@@ -21,6 +21,8 @@ export const jenkinsOption: OptionItem = {
   detail: "",
 };
 
+export const providerOptions: OptionItem[] = [githubOption, azdoOption, jenkinsOption];
+
 export const ciOption: OptionItem = {
   id: "ci",
   label: "CI",
@@ -44,6 +46,8 @@ export const publishOption: OptionItem = {
   label: "Publish to Teams",
   detail: getLocalizedString("plugins.cicd.publishOption.detail"),
 };
+
+export const templateOptions: OptionItem[] = [ciOption, provisionOption, cdOption, publishOption];
 
 const templateIdLabelMap = new Map<string, string>([
   [ciOption.id, ciOption.label],

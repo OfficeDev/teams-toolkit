@@ -22,6 +22,7 @@ describe("Create existing tab app", function () {
 
   before(() => {
     mockedEnvRestore = mockedEnv({
+      TEAMSFX_PREVIEW: "true",
       TEAMSFX_INIT_APP: "true",
     });
   });

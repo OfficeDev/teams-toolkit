@@ -12,6 +12,8 @@ import { execAsync, getTestFolder, getUniqueAppName, cleanUpLocalProject } from 
 
 import { describe } from "mocha";
 import { it } from "../../commonlib/it";
+import { CliHelper } from "../../commonlib/cliHelper";
+import { Capability, Resource } from "../../commonlib/constants";
 
 describe("Azure App Scaffold", function () {
   let testFolder: string;
@@ -34,20 +36,24 @@ describe("Azure App Scaffold", function () {
   it(`Tab + Bot + Function in TypeScript`, { testPlanCaseId: 9863654 }, async function () {
     const lang = "typescript";
 
-    // new a project (tab + bot + function) in TypeScript
-    await execAsync(
-      `teamsfx new --interactive false --app-name ${appName} --capabilities tab bot --azure-resources function --programming-language ${lang}`,
-      {
-        cwd: testFolder,
-        env: process.env,
-        timeout: 0,
-      }
+    await CliHelper.createProjectWithCapability(
+      appName,
+      testFolder,
+      Capability.Tab,
+      process.env,
+      `--programming-language ${lang}`
     );
-    console.log(`[Successfully] scaffold to ${projectPath}`);
+    console.log(`[Successfully] scaffold typescript tab project to ${projectPath}`);
+
+    await CliHelper.addCapabilityToProject(projectPath, Capability.Notification);
+    console.log(`[Successfully] add capability ${Capability.Notification}`);
+
+    await CliHelper.addResourceToProject(projectPath, Resource.AzureFunction);
+    console.log(`[Successfully] add resource ${Resource.AzureFunction}`);
 
     {
       await FrontendValidator.validateScaffold(projectPath, lang);
-      await BotValidator.validateScaffold(projectPath, lang);
+      await BotValidator.validateScaffold(projectPath, lang, "src");
       await FunctionValidator.validateScaffold(projectPath, lang);
     }
   });

@@ -24,7 +24,7 @@ It's recommended to get channels from .
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(parent, info)](./teamsfx.channel._constructor_.md) |  | <b><i>(BETA)</i></b> Constuctor. |
+|  [(constructor)(parent, info)](./teamsfx.channel._constructor_.md) |  | <b><i>(BETA)</i></b> Constructor. |
 
 ## Properties
 

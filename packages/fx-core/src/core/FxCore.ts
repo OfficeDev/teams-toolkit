@@ -44,14 +44,13 @@ import { getLocalizedString } from "../common/localizeUtils";
 import { localSettingsFileName } from "../common/localSettingsProvider";
 import {
   getProjectSettingsVersion,
-  isPureExistingApp,
+  isExistingTabApp,
   isValidProject,
   newProjectSettings,
 } from "../common/projectSettingsHelper";
 import { TelemetryReporterInstance } from "../common/telemetry";
 import {
   createV2Context,
-  getRootDirectory,
   isAadManifestEnabled,
   isConfigUnifyEnabled,
   mapToJson,
@@ -145,6 +144,8 @@ import {
   sendErrorTelemetryThenReturnError,
 } from "./telemetry";
 import { CoreHookContext } from "./types";
+import { isPreviewFeaturesEnabled } from "../common";
+import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -185,14 +186,11 @@ export class FxCore implements v3.ICore {
     }
     setCurrentStage(Stage.create);
     inputs.stage = Stage.create;
-    let folder = inputs[QuestionRootFolder.name] as string;
-    if (inputs.platform === Platform.VSCode) {
-      folder = getRootDirectory();
-      try {
-        await fs.ensureDir(folder);
-      } catch (e) {
-        throw new ProjectFolderInvalidError(folder);
-      }
+    const folder = inputs[QuestionRootFolder.name] as string;
+
+    if (isPreviewFeaturesEnabled()) {
+      const capability = inputs[CoreQuestionNames.Capabilities] as string;
+      inputs[CoreQuestionNames.Capabilities] = [capability];
     }
 
     const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
@@ -288,13 +286,17 @@ export class FxCore implements v3.ICore {
       if (scaffoldSourceCodeRes.isErr()) {
         return err(scaffoldSourceCodeRes.error);
       }
-      const generateResourceTemplateRes = await solution.generateResourceTemplate(
-        contextV2,
-        inputs
-      );
-      if (generateResourceTemplateRes.isErr()) {
-        return err(generateResourceTemplateRes.error);
+
+      if (capabilities && !capabilities.includes(TabSPFxItem.id)) {
+        const generateResourceTemplateRes = await solution.generateResourceTemplate(
+          contextV2,
+          inputs
+        );
+        if (generateResourceTemplateRes.isErr()) {
+          return err(generateResourceTemplateRes.error);
+        }
       }
+
       // ctx.provisionInputConfig = generateResourceTemplateRes.value;
       if (solution.createEnv) {
         inputs.copy = false;
@@ -349,15 +351,7 @@ export class FxCore implements v3.ICore {
     }
     setCurrentStage(Stage.create);
     inputs.stage = Stage.create;
-    let folder = inputs[QuestionRootFolder.name] as string;
-    if (inputs.platform === Platform.VSCode || inputs.platform === Platform.VS) {
-      folder = getRootDirectory();
-      try {
-        await fs.ensureDir(folder);
-      } catch (e) {
-        throw new ProjectFolderInvalidError(folder);
-      }
-    }
+    const folder = inputs[QuestionRootFolder.name] as string;
     if (!folder) {
       return err(InvalidInputError("folder is undefined"));
     }
@@ -473,6 +467,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -505,8 +500,9 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
-    ProjectSettingsLoaderMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
+    ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     SolutionLoaderMW_V3,
     QuestionModelMW,
@@ -579,6 +575,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -593,7 +590,7 @@ export class FxCore implements v3.ICore {
     if (!ctx?.projectSettings) {
       return err(new ObjectIsUndefinedError("deploy input stuff"));
     }
-    if (isPureExistingApp(ctx.projectSettings)) {
+    if (isExistingTabApp(ctx.projectSettings)) {
       // existing app scenario, deploy has no effect
       return err(new OperationNotPermittedError("deploy"));
     }
@@ -621,6 +618,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     SolutionLoaderMW_V3,
@@ -654,6 +652,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     LocalSettingsLoaderMW,
@@ -724,6 +723,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -758,6 +758,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -799,6 +800,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     LocalSettingsLoaderMW,
@@ -846,14 +848,19 @@ export class FxCore implements v3.ICore {
         //for existing app
         if (
           res.isOk() &&
-          func.method === "addCapability" &&
+          (func.method === "addCapability" || func.method === "addFeature") &&
           inputs.capabilities &&
           inputs.capabilities.length > 0
         ) {
           await ensureBasicFolderStructure(inputs);
         }
         // reset provisionSucceeded state for all env
-        if (res.isOk() && (func.method === "addCapability" || func.method === "addResource")) {
+        if (
+          res.isOk() &&
+          (func.method === "addCapability" ||
+            func.method === "addResource" ||
+            func.method === "addFeature")
+        ) {
           if (
             ctx.envInfoV2?.state?.solution?.provisionSucceeded === true ||
             ctx.envInfoV2?.state?.solution?.provisionSucceeded === "true"
@@ -899,6 +906,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     LocalSettingsLoaderMW,
@@ -1006,6 +1014,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     LocalSettingsLoaderMW,
@@ -1067,6 +1076,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -1094,6 +1104,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     QuestionModelMW,
@@ -1129,6 +1140,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -1156,6 +1168,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
@@ -1190,6 +1203,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -1217,6 +1231,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
@@ -1404,6 +1419,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     SolutionLoaderMW,
     ContextInjectorMW,

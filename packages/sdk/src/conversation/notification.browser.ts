@@ -92,7 +92,7 @@ export class Channel implements NotificationTarget {
   public readonly type: NotificationTargetType = "Channel";
 
   /**
-   * Constuctor.
+   * Constructor.
    *
    * @remarks
    * Only work on server side.
@@ -190,7 +190,7 @@ export class Member implements NotificationTarget {
   public readonly type: NotificationTargetType = "Person";
 
   /**
-   * Constuctor.
+   * Constructor.
    *
    * @remarks
    * Only work on server side.

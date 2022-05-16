@@ -27,6 +27,7 @@ export enum TelemetryProperty {
   Capabilities = "capabilities",
   ActivePlugins = "active-plugins",
   IsSideloadingAllowed = "is-sideloading-allowed",
+  NeedMigrateAadManifest = "need-migrate-aad-manifest",
 }
 
 export enum TelemetryEvent {
@@ -52,14 +53,11 @@ export enum TelemetryEvent {
   ProjectMigratorGuide = "project-migrator-guide",
   ProjectMigratorPrecheckFailed = "project-migrator-pre-check-failed",
   ProjectMigratorError = "project-migrator-error",
-  ProjectAadManifestMigrationNotification = "project-aad-manifest-migration-notification",
   ProjectAadManifestMigrationError = "project-aad-manifest-migration-error",
   ProjectAadManifestMigrationStart = "project-aad-manifest-migration-start",
   ProjectAadManifestMigrationAddAADTemplateStart = "project-aad-manifest-migration-add-aad-template-start",
   ProjectAadManifestMigrationAddAADTemplate = "project-aad-manifest-migration-add-aad-template",
-  ProjectAadManifestMigrationAddSSOCapabilityStart = "project-aad-manifest-migration-add-sso-capability-start",
-  ProjectAadManifestMigrationAddSSOCapability = "project-aad-manifest-migration-add-sso-capability",
-  ProjectAadManifestMigrationBackupStart = "project-aad-manifest-migration-backup",
+  ProjectAadManifestMigrationBackupStart = "project-aad-manifest-migration-backup-start",
   ProjectAadManifestMigrationBackup = "project-aad-manifest-migration-backup",
   ProjectConsolidateNotificationStart = "project-consolidate-notification-start",
   ProjectConsolidateNotification = "project-consolidate-notification",

@@ -29,7 +29,7 @@ import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
-  TelemetryTiggerFrom,
+  TelemetryTriggerFrom,
 } from "../telemetry/extTelemetryEvents";
 import { isMacOS } from "../utils/commonUtils";
 import { localize } from "../utils/localizeUtils";
@@ -42,7 +42,7 @@ export class WebviewPanel {
   public static currentPanels: WebviewPanel[] = [];
 
   private panel: vscode.WebviewPanel;
-  private panelType: PanelType = PanelType.QuickStart;
+  private panelType: PanelType = PanelType.SampleGallery;
   private disposables: vscode.Disposable[] = [];
 
   public static createOrShow(panelType: PanelType, isToSide?: boolean) {
@@ -105,7 +105,7 @@ export class WebviewPanel {
           case Commands.SigninM365:
             Correlator.run(async () => {
               ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginClick, {
-                [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview,
+                [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
                 [TelemetryProperty.AccountType]: AccountType.M365,
               });
               await AppStudioTokenInstance.getJsonObject(false);
@@ -114,7 +114,7 @@ export class WebviewPanel {
           case Commands.SigninAzure:
             Correlator.run(async () => {
               ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginClick, {
-                [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview,
+                [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
                 [TelemetryProperty.AccountType]: AccountType.Azure,
               });
               await AzureAccountManager.getAccountCredentialAsync(false);
@@ -123,7 +123,7 @@ export class WebviewPanel {
           case Commands.CreateNewProject:
             await vscode.commands.executeCommand(
               "fx-extension.create",
-              TelemetryTiggerFrom.Webview
+              TelemetryTriggerFrom.Webview
             );
             break;
           case Commands.SwitchPanel:
@@ -157,7 +157,7 @@ export class WebviewPanel {
 
   private async downloadSampleApp(msg: any) {
     const props: any = {
-      [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview,
+      [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
       [TelemetryProperty.SampleAppName]: msg.data.appFolder,
     };
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSampleStart, props);
@@ -209,8 +209,6 @@ export class WebviewPanel {
 
   private getWebpageTitle(panelType: PanelType) {
     switch (panelType) {
-      case PanelType.QuickStart:
-        return localize("teamstoolkit.webview.quickStartPageTitle");
       case PanelType.SampleGallery:
         return localize("teamstoolkit.webview.samplePageTitle");
       case PanelType.Survey:

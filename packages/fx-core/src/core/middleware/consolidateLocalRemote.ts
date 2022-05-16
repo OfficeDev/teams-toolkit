@@ -12,11 +12,12 @@ import {
   StatesFolderName,
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
-import { isSPFxProject, isAADEnabled, isConfigUnifyEnabled } from "../../common/tools";
+import { isSPFxProject, isConfigUnifyEnabled } from "../../common/tools";
 import { environmentManager } from "../environment";
 import { CoreSource, ConsolidateCanceledError } from "../error";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import fs from "fs-extra";
+import * as os from "os";
 import path from "path";
 import { getLocalAppName } from "../../plugins/resource/appstudio/utils/utils";
 import {
@@ -36,15 +37,23 @@ import { loadProjectSettings } from "./projectSettingsLoader";
 import { addPathToGitignore, needMigrateToArmAndMultiEnv } from "./projectMigrator";
 import * as util from "util";
 import { ManifestTemplate } from "../../plugins/resource/spfx/utils/constants";
+import {
+  needMigrateToAadManifest,
+  Permission,
+  permissionsToRequiredResourceAccess,
+} from "./MigrationUtils";
+import { Constants } from "../../plugins/resource/aad/constants";
+import { AADManifest } from "../../plugins/resource/aad/interfaces/AADManifest";
+import { generateAadManifestTemplate } from "../generateAadManifestTemplate";
 
 const upgradeButton = "Upgrade";
 const LearnMore = "Learn More";
-const LearnMoreLink = "https://aka.ms/teamsfx-unify-config-guide";
+const LearnMoreLinkWithAADManifest = "https://aka.ms/teamsfx-unify-config-and-aad-manifest-guide";
 const UnifyManifestLearMoreLink = "https://aka.ms/teamsfx-unify-local-remote-manifest-guide";
 let userCancelFlag = false;
 const backupFolder = ".backup";
 const methods: Set<string> = new Set(["getProjectConfig", "checkPermission"]);
-const upgradeReportName = "unify-config-change-logs.md";
+const upgradeWithAadManifestReportName = "unify-config-and-aad-manifest-change-logs.md";
 const componentIdRegex = /(?<=componentId=)([a-z0-9-]*)(?=%26)/;
 const manifestRegex = /{{{.*}}}|{{.*}}|{.*}/g;
 const ignoreKeys: Set<string> = new Set([
@@ -55,6 +64,7 @@ const ignoreKeys: Set<string> = new Set([
   "$schema",
   "description",
 ]);
+let needMigrateAadManifest = false;
 
 export const ProjectConsolidateMW: Middleware = async (
   ctx: CoreHookContext,
@@ -63,7 +73,10 @@ export const ProjectConsolidateMW: Middleware = async (
   if (await needMigrateToArmAndMultiEnv(ctx)) {
     next();
   } else if ((await needConsolidateLocalRemote(ctx)) && checkMethod(ctx)) {
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateNotificationStart);
+    needMigrateAadManifest = await needMigrateToAadManifest(ctx);
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateNotificationStart, {
+      [TelemetryProperty.NeedMigrateAadManifest]: needMigrateAadManifest ? "true" : "false",
+    });
     let showModal = true;
     if (ctx.method && methods.has(ctx.method)) {
       showModal = false;
@@ -84,19 +97,22 @@ async function upgrade(ctx: CoreHookContext, next: NextFunction, showModal: bool
   do {
     const res = await TOOLS?.ui.showMessage(
       "warn",
-      getLocalizedString("core.consolidateLocalRemote.Message"),
+      needMigrateAadManifest
+        ? getLocalizedString("core.consolidateLocalRemoteWithAadManifest.Message")
+        : getLocalizedString("core.consolidateLocalRemote.Message"),
       showModal,
       upgradeButton,
       LearnMore
     );
     answer = res?.isOk() ? res.value : undefined;
     if (answer === LearnMore) {
-      TOOLS?.ui.openUrl(LearnMoreLink);
+      TOOLS?.ui.openUrl(LearnMoreLinkWithAADManifest);
     }
   } while (answer === LearnMore);
   if (!answer || answer != upgradeButton) {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateNotification, {
       [TelemetryProperty.Status]: ProjectMigratorStatus.Cancel,
+      [TelemetryProperty.NeedMigrateAadManifest]: needMigrateAadManifest ? "true" : "false",
     });
     ctx.result = err(ConsolidateCanceledError());
     outputCancelMessage(ctx);
@@ -104,16 +120,22 @@ async function upgrade(ctx: CoreHookContext, next: NextFunction, showModal: bool
   }
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateNotification, {
     [TelemetryProperty.Status]: ProjectMigratorStatus.OK,
+    [TelemetryProperty.NeedMigrateAadManifest]: needMigrateAadManifest ? "true" : "false",
   });
 
   try {
     await consolidateLocalRemote(ctx);
-    await next();
+    if (showModal) {
+      await next();
+    }
   } catch (error) {
     sendTelemetryErrorEvent(
       Component.core,
       TelemetryEvent.ProjectConsolidateError,
-      assembleError(error, CoreSource)
+      assembleError(error, CoreSource),
+      {
+        [TelemetryProperty.NeedMigrateAadManifest]: needMigrateAadManifest ? "true" : "false",
+      }
     );
     throw error;
   }
@@ -163,7 +185,9 @@ function outputCancelMessage(ctx: CoreHookContext) {
 }
 
 async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
-  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateUpgradeStart);
+  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateUpgradeStart, {
+    [TelemetryProperty.NeedMigrateAadManifest]: needMigrateAadManifest ? "true" : "false",
+  });
   const lastArg = ctx.arguments[ctx.arguments.length - 1];
   const inputs: Inputs = lastArg === ctx ? ctx.arguments[ctx.arguments.length - 2] : lastArg;
   const fileList: Array<string> = [];
@@ -175,11 +199,18 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
   }
 
   const projectSettings = loadRes.value;
-
+  const projectSettingsPath = path.join(
+    inputs.projectPath as string,
+    ".fx",
+    "configs",
+    "projectSettings.json"
+  );
   try {
     // add local environment
     const appName = getLocalAppName(projectSettings.appName);
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateAddLocalEnvStart);
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateAddLocalEnvStart, {
+      [TelemetryProperty.NeedMigrateAadManifest]: needMigrateAadManifest ? "true" : "false",
+    });
     const newEnvConfig = environmentManager.newEnvConfigData(appName);
     const writeEnvResult = await environmentManager.writeEnvConfig(
       inputs.projectPath!,
@@ -190,7 +221,9 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
       throw err(writeEnvResult.error);
     }
     fileList.push(path.join(inputs.projectPath as string, ".fx", "configs", "env.local.json"));
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateAddLocalEnv);
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateAddLocalEnv, {
+      [TelemetryProperty.NeedMigrateAadManifest]: needMigrateAadManifest ? "true" : "false",
+    });
 
     // add consolidate manifest
     let manifest: TeamsAppManifest | undefined;
@@ -238,10 +271,18 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
         await fs.writeFile(manifestTemplatePath, JSON.stringify(manifest, null, 4));
         sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateAddSPFXManifest);
       } else {
-        sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateCopyAzureManifestStart);
+        sendTelemetryEvent(
+          Component.core,
+          TelemetryEvent.ProjectConsolidateCopyAzureManifestStart,
+          {
+            [TelemetryProperty.NeedMigrateAadManifest]: needMigrateAadManifest ? "true" : "false",
+          }
+        );
         const manifestTemplatePath = await getManifestTemplatePath(inputs.projectPath as string);
         await fs.copyFile(remoteManifestFile, manifestTemplatePath);
-        sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateCopyAzureManifest);
+        sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateCopyAzureManifest, {
+          [TelemetryProperty.NeedMigrateAadManifest]: needMigrateAadManifest ? "true" : "false",
+        });
       }
     }
     fileList.push(
@@ -250,7 +291,9 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
 
     // copy and remove old configs
     const backupPath = path.join(inputs.projectPath as string, backupFolder);
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateBackupConfigStart);
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateBackupConfigStart, {
+      [TelemetryProperty.NeedMigrateAadManifest]: needMigrateAadManifest ? "true" : "false",
+    });
     const localSettingsFile = path.join(
       inputs.projectPath as string,
       ".fx",
@@ -307,8 +350,50 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
       );
     }
 
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateBackupConfig);
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateUpgrade);
+    if (needMigrateAadManifest) {
+      const permissionFilePath = path.join(inputs.projectPath as string, "permissions.json");
+
+      // add aad.template.file
+      const permissions = (await fs.readJson(permissionFilePath)) as Permission[];
+
+      const requiredResourceAccess = permissionsToRequiredResourceAccess(permissions);
+      const aadManifestPath = path.join(
+        inputs.projectPath as string,
+        "templates",
+        "appPackage",
+        "aad.template.json"
+      );
+      const projectSettingsJson = await fs.readJson(projectSettingsPath);
+
+      await generateAadManifestTemplate(
+        inputs.projectPath!,
+        projectSettingsJson,
+        requiredResourceAccess,
+        true
+      );
+      fileList.push(aadManifestPath);
+
+      await fs.writeJSON(projectSettingsPath, projectSettingsJson, { spaces: 4, EOL: os.EOL });
+
+      moveFiles += "projectSettings.json,";
+      await fs.ensureDir(path.join(backupPath, ".fx", "configs"));
+      await fs.writeJSON(
+        path.join(backupPath, ".fx", "configs", "projectSettings.json"),
+        projectSettings,
+        { spaces: 4, EOL: os.EOL }
+      );
+      removeMap.set(
+        path.join(backupPath, ".fx", "configs", "projectSettings.json"),
+        projectSettingsPath
+      );
+    }
+
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateBackupConfig, {
+      [TelemetryProperty.NeedMigrateAadManifest]: needMigrateAadManifest ? "true" : "false",
+    });
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateUpgrade, {
+      [TelemetryProperty.NeedMigrateAadManifest]: needMigrateAadManifest ? "true" : "false",
+    });
 
     postConsolidate(inputs.projectPath as string, ctx, inputs, backupFolder, moveFiles);
   } catch (e) {
@@ -339,7 +424,9 @@ async function postConsolidate(
   backupFolder: string | undefined,
   moveFiles: string
 ): Promise<void> {
-  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateGuideStart);
+  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateGuideStart, {
+    [TelemetryProperty.NeedMigrateAadManifest]: needMigrateAadManifest ? "true" : "false",
+  });
   await updateGitIgnore(projectPath, TOOLS.logProvider, backupFolder);
 
   if (moveFiles.length > 0) {
@@ -350,7 +437,10 @@ async function postConsolidate(
   }
 
   if (inputs.platform !== Platform.VSCode) {
-    TOOLS?.logProvider.info(getLocalizedString("core.consolidateLocalRemote.SuccessMessage"));
+    const msg = needMigrateAadManifest
+      ? getLocalizedString("core.consolidateLocalRemoteWithAadManifest.SuccessMessage")
+      : getLocalizedString("core.consolidateLocalRemote.SuccessMessage");
+    TOOLS?.logProvider.info(msg);
   }
 }
 
@@ -380,8 +470,9 @@ async function updateGitIgnore(
 
 async function generateUpgradeReport(backupFolder: string) {
   try {
-    const target = path.join(backupFolder, upgradeReportName);
-    const source = path.resolve(path.join(getResourceFolder(), upgradeReportName));
+    const reportName = upgradeWithAadManifestReportName;
+    const target = path.join(backupFolder, reportName);
+    const source = path.resolve(path.join(getResourceFolder(), reportName));
     await fs.copyFile(source, target);
   } catch (error) {
     // do nothing
@@ -416,7 +507,10 @@ async function compareLocalAndRemoteManifest(
     sendTelemetryErrorEvent(
       Component.core,
       TelemetryEvent.ProjectConsolidateCheckManifestError,
-      assembleError(error, CoreSource)
+      assembleError(error, CoreSource),
+      {
+        [TelemetryProperty.NeedMigrateAadManifest]: needMigrateAadManifest ? "true" : "false",
+      }
     );
   }
 }

@@ -12,6 +12,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { DeepReadonly, EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { Service } from "typedi";
+import { isPreviewFeaturesEnabled } from "../../../../common";
 import { PluginDisplayName } from "../../../../common/constants";
 import { SolutionPluginsV2 } from "../../../../core/SolutionPluginContainer";
 import { checkPermission } from "./checkPermission";
@@ -20,7 +21,12 @@ import { createEnv } from "./createEnv";
 import { deploy } from "./deploy";
 import { executeUserTask } from "./executeUserTask";
 import { generateResourceTemplate } from "./generateResourceTemplate";
-import { getQuestions, getQuestionsForScaffolding, getQuestionsForUserTask } from "./getQuestions";
+import {
+  getQuestions,
+  getQuestionsForScaffolding,
+  getQuestionsForScaffoldingPreview,
+  getQuestionsForUserTask,
+} from "./getQuestions";
 import { grantPermission } from "./grantPermission";
 import { listCollaborator } from "./listCollaborator";
 import { provisionResource } from "./provision";
@@ -64,7 +70,9 @@ export class TeamsAppSolutionV2 implements v2.SolutionPlugin {
   getQuestionsForScaffolding?: (
     ctx: v2.Context,
     inputs: Inputs
-  ) => Promise<Result<QTreeNode | undefined, FxError>> = getQuestionsForScaffolding;
+  ) => Promise<Result<QTreeNode | undefined, FxError>> = isPreviewFeaturesEnabled()
+    ? getQuestionsForScaffoldingPreview
+    : getQuestionsForScaffolding;
 
   executeUserTask?: (
     ctx: v2.Context,

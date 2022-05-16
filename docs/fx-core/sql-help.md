@@ -9,7 +9,7 @@
 #### Step #1 add skip flag
 1. Open `.fx\configs\config.{envName}.json` file.
 1. Add a key named 'skipAddingSqlUser', and set the value to true.
-1. Run `TeamsFx - Provision in the cloud` command again.
+1. Run `Teams - Provision in the cloud` command again.
 
 #### Step #2 add database user manually
 

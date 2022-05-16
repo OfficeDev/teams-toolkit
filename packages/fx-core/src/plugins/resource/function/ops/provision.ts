@@ -53,67 +53,6 @@ export class FunctionNaming {
 }
 
 export class FunctionProvision {
-  public static async ensureFunctionApp(
-    client: WebSiteManagementClient,
-    resourceGroupName: string,
-    location: string,
-    functionAppName: string,
-    language: FunctionLanguage,
-    appServiceId: string,
-    storageConnectionString: string,
-    version: string
-  ): Promise<Site> {
-    const settings: NameValuePair[] = Object.entries({
-      ...DefaultProvisionConfigs.functionAppStaticSettings,
-      ...this.getFunctionAppRuntimeSettings(language, version),
-      ...this.getFunctionAppStorageSettings(storageConnectionString),
-    }).map((kv) => ({
-      name: kv[0],
-      value: kv[1],
-    }));
-
-    const siteEnvelope: Site = {
-      ...DefaultProvisionConfigs.functionAppConfig(location),
-      serverFarmId: appServiceId,
-      siteConfig: {
-        appSettings: settings,
-      },
-    };
-
-    const site = await AzureLib.ensureFunctionApp(
-      client,
-      resourceGroupName,
-      functionAppName,
-      siteEnvelope
-    );
-
-    // The ensureFunctionApp may return a site found on Azure,
-    // we need to return a site with updated settings for post provision.
-    settings.forEach((pair) => {
-      pair.name && pair.value && this.pushAppSettings(site, pair.name, pair.value);
-    });
-
-    return site;
-  }
-
-  // TODO: Extend to support multiple language and versions.
-  private static getFunctionAppRuntimeSettings(
-    language: FunctionLanguage,
-    version: string
-  ): { [key: string]: string } {
-    return LanguageStrategyFactory.getStrategy(language).functionAppRuntimeSettings(version);
-  }
-
-  private static getFunctionAppStorageSettings(storageConnectionString: string): {
-    [key: string]: string;
-  } {
-    return {
-      WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: storageConnectionString,
-      AzureWebJobsDashboard: storageConnectionString,
-      AzureWebJobsStorage: storageConnectionString,
-    };
-  }
-
   // Push AppSettings when it is not included.
   public static pushAppSettings(
     site: Site,

@@ -45,7 +45,7 @@ import { solutionGlobalVars } from "../v3/solutionGlobalVars";
 import {
   hasAAD,
   hasAzureResource,
-  isPureExistingApp,
+  isExistingTabApp,
 } from "../../../../common/projectSettingsHelper";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 
@@ -144,14 +144,17 @@ export async function provisionResource(
     }
   }
 
-  const pureExistingApp = isPureExistingApp(ctx.projectSetting);
+  const plugins = getSelectedPlugins(ctx.projectSetting);
+  if (isExistingTabApp(ctx.projectSetting)) {
+    // for existing tab app, enable app studio plugin when solution settings is empty.
+    const appStudioPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
+    if (!plugins.find((p) => p.name === appStudioPlugin.name)) {
+      plugins.push(appStudioPlugin);
+    }
+  }
 
   envInfo.state[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] = false;
   const solutionInputs = extractSolutionInputs(envInfo.state[GLOBAL_CONFIG]);
-  // for minimized teamsfx project, there is only one plugin (app studio)
-  const plugins = pureExistingApp
-    ? [Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin)]
-    : getSelectedPlugins(ctx.projectSetting);
   const provisionThunks = plugins
     .filter((plugin) => !isUndefined(plugin.provisionResource))
     .map((plugin) => {
@@ -205,26 +208,23 @@ export async function provisionResource(
     _.assign(envInfo.state, update);
   }
 
-  // there is no aad for minimized teamsfx project
-  if (!pureExistingApp) {
-    // call aad.setApplicationInContext
-    const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
-    if (plugins.some((plugin) => plugin.name === aadPlugin.name) && aadPlugin.executeUserTask) {
-      const result = await aadPlugin.executeUserTask(
-        ctx,
-        inputs,
-        {
-          namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
-          method: "setApplicationInContext",
-          params: { isLocal: false },
-        },
-        {},
-        envInfo,
-        tokenProvider
-      );
-      if (result.isErr()) {
-        return err(result.error);
-      }
+  // call aad.setApplicationInContext
+  const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
+  if (plugins.some((plugin) => plugin.name === aadPlugin.name) && aadPlugin.executeUserTask) {
+    const result = await aadPlugin.executeUserTask(
+      ctx,
+      inputs,
+      {
+        namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
+        method: "setApplicationInContext",
+        params: { isLocal: false },
+      },
+      {},
+      envInfo,
+      tokenProvider
+    );
+    if (result.isErr()) {
+      return err(result.error);
     }
   }
 
@@ -270,7 +270,7 @@ export async function provisionResource(
 
     const msg = getLocalizedString("core.provision.successNotice", ctx.projectSetting.appName);
     ctx.logProvider?.info(msg);
-    if (!pureExistingApp) {
+    if (!isExistingTabApp(ctx.projectSetting)) {
       const url = getResourceGroupInPortal(
         solutionInputs.subscriptionId,
         solutionInputs.tenantId,

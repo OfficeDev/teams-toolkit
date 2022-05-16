@@ -3,14 +3,11 @@
 import * as path from "path";
 
 import { Commands, CommonConstants, FunctionPluginPathInfo } from "./constants";
-import { FunctionLanguage, NodeVersion } from "./enums";
+import { FunctionLanguage } from "./enums";
 
 export interface FunctionLanguageStrategy {
   /* For scaffolding. */
   getFunctionEntryFileOrFolderName: (entryName: string) => string;
-
-  /* For provision. */
-  functionAppRuntimeSettings: (version?: string) => { [key: string]: string };
 
   /* For deployment. */
   skipFuncExtensionInstall: boolean;
@@ -24,12 +21,6 @@ export interface FunctionLanguageStrategy {
 
 const NodeJSCommonStrategy: FunctionLanguageStrategy = {
   getFunctionEntryFileOrFolderName: (entryName: string) => entryName,
-  functionAppRuntimeSettings: (version?: string) => {
-    return {
-      FUNCTIONS_WORKER_RUNTIME: "node",
-      WEBSITE_NODE_DEFAULT_VERSION: `~${version ?? NodeVersion.Version12}`,
-    };
-  },
   skipFuncExtensionInstall: false,
   /* We skip scanning node_modules folder for node because it has too many small files.
    * Its consistency can be guaranteed by `npm install`.
@@ -66,11 +57,6 @@ const TypeScriptLanguageStrategy: FunctionLanguageStrategy = {
 
 // const CSharpLanguageStrategy: FunctionLanguageStrategy = {
 //     getFunctionEntryFileOrFolderName: (entryName: string) => `${entryName}.cs`,
-//     functionAppRuntimeSettings: (version?: string) => {
-//         return {
-//             "FUNCTIONS_WORKER_RUNTIME": "dotnet"
-//         };
-//     },
 //     skipFuncExtensionInstall: true,
 //     buildCommands: [{
 //         command: Commands.dotnetPublish,

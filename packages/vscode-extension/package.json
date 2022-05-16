@@ -1,6 +1,6 @@
 {
   "name": "ms-teams-vscode-extension",
-  "displayName": "Teams Toolkit (Preview)",
+  "displayName": "Teams Toolkit",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
   "version": "4.0.0-rc",
   "publisher": "TeamsDevApp",
@@ -28,7 +28,7 @@
     "Azure",
     "M365"
   ],
-  "preview": true,
+  "preview": false,
   "categories": [
     "Azure",
     "Extension Packs",
@@ -66,7 +66,6 @@
     "onCommand:workbench.action.tasks.runTask",
     "onCommand:fx-extension.addSso",
     "workspaceContains:**/.fx/*",
-    "onView:teamsfx",
     "onView:teamsfx-accounts",
     "onView:teamsfx-environment",
     "onView:teamsfx-development",
@@ -74,6 +73,29 @@
     "onView:teamsfx-help-and-feedback"
   ],
   "contributes": {
+    "icons": {
+      "teamsfx-add-feature": {
+        "description": "Add feature icon in command tree view",
+        "default": {
+          "fontPath": "./media/font/teamstoolkit.woff",
+          "fontCharacter": "\\E000"
+        }
+      },
+      "teamsfx-developer-portal": {
+        "description": "Developer portal icon in command tree view",
+        "default": {
+          "fontPath": "./media/font/teamstoolkit.woff",
+          "fontCharacter": "\\E001"
+        }
+      },
+      "teamsfx-m365": {
+        "description": "Microsoft 365 icon in account tree view",
+        "default": {
+          "fontPath": "./media/font/teamstoolkit.woff",
+          "fontCharacter": "\\E002"
+        }
+      }
+    },
     "viewsContainers": {
       "activitybar": [
         {
@@ -147,7 +169,7 @@
     "menus": {
       "explorer/context": [
         {
-          "command": "fx-extension.deployAadAppManifest",
+          "command": "fx-extension.deployAadAppManifestFromCtxMenu",
           "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled",
           "group": "deploy@0"
         },
@@ -404,6 +426,10 @@
         {
           "command": "fx-extension.openHelpFeedbackLink",
           "when": "false"
+        },
+        {
+          "command": "fx-extension.deployAadAppManifestFromCtxMenu",
+          "when": "false"
         }
       ]
     },
@@ -411,6 +437,11 @@
       {
         "command": "fx-extension.deployAadAppManifest",
         "title": "%teamstoolkit.commands.deployAadAppManifest.title%",
+        "enablement": "fx-extension.isAadManifestEnabled"
+      },
+      {
+        "command": "fx-extension.deployAadAppManifestFromCtxMenu",
+        "title": "%teamstoolkit.commands.deployAadAppManifestFromCtxMenu.title%",
         "enablement": "fx-extension.isAadManifestEnabled"
       },
       {
@@ -449,7 +480,7 @@
       },
       {
         "command": "fx-extension.openWelcome",
-        "title": "%teamstoolkit.commands.quickStart.title%"
+        "title": "%teamstoolkit.commands.getstarted.title%"
       },
       {
         "command": "fx-extension.openSurvey",
@@ -470,12 +501,12 @@
       {
         "command": "fx-extension.update",
         "title": "%teamstoolkit.commands.addCloudResource.title%",
-        "enablement": "!fx-extension.isSPFx"
+        "enablement": "!fx-entension.previewFeaturesEnabled && !fx-extension.isSPFx"
       },
       {
         "command": "fx-extension.addCapability",
         "title": "%teamstoolkit.commands.addCapability.title%",
-        "enablement": "!fx-extension.isSPFx && !fx-extension.isM365"
+        "enablement": "!fx-entension.previewFeaturesEnabled && !fx-extension.isSPFx && !fx-extension.isM365"
       },
       {
         "command": "fx-extension.addFeature",
@@ -493,7 +524,7 @@
       {
         "command": "fx-extension.connectExistingApi",
         "title": "%teamstoolkit.commands.connectExistingApi.title%",
-        "enablement": "fx-extension.isApiConnectEnabled"
+        "enablement": "!fx-entension.previewFeaturesEnabled && fx-extension.isApiConnectEnabled"
       },
       {
         "command": "fx-extension.build",
@@ -571,6 +602,7 @@
       {
         "command": "fx-extension.addCICDWorkflows",
         "title": "%teamstoolkit.commands.addCICDWorkflows.title%",
+        "enablement": "!fx-entension.previewFeaturesEnabled",
         "icon": "$(sync)"
       },
       {
@@ -702,7 +734,7 @@
       {
         "command": "fx-extension.addSso",
         "title": "%teamstoolkit.commands.addSso.title%",
-        "enablement": "fx-extension.isAadManifestEnabled"
+        "enablement": "!fx-entension.previewFeaturesEnabled && fx-extension.isAadManifestEnabled"
       },
       {
         "command": "fx-extension.selectTutorials",
@@ -766,6 +798,30 @@
         "fileLocation": [
           "relative",
           "${workspaceFolder}/api"
+        ],
+        "pattern": [
+          {
+            "regexp": "^.*$",
+            "file": 0,
+            "location": 1,
+            "message": 2
+          }
+        ],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^.*(Job host stopped|signaling restart).*$",
+          "endsPattern": "^.*(Worker process started and initialized|Host lock lease acquired by instance ID).*$"
+        }
+      },
+      {
+        "name": "teamsfx-func-hosted-bot-watch",
+        "label": "TeamsFx Azure Functions Hosted Bot Problems",
+        "owner": "Teams Toolkit",
+        "source": "teamsfx",
+        "applyTo": "allDocuments",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}/bot"
         ],
         "pattern": [
           {
@@ -856,23 +912,6 @@
     ],
     "configuration": [
       {
-        "title": "General",
-        "order": 1,
-        "properties": {
-          "fx-extension.defaultProjectRootDirectory": {
-            "type": "string",
-            "description": "Set the default root directory for creating new teams app project. By default, the root directory is ${homeDir}/TeamsApps. (requires reload of VS Code)",
-            "default": "${homeDir}/TeamsApps"
-          },
-          "fx-extension.automaticNpmInstall": {
-            "type": "boolean",
-            "title": "Automatic NPM Install",
-            "description": "Automatically execute npm install command for your Teams application.",
-            "default": false
-          }
-        }
-      },
-      {
         "title": "Prerequisite Check",
         "order": 2,
         "properties": {
@@ -939,18 +978,6 @@
             }
           }
         }
-      },
-      {
-        "title": "Experimental Features",
-        "order": 3,
-        "properties": {
-          "fx-extension.enablePreviewFeatures": {
-            "order": 0,
-            "type": "boolean",
-            "description": "Enable a set of experimental features, including creating notification bot and command bot, extending apps across Microsoft 365, add sso and call an API. (Requires reload of VS Code)",
-            "default": false
-          }
-        }
       }
     ],
     "languages": [
@@ -970,7 +997,7 @@
     ],
     "walkthroughs": [
       {
-        "id": "teamsToolkitQuickStart",
+        "id": "teamsToolkitGetStarted",
         "title": "Get started with Teams Toolkit",
         "description": "Jumpstart your Teams app development experience",
         "steps": [
@@ -1053,7 +1080,9 @@
     "lint:fix": "eslint --config .eslintrc.js package.json src test --ext .ts --fix --fix-type [problem,suggestion]",
     "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
     "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
-    "precommit": "npm run check-sensitive && lint-staged"
+    "precommit": "npm run check-sensitive && lint-staged",
+    "updateFont": "node ./scripts/updateFont.js",
+    "previewFont": "start ./media/font/teamstoolkit.html"
   },
   "devDependencies": {
     "@azure/arm-subscriptions": "^3.0.0",
@@ -1137,6 +1166,7 @@
     "uuid": "^8.3.2",
     "verdaccio": "^5.6.2",
     "vsce": "^2.7.0",
+    "webfont": "^11.2.26",
     "webpack": "^5.38.1",
     "webpack-cli": "^4.7.2",
     "winston": "^3.3.3"
@@ -1148,6 +1178,7 @@
     "@microsoft/teamsfx-api": "^0.18.0",
     "@microsoft/teamsfx-core": "^1.8.0",
     "@npmcli/package-json": "^1.0.1",
+    "@vscode/extension-telemetry": "^0.5.1",
     "@vscode/webview-ui-toolkit": "^0.9.3",
     "ajv": "^8.5.0",
     "async-mutex": "^0.3.1",
@@ -1158,12 +1189,12 @@
     "jsonschema": "^1.4.0",
     "lodash": "^4.17.21",
     "log4js": "^6.3.0",
+    "open": "^8.4.0",
     "read-package-json-fast": "^2.0.3",
     "sudo-prompt": "^9.2.1",
     "underscore": "^1.12.1",
     "validator": "^13.7.0",
-    "vscode-extension-telemetry": "^0.2.9",
-    "vscode-tas-client": "^0.1.22",
+    "vscode-tas-client": "^0.1.47",
     "vscode-test": "^1.5.2"
   },
   "extensionDependencies": [

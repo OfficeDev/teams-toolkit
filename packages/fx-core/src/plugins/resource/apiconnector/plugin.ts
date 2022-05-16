@@ -29,7 +29,7 @@ import {
   AADAuthConfig,
   APIKeyAuthConfig,
 } from "./config";
-import { ApiConnectorResult, ResultFactory, QesutionResult, FileChange } from "./result";
+import { ApiConnectorResult, ResultFactory, QuestionResult, FileChange } from "./result";
 import { AuthType, Constants, KeyLocation, ComponentType } from "./constants";
 import { EnvHandler } from "./envHandler";
 import { ErrorMessage } from "./errors";
@@ -187,7 +187,10 @@ export class ApiConnectorImpl {
       );
     }
     TelemetryUtils.sendEvent(Telemetry.stage.scaffold, true, telemetryProperties);
-    return ResultFactory.Success();
+    const result = config.ComponentType.map((item) => {
+      return path.join(projectPath, item, getSampleFileName(config.APIName, languageType));
+    });
+    return { generatedFiles: result };
   }
 
   private sendErrorTelemetry(thrownErr: FxError) {
@@ -355,7 +358,7 @@ export class ApiConnectorImpl {
     return await depsHandler.addPkgDeps();
   }
 
-  public async generateQuestion(ctx: Context, inputs: Inputs): Promise<QesutionResult> {
+  public async generateQuestion(ctx: Context, inputs: Inputs): Promise<QuestionResult> {
     const componentOptions = [];
     if (inputs.platform === Platform.CLI_HELP) {
       componentOptions.push(botOption);
@@ -432,22 +435,25 @@ export class ApiConnectorImpl {
   }
 
   public buildAADAuthQuestion(ctx: Context, inputs: Inputs): QTreeNode {
-    const options = [anotherAppOption];
     const solutionSettings = getAzureSolutionSettings(ctx)!;
+    let node: QTreeNode;
     if (isAADEnabled(solutionSettings) || inputs.platform === Platform.CLI_HELP) {
-      options.unshift(reuseAppOption);
+      node = new QTreeNode({
+        name: Constants.questionKey.apiAppType,
+        type: "singleSelect",
+        staticOptions: [reuseAppOption, anotherAppOption],
+        title: getLocalizedString("plugins.apiConnector.getQuestion.appType.title"),
+      });
+      node.condition = { equals: AADAuthOption.id };
+      const tenentQuestionNode = new QTreeNode(appTenantIdQuestion);
+      tenentQuestionNode.condition = { equals: anotherAppOption.id };
+      tenentQuestionNode.addChild(new QTreeNode(appIdQuestion));
+      node.addChild(tenentQuestionNode);
+    } else {
+      node = new QTreeNode(appTenantIdQuestion);
+      node.condition = { equals: AADAuthOption.id };
+      node.addChild(new QTreeNode(appIdQuestion));
     }
-    const node = new QTreeNode({
-      name: Constants.questionKey.apiAppType,
-      type: "singleSelect",
-      staticOptions: options,
-      title: getLocalizedString("plugins.apiConnector.getQuestion.appType.title"),
-    });
-    node.condition = { equals: AADAuthOption.id };
-    const tenentQuestionNode = new QTreeNode(appTenantIdQuestion);
-    tenentQuestionNode.condition = { equals: anotherAppOption.id };
-    tenentQuestionNode.addChild(new QTreeNode(appIdQuestion));
-    node.addChild(tenentQuestionNode);
     return node;
   }
 

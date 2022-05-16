@@ -35,7 +35,8 @@ export async function automaticNpmInstallHandler(
     const state = await globalStateGet("automaticNpmInstall", false);
     if (state) {
       globalStateUpdate("automaticNpmInstall", false);
-      const configuration = getConfiguration(ConfigurationKey.AutomaticNpmInstall);
+      // const configuration = getConfiguration(ConfigurationKey.AutomaticNpmInstall);
+      const configuration = false;
       if (configuration && ext.workspaceUri !== undefined) {
         const localEnvManager = new LocalEnvManager(
           VsCodeLogInstance,

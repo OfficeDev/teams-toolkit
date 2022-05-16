@@ -55,11 +55,9 @@ import { ResourcePlugins } from "../../../../common/constants";
 
 export class TeamsBotV2Impl {
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
-    let workingPath: string;
-    if (inputs.platform === Platform.VS) {
-      workingPath = inputs.projectPath ?? "";
-    } else {
-      workingPath = path.join(inputs.projectPath ?? "", "bot");
+    let workingPath = inputs.projectPath ?? "";
+    if (inputs.platform !== Platform.VS) {
+      workingPath = path.join(workingPath, "bot");
     }
     const hostType = this.resolveHostType(inputs);
     utils.checkAndSavePluginSettingV2(ctx, PluginBot.HOST_TYPE, hostType);

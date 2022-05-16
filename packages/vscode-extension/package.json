@@ -480,7 +480,7 @@
       },
       {
         "command": "fx-extension.openWelcome",
-        "title": "%teamstoolkit.commands.quickStart.title%"
+        "title": "%teamstoolkit.commands.getstarted.title%"
       },
       {
         "command": "fx-extension.openSurvey",
@@ -997,7 +997,7 @@
     ],
     "walkthroughs": [
       {
-        "id": "teamsToolkitQuickStart",
+        "id": "teamsToolkitGetStarted",
         "title": "Get started with Teams Toolkit",
         "description": "Jumpstart your Teams app development experience",
         "steps": [

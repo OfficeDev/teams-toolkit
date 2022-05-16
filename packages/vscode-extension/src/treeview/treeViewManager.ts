@@ -312,8 +312,8 @@ class TreeViewManager {
   private registerHelper(disposables: vscode.Disposable[]) {
     const helpCommand = [
       new TreeViewCommand(
-        localize("teamstoolkit.commandsTreeViewProvider.quickStartTitle"),
-        localize("teamstoolkit.commandsTreeViewProvider.quickStartDescription"),
+        localize("teamstoolkit.commandsTreeViewProvider.getStartedTitle"),
+        localize("teamstoolkit.commandsTreeViewProvider.getStarted"),
         "fx-extension.openWelcome",
         undefined,
         { name: "symbol-event", custom: false },

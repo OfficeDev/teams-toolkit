@@ -52,7 +52,7 @@ import { mergeTemplates } from "../../../../common/azure-hosting/utils";
 import { getActivatedV2ResourcePlugins } from "../../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/adaptor";
 import { ResourcePlugins } from "../../../../common/constants";
-import { languageMapping } from "./constants";
+import { hostServiceTypeMapping, languageMapping } from "./constants";
 
 export class TeamsBotV2Impl {
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
@@ -267,14 +267,7 @@ export class TeamsBotV2Impl {
     const rawHostType = ctx.projectSetting?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[
       PluginBot.HOST_TYPE
     ] as string;
-
-    switch (rawHostType) {
-      case "app-service":
-        return ServiceType.AppService;
-      case "azure-functions":
-        return ServiceType.Function;
-    }
-    throw new Error("Invalid host type");
+    return hostServiceTypeMapping[rawHostType];
   }
 
   private resolveProgrammingLanguage(ctx: Context): string {

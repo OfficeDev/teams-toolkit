@@ -325,10 +325,11 @@ export function UpgradeCanceledError(): UserError {
 
 export function ConsolidateCanceledError(): UserError {
   return new UserError(
+    CoreSource,
     // @see tools.isUserCancelError()
     "UserCancel",
-    getLocalizedString("error.ConsolidateCanceledError"),
-    CoreSource
+    getDefaultString("error.ConsolidateCanceledError"),
+    getLocalizedString("error.ConsolidateCanceledError")
   );
 }
 

@@ -176,16 +176,43 @@ export class TeamsBotV2Impl {
 
   private getTemplates(ctx: Context, inputs: Inputs): CodeTemplateInfo[] {
     const lang = this.resolveProgrammingLanguage(ctx);
-    const scenarios = this.resolveScenarios(ctx, inputs);
-
-    return scenarios.map((scenario) => {
-      return {
+    const templateInfos: CodeTemplateInfo[] = [];
+    const botGroupScenarios = new Set<string>();
+    const msgextGroupScenarios = new Set<string>();
+    const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
+    const capabilities = solutionSettings.capabilities;
+    capabilities.map((capability: string) => {
+      switch (capability) {
+        case MessageExtensionItem.id:
+          this.resolveScenariosForMessageExtension(
+            ctx,
+            inputs,
+            botGroupScenarios,
+            msgextGroupScenarios
+          );
+          break;
+        case BotOptionItem.id:
+          this.resolveScenariosForBot(ctx, inputs, botGroupScenarios, msgextGroupScenarios);
+          break;
+      }
+    });
+    botGroupScenarios.forEach((scenario) => {
+      templateInfos.push({
         group: TemplateProjectsConstants.GROUP_NAME_BOT,
         language: lang,
         scenario: scenario,
         variables: {},
-      };
+      });
     });
+    msgextGroupScenarios.forEach((scenario) => {
+      templateInfos.push({
+        group: TemplateProjectsConstants.GROUP_NAME_MSGEXT,
+        language: lang,
+        scenario: scenario,
+        variables: {},
+      });
+    });
+    return templateInfos;
   }
 
   private getBicepConfigs(ctx: Context, inputs: Inputs): BicepConfigs {
@@ -267,64 +294,57 @@ export class TeamsBotV2Impl {
     throw new Error("Invalid programming language");
   }
 
-  private resolveScenarios(ctx: Context, inputs: Inputs): string[] {
-    const templateScenarios: string[] = [];
-    const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
-    const capabilities = solutionSettings.capabilities;
-    capabilities.map((capability: string) => {
-      switch (capability) {
-        case MessageExtensionItem.id:
-          templateScenarios.push(...this.resolveScenariosForMessageExtension(ctx, inputs));
-          break;
-        case BotOptionItem.id:
-          templateScenarios.push(...this.resolveScenariosForBot(inputs));
-          break;
-      }
-    });
-    return templateScenarios;
-  }
-
-  private resolveScenariosForMessageExtension(ctx: Context, inputs: Inputs): string[] {
-    const templateScenarios: string[] = [];
+  private resolveScenariosForMessageExtension(
+    ctx: Context,
+    inputs: Inputs,
+    botGroupScenarios: Set<string>,
+    msgextGroupScenarios: Set<string>
+  ): void {
     const isM365 = ctx.projectSetting?.isM365;
     if (isM365) {
-      templateScenarios.push(TemplateProjectsScenarios.M365_SCENARIO_NAME);
+      botGroupScenarios.add(TemplateProjectsScenarios.M365_SCENARIO_NAME);
     } else {
-      templateScenarios.push(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
+      if (inputs.platform === Platform.VS) {
+        msgextGroupScenarios.add(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
+      } else {
+        botGroupScenarios.add(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
+      }
     }
-    return templateScenarios;
   }
 
-  private resolveScenariosForBot(inputs: Inputs): string[] {
-    const templateScenarios: string[] = [];
+  private resolveScenariosForBot(
+    ctx: Context,
+    inputs: Inputs,
+    botGroupScenarios: Set<string>,
+    msgextGroupScenarios: Set<string>
+  ): void {
     const botScenarios = inputs?.[AzureSolutionQuestionNames.Scenarios];
     if (!botScenarios) {
-      templateScenarios.push(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
+      botGroupScenarios.add(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
     } else {
       botScenarios.map((scenario: string) => {
         switch (scenario) {
           case BotScenario.CommandAndResponseBot:
-            templateScenarios.push(TemplateProjectsScenarios.COMMAND_AND_RESPONSE_SCENARIO_NAME);
+            botGroupScenarios.add(TemplateProjectsScenarios.COMMAND_AND_RESPONSE_SCENARIO_NAME);
             break;
           case BotScenario.NotificationBot:
             const hostType = this.resolveHostType(inputs);
             if (hostType === HostTypes.AZURE_FUNCTIONS) {
-              templateScenarios.push(
+              botGroupScenarios.add(
                 TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME
               );
               const triggers = this.resolveTriggers(inputs);
               triggers.map((trigger) =>
-                templateScenarios.push(TriggerTemplateScenarioMappings[trigger])
+                botGroupScenarios.add(TriggerTemplateScenarioMappings[trigger])
               );
             }
             if (hostType === HostTypes.APP_SERVICE) {
-              templateScenarios.push(TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME);
+              botGroupScenarios.add(TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME);
             }
             break;
         }
       });
     }
-    return templateScenarios;
   }
 
   private resolveTriggers(inputs: Inputs): BotTrigger[] {

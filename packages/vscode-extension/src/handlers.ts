@@ -254,6 +254,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
     ExtTelemetry.isFromSample = await getIsFromSample();
     ExtTelemetry.settingsVersion = await getSettingsVersion();
     ExtTelemetry.isM365 = await getIsM365();
+    await ExtTelemetry.sendCachedTelemetryEventsAsync();
 
     if (workspacePath) {
       // refresh env tree when env config files added or deleted.
@@ -724,13 +725,13 @@ export async function addFeatureHandler(args?: any[]): Promise<Result<null, FxEr
   const result = await runUserTask(func, TelemetryEvent.AddFeature, true);
   if (result.isOk()) {
     await globalStateUpdate("automaticNpmInstall", true);
-    automaticNpmInstallHandler(excludeFrontend, excludeBackend, excludeBot);
+    await automaticNpmInstallHandler(excludeFrontend, excludeBackend, excludeBot);
     await envTreeProviderInstance.reloadEnvironments();
 
     if (
       workspace.workspaceFolders &&
       workspace.workspaceFolders.length > 0 &&
-      result.value.func == AddSsoParameters.AddSso
+      result.value?.func == AddSsoParameters.AddSso
     ) {
       const capabilities = result.value.capabilities;
 
@@ -746,7 +747,7 @@ export async function addFeatureHandler(args?: any[]): Promise<Result<null, FxEr
           await commands.executeCommand("markdown.preview.toggleLock");
         });
       }
-    } else if (result.value.func === UserTaskFunctionName.ConnectExistingApi) {
+    } else if (result.value?.func === UserTaskFunctionName.ConnectExistingApi) {
       const files: string[] = result.value.generatedFiles;
       for (const generatedFile of files) {
         workspace.openTextDocument(generatedFile).then((document) => {
@@ -1579,10 +1580,10 @@ export async function openHelpFeedbackLinkHandler(args: any[]): Promise<boolean>
   return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-helpnfeedback"));
 }
 export async function openWelcomeHandler(args?: any[]): Promise<Result<unknown, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.QuickStart, getTriggerFromProperty(args));
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GetStarted, getTriggerFromProperty(args));
   const data = await vscode.commands.executeCommand(
     "workbench.action.openWalkthrough",
-    "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitQuickStart"
+    "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStarted"
   );
   return Promise.resolve(ok(data));
 }

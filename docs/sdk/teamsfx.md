@@ -58,7 +58,7 @@
 |  --- | --- |
 |  [AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md) | <b><i>(BETA)</i></b> Authentication related configuration. |
 |  [AuthProvider](./teamsfx.authprovider.md) | <b><i>(BETA)</i></b> Defines method that injects authentication info to http requests |
-|  [CommandMessage](./teamsfx.commandmessage.md) | Interface for a command messagge that can handled in a command handler. |
+|  [CommandMessage](./teamsfx.commandmessage.md) | Interface for a command message that can handled in a command handler. |
 |  [CommandOptions](./teamsfx.commandoptions.md) | <b><i>(BETA)</i></b> Options to initialize [CommandBot](./teamsfx.commandbot.md)<!-- -->. |
 |  [ConversationOptions](./teamsfx.conversationoptions.md) | <b><i>(BETA)</i></b> Options to initialize [ConversationBot](./teamsfx.conversationbot.md) |
 |  [Logger](./teamsfx.logger.md) | <b><i>(BETA)</i></b> Interface for customized logger. |

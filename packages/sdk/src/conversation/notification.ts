@@ -75,7 +75,7 @@ export class Channel implements NotificationTarget {
   public readonly type: NotificationTargetType = "Channel";
 
   /**
-   * Constuctor.
+   * Constructor.
    *
    * @remarks
    * It's recommended to get channels from {@link TeamsBotInstallation.channels()}, instead of using this constructor.
@@ -175,7 +175,7 @@ export class Member implements NotificationTarget {
   public readonly type: NotificationTargetType = "Person";
 
   /**
-   * Constuctor.
+   * Constructor.
    *
    * @remarks
    * It's recommended to get members from {@link TeamsBotInstallation.members()}, instead of using this constructor.

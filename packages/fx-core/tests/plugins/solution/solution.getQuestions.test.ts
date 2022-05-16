@@ -390,6 +390,7 @@ describe("getQuestionsForScaffolding()", async () => {
 
   it("getQuestionsForUserTask - addFeature success", async () => {
     sandbox.stub<any, any>(featureFlags, "isPreviewFeaturesEnabled").returns(true);
+    sandbox.stub<any, any>(tool, "canAddCICDWorkflows").resolves(true);
     const mockedCtx = new MockedV2Context(projectSettings);
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
@@ -455,6 +456,7 @@ describe("getQuestionsForScaffolding()", async () => {
   it("getQuestionsForUserTask - addFeature: message extension", async () => {
     sandbox.stub(featureFlags, "isPreviewFeaturesEnabled").returns(true);
     sandbox.stub(featureFlags, "isBotNotificationEnabled").returns(true);
+    sandbox.stub<any, any>(tool, "canAddCICDWorkflows").resolves(true);
     const projectSettingsWithNotification = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -541,6 +543,7 @@ describe("getQuestionsForScaffolding()", async () => {
   it("getQuestionsForUserTask - addFeature: can add message extension for legacy bot", async () => {
     sandbox.stub(featureFlags, "isPreviewFeaturesEnabled").returns(true);
     sandbox.stub(featureFlags, "isBotNotificationEnabled").returns(true);
+    sandbox.stub<any, any>(tool, "canAddCICDWorkflows").resolves(true);
     const projectSettingsWithNotification = {
       appName: "my app",
       projectId: uuid.v4(),

@@ -1,8 +1,14 @@
 import { AdaptiveCards } from "@microsoft/adaptivecards-tools";
 import * as restify from "restify";
 import notificationTemplate from "./adaptiveCards/notification-default.json";
-import { bot, server } from "./internal/initialize";
+import { bot } from "./internal/initialize";
 import { CardData } from "./cardModels";
+
+// Create HTTP server.
+const server = restify.createServer();
+server.listen(process.env.port || process.env.PORT || 3978, () => {
+  console.log(`\nBot Started, ${server.name} listening to ${server.url}`);
+});
 
 // Register an API endpoint with `restify`.
 //
@@ -13,7 +19,7 @@ import { CardData } from "./cardModels";
 // In response to events, this function sends Adaptive Cards to Teams. You can update the logic in this function
 // to suit your needs. You can enrich the event with additional data and send an Adaptive Card as required.
 //
-// You can add authentication / authorization for this API. Refer to 
+// You can add authentication / authorization for this API. Refer to
 // https://aka.ms/teamsfx-notification for more details.
 server.post(
   "/api/notification",
@@ -76,7 +82,6 @@ server.post(
         await target.sendAdaptiveCard(...);
       }
       **/
-
     }
 
     res.json({});
@@ -86,7 +91,7 @@ server.post(
 // Register an API endpoint with `restify`. Teams sends messages to your application
 // through this endpoint.
 //
-// The Teams Toolkit bot registration configures the bot with `/api/messages` as the 
+// The Teams Toolkit bot registration configures the bot with `/api/messages` as the
 // Bot Framework endpoint. If you customize this route, update the Bot registration
 // in `/templates/provision/bot.bicep`.
 server.post("/api/messages", async (req, res) => {

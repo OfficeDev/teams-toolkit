@@ -323,7 +323,7 @@ suite("handlers", () => {
     sinon.assert.calledOnceWithExactly(
       executeCommands,
       "workbench.action.openWalkthrough",
-      "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitQuickStart"
+      "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStarted"
     );
     executeCommands.restore();
     sendTelemetryEvent.restore();

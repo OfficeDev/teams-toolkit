@@ -305,7 +305,17 @@ async function getResourceBaseName(env: string): Promise<string | undefined> {
       `azure.parameters.${env}.json`
     );
     const azureParametersJson = JSON.parse(fs.readFileSync(azureParametersFilePath, "utf-8"));
-    return azureParametersJson.parameters.provisionParameters.value.resourceBaseName;
+    let result: string = azureParametersJson.parameters.provisionParameters.value.resourceBaseName;
+    const placeholder = "{{state.solution.resourceNameSuffix}}";
+    if (result.includes(placeholder)) {
+      const envStateFilesPath = environmentManager.getEnvStateFilesPath(
+        env,
+        ext.workspaceUri.fsPath
+      );
+      const envJson = JSON.parse(fs.readFileSync(envStateFilesPath.envState, "utf8"));
+      result = result.replace(placeholder, envJson[PluginNames.SOLUTION].resourceNameSuffix);
+    }
+    return result;
   } catch {
     return undefined;
   }

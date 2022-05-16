@@ -1,7 +1,5 @@
 import * as React from "react";
 import "./tree.scss";
-import developerPortal_dark from "../../../media/treeview/command/developerPortal-dark.svg";
-import developerPortal_light from "../../../media/treeview/command/developerPortal-light.svg";
 import { getCurrentTheme, Theme } from "./theme";
 import { TreeItem } from "./treeItem";
 import { localize } from "../../utils/localizeUtils";
@@ -89,7 +87,7 @@ export class DeploymentView extends React.Component<any, any> {
         <TreeItem
           label="Developer Portal for Teams"
           tooltip={localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalDescription")}
-          icon={this.state.colorTheme === Theme.Dark ? developerPortal_dark : developerPortal_light}
+          icon="codicon teamsfx-developer-portal"
           customized={true}
           disable={false}
           command="fx-extension.openAppManagement"

@@ -9,7 +9,9 @@ namespace Microsoft.TeamsFx.Conversation
     ///  <seealso cref="ITeamsCommandHandler"/>
     public class StringTrigger : ITriggerPattern
     {
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets or sets the string pattern used to match the input.
+        /// </summary>
         public string Pattern { get; set; }
 
         /// <inheritdoc/>

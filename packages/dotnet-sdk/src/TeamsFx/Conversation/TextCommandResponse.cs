@@ -36,7 +36,7 @@ namespace Microsoft.TeamsFx.Conversation
         /// <inheritdoc/>
         public async Task SendResponseAsync(ITurnContext turnContext, CancellationToken cancellationToken = default)
         {
-            await turnContext.SendActivityAsync(Text, cancellationToken: cancellationToken);
+            await turnContext.SendActivityAsync(Text, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
     }
 }

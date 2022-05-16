@@ -11,8 +11,10 @@ namespace Microsoft.TeamsFx.Conversation
     /// <seealso cref="ITeamsCommandHandler"/>
     public class RegExpTrigger : ITriggerPattern
     {
-        /// <inheritdoc/>
-        public string Pattern { get; set; }
+        /// <summary>
+        /// Gets or sets the regular expression used to match the input.
+        /// </summary>
+        public Regex Pattern { get; set; }
 
         /// <inheritdoc/>
         public CommandTriggerType TriggerType => CommandTriggerType.RegExp;
@@ -24,14 +26,28 @@ namespace Microsoft.TeamsFx.Conversation
         /// <exception cref="ArgumentNullException"><paramref name="pattern"/> is null.</exception>
         public RegExpTrigger(string pattern)
         {
+            if (string.IsNullOrEmpty(pattern))
+            {
+                throw new ArgumentNullException(nameof(pattern));
+            }
+
+            Pattern = new Regex(pattern, RegexOptions.IgnoreCase);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RegExpTrigger"/> class.
+        /// </summary>
+        /// <param name="pattern">The regular expression pattern.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="pattern"/> is null.</exception>
+        public RegExpTrigger(Regex pattern)
+        {
             Pattern = pattern ?? throw new ArgumentNullException(nameof(pattern));
         }
 
         /// <inheritdoc/>
         public bool ShouldTrigger(string input)
         {
-            var regex = new Regex(Pattern, RegexOptions.IgnoreCase);
-            return regex.IsMatch(input);
+            return Pattern.IsMatch(input);
         }
     }
 }

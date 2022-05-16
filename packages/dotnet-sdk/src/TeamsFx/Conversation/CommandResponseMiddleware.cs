@@ -87,8 +87,9 @@ namespace Microsoft.TeamsFx.Conversation
                     shouldTrigger = true;
                     if (triggerPattern.TriggerType == CommandTriggerType.RegExp)
                     {
-                        var regex = new Regex(triggerPattern.Pattern, RegexOptions.IgnoreCase);
-                        matches = regex.Matches(input);
+
+                        var regexTrigger = triggerPattern as RegExpTrigger;
+                        matches = regexTrigger.Pattern.Matches(input);
                     }
 
                     break;

@@ -9,7 +9,7 @@ import {
 const teamsFx = new TeamsFx();
 // Initializes a new axios instance to call {{config.APIName}} API.
 const authProvider = new CertificateAuthProvider(
-  // TODO: Please add code to read your cert and private key, replace "<your-cert>" and "<your-private-key>" with actual value.
+  // TODO: Add code to read your certificate and private key. Replace "<your-cert>" and "<your-private-key>" with your actual certificate and private key values.
   // If you have a .pfx cert, you can use "createPfxCertOption" function to initialize your cert option.
   createPemCertOption("<your-cert>", "<your-private-key>")
 );

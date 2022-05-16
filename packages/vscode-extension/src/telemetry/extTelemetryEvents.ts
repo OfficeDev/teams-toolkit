@@ -247,6 +247,8 @@ export enum TelemetryProperty {
   // Used with OpenTutorial
   TutorialName = "tutorial-name",
   DocumentationName = "documentation-name",
+  // Used with Deactivate
+  Timestamp = "timestamp",
 }
 
 export enum TelemetrySuccess {

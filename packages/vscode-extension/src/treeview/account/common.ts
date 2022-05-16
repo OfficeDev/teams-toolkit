@@ -10,3 +10,19 @@ export enum AccountItemStatus {
 }
 
 export const loadingIcon = new vscode.ThemeIcon("loading~spin");
+export const infoIcon = new vscode.ThemeIcon("info");
+export const errorIcon = new vscode.ThemeIcon(
+  "error",
+  new vscode.ThemeColor("notificationsErrorIcon.foreground")
+);
+export const warningIcon = new vscode.ThemeIcon(
+  "warning",
+  new vscode.ThemeColor("editorLightBulb.foreground")
+);
+export const passIcon = new vscode.ThemeIcon(
+  "pass",
+  new vscode.ThemeColor("debugIcon.startForeground")
+);
+export const m365Icon = new vscode.ThemeIcon("teamsfx-m365");
+export const azureIcon = new vscode.ThemeIcon("azure");
+export const keyIcon = new vscode.ThemeIcon("key");

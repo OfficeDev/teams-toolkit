@@ -60,7 +60,12 @@ export abstract class NodeChecker implements DepsChecker {
     const currentVersion = await getInstalledNodeVersion();
     if (currentVersion === null) {
       this._telemetry.sendUserErrorEvent(DepsCheckerEvent.nodeNotFound, "Node.js can't be found.");
-      throw new NodeNotFoundError(Messages.NodeNotFound, this._nodeNotFoundHelpLink);
+      throw new NodeNotFoundError(
+        Messages.NodeNotFound.split("@NodeVersion").join(
+          supportedVersions[supportedVersions.length - 1]
+        ),
+        this._nodeNotFoundHelpLink
+      );
     }
     this._telemetry.sendEvent(DepsCheckerEvent.nodeVersion, {
       "global-version": `${currentVersion.version}`,

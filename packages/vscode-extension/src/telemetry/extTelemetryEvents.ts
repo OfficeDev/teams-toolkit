@@ -4,7 +4,7 @@ export enum TelemetryEvent {
   CreateAccountStart = "create-account-start",
   CreateAccount = "create-account",
 
-  QuickStart = "quick-start",
+  GetStarted = "quick-start",
 
   Samples = "samples",
 
@@ -99,8 +99,6 @@ export enum TelemetryEvent {
   OpenDownloadNode = "open-download-node",
 
   NextStep = "next-step",
-
-  ClickQuickStartCard = "click-quick-start-card",
 
   ClickOpenDeploymentTreeview = "click-open-deployment-tree-view",
   ClickValidatePrerequisites = "click-validate-prerequisites",
@@ -249,6 +247,8 @@ export enum TelemetryProperty {
   // Used with OpenTutorial
   TutorialName = "tutorial-name",
   DocumentationName = "documentation-name",
+  // Used with Deactivate
+  Timestamp = "timestamp",
 }
 
 export enum TelemetrySuccess {

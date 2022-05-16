@@ -254,6 +254,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
     ExtTelemetry.isFromSample = await getIsFromSample();
     ExtTelemetry.settingsVersion = await getSettingsVersion();
     ExtTelemetry.isM365 = await getIsM365();
+    await ExtTelemetry.sendCachedTelemetryEventsAsync();
 
     if (workspacePath) {
       // refresh env tree when env config files added or deleted.
@@ -1579,10 +1580,10 @@ export async function openHelpFeedbackLinkHandler(args: any[]): Promise<boolean>
   return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-helpnfeedback"));
 }
 export async function openWelcomeHandler(args?: any[]): Promise<Result<unknown, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.QuickStart, getTriggerFromProperty(args));
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GetStarted, getTriggerFromProperty(args));
   const data = await vscode.commands.executeCommand(
     "workbench.action.openWalkthrough",
-    "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitQuickStart"
+    "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStarted"
   );
   return Promise.resolve(ok(data));
 }

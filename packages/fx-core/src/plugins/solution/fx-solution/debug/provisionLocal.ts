@@ -24,7 +24,7 @@ import {
   ConfigLocalDebugSettingsError,
 } from "./error";
 import { getCodespaceName, getCodespaceUrl } from "./util/codespace";
-import { getNgrokHttpUrl } from "./util/ngrok";
+import { getNgrokHttpUrl, getTunnelsHttpUrl } from "./util/tunneling";
 import {
   EnvKeysBackend,
   EnvKeysBot,
@@ -134,7 +134,7 @@ export async function setupLocalDebugSettings(
           localSettings.bot.botEndpoint = localBotEndpoint;
           localSettings.bot.botDomain = localBotEndpoint.slice(8);
         } else {
-          const ngrokHttpUrl = await getNgrokHttpUrl(3978);
+          const ngrokHttpUrl = await getTunnelsHttpUrl(3978);
           if (!ngrokHttpUrl) {
             const error = NgrokTunnelNotConnected();
             TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);
@@ -271,7 +271,7 @@ export async function setupLocalEnvironment(
           envInfo.state[ResourcePlugins.Bot].siteEndpoint = localBotEndpoint;
           envInfo.state[ResourcePlugins.Bot].validDomain = localBotEndpoint.slice(8);
         } else {
-          const ngrokHttpUrl = await getNgrokHttpUrl(3978);
+          const ngrokHttpUrl = await getTunnelsHttpUrl(3978);
           if (!ngrokHttpUrl) {
             const error = NgrokTunnelNotConnected();
             TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);

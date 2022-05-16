@@ -142,16 +142,17 @@ export class TaskDefinition {
     };
   }
 
-  static ngrokStart(
+  static readonly TunnelingStartTaskName = "tunneling start";
+  static readonly NgrokStartTaskName = "ngrok start";
+
+  static tunnelingStart(
+    taskName: string,
     workspaceFolder: string,
-    skipNgrok: boolean,
     ngrokBinFolders: string[] | undefined
   ): ITaskDefinition {
     return {
-      name: "ngrok start",
-      command: skipNgrok
-        ? "echo 'Skip starting ngrok, and will use predefined bot endpoint.'"
-        : "ngrok http 3978 --log=stdout",
+      name: taskName,
+      command: "ngrok http 3978 --log=stdout",
       env: ngrokBinFolders
         ? {
             PATH: `${ngrokBinFolders.join(path.delimiter)}${path.delimiter}${
@@ -164,7 +165,20 @@ export class TaskDefinition {
         needShell: true,
         needCmd: isWindows(),
       },
-      isBackground: !skipNgrok,
+      isBackground: true,
+    };
+  }
+
+  static tunnelingSkippedStart(taskName: string, workspaceFolder: string): ITaskDefinition {
+    return {
+      name: taskName,
+      command: "echo 'Skip starting tunneling tool, and will use predefined bot endpoint.'",
+      cwd: path.join(workspaceFolder, FolderName.Bot),
+      execOptions: {
+        needShell: true,
+        needCmd: isWindows(),
+      },
+      isBackground: false,
     };
   }
 

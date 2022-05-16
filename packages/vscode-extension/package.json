@@ -894,6 +894,30 @@
         }
       },
       {
+        "name": "teamsfx-tunneling-watch",
+        "label": "TeamsFx Tunneling Problems",
+        "owner": "Teams Toolkit",
+        "source": "teamsfx",
+        "applyTo": "allDocuments",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "pattern": [
+          {
+            "regexp": "^.*$",
+            "file": 0,
+            "location": 1,
+            "message": 2
+          }
+        ],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*",
+          "endsPattern": "^The tunnel is up and running|The tunnel failed to start"
+        }
+      },
+      {
         "name": "teamsfx-bot-watch",
         "label": "TeamsFx Bot Problems",
         "owner": "Teams Toolkit",

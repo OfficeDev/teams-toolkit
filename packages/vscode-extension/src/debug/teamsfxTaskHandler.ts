@@ -23,7 +23,10 @@ import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import { TeamsfxDebugConfiguration } from "./teamsfxDebugProvider";
 import { localize } from "../utils/localizeUtils";
 
-export const allRunningTeamsfxTasks: Map<string, number> = new Map<string, number>();
+export const allRunningTeamsfxTasks: Map<string, number | vscode.TaskExecution> = new Map<
+  string,
+  number | vscode.TaskExecution
+>();
 export const allRunningDebugSessions: Set<string> = new Set<string>();
 const activeNpmInstallTasks = new Set<string>();
 
@@ -216,7 +219,11 @@ async function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent)
   if (ext.workspaceUri && isValidProject(ext.workspaceUri.fsPath)) {
     const task = event.execution.task;
     if (task.scope !== undefined && isTeamsfxTask(task)) {
-      allRunningTeamsfxTasks.set(getTaskKey(task), event.processId);
+      allRunningTeamsfxTasks.set(
+        getTaskKey(task),
+        // For custom execution, there is no process so pid === -1.
+        event.processId < 0 ? event.execution : event.processId
+      );
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugServiceStart, {
         [TelemetryProperty.DebugServiceName]: task.name,
       });
@@ -400,9 +407,15 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
 }
 
 export function terminateAllRunningTeamsfxTasks(): void {
-  for (const task of allRunningTeamsfxTasks) {
+  for (const [_, pidOrTask] of allRunningTeamsfxTasks) {
     try {
-      process.kill(task[1], "SIGTERM");
+      if (typeof pidOrTask === "number") {
+        process.kill(pidOrTask, "SIGTERM");
+      } else {
+        // For a shell task, execution.terminate() sends SIGHUP signal, which behaviors the same as other terminal.
+        // But it is different from our expected behavior (SIGTERM). So only use it for custom execution task.
+        pidOrTask.terminate();
+      }
     } catch (e) {
       // ignore and keep killing others
     }

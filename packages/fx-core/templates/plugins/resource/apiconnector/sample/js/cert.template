@@ -4,8 +4,9 @@ const teamsfxSdk = require("@microsoft/teamsfx");
 const teamsFx = new teamsfxSdk.TeamsFx();
 // Initialize a new axios instance to call {{config.APIName}}
 const authProvider = new teamsfxSdk.CertificateAuthProvider(
-  // Add code to read your certificate and private key.
-  // Replace "<your-cert>" and "<your-private-key>" with your actual certificate and private key values
+  // TODO: 
+  // 1. Add code to read your certificate and private key.
+  // 2. Replace "<your-cert>" and "<your-private-key>" with your actual certificate and private key values
   // If you have a .pfx certificate, you can use the `createPfxCertOption` function to initialize your certificate
   teamsfxSdk.createPemCertOption("<your-cert>", "<your-private-key>")
 );

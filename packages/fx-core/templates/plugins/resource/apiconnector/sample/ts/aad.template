@@ -21,7 +21,7 @@ const teamsFx = new TeamsFx(IdentityType.App, {
 // Initialize a new axios instance to call {{config.APIName}}
 const appCredential = teamsFx.getCredential();
 const authProvider = new BearerTokenAuthProvider(
-  // Replace '<your-api-scope>' with your required API scope
+  // TODO: Replace '<your-api-scope>' with your required API scope
   async () => (await appCredential.getToken("<your-api-scope>"))!.token
 );
 const {{config.APIName}}Client = createApiClient(

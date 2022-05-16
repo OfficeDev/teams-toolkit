@@ -58,7 +58,7 @@ export enum TelemetryEvent {
   ProjectAadManifestMigrationStart = "project-aad-manifest-migration-start",
   ProjectAadManifestMigrationAddAADTemplateStart = "project-aad-manifest-migration-add-aad-template-start",
   ProjectAadManifestMigrationAddAADTemplate = "project-aad-manifest-migration-add-aad-template",
-  ProjectAadManifestMigrationBackupStart = "project-aad-manifest-migration-backup",
+  ProjectAadManifestMigrationBackupStart = "project-aad-manifest-migration-backup-start",
   ProjectAadManifestMigrationBackup = "project-aad-manifest-migration-backup",
   ProjectConsolidateNotificationStart = "project-consolidate-notification-start",
   ProjectConsolidateNotification = "project-consolidate-notification",

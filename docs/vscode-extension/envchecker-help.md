@@ -191,12 +191,12 @@ If you prefer to manage some or all of the Teams app development prerequisites y
 ![envchecker-settings](../images/vscode-extension/envchecker/envchecker-settings-2.png)
 
 For CLI, you should run command as follows:
-* Node.js: teamsfx config set validate-node off
-* .NET SDK: teamsfx config set validate-dotnet-sdk off
-* Azure Functions Core Tools: teamsfx config set validate-func-core-tools off
-* Ngrok: teamsfx config set validate-ngrok off
-* Development Certificate: teamsfx config set trust-development-certificate off
-* Bicep CLI: Set TEAMSFX_BICEP_ENV_CHECKER_ENABLE=false to your environment variables.
+* Node.js: `teamsfx config set validate-node off`
+* .NET SDK: `teamsfx config set validate-dotnet-sdk off`
+* Azure Functions Core Tools: `teamsfx config set validate-func-core-tools off`
+* Ngrok: `teamsfx config set validate-ngrok off`
+* Development Certificate: `teamsfx config set trust-development-certificate off`
+* Bicep CLI: Set `TEAMSFX_BICEP_ENV_CHECKER_ENABLE=false` to your environment variables.
 
 ## <a name="functionDepsCheckerreport-issues"></a>Report issues  
 

@@ -1,4 +1,7 @@
-﻿namespace Microsoft.TeamsFx.Conversation
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+namespace Microsoft.TeamsFx.Conversation
 {
     /// <summary>
     /// The target type where the notification will be sent to.

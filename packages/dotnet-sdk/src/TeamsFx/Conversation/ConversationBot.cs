@@ -6,7 +6,10 @@
     /// Provide utilities for bot conversation, including:
     /// <list type="bullet">
     ///     <item>
-    ///         <description>send notification to varies targets (e.g., member, group, channel).</description>
+    ///         <description>Send notification to varies targets (e.g., member, group, channel).</description>
+    ///     </item>
+    ///     <item>
+    ///         <description>Handle command and send a response to Teams.</description>
     ///     </item>
     /// </list>
     /// </summary>
@@ -17,6 +20,9 @@
     /// <para>
     /// For notification, set <c>Notification.Storage</c> in <see cref="ConversationOptions"/> to use your own storage implementation.
     /// </para>
+    /// <para>
+    /// For command, set <c>Command.Commands</c> in <see cref="CommandOptions"/> to register your command handlers.
+    /// </para>
     /// </remarks>
     public class ConversationBot
     {
@@ -26,9 +32,14 @@
         public BotAdapter Adapter { get; private set; }
 
         /// <summary>
-        /// The entrypoint of notification.
+        /// The entry point of notification.
         /// </summary>
         public NotificationBot Notification { get; private set; }
+
+        /// <summary>
+        /// The entry point of command.
+        /// </summary>
+        public CommandBot Command { get; private set; }
 
         /// <summary>
         /// Creates new instance of the <see cref="ConversationBot"/>.
@@ -51,6 +62,11 @@
             if (options.Notification != null)
             {
                 Notification = new NotificationBot(Adapter, options.Notification);
+            }
+
+            if (options.Command != null)
+            {
+                Command = new CommandBot(Adapter, options.Command);
             }
         }
     }

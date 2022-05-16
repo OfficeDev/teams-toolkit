@@ -1,4 +1,7 @@
-﻿namespace Microsoft.TeamsFx.Conversation
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+namespace Microsoft.TeamsFx.Conversation
 {
     using Microsoft.Bot.Builder;
     using Microsoft.Bot.Schema.Teams;

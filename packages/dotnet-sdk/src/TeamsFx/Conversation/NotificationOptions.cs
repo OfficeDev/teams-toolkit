@@ -1,4 +1,7 @@
-﻿namespace Microsoft.TeamsFx.Conversation
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+namespace Microsoft.TeamsFx.Conversation
 {
     /// <summary>
     /// Options to initialize <see cref="NotificationBot"/>.

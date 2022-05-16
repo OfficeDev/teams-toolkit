@@ -49,6 +49,15 @@ export interface OptionItem {
    * group name. If it's set, separator will be rendered on UI between groups.
    */
   groupName?: string;
+
+  /**
+   * Actions that can be made within the item.
+   * @param An array of actions
+   * @param `icon` is the icon id of the action item
+   * @param `tooltip` is the hint of the action item
+   * @param `command` is the command name that will be executed when current action triggered
+   */
+  buttons?: { iconPath: string; tooltip: string; command: string }[];
 }
 
 export class ConfigMap extends Map<string, ConfigValue> {

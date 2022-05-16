@@ -229,9 +229,9 @@ export class Member implements NotificationTarget {
 // @public
 export class MessageBuilder {
     // @beta
-    static attachAdaptiveCard<TData>(cardTemplate: any, data: TData): Partial<Activity_2>;
+    static attachAdaptiveCard<TData extends object>(cardTemplate: unknown, data: TData): Partial<Activity_2>;
     // @beta
-    static attachAdaptiveCardWithoutData(card: any): Partial<Activity_2>;
+    static attachAdaptiveCardWithoutData(card: unknown): Partial<Activity_2>;
     // @beta
     static attachContent(attachement: Attachment): Partial<Activity_2>;
     // @beta
@@ -357,7 +357,7 @@ export class TeamsFx implements TeamsFxConfiguration {
 
 // @beta
 export interface TeamsFxBotCommandHandler {
-    handleCommandReceived(context: TurnContext, message: CommandMessage): Promise<string | Partial<Activity>>;
+    handleCommandReceived(context: TurnContext, message: CommandMessage): Promise<string | Partial<Activity> | void>;
     triggerPatterns: TriggerPatterns;
 }
 

@@ -20,6 +20,8 @@ import { waitSeconds } from "../../../common";
 import { DeployStatus } from "./constants";
 
 export class AzureOperations {
+  private static readonly axiosInstance = axios.create();
+
   public static async UpdateBotChannelRegistration(
     botClient: AzureBotService,
     resourceGroup: string,
@@ -139,7 +141,7 @@ export class AzureOperations {
   ): Promise<string> {
     let res = undefined;
     try {
-      res = await axios.post(zipDeployEndpoint, zipBuffer, config);
+      res = await AzureOperations.axiosInstance.post(zipDeployEndpoint, zipBuffer, config);
     } catch (e) {
       throw new ZipDeployError(e);
     }
@@ -155,7 +157,7 @@ export class AzureOperations {
     let res = undefined;
     for (let i = 0; i < DeployStatus.RETRY_TIMES; ++i) {
       try {
-        res = await axios.get(location, config);
+        res = await AzureOperations.axiosInstance.get(location, config);
       } catch (e) {
         throw new DeployStatusError(e);
       }

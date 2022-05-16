@@ -6,7 +6,7 @@ import * as path from "path";
 import * as uuid from "uuid";
 import * as vscode from "vscode";
 import * as constants from "./constants";
-import { ConfigFolderName, UserError } from "@microsoft/teamsfx-api";
+import { ConfigFolderName, InputConfigsFolderName, UserError } from "@microsoft/teamsfx-api";
 import VsCodeLogInstance from "../commonlib/log";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { getTeamsAppTelemetryInfoByEnv } from "../utils/commonUtils";
@@ -20,6 +20,8 @@ import {
   environmentManager,
   ProjectSettingsHelper,
   PluginNames,
+  GLOBAL_CONFIG,
+  getResourceGroupInPortal,
 } from "@microsoft/teamsfx-core";
 import { allRunningDebugSessions } from "./teamsfxTaskHandler";
 
@@ -280,6 +282,58 @@ export async function getLocalBotId(): Promise<string | undefined> {
   }
 }
 
+export async function getBotId(env: string): Promise<string | undefined> {
+  try {
+    if (env === environmentManager.getLocalEnvName()) {
+      return await getLocalBotId();
+    }
+
+    const result = environmentManager.getEnvStateFilesPath(env, ext.workspaceUri.fsPath);
+    const envJson = JSON.parse(fs.readFileSync(result.envState, "utf8"));
+    return envJson[PluginNames.BOT].botId;
+  } catch {
+    return undefined;
+  }
+}
+
+async function getResourceBaseName(env: string): Promise<string | undefined> {
+  try {
+    const azureParametersFilePath = path.join(
+      ext.workspaceUri.fsPath,
+      `.${ConfigFolderName}`,
+      InputConfigsFolderName,
+      `azure.parameters.${env}.json`
+    );
+    const azureParametersJson = JSON.parse(fs.readFileSync(azureParametersFilePath, "utf-8"));
+    let result: string = azureParametersJson.parameters.provisionParameters.value.resourceBaseName;
+    const placeholder = "{{state.solution.resourceNameSuffix}}";
+    if (result.includes(placeholder)) {
+      const envStateFilesPath = environmentManager.getEnvStateFilesPath(
+        env,
+        ext.workspaceUri.fsPath
+      );
+      const envJson = JSON.parse(fs.readFileSync(envStateFilesPath.envState, "utf8"));
+      result = result.replace(placeholder, envJson[PluginNames.SOLUTION].resourceNameSuffix);
+    }
+    return result;
+  } catch {
+    return undefined;
+  }
+}
+
+export async function getBotOutlookChannelLink(env: string): Promise<string> {
+  const result = environmentManager.getEnvStateFilesPath(env, ext.workspaceUri.fsPath);
+  const envJson = JSON.parse(fs.readFileSync(result.envState, "utf8"));
+  const tenantId = envJson[GLOBAL_CONFIG].tenantId;
+  const subscriptionId = envJson[GLOBAL_CONFIG].subscriptionId;
+  const resourceGroupName = envJson[GLOBAL_CONFIG].resourceGroupName;
+
+  const resourceGroupLink = getResourceGroupInPortal(subscriptionId, tenantId, resourceGroupName);
+  const resourceBaseName = await getResourceBaseName(env);
+
+  return `${resourceGroupLink}/providers/Microsoft.BotService/botServices/${resourceBaseName}/channelsReact`;
+}
+
 export async function loadPackageJson(path: string): Promise<any> {
   if (!(await fs.pathExists(path))) {
     VsCodeLogInstance.error(`Cannot load package.json from ${path}. File not found.`);
@@ -330,20 +384,27 @@ export async function getProjectComponents(): Promise<string | undefined> {
   try {
     const projectPath = ext.workspaceUri.fsPath;
     const projectSettings = await localEnvManager.getProjectSettings(projectPath);
-    const components: string[] = [];
+    const result: { [key: string]: any } = { components: [] };
     if (ProjectSettingsHelper.isSpfx(projectSettings)) {
-      components.push("spfx");
+      result.components.push("spfx");
     }
     if (ProjectSettingsHelper.includeFrontend(projectSettings)) {
-      components.push("frontend");
+      result.components.push("frontend");
     }
     if (ProjectSettingsHelper.includeBot(projectSettings)) {
-      components.push("bot");
+      result.components.push(`bot`);
+      result.botHostType = ProjectSettingsHelper.includeFuncHostedBot(projectSettings)
+        ? "azure-functions"
+        : "app-service";
+      result.botCapabilities = ProjectSettingsHelper.getBotCapabilities(projectSettings);
     }
     if (ProjectSettingsHelper.includeBackend(projectSettings)) {
-      components.push("backend");
+      result.components.push("backend");
     }
-    return components.join("+");
+    if (ProjectSettingsHelper.includeAAD(projectSettings)) {
+      result.components.push("aad");
+    }
+    return JSON.stringify(result);
   } catch (error: any) {
     return undefined;
   }

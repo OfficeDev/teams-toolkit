@@ -9,6 +9,7 @@ import { AADAuthConfig, ApiConnectorConfiguration, BasicAuthConfig } from "./con
 import { FileChange, FileChangeType, ResultFactory } from "./result";
 import { AuthType, ComponentType, Constants } from "./constants";
 import { ErrorMessage } from "./errors";
+import { UserError } from "@microsoft/teamsfx-api";
 
 declare type ApiConnectors = Record<string, Map<string, string>>;
 export class ApiDataManager {
@@ -18,7 +19,14 @@ export class ApiDataManager {
     for (const item in this.apiConnector) {
       const apis = this.apiConnector[item];
       for (const [key, value] of Array.from(apis)) {
-        customEnvs[key] = value;
+        if (customEnvs[key]) {
+          throw ResultFactory.UserError(
+            ErrorMessage.envVarExistError.name,
+            ErrorMessage.envVarExistError.message(key)
+          );
+        } else {
+          customEnvs[key] = value;
+        }
       }
     }
     localEnvs.customizedLocalEnvs = customEnvs;
@@ -107,6 +115,9 @@ export class EnvHandler {
         await provider.saveLocalEnvs(undefined, localEnvsBE, undefined);
       }
     } catch (err) {
+      if (err instanceof UserError) {
+        throw err;
+      }
       throw ResultFactory.SystemError(
         ErrorMessage.ApiConnectorFileCreateFailError.name,
         ErrorMessage.ApiConnectorFileCreateFailError.message(srcFile)

@@ -1,4 +1,7 @@
 # Simple Auth
+
+> Please be advised that this package will no longer be maintained. We have made some improvement to [@microsoft/teamsfx](https://www.npmjs.com/package/@microsoft/teamsfx) to make Teams tab app auth simpler with [auth code flow](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow). If you want to use latest SDK, you can follow this [instruction](https://github.com/OfficeDev/TeamsFx/wiki/How-Authentication-Works-in-TeamsFx-Tab-Template#how-to-migrate-from-sdk-version-earlier-than-050-to-latest-sdk) to upgrade your tab app.
+
 ## Introduction
 The Simple Auth is a backend service helping Teams tab app access first/third party services from client side.
 

@@ -125,7 +125,7 @@ export class TeamsUserCredential implements TokenCredential {
     }
     let resultJson: any = {};
     try {
-      resultJson = JSON.parse(result);
+      resultJson = typeof result == "string" ? JSON.parse(result) : result;
     } catch (error) {
       // If can not parse result as Json, will throw error.
       const failedToParseResult = "Failed to parse response to Json.";

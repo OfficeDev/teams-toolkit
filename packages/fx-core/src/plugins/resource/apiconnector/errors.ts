@@ -62,7 +62,7 @@ export class ErrorMessage {
   };
 
   public static readonly NoValidCompoentExistError = {
-    name: "NoValidCompoentExistError",
+    name: "NoBotOrFunctionExistError",
     message: (): ApiConnectionMsg =>
       ErrorMessage.getMessages(`error.apiConnector.${ErrorMessage.NoValidCompoentExistError.name}`),
   };
@@ -109,5 +109,11 @@ export class ErrorMessage {
         `error.apiConnector.${ErrorMessage.componentNotExistError.name}`,
         component
       ),
+  };
+
+  public static readonly envVarExistError = {
+    name: "envVarExistError",
+    message: (varName: string): ApiConnectionMsg =>
+      ErrorMessage.getMessages(`error.apiConnector.${ErrorMessage.envVarExistError.name}`, varName),
   };
 }

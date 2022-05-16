@@ -33,6 +33,7 @@ import { getAllowedAppIds } from "../../../common/tools";
 import { TOOLS } from "../../../core/globalVars";
 import { AADManifest } from "./interfaces/AADManifest";
 import { AadAppManifestManager } from "./aadAppManifestManager";
+import { v4 as uuidv4 } from "uuid";
 
 function delay(ms: number) {
   // tslint:disable-next-line no-string-based-set-timeout
@@ -105,9 +106,13 @@ export class AadAppClient {
     skip = false
   ): Promise<void> {
     try {
-      await AadAppClient.retryHanlder(stage, () =>
-        AadAppManifestManager.updateAadApp(TokenProvider.token as string, manifest)
-      );
+      await AadAppClient.retryHanlder(stage, async () => {
+        const preAuthorizedApplications = manifest.preAuthorizedApplications;
+        manifest.preAuthorizedApplications = [];
+        await AadAppManifestManager.updateAadApp(TokenProvider.token as string, manifest);
+        manifest.preAuthorizedApplications = preAuthorizedApplications;
+        await AadAppManifestManager.updateAadApp(TokenProvider.token as string, manifest);
+      });
     } catch (error) {
       if (skip) {
         const message = Messages.StepFailedAndSkipped(
@@ -233,9 +238,9 @@ export class AadAppClient {
     stage: string,
     objectId: string,
     clientSecret: string | undefined,
+    oauth2PermissionScopeId: string | undefined,
     graphTokenProvider?: GraphTokenProvider,
-    envName?: string,
-    skip = false
+    envName?: string
   ): Promise<ProvisionConfig> {
     let manifest: AADManifest;
     try {
@@ -248,20 +253,20 @@ export class AadAppClient {
       throw AadAppClient.handleError(error, GetAppError, objectId, tenantId, fileName);
     }
 
-    const config = new ProvisionConfig(!envName);
-    if (
-      manifest.oauth2Permissions &&
-      manifest.oauth2Permissions[0] &&
-      manifest.oauth2Permissions[0].id
-    ) {
-      config.oauth2PermissionScopeId = manifest.oauth2Permissions[0].id;
-    } else {
-      const fileName = Utils.getConfigFileName(envName);
-      throw ResultFactory.UserError(
-        GetAppConfigError.name,
-        GetAppConfigError.message(ConfigKeys.oauth2PermissionScopeId, fileName)
-      );
+    const config = new ProvisionConfig(!envName, false);
+
+    // Check whether remote aad app contains scope id
+    manifest.oauth2Permissions?.forEach((oauth2Permission) => {
+      if (oauth2Permission.value === "access_as_user") {
+        config.oauth2PermissionScopeId = oauth2Permission.id;
+      }
+    });
+
+    // If remote aad app doesn't contain scope id, use scope id in state file or create a new one
+    if (!config.oauth2PermissionScopeId) {
+      config.oauth2PermissionScopeId = oauth2PermissionScopeId ? oauth2PermissionScopeId : uuidv4();
     }
+
     config.objectId = objectId;
     config.clientId = manifest.appId!;
     config.password = clientSecret;

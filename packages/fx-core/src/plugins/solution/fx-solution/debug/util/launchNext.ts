@@ -148,27 +148,92 @@ export function generateM365Compounds(
   }
 
   launchCompounds.push(
-    debugM365(includeFrontend, includeBackend, includeBot, HubName.teams, "Edge", edgeOrder)
+    debugM365(includeFrontend, includeBackend, includeBot, HubName.teams, 1, "Edge", edgeOrder)
   );
   launchCompounds.push(
-    debugM365(includeFrontend, includeBackend, includeBot, HubName.teams, "Chrome", chromeOrder)
+    debugM365(includeFrontend, includeBackend, includeBot, HubName.teams, 1, "Chrome", chromeOrder)
   );
   launchCompounds.push(
-    debugM365(includeFrontend, includeBackend, includeBot, HubName.outlook, "Edge", edgeOrder)
+    debugM365(includeFrontend, includeBackend, includeBot, HubName.outlook, 2, "Edge", edgeOrder)
   );
   launchCompounds.push(
-    debugM365(includeFrontend, includeBackend, includeBot, HubName.outlook, "Chrome", chromeOrder)
+    debugM365(
+      includeFrontend,
+      includeBackend,
+      includeBot,
+      HubName.outlook,
+      2,
+      "Chrome",
+      chromeOrder
+    )
   );
   if (includeFrontend) {
     launchCompounds.push(
-      debugM365(includeFrontend, includeBackend, includeBot, HubName.office, "Edge", edgeOrder)
+      debugM365(includeFrontend, includeBackend, includeBot, HubName.office, 3, "Edge", edgeOrder)
     );
     launchCompounds.push(
-      debugM365(includeFrontend, includeBackend, includeBot, HubName.office, "Chrome", chromeOrder)
+      debugM365(
+        includeFrontend,
+        includeBackend,
+        includeBot,
+        HubName.office,
+        3,
+        "Chrome",
+        chromeOrder
+      )
     );
   }
 
   return launchCompounds;
+}
+
+export function mergeLaunches(
+  existingData: Record<string, unknown>,
+  newData: Record<string, unknown>
+): Record<string, unknown> {
+  const mergedData = {} as Record<string, unknown>;
+  Object.assign(mergedData, existingData);
+
+  if (mergedData.version === undefined) {
+    mergedData.version = "0.2.0";
+  }
+
+  if (mergedData.configurations === undefined) {
+    mergedData.configurations = newData.configurations;
+  } else {
+    const existingConfigurations = mergedData.configurations as Record<string, unknown>[];
+    const newConfigurations = (newData.configurations ?? []) as Record<string, unknown>[];
+    const keptConfigurations = [];
+    for (const existingConfiguration of existingConfigurations) {
+      if (
+        !newConfigurations.some(
+          (newConfiguration) =>
+            existingConfiguration.name === newConfiguration.name &&
+            existingConfiguration.type === newConfiguration.type &&
+            existingConfiguration.request === newConfiguration.request
+        )
+      ) {
+        keptConfigurations.push(existingConfiguration);
+      }
+    }
+    mergedData.configurations = [...keptConfigurations, ...newConfigurations];
+  }
+
+  if (mergedData.compounds === undefined) {
+    mergedData.compounds = newData.compounds;
+  } else {
+    const existingCompounds = mergedData.compounds as Record<string, unknown>[];
+    const newCompounds = (newData.compounds ?? []) as Record<string, unknown>[];
+    const keptCompounds = [];
+    for (const existingCompound of existingCompounds) {
+      if (!newCompounds.some((newCompound) => existingCompound.name === newCompound.name)) {
+        keptCompounds.push(existingCompound);
+      }
+    }
+    mergedData.compounds = [...keptCompounds, ...newCompounds];
+  }
+
+  return mergedData;
 }
 
 function launchRemote(
@@ -355,6 +420,7 @@ function debugM365(
   includeBackend: boolean,
   includeBot: boolean,
   hubName: string,
+  hubOrder: number,
   browserName: string,
   order: number
 ): Record<string, unknown> {
@@ -378,7 +444,7 @@ function debugM365(
         ? "Pre Debug Check & Start All"
         : "Pre Debug Check & Start All & Install App",
     presentation: {
-      group: `all`,
+      group: `group ${hubOrder}: ${hubName}`,
       order: order,
     },
     stopAll: true,

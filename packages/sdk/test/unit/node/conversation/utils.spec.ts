@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { ConversationReference } from "botframework-schema";
 import { assert, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import {
@@ -12,11 +13,12 @@ import {
 chaiUse(chaiPromises);
 
 describe("Notification.Utils Tests - Node", () => {
-  it("cloneConversation should clone correct data", () => {
-    const source = { channelId: "1" };
+  it("cloneConversation should deep clone correct data", () => {
+    const source = { channelId: "1", conversation: { id: "X" } } as ConversationReference;
     const target = cloneConversation(source) as any;
     source.channelId = "2";
-    assert.deepStrictEqual(target, { channelId: "1" });
+    source.conversation.id = "Y";
+    assert.deepStrictEqual(target, { channelId: "1", conversation: { id: "X" } });
   });
 
   it("getTargetType should return correct type", () => {

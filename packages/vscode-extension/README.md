@@ -18,9 +18,9 @@ Teams apps are a combination of [capabilities](https://aka.ms/teamsfx-capabiliti
 
 <a href=https://docs.microsoft.com/en-us/microsoftteams/platform/bots/what-are-bots>Bots</a> allow users to interact with your web service through text, interactive cards, and task modules.
 
-### Messaging Extension
+### Message Extension
 
-<a href=https://docs.microsoft.com/en-us/microsoftteams/platform/messaging-extensions/what-are-messaging-extensions>Messaging extensions</a> allow users to interact with your web service through buttons and forms in the Microsoft Teams client.
+<a href=https://docs.microsoft.com/en-us/microsoftteams/platform/messaging-extensions/what-are-messaging-extensions>Message extensions</a> allow users to interact with your web service through buttons and forms in the Microsoft Teams client.
 
 ## Getting started
 

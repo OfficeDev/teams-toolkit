@@ -176,7 +176,6 @@ export class TaskDefinition {
       cwd: path.join(workspaceFolder, FolderName.Bot),
       execOptions: {
         needShell: true,
-        needCmd: isWindows(),
       },
       isBackground: false,
     };

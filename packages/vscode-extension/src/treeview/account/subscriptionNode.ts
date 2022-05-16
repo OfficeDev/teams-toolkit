@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as path from "path";
 import * as util from "util";
 import * as vscode from "vscode";
 
@@ -9,10 +8,10 @@ import { SubscriptionInfo } from "@microsoft/teamsfx-api";
 import { isValidProject } from "@microsoft/teamsfx-core";
 
 import AzureAccountManager from "../../commonlib/azureLogin";
-import { ext } from "../../extensionVariables";
 import { getWorkspacePath } from "../../handlers";
 import { localize } from "../../utils/localizeUtils";
 import { DynamicNode } from "../dynamicNode";
+import { infoIcon, keyIcon, warningIcon } from "./common";
 
 export class SubscriptionNode extends DynamicNode {
   private subscription?: SubscriptionInfo;
@@ -29,22 +28,7 @@ export class SubscriptionNode extends DynamicNode {
       this.label = this.subscription.subscriptionName;
       this.tooltip = this.subscription.subscriptionName;
       this.contextValue = "selectSubscription";
-      this.iconPath = {
-        light: path.join(
-          ext.context.extensionPath,
-          "media",
-          "treeview",
-          "account",
-          "subscriptionSelected-light.svg"
-        ),
-        dark: path.join(
-          ext.context.extensionPath,
-          "media",
-          "treeview",
-          "account",
-          "subscriptionSelected-dark.svg"
-        ),
-      };
+      this.iconPath = keyIcon;
     }
     return this;
   }
@@ -63,22 +47,7 @@ export class SubscriptionNode extends DynamicNode {
     );
     this.tooltip = undefined;
     this.contextValue = "selectSubscription";
-    this.iconPath = {
-      light: path.join(
-        ext.context.extensionPath,
-        "media",
-        "treeview",
-        "account",
-        "subscriptions-light.svg"
-      ),
-      dark: path.join(
-        ext.context.extensionPath,
-        "media",
-        "treeview",
-        "account",
-        "subscriptions-dark.svg"
-      ),
-    };
+    this.iconPath = infoIcon;
     this.eventEmitter.fire(this);
   }
 
@@ -87,21 +56,6 @@ export class SubscriptionNode extends DynamicNode {
     this.contextValue = validProject ? "emptySubscription" : "invalidFxProject";
     this.label = localize("teamstoolkit.accountTree.noSubscriptions");
     this.tooltip = localize("teamstoolkit.accountTree.noSubscriptionsTooltip");
-    this.iconPath = {
-      light: path.join(
-        ext.context.extensionPath,
-        "media",
-        "treeview",
-        "account",
-        "warning-light.svg"
-      ),
-      dark: path.join(
-        ext.context.extensionPath,
-        "media",
-        "treeview",
-        "account",
-        "warning-dark.svg"
-      ),
-    };
+    this.iconPath = warningIcon;
   }
 }

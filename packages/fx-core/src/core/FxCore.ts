@@ -153,6 +153,8 @@ import { createContextV3 } from "../component/utils";
 import "../component/core";
 import { BotFeatureIds } from "../plugins/solution/fx-solution/question";
 import { QuestionModelMW_V3 } from "./middleware/questionModelV3";
+import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
+
 export class FxCore implements v3.ICore {
   tools: Tools;
   isFromSample?: boolean;
@@ -416,6 +418,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -448,8 +451,9 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     ProjectMigratorMW,
     ProjectConsolidateMW,
-    ProjectSettingsLoaderMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
+    ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     SolutionLoaderMW_V3,
     QuestionModelMW,
@@ -522,6 +526,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -564,6 +569,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     SolutionLoaderMW_V3,
@@ -597,6 +603,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     LocalSettingsLoaderMW,
@@ -667,6 +674,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -701,6 +709,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -742,6 +751,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     LocalSettingsLoaderMW,
@@ -841,7 +851,22 @@ export class FxCore implements v3.ICore {
     }
     return err(FunctionRouterError(func));
   }
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW])
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ProjectMigratorMW,
+    ProjectConsolidateMW,
+    AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW_V3(false),
+    LocalSettingsLoaderMW,
+    SolutionLoaderMW_V3,
+    QuestionModelMW,
+    ContextInjectorMW,
+    ProjectSettingsWriterMW,
+    EnvInfoWriterMW(),
+  ])
   async executeUserTaskV3(
     func: Func,
     inputs: Inputs,
@@ -923,6 +948,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     LocalSettingsLoaderMW,
@@ -984,6 +1010,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -1011,6 +1038,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     QuestionModelMW,
@@ -1046,6 +1074,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -1073,6 +1102,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
@@ -1107,6 +1137,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -1134,6 +1165,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
@@ -1321,6 +1353,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectConsolidateMW,
     AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     SolutionLoaderMW,
     ContextInjectorMW,

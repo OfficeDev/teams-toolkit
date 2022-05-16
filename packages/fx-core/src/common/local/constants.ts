@@ -89,3 +89,5 @@ export const BotHostTypes = Object.freeze({
   AppService: "app-service",
   AzureFunctions: "azure-functions",
 });
+
+export const BotCapabilities = "capabilities";

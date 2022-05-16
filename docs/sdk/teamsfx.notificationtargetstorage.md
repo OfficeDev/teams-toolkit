@@ -19,7 +19,7 @@ export interface NotificationTargetStorage
 
 |  Method | Description |
 |  --- | --- |
-|  [delete(key)](./teamsfx.notificationtargetstorage.delete.md) | <b><i>(BETA)</i></b> Delete one notificaton target by its key. |
+|  [delete(key)](./teamsfx.notificationtargetstorage.delete.md) | <b><i>(BETA)</i></b> Delete one notification target by its key. |
 |  [list()](./teamsfx.notificationtargetstorage.list.md) | <b><i>(BETA)</i></b> List all stored notification targets. |
 |  [read(key)](./teamsfx.notificationtargetstorage.read.md) | <b><i>(BETA)</i></b> Read one notification target by its key. |
 |  [write(key, object)](./teamsfx.notificationtargetstorage.write.md) | <b><i>(BETA)</i></b> Write one notification target by its key. |

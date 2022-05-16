@@ -1,14 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as path from "path";
 import * as vscode from "vscode";
 
-import { ext } from "../../extensionVariables";
 import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
 import { localize } from "../../utils/localizeUtils";
 import { DynamicNode } from "../dynamicNode";
-import { AccountItemStatus, loadingIcon } from "./common";
+import { AccountItemStatus, loadingIcon, m365Icon } from "./common";
 import { SideloadingNode } from "./sideloadingNode";
 
 export class M365AccountNode extends DynamicNode {
@@ -81,16 +79,7 @@ export class M365AccountNode extends DynamicNode {
       this.iconPath = loadingIcon;
       this.label = localize("teamstoolkit.accountTree.signingInM365");
     } else {
-      this.iconPath = {
-        light: path.join(
-          ext.context.extensionPath,
-          "media",
-          "treeview",
-          "account",
-          "m365-light.svg"
-        ),
-        dark: path.join(ext.context.extensionPath, "media", "treeview", "account", "m365-dark.svg"),
-      };
+      this.iconPath = m365Icon;
     }
     return this;
   }

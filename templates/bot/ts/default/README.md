@@ -1,12 +1,12 @@
-# How to use this Bots and Messaging Extensions HelloWorld app
+# How to use this Bots and Message Extensions HelloWorld app
 
 A bot, chatbot, or conversational bot is an app that responds to simple commands sent in chat and replies in meaningful ways. Examples of bots in everyday use include: bots that notify about build failures, bots that provide information about the weather or bus schedules, or provide travel information. A bot interaction can be a quick question and answer, or it can be a complex conversation. Being a cloud application, a bot can provide valuable and secure access to cloud services and corporate resources.
 
-A Messaging Extension allows users to interact with your web service while composing messages in the Microsoft Teams client. Users can invoke your web service to assist message composition, from the message compose box, or from the search bar.
+A Message Extension allows users to interact with your web service while composing messages in the Microsoft Teams client. Users can invoke your web service to assist message composition, from the message compose box, or from the search bar.
 
-Messaging Extensions are implemented on top of the Bot support architecture within Teams.
+Message Extensions are implemented on top of the Bot support architecture within Teams.
 
-This is a simple hello world application with both Bot and Messaging extension capabilities.
+This is a simple hello world application with both Bot and Message extension capabilities.
 
 ## Prerequisites
 
@@ -88,15 +88,15 @@ This template provides some sample functionality:
 
 To trigger these functions, there are multiple entry points:
 
-- `@mention` Your messaging extension, from the `search box area`.
+- `@mention` Your message extension, from the `search box area`.
 
   ![AtBotFromSearch](./images/AtBotFromSearch.png)
 
-- `@mention` your messaging extension from the `compose message area`.
+- `@mention` your message extension from the `compose message area`.
 
   ![AtBotFromMessage](./images/AtBotInMessage.png)
 
-- Click the `...` under compose message area, find your messaging extension.
+- Click the `...` under compose message area, find your message extension.
 
   ![ComposeArea](./images/ThreeDot.png)
 
@@ -112,7 +112,7 @@ To trigger these functions, there are multiple entry points:
 - [Bot Framework Documentation](https://docs.botframework.com/)
 - [Azure Bot Service Introduction](https://docs.microsoft.com/azure/bot-service/bot-service-overview-introduction?view=azure-bot-service-4.0)
 
-### Messaging Extension
+### Message Extension
 
 - [Search Command](https://docs.microsoft.com/en-us/microsoftteams/platform/messaging-extensions/how-to/search-commands/define-search-command)
 - [Action Command](https://docs.microsoft.com/en-us/microsoftteams/platform/messaging-extensions/how-to/action-commands/define-action-command)

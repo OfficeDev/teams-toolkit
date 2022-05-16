@@ -6,7 +6,7 @@
  */
 
 import path from "path";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentManager, isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core";
 import {
   getSubscriptionId,
   getTestFolder,
@@ -36,7 +36,11 @@ describe("Add capabilities", function () {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.MessageExtension);
 
     // Act
-    await CliHelper.addCapabilityToProject(projectPath, Capability.Tab);
+    if (isPreviewFeaturesEnabled()) {
+      await CliHelper.addCapabilityToProject(projectPath, Capability.SSOTab);
+    } else {
+      await CliHelper.addCapabilityToProject(projectPath, Capability.Tab);
+    }
 
     await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
     await setBotSkuNameToB1Bicep(projectPath, env);

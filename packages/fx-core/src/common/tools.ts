@@ -20,6 +20,8 @@ import {
   UserError,
   TelemetryReporter,
   Void,
+  Inputs,
+  Platform,
 } from "@microsoft/teamsfx-api";
 import axios from "axios";
 import { exec, ExecOptions } from "child_process";
@@ -65,6 +67,9 @@ import { isFeatureFlagEnabled } from "./featureFlags";
 import _ from "lodash";
 import { BotHostTypeName, BotHostTypes } from "./local/constants";
 import { isExistingTabApp } from "./projectSettingsHelper";
+import { ExistingTemplatesStat } from "../plugins/resource/cicd/utils/existingTemplatesStat";
+import { environmentManager } from "../core/environment";
+import { NoProjectOpenedError } from "../plugins/resource/cicd/errors";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -559,6 +564,45 @@ export function canAddApiConnection(solutionSettings?: AzureSolutionSettings): b
   return (
     activePlugins.includes(ResourcePlugins.Bot) || activePlugins.includes(ResourcePlugins.Function)
   );
+}
+
+// Conditions required to be met:
+// 1. Not (All templates were existing env x provider x templates)
+// 2. Not minimal app
+export async function canAddCICDWorkflows(inputs: Inputs, ctx: v2.Context): Promise<boolean> {
+  // Not include `Add CICD Workflows` in minimal app case.
+  if (isExistingTabApp(ctx.projectSetting)) {
+    return false;
+  }
+
+  if (!inputs.projectPath) {
+    throw new NoProjectOpenedError();
+  }
+
+  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath);
+  if (envProfilesResult.isErr()) {
+    throw new SystemError(
+      "Core",
+      "ListMultiEnvError",
+      getDefaultString("error.cicd.FailedToListMultiEnv", envProfilesResult.error.message),
+      getLocalizedString("error.cicd.FailedToListMultiEnv", envProfilesResult.error.message)
+    );
+  }
+
+  const existingInstance = ExistingTemplatesStat.getInstance(
+    inputs.projectPath,
+    envProfilesResult.value
+  );
+  await existingInstance.scan();
+
+  // If at least one env are not all-existing, return true.
+  for (const envName of envProfilesResult.value) {
+    if (existingInstance.notExisting(envName)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 export function isYoCheckerEnabled(): boolean {

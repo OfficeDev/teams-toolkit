@@ -35,6 +35,7 @@ import {
   toLocaleLowerCase,
   toYargsOptions,
   getTeamsAppTelemetryInfoByEnv,
+  getIsM365,
 } from "../../src/utils";
 import * as utils from "../../src/utils";
 import { expect } from "./utils";
@@ -683,6 +684,58 @@ describe("Utils Tests", function () {
     it("should work for input of type string and array of string", () => {
       expect(toLocaleLowerCase("AB")).equals("ab");
       expect(toLocaleLowerCase(["Ab", "BB"])).deep.equals(["ab", "bb"]);
+    });
+  });
+
+  describe("getIsM365", async () => {
+    const sandbox = sinon.createSandbox();
+
+    before(() => {
+      sandbox.stub(fs, "existsSync").callsFake((path: fs.PathLike) => {
+        return path.toString().includes("real");
+      });
+      sandbox.stub(fs, "readJsonSync").callsFake((path: fs.PathLike) => {
+        if (path.toString().includes("real")) {
+          if (path.toString().includes("true")) {
+            return { isM365: true };
+          } else if (path.toString().includes("false")) {
+            return { isM365: false };
+          } else {
+            return {};
+          }
+        } else {
+          throw new Error(`ENOENT: no such file or directory, open '${path.toString()}'`);
+        }
+      });
+    });
+
+    after(() => {
+      sandbox.restore();
+    });
+
+    it("No Root Folder", async () => {
+      const result = getIsM365(undefined);
+      expect(result).equals(undefined);
+    });
+
+    it("No File", async () => {
+      const result = getIsM365("error");
+      expect(result).equals(undefined);
+    });
+
+    it("isM365 == true", async () => {
+      const result = getIsM365("real.isM365=true");
+      expect(result).equals("true");
+    });
+
+    it("isM365 == false", async () => {
+      const result = getIsM365("real.isM365=false");
+      expect(result).equals("false");
+    });
+
+    it("isM365 == undefined", async () => {
+      const result = getIsM365("real.isM365=undefined");
+      expect(result).equals(undefined);
     });
   });
 });

@@ -50,7 +50,7 @@ describe("Multi Env Happy Path for Azure", function () {
       try {
         let result;
         result = await execAsync(
-          `teamsfx new --interactive false --app-name ${appName} --capabilities tab bot --azure-resources function sql --programming-language javascript`,
+          `teamsfx new --interactive false --app-name ${appName} --capabilities notification --bot-host-type-trigger http-functions --programming-language javascript`,
           {
             cwd: testFolder,
             env: processEnv,
@@ -59,6 +59,36 @@ describe("Multi Env Happy Path for Azure", function () {
         );
         console.log(
           `[Successfully] scaffold to ${projectPath}, stdout: '${result.stdout}', stderr: '${result.stderr}''`
+        );
+
+        result = await execAsync(`teamsfx add tab`, {
+          cwd: projectPath,
+          env: processEnv,
+          timeout: 0,
+        });
+        console.log(
+          `[Successfully] Add "tab" to ${projectPath}, stdout: '${result.stdout}', stderr: '${result.stderr}''`
+        );
+
+        result = await execAsync(
+          `teamsfx add azure-function --interactive false --function-name getUserProfile`,
+          {
+            cwd: projectPath,
+            env: processEnv,
+            timeout: 0,
+          }
+        );
+        console.log(
+          `[Successfully] Add "function" to ${projectPath}, stdout: '${result.stdout}', stderr: '${result.stderr}''`
+        );
+
+        result = await execAsync(`teamsfx add azure-sql --interactive false`, {
+          cwd: projectPath,
+          env: processEnv,
+          timeout: 0,
+        });
+        console.log(
+          `[Successfully] Add "sql" to ${projectPath}, stdout: '${result.stdout}', stderr: '${result.stderr}''`
         );
 
         await CliHelper.setSubscription(subscription, projectPath, processEnv);
@@ -168,11 +198,8 @@ describe("Multi Env Happy Path for Azure", function () {
           chai.expect(result.stderr).to.be.empty;
         }
 
-        const updateManifestCmd =
-          processEnv["TEAMSFX_DEPLOY_MANIFEST"] === "true"
-            ? `teamsfx deploy manifest --env ${env} --include-app-manifest yes`
-            : `teamsfx manifest update --env ${env}`;
         // update manifest
+        const updateManifestCmd = `teamsfx deploy manifest --env ${env} --include-app-manifest yes`;
         result = await execAsyncWithRetry(updateManifestCmd, {
           cwd: projectPath,
           env: processEnv,

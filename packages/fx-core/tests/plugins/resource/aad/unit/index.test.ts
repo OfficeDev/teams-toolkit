@@ -171,9 +171,11 @@ describe("AadAppForTeamsPlugin: CI", () => {
     context = await TestHelper.pluginContext(new Map(), true, false, false);
     context.appStudioToken = mockTokenProvider();
     context.graphTokenProvider = mockTokenProviderGraph();
-    sinon
-      .stub<any, any>(AadAppManifestManager, "loadAadManifest")
-      .resolves({ id: "", name: "fake-aad-name", oauth2Permissions: [{}] });
+    sinon.stub<any, any>(AadAppManifestManager, "loadAadManifest").resolves({
+      id: "",
+      name: "fake-aad-name",
+      oauth2Permissions: [{ value: "access_as_user" }],
+    });
     sinon
       .stub<any, any>(AadAppManifestManager, "createAadApp")
       .resolves({ appId: "fake-appId", id: "fake-object-id" });

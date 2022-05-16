@@ -141,19 +141,21 @@ export class Utils {
       ? ConfigUtils.getAadConfig(ctx, ConfigKeys.clientSecret, true)
       : ctx.envInfo.config.auth?.clientSecret;
 
-    if (objectId && clientId && oauth2PermissionScopeId && clientSecret) {
+    if (objectId && clientId && clientSecret) {
       if (!isLocalDebug) {
         ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.objectId, objectId as string);
         ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.clientId, clientId as string);
         ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.clientSecret, clientSecret as string);
-        ConfigUtils.checkAndSaveConfig(
-          ctx,
-          ConfigKeys.oauth2PermissionScopeId,
-          oauth2PermissionScopeId as string
-        );
+        if (oauth2PermissionScopeId) {
+          ConfigUtils.checkAndSaveConfig(
+            ctx,
+            ConfigKeys.oauth2PermissionScopeId,
+            oauth2PermissionScopeId as string
+          );
+        }
       }
       return true;
-    } else if (objectId || clientId || oauth2PermissionScopeId || clientSecret) {
+    } else if (objectId || clientId || clientSecret) {
       throw ResultFactory.UserError(
         GetSkipAppConfigError.name,
         GetSkipAppConfigError.message(Utils.getInputFileName(ctx.envInfo.envName))
@@ -253,9 +255,11 @@ export class ProvisionConfig {
   public oauth2PermissionScopeId?: string;
   private isLocalDebug: boolean;
 
-  constructor(isLocalDebug = false) {
+  constructor(isLocalDebug = false, generateScopeId = true) {
     this.isLocalDebug = isLocalDebug;
-    this.oauth2PermissionScopeId = uuidv4();
+    if (generateScopeId) {
+      this.oauth2PermissionScopeId = uuidv4();
+    }
   }
   public async restoreConfigFromLocalSettings(
     ctx: v2.Context,

@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as vscode from "vscode";
-import Reporter from "vscode-extension-telemetry";
-import { TelemetryReporter } from "@microsoft/teamsfx-api";
+import Reporter from "@vscode/extension-telemetry";
+import { TelemetryReporter, ConfigFolderName } from "@microsoft/teamsfx-api";
 import {
   getAllFeatureFlags,
   getPackageVersion,
@@ -12,7 +12,6 @@ import {
 } from "../utils/commonUtils";
 import { TelemetryProperty } from "../telemetry/extTelemetryEvents";
 import { Correlator } from "@microsoft/teamsfx-core";
-import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import { configure, getLogger, Logger } from "log4js";
 import * as os from "os";
 import * as path from "path";
@@ -92,8 +91,13 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
       properties = { ...this.sharedProperties, ...properties };
     }
 
-    const projectId = getProjectId();
-    properties[TelemetryProperty.ProjectId] = projectId ? projectId : "";
+    if (
+      properties[TelemetryProperty.ProjectId] === "unknown" ||
+      properties[TelemetryProperty.ProjectId] === undefined
+    ) {
+      const projectId = getProjectId();
+      properties[TelemetryProperty.ProjectId] = projectId ? projectId : "unknown";
+    }
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
     const featureFlags = getAllFeatureFlags();
@@ -117,8 +121,13 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
       properties = { ...this.sharedProperties, ...properties };
     }
 
-    const projectId = getProjectId();
-    properties[TelemetryProperty.ProjectId] = projectId ? projectId : "";
+    if (
+      properties[TelemetryProperty.ProjectId] === "unknown" ||
+      properties[TelemetryProperty.ProjectId] === undefined
+    ) {
+      const projectId = getProjectId();
+      properties[TelemetryProperty.ProjectId] = projectId ? projectId : "unknown";
+    }
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
     const featureFlags = getAllFeatureFlags();
@@ -142,8 +151,13 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
       properties = { ...this.sharedProperties, ...properties };
     }
 
-    const projectId = getProjectId();
-    properties[TelemetryProperty.ProjectId] = projectId ? projectId : "";
+    if (
+      properties[TelemetryProperty.ProjectId] === "unknown" ||
+      properties[TelemetryProperty.ProjectId] === undefined
+    ) {
+      const projectId = getProjectId();
+      properties[TelemetryProperty.ProjectId] = projectId ? projectId : "unknown";
+    }
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
     const featureFlags = getAllFeatureFlags();

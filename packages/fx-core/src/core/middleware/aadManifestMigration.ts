@@ -43,7 +43,6 @@ export const AadManifestMigrationMW: Middleware = async (
   } else if (await needConsolidateLocalRemote(ctx)) {
     await next();
   } else if ((await needMigrateToAadManifest(ctx)) && checkMethod(ctx)) {
-    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
     await upgrade(ctx, next);
   } else {
     await next();

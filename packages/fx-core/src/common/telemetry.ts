@@ -53,7 +53,6 @@ export enum TelemetryEvent {
   ProjectMigratorGuide = "project-migrator-guide",
   ProjectMigratorPrecheckFailed = "project-migrator-pre-check-failed",
   ProjectMigratorError = "project-migrator-error",
-  ProjectAadManifestMigrationNotification = "project-aad-manifest-migration-notification",
   ProjectAadManifestMigrationError = "project-aad-manifest-migration-error",
   ProjectAadManifestMigrationStart = "project-aad-manifest-migration-start",
   ProjectAadManifestMigrationAddAADTemplateStart = "project-aad-manifest-migration-add-aad-template-start",

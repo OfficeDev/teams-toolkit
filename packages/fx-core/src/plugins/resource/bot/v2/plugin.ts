@@ -349,16 +349,10 @@ export class TeamsBotV2Impl {
 
   private resolveTriggers(inputs: Inputs): BotTrigger[] {
     const rawHostTypeTriggers = inputs?.[QuestionNames.BOT_HOST_TYPE_TRIGGER];
-    if (!Array.isArray(rawHostTypeTriggers)) {
-      return [];
-    }
-    // convert HostTypeTrigger question to trigger name
-    return rawHostTypeTriggers
-      .map((hostTypeTrigger) => {
-        const option = HostTypeTriggerOptions.find((option) => option.id === hostTypeTrigger);
-        return option?.trigger;
-      })
-      .filter((item): item is BotTrigger => item !== undefined);
+    return rawHostTypeTriggers.map((hostTypeTrigger: string) => {
+      const option = HostTypeTriggerOptions.find((option) => option.id === hostTypeTrigger);
+      return option?.trigger;
+    });
   }
 }
 

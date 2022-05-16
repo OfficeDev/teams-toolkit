@@ -161,7 +161,6 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
             // Update AAD app
             var application = new Application
             {
-                SignInAudience = "AzureADMyOrg",
                 Web = new WebApplication
                 {
                     RedirectUris = new List<string>() { IntegrationTestSettings.RedirectUri }

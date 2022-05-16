@@ -180,18 +180,25 @@ export class VsCodeUI implements UserInteraction {
       return await new Promise<Result<SingleSelectResult, FxError>>(
         async (resolve): Promise<void> => {
           // set items
+          const options = option.options;
           quickPick.items = convertToFxQuickPickItems(option.options);
-          const optionMap = new Map<string, FxQuickPickItem>();
-          for (const item of quickPick.items) {
-            optionMap.set(item.id, item);
-          }
-          /// set default
+          // set default
           if (option.default) {
-            const defaultItem = optionMap.get(option.default);
-            if (defaultItem) {
-              const newitems = quickPick.items.filter((i) => i.id !== option.default);
-              newitems.unshift(defaultItem);
-              quickPick.items = newitems;
+            // let defaultOption: string | OptionItem | undefined;
+            if (options && options.length > 0 && typeof options[0] === "string") {
+              const defaultOption = (options as string[]).find((o) => o == option.default);
+              if (defaultOption) {
+                const newItems = (options as string[]).filter((o) => o != option.default);
+                newItems.unshift(defaultOption);
+                quickPick.items = convertToFxQuickPickItems(newItems);
+              }
+            } else {
+              const defaultOption = (options as OptionItem[]).find((o) => o.id == option.default);
+              if (defaultOption) {
+                const newItems = (options as OptionItem[]).filter((o) => o.id != option.default);
+                newItems.unshift(defaultOption);
+                quickPick.items = convertToFxQuickPickItems(newItems);
+              }
             }
           }
 

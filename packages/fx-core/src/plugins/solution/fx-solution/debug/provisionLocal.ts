@@ -134,14 +134,14 @@ export async function setupLocalDebugSettings(
           localSettings.bot.botEndpoint = localBotEndpoint;
           localSettings.bot.botDomain = localBotEndpoint.slice(8);
         } else {
-          const ngrokHttpUrl = await getTunnelsHttpUrl(3978);
-          if (!ngrokHttpUrl) {
+          const tunnelsHttpUrl = await getTunnelsHttpUrl(3978);
+          if (!tunnelsHttpUrl) {
             const error = NgrokTunnelNotConnected();
             TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);
             return err(error);
           } else {
-            localSettings.bot.botEndpoint = ngrokHttpUrl;
-            localSettings.bot.botDomain = ngrokHttpUrl.slice(8);
+            localSettings.bot.botEndpoint = tunnelsHttpUrl;
+            localSettings.bot.botDomain = tunnelsHttpUrl.slice(8);
           }
         }
       }

@@ -74,32 +74,25 @@
   ],
   "contributes": {
     "icons": {
-      "toolkit-commandBot": {
-        "description": "Command bot icon in capability list",
+      "teamsfx-add-feature": {
+        "description": "Add feature icon in command tree view",
         "default": {
           "fontPath": "./media/font/teamstoolkit.woff",
           "fontCharacter": "\\E000"
         }
       },
-      "toolkit-message": {
-        "description": "Message icon in capability list",
+      "teamsfx-developer-portal": {
+        "description": "Developer portal icon in command tree view",
         "default": {
           "fontPath": "./media/font/teamstoolkit.woff",
           "fontCharacter": "\\E001"
         }
       },
-      "toolkit-notification": {
-        "description": "Notification icon in capability list",
+      "teamsfx-m365": {
+        "description": "Microsoft 365 icon in account tree view",
         "default": {
           "fontPath": "./media/font/teamstoolkit.woff",
           "fontCharacter": "\\E002"
-        }
-      },
-      "toolkit-tab": {
-        "description": "Tab icon in capability list",
-        "default": {
-          "fontPath": "./media/font/teamstoolkit.woff",
-          "fontCharacter": "\\E003"
         }
       }
     },

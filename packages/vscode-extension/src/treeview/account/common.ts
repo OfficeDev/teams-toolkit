@@ -23,5 +23,6 @@ export const passIcon = new vscode.ThemeIcon(
   "pass",
   new vscode.ThemeColor("debugIcon.startForeground")
 );
+export const m365Icon = new vscode.ThemeIcon("teamsfx-m365");
 export const azureIcon = new vscode.ThemeIcon("azure");
 export const keyIcon = new vscode.ThemeIcon("key");

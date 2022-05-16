@@ -145,7 +145,7 @@ class TreeViewManager {
             localize("teamstoolkit.commandsTreeViewProvider.addFeatureDescription"),
             "fx-extension.addFeature",
             "addFeature",
-            { name: "addFeature", custom: true }
+            { name: "teamsfx-add-feature", custom: false }
           )
         );
       } else {
@@ -277,7 +277,7 @@ class TreeViewManager {
         localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalDescription"),
         "fx-extension.openAppManagement",
         undefined,
-        { name: "developerPortal", custom: true }
+        { name: "teamsfx-developer-portal", custom: false }
       )
     );
 

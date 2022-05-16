@@ -7,7 +7,7 @@
 
 import path from "path";
 
-import { AadValidator, BotValidator } from "../../commonlib";
+import { BotValidator } from "../../commonlib";
 import {
   getSubscriptionId,
   getTestFolder,
@@ -18,7 +18,6 @@ import {
   deleteResourceGroupByName,
   setBotSkuNameToB1Bicep,
 } from "../commonUtils";
-import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, ResourceToDeploy } from "../../commonlib/constants";

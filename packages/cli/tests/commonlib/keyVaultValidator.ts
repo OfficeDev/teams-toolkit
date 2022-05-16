@@ -101,6 +101,15 @@ export class KeyVaultValidator {
   ) {
     console.log("Validating key vault secrets.");
 
+    const activeResourcePlugins = await getActivePluginsFromProjectSetting(this.projectPath);
+    chai.assert.isArray(activeResourcePlugins);
+    if (
+      !activeResourcePlugins.includes(PluginId.Aad) &&
+      !activeResourcePlugins.includes(PluginId.Bot)
+    ) {
+      return;
+    }
+
     // Add "get secret" permission for test account
     await this.updateKeyVaultGetSecretPermission(
       this.subscriptionId,
@@ -114,9 +123,6 @@ export class KeyVaultValidator {
 
     const identityTokenCredential = await tokenProvider.getIdentityCredentialAsync();
     const tokenToGetSecret = (await identityTokenCredential?.getToken(keyvaultScope))?.token;
-
-    const activeResourcePlugins = await getActivePluginsFromProjectSetting(this.projectPath);
-    chai.assert.isArray(activeResourcePlugins);
 
     if (activeResourcePlugins.includes(PluginId.Aad)) {
       const m365ClientSecretName =

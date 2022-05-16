@@ -76,8 +76,12 @@ export class ApiKeyProvider implements AuthProvider {
         if (!config.params) {
           config.params = {};
         }
-        const url = new URL(config.url!, config.baseURL);
-        if (config.params[this.keyName] || url.searchParams.has(this.keyName)) {
+        let urlHasDefinedApiKey = false;
+        if (config.url) {
+          const url = new URL(config.url, config.baseURL);
+          urlHasDefinedApiKey = url.searchParams.has(this.keyName);
+        }
+        if (config.params[this.keyName] || urlHasDefinedApiKey) {
           throw new ErrorWithCode(
             formatString(ErrorMessage.DuplicateApiKeyInQueryParam, this.keyName),
             ErrorCode.AuthorizationInfoAlreadyExists

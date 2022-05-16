@@ -23,7 +23,7 @@ import {
   Void,
 } from "@microsoft/teamsfx-api";
 import { Container } from "typedi";
-import { createV2Context, deepCopy } from "../../common/tools";
+import { createV2Context, deepCopy, isExistingTabAppEnabled } from "../../common/tools";
 import { newProjectSettings } from "../../common/projectSettingsHelper";
 import { SPFxPluginV3 } from "../../plugins/resource/spfx/v3";
 import {
@@ -460,17 +460,13 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   capNode.addChild(programmingLanguage);
 
   // existing tab endpoint
-  const existingTabEndpoint = new QTreeNode(ExistingTabEndpointQuestion);
-  if (isPreviewFeaturesEnabled()) {
+  if (isExistingTabAppEnabled()) {
+    const existingTabEndpoint = new QTreeNode(ExistingTabEndpointQuestion);
     existingTabEndpoint.condition = {
       equals: ExistingTabOptionItem.id,
     };
-  } else {
-    existingTabEndpoint.condition = {
-      contains: ExistingTabOptionItem.id,
-    };
+    capNode.addChild(existingTabEndpoint);
   }
-  capNode.addChild(existingTabEndpoint);
 
   createNew.addChild(new QTreeNode(QuestionRootFolder));
   createNew.addChild(new QTreeNode(createAppNameQuestion()));

@@ -64,14 +64,14 @@ export class FunctionPluginError extends Error {
   getMessage(): string {
     return getLocalizedString(
       "plugins.baseErrorMessage",
-      this.message[1],
+      this.messages[1],
       this.suggestions.join(" ")
     );
   }
   getDefaultMessage(): string {
     return getDefaultString(
       "plugins.baseErrorMessage",
-      this.message[0],
+      this.messages[0],
       this.suggestions.join(" ")
     );
   }

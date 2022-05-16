@@ -1,16 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as path from "path";
 import * as vscode from "vscode";
 
 import { getSideloadingStatus } from "@microsoft/teamsfx-core";
 
-import { ext } from "../../extensionVariables";
 import { checkSideloadingCallback } from "../../handlers";
 import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
 import { localize } from "../../utils/localizeUtils";
 import { DynamicNode } from "../dynamicNode";
+import { errorIcon, passIcon } from "./common";
 
 export class SideloadingNode extends DynamicNode {
   constructor(
@@ -39,41 +38,11 @@ export class SideloadingNode extends DynamicNode {
     }
     if (isSideloadingAllowed) {
       this.label = localize("teamstoolkit.accountTree.sideloadingPass");
-      this.iconPath = {
-        light: path.join(
-          ext.context.extensionPath,
-          "media",
-          "treeview",
-          "account",
-          "sideloadingPass-light.svg"
-        ),
-        dark: path.join(
-          ext.context.extensionPath,
-          "media",
-          "treeview",
-          "account",
-          "sideloadingPass-dark.svg"
-        ),
-      };
+      this.iconPath = passIcon;
       this.tooltip = localize("teamstoolkit.accountTree.sideloadingPassTooltip");
     } else {
       this.label = localize("teamstoolkit.accountTree.sideloadingWarning");
-      this.iconPath = {
-        light: path.join(
-          ext.context.extensionPath,
-          "media",
-          "treeview",
-          "account",
-          "sideloadingError-light.svg"
-        ),
-        dark: path.join(
-          ext.context.extensionPath,
-          "media",
-          "treeview",
-          "account",
-          "sideloadingError-dark.svg"
-        ),
-      };
+      this.iconPath = errorIcon;
       this.tooltip = localize("teamstoolkit.accountTree.sideloadingWarningTooltip");
       this.command = {
         title: this.label,

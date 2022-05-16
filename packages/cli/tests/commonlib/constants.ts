@@ -33,6 +33,7 @@ export const fileEncoding = "UTF8";
 
 export enum Capability {
   Tab = "tab",
+  SSOTab = "sso-tab",
   Bot = "bot",
   MessageExtension = "message-extension",
   M365SsoLaunchPage = "sso-launch-page",
@@ -41,6 +42,7 @@ export enum Capability {
   TabSso = "TabSSO",
   BotSso = "BotSSO",
   TabNonSso = "tab-non-sso",
+  Notification = "notification",
 }
 
 export enum Resource {

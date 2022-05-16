@@ -77,7 +77,10 @@ export class TreeViewCommand extends vscode.TreeItem {
   private setImagetoIcon() {
     if (this.image !== undefined) {
       if (!this.image.custom) {
-        this.iconPath = new vscode.ThemeIcon(this.image.name);
+        this.iconPath = new vscode.ThemeIcon(
+          this.image.name,
+          new vscode.ThemeColor("icon.foreground")
+        );
       } else {
         this.iconPath = {
           light: path.join(

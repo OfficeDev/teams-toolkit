@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import * as process from "process";
 import { FeatureFlagName } from "./constants";
 
 // Determine whether feature flag is enabled based on environment variable setting
@@ -17,7 +16,7 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
  * Update all preview feature flags.
  */
 export function initializePreviewFeatureFlags(): void {
-  if (isFeatureFlagEnabled(FeatureFlagName.Preview, false)) {
+  if (isPreviewFeaturesEnabled()) {
     process.env[FeatureFlagName.BotNotification] = "true";
     process.env[FeatureFlagName.M365App] = "true";
     process.env[FeatureFlagName.ConfigUnify] = "true";
@@ -32,7 +31,7 @@ export function isBotNotificationEnabled(): boolean {
 }
 
 export function isPreviewFeaturesEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.Preview, false);
+  return true;
 }
 
 export function isCLIDotNetEnabled(): boolean {

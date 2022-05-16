@@ -1,5 +1,6 @@
 /**
- * Adaptive card data model bound to the card template.
+ * Adaptive Card data model. Properties can be referenced in an adaptive card via the `${var}`
+ * Adaptive Card syntax.
  */
 export interface CardData {
   title: string;

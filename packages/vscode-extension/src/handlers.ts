@@ -137,6 +137,7 @@ import { CommandsWebviewProvider } from "./treeview/webViewProvider/commandsWebv
 import {
   anonymizeFilePaths,
   getM365TenantFromEnv,
+  getProjectId,
   getProvisionSucceedFromEnv,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
@@ -164,6 +165,8 @@ export async function activate(): Promise<Result<Void, FxError>> {
     const workspacePath = getWorkspacePath();
     const validProject = isValidProject(workspacePath);
     if (validProject) {
+      const projectId = (await getProjectId()) || "unknown";
+      ExtTelemetry.addSharedProperty(TelemetryProperty.ProjectId, projectId);
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTeamsApp, {});
     }
 
@@ -250,6 +253,8 @@ export async function activate(): Promise<Result<Void, FxError>> {
     await postUpgrade();
     ExtTelemetry.isFromSample = await getIsFromSample();
     ExtTelemetry.settingsVersion = await getSettingsVersion();
+    ExtTelemetry.isM365 = await getIsM365();
+    await ExtTelemetry.sendCachedTelemetryEventsAsync();
 
     if (workspacePath) {
       // refresh env tree when env config files added or deleted.
@@ -296,6 +301,19 @@ async function getIsFromSample() {
     await core.getProjectConfig(input);
 
     return core.isFromSample;
+  }
+  return undefined;
+}
+
+async function getIsM365(): Promise<boolean | undefined> {
+  if (core) {
+    const input = getSystemInputs();
+    input.ignoreEnvInfo = true;
+    const res = await core.getProjectConfig(input);
+
+    if (res.isOk()) {
+      return res?.value?.settings?.isM365;
+    }
   }
   return undefined;
 }
@@ -707,13 +725,13 @@ export async function addFeatureHandler(args?: any[]): Promise<Result<null, FxEr
   const result = await runUserTask(func, TelemetryEvent.AddFeature, true);
   if (result.isOk()) {
     await globalStateUpdate("automaticNpmInstall", true);
-    automaticNpmInstallHandler(excludeFrontend, excludeBackend, excludeBot);
+    await automaticNpmInstallHandler(excludeFrontend, excludeBackend, excludeBot);
     await envTreeProviderInstance.reloadEnvironments();
 
     if (
       workspace.workspaceFolders &&
       workspace.workspaceFolders.length > 0 &&
-      result.value.func == AddSsoParameters.AddSso
+      result.value?.func == AddSsoParameters.AddSso
     ) {
       const capabilities = result.value.capabilities;
 
@@ -729,7 +747,7 @@ export async function addFeatureHandler(args?: any[]): Promise<Result<null, FxEr
           await commands.executeCommand("markdown.preview.toggleLock");
         });
       }
-    } else if (result.value.func === UserTaskFunctionName.ConnectExistingApi) {
+    } else if (result.value?.func === UserTaskFunctionName.ConnectExistingApi) {
       const files: string[] = result.value.generatedFiles;
       for (const generatedFile of files) {
         workspace.openTextDocument(generatedFile).then((document) => {
@@ -1180,7 +1198,7 @@ async function processResult(
     createProperty[TelemetryProperty.NewProjectId] = inputs?.projectId;
   }
   if (eventName === TelemetryEvent.CreateProject && inputs?.isM365) {
-    createProperty[TelemetryProperty.IsM365] = "true";
+    createProperty[TelemetryProperty.IsCreatingM365] = "true";
   }
 
   if (eventName === TelemetryEvent.Deploy && inputs && inputs["include-aad-manifest"] === "yes") {
@@ -1562,10 +1580,10 @@ export async function openHelpFeedbackLinkHandler(args: any[]): Promise<boolean>
   return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-helpnfeedback"));
 }
 export async function openWelcomeHandler(args?: any[]): Promise<Result<unknown, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.QuickStart, getTriggerFromProperty(args));
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GetStarted, getTriggerFromProperty(args));
   const data = await vscode.commands.executeCommand(
     "workbench.action.openWalkthrough",
-    "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitQuickStart"
+    "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStarted"
   );
   return Promise.resolve(ok(data));
 }
@@ -1633,10 +1651,10 @@ export async function openReadMeHandler(args: any[]) {
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
     let targetFolder: string | undefined;
-    if (isSPFxProject(workspacePath)) {
-      targetFolder = workspacePath;
-    } else if (await getIsFromSample()) {
+    if (await getIsFromSample()) {
       openSampleReadmeHandler(args);
+    } else if (isSPFxProject(workspacePath)) {
+      targetFolder = `${workspacePath}/SPFx`;
     } else {
       const tabFolder = await commonUtils.getProjectRoot(workspacePath, FolderName.Frontend);
       const botFolder = await commonUtils.getProjectRoot(workspacePath, FolderName.Bot);

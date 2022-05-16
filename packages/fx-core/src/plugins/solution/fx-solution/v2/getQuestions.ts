@@ -69,6 +69,7 @@ import { isExistingTabApp, isVSProject } from "../../../../common/projectSetting
 import {
   canAddApiConnection,
   canAddSso,
+  canAddCICDWorkflows,
   isAadManifestEnabled,
   isDeployManifestEnabled,
 } from "../../../../common/tools";
@@ -603,7 +604,7 @@ export async function getQuestionsForAddCapability(
     // For CLI_HELP
     addCapQuestion.staticOptions = [
       ...(isBotNotificationEnabled() ? [TabNewUIOptionItem] : [TabOptionItem]),
-      ...(isBotNotificationEnabled() ? [] : [BotOptionItem]),
+      ...[BotOptionItem],
       ...(isBotNotificationEnabled() ? [NotificationOptionItem, CommandAndResponseOptionItem] : []),
       ...(isBotNotificationEnabled() ? [MessageExtensionNewUIItem] : [MessageExtensionItem]),
       ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
@@ -680,6 +681,7 @@ export async function getQuestionsForAddCapability(
     if (isBotNotificationEnabled()) {
       options.push(CommandAndResponseOptionItem);
       options.push(NotificationOptionItem);
+      options.push(BotOptionItem);
     } else {
       options.push(BotOptionItem);
     }
@@ -935,9 +937,8 @@ export async function getQuestionsForAddFeature(
   if (isApiConnectionAddable) {
     options.push(ApiConnectionOptionItem);
   }
-  const isCicdAddable = !(
-    inputs.platform !== Platform.CLI_HELP && isExistingTabApp(ctx.projectSetting)
-  );
+
+  const isCicdAddable = await canAddCICDWorkflows(inputs, ctx);
   if (isCicdAddable) {
     options.push(CicdOptionItem);
   }

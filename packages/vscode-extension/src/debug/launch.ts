@@ -10,6 +10,7 @@ import { VS_CODE_UI } from "../extension";
 import * as constants from "./constants";
 import { generateAccountHint } from "./teamsfxDebugProvider";
 import { TempFolderManager } from "./tempFolderManager";
+import { delay } from "../utils/commonUtils";
 
 export async function openHubWebClient(
   includeFrontend: boolean,
@@ -43,24 +44,52 @@ export async function openUrlWithNewProfile(url: string): Promise<boolean> {
     if (profileFolderPath === undefined) {
       return false;
     }
-    await open(url, {
-      app: [
-        {
-          name: open.apps.chrome,
-          arguments: [`--user-data-dir=${profileFolderPath}`],
-        },
-        {
-          name: open.apps.edge,
-          arguments: [`--user-data-dir=${profileFolderPath}`],
-        },
-        {
-          name: open.apps.firefox,
-          arguments: ["-profile", profileFolderPath],
-        },
-      ],
-    });
 
-    return true;
+    const tryToOpen = async (
+      url: string,
+      app: { name: string | readonly string[]; arguments: string[] }
+    ) => {
+      return new Promise<boolean>(async (resolve) => {
+        try {
+          const cp = await open(url, {
+            app,
+          });
+          cp.once("close", (code) => {
+            resolve(code === 0);
+          });
+          // NOTE: if app is not existing in the system, open will not throw but cp will exit immediately.
+          // So we may assume that if cp does not exit after 3s, the app is launched successfully.
+          await delay(3000);
+          if (cp.exitCode !== null && cp.exitCode !== 0) {
+            resolve(false);
+          }
+          resolve(true);
+        } catch {
+          resolve(false);
+        }
+      });
+    };
+
+    const apps = [
+      {
+        name: open.apps.chrome,
+        arguments: [`--user-data-dir=${profileFolderPath}`],
+      },
+      {
+        name: open.apps.edge,
+        arguments: [`--user-data-dir=${profileFolderPath}`],
+      },
+      {
+        name: open.apps.firefox,
+        arguments: ["-profile", profileFolderPath],
+      },
+    ];
+    for (const app of apps) {
+      if (await tryToOpen(url, app)) {
+        return true;
+      }
+    }
+    return false;
   } catch {
     // ignore any error
     return false;

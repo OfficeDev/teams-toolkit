@@ -29,6 +29,7 @@ import {
   NodeNotSupportedError,
   npmInstallCommand,
   ProjectSettingsHelper,
+  validationSettingsHelpLink,
 } from "@microsoft/teamsfx-core";
 
 import * as os from "os";
@@ -457,7 +458,7 @@ async function checkNode(
         ? doctorConstant.NodeSuccess.split("@Version").join(nodeStatus.details.installVersion)
         : nodeStatus.name,
       failureMsg: nodeStatus.name,
-      error: handleDepsCheckerError(nodeStatus.error, nodeStatus),
+      error: handleDepsCheckerError(nodeStatus.error, nodeStatus, enabledCheckers),
     };
   } catch (error: any) {
     return {
@@ -575,13 +576,17 @@ async function resolveLocalCertificate(
   };
 }
 
-function handleDepsCheckerError(error: any, dep?: DependencyStatus): FxError {
+function handleDepsCheckerError(
+  error: any,
+  dep?: DependencyStatus,
+  enabledCheckers?: (Checker | DepsType)[]
+): FxError {
   if (dep) {
     if (error instanceof NodeNotFoundError) {
       handleNodeNotFoundError(error);
     }
     if (error instanceof NodeNotSupportedError) {
-      handleNodeNotSupportedError(error, dep);
+      handleNodeNotSupportedError(error, dep, enabledCheckers);
     }
   }
   return error instanceof DepsCheckerError
@@ -589,7 +594,8 @@ function handleDepsCheckerError(error: any, dep?: DependencyStatus): FxError {
         error,
         source: ExtensionSource,
         name: ExtensionErrors.PrerequisitesValidationError,
-        helpLink: error.helpLink,
+        helpLink:
+          error instanceof NodeNotSupportedError ? validationSettingsHelpLink : error.helpLink,
       })
     : assembleError(error);
 }
@@ -598,12 +604,25 @@ function handleNodeNotFoundError(error: NodeNotFoundError) {
   error.message = `${doctorConstant.NodeNotFound}${os.EOL}${doctorConstant.WhiteSpace}${doctorConstant.RestartVSCode}`;
 }
 
-function handleNodeNotSupportedError(error: any, dep: DependencyStatus) {
+function handleNodeNotSupportedError(
+  error: NodeNotSupportedError,
+  dep: DependencyStatus,
+  enabledCheckers?: (Checker | DepsType)[]
+) {
+  const node12Version = "v12";
   const supportedVersions = dep.details.supportedVersions.map((v) => "v" + v).join(" ,");
   error.message = `${doctorConstant.NodeNotSupported.split("@CurrentVersion")
     .join(dep.details.installVersion)
     .split("@SupportedVersions")
     .join(supportedVersions)}${os.EOL}${doctorConstant.WhiteSpace}${doctorConstant.RestartVSCode}`;
+
+  // a workaround for node 12 user (node12 not in our supported version list for tab and function)
+  if (dep.details.installVersion?.includes(node12Version)) {
+    const bypass = enabledCheckers?.includes(DepsType.FuncCoreTools)
+      ? doctorConstant.BypassNode12AndFunction
+      : doctorConstant.BypassNode12;
+    error.message = `${error.message}${os.EOL}${doctorConstant.WhiteSpace}${bypass}`;
+  }
 }
 
 async function checkNpmInstall(

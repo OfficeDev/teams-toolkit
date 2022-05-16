@@ -85,7 +85,7 @@ export default class New extends YargsCommand {
       const result = await core.createProject(inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error, {
-          [TelemetryProperty.IsM365]: inputs.isM365 + "",
+          [TelemetryProperty.IsCreatingM365]: inputs.isM365 + "",
         });
         return err(result.error);
       }
@@ -96,7 +96,7 @@ export default class New extends YargsCommand {
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProject, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
       [TelemetryProperty.NewProjectId]: inputs.projectId,
-      [TelemetryProperty.IsM365]: inputs.isM365 + "",
+      [TelemetryProperty.IsCreatingM365]: inputs.isM365 + "",
     });
     return ok(null);
   }

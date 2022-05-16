@@ -44,6 +44,8 @@ import {
   PluginNames,
   isValidProject,
   isConfigUnifyEnabled,
+  ProjectSettingsHelper,
+  LocalEnvManager,
 } from "@microsoft/teamsfx-core";
 import { WorkspaceNotSupported } from "./cmds/preview/errors";
 import CLIUIInstance from "./userInteraction";
@@ -392,6 +394,24 @@ export function getSettingsVersion(rootFolder: string | undefined): string | und
       const result = readSettingsFileSync(rootFolder);
       if (result.isOk()) {
         return result.value.version;
+      }
+    }
+  } catch (e) {
+    // ignore errors for telemetry
+  }
+  return undefined;
+}
+
+// Only used for telemetry
+export function getIsM365(rootFolder: string | undefined): string | undefined {
+  if (!rootFolder) {
+    return undefined;
+  }
+  try {
+    if (isWorkspaceSupported(rootFolder)) {
+      const result = readSettingsFileSync(rootFolder);
+      if (result.isOk() && result.value.isM365 !== undefined) {
+        return `${result.value.isM365}`;
       }
     }
   } catch (e) {

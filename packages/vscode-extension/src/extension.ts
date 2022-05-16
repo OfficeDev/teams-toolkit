@@ -51,7 +51,7 @@ import * as handlers from "./handlers";
 import { ManifestTemplateHoverProvider } from "./hoverProvider";
 import { VsCodeUI } from "./qm/vsc_ui";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
-import { TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
+import { TelemetryEvent, TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 import {
   canUpgradeToArmAndMultiEnv,
   delay,
@@ -694,6 +694,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 // this method is called when your extension is deactivated
 export async function deactivate() {
+  await ExtTelemetry.cacheTelemetryEventAsync(TelemetryEvent.Deactivate);
   await ExtTelemetry.dispose();
   handlers.cmdHdlDisposeTreeView();
   disableRunIcon();

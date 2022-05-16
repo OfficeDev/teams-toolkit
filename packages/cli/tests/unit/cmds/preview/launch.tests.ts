@@ -17,6 +17,9 @@ import {
   TelemetrySuccess,
 } from "../../../../src/telemetry/cliTelemetryEvents";
 import { TempFolderManager } from "../../../../src/cmds/preview/tempFolderManager";
+import EventEmitter from "events";
+import open from "open";
+import * as utils from "../../../../src/utils";
 
 describe("launch", () => {
   const sandbox = sinon.createSandbox();
@@ -114,12 +117,69 @@ describe("launch", () => {
   });
 
   describe("openUrlWithNewProfile", () => {
+    beforeEach(async () => {
+      sandbox.stub(utils, "sleep").callsFake(async () => {});
+    });
+
     it("happy path", async () => {
       sandbox.stub(TempFolderManager.prototype, "getTempFolderPath").returns(Promise.resolve(""));
+      let called = 0;
       const launch = proxyquire("../../../../src/cmds/preview/launch", {
-        open: async () => {},
+        open: async () => {
+          called += 1;
+          return new MockChildProcess(null, false);
+        },
       });
       expect(await launch.openUrlWithNewProfile("")).to.deep.equals(true);
+      expect(called).to.deep.equal(1);
+    });
+
+    it("chrome not existing", async () => {
+      sandbox.stub(TempFolderManager.prototype, "getTempFolderPath").returns(Promise.resolve(""));
+      let called = 0;
+      const launch = proxyquire("../../../../src/cmds/preview/launch", {
+        open: async (target: string, options: open.Options) => {
+          called += 1;
+          if ((options.app as open.App).name === open.apps.chrome) {
+            return new MockChildProcess(1, true);
+          }
+          return new MockChildProcess(null, false);
+        },
+      });
+      expect(await launch.openUrlWithNewProfile("")).to.deep.equals(true);
+      expect(called).to.deep.equal(2);
+    });
+
+    it("chrome, edge not existing", async () => {
+      sandbox.stub(TempFolderManager.prototype, "getTempFolderPath").returns(Promise.resolve(""));
+      let called = 0;
+      const launch = proxyquire("../../../../src/cmds/preview/launch", {
+        open: async (target: string, options: open.Options) => {
+          called += 1;
+          if (
+            (options.app as open.App).name === open.apps.chrome ||
+            (options.app as open.App).name === open.apps.edge
+          ) {
+            return new MockChildProcess(1, true);
+          }
+          return new MockChildProcess(null, false);
+        },
+      });
+      expect(await launch.openUrlWithNewProfile("")).to.deep.equals(true);
+      expect(called).to.deep.equal(3);
+    });
+
+    it("chrome, edge, firefox not existing", async () => {
+      sandbox.stub(TempFolderManager.prototype, "getTempFolderPath").returns(Promise.resolve(""));
+      let called = 0;
+      const launch = proxyquire("../../../../src/cmds/preview/launch", {
+        open: async () => {
+          called += 1;
+          return new MockChildProcess(1, true);
+        },
+      });
+      expect(await launch.openUrlWithNewProfile("")).to.deep.equals(false);
+      expect(called).to.deep.equal(3);
     });
 
     it("getTempFolderPath failed", async () => {
@@ -153,5 +213,24 @@ class MockProgressHandler implements IProgressHandler {
   }
   end(success: boolean): Promise<void> {
     return Promise.resolve();
+  }
+}
+
+class MockChildProcess {
+  exitCode: number | null;
+  closeImmediately: boolean;
+  event: EventEmitter;
+
+  constructor(exitCode: number | null, closeImmediately: boolean) {
+    this.exitCode = exitCode;
+    this.closeImmediately = closeImmediately;
+    this.event = new EventEmitter();
+  }
+
+  once(event: "close", listener: (code: number | null) => void) {
+    this.event.once(event, listener);
+    if (this.closeImmediately) {
+      this.event.emit(event, this.exitCode);
+    }
   }
 }

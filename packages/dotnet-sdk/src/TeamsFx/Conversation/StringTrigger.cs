@@ -14,9 +14,6 @@ namespace Microsoft.TeamsFx.Conversation
         /// </summary>
         public string Pattern { get; set; }
 
-        /// <inheritdoc/>
-        public CommandTriggerType TriggerType => CommandTriggerType.String;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="StringTrigger"/> class.
         /// </summary>

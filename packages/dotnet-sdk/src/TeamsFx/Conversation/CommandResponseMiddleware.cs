@@ -85,10 +85,8 @@ namespace Microsoft.TeamsFx.Conversation
                 if (triggerPattern.ShouldTrigger(input))
                 {
                     shouldTrigger = true;
-                    if (triggerPattern.TriggerType == CommandTriggerType.RegExp)
+                    if (triggerPattern is RegExpTrigger regexTrigger)
                     {
-
-                        var regexTrigger = triggerPattern as RegExpTrigger;
                         matches = regexTrigger.Pattern.Matches(input);
                     }
 

@@ -16,9 +16,6 @@ namespace Microsoft.TeamsFx.Conversation
         /// </summary>
         public Regex Pattern { get; set; }
 
-        /// <inheritdoc/>
-        public CommandTriggerType TriggerType => CommandTriggerType.RegExp;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="RegExpTrigger"/> class.
         /// </summary>

@@ -9,11 +9,6 @@ namespace Microsoft.TeamsFx.Conversation
     public interface ITriggerPattern
     {
         /// <summary>
-        /// Gets the trigger type.
-        /// </summary>
-        public CommandTriggerType TriggerType { get; }
-
-        /// <summary>
         /// Check whether the trigger pattern is matched.
         /// </summary>
         /// <param name="input">The input string.</param>

@@ -5,12 +5,7 @@ import { Inputs, AzureSolutionSettings } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import { ServiceType } from "../../../../common/azure-hosting/interfaces";
 import { AzureSolutionQuestionNames, BotScenario } from "../../../solution";
-import {
-  QuestionNames,
-  TemplateProjectsConstants,
-  TemplateProjectsScenarios,
-  TriggerTemplateScenarioMappings,
-} from "../constants";
+import { QuestionNames, TemplateProjectsConstants, TemplateProjectsScenarios } from "../constants";
 import {
   AppServiceOptionItem,
   HostTypeTriggerOptionItem,
@@ -18,7 +13,7 @@ import {
 } from "../question";
 import { HostType, HostTypes, PluginBot } from "../resources/strings";
 import { CodeTemplateInfo } from "./interface/codeTemplateInfo";
-import { langMap, serviceMap } from "./mapping";
+import { langMap, serviceMap, triggerScenarioMap } from "./mapping";
 
 export function getTemplateInfos(ctx: Context, inputs: Inputs): CodeTemplateInfo[] {
   const lang = resolveProgrammingLanguage(ctx);
@@ -56,9 +51,7 @@ export function decideTemplateScenarios(ctx: Context, inputs: Inputs): string[] 
             templateScenarios.push(
               TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME
             );
-            options.map((option) =>
-              templateScenarios.push(TriggerTemplateScenarioMappings[option.trigger!])
-            );
+            options.map((option) => templateScenarios.push(triggerScenarioMap[option.trigger!]));
           }
           break;
       }

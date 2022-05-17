@@ -323,6 +323,8 @@ export interface CloudResource {
     readonly outputs: ResourceOutputs;
     // (undocumented)
     provision?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Action | undefined, FxError>>;
+    // (undocumented)
+    readonly secretKeys?: string[];
 }
 
 // @public (undocumented)

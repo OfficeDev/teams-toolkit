@@ -1048,7 +1048,7 @@
           {
             "id": "teamsToolkitExploreMore",
             "title": "What's next?",
-            "description": "Here are some recommendations to continue your journey with Teams Toolkit.\n • Explore [Tutorials](command:fx-extension.selectTutorials?%5B%22WalkThrough%22%5D) and get more practical guidances\n • Open [Readme.md](command:fx-extension.openReadMe?%5B%22WalkThrough%22%2Ctrue%5D) to understand how to develop this app\n • Read our [Documentation](command:fx-extension.openDocument?%5B%22WalkThrough%22%5D)",
+            "description": "Here are some recommendations to continue your journey with Teams Toolkit.\n • Explore [Tutorials](command:fx-extension.selectTutorials?%5B%22WalkThrough%22%5D) and get more practical guidances\n • Open [Readme.md](command:fx-extension.openReadMe?%5B%22WalkThrough%22%5D) to understand how to develop this app\n • Read our [Documentation](command:fx-extension.openDocument?%5B%22WalkThrough%22%5D)",
             "media": {
               "svg": "media/walkthrough/whatsnext.svg",
               "altText": "Tutorials, README.md and Documentation"

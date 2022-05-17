@@ -12,7 +12,7 @@ export const runtimeMap: { [key: string]: string } = {
 
 export const serviceMap: { [key: string]: ServiceType } = {
   [HostTypes.APP_SERVICE]: ServiceType.AppService,
-  [HostTypes.AZURE_FUNCTIONS]: ServiceType.Functions,
+  [HostTypes.AZURE_FUNCTIONS]: ServiceType.Function,
 };
 
 export const langMap: { [key: string]: string } = {

@@ -109,6 +109,8 @@ async function migrate(ctx: CoreHookContext): Promise<boolean> {
 
     await fs.writeJSON(projectSettingsPath, projectSettingsJson, { spaces: 4, EOL: os.EOL });
 
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectAadManifestMigrationAddAADTemplate);
+
     // backup
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectAadManifestMigrationBackupStart);
 
@@ -130,11 +132,11 @@ async function migrate(ctx: CoreHookContext): Promise<boolean> {
     throw e;
   }
 
-  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectAadManifestMigrationAddAADTemplate);
-
   postMigration(inputs);
 
   generateUpgradeReport(path.join(inputs.projectPath as string, backupFolder));
+
+  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectAadManifestMigration);
 
   return true;
 }

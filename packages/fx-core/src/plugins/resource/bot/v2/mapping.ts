@@ -3,13 +3,19 @@
 
 import { ServiceType } from "../../../../common/azure-hosting/interfaces";
 
-export const languageMapping: { [key: string]: string } = {
+export const runtimeMap: { [key: string]: string } = {
   js: "node",
   ts: "node",
   csharp: "dotnet",
 };
 
-export const hostServiceTypeMapping: { [key: string]: ServiceType } = {
+export const serviceMap: { [key: string]: ServiceType } = {
   "app-service": ServiceType.AppService,
-  "azure-functions": ServiceType.Function,
+  "azure-functions": ServiceType.Functions,
+};
+
+export const langMap: { [key: string]: string } = {
+  javascript: "js",
+  typescript: "ts",
+  csharp: "csharp",
 };

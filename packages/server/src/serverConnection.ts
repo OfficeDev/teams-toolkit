@@ -2,10 +2,8 @@
 // Licensed under the MIT license.
 
 import { CancellationToken, MessageConnection } from "vscode-jsonrpc";
-
-import { FxError, Inputs, Void, Tools, Result, Func } from "@microsoft/teamsfx-api";
-import { FxCore, Correlator } from "@microsoft/teamsfx-core";
-
+import { FxError, Inputs, Void, Tools, Result, Func, ok } from "@microsoft/teamsfx-api";
+import { FxCore, Correlator, getSideloadingStatus } from "@microsoft/teamsfx-core";
 import { IServerConnection, Namespaces } from "./apis";
 import LogProvider from "./providers/logger";
 import TokenProvider from "./providers/tokenProvider";
@@ -47,6 +45,11 @@ export default class ServerConnection implements IServerConnection {
       /// fn.name = `bound ${functionName}`
       connection.onRequest(`${ServerConnection.namespace}/${fn.name.split(" ")[1]}`, fn);
     });
+
+    connection.onRequest(
+      `${ServerConnection.namespace}/getSideloadingStatusRequest`,
+      this.getSideloadingStatusRequest.bind(this)
+    );
   }
 
   public listen() {
@@ -184,5 +187,12 @@ export default class ServerConnection implements IServerConnection {
       previousSelectedIds
     );
     return standardizeResult(res);
+  }
+
+  public async getSideloadingStatusRequest(token: {
+    token: string;
+  }): Promise<Result<string, FxError>> {
+    const res = await getSideloadingStatus(token.token);
+    return ok(String(res));
   }
 }

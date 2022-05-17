@@ -63,10 +63,10 @@ export class TeamsBotV2Impl {
     const hostType = this.resolveHostType(inputs);
     utils.checkAndSavePluginSettingV2(ctx, PluginBot.HOST_TYPE, hostType);
 
-    const templates = this.getTemplates(ctx, inputs);
+    const templateInfos = this.getTemplateInfos(ctx, inputs);
     await Promise.all(
-      templates.map(async (template) => {
-        await scaffold(template, workingPath);
+      templateInfos.map(async (templateInfo) => {
+        await scaffold(templateInfo, workingPath);
       })
     );
 
@@ -175,7 +175,7 @@ export class TeamsBotV2Impl {
     return ok(Void);
   }
 
-  private getTemplates(ctx: Context, inputs: Inputs): CodeTemplateInfo[] {
+  private getTemplateInfos(ctx: Context, inputs: Inputs): CodeTemplateInfo[] {
     const lang = this.resolveProgrammingLanguage(ctx);
     const templateInfos: CodeTemplateInfo[] = [];
     const botGroupScenarios = new Set<string>();

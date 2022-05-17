@@ -6,12 +6,11 @@ import { Context } from "@microsoft/teamsfx-api/build/v2";
 import * as fs from "fs-extra";
 import path from "path";
 import { generateBicepFromFile } from "..";
-import { ArmTemplateResult } from "../armInterface";
 import { Bicep } from "../constants";
 import { getTemplatesFolder } from "../../folder";
 import { BicepContext } from "./interfaces";
 
-export abstract class AzureHosting {
+export abstract class AzureService {
   abstract hostType: string;
   abstract configurable: boolean;
 
@@ -44,7 +43,7 @@ export abstract class AzureHosting {
           path.join(bicepTemplateDir, filename),
           bicepContext
         );
-        return AzureHosting.replacePluginId(module, pluginId);
+        return AzureService.replacePluginId(module, pluginId);
       })
     );
 
@@ -77,8 +76,27 @@ export abstract class AzureHosting {
   }
 
   async updateBicep(bicepContext: BicepContext, pluginId: string): Promise<ResourceTemplate> {
-    return {} as ArmTemplateResult;
+    // * The order matters.
+    // * 0: Configuration Orchestration, 1: Configuration Module
+    if (!this.configurable) {
+      return {} as ResourceTemplate;
+    }
+    const bicepFile = `${this.hostType}Configuration.template.bicep`;
+
+    const bicepTemplateDir = this.getBicepTemplateFolder();
+    let module = await generateBicepFromFile(path.join(bicepTemplateDir, bicepFile), bicepContext);
+    module = AzureService.replacePluginId(module, pluginId);
+
+    return {
+      Configuration: this.configurable
+        ? {
+            Modules: { [this.hostType]: module },
+          }
+        : undefined,
+      Reference: this.reference,
+    } as ResourceTemplate;
   }
+
   async configure(ctx: Context): Promise<Void> {
     return Void;
   }

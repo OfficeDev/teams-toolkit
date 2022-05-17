@@ -1,20 +1,20 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureFunctionHosting } from "./azureFunctionHosting";
-import { AzureHosting } from "./azureHosting";
+import { AzureFunctionsHosting } from "./azureFunctionsHosting";
+import { AzureService } from "./azureService";
 import { BotServiceHosting } from "./botServiceHosting";
 import { ServiceType } from "./interfaces";
 import { AzureAppServiceHosting } from "./azureAppServiceHosting";
 
-const HostingMap: { [key: string]: () => AzureHosting } = {
-  [ServiceType.Functions]: () => new AzureFunctionHosting(),
+const HostingMap: { [key: string]: () => AzureService } = {
+  [ServiceType.Functions]: () => new AzureFunctionsHosting(),
   [ServiceType.BotService]: () => new BotServiceHosting(),
   [ServiceType.AppService]: () => new AzureAppServiceHosting(),
 };
 
-export class AzureHostingFactory {
-  static createHosting(serviceType: ServiceType): AzureHosting {
+export class AzureServiceFactory {
+  static createHosting(serviceType: ServiceType): AzureService {
     if (HostingMap[serviceType] !== undefined) {
       return HostingMap[serviceType]();
     }

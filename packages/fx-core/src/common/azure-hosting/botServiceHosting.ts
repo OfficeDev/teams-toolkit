@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureHosting } from "./azureHosting";
 import { ServiceType } from "./interfaces";
+import { AzureService } from "./azureService";
 
-export class BotServiceHosting extends AzureHosting {
+export class BotServiceHosting extends AzureService {
   configurable = false;
   hostType = ServiceType.BotService;
 }

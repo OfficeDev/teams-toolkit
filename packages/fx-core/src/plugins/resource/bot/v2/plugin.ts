@@ -13,11 +13,13 @@ import {
 import { scaffold } from "./scaffold";
 import * as utils from "../utils/common";
 import path from "path";
-import { AzureHostingFactory } from "../../../../common/azure-hosting/hostingFactory";
 import { Commands, CommonStrings, ConfigNames, PluginBot } from "../resources/strings";
 import { checkAndThrowIfMissing, checkPrecondition, CommandExecutionError } from "../errors";
 import { BicepConfigs, ServiceType } from "../../../../common/azure-hosting/interfaces";
 import { getSiteNameFromResourceId } from "../../../../common";
+import { AzureServiceFactory } from "../../../../common/azure-hosting/hostingFactory";
+import { isBotNotificationEnabled } from "../../../../common";
+import { AzureSolutionQuestionNames } from "../../../solution/fx-solution/question";
 import {
   DEFAULT_DOTNET_FRAMEWORK,
   DeployConfigs,
@@ -77,7 +79,7 @@ export class TeamsBotV2Impl {
     const serviceTypes = [resolveServiceType(ctx), ServiceType.BotService];
     const templates = await Promise.all(
       serviceTypes.map((serviceType) => {
-        const hosting = AzureHostingFactory.createHosting(serviceType);
+        const hosting = AzureServiceFactory.createHosting(serviceType);
         return hosting.generateBicep(bicepContext, ResourcePlugins.Bot);
       })
     );
@@ -102,7 +104,7 @@ export class TeamsBotV2Impl {
     const serviceTypes = [resolveServiceType(ctx), ServiceType.BotService];
     const templates = await Promise.all(
       serviceTypes.map((serviceType) => {
-        const hosting = AzureHostingFactory.createHosting(serviceType);
+        const hosting = AzureServiceFactory.createHosting(serviceType);
         return hosting.updateBicep(bicepContext, ResourcePlugins.Bot);
       })
     );
@@ -176,7 +178,7 @@ export class TeamsBotV2Impl {
     );
 
     // upload
-    const host = AzureHostingFactory.createHosting(hostType);
+    const host = AzureServiceFactory.createHosting(hostType);
     await progressBarHandler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_DEPLOY);
     await host.deploy(inputs, tokenProvider, zipBuffer, siteName);
     await TeamsBotV2Impl.saveDeploymentInfo(

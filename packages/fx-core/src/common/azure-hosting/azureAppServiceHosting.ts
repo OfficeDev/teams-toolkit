@@ -1,18 +1,14 @@
-import { AzureHosting } from "./azureHosting";
-import { BicepContext, ServiceType } from "./interfaces";
-import { Inputs, ResourceTemplate, TokenProvider, Void } from "@microsoft/teamsfx-api";
-import { generateBicepFromFile } from "../tools";
-import * as path from "path";
+import { ServiceType } from "./interfaces";
+import { Inputs, TokenProvider, Void } from "@microsoft/teamsfx-api";
 import { azureWebSiteDeploy } from "./utils";
-import { Bicep } from "../constants";
-import { AppServiceBicepConstant } from "./hostingConstant";
+import { AzureService } from "./azureService";
 
 const resourceId = "provisionOutputs.webAppOutput.value.webAppResourceId";
 const hostName = "provisionOutputs.webAppOutput.value.validDomain";
 const webAppEndpoint = "provisionOutputs.webAppOutput.value.siteEndpoint";
 const endpointAsParam = "webAppProvision.outputs.webAppEndpoint";
 
-export class AzureAppServiceHosting extends AzureHosting {
+export class AzureAppServiceHosting extends AzureService {
   configurable = true;
   hostType = ServiceType.AppService;
   reference = {
@@ -21,25 +17,6 @@ export class AzureAppServiceHosting extends AzureHosting {
     webAppEndpoint: webAppEndpoint,
     endpointAsParam: endpointAsParam,
   };
-
-  async updateBicep(bicepContext: BicepContext, pluginId: string): Promise<ResourceTemplate> {
-    const bicepTemplateDir = this.getBicepTemplateFolder();
-    const configModule = await generateBicepFromFile(
-      path.join(bicepTemplateDir, Bicep.ConfigFileName),
-      bicepContext
-    );
-    const configModuleRes = AzureHosting.replacePluginId(configModule, pluginId);
-    return {
-      Reference: {
-        resourceId: AppServiceBicepConstant.resourceId,
-        hostName: AppServiceBicepConstant.hostName,
-        webAppEndpoint: AppServiceBicepConstant.webAppEndpoint,
-      },
-      Configuration: {
-        Modules: { [this.hostType]: configModuleRes },
-      },
-    };
-  }
 
   async deploy(
     inputs: Inputs,

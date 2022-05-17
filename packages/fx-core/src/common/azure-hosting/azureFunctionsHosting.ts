@@ -1,19 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureHosting } from "./azureHosting";
 import { ServiceType } from "./interfaces";
 import { Inputs, TokenProvider } from "@microsoft/teamsfx-api";
 import { Void } from "../../plugins";
 import { azureWebSiteDeploy } from "./utils";
 import { AzureOperations } from "./azureOps";
+import { AzureService } from "./azureService";
 
 const functionResourceId = "provisionOutputs.functionOutput.value.resourceId";
 const functionHostName = "provisionOutputs.functionOutput.value.validDomain";
 const functionEndpoint = "provisionOutputs.functionOutputs.value.functionEndpoint";
 const endpointAsParam = "functionProvision.outputs.functionEndpoint";
 
-export class AzureFunctionHosting extends AzureHosting {
+export class AzureFunctionsHosting extends AzureService {
   configurable = true;
   hostType = ServiceType.Functions;
   reference = {

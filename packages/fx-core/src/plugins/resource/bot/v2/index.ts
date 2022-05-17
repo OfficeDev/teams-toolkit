@@ -67,24 +67,24 @@ export class BotPluginV2 implements ResourcePlugin {
   }
 
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
-    // return catchAndThrow(() => this.impl.scaffoldSourceCode(ctx, inputs));
-    return await scaffoldSourceCodeAdapter(ctx, inputs, this.plugin);
+    return catchAndThrow(() => this.impl.scaffoldSourceCode(ctx, inputs));
+    // return await scaffoldSourceCodeAdapter(ctx, inputs, this.plugin);
   }
 
   async generateResourceTemplate(
     ctx: Context,
     inputs: Inputs
   ): Promise<Result<ResourceTemplate, FxError>> {
-    // return catchAndThrow(() => this.impl.generateResourceTemplate(ctx, inputs));
-    return await generateResourceTemplateAdapter(ctx, inputs, this.plugin);
+    return catchAndThrow(() => this.impl.generateResourceTemplate(ctx, inputs));
+    // return await generateResourceTemplateAdapter(ctx, inputs, this.plugin);
   }
 
   async updateResourceTemplate(
     ctx: Context,
     inputs: Inputs
   ): Promise<Result<v2.ResourceTemplate, FxError>> {
-    // return catchAndThrow(() => this.impl.updateResourceTemplate(ctx, inputs));
-    return await updateResourceTemplateAdapter(ctx, inputs, this.plugin);
+    return catchAndThrow(() => this.impl.updateResourceTemplate(ctx, inputs));
+    // return await updateResourceTemplateAdapter(ctx, inputs, this.plugin);
   }
 
   async provisionResource(

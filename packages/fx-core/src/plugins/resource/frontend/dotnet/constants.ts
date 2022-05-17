@@ -17,8 +17,6 @@ export class RegularExpr {
   static readonly clientId = /\$clientId\$/g;
   static readonly clientSecret = /\$client-secret\$/g;
   static readonly oauthAuthority = /\$oauthAuthority\$/g;
-  static readonly botId = /\$botId\$/g;
-  static readonly botPassword = /\$bot-password\$/g;
 }
 
 export class DotnetPluginInfo {
@@ -54,6 +52,12 @@ export class DotnetCommands {
     `dotnet publish --configuration Release --runtime ${runtime} --self-contained`;
 }
 
+export class ScaffoldInfo {
+  static readonly language = "csharp";
+  static readonly defaultScenario = "default";
+  static readonly group = "tab";
+}
+
 export class DependentPluginInfo {
   static readonly solutionPluginName = "solution";
   static readonly subscriptionId = "subscriptionId";
@@ -61,8 +65,6 @@ export class DependentPluginInfo {
 
   public static readonly aadClientId: string = "clientId";
   public static readonly aadClientSecret: string = "clientSecret";
-  public static readonly botId: string = "botId";
-  public static readonly botPassword: string = "botPassword";
   public static readonly appTenantId: string = "tenantId";
 }
 
@@ -73,11 +75,6 @@ export class DotnetConfigInfo {
   static readonly webAppDomain = "domain";
   static readonly projectFilePath = "projectFilePath";
   static readonly indexPath = "indexPath";
-}
-
-export class Capability {
-  static readonly tab = "Tab";
-  static readonly bot = "Bot";
 }
 
 export class WebappBicepFile {
@@ -105,6 +102,4 @@ export class AppSettingsPlaceholders {
   static readonly clientId = "$clientId$";
   static readonly clientSecret = "$client-secret$";
   static readonly oauthAuthority = "$oauthAuthority$";
-  static readonly botId = "$botId$";
-  static readonly botPassword = "$bot-password$";
 }

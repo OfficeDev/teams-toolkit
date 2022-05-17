@@ -189,10 +189,13 @@ export default class ServerConnection implements IServerConnection {
     return standardizeResult(res);
   }
 
-  public async getSideloadingStatusRequest(token: {
-    token: string;
-  }): Promise<Result<string, FxError>> {
-    const res = await getSideloadingStatus(token.token);
+  public async getSideloadingStatusRequest(
+    accountToken: {
+      token: string;
+    },
+    token: CancellationToken
+  ): Promise<Result<string, FxError>> {
+    const res = await getSideloadingStatus(accountToken.token);
     return ok(String(res));
   }
 }

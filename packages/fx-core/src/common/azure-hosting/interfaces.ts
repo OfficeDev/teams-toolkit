@@ -2,9 +2,9 @@
 // Licensed under the MIT license.
 
 export enum ServiceType {
-  AppService = "app-service",
-  Functions = "functions",
-  BotService = "bot-services",
+  AppService = "appservice",
+  Functions = "function",
+  BotService = "botservice",
 }
 
 export type BicepConfigs = string[];

@@ -11,7 +11,7 @@ const endpointAsParam = "functionProvision.outputs.functionEndpoint";
 
 export class AzureFunctionHosting extends AzureHosting {
   configurable = true;
-  hostType = ServiceType.Function;
+  hostType = ServiceType.Functions;
   reference = {
     resourceId: functionResourceId,
     hostName: functionHostName,

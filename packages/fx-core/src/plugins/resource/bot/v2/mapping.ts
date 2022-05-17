@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { ServiceType } from "../../../../common/azure-hosting/interfaces";
+import { HostTypes } from "../resources/strings";
 
 export const runtimeMap: { [key: string]: string } = {
   js: "node",
@@ -10,8 +11,8 @@ export const runtimeMap: { [key: string]: string } = {
 };
 
 export const serviceMap: { [key: string]: ServiceType } = {
-  "app-service": ServiceType.AppService,
-  "azure-functions": ServiceType.Functions,
+  [HostTypes.APP_SERVICE]: ServiceType.AppService,
+  [HostTypes.AZURE_FUNCTIONS]: ServiceType.Functions,
 };
 
 export const langMap: { [key: string]: string } = {

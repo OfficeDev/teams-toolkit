@@ -372,15 +372,15 @@ export class AppStudioPlugin implements Plugin {
         ctx.ui?.showMessage("info", msg, false);
       } else {
         const msg = getLocalizedString("plugins.appstudio.publishSucceedNotice", result.name);
-        ctx.ui
-          ?.showMessage("info", msg, false, Constants.ADMIN_PORTAL, Constants.LEARN_MORE)
-          .then((value) => {
-            if (value.isOk() && value.value === Constants.LEARN_MORE) {
-              ctx.ui?.openUrl(Constants.TEAMS_MANAGE_APP_DOC);
-            } else if (value.isOk() && value.value === Constants.ADMIN_PORTAL) {
-              ctx.ui?.openUrl(Constants.TEAMS_ADMIN_PORTAL);
-            }
-          });
+        const learnMore = getLocalizedString("core.Notification.LearnMore");
+        const adminPortal = getLocalizedString("plugins.appstudio.adminPortal");
+        ctx.ui?.showMessage("info", msg, false, adminPortal, learnMore).then((value) => {
+          if (value.isOk() && value.value === learnMore) {
+            ctx.ui?.openUrl(Constants.TEAMS_MANAGE_APP_DOC);
+          } else if (value.isOk() && value.value === adminPortal) {
+            ctx.ui?.openUrl(Constants.TEAMS_ADMIN_PORTAL);
+          }
+        });
       }
       const properties: { [key: string]: string } = this.appStudioPluginImpl.commonProperties;
       properties[TelemetryPropertyKey.updateExistingApp] = String(result.update);

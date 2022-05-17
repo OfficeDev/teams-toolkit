@@ -363,21 +363,17 @@ export class AppStudioPlugin implements Plugin {
     try {
       const result = await this.appStudioPluginImpl.publish(ctx);
       ctx.logProvider?.info(`Publish success!`);
-      const msg = getLocalizedString(
-        "plugins.appstudio.publishSucceedNotice",
-        result.name,
-        Constants.TEAMS_ADMIN_PORTAL
-      );
       if (ctx.answers?.platform === Platform.CLI) {
-        ctx.ui?.showMessage(
-          "info",
-          msg.replace("[", "").replace("]", "") +
-            ` Learn more from ${Constants.TEAMS_MANAGE_APP_DOC}.`,
-          false
+        const msg = getLocalizedString(
+          "plugins.appstudio.publishSucceedNotice",
+          result.name,
+          Constants.TEAMS_MANAGE_APP_DOC
         );
+        ctx.ui?.showMessage("info", msg, false);
       } else {
+        const msg = getLocalizedString("plugins.appstudio.publishSucceedNotice", result.name);
         ctx.ui
-          ?.showMessage("info", msg, false, Constants.LEARN_MORE, Constants.ADMIN_PORTAL)
+          ?.showMessage("info", msg, false, Constants.ADMIN_PORTAL, Constants.LEARN_MORE)
           .then((value) => {
             if (value.isOk() && value.value === Constants.LEARN_MORE) {
               ctx.ui?.openUrl(Constants.TEAMS_MANAGE_APP_DOC);

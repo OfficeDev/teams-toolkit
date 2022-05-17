@@ -2,7 +2,6 @@
 [![E2E Test workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/e2e-test.yml/badge.svg)](https://github.com/OfficeDev/TeamsFx/actions/workflows/e2e-test.yml)
 [![SDK CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/sdk-ci.yml/badge.svg)](https://github.com/OfficeDev/TeamsFx/actions/workflows/sdk-ci.yml)
 [![DotNet SDK CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/dotnetsdk-ci.yml/badge.svg)](https://github.com/OfficeDev/TeamsFx/actions/workflows/dotnetsdk-ci.yml)
-[![SimpleAuth CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/simpleauthCI.yml/badge.svg)](https://github.com/OfficeDev/TeamsFx/actions/workflows/simpleauthCI.yml)
 [![Function Extension CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/FunctionExtensionCI.yml/badge.svg)](https://github.com/OfficeDev/TeamsFx/actions/workflows/FunctionExtensionCI.yml)
 
 > Please be advised that this project is currently in **Public Preview**, with a lot of active development work taking place. **Please expect breaking changes** as we continue to iterate.
@@ -28,7 +27,6 @@ This repository contains the following packages:
 | **API** <br/> [packages/api](https://github.com/OfficeDev/TeamsFx/tree/main/packages/api) | The TeamsFx API is a collection of contracts supported by the IDE Extensions and CLI. It enables developers to write plugins to extend TeamsFx with new capabilities. |
 | **Core** <br/> [packages/fx-core](https://github.com/OfficeDev/TeamsFx/tree/main/packages/fx-core) | The Core package centralizes implementation of capabilities shared by the IDE Extensions and the CLI. |
 | **Azure Functions Support** <br/> [packages/function-extension](https://github.com/OfficeDev/TeamsFx/tree/main/packages/function-extension) | TeamsFx helps developers include server-side code in their Teams application backed by [Azure Functions](https://docs.microsoft.com/en-us/azure/azure-functions/). This plugin adds support to simplify the integration of an authentication-aware Azure Function into your Teams app. |
-| **Simple Auth** <br/> [packages/simpleauth](https://github.com/OfficeDev/TeamsFx/tree/main/packages/simpleauth) | This package adds support for server-side code necessary for client-side code to access services such as Microsoft Graph.|
 
 <br>
 

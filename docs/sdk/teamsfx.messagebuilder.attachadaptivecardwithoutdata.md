@@ -12,14 +12,14 @@ Build a bot message activity attached with an adaptive card.
 <b>Signature:</b>
 
 ```typescript
-static attachAdaptiveCardWithoutData(card: any): Partial<Activity>;
+static attachAdaptiveCardWithoutData(card: unknown): Partial<Activity>;
 ```
 
 ## Parameters
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  card | any | The adaptive card content. |
+|  card | unknown | The adaptive card content. |
 
 <b>Returns:</b>
 

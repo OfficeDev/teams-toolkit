@@ -81,11 +81,6 @@ const config = {
       /node-gyp[\/\\]bin[\/\\]node-gyp.js/,
       "@npmcli/node-gyp"
     ),
-    // new CopyPlugin({
-    //   patterns: [
-    //     { from: "src/resources/strings.json", to: "resources/strings.json" }
-    //   ],
-    // }),
   ],
   optimization: {
     minimizer: [

@@ -518,15 +518,17 @@ describe("AAD App Client Test", () => {
         "getAadApp",
         objectId,
         secret,
+        oauth2PermissionScopeId,
         new MockGraphTokenProvider()
       );
       chai.assert.equal(getResult.objectId, objectId);
       chai.assert.equal(getResult.clientId, clientId);
     });
 
-    it("throw GetAppConfigError", async () => {
+    it("use existing scope id", async () => {
       const objectId = faker.datatype.uuid();
       const clientId = faker.datatype.uuid();
+      const existingScopeId = faker.datatype.uuid();
       const fileName = "fileName";
       const secret = "secret";
       const displayName = "getAadApp";
@@ -539,20 +541,15 @@ describe("AAD App Client Test", () => {
       });
       sinon.stub(Utils, "getConfigFileName").returns(fileName);
 
-      try {
-        const getResult = await AadAppClient.getAadAppUsingManifest(
-          "getAadApp",
-          objectId,
-          secret,
-          new MockGraphTokenProvider()
-        );
-      } catch (error) {
-        chai.assert.isTrue(error instanceof UserError);
-        chai.assert.equal(
-          error.message,
-          GetAppConfigError.message(ConfigKeys.oauth2PermissionScopeId, fileName)[0]
-        );
-      }
+      const getResult = await AadAppClient.getAadAppUsingManifest(
+        "getAadApp",
+        objectId,
+        secret,
+        existingScopeId,
+        new MockGraphTokenProvider()
+      );
+
+      chai.assert.equal(getResult.oauth2PermissionScopeId, existingScopeId);
     });
 
     it("System Error", async () => {
@@ -578,6 +575,7 @@ describe("AAD App Client Test", () => {
           "getAadApp",
           objectId,
           secret,
+          undefined,
           new MockGraphTokenProvider()
         );
       } catch (error) {
@@ -609,6 +607,7 @@ describe("AAD App Client Test", () => {
           "getAadApp",
           objectId,
           secret,
+          undefined,
           new MockGraphTokenProvider()
         );
       } catch (error) {

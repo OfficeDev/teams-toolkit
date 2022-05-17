@@ -261,6 +261,14 @@ export const AadManifestMissingName: AadError = {
   ],
 };
 
+export const AADManifestMissingScopeIdForTeamsApp: AadError = {
+  name: "AadManifestMissingScopeIdForTeamsApp",
+  message: () => [
+    getDefaultString("error.aad.AadManifestMissingScopeIdForTeamsApp"),
+    getLocalizedString("error.aad.AadManifestMissingScopeIdForTeamsApp"),
+  ],
+};
+
 export const AadManifestMissingObjectId: AadError = {
   name: "AadManifestMissingObjectId",
   message: () => [

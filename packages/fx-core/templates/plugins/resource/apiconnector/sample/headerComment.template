@@ -6,15 +6,14 @@ Your next steps:
 2. Add your user password to TEAMSFX_API_{{capitalName}}_PASSWORD in "{{component}}/.env.teamsfx.local".
 {{else if (equals config.AuthConfig.AuthType "aad")}}
     {{#if (equals config.AuthConfig.ReuseTeamsApp false)}}
-2. Add your client secret to TEAMSFX_API_{{capitalName}}_CLIENT_SECRET in "{{component}}/.env.teamsfx.local".
+2. Replace "<your-api-scope>" in this file with actual scope required by the API.
+3. Add your client secret to TEAMSFX_API_{{capitalName}}_CLIENT_SECRET in "{{component}}/.env.teamsfx.local".
     {{else}}
 2. Replace "<your-api-scope>" in this file with actual scope required by the API.
-3. Gain consent of the required scope.
-4. Add the scope to "templates/appPackage/aad.template.json" in this project.
-   You can visit https://aka.ms/teamsfx-aad-manifest to learn more about the AAD app template.
+3. Refer https://aka.ms/teamsfx-connect-api-with-aad for configuring AAD app and consent scopes.
     {{/if}}
 {{else if (equals config.AuthConfig.AuthType "apikey")}}
-2. Add your API Key to TEAMSFX_API_{{capitalName}}_APIKEY in "{{component}}/.env.teamsfx.local".
+2. Add your API Key to TEAMSFX_API_{{capitalName}}_API_KEY in "{{component}}/.env.teamsfx.local".
 {{else if (equals config.AuthConfig.AuthType "cert")}}
 2. Add code to read your cert content and replace "<your-cert>" and "<your-private-key>" with actual value.
 {{else if (equals config.AuthConfig.AuthType "custom")}}
@@ -23,7 +22,22 @@ Your next steps:
 
 You can now import the API client (an Axios instance) in another file and call {{config.APIName}} APIs without worrying about authentication.
 Here is an example for a GET request to "relative_path_of_target_api":
-const result = await {{config.APIName}}Client.get("relative_path_of_target_api");
+```
+{{#if (equals languageExt "js")}}
+const { {{config.APIName}}Client } = require("relative_path_to_this_file");
+{{else}}
+import { {{config.APIName}}Client } from "relative_path_to_this_file";
+{{/if}}
+
+const response = await {{config.APIName}}Client.get("relative_path_of_target_api");
+// You only need to enter the relative path for your API.
+// For example, if you want to call api https://my-api-endpoint/test, and inputted https://my-api-endpoint as API endpoint,
+// the code will looks like: const response = await {{config.APIName}}Client.get("test");
+
+const responseBody = response.data;
+```
+
+If you added this API while local debugging, please stop local debugging and start again because local debugging will not hot reload changes to .env.teamsfx.local
 
 You can refer https://aka.ms/teamsfx-connect-api to learn more.
 */

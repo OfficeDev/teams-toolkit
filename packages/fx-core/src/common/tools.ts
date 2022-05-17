@@ -18,12 +18,15 @@ import {
   AzureSolutionSettings,
   v2,
   UserError,
+  TelemetryReporter,
+  Void,
+  Inputs,
+  Platform,
 } from "@microsoft/teamsfx-api";
 import axios from "axios";
 import { exec, ExecOptions } from "child_process";
 import * as fs from "fs-extra";
 import * as Handlebars from "handlebars";
-import * as path from "path";
 import { promisify } from "util";
 import * as uuid from "uuid";
 import {
@@ -35,9 +38,12 @@ import {
   ResourcePlugins,
 } from "./constants";
 import * as crypto from "crypto";
-import * as os from "os";
 import { FailedToParseResourceIdError } from "../core/error";
-import { SolutionError } from "../plugins/solution/fx-solution/constants";
+import {
+  PluginNames,
+  SolutionError,
+  SolutionSource,
+} from "../plugins/solution/fx-solution/constants";
 import Mustache from "mustache";
 import {
   Component,
@@ -50,12 +56,20 @@ import {
   HostTypeOptionAzure,
   TabSsoItem,
   BotSsoItem,
+  BotOptionItem,
+  TabOptionItem,
+  MessageExtensionItem,
 } from "../plugins/solution/fx-solution/question";
 import { TOOLS } from "../core/globalVars";
 import { LocalCrypto } from "../core/crypto";
 import { getDefaultString, getLocalizedString } from "./localizeUtils";
 import { isFeatureFlagEnabled } from "./featureFlags";
 import _ from "lodash";
+import { BotHostTypeName, BotHostTypes } from "./local/constants";
+import { isExistingTabApp } from "./projectSettingsHelper";
+import { ExistingTemplatesStat } from "../plugins/resource/cicd/utils/existingTemplatesStat";
+import { environmentManager } from "../core/environment";
+import { NoProjectOpenedError } from "../plugins/resource/cicd/errors";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -427,13 +441,168 @@ export function isAADEnabled(solutionSettings: AzureSolutionSettings): boolean {
   }
 }
 
-export function getRootDirectory(): string {
-  const root = process.env[FeatureFlagName.rootDirectory];
-  if (root === undefined || root === "") {
-    return path.join(os.homedir(), ConstantString.rootFolder);
-  } else {
-    return path.resolve(root.replace("${homeDir}", os.homedir()));
+// TODO: handle VS scenario
+export function canAddSso(
+  projectSettings: ProjectSettings,
+  returnError = false
+): boolean | Result<Void, FxError> {
+  // Can not add sso if feature flag is not enabled
+  if (!isAadManifestEnabled()) {
+    return returnError
+      ? err(
+          new SystemError(
+            SolutionSource,
+            SolutionError.NeedEnableFeatureFlag,
+            getLocalizedString("core.addSso.needEnableFeatureFlag")
+          )
+        )
+      : false;
   }
+
+  const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
+  if (
+    isExistingTabApp(projectSettings) &&
+    !(solutionSettings && solutionSettings.capabilities.includes(TabSsoItem.id))
+  ) {
+    return ok(Void);
+  }
+  if (!(solutionSettings.hostType === HostTypeOptionAzure.id)) {
+    return returnError
+      ? err(
+          new SystemError(
+            SolutionSource,
+            SolutionError.AddSsoNotSupported,
+            getLocalizedString("core.addSso.onlySupportAzure")
+          )
+        )
+      : false;
+  }
+
+  // Will throw error if only Messaging Extension is selected
+  if (
+    solutionSettings.capabilities.length === 1 &&
+    solutionSettings.capabilities[0] === MessageExtensionItem.id
+  ) {
+    return returnError
+      ? err(
+          new SystemError(
+            SolutionSource,
+            SolutionError.AddSsoNotSupported,
+            getLocalizedString("core.addSso.onlyMeNotSupport")
+          )
+        )
+      : false;
+  }
+
+  // Will throw error if bot host type is Azure Function
+  if (
+    solutionSettings.capabilities.includes(BotOptionItem.id) &&
+    !(
+      solutionSettings.capabilities.includes(TabOptionItem.id) &&
+      !solutionSettings.capabilities.includes(TabSsoItem.id)
+    )
+  ) {
+    const botHostType = projectSettings.pluginSettings?.[ResourcePlugins.Bot]?.[BotHostTypeName];
+    if (botHostType === BotHostTypes.AzureFunctions) {
+      return returnError
+        ? err(
+            new SystemError(
+              SolutionSource,
+              SolutionError.AddSsoNotSupported,
+              getLocalizedString("core.addSso.functionNotSupport")
+            )
+          )
+        : false;
+    }
+  }
+
+  // Check whether SSO is enabled
+  const activeResourcePlugins = solutionSettings.activeResourcePlugins;
+  const containTabSsoItem = solutionSettings.capabilities.includes(TabSsoItem.id);
+  const containTab = solutionSettings.capabilities.includes(TabOptionItem.id);
+  const containBotSsoItem = solutionSettings.capabilities.includes(BotSsoItem.id);
+  const containBot = solutionSettings.capabilities.includes(BotOptionItem.id);
+  const containAadPlugin = activeResourcePlugins.includes(PluginNames.AAD);
+  if (
+    ((containTabSsoItem && !containBot) ||
+      (containBot && containBotSsoItem && !containTab) ||
+      (containTabSsoItem && containBot && containBotSsoItem)) &&
+    containAadPlugin
+  ) {
+    return returnError
+      ? err(
+          new SystemError(
+            SolutionSource,
+            SolutionError.SsoEnabled,
+            getLocalizedString("core.addSso.ssoEnabled")
+          )
+        )
+      : false;
+  } else if (
+    ((containBotSsoItem && !containBot) ||
+      (containTabSsoItem || containBotSsoItem) !== containAadPlugin) &&
+    returnError
+  ) {
+    // Throw error if the project is invalid
+    // Will not stop showing add sso
+    const e = new UserError(
+      SolutionSource,
+      SolutionError.InvalidSsoProject,
+      getLocalizedString("core.addSso.invalidSsoProject")
+    );
+    return err(e);
+  }
+
+  return returnError ? ok(Void) : true;
+}
+
+export function canAddApiConnection(solutionSettings?: AzureSolutionSettings): boolean {
+  const activePlugins = solutionSettings?.activeResourcePlugins;
+  if (!activePlugins) {
+    return false;
+  }
+  return (
+    activePlugins.includes(ResourcePlugins.Bot) || activePlugins.includes(ResourcePlugins.Function)
+  );
+}
+
+// Conditions required to be met:
+// 1. Not (All templates were existing env x provider x templates)
+// 2. Not minimal app
+export async function canAddCICDWorkflows(inputs: Inputs, ctx: v2.Context): Promise<boolean> {
+  // Not include `Add CICD Workflows` in minimal app case.
+  if (isExistingTabApp(ctx.projectSetting)) {
+    return false;
+  }
+
+  if (!inputs.projectPath) {
+    throw new NoProjectOpenedError();
+  }
+
+  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath);
+  if (envProfilesResult.isErr()) {
+    throw new SystemError(
+      "Core",
+      "ListMultiEnvError",
+      getDefaultString("error.cicd.FailedToListMultiEnv", envProfilesResult.error.message),
+      getLocalizedString("error.cicd.FailedToListMultiEnv", envProfilesResult.error.message)
+    );
+  }
+
+  const existingInstance = ExistingTemplatesStat.getInstance(
+    inputs.projectPath,
+    envProfilesResult.value
+  );
+  await existingInstance.scan();
+
+  // If at least one env are not all-existing, return true.
+  for (const envName of envProfilesResult.value) {
+    if (existingInstance.notExisting(envName)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 export function isYoCheckerEnabled(): boolean {

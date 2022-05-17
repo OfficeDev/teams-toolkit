@@ -4,7 +4,7 @@
 import { Kind, SkuName, SkuTier } from "@azure/arm-storage/esm/models";
 import { getAllowedAppIds } from "../../../common/tools";
 
-import { FunctionConfigKey, FunctionLanguage, NodeVersion } from "./enums";
+import { FunctionConfigKey, FunctionLanguage } from "./enums";
 
 export class CommonConstants {
   public static readonly emptyString: string = "";
@@ -70,7 +70,6 @@ export class DefaultValues {
   public static readonly scaffoldTryCount: number = 1;
   public static readonly scaffoldTimeoutInMs: number = 10 * 1000;
   public static readonly deployTimeoutInMs: number = 10 * 60 * 1000;
-  public static readonly nodeVersion: NodeVersion = NodeVersion.Version12;
 }
 
 export class DependentPluginInfo {

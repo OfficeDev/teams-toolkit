@@ -2,19 +2,25 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+
 import * as vscode from "vscode";
-import { VSCodeTelemetryReporter } from "../commonlib/telemetry";
-import {
-  TelemetryProperty,
-  TelemetryComponentType,
-  TelemetrySuccess,
-  TelemetryEvent,
-  TelemetryErrorType,
-} from "./extTelemetryEvents";
-import * as extensionPackage from "../../package.json";
 import { FxError, Stage, UserError } from "@microsoft/teamsfx-api";
-import { getIsExistingUser, isSPFxProject } from "../utils/commonUtils";
+import { Correlator, globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
+
+import * as extensionPackage from "../../package.json";
+import { VSCodeTelemetryReporter } from "../commonlib/telemetry";
 import { ext } from "../extensionVariables";
+import { getIsExistingUser, getProjectId, isSPFxProject } from "../utils/commonUtils";
+import {
+  TelemetryComponentType,
+  TelemetryErrorType,
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "./extTelemetryEvents";
+
+const TelemetryCacheKey = "TelemetryEvents";
+let lastCorrelationId: string | undefined = undefined;
 
 export namespace ExtTelemetry {
   export let reporter: VSCodeTelemetryReporter;
@@ -22,6 +28,7 @@ export namespace ExtTelemetry {
   /* eslint-disable prefer-const */
   export let isFromSample: boolean | undefined = undefined;
   export let settingsVersion: string | undefined = undefined;
+  export let isM365: boolean | undefined = undefined;
 
   export function setHasSentTelemetry(eventName: string) {
     if (eventName === "query-expfeature") return;
@@ -74,6 +81,7 @@ export namespace ExtTelemetry {
     measurements?: { [p: string]: number }
   ): void {
     setHasSentTelemetry(eventName);
+    lastCorrelationId = Correlator.getId();
     if (!properties) {
       properties = {};
     }
@@ -92,6 +100,9 @@ export namespace ExtTelemetry {
 
     if (isFromSample != undefined) {
       properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
+    }
+    if (isM365 !== undefined) {
+      properties![TelemetryProperty.IsM365] = isM365.toString();
     }
     if (settingsVersion !== undefined) {
       properties![TelemetryProperty.SettingsVersion] = settingsVersion.toString();
@@ -138,6 +149,9 @@ export namespace ExtTelemetry {
     if (isFromSample != undefined) {
       properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
     }
+    if (isM365 !== undefined) {
+      properties![TelemetryProperty.IsM365] = isM365.toString();
+    }
     if (settingsVersion !== undefined) {
       properties![TelemetryProperty.SettingsVersion] = settingsVersion.toString();
     }
@@ -169,11 +183,42 @@ export namespace ExtTelemetry {
     if (isFromSample != undefined) {
       properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
     }
+    if (isM365 !== undefined) {
+      properties![TelemetryProperty.IsM365] = isM365.toString();
+    }
     if (settingsVersion !== undefined) {
       properties![TelemetryProperty.SettingsVersion] = settingsVersion.toString();
     }
 
     reporter.sendTelemetryException(error, properties, measurements);
+  }
+
+  export async function cacheTelemetryEventAsync(
+    eventName: string,
+    properties?: { [p: string]: string }
+  ) {
+    const telemetryEvents = {
+      eventName: eventName,
+      properties: {
+        [TelemetryProperty.CorrelationId]: lastCorrelationId,
+        [TelemetryProperty.ProjectId]: getProjectId(),
+        [TelemetryProperty.Timestamp]: new Date().toISOString(),
+        ...properties,
+      },
+    };
+    const newValue = JSON.stringify(telemetryEvents);
+    await globalStateUpdate(TelemetryCacheKey, newValue);
+  }
+
+  export async function sendCachedTelemetryEventsAsync() {
+    const existingValue = await globalStateGet(TelemetryCacheKey);
+    if (existingValue) {
+      try {
+        const telemetryEvent = JSON.parse(existingValue);
+        reporter.sendTelemetryEvent(telemetryEvent.eventName, telemetryEvent.properties);
+      } catch (e) {}
+      await globalStateUpdate(TelemetryCacheKey, undefined);
+    }
   }
 
   export async function dispose() {

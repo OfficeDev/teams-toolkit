@@ -982,6 +982,11 @@ export type OnSelectionChangeFunc = (currentSelectedIds: Set<string>, previousSe
 
 // @public
 export interface OptionItem {
+    buttons?: {
+        iconPath: string;
+        tooltip: string;
+        command: string;
+    }[];
     cliName?: string;
     data?: unknown;
     description?: string;
@@ -1514,6 +1519,7 @@ export interface StringValidation extends StaticValidation {
     includes?: string;
     maxLength?: number;
     minLength?: number;
+    notEquals?: string;
     pattern?: string;
     startsWith?: string;
 }

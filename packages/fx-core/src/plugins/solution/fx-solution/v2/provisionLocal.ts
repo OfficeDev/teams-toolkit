@@ -1,7 +1,7 @@
 import { FxError, Inputs, Json, SystemError, TokenProvider, v2 } from "@microsoft/teamsfx-api";
 import { isUndefined } from "lodash";
 import { Container } from "typedi";
-import { isPureExistingApp } from "../../../../common/projectSettingsHelper";
+import { isExistingTabApp } from "../../../../common/projectSettingsHelper";
 import { isConfigUnifyEnabled } from "../../../../common/tools";
 import { environmentManager } from "../../../../core/environment";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
@@ -70,11 +70,16 @@ export async function provisionLocalResource(
   if (m365TenantMatches.isErr()) {
     return new v2.FxFailure(m365TenantMatches.error);
   }
-  const pureExistingApp = isPureExistingApp(ctx.projectSetting);
-  // for minimized teamsfx project, there is only one plugin (app studio)
-  const plugins = pureExistingApp
-    ? [Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin)]
-    : getSelectedPlugins(ctx.projectSetting);
+
+  const plugins = getSelectedPlugins(ctx.projectSetting);
+  if (isExistingTabApp(ctx.projectSetting)) {
+    // for existing tab app, enable app studio plugin when solution settings is empty.
+    const appStudioPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
+    if (!plugins.find((p) => p.name === appStudioPlugin.name)) {
+      plugins.push(appStudioPlugin);
+    }
+  }
+
   const provisionLocalResourceThunks = plugins
     .filter((plugin) => !isUndefined(plugin.provisionLocalResource))
     .map((plugin) => {

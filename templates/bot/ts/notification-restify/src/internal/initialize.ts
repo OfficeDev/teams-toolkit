@@ -1,5 +1,4 @@
 import { ConversationBot } from "@microsoft/teamsfx";
-import * as restify from "restify";
 
 // Create bot.
 export const bot = new ConversationBot({
@@ -14,12 +13,3 @@ export const bot = new ConversationBot({
     enabled: true,
   },
 });
-
-// Create HTTP server.
-const server = restify.createServer();
-
-server.listen(process.env.port || process.env.PORT || 3978, () => {
-  console.log(`\nBot Started, ${server.name} listening to ${server.url}`);
-});
-
-export { server };

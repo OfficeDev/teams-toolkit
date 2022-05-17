@@ -22,7 +22,7 @@ import {
   v3,
 } from "@microsoft/teamsfx-api";
 import { Container } from "typedi";
-import { createV2Context, deepCopy } from "../../common/tools";
+import { createV2Context, deepCopy, isExistingTabAppEnabled } from "../../common/tools";
 import { newProjectSettings } from "../../common/projectSettingsHelper";
 import { SPFxPluginV3 } from "../../plugins/resource/spfx/v3";
 import { ExistingTabOptionItem, TabSPFxItem } from "../../plugins/solution/fx-solution/question";
@@ -36,6 +36,7 @@ import { TOOLS } from "../globalVars";
 import {
   createAppNameQuestion,
   createCapabilityQuestion,
+  createCapabilityQuestionPreview,
   ExistingTabEndpointQuestion,
   getCreateNewOrFromSampleQuestion,
   ProgrammingLanguageQuestion,
@@ -46,6 +47,7 @@ import {
 } from "../question";
 import { getAllSolutionPluginsV2 } from "../SolutionPluginContainer";
 import { CoreHookContext } from "../types";
+import { isPreviewFeaturesEnabled } from "../../common";
 
 /**
  * This middleware will help to collect input from question flow
@@ -387,8 +389,14 @@ export async function getQuestionsForCreateProjectV2(
   createNew.condition = { equals: ScratchOptionYes.id };
 
   // capabilities
-  const capQuestion = createCapabilityQuestion();
-  const capNode = new QTreeNode(capQuestion);
+  let capNode: QTreeNode;
+  if (isPreviewFeaturesEnabled()) {
+    const capQuestion = createCapabilityQuestionPreview();
+    capNode = new QTreeNode(capQuestion);
+  } else {
+    const capQuestion = createCapabilityQuestion();
+    capNode = new QTreeNode(capQuestion);
+  }
   createNew.addChild(capNode);
 
   const globalSolutions: v2.SolutionPlugin[] = await getAllSolutionPluginsV2();
@@ -417,32 +425,36 @@ export async function getQuestionsForCreateProjectV2(
 
   // Language
   const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
-  programmingLanguage.condition = {
-    minItems: 1,
-    excludes: ExistingTabOptionItem.id,
-  };
+  if (isPreviewFeaturesEnabled()) {
+    programmingLanguage.condition = {
+      notEquals: ExistingTabOptionItem.id,
+    };
+  } else {
+    programmingLanguage.condition = {
+      minItems: 1,
+      excludes: ExistingTabOptionItem.id,
+    };
+  }
   capNode.addChild(programmingLanguage);
 
   // existing tab endpoint
-  const existingTabEndpoint = new QTreeNode(ExistingTabEndpointQuestion);
-  existingTabEndpoint.condition = {
-    contains: ExistingTabOptionItem.id,
-  };
-  capNode.addChild(existingTabEndpoint);
-
-  // only CLI need folder input
-  if (CLIPlatforms.includes(inputs.platform)) {
-    createNew.addChild(new QTreeNode(QuestionRootFolder));
+  if (isExistingTabAppEnabled()) {
+    const existingTabEndpoint = new QTreeNode(ExistingTabEndpointQuestion);
+    existingTabEndpoint.condition = {
+      equals: ExistingTabOptionItem.id,
+    };
+    capNode.addChild(existingTabEndpoint);
   }
+
+  createNew.addChild(new QTreeNode(QuestionRootFolder));
   createNew.addChild(new QTreeNode(createAppNameQuestion()));
 
   // create from sample
   const sampleNode = new QTreeNode(SampleSelect);
   node.addChild(sampleNode);
   sampleNode.condition = { equals: ScratchOptionNo.id };
-  if (inputs.platform !== Platform.VSCode) {
-    sampleNode.addChild(new QTreeNode(QuestionRootFolder));
-  }
+  sampleNode.addChild(new QTreeNode(QuestionRootFolder));
+
   return ok(node.trim());
 }
 

@@ -50,7 +50,7 @@ import { ResourcePermission, TeamsAppAdmin } from "../../../../common/permission
 import isUUID from "validator/lib/isUUID";
 import { AppStudioClient } from "../appStudio";
 import { IUserList } from "../interfaces/IAppDefinition";
-import { isPureExistingApp } from "../../../../common/projectSettingsHelper";
+import { isExistingTabApp } from "../../../../common/projectSettingsHelper";
 import { InitializedFileAlreadyExistError } from "../../../../core/error";
 
 @Service(BuiltInFeaturePluginNames.appStudio)
@@ -72,7 +72,7 @@ export class AppStudioPluginV3 {
     const res = await init(
       inputs.projectPath,
       ctx.projectSetting.appName,
-      isPureExistingApp(ctx.projectSetting)
+      isExistingTabApp(ctx.projectSetting)
     );
     if (res.isErr()) return err(res.error);
     const templatesFolder = getTemplatesFolder();

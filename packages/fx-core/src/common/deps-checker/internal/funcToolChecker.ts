@@ -21,14 +21,15 @@ export enum FuncVersion {
   v1 = "1",
   v2 = "2",
   v3 = "3",
+  v4 = "4",
 }
 
 const funcPackageName = "azure-functions-core-tools";
 const funcToolName = "Azure Functions Core Tools";
 
-const installVersion = FuncVersion.v3;
-const supportedVersions = [FuncVersion.v3];
-const displayFuncName = `${funcToolName} (v${FuncVersion.v3})`;
+const installVersion = FuncVersion.v4;
+const supportedVersions = [FuncVersion.v4];
+const displayFuncName = `${funcToolName} (v${FuncVersion.v4})`;
 
 const timeout = 5 * 60 * 1000;
 
@@ -295,7 +296,7 @@ export class FuncToolChecker implements DepsChecker {
       DepsCheckerEvent.funcInstallScriptCompleted,
       async () => {
         await runWithProgressIndicator(
-          async () => await this.doInstallPortableFunc(FuncVersion.v3),
+          async () => await this.doInstallPortableFunc(FuncVersion.v4),
           this._logger
         );
       }
@@ -384,6 +385,8 @@ export function mapToFuncToolsVersion(output: string): FuncVersion | null {
       return FuncVersion.v2;
     case FuncVersion.v3:
       return FuncVersion.v3;
+    case FuncVersion.v4:
+      return FuncVersion.v4;
     default:
       return null;
   }

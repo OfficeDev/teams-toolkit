@@ -6,7 +6,12 @@ import * as vscode from "vscode";
 import * as constants from "./constants";
 import * as commonUtils from "./commonUtils";
 import { Json, ProductName, ProjectSettings, v2, VsCodeEnv } from "@microsoft/teamsfx-api";
-import { FolderName, isConfigUnifyEnabled, LocalEnvManager } from "@microsoft/teamsfx-core";
+import {
+  FolderName,
+  isConfigUnifyEnabled,
+  isMicrosoftTunnelingEnabled,
+  LocalEnvManager,
+} from "@microsoft/teamsfx-core";
 import { VSCodeDepsChecker } from "./depsChecker/vscodeChecker";
 import { vscodeLogger } from "./depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
@@ -20,6 +25,7 @@ import {
   TaskDefinition,
 } from "@microsoft/teamsfx-core";
 import { vscodeHelper } from "./depsChecker/vscodeHelper";
+import { createMicrosoftTunnelingTask } from "./microsoftTunnelingTask";
 
 export class TeamsfxTaskProvider implements vscode.TaskProvider {
   public static readonly type: string = ProductName;
@@ -86,7 +92,15 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       const botRoot = await commonUtils.getProjectRoot(workspacePath, FolderName.Bot);
       if (botRoot) {
         const skipNgrok = !vscodeHelper.isNgrokCheckerEnabled();
-        tasks.push(await this.createNgrokStartTask(workspaceFolder, botRoot, skipNgrok));
+        const tunnelingTasks = await this.createTunnelingStartTasks(
+          projectSettings,
+          workspaceFolder,
+          botRoot,
+          skipNgrok
+        );
+        for (const task of tunnelingTasks) {
+          tasks.push(task);
+        }
         const silent: boolean = frontendRoot !== undefined;
         tasks.push(
           await this.createBotStartTask(workspaceFolder, programmingLanguage, localEnv, silent)
@@ -171,22 +185,56 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     );
   }
 
-  private async createNgrokStartTask(
+  private async createTunnelingStartTasks(
+    projectSettings: ProjectSettings,
     workspaceFolder: vscode.WorkspaceFolder,
     projectRoot: string,
     isSkipped: boolean,
     definition?: vscode.TaskDefinition
-  ): Promise<vscode.Task> {
+  ): Promise<vscode.Task[]> {
     // prepare PATH to execute `ngrok`
     const depsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
     const ngrok = await depsChecker.getDepsStatus(DepsType.Ngrok);
-    return createTask(
-      TaskDefinition.ngrokStart(workspaceFolder.uri.fsPath, isSkipped, ngrok.details.binFolders),
-      workspaceFolder,
-      undefined,
-      definition,
-      constants.ngrokProblemMatcher
-    );
+
+    const _createTunnelingSkippedTask = (taskName: string) => {
+      return createTask(
+        TaskDefinition.tunnelingSkippedStart(taskName, workspaceFolder.uri.fsPath),
+        workspaceFolder,
+        undefined,
+        definition,
+        constants.ngrokProblemMatcher
+      );
+    };
+
+    const _createMicrosoftTunnelingTask = (taskName: string) => {
+      return createMicrosoftTunnelingTask(taskName, projectSettings, workspaceFolder);
+    };
+
+    const _createNgrokTunnelingTask = (taskName: string) => {
+      return createTask(
+        TaskDefinition.tunnelingStart(
+          taskName,
+          workspaceFolder.uri.fsPath,
+          ngrok.details.binFolders
+        ),
+        workspaceFolder,
+        undefined,
+        definition,
+        constants.ngrokProblemMatcher
+      );
+    };
+
+    const _createTask = isSkipped
+      ? _createTunnelingSkippedTask
+      : isMicrosoftTunnelingEnabled()
+      ? _createMicrosoftTunnelingTask
+      : _createNgrokTunnelingTask;
+
+    // Also provide ngrok task for backward compatibility.
+    // For existing projects, even though it is called `ngrok start`, it may use Microsoft tunneling according to settings.
+    const taskNames = [TaskDefinition.TunnelingStartTaskName, TaskDefinition.NgrokStartTaskName];
+
+    return Promise.all(taskNames.map((taskName) => _createTask(taskName)));
   }
 
   private async createBotStartTask(

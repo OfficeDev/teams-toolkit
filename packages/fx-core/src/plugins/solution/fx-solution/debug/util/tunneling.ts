@@ -3,6 +3,16 @@
 "use strict";
 
 import axios from "axios";
+import { isMicrosoftTunnelingEnabled } from "../../../../../common";
+import { getCurrentTunnelPorts } from "./microsoftTunnelingManager";
+
+export async function getTunnelsHttpUrl(port: number): Promise<string | undefined> {
+  if (isMicrosoftTunnelingEnabled()) {
+    return await getMicrosoftTunnelsHttpUrl(port);
+  } else {
+    return await getNgrokHttpUrl(port);
+  }
+}
 
 interface NgrokHttpConfig {
   addr: string;
@@ -21,6 +31,11 @@ interface NgrokApiTunnelsResponse {
 function delay(ms: number) {
   // tslint:disable-next-line no-string-based-set-timeout
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function getMicrosoftTunnelsHttpUrl(port: number): Promise<string | undefined> {
+  const endpoints = getCurrentTunnelPorts();
+  return endpoints?.get(port)?.replace(/\/$/, "");
 }
 
 export async function getNgrokHttpUrl(port: string | number): Promise<string | undefined> {

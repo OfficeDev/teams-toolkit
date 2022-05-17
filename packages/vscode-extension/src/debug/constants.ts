@@ -8,6 +8,7 @@ export const frontendProblemMatcher = "$teamsfx-frontend-watch";
 export const backendProblemMatcher = "$teamsfx-backend-watch";
 export const authProblemMatcher = "$teamsfx-auth-watch";
 export const ngrokProblemMatcher = "$teamsfx-ngrok-watch";
+export const tunnelsProblemMatcher = "$teamsfx-tunneling-watch";
 export const botProblemMatcher = "$teamsfx-bot-watch";
 export const tscWatchProblemMatcher = "$tsc-watch";
 

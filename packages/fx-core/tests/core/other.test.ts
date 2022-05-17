@@ -280,7 +280,14 @@ describe("Other test case", () => {
       assert.isTrue(res !== undefined);
     }
     {
-      const res = TaskDefinition.ngrokStart(projectPath, true, []);
+      const res = TaskDefinition.tunnelingStart(TaskDefinition.NgrokStartTaskName, projectPath, []);
+      assert.isTrue(res !== undefined);
+    }
+    {
+      const res = TaskDefinition.tunnelingSkippedStart(
+        TaskDefinition.TunnelingStartTaskName,
+        projectPath
+      );
       assert.isTrue(res !== undefined);
     }
     {

@@ -24,7 +24,7 @@ import {
   ConfigLocalDebugSettingsError,
 } from "./error";
 import { getCodespaceName, getCodespaceUrl } from "./util/codespace";
-import { getNgrokHttpUrl } from "./util/ngrok";
+import { getNgrokHttpUrl, getTunnelsHttpUrl } from "./util/tunneling";
 import {
   EnvKeysBackend,
   EnvKeysBot,
@@ -134,14 +134,14 @@ export async function setupLocalDebugSettings(
           localSettings.bot.botEndpoint = localBotEndpoint;
           localSettings.bot.botDomain = localBotEndpoint.slice(8);
         } else {
-          const ngrokHttpUrl = await getNgrokHttpUrl(3978);
-          if (!ngrokHttpUrl) {
+          const tunnelsHttpUrl = await getTunnelsHttpUrl(3978);
+          if (!tunnelsHttpUrl) {
             const error = NgrokTunnelNotConnected();
             TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);
             return err(error);
           } else {
-            localSettings.bot.botEndpoint = ngrokHttpUrl;
-            localSettings.bot.botDomain = ngrokHttpUrl.slice(8);
+            localSettings.bot.botEndpoint = tunnelsHttpUrl;
+            localSettings.bot.botDomain = tunnelsHttpUrl.slice(8);
           }
         }
       }
@@ -271,14 +271,14 @@ export async function setupLocalEnvironment(
           envInfo.state[ResourcePlugins.Bot].siteEndpoint = localBotEndpoint;
           envInfo.state[ResourcePlugins.Bot].validDomain = localBotEndpoint.slice(8);
         } else {
-          const ngrokHttpUrl = await getNgrokHttpUrl(3978);
-          if (!ngrokHttpUrl) {
+          const tunnelsHttpUrl = await getTunnelsHttpUrl(3978);
+          if (!tunnelsHttpUrl) {
             const error = NgrokTunnelNotConnected();
             TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);
             return err(error);
           } else {
-            envInfo.state[ResourcePlugins.Bot].siteEndpoint = ngrokHttpUrl;
-            envInfo.state[ResourcePlugins.Bot].validDomain = ngrokHttpUrl.slice(8);
+            envInfo.state[ResourcePlugins.Bot].siteEndpoint = tunnelsHttpUrl;
+            envInfo.state[ResourcePlugins.Bot].validDomain = tunnelsHttpUrl.slice(8);
           }
         }
       }

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { LogProvider } from "@microsoft/teamsfx-api";
+import { LogLevel, LogProvider } from "@microsoft/teamsfx-api";
 
 import { TunnelManagementHttpClient, TunnelRequestOptions } from "@vs/tunnels-management";
 import {
@@ -10,10 +10,11 @@ import {
   TunnelAccessScopes,
   TunnelProtocol,
   TunnelAccessControl,
-  TunnelConnectionMode,
 } from "@vs/tunnels-contracts";
 import { TunnelRelayTunnelHost } from "@vs/tunnels-connections";
-import * as corePackage from "../../../../../../package.json";
+import { TraceLevel } from "@vs/vs-ssh";
+// Need to use require instead of import to prevent packaging folder structure issue.
+const corePackage = require("../../../../../../package.json");
 
 const TeamsfxTunnelsUserAgent = { name: corePackage.name, version: corePackage.version };
 const TeamsfxTunnelAccessControl: TunnelAccessControl = {
@@ -27,19 +28,19 @@ const TeamsfxTunnelAccessControl: TunnelAccessControl = {
   ],
 };
 
-interface TunnelInfo {
+export interface TunnelInfo {
   tunnelsClusterId?: string;
   tunnelsId?: string;
 }
 
-interface TunnelHostResult {
+export interface TunnelHostResult {
   tunnelInfo: TunnelInfo;
   portEndpoints: Map<number, string>;
 }
 
 export class MicrosoftTunnelingManager {
   private tunnelManagementClient: TunnelManagementHttpClient;
-  private tunnelHost: TunnelRelayTunnelHost | undefined;
+  private tunnelHost?: TunnelRelayTunnelHost;
 
   constructor(getTunnelsAccessToken: () => Promise<string>) {
     this.tunnelManagementClient = new TunnelManagementHttpClient(
@@ -64,15 +65,18 @@ export class MicrosoftTunnelingManager {
     // TODO: Handle cases that host is already up. This happens when last host is not cleaned up (rare case).
 
     this.tunnelHost = new TunnelRelayTunnelHost(this.tunnelManagementClient);
-    this.tunnelHost.trace = (level, eventId, msg, err) => {
-      // TODO: handle verbose log by passing in log interface.
-      logProvider?.info("MicrosoftTunnelsSDK: " + msg);
+    this.tunnelHost.trace = (level: TraceLevel, eventId: number, msg: string, err?: Error) => {
+      logProvider?.log(
+        MicrosoftTunnelingManager.convertToLogLevel(level),
+        "MicrosoftTunnelingSDK: " + msg
+      );
     };
 
     // Start host. This is an non-blocking operations. It does not block on the host service.
     await this.tunnelHost.start(tunnelInstance);
 
     const portEndpoints = await this.getPortEndpoints(tunnelInstance, ports);
+    globalPortEndpoints = portEndpoints;
     return {
       portEndpoints: portEndpoints,
       tunnelInfo: {
@@ -86,6 +90,7 @@ export class MicrosoftTunnelingManager {
     if (this.tunnelHost) {
       this.tunnelHost.dispose();
       this.tunnelHost = undefined;
+      globalPortEndpoints = undefined;
     }
   }
 
@@ -101,12 +106,15 @@ export class MicrosoftTunnelingManager {
     const PortUriFormatPlaceholder = "{port}";
     let retried = 0;
     while (retried < maxRetries) {
+      // TODO: handler all API call exceptions and convert to FxError
       const tunnelResult = await this.tunnelManagementClient.getTunnel(tunnel);
       if (tunnelResult && tunnelResult.endpoints) {
         for (const endpoint of tunnelResult.endpoints) {
           const portUriFormat = endpoint.portUriFormat;
           if (
-            endpoint.connectionMode === TunnelConnectionMode.TunnelRelay &&
+            // Currently there is a bug that endpoint.connectionMode is wrong value.
+            // https://github.com/microsoft/basis-planning/issues/351
+            /*endpoint.connectionMode === TunnelConnectionMode.TunnelRelay && */
             portUriFormat !== undefined
           ) {
             return new Map<number, string>(
@@ -171,10 +179,27 @@ export class MicrosoftTunnelingManager {
   private async ensurePortsExist(tunnelInstance: Tunnel, ports: number[]): Promise<void> {
     // TODO: implement me.
   }
+
+  private static convertToLogLevel(traceLevel: TraceLevel): LogLevel {
+    const mapping = {
+      [TraceLevel.Error]: LogLevel.Error,
+      [TraceLevel.Warning]: LogLevel.Warning,
+      [TraceLevel.Info]: LogLevel.Info,
+      [TraceLevel.Verbose]: LogLevel.Debug,
+    };
+    return mapping[traceLevel] || LogLevel.Info;
+  }
 }
 
 function sleep(millis: number): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(() => resolve(), millis);
   });
+}
+
+// Tunnels are managed in vscode/cli task and tunnel endpoints are read in solution.
+// So use a global variable to share between task and solution.
+let globalPortEndpoints: Map<number, string> | undefined;
+export function getCurrentTunnelPorts(): Map<number, string> | undefined {
+  return globalPortEndpoints;
 }

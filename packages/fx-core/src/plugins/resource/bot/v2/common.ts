@@ -65,7 +65,7 @@ export function decideTemplateScenarios(ctx: Context, inputs: Inputs): string[] 
 export function resolveProgrammingLanguage(ctx: Context): string {
   const lang = ctx.projectSetting.programmingLanguage;
   if (!lang || !(lang in langMap)) {
-    throw new Error("Invalid programming language");
+    throw new Error(`notification trigger '${lang}' is invalid.`);
   }
   return langMap[lang.toLocaleLowerCase()];
 }
@@ -78,7 +78,7 @@ export function resolveTriggerOption(inputs: Inputs): HostTypeTriggerOptionItem[
       .filter((item) => item) as HostTypeTriggerOptionItem[];
     return options;
   }
-  throw new Error("Invalid notification trigger type");
+  throw new Error(`notification trigger '${notificationTriggerType}' is invalid.`);
 }
 
 export function resolveHostType(inputs: Inputs): HostType {
@@ -97,7 +97,7 @@ export function resolveServiceType(ctx: Context): ServiceType {
   const rawHostType =
     ctx.projectSetting?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[PluginBot.HOST_TYPE];
   if (!rawHostType || !(rawHostType in serviceMap)) {
-    throw new Error("Invalid service type");
+    throw new Error(`Host type '${rawHostType}' is invalid.`);
   }
   return serviceMap[rawHostType];
 }

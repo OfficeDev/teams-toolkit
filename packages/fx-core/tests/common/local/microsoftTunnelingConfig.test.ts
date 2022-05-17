@@ -13,13 +13,10 @@ import {
   loadTunnelInfo,
   storeTunnelInfo,
   TunnelPorts,
-} from "../../../../../src/plugins/solution/fx-solution/debug/util/microsoftTunnelingConfig";
-import { environmentManager } from "../../../../../src/core/environment";
-import { PluginNames } from "../../../../../src/plugins/solution/fx-solution/constants";
-import {
-  BotOptionItem,
-  TabOptionItem,
-} from "../../../../../src/plugins/solution/fx-solution/question";
+} from "../../../src/common/local/microsoftTunnelingConfig";
+import { environmentManager } from "../../../src/core/environment";
+import { PluginNames } from "../../../src/plugins/solution/fx-solution/constants";
+import { BotOptionItem, TabOptionItem } from "../../../src/plugins/solution/fx-solution/question";
 
 const localEnvConfig = {
   $schema: "https://aka.ms/teamsfx-env-config-schema",
@@ -98,8 +95,8 @@ describe("microsoftTunnelingConfig", () => {
         [envConfigPath]: JSON.stringify(localEnvConfig),
         [envStatePath]: JSON.stringify({
           [PluginNames.SOLUTION]: {
-            tunnelsClusterId: clusterId,
-            tunnelsId: tunnelId,
+            tunnelClusterId: clusterId,
+            tunnelId: tunnelId,
           },
         }),
       });
@@ -110,8 +107,8 @@ describe("microsoftTunnelingConfig", () => {
       // Assert
       chai.assert.isTrue(tunnelInfo.isOk());
       chai.assert.deepEqual(tunnelInfo._unsafeUnwrap(), {
-        tunnelsClusterId: clusterId,
-        tunnelsId: tunnelId,
+        tunnelClusterId: clusterId,
+        tunnelId: tunnelId,
       });
     });
 
@@ -133,8 +130,8 @@ describe("microsoftTunnelingConfig", () => {
         [envConfigPath]: JSON.stringify(localEnvConfig),
         [envStatePath]: JSON.stringify({
           [PluginNames.SOLUTION]: {
-            tunnelsClusterId: invalidClusterId,
-            tunnelsId: invalidTunnelId,
+            tunnelClusterId: invalidClusterId,
+            tunnelId: invalidTunnelId,
           },
         }),
       });
@@ -145,8 +142,8 @@ describe("microsoftTunnelingConfig", () => {
       // Assert
       chai.assert.isTrue(tunnelInfo.isOk());
       chai.assert.deepEqual(tunnelInfo._unsafeUnwrap(), {
-        tunnelsClusterId: undefined,
-        tunnelsId: undefined,
+        tunnelClusterId: undefined,
+        tunnelId: undefined,
       });
     });
 
@@ -165,8 +162,8 @@ describe("microsoftTunnelingConfig", () => {
       // Assert
       chai.assert.isTrue(tunnelInfo.isOk());
       chai.assert.deepEqual(tunnelInfo._unsafeUnwrap(), {
-        tunnelsClusterId: undefined,
-        tunnelsId: undefined,
+        tunnelClusterId: undefined,
+        tunnelId: undefined,
       });
     });
   });
@@ -198,8 +195,8 @@ describe("microsoftTunnelingConfig", () => {
     it("can create new file", async () => {
       mockFs({ [envConfigPath]: JSON.stringify(localEnvConfig) });
       const tunnelInfo = {
-        tunnelsId: "test tunnel id",
-        tunnelsClusterId: "test cluster id",
+        tunnelId: "test tunnel id",
+        tunnelClusterId: "test cluster id",
       };
       const result = await storeTunnelInfo(workspaceFolder, projectId, tunnelInfo);
 
@@ -233,8 +230,8 @@ describe("microsoftTunnelingConfig", () => {
         }),
       });
       const tunnelInfo = {
-        tunnelsId: "test tunnel id",
-        tunnelsClusterId: "test cluster id",
+        tunnelId: "test tunnel id",
+        tunnelClusterId: "test cluster id",
       };
       const result = await storeTunnelInfo(workspaceFolder, projectId, tunnelInfo);
 

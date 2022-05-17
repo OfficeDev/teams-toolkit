@@ -11,14 +11,13 @@ import {
   AzureSolutionSettings,
   ConfigMap,
   v3,
-  SystemError,
 } from "@microsoft/teamsfx-api";
-import { PathNotExistError } from "../../../../../core/error";
-import { LocalCrypto } from "../../../../../core/crypto";
-import { environmentManager } from "../../../../../core/environment";
-import { PluginNames, SolutionError, SolutionSource } from "../../constants";
-import { BotOptionItem } from "../../question";
+import { PathNotExistError, NotImplementedError } from "../../core/error";
+import { LocalCrypto } from "../../core/crypto";
+import { environmentManager } from "../../core/environment";
+import { BotOptionItem } from "../../plugins/solution/fx-solution/question";
 import { TunnelInfo } from "./microsoftTunnelingManager";
+import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 
 export const TunnelPorts: {
   [name: string]: { ports: number[]; tunnelNeeded: (projectSettings: ProjectSettings) => boolean };
@@ -51,21 +50,19 @@ export async function loadTunnelInfo(
     return err(localEnvInfoResult.error);
   }
   if (!isEnvInfo(localEnvInfoResult.value)) {
-    return err(
-      new SystemError(SolutionSource, SolutionError.FeatureNotSupported, "Not implemented")
-    );
+    return err(new NotImplementedError("loadTunnelInfo() for V3"));
   }
 
   const [_, solutionState] = getEnvAndSolutionState(localEnvInfoResult.value);
 
-  const tunnelsClusterId = stringOrUndefined(
-    solutionState?.get(nameOf<TunnelInfo>("tunnelsClusterId"))
+  const tunnelClusterId = stringOrUndefined(
+    solutionState?.get(nameOf<TunnelInfo>("tunnelClusterId"))
   );
-  const tunnelsId = stringOrUndefined(solutionState?.get(nameOf<TunnelInfo>("tunnelsId")));
+  const tunnelId = stringOrUndefined(solutionState?.get(nameOf<TunnelInfo>("tunnelId")));
 
   return ok({
-    tunnelsClusterId,
-    tunnelsId,
+    tunnelClusterId,
+    tunnelId,
   });
 }
 
@@ -84,9 +81,7 @@ export async function storeTunnelInfo(
   let localEnvInfo = undefined;
   if (localEnvInfoResult.isOk()) {
     if (!isEnvInfo(localEnvInfoResult.value)) {
-      return err(
-        new SystemError(SolutionSource, SolutionError.FeatureNotSupported, "Not implemented")
-      );
+      return err(new NotImplementedError("loadTunnelInfo() for V3"));
     }
     localEnvInfo = localEnvInfoResult.value;
   }
@@ -96,8 +91,8 @@ export async function storeTunnelInfo(
     ? getEnvAndSolutionState(localEnvInfo)
     : newEnvAndSolutionState();
 
-  solutionState.set(nameOf<TunnelInfo>("tunnelsClusterId"), tunnelInfo.tunnelsClusterId);
-  solutionState.set(nameOf<TunnelInfo>("tunnelsId"), tunnelInfo.tunnelsId);
+  solutionState.set(nameOf<TunnelInfo>("tunnelClusterId"), tunnelInfo.tunnelClusterId);
+  solutionState.set(nameOf<TunnelInfo>("tunnelId"), tunnelInfo.tunnelId);
 
   const result = await environmentManager.writeEnvState(
     envState,

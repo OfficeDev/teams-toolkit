@@ -4,13 +4,13 @@
 import "mocha";
 import * as sinon from "sinon";
 import * as chai from "chai";
-import { MicrosoftTunnelingManager } from "../../../../../src/plugins/solution/fx-solution/debug/util/microsoftTunnelingManager";
+import { MicrosoftTunnelingManager } from "../../../src/common/local/microsoftTunnelingManager";
 import { TunnelManagementHttpClient, TunnelRequestOptions } from "@vs/tunnels-management";
 import { Tunnel, TunnelConnectionMode } from "@vs/tunnels-contracts";
 import { TunnelRelayTunnelHost } from "@vs/tunnels-connections";
 
 describe("MicrosoftTunnelingManager", () => {
-  describe("startTunnelsHost()", () => {
+  describe("startTunnelHost()", () => {
     const sandbox = sinon.createSandbox();
     beforeEach(() => {});
     afterEach(() => {
@@ -55,8 +55,8 @@ describe("MicrosoftTunnelingManager", () => {
         [3978, "3978 url"],
       ]);
       chai.assert.deepEqual(result.tunnelInfo, {
-        tunnelsClusterId: createdTunnelClusterId,
-        tunnelsId: createdTunnelId,
+        tunnelClusterId: createdTunnelClusterId,
+        tunnelId: createdTunnelId,
       });
     });
 
@@ -91,8 +91,8 @@ describe("MicrosoftTunnelingManager", () => {
 
       // Act
       const result = await manager.startTunnelHost([3978, 3000], {
-        tunnelsClusterId: existingTunnelClusterId,
-        tunnelsId: existingTunnelId,
+        tunnelClusterId: existingTunnelClusterId,
+        tunnelId: existingTunnelId,
       });
 
       // Assert
@@ -101,8 +101,8 @@ describe("MicrosoftTunnelingManager", () => {
         [3978, "testtunnel-3978.testcluster.example.com"],
       ]);
       chai.assert.deepEqual(result.tunnelInfo, {
-        tunnelsClusterId: existingTunnelClusterId,
-        tunnelsId: existingTunnelId,
+        tunnelClusterId: existingTunnelClusterId,
+        tunnelId: existingTunnelId,
       });
     });
     it("Tunnel expiration", () => {});
@@ -110,7 +110,7 @@ describe("MicrosoftTunnelingManager", () => {
     it("Host did not shut down cleanly", () => {});
   });
 
-  describe("stopTunnelsHost()", () => {
+  describe("stopTunnelHost()", () => {
     const sandbox = sinon.createSandbox();
     beforeEach(() => {});
     afterEach(() => {
@@ -144,8 +144,8 @@ describe("MicrosoftTunnelingManager", () => {
 
       // Act
       await manager.startTunnelHost([3978, 3000], {
-        tunnelsClusterId: "test cluster",
-        tunnelsId: "test tunnel",
+        tunnelClusterId: "test cluster",
+        tunnelId: "test tunnel",
       });
       await manager.stopTunnelHost();
 

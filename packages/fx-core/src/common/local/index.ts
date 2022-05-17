@@ -7,3 +7,5 @@ export * from "./packageJsonHelper";
 export * from "./projectSettingsHelper";
 export * from "./taskDefinition";
 export * from "./constants";
+export * from "./microsoftTunnelingConfig";
+export * from "./microsoftTunnelingManager";

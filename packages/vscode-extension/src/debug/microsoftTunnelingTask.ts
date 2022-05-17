@@ -105,7 +105,7 @@ export class MicrosoftTunnelingTaskTerminal implements vscode.Pseudoterminal {
 
   private printTunnelInfo(tunnelHostResult: TunnelHostResult) {
     this.logger.info(
-      `Tunnel info: clusterId: ${tunnelHostResult.tunnelInfo.tunnelsClusterId}, tunnelId: ${tunnelHostResult.tunnelInfo.tunnelsId}`
+      `Tunnel info: clusterId: ${tunnelHostResult.tunnelInfo.tunnelClusterId}, tunnelId: ${tunnelHostResult.tunnelInfo.tunnelId}`
     );
     this.logger.info("Port mappings:");
     for (const [portNumber, endpoint] of tunnelHostResult.portEndpoints.entries()) {
@@ -129,7 +129,7 @@ export function createMicrosoftTunnelingTask(
     taskName,
     ProductName,
     execution,
-    constants.tunnelsProblemMatcher
+    constants.tunnelingProblemMatcher
   );
   // The custom execution is a background task and uses problem matcher to finish.
   task.isBackground = true;

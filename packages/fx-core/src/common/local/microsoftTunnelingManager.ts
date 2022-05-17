@@ -14,9 +14,9 @@ import {
 import { TunnelRelayTunnelHost } from "@vs/tunnels-connections";
 import { TraceLevel } from "@vs/vs-ssh";
 // Need to use require instead of import to prevent packaging folder structure issue.
-const corePackage = require("../../../../../../package.json");
+const corePackage = require("../../../package.json");
 
-const TeamsfxTunnelsUserAgent = { name: corePackage.name, version: corePackage.version };
+const TeamsfxTunnelingUserAgent = { name: corePackage.name, version: corePackage.version };
 const TeamsfxTunnelAccessControl: TunnelAccessControl = {
   entries: [
     {
@@ -29,8 +29,8 @@ const TeamsfxTunnelAccessControl: TunnelAccessControl = {
 };
 
 export interface TunnelInfo {
-  tunnelsClusterId?: string;
-  tunnelsId?: string;
+  tunnelClusterId?: string;
+  tunnelId?: string;
 }
 
 export interface TunnelHostResult {
@@ -42,10 +42,10 @@ export class MicrosoftTunnelingManager {
   private tunnelManagementClient: TunnelManagementHttpClient;
   private tunnelHost?: TunnelRelayTunnelHost;
 
-  constructor(getTunnelsAccessToken: () => Promise<string>) {
+  constructor(getTunnelingAccessToken: () => Promise<string>) {
     this.tunnelManagementClient = new TunnelManagementHttpClient(
-      TeamsfxTunnelsUserAgent,
-      async () => `Bearer ${await getTunnelsAccessToken()}`
+      TeamsfxTunnelingUserAgent,
+      async () => `Bearer ${await getTunnelingAccessToken()}`
     );
   }
 
@@ -80,8 +80,8 @@ export class MicrosoftTunnelingManager {
     return {
       portEndpoints: portEndpoints,
       tunnelInfo: {
-        tunnelsClusterId: tunnelInstance.clusterId,
-        tunnelsId: tunnelInstance.tunnelId,
+        tunnelClusterId: tunnelInstance.clusterId,
+        tunnelId: tunnelInstance.tunnelId,
       },
     };
   }
@@ -143,10 +143,10 @@ export class MicrosoftTunnelingManager {
    */
   private async ensureTunnelExist(ports: number[], tunnelInfo?: TunnelInfo): Promise<Tunnel> {
     let tunnelInstance: Tunnel;
-    if (tunnelInfo?.tunnelsClusterId && tunnelInfo?.tunnelsId) {
+    if (tunnelInfo?.tunnelClusterId && tunnelInfo?.tunnelId) {
       const tunnelResult = await this.tunnelManagementClient.getTunnel({
-        tunnelId: tunnelInfo.tunnelsId,
-        clusterId: tunnelInfo.tunnelsClusterId,
+        tunnelId: tunnelInfo.tunnelId,
+        clusterId: tunnelInfo.tunnelClusterId,
       });
       if (tunnelResult === null) {
         // TODO: handle tunnel expiration

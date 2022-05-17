@@ -4,11 +4,11 @@
 
 import axios from "axios";
 import { isMicrosoftTunnelingEnabled } from "../../../../../common";
-import { getCurrentTunnelPorts } from "./microsoftTunnelingManager";
+import { getCurrentTunnelPorts } from "../../../../../common/local/microsoftTunnelingManager";
 
-export async function getTunnelsHttpUrl(port: number): Promise<string | undefined> {
+export async function getTunnelingHttpUrl(port: number): Promise<string | undefined> {
   if (isMicrosoftTunnelingEnabled()) {
-    return await getMicrosoftTunnelsHttpUrl(port);
+    return await getMicrosoftTunnelingHttpUrl(port);
   } else {
     return await getNgrokHttpUrl(port);
   }
@@ -33,7 +33,7 @@ function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function getMicrosoftTunnelsHttpUrl(port: number): Promise<string | undefined> {
+async function getMicrosoftTunnelingHttpUrl(port: number): Promise<string | undefined> {
   const endpoints = getCurrentTunnelPorts();
   return endpoints?.get(port)?.replace(/\/$/, "");
 }

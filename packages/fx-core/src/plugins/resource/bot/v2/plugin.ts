@@ -52,7 +52,7 @@ import { mergeTemplates } from "../../../../common/azure-hosting/utils";
 import { getActivatedV2ResourcePlugins } from "../../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/adaptor";
 import { ResourcePlugins } from "../../../../common/constants";
-import { hostServiceTypeMapping, languageMapping } from "./constants";
+import { hostServiceTypeMapping, languageMapping } from "./mapping";
 
 export class TeamsBotV2Impl {
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {

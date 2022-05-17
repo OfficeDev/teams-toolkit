@@ -271,14 +271,14 @@ export async function setupLocalEnvironment(
           envInfo.state[ResourcePlugins.Bot].siteEndpoint = localBotEndpoint;
           envInfo.state[ResourcePlugins.Bot].validDomain = localBotEndpoint.slice(8);
         } else {
-          const ngrokHttpUrl = await getTunnelsHttpUrl(3978);
-          if (!ngrokHttpUrl) {
+          const tunnelsHttpUrl = await getTunnelsHttpUrl(3978);
+          if (!tunnelsHttpUrl) {
             const error = NgrokTunnelNotConnected();
             TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);
             return err(error);
           } else {
-            envInfo.state[ResourcePlugins.Bot].siteEndpoint = ngrokHttpUrl;
-            envInfo.state[ResourcePlugins.Bot].validDomain = ngrokHttpUrl.slice(8);
+            envInfo.state[ResourcePlugins.Bot].siteEndpoint = tunnelsHttpUrl;
+            envInfo.state[ResourcePlugins.Bot].validDomain = tunnelsHttpUrl.slice(8);
           }
         }
       }

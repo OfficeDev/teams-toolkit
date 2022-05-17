@@ -136,6 +136,8 @@ async function migrate(ctx: CoreHookContext): Promise<boolean> {
 
   generateUpgradeReport(path.join(inputs.projectPath as string, backupFolder));
 
+  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectAadManifestMigration);
+
   return true;
 }
 

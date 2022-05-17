@@ -152,7 +152,8 @@
         {
           "id": "teamsfx-help-and-feedback",
           "name": "Help and feedback",
-          "when": "fx-extension.sidebarWelcome.treeview"
+          "when": "fx-extension.sidebarWelcome.treeview",
+          "visibility": "collapsed"
         },
         {
           "id": "teamsfx-empty-project",

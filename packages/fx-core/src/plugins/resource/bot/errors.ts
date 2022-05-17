@@ -306,12 +306,16 @@ export class MessageEndpointUpdatingError extends PluginError {
 }
 
 export class CommandExecutionError extends PluginError {
-  constructor(cmd: string, innerError?: InnerError) {
+  constructor(cmd: string, path: string, innerError?: InnerError) {
     super(
       ErrorType.USER,
       ErrorNames.COMMAND_EXECUTION_ERROR,
       Messages.CommandExecutionFailed(cmd),
-      [Messages.CheckCommandOutputAndTryToFixIt, Messages.RetryTheCurrentStep],
+      [
+        Messages.RunFailedCommand(cmd, path),
+        Messages.CheckCommandOutputAndTryToFixIt,
+        Messages.RetryTheCurrentStep,
+      ],
       innerError
     );
   }

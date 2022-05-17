@@ -790,6 +790,7 @@
   "plugins.bot.RecoverConfig": "Please recover the config value.",
   "plugins.bot.RecreateProject": "Please recreate the project.",
   "plugins.bot.CheckCommandOutput": "Please check the command output and try to fix it.",
+  "plugins.bot.RunFailedCommand": "Please run failed command '%s' in the folder: '%s'.",
   "plugins.bot.DeleteExistsAzureBotChannelRegistrations": "Please delete existing azure bot channel registrations.",
   "plugins.bot.DelAzureBotChannel": "If azure account is switched, don't forget to delete azure bot channel registration under the previous account.",
   "plugins.bot.CheckLogAndFix": "Please check log in output channel and try to fix this issue.",

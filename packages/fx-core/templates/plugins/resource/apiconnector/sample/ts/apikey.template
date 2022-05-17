@@ -1,8 +1,8 @@
 import { TeamsFx, createApiClient, ApiKeyProvider, ApiKeyLocation } from "@microsoft/teamsfx";
 
-// Loads current app's configuration.
+// Load application configuration
 const teamsFx = new TeamsFx();
-// Initializes a new axios instance to call {{config.APIName}} API.
+// Initialize a new axios instance to call {{config.APIName}}
 const authProvider = new ApiKeyProvider(
   "{{config.AuthConfig.Name}}",
   teamsFx.getConfig("TEAMSFX_API_{{capitalName}}_API_KEY"),

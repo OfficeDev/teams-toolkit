@@ -1,5 +1,8 @@
 name: "TeamsFx javascript CodeQL config"
 
+packs:
+  - codeql/javascript-queries
+
 queries:
   - name: Extended Security
     uses: security-extended

@@ -57,7 +57,8 @@ import { hostServiceTypeMapping, languageMapping } from "./mapping";
 export class TeamsBotV2Impl {
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
     let workingPath = inputs.projectPath ?? "";
-    if (inputs.platform !== Platform.VS) {
+    const lang = this.resolveProgrammingLanguage(ctx);
+    if (lang === "csharp") {
       workingPath = path.join(workingPath, "bot");
     }
     const hostType = this.resolveHostType(inputs);

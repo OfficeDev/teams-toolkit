@@ -9,8 +9,6 @@
         "version": "bash ../.github/scripts/pkg-version.sh template-sync && bash ../.github/scripts/pkg-version.sh core-template"
     },
     "templates": [
-        "blazor-base/csharp/default",
-        "bot/csharp/default",
         "bot/js/command-and-response",
         "bot/js/default",
         "bot/js/m365",
@@ -35,7 +33,8 @@
         "tab/js/non-sso",
         "tab/ts/non-sso",
         "tab/js/m365",
-        "tab/ts/m365"
+        "tab/ts/m365",
+        "msgext/csharp/default"
     ],
     "devDependencies": {
         "@typescript-eslint/eslint-plugin": "^4.19.0",

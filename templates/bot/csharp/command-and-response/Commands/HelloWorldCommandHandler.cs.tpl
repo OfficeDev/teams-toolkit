@@ -9,6 +9,7 @@
     /// </summary>
     public class HelloWorldCommandHandler : ITeamsCommandHandler
     {
+        private readonly ILogger<HelloWorldCommandHandler> _logger;
         private readonly string _adaptiveCardFilePath = Path.Combine(".", "Resources", "HelloWorldCard.json");
 
         public ITriggerPattern[] TriggerPatterns => new ITriggerPattern[]
@@ -16,9 +17,14 @@
             new StringTrigger("helloworld")
         };
 
+        public HelloWorldCommandHandler(ILogger<HelloWorldCommandHandler> logger)
+        {
+            _logger = logger;
+        }
+
         public async Task<ICommandResponse> HandleCommandAsync(ITurnContext turnContext, CommandMessage message, CancellationToken cancellationToken = default)
         {
-            Console.WriteLine(message.Text);
+            _logger?.LogInformation($"Bot received message: {message.Text}");
 
             // Read adaptive card template
             var cardTemplate = await File.ReadAllTextAsync(_adaptiveCardFilePath, cancellationToken);

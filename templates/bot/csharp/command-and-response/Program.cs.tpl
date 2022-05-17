@@ -26,7 +26,8 @@ builder.Services.AddSingleton<CloudAdapter, AdapterWithErrorHandler>();
 builder.Services.AddSingleton<IBotFrameworkHttpAdapter>(sp => sp.GetService<CloudAdapter>());
 builder.Services.AddSingleton<BotAdapter>(sp => sp.GetService<CloudAdapter>());
 
-// Create the Conversation with command-response feature enabled.
+// Create command handlers and the Conversation with command-response feature enabled.
+builder.Services.AddSingleton<HelloWorldCommandHandler>();
 builder.Services.AddSingleton(sp =>
 {
     var options = new ConversationOptions()
@@ -34,7 +35,7 @@ builder.Services.AddSingleton(sp =>
         Adapter = sp.GetService<CloudAdapter>(),
         Command = new CommandOptions()
         {
-            Commands = new List<ITeamsCommandHandler> { new HelloWorldCommandHandler() }
+            Commands = new List<ITeamsCommandHandler> { sp.GetService<HelloWorldCommandHandler>() }
         }
     };
 

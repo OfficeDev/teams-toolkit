@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { LogLevel, LogProvider } from "@microsoft/teamsfx-api";
+import { ok, err, FxError, LogProvider, Result } from "@microsoft/teamsfx-api";
 
-import { TunnelManagementHttpClient, TunnelRequestOptions } from "@vs/tunnels-management";
+import { TunnelRequestOptions } from "@vs/tunnels-management";
 import {
   Tunnel,
   TunnelAccessControlEntryType,
@@ -11,12 +11,10 @@ import {
   TunnelProtocol,
   TunnelAccessControl,
 } from "@vs/tunnels-contracts";
-import { TunnelRelayTunnelHost } from "@vs/tunnels-connections";
-import { TraceLevel } from "@vs/vs-ssh";
-// Need to use require instead of import to prevent packaging folder structure issue.
-const corePackage = require("../../../package.json");
+import { MicrosoftTunnelingTimeoutError } from "./microsoftTunnelingError";
+import { NotImplementedError } from "../../core/error";
+import { MicrosoftTunnelingService } from "./microsoftTunnelingService";
 
-const TeamsfxTunnelingUserAgent = { name: corePackage.name, version: corePackage.version };
 const TeamsfxTunnelAccessControl: TunnelAccessControl = {
   entries: [
     {
@@ -39,14 +37,10 @@ export interface TunnelHostResult {
 }
 
 export class MicrosoftTunnelingManager {
-  private tunnelManagementClient: TunnelManagementHttpClient;
-  private tunnelHost?: TunnelRelayTunnelHost;
+  private service: MicrosoftTunnelingService;
 
-  constructor(getTunnelingAccessToken: () => Promise<string>) {
-    this.tunnelManagementClient = new TunnelManagementHttpClient(
-      TeamsfxTunnelingUserAgent,
-      async () => `Bearer ${await getTunnelingAccessToken()}`
-    );
+  constructor(getTunnelingAccessToken: () => Promise<string>, logProvider?: LogProvider) {
+    this.service = new MicrosoftTunnelingService(getTunnelingAccessToken, logProvider);
   }
 
   /**
@@ -56,42 +50,52 @@ export class MicrosoftTunnelingManager {
    */
   public async startTunnelHost(
     ports: number[],
-    tunnelInfo?: TunnelInfo,
-    logProvider?: LogProvider
-  ): Promise<TunnelHostResult> {
-    const tunnelInstance = await this.ensureTunnelExist(ports, tunnelInfo);
-    await this.ensurePortsExist(tunnelInstance, ports);
+    tunnelInfo?: TunnelInfo
+  ): Promise<Result<TunnelHostResult, FxError>> {
+    const result = await this._startTunnelHost(ports, tunnelInfo);
+    // globalPortEndpoints = result.isOk() ? ok(result.value.portEndpoints) : err(result.error);
+    globalPortEndpoints = result.isOk() ? result.value.portEndpoints : undefined;
+    return result;
+  }
+
+  public async _startTunnelHost(
+    ports: number[],
+    tunnelInfo?: TunnelInfo
+  ): Promise<Result<TunnelHostResult, FxError>> {
+    const tunnelInstanceResult = await this.ensureTunnelExist(ports, tunnelInfo);
+    if (tunnelInstanceResult.isErr()) {
+      return err(tunnelInstanceResult.error);
+    }
+    const tunnelInstance = tunnelInstanceResult.value;
+    const portResult = await this.ensurePortsExist(tunnelInstance, ports);
+    if (portResult.isErr()) {
+      return err(portResult.error);
+    }
 
     // TODO: Handle cases that host is already up. This happens when last host is not cleaned up (rare case).
 
-    this.tunnelHost = new TunnelRelayTunnelHost(this.tunnelManagementClient);
-    this.tunnelHost.trace = (level: TraceLevel, eventId: number, msg: string, err?: Error) => {
-      logProvider?.log(
-        MicrosoftTunnelingManager.convertToLogLevel(level),
-        "MicrosoftTunnelingSDK: " + msg
-      );
-    };
-
     // Start host. This is an non-blocking operations. It does not block on the host service.
-    await this.tunnelHost.start(tunnelInstance);
+    const hostResult = await this.service.hostStart(tunnelInstance);
+    if (hostResult.isErr()) {
+      return err(hostResult.error);
+    }
 
-    const portEndpoints = await this.getPortEndpoints(tunnelInstance, ports);
-    globalPortEndpoints = portEndpoints;
-    return {
-      portEndpoints: portEndpoints,
+    const portEndpointsResult = await this.getPortEndpoints(tunnelInstance, ports);
+    if (portEndpointsResult.isErr()) {
+      return err(portEndpointsResult.error);
+    }
+    return ok({
+      portEndpoints: portEndpointsResult.value,
       tunnelInfo: {
         tunnelClusterId: tunnelInstance.clusterId,
         tunnelId: tunnelInstance.tunnelId,
       },
-    };
+    });
   }
 
-  public async stopTunnelHost(): Promise<void> {
-    if (this.tunnelHost) {
-      this.tunnelHost.dispose();
-      this.tunnelHost = undefined;
-      globalPortEndpoints = undefined;
-    }
+  public async stopTunnelHost(): Promise<Result<void, FxError>> {
+    globalPortEndpoints = undefined;
+    return await this.service.hostStop();
   }
 
   /**
@@ -102,14 +106,16 @@ export class MicrosoftTunnelingManager {
     ports: number[],
     retryIntervalMillis = 1000,
     maxRetries = 10
-  ): Promise<Map<number, string>> {
+  ): Promise<Result<Map<number, string>, FxError>> {
     const PortUriFormatPlaceholder = "{port}";
     let retried = 0;
     while (retried < maxRetries) {
-      // TODO: handler all API call exceptions and convert to FxError
-      const tunnelResult = await this.tunnelManagementClient.getTunnel(tunnel);
-      if (tunnelResult && tunnelResult.endpoints) {
-        for (const endpoint of tunnelResult.endpoints) {
+      const tunnelResult = await this.service.getTunnel(tunnel);
+      if (tunnelResult.isErr()) {
+        return err(tunnelResult.error);
+      }
+      if (tunnelResult.value && tunnelResult.value.endpoints) {
+        for (const endpoint of tunnelResult.value.endpoints) {
           const portUriFormat = endpoint.portUriFormat;
           if (
             // Currently there is a bug that endpoint.connectionMode is wrong value.
@@ -117,12 +123,12 @@ export class MicrosoftTunnelingManager {
             /*endpoint.connectionMode === TunnelConnectionMode.TunnelRelay && */
             portUriFormat !== undefined
           ) {
-            return new Map<number, string>(
-              ports.map((port) => {
-                // TODO: handle trailing "/" in somewhere but not here
-                // url = url.replace(/\/+$/g, "");
-                return [port, portUriFormat.replace(PortUriFormatPlaceholder, `${port}`)];
-              })
+            return ok(
+              new Map<number, string>(
+                ports.map((port) => {
+                  return [port, portUriFormat.replace(PortUriFormatPlaceholder, `${port}`)];
+                })
+              )
             );
           }
         }
@@ -130,8 +136,7 @@ export class MicrosoftTunnelingManager {
       await sleep(retryIntervalMillis);
       retried++;
     }
-    // TODO: Handle timeout error
-    throw new Error("Not implemented: tunnel host startup timeout");
+    return err(new MicrosoftTunnelingTimeoutError());
   }
 
   /**
@@ -141,18 +146,24 @@ export class MicrosoftTunnelingManager {
    * @param tunnelInfo If passed in, will re-use this tunnel.
    * @returns the tunnel created or retrieved.
    */
-  private async ensureTunnelExist(ports: number[], tunnelInfo?: TunnelInfo): Promise<Tunnel> {
+  private async ensureTunnelExist(
+    ports: number[],
+    tunnelInfo?: TunnelInfo
+  ): Promise<Result<Tunnel, FxError>> {
     let tunnelInstance: Tunnel;
     if (tunnelInfo?.tunnelClusterId && tunnelInfo?.tunnelId) {
-      const tunnelResult = await this.tunnelManagementClient.getTunnel({
+      const tunnelResult = await this.service.getTunnel({
         tunnelId: tunnelInfo.tunnelId,
         clusterId: tunnelInfo.tunnelClusterId,
       });
-      if (tunnelResult === null) {
+      if (tunnelResult.isErr()) {
+        return err(tunnelResult.error);
+      }
+      if (tunnelResult.value === null) {
         // TODO: handle tunnel expiration
-        throw new Error("not implemented");
+        return err(new NotImplementedError("Handle tunnel expiration"));
       } else {
-        tunnelInstance = tunnelResult;
+        tunnelInstance = tunnelResult.value;
       }
     } else {
       const tunnelRequest: Tunnel = {
@@ -163,12 +174,13 @@ export class MicrosoftTunnelingManager {
         tokenScopes: [TunnelAccessScopes.Host, TunnelAccessScopes.Connect],
         includePorts: true,
       };
-      tunnelInstance = await this.tunnelManagementClient.createTunnel(
-        tunnelRequest,
-        tunnelRequestOptions
-      );
+      const tunnelResult = await this.service.createTunnel(tunnelRequest, tunnelRequestOptions);
+      if (tunnelResult.isErr()) {
+        return err(tunnelResult.error);
+      }
+      tunnelInstance = tunnelResult.value;
     }
-    return tunnelInstance;
+    return ok(tunnelInstance);
   }
 
   /**
@@ -176,18 +188,12 @@ export class MicrosoftTunnelingManager {
    * In most cases this is not needed. Rare cases are adding features or port creation failure in the last debug session.
    * After this step, the ports should exist in the service.
    */
-  private async ensurePortsExist(tunnelInstance: Tunnel, ports: number[]): Promise<void> {
+  private async ensurePortsExist(
+    tunnelInstance: Tunnel,
+    ports: number[]
+  ): Promise<Result<void, FxError>> {
     // TODO: implement me.
-  }
-
-  private static convertToLogLevel(traceLevel: TraceLevel): LogLevel {
-    const mapping = {
-      [TraceLevel.Error]: LogLevel.Error,
-      [TraceLevel.Warning]: LogLevel.Warning,
-      [TraceLevel.Info]: LogLevel.Info,
-      [TraceLevel.Verbose]: LogLevel.Debug,
-    };
-    return mapping[traceLevel] || LogLevel.Info;
+    return ok(undefined);
   }
 }
 
@@ -199,7 +205,7 @@ function sleep(millis: number): Promise<void> {
 
 // Tunnels are managed in vscode/cli task and tunnel endpoints are read in solution.
 // So use a global variable to share between task and solution.
-let globalPortEndpoints: Map<number, string> | undefined;
-export function getCurrentTunnelPorts(): Map<number, string> | undefined {
+let globalPortEndpoints: Result<Map<number, string>, FxError> | undefined;
+export function getCurrentTunnelPorts(): Result<Map<number, string>, FxError> | undefined {
   return globalPortEndpoints;
 }

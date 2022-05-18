@@ -80,7 +80,7 @@ export class MicrosoftTunnelingTaskTerminal implements vscode.Pseudoterminal {
         throw new Error("No login");
       }
       return token;
-    });
+    }, this.logger);
     const tunnelInfoResult = await loadTunnelInfo(this.projectPath, this.projectSettings.projectId);
     if (tunnelInfoResult.isErr()) {
       return err(tunnelInfoResult.error);
@@ -88,9 +88,14 @@ export class MicrosoftTunnelingTaskTerminal implements vscode.Pseudoterminal {
     const tunnelInfo = tunnelInfoResult.value;
     const ports = await getTunnelPorts(this.projectSettings);
 
-    const info = await this.manager.startTunnelHost(ports, tunnelInfo, this.logger);
-    await storeTunnelInfo(this.projectPath, this.projectSettings.projectId, info.tunnelInfo);
-    this.printTunnelInfo(info);
+    const newInfoResult = await this.manager.startTunnelHost(ports, tunnelInfo);
+    if (newInfoResult.isErr()) {
+      return err(newInfoResult.error);
+    }
+    const newInfo = newInfoResult.value;
+
+    await storeTunnelInfo(this.projectPath, this.projectSettings.projectId, newInfo.tunnelInfo);
+    this.printTunnelInfo(newInfo);
 
     // For problem matcher
     this.logger.info(TunnelUpMessage);

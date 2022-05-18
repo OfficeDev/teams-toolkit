@@ -12,6 +12,10 @@ export class HelpLinks {
   static readonly HowToAddCapability = "https://aka.ms/teamsfx-how-to-add-capability";
 }
 
+export class VSCodeExtensionCommand {
+  static readonly showOutputChannel = "command:fx-extension.showOutputChannel";
+}
+
 export class Bicep {
   static readonly ParameterOrchestrationFileName: string = "param.template.bicep";
   static readonly ModuleOrchestrationFileName: string = "module.template.bicep";

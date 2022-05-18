@@ -50,6 +50,7 @@ import { flattenConfigMap } from "../../../resource/utils4v2";
 import * as util from "util";
 import { PluginsWithContext } from "../types";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
+import { VSCodeExtensionCommand } from "../../../../common/constants";
 
 export async function executeListCollaboratorV2(
   ctx: v2.Context,
@@ -297,12 +298,20 @@ async function listCollaboratorImpl(
     } else if (platform === Platform.VSCode) {
       ui?.showMessage(
         "info",
-        getLocalizedString(
-          "core.collaboration.ListCollaboratorsSuccess",
-          CollaborationUtil.isSpfxProject(param.ctx)
-            ? ""
-            : getLocalizedString("core.collaboration.WithAadApp")
-        ),
+        [
+          {
+            content: getLocalizedString(
+              "core.collaboration.ListCollaboratorsSuccess",
+              CollaborationUtil.isSpfxProject(param.ctx)
+                ? ""
+                : getLocalizedString("core.collaboration.WithAadApp")
+            ),
+          },
+          {
+            content: getLocalizedString("core.notification.outputChanel"),
+            link: VSCodeExtensionCommand.showOutputChannel,
+          },
+        ],
         false
       );
       logProvider?.info(message);

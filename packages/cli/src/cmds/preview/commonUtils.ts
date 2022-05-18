@@ -61,9 +61,7 @@ export async function openBrowser(
       });
       break;
     case constants.Browser.default:
-      await open(url, {
-        wait: true,
-      });
+      await open(url);
       break;
   }
 }

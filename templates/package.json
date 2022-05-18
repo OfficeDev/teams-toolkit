@@ -11,6 +11,7 @@
     "templates": [
         "blazor-base/csharp/default",
         "bot/csharp/default",
+        "bot/csharp/notification-webapi",
         "bot/js/command-and-response",
         "bot/js/default",
         "bot/js/m365",

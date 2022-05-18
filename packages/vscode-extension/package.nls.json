@@ -258,7 +258,7 @@
     "teamstoolkit.localDebug.installApp.bot.configureOutlook": "Configure Outlook",
     "teamstoolkit.localDebug.installApp.bot.description": "To continue to debug your application in Outlook, you need to follow two steps:",
     "teamstoolkit.localDebug.installApp.bot.finish": "Once you have finished the above two steps, please come back and click 'Continue'",
-    "teamstoolkit.localDebug.installApp.bot.guide1": "First, please click 'Install in Teams' to instapp the app in Teams.",
+    "teamstoolkit.localDebug.installApp.bot.guide1": "First, please click 'Install in Teams' to install the app in Teams.",
     "teamstoolkit.localDebug.installApp.bot.guide2": "Second, please click 'Configure Outlook', sign in to the portal with the same Microsoft 365 account you used in Teams Toolkit. Click the 'Save' button in the portal to connect your bot to the Outlook channel.",
     "teamstoolkit.localDebug.installApp.cancel": "Cancel",
     "teamstoolkit.localDebug.installApp.continue": "Continue",

@@ -1692,7 +1692,7 @@ export async function ensureBasicFolderStructure(
                   test: 'echo "Error: no test specified" && exit 1',
                 },
                 devDependencies: {
-                  "@microsoft/teamsfx-cli": "0.*",
+                  "@microsoft/teamsfx-cli": "1.*",
                 },
                 license: "MIT",
               },

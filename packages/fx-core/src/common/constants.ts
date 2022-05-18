@@ -15,7 +15,7 @@ export class HelpLinks {
 export class VSCodeExtensionCommand {
   static readonly showOutputChannel = "command:fx-extension.showOutputChannel";
   static readonly openFolder = "command:fx-extension.openFolder";
-  static readonly openReadme = "command:fx-extension.openReadMe";
+  static readonly openReadme = "command:fx-extension.openReadMe?%5B%22Notification%22%5D";
 }
 
 export class Bicep {

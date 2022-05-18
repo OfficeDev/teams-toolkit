@@ -10,7 +10,7 @@ import { AppServiceOptionItem, HostTypeTriggerOptions } from "../question";
 //todo: refactor HostTypes to be enum
 import { HostType, HostTypes, PluginBot } from "../resources/strings";
 import { CodeTemplateInfo } from "./interface/codeTemplateInfo";
-import { getLanguage, getScenario, getServiceType } from "./mapping";
+import { getLanguage, getTemplateScenarioFromTrigger, getServiceType } from "./mapping";
 
 export function getTemplateInfos(ctx: Context, inputs: Inputs): CodeTemplateInfo[] {
   const lang = getLanguage(ctx.projectSetting.programmingLanguage!);
@@ -53,7 +53,9 @@ export function decideTemplateScenarios(ctx: Context, inputs: Inputs): string[] 
           const notificationTriggerType = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] as string[];
           notificationTriggerType
             .map((item) => HostTypeTriggerOptions.find((option) => option.id === item)!.trigger!)
-            .forEach((hostType) => templateScenarios.push(getScenario(hostType)));
+            .forEach((hostType) =>
+              templateScenarios.push(getTemplateScenarioFromTrigger(hostType))
+            );
         }
         break;
     }

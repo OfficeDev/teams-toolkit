@@ -59,7 +59,7 @@ export function getLanguage(lang: string): string {
   throw new Error("invalid bot input");
 }
 
-export function getScenario(trigger: string): string {
+export function getTemplateScenarioFromTrigger(trigger: string): string {
   const scenario = triggerScenarioMap.get(trigger);
   if (scenario) {
     return scenario;

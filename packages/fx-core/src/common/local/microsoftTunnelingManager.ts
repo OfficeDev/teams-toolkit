@@ -119,7 +119,7 @@ export class MicrosoftTunnelingManager {
           const portUriFormat = endpoint.portUriFormat;
           if (
             // Currently there is a bug that endpoint.connectionMode is wrong value.
-            // https://github.com/microsoft/basis-planning/issues/351
+            // See the planning project issues/351
             /*endpoint.connectionMode === TunnelConnectionMode.TunnelRelay && */
             portUriFormat !== undefined
           ) {

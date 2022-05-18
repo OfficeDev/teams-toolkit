@@ -74,7 +74,7 @@ export class MicrosoftTunnelingTaskTerminal implements vscode.Pseudoterminal {
     // TODO: add telemetry
     // TODO: prevent re-entry (cases when user manually trigger a task)
     this.manager = new MicrosoftTunnelingManager(async () => {
-      // TODO: switch to new login and pass in Basis scopes
+      // TODO: switch to new login and pass in Microsoft tunneling scopes
       const token = await appStudioLogin.getAccessToken();
       if (!token) {
         throw new Error("No login");

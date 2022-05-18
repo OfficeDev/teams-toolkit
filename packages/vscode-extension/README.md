@@ -1,5 +1,5 @@
 # Microsoft Teams Toolkit for Visual Studio Code
-## What is  Teams Toolkit?
+## What is Teams Toolkit?
 
 The Teams Toolkit helps developers create and deploy Teams apps with integrated Identity, access to cloud storage, data from [Microsoft Graph](https://docs.microsoft.com/en-us/graph/teams-concept-overview), and other services in [Azure](https://docs.microsoft.com/en-us/microsoftteams/platform/build-your-first-app/build-bot) and [M365](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant) with a "zero-configuration" approach to the developer experience.
 
@@ -50,14 +50,17 @@ Verify you have the right prerequisites for building Teams apps and install some
 
 ### Create your project
 
-Use the Teams Toolkit for Visual Studio Code to set up your first app project. Create your app project using the following steps:
+Use the Teams Toolkit for Visual Studio Code to set up your first app project. Create your tab app project using the following steps:
 
 - Ensure you've installed the Microsoft Teams Toolkit for Visual Studio Code
-- In Visual Studio Code, in `DEVELOPMENT` section click `Create a new Teams app`. Or open the Command Palette (Ctrl+Shift+P / ⌘⇧-P or View -> Command - Palette) and type "teams" and choose `Teams: Create a new Teams app`.
-- Next, Add capabilities comes up. Select capability you want then Next.
-- Choose options according to your purpose.
+- Select the Teams Toolkit icon in the Visual Studio Code sidebar.
+- Select `Create a new Teams app` button and at next prompt to also select `Create a new Teams app`.
+- Ensure that Tab is selected as the capability that you want to build in your app. Select OK.
+- Select JavaScript as the programming language.
 - Choose a location where your new application will be created in a new folder.
 - Type a name for your project and hit Enter.
+
+read more on [creating new project](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/create-new-project).
 
 ### Configure your app
 
@@ -78,13 +81,15 @@ When an app is installed, the Teams client parses the manifest file to determine
 - To configure your app, navigate to the `appPackage/manifest.template.json` file or from UI to select `DEVELOPMENT`-`Edit manifest file` and edit the manifest.
 - The toolkit will automatically update the app registration data accordingly during app side-loading and publish.
 
-### Preview your app on your local/remote dev environment
+read more on [customizing](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/teamsfx-manifest-customization) and [previewing](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/teamsfx-manifest-preview) manifest file.
 
-Prerequisites: [Enable Teams developer preview mode](https://docs.microsoft.com/en-us/microsoftteams/platform/resources/dev-preview/developer-preview-intro#enable-developer-preview)
+### Preview your app on your local/remote dev environment
 
 Simply press F5 to run your first Teams app or navigate to the Debug tab in the activity bar and select Run icon to display the Run and Debug view. As a default, the toolkit will automatically help you to setup local environment and load the app in Teams.
 
 If you want to have a better estimation of how the app will behave in the cloud environment, you can deploy your resources to the cloud and preview your app with the backend running in the cloud (remote).
+
+read more on [local debug](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/debug-local).
 
 ### Deploy your application to Azure
 
@@ -104,6 +109,8 @@ Deploy copies of your application to the provisioned Azure resources. It is typi
 - Once deploy is finished, go to the Visual Studio Code Debug Panel (Ctrl+Shift+D / ⌘⇧-D or View -> Run) and select Launch Remote (Edge).
 - Press the start button (green arrow) to launch your app - now running remotely on Azure!
 
+read more on [provision](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/provision) and [deploy](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/deploy) to Azure.
+
 ### Publish your application to Teams
 
 When your application resources and infrastructure are deployed successfully, you can publish and register your app to Teams app catalog to share with others in your organization.
@@ -112,6 +119,8 @@ When your application resources and infrastructure are deployed successfully, yo
 - In the Visual Studio Code Command Palette, enter "teams" and choose the command `Teams: Publish to the Teams`.
 - Depending on your permission, you can send your app to the admin portal directly, or manually submit the app package file to your admin to check.
 - Once your app is approved by your admin, you can see it under "Built for your org" section in Teams Apps.
+
+read more on [publishing](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/publish) Teams apps.
 
 ## Explore Code Samples
 

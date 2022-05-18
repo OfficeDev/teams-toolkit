@@ -425,6 +425,8 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(showOutputChannel);
 
+  registerInCommandController(context, "fx-extension.openFolder", handlers.openFolderHandler);
+
   const addSso = vscode.commands.registerCommand("fx-extension.addSso", () =>
     Correlator.run(handlers.addSsoHanlder)
   );

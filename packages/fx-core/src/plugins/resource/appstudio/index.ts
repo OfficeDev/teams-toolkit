@@ -19,6 +19,8 @@ import {
   Func,
   Void,
 } from "@microsoft/teamsfx-api";
+import * as path from "path";
+import { pathToFileURL } from "url";
 import { AppStudioPluginImpl } from "./plugin";
 import { Constants } from "./constants";
 import { AppStudioError } from "./errors";
@@ -35,6 +37,7 @@ import { IUserList } from "./interfaces/IAppDefinition";
 import { getManifestTemplatePath } from "./manifestTemplate";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { isDeployManifestEnabled } from "../../../common";
+import { VSCodeExtensionCommand } from "../../../common/constants";
 
 @Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {
@@ -228,13 +231,23 @@ export class AppStudioPlugin implements Plugin {
     TelemetryUtils.sendStartEvent(TelemetryEventName.buildTeamsPackage);
     try {
       const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, isLocalDebug);
-      const builtSuccess = [
-        { content: "(√)Done: ", color: Colors.BRIGHT_GREEN },
-        { content: "Teams Package ", color: Colors.BRIGHT_WHITE },
-        { content: appPackagePath, color: Colors.BRIGHT_MAGENTA },
-        { content: " built successfully!", color: Colors.BRIGHT_WHITE },
-      ];
-      ctx.ui?.showMessage("info", builtSuccess, false);
+      if (ctx.answers?.platform === Platform.CLI) {
+        const builtSuccess = [
+          { content: "(√)Done: ", color: Colors.BRIGHT_GREEN },
+          { content: "Teams Package ", color: Colors.BRIGHT_WHITE },
+          { content: appPackagePath, color: Colors.BRIGHT_MAGENTA },
+          { content: " built successfully!", color: Colors.BRIGHT_WHITE },
+        ];
+        ctx.ui?.showMessage("info", builtSuccess, false);
+      } else {
+        const folderLink = pathToFileURL(path.dirname(appPackagePath));
+        const appPackageLink = `${VSCodeExtensionCommand.openFolder}?%5B%22${folderLink}%22%5D`;
+        const builtSuccess = [
+          { content: getLocalizedString("plugins.appstudio.buildSucceedNotice") },
+          { content: getLocalizedString("core.notification.localAddress"), link: appPackageLink },
+        ];
+        ctx.ui?.showMessage("info", builtSuccess, false);
+      }
       TelemetryUtils.sendSuccessEvent(
         TelemetryEventName.buildTeamsPackage,
         this.appStudioPluginImpl.commonProperties

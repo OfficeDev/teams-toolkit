@@ -167,6 +167,8 @@ export class Messages {
   public static readonly CheckCommandOutputAndTryToFixIt = getLocalizedString(
     "plugins.bot.CheckCommandOutput"
   );
+  public static readonly RunFailedCommand = (command: string, path: string): string =>
+    getLocalizedString("plugins.bot.RunFailedCommand", command, path);
   public static readonly DeleteExistingBotChannelRegistration = getLocalizedString(
     // eslint-disable-next-line no-secrets/no-secrets
     "plugins.bot.DeleteExistsAzureBotChannelRegistrations"

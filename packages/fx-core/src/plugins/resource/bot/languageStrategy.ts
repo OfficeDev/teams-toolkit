@@ -140,7 +140,11 @@ export class LanguageStrategy {
         await utils.execute("npm install", packDir);
         await utils.execute("npm run build", packDir);
       } catch (e) {
-        throw new CommandExecutionError(`${Commands.NPM_INSTALL},${Commands.NPM_BUILD}`, e);
+        throw new CommandExecutionError(
+          `${Commands.NPM_INSTALL}, ${Commands.NPM_BUILD}`,
+          packDir,
+          e
+        );
       }
     }
 
@@ -149,7 +153,7 @@ export class LanguageStrategy {
         // fail to npm install @microsoft/teamsfx on azure web app, so pack it locally.
         await utils.execute("npm install", packDir);
       } catch (e) {
-        throw new CommandExecutionError(`${Commands.NPM_INSTALL}`, e);
+        throw new CommandExecutionError(`${Commands.NPM_INSTALL}`, packDir, e);
       }
     }
   }

@@ -50,8 +50,6 @@ export async function openBrowser(
           name: open.apps.chrome,
           arguments: browserArguments,
         },
-        wait: true,
-        allowNonzeroExitCode: true,
       });
       break;
     case constants.Browser.edge:
@@ -60,8 +58,6 @@ export async function openBrowser(
           name: open.apps.edge,
           arguments: browserArguments,
         },
-        wait: true,
-        allowNonzeroExitCode: true,
       });
       break;
     case constants.Browser.default:

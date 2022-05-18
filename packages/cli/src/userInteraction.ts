@@ -510,7 +510,10 @@ export class CLIUserInteraction implements UserInteraction {
 
   public async showMessage(
     level: "info" | "warn" | "error",
-    message: string | Array<{ content: string; color: Colors }>,
+    message:
+      | string
+      | Array<{ content: string; color: Colors }>
+      | Array<{ content: string; link?: string }>,
     modal: boolean,
     ...items: string[]
   ): Promise<Result<string | undefined, FxError>> {
@@ -526,7 +529,8 @@ export class CLIUserInteraction implements UserInteraction {
           switch (level) {
             case "info":
               if (message instanceof Array) {
-                CLILogProvider.necessaryLog(LogLevel.Info, getColorizedString(message));
+                const colorMessage = message as Array<{ content: string; color: Colors }>;
+                CLILogProvider.necessaryLog(LogLevel.Info, getColorizedString(colorMessage));
               } else {
                 CLILogProvider.necessaryLog(LogLevel.Info, message);
               }

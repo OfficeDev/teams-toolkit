@@ -2016,6 +2016,10 @@ export interface UserInteraction {
         content: string;
         color: Colors;
     }>, modal: boolean, ...items: string[]): Promise<Result<string | undefined, FxError>>;
+    showMessage(level: "info" | "warn" | "error", message: Array<{
+        content: string;
+        link?: string;
+    }>, modal: boolean, ...items: string[]): Promise<Result<string | undefined, FxError>>;
 }
 
 declare namespace v2 {

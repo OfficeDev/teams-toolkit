@@ -295,6 +295,20 @@ export interface UserInteraction {
   ): Promise<Result<string | undefined, FxError>>;
 
   /**
+   * Show an information/warning/error message with link.
+   * @param level message level
+   * @param message The message with link
+   * @param items A set of items that will be rendered as actions in the message.
+   * @returns A promise that resolves to the selected item or `undefined` when being dismissed.
+   */
+  showMessage(
+    level: "info" | "warn" | "error",
+    message: Array<{ content: string; link?: string }>,
+    modal: boolean,
+    ...items: string[]
+  ): Promise<Result<string | undefined, FxError>>;
+
+  /**
    * Create a new progress bar with the specified title and the number of steps. It will
    * return a progress handler and you can use this handler to control the detail message
    * of it.

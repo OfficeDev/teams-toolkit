@@ -105,7 +105,6 @@ export async function storeTunnelInfo(
     return ok(undefined);
   }
 
-  solutionState.set(nameOf<TunnelInfo>("tunnelId"), tunnelInfo.tunnelId);
   const result = await environmentManager.writeEnvState(
     envState,
     projectPath,

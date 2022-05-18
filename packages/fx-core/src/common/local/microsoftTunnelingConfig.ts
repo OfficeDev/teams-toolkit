@@ -91,9 +91,21 @@ export async function storeTunnelInfo(
     ? getEnvAndSolutionState(localEnvInfo)
     : newEnvAndSolutionState();
 
-  solutionState.set(nameOf<TunnelInfo>("tunnelClusterId"), tunnelInfo.tunnelClusterId);
-  solutionState.set(nameOf<TunnelInfo>("tunnelId"), tunnelInfo.tunnelId);
+  // Save the write file effort if not changed
+  let changed = false;
+  const keys: (keyof TunnelInfo)[] = ["tunnelId", "tunnelClusterId"];
+  for (const key of keys) {
+    const value = tunnelInfo[key];
+    if (value != solutionState.get(key)) {
+      solutionState.set(key, value);
+      changed = true;
+    }
+  }
+  if (!changed) {
+    return ok(undefined);
+  }
 
+  solutionState.set(nameOf<TunnelInfo>("tunnelId"), tunnelInfo.tunnelId);
   const result = await environmentManager.writeEnvState(
     envState,
     projectPath,

@@ -12,11 +12,11 @@ const HostingMap: { [key: string]: () => AzureHosting } = {
 };
 
 export class AzureHostingFactory {
-  static createHosting(hostType: ServiceType): AzureHosting {
-    if (HostingMap[hostType] !== undefined) {
-      return HostingMap[hostType]();
+  static createHosting(serviceType: ServiceType): AzureHosting {
+    if (HostingMap[serviceType] !== undefined) {
+      return HostingMap[serviceType]();
     }
 
-    throw new Error(`Host type '${hostType}' is not supported.`);
+    throw new Error(`Host type '${serviceType}' is not supported.`);
   }
 }

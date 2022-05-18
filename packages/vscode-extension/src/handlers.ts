@@ -84,6 +84,7 @@ import {
 
 import AppStudioCodeSpaceTokenInstance from "./commonlib/appStudioCodeSpaceLogin";
 import AppStudioTokenInstance from "./commonlib/appStudioLogin";
+import M365TokenInstance from "./commonlib/m365Login";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { signedIn, signedOut } from "./commonlib/common/constant";
 import GraphManagerInstance from "./commonlib/graphLogin";
@@ -229,6 +230,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
         graphTokenProvider: GraphManagerInstance,
         appStudioToken: appstudioLogin,
         sharepointTokenProvider: SharepointTokenInstance,
+        m365TokenProvider: M365TokenInstance,
       },
       telemetryReporter: telemetry,
       treeProvider: TreeViewManagerInstance.getTreeView("teamsfx-accounts")!,

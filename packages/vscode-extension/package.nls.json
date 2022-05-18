@@ -40,6 +40,8 @@
     "teamstoolkit.codeFlowLogin.loginTimeoutTitle": "LoginTimeout",
     "teamstoolkit.codeFlowLogin.resultFileNotFound": "Result file not found.",
     "teamstoolkit.codeFlowLogin.silentAcquireToken": "Failed to retrieve token silently: %s",
+    "teamstoolkit.codeFlowLogin.checkOnlineFailTitle": "CheckOnlineFail",
+    "teamstoolkit.codeFlowLogin.checkOnlineFailDetail": "You appear to be offline. Please check your network connection.",
     "teamstoolkit.codeLens.projectSettingsNotice": "This file is maintained by Teams Toolkit, please do not modify it",
     "teamstoolkit.commands.accounts.title": "Teams: Accounts",
     "teamstoolkit.commands.accountsLink.title": "Learn more about accounts",

@@ -7,7 +7,16 @@ import * as http from "http";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { Mutex } from "async-mutex";
-import { UserError, LogLevel, Colors, SystemError } from "@microsoft/teamsfx-api";
+import {
+  UserError,
+  LogLevel,
+  Colors,
+  SystemError,
+  Result,
+  FxError,
+  ok,
+  err,
+} from "@microsoft/teamsfx-api";
 
 import CliCodeLogInstance from "./log";
 import * as crypto from "crypto";
@@ -31,7 +40,7 @@ import {
 } from "../telemetry/cliTelemetryEvents";
 import { getColorizedString } from "../utils";
 
-class ErrorMessage {
+export class ErrorMessage {
   static readonly loginFailureTitle = "LoginFail";
   static readonly loginFailureDescription =
     "Cannot retrieve user login information. Login with another account.";
@@ -43,6 +52,12 @@ class ErrorMessage {
   static readonly loginPortConflictTitle = "LoginPortConflict";
   static readonly loginPortConflictDescription = "Timeout waiting for port. Try again.";
   static readonly loginComponent = "login";
+  static readonly checkOnlineFailTitle = "CheckOnlineFail";
+  static readonly checkOnlineFailDetail =
+    "You appear to be offline. Please check your network connection.";
+  static readonly loginUsernamePasswordFailTitle = "UsernamePasswordLoginFail";
+  static readonly loginUsernamePasswordFailDetail =
+    "Fail to login via username and password. Please check your username or password";
 }
 
 interface Deferred<T> {
@@ -53,6 +68,9 @@ interface Deferred<T> {
 export class CodeFlowLogin {
   pca: PublicClientApplication | undefined;
   account: AccountInfo | undefined;
+  /**
+   * @deprecated will be removed after unify m365 login
+   */
   scopes: string[] | undefined;
   config: Configuration | undefined;
   port: number | undefined;
@@ -246,6 +264,9 @@ export class CodeFlowLogin {
     return true;
   }
 
+  /**
+   * @deprecated will be removed after unify m365 login
+   */
   async getToken(refresh = true): Promise<string | undefined> {
     try {
       if (!this.account) {
@@ -294,6 +315,57 @@ export class CodeFlowLogin {
         throw LoginCodeFlowError(error);
       } else {
         throw error;
+      }
+    }
+  }
+
+  async getTokenByScopes(scopes: Array<string>, refresh = true): Promise<Result<string, FxError>> {
+    try {
+      if (!this.account) {
+        await this.reloadCache();
+      }
+      if (!this.account) {
+        const accessToken = await this.login();
+        return ok(accessToken);
+      } else {
+        return this.pca!.acquireTokenSilent({
+          account: this.account,
+          scopes: scopes,
+          forceRefresh: false,
+        })
+          .then((response) => {
+            if (response) {
+              return ok(response.accessToken);
+            } else {
+              return err(LoginCodeFlowError(new Error("No token response")));
+            }
+          })
+          .catch(async (error) => {
+            CliCodeLogInstance.necessaryLog(
+              LogLevel.Error,
+              "[Login] silent acquire token : " + error.message
+            );
+            if (!(await checkIsOnline())) {
+              return error(CheckOnlineError());
+            }
+            await this.logout();
+            (this.msalTokenCache as any).storage.setCache({});
+            if (refresh) {
+              const accessToken = await this.login();
+              return ok(accessToken);
+            }
+            return err(LoginCodeFlowError(error));
+          });
+      }
+    } catch (error) {
+      CliCodeLogInstance.necessaryLog(LogLevel.Error, "[Login] " + error.message);
+      if (
+        error.name !== ErrorMessage.loginTimeoutTitle &&
+        error.name !== ErrorMessage.loginPortConflictTitle
+      ) {
+        return err(LoginCodeFlowError(error));
+      } else {
+        return err(error as UserError);
       }
     }
   }
@@ -432,6 +504,14 @@ export function LoginCodeFlowError(innerError?: any): UserError {
     message: ErrorMessage.loginCodeFlowFailureDescription,
     source: ErrorMessage.loginComponent,
     error: innerError,
+  });
+}
+
+export function CheckOnlineError(): UserError {
+  return new UserError({
+    name: ErrorMessage.checkOnlineFailTitle,
+    message: ErrorMessage.checkOnlineFailDetail,
+    source: ErrorMessage.loginComponent,
   });
 }
 

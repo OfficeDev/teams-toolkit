@@ -10,7 +10,7 @@ import * as http from "http";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { Mutex } from "async-mutex";
-import { UserError } from "@microsoft/teamsfx-api";
+import { FxError, ok, Result, UserError, err } from "@microsoft/teamsfx-api";
 import VsCodeLogInstance from "./log";
 import * as crypto from "crypto";
 import { AddressInfo } from "net";
@@ -25,6 +25,7 @@ import {
   TelemetrySuccess,
 } from "../telemetry/extTelemetryEvents";
 import { getDefaultString, localize } from "../utils/localizeUtils";
+import { ExtensionErrors } from "../error";
 
 interface Deferred<T> {
   resolve: (result: T | Promise<T>) => void;
@@ -34,6 +35,9 @@ interface Deferred<T> {
 export class CodeFlowLogin {
   pca: PublicClientApplication | undefined;
   account: AccountInfo | undefined;
+  /**
+   * @deprecated will be removed after unify m365 login
+   */
   scopes: string[] | undefined;
   config: Configuration | undefined;
   port: number | undefined;
@@ -236,6 +240,9 @@ export class CodeFlowLogin {
     }
   }
 
+  /**
+   * @deprecated will be removed after unify m365 login
+   */
   async getToken(refresh = true): Promise<string | undefined> {
     try {
       if (!this.account) {
@@ -283,6 +290,57 @@ export class CodeFlowLogin {
         throw LoginCodeFlowError(error);
       } else {
         throw error;
+      }
+    }
+  }
+
+  async getTokenByScopes(scopes: Array<string>, refresh = true): Promise<Result<string, FxError>> {
+    try {
+      if (!this.account) {
+        const accessToken = await this.login();
+        return ok(accessToken);
+      } else {
+        return this.pca!.acquireTokenSilent({
+          account: this.account,
+          scopes: scopes,
+          forceRefresh: false,
+        })
+          .then((response) => {
+            if (response) {
+              return ok(response.accessToken);
+            } else {
+              return err(LoginCodeFlowError(new Error("No token response.")));
+            }
+          })
+          .catch(async (error) => {
+            VsCodeLogInstance.error(
+              "[Login] " +
+                stringUtil.format(
+                  localize("teamstoolkit.codeFlowLogin.silentAcquireToken"),
+                  error.message
+                )
+            );
+            if (!(await checkIsOnline())) {
+              return error(CheckOnlineError());
+            }
+            await this.logout();
+            (this.msalTokenCache as any).storage.setCache({});
+            if (refresh) {
+              const accessToken = await this.login();
+              return ok(accessToken);
+            }
+            return err(LoginCodeFlowError(error));
+          });
+      }
+    } catch (error) {
+      VsCodeLogInstance.error("[Login] " + error.message);
+      if (
+        error.name !== getDefaultString("teamstoolkit.codeFlowLogin.loginTimeoutTitle") &&
+        error.name !== getDefaultString("teamstoolkit.codeFlowLogin.loginPortConflictTitle")
+      ) {
+        return err(LoginCodeFlowError(error));
+      } else {
+        return err(error as UserError);
       }
     }
   }
@@ -355,6 +413,24 @@ export function LoginCodeFlowError(innerError?: any): UserError {
     displayMessage: localize("teamstoolkit.codeFlowLogin.loginCodeFlowFailureDescription"),
     source: getDefaultString("teamstoolkit.codeFlowLogin.loginComponent"),
     error: innerError,
+  });
+}
+
+export function CheckOnlineError(): UserError {
+  return new UserError({
+    name: getDefaultString("teamstoolkit.codeFlowLogin.checkOnlineFailTitle"),
+    message: getDefaultString("teamstoolkit.codeFlowLogin.checkOnlineFailDetail"),
+    displayMessage: localize("teamstoolkit.codeFlowLogin.checkOnlineFailDetail"),
+    source: getDefaultString("teamstoolkit.codeFlowLogin.loginComponent"),
+  });
+}
+
+export function UserCancelError(source: string): UserError {
+  return new UserError({
+    name: ExtensionErrors.UserCancel,
+    message: getDefaultString("teamstoolkit.appStudioLogin.loginCancel"),
+    displayMessage: localize("teamstoolkit.appStudioLogin.loginCancel"),
+    source: source,
   });
 }
 

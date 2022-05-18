@@ -4,6 +4,8 @@
 
 import { TokenCredential } from "@azure/core-http";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
+import { Result } from "neverthrow";
+import { FxError } from "../error";
 
 /**
  * Difference between getAccountCredential and getIdentityCredential [Node Azure Authenticate](https://docs.microsoft.com/en-us/azure/developer/javascript/core/node-sdk-azure-authenticate)
@@ -88,6 +90,8 @@ export interface AzureAccountProvider {
 
 /**
  * Provide team accessToken
+ *
+ * @deprecated The method should not be used, please update to M365TokenProvider
  */
 export interface AppStudioTokenProvider {
   /**
@@ -135,6 +139,8 @@ export interface AppStudioTokenProvider {
 
 /**
  * Provide graph accessToken and JSON object
+ *
+ * @deprecated The method should not be used, please update to M365TokenProvider
  */
 export interface GraphTokenProvider {
   /**
@@ -182,6 +188,8 @@ export interface GraphTokenProvider {
 
 /**
  * Provide sharepoint accessToken and JSON object
+ *
+ * @deprecated The method should not be used, please update to M365TokenProvider
  */
 export interface SharepointTokenProvider {
   /**
@@ -228,9 +236,45 @@ export type SubscriptionInfo = {
   tenantId: string;
 };
 
+export declare type TokenRequest = {
+  scopes: Array<string>;
+  showDialog?: boolean;
+};
+export type LoginStatus = {
+  status: string;
+  token?: string;
+  accountInfo?: Record<string, unknown>;
+};
+export interface M365TokenProvider {
+  getAccessToken(tokenRequest: TokenRequest): Promise<Result<string, FxError>>;
+  getJsonObject(tokenRequest: TokenRequest): Promise<Result<Record<string, unknown>, FxError>>;
+  getStatus(tokenRequest: TokenRequest): Promise<Result<LoginStatus, FxError>>;
+  setStatusChangeMap(
+    name: string,
+    tokenRequest: TokenRequest,
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>,
+    immediateCall?: boolean
+  ): Promise<Result<boolean, FxError>>;
+  removeStatusChangeMap(name: string): Promise<Result<boolean, FxError>>;
+}
+
 export type TokenProvider = {
   azureAccountProvider: AzureAccountProvider;
+  /**
+   * @deprecated The method should not be used, please update to M365TokenProvider
+   */
   graphTokenProvider: GraphTokenProvider;
+  /**
+   * @deprecated The method should not be used, please update to M365TokenProvider
+   */
   appStudioToken: AppStudioTokenProvider;
+  /**
+   * @deprecated The method should not be used, please update to M365TokenProvider
+   */
   sharepointTokenProvider: SharepointTokenProvider;
+  m365TokenProvider: M365TokenProvider;
 };

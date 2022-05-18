@@ -11,3 +11,4 @@ export * from "./permissionInterface";
 export * from "./projectSettingsHelper";
 export * from "./samples";
 export * from "./tools";
+export * from "./basicLogin";

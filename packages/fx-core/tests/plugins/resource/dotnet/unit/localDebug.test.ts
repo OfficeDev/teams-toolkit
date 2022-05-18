@@ -18,28 +18,24 @@ import {
 } from "../../../../../src/plugins/resource/frontend/dotnet/constants";
 import {
   LocalSettingsAuthKeys,
-  LocalSettingsBotKeys,
   LocalSettingsFrontendKeys,
   LocalSettingsTeamsAppKeys,
 } from "../../../../../src/common/localSettingsConstants";
 import { PathLike } from "fs";
-import { FeatureFlagName } from "../../../../../src/common/constants";
 import { PluginNames } from "../../../../../src/plugins/solution/fx-solution/constants";
 import * as core from "../../../../../src/common/tools";
 
 chai.use(chaiAsPromised);
 
 const appSettingDevelopment =
-  '{TeamsFx": {"Authentication": {"ClientId": "$clientId$","ClientSecret": "$client-secret$","OAuthAuthority": "$oauthAuthority$"}, "BOT_ID": "$botId$", "BOT_PASSWORD": "$bot-password$"}}';
+  '{TeamsFx": {"Authentication": {"ClientId": "$clientId$","ClientSecret": "$client-secret$","OAuthAuthority": "$oauthAuthority$"}}}';
 
 const clientId = "clientId";
 const clientSecret = "clientSecret";
 const tenantId = "tenantId";
-const botId = "botId";
-const botPassword = "botPassword";
 const expectedAppSettings = `{TeamsFx": {"Authentication": {"ClientId": "${clientId}","ClientSecret": "${clientSecret}","OAuthAuthority": "${PathInfo.oauthHost(
   tenantId
-)}"}, "BOT_ID": "${botId}", "BOT_PASSWORD": "${botPassword}"}}`;
+)}"}}}`;
 
 describe("WebappPlugin", () => {
   describe("config unify disabled", () => {
@@ -56,10 +52,6 @@ describe("WebappPlugin", () => {
           [LocalSettingsAuthKeys.ClientSecret, clientSecret],
         ]),
         frontend: new Map([]),
-        bot: new Map([
-          [LocalSettingsBotKeys.BotId, botId],
-          [LocalSettingsBotKeys.BotPassword, botPassword],
-        ]),
       } as LocalSettings;
       sinon.stub(core, "isConfigUnifyEnabled").returns(false);
     });
@@ -108,13 +100,6 @@ describe("WebappPlugin", () => {
             ]),
           ],
           [PluginNames.APPST, new Map([[DependentPluginInfo.appTenantId, tenantId]])],
-          [
-            PluginNames.BOT,
-            new Map([
-              [DependentPluginInfo.botId, botId],
-              [DependentPluginInfo.botPassword, botPassword],
-            ]),
-          ],
         ]),
       } as EnvInfo;
       sinon.stub(core, "isConfigUnifyEnabled").returns(true);

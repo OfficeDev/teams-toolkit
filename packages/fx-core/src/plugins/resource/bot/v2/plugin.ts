@@ -27,12 +27,14 @@ import {
   resolveProgrammingLanguage,
   resolveServiceType,
 } from "./common";
+import { getLocalizedString } from "../../../../common/localizeUtils";
+import { ProgrammingLanguage } from "./enum";
 
 export class TeamsBotV2Impl {
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
     let workingPath = inputs.projectPath ?? "";
     const lang = resolveProgrammingLanguage(ctx);
-    if (lang !== "csharp") {
+    if (lang !== ProgrammingLanguage.Csharp) {
       workingPath = path.join(workingPath, "bot");
     }
     const hostType = resolveHostType(inputs);
@@ -141,8 +143,8 @@ export class TeamsBotV2Impl {
   private getBicepConfigs(ctx: Context, inputs: Inputs): BicepConfigs {
     const bicepConfigs: BicepConfigs = [];
     const lang = resolveProgrammingLanguage(ctx);
-    if (!runtimeMap[lang]) {
-      throw new Error(`programming language '${lang}' is not supported.`);
+    if (runtimeMap[lang] === undefined) {
+      throw new Error(getLocalizedString("error.bot.InvalidLanguageError", lang));
     }
     bicepConfigs.push(runtimeMap[lang]);
     bicepConfigs.push("running-on-azure");

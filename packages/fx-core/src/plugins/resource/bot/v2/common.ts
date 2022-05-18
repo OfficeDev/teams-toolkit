@@ -4,6 +4,7 @@
 import { Inputs, AzureSolutionSettings } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import { ServiceType } from "../../../../common/azure-hosting/interfaces";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 import { AzureSolutionQuestionNames, BotScenario } from "../../../solution";
 import { QuestionNames, TemplateProjectsConstants, TemplateProjectsScenarios } from "../constants";
 import {
@@ -51,7 +52,14 @@ export function decideTemplateScenarios(ctx: Context, inputs: Inputs): string[] 
             templateScenarios.push(
               TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME
             );
-            options.map((option) => templateScenarios.push(triggerScenarioMap[option.trigger!]));
+            options.map((option) => {
+              if (!option.trigger || !triggerScenarioMap[option.trigger]) {
+                throw new Error(
+                  getLocalizedString("error.bot.InvalidNotificationTriggerError", option.trigger)
+                );
+              }
+              templateScenarios.push(triggerScenarioMap[option.trigger]);
+            });
           }
           break;
       }
@@ -65,7 +73,7 @@ export function decideTemplateScenarios(ctx: Context, inputs: Inputs): string[] 
 export function resolveProgrammingLanguage(ctx: Context): string {
   const lang = ctx.projectSetting.programmingLanguage;
   if (!lang || !(lang.toLowerCase() in langMap)) {
-    throw new Error(`programming language '${lang}' is invalid.`);
+    throw new Error(getLocalizedString("error.bot.InvalidLanguageError", lang));
   }
   return langMap[lang.toLowerCase()];
 }
@@ -78,7 +86,9 @@ export function resolveTriggerOption(inputs: Inputs): HostTypeTriggerOptionItem[
       .filter((item) => item) as HostTypeTriggerOptionItem[];
     return options;
   }
-  throw new Error(`notification trigger '${notificationTriggerType}' is invalid.`);
+  throw new Error(
+    getLocalizedString("error.bot.InvalidNotificationTriggerError", notificationTriggerType)
+  );
 }
 
 export function resolveHostType(inputs: Inputs): HostType {
@@ -97,7 +107,7 @@ export function resolveServiceType(ctx: Context): ServiceType {
   const rawHostType =
     ctx.projectSetting?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[PluginBot.HOST_TYPE];
   if (!rawHostType || !(rawHostType in serviceMap)) {
-    throw new Error(`Host type '${rawHostType}' is invalid.`);
+    throw new Error(getLocalizedString("error.bot.InvalidHostTypeError", rawHostType));
   }
   return serviceMap[rawHostType];
 }

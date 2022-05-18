@@ -9,6 +9,7 @@ import { providerIdToLabel, questionNames, templateIdToLabel } from "./questions
 import { InternalError, NoProjectOpenedError } from "./errors";
 import { Logger } from "./logger";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
+import { VSCodeExtensionCommand } from "../../../common/constants";
 
 export class CICDImpl {
   public commonProperties: { [key: string]: string } = {};
@@ -91,27 +92,36 @@ export class CICDImpl {
     const messages = [];
     if (created.length > 0) {
       messages.push(
-        getLocalizedString(
-          "plugins.cicd.result.scaffold.created",
-          created.join(", "),
-          providerIdToLabel(providerName),
-          envName
-        )
+        {
+          content: getLocalizedString(
+            "plugins.cicd.result.scaffold.created",
+            created.join(", "),
+            providerIdToLabel(providerName),
+            envName
+          ),
+        },
+        {
+          content: getLocalizedString("core.notification.readme"),
+          link: VSCodeExtensionCommand.openReadme,
+        },
+        {
+          content: getLocalizedString("core.notification.period"),
+        }
       );
     }
     if (skipped.length > 0) {
-      messages.push(
-        getLocalizedString(
+      messages.push({
+        content: getLocalizedString(
           "plugins.cicd.result.scaffold.skipped",
           skipped.join(", "),
           providerIdToLabel(providerName),
           envName
-        )
-      );
+        ),
+      });
     }
 
-    const message = messages.join(" ");
-    context.userInteraction.showMessage("info", message, false);
+    const message = messages.map((msg) => msg.content).join(" ");
+    context.userInteraction.showMessage("info", messages, false);
     Logger.info(message);
 
     return ResultFactory.Success();

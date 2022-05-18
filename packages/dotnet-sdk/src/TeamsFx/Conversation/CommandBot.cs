@@ -14,6 +14,11 @@ namespace Microsoft.TeamsFx.Conversation
         private readonly CommandResponseMiddleware _middleware;
 
         /// <summary>
+        /// Gets the registered command handlers of this command bot.
+        /// </summary>
+        public IList<ITeamsCommandHandler> CommandHandlers => _middleware.CommandHandlers;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="CommandBot"/> class.
         /// </summary>
         /// <param name="adapter"></param>
@@ -54,7 +59,7 @@ namespace Microsoft.TeamsFx.Conversation
         /// <exception cref="ArgumentException"><paramref name="commandHandlers"/> is null or empty. </exception>
         public void RegisterCommands(IList<ITeamsCommandHandler> commandHandlers)
         {
-            if (commandHandlers == null && !commandHandlers.Any())
+            if (commandHandlers == null || !commandHandlers.Any())
             {
                 throw new ArgumentException("There is no command handler to be registered.", nameof(commandHandlers));
             }

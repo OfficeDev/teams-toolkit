@@ -42,6 +42,7 @@ import {
   getSubscriptionIdFromResourceId,
   isConfigUnifyEnabled,
 } from "../../../../common/tools";
+import { TemplateInfo } from "./resources/templateInfo";
 import { Bicep } from "../../../../common/constants";
 import { getActivatedV2ResourcePlugins } from "../../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/adaptor";
@@ -117,7 +118,7 @@ export class DotnetPluginImpl implements PluginImpl {
       throw new NoProjectSettingError();
     }
     const projectName = ctx.projectSettings!.appName;
-    await scaffoldFromZipPackage(ctx.root, { ProjectName: projectName });
+    await scaffoldFromZipPackage(ctx.root, new TemplateInfo({ ProjectName: projectName }));
     ctx.projectSettings.pluginSettings = {
       ...ctx.projectSettings?.pluginSettings,
       projectFilePath: path.join(ctx.root, PathInfo.projectFilename(ctx.projectSettings.appName)),
@@ -232,7 +233,7 @@ export class DotnetPluginImpl implements PluginImpl {
     let clientId = Placeholders.clientId;
     let clientSecret = Placeholders.clientSecret;
     let tenantId = "";
-    let oauthAuthority = Placeholders.oauthAuthority;
+    let oauthAuthority = "";
 
     if (isConfigUnifyEnabled()) {
       clientId =

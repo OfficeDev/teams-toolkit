@@ -6,7 +6,7 @@ import {
   UnknownScaffoldError,
   UnzipTemplateError,
 } from "../../resources/errors";
-import { Constants, ScaffoldInfo } from "../constants";
+import { Constants } from "../constants";
 import { Logger } from "../../utils/logger";
 import { Messages } from "../resources/messages";
 import { TelemetryHelper } from "../../utils/telemetry-helper";
@@ -17,18 +17,19 @@ import {
   ScaffoldContext,
   scaffoldFromTemplates,
 } from "../../../../../common/template-utils/templatesActions";
+import { TemplateInfo } from "../resources/templateInfo";
 
 export async function scaffoldFromZipPackage(
   componentPath: string,
-  variable: { [key: string]: string }
+  templateInfo: TemplateInfo
 ): Promise<void> {
   await scaffoldFromTemplates({
-    group: ScaffoldInfo.group,
-    lang: ScaffoldInfo.language,
-    scenario: ScaffoldInfo.defaultScenario,
+    group: templateInfo.group,
+    lang: templateInfo.language,
+    scenario: templateInfo.scenario,
     dst: componentPath,
-    fileNameReplaceFn: genTemplateNameRenderReplaceFn(variable.ProjectName),
-    fileDataReplaceFn: genTemplateRenderReplaceFn(variable),
+    fileNameReplaceFn: genTemplateNameRenderReplaceFn(templateInfo.variables.ProjectName),
+    fileDataReplaceFn: genTemplateRenderReplaceFn(templateInfo.variables),
     onActionEnd: async (action: ScaffoldAction, context: ScaffoldContext) => {
       if (action.name === ScaffoldActionName.FetchTemplatesUrlWithTag) {
         Logger.info(Messages.getTemplateFrom(context.zipUrl ?? Constants.emptyString));

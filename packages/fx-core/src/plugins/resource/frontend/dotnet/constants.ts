@@ -52,12 +52,6 @@ export class DotnetCommands {
     `dotnet publish --configuration Release --runtime ${runtime} --self-contained`;
 }
 
-export class ScaffoldInfo {
-  static readonly language = "csharp";
-  static readonly defaultScenario = "default";
-  static readonly group = "tab";
-}
-
 export class DependentPluginInfo {
   static readonly solutionPluginName = "solution";
   static readonly subscriptionId = "subscriptionId";

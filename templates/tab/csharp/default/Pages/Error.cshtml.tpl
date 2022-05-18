@@ -1,5 +1,5 @@
 @page
-@model {{BlazorAppServer}}.Pages.ErrorModel
+@model {{ProjectName}}.Pages.ErrorModel
 
 <!DOCTYPE html>
 <html>

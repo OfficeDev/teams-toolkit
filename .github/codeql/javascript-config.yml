@@ -9,3 +9,10 @@ queries:
 
   - name: Security and Quality
     uses: security-and-quality
+
+paths-ignore:
+  - "**/test/**/*"
+  - "**/tests/**/*"
+  - "**/*.test.ts"
+  - "**/*.tests.ts"
+  - ".github/scripts"

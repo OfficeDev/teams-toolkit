@@ -9,3 +9,11 @@ queries:
 
   - name: Security and Quality
     uses: security-and-quality
+
+paths-ignore:
+  - "**/*Test.cs"
+  - "**/*Tests.cs"
+  - "**/*.Test/**/*"
+  - "**/*.Tests/**/*"
+  - "packages/dotnet-sdk/src/TeamsFx.Test/**/*"
+  - "packages/simpleauth/src/TeamsFxSimpleAuth.Tests/**/*"

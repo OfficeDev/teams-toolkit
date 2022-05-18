@@ -11,7 +11,7 @@
       },
       "hotReloadProfile": "aspnetcore"
     },
-    "{{BlazorAppServer}}": {
+    "{{ProjectName}}": {
       "commandName": "Project",
       "dotnetRunMessages": "true",
       "launchBrowser": true,

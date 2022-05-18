@@ -56,6 +56,8 @@ namespace Microsoft.TeamsFx.Conversation
                         {
                             await response.SendResponseAsync(turnContext, cancellationToken).ConfigureAwait(false);
                         }
+
+                        break;
                     }
                 }
             }
@@ -75,7 +77,7 @@ namespace Microsoft.TeamsFx.Conversation
             return text;
         }
 
-        private static (bool, MatchCollection) ShouldTrigger(string input, ITriggerPattern[] triggerPatterns)
+        private static (bool, MatchCollection) ShouldTrigger(string input, IEnumerable<ITriggerPattern> triggerPatterns)
         {
             var shouldTrigger = false;
             MatchCollection matches = null;

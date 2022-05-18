@@ -5,6 +5,8 @@ namespace Microsoft.TeamsFx.Conversation
 {
     using Microsoft.Bot.Builder;
     using Microsoft.Bot.Builder.Teams;
+    using Microsoft.Rest;
+    using System.Net;
 
     /// <summary>
     /// Provide utilities to send notification to varies targets (e.g., member, group, channel).
@@ -80,10 +82,22 @@ namespace Microsoft.TeamsFx.Conversation
                             // try get member to see if the installation is still valid
                             await TeamsInfo.GetPagedMembersAsync(context, 1, null, ct).ConfigureAwait(false);
                         }
-                        catch (Exception)
+                        catch (Exception e)
                         {
-                            // TODO: handle BotNotInConversationRoster
-                            valid = true;
+                            if (e is HttpOperationException httpEx)
+                            {
+                                var response = httpEx.Response;
+                                if (response != null)
+                                {
+                                    var status = response.StatusCode;
+                                    var error = response.Content ?? string.Empty;
+                                    if (status == HttpStatusCode.Forbidden && error.Contains("BotNotInConversationRoster"))
+                                    {
+                                        // bot is uninstalled
+                                        valid = false;
+                                    }
+                                }
+                            }
                         }
                     },
                     cancellationToken

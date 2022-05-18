@@ -26,7 +26,7 @@ namespace Microsoft.TeamsFx.Conversation
         ///     </item>
         /// </list>
         /// </remarks>
-        ITriggerPattern[] TriggerPatterns { get; }
+        IEnumerable<ITriggerPattern> TriggerPatterns { get; }
 
         /// <summary>
         /// Handles the command.

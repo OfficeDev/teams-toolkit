@@ -18,7 +18,7 @@ import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
 import { getTemplatesFolder } from "../folder";
-import { doDeployArmTemplatesV3 } from "../plugins/solution/fx-solution/arm";
+import arm from "../plugins/solution/fx-solution/arm";
 @Service("bicep")
 export class BicepProvider {
   readonly name = "bicep";
@@ -108,7 +108,7 @@ export class BicepProvider {
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const ctx = context as ProvisionContextV3;
-        const res = await doDeployArmTemplatesV3(
+        const res = await arm.deployArmTemplates(
           ctx,
           inputs,
           ctx.envInfo,

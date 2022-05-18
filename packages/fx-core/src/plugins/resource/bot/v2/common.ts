@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Inputs, AzureSolutionSettings } from "@microsoft/teamsfx-api";
+import { Inputs } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import { ServiceType } from "../../../../common/azure-hosting/interfaces";
 import { getLocalizedString } from "../../../../common/localizeUtils";

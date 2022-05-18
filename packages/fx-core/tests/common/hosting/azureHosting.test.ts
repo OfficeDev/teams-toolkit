@@ -18,7 +18,7 @@ describe("azure hosting", () => {
     const pluginId = ResourcePlugins.Bot;
 
     it("generate bicep", async () => {
-      const functionHosting = AzureHostingFactory.createHosting(ServiceType.Function);
+      const functionHosting = AzureHostingFactory.createHosting(ServiceType.Functions);
       const template = await functionHosting.generateBicep(bicepContext, pluginId);
 
       chai.assert.exists(template.Configuration);

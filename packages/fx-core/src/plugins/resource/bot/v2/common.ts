@@ -36,7 +36,7 @@ export function decideTemplateScenarios(ctx: Context, inputs: Inputs): string[] 
     return templateScenarios;
   }
   const botScenarios = inputs?.[AzureSolutionQuestionNames.Scenarios];
-  if (Array.isArray(botScenarios)) {
+  if (botScenarios) {
     botScenarios.map((scenario: string) => {
       switch (scenario) {
         case BotScenario.CommandAndResponseBot:
@@ -64,10 +64,10 @@ export function decideTemplateScenarios(ctx: Context, inputs: Inputs): string[] 
 
 export function resolveProgrammingLanguage(ctx: Context): string {
   const lang = ctx.projectSetting.programmingLanguage;
-  if (!lang || !(lang in langMap)) {
-    throw new Error(`notification trigger '${lang}' is invalid.`);
+  if (!lang || !(lang.toLowerCase() in langMap)) {
+    throw new Error(`programming language '${lang}' is invalid.`);
   }
-  return langMap[lang.toLocaleLowerCase()];
+  return langMap[lang.toLowerCase()];
 }
 
 export function resolveTriggerOption(inputs: Inputs): HostTypeTriggerOptionItem[] {
@@ -82,10 +82,10 @@ export function resolveTriggerOption(inputs: Inputs): HostTypeTriggerOptionItem[
 }
 
 export function resolveHostType(inputs: Inputs): HostType {
-  const hostTypeTriggers = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER];
+  const notificationTriggerType = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER];
   let hostType;
-  if (Array.isArray(hostTypeTriggers)) {
-    const hostTypes = hostTypeTriggers.map(
+  if (Array.isArray(notificationTriggerType)) {
+    const hostTypes = notificationTriggerType.map(
       (item) => HostTypeTriggerOptions.find((option) => option.id === item)?.hostType
     );
     hostType = hostTypes ? hostTypes[0] : undefined;

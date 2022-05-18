@@ -1,5 +1,5 @@
 {
     "dependencies": {
-        "@microsoft/teamsfx": "1.0.0-rc.0"
+        "@microsoft/teamsfx": "^1.0.0"
     }
 }

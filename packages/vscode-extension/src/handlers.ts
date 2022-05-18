@@ -944,7 +944,9 @@ export async function showOutputChannel(args?: any[]): Promise<Result<any, FxErr
 }
 
 export async function openFolderHandler(args?: any[]): Promise<Result<any, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenFolder);
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenFolder, {
+    [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Notification,
+  });
   if (args && args.length > 0 && args[0]) {
     const uri = Uri.parse(args[0]);
     openFolderInExplorer(uri.fsPath);

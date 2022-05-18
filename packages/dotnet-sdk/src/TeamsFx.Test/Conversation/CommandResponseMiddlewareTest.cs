@@ -20,13 +20,15 @@
             _middleware = new CommandResponseMiddleware();
         }
 
-        [TestMethod]
-        public async Task OnTurnAsync_TriggerCommandByString_ShouldSucceed()
+        [DataTestMethod]
+        [DataRow("SampleTest")]
+        [DataRow("SAMPLETEST")]
+        [DataRow(" SampleTest ")]
+        public async Task OnTurnAsync_TriggerCommandByString_ShouldSucceed(string input)
         {
             // Arrange
             var command = new TestCommandHandler(new[] { _stringTrigger });
             _middleware.CommandHandlers.Add(command);
-            var input = "SampleTest";
             var activity = CreateMessageActivity(input);
 
             var mockTurnContext = new Mock<ITurnContext>();
@@ -38,16 +40,18 @@
             // Assert
             Assert.IsTrue(command.IsTriggered);
             Assert.IsNotNull(command.ReceivedMessage);
-            Assert.AreEqual(command.ReceivedMessage.Text, input, true);
+            Assert.AreEqual(command.ReceivedMessage.Text, input.Trim(), true);
         }
 
-        [TestMethod]
-        public async Task OnTurnAsync_TriggerCommandByRegex_ShouldSucceed()
+        [DataTestMethod]
+        [DataRow("Test fake-value")]
+        [DataRow("Test abc123")]
+        public async Task OnTurnAsync_TriggerCommandByRegex_ShouldSucceed(string input)
         {
             // Arrange
             var command = new TestCommandHandler(new[] { _regexTrigger });
             _middleware.CommandHandlers.Add(command);
-            var input = "Test fake-value";
+            var param = input.Trim().Split(' ').Last();
             var activity = CreateMessageActivity(input);
 
             var mockTurnContext = new Mock<ITurnContext>();
@@ -61,7 +65,7 @@
             Assert.IsNotNull(command.ReceivedMessage);
             Assert.AreEqual(command.ReceivedMessage.Text, input, true);
             Assert.IsNotNull(command.ReceivedMessage.Matches);
-            Assert.AreEqual(command.ReceivedMessage.Matches[0].Groups[1].Value, "fake-value");
+            Assert.AreEqual(command.ReceivedMessage.Matches[0].Groups[1].Value, param, true);
         }
 
         [TestMethod]
@@ -87,8 +91,10 @@
             Assert.IsFalse(command2.IsTriggered);
         }
 
-        [TestMethod]
-        public async Task OnTurnAsync_MultiStringPatterns_ShouldTrigger()
+        [DataTestMethod]
+        [DataRow("test1")]
+        [DataRow("test2")]
+        public async Task OnTurnAsync_MultiStringPatterns_ShouldTrigger(string input)
         {
             // Arrange
             var command = new TestCommandHandler(new []
@@ -98,8 +104,6 @@
             });
 
             _middleware.CommandHandlers.Add(command);
-
-            var input = "test2";
             var activity = CreateMessageActivity(input);
 
             var mockTurnContext = new Mock<ITurnContext>();
@@ -115,13 +119,15 @@
             Assert.IsTrue(command.IsTriggered);
         }
 
-        [TestMethod]
-        public async Task OnTurnAsync_InputNotMatch_ShouldSkipped()
+        [DataTestMethod]
+        [DataRow("SampleTest extra-input")]
+        [DataRow("Invalid input")]
+        [DataRow("A Test !@#$%^")]
+        public async Task OnTurnAsync_InputNotMatch_ShouldSkipped(string input)
         {
             // Arrange
-            var command = new TestCommandHandler(new[] { _stringTrigger });
+            var command = new TestCommandHandler(new List<ITriggerPattern> { _stringTrigger, _regexTrigger });
             _middleware.CommandHandlers.Add(command);
-            var input = "Invalid input";
             var activity = CreateMessageActivity(input);
 
             var mockTurnContext = new Mock<ITurnContext>();

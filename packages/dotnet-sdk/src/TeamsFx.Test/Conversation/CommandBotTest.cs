@@ -18,7 +18,7 @@
             CommandBot bot = new CommandBot(_mockAdapter.Object,
                 new CommandOptions()
                 {
-                    Commands = new[] { new TestCommandHandler(("test-command")) }
+                    Commands = new List<ITeamsCommandHandler> { new TestCommandHandler(("test-command")) }
                 });
 
             // Assert
@@ -54,7 +54,7 @@
             // Arrange
             var _mockAdapter = new Mock<BotAdapter>();
             CommandBot bot = new CommandBot(_mockAdapter.Object, new CommandOptions());
-            var Commands = new[]
+            var Commands = new List<ITeamsCommandHandler>
             { 
                 new TestCommandHandler(("test-command1")),
                 new TestCommandHandler(("test-command2"))

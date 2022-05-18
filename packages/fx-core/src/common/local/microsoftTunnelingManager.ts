@@ -205,7 +205,7 @@ function sleep(millis: number): Promise<void> {
 
 // Tunnels are managed in vscode/cli task and tunnel endpoints are read in solution.
 // So use a global variable to share between task and solution.
-let globalPortEndpoints: Map<number, string>;
-export function getCurrentTunnelPorts(): Map<number, string> {
+let globalPortEndpoints: Map<number, string> | undefined;
+export function getCurrentTunnelPorts(): Map<number, string> | undefined {
   return globalPortEndpoints;
 }

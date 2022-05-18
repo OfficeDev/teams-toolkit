@@ -20,20 +20,14 @@ import { mergeTemplates } from "../../../../common/azure-hosting/utils";
 import { getActivatedV2ResourcePlugins } from "../../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/adaptor";
 import { ResourcePlugins } from "../../../../common/constants";
-import { runtimeMap } from "./mapping";
-import {
-  getTemplateInfos,
-  resolveHostType,
-  resolveProgrammingLanguage,
-  resolveServiceType,
-} from "./common";
-import { getLocalizedString } from "../../../../common/localizeUtils";
+import { getTemplateInfos, resolveHostType, resolveServiceType } from "./common";
 import { ProgrammingLanguage } from "./enum";
+import { getLanguage, getRuntime } from "./mapping";
 
 export class TeamsBotV2Impl {
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
     let workingPath = inputs.projectPath ?? "";
-    const lang = resolveProgrammingLanguage(ctx);
+    const lang = getLanguage(ctx.projectSetting.programmingLanguage!);
     if (lang !== ProgrammingLanguage.Csharp) {
       workingPath = path.join(workingPath, "bot");
     }
@@ -142,11 +136,8 @@ export class TeamsBotV2Impl {
 
   private getBicepConfigs(ctx: Context, inputs: Inputs): BicepConfigs {
     const bicepConfigs: BicepConfigs = [];
-    const lang = resolveProgrammingLanguage(ctx);
-    if (runtimeMap[lang] === undefined) {
-      throw new Error(getLocalizedString("error.bot.InvalidLanguageError", lang));
-    }
-    bicepConfigs.push(runtimeMap[lang]);
+    const lang = getLanguage(ctx.projectSetting.programmingLanguage!);
+    bicepConfigs.push(getRuntime(lang));
     bicepConfigs.push("running-on-azure");
     return bicepConfigs;
   }
@@ -154,7 +145,7 @@ export class TeamsBotV2Impl {
   private async localBuild(ctx: Context, inputs: Inputs): Promise<string> {
     // Return the folder path to be zipped and uploaded
 
-    const lang = resolveProgrammingLanguage(ctx);
+    const lang = getLanguage(ctx.projectSetting.programmingLanguage!);
     const packDir = path.join(inputs.projectPath!, CommonStrings.BOT_WORKING_DIR_NAME);
     if (lang === "ts") {
       //Typescript needs tsc build before deploy because of windows app server. other languages don't need it.

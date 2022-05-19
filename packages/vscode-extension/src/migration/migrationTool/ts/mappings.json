@@ -114,6 +114,10 @@
       "target": "microsoftTeams.pages.config.registerChangeConfigHandler"
     },
     {
+      "source": "microsoftTeams.registerChangeSettingsHandler",
+      "target": "microsoftTeams.pages.config.registerChangeConfigHandler"
+    },
+    {
       "source": "microsoftTeams.enterFullscreen",
       "target": "microsoftTeams.pages.fullTrust.enterFullscreen"
     },

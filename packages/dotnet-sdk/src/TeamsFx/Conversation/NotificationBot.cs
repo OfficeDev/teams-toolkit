@@ -48,7 +48,7 @@ namespace Microsoft.TeamsFx.Conversation
                 }
                 else
                 {
-                    _storage = new LocalFileStorage(Environment.CurrentDirectory);
+                    _storage = new LocalFileStorage(Path.GetFullPath(Environment.GetEnvironmentVariable("TEAMSFX_NOTIFICATION_LOCALSTORE_DIR") ?? Environment.CurrentDirectory));
                 }
             }
 

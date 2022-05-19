@@ -3,10 +3,14 @@
 
 import {
   ScaffoldAction,
+  ScaffoldActionName,
   ScaffoldContext,
   scaffoldFromTemplates,
 } from "../../../../common/template-utils/templatesActions";
 import { CodeTemplateInfo } from "./interface/codeTemplateInfo";
+import { TemplateZipFallbackError, UnzipError } from "../errors";
+import { Logger } from "../logger";
+import { Messages } from "../resources/messages";
 
 export async function scaffold(template: CodeTemplateInfo, dst: string): Promise<void> {
   return await scaffoldFromTemplates({
@@ -15,10 +19,24 @@ export async function scaffold(template: CodeTemplateInfo, dst: string): Promise
     scenario: template.scenario,
     dst: dst,
     onActionEnd: async (action: ScaffoldAction, context: ScaffoldContext) => {
-      // TODO
+      if (action.name === ScaffoldActionName.FetchTemplatesUrlWithTag) {
+        Logger.info(Messages.SuccessfullyRetrievedTemplateZip(context.zipUrl ?? ""));
+      }
     },
-    onActionError: async (action: ScaffoldAction, context: ScaffoldContext) => {
-      // TODO
+    onActionError: async (action: ScaffoldAction, context: ScaffoldContext, error: Error) => {
+      Logger.error(error.toString());
+      switch (action.name) {
+        case ScaffoldActionName.FetchTemplatesUrlWithTag:
+        case ScaffoldActionName.FetchTemplatesZipFromUrl:
+          Logger.info(Messages.FallingBackToUseLocalTemplateZip);
+          break;
+        case ScaffoldActionName.FetchTemplateZipFromLocal:
+          throw new TemplateZipFallbackError();
+        case ScaffoldActionName.Unzip:
+          throw new UnzipError(context.dst);
+        default:
+          throw new Error(error.message);
+      }
     },
   });
 }

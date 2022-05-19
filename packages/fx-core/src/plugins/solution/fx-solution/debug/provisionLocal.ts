@@ -134,12 +134,13 @@ export async function setupLocalDebugSettings(
           localSettings.bot.botEndpoint = localBotEndpoint;
           localSettings.bot.botDomain = localBotEndpoint.slice(8);
         } else {
-          const tunnelingHttpUrl = await getTunnelingHttpUrl(3978);
-          if (!tunnelingHttpUrl) {
-            const error = NgrokTunnelNotConnected();
+          const tunnelingHttpUrlResult = await getTunnelingHttpUrl(3978);
+          if (tunnelingHttpUrlResult.isErr()) {
+            const error = tunnelingHttpUrlResult.error;
             TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);
             return err(error);
           } else {
+            const tunnelingHttpUrl = tunnelingHttpUrlResult.value;
             localSettings.bot.botEndpoint = tunnelingHttpUrl;
             localSettings.bot.botDomain = tunnelingHttpUrl.slice(8);
           }
@@ -154,12 +155,13 @@ export async function setupLocalDebugSettings(
 
       if (includeBot) {
         localSettings.bot ??= {};
-        const ngrokHttpUrl = await getNgrokHttpUrl(2544);
-        if (!ngrokHttpUrl) {
-          const error = NgrokTunnelNotConnected();
+        const ngrokHttpUrlResult = await getNgrokHttpUrl(2544);
+        if (ngrokHttpUrlResult.isErr()) {
+          const error = ngrokHttpUrlResult.error;
           TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);
           return err(error);
         }
+        const ngrokHttpUrl = ngrokHttpUrlResult.value;
         localSettings.bot.botEndpoint = ngrokHttpUrl;
         localSettings.bot.botDomain = ngrokHttpUrl.slice(8);
       }
@@ -271,12 +273,13 @@ export async function setupLocalEnvironment(
           envInfo.state[ResourcePlugins.Bot].siteEndpoint = localBotEndpoint;
           envInfo.state[ResourcePlugins.Bot].validDomain = localBotEndpoint.slice(8);
         } else {
-          const tunnelingHttpUrl = await getTunnelingHttpUrl(3978);
-          if (!tunnelingHttpUrl) {
-            const error = NgrokTunnelNotConnected();
+          const tunnelingHttpUrlResult = await getTunnelingHttpUrl(3978);
+          if (tunnelingHttpUrlResult.isErr()) {
+            const error = tunnelingHttpUrlResult.error;
             TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);
             return err(error);
           } else {
+            const tunnelingHttpUrl = tunnelingHttpUrlResult.value;
             envInfo.state[ResourcePlugins.Bot].siteEndpoint = tunnelingHttpUrl;
             envInfo.state[ResourcePlugins.Bot].validDomain = tunnelingHttpUrl.slice(8);
           }
@@ -291,12 +294,13 @@ export async function setupLocalEnvironment(
 
       if (includeBot) {
         envInfo.state[ResourcePlugins.Bot] ??= {};
-        const ngrokHttpUrl = await getNgrokHttpUrl(2544);
-        if (!ngrokHttpUrl) {
-          const error = NgrokTunnelNotConnected();
+        const ngrokHttpUrlResult = await getNgrokHttpUrl(2544);
+        if (ngrokHttpUrlResult.isErr()) {
+          const error = ngrokHttpUrlResult.error;
           TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);
           return err(error);
         } else {
+          const ngrokHttpUrl = ngrokHttpUrlResult.value;
           envInfo.state[ResourcePlugins.Bot].siteEndpoint = ngrokHttpUrl;
           envInfo.state[ResourcePlugins.Bot].validDomain = ngrokHttpUrl.slice(8);
         }

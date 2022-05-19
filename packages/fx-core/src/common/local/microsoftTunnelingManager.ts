@@ -53,8 +53,7 @@ export class MicrosoftTunnelingManager {
     tunnelInfo?: TunnelInfo
   ): Promise<Result<TunnelHostResult, FxError>> {
     const result = await this._startTunnelHost(ports, tunnelInfo);
-    // globalPortEndpoints = result.isOk() ? ok(result.value.portEndpoints) : err(result.error);
-    globalPortEndpoints = result.isOk() ? result.value.portEndpoints : undefined;
+    globalPortEndpoints = result.isOk() ? ok(result.value.portEndpoints) : err(result.error);
     return result;
   }
 
@@ -205,7 +204,7 @@ function sleep(millis: number): Promise<void> {
 
 // Tunnels are managed in vscode/cli task and tunnel endpoints are read in solution.
 // So use a global variable to share between task and solution.
-let globalPortEndpoints: Map<number, string> | undefined;
-export function getCurrentTunnelPorts(): Map<number, string> | undefined {
+let globalPortEndpoints: Result<Map<number, string>, FxError> | undefined;
+export function getCurrentTunnelPorts(): Result<Map<number, string>, FxError> | undefined {
   return globalPortEndpoints;
 }

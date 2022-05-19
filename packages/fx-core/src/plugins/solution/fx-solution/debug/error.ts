@@ -22,6 +22,18 @@ export function ConfigLocalDebugSettingsError(error: any): SystemError {
   return new SystemError({ error, source: SolutionSource, name: "ConfigLocalDebugSettingsError" });
 }
 
+export class MicrosoftTunnelingNotConnected extends UserError {
+  constructor() {
+    super({
+      name: "MicrosoftTunnelNotConnected",
+      source: "localdebug-plugin",
+      message: getDefaultString("error.MicrosoftTunnelingNotConnected"),
+      displayMessage: getLocalizedString("error.MicrosoftTunnelingNotConnected"),
+      helpLink: "https://aka.ms/teamsfx-localdebug",
+    });
+  }
+}
+
 export function NgrokTunnelNotConnected(): UserError {
   return new UserError({
     name: "NgrokTunnelNotConnected",

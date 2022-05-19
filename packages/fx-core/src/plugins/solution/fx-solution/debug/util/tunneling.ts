@@ -2,11 +2,13 @@
 // Licensed under the MIT license.
 "use strict";
 
+import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
 import axios from "axios";
-import { isMicrosoftTunnelingEnabled } from "../../../../../common";
+import { isMicrosoftTunnelingEnabled } from "../../../../../common/featureFlags";
 import { getCurrentTunnelPorts } from "../../../../../common/local/microsoftTunnelingManager";
+import { MicrosoftTunnelingNotConnected, NgrokTunnelNotConnected } from "../error";
 
-export async function getTunnelingHttpUrl(port: number): Promise<string | undefined> {
+export async function getTunnelingHttpUrl(port: number): Promise<Result<string, FxError>> {
   if (isMicrosoftTunnelingEnabled()) {
     return await getMicrosoftTunnelingHttpUrl(port);
   } else {
@@ -33,12 +35,27 @@ function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function getMicrosoftTunnelingHttpUrl(port: number): Promise<string | undefined> {
-  const endpoints = getCurrentTunnelPorts();
-  return endpoints?.get(port)?.replace(/\/$/, "");
+async function getMicrosoftTunnelingHttpUrl(port: number): Promise<Result<string, FxError>> {
+  // endpointResult:
+  //    FxError: some error occured when starting tunnel
+  //    undefined: tunnel not connected yet (shouldn't happen because we tunneling task and setupLocalEnv are sequential)
+  //    string: success
+  const endpointsResult = getCurrentTunnelPorts();
+  if (endpointsResult === undefined) {
+    return err(new MicrosoftTunnelingNotConnected());
+  }
+  if (endpointsResult.isErr()) {
+    return err(endpointsResult.error);
+  }
+  const endpoint: string | undefined = endpointsResult.value.get(port);
+  if (endpoint === undefined) {
+    return err(new MicrosoftTunnelingNotConnected());
+  }
+  // remove trailing '/' from Microsoft tunneling endpoint
+  return ok(endpoint.replace(/\/$/, ""));
 }
 
-export async function getNgrokHttpUrl(port: string | number): Promise<string | undefined> {
+export async function getNgrokHttpUrl(port: string | number): Promise<Result<string, FxError>> {
   for (let ngrokWebInterfacePort = 4040; ngrokWebInterfacePort < 4045; ++ngrokWebInterfacePort) {
     let numRetries = 5;
     while (numRetries > 0) {
@@ -49,7 +66,7 @@ export async function getNgrokHttpUrl(port: string | number): Promise<string | u
           // tunnels will be empty if tunnel connection is not completed
           for (const tunnel of tunnels) {
             if (tunnel.config.addr === `http://localhost:${port}` && tunnel.proto === "https") {
-              return tunnel.public_url;
+              return ok(tunnel.public_url);
             }
           }
         }
@@ -60,5 +77,5 @@ export async function getNgrokHttpUrl(port: string | number): Promise<string | u
       --numRetries;
     }
   }
-  return undefined;
+  return err(NgrokTunnelNotConnected());
 }

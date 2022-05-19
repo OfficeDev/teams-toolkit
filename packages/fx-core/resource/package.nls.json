@@ -357,6 +357,7 @@
   "error.LocalBotEndpointNotConfigured": "Local bot endpoint is not configured. Set \"fx-resource-local-debug.localBotEndpoint\" in \".fx/default.user.data\" and try again.",
   "error.InvalidLocalBotEndpointFormat": "Local bot endpoint format is invalid: %s.",
   "error.NgrokTunnelNotConnected": "Ngrok tunnel is not connected. Check your network settings and try again.",
+  "error.MicrosoftTunnelingNotConnected": "Microsoft tunneling is not connected. Check your network settings and try again.",
   "error.frontend.UnauthenticatedError": "Failed to get user login information.",
   "error.frontend.InvalidConfigError": "Get invalid %s.",
   "error.frontend.CheckResourceGroupError": "Failed to check resource group existence.",

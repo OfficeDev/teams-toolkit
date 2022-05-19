@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ok, FxError, LogProvider, LogLevel, Result } from "@microsoft/teamsfx-api";
+import { ok, FxError, LogProvider, LogLevel, Result, err } from "@microsoft/teamsfx-api";
 import { TunnelRelayTunnelHost } from "@vs/tunnels-connections";
 import { Tunnel } from "@vs/tunnels-contracts";
 import { TunnelManagementHttpClient, TunnelRequestOptions } from "@vs/tunnels-management";
@@ -10,6 +10,7 @@ import { runWithMicrosoftTunnelingServiceErrorHandling } from "./microsoftTunnel
 // Need to use require instead of import to prevent packaging folder structure issue.
 const corePackage = require("../../../package.json");
 
+const TeamsfxPermissionCheckTunnelName = "teamsfxpermissioncheck";
 const TeamsfxTunnelingUserAgent = { name: corePackage.name, version: corePackage.version };
 
 export class MicrosoftTunnelingService {
@@ -59,6 +60,20 @@ export class MicrosoftTunnelingService {
 
   async hostStop(): Promise<Result<void, FxError>> {
     this.tunnelHost?.dispose();
+    return ok(undefined);
+  }
+
+  async tryCreatingPermissionCheckTunnel(): Promise<Result<void, FxError>> {
+    const result = await this.createTunnel({ name: TeamsfxPermissionCheckTunnelName });
+    if (result.isErr()) {
+      return err(result.error);
+    }
+
+    // Do not await. Only try to delete tunnel in the background
+    try {
+      this.tunnelManagementClient.deleteTunnel(result.value);
+    } catch {}
+
     return ok(undefined);
   }
 

@@ -11,7 +11,10 @@ import {
   TunnelProtocol,
   TunnelAccessControl,
 } from "@vs/tunnels-contracts";
-import { MicrosoftTunnelingTimeoutError } from "./microsoftTunnelingError";
+import {
+  MicrosoftTunnelingNeedOnboardingError,
+  MicrosoftTunnelingTimeoutError,
+} from "./microsoftTunnelingError";
 import { NotImplementedError } from "../../core/error";
 import { MicrosoftTunnelingService } from "./microsoftTunnelingService";
 
@@ -41,6 +44,17 @@ export class MicrosoftTunnelingManager {
 
   constructor(getTunnelingAccessToken: () => Promise<string>, logProvider?: LogProvider) {
     this.service = new MicrosoftTunnelingService(getTunnelingAccessToken, logProvider);
+  }
+
+  public async checkOnboarded(): Promise<boolean> {
+    // For onboarded users: Either 200 for tunnel creation success or 409 conflict
+    // For not onboarded users: 403 Forbidden
+    // If any other errors occur, assume onboarded and continue. Let it fail at the point where the action is really used.
+    // https://global.rel.tunnels.api.visualstudio.com/api/swagger/index.html
+    const createResult = await this.service.tryCreatingPermissionCheckTunnel();
+    return !(
+      createResult.isErr() && createResult.error instanceof MicrosoftTunnelingNeedOnboardingError
+    );
   }
 
   /**

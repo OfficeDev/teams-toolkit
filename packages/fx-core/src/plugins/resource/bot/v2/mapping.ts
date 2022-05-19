@@ -64,5 +64,5 @@ export function getTemplateScenarioFromTrigger(trigger: string): string {
   if (scenario) {
     return scenario;
   }
-  throw new Error("invalid bot input" + scenario);
+  throw new Error("invalid bot input");
 }

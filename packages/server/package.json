@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-server",
-  "version": "0.1.1-rc.0",
+  "version": "0.1.1-rc.2",
   "author": "Microsoft Corporation",
   "description": "",
   "license": "MIT",
@@ -91,7 +91,7 @@
   "dependencies": {
     "@azure/ms-rest-nodeauth": "^3.1.1",
     "@microsoft/teamsfx-api": "^0.19.0-rc.0",
-    "@microsoft/teamsfx-core": "^1.9.0-rc.0",
+    "@microsoft/teamsfx-core": "^1.9.0-rc.2",
     "fs-extra": "^9.1.0",
     "underscore": "^1.12.1",
     "vscode-jsonrpc": "^6.0.0",

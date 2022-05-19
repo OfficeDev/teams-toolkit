@@ -71,7 +71,9 @@ export class MicrosoftTunnelingService {
 
     // Do not await. Only try to delete tunnel in the background
     try {
-      this.tunnelManagementClient.deleteTunnel(result.value);
+      this.tunnelManagementClient.deleteTunnel(result.value).catch(() => {
+        /* Prevent unhandled promise rejection */
+      });
     } catch {}
 
     return ok(undefined);

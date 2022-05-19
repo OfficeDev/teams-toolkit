@@ -15,7 +15,7 @@ import { ArmTemplateResult } from "../../../../common/armInterface";
 import fs from "fs-extra";
 import { AppSettingsPlaceholders, PathInfo, RegularExpr } from "./constants";
 import { TeamsBotImpl } from "../plugin";
-import { FileIOError } from "../../frontend/dotnet/resources/errors";
+import { FileIOError } from "./errors";
 
 // Extends TeamsBotImpl to reuse provision method
 export class DotnetBotImpl extends TeamsBotImpl {

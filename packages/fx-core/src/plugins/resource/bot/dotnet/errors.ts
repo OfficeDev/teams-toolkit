@@ -9,23 +9,7 @@ const tips = {
   checkFsPermissions: getLocalizedString("plugins.dotnet.checkFsPermissions"),
 };
 
-export class DotnetPluginError extends PluginError {
-  public innerError?: Error;
-
-  constructor(
-    errorType: ErrorType,
-    code: string,
-    messages: [string, string],
-    suggestions: string[],
-    helpLink?: string,
-    innerError?: Error
-  ) {
-    super(errorType, code, messages, suggestions, helpLink);
-    this.innerError = innerError;
-  }
-}
-
-export class FileIOError extends DotnetPluginError {
+export class FileIOError extends PluginError {
   constructor(path: string) {
     super(
       ErrorType.USER,

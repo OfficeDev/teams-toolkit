@@ -19,11 +19,6 @@ export class DependentPluginInfo {
   public static readonly botPassword: string = "botPassword";
 }
 
-export class AppSettingsPlaceholders {
-  static readonly botId = "$botId$";
-  static readonly botPassword = "$bot-password$";
-}
-
 export class RegularExpr {
   static readonly botId = /\$botId\$/g;
   static readonly botPassword = /\$bot-password\$/g;

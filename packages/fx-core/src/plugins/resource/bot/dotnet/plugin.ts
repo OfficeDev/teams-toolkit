@@ -13,10 +13,9 @@ import { FxResult, FxBotPluginResultFactory as ResultFactory } from "../result";
 import { generateBicepFromFile, isConfigUnifyEnabled } from "../../../../common/tools";
 import { ArmTemplateResult } from "../../../../common/armInterface";
 import fs from "fs-extra";
-import { AppSettingsPlaceholders, DependentPluginInfo, PathInfo, RegularExpr } from "./constants";
+import { DependentPluginInfo, PathInfo, RegularExpr } from "./constants";
 import { TeamsBotImpl } from "../plugin";
 import { FileIOError } from "./errors";
-import { LocalSettingsBotKeys } from "../../../../common/localSettingsConstants";
 import { PluginNames } from "../../../solution";
 
 // Extends TeamsBotImpl to reuse provision method
@@ -59,22 +58,12 @@ export class DotnetBotImpl extends TeamsBotImpl {
     const appSettingsPath = path.join(context.root, PathInfo.appSettingDevelopment);
     try {
       let appSettings = await fs.readFile(appSettingsPath, "utf-8");
-      let botId = "";
-      let botPassword = "";
-      if (isConfigUnifyEnabled()) {
-        botId =
-          context.envInfo.state.get(PluginNames.BOT)?.get(DependentPluginInfo.botId) ??
-          AppSettingsPlaceholders.botId;
-        botPassword =
-          context.envInfo.state.get(PluginNames.BOT)?.get(DependentPluginInfo.botPassword) ??
-          AppSettingsPlaceholders.botPassword;
-      } else {
-        botId =
-          context.localSettings?.bot?.get(LocalSettingsBotKeys.BotId) ??
-          AppSettingsPlaceholders.botId;
-        botPassword =
-          context.localSettings?.bot?.get(LocalSettingsBotKeys.BotPassword) ??
-          AppSettingsPlaceholders.botPassword;
+      const botId = context.envInfo.state.get(PluginNames.BOT)?.get(DependentPluginInfo.botId);
+      const botPassword = context.envInfo.state
+        .get(PluginNames.BOT)
+        ?.get(DependentPluginInfo.botPassword);
+      if (!botId && !botPassword) {
+        return ResultFactory.Success();
       }
       appSettings = appSettings.replace(RegularExpr.botId, botId);
       appSettings = appSettings.replace(RegularExpr.botPassword, botPassword);

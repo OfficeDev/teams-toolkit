@@ -15,7 +15,7 @@ import {
   NotificationTriggers,
 } from "./resources/strings";
 
-interface HostTypeTriggerOptionItem extends OptionItem {
+export interface HostTypeTriggerOptionItem extends OptionItem {
   hostType: HostType;
   trigger?: NotificationTrigger;
 }

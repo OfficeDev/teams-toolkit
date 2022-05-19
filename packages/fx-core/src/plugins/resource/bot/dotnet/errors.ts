@@ -1,4 +1,6 @@
-import { ConfigFolderName } from "@microsoft/teamsfx-api";
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { getLocalizedString, getDefaultString } from "../../../../common/localizeUtils";
 import { ErrorType, PluginError } from "../errors";
 

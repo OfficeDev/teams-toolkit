@@ -8,12 +8,22 @@ import { MicrosoftTunnelingManager } from "../../../src/common/local/microsoftTu
 import { TunnelManagementHttpClient, TunnelRequestOptions } from "@vs/tunnels-management";
 import { Tunnel, TunnelConnectionMode } from "@vs/tunnels-contracts";
 import { TunnelRelayTunnelHost } from "@vs/tunnels-connections";
+import axios from "axios";
+import {
+  MicrosoftTunnelingNeedOnboardingError,
+  MicrosoftTunnelingServiceError,
+  MicrosoftTunnelingTimeoutError,
+} from "../../../src/common/local/microsoftTunnelingError";
 
 describe("MicrosoftTunnelingManager", () => {
   describe("startTunnelHost()", () => {
     const sandbox = sinon.createSandbox();
-    beforeEach(() => {});
+    let clock: sinon.SinonFakeTimers;
+    beforeEach(() => {
+      clock = sinon.useFakeTimers();
+    });
     afterEach(() => {
+      clock.restore();
       sandbox.restore();
     });
 
@@ -50,11 +60,12 @@ describe("MicrosoftTunnelingManager", () => {
       const result = await manager.startTunnelHost([3978, 3000]);
 
       // Assert
-      chai.assert.deepEqual(Array.from(result.portEndpoints.entries()).sort(), [
+      chai.assert.isTrue(result.isOk());
+      chai.assert.deepEqual(Array.from(result._unsafeUnwrap().portEndpoints.entries()).sort(), [
         [3000, "3000 url"],
         [3978, "3978 url"],
       ]);
-      chai.assert.deepEqual(result.tunnelInfo, {
+      chai.assert.deepEqual(result._unsafeUnwrap().tunnelInfo, {
         tunnelClusterId: createdTunnelClusterId,
         tunnelId: createdTunnelId,
       });
@@ -96,17 +107,116 @@ describe("MicrosoftTunnelingManager", () => {
       });
 
       // Assert
-      chai.assert.deepEqual(Array.from(result.portEndpoints.entries()).sort(), [
+      chai.assert.isTrue(result.isOk());
+      chai.assert.deepEqual(Array.from(result._unsafeUnwrap().portEndpoints.entries()).sort(), [
         [3000, "testtunnel-3000.testcluster.example.com"],
         [3978, "testtunnel-3978.testcluster.example.com"],
       ]);
-      chai.assert.deepEqual(result.tunnelInfo, {
+      chai.assert.deepEqual(result._unsafeUnwrap().tunnelInfo, {
         tunnelClusterId: existingTunnelClusterId,
         tunnelId: existingTunnelId,
       });
     });
+
     it("Tunnel expiration", () => {});
-    it("Need onboarding", () => {});
+
+    it("Need onboarding", async () => {
+      // Arrange
+      sandbox.stub(axios, "isAxiosError").callsFake((payload: any) => !!payload.isAxiosError);
+      sandbox
+        .stub(TunnelManagementHttpClient.prototype, "createTunnel")
+        .callsFake(async (): Promise<Tunnel> => {
+          throw Object.assign(new Error(), { isAxiosError: true, response: { status: 403 } });
+        });
+      sandbox
+        .stub(TunnelManagementHttpClient.prototype, "getTunnel")
+        .callsFake(async (tunnel: Tunnel): Promise<Tunnel | null> => {
+          const result = Object.assign({}, tunnel);
+          result.endpoints = [
+            {
+              connectionMode: TunnelConnectionMode.TunnelRelay,
+              portUriFormat: "{port} url",
+              hostId: "some host id",
+            },
+          ];
+          return result;
+        });
+      const manager = new MicrosoftTunnelingManager(async () => "fake token");
+
+      // Act
+      const result = await manager.startTunnelHost([3978, 3000]);
+
+      // Assert
+      chai.assert.isTrue(result.isErr());
+      chai.assert.instanceOf(result._unsafeUnwrapErr(), MicrosoftTunnelingNeedOnboardingError);
+    });
+
+    it("Service error", async () => {
+      // Arrange
+      sandbox.stub(axios, "isAxiosError").callsFake((payload: any) => !!payload.isAxiosError);
+      sandbox
+        .stub(TunnelManagementHttpClient.prototype, "createTunnel")
+        .callsFake(async (): Promise<Tunnel> => {
+          throw Object.assign(new Error(), { isAxiosError: true, response: { status: 500 } });
+        });
+      sandbox
+        .stub(TunnelManagementHttpClient.prototype, "getTunnel")
+        .callsFake(async (tunnel: Tunnel): Promise<Tunnel | null> => {
+          const result = Object.assign({}, tunnel);
+          result.endpoints = [
+            {
+              connectionMode: TunnelConnectionMode.TunnelRelay,
+              portUriFormat: "{port} url",
+              hostId: "some host id",
+            },
+          ];
+          return result;
+        });
+      const manager = new MicrosoftTunnelingManager(async () => "fake token");
+
+      // Act
+      const result = await manager.startTunnelHost([3978, 3000]);
+
+      // Assert
+      chai.assert.isTrue(result.isErr());
+      chai.assert.instanceOf(result._unsafeUnwrapErr(), MicrosoftTunnelingServiceError);
+    });
+
+    it("Host start timeout", async () => {
+      // Arrange
+      const createdTunnelId = "some random tunnel id";
+      const createdTunnelClusterId = "some random tunnel cluster id";
+      sandbox
+        .stub(TunnelManagementHttpClient.prototype, "createTunnel")
+        .callsFake(async (tunnel: Tunnel, options?: TunnelRequestOptions): Promise<Tunnel> => {
+          return { tunnelId: createdTunnelId, clusterId: createdTunnelClusterId };
+        });
+      sandbox
+        .stub(TunnelRelayTunnelHost.prototype, "start")
+        .callsFake(async (): Promise<void> => {});
+      sandbox
+        .stub(TunnelManagementHttpClient.prototype, "getTunnel")
+        .callsFake(
+          async (tunnel: Tunnel, options?: TunnelRequestOptions): Promise<Tunnel | null> => {
+            const result = Object.assign({}, tunnel);
+            // return no more endpoint
+            result.endpoints = [];
+            return result;
+          }
+        );
+      const manager = new MicrosoftTunnelingManager(async () => "fake token");
+
+      // Act
+      const tunnelHostPromise = manager.startTunnelHost([3978, 3000]);
+      // 12s should be enough for 10s timeout
+      await clock.tickAsync(12 * 1000);
+      const result = await tunnelHostPromise;
+
+      // Assert
+      chai.assert.isTrue(result.isErr());
+      chai.assert.instanceOf(result._unsafeUnwrapErr(), MicrosoftTunnelingTimeoutError);
+    });
+
     it("Host did not shut down cleanly", () => {});
   });
 

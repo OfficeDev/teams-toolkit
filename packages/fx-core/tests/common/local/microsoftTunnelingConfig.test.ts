@@ -171,7 +171,7 @@ describe("microsoftTunnelingConfig", () => {
     const workspaceFolder = "some workspace folder";
     const projectId = "test project id";
     const sandbox = sinon.createSandbox();
-    const files: { [filePath: string]: string } = {};
+    let files: { [filePath: string]: string } = {};
     const envConfigPath = environmentManager.getEnvConfigPath(
       environmentManager.getLocalEnvName(),
       workspaceFolder
@@ -188,6 +188,7 @@ describe("microsoftTunnelingConfig", () => {
         });
     });
     afterEach(() => {
+      files = {};
       sandbox.restore();
       mockFs.restore();
     });
@@ -254,6 +255,31 @@ describe("microsoftTunnelingConfig", () => {
         Object.assign({ solutionKey1: "solutionValue1" }, tunnelInfo)
       );
       chai.assert.deepEqual(localState[PluginNames.BOT], { pluginKey1: "pluginValue1" });
+    });
+
+    it("should not write file if content not changed", async () => {
+      const envStatePath = path.resolve(
+        environmentManager.getEnvStateFilesPath(
+          environmentManager.getLocalEnvName(),
+          workspaceFolder
+        ).envState
+      );
+      const tunnelInfo = {
+        tunnelId: "test tunnel id",
+        tunnelClusterId: "test cluster id",
+      };
+      mockFs({
+        [envConfigPath]: JSON.stringify(localEnvConfig),
+        [envStatePath]: JSON.stringify({
+          [PluginNames.SOLUTION]: tunnelInfo,
+          [PluginNames.BOT]: { pluginKey1: "pluginValue1" },
+        }),
+      });
+      const result = await storeTunnelInfo(workspaceFolder, projectId, tunnelInfo);
+
+      // Assert
+      chai.assert.isTrue(result.isOk());
+      chai.assert.isFalse(envStatePath in files);
     });
   });
 });

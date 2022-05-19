@@ -108,7 +108,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
     assert.strictEqual(errorResult.code, ErrorCode.InternalError);
     assert.include(
       errorResult.message,
-      "Initialize teams sdk failed due to not running inside Teams"
+      "Get SSO token failed with error: SDK initialization timed out."
     );
   });
 

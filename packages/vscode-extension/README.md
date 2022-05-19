@@ -60,7 +60,7 @@ Use the Teams Toolkit for Visual Studio Code to set up your first app project. C
 - Choose a location where your new application will be created in a new folder.
 - Type a name for your project and hit Enter.
 
-read more on [creating new project](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/create-new-project).
+Read more on [creating new project](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/create-new-project).
 
 ### Configure your app
 
@@ -81,7 +81,7 @@ When an app is installed, the Teams client parses the manifest file to determine
 - To configure your app, navigate to the `appPackage/manifest.template.json` file or from UI to select `DEVELOPMENT`-`Edit manifest file` and edit the manifest.
 - The toolkit will automatically update the app registration data accordingly during app side-loading and publish.
 
-read more on [customizing](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/teamsfx-manifest-customization) and [previewing](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/teamsfx-manifest-preview) manifest file.
+Read more on [customizing](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/teamsfx-manifest-customization) and [previewing](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/teamsfx-manifest-preview) manifest file.
 
 ### Preview your app on your local/remote dev environment
 
@@ -89,7 +89,7 @@ Simply press F5 to run your first Teams app or navigate to the Debug tab in the 
 
 If you want to have a better estimation of how the app will behave in the cloud environment, you can deploy your resources to the cloud and preview your app with the backend running in the cloud (remote).
 
-read more on [local debug](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/debug-local).
+Read more on [local debug](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/debug-local).
 
 ### Deploy your application to Azure
 
@@ -109,7 +109,7 @@ Deploy copies of your application to the provisioned Azure resources. It is typi
 - Once deploy is finished, go to the Visual Studio Code Debug Panel (Ctrl+Shift+D / ⌘⇧-D or View -> Run) and select Launch Remote (Edge).
 - Press the start button (green arrow) to launch your app - now running remotely on Azure!
 
-read more on [provision](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/provision) and [deploy](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/deploy) to Azure.
+Read more on [provision](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/provision) and [deploy](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/deploy) to Azure.
 
 ### Publish your application to Teams
 
@@ -120,7 +120,7 @@ When your application resources and infrastructure are deployed successfully, yo
 - Depending on your permission, you can send your app to the admin portal directly, or manually submit the app package file to your admin to check.
 - Once your app is approved by your admin, you can see it under "Built for your org" section in Teams Apps.
 
-read more on [publishing](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/publish) Teams apps.
+Read more on [publishing](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/publish) Teams apps.
 
 ## Explore Code Samples
 

@@ -6,7 +6,6 @@ import {
   Func,
   FxError,
   ok,
-  Platform,
   Plugin,
   PluginContext,
   QTreeNode,
@@ -30,7 +29,7 @@ import {
 } from "./errors";
 import { Logger } from "./logger";
 import { telemetryHelper } from "./utils/telemetry-helper";
-import { BotOptionItem, MessageExtensionItem } from "../../solution/fx-solution/question";
+import { BotOptionItem, MessageExtensionItem } from "../../solution";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import "./v2";
@@ -42,6 +41,7 @@ import { FunctionsHostedBotImpl } from "./functionsHostedBot/plugin";
 import { ScaffoldConfig } from "./configs/scaffoldConfig";
 import { createHostTypeTriggerQuestion, showNotificationTriggerCondition } from "./question";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
+import { CommonHostingError } from "../../../common/azure-hosting/hostingError";
 
 @Service(ResourcePlugins.BotPlugin)
 export class TeamsBot implements Plugin {
@@ -57,6 +57,7 @@ export class TeamsBot implements Plugin {
 
   /**
    * @param isScaffold true for `scaffold` lifecycle, false otherwise.
+   * @param context context of plugin
    */
   public getImpl(context: PluginContext, isScaffold = false): PluginImpl {
     if (isVSProject(context.projectSettings)) {
@@ -290,15 +291,15 @@ export class TeamsBot implements Plugin {
       return res;
     }
 
-    if (e instanceof PluginError) {
+    if (e instanceof PluginError || e instanceof CommonHostingError) {
       const result =
-        e.errorType === ErrorType.SYSTEM
+        e instanceof PluginError && e.errorType === ErrorType.SYSTEM
           ? ResultFactory.SystemError(e.name, [e.genMessage(), e.genDisplayMessage()], e.innerError)
           : ResultFactory.UserError(
               e.name,
               [e.genMessage(), e.genDisplayMessage()],
               e.innerError,
-              e.helpLink
+              e instanceof PluginError ? e.helpLink : ""
             );
       sendTelemetry && telemetryHelper.sendResultEvent(context, name, result);
       return result;

@@ -42,7 +42,6 @@ import { IBotRegistration } from "./appStudio/interfaces/IBotRegistration";
 import { Logger } from "./logger";
 import { DeployMgr } from "./deployMgr";
 import { BotAuthCredential } from "./botAuthCredential";
-import { AzureOperations } from "./azureOps";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import path from "path";
 import { getTemplatesFolder } from "../../../folder";
@@ -52,13 +51,16 @@ import {
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,
+  isBotNotificationEnabled,
+  generateBicepFromFile,
+  isConfigUnifyEnabled,
 } from "../../../common";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
-import { generateBicepFromFile, isConfigUnifyEnabled } from "../../../common/tools";
-import { isBotNotificationEnabled } from "../../../common/featureFlags";
 import { PluginImpl } from "./interface";
 import { BOT_ID } from "../appstudio/constants";
+import { AzureOperations } from "../../../common/azure-hosting/azureOps";
+import { AzureUploadConfig } from "../../../common/azure-hosting/interfaces";
 
 export class TeamsBotImpl implements PluginImpl {
   // Made config public, because expect the upper layer to fill inputs.
@@ -317,18 +319,14 @@ export class TeamsBotImpl implements PluginImpl {
       await this.getAzureAccountCredential(),
       this.config.provision.subscriptionId!
     );
-    const listResponse = await AzureOperations.ListPublishingCredentials(
+    const listResponse = await AzureOperations.listPublishingCredentials(
       webSiteMgmtClient,
       this.config.provision.resourceGroup!,
       this.config.provision.siteName!
     );
 
-    const publishingUserName = listResponse.publishingUserName
-      ? listResponse.publishingUserName
-      : "";
-    const publishingPassword = listResponse.publishingPassword
-      ? listResponse.publishingPassword
-      : "";
+    const publishingUserName = listResponse.publishingUserName ?? "";
+    const publishingPassword = listResponse.publishingPassword ?? "";
     const encryptedCreds: string = utils.toBase64(`${publishingUserName}:${publishingPassword}`);
 
     const config = {
@@ -337,12 +335,12 @@ export class TeamsBotImpl implements PluginImpl {
       },
       maxContentLength: Infinity,
       maxBodyLength: Infinity,
-    };
+    } as AzureUploadConfig;
 
     const zipDeployEndpoint: string = getZipDeployEndpoint(this.config.provision.siteName!);
     await handler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_DEPLOY);
-    const statusUrl = await AzureOperations.ZipDeployPackage(zipDeployEndpoint, zipBuffer, config);
-    await AzureOperations.CheckDeployStatus(statusUrl, config);
+    const statusUrl = await AzureOperations.zipDeployPackage(zipDeployEndpoint, zipBuffer, config);
+    await AzureOperations.checkDeployStatus(statusUrl, config);
 
     await deployMgr.updateLastDeployTime(deployTimeCandidate);
 

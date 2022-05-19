@@ -3,14 +3,13 @@
 
 import { Inputs } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
-import { ServiceType } from "../../../../common/azure-hosting/interfaces";
 import { AzureSolutionQuestionNames, BotScenario } from "../../../solution";
 import { QuestionNames, TemplateProjectsConstants, TemplateProjectsScenarios } from "../constants";
 import { HostTypeTriggerOptions } from "../question";
-//todo: refactor HostTypes to be enum
-import { HostType, HostTypes, PluginBot } from "../resources/strings";
 import { CodeTemplateInfo } from "./interface/codeTemplateInfo";
 import { getLanguage, getServiceType, getTriggerScenarios } from "./mapping";
+import { ServiceType } from "../../../../common/azure-hosting/interfaces";
+import { PluginBot, HostType, HostTypes } from "../resources/strings";
 
 export function getTemplateInfos(ctx: Context, inputs: Inputs): CodeTemplateInfo[] {
   const lang = getLanguage(ctx.projectSetting.programmingLanguage!);

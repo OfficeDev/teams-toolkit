@@ -20,12 +20,10 @@ import {
   CommonStrings,
   HostTypes,
 } from "../../../../../src/plugins/resource/bot/resources/strings";
-import { AzureOperations } from "../../../../../src/plugins/resource/bot/azureOps";
 import { AADRegistration } from "../../../../../src/plugins/resource/bot/aadRegistration";
 import { BotAuthCredential } from "../../../../../src/plugins/resource/bot/botAuthCredential";
 import { AppStudio } from "../../../../../src/plugins/resource/bot/appStudio/appStudio";
 import { LanguageStrategy } from "../../../../../src/plugins/resource/bot/languageStrategy";
-import { LocalSettingsBotKeys } from "../../../../../src/common/localSettingsConstants";
 import { NodeJSBotPluginV3 } from "../../../../../src/plugins/resource/bot/v3";
 import {
   Func,
@@ -56,6 +54,7 @@ import { FunctionsHostedBotImpl } from "../../../../../src/plugins/resource/bot/
 import { ScaffoldConfig } from "../../../../../src/plugins/resource/bot/configs/scaffoldConfig";
 import { DotnetBotImpl } from "../../../../../src/plugins/resource/bot/dotnet/plugin";
 import { FuncHostedDeployMgr } from "../../../../../src/plugins/resource/bot/functionsHostedBot/deployMgr";
+import { AzureOperations } from "../../../../../src/common/azure-hosting/azureOps";
 
 describe("Teams Bot Resource Plugin", () => {
   describe("Test plugin implementation dispatching", () => {
@@ -300,10 +299,9 @@ describe("Teams Bot Resource Plugin", () => {
       const fakeCreds = testUtils.generateFakeTokenCredentialsBase();
 
       let item: any = { registrationState: "Unregistered" };
-      const namespace = ["ut"];
       const fakeRPClient: any = {
-        get: (namespace: string) => item,
-        register: (namespace: string) => {
+        get: (_: string) => item,
+        register: (_: string) => {
           item = {};
           item = { ...item, $namespace: { registrationState: "Registered" } };
           return item;
@@ -316,11 +314,6 @@ describe("Teams Bot Resource Plugin", () => {
       sinon
         .stub(mockedTokenProvider.azureAccountProvider, "getAccountCredentialAsync")
         .resolves(fakeCreds);
-      sinon.stub(AzureOperations, "CreateOrUpdateAzureWebApp").resolves({
-        defaultHostName: "abc.azurewebsites.net",
-      });
-      sinon.stub(AzureOperations, "LinkTeamsChannel").resolves();
-
       // Act
       const result = await botPlugin.provisionResource(ctx, inputs, envInfoV3, mockedTokenProvider);
 
@@ -357,9 +350,6 @@ describe("Teams Bot Resource Plugin", () => {
       sinon
         .stub(pluginContext.azureAccountProvider!, "getAccountCredentialAsync")
         .resolves(fakeCreds);
-
-      sinon.stub(AzureOperations, "CreateOrUpdateAzureWebApp").resolves();
-      sinon.stub(AzureOperations, "UpdateBotChannelRegistration").resolves();
       // Act
       const result = await botPlugin.postProvision(pluginContext);
 
@@ -418,9 +408,6 @@ describe("Teams Bot Resource Plugin", () => {
         .stub(mockedTokenProvider.azureAccountProvider, "getAccountCredentialAsync")
         .resolves(fakeCreds);
 
-      sinon.stub(AzureOperations, "CreateOrUpdateAzureWebApp").resolves();
-      sinon.stub(AzureOperations, "UpdateBotChannelRegistration").resolves();
-
       // Act
       const result = await botPlugin.configureResource(ctx, inputs, envInfoV3, mockedTokenProvider);
 
@@ -477,12 +464,13 @@ describe("Teams Bot Resource Plugin", () => {
 
       sinon.stub(LanguageStrategy, "localBuild").resolves();
       sinon.stub(utils, "zipAFolder").returns(new AdmZip().toBuffer());
-      sinon.stub(AzureOperations, "ListPublishingCredentials").resolves({
+      sinon.stub(AzureOperations, "listPublishingCredentials").resolves({
+        _response: { status: 0 },
         publishingUserName: "test-username",
         publishingPassword: "test-password",
       });
-      sinon.stub(AzureOperations, "ZipDeployPackage").resolves("");
-      sinon.stub(AzureOperations, "CheckDeployStatus").resolves();
+      sinon.stub(AzureOperations, "zipDeployPackage").resolves("");
+      sinon.stub(AzureOperations, "checkDeployStatus").resolves();
     });
 
     afterEach(async () => {
@@ -527,13 +515,14 @@ describe("Teams Bot Resource Plugin", () => {
       sinon.stub(FuncHostedDeployMgr.prototype, "zipAFolder").resolves(new AdmZip().toBuffer());
       sinon.stub(FuncHostedDeployMgr.prototype, "getIgnoreRules").resolves([]);
       sinon.stub(FuncHostedDeployMgr.prototype, "saveDeploymentInfo").resolves();
-      sinon.stub(AzureOperations, "ListPublishingCredentials").resolves({
+      sinon.stub(AzureOperations, "listPublishingCredentials").resolves({
+        _response: { status: 0 },
         publishingUserName: "test-username",
         publishingPassword: "test-password",
       });
-      sinon.stub(AzureOperations, "RestartWebApp").resolves();
-      sinon.stub(AzureOperations, "ZipDeployPackage").resolves("");
-      sinon.stub(AzureOperations, "CheckDeployStatus").resolves();
+      sinon.stub(AzureOperations, "restartWebApp").resolves();
+      sinon.stub(AzureOperations, "zipDeployPackage").resolves("");
+      sinon.stub(AzureOperations, "checkDeployStatus").resolves();
     });
 
     afterEach(async () => {
@@ -564,12 +553,13 @@ describe("Teams Bot Resource Plugin", () => {
     beforeEach(() => {
       sinon.stub(LanguageStrategy, "localBuild").resolves();
       sinon.stub(utils, "zipAFolder").returns(new AdmZip().toBuffer());
-      sinon.stub(AzureOperations, "ListPublishingCredentials").resolves({
+      sinon.stub(AzureOperations, "listPublishingCredentials").resolves({
+        _response: { status: 0 },
         publishingUserName: "test-username",
         publishingPassword: "test-password",
       });
-      sinon.stub(AzureOperations, "ZipDeployPackage").resolves("");
-      sinon.stub(AzureOperations, "CheckDeployStatus").resolves();
+      sinon.stub(AzureOperations, "zipDeployPackage").resolves("");
+      sinon.stub(AzureOperations, "checkDeployStatus").resolves();
       sinon.stub(fs, "pathExists").resolves(true);
     });
 

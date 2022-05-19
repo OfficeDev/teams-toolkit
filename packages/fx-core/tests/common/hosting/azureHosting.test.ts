@@ -3,7 +3,7 @@
 
 import "mocha";
 import * as chai from "chai";
-import path from "path";
+import * as path from "path";
 import { AzureHostingFactory } from "../../../src/common/azure-hosting/hostingFactory";
 import { BicepContext, ServiceType } from "../../../src/common/azure-hosting/interfaces";
 import { ResourcePlugins } from "../../../src/common/constants";

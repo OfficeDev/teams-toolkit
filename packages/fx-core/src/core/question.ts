@@ -285,17 +285,14 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
   };
 }
 
-export function createCapabilityForDotNet(): MultiSelectQuestion {
+export function createCapabilityForDotNet(): SingleSelectQuestion {
   const staticOptions: StaticOptions = [TabOptionItem, BotOptionItem];
   return {
     name: CoreQuestionNames.Capabilities,
     title: getLocalizedString("core.createCapabilityQuestion.title"),
-    type: "multiSelect",
+    type: "singleSelect",
     staticOptions: staticOptions,
     placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
-    validation: {
-      minItems: 1,
-    },
   };
 }
 

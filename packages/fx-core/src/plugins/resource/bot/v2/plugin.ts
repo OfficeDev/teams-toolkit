@@ -147,7 +147,7 @@ export class TeamsBotV2Impl {
 
     const lang = getLanguage(ctx.projectSetting.programmingLanguage!);
     const packDir = path.join(inputs.projectPath!, CommonStrings.BOT_WORKING_DIR_NAME);
-    if (lang === "ts") {
+    if (lang === ProgrammingLanguage.Ts) {
       //Typescript needs tsc build before deploy because of windows app server. other languages don't need it.
       try {
         await utils.execute("npm install", packDir);
@@ -158,7 +158,7 @@ export class TeamsBotV2Impl {
       }
     }
 
-    if (lang === "js") {
+    if (lang === ProgrammingLanguage.Js) {
       try {
         // fail to npm install @microsoft/teamsfx on azure web app, so pack it locally.
         await utils.execute("npm install", packDir);
@@ -168,7 +168,7 @@ export class TeamsBotV2Impl {
       }
     }
 
-    if (lang === "csharp") {
+    if (lang === ProgrammingLanguage.Csharp) {
       try {
         // TODO: build csharp project
         await utils.execute("dotnet publish", packDir);

@@ -4,10 +4,15 @@
 import { ServiceType } from "../../../../common/azure-hosting/interfaces";
 import { BotNotificationTriggers } from "../../../solution";
 import { TemplateProjectsScenarios } from "../constants";
+import {
+  FunctionsHttpTriggerOptionItem,
+  FunctionsTimerTriggerOptionItem,
+  AppServiceOptionItem,
+} from "../question";
 import { HostTypes } from "../resources/strings";
 import { ProgrammingLanguage } from "./enum";
 
-const runtimeMap: Map<string, string> = new Map<string, string>([
+const runtimeMap: Map<ProgrammingLanguage, string> = new Map<ProgrammingLanguage, string>([
   [ProgrammingLanguage.Js, "node"],
   [ProgrammingLanguage.Ts, "node"],
   [ProgrammingLanguage.Csharp, "csharp"],
@@ -18,24 +23,31 @@ const serviceMap: Map<string, ServiceType> = new Map<string, ServiceType>([
   [HostTypes.AZURE_FUNCTIONS, ServiceType.Functions],
 ]);
 
-const langMap: Map<string, string> = new Map<string, string>([
+const langMap: Map<string, ProgrammingLanguage> = new Map<string, ProgrammingLanguage>([
   ["javascript", ProgrammingLanguage.Js],
   ["typescript", ProgrammingLanguage.Ts],
   ["csharp", ProgrammingLanguage.Csharp],
 ]);
 
-const triggerScenarioMap: Map<string, string> = new Map<string, string>([
+const triggerScenarioMap: Map<string, string[]> = new Map<string, string[]>([
   [
-    BotNotificationTriggers.Http,
-    TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_HTTP_SCENARIO_NAME,
+    FunctionsHttpTriggerOptionItem.id,
+    [
+      TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME,
+      TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_HTTP_SCENARIO_NAME,
+    ],
   ],
   [
-    BotNotificationTriggers.Timer,
-    TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_TIMER_SCENARIO_NAME,
+    FunctionsTimerTriggerOptionItem.id,
+    [
+      TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME,
+      TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_TIMER_SCENARIO_NAME,
+    ],
   ],
+  [AppServiceOptionItem.id, [TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME]],
 ]);
 
-export function getRuntime(lang: string): string {
+export function getRuntime(lang: ProgrammingLanguage): string {
   const runtime = runtimeMap.get(lang);
   if (runtime) {
     return runtime;
@@ -51,7 +63,7 @@ export function getServiceType(hostType: string): ServiceType {
   throw new Error("invalid bot input");
 }
 
-export function getLanguage(lang: string): string {
+export function getLanguage(lang: string): ProgrammingLanguage {
   const language = langMap.get(lang.toLowerCase());
   if (language) {
     return language;
@@ -59,10 +71,10 @@ export function getLanguage(lang: string): string {
   throw new Error("invalid bot input");
 }
 
-export function getTemplateScenarioFromTrigger(trigger: string): string {
-  const scenario = triggerScenarioMap.get(trigger);
-  if (scenario) {
-    return scenario;
+export function getTriggerScenarios(trigger: string): string[] {
+  const scenarios = triggerScenarioMap.get(trigger);
+  if (scenarios) {
+    return scenarios;
   }
   throw new Error("invalid bot input");
 }

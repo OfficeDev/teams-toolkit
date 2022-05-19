@@ -10,11 +10,11 @@ import { AppServiceOptionItem, HostTypeTriggerOptions } from "../question";
 //todo: refactor HostTypes to be enum
 import { HostType, HostTypes, PluginBot } from "../resources/strings";
 import { CodeTemplateInfo } from "./interface/codeTemplateInfo";
-import { getLanguage, getTemplateScenarioFromTrigger, getServiceType } from "./mapping";
+import { getLanguage, getServiceType, getTriggerScenarios } from "./mapping";
 
 export function getTemplateInfos(ctx: Context, inputs: Inputs): CodeTemplateInfo[] {
   const lang = getLanguage(ctx.projectSetting.programmingLanguage!);
-  const scenarios = decideTemplateScenarios(ctx, inputs);
+  const scenarios = Array.from(decideTemplateScenarios(ctx, inputs));
   return scenarios.map((scenario) => {
     return {
       group: TemplateProjectsConstants.GROUP_NAME_BOT,
@@ -25,38 +25,28 @@ export function getTemplateInfos(ctx: Context, inputs: Inputs): CodeTemplateInfo
   });
 }
 
-export function decideTemplateScenarios(ctx: Context, inputs: Inputs): string[] {
+export function decideTemplateScenarios(ctx: Context, inputs: Inputs): Set<string> {
   const isM365 = ctx.projectSetting?.isM365;
-  const templateScenarios: string[] = [];
+  const templateScenarios: Set<string> = new Set<string>();
   if (isM365) {
-    templateScenarios.push(TemplateProjectsScenarios.M365_SCENARIO_NAME);
+    templateScenarios.add(TemplateProjectsScenarios.M365_SCENARIO_NAME);
     return templateScenarios;
   }
   const botScenarios = inputs?.[AzureSolutionQuestionNames.Scenarios];
   if (!botScenarios) {
-    templateScenarios.push(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
+    templateScenarios.add(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
     return templateScenarios;
   }
-  botScenarios.map((scenario: string) => {
+  botScenarios.forEach((scenario: string) => {
     switch (scenario) {
       case BotScenario.CommandAndResponseBot:
-        templateScenarios.push(TemplateProjectsScenarios.COMMAND_AND_RESPONSE_SCENARIO_NAME);
+        templateScenarios.add(TemplateProjectsScenarios.COMMAND_AND_RESPONSE_SCENARIO_NAME);
         break;
       case BotScenario.NotificationBot:
         const notificationTriggerType = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] as string[];
-        if (notificationTriggerType.includes(AppServiceOptionItem.id)) {
-          templateScenarios.push(TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME);
-        } else {
-          templateScenarios.push(
-            TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME
-          );
-          const notificationTriggerType = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] as string[];
-          notificationTriggerType
-            .map((item) => HostTypeTriggerOptions.find((option) => option.id === item)!.trigger!)
-            .forEach((hostType) =>
-              templateScenarios.push(getTemplateScenarioFromTrigger(hostType))
-            );
-        }
+        notificationTriggerType.forEach((triggerType) => {
+          getTriggerScenarios(triggerType).forEach((item) => templateScenarios.add(item));
+        });
         break;
     }
   });

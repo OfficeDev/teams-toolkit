@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import { ServiceType } from "../../../../common/azure-hosting/interfaces";
-import { BotNotificationTriggers } from "../../../solution";
 import { TemplateProjectsScenarios } from "../constants";
 import {
   FunctionsHttpTriggerOptionItem,

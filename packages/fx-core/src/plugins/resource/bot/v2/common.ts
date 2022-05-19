@@ -6,7 +6,7 @@ import { Context } from "@microsoft/teamsfx-api/build/v2";
 import { ServiceType } from "../../../../common/azure-hosting/interfaces";
 import { AzureSolutionQuestionNames, BotScenario } from "../../../solution";
 import { QuestionNames, TemplateProjectsConstants, TemplateProjectsScenarios } from "../constants";
-import { AppServiceOptionItem, HostTypeTriggerOptions } from "../question";
+import { HostTypeTriggerOptions } from "../question";
 //todo: refactor HostTypes to be enum
 import { HostType, HostTypes, PluginBot } from "../resources/strings";
 import { CodeTemplateInfo } from "./interface/codeTemplateInfo";

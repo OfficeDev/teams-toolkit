@@ -510,10 +510,7 @@ export class CLIUserInteraction implements UserInteraction {
 
   public async showMessage(
     level: "info" | "warn" | "error",
-    message:
-      | string
-      | Array<{ content: string; color: Colors }>
-      | Array<{ content: string; link?: string }>,
+    message: string | Array<{ content: string; color?: Colors; link?: string }>,
     modal: boolean,
     ...items: string[]
   ): Promise<Result<string | undefined, FxError>> {

@@ -508,30 +508,29 @@ export function argsToInputs(
 }
 
 export function getColorizedString(
-  message: Array<{ content: string; color: Colors }> | Array<{ content: string; link?: string }>
+  message: Array<{ content: string; color?: Colors; link?: string }>
 ): string {
   // Color support is automatically detected by chalk
   const colorizedMessage = message
     .map((item) => {
-      const color = (item as { content: string; color: Colors }).color;
-      const link = (item as { content: string; link?: string }).link;
-      switch (color) {
+      const content = item.link ? `${item.content}(${item.link})` : item.content;
+      switch (item.color) {
         case Colors.BRIGHT_WHITE:
-          return chalk.whiteBright(item.content);
+          return chalk.whiteBright(content);
         case Colors.WHITE:
-          return chalk.white(item.content);
+          return chalk.white(content);
         case Colors.BRIGHT_MAGENTA:
-          return chalk.magentaBright(item.content);
+          return chalk.magentaBright(content);
         case Colors.BRIGHT_GREEN:
-          return chalk.greenBright(item.content);
+          return chalk.greenBright(content);
         case Colors.BRIGHT_RED:
-          return chalk.redBright(item.content);
+          return chalk.redBright(content);
         case Colors.BRIGHT_YELLOW:
-          return chalk.yellowBright(item.content);
+          return chalk.yellowBright(content);
         case Colors.BRIGHT_CYAN:
-          return chalk.cyanBright.underline(item.content);
+          return chalk.cyanBright.underline(content);
         default:
-          return link ? `${item.content}(${link})` : item.content;
+          return content;
       }
     })
     .join("");

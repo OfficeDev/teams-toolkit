@@ -677,7 +677,8 @@ describe("Utils Tests", function () {
 
     const message = [{ content: "foo", link: "link" }, { content: "bar" }] as Array<{
       content: string;
-      color: Colors;
+      color?: Colors;
+      link?: string;
     }>;
     const result = getColorizedString(message);
     expect(result).equals("foo(link)bar");

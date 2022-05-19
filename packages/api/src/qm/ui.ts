@@ -283,27 +283,13 @@ export interface UserInteraction {
   /**
    * Show an information/warning/error message with different colors to users, which only works for CLI.
    * @param level message level
-   * @param message The message with color to show. The color only works for CLI.
+   * @param message The message with color to show. The color only works for CLI. Link is clickable in VS Code and will be printed in CLI.
    * @param items A set of items that will be rendered as actions in the message.
    * @returns A promise that resolves to the selected item or `undefined` when being dismissed.
    */
   showMessage(
     level: "info" | "warn" | "error",
-    message: Array<{ content: string; color: Colors }>,
-    modal: boolean,
-    ...items: string[]
-  ): Promise<Result<string | undefined, FxError>>;
-
-  /**
-   * Show an information/warning/error message with link.
-   * @param level message level
-   * @param message The message with link
-   * @param items A set of items that will be rendered as actions in the message.
-   * @returns A promise that resolves to the selected item or `undefined` when being dismissed.
-   */
-  showMessage(
-    level: "info" | "warn" | "error",
-    message: Array<{ content: string; link?: string }>,
+    message: Array<{ content: string; color?: Colors; link?: string }>,
     modal: boolean,
     ...items: string[]
   ): Promise<Result<string | undefined, FxError>>;

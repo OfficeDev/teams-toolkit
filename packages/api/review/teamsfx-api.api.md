@@ -2014,10 +2014,7 @@ export interface UserInteraction {
     showMessage(level: "info" | "warn" | "error", message: string, modal: boolean, ...items: string[]): Promise<Result<string | undefined, FxError>>;
     showMessage(level: "info" | "warn" | "error", message: Array<{
         content: string;
-        color: Colors;
-    }>, modal: boolean, ...items: string[]): Promise<Result<string | undefined, FxError>>;
-    showMessage(level: "info" | "warn" | "error", message: Array<{
-        content: string;
+        color?: Colors;
         link?: string;
     }>, modal: boolean, ...items: string[]): Promise<Result<string | undefined, FxError>>;
 }

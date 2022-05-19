@@ -5,7 +5,7 @@ import sinon from "sinon";
 import yargs, { Options } from "yargs";
 
 import { FxError, Inputs, LogLevel, ok, Func } from "@microsoft/teamsfx-api";
-import { FxCore } from "@microsoft/teamsfx-core";
+import { FxCore, isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core";
 
 import Add from "../../../src/cmds/add";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
@@ -68,7 +68,22 @@ describe("Add CICD Command Tests", function () {
   it("Builder Check", () => {
     const cmd = new Add();
     yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
-    expect(registeredCommands).deep.equals(["add <feature>", "cicd"]);
+    expect(registeredCommands).deep.equals(
+      isPreviewFeaturesEnabled()
+        ? [
+            "add <feature>",
+            "sso-tab",
+            "tab",
+            "bot",
+            "message-extension",
+            "azure-function",
+            "azure-apim",
+            "azure-sql",
+            "azure-keyvault",
+            "cicd",
+          ]
+        : ["add <feature>", "cicd"]
+    );
   });
 
   it("Add CICD Command Running Check", async () => {

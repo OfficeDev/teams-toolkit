@@ -252,10 +252,6 @@ export function syncFeatureFlags() {
     ConfigurationKey.BicepEnvCheckerEnable
   ).toString();
 
-  process.env["TEAMSFX_ROOT_DIRECTORY"] = getConfiguration(
-    ConfigurationKey.RootDirectory
-  ).toString();
-
   process.env["TEAMSFX_YO_ENV_CHECKER_ENABLE"] = getConfiguration(
     ConfigurationKey.YoEnvCheckerEnable
   ).toString();
@@ -268,9 +264,6 @@ export function syncFeatureFlags() {
   if (tunneling === TeamsfxTunnelingServices.MicrosoftTunneling) {
     process.env["TEAMSFX_MICROSOFT_TUNNELING"] = "true";
   }
-
-  // TODO: enable preview feature flag in fx-core after E2E tests are fixed.
-  process.env[FeatureFlags.Preview] = "true";
 
   initializePreviewFeatureFlags();
 }
@@ -504,6 +497,8 @@ export function getTriggerFromProperty(args?: any[]) {
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.TreeView };
     case TelemetryTriggerFrom.ViewTitleNavigation:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.ViewTitleNavigation };
+    case TelemetryTriggerFrom.QuickPick:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.QuickPick };
     case TelemetryTriggerFrom.Webview:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview };
     case TelemetryTriggerFrom.CodeLens:

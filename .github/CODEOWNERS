@@ -14,7 +14,7 @@
 /packages/vscode-extension/src/debug @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
 /packages/vscode-extension/test/integration/envChecker @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
 /packages/vscode-extension/test/unit/localdebug @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
-/packages/vscode-extension/package.nls.json @timngmsft @HuihuiWu-Microsoft
+/packages/vscode-extension/package.nls.json @timngmsft @HuihuiWu-Microsoft @tecton
 /packages/vscode-extension/src/migration @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
 /packages/vscode-extension/test/unit/migration @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
 
@@ -121,9 +121,11 @@
 /packages/function-extension @adashen @blackchoey @dilin-MS
 
 /packages/dotnet-sdk @tecton  @JerryYangKai
+/packages/dotnet-sdk/src/TeamsFx/Conversation @swatDong @dooriya @kimizhu
+/packages/dotnet-sdk/src/TeamsFx.Test/Conversation @swatDong @dooriya @kimizhu
 
 /.github/workflows/cd.yml @adashen @LongOddCode @IvanJobs @qinezh @wenytang-ms
 
 /packages/server @chagong @Alive-Fish @jayzhang
 
-/Localize @HuihuiWu-Microsoft
+/Localize @HuihuiWu-Microsoft @tecton

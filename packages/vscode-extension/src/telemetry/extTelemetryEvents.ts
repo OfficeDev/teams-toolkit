@@ -4,7 +4,7 @@ export enum TelemetryEvent {
   CreateAccountStart = "create-account-start",
   CreateAccount = "create-account",
 
-  QuickStart = "quick-start",
+  GetStarted = "quick-start",
 
   Samples = "samples",
 
@@ -100,8 +100,6 @@ export enum TelemetryEvent {
 
   NextStep = "next-step",
 
-  ClickQuickStartCard = "click-quick-start-card",
-
   ClickOpenDeploymentTreeview = "click-open-deployment-tree-view",
   ClickValidatePrerequisites = "click-validate-prerequisites",
   ClickOpenReadMe = "click-open-read-me",
@@ -167,7 +165,6 @@ export enum TelemetryEvent {
   ShowLocalPreviewNotification = "show-local-preview-notification",
   ClickLocalDebug = "click-local-debug",
   ClickLocalPreview = "click-local-preview",
-  ClickChangeLocation = "click-change-location",
   PreviewAdaptiveCard = "open-adaptivecard-preview",
 
   PreviewManifestFile = "preview-manifest",
@@ -192,6 +189,8 @@ export enum TelemetryEvent {
   // To track the effect of UX changes
   // that prevents user performing concurrent operations.
   TreeViewCommandConcurrentExecution = "treeview-command-concurrent-execution",
+
+  Deactivate = "deactivate",
 }
 
 export enum TelemetryProperty {
@@ -238,6 +237,7 @@ export enum TelemetryProperty {
   IsFromSample = "is-from-sample",
   IsSpfx = "is-spfx",
   IsM365 = "is-m365",
+  IsCreatingM365 = "is-creating-m365",
   SettingsVersion = "settings-version",
   UpdateFailedFiles = "update-failed-files",
   NewProjectId = "new-project-id",
@@ -247,6 +247,8 @@ export enum TelemetryProperty {
   // Used with OpenTutorial
   TutorialName = "tutorial-name",
   DocumentationName = "documentation-name",
+  // Used with Deactivate
+  Timestamp = "timestamp",
 }
 
 export enum TelemetrySuccess {
@@ -264,6 +266,7 @@ export enum TelemetryTriggerFrom {
   SideBar = "SideBar",
   WalkThrough = "WalkThrough",
   Notification = "Notification",
+  QuickPick = "QuickPick",
   Other = "Other",
   Auto = "Auto",
   Unknow = "Unknow",

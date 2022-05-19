@@ -2,10 +2,8 @@
 // Licensed under the MIT license.
 
 import { CancellationToken, MessageConnection } from "vscode-jsonrpc";
-
-import { FxError, Inputs, Void, Tools, Result } from "@microsoft/teamsfx-api";
-import { FxCore, Correlator } from "@microsoft/teamsfx-core";
-
+import { FxError, Inputs, Void, Tools, Result, Func, ok } from "@microsoft/teamsfx-api";
+import { FxCore, Correlator, getSideloadingStatus } from "@microsoft/teamsfx-core";
 import { IServerConnection, Namespaces } from "./apis";
 import LogProvider from "./providers/logger";
 import TokenProvider from "./providers/tokenProvider";
@@ -13,6 +11,7 @@ import TelemetryReporter from "./providers/telemetry";
 import UserInteraction from "./providers/userInteraction";
 import { callFunc } from "./customizedFuncAdapter";
 import { standardizeResult } from "./utils";
+import { environmentManager } from "@microsoft/teamsfx-core";
 
 export default class ServerConnection implements IServerConnection {
   public static readonly namespace = Namespaces.Server;
@@ -37,6 +36,7 @@ export default class ServerConnection implements IServerConnection {
       this.deployArtifactsRequest.bind(this),
       this.buildArtifactsRequest.bind(this),
       this.publishApplicationRequest.bind(this),
+      this.deployTeamsAppManifestRequest.bind(this),
 
       this.customizeLocalFuncRequest.bind(this),
       this.customizeValidateFuncRequest.bind(this),
@@ -45,6 +45,11 @@ export default class ServerConnection implements IServerConnection {
       /// fn.name = `bound ${functionName}`
       connection.onRequest(`${ServerConnection.namespace}/${fn.name.split(" ")[1]}`, fn);
     });
+
+    connection.onRequest(
+      `${ServerConnection.namespace}/getSideloadingStatusRequest`,
+      this.getSideloadingStatusRequest.bind(this)
+    );
   }
 
   public listen() {
@@ -129,6 +134,27 @@ export default class ServerConnection implements IServerConnection {
     return standardizeResult(res);
   }
 
+  public async deployTeamsAppManifestRequest(
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<Result<any, FxError>> {
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const func: Func = {
+      namespace: "fx-solution-azure/fx-resource-appstudio",
+      method: "updateManifest",
+      params: {
+        envName: environmentManager.getDefaultEnvName(),
+      },
+    };
+    const res = await Correlator.runWithId(
+      corrId,
+      (func, inputs) => this.core.executeUserTask(func, inputs),
+      func,
+      inputs
+    );
+    return standardizeResult(res);
+  }
+
   public async customizeLocalFuncRequest(
     funcId: number,
     params: Inputs,
@@ -161,5 +187,15 @@ export default class ServerConnection implements IServerConnection {
       previousSelectedIds
     );
     return standardizeResult(res);
+  }
+
+  public async getSideloadingStatusRequest(
+    accountToken: {
+      token: string;
+    },
+    token: CancellationToken
+  ): Promise<Result<string, FxError>> {
+    const res = await getSideloadingStatus(accountToken.token);
+    return ok(String(res));
   }
 }

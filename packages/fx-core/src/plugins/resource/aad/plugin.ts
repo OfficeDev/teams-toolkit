@@ -37,6 +37,7 @@ import {
   AadManifestMissingName,
   CannotGenerateIdentifierUrisError,
   AadManifestNotProvisioned,
+  AADManifestMissingScopeIdForTeamsApp,
 } from "./errors";
 import { Envs } from "./interfaces/models";
 import { DialogUtils } from "./utils/dialog";
@@ -76,6 +77,7 @@ import {
 } from "../../solution/fx-solution/question";
 import { format, Formats } from "./utils/format";
 import { SOLUTION_PROVISION_SUCCEEDED } from "../../solution";
+import { generateAadManifestTemplate } from "../../../core/generateAadManifestTemplate";
 
 export class AadAppForTeamsImpl {
   public async provision(ctx: PluginContext, isLocalDebug = false): Promise<AadResult> {
@@ -190,16 +192,18 @@ export class AadAppForTeamsImpl {
     await config.restoreConfigFromContext(ctx);
 
     const manifest = await AadAppManifestManager.loadAadManifest(ctx);
-    config.oauth2PermissionScopeId = manifest.oauth2Permissions[0]?.id;
 
     await DialogUtils.progress?.start(ProgressDetail.Starting);
     if (manifest.id) {
-      if (!skip) {
+      const existingOauth2PermissionScopeId = ctx.envInfo.config.auth?.accessAsUserScopeId;
+
+      if (!skip || !existingOauth2PermissionScopeId) {
         await DialogUtils.progress?.next(ProgressDetail.GetAadApp);
         config = await AadAppClient.getAadAppUsingManifest(
           telemetryMessage,
           manifest.id,
           config.password,
+          await this.getScopeIdForTeams(manifest),
           ctx.graphTokenProvider,
           ctx.envInfo.envName
         );
@@ -213,6 +217,7 @@ export class AadAppForTeamsImpl {
           AadManifestMissingName.message()
         );
       }
+      config.oauth2PermissionScopeId = await this.getScopeIdForTeams(manifest);
       await AadAppClient.createAadAppUsingManifest(telemetryMessage, manifest, config);
       config.password = undefined;
       ctx.logProvider?.info(Messages.getLog(Messages.CreateAadAppSuccess));
@@ -235,6 +240,26 @@ export class AadAppForTeamsImpl {
       skip ? { [Telemetry.skip]: Telemetry.yes } : {}
     );
     return ResultFactory.Success();
+  }
+
+  private getScopeIdForTeams(manifest: AADManifest) {
+    let scopeId;
+    let findAccessAsUser;
+    manifest.oauth2Permissions?.forEach((oauth2Permission) => {
+      if (oauth2Permission.value === "access_as_user") {
+        scopeId = oauth2Permission.id;
+        findAccessAsUser = true;
+      }
+    });
+
+    if (!findAccessAsUser) {
+      throw ResultFactory.UserError(
+        AADManifestMissingScopeIdForTeamsApp.name,
+        AADManifestMissingScopeIdForTeamsApp.message()
+      );
+    }
+
+    return scopeId;
   }
 
   public setApplicationInContext(ctx: PluginContext, isLocalDebug = false): AadResult {
@@ -776,86 +801,10 @@ export class AadAppForTeamsImpl {
     if (isAadManifestEnabled() && isConfigUnifyEnabled()) {
       TelemetryUtils.init(ctx);
       Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartScaffold);
-
-      const templatesFolder = getTemplatesFolder();
-      const appDir = `${ctx.root}/${Constants.appPackageFolder}`;
-      const aadManifestTemplate = `${templatesFolder}/${Constants.aadManifestTemplateFolder}/${Constants.aadManifestTemplateName}`;
-      await fs.ensureDir(appDir);
-
-      const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
-
-      const aadManifestPath = `${appDir}/${Constants.aadManifestTemplateName}`;
-
-      let aadJson;
-
-      if (await fs.pathExists(aadManifestPath)) {
-        aadJson = await fs.readJSON(aadManifestPath);
-      } else {
-        aadJson = await fs.readJSON(aadManifestTemplate);
-      }
-
-      if (!aadJson.replyUrlsWithType) {
-        aadJson.replyUrlsWithType = [];
-      }
-
-      if (azureSolutionSettings.capabilities.includes("Tab")) {
-        const tabRedirectUrl1 =
-          "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/auth-end.html";
-
-        if (!this.isRedirectUrlExist(aadJson.replyUrlsWithType, tabRedirectUrl1, "Web")) {
-          aadJson.replyUrlsWithType.push({
-            url: tabRedirectUrl1,
-            type: "Web",
-          });
-        }
-
-        const tabRedirectUrl2 =
-          "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/auth-end.html?clientId={{state.fx-resource-aad-app-for-teams.clientId}}";
-
-        if (!this.isRedirectUrlExist(aadJson.replyUrlsWithType, tabRedirectUrl2, "Spa")) {
-          aadJson.replyUrlsWithType.push({
-            url: tabRedirectUrl2,
-            type: "Spa",
-          });
-        }
-
-        const tabRedirectUrl3 =
-          "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/blank-auth-end.html";
-
-        if (!this.isRedirectUrlExist(aadJson.replyUrlsWithType, tabRedirectUrl3, "Spa")) {
-          aadJson.replyUrlsWithType.push({
-            url: tabRedirectUrl3,
-            type: "Spa",
-          });
-        }
-      }
-
-      if (azureSolutionSettings.capabilities.includes("Bot")) {
-        const botRedirectUrl = "{{state.fx-resource-aad-app-for-teams.botEndpoint}}/auth-end.html";
-
-        if (!this.isRedirectUrlExist(aadJson.replyUrlsWithType, botRedirectUrl, "Web")) {
-          aadJson.replyUrlsWithType.push({
-            url: botRedirectUrl,
-            type: "Web",
-          });
-        }
-      }
-
-      await fs.writeJSON(`${appDir}/${Constants.aadManifestTemplateName}`, aadJson, {
-        spaces: 4,
-        EOL: os.EOL,
-      });
-
+      await generateAadManifestTemplate(ctx.root, ctx.projectSettings);
       Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndScaffold);
     }
     return ResultFactory.Success();
-  }
-
-  private isRedirectUrlExist(replyUrls: ReplyUrlsWithType[], url: string, type: string) {
-    return (
-      replyUrls.filter((item: ReplyUrlsWithType) => item.url === url && item.type === type).length >
-      0
-    );
   }
 
   public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {

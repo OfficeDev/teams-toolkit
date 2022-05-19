@@ -1,0 +1,18 @@
+name: "TeamsFx javascript CodeQL config"
+
+packs:
+  - codeql/javascript-queries
+
+queries:
+  - name: Extended Security
+    uses: security-extended
+
+  - name: Security and Quality
+    uses: security-and-quality
+
+paths-ignore:
+  - "**/test/**/*"
+  - "**/tests/**/*"
+  - "**/*.test.ts"
+  - "**/*.tests.ts"
+  - ".github/scripts"

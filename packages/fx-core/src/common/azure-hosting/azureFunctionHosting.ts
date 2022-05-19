@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { AzureHosting } from "./azureHosting";
-import { HostType } from "./interfaces";
+import { ServiceType } from "./interfaces";
 
 const functionResourceId = "provisionOutputs.functionOutput.value.resourceId";
 const functionHostName = "provisionOutputs.functionOutput.value.validDomain";
@@ -11,7 +11,7 @@ const endpointAsParam = "functionProvision.outputs.functionEndpoint";
 
 export class AzureFunctionHosting extends AzureHosting {
   configurable = true;
-  hostType = HostType.Function;
+  hostType = ServiceType.Functions;
   reference = {
     resourceId: functionResourceId,
     hostName: functionHostName,

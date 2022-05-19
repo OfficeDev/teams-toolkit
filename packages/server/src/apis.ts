@@ -82,6 +82,10 @@ export interface IServerConnection {
     inputs: Inputs,
     token: CancellationToken
   ) => Promise<Result<Void, FxError>>;
+  deployTeamsAppManifestRequest: (
+    inputs: Inputs,
+    token: CancellationToken
+  ) => Promise<Result<any, FxError>>;
 
   customizeLocalFuncRequest: (
     funcId: number,

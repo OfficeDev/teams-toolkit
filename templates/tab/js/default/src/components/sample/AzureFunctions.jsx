@@ -2,7 +2,6 @@ import { useContext } from "react";
 import { Button, Loader } from "@fluentui/react-northstar";
 import { useData } from "@microsoft/teamsfx-react";
 import * as axios from "axios";
-import { TeamsFx } from "@microsoft/teamsfx";
 import { TeamsFxContext } from "../Context";
 
 const functionName = process.env.REACT_APP_FUNC_NAME || "myFunc";

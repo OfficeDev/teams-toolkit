@@ -142,12 +142,12 @@
     },
     {
       "source": "microsoftTeams.getConfigSetting",
-      "target": "microsoftTeams.legacy.fullTrust.getConfigSetting",
+      "target": "microsoftTeams.teams.fullTrust.getConfigSetting",
       "callbackToPromise": true
     },
     {
       "source": "microsoftTeams.getUserJoinedTeams",
-      "target": "microsoftTeams.legacy.fullTrust.joinedTeams.getUserJoinedTeams",
+      "target": "microsoftTeams.teams.fullTrust.joinedTeams.getUserJoinedTeams",
       "callbackToPromise": true
     },
     {

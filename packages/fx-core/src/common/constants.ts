@@ -2,7 +2,6 @@ export class ConstantString {
   static readonly UTF8Encoding = "utf-8";
   static readonly DeploymentResourceType = "Microsoft.Resources/deployments";
   static readonly DeploymentNotFound = "DeploymentNotFound";
-  static readonly rootFolder = "TeamsApps";
 }
 
 export class HelpLinks {
@@ -63,7 +62,6 @@ export class FeatureFlagName {
   static readonly APIV3 = "TEAMSFX_APIV3";
   // This will default to true and this environment is only for tests. It does not expose to user.
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
-  static readonly rootDirectory = "TEAMSFX_ROOT_DIRECTORY";
   static readonly VSCallingCLI = "VS_CALLING_CLI";
   static readonly ConfigUnify = "TEAMSFX_CONFIG_UNIFY";
   static readonly ExistingTabApp = "TEAMSFX_INIT_APP";
@@ -78,6 +76,7 @@ export class FeatureFlagName {
   static readonly DeployManifest = "TEAMSFX_DEPLOY_MANIFEST";
   static readonly Preview = "TEAMSFX_PREVIEW";
   static readonly MicrosoftTunneling = "TEAMSFX_MICROSOFT_TUNNELING";
+  static readonly CLIDotNet = "TEAMSFX_CLI_DOTNET";
 }
 
 export class ManifestVariables {

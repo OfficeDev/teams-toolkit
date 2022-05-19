@@ -15,6 +15,9 @@ import {
   SingleSelectQuestion,
   Platform,
   Stage,
+  StaticOptions,
+  MultiSelectQuestion,
+  OptionItem,
 } from "@microsoft/teamsfx-api";
 
 import { FxResult, FxCICDPluginResultFactory as ResultFactory } from "./result";
@@ -37,9 +40,10 @@ import {
 import { Logger } from "./logger";
 import { environmentManager } from "../../../core/environment";
 import { telemetryHelper } from "./utils/telemetry-helper";
-import { getLocalizedString } from "../../../common/localizeUtils";
+import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { isExistingTabApp } from "../../../common";
 import { NoCapabilityFoundError } from "../../../core/error";
+import { ExistingTemplatesStat } from "./utils/existingTemplatesStat";
 
 @Service(ResourcePluginsV2.CICDPlugin)
 export class CICDPluginV2 implements ResourcePlugin {
@@ -77,21 +81,21 @@ export class CICDPluginV2 implements ResourcePlugin {
       type: "group",
     });
 
-    const whichProvider = new QTreeNode({
+    const whichProvider: SingleSelectQuestion = {
       name: questionNames.Provider,
       type: "singleSelect",
       staticOptions: [githubOption, azdoOption, jenkinsOption],
       title: getLocalizedString("plugins.cicd.whichProvider.title"),
       default: githubOption.id,
-    });
+    };
 
-    const whichTemplate = new QTreeNode({
+    const whichTemplate: MultiSelectQuestion = {
       name: questionNames.Template,
       type: "multiSelect",
       staticOptions: [ciOption, cdOption, provisionOption, publishOption],
       title: getLocalizedString("plugins.cicd.whichTemplate.title"),
       default: [ciOption.id],
-    });
+    };
 
     // TODO: add support for VS/.Net Projects.
     if (inputs.platform === Platform.VSCode) {
@@ -102,24 +106,49 @@ export class CICDPluginV2 implements ResourcePlugin {
       const envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath);
       if (envProfilesResult.isErr()) {
         throw new InternalError(
-          ["Failed to list multi env.", "Failed to list multi env."],
+          [
+            getDefaultString("error.cicd.FailedToListMultiEnv", envProfilesResult.error.message),
+            getLocalizedString("error.cicd.FailedToListMultiEnv", envProfilesResult.error.message),
+          ],
           envProfilesResult.error
         );
       }
+
+      const existingInstance = ExistingTemplatesStat.getInstance(
+        inputs.projectPath!,
+        envProfilesResult.value
+      );
+      // Mute this scan before there's initial scan on upper layers.
+      // await existingInstance.scan();
 
       const whichEnvironment: SingleSelectQuestion = {
         type: "singleSelect",
         name: questionNames.Environment,
         title: getLocalizedString("plugins.cicd.whichEnvironment.title"),
         staticOptions: [],
+        dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
+          // Remove the env items in which all combinations of templates are scaffolded/existing.
+          return existingInstance.availableEnvOptions();
+        },
         skipSingleOption: true,
       };
-      whichEnvironment.staticOptions = envProfilesResult.value;
+
+      whichProvider.dynamicOptions = async (inputs: Inputs): Promise<OptionItem[]> => {
+        const envName = inputs[questionNames.Environment];
+        return existingInstance.availableProviderOptions(envName);
+      };
+
+      whichTemplate.dynamicOptions = async (inputs: Inputs): Promise<OptionItem[]> => {
+        const envName = inputs[questionNames.Environment];
+        const provider = inputs[questionNames.Provider];
+        return existingInstance.availableTemplateOptions(envName, provider);
+      };
+
       cicdWorkflowQuestions.addChild(new QTreeNode(whichEnvironment));
     }
 
-    cicdWorkflowQuestions.addChild(whichProvider);
-    cicdWorkflowQuestions.addChild(whichTemplate);
+    cicdWorkflowQuestions.addChild(new QTreeNode(whichProvider));
+    cicdWorkflowQuestions.addChild(new QTreeNode(whichTemplate));
 
     return ok(cicdWorkflowQuestions);
   }

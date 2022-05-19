@@ -3,6 +3,9 @@
 "use strict";
 
 import { Platform, Stage, VsCodeEnv } from "./constants";
+import { TokenProvider } from "./utils/login";
+import { Context } from "./v2/types";
+import { AppManifestProvider } from "./v3/plugins";
 import { EnvInfoV3 } from "./v3/types";
 
 export type Json = Record<string, any>;
@@ -49,6 +52,15 @@ export interface OptionItem {
    * group name. If it's set, separator will be rendered on UI between groups.
    */
   groupName?: string;
+
+  /**
+   * Actions that can be made within the item.
+   * @param An array of actions
+   * @param `icon` is the icon id of the action item
+   * @param `tooltip` is the hint of the action item
+   * @param `command` is the command name that will be executed when current action triggered
+   */
+  buttons?: { iconPath: string; tooltip: string; command: string }[];
 }
 
 export class ConfigMap extends Map<string, ConfigValue> {
@@ -252,3 +264,28 @@ export interface ProjectConfigV3 {
     [key: string]: EnvInfoV3;
   };
 }
+
+export interface Component extends Json {
+  name: string;
+  hosting?: string;
+  deployType?: "folder" | "zip";
+  language?: string;
+  folder?: string;
+  build?: boolean;
+  provision?: boolean;
+  connections?: string[];
+}
+export interface ProjectSettingsV3 extends ProjectSettings {
+  components: Component[];
+}
+export interface ContextV3 extends Context {
+  manifestProvider: AppManifestProvider;
+  projectSetting: ProjectSettingsV3;
+  envInfo?: EnvInfoV3;
+  tokenProvider?: TokenProvider;
+}
+export interface ProvisionContextV3 extends ContextV3 {
+  envInfo: EnvInfoV3;
+  tokenProvider: TokenProvider;
+}
+export type MaybePromise<T> = T | Promise<T>;

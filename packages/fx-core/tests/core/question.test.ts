@@ -4,6 +4,7 @@ import chai from "chai";
 import {
   createCapabilityQuestion,
   createCapabilityQuestionPreview,
+  createAppNameQuestion,
   handleSelectionConflict,
   ProgrammingLanguageQuestion,
 } from "../../src/core/question";
@@ -24,6 +25,7 @@ import {
   TabSPFxItem,
   TabSPFxNewUIItem,
 } from "../../src/plugins/solution/fx-solution/question";
+import { getLocalizedString } from "../../src/common/localizeUtils";
 
 describe("Programming Language Questions", async () => {
   it("should return csharp on VS platform", async () => {
@@ -166,7 +168,6 @@ describe("Capability Questions", () => {
       chai.assert.deepEqual(question.staticOptions, [
         NotificationOptionItem,
         CommandAndResponseOptionItem,
-        ExistingTabOptionItem,
         TabNewUIOptionItem,
         TabSPFxNewUIItem,
         TabNonSsoItem,
@@ -176,5 +177,24 @@ describe("Capability Questions", () => {
         M365SearchAppOptionItem,
       ]);
     });
+  });
+});
+
+describe("App name question", async () => {
+  const question = createAppNameQuestion();
+  const validFunc = (question.validation as FuncValidation<string>).validFunc;
+
+  it("app name exceed maxlength of 30", async () => {
+    const input = "SurveyMonkeyWebhookNotification";
+    const result = await validFunc(input);
+
+    chai.assert.equal(result, getLocalizedString("core.QuestionAppName.validation.maxlength"));
+  });
+
+  it("app name with wrong pattern", async () => {
+    const input = "123app";
+    const result = await validFunc(input);
+
+    chai.assert.equal(result, getLocalizedString("core.QuestionAppName.validation.pattern"));
   });
 });

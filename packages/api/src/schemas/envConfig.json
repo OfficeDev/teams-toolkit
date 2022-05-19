@@ -50,9 +50,9 @@
         }
       },
       "dependencies": {
-        "clientId": ["clientSecret", "objectId", "accessAsUserScopeId"],
-        "clientSecret": ["clientId", "objectId", "accessAsUserScopeId"],
-        "objectId": ["clientId", "clientSecret", "accessAsUserScopeId"],
+        "clientId": ["clientSecret", "objectId"],
+        "clientSecret": ["clientId", "objectId"],
+        "objectId": ["clientId", "clientSecret"],
         "accessAsUserScopeId": ["clientId", "clientSecret", "objectId"],
         "botId": ["botEndpoint"],
         "botEndpoint": ["botId"]

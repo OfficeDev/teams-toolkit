@@ -16,7 +16,7 @@ import {
   setBotSkuNameToB1Bicep,
   setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentManager, isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
 import { BotValidator } from "../../commonlib";
@@ -34,7 +34,11 @@ describe("Configuration successfully changed when with different plugins", funct
 
   it(`bot + tab`, async function () {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
-    await CliHelper.addCapabilityToProject(projectPath, Capability.Tab);
+    if (isPreviewFeaturesEnabled()) {
+      await CliHelper.addCapabilityToProject(projectPath, Capability.SSOTab);
+    } else {
+      await CliHelper.addCapabilityToProject(projectPath, Capability.Tab);
+    }
 
     // Provision
     await setSimpleAuthSkuNameToB1Bicep(projectPath, env);

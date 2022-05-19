@@ -226,9 +226,13 @@ export enum SolutionTelemetryEvent {
 
   AddSsoStart = "add-sso-start",
   AddSso = "add-sso",
+  AddSsoReadme = "add-sso-readme",
 
   DeployStart = "deploy-start",
   Deploy = "deploy",
+
+  ProvisionStart = "provision-start",
+  Provision = "provision",
 }
 
 export enum SolutionTelemetryProperty {
@@ -247,6 +251,7 @@ export enum SolutionTelemetryProperty {
   ErrorCode = "error-code",
   ErrorMessage = "error-message",
   HostType = "host-type",
+  SubscriptionId = "subscription-id",
 }
 
 export enum SolutionTelemetrySuccess {
@@ -317,4 +322,9 @@ export class AddSsoParameters {
   static readonly Readme = "README.md";
   static readonly LearnMore = "Learn More";
   static readonly LearnMoreUrl = "https://aka.ms/teamsfx-add-sso-readme";
+  static readonly AddSso = "addSso";
+}
+
+export class UserTaskFunctionName {
+  static readonly ConnectExistingApi = "connectExistingApi";
 }

@@ -4,19 +4,19 @@
 import { AzureFunctionHosting } from "./azureFunctionHosting";
 import { AzureHosting } from "./azureHosting";
 import { BotServiceHosting } from "./botServiceHosting";
-import { HostType } from "./interfaces";
+import { ServiceType } from "./interfaces";
 
 const HostingMap: { [key: string]: () => AzureHosting } = {
-  [HostType.Function]: () => new AzureFunctionHosting(),
-  [HostType.BotService]: () => new BotServiceHosting(),
+  [ServiceType.Functions]: () => new AzureFunctionHosting(),
+  [ServiceType.BotService]: () => new BotServiceHosting(),
 };
 
 export class AzureHostingFactory {
-  static createHosting(hostType: HostType): AzureHosting {
-    if (HostingMap[hostType] !== undefined) {
-      return HostingMap[hostType]();
+  static createHosting(serviceType: ServiceType): AzureHosting {
+    if (HostingMap[serviceType] !== undefined) {
+      return HostingMap[serviceType]();
     }
 
-    throw new Error(`Host type '${hostType}' is not supported.`);
+    throw new Error(`Host type '${serviceType}' is not supported.`);
   }
 }

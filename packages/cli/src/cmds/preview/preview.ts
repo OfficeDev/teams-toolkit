@@ -4,6 +4,7 @@
 "use strict";
 
 import * as path from "path";
+import * as os from "os";
 import * as fs from "fs-extra";
 import { Argv } from "yargs";
 import {
@@ -43,6 +44,7 @@ import {
   NodeNotSupportedError,
   isExistingTabApp as isExistingTabAppCore,
   isM365AppEnabled,
+  validationSettingsHelpLink,
 } from "@microsoft/teamsfx-core";
 
 import { YargsCommand } from "../../yargsCommand";
@@ -189,6 +191,8 @@ export default class Preview extends YargsCommand {
       this.telemetryProperties[TelemetryProperty.PreviewAppId] = utils.getLocalTeamsAppId(
         workspaceFolder
       ) as string;
+      this.telemetryProperties[TelemetryProperty.PreviewProjectComponents] =
+        (await this.getProjectComponents(workspaceFolder)) ?? "";
 
       cliTelemetry
         .withRootFolder(workspaceFolder)
@@ -500,6 +504,7 @@ export default class Preview extends YargsCommand {
             browserArguments,
             this.telemetryProperties
           );
+          cliLogger.necessaryLog(LogLevel.Warning, constants.m365TenantHintMessage);
           cliLogger.necessaryLog(LogLevel.Warning, constants.waitCtrlPlusC);
         }
       } else {
@@ -521,6 +526,7 @@ export default class Preview extends YargsCommand {
           LogLevel.Warning,
           util.format(constants.installApp.nonInteractive.manifestChanges, "--local")
         );
+        cliLogger.necessaryLog(LogLevel.Warning, constants.m365TenantHintMessage);
         cliLogger.necessaryLog(LogLevel.Warning, constants.waitCtrlPlusC);
       } else {
         cliLogger.necessaryLog(
@@ -1268,6 +1274,10 @@ export default class Preview extends YargsCommand {
     depsManager: DepsManager
   ): Promise<Result<null, FxError>> {
     const node = hasBackend || hasFuncHostedBot ? DepsType.FunctionNode : DepsType.AzureNode;
+    if (!(await CliDepsChecker.isEnabled(node))) {
+      return ok(null);
+    }
+
     const nodeBar = CLIUIInstance.createProgressBar(DepsDisplayName[node], 1);
     await nodeBar.start(ProgressMessage[node]);
 
@@ -1291,6 +1301,7 @@ export default class Preview extends YargsCommand {
           helpLink = nodeStatus.error.helpLink;
         }
         if (nodeStatus.error instanceof NodeNotSupportedError) {
+          const node12Version = "v12";
           const supportedVersions = nodeStatus?.details.supportedVersions
             .map((v) => "v" + v)
             .join(" ,");
@@ -1298,6 +1309,16 @@ export default class Preview extends YargsCommand {
             .join(nodeStatus?.details.installVersion)
             .split("@SupportedVersions")
             .join(supportedVersions);
+
+          if (nodeStatus.details.installVersion?.includes(node12Version)) {
+            const bypass =
+              hasBackend || hasFuncHostedBot
+                ? doctorResult.BypassNode12AndFunction
+                : doctorResult.BypassNode12;
+            summaryMsg = `${summaryMsg}${os.EOL}${bypass
+              .split("@Link")
+              .join(validationSettingsHelpLink)}`;
+          }
         }
       }
     } catch (err) {
@@ -1482,6 +1503,37 @@ export default class Preview extends YargsCommand {
       return fxError;
     } else {
       return new UnknownError(source, JSON.stringify(e));
+    }
+  }
+
+  private async getProjectComponents(workspaceFolder: string): Promise<string | undefined> {
+    try {
+      const localEnvManager = new LocalEnvManager();
+      const projectSettings = await localEnvManager.getProjectSettings(workspaceFolder);
+
+      const result: { [key: string]: any } = { components: [] };
+      if (ProjectSettingsHelper.isSpfx(projectSettings)) {
+        result.components.push("spfx");
+      }
+      if (ProjectSettingsHelper.includeFrontend(projectSettings)) {
+        result.components.push("frontend");
+      }
+      if (ProjectSettingsHelper.includeBot(projectSettings)) {
+        result.components.push(`bot`);
+        result.botHostType = ProjectSettingsHelper.includeFuncHostedBot(projectSettings)
+          ? "azure-functions"
+          : "app-service";
+        result.botCapabilities = ProjectSettingsHelper.getBotCapabilities(projectSettings);
+      }
+      if (ProjectSettingsHelper.includeBackend(projectSettings)) {
+        result.components.push("backend");
+      }
+      if (ProjectSettingsHelper.includeAAD(projectSettings)) {
+        result.components.push("aad");
+      }
+      return JSON.stringify(result);
+    } catch (error: any) {
+      return undefined;
     }
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "ms-teams-vscode-extension",
-  "displayName": "Teams Toolkit (Preview)",
+  "displayName": "Teams Toolkit",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
   "version": "3.8.0",
   "publisher": "TeamsDevApp",
@@ -28,7 +28,7 @@
     "Azure",
     "M365"
   ],
-  "preview": true,
+  "preview": false,
   "categories": [
     "Azure",
     "Extension Packs",
@@ -66,7 +66,6 @@
     "onCommand:workbench.action.tasks.runTask",
     "onCommand:fx-extension.addSso",
     "workspaceContains:**/.fx/*",
-    "onView:teamsfx",
     "onView:teamsfx-accounts",
     "onView:teamsfx-environment",
     "onView:teamsfx-development",
@@ -75,32 +74,25 @@
   ],
   "contributes": {
     "icons": {
-      "toolkit-commandBot": {
-        "description": "Command bot icon in capability list",
+      "teamsfx-add-feature": {
+        "description": "Add feature icon in command tree view",
         "default": {
           "fontPath": "./media/font/teamstoolkit.woff",
           "fontCharacter": "\\E000"
         }
       },
-      "toolkit-message": {
-        "description": "Message icon in capability list",
+      "teamsfx-developer-portal": {
+        "description": "Developer portal icon in command tree view",
         "default": {
           "fontPath": "./media/font/teamstoolkit.woff",
           "fontCharacter": "\\E001"
         }
       },
-      "toolkit-notification": {
-        "description": "Notification icon in capability list",
+      "teamsfx-m365": {
+        "description": "Microsoft 365 icon in account tree view",
         "default": {
           "fontPath": "./media/font/teamstoolkit.woff",
           "fontCharacter": "\\E002"
-        }
-      },
-      "toolkit-tab": {
-        "description": "Tab icon in capability list",
-        "default": {
-          "fontPath": "./media/font/teamstoolkit.woff",
-          "fontCharacter": "\\E003"
         }
       }
     },
@@ -160,7 +152,8 @@
         {
           "id": "teamsfx-help-and-feedback",
           "name": "Help and feedback",
-          "when": "fx-extension.sidebarWelcome.treeview"
+          "when": "fx-extension.sidebarWelcome.treeview",
+          "visibility": "collapsed"
         },
         {
           "id": "teamsfx-empty-project",
@@ -488,7 +481,7 @@
       },
       {
         "command": "fx-extension.openWelcome",
-        "title": "%teamstoolkit.commands.quickStart.title%"
+        "title": "%teamstoolkit.commands.getstarted.title%"
       },
       {
         "command": "fx-extension.openSurvey",
@@ -509,12 +502,12 @@
       {
         "command": "fx-extension.update",
         "title": "%teamstoolkit.commands.addCloudResource.title%",
-        "enablement": "!fx-entension.gaPreviewEnabled && !fx-extension.isSPFx"
+        "enablement": "!fx-entension.previewFeaturesEnabled && !fx-extension.isSPFx"
       },
       {
         "command": "fx-extension.addCapability",
         "title": "%teamstoolkit.commands.addCapability.title%",
-        "enablement": "!fx-entension.gaPreviewEnabled && !fx-extension.isSPFx && !fx-extension.isM365"
+        "enablement": "!fx-entension.previewFeaturesEnabled && !fx-extension.isSPFx && !fx-extension.isM365"
       },
       {
         "command": "fx-extension.addFeature",
@@ -532,7 +525,7 @@
       {
         "command": "fx-extension.connectExistingApi",
         "title": "%teamstoolkit.commands.connectExistingApi.title%",
-        "enablement": "!fx-entension.gaPreviewEnabled && fx-extension.isApiConnectEnabled"
+        "enablement": "!fx-entension.previewFeaturesEnabled && fx-extension.isApiConnectEnabled"
       },
       {
         "command": "fx-extension.build",
@@ -610,7 +603,7 @@
       {
         "command": "fx-extension.addCICDWorkflows",
         "title": "%teamstoolkit.commands.addCICDWorkflows.title%",
-        "enablement": "!fx-entension.gaPreviewEnabled",
+        "enablement": "!fx-entension.previewFeaturesEnabled",
         "icon": "$(sync)"
       },
       {
@@ -742,7 +735,7 @@
       {
         "command": "fx-extension.addSso",
         "title": "%teamstoolkit.commands.addSso.title%",
-        "enablement": "!fx-entension.gaPreviewEnabled && fx-extension.isAadManifestEnabled"
+        "enablement": "!fx-entension.previewFeaturesEnabled && fx-extension.isAadManifestEnabled"
       },
       {
         "command": "fx-extension.selectTutorials",
@@ -944,23 +937,6 @@
     ],
     "configuration": [
       {
-        "title": "General",
-        "order": 1,
-        "properties": {
-          "fx-extension.defaultProjectRootDirectory": {
-            "type": "string",
-            "description": "Set the default root directory for creating new teams app project. By default, the root directory is ${homeDir}/TeamsApps. (requires reload of VS Code)",
-            "default": "${homeDir}/TeamsApps"
-          },
-          "fx-extension.automaticNpmInstall": {
-            "type": "boolean",
-            "title": "Automatic NPM Install",
-            "description": "Automatically execute npm install command for your Teams application.",
-            "default": false
-          }
-        }
-      },
-      {
         "title": "Prerequisite Check",
         "order": 2,
         "properties": {
@@ -1059,7 +1035,7 @@
     ],
     "walkthroughs": [
       {
-        "id": "teamsToolkitQuickStart",
+        "id": "teamsToolkitGetStarted",
         "title": "Get started with Teams Toolkit",
         "description": "Jumpstart your Teams app development experience",
         "steps": [
@@ -1110,7 +1086,7 @@
           {
             "id": "teamsToolkitExploreMore",
             "title": "What's next?",
-            "description": "Here are some recommendations to continue your journey with Teams Toolkit.\n • Explore [Tutorials](command:fx-extension.selectTutorials?%5B%22WalkThrough%22%5D) and get more practical guidances\n • Open [Readme.md](command:fx-extension.openReadMe?%5B%22WalkThrough%22%2Ctrue%5D) to understand how to develop this app\n • Read our [Documentation](command:fx-extension.openDocument?%5B%22WalkThrough%22%5D)",
+            "description": "Here are some recommendations to continue your journey with Teams Toolkit.\n • Explore [Tutorials](command:fx-extension.selectTutorials?%5B%22WalkThrough%22%5D) and get more practical guidances\n • Open [Readme.md](command:fx-extension.openReadMe?%5B%22WalkThrough%22%5D) to understand how to develop this app\n • Read our [Documentation](command:fx-extension.openDocument?%5B%22WalkThrough%22%5D)",
             "media": {
               "svg": "media/walkthrough/whatsnext.svg",
               "altText": "Tutorials, README.md and Documentation"
@@ -1240,6 +1216,7 @@
     "@microsoft/teamsfx-api": "^0.18.0",
     "@microsoft/teamsfx-core": "^1.8.0",
     "@npmcli/package-json": "^1.0.1",
+    "@vscode/extension-telemetry": "^0.5.1",
     "@vscode/webview-ui-toolkit": "^0.9.3",
     "ajv": "^8.5.0",
     "async-mutex": "^0.3.1",
@@ -1250,12 +1227,12 @@
     "jsonschema": "^1.4.0",
     "lodash": "^4.17.21",
     "log4js": "^6.3.0",
+    "open": "^8.4.0",
     "read-package-json-fast": "^2.0.3",
     "sudo-prompt": "^9.2.1",
     "underscore": "^1.12.1",
     "validator": "^13.7.0",
-    "vscode-extension-telemetry": "^0.2.9",
-    "vscode-tas-client": "^0.1.22",
+    "vscode-tas-client": "^0.1.47",
     "vscode-test": "^1.5.2"
   },
   "extensionDependencies": [

@@ -35,6 +35,7 @@ import { prepareLocalAuthService } from "./util/localService";
 import { getAllowedAppIds } from "../../../../common/tools";
 import { LocalCertificateManager } from "../../../../common/local/localCertificateManager";
 import { ResourcePlugins } from "../../../../common/constants";
+import { BotHostTypes } from "../../../../common/local/constants";
 
 export async function setupLocalDebugSettings(
   ctx: v2.Context,
@@ -48,6 +49,8 @@ export async function setupLocalDebugSettings(
   const includeAAD = ProjectSettingsHelper.includeAAD(ctx.projectSetting);
   const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(ctx.projectSetting);
   const skipNgrok = inputs.checkerInfo?.skipNgrok as boolean;
+  const includeFuncHostedBot = ProjectSettingsHelper.includeFuncHostedBot(ctx.projectSetting);
+  const botCapabilities = ProjectSettingsHelper.getBotCapabilities(ctx.projectSetting);
 
   const telemetryProperties = {
     platform: inputs.platform as string,
@@ -57,6 +60,8 @@ export async function setupLocalDebugSettings(
     bot: includeBot ? "true" : "false",
     auth: includeAAD && includeSimpleAuth ? "true" : "false",
     "skip-ngrok": skipNgrok ? "true" : "false",
+    "bot-host-type": includeFuncHostedBot ? BotHostTypes.AzureFunctions : BotHostTypes.AppService,
+    "bot-capabilities": JSON.stringify(botCapabilities),
   };
   TelemetryUtils.init(ctx.telemetryReporter);
   TelemetryUtils.sendStartEvent(TelemetryEventName.setupLocalDebugSettings, telemetryProperties);
@@ -187,6 +192,8 @@ export async function setupLocalEnvironment(
   const includeAAD = ProjectSettingsHelper.includeAAD(ctx.projectSetting);
   const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(ctx.projectSetting);
   const skipNgrok = inputs.checkerInfo?.skipNgrok as boolean;
+  const includeFuncHostedBot = ProjectSettingsHelper.includeFuncHostedBot(ctx.projectSetting);
+  const botCapabilities = ProjectSettingsHelper.getBotCapabilities(ctx.projectSetting);
 
   const telemetryProperties = {
     platform: inputs.platform as string,
@@ -196,6 +203,8 @@ export async function setupLocalEnvironment(
     bot: includeBot ? "true" : "false",
     auth: includeAAD && includeSimpleAuth ? "true" : "false",
     "skip-ngrok": skipNgrok ? "true" : "false",
+    "bot-host-type": includeFuncHostedBot ? BotHostTypes.AzureFunctions : BotHostTypes.AppService,
+    "bot-capabilities": JSON.stringify(botCapabilities),
   };
   TelemetryUtils.init(ctx.telemetryReporter);
   TelemetryUtils.sendStartEvent(TelemetryEventName.setupLocalDebugSettings, telemetryProperties);
@@ -325,6 +334,8 @@ export async function configLocalDebugSettings(
   const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
   const includeAAD = ProjectSettingsHelper.includeAAD(ctx.projectSetting);
   const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(ctx.projectSetting);
+  const includeFuncHostedBot = ProjectSettingsHelper.includeFuncHostedBot(ctx.projectSetting);
+  const botCapabilities = ProjectSettingsHelper.getBotCapabilities(ctx.projectSetting);
   let trustDevCert = inputs.checkerInfo?.trustDevCert as boolean | undefined;
 
   const telemetryProperties = {
@@ -334,6 +345,8 @@ export async function configLocalDebugSettings(
     bot: includeBot ? "true" : "false",
     auth: includeAAD && includeSimpleAuth ? "true" : "false",
     "trust-development-certificate": trustDevCert + "",
+    "bot-host-type": includeFuncHostedBot ? BotHostTypes.AzureFunctions : BotHostTypes.AppService,
+    "bot-capabilities": JSON.stringify(botCapabilities),
   };
   TelemetryUtils.init(ctx.telemetryReporter);
   TelemetryUtils.sendStartEvent(TelemetryEventName.configLocalDebugSettings, telemetryProperties);
@@ -458,6 +471,8 @@ export async function configLocalEnvironment(
   const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
   const includeAAD = ProjectSettingsHelper.includeAAD(ctx.projectSetting);
   const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(ctx.projectSetting);
+  const includeFuncHostedBot = ProjectSettingsHelper.includeFuncHostedBot(ctx.projectSetting);
+  const botCapabilities = ProjectSettingsHelper.getBotCapabilities(ctx.projectSetting);
   let trustDevCert = inputs.checkerInfo?.trustDevCert as boolean | undefined;
 
   const telemetryProperties = {
@@ -466,6 +481,8 @@ export async function configLocalEnvironment(
     function: includeBackend ? "true" : "false",
     bot: includeBot ? "true" : "false",
     auth: includeAAD && includeSimpleAuth ? "true" : "false",
+    "bot-host-type": includeFuncHostedBot ? BotHostTypes.AzureFunctions : BotHostTypes.AppService,
+    "bot-capabilities": JSON.stringify(botCapabilities),
     "trust-development-certificate": trustDevCert + "",
   };
   TelemetryUtils.init(ctx.telemetryReporter);

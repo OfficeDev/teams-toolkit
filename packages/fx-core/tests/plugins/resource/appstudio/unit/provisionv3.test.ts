@@ -31,6 +31,7 @@ import {
   MockedTelemetryReporter,
 } from "../../../solution/util";
 import { MockUserInteraction } from "../helper";
+import { MockM365TokenProvider } from "../../../../core/utils";
 
 describe("Provision Teams app with Azure", () => {
   const sandbox = sinon.createSandbox();
@@ -65,6 +66,7 @@ describe("Provision Teams app with Azure", () => {
       appStudioToken: new MockedAppStudioTokenProvider(),
       graphTokenProvider: new MockedGraphTokenProvider(),
       sharepointTokenProvider: new MockedSharepointProvider(),
+      m365TokenProvider: new MockM365TokenProvider(),
     };
 
     context = {

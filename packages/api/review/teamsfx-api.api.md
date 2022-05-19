@@ -234,6 +234,20 @@ export interface BaseQuestion {
 }
 
 // @public (undocumented)
+export abstract class BasicLogin {
+    // (undocumented)
+    abstract getStatus(tokenRequest: TokenRequest): Promise<Result<LoginStatus, FxError>>;
+    // (undocumented)
+    notifyStatus(tokenRequest: TokenRequest): Promise<void>;
+    // (undocumented)
+    removeStatusChangeMap(name: string): Promise<Result<boolean, FxError>>;
+    // (undocumented)
+    setStatusChangeMap(name: string, tokenRequest: TokenRequest, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediateCall?: boolean): Promise<Result<boolean, FxError>>;
+    // (undocumented)
+    statusChangeMap: Map<any, any>;
+}
+
+// @public (undocumented)
 export interface Bicep {
     // (undocumented)
     Configuration?: ConfigurationBicep;
@@ -1053,17 +1067,12 @@ export interface LogProvider {
     warning(message: string): Promise<boolean>;
 }
 
-// @public (undocumented)
+// @public
 export interface M365TokenProvider {
-    // (undocumented)
     getAccessToken(tokenRequest: TokenRequest): Promise<Result<string, FxError>>;
-    // (undocumented)
     getJsonObject(tokenRequest: TokenRequest): Promise<Result<Record<string, unknown>, FxError>>;
-    // (undocumented)
     getStatus(tokenRequest: TokenRequest): Promise<Result<LoginStatus, FxError>>;
-    // (undocumented)
     removeStatusChangeMap(name: string): Promise<Result<boolean, FxError>>;
-    // (undocumented)
     setStatusChangeMap(name: string, tokenRequest: TokenRequest, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediateCall?: boolean): Promise<Result<boolean, FxError>>;
 }
 

@@ -39,6 +39,7 @@ import * as uuid from "uuid";
 import Container from "typedi";
 import { AadAppForTeamsPluginV3 } from "../../../../../src/plugins/resource/aad/v3";
 import { AppStudioPluginV3 } from "../../../../../src/plugins/resource/appstudio/v3";
+import { MockM365TokenProvider } from "../../../../core/utils";
 
 const userList: IUserList = {
   tenantId: faker.datatype.uuid(),
@@ -71,6 +72,7 @@ describe("Remote Collaboration", () => {
     appStudioToken: new MockedAppStudioTokenProvider(),
     graphTokenProvider: mockTokenProviderGraph(),
     sharepointTokenProvider: new MockedSharepointProvider(),
+    m365TokenProvider: new MockM365TokenProvider(),
   };
   beforeEach(async () => {
     plugin = new AppStudioPlugin();

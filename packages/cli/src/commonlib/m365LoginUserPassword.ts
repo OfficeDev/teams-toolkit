@@ -60,8 +60,6 @@ export class M365ProviderUserPassword implements M365TokenProvider {
       }/oauth2/v2.0/token`,
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
-        Cookie:
-          "fpc=AmzaQu9yHbpLtMD2LmHazdRCGxwGAQAAAIW47NcOAAAA; x-ms-gateway-slice=estsfd; stsservicecookie=estsfd",
       },
       data: data,
     };

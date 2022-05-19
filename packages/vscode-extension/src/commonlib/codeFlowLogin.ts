@@ -33,16 +33,16 @@ interface Deferred<T> {
 }
 
 export class CodeFlowLogin {
-  pca: PublicClientApplication | undefined;
+  pca: PublicClientApplication;
   account: AccountInfo | undefined;
   /**
    * @deprecated will be removed after unify m365 login
    */
-  scopes: string[] | undefined;
-  config: Configuration | undefined;
-  port: number | undefined;
-  mutex: Mutex | undefined;
-  msalTokenCache: TokenCache | undefined;
+  scopes: string[];
+  config: Configuration;
+  port: number;
+  mutex: Mutex;
+  msalTokenCache: TokenCache;
   accountName: string;
   status: string | undefined;
 
@@ -51,7 +51,7 @@ export class CodeFlowLogin {
     this.config = config;
     this.port = port;
     this.mutex = new Mutex();
-    this.pca = new PublicClientApplication(this.config!);
+    this.pca = new PublicClientApplication(this.config);
     this.msalTokenCache = this.pca.getTokenCache();
     this.accountName = accountName;
     this.status = loggedOut;
@@ -60,7 +60,7 @@ export class CodeFlowLogin {
   async reloadCache() {
     const accountCache = await loadAccountId(this.accountName);
     if (accountCache) {
-      const dataCache = await this.msalTokenCache!.getAccountByHomeId(accountCache);
+      const dataCache = await this.msalTokenCache.getAccountByHomeId(accountCache);
       if (dataCache) {
         this.account = dataCache;
         this.status = loggedIn;
@@ -71,7 +71,7 @@ export class CodeFlowLogin {
     }
   }
 
-  async login(): Promise<string> {
+  async login(scopes: Array<string>): Promise<string> {
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginStart, {
       [TelemetryProperty.AccountType]: this.accountName,
     });
@@ -89,7 +89,7 @@ export class CodeFlowLogin {
     serverPort = (server.address() as AddressInfo).port;
 
     const authCodeUrlParameters = {
-      scopes: this.scopes!,
+      scopes: scopes,
       codeChallenge: codeChallenge,
       codeChallengeMethod: "S256",
       redirectUri: `http://localhost:${serverPort}`,
@@ -105,12 +105,13 @@ export class CodeFlowLogin {
       this.status = loggingIn;
       const tokenRequest = {
         code: req.query.code as string,
-        scopes: this.scopes!,
+        scopes: scopes,
         redirectUri: `http://localhost:${serverPort}`,
         codeVerifier: codeVerifier,
       };
 
-      this.pca!.acquireTokenByCode(tokenRequest)
+      this.pca
+        .acquireTokenByCode(tokenRequest)
         .then(async (response) => {
           if (response) {
             if (response.account) {
@@ -171,8 +172,8 @@ export class CodeFlowLogin {
 
     let accessToken = undefined;
     try {
-      await this.startServer(server, serverPort!);
-      this.pca!.getAuthCodeUrl(authCodeUrlParameters).then(async (response: string) => {
+      await this.startServer(server, serverPort);
+      this.pca.getAuthCodeUrl(authCodeUrlParameters).then(async (response: string) => {
         vscode.env.openExternal(vscode.Uri.parse(response));
       });
 
@@ -212,7 +213,7 @@ export class CodeFlowLogin {
     try {
       const accountCache = await loadAccountId(this.accountName);
       if (accountCache) {
-        const dataCache = await this.msalTokenCache!.getAccountByHomeId(accountCache);
+        const dataCache = await this.msalTokenCache.getAccountByHomeId(accountCache);
         if (dataCache) {
           this.msalTokenCache?.removeAccount(dataCache);
         }
@@ -246,14 +247,15 @@ export class CodeFlowLogin {
   async getToken(refresh = true): Promise<string | undefined> {
     try {
       if (!this.account) {
-        const accessToken = await this.login();
+        const accessToken = await this.login(this.scopes);
         return accessToken;
       } else {
-        return this.pca!.acquireTokenSilent({
-          account: this.account,
-          scopes: this.scopes!,
-          forceRefresh: false,
-        })
+        return this.pca
+          .acquireTokenSilent({
+            account: this.account,
+            scopes: this.scopes,
+            forceRefresh: false,
+          })
           .then((response) => {
             if (response) {
               return response.accessToken;
@@ -275,7 +277,7 @@ export class CodeFlowLogin {
             await this.logout();
             (this.msalTokenCache as any).storage.setCache({});
             if (refresh) {
-              const accessToken = await this.login();
+              const accessToken = await this.login(this.scopes);
               return accessToken;
             }
             return undefined;
@@ -295,52 +297,39 @@ export class CodeFlowLogin {
   }
 
   async getTokenByScopes(scopes: Array<string>, refresh = true): Promise<Result<string, FxError>> {
-    try {
-      if (!this.account) {
-        const accessToken = await this.login();
-        return ok(accessToken);
-      } else {
-        return this.pca!.acquireTokenSilent({
+    if (!this.account) {
+      const accessToken = await this.login(scopes);
+      return ok(accessToken);
+    } else {
+      try {
+        const res = await this.pca.acquireTokenSilent({
           account: this.account,
           scopes: scopes,
           forceRefresh: false,
-        })
-          .then((response) => {
-            if (response) {
-              return ok(response.accessToken);
-            } else {
-              return err(LoginCodeFlowError(new Error("No token response.")));
-            }
-          })
-          .catch(async (error) => {
-            VsCodeLogInstance.error(
-              "[Login] " +
-                stringUtil.format(
-                  localize("teamstoolkit.codeFlowLogin.silentAcquireToken"),
-                  error.message
-                )
-            );
-            if (!(await checkIsOnline())) {
-              return error(CheckOnlineError());
-            }
-            await this.logout();
-            (this.msalTokenCache as any).storage.setCache({});
-            if (refresh) {
-              const accessToken = await this.login();
-              return ok(accessToken);
-            }
-            return err(LoginCodeFlowError(error));
-          });
-      }
-    } catch (error) {
-      VsCodeLogInstance.error("[Login] " + error.message);
-      if (
-        error.name !== getDefaultString("teamstoolkit.codeFlowLogin.loginTimeoutTitle") &&
-        error.name !== getDefaultString("teamstoolkit.codeFlowLogin.loginPortConflictTitle")
-      ) {
+        });
+        if (res) {
+          return ok(res.accessToken);
+        } else {
+          return err(LoginCodeFlowError(new Error("No token response.")));
+        }
+      } catch (error) {
+        VsCodeLogInstance.error(
+          "[Login] " +
+            stringUtil.format(
+              localize("teamstoolkit.codeFlowLogin.silentAcquireToken"),
+              error.message
+            )
+        );
+        if (!(await checkIsOnline())) {
+          return error(CheckOnlineError());
+        }
+        await this.logout();
+        (this.msalTokenCache as any).storage.setCache({});
+        if (refresh) {
+          const accessToken = await this.login(scopes);
+          return ok(accessToken);
+        }
         return err(LoginCodeFlowError(error));
-      } else {
-        return err(error as UserError);
       }
     }
   }
@@ -435,7 +424,7 @@ export function UserCancelError(source: string): UserError {
 }
 
 export function ConvertTokenToJson(token: string): object {
-  const array = token!.split(".");
+  const array = token.split(".");
   const buff = Buffer.from(array[1], "base64");
   return JSON.parse(buff.toString(UTF8));
 }

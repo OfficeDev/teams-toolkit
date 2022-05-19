@@ -14,6 +14,7 @@ import {
   UserError,
   err,
   LoginStatus,
+  BasicLogin,
 } from "@microsoft/teamsfx-api";
 import { LogLevel } from "@azure/msal-node";
 import { ExtensionErrors } from "../error";
@@ -39,7 +40,7 @@ import {
   TelemetrySuccess,
 } from "../telemetry/extTelemetryEvents";
 import { getDefaultString, localize } from "../utils/localizeUtils";
-import { AppStudioScopes, BasicLogin } from "@microsoft/teamsfx-core";
+import { AppStudioScopes } from "@microsoft/teamsfx-core";
 
 const SERVER_PORT = 0;
 const cachePlugin = new CryptoCachePlugin(m365CacheName);
@@ -72,7 +73,7 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
 
   private constructor() {
     super();
-    M365Login.codeFlowInstance = new CodeFlowLogin([], config, SERVER_PORT, AccountType.M365);
+    M365Login.codeFlowInstance = new CodeFlowLogin([], config, SERVER_PORT, m365CacheName);
   }
 
   /**

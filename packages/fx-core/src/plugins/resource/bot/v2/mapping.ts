@@ -29,7 +29,7 @@ const langMap: Map<string, ProgrammingLanguage> = new Map<string, ProgrammingLan
   ["csharp", ProgrammingLanguage.Csharp],
 ]);
 
-const triggerScenarioMap: Map<string, string[]> = new Map<string, string[]>([
+const triggerScenariosMap: Map<string, string[]> = new Map<string, string[]>([
   [
     FunctionsHttpTriggerOptionItem.id,
     [
@@ -72,7 +72,7 @@ export function getLanguage(lang: string): ProgrammingLanguage {
 }
 
 export function getTriggerScenarios(trigger: string): string[] {
-  const scenarios = triggerScenarioMap.get(trigger);
+  const scenarios = triggerScenariosMap.get(trigger);
   if (scenarios) {
     return scenarios;
   }

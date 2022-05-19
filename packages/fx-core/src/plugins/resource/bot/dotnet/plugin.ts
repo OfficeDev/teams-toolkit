@@ -10,7 +10,7 @@ import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/
 import { Logger } from "../logger";
 import { Messages } from "../resources/messages";
 import { FxResult, FxBotPluginResultFactory as ResultFactory } from "../result";
-import { generateBicepFromFile, isConfigUnifyEnabled } from "../../../../common/tools";
+import { generateBicepFromFile } from "../../../../common/tools";
 import { ArmTemplateResult } from "../../../../common/armInterface";
 import fs from "fs-extra";
 import { DependentPluginInfo, PathInfo, RegularExpr } from "./constants";

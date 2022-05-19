@@ -7,8 +7,8 @@ import { AzureSolutionQuestionNames, BotScenario } from "../../../solution";
 import { QuestionNames, TemplateProjectsConstants, TemplateProjectsScenarios } from "../constants";
 import { HostTypeTriggerOptions } from "../question";
 import { CodeTemplateInfo } from "./interface/codeTemplateInfo";
-import { getLanguage, getHostType, getTriggerScenarios } from "./mapping";
-import { ServiceType as HostTypeNew } from "../../../../common/azure-hosting/interfaces";
+import { getLanguage, getServiceType, getTriggerScenarios } from "./mapping";
+import { ServiceType } from "../../../../common/azure-hosting/interfaces";
 import { PluginBot, HostType, HostTypes } from "../resources/strings";
 
 export function getTemplateInfos(ctx: Context, inputs: Inputs): CodeTemplateInfo[] {
@@ -64,9 +64,9 @@ export function resolveHostType(inputs: Inputs): HostType {
   return hostType ? hostType : HostTypes.APP_SERVICE;
 }
 
-export function resolveServiceType(ctx: Context): HostTypeNew {
+export function resolveServiceType(ctx: Context): ServiceType {
   const rawHostType = ctx.projectSetting?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[
     PluginBot.HOST_TYPE
   ] as string;
-  return getHostType(rawHostType);
+  return getServiceType(rawHostType);
 }

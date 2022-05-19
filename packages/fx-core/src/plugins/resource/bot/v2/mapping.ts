@@ -54,10 +54,10 @@ export function getRuntime(lang: ProgrammingLanguage): string {
   throw new Error("invalid bot input");
 }
 
-export function getHostType(ht: string): ServiceType {
-  const hostType = serviceMap.get(ht);
-  if (hostType) {
-    return hostType;
+export function getServiceType(hostType: string): ServiceType {
+  const serviceType = serviceMap.get(hostType);
+  if (serviceType) {
+    return serviceType;
   }
   throw new Error("invalid bot input");
 }

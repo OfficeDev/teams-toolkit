@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace {{BlazorAppServer}}.Interop.TeamsSDK;
+namespace {{ProjectName}}.Interop.TeamsSDK;
 
 internal class EnumDescriptionConverter<T> : JsonConverter<T> where T : struct, Enum
 {

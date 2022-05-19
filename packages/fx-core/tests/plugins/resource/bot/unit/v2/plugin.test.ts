@@ -9,6 +9,7 @@ import { Context } from "@microsoft/teamsfx-api/build/v2";
 import { Inputs } from "@microsoft/teamsfx-api";
 import { newInputV2, newPluginContextV2 } from "../utils";
 import sinon from "sinon";
+import * as faker from "faker";
 import * as fetch from "../../../../../../src/common/template-utils/templatesUtils";
 import mock from "mock-fs";
 import AdmZip from "adm-zip";
@@ -44,7 +45,7 @@ describe("Bot Plugin v2", () => {
     });
 
     it("Happy Path", async () => {
-      sinon.stub(fetch, "fetchTemplateUrl").resolves("");
+      sinon.stub(fetch, "fetchTemplateUrl").resolves(faker.internet.url());
       sinon.stub(fetch, "fetchZipFromUrl").resolves(new AdmZip());
 
       const result = await botPlugin.scaffoldSourceCode(context, inputs);

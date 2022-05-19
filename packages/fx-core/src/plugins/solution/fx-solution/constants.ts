@@ -230,6 +230,9 @@ export enum SolutionTelemetryEvent {
 
   DeployStart = "deploy-start",
   Deploy = "deploy",
+
+  ProvisionStart = "provision-start",
+  Provision = "provision",
 }
 
 export enum SolutionTelemetryProperty {
@@ -248,6 +251,7 @@ export enum SolutionTelemetryProperty {
   ErrorCode = "error-code",
   ErrorMessage = "error-message",
   HostType = "host-type",
+  SubscriptionId = "subscription-id",
 }
 
 export enum SolutionTelemetrySuccess {

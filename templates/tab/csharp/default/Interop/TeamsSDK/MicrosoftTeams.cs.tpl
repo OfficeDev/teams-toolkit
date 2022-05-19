@@ -1,6 +1,6 @@
 ﻿using Microsoft.JSInterop;
 
-namespace {{BlazorAppServer}}.Interop.TeamsSDK;
+namespace {{ProjectName}}.Interop.TeamsSDK;
 
 public class MicrosoftTeams : InteropModuleBase
 {

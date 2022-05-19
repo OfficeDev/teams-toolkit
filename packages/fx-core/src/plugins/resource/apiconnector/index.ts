@@ -1,7 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 "use strict";
-import { Inputs, Json, ProjectSettings, v2, Func, TokenProvider } from "@microsoft/teamsfx-api";
+import {
+  Inputs,
+  Json,
+  ProjectSettings,
+  AzureSolutionSettings,
+  v2,
+  Func,
+  TokenProvider,
+} from "@microsoft/teamsfx-api";
 import { Context, ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
 import { Service } from "typedi";
 import { ResourcePluginsV2 } from "../../solution/fx-solution/ResourcePluginContainer";
@@ -10,7 +18,7 @@ import { DeepReadonly } from "@microsoft/teamsfx-api/build/v2";
 import { FxResult, ResultFactory, QuestionResult } from "./result";
 import { ErrorMessage } from "./errors";
 import { UserTaskFunctionName } from "../../solution/fx-solution/constants";
-
+import { HostTypeOptionAzure } from "../../solution/fx-solution/question";
 @Service(ResourcePluginsV2.ApiConnectorPlugin)
 export class ApiConnectorPluginV2 implements ResourcePlugin {
   name = "fx-resource-api-connector";
@@ -18,7 +26,8 @@ export class ApiConnectorPluginV2 implements ResourcePlugin {
   apiConnectorImpl: ApiConnectorImpl = new ApiConnectorImpl();
 
   activate(projectSettings: ProjectSettings): boolean {
-    return true;
+    const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
+    return solutionSettings.hostType === HostTypeOptionAzure.id;
   }
 
   public async getQuestionsForUserTask(

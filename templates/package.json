@@ -9,9 +9,6 @@
         "version": "bash ../.github/scripts/pkg-version.sh template-sync && bash ../.github/scripts/pkg-version.sh core-template"
     },
     "templates": [
-        "blazor-base/csharp/default",
-        "bot/csharp/default",
-        "bot/csharp/notification-webapi",
         "bot/js/command-and-response",
         "bot/js/default",
         "bot/js/m365",
@@ -26,6 +23,8 @@
         "bot/ts/notification-restify",
         "bot/ts/notification-trigger-http",
         "bot/ts/notification-trigger-timer",
+        "bot/csharp/default",
+        "bot/csharp/notification-webapi",
         "function-base/js/default",
         "function-base/ts/default",
         "function-triggers/js/HTTPTrigger",

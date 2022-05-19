@@ -18,6 +18,7 @@ export interface CloudResource {
   readonly description?: string;
   readonly outputs: ResourceOutputs;
   readonly finalOutputKeys: string[];
+  readonly secretKeys?: string[];
   generateBicep?: (
     context: ContextV3,
     inputs: InputsWithProjectPath

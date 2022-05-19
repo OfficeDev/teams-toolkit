@@ -680,7 +680,7 @@ describe("Utils Tests", function () {
       color: Colors;
     }>;
     const result = getColorizedString(message);
-    expect(result).equals("foobar");
+    expect(result).equals("foo(link)bar");
   });
 
   it("getVersion", async () => {

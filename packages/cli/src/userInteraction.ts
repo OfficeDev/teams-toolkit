@@ -529,8 +529,7 @@ export class CLIUserInteraction implements UserInteraction {
           switch (level) {
             case "info":
               if (message instanceof Array) {
-                const colorMessage = message as Array<{ content: string; color: Colors }>;
-                CLILogProvider.necessaryLog(LogLevel.Info, getColorizedString(colorMessage));
+                CLILogProvider.necessaryLog(LogLevel.Info, getColorizedString(message));
               } else {
                 CLILogProvider.necessaryLog(LogLevel.Info, message);
               }

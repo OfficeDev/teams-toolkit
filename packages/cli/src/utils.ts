@@ -507,11 +507,15 @@ export function argsToInputs(
   return inputs;
 }
 
-export function getColorizedString(message: Array<{ content: string; color: Colors }>): string {
+export function getColorizedString(
+  message: Array<{ content: string; color: Colors }> | Array<{ content: string; link?: string }>
+): string {
   // Color support is automatically detected by chalk
   const colorizedMessage = message
     .map((item) => {
-      switch (item.color) {
+      const color = (item as { content: string; color: Colors }).color;
+      const link = (item as { content: string; link?: string }).link;
+      switch (color) {
         case Colors.BRIGHT_WHITE:
           return chalk.whiteBright(item.content);
         case Colors.WHITE:
@@ -527,7 +531,7 @@ export function getColorizedString(message: Array<{ content: string; color: Colo
         case Colors.BRIGHT_CYAN:
           return chalk.cyanBright.underline(item.content);
         default:
-          return item.content;
+          return link ? `${item.content}(${link})` : item.content;
       }
     })
     .join("");

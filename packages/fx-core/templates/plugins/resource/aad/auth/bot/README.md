@@ -20,6 +20,8 @@ After you successfully added SSO into your project, Teams Toolkit will create an
 
 As described above, the Teams Toolkit generated some configuration to set up your application for SSO, but you need to update your application business logic to take advantage of the SSO feature as appropriate.
 
+> Note: The following part is for `command and response bot`. For `basic bot`, please refer to the [bot-sso sample](https://aka.ms/bot-sso-sample).
+
 ## Set up the AAD redirects
 
 1. Move the `auth/bot/public` folder to `bot/src`. This folder contains HTML pages that the bot application hosts. When single sign-on flows are initiated with AAD, AAD will redirect the user to these pages.
@@ -42,7 +44,7 @@ These folder contains three files as reference for sso implementation:
 
 1. (Optional) Follow the code sample and register your own command with `addCommand` in this file.
 1. Execute the following commands under `bot/`: `npm install isomorphic-fetch`
-1. Execute the following commands under `bot/`: `npm install copyfiles` and replace following line in package.json:
+1. (For ts only) Execute the following commands under `bot/`: `npm install copyfiles` and replace following line in package.json:
     ```
     "tsc --build && shx cp -r ./src/adaptiveCards ./lib/src",
     ```

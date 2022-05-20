@@ -1,5 +1,5 @@
 // Resources for bot
-module webAppProvision '\{{PluginIdPlaceholder.Provision.webapp.path}}' = {
+module webAppProvision '\{{PluginIdPlaceholder.Provision.appservice.path}}' = {
   name: 'webApp.Provision'
   params: {
     provisionParameters: provisionParameters
@@ -15,6 +15,6 @@ output webAppOutput object = {
   siteName: webAppProvision.outputs.webAppName
   validDomain: webAppProvision.outputs.webAppDomain
   appServicePlanName: webAppProvision.outputs.appServicePlanName
-  webAppResourceId: webAppProvision.outputs.webAppResourceId
+  botWebAppResourceId: webAppProvision.outputs.webAppResourceId
   siteEndpoint: webAppProvision.outputs.webAppEndpoint
 }

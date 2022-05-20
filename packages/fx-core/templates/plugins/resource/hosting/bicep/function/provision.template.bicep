@@ -1,6 +1,6 @@
 // Resources for bot
-module functionProvision '\{{PluginIdPlaceholder.Provision.function.path}}' = {
-  name: 'function.Provision'
+module botFunctionProvision '\{{PluginIdPlaceholder.Provision.botFunction.path}}' = {
+  name: 'botFunctionProvision'
   params: {
     provisionParameters: provisionParameters
     {{#if (contains "fx-resource-identity" plugins)}}
@@ -9,12 +9,12 @@ module functionProvision '\{{PluginIdPlaceholder.Provision.function.path}}' = {
   }
 }
 
-output functionOutput object = {
+output botFunctionOutput object = {
   teamsFxPluginId: 'PluginIdPlaceholder'
-  skuName: functionProvision.outputs.functionSKU
-  siteName: functionProvision.outputs.functionName
-  validDomain: functionProvision.outputs.domain
-  appServicePlanName: functionProvision.outputs.appServicePlanName
-  botWebAppResourceId: functionProvision.outputs.functionResourceId
-  siteEndpoint: functionProvision.outputs.functionEndpoint
+  skuName: botFunctionProvision.outputs.functionSKU
+  siteName: botFunctionProvision.outputs.functionName
+  validDomain: botFunctionProvision.outputs.domain
+  appServicePlanName: botFunctionProvision.outputs.appServicePlanName
+  botWebAppResourceId: botFunctionProvision.outputs.functionResourceId
+  siteEndpoint: botFunctionProvision.outputs.functionEndpoint
 }

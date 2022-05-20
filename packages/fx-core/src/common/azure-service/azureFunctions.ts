@@ -8,10 +8,10 @@ import { azureWebSiteDeploy } from "./utils";
 import { AzureOperations } from "./azureOps";
 import { AzureService } from "./azureService";
 
-const functionResourceId = "provisionOutputs.functionOutput.value.resourceId";
-const functionHostName = "provisionOutputs.functionOutput.value.validDomain";
-const functionEndpoint = "provisionOutputs.functionOutputs.value.functionEndpoint";
-const endpointAsParam = "functionProvision.outputs.functionEndpoint";
+const functionResourceId = "provisionOutputs.botFunctionOutput.value.botWebAppResourceId";
+const functionHostName = "provisionOutputs.botFunctionOutput.value.validDomain";
+const functionEndpoint = "provisionOutputs.botFunctionOutputs.value.functionEndpoint";
+const endpointAsParam = "botFunctionProvision.outputs.functionEndpoint";
 
 export class AzureFunctions extends AzureService {
   configurable = true;

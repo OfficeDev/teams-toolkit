@@ -41,7 +41,7 @@
     "test:core:miniapp": "nyc mocha \"tests/core/miniapp.test.ts\"",
     "test:core:other": "nyc mocha \"tests/core/other.test.ts\"",
     "test:workflow": "nyc mocha \"tests/core/workflow.test.ts\"",
-    "test:hosting": "nyc mocha \"tests/common/hosting/**/*.test.ts\"",
+    "test:azure-service": "nyc mocha \"tests/common/azure-service/**/*.test.ts\"",
     "clean": "rm -rf build",
     "build": "rimraf build && npx tsc -p ./",
     "lint:fix": "eslint --fix \"src/**/*.ts\" \"tests/**/*.ts\"",

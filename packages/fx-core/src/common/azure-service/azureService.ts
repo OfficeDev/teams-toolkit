@@ -21,7 +21,7 @@ export abstract class AzureService {
       getTemplatesFolder(),
       "plugins",
       "resource",
-      "hosting",
+      "azure-service",
       "bicep",
       this.hostType
     );

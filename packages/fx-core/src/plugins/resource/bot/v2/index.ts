@@ -33,15 +33,11 @@ import {
 import {
   configureLocalResourceAdapter,
   configureResourceAdapter,
-  deployAdapter,
   executeUserTaskAdapter,
-  generateResourceTemplateAdapter,
   getQuestionsForScaffoldingAdapter,
   getQuestionsForUserTaskAdapter,
   provisionLocalResourceAdapter,
   provisionResourceAdapter,
-  scaffoldSourceCodeAdapter,
-  updateResourceTemplateAdapter,
 } from "../../utils4v2";
 import { PluginBot } from "../resources/strings";
 import { TeamsBotV2Impl } from "./plugin";
@@ -68,7 +64,6 @@ export class BotPluginV2 implements ResourcePlugin {
 
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
     return catchAndThrow(() => this.impl.scaffoldSourceCode(ctx, inputs));
-    // return await scaffoldSourceCodeAdapter(ctx, inputs, this.plugin);
   }
 
   async generateResourceTemplate(
@@ -76,7 +71,6 @@ export class BotPluginV2 implements ResourcePlugin {
     inputs: Inputs
   ): Promise<Result<ResourceTemplate, FxError>> {
     return catchAndThrow(() => this.impl.generateResourceTemplate(ctx, inputs));
-    // return await generateResourceTemplateAdapter(ctx, inputs, this.plugin);
   }
 
   async updateResourceTemplate(
@@ -84,7 +78,6 @@ export class BotPluginV2 implements ResourcePlugin {
     inputs: Inputs
   ): Promise<Result<v2.ResourceTemplate, FxError>> {
     return catchAndThrow(() => this.impl.updateResourceTemplate(ctx, inputs));
-    // return await updateResourceTemplateAdapter(ctx, inputs, this.plugin);
   }
 
   async provisionResource(
@@ -144,8 +137,7 @@ export class BotPluginV2 implements ResourcePlugin {
     envInfo: DeepReadonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
-    // return this.impl.deploy(ctx, inputs, envInfo, tokenProvider);
-    return await deployAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
+    return catchAndThrow(() => this.impl.deploy(ctx, inputs, envInfo, tokenProvider));
   }
 
   async getQuestionsForUserTask(

@@ -18,8 +18,6 @@ import { checkAndThrowIfMissing, checkPrecondition, CommandExecutionError } from
 import { BicepConfigs, ServiceType } from "../../../../common/azure-hosting/interfaces";
 import { getSiteNameFromResourceId } from "../../../../common";
 import { AzureServiceFactory } from "../../../../common/azure-hosting/hostingFactory";
-import { isBotNotificationEnabled } from "../../../../common";
-import { AzureSolutionQuestionNames } from "../../../solution/fx-solution/question";
 import {
   DEFAULT_DOTNET_FRAMEWORK,
   DeployConfigs,

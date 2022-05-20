@@ -63,6 +63,10 @@ This template provides a simple functionality to search for `npm` packages and r
   
     ![InOutlook](https://user-images.githubusercontent.com/11220663/167869656-20225f14-f982-4e47-8dd0-050285d56853.png)
 
+## Known issue
+
+You might see `Something went wrong` from the message extension while local debugging this application. This is a known issue to us and we are actively working on a fix to resolve it. Meanwhile, to proceed with local debug, you can delete those three files: `config.local.json`, `local.userdata` and `state.local.json` and press `F5` again.
+
 ## References
 
 * [Extend a Teams message extension across Microsoft 365](https://docs.microsoft.com/microsoftteams/platform/m365-apps/extend-m365-teams-message-extension?tabs=manifest-teams-toolkit)

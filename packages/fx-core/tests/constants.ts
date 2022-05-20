@@ -1,6 +1,10 @@
 import Container from "typedi";
-import { ResourcePlugins } from "../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import {
+  ResourcePlugins,
+  ResourcePluginsV2,
+} from "../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import { Plugin } from "@microsoft/teamsfx-api";
+import { ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
 
 export class PluginId {
   static readonly Aad = "fx-resource-aad-app-for-teams";
@@ -20,6 +24,9 @@ export const identityPlugin = Container.get<Plugin>(ResourcePlugins.IdentityPlug
 export const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin) as Plugin;
 export const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin) as Plugin;
 export const botPlugin = Container.get<Plugin>(ResourcePlugins.BotPlugin) as Plugin;
+export const botPluginV2 = Container.get<ResourcePlugin>(
+  ResourcePluginsV2.BotPlugin
+) as ResourcePlugin;
 export const localdebugPlugin = Container.get<Plugin>(ResourcePlugins.LocalDebugPlugin) as Plugin;
 export const appStudioPlugin = Container.get<Plugin>(ResourcePlugins.AppStudioPlugin) as Plugin;
 export const sqlPlugin = Container.get<Plugin>(ResourcePlugins.SqlPlugin) as Plugin;

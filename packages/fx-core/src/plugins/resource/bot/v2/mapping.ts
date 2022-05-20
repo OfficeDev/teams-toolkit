@@ -16,17 +16,20 @@ const runtimeMap: Map<ProgrammingLanguage, string> = new Map<ProgrammingLanguage
   [ProgrammingLanguage.Ts, "node"],
   [ProgrammingLanguage.Csharp, "csharp"],
 ]);
+const defaultRuntime = "node";
 
 const serviceMap: Map<string, ServiceType> = new Map<string, ServiceType>([
   [HostTypes.APP_SERVICE, ServiceType.AppService],
   [HostTypes.AZURE_FUNCTIONS, ServiceType.Functions],
 ]);
+const defaultServiceType = ServiceType.AppService;
 
 const langMap: Map<string, ProgrammingLanguage> = new Map<string, ProgrammingLanguage>([
   ["javascript", ProgrammingLanguage.Js],
   ["typescript", ProgrammingLanguage.Ts],
   ["csharp", ProgrammingLanguage.Csharp],
 ]);
+const defaultLang = ProgrammingLanguage.Js;
 
 const triggerScenariosMap: Map<string, string[]> = new Map<string, string[]>([
   [
@@ -51,23 +54,23 @@ export function getRuntime(lang: ProgrammingLanguage): string {
   if (runtime) {
     return runtime;
   }
-  throw new Error("invalid bot input");
+  return defaultLang;
 }
 
-export function getServiceType(hostType: string): ServiceType {
-  const serviceType = serviceMap.get(hostType);
+export function getServiceType(hostType?: string): ServiceType {
+  const serviceType = serviceMap.get(hostType ?? "");
   if (serviceType) {
     return serviceType;
   }
-  throw new Error("invalid bot input");
+  return defaultServiceType;
 }
 
-export function getLanguage(lang: string): ProgrammingLanguage {
-  const language = langMap.get(lang.toLowerCase());
+export function getLanguage(lang?: string): ProgrammingLanguage {
+  const language = langMap.get(lang?.toLowerCase() ?? "");
   if (language) {
     return language;
   }
-  throw new Error("invalid bot input");
+  return defaultLang;
 }
 
 export function getTriggerScenarios(trigger: string): string[] {

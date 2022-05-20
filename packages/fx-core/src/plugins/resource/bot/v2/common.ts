@@ -12,7 +12,7 @@ import { ServiceType } from "../../../../common/azure-hosting/interfaces";
 import { PluginBot, HostType, HostTypes } from "../resources/strings";
 
 export function getTemplateInfos(ctx: Context, inputs: Inputs): CodeTemplateInfo[] {
-  const lang = getLanguage(ctx.projectSetting.programmingLanguage!);
+  const lang = getLanguage(ctx.projectSetting.programmingLanguage);
   const scenarios = Array.from(decideTemplateScenarios(ctx, inputs));
   return scenarios.map((scenario) => {
     return {
@@ -32,7 +32,7 @@ export function decideTemplateScenarios(ctx: Context, inputs: Inputs): Set<strin
     return templateScenarios;
   }
   const botScenarios = inputs?.[AzureSolutionQuestionNames.Scenarios];
-  if (!botScenarios) {
+  if (!botScenarios || (Array.isArray(botScenarios) && botScenarios.length === 0)) {
     templateScenarios.add(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
     return templateScenarios;
   }

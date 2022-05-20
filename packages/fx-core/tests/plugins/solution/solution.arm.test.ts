@@ -33,7 +33,7 @@ import * as tools from "../../../src/common/tools";
 import { environmentManager } from "../../../src/core/environment";
 import {
   aadPlugin,
-  botPlugin,
+  botPluginV2,
   ErrorName,
   fehostPlugin,
   fileEncoding,
@@ -264,11 +264,11 @@ Mocked identity provision orchestration content. Module path: './provision/ident
     // Add bot capability
     (
       mockedCtx.projectSettings!.solutionSettings as AzureSolutionSettings
-    ).activeResourcePlugins.push(botPlugin.name);
+    ).activeResourcePlugins.push(botPluginV2.name);
     (mockedCtx.projectSettings!.solutionSettings as AzureSolutionSettings).capabilities.push(
       BotOptionItem.id
     );
-    result = await generateArmTemplate(mockedCtx, [botPlugin]);
+    result = await generateArmTemplate(mockedCtx, [botPluginV2]);
 
     expect(result.isOk()).to.be.true;
     expect(
@@ -435,11 +435,11 @@ Mocked simple auth configuration orchestration content. Module path: './teamsFx/
     // Add bot capability
     (
       mockedCtx.projectSettings!.solutionSettings as AzureSolutionSettings
-    ).activeResourcePlugins.push(botPlugin.name);
+    ).activeResourcePlugins.push(botPluginV2.name);
     (mockedCtx.projectSettings!.solutionSettings as AzureSolutionSettings).capabilities.push(
       BotOptionItem.id
     );
-    result = await generateArmTemplate(mockedCtx, [botPlugin]);
+    result = await generateArmTemplate(mockedCtx, [botPluginV2]);
 
     const projectMainBicepWithBot = await fs.readFile(
       path.join(projectArmTemplateFolder, TestFilePath.mainFileName),
@@ -492,7 +492,7 @@ Mocked bot configuration orchestration content. Module path: './teamsFx/botConfi
     mockedCtx.projectSettings!.solutionSettings = {
       hostType: HostTypeOptionAzure.id,
       name: "azure",
-      activeResourcePlugins: [aadPlugin.name, botPlugin.name, identityPlugin.name],
+      activeResourcePlugins: [aadPlugin.name, botPluginV2.name, identityPlugin.name],
       capabilities: [BotOptionItem.id],
     };
     TestHelper.mockedFehostGenerateArmTemplates(mocker);
@@ -504,7 +504,7 @@ Mocked bot configuration orchestration content. Module path: './teamsFx/botConfi
     TestHelper.mockedIdentityUpdateArmTemplates(mocker);
 
     // Action
-    let result = await generateArmTemplate(mockedCtx, [aadPlugin, botPlugin, identityPlugin]);
+    let result = await generateArmTemplate(mockedCtx, [aadPlugin, botPluginV2, identityPlugin]);
 
     // Assert
     const projectArmTemplateFolder = path.join(

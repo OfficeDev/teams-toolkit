@@ -5,13 +5,17 @@
 [![DotNet SDK CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/dotnetsdk-ci.yml/badge.svg)](https://github.com/OfficeDev/TeamsFx/actions/workflows/dotnetsdk-ci.yml)
 [![Function Extension CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/FunctionExtensionCI.yml/badge.svg)](https://github.com/OfficeDev/TeamsFx/actions/workflows/FunctionExtensionCI.yml)
 
-Microsoft Teams Toolkit is a Visual Studio Code extension (along with a corresponding CLI) that simplifies building applications for Microsoft Teams.
+Teams Toolkit for Visual Studio, Visual Studio Code, and Command Line Interface (CLI) are tools for building Teams apps, fast. Whether you are new to Teams platform or a seasoned developer, Teams Toolkit is the best way to create, build, debug, test, and deploy apps.
 
-The Teams Toolkit includes:
+Teams Toolkit provides support for the end-to-end Teams development journey, including:  
 
-- IDE extensions for Visual Studio and Visual Studio Code
-- A command line tool `teamsfx` for terminal users, automation, and CI
-- A code library, Teams Framework `teamsfx`, that provides runtime support to ease development
+- Support for all major Teams extensibility surfaces, including tabs, bots, and message extensions.
+- Integrations with the tools, languages, and frameworks you know and love.
+- Scaffolds for getting started fast with Teams extensibility surfaces and common scenarios such as notifications and command & response-style bots.
+- Rapid iteration with full stack debugging, hot reload, and secure tunneling.
+- Simplified SSO authentication.
+- Integrated support for hosting, data storage, and serverless functions.
+- CI/CD actions for GitHub and Azure DevOps to deliver apps with confidence.
 
 This repository contains the following packages:
 | Package | Description |
@@ -23,7 +27,7 @@ This repository contains the following packages:
 | **Core** [packages/fx-core](https://github.com/OfficeDev/TeamsFx/tree/main/packages/fx-core) | The Core package centralizes implementation of capabilities shared by the IDE Extensions and the CLI. |
 | **Azure Functions Support** [packages/function-extension](https://github.com/OfficeDev/TeamsFx/tree/main/packages/function-extension) | TeamsFx helps developers include server-side code in their Teams application backed by [Azure Functions](https://docs.microsoft.com/azure/azure-functions/). This plugin adds support to simplify the integration of an authentication-aware Azure Function into your Teams app. |
 
-## Getting Started
+## Get Started
 
 Pick your preferred tool to get started:
 
@@ -31,9 +35,9 @@ Pick your preferred tool to get started:
 - For .NET developers, install [Teams Toolkit for Visual Studio](https://docs.microsoft.com/microsoftteams/platform/toolkit/visual-studio-overview#install-teams-toolkit-for-visual-studio).
 - For command line users, install [TeamsFx CLI](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-cli#get-started): `npm install -g @microsoft/teamsfx-cli`
 
-Follow [the documentation](https://aka.ms/teamsfx-docs) to start building apps for Microsoft Teams.
+Visit [the documentation](https://aka.ms/teamsfx-docs) to get started with building apps with Teams Toolkit today.
 
-## Contributing
+## Contributions
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
 Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
@@ -50,9 +54,11 @@ provided by the bot. You will only need to do this once across all repos using o
 
 Teams Toolkit collects usage data and sends it to Microsoft to help improve our products and services. Read our [Privacy Statement](https://privacy.microsoft.com/privacystatement) and [Data Collection Notice](https://docs.opensource.microsoft.com/content/releasing/telemetry.html) to learn more. Learn more in our [FAQ](https://code.visualstudio.com/docs/supporting/faq#_how-to-disable-telemetry-reporting).
 
-## Reporting security issues and bugs
+## Feedback
 
-Security issues and bugs should be reported privately, via email, to the Microsoft Security Response Center (MSRC) secure@microsoft.com. You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message. Further information, including the MSRC PGP key, can be found in the [Security TechCenter](https://www.microsoft.com/msrc/faqs-report-an-issue?rtc=1).
+[Log an issue](https://github.com/OfficeDev/TeamsFx/issues/new?assignees=&labels=&template=bug_report.md&title=) or [request a feature](https://github.com/OfficeDev/TeamsFx/issues/new?assignees=&labels=&template=feature_request.md&title=) to us on GitHub.
+
+Report security issues and bugs privately, via email, to the Microsoft Security Response Center (MSRC) secure@microsoft.com. You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message. Further information, including the MSRC PGP key, can be found in the [Security TechCenter](https://www.microsoft.com/msrc/faqs-report-an-issue?rtc=1).
 
 ## Trademarks
 

@@ -9,11 +9,9 @@ export class Constants {
   public static readonly BUILD_OR_PUBLISH_QUESTION = "build-or-publish";
   public static readonly INCLUDE_APP_MANIFEST = "include-app-manifest";
   public static readonly READ_MORE = "Read more";
-  public static readonly LEARN_MORE = "Learn more";
   public static readonly VIEW_DEVELOPER_PORTAL = "View in Developer Portal";
   public static readonly DEVELOPER_PORTAL_APP_PACKAGE_URL =
     "https://dev.teams.microsoft.com/apps/%s/app-package";
-  public static readonly ADMIN_PORTAL = "Admin portal";
   public static readonly PUBLISH_GUIDE = "https://aka.ms/teamsfx-publish";
   public static readonly TEAMS_ADMIN_PORTAL = "https://aka.ms/teamsfx-mtac";
   public static readonly TEAMS_MANAGE_APP_DOC = "https://aka.ms/teamsfx-mtac-doc";

@@ -9,6 +9,7 @@ import { providerIdToLabel, questionNames, templateIdToLabel } from "./questions
 import { InternalError, NoProjectOpenedError } from "./errors";
 import { Logger } from "./logger";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
+import { VSCodeExtensionCommand } from "../../../common/constants";
 
 export class CICDImpl {
   public commonProperties: { [key: string]: string } = {};
@@ -90,14 +91,26 @@ export class CICDImpl {
     // 4. Send notification messages.
     const messages = [];
     if (created.length > 0) {
-      messages.push(
-        getLocalizedString(
-          "plugins.cicd.result.scaffold.created",
-          created.join(", "),
-          providerIdToLabel(providerName),
-          envName
-        )
-      );
+      if (inputs.platform === Platform.CLI) {
+        messages.push(
+          getLocalizedString(
+            "plugins.cicd.result.scaffold.created.cli",
+            created.join(", "),
+            providerIdToLabel(providerName),
+            envName
+          )
+        );
+      } else if (inputs.platform === Platform.VSCode) {
+        messages.push(
+          getLocalizedString(
+            "plugins.cicd.result.scaffold.created",
+            created.join(", "),
+            providerIdToLabel(providerName),
+            envName,
+            VSCodeExtensionCommand.openReadme
+          )
+        );
+      }
     }
     if (skipped.length > 0) {
       messages.push(

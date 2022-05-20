@@ -6,7 +6,7 @@ module botFunctionProvision '{{fx-resource-bot.Provision.botFunction.path}}' = {
   }
 }
 
-output functionOutput object = {
+output botFunctionOutput object = {
   teamsFxPluginId: 'fx-resource-bot'
   skuName: functionProvision.outputs.functionSKU
   siteName: functionProvision.outputs.functionName

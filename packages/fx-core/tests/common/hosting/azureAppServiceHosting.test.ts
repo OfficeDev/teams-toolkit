@@ -43,7 +43,6 @@ describe("azure app service hosting", () => {
 
       chai.assert.exists(template.Configuration);
       chai.assert.deepEqual(template.Reference, hosting.reference);
-      chai.assert.exists(template.Parameters);
 
       const expectedConfigModule = await fs.readFile(
         path.resolve(path.join(__dirname, "expectedBicep", "webAppConfigModule.bicep")),

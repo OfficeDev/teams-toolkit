@@ -96,7 +96,7 @@ Deployment happens in two steps: Provisioning and Deployment. Provisioning creat
 - In the Visual Studio Code Command Palette, enter "teams" and choose the command `Teams: Provision in the Cloud`.
 - You will be asked to sign into your Azure account. This is the account where Azure resources will be provisioned. Typically this is different from the M365 account you used to sign in earlier.
 - You will be asked to select a subscription to use from the Azure account.
-- Once provisioning is completed, Visual Studio Code will popup the notification with the message "[Teams Toolkit] provision finished successfully".
+- Once provisioning is completed, Visual Studio Code will popup the notification with the message "'app name' successfully provisioned in the cloud.".
 
 Deploy copies your application to the provisioned Azure resources. It is typically done after every change to your application. To deploy your application to the provisioned resources in an active Azure subscription:
 

@@ -305,23 +305,30 @@ export class TeamsBotV2Impl {
       DeployConfigsConstants.GIT_IGNORE_FILE,
       workingDir
     );
-    const totalIgnore = await TeamsBotV2Impl.prepareIgnore(
-      [FolderNames.NODE_MODULES].concat(generalIgnore).concat(gitIgnore)
-    );
+    const totalIgnore = await TeamsBotV2Impl.prepareIgnore(generalIgnore.concat(gitIgnore));
+    const filter = (itemPath: string) => path.basename(itemPath) !== FolderNames.NODE_MODULES;
 
-    await forEachFileAndDir(
-      workingDir,
-      (itemPath, status) => {
-        const relativePath = path.relative(workingDir, itemPath);
-        if (relativePath && status.mtime.getTime() > lastTime) {
-          return true;
-        }
-      },
-      (item) => {
-        return !totalIgnore.test(item).ignored;
-      }
-    );
-    return false;
+    let changed = false;
+    try {
+      await forEachFileAndDir(
+        workingDir,
+        (itemPath, status) => {
+          const relativePath = path.relative(workingDir, itemPath);
+          if (
+            relativePath &&
+            status.mtime.getTime() > lastTime &&
+            !totalIgnore.test(relativePath).ignored
+          ) {
+            changed = true;
+            return true;
+          }
+        },
+        filter
+      );
+      return changed;
+    } catch {
+      return true;
+    }
   }
 
   private static async saveDeploymentInfo(

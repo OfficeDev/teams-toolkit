@@ -1,5 +1,5 @@
 // Resources for bot
-module webAppProvision '\{{PluginIdPlaceholder.Provision.appservice.path}}' = {
+module webAppProvision '\{{PluginIdPlaceholder.Provision.webapp.path}}' = {
   name: 'webApp.Provision'
   params: {
     provisionParameters: provisionParameters

@@ -1,6 +1,6 @@
 // Resources for bot
-module functionProvision '{{fx-resource-bot.Provision.function.path}}' = {
-  name: 'function.Provision'
+module botFunctionProvision '{{fx-resource-bot.Provision.botFunction.path}}' = {
+  name: 'botFunctionProvision'
   params: {
     provisionParameters: provisionParameters
   }
@@ -12,6 +12,6 @@ output functionOutput object = {
   siteName: functionProvision.outputs.functionName
   validDomain: functionProvision.outputs.domain
   appServicePlanName: functionProvision.outputs.appServicePlanName
-  resourceId: functionProvision.outputs.functionResourceId
+  botWebAppResourceId: functionProvision.outputs.functionResourceId
   siteEndpoint: functionProvision.outputs.functionEndpoint
 }

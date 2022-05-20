@@ -74,7 +74,7 @@ describe("azure app service hosting", () => {
       chai.assert.exists(template.Reference);
 
       const except = await fs.readFile(
-        path.resolve(path.join(__dirname, "expectedBicep", "configurationModuleUpdate.bicep")),
+        path.resolve(path.join(__dirname, "expectedBicep", "webAppConfigModule.bicep")),
         "utf-8"
       );
       chai.assert.equal(template.Configuration.Modules[hosting.hostType], except);

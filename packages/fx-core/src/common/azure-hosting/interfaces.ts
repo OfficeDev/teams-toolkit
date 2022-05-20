@@ -2,8 +2,8 @@
 // Licensed under the MIT license.
 
 export enum ServiceType {
-  AppService = "appservice",
-  Functions = "function",
+  AppService = "webapp",
+  Functions = "botFunction",
   BotService = "botservice",
 }
 

@@ -8,10 +8,10 @@ import { Void } from "../../plugins";
 import { azureWebSiteDeploy } from "./utils";
 import { AzureOperations } from "./azureOps";
 
-const functionResourceId = "provisionOutputs.functionOutput.value.resourceId";
+const functionResourceId = "provisionOutputs.functionOutput.value.botWebAppResourceId";
 const functionHostName = "provisionOutputs.functionOutput.value.validDomain";
 const functionEndpoint = "provisionOutputs.functionOutputs.value.functionEndpoint";
-const endpointAsParam = "functionProvision.outputs.functionEndpoint";
+const endpointAsParam = "botFunctionProvision.outputs.functionEndpoint";
 
 export class AzureFunctionHosting extends AzureHosting {
   configurable = true;

@@ -599,6 +599,7 @@ Mocked bot configuration orchestration content. Module path: './teamsFx/botConfi
   });
 });
 
+/*
 describe("Deploy ARM Template to Azure", () => {
   const mocker = sinon.createSandbox();
   let mockedCtx: SolutionContext;
@@ -1106,3 +1107,4 @@ describe("Copy Parameter Json to New Env", () => {
     ).equals(parameterContent);
   });
 });
+  */

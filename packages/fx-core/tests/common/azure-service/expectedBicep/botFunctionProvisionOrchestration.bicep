@@ -12,6 +12,6 @@ output botFunctionOutput object = {
   siteName: botFunctionProvision.outputs.functionName
   validDomain: botFunctionProvision.outputs.domain
   appServicePlanName: botFunctionProvision.outputs.appServicePlanName
-  resourceId: botFunctionProvision.outputs.functionResourceId
+  botWebAppResourceId: botFunctionProvision.outputs.functionResourceId
   siteEndpoint: botFunctionProvision.outputs.functionEndpoint
 }

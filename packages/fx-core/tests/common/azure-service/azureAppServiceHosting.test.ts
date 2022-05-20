@@ -43,7 +43,6 @@ describe("azure app service hosting", () => {
 
       chai.assert.exists(template.Configuration);
       chai.assert.deepEqual(template.Reference, hosting.reference);
-      chai.assert.exists(template.Parameters);
 
       const expectedConfigModule = await fs.readFile(
         path.resolve(path.join(__dirname, "expectedBicep", "webAppConfigModule.bicep")),
@@ -74,10 +73,10 @@ describe("azure app service hosting", () => {
       chai.assert.exists(template.Reference);
 
       const except = await fs.readFile(
-        path.resolve(path.join(__dirname, "expectedBicep", "webAppConfigOrchestration.bicep")),
+        path.resolve(path.join(__dirname, "expectedBicep", "webAppConfigModule.bicep")),
         "utf-8"
       );
-      chai.assert.equal(template.Configuration.Orchestration[hosting.hostType], except);
+      chai.assert.equal(template.Configuration.Modules[hosting.hostType], except);
     });
   });
 

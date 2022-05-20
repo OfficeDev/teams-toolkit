@@ -65,8 +65,12 @@ export class DotnetBotImpl extends TeamsBotImpl {
       if (!botId && !botPassword) {
         return ResultFactory.Success();
       }
-      appSettings = appSettings.replace(RegularExpr.botId, botId);
-      appSettings = appSettings.replace(RegularExpr.botPassword, botPassword);
+      if (botId) {
+        appSettings = appSettings.replace(RegularExpr.botId, botId);
+      }
+      if (botPassword) {
+        appSettings = appSettings.replace(RegularExpr.botPassword, botPassword);
+      }
       await fs.writeFile(appSettingsPath, appSettings, "utf-8");
     } catch (error) {
       throw new FileIOError(appSettingsPath);

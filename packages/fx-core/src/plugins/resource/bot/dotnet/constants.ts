@@ -14,11 +14,6 @@ export class PathInfo {
   static readonly appSettingDevelopment = "appsettings.Development.json";
 }
 
-export class DependentPluginInfo {
-  static readonly botId = "botId";
-  public static readonly botPassword: string = "botPassword";
-}
-
 export class RegularExpr {
   static readonly botId = /\$botId\$/g;
   static readonly botPassword = /\$bot-password\$/g;

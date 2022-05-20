@@ -248,7 +248,7 @@ function startBackend(programmingLanguage: string): Record<string, unknown> {
     options: {
       cwd: "${workspaceFolder}/api",
       env: {
-        PATH: "${env:PATH}${command:fx-extension.get-func-path}",
+        PATH: "${command:fx-extension.get-func-path}${env:PATH}",
       },
     },
     presentation: {
@@ -341,7 +341,7 @@ function startFuncHostedBot(
     options: {
       cwd: "${workspaceFolder}/bot",
       env: {
-        PATH: "${env:PATH}${command:fx-extension.get-func-path}",
+        PATH: "${command:fx-extension.get-func-path}${env:PATH}",
       },
     },
   } as Record<string, unknown>;

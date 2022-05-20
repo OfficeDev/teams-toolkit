@@ -32,7 +32,7 @@ export function decideTemplateScenarios(ctx: Context, inputs: Inputs): Set<strin
     return templateScenarios;
   }
   const botScenarios = inputs?.[AzureSolutionQuestionNames.Scenarios];
-  if (!botScenarios) {
+  if (!botScenarios || botScenarios.length === 0) {
     templateScenarios.add(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
     return templateScenarios;
   }

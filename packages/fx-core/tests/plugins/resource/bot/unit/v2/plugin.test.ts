@@ -19,8 +19,8 @@ import mock from "mock-fs";
 import AdmZip from "adm-zip";
 import { getTemplatesFolder } from "../../../../../../src";
 import * as utils from "../../../../../../src/plugins/resource/bot/utils/common";
-import { AzureServiceFactory } from "../../../../../../src/common/azure-hosting/hostingFactory";
-import { ServiceType } from "../../../../../../src/common/azure-hosting/interfaces";
+import { AzureServiceFactory } from "../../../../../../src/common/azure-service/hostingFactory";
+import { ServiceType } from "../../../../../../src/common/azure-service/interfaces";
 
 const fs = require("fs-extra");
 

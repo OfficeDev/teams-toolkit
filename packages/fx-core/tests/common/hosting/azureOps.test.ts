@@ -3,7 +3,7 @@
 import "mocha";
 import * as chai from "chai";
 import * as sinon from "sinon";
-import { AzureOperations } from "../../../src/common/azure-hosting/azureOps";
+import { AzureOperations } from "../../../src/common/azure-service/azureOps";
 import * as appService from "@azure/arm-appservice";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { TokenResponse } from "adal-node";
@@ -17,8 +17,8 @@ import {
   ListPublishingCredentialsError,
   RestartWebAppError,
   ZipDeployError,
-} from "../../../src/common/azure-hosting/hostingError";
-import { ErrorNameConstant } from "../../../src/common/azure-hosting/hostingConstant";
+} from "../../../src/common/azure-service/hostingError";
+import { ErrorNameConstant } from "../../../src/common/azure-service/hostingConstant";
 chai.use(chaiAsPromised);
 
 class FakeTokenCredentials extends TokenCredentialsBase {

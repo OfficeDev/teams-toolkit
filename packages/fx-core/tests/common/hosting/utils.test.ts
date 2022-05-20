@@ -4,14 +4,14 @@
 import "mocha";
 import * as chai from "chai";
 import { Inputs, SubscriptionInfo, TokenProvider } from "@microsoft/teamsfx-api";
-import { azureWebSiteDeploy } from "../../../src/common/azure-hosting/utils";
+import { azureWebSiteDeploy } from "../../../src/common/azure-service/utils";
 import { MockedAzureAccountProvider } from "../../plugins/solution/util";
-import { AzureOperations } from "../../../src/common/azure-hosting/azureOps";
+import { AzureOperations } from "../../../src/common/azure-service/azureOps";
 import * as sinon from "sinon";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import chaiAsPromised from "chai-as-promised";
-import { PreconditionError } from "../../../src/common/azure-hosting/hostingError";
+import { PreconditionError } from "../../../src/common/azure-service/hostingError";
 chai.use(chaiAsPromised);
 
 describe("hosting util test", () => {

@@ -54,7 +54,7 @@ import { FunctionsHostedBotImpl } from "../../../../../src/plugins/resource/bot/
 import { ScaffoldConfig } from "../../../../../src/plugins/resource/bot/configs/scaffoldConfig";
 import { DotnetBotImpl } from "../../../../../src/plugins/resource/bot/dotnet/plugin";
 import { FuncHostedDeployMgr } from "../../../../../src/plugins/resource/bot/functionsHostedBot/deployMgr";
-import { AzureOperations } from "../../../../../src/common/azure-hosting/azureOps";
+import { AzureOperations } from "../../../../../src/common/azure-service/azureOps";
 
 describe("Teams Bot Resource Plugin", () => {
   describe("Test plugin implementation dispatching", () => {

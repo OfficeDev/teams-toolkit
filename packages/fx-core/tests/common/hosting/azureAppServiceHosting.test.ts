@@ -1,7 +1,7 @@
 import "mocha";
 import { BicepContext, ServiceType } from "../../../src/common/azure-hosting/interfaces";
 import { ResourcePlugins } from "../../plugins/resource/util";
-import { AzureHostingFactory } from "../../../src/common/azure-hosting/hostingFactory";
+import { AzureServiceFactory } from "../../../src/common/azure-hosting/hostingFactory";
 import * as chai from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -38,7 +38,7 @@ describe("azure app service hosting", () => {
 
   describe("create bicep", () => {
     it("create bicep", async () => {
-      const hosting = AzureHostingFactory.createHosting(ServiceType.AppService);
+      const hosting = AzureServiceFactory.createHosting(ServiceType.AppService);
       const template = await hosting.generateBicep(context, pluginId);
 
       chai.assert.exists(template.Configuration);
@@ -67,7 +67,7 @@ describe("azure app service hosting", () => {
 
   describe("update bicep", () => {
     it("update bicep", async () => {
-      const hosting = AzureHostingFactory.createHosting(ServiceType.AppService);
+      const hosting = AzureServiceFactory.createHosting(ServiceType.AppService);
       const template = await hosting.updateBicep(context, pluginId);
 
       chai.assert.exists(template.Configuration);
@@ -83,7 +83,7 @@ describe("azure app service hosting", () => {
 
   describe("deploy", () => {
     it("deploy success", async () => {
-      const hosting = AzureHostingFactory.createHosting(ServiceType.AppService);
+      const hosting = AzureServiceFactory.createHosting(ServiceType.AppService);
       const inputs = {
         platform: Platform.VSCode,
       };

@@ -65,7 +65,7 @@ This template provides a simple functionality to search for `npm` packages and r
 
 ## Known issue
 
-You might see `Something went wrong` from the message extension while local debugging this application. This is a known issue to us and we are actively working on a fix to resolve it. Meanwhile, to proceed with local debug, you can delete those three files: `config.local.json`, `local.userdata` and `state.local.json` and press `F5` again. 
+You might see `Something went wrong` from the message extension while local debugging this application. This is a known issue to us and we are actively working on a fix to resolve it. Meanwhile, to proceed with local debug, you can delete those three files: `.fx/configs/config.local.json`, `.fx/states/local.userdata` and `.fx/states/state.local.json` and press `F5` again.
 
 ## References
 

@@ -17,8 +17,8 @@ import {
   ListPublishingCredentialsError,
   RestartWebAppError,
   ZipDeployError,
-} from "../../../src/common/azure-service/hostingError";
-import { ErrorNameConstant } from "../../../src/common/azure-service/hostingConstant";
+} from "../../../src/common/azure-service/errors";
+import { ErrorNameConstant } from "../../../src/common/azure-service/constants";
 chai.use(chaiAsPromised);
 
 class FakeTokenCredentials extends TokenCredentialsBase {

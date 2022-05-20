@@ -11,7 +11,7 @@ import * as sinon from "sinon";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import chaiAsPromised from "chai-as-promised";
-import { PreconditionError } from "../../../src/common/azure-service/hostingError";
+import { PreconditionError } from "../../../src/common/azure-service/errors";
 chai.use(chaiAsPromised);
 
 describe("hosting util test", () => {

@@ -44,7 +44,7 @@ export class TeamsBotV2Impl {
 
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
     let workingPath = inputs.projectPath ?? "";
-    const lang = getLanguage(ctx.projectSetting.programmingLanguage!);
+    const lang = getLanguage(ctx.projectSetting.programmingLanguage);
     if (lang !== ProgrammingLanguage.Csharp) {
       workingPath = path.join(workingPath, "bot");
     }
@@ -214,7 +214,7 @@ export class TeamsBotV2Impl {
 
   private static getBicepConfigs(ctx: Context, inputs: Inputs): BicepConfigs {
     const bicepConfigs: BicepConfigs = [];
-    const lang = getLanguage(ctx.projectSetting.programmingLanguage!);
+    const lang = getLanguage(ctx.projectSetting.programmingLanguage);
     bicepConfigs.push(getRuntime(lang));
     bicepConfigs.push("running-on-azure");
     return bicepConfigs;
@@ -227,7 +227,7 @@ export class TeamsBotV2Impl {
   ): Promise<string> {
     // Return the folder path to be zipped and uploaded
 
-    const lang = getLanguage(ctx.projectSetting.programmingLanguage!);
+    const lang = getLanguage(ctx.projectSetting.programmingLanguage);
     const packDir = path.join(projectPath, CommonStrings.BOT_WORKING_DIR_NAME);
     if (lang === ProgrammingLanguage.Ts) {
       //Typescript needs tsc build before deploy because of Windows app server. other languages don"t need it.

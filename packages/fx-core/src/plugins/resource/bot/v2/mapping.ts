@@ -57,16 +57,16 @@ export function getRuntime(lang: ProgrammingLanguage): string {
   return defaultRuntime;
 }
 
-export function getServiceType(hostType: string): ServiceType {
-  const serviceType = serviceMap.get(hostType);
+export function getServiceType(hostType?: string): ServiceType {
+  const serviceType = serviceMap.get(hostType ?? "");
   if (serviceType) {
     return serviceType;
   }
   return defaultServiceType;
 }
 
-export function getLanguage(lang: string): ProgrammingLanguage {
-  const language = langMap.get(lang.toLowerCase());
+export function getLanguage(lang?: string): ProgrammingLanguage {
+  const language = langMap.get(lang?.toLowerCase() ?? "");
   if (language) {
     return language;
   }

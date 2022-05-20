@@ -8,12 +8,16 @@ import { MicrosoftTunnelingManager } from "../../../src/common/local/microsoftTu
 import { TunnelManagementHttpClient, TunnelRequestOptions } from "@vs/tunnels-management";
 import { Tunnel, TunnelConnectionMode } from "@vs/tunnels-contracts";
 import { TunnelRelayTunnelHost } from "@vs/tunnels-connections";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import {
   MicrosoftTunnelingNeedOnboardingError,
   MicrosoftTunnelingServiceError,
   MicrosoftTunnelingTimeoutError,
 } from "../../../src/common/local/microsoftTunnelingError";
+
+function createMockHttpError(status: number): Error {
+  return Object.assign(new Error(), { isAxiosError: true, response: { status } });
+}
 
 describe("MicrosoftTunnelingManager", () => {
   describe("startTunnelHost()", () => {
@@ -126,7 +130,7 @@ describe("MicrosoftTunnelingManager", () => {
       sandbox
         .stub(TunnelManagementHttpClient.prototype, "createTunnel")
         .callsFake(async (): Promise<Tunnel> => {
-          throw Object.assign(new Error(), { isAxiosError: true, response: { status: 403 } });
+          throw createMockHttpError(403);
         });
       sandbox
         .stub(TunnelManagementHttpClient.prototype, "getTunnel")
@@ -157,7 +161,7 @@ describe("MicrosoftTunnelingManager", () => {
       sandbox
         .stub(TunnelManagementHttpClient.prototype, "createTunnel")
         .callsFake(async (): Promise<Tunnel> => {
-          throw Object.assign(new Error(), { isAxiosError: true, response: { status: 500 } });
+          throw createMockHttpError(500);
         });
       sandbox
         .stub(TunnelManagementHttpClient.prototype, "getTunnel")
@@ -261,6 +265,90 @@ describe("MicrosoftTunnelingManager", () => {
 
       // Assert
       chai.assert.isTrue(disposeCalled);
+    });
+  });
+
+  describe("checkOnboarded()", () => {
+    const sandbox = sinon.createSandbox();
+    beforeEach(() => {});
+    afterEach(() => {
+      sandbox.restore();
+    });
+    it("onboarded: successful creation", async () => {
+      // Arrange
+      sandbox
+        .stub(TunnelManagementHttpClient.prototype, "createTunnel")
+        .callsFake(async (): Promise<Tunnel> => {
+          return { tunnelId: "good tunnel id", clusterId: "good cluster id" };
+        });
+      const manager = new MicrosoftTunnelingManager(async () => "fake token");
+
+      // Act
+      const result = await manager.checkOnboarded();
+
+      // Assert
+      chai.assert.isTrue(result);
+    });
+    it("onboarded: tunnel exists", async () => {
+      // Arrange
+      sandbox
+        .stub(TunnelManagementHttpClient.prototype, "createTunnel")
+        .callsFake(async (): Promise<Tunnel> => {
+          // 409 Conflict: tunnel already exists
+          throw createMockHttpError(409);
+        });
+      const manager = new MicrosoftTunnelingManager(async () => "fake token");
+
+      // Act
+      const result = await manager.checkOnboarded();
+
+      // Assert
+      chai.assert.isTrue(result);
+    });
+    it("not onboarded: forbidden", async () => {
+      // Arrange
+      sandbox
+        .stub(TunnelManagementHttpClient.prototype, "createTunnel")
+        .callsFake(async (): Promise<Tunnel> => {
+          throw createMockHttpError(403);
+        });
+      const manager = new MicrosoftTunnelingManager(async () => "fake token");
+
+      // Act
+      const result = await manager.checkOnboarded();
+
+      // Assert
+      chai.assert.isFalse(result);
+    });
+    it("other HTTP error, assume onboarded and let it fail at the point when running the real operation.", async () => {
+      // Arrange
+      sandbox
+        .stub(TunnelManagementHttpClient.prototype, "createTunnel")
+        .callsFake(async (): Promise<Tunnel> => {
+          throw createMockHttpError(500);
+        });
+      const manager = new MicrosoftTunnelingManager(async () => "fake token");
+
+      // Act
+      const result = await manager.checkOnboarded();
+
+      // Assert
+      chai.assert.isTrue(result);
+    });
+    it("other error, assume onboarded and let it fail at the point when running the real operation.", async () => {
+      // Arrange
+      sandbox
+        .stub(TunnelManagementHttpClient.prototype, "createTunnel")
+        .callsFake(async (): Promise<Tunnel> => {
+          throw new Error("unknown error");
+        });
+      const manager = new MicrosoftTunnelingManager(async () => "fake token");
+
+      // Act
+      const result = await manager.checkOnboarded();
+
+      // Assert
+      chai.assert.isTrue(result);
     });
   });
 });

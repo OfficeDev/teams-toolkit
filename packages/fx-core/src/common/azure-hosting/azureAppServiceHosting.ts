@@ -22,25 +22,6 @@ export class AzureAppServiceHosting extends AzureHosting {
     endpointAsParam: endpointAsParam,
   };
 
-  async updateBicep(bicepContext: BicepContext, pluginId: string): Promise<ResourceTemplate> {
-    const bicepTemplateDir = this.getBicepTemplateFolder();
-    const configModule = await generateBicepFromFile(
-      path.join(bicepTemplateDir, Bicep.ConfigFileName),
-      bicepContext
-    );
-    const configModuleRes = AzureHosting.replacePluginId(configModule, pluginId);
-    return {
-      Reference: {
-        resourceId: AppServiceBicepConstant.resourceId,
-        hostName: AppServiceBicepConstant.hostName,
-        webAppEndpoint: AppServiceBicepConstant.webAppEndpoint,
-      },
-      Configuration: {
-        Modules: { [this.hostType]: configModuleRes },
-      },
-    };
-  }
-
   async deploy(
     inputs: Inputs,
     tokenProvider: TokenProvider,

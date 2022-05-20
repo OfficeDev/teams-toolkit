@@ -77,7 +77,25 @@ export abstract class AzureHosting {
   }
 
   async updateBicep(bicepContext: BicepContext, pluginId: string): Promise<ResourceTemplate> {
-    return {} as ArmTemplateResult;
+    // * The order matters.
+    // * 0: Configuration Orchestration, 1: Configuration Module
+    if (!this.configurable) {
+      return {} as ResourceTemplate;
+    }
+    const bicepFile = `${this.hostType}Configuration.template.bicep`;
+
+    const bicepTemplateDir = this.getBicepTemplateFolder();
+    let module = await generateBicepFromFile(path.join(bicepTemplateDir, bicepFile), bicepContext);
+    module = AzureHosting.replacePluginId(module, pluginId);
+
+    return {
+      Configuration: this.configurable
+        ? {
+            Modules: { [this.hostType]: module },
+          }
+        : undefined,
+      Reference: this.reference,
+    } as ResourceTemplate;
   }
   async configure(ctx: Context): Promise<Void> {
     return Void;

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { getDefaultString, getLocalizedString } from "../localizeUtils";
-import { AzureOpsConstant, ErrorNameConstant } from "./hostingConstant";
+import { AzureOpsConstant, ErrorNameConstant } from "./constants";
 
 export type InnerError = HttpError | Error | unknown;
 

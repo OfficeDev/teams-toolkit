@@ -15,16 +15,16 @@ import * as utils from "../utils/common";
 import path from "path";
 import { Commands, CommonStrings, ConfigNames, PluginBot } from "../resources/strings";
 import { checkAndThrowIfMissing, checkPrecondition, CommandExecutionError } from "../errors";
-import { BicepConfigs, ServiceType } from "../../../../common/azure-hosting/interfaces";
+import { BicepConfigs, ServiceType } from "../../../../common/azure-service/interfaces";
 import { getSiteNameFromResourceId } from "../../../../common";
-import { AzureServiceFactory } from "../../../../common/azure-hosting/hostingFactory";
+import { AzureServiceFactory } from "../../../../common/azure-service/azureServiceFactory";
 import {
   DEFAULT_DOTNET_FRAMEWORK,
   DeployConfigs,
   FolderNames,
   ProgressBarConstants,
 } from "../constants";
-import { mergeTemplates } from "../../../../common/azure-hosting/utils";
+import { mergeTemplates } from "../../../../common/azure-service/utils";
 import { getActivatedV2ResourcePlugins } from "../../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/adaptor";
 import { ResourcePlugins } from "../../../../common/constants";
@@ -34,7 +34,7 @@ import { forEachFileAndDir } from "../utils/dir-walk";
 import { Logger } from "../logger";
 import { ProgressBarFactory } from "../progressBars";
 import ignore, { Ignore } from "ignore";
-import { DeployConfigsConstants } from "../../../../common/azure-hosting/hostingConstant";
+import { DeployConfigsConstants } from "../../../../common/azure-service/constants";
 import { getTemplateInfos, resolveHostType, resolveServiceType } from "./common";
 import { ProgrammingLanguage } from "./enum";
 import { getLanguage, getRuntime } from "./mapping";
@@ -77,7 +77,7 @@ export class TeamsBotV2Impl {
     const serviceTypes = [resolveServiceType(ctx), ServiceType.BotService];
     const templates = await Promise.all(
       serviceTypes.map((serviceType) => {
-        const hosting = AzureServiceFactory.createHosting(serviceType);
+        const hosting = AzureServiceFactory.createAzureService(serviceType);
         return hosting.generateBicep(bicepContext, ResourcePlugins.Bot);
       })
     );
@@ -102,7 +102,7 @@ export class TeamsBotV2Impl {
     const serviceTypes = [resolveServiceType(ctx), ServiceType.BotService];
     const templates = await Promise.all(
       serviceTypes.map((serviceType) => {
-        const hosting = AzureServiceFactory.createHosting(serviceType);
+        const hosting = AzureServiceFactory.createAzureService(serviceType);
         return hosting.updateBicep(bicepContext, ResourcePlugins.Bot);
       })
     );
@@ -176,7 +176,7 @@ export class TeamsBotV2Impl {
     );
 
     // upload
-    const host = AzureServiceFactory.createHosting(hostType);
+    const host = AzureServiceFactory.createAzureService(hostType);
     await progressBarHandler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_DEPLOY);
     await host.deploy(inputs, tokenProvider, zipBuffer, siteName);
     await TeamsBotV2Impl.saveDeploymentInfo(

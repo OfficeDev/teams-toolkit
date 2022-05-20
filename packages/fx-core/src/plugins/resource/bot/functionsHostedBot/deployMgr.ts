@@ -10,7 +10,7 @@ import { Logger } from "../logger";
 import {
   AzureOperationCommonConstants,
   DeployConfigsConstants,
-} from "../../../../common/azure-hosting/hostingConstant";
+} from "../../../../common/azure-service/constants";
 
 export class FuncHostedDeployMgr {
   private readonly workingDir: string;

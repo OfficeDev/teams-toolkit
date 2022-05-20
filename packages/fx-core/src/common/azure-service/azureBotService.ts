@@ -4,7 +4,7 @@
 import { ServiceType } from "./interfaces";
 import { AzureService } from "./azureService";
 
-export class BotServiceHosting extends AzureService {
+export class AzureBotService extends AzureService {
   configurable = false;
   hostType = ServiceType.BotService;
 }

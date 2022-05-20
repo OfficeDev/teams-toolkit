@@ -8,7 +8,7 @@ import { QuestionNames, TemplateProjectsConstants, TemplateProjectsScenarios } f
 import { HostTypeTriggerOptions } from "../question";
 import { CodeTemplateInfo } from "./interface/codeTemplateInfo";
 import { getLanguage, getServiceType, getTriggerScenarios } from "./mapping";
-import { ServiceType } from "../../../../common/azure-hosting/interfaces";
+import { ServiceType } from "../../../../common/azure-service/interfaces";
 import { PluginBot, HostType, HostTypes } from "../resources/strings";
 
 export function getTemplateInfos(ctx: Context, inputs: Inputs): CodeTemplateInfo[] {

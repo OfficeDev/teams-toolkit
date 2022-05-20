@@ -13,7 +13,7 @@ const functionHostName = "provisionOutputs.functionOutput.value.validDomain";
 const functionEndpoint = "provisionOutputs.functionOutputs.value.functionEndpoint";
 const endpointAsParam = "functionProvision.outputs.functionEndpoint";
 
-export class AzureFunctionsHosting extends AzureService {
+export class AzureFunctions extends AzureService {
   configurable = true;
   hostType = ServiceType.Functions;
   reference = {

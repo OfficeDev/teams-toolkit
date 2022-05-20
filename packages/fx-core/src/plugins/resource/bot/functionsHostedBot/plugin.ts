@@ -28,11 +28,11 @@ import { FuncHostedDeployMgr } from "./deployMgr";
 import * as appService from "@azure/arm-appservice";
 import { getZipDeployEndpoint } from "../utils/zipDeploy";
 import * as utils from "../utils/common";
-import { AzureOperations } from "../../../../common/azure-hosting/azureOps";
+import { AzureOperations } from "../../../../common/azure-service/azureOps";
 import {
   AzureOperationCommonConstants,
   DeployConfigsConstants,
-} from "../../../../common/azure-hosting/hostingConstant";
+} from "../../../../common/azure-service/constants";
 
 export class FunctionsHostedBotImpl extends TeamsBotImpl {
   public async scaffold(context: PluginContext): Promise<FxResult> {

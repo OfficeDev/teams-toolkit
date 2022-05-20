@@ -19,7 +19,7 @@ import mock from "mock-fs";
 import AdmZip from "adm-zip";
 import { getTemplatesFolder } from "../../../../../../src";
 import * as utils from "../../../../../../src/plugins/resource/bot/utils/common";
-import { AzureHostingFactory } from "../../../../../../src/common/azure-hosting/hostingFactory";
+import { AzureServiceFactory } from "../../../../../../src/common/azure-hosting/hostingFactory";
 import { ServiceType } from "../../../../../../src/common/azure-hosting/interfaces";
 
 const fs = require("fs-extra");
@@ -105,7 +105,7 @@ describe("Bot Plugin v2", () => {
     });
 
     it("Happy Path", async () => {
-      const host = AzureHostingFactory.createHosting(ServiceType.Functions);
+      const host = AzureServiceFactory.createAzureService(ServiceType.Functions);
       const bar = new MockProgressHandler();
       context.userInteraction["createProgressBar"] = () => bar;
       sinon.stub(fs, "writeFile");
@@ -120,7 +120,7 @@ describe("Bot Plugin v2", () => {
       sinon.stub(bar, "end").resolves();
       sinon.stub(utils, "execute");
       sinon.stub(utils, "zipFolderAsync");
-      sinon.stub(AzureHostingFactory, "createHosting").returns(host);
+      sinon.stub(AzureServiceFactory, "createAzureService").returns(host);
       sinon.stub(host, "deploy").resolves({});
       sinon.stub(fs, "writeJSON");
       const res = await botPlugin.deploy(context, inputs as DeploymentInputs, env, tokenProvider);

@@ -76,8 +76,8 @@ import {
   UnzipError,
 } from "./error";
 import { ensureSolutionSettings } from "../../../solution/fx-solution/utils/solutionSettingsHelper";
-import { AzureOperations } from "../../../../common/azure-hosting/azureOps";
-import { AzureUploadConfig } from "../../../../common/azure-hosting/interfaces";
+import { AzureOperations } from "../../../../common/azure-service/azureOps";
+import { AzureUploadConfig } from "../../../../common/azure-service/interfaces";
 
 @Service(BuiltInFeaturePluginNames.bot)
 export class NodeJSBotPluginV3 implements v3.PluginV3 {

@@ -16,7 +16,7 @@ import ignore, { Ignore } from "ignore";
 import * as fs from "fs-extra";
 import { forEachFileAndDir } from "./dir-walk";
 import path from "path";
-import { AzureOperationCommonConstants } from "../../../../common/azure-hosting/hostingConstant";
+import { AzureOperationCommonConstants } from "../../../../common/azure-service/constants";
 
 export function toBase64(source: string): string {
   return Base64.encode(source);

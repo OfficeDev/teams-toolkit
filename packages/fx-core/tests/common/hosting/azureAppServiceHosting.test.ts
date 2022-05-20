@@ -1,13 +1,13 @@
 import "mocha";
-import { BicepContext, ServiceType } from "../../../src/common/azure-hosting/interfaces";
+import { BicepContext, ServiceType } from "../../../src/common/azure-service/interfaces";
 import { ResourcePlugins } from "../../plugins/resource/util";
-import { AzureServiceFactory } from "../../../src/common/azure-hosting/hostingFactory";
+import { AzureServiceFactory } from "../../../src/common/azure-service/azureServiceFactory";
 import * as chai from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { Platform, TokenProvider } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
-import * as lib from "../../../src/common/azure-hosting/utils";
+import * as lib from "../../../src/common/azure-service/utils";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { TokenResponse } from "adal-node";
 import * as appService from "@azure/arm-appservice";
@@ -38,7 +38,7 @@ describe("azure app service hosting", () => {
 
   describe("create bicep", () => {
     it("create bicep", async () => {
-      const hosting = AzureServiceFactory.createHosting(ServiceType.AppService);
+      const hosting = AzureServiceFactory.createAzureService(ServiceType.AppService);
       const template = await hosting.generateBicep(context, pluginId);
 
       chai.assert.exists(template.Configuration);
@@ -67,7 +67,7 @@ describe("azure app service hosting", () => {
 
   describe("update bicep", () => {
     it("update bicep", async () => {
-      const hosting = AzureServiceFactory.createHosting(ServiceType.AppService);
+      const hosting = AzureServiceFactory.createAzureService(ServiceType.AppService);
       const template = await hosting.updateBicep(context, pluginId);
 
       chai.assert.exists(template.Configuration);
@@ -83,7 +83,7 @@ describe("azure app service hosting", () => {
 
   describe("deploy", () => {
     it("deploy success", async () => {
-      const hosting = AzureServiceFactory.createHosting(ServiceType.AppService);
+      const hosting = AzureServiceFactory.createAzureService(ServiceType.AppService);
       const inputs = {
         platform: Platform.VSCode,
       };

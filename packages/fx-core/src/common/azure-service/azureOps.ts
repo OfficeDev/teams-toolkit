@@ -9,8 +9,8 @@ import {
   ListPublishingCredentialsError,
   RestartWebAppError,
   ZipDeployError,
-} from "./hostingError";
-import { DeployStatusConstant } from "./hostingConstant";
+} from "./errors";
+import { DeployStatusConstant } from "./constants";
 import { waitSeconds } from "../tools";
 import {
   AxiosOnlyStatusResult,

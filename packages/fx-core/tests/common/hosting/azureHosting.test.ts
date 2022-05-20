@@ -3,9 +3,9 @@
 
 import "mocha";
 import * as chai from "chai";
-import { BicepContext, ServiceType } from "../../../src/common/azure-hosting/interfaces";
+import { BicepContext, ServiceType } from "../../../src/common/azure-service/interfaces";
 import path from "path";
-import { AzureServiceFactory } from "../../../src/common/azure-hosting/hostingFactory";
+import { AzureServiceFactory } from "../../../src/common/azure-service/azureServiceFactory";
 import { ResourcePlugins } from "../../../src/common/constants";
 const fs = require("fs-extra");
 
@@ -18,7 +18,7 @@ describe("azure hosting", () => {
     const pluginId = ResourcePlugins.Bot;
 
     it("generate bicep", async () => {
-      const functionHosting = AzureServiceFactory.createHosting(ServiceType.Functions);
+      const functionHosting = AzureServiceFactory.createAzureService(ServiceType.Functions);
       const template = await functionHosting.generateBicep(bicepContext, pluginId);
 
       chai.assert.exists(template.Configuration);

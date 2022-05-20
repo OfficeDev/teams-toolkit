@@ -8,8 +8,8 @@ import * as appService from "@azure/arm-appservice";
 import { AzureUploadConfig } from "./interfaces";
 import { Base64 } from "js-base64";
 import { AzureOperations } from "./azureOps";
-import { AzureOperationCommonConstants, AzureOpsConstant } from "./hostingConstant";
-import { PreconditionError } from "./hostingError";
+import { AzureOperationCommonConstants, AzureOpsConstant } from "./constants";
+import { PreconditionError } from "./errors";
 
 export function mergeTemplates(templates: ArmTemplateResult[]): ArmTemplateResult {
   const existsProvision = templates.some((it) => it.Provision);

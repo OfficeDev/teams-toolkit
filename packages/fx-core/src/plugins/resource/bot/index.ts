@@ -41,7 +41,7 @@ import { FunctionsHostedBotImpl } from "./functionsHostedBot/plugin";
 import { ScaffoldConfig } from "./configs/scaffoldConfig";
 import { createHostTypeTriggerQuestion, showNotificationTriggerCondition } from "./question";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
-import { CommonHostingError } from "../../../common/azure-hosting/hostingError";
+import { CommonHostingError } from "../../../common/azure-service/errors";
 
 @Service(ResourcePlugins.BotPlugin)
 export class TeamsBot implements Plugin {

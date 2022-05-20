@@ -59,8 +59,8 @@ import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/Resour
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
 import { PluginImpl } from "./interface";
 import { BOT_ID } from "../appstudio/constants";
-import { AzureOperations } from "../../../common/azure-hosting/azureOps";
-import { AzureUploadConfig } from "../../../common/azure-hosting/interfaces";
+import { AzureOperations } from "../../../common/azure-service/azureOps";
+import { AzureUploadConfig } from "../../../common/azure-service/interfaces";
 
 export class TeamsBotImpl implements PluginImpl {
   // Made config public, because expect the upper layer to fill inputs.

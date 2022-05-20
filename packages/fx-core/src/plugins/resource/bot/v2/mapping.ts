@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ServiceType } from "../../../../common/azure-hosting/interfaces";
+import { ServiceType } from "../../../../common/azure-service/interfaces";
 import { TemplateProjectsScenarios } from "../constants";
 import {
   FunctionsHttpTriggerOptionItem,

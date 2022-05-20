@@ -36,13 +36,16 @@ interface Deferred<T> {
 }
 
 export class CodeFlowTenantLogin {
-  pca: PublicClientApplication | undefined;
+  pca: PublicClientApplication;
   account: AccountInfo | undefined;
-  scopes: string[] | undefined;
-  config: Configuration | undefined;
-  port: number | undefined;
-  mutex: Mutex | undefined;
-  msalTokenCache: TokenCache | undefined;
+  /**
+   * @deprecated will be removed after unify m365 login
+   */
+  scopes: string[];
+  config: Configuration;
+  port: number;
+  mutex: Mutex;
+  msalTokenCache: TokenCache;
   accountName: string | undefined;
   showMFA: boolean | undefined;
 
@@ -51,7 +54,7 @@ export class CodeFlowTenantLogin {
     this.config = config;
     this.port = port;
     this.mutex = new Mutex();
-    this.pca = new PublicClientApplication(this.config!);
+    this.pca = new PublicClientApplication(this.config);
     this.msalTokenCache = this.pca.getTokenCache();
     this.accountName = accountName;
     this.showMFA = true;
@@ -61,7 +64,7 @@ export class CodeFlowTenantLogin {
     if (this.accountName) {
       const accountCache = await loadAccountId(this.accountName);
       if (accountCache) {
-        const dataCache = await this.msalTokenCache!.getAccountByHomeId(accountCache);
+        const dataCache = await this.msalTokenCache.getAccountByHomeId(accountCache);
         if (dataCache) {
           this.account = dataCache;
         }
@@ -84,7 +87,7 @@ export class CodeFlowTenantLogin {
     serverPort = (server.address() as AddressInfo).port;
 
     const authCodeUrlParameters = {
-      scopes: this.scopes!,
+      scopes: this.scopes,
       codeChallenge: codeChallenge,
       codeChallengeMethod: "S256",
       redirectUri: `http://localhost:${serverPort}`,
@@ -99,12 +102,13 @@ export class CodeFlowTenantLogin {
     app.get("/", (req: express.Request, res: express.Response) => {
       const tokenRequest = {
         code: req.query.code as string,
-        scopes: this.scopes!,
+        scopes: this.scopes,
         redirectUri: `http://localhost:${serverPort}`,
         codeVerifier: codeVerifier,
       };
 
-      this.pca!.acquireTokenByCode(tokenRequest)
+      this.pca
+        .acquireTokenByCode(tokenRequest)
         .then(async (response) => {
           if (response) {
             if (response.account) {
@@ -148,8 +152,8 @@ export class CodeFlowTenantLogin {
 
     let accessToken = undefined;
     try {
-      await this.startServer(server, serverPort!);
-      this.pca!.getAuthCodeUrl(authCodeUrlParameters).then(async (response: string) => {
+      await this.startServer(server, serverPort);
+      this.pca.getAuthCodeUrl(authCodeUrlParameters).then(async (response: string) => {
         response += "#";
         if (this.accountName == "azure") {
           const message = [
@@ -183,7 +187,7 @@ export class CodeFlowTenantLogin {
     if (this.accountName) {
       const accountCache = await loadAccountId(this.accountName);
       if (accountCache) {
-        const dataCache = await this.msalTokenCache!.getAccountByHomeId(accountCache);
+        const dataCache = await this.msalTokenCache.getAccountByHomeId(accountCache);
         if (dataCache) {
           this.msalTokenCache?.removeAccount(dataCache);
         }
@@ -203,11 +207,12 @@ export class CodeFlowTenantLogin {
         const accessToken = await this.login(tenantId);
         return accessToken;
       } else {
-        return this.pca!.acquireTokenSilent({
-          account: this.account,
-          scopes: this.scopes!,
-          forceRefresh: false,
-        })
+        return this.pca
+          .acquireTokenSilent({
+            account: this.account,
+            scopes: this.scopes,
+            forceRefresh: false,
+          })
           .then((response) => {
             if (response) {
               return response.accessToken;
@@ -298,7 +303,7 @@ export function LoginFailureError(innerError?: any): UserError {
 }
 
 export function ConvertTokenToJson(token: string): any {
-  const array = token!.split(".");
+  const array = token.split(".");
   const buff = Buffer.from(array[1], "base64");
   return JSON.parse(buff.toString(UTF8));
 }

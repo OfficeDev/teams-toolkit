@@ -912,3 +912,19 @@ export function undefinedName(objs: any[], names: string[]) {
 export function getPropertyByPath(obj: any, path: string, defaultValue?: string) {
   return _.get(obj, path, defaultValue);
 }
+
+export const AppStudioScopes = [`${getAppStudioEndpoint()}/AppDefinitions.ReadWrite`];
+export const GraphScopes = ["Application.ReadWrite.All", "TeamsAppInstallation.ReadForUser"];
+export const GraphReadUserScopes = ["https://graph.microsoft.com/User.ReadBasic.All"];
+export const SPFxScopes = (tenant: string) => [`${tenant}/Sites.FullControl.All`];
+
+export async function getSPFxTenant(graphToken: string): Promise<string> {
+  const GRAPH_TENANT_ENDPT = "https://graph.microsoft.com/v1.0/sites/root?$select=webUrl";
+  if (graphToken.length > 0) {
+    const response = await axios.get(GRAPH_TENANT_ENDPT, {
+      headers: { Authorization: `Bearer ${graphToken}` },
+    });
+    return response.data.webUrl;
+  }
+  return "";
+}

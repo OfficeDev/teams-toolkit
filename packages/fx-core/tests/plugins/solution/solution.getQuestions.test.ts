@@ -62,7 +62,11 @@ import {
   getQuestionsForUserTask,
 } from "../../../src/plugins/solution/fx-solution/v2/getQuestions";
 import { BuiltInFeaturePluginNames } from "../../../src/plugins/solution/fx-solution/v3/constants";
-import { MockGraphTokenProvider, MockSharepointTokenProvider } from "../../core/utils";
+import {
+  MockGraphTokenProvider,
+  MockM365TokenProvider,
+  MockSharepointTokenProvider,
+} from "../../core/utils";
 import { MockedAppStudioProvider, MockedAzureAccountProvider, MockedV2Context } from "./util";
 import { BotCapabilities, PluginBot } from "../../../src/plugins/resource/bot/resources/strings";
 import { BotHostTypes } from "../../../src";
@@ -80,6 +84,7 @@ const mockedProvider: TokenProvider = {
   azureAccountProvider: new MockedAzureAccountProvider(),
   graphTokenProvider: new MockGraphTokenProvider(),
   sharepointTokenProvider: new MockSharepointTokenProvider(),
+  m365TokenProvider: new MockM365TokenProvider(),
 };
 const envInfo: EnvInfoV2 = {
   envName: "default",

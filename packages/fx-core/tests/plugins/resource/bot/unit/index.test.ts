@@ -45,7 +45,7 @@ import {
   MockedSharepointProvider,
   MockedV2Context,
 } from "../../../solution/util";
-import { randomAppName } from "../../../../core/utils";
+import { MockM365TokenProvider, randomAppName } from "../../../../core/utils";
 import * as os from "os";
 import { ResourcePlugins } from "../../../../../src/common/constants";
 import { ConfigKeys } from "../../../../../src/plugins/resource/bot/constants";
@@ -286,6 +286,7 @@ describe("Teams Bot Resource Plugin", () => {
         appStudioToken: new MockedAppStudioTokenProvider(),
         graphTokenProvider: new MockedGraphTokenProvider(),
         sharepointTokenProvider: new MockedSharepointProvider(),
+        m365TokenProvider: new MockM365TokenProvider(),
       };
       const envInfoV3: v3.EnvInfoV3 = {
         envName: "dev",
@@ -388,6 +389,7 @@ describe("Teams Bot Resource Plugin", () => {
         appStudioToken: new MockedAppStudioTokenProvider(),
         graphTokenProvider: new MockedGraphTokenProvider(),
         sharepointTokenProvider: new MockedSharepointProvider(),
+        m365TokenProvider: new MockM365TokenProvider(),
       };
       const envInfoV3: v3.EnvInfoV3 = {
         envName: "dev",
@@ -592,6 +594,7 @@ describe("Teams Bot Resource Plugin", () => {
         appStudioToken: new MockedAppStudioTokenProvider(),
         graphTokenProvider: new MockedGraphTokenProvider(),
         sharepointTokenProvider: new MockedSharepointProvider(),
+        m365TokenProvider: new MockM365TokenProvider(),
       };
       const envInfoV3: v3.EnvInfoV3 = {
         envName: "dev",
@@ -686,6 +689,7 @@ describe("Teams Bot Resource Plugin", () => {
         appStudioToken: new MockedAppStudioTokenProvider(),
         graphTokenProvider: new MockedGraphTokenProvider(),
         sharepointTokenProvider: new MockedSharepointProvider(),
+        m365TokenProvider: new MockM365TokenProvider(),
       };
       const envInfoV3: v3.EnvInfoV3 = {
         envName: "local",
@@ -781,6 +785,7 @@ describe("Teams Bot Resource Plugin", () => {
         appStudioToken: new MockedAppStudioTokenProvider(),
         graphTokenProvider: new MockedGraphTokenProvider(),
         sharepointTokenProvider: new MockedSharepointProvider(),
+        m365TokenProvider: new MockM365TokenProvider(),
       };
       const envInfoV3: v3.EnvInfoV3 = {
         envName: "dev",

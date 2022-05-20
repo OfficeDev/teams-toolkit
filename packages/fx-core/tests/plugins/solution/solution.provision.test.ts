@@ -105,6 +105,7 @@ import { assert } from "sinon";
 import { resourceGroupHelper } from "../../../src/plugins/solution/fx-solution/utils/ResourceGroupHelper";
 import * as manifestTemplate from "../../../src/plugins/resource/appstudio/manifestTemplate";
 import { SolutionRunningState } from "../../../src/plugins/solution/fx-solution/types";
+import { MockM365TokenProvider } from "../../core/utils";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -1059,6 +1060,7 @@ describe("API v2 implementation", () => {
         appStudioToken: new MockedAppStudioTokenProvider(),
         graphTokenProvider: new MockedGraphTokenProvider(),
         sharepointTokenProvider: new MockedSharepointProvider(),
+        m365TokenProvider: new MockM365TokenProvider(),
       };
       const mockedEnvInfo: v2.EnvInfoV2 = {
         envName: "default",
@@ -1133,6 +1135,7 @@ describe("API v2 implementation", () => {
         appStudioToken: new MockedAppStudioTokenProvider(),
         graphTokenProvider: new MockedGraphTokenProvider(),
         sharepointTokenProvider: new MockedSharepointProvider(),
+        m365TokenProvider: new MockM365TokenProvider(),
       };
       const mockedEnvInfo: v2.EnvInfoV2 = {
         envName: "default",
@@ -1176,6 +1179,7 @@ describe("API v2 implementation", () => {
         appStudioToken: new MockedAppStudioTokenProvider(),
         graphTokenProvider: new MockedGraphTokenProvider(),
         sharepointTokenProvider: new MockedSharepointProvider(),
+        m365TokenProvider: new MockM365TokenProvider(),
       };
       const mockedEnvInfo: v2.EnvInfoV2 = {
         envName: "default",

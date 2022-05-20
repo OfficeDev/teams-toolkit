@@ -80,7 +80,7 @@ interface AppManifestProvider {
 // @public (undocumented)
 export const AppPackageFolderName = "appPackage";
 
-// @public
+// @public @deprecated
 export interface AppStudioTokenProvider {
     getAccessToken(showDialog?: boolean): Promise<string | undefined>;
     getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined>;
@@ -231,6 +231,20 @@ export interface BaseQuestion {
     title?: string;
     totalSteps?: number;
     value?: unknown;
+}
+
+// @public (undocumented)
+export abstract class BasicLogin {
+    // (undocumented)
+    abstract getStatus(tokenRequest: TokenRequest): Promise<Result<LoginStatus, FxError>>;
+    // (undocumented)
+    notifyStatus(tokenRequest: TokenRequest): Promise<void>;
+    // (undocumented)
+    removeStatusChangeMap(name: string): Promise<Result<boolean, FxError>>;
+    // (undocumented)
+    setStatusChangeMap(name: string, tokenRequest: TokenRequest, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediateCall?: boolean): Promise<Result<boolean, FxError>>;
+    // (undocumented)
+    statusChangeMap: Map<any, any>;
 }
 
 // @public (undocumented)
@@ -794,7 +808,7 @@ export function getSingleOption(q: SingleSelectQuestion | MultiSelectQuestion, o
 // @public
 export function getValidationFunction<T extends string | string[] | undefined>(validation: ValidationSchema, inputs: Inputs): (input: T) => string | undefined | Promise<string | undefined>;
 
-// @public
+// @public @deprecated
 export interface GraphTokenProvider {
     getAccessToken(showDialog?: boolean): Promise<string | undefined>;
     getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined>;
@@ -1024,6 +1038,13 @@ interface LocalSettings_2 extends Json {
 }
 
 // @public (undocumented)
+export type LoginStatus = {
+    status: string;
+    token?: string;
+    accountInfo?: Record<string, unknown>;
+};
+
+// @public (undocumented)
 export enum LogLevel {
     Debug = 1,
     Error = 4,
@@ -1046,6 +1067,15 @@ export interface LogProvider {
     log(logLevel: LogLevel, message: string): Promise<boolean>;
     trace(message: string): Promise<boolean>;
     warning(message: string): Promise<boolean>;
+}
+
+// @public
+export interface M365TokenProvider {
+    getAccessToken(tokenRequest: TokenRequest): Promise<Result<string, FxError>>;
+    getJsonObject(tokenRequest: TokenRequest): Promise<Result<Record<string, unknown>, FxError>>;
+    getStatus(tokenRequest: TokenRequest): Promise<Result<LoginStatus, FxError>>;
+    removeStatusChangeMap(name: string): Promise<Result<boolean, FxError>>;
+    setStatusChangeMap(name: string, tokenRequest: TokenRequest, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediateCall?: boolean): Promise<Result<boolean, FxError>>;
 }
 
 // @public (undocumented)
@@ -1479,7 +1509,7 @@ export type SelectFolderConfig = UIConfig<string>;
 // @public (undocumented)
 export type SelectFolderResult = InputResult<string>;
 
-// @public
+// @public @deprecated
 export interface SharepointTokenProvider {
     getAccessToken(showDialog?: boolean): Promise<string | undefined>;
     getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined>;
@@ -1855,6 +1885,13 @@ export type TokenProvider = {
     graphTokenProvider: GraphTokenProvider;
     appStudioToken: AppStudioTokenProvider;
     sharepointTokenProvider: SharepointTokenProvider;
+    m365TokenProvider: M365TokenProvider;
+};
+
+// @public (undocumented)
+export type TokenRequest = {
+    scopes: Array<string>;
+    showDialog?: boolean;
 };
 
 // @public (undocumented)

@@ -17,7 +17,7 @@ import {
 import { MockFeaturePluginNames } from "./mockPlugins";
 import * as os from "os";
 import * as path from "path";
-import { randomAppName } from "../../core/utils";
+import { MockM365TokenProvider, randomAppName } from "../../core/utils";
 describe("SolutionV3 - deploy", () => {
   it("deploy", async () => {
     const projectSettings: ProjectSettings = {
@@ -42,6 +42,7 @@ describe("SolutionV3 - deploy", () => {
       appStudioToken: new MockedAppStudioTokenProvider(),
       graphTokenProvider: new MockedGraphTokenProvider(),
       sharepointTokenProvider: new MockedSharepointProvider(),
+      m365TokenProvider: new MockM365TokenProvider(),
     };
     const envInfov3: v3.EnvInfoV3 = {
       envName: "dev",
@@ -75,6 +76,7 @@ describe("SolutionV3 - deploy", () => {
       appStudioToken: new MockedAppStudioTokenProvider(),
       graphTokenProvider: new MockedGraphTokenProvider(),
       sharepointTokenProvider: new MockedSharepointProvider(),
+      m365TokenProvider: new MockM365TokenProvider(),
     };
     const envInfoV3: v2.DeepReadonly<v3.EnvInfoV3> = {
       envName: "dev",

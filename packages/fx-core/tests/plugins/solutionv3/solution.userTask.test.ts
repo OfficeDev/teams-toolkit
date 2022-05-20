@@ -19,7 +19,7 @@ import {
 } from "../solution/util";
 import * as path from "path";
 import * as os from "os";
-import { deleteFolder, randomAppName } from "../../core/utils";
+import { deleteFolder, MockM365TokenProvider, randomAppName } from "../../core/utils";
 import { Container } from "typedi";
 import { TeamsFxAzureSolution } from "../../../src/plugins/solution/fx-solution/v3/solution";
 import {
@@ -76,6 +76,7 @@ describe("SolutionV3 - executeUserTask", () => {
       appStudioToken: new MockedAppStudioTokenProvider(),
       graphTokenProvider: new MockedGraphTokenProvider(),
       sharepointTokenProvider: new MockedSharepointProvider(),
+      m365TokenProvider: new MockM365TokenProvider(),
     };
     const res = await getQuestionsForUserTask(
       ctx,

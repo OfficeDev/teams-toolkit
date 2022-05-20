@@ -25,7 +25,13 @@ This repository contains the following packages:
 
 ## Getting Started
 
-To get started with Teams Toolkit, see [the documentation](https://aka.ms/teamsfx-docs).
+Pick your preferred tool to get started:
+
+- For JavaScript and TypeScript developers, install [Teams Toolkit for Visual Studio Code](https://docs.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals#install-teams-toolkit-for-visual-studio-code).
+- For .NET developers, install [Teams Toolkit for Visual Studio](https://docs.microsoft.com/microsoftteams/platform/toolkit/visual-studio-overview#install-teams-toolkit-for-visual-studio).
+- For command line users, install [TeamsFx CLI](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-cli#get-started): `npm install -g @microsoft/teamsfx-cli`
+
+Follow [the documentation](https://aka.ms/teamsfx-docs) to start building apps for Microsoft Teams.
 
 ## Contributing
 

@@ -298,20 +298,13 @@ async function listCollaboratorImpl(
     } else if (platform === Platform.VSCode) {
       ui?.showMessage(
         "info",
-        [
-          {
-            content: getLocalizedString(
-              "core.collaboration.ListCollaboratorsSuccess",
-              CollaborationUtil.isSpfxProject(param.ctx)
-                ? ""
-                : getLocalizedString("core.collaboration.WithAadApp")
-            ),
-          },
-          {
-            content: getLocalizedString("core.notification.outputChanel"),
-            link: VSCodeExtensionCommand.showOutputChannel,
-          },
-        ],
+        getLocalizedString(
+          "core.collaboration.ListCollaboratorsSuccess",
+          CollaborationUtil.isSpfxProject(param.ctx)
+            ? ""
+            : getLocalizedString("core.collaboration.WithAadApp"),
+          VSCodeExtensionCommand.showOutputChannel
+        ),
         false
       );
       logProvider?.info(message);

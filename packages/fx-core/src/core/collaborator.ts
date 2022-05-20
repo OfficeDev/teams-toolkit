@@ -170,18 +170,11 @@ export async function listCollaborator(
     } else if (inputs.platform === Platform.VSCode) {
       ctx.userInteraction.showMessage(
         "info",
-        [
-          {
-            content: getLocalizedString(
-              "core.collaboration.ListCollaboratorsSuccess",
-              hasAad ? getLocalizedString("core.collaboration.WithAadApp") : ""
-            ),
-          },
-          {
-            content: getLocalizedString("core.notification.outputChanel"),
-            link: VSCodeExtensionCommand.showOutputChannel,
-          },
-        ],
+        getLocalizedString(
+          "core.collaboration.ListCollaboratorsSuccess",
+          hasAad ? getLocalizedString("core.collaboration.WithAadApp") : "",
+          VSCodeExtensionCommand.showOutputChannel
+        ),
         false
       );
       ctx.logProvider.info(message);

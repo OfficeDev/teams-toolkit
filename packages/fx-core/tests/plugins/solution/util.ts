@@ -194,7 +194,7 @@ export class MockedUserInteraction implements UserInteraction {
 
   async showMessage(
     level: "info" | "warn" | "error",
-    message: string | { content: string; color?: Colors; link?: string }[],
+    message: string | { content: string; color: Colors }[],
     modal: boolean,
     ...items: string[]
   ): Promise<Result<string, FxError>> {

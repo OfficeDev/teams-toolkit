@@ -91,37 +91,40 @@ export class CICDImpl {
     // 4. Send notification messages.
     const messages = [];
     if (created.length > 0) {
-      messages.push(
-        {
-          content: getLocalizedString(
-            "plugins.cicd.result.scaffold.created",
+      if (inputs.platform === Platform.CLI) {
+        messages.push(
+          getLocalizedString(
+            "plugins.cicd.result.scaffold.created.cli",
             created.join(", "),
             providerIdToLabel(providerName),
             envName
-          ),
-        },
-        {
-          content: getLocalizedString("core.notification.readme"),
-          link: VSCodeExtensionCommand.openReadme,
-        },
-        {
-          content: getLocalizedString("core.notification.period"),
-        }
-      );
+          )
+        );
+      } else if (inputs.platform === Platform.VSCode) {
+        messages.push(
+          getLocalizedString(
+            "plugins.cicd.result.scaffold.created",
+            created.join(", "),
+            providerIdToLabel(providerName),
+            envName,
+            VSCodeExtensionCommand.openReadme
+          )
+        );
+      }
     }
     if (skipped.length > 0) {
-      messages.push({
-        content: getLocalizedString(
+      messages.push(
+        getLocalizedString(
           "plugins.cicd.result.scaffold.skipped",
           skipped.join(", "),
           providerIdToLabel(providerName),
           envName
-        ),
-      });
+        )
+      );
     }
 
-    const message = messages.map((msg) => msg.content).join(" ");
-    context.userInteraction.showMessage("info", messages, false);
+    const message = messages.join(" ");
+    context.userInteraction.showMessage("info", message, false);
     Logger.info(message);
 
     return ResultFactory.Success();

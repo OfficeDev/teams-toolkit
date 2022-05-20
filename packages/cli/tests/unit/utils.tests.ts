@@ -674,14 +674,6 @@ describe("Utils Tests", function () {
         return { content: String(v), color: v };
       })
     );
-
-    const message = [{ content: "foo", link: "link" }, { content: "bar" }] as Array<{
-      content: string;
-      color?: Colors;
-      link?: string;
-    }>;
-    const result = getColorizedString(message);
-    expect(result).equals("foo(link)bar");
   });
 
   it("getVersion", async () => {

@@ -605,27 +605,19 @@ export class VsCodeUI implements UserInteraction {
 
   public async showMessage(
     level: "info" | "warn" | "error",
-    message: Array<{ content: string; color?: Colors; link?: string }>,
+    message: Array<{ content: string; color: Colors }>,
     modal: boolean,
     ...items: string[]
   ): Promise<Result<string | undefined, FxError>>;
 
   async showMessage(
     level: "info" | "warn" | "error",
-    message: string | Array<{ content: string; color?: Colors; link?: string }>,
+    message: string | Array<{ content: string; color: Colors }>,
     modal: boolean,
     ...items: string[]
   ): Promise<Result<string | undefined, FxError>> {
     if (message instanceof Array) {
-      message = message
-        .map((segment) => {
-          if (segment.link) {
-            return `[${segment.content}](${segment.link})`;
-          } else {
-            return segment.content;
-          }
-        })
-        .join("");
+      message = message.map((x) => x.content).join("");
     }
     return new Promise(async (resolve) => {
       const option = { modal: modal };

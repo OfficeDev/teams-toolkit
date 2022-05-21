@@ -1422,7 +1422,9 @@ export async function getFuncPathHandler(): Promise<string> {
     const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
     const funcStatus = await vscodeDepsChecker.getDepsStatus(DepsType.FuncCoreTools);
     if (funcStatus?.details?.binFolders !== undefined) {
-      return `${funcStatus.details.binFolders.join(path.delimiter)}${path.delimiter}`;
+      return `${path.delimiter}${funcStatus.details.binFolders.join(path.delimiter)}${
+        path.delimiter
+      }`;
     }
   } catch (error: any) {
     showError(assembleError(error));

@@ -3,7 +3,7 @@
 
 import "mocha";
 import * as chai from "chai";
-import { Inputs, SubscriptionInfo, TokenProvider } from "@microsoft/teamsfx-api";
+import { SubscriptionInfo, TokenProvider } from "@microsoft/teamsfx-api";
 import { azureWebSiteDeploy } from "../../../src/common/azure-hosting/utils";
 import { MockedAzureAccountProvider } from "../../plugins/solution/util";
 import { AzureOperations } from "../../../src/common/azure-hosting/azureOps";
@@ -16,12 +16,14 @@ chai.use(chaiAsPromised);
 
 describe("hosting util test", () => {
   describe("azureWebSiteDeploy", () => {
-    const inputs = {
-      subscriptionId: 1,
-    } as unknown as Inputs;
+    const subscriptionId = "testSubs";
+    const rgName = "testRg";
+    const siteName = "testSite";
+    const resourceId = `/subscriptions/${subscriptionId}/resourceGroups/${rgName}/providers/Microsoft.Web/sites/${siteName}`;
+
     class FakeAzureAccountProvider extends MockedAzureAccountProvider {
       async listSubscriptions(): Promise<SubscriptionInfo[]> {
-        return [{ subscriptionId: "111", subscriptionName: "sub1", tenantId: "222" }];
+        return [{ subscriptionId: subscriptionId, subscriptionName: "sub1", tenantId: "222" }];
       }
     }
     const provider = {
@@ -37,7 +39,7 @@ describe("hosting util test", () => {
       });
       sinon.stub(AzureOperations, "zipDeployPackage").resolves("url");
       sinon.stub(AzureOperations, "checkDeployStatus");
-      const res = await azureWebSiteDeploy(inputs, provider, Buffer.alloc(1, ""), "");
+      const res = await azureWebSiteDeploy(resourceId, provider, Buffer.alloc(1, ""));
       chai.assert.isTrue(!!res);
     });
 
@@ -46,7 +48,7 @@ describe("hosting util test", () => {
       sinon.stub(AzureOperations, "zipDeployPackage").resolves("url");
       sinon.stub(AzureOperations, "checkDeployStatus");
       await chai
-        .expect(azureWebSiteDeploy(inputs, provider, Buffer.alloc(1, ""), ""))
+        .expect(azureWebSiteDeploy(resourceId, provider, Buffer.alloc(1, "")))
         .to.be.rejectedWith(PreconditionError);
     });
   });

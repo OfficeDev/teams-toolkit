@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import "mocha";
 import { BicepContext, ServiceType } from "../../../src/common/azure-hosting/interfaces";
 import { ResourcePlugins } from "../../plugins/resource/util";
@@ -83,16 +86,12 @@ describe("azure app service hosting", () => {
   describe("deploy", () => {
     it("deploy success", async () => {
       const hosting = AzureHostingFactory.createHosting(ServiceType.AppService);
-      const inputs = {
-        platform: Platform.VSCode,
-      };
       const tokenProvider = {} as TokenProvider;
-
       const fake = new FakeTokenCredentials("x", "y");
       const client = new appService.WebSiteManagementClient(fake, "z");
 
       sinon.stub(lib, "azureWebSiteDeploy").resolves(client);
-      await hosting.deploy(inputs, tokenProvider, Buffer.alloc(1, ""), "siteName");
+      await hosting.deploy("", tokenProvider, Buffer.alloc(1, ""));
     });
   });
 });

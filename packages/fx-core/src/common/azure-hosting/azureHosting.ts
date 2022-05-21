@@ -1,12 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Inputs, ResourceTemplate, TokenProvider, Void } from "@microsoft/teamsfx-api";
+import { ResourceTemplate, TokenProvider, Void } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import * as fs from "fs-extra";
 import path from "path";
 import { generateBicepFromFile } from "..";
-import { ArmTemplateResult } from "../armInterface";
 import { Bicep } from "../constants";
 import { getTemplatesFolder } from "../../folder";
 import { BicepContext } from "./interfaces";
@@ -103,17 +102,11 @@ export abstract class AzureHosting {
 
   /**
    * deploy to Azure
-   * @param inputs environment for user input
+   * @param resourceId Azure resource id
    * @param tokenProvider token environment
    * @param buffer zip file stream buffer
-   * @param siteName Azure app/function site name
    */
-  async deploy(
-    inputs: Inputs,
-    tokenProvider: TokenProvider,
-    buffer: Buffer,
-    siteName: string
-  ): Promise<Void> {
+  async deploy(resourceId: string, tokenProvider: TokenProvider, buffer: Buffer): Promise<Void> {
     return Void;
   }
 }

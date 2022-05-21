@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { ArmTemplateResult } from "../armInterface";
-import { Inputs, TokenProvider } from "@microsoft/teamsfx-api";
+import { TokenProvider } from "@microsoft/teamsfx-api";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import * as appService from "@azure/arm-appservice";
 import { AzureUploadConfig } from "./interfaces";
@@ -10,6 +10,11 @@ import { Base64 } from "js-base64";
 import { AzureOperations } from "./azureOps";
 import { AzureOperationCommonConstants, AzureOpsConstant } from "./hostingConstant";
 import { PreconditionError } from "./hostingError";
+import {
+  getResourceGroupNameFromResourceId,
+  getSiteNameFromResourceId,
+  getSubscriptionIdFromResourceId,
+} from "../tools";
 
 export function mergeTemplates(templates: ArmTemplateResult[]): ArmTemplateResult {
   const existsProvision = templates.some((it) => it.Provision);
@@ -49,25 +54,26 @@ async function getAzureAccountCredential(
 }
 
 async function fetchWebSiteManagementClient(
-  tokenProvider: TokenProvider,
-  inputs: Inputs
+  subscriptionId: string,
+  tokenProvider: TokenProvider
 ): Promise<appService.WebSiteManagementClient> {
   return new appService.WebSiteManagementClient(
     await getAzureAccountCredential(tokenProvider),
-    inputs.subscriptionId
+    subscriptionId
   );
 }
 
 async function getAzureDeployConfig(
-  tokenProvider: TokenProvider,
-  inputs: Inputs,
-  siteName: string
+  subscriptionId: string,
+  rgName: string,
+  siteName: string,
+  tokenProvider: TokenProvider
 ): Promise<[AzureUploadConfig, appService.WebSiteManagementClient]> {
   // get publish credentials
-  const webSiteMgmtClient = await fetchWebSiteManagementClient(tokenProvider, inputs);
+  const webSiteMgmtClient = await fetchWebSiteManagementClient(subscriptionId, tokenProvider);
   const listResponse = await AzureOperations.listPublishingCredentials(
     webSiteMgmtClient,
-    inputs.resourceGroupName,
+    rgName,
     siteName
   );
   const publishingUserName = listResponse.publishingUserName ?? "";
@@ -89,12 +95,19 @@ async function getAzureDeployConfig(
 }
 
 export async function azureWebSiteDeploy(
-  inputs: Inputs,
+  resourceId: string,
   tokenProvider: TokenProvider,
-  buffer: Buffer,
-  siteName: string
+  buffer: Buffer
 ): Promise<appService.WebSiteManagementClient> {
-  const [config, client] = await getAzureDeployConfig(tokenProvider, inputs, siteName);
+  const subscriptionId = getSubscriptionIdFromResourceId(resourceId);
+  const rgName = getResourceGroupNameFromResourceId(resourceId);
+  const siteName = getSiteNameFromResourceId(resourceId);
+  const [config, client] = await getAzureDeployConfig(
+    subscriptionId,
+    rgName,
+    siteName,
+    tokenProvider
+  );
   const zipDeployEndpoint: string = getZipDeployEndpoint(siteName);
   const statusUrl = await AzureOperations.zipDeployPackage(zipDeployEndpoint, buffer, config);
   await AzureOperations.checkDeployStatus(statusUrl, config);

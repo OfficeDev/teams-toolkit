@@ -1,6 +1,6 @@
 // Resources for bot
 module webAppProvision '{{fx-resource-bot.Provision.webapp.path}}' = {
-  name: 'webApp.Provision'
+  name: 'webAppProvision'
   params: {
     provisionParameters: provisionParameters
     userAssignedIdentityId: {{fx-resource-identity.References.identityResourceId}}

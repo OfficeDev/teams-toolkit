@@ -58,7 +58,7 @@ resource botFunctionSettings 'Microsoft.Web/sites/config@2021-02-01' = {
     BOT_PASSWORD: botAadAppClientSecret // Secret of your bot
 {{/if}}
 {{#if (contains "fx-resource-function" plugins) }}
-    API_ENDPOINT: provisionOutputs.botFunctionOutput.value.functionEndpoint // Azure Function endpoint
+    API_ENDPOINT: provisionOutputs.functionOutput.value.functionEndpoint // Azure Function endpoint
 {{/if}}
 {{#if (contains "fx-resource-azure-sql" plugins)}}
     SQL_DATABASE_NAME: \{{fx-resource-azure-sql.References.databaseName}} // SQL database name

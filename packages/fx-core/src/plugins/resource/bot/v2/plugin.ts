@@ -147,7 +147,6 @@ export class TeamsBotV2Impl {
     const botWebAppResourceId = (envInfo as v2.EnvInfoV2).state[this.name][
       PluginBot.BOT_WEB_APP_RESOURCE_ID
     ];
-    const siteName = getSiteNameFromResourceId(botWebAppResourceId);
 
     // create config file if not exists
     await fs.ensureDir(deployDir);
@@ -178,7 +177,7 @@ export class TeamsBotV2Impl {
     // upload
     const host = AzureHostingFactory.createHosting(hostType);
     await progressBarHandler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_DEPLOY);
-    await host.deploy(inputs, tokenProvider, zipBuffer, siteName);
+    await host.deploy(botWebAppResourceId, tokenProvider, zipBuffer);
     await TeamsBotV2Impl.saveDeploymentInfo(
       configFile,
       envName,

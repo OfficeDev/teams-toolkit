@@ -1,6 +1,6 @@
 // Resources for bot
 module webAppProvision '\{{PluginIdPlaceholder.Provision.webapp.path}}' = {
-  name: 'webApp.Provision'
+  name: 'webAppProvision'
   params: {
     provisionParameters: provisionParameters
     {{#if (contains "fx-resource-identity" plugins)}}

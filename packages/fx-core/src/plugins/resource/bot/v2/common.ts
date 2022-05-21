@@ -5,7 +5,7 @@ import { Inputs } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import { AzureSolutionQuestionNames, BotScenario } from "../../../solution";
 import { QuestionNames, TemplateProjectsConstants, TemplateProjectsScenarios } from "../constants";
-import { HostTypeTriggerOptions } from "../question";
+import { AppServiceOptionItem, HostTypeTriggerOptions } from "../question";
 import { CodeTemplateInfo } from "./interface/codeTemplateInfo";
 import { getLanguage, getServiceType, getTriggerScenarios } from "./mapping";
 import { ServiceType } from "../../../../common/azure-hosting/interfaces";
@@ -42,7 +42,10 @@ export function decideTemplateScenarios(ctx: Context, inputs: Inputs): Set<strin
         templateScenarios.add(TemplateProjectsScenarios.COMMAND_AND_RESPONSE_SCENARIO_NAME);
         break;
       case BotScenario.NotificationBot:
-        const notificationTriggerType = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] as string[];
+        //! Will not scaffold any trigger when notificationTriggerType is undefined,
+        const notificationTriggerType = (inputs[
+          QuestionNames.BOT_HOST_TYPE_TRIGGER
+        ] as string[]) ?? [AppServiceOptionItem.id];
         notificationTriggerType.forEach((triggerType) => {
           getTriggerScenarios(triggerType).forEach((item) => templateScenarios.add(item));
         });

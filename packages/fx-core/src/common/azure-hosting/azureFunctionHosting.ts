@@ -3,10 +3,11 @@
 
 import { AzureHosting } from "./azureHosting";
 import { ServiceType } from "./interfaces";
-import { Inputs, TokenProvider } from "@microsoft/teamsfx-api";
+import { TokenProvider } from "@microsoft/teamsfx-api";
 import { Void } from "../../plugins";
 import { azureWebSiteDeploy } from "./utils";
 import { AzureOperations } from "./azureOps";
+import { getResourceGroupNameFromResourceId, getSiteNameFromResourceId } from "../tools";
 
 const functionResourceId = "provisionOutputs.functionOutput.value.botWebAppResourceId";
 const functionHostName = "provisionOutputs.functionOutput.value.validDomain";
@@ -23,15 +24,15 @@ export class AzureFunctionHosting extends AzureHosting {
     endpointAsParam: endpointAsParam,
   };
 
-  async deploy(
-    inputs: Inputs,
-    tokenProvider: TokenProvider,
-    buffer: Buffer,
-    siteName: string
-  ): Promise<Void> {
-    await super.deploy(inputs, tokenProvider, buffer, siteName);
-    const client = await azureWebSiteDeploy(inputs, tokenProvider, buffer, siteName);
-    await AzureOperations.restartWebApp(client, inputs.resourceGroupName, siteName);
+  async deploy(resourceId: string, tokenProvider: TokenProvider, buffer: Buffer): Promise<Void> {
+    await super.deploy(resourceId, tokenProvider, buffer);
+    const client = await azureWebSiteDeploy(resourceId, tokenProvider, buffer);
+
+    await AzureOperations.restartWebApp(
+      client,
+      getResourceGroupNameFromResourceId(resourceId),
+      getSiteNameFromResourceId(resourceId)
+    );
     return Void;
   }
 }

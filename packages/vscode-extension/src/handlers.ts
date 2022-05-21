@@ -1415,12 +1415,12 @@ export async function backendExtensionsInstallHandler(): Promise<string | undefi
 
 /**
  * Get func binary path to be referenced by task definition.
- * Usage like ${env:PATH}${command:...} so need to include delimiter as well
+ * Usage like ${command:...}${env:PATH} so need to include delimiter as well
  */
 export async function getFuncPathHandler(): Promise<string> {
   try {
     if (!vscodeHelper.isFuncCoreToolsEnabled()) {
-      return "";
+      return `${path.delimiter}`;
     }
 
     const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
@@ -1434,7 +1434,7 @@ export async function getFuncPathHandler(): Promise<string> {
     showError(assembleError(error));
   }
 
-  return "";
+  return `${path.delimiter}`;
 }
 
 /**

@@ -1110,9 +1110,9 @@ export default class Preview extends YargsCommand {
     let funcEnv = undefined;
     if (func.details.binFolders !== undefined) {
       funcEnv = {
-        PATH: `${path.delimiter}${func.details.binFolders.join(path.delimiter)}${process.env.PATH}${
-          path.delimiter
-        }`,
+        PATH: `${path.delimiter}${func.details.binFolders.join(path.delimiter)}${path.delimiter}${
+          process.env.PATH
+        }${path.delimiter}`,
       };
     }
     const backendStartTask = includeBackend

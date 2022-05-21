@@ -1419,6 +1419,10 @@ export async function backendExtensionsInstallHandler(): Promise<string | undefi
  */
 export async function getFuncPathHandler(): Promise<string> {
   try {
+    if (!vscodeHelper.isFuncCoreToolsEnabled()) {
+      return "";
+    }
+
     const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
     const funcStatus = await vscodeDepsChecker.getDepsStatus(DepsType.FuncCoreTools);
     if (funcStatus?.details?.binFolders !== undefined) {

@@ -1281,6 +1281,7 @@ export default class Preview extends YargsCommand {
     let result = true;
     let summaryMsg = doctorResult.NodeSuccess;
     let helpLink = undefined;
+    let isNode12Installed = false;
 
     try {
       nodeStatus = (
@@ -1307,6 +1308,7 @@ export default class Preview extends YargsCommand {
             .join(supportedVersions);
 
           if (nodeStatus.details.installVersion?.includes(node12Version)) {
+            isNode12Installed = true;
             const bypass =
               hasBackend || hasFuncHostedBot
                 ? doctorResult.BypassNode12AndFunction
@@ -1326,6 +1328,7 @@ export default class Preview extends YargsCommand {
     await nodeBar.end(result);
     if (!result) {
       cliLogger.necessaryLog(LogLevel.Info, doctorResult.InstallNode);
+      cliLogger.necessaryLog(LogLevel.Info, doctorResult.Node12MatchFunction);
       return err(errors.PrerequisitesValidationError("Node.js checker failed.", helpLink));
     }
 

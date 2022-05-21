@@ -1328,7 +1328,9 @@ export default class Preview extends YargsCommand {
     await nodeBar.end(result);
     if (!result) {
       cliLogger.necessaryLog(LogLevel.Info, doctorResult.InstallNode);
-      cliLogger.necessaryLog(LogLevel.Info, doctorResult.Node12MatchFunction);
+      if (isNode12Installed) {
+        cliLogger.necessaryLog(LogLevel.Info, doctorResult.Node12MatchFunction);
+      }
       return err(errors.PrerequisitesValidationError("Node.js checker failed.", helpLink));
     }
 

@@ -12,7 +12,7 @@
         private readonly ILogger<HelloWorldCommandHandler> _logger;
         private readonly string _adaptiveCardFilePath = Path.Combine(".", "Resources", "HelloWorldCard.json");
 
-        public ITriggerPattern[] TriggerPatterns => new ITriggerPattern[]
+        public IEnumerable<ITriggerPattern> TriggerPatterns => new List<ITriggerPattern>
         {
             new StringTrigger("helloworld")
         };

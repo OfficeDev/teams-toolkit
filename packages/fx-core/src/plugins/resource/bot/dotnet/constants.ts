@@ -11,4 +11,10 @@ export class PathInfo {
     "bicep"
   );
   public static readonly ProvisionModuleTemplateFileName = "botServiceProvision.template.bicep";
+  static readonly appSettingDevelopment = "appsettings.Development.json";
+}
+
+export class RegularExpr {
+  static readonly botId = /\$botId\$/g;
+  static readonly botPassword = /\$bot-password\$/g;
 }

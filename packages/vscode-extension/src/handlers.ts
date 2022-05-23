@@ -84,6 +84,7 @@ import {
 
 import AppStudioCodeSpaceTokenInstance from "./commonlib/appStudioCodeSpaceLogin";
 import AppStudioTokenInstance from "./commonlib/appStudioLogin";
+import M365TokenInstance from "./commonlib/m365Login";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { signedIn, signedOut } from "./commonlib/common/constant";
 import GraphManagerInstance from "./commonlib/graphLogin";
@@ -136,6 +137,7 @@ import TreeViewManagerInstance from "./treeview/treeViewManager";
 import { CommandsWebviewProvider } from "./treeview/webViewProvider/commandsWebviewProvider";
 import {
   anonymizeFilePaths,
+  getAppName,
   getM365TenantFromEnv,
   getProjectId,
   getProvisionSucceedFromEnv,
@@ -147,6 +149,7 @@ import {
   isSPFxProject,
   isTeamsfx,
   isTriggerFromWalkThrough,
+  openFolderInExplorer,
 } from "./utils/commonUtils";
 import { localize, parseLocale } from "./utils/localizeUtils";
 
@@ -229,6 +232,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
         graphTokenProvider: GraphManagerInstance,
         appStudioToken: appstudioLogin,
         sharepointTokenProvider: SharepointTokenInstance,
+        m365TokenProvider: M365TokenInstance,
       },
       telemetryReporter: telemetry,
       treeProvider: TreeViewManagerInstance.getTreeView("teamsfx-accounts")!,
@@ -938,6 +942,17 @@ export async function addCICDWorkflowsHandler(args?: any[]): Promise<Result<null
 export async function showOutputChannel(args?: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowOutputChannel);
   VsCodeLogInstance.outputChannel.show();
+  return ok(null);
+}
+
+export async function openFolderHandler(args?: any[]): Promise<Result<any, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenFolder, {
+    [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Notification,
+  });
+  if (args && args.length > 0 && args[0]) {
+    const uri = Uri.parse(args[0]);
+    openFolderInExplorer(uri.fsPath);
+  }
   return ok(null);
 }
 
@@ -1788,8 +1803,18 @@ async function showLocalDebugMessage() {
   };
 
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalDebugNotification);
+  const appName = getAppName() ?? "Teams App";
+  const folderLink = encodeURI(ext.workspaceUri.toString());
+  const openFolderCommand = `command:fx-extension.openFolder?%5B%22${folderLink}%22%5D`;
   vscode.window
-    .showInformationMessage(localize("teamstoolkit.handlers.localDebugDescription"), localDebug)
+    .showInformationMessage(
+      util.format(
+        localize("teamstoolkit.handlers.localDebugDescription"),
+        appName,
+        openFolderCommand
+      ),
+      localDebug
+    )
     .then((selection) => {
       if (selection?.title === localize("teamstoolkit.handlers.localDebugTitle")) {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalDebug);
@@ -1815,8 +1840,18 @@ async function showLocalPreviewMessage() {
   };
 
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalPreviewNotification);
+  const appName = getAppName() ?? "Teams App";
+  const folderLink = encodeURI(ext.workspaceUri.toString());
+  const openFolderCommand = `command:fx-extension.openFolder?%5B%22${folderLink}%22%5D`;
   vscode.window
-    .showInformationMessage(localize("teamstoolkit.handlers.localPreviewDescription"), localPreview)
+    .showInformationMessage(
+      util.format(
+        localize("teamstoolkit.handlers.localPreviewDescription"),
+        appName,
+        openFolderCommand
+      ),
+      localPreview
+    )
     .then((selection) => {
       if (selection?.title === localize("teamstoolkit.handlers.localPreviewTitle")) {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalPreview);

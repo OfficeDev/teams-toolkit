@@ -88,8 +88,8 @@ describe("Publish Teams app with Azure", () => {
     sandbox
       .stub(MockUserInteraction.prototype, "showMessage")
       .callsFake((level, message, modal, ...items) => {
-        if (items.includes(Constants.ADMIN_PORTAL)) {
-          return Promise.resolve(ok(Constants.ADMIN_PORTAL));
+        if (items.includes("Go to admin portal")) {
+          return Promise.resolve(ok("Go to admin portal"));
         }
         return Promise.resolve(ok(undefined));
       });

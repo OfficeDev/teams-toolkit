@@ -53,6 +53,7 @@ import { LocalCrypto } from "../../../src/core/crypto";
 import { aadPlugin, fehostPlugin, spfxPlugin } from "../../constants";
 import { SolutionRunningState } from "../../../src/plugins/solution/fx-solution/types";
 import { SpfxPluginV2 } from "../../../src/plugins/resource/spfx/v2";
+import { MockM365TokenProvider } from "../../core/utils";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -266,6 +267,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       appStudioToken: new MockedAppStudioTokenProvider(),
       graphTokenProvider: new MockedGraphTokenProvider(),
       sharepointTokenProvider: new MockedSharepointProvider(),
+      m365TokenProvider: new MockM365TokenProvider(),
     };
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
@@ -300,6 +302,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       appStudioToken: new MockedAppStudioTokenProvider(),
       graphTokenProvider: new MockedGraphTokenProvider(),
       sharepointTokenProvider: new MockedSharepointProvider(),
+      m365TokenProvider: new MockM365TokenProvider(),
     };
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
@@ -337,6 +340,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       appStudioToken: new MockedAppStudioTokenProvider(),
       graphTokenProvider: new MockedGraphTokenProvider(),
       sharepointTokenProvider: new MockedSharepointProvider(),
+      m365TokenProvider: new MockM365TokenProvider(),
     };
     const mockedInputs: Inputs = {
       platform: Platform.VS,
@@ -373,6 +377,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       appStudioToken: new MockedAppStudioTokenProvider(),
       graphTokenProvider: new MockedGraphTokenProvider(),
       sharepointTokenProvider: new MockedSharepointProvider(),
+      m365TokenProvider: new MockM365TokenProvider(),
     };
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
@@ -412,6 +417,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       appStudioToken: new MockedAppStudioTokenProvider(),
       graphTokenProvider: new MockedGraphTokenProvider(),
       sharepointTokenProvider: new MockedSharepointProvider(),
+      m365TokenProvider: new MockM365TokenProvider(),
     };
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
@@ -453,6 +459,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       appStudioToken: new MockedAppStudioTokenProvider(),
       graphTokenProvider: new MockedGraphTokenProvider(),
       sharepointTokenProvider: new MockedSharepointProvider(),
+      m365TokenProvider: new MockM365TokenProvider(),
     };
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
@@ -498,6 +505,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       appStudioToken: new MockedAppStudioTokenProvider(),
       graphTokenProvider: new MockedGraphTokenProvider(),
       sharepointTokenProvider: new MockedSharepointProvider(),
+      m365TokenProvider: new MockM365TokenProvider(),
     };
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,

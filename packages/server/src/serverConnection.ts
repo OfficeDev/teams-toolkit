@@ -111,11 +111,20 @@ export default class ServerConnection implements IServerConnection {
   public async buildArtifactsRequest(
     inputs: Inputs,
     token: CancellationToken
-  ): Promise<Result<Void, FxError>> {
+  ): Promise<Result<any, FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const func: Func = {
+      namespace: "fx-solution-azure",
+      method: "buildPackage",
+      params: {
+        type: inputs.env == environmentManager.getLocalEnvName() ? "localDebug" : "remote",
+        env: inputs.env,
+      },
+    };
     const res = await Correlator.runWithId(
       corrId,
-      (params) => this.core.buildArtifacts(params),
+      (func, inputs) => this.core.executeUserTask(func, inputs),
+      func,
       inputs
     );
     return standardizeResult(res);

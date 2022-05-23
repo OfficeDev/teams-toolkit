@@ -67,7 +67,7 @@ import "../../../src/plugins/resource/bot/v2";
 import { newEnvInfo } from "../../../src";
 import fs from "fs-extra";
 import { ProgrammingLanguage } from "../../../src/plugins/resource/bot/enums/programmingLanguage";
-import { MockGraphTokenProvider, randomAppName } from "../../core/utils";
+import { MockGraphTokenProvider, MockM365TokenProvider, randomAppName } from "../../core/utils";
 import { createEnv } from "../../../src/plugins/solution/fx-solution/v2/createEnv";
 import { ScaffoldingContextAdapter } from "../../../src/plugins/solution/fx-solution/v2/adaptor";
 import { LocalCrypto } from "../../../src/core/crypto";
@@ -102,6 +102,7 @@ const mockedProvider: TokenProvider = {
   azureAccountProvider: new MockedAzureAccountProvider(),
   graphTokenProvider: new MockGraphTokenProvider(),
   sharepointTokenProvider: new MockedSharepointProvider(),
+  m365TokenProvider: new MockM365TokenProvider(),
 };
 function mockSolutionContextWithPlatform(platform?: Platform): SolutionContext {
   const config: SolutionConfig = new Map();

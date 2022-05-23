@@ -6,7 +6,7 @@ param provisionOutputs object
 @secure()
 param currentAppSettings object
 
-var functionName = split(provisionOutputs.functionOutput.value.resourceId, '/')[8]
+var functionName = split(provisionOutputs.botFunctionOutput.value.botWebAppResourceId, '/')[8]
 
 {{#if (contains "fx-resource-aad-app-for-teams" plugins)}}
 var m365ClientId = provisionParameters['m365ClientId']
@@ -45,7 +45,7 @@ resource botFunctionSettings 'Microsoft.Web/sites/config@2021-02-01' = {
     TeamsFx__Authentication__OAuthAuthority: m365OauthAuthorityHost
   {{/if}}
   {{#if (contains "node" configs)}}
-    INITIATE_LOGIN_ENDPOINT: uri(provisionOutputs.functionOutput.value.siteEndpoint, 'auth-start.html') // The page is used to let users consent required OAuth permissions during bot SSO process
+    INITIATE_LOGIN_ENDPOINT: uri(provisionOutputs.botFunctionOutput.value.siteEndpoint, 'auth-start.html') // The page is used to let users consent required OAuth permissions during bot SSO process
     M365_AUTHORITY_HOST: m365OauthAuthorityHost // AAD authority host
     M365_CLIENT_ID: m365ClientId // Client id of AAD application
     M365_CLIENT_SECRET: m365ClientSecret // Client secret of AAD application

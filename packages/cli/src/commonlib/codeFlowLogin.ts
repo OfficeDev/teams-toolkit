@@ -7,7 +7,16 @@ import * as http from "http";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { Mutex } from "async-mutex";
-import { UserError, LogLevel, Colors, SystemError } from "@microsoft/teamsfx-api";
+import {
+  UserError,
+  LogLevel,
+  Colors,
+  SystemError,
+  Result,
+  FxError,
+  ok,
+  err,
+} from "@microsoft/teamsfx-api";
 
 import CliCodeLogInstance from "./log";
 import * as crypto from "crypto";
@@ -31,7 +40,7 @@ import {
 } from "../telemetry/cliTelemetryEvents";
 import { getColorizedString } from "../utils";
 
-class ErrorMessage {
+export class ErrorMessage {
   static readonly loginFailureTitle = "LoginFail";
   static readonly loginFailureDescription =
     "Cannot retrieve user login information. Login with another account.";
@@ -43,6 +52,12 @@ class ErrorMessage {
   static readonly loginPortConflictTitle = "LoginPortConflict";
   static readonly loginPortConflictDescription = "Timeout waiting for port. Try again.";
   static readonly loginComponent = "login";
+  static readonly checkOnlineFailTitle = "CheckOnlineFail";
+  static readonly checkOnlineFailDetail =
+    "You appear to be offline. Please check your network connection.";
+  static readonly loginUsernamePasswordFailTitle = "UsernamePasswordLoginFail";
+  static readonly loginUsernamePasswordFailDetail =
+    "Fail to login via username and password. Please check your username or password";
 }
 
 interface Deferred<T> {
@@ -51,13 +66,16 @@ interface Deferred<T> {
 }
 
 export class CodeFlowLogin {
-  pca: PublicClientApplication | undefined;
+  pca: PublicClientApplication;
   account: AccountInfo | undefined;
-  scopes: string[] | undefined;
-  config: Configuration | undefined;
-  port: number | undefined;
-  mutex: Mutex | undefined;
-  msalTokenCache: TokenCache | undefined;
+  /**
+   * @deprecated will be removed after unify m365 login
+   */
+  scopes: string[];
+  config: Configuration;
+  port: number;
+  mutex: Mutex;
+  msalTokenCache: TokenCache;
   accountName: string;
   socketMap: Map<number, any>;
 
@@ -66,7 +84,7 @@ export class CodeFlowLogin {
     this.config = config;
     this.port = port;
     this.mutex = new Mutex();
-    this.pca = new PublicClientApplication(this.config!);
+    this.pca = new PublicClientApplication(this.config);
     this.msalTokenCache = this.pca.getTokenCache();
     this.accountName = accountName;
     this.socketMap = new Map();
@@ -75,7 +93,7 @@ export class CodeFlowLogin {
   async reloadCache() {
     const accountCache = await loadAccountId(this.accountName);
     if (accountCache) {
-      const dataCache = await this.msalTokenCache!.getAccountByHomeId(accountCache);
+      const dataCache = await this.msalTokenCache.getAccountByHomeId(accountCache);
       if (dataCache) {
         this.account = dataCache;
       }
@@ -84,7 +102,7 @@ export class CodeFlowLogin {
     }
   }
 
-  async login(): Promise<string> {
+  async login(scopes: Array<string>): Promise<string> {
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLoginStart, {
       [TelemetryProperty.AccountType]: this.accountName,
     });
@@ -114,7 +132,7 @@ export class CodeFlowLogin {
     });
 
     const authCodeUrlParameters = {
-      scopes: this.scopes!,
+      scopes: scopes,
       codeChallenge: codeChallenge,
       codeChallengeMethod: "S256",
       redirectUri: `http://localhost:${serverPort}`,
@@ -129,12 +147,13 @@ export class CodeFlowLogin {
     app.get("/", (req: express.Request, res: express.Response) => {
       const tokenRequest = {
         code: req.query.code as string,
-        scopes: this.scopes!,
+        scopes: scopes,
         redirectUri: `http://localhost:${serverPort}`,
         codeVerifier: codeVerifier,
       };
 
-      this.pca!.acquireTokenByCode(tokenRequest)
+      this.pca
+        .acquireTokenByCode(tokenRequest)
         .then(async (response) => {
           if (response) {
             if (response.account) {
@@ -146,7 +165,7 @@ export class CodeFlowLogin {
                 res,
                 path.join(__dirname, "./codeFlowResult/index.html"),
                 "text/html; charset=utf-8",
-                this.accountName!
+                this.accountName
               );
               this.destroySockets();
               deferredRedirect.resolve(response.accessToken);
@@ -179,8 +198,8 @@ export class CodeFlowLogin {
 
     let accessToken = undefined;
     try {
-      await this.startServer(server, serverPort!);
-      this.pca!.getAuthCodeUrl(authCodeUrlParameters).then(async (url: string) => {
+      await this.startServer(server, serverPort);
+      this.pca.getAuthCodeUrl(authCodeUrlParameters).then(async (url: string) => {
         url += "#";
         if (this.accountName == "azure") {
           const message = [
@@ -236,7 +255,7 @@ export class CodeFlowLogin {
   async logout(): Promise<boolean> {
     const accountCache = await loadAccountId(this.accountName);
     if (accountCache) {
-      const dataCache = await this.msalTokenCache!.getAccountByHomeId(accountCache);
+      const dataCache = await this.msalTokenCache.getAccountByHomeId(accountCache);
       if (dataCache) {
         this.msalTokenCache?.removeAccount(dataCache);
       }
@@ -246,20 +265,24 @@ export class CodeFlowLogin {
     return true;
   }
 
+  /**
+   * @deprecated will be removed after unify m365 login
+   */
   async getToken(refresh = true): Promise<string | undefined> {
     try {
       if (!this.account) {
         await this.reloadCache();
       }
       if (!this.account) {
-        const accessToken = await this.login();
+        const accessToken = await this.login(this.scopes);
         return accessToken;
       } else {
-        return this.pca!.acquireTokenSilent({
-          account: this.account,
-          scopes: this.scopes!,
-          forceRefresh: false,
-        })
+        return this.pca
+          .acquireTokenSilent({
+            account: this.account,
+            scopes: this.scopes,
+            forceRefresh: false,
+          })
           .then((response) => {
             if (response) {
               return response.accessToken;
@@ -278,7 +301,7 @@ export class CodeFlowLogin {
             await this.logout();
             (this.msalTokenCache as any).storage.setCache({});
             if (refresh) {
-              const accessToken = await this.login();
+              const accessToken = await this.login(this.scopes);
               return accessToken;
             } else {
               return undefined;
@@ -298,18 +321,57 @@ export class CodeFlowLogin {
     }
   }
 
+  async getTokenByScopes(scopes: Array<string>, refresh = true): Promise<Result<string, FxError>> {
+    if (!this.account) {
+      await this.reloadCache();
+    }
+    if (!this.account) {
+      const accessToken = await this.login(scopes);
+      return ok(accessToken);
+    } else {
+      try {
+        const res = await this.pca.acquireTokenSilent({
+          account: this.account,
+          scopes: scopes,
+          forceRefresh: false,
+        });
+        if (res) {
+          return ok(res.accessToken);
+        } else {
+          return err(LoginCodeFlowError(new Error("No token response")));
+        }
+      } catch (error) {
+        CliCodeLogInstance.necessaryLog(
+          LogLevel.Error,
+          "[Login] silent acquire token : " + error.message
+        );
+        if (!(await checkIsOnline())) {
+          return err(CheckOnlineError());
+        }
+        await this.logout();
+        (this.msalTokenCache as any).storage.setCache({});
+        if (refresh) {
+          const accessToken = await this.login(scopes);
+          return ok(accessToken);
+        }
+        return err(LoginCodeFlowError(error));
+      }
+    }
+  }
+
   async getTenantToken(tenantId: string): Promise<string | undefined> {
     try {
       if (!this.account) {
         await this.reloadCache();
       }
       if (this.account) {
-        return this.pca!.acquireTokenSilent({
-          authority: env.activeDirectoryEndpointUrl + tenantId,
-          account: this.account,
-          scopes: this.scopes!,
-          forceRefresh: true,
-        })
+        return this.pca
+          .acquireTokenSilent({
+            authority: env.activeDirectoryEndpointUrl + tenantId,
+            account: this.account,
+            scopes: this.scopes,
+            forceRefresh: true,
+          })
           .then((response) => {
             if (response) {
               return response.accessToken;
@@ -332,9 +394,9 @@ export class CodeFlowLogin {
               for (let i = 0; i < accountList!.length; ++i) {
                 this.msalTokenCache?.removeAccount(accountList![i]);
               }
-              this.config!.auth.authority = env.activeDirectoryEndpointUrl + tenantId;
-              this.pca = new PublicClientApplication(this.config!);
-              const accessToken = await this.login();
+              this.config.auth.authority = env.activeDirectoryEndpointUrl + tenantId;
+              this.pca = new PublicClientApplication(this.config);
+              const accessToken = await this.login(this.scopes);
               return accessToken;
             }
           });
@@ -435,8 +497,16 @@ export function LoginCodeFlowError(innerError?: any): UserError {
   });
 }
 
+export function CheckOnlineError(): UserError {
+  return new UserError({
+    name: ErrorMessage.checkOnlineFailTitle,
+    message: ErrorMessage.checkOnlineFailDetail,
+    source: ErrorMessage.loginComponent,
+  });
+}
+
 export function ConvertTokenToJson(token: string): any {
-  const array = token!.split(".");
+  const array = token.split(".");
   const buff = Buffer.from(array[1], "base64");
   return JSON.parse(buff.toString(UTF8));
 }

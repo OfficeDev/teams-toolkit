@@ -19,7 +19,7 @@ import {
   MockedSharepointProvider,
   MockedV2Context,
 } from "../../solution/util";
-import { randomAppName } from "../../../core/utils";
+import { MockM365TokenProvider, randomAppName } from "../../../core/utils";
 describe("APIM V3 API", () => {
   it("getQuestionsForDeploy", async () => {
     const projectSettings: ProjectSettings = {
@@ -44,6 +44,7 @@ describe("APIM V3 API", () => {
       appStudioToken: new MockedAppStudioTokenProvider(),
       graphTokenProvider: new MockedGraphTokenProvider(),
       sharepointTokenProvider: new MockedSharepointProvider(),
+      m365TokenProvider: new MockM365TokenProvider(),
     };
     const envInfoV3: v2.DeepReadonly<v3.EnvInfoV3> = {
       envName: "dev",

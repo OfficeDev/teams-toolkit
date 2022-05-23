@@ -43,11 +43,12 @@ import {
   scaffoldSourceCodeAdapter,
   updateResourceTemplateAdapter,
 } from "../../utils4v2";
+import { PluginBot } from "../resources/strings";
 import { TeamsBotV2Impl } from "./plugin";
 
 @Service(ResourcePluginsV2.BotPlugin)
 export class BotPluginV2 implements ResourcePlugin {
-  name = "fx-resource-bot";
+  name = PluginBot.PLUGIN_NAME;
   displayName = "Bot";
   @Inject(ResourcePlugins.BotPlugin)
   plugin!: TeamsBot;
@@ -66,24 +67,21 @@ export class BotPluginV2 implements ResourcePlugin {
   }
 
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
-    // return catchAndThrow(() => this.impl.scaffoldSourceCode(ctx, inputs));
-    return await scaffoldSourceCodeAdapter(ctx, inputs, this.plugin);
+    return catchAndThrow(() => this.impl.scaffoldSourceCode(ctx, inputs));
   }
 
   async generateResourceTemplate(
     ctx: Context,
     inputs: Inputs
   ): Promise<Result<ResourceTemplate, FxError>> {
-    // return catchAndThrow(() => this.impl.generateResourceTemplate(ctx, inputs));
-    return await generateResourceTemplateAdapter(ctx, inputs, this.plugin);
+    return catchAndThrow(() => this.impl.generateResourceTemplate(ctx, inputs));
   }
 
   async updateResourceTemplate(
     ctx: Context,
     inputs: Inputs
   ): Promise<Result<v2.ResourceTemplate, FxError>> {
-    // return catchAndThrow(() => this.impl.updateResourceTemplate(ctx, inputs));
-    return await updateResourceTemplateAdapter(ctx, inputs, this.plugin);
+    return catchAndThrow(() => this.impl.updateResourceTemplate(ctx, inputs));
   }
 
   async provisionResource(
@@ -143,7 +141,7 @@ export class BotPluginV2 implements ResourcePlugin {
     envInfo: DeepReadonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
-    return await deployAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
+    return this.impl.deploy(ctx, inputs, envInfo, tokenProvider);
   }
 
   async getQuestionsForUserTask(

@@ -3,17 +3,16 @@
 
 import { Inputs } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
-import { ServiceType } from "../../../../common/azure-hosting/interfaces";
 import { AzureSolutionQuestionNames, BotScenario } from "../../../solution";
 import { QuestionNames, TemplateProjectsConstants, TemplateProjectsScenarios } from "../constants";
-import { HostTypeTriggerOptions } from "../question";
-//todo: refactor HostTypes to be enum
-import { HostType, HostTypes, PluginBot } from "../resources/strings";
+import { AppServiceOptionItem, HostTypeTriggerOptions } from "../question";
 import { CodeTemplateInfo } from "./interface/codeTemplateInfo";
 import { getLanguage, getServiceType, getTriggerScenarios } from "./mapping";
+import { ServiceType } from "../../../../common/azure-hosting/interfaces";
+import { PluginBot, HostType, HostTypes } from "../resources/strings";
 
 export function getTemplateInfos(ctx: Context, inputs: Inputs): CodeTemplateInfo[] {
-  const lang = getLanguage(ctx.projectSetting.programmingLanguage!);
+  const lang = getLanguage(ctx.projectSetting.programmingLanguage);
   const scenarios = Array.from(decideTemplateScenarios(ctx, inputs));
   return scenarios.map((scenario) => {
     return {
@@ -33,7 +32,7 @@ export function decideTemplateScenarios(ctx: Context, inputs: Inputs): Set<strin
     return templateScenarios;
   }
   const botScenarios = inputs?.[AzureSolutionQuestionNames.Scenarios];
-  if (!botScenarios) {
+  if (!botScenarios || (Array.isArray(botScenarios) && botScenarios.length === 0)) {
     templateScenarios.add(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
     return templateScenarios;
   }
@@ -43,7 +42,10 @@ export function decideTemplateScenarios(ctx: Context, inputs: Inputs): Set<strin
         templateScenarios.add(TemplateProjectsScenarios.COMMAND_AND_RESPONSE_SCENARIO_NAME);
         break;
       case BotScenario.NotificationBot:
-        const notificationTriggerType = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] as string[];
+        //! Will not scaffold any trigger when notificationTriggerType is undefined,
+        const notificationTriggerType = (inputs[
+          QuestionNames.BOT_HOST_TYPE_TRIGGER
+        ] as string[]) ?? [AppServiceOptionItem.id];
         notificationTriggerType.forEach((triggerType) => {
           getTriggerScenarios(triggerType).forEach((item) => templateScenarios.add(item));
         });

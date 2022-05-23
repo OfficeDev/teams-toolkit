@@ -60,7 +60,6 @@ import { AppStudio } from "../appStudio/appStudio";
 import { DeployMgr } from "../deployMgr";
 import * as utils from "../utils/common";
 import * as appService from "@azure/arm-appservice";
-import { AzureOperations } from "../azureOps";
 import { getZipDeployEndpoint } from "../utils/zipDeploy";
 import {
   ScaffoldAction,
@@ -77,6 +76,8 @@ import {
   UnzipError,
 } from "./error";
 import { ensureSolutionSettings } from "../../../solution/fx-solution/utils/solutionSettingsHelper";
+import { AzureOperations } from "../../../../common/azure-hosting/azureOps";
+import { AzureUploadConfig } from "../../../../common/azure-hosting/interfaces";
 
 @Service(BuiltInFeaturePluginNames.bot)
 export class NodeJSBotPluginV3 implements v3.PluginV3 {
@@ -499,18 +500,14 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
       await this.getAzureAccountCredential(tokenProvider.azureAccountProvider),
       subscriptionId!
     );
-    const listResponse = await AzureOperations.ListPublishingCredentials(
+    const listResponse = await AzureOperations.listPublishingCredentials(
       webSiteMgmtClient,
       resourceGroup!,
       siteName!
     );
 
-    const publishingUserName = listResponse.publishingUserName
-      ? listResponse.publishingUserName
-      : "";
-    const publishingPassword = listResponse.publishingPassword
-      ? listResponse.publishingPassword
-      : "";
+    const publishingUserName = listResponse.publishingUserName ?? "";
+    const publishingPassword = listResponse.publishingPassword ?? "";
     const encryptedCreds: string = utils.toBase64(`${publishingUserName}:${publishingPassword}`);
 
     const config = {
@@ -519,12 +516,12 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
       },
       maxContentLength: Infinity,
       maxBodyLength: Infinity,
-    };
+    } as AzureUploadConfig;
 
     const zipDeployEndpoint: string = getZipDeployEndpoint(botConfig.siteName);
     await handler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_DEPLOY);
-    const statusUrl = await AzureOperations.ZipDeployPackage(zipDeployEndpoint, zipBuffer, config);
-    await AzureOperations.CheckDeployStatus(statusUrl, config);
+    const statusUrl = await AzureOperations.zipDeployPackage(zipDeployEndpoint, zipBuffer, config);
+    await AzureOperations.checkDeployStatus(statusUrl, config);
 
     await deployMgr.updateLastDeployTime(deployTimeCandidate);
 

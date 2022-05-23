@@ -1,20 +1,21 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as vscode from "vscode";
-import * as os from "os";
-import * as extensionPackage from "./../../package.json";
+import { exec, execSync } from "child_process";
 import * as fs from "fs-extra";
-import { ext } from "../extensionVariables";
+import * as os from "os";
 import * as path from "path";
+import { format } from "util";
+import * as vscode from "vscode";
+
 import {
   ConfigFolderName,
-  InputConfigsFolderName,
-  ProjectSettingsFileName,
-  EnvStateFileNameTemplate,
-  StatesFolderName,
   EnvNamePlaceholder,
+  EnvStateFileNameTemplate,
+  InputConfigsFolderName,
   Json,
+  ProjectSettingsFileName,
+  StatesFolderName,
   SubscriptionInfo,
 } from "@microsoft/teamsfx-api";
 import {
@@ -24,7 +25,8 @@ import {
   isValidProject,
   PluginNames,
 } from "@microsoft/teamsfx-core";
-import { workspace, WorkspaceConfiguration } from "vscode";
+
+import * as extensionPackage from "../../package.json";
 import * as commonUtils from "../debug/commonUtils";
 import {
   ConfigurationKey,
@@ -32,9 +34,9 @@ import {
   TeamsfxTunnelingServices,
   UserState,
 } from "../constants";
-import { execSync } from "child_process";
+import { ext } from "../extensionVariables";
+import { TelemetryProperty, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
 import * as versionUtil from "./versionUtil";
-import { TelemetryTriggerFrom, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {
@@ -124,6 +126,26 @@ export function getProjectId(): string | undefined {
   } catch (e) {
     return undefined;
   }
+}
+
+export function getAppName(): string | undefined {
+  const ws = ext.workspaceUri.fsPath;
+  const settingsJsonPathNew = path.join(
+    ws,
+    `.${ConfigFolderName}`,
+    InputConfigsFolderName,
+    ProjectSettingsFileName
+  );
+  try {
+    const settingsJson = JSON.parse(fs.readFileSync(settingsJsonPathNew, "utf8"));
+    return settingsJson.appName;
+  } catch (e) {}
+  return undefined;
+}
+
+export function openFolderInExplorer(folderPath: string): void {
+  const command = format('start "" %s', folderPath);
+  exec(command);
 }
 
 export async function isExistingTabApp(workspacePath: string): Promise<boolean> {
@@ -232,8 +254,8 @@ export function anonymizeFilePaths(stack?: string): string {
 }
 
 export async function isTeamsfx(): Promise<boolean> {
-  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
-    const workspaceFolder = workspace.workspaceFolders[0];
+  if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
+    const workspaceFolder = vscode.workspace.workspaceFolders[0];
 
     return await commonUtils.isFxProject(workspaceFolder.uri.fsPath);
   }
@@ -242,7 +264,8 @@ export async function isTeamsfx(): Promise<boolean> {
 }
 
 export function getConfiguration(key: string): boolean {
-  const configuration: WorkspaceConfiguration = workspace.getConfiguration(CONFIGURATION_PREFIX);
+  const configuration: vscode.WorkspaceConfiguration =
+    vscode.workspace.getConfiguration(CONFIGURATION_PREFIX);
 
   return configuration.get<boolean>(key, false);
 }
@@ -259,7 +282,8 @@ export function syncFeatureFlags() {
     ConfigurationKey.generatorEnvCheckerEnable
   ).toString();
 
-  const configuration: WorkspaceConfiguration = workspace.getConfiguration(CONFIGURATION_PREFIX);
+  const configuration: vscode.WorkspaceConfiguration =
+    vscode.workspace.getConfiguration(CONFIGURATION_PREFIX);
   const tunneling = configuration.get<TeamsfxTunnelingServices>(ConfigurationKey.Tunneling);
   if (tunneling === TeamsfxTunnelingServices.MicrosoftTunneling) {
     process.env["TEAMSFX_MICROSOFT_TUNNELING"] = "true";

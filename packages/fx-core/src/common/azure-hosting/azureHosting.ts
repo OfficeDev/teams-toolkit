@@ -1,12 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Inputs, ResourceTemplate, Void } from "@microsoft/teamsfx-api";
+import { ResourceTemplate, TokenProvider, Void } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import * as fs from "fs-extra";
 import path from "path";
 import { generateBicepFromFile } from "..";
-import { ArmTemplateResult } from "../armInterface";
 import { Bicep } from "../constants";
 import { getTemplatesFolder } from "../../folder";
 import { BicepContext } from "./interfaces";
@@ -17,7 +16,7 @@ export abstract class AzureHosting {
 
   reference: any = undefined;
 
-  private getBicepTemplateFolder(): string {
+  protected getBicepTemplateFolder(): string {
     return path.join(
       getTemplatesFolder(),
       "plugins",
@@ -44,8 +43,7 @@ export abstract class AzureHosting {
           path.join(bicepTemplateDir, filename),
           bicepContext
         );
-        // TODO: leverage HandleBars to replace plugin id
-        return module.replace(/PluginIdPlaceholder/g, pluginId);
+        return AzureHosting.replacePluginId(module, pluginId);
       })
     );
 
@@ -72,13 +70,43 @@ export abstract class AzureHosting {
     } as ResourceTemplate;
   }
 
+  static replacePluginId(module: string, pluginId: string): string {
+    // TODO: leverage HandleBars to replace plugin id
+    return module.replace(/PluginIdPlaceholder/g, pluginId);
+  }
+
   async updateBicep(bicepContext: BicepContext, pluginId: string): Promise<ResourceTemplate> {
-    return {} as ArmTemplateResult;
+    // * The order matters.
+    // * 0: Configuration Orchestration, 1: Configuration Module
+    if (!this.configurable) {
+      return {} as ResourceTemplate;
+    }
+    const bicepFile = `${this.hostType}Configuration.template.bicep`;
+
+    const bicepTemplateDir = this.getBicepTemplateFolder();
+    let module = await generateBicepFromFile(path.join(bicepTemplateDir, bicepFile), bicepContext);
+    module = AzureHosting.replacePluginId(module, pluginId);
+
+    return {
+      Configuration: this.configurable
+        ? {
+            Modules: { [this.hostType]: module },
+          }
+        : undefined,
+      Reference: this.reference,
+    } as ResourceTemplate;
   }
   async configure(ctx: Context): Promise<Void> {
     return Void;
   }
-  async deploy(ctx: Context, inputs: Inputs): Promise<Void> {
+
+  /**
+   * deploy to Azure
+   * @param resourceId Azure resource id
+   * @param tokenProvider token environment
+   * @param buffer zip file stream buffer
+   */
+  async deploy(resourceId: string, tokenProvider: TokenProvider, buffer: Buffer): Promise<Void> {
     return Void;
   }
 }

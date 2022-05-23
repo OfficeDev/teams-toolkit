@@ -26,6 +26,7 @@ import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenProvider from "./commonlib/appStudioLogin";
 import GraphTokenProvider from "./commonlib/graphLogin";
 import SharepointTokenProvider from "./commonlib/sharepointLogin";
+import M365TokenProvider from "./commonlib/m365Login";
 import CLILogProvider from "./commonlib/log";
 import CLIUIInstance from "./userInteraction";
 import { flattenNodes, getSingleOptionString, toYargsOptions } from "./utils";
@@ -71,6 +72,7 @@ export class HelpParamGenerator {
         graphTokenProvider: GraphTokenProvider,
         appStudioToken: AppStudioTokenProvider,
         sharepointTokenProvider: SharepointTokenProvider,
+        m365TokenProvider: M365TokenProvider,
       },
       telemetryReporter: undefined,
       ui: CLIUIInstance,

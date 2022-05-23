@@ -19,6 +19,8 @@ import {
   Func,
   Void,
 } from "@microsoft/teamsfx-api";
+import * as path from "path";
+import { pathToFileURL } from "url";
 import { AppStudioPluginImpl } from "./plugin";
 import { Constants } from "./constants";
 import { AppStudioError } from "./errors";
@@ -35,6 +37,7 @@ import { IUserList } from "./interfaces/IAppDefinition";
 import { getManifestTemplatePath } from "./manifestTemplate";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { isDeployManifestEnabled } from "../../../common";
+import { VSCodeExtensionCommand } from "../../../common/constants";
 
 @Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {
@@ -228,13 +231,23 @@ export class AppStudioPlugin implements Plugin {
     TelemetryUtils.sendStartEvent(TelemetryEventName.buildTeamsPackage);
     try {
       const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, isLocalDebug);
-      const builtSuccess = [
-        { content: "(√)Done: ", color: Colors.BRIGHT_GREEN },
-        { content: "Teams Package ", color: Colors.BRIGHT_WHITE },
-        { content: appPackagePath, color: Colors.BRIGHT_MAGENTA },
-        { content: " built successfully!", color: Colors.BRIGHT_WHITE },
-      ];
-      ctx.ui?.showMessage("info", builtSuccess, false);
+      if (ctx.answers?.platform === Platform.CLI) {
+        const builtSuccess = [
+          { content: "(√)Done: ", color: Colors.BRIGHT_GREEN },
+          { content: "Teams Package ", color: Colors.BRIGHT_WHITE },
+          { content: appPackagePath, color: Colors.BRIGHT_MAGENTA },
+          { content: " built successfully!", color: Colors.BRIGHT_WHITE },
+        ];
+        ctx.ui?.showMessage("info", builtSuccess, false);
+      } else {
+        const folderLink = pathToFileURL(path.dirname(appPackagePath));
+        const appPackageLink = `${VSCodeExtensionCommand.openFolder}?%5B%22${folderLink}%22%5D`;
+        const builtSuccess = getLocalizedString(
+          "plugins.appstudio.buildSucceedNotice",
+          appPackageLink
+        );
+        ctx.ui?.showMessage("info", builtSuccess, false);
+      }
       TelemetryUtils.sendSuccessEvent(
         TelemetryEventName.buildTeamsPackage,
         this.appStudioPluginImpl.commonProperties
@@ -363,28 +376,26 @@ export class AppStudioPlugin implements Plugin {
     try {
       const result = await this.appStudioPluginImpl.publish(ctx);
       ctx.logProvider?.info(`Publish success!`);
-      const msg = getLocalizedString(
-        "plugins.appstudio.publishSucceedNotice",
-        result.name,
-        Constants.TEAMS_ADMIN_PORTAL
-      );
       if (ctx.answers?.platform === Platform.CLI) {
-        ctx.ui?.showMessage(
-          "info",
-          msg.replace("[", "").replace("]", "") +
-            ` Learn more from ${Constants.TEAMS_MANAGE_APP_DOC}.`,
-          false
+        const msg = getLocalizedString(
+          "plugins.appstudio.publishSucceedNotice.cli",
+          result.name,
+          Constants.TEAMS_ADMIN_PORTAL,
+          Constants.TEAMS_MANAGE_APP_DOC
         );
+        ctx.ui?.showMessage("info", msg, false);
       } else {
-        ctx.ui
-          ?.showMessage("info", msg, false, Constants.LEARN_MORE, Constants.ADMIN_PORTAL)
-          .then((value) => {
-            if (value.isOk() && value.value === Constants.LEARN_MORE) {
-              ctx.ui?.openUrl(Constants.TEAMS_MANAGE_APP_DOC);
-            } else if (value.isOk() && value.value === Constants.ADMIN_PORTAL) {
-              ctx.ui?.openUrl(Constants.TEAMS_ADMIN_PORTAL);
-            }
-          });
+        const msg = getLocalizedString(
+          "plugins.appstudio.publishSucceedNotice",
+          result.name,
+          Constants.TEAMS_MANAGE_APP_DOC
+        );
+        const adminPortal = getLocalizedString("plugins.appstudio.adminPortal");
+        ctx.ui?.showMessage("info", msg, false, adminPortal).then((value) => {
+          if (value.isOk() && value.value === adminPortal) {
+            ctx.ui?.openUrl(Constants.TEAMS_ADMIN_PORTAL);
+          }
+        });
       }
       const properties: { [key: string]: string } = this.appStudioPluginImpl.commonProperties;
       properties[TelemetryPropertyKey.updateExistingApp] = String(result.update);

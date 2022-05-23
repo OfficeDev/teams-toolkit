@@ -3,11 +3,16 @@
 
 import { AzureHosting } from "./azureHosting";
 import { ServiceType } from "./interfaces";
+import { TokenProvider } from "@microsoft/teamsfx-api";
+import { Void } from "../../plugins";
+import { azureWebSiteDeploy } from "./utils";
+import { AzureOperations } from "./azureOps";
+import { getResourceGroupNameFromResourceId, getSiteNameFromResourceId } from "../tools";
 
-const functionResourceId = "provisionOutputs.functionOutput.value.resourceId";
+const functionResourceId = "provisionOutputs.functionOutput.value.botWebAppResourceId";
 const functionHostName = "provisionOutputs.functionOutput.value.validDomain";
 const functionEndpoint = "provisionOutputs.functionOutputs.value.functionEndpoint";
-const endpointAsParam = "functionProvision.outputs.functionEndpoint";
+const endpointAsParam = "botFunctionProvision.outputs.functionEndpoint";
 
 export class AzureFunctionHosting extends AzureHosting {
   configurable = true;
@@ -18,4 +23,16 @@ export class AzureFunctionHosting extends AzureHosting {
     functionEndpoint: functionEndpoint,
     endpointAsParam: endpointAsParam,
   };
+
+  async deploy(resourceId: string, tokenProvider: TokenProvider, buffer: Buffer): Promise<Void> {
+    await super.deploy(resourceId, tokenProvider, buffer);
+    const client = await azureWebSiteDeploy(resourceId, tokenProvider, buffer);
+
+    await AzureOperations.restartWebApp(
+      client,
+      getResourceGroupNameFromResourceId(resourceId),
+      getSiteNameFromResourceId(resourceId)
+    );
+    return Void;
+  }
 }

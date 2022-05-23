@@ -662,9 +662,19 @@ export class AppStudioPluginImpl {
     const appDirectory = await getAppDirectory(ctx.root);
     let zipFileName: string;
     if (isLocalDebug) {
-      zipFileName = `${ctx.root}/${BuildFolderName}/${AppPackageFolderName}/appPackage.local.zip`;
+      zipFileName = path.join(
+        ctx.root,
+        BuildFolderName,
+        AppPackageFolderName,
+        "appPackage.local.zip"
+      );
     } else {
-      zipFileName = `${ctx.root}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${ctx.envInfo.envName}.zip`;
+      zipFileName = path.join(
+        ctx.root,
+        BuildFolderName,
+        AppPackageFolderName,
+        `appPackage.${ctx.envInfo.envName}.zip`
+      );
     }
 
     if (isSPFxProject(ctx.projectSettings)) {

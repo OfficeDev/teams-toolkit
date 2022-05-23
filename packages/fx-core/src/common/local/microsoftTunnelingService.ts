@@ -6,7 +6,10 @@ import { TunnelRelayTunnelHost } from "@vs/tunnels-connections";
 import { Tunnel } from "@vs/tunnels-contracts";
 import { TunnelManagementHttpClient, TunnelRequestOptions } from "@vs/tunnels-management";
 import { TraceLevel } from "@vs/vs-ssh";
-import { runWithMicrosoftTunnelingServiceErrorHandling } from "./microsoftTunnelingError";
+import {
+  MicrosoftTunnelingLoginError,
+  runWithMicrosoftTunnelingServiceErrorHandling,
+} from "./microsoftTunnelingError";
 // Need to use require instead of import to prevent packaging folder structure issue.
 const corePackage = require("../../../package.json");
 
@@ -18,10 +21,23 @@ export class MicrosoftTunnelingService {
   private tunnelHost?: TunnelRelayTunnelHost;
   private logProvider?: LogProvider;
 
-  constructor(getTunnelingAccessToken: () => Promise<string>, logProvider?: LogProvider) {
+  constructor(
+    getTunnelingAccessToken: () => Promise<Result<string, FxError>>,
+    logProvider?: LogProvider
+  ) {
     this.tunnelManagementClient = new TunnelManagementHttpClient(
       TeamsfxTunnelingUserAgent,
-      async () => `Bearer ${await getTunnelingAccessToken()}`
+      async (): Promise<string> => {
+        const result = await getTunnelingAccessToken();
+        if (result.isErr()) {
+          // Microsoft tunneling SDK use exception in their callbacks to handle errors.
+          // The exception is thrown when actually calling an API (e.g. createTunnel()).
+          // This exception is handled in runWithMicrosoftTunnelingServiceErrorHandling().
+          throw new MicrosoftTunnelingLoginError(result.error);
+        }
+        const accessToken = result.value;
+        return `Bearer ${accessToken}`;
+      }
     );
     this.logProvider = logProvider;
   }

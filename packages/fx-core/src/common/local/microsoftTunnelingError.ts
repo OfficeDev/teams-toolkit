@@ -67,19 +67,35 @@ export class MicrosoftTunnelingError extends SystemError {
   }
 }
 
+/**
+ * Since the tunneling SDK throws any error it encounter when doing an action (e.g. createTunnel()),
+ * it is hard to distinguish login error from other FxError or Error only by checking error class type.
+ * (it is possible but requires checking many types: LoginCodeFlowError, CheckIsOnlineError, etc.)
+ * So this class is a wrapper for errors returned from M365 login (e.g. M365Login.getAccessToken()).
+ */
+export class MicrosoftTunnelingLoginError extends UserError {
+  constructor(innerFxError: FxError) {
+    super(innerFxError.source, MicrosoftTunnelingLoginError.name, innerFxError.message);
+    this.innerError = innerFxError;
+    this.helpLink = innerFxError instanceof UserError ? innerFxError.helpLink : undefined;
+    this.stack = innerFxError.stack;
+  }
+}
+
 export async function runWithMicrosoftTunnelingServiceErrorHandling<T>(
   action: () => Promise<T>
 ): Promise<Result<T, FxError>> {
   try {
     return ok(await action());
   } catch (error) {
-    // TODO: handle login error for new login
     if (isTunnelingServiceError(error)) {
       if (isTunnelingServiceNeedOnboarding(error)) {
         return err(new MicrosoftTunnelingNeedOnboardingError(error));
       } else {
         return err(new MicrosoftTunnelingServiceError(error));
       }
+    } else if (error instanceof UserError || error instanceof SystemError) {
+      return err(error);
     } else {
       return err(
         new MicrosoftTunnelingError(

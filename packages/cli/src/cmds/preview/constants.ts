@@ -109,6 +109,8 @@ export const doctorResult = {
   InstallNode: "Go to https://nodejs.org/about/releases/ to install Node.js (v16 is recommended).",
   BypassNode12: `To continue to preview using Node.js v12, please follow the link (@Link) to disable Node.js check with TeamsFx CLI.`,
   BypassNode12AndFunction: `To continue to preview using Node.js v12, please follow the link (@Link) to disable Node.js and Azure Functions Core Tools check with TeamsFx CLI. Also make sure you install the Azure Functions Core Tools v3. https://github.com/Azure/azure-functions-core-tools`,
+  Node12MatchFunction:
+    "If you have your own Azure Functions Core Tools installed, make sure it works with new Node.js version. See (https://docs.microsoft.com/azure/azure-functions/functions-versions#languages) for Azure Functions supported Node versions",
   SideLoadingDisabled:
     "Your M365 tenant admin hasn't enabled sideloading permission for your account. You can't install your app to Teams!",
   NotSignIn: "No M365 account login",

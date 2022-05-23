@@ -169,11 +169,22 @@ export class MicrosoftTunnelingManager {
     tunnelInfo?: TunnelInfo
   ): Promise<Result<Tunnel, FxError>> {
     let tunnelInstance: Tunnel;
+
+    // Must set tokenScopes and includePorts so that the returned tunnel.accessTokens and tunnel.ports are not empty.
+    // These two properties are required for tunnelHost.start(tunnel).
+    const tunnelRequestOptions: TunnelRequestOptions = {
+      tokenScopes: [TunnelAccessScopes.Host, TunnelAccessScopes.Connect],
+      includePorts: true,
+    };
+
     if (tunnelInfo?.tunnelClusterId && tunnelInfo?.tunnelId) {
-      const tunnelResult = await this.service.getTunnel({
-        tunnelId: tunnelInfo.tunnelId,
-        clusterId: tunnelInfo.tunnelClusterId,
-      });
+      const tunnelResult = await this.service.getTunnel(
+        {
+          clusterId: tunnelInfo.tunnelClusterId,
+          tunnelId: tunnelInfo.tunnelId,
+        },
+        tunnelRequestOptions
+      );
       if (tunnelResult.isErr()) {
         return err(tunnelResult.error);
       }
@@ -187,10 +198,6 @@ export class MicrosoftTunnelingManager {
       const tunnelRequest: Tunnel = {
         ports: ports.map((port) => ({ portNumber: port, protocol: TunnelProtocol.Http })),
         accessControl: TeamsfxTunnelAccessControl,
-      };
-      const tunnelRequestOptions: TunnelRequestOptions = {
-        tokenScopes: [TunnelAccessScopes.Host, TunnelAccessScopes.Connect],
-        includePorts: true,
       };
       const tunnelResult = await this.service.createTunnel(tunnelRequest, tunnelRequestOptions);
       if (tunnelResult.isErr()) {

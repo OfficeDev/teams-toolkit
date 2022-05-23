@@ -1,14 +1,22 @@
 import "./Graph.css";
 import { useGraph } from "./lib/useGraph";
+import { Providers, ProviderState } from '@microsoft/mgt-element';
+import { TeamsFxProvider } from '@microsoft/mgt-teamsfx-provider';
 import { Button } from "@fluentui/react-northstar";
 import { Design } from './Design';
 import { PersonCardFluentUI } from './PersonCardFluentUI';
+import { PersonCardGraphToolkit } from './PersonCardGraphToolkit';
 
 export function Graph() {
   const { loading, error, data, reload } = useGraph(
-    async (graph) => {
+    async (graph, teamsfx, scope) => {
       // Call graph api directly to get user profile information
       const profile = await graph.api("/me").get();
+
+      // Initialize Graph Toolkit TeamsFx provider
+      const provider = new TeamsFxProvider(teamsfx, scope);
+      Providers.globalProvider = provider;
+      Providers.globalProvider.setState(ProviderState.SignedIn);
 
       let photoUrl = "";
       try {
@@ -31,9 +39,11 @@ export function Graph() {
         <pre>{`const teamsfx = new TeamsFx(); \nawait teamsfx.login(scope);`}</pre>
         <Button primary content="Authorize" disabled={loading} onClick={reload} />
 
-        <p>Below is the implementation of retrieving profile photo for currently signed-in user using Fluent UI component.</p>
-        <h4>Display user profile using Fluent UI Component</h4>
+        <p>Below are two different implementations of retrieving profile photo for currently signed-in user using Fluent UI component and Graph Toolkit respectively.</p>
+        <h4>1. Display user profile using Fluent UI Component</h4>
         <PersonCardFluentUI loading={loading} data={data} error={error} />
+        <h4>2. Display user profile using Graph Toolkit</h4>
+        <PersonCardGraphToolkit loading={loading} data={data} error={error} />
       </div>
     </div>
   );

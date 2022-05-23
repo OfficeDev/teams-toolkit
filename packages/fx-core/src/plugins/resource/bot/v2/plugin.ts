@@ -44,7 +44,7 @@ export class TeamsBotV2Impl {
 
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
     let workingPath = inputs.projectPath ?? "";
-    const lang = getLanguage(ctx.projectSetting.programmingLanguage!);
+    const lang = getLanguage(ctx.projectSetting.programmingLanguage);
     if (lang !== ProgrammingLanguage.Csharp) {
       workingPath = path.join(workingPath, "bot");
     }
@@ -147,7 +147,6 @@ export class TeamsBotV2Impl {
     const botWebAppResourceId = (envInfo as v2.EnvInfoV2).state[this.name][
       PluginBot.BOT_WEB_APP_RESOURCE_ID
     ];
-    const siteName = getSiteNameFromResourceId(botWebAppResourceId);
 
     // create config file if not exists
     await fs.ensureDir(deployDir);
@@ -178,7 +177,7 @@ export class TeamsBotV2Impl {
     // upload
     const host = AzureHostingFactory.createHosting(hostType);
     await progressBarHandler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_DEPLOY);
-    await host.deploy(inputs, tokenProvider, zipBuffer, siteName);
+    await host.deploy(botWebAppResourceId, tokenProvider, zipBuffer);
     await TeamsBotV2Impl.saveDeploymentInfo(
       configFile,
       envName,
@@ -214,7 +213,7 @@ export class TeamsBotV2Impl {
 
   private static getBicepConfigs(ctx: Context, inputs: Inputs): BicepConfigs {
     const bicepConfigs: BicepConfigs = [];
-    const lang = getLanguage(ctx.projectSetting.programmingLanguage!);
+    const lang = getLanguage(ctx.projectSetting.programmingLanguage);
     bicepConfigs.push(getRuntime(lang));
     bicepConfigs.push("running-on-azure");
     return bicepConfigs;
@@ -227,7 +226,7 @@ export class TeamsBotV2Impl {
   ): Promise<string> {
     // Return the folder path to be zipped and uploaded
 
-    const lang = getLanguage(ctx.projectSetting.programmingLanguage!);
+    const lang = getLanguage(ctx.projectSetting.programmingLanguage);
     const packDir = path.join(projectPath, CommonStrings.BOT_WORKING_DIR_NAME);
     if (lang === ProgrammingLanguage.Ts) {
       //Typescript needs tsc build before deploy because of Windows app server. other languages don"t need it.
@@ -305,23 +304,30 @@ export class TeamsBotV2Impl {
       DeployConfigsConstants.GIT_IGNORE_FILE,
       workingDir
     );
-    const totalIgnore = await TeamsBotV2Impl.prepareIgnore(
-      [FolderNames.NODE_MODULES].concat(generalIgnore).concat(gitIgnore)
-    );
+    const totalIgnore = await TeamsBotV2Impl.prepareIgnore(generalIgnore.concat(gitIgnore));
+    const filter = (itemPath: string) => path.basename(itemPath) !== FolderNames.NODE_MODULES;
 
-    await forEachFileAndDir(
-      workingDir,
-      (itemPath, status) => {
-        const relativePath = path.relative(workingDir, itemPath);
-        if (relativePath && status.mtime.getTime() > lastTime) {
-          return true;
-        }
-      },
-      (item) => {
-        return !totalIgnore.test(item).ignored;
-      }
-    );
-    return false;
+    let changed = false;
+    try {
+      await forEachFileAndDir(
+        workingDir,
+        (itemPath, status) => {
+          const relativePath = path.relative(workingDir, itemPath);
+          if (
+            relativePath &&
+            status.mtime.getTime() > lastTime &&
+            !totalIgnore.test(relativePath).ignored
+          ) {
+            changed = true;
+            return true;
+          }
+        },
+        filter
+      );
+      return changed;
+    } catch {
+      return true;
+    }
   }
 
   private static async saveDeploymentInfo(

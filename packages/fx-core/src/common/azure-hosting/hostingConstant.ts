@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { getDefaultString, getLocalizedString } from "../localizeUtils";
 
 export class AppServiceBicepConstant {

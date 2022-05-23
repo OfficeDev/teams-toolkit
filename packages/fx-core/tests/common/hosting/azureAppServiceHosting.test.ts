@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import "mocha";
 import { BicepContext, ServiceType } from "../../../src/common/azure-hosting/interfaces";
 import { ResourcePlugins } from "../../plugins/resource/util";
@@ -43,7 +46,6 @@ describe("azure app service hosting", () => {
 
       chai.assert.exists(template.Configuration);
       chai.assert.deepEqual(template.Reference, hosting.reference);
-      chai.assert.exists(template.Parameters);
 
       const expectedConfigModule = await fs.readFile(
         path.resolve(path.join(__dirname, "expectedBicep", "webAppConfigModule.bicep")),
@@ -74,7 +76,7 @@ describe("azure app service hosting", () => {
       chai.assert.exists(template.Reference);
 
       const except = await fs.readFile(
-        path.resolve(path.join(__dirname, "expectedBicep", "configurationModuleUpdate.bicep")),
+        path.resolve(path.join(__dirname, "expectedBicep", "webAppConfigModule.bicep")),
         "utf-8"
       );
       chai.assert.equal(template.Configuration.Modules[hosting.hostType], except);
@@ -84,16 +86,12 @@ describe("azure app service hosting", () => {
   describe("deploy", () => {
     it("deploy success", async () => {
       const hosting = AzureHostingFactory.createHosting(ServiceType.AppService);
-      const inputs = {
-        platform: Platform.VSCode,
-      };
       const tokenProvider = {} as TokenProvider;
-
       const fake = new FakeTokenCredentials("x", "y");
       const client = new appService.WebSiteManagementClient(fake, "z");
 
       sinon.stub(lib, "azureWebSiteDeploy").resolves(client);
-      await hosting.deploy(inputs, tokenProvider, Buffer.alloc(1, ""), "siteName");
+      await hosting.deploy("", tokenProvider, Buffer.alloc(1, ""));
     });
   });
 });

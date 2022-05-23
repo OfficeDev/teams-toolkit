@@ -10,6 +10,7 @@ import {
   Result,
   FxError,
   Void,
+  Inputs,
 } from "@microsoft/teamsfx-api";
 import path from "path";
 import { environmentManager } from "../../../src";
@@ -20,6 +21,7 @@ import sinon from "sinon";
 import {
   aadPlugin,
   botPlugin,
+  botPluginV2,
   fehostPlugin,
   identityPlugin,
   simpleAuthPlugin,
@@ -30,6 +32,7 @@ import { MockedLogProvider, MockedTelemetryReporter, MockedUserInteraction } fro
 import { UserTokenCredentials } from "@azure/ms-rest-nodeauth";
 import os from "os";
 import * as cpUtils from "../../../src/common/cpUtils";
+import { Context } from "@microsoft/teamsfx-api/build/v2";
 
 export class TestHelper {
   static appName = "ut_app_name";
@@ -220,47 +223,51 @@ export class TestHelper {
   }
 
   static mockedBotGenerateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
-    return mocker.stub(botPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      const res: ArmTemplateResult = {
-        Provision: {
-          Orchestration:
-            "Mocked bot provision orchestration content. Module path: '{{fx-resource-bot.Provision.botProvision.path}}'.",
-          Modules: {
-            botProvision: TestFileContent.botProvisionModule,
+    return mocker
+      .stub(botPluginV2, "generateResourceTemplate")
+      .callsFake(async (ctx: Context, inputs: Inputs) => {
+        const res: ArmTemplateResult = {
+          Provision: {
+            Orchestration:
+              "Mocked bot provision orchestration content. Module path: '{{fx-resource-bot.Provision.botProvision.path}}'.",
+            Modules: {
+              botProvision: TestFileContent.botProvisionModule,
+            },
           },
-        },
-        Configuration: {
-          Orchestration:
-            "Mocked bot configuration orchestration content. Module path: '{{fx-resource-bot.Configuration.botConfig.path}}'.",
-          Modules: {
-            botConfig: TestFileContent.botConfigurationModule,
+          Configuration: {
+            Orchestration:
+              "Mocked bot configuration orchestration content. Module path: '{{fx-resource-bot.Configuration.botConfig.path}}'.",
+            Modules: {
+              botConfig: TestFileContent.botConfigurationModule,
+            },
           },
-        },
-        Reference: {
-          botOutputKey: TestFileContent.botReferenceValue,
-        },
-        Parameters: {
-          BotParameter: TestFileContent.botParameterValue,
-        },
-      };
-      return ok(res);
-    });
+          Reference: {
+            botOutputKey: TestFileContent.botReferenceValue,
+          },
+          Parameters: {
+            BotParameter: TestFileContent.botParameterValue,
+          },
+        };
+        return ok({ kind: "bicep", template: res });
+      });
   }
 
   static mockedBotUpdateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
-    return mocker.stub(botPlugin, "updateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      const res: ArmTemplateResult = {
-        Configuration: {
-          Modules: {
-            botConfig: TestFileContent.botConfigUpdateModule,
+    return mocker
+      .stub(botPluginV2, "updateResourceTemplate")
+      .callsFake(async (ctx: Context, inputs: Inputs) => {
+        const res: ArmTemplateResult = {
+          Configuration: {
+            Modules: {
+              botConfig: TestFileContent.botConfigUpdateModule,
+            },
           },
-        },
-        Reference: {
-          botOutputKey: TestFileContent.botReferenceValue,
-        },
-      };
-      return ok(res);
-    });
+          Reference: {
+            botOutputKey: TestFileContent.botReferenceValue,
+          },
+        };
+        return ok({ kind: "bicep", template: res });
+      });
   }
 
   static mockArmDeploymentDependencies(mockedCtx: SolutionContext, mocker: sinon.SinonSandbox) {

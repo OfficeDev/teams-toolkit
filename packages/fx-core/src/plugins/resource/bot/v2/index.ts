@@ -40,7 +40,6 @@ import {
   provisionResourceAdapter,
 } from "../../utils4v2";
 import { Logger } from "../logger";
-import { ProgressBarFactory } from "../progressBars";
 import { PluginBot } from "../resources/strings";
 import { TeamsBotV2Impl } from "./plugin";
 import { ProgressBarFactory } from "../progressBars";

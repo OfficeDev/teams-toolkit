@@ -5,7 +5,7 @@ Prerequisites
 
 To debug a command-response bot in Visual Studio, you'll need to setup Ngrok(https://ngrok.com/). Ngrok is used to help forward external messages from Azure Bot Framework to your locally running machine.
 
-After installing ngrok, use a Command Prompt to run this command: ngrok http 2544
+After installing ngrok, use a Command Prompt to run this command: ngrok http 5130
 
 
 Quick start
@@ -15,7 +15,7 @@ Before you run or Start Debugging for the first time, follow these steps:
 
 1. If your project only contains a Tab capability, skip to step #3.
 
-2. For projects that contain a Bot or Message Extension capability, first use a Command Prompt to run this command: ngrok http 2544.
+2. For projects that contain a Bot or Message Extension capability, first use a Command Prompt to run this command: ngrok http 5130.
 
 3. Select the Project > Teams Toolkit > Configure Microsoft Teams app menu in Visual Studio. When prompted, sign in using your M365 account.
 

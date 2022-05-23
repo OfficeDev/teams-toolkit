@@ -9,13 +9,11 @@
     [ApiController]
     public class BotController : ControllerBase
     {
-        private readonly CloudAdapter _adapter;
         private readonly ConversationBot _conversation;
         private readonly IBot _bot;
 
-        public BotController(CloudAdapter adapter, ConversationBot conversation, IBot bot)
+        public BotController(ConversationBot conversation, IBot bot)
         {
-            _adapter = adapter;
             _conversation = conversation;
             _bot = bot;
         }
@@ -23,7 +21,7 @@
         [HttpPost]
         public async Task PostAsync(CancellationToken cancellationToken = default)
         {
-            await _adapter.ProcessAsync
+            await (_conversation.Adapter as CloudAdapter).ProcessAsync
             (
                 Request,
                 Response,

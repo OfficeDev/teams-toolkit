@@ -25,6 +25,7 @@
         "bot/ts/notification-trigger-timer",
         "bot/csharp/default",
         "bot/csharp/notification-webapi",
+        "bot/csharp/command-and-response",
         "function-base/js/default",
         "function-base/ts/default",
         "function-triggers/js/HTTPTrigger",

@@ -77,7 +77,7 @@ export class MicrosoftTunnelingTaskTerminal implements vscode.Pseudoterminal {
     this.manager = new MicrosoftTunnelingManager(
       () =>
         m365Login.getAccessToken({
-          showDialog: true,
+          showDialog: false,
           scopes: [MicrosoftTunnelingAadScope],
         }),
       this.logger

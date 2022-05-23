@@ -159,7 +159,7 @@ export async function setupLocalDebugSettings(
 
       if (includeBot) {
         localSettings.bot ??= {};
-        const ngrokHttpUrl = await getNgrokHttpUrl(2544);
+        const ngrokHttpUrl = await getNgrokHttpUrl(5130);
         if (!ngrokHttpUrl) {
           const error = NgrokTunnelNotConnected();
           TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);
@@ -300,7 +300,7 @@ export async function setupLocalEnvironment(
 
       if (includeBot) {
         envInfo.state[ResourcePlugins.Bot] ??= {};
-        const ngrokHttpUrl = await getNgrokHttpUrl(2544);
+        const ngrokHttpUrl = await getNgrokHttpUrl(5130);
         if (!ngrokHttpUrl) {
           const error = NgrokTunnelNotConnected();
           TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);

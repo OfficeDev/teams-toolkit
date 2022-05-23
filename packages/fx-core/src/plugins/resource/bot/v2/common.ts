@@ -14,12 +14,13 @@ import { PluginBot, HostType, HostTypes } from "../resources/strings";
 export function getTemplateInfos(ctx: Context, inputs: Inputs): CodeTemplateInfo[] {
   const lang = getLanguage(ctx.projectSetting.programmingLanguage);
   const scenarios = Array.from(decideTemplateScenarios(ctx, inputs));
+  const projectName = ctx.projectSetting.appName;
   return scenarios.map((scenario) => {
     return {
       group: TemplateProjectsConstants.GROUP_NAME_BOT,
       language: lang,
       scenario: scenario,
-      variables: {},
+      variables: { ProjectName: projectName },
     };
   });
 }

@@ -6,6 +6,7 @@ import {
   ScaffoldActionName,
   ScaffoldContext,
   scaffoldFromTemplates,
+  genTemplateRenderReplaceFn,
 } from "../../../../common/template-utils/templatesActions";
 import { CodeTemplateInfo } from "./interface/codeTemplateInfo";
 import { TemplateZipFallbackError, UnzipError } from "../errors";
@@ -18,6 +19,8 @@ export async function scaffold(template: CodeTemplateInfo, dst: string): Promise
     lang: template.language,
     scenario: template.scenario,
     dst: dst,
+    fileNameReplaceFn: genTemplateNameRenderReplaceFn(template.variables.projectName),
+    fileDataReplaceFn: genTemplateRenderReplaceFn(template.variables),
     onActionEnd: async (action: ScaffoldAction, context: ScaffoldContext) => {
       if (action.name === ScaffoldActionName.FetchTemplatesUrlWithTag) {
         Logger.info(Messages.SuccessfullyRetrievedTemplateZip(context.zipUrl ?? ""));
@@ -39,4 +42,10 @@ export async function scaffold(template: CodeTemplateInfo, dst: string): Promise
       }
     },
   });
+}
+
+function genTemplateNameRenderReplaceFn(appName: string) {
+  return (name: string, data: Buffer): string => {
+    return name.replace(/ProjectName/, appName).replace(/\.tpl/, "");
+  };
 }

@@ -38,49 +38,6 @@ const expectedAppSettings = `{TeamsFx": {"Authentication": {"ClientId": "${clien
 )}"}}}`;
 
 describe("WebappPlugin", () => {
-  describe("config unify disabled", () => {
-    let plugin: WebappPlugin;
-    let pluginContext: PluginContext;
-
-    beforeEach(async () => {
-      plugin = new WebappPlugin();
-      pluginContext = TestHelper.getFakePluginContext();
-      pluginContext.localSettings = {
-        teamsApp: new Map([[LocalSettingsTeamsAppKeys.TenantId, tenantId]]),
-        auth: new Map([
-          [LocalSettingsAuthKeys.ClientId, clientId],
-          [LocalSettingsAuthKeys.ClientSecret, clientSecret],
-        ]),
-        frontend: new Map([]),
-      } as LocalSettings;
-      sinon.stub(core, "isConfigUnifyEnabled").returns(false);
-    });
-
-    afterEach(() => {
-      sinon.restore();
-    });
-
-    it("local debug", async () => {
-      const result = await plugin.localDebug(pluginContext);
-      chai.assert.isTrue(result.isOk());
-      chai.assert.equal(
-        pluginContext.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabIndexPath),
-        PathInfo.indexPath
-      );
-    });
-
-    it("post local debug", async () => {
-      sinon.stub(fs, "pathExists").resolves(true);
-      sinon.stub(fs, "readFile").resolves(appSettingDevelopment as any);
-      sinon.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
-        chai.assert.equal(data, expectedAppSettings);
-      });
-
-      const result = await plugin.postLocalDebug(pluginContext);
-      chai.assert.isTrue(result.isOk());
-    });
-  });
-
   describe("config unify enabled", () => {
     let plugin: WebappPlugin;
     let pluginContext: PluginContext;

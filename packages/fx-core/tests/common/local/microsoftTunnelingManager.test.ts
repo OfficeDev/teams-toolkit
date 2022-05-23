@@ -4,16 +4,19 @@
 import "mocha";
 import * as sinon from "sinon";
 import * as chai from "chai";
+import { err, ok, UserError } from "@microsoft/teamsfx-api";
 import { MicrosoftTunnelingManager } from "../../../src/common/local/microsoftTunnelingManager";
 import { TunnelManagementHttpClient, TunnelRequestOptions } from "@vs/tunnels-management";
 import { Tunnel, TunnelConnectionMode } from "@vs/tunnels-contracts";
 import { TunnelRelayTunnelHost } from "@vs/tunnels-connections";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import {
+  MicrosoftTunnelingLoginError,
   MicrosoftTunnelingNeedOnboardingError,
   MicrosoftTunnelingServiceError,
   MicrosoftTunnelingTimeoutError,
 } from "../../../src/common/local/microsoftTunnelingError";
+import { CoreSource } from "../../../src/core/error";
 
 function createMockHttpError(status: number): Error {
   return Object.assign(new Error(), { isAxiosError: true, response: { status } });
@@ -58,7 +61,7 @@ describe("MicrosoftTunnelingManager", () => {
             return result;
           }
         );
-      const manager = new MicrosoftTunnelingManager(async () => "fake token");
+      const manager = new MicrosoftTunnelingManager(async () => ok("fake token"));
 
       // Act
       const result = await manager.startTunnelHost([3978, 3000]);
@@ -102,7 +105,7 @@ describe("MicrosoftTunnelingManager", () => {
         );
       const existingTunnelId = "testtunnel";
       const existingTunnelClusterId = "testcluster";
-      const manager = new MicrosoftTunnelingManager(async () => "fake token");
+      const manager = new MicrosoftTunnelingManager(async () => ok("fake token"));
 
       // Act
       const result = await manager.startTunnelHost([3978, 3000], {
@@ -145,7 +148,7 @@ describe("MicrosoftTunnelingManager", () => {
           ];
           return result;
         });
-      const manager = new MicrosoftTunnelingManager(async () => "fake token");
+      const manager = new MicrosoftTunnelingManager(async () => ok("fake token"));
 
       // Act
       const result = await manager.startTunnelHost([3978, 3000]);
@@ -176,7 +179,7 @@ describe("MicrosoftTunnelingManager", () => {
           ];
           return result;
         });
-      const manager = new MicrosoftTunnelingManager(async () => "fake token");
+      const manager = new MicrosoftTunnelingManager(async () => ok("fake token"));
 
       // Act
       const result = await manager.startTunnelHost([3978, 3000]);
@@ -208,7 +211,7 @@ describe("MicrosoftTunnelingManager", () => {
             return result;
           }
         );
-      const manager = new MicrosoftTunnelingManager(async () => "fake token");
+      const manager = new MicrosoftTunnelingManager(async () => ok("fake token"));
 
       // Act
       const tunnelHostPromise = manager.startTunnelHost([3978, 3000]);
@@ -222,6 +225,20 @@ describe("MicrosoftTunnelingManager", () => {
     });
 
     it("Host did not shut down cleanly", () => {});
+
+    it("M365 Login error", async () => {
+      // Arrange
+      const manager = new MicrosoftTunnelingManager(async () =>
+        err(new UserError(CoreSource, "M365 login error", "M365 login error"))
+      );
+
+      // Act
+      const result = await manager.startTunnelHost([3978]);
+
+      // Assert
+      chai.assert.isTrue(result.isErr());
+      chai.assert.instanceOf(result._unsafeUnwrapErr(), MicrosoftTunnelingLoginError);
+    });
   });
 
   describe("stopTunnelHost()", () => {
@@ -254,7 +271,7 @@ describe("MicrosoftTunnelingManager", () => {
             return result;
           }
         );
-      const manager = new MicrosoftTunnelingManager(async () => "fake token");
+      const manager = new MicrosoftTunnelingManager(async () => ok("fake token"));
 
       // Act
       await manager.startTunnelHost([3978, 3000], {
@@ -281,7 +298,7 @@ describe("MicrosoftTunnelingManager", () => {
         .callsFake(async (): Promise<Tunnel> => {
           return { tunnelId: "good tunnel id", clusterId: "good cluster id" };
         });
-      const manager = new MicrosoftTunnelingManager(async () => "fake token");
+      const manager = new MicrosoftTunnelingManager(async () => ok("fake token"));
 
       // Act
       const result = await manager.checkOnboarded();
@@ -297,7 +314,7 @@ describe("MicrosoftTunnelingManager", () => {
           // 409 Conflict: tunnel already exists
           throw createMockHttpError(409);
         });
-      const manager = new MicrosoftTunnelingManager(async () => "fake token");
+      const manager = new MicrosoftTunnelingManager(async () => ok("fake token"));
 
       // Act
       const result = await manager.checkOnboarded();
@@ -312,7 +329,7 @@ describe("MicrosoftTunnelingManager", () => {
         .callsFake(async (): Promise<Tunnel> => {
           throw createMockHttpError(403);
         });
-      const manager = new MicrosoftTunnelingManager(async () => "fake token");
+      const manager = new MicrosoftTunnelingManager(async () => ok("fake token"));
 
       // Act
       const result = await manager.checkOnboarded();
@@ -327,7 +344,7 @@ describe("MicrosoftTunnelingManager", () => {
         .callsFake(async (): Promise<Tunnel> => {
           throw createMockHttpError(500);
         });
-      const manager = new MicrosoftTunnelingManager(async () => "fake token");
+      const manager = new MicrosoftTunnelingManager(async () => ok("fake token"));
 
       // Act
       const result = await manager.checkOnboarded();
@@ -342,7 +359,7 @@ describe("MicrosoftTunnelingManager", () => {
         .callsFake(async (): Promise<Tunnel> => {
           throw new Error("unknown error");
         });
-      const manager = new MicrosoftTunnelingManager(async () => "fake token");
+      const manager = new MicrosoftTunnelingManager(async () => ok("fake token"));
 
       // Act
       const result = await manager.checkOnboarded();

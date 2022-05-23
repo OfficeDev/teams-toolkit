@@ -20,9 +20,10 @@ import {
   getTunnelPorts,
   storeTunnelInfo,
   MicrosoftTunnelingManager,
+  MicrosoftTunnelingAadScope,
 } from "@microsoft/teamsfx-core";
 import * as constants from "./constants";
-import appStudioLogin from "../commonlib/appStudioLogin";
+import m365Login from "../commonlib/m365Login";
 
 const TunnelUpMessage = `The tunnel is up and running.`;
 const TunnelFailMessage = `The tunnel failed to start.`;
@@ -73,14 +74,14 @@ export class MicrosoftTunnelingTaskTerminal implements vscode.Pseudoterminal {
   private async openAsync(): Promise<Result<void, FxError>> {
     // TODO: add telemetry
     // TODO: prevent re-entry (cases when user manually trigger a task)
-    this.manager = new MicrosoftTunnelingManager(async () => {
-      // TODO: switch to new login and pass in Microsoft tunneling scopes
-      const token = await appStudioLogin.getAccessToken();
-      if (!token) {
-        throw new Error("No login");
-      }
-      return token;
-    }, this.logger);
+    this.manager = new MicrosoftTunnelingManager(
+      () =>
+        m365Login.getAccessToken({
+          showDialog: true,
+          scopes: [MicrosoftTunnelingAadScope],
+        }),
+      this.logger
+    );
     const tunnelInfoResult = await loadTunnelInfo(this.projectPath, this.projectSettings.projectId);
     if (tunnelInfoResult.isErr()) {
       return err(tunnelInfoResult.error);

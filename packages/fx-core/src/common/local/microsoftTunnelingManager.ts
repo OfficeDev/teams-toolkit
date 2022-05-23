@@ -29,6 +29,8 @@ const TeamsfxTunnelAccessControl: TunnelAccessControl = {
   ],
 };
 
+export const MicrosoftTunnelingAadScope = "46da2f7e-b5ef-422a-88d4-2a7f9de6a0b2/.default";
+
 export interface TunnelInfo {
   tunnelClusterId?: string;
   tunnelId?: string;
@@ -42,7 +44,10 @@ export interface TunnelHostResult {
 export class MicrosoftTunnelingManager {
   private service: MicrosoftTunnelingService;
 
-  constructor(getTunnelingAccessToken: () => Promise<string>, logProvider?: LogProvider) {
+  constructor(
+    getTunnelingAccessToken: () => Promise<Result<string, FxError>>,
+    logProvider?: LogProvider
+  ) {
     this.service = new MicrosoftTunnelingService(getTunnelingAccessToken, logProvider);
   }
 

@@ -19,7 +19,7 @@ export async function scaffold(template: CodeTemplateInfo, dst: string): Promise
     lang: template.language,
     scenario: template.scenario,
     dst: dst,
-    fileNameReplaceFn: genTemplateNameRenderReplaceFn(template.variables.projectName),
+    fileNameReplaceFn: genTemplateNameRenderReplaceFn(template.variables.ProjectName),
     fileDataReplaceFn: genTemplateRenderReplaceFn(template.variables),
     onActionEnd: async (action: ScaffoldAction, context: ScaffoldContext) => {
       if (action.name === ScaffoldActionName.FetchTemplatesUrlWithTag) {
@@ -44,7 +44,7 @@ export async function scaffold(template: CodeTemplateInfo, dst: string): Promise
   });
 }
 
-function genTemplateNameRenderReplaceFn(appName: string) {
+export function genTemplateNameRenderReplaceFn(appName: string) {
   return (name: string, data: Buffer): string => {
     return name.replace(/ProjectName/, appName).replace(/\.tpl/, "");
   };

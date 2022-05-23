@@ -35,7 +35,7 @@ Teams Toolkit for Visual Studio, Visual Studio Code, and Command Line Interface 
 
 ## Support Policy
 
-Teams Toolkit products will follow [Modern Lifecycle Policy](https://docs.microsoft.com/lifecycle/policies/modern) unless otherwise noted. Visit our [lifecycle and support document](https://aka.ms/teamsfx-support) to find out details for each product.
+Teams Toolkit products will follow [Modern Lifecycle Policy](https://docs.microsoft.com/lifecycle/policies/modern) and extended support as described in our [lifecycle and support document](https://aka.ms/teamsfx-support).
 
 ## Feedback
 

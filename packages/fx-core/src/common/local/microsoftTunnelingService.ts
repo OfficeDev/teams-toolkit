@@ -3,10 +3,11 @@
 
 import { ok, FxError, LogProvider, LogLevel, Result, err } from "@microsoft/teamsfx-api";
 import { TunnelRelayTunnelHost } from "@vs/tunnels-connections";
-import { Tunnel } from "@vs/tunnels-contracts";
+import { Tunnel, TunnelAccessScopes } from "@vs/tunnels-contracts";
 import { TunnelManagementHttpClient, TunnelRequestOptions } from "@vs/tunnels-management";
 import { TraceLevel } from "@vs/vs-ssh";
 import {
+  MicrosoftTunnelingError,
   MicrosoftTunnelingLoginError,
   runWithMicrosoftTunnelingServiceErrorHandling,
 } from "./microsoftTunnelingError";
@@ -60,8 +61,18 @@ export class MicrosoftTunnelingService {
     );
   }
 
-  hostStart(tunnel: Tunnel): Promise<Result<void, FxError>> {
-    return runWithMicrosoftTunnelingServiceErrorHandling(async () => {
+  async hostStart(tunnel: Tunnel): Promise<Result<void, FxError>> {
+    if (
+      !tunnel.accessTokens?.[TunnelAccessScopes.Host] ||
+      !tunnel.accessTokens?.[TunnelAccessScopes.Connect]
+    ) {
+      return err(new MicrosoftTunnelingError("Cannot start host without host and connect tokens."));
+    }
+    if (!tunnel.ports || tunnel.ports.length === 0) {
+      return err(new MicrosoftTunnelingError("Cannot start host without ports."));
+    }
+
+    return await runWithMicrosoftTunnelingServiceErrorHandling(async () => {
       const tunnelHost = new TunnelRelayTunnelHost(this.tunnelManagementClient);
       tunnelHost.trace = (level: TraceLevel, eventId: number, msg: string, err?: Error) => {
         this.logProvider?.log(

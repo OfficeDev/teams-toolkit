@@ -56,13 +56,19 @@ export class MicrosoftTunnelingServiceError extends SystemError {
   }
 }
 
+/**
+ * Unexpected errors like bugs in code or other unexpected errors from the SDK/service.
+ */
 export class MicrosoftTunnelingError extends SystemError {
-  constructor(innerError: Error) {
+  constructor(errorOrMsg: Error | string) {
     super({
       source: CoreSource,
       name: MicrosoftTunnelingError.name,
-      error: innerError,
-      message: "Failed to call Microsoft tunneling service API",
+      error: errorOrMsg instanceof Error ? errorOrMsg : undefined,
+      message:
+        errorOrMsg instanceof Error
+          ? `Microsoft tunneling unknown error: ${errorOrMsg.message}`
+          : errorOrMsg,
     });
   }
 }

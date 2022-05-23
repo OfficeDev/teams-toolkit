@@ -40,7 +40,6 @@ import {
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,
-  isConfigUnifyEnabled,
 } from "../../../../common/tools";
 import { TemplateInfo } from "./resources/templateInfo";
 import { Bicep } from "../../../../common/constants";
@@ -51,11 +50,6 @@ import { PluginImpl } from "../interface";
 import { ProgressHelper } from "../utils/progress-helper";
 import { WebappDeployProgress as DeployProgress } from "./resources/steps";
 import { BotOptionItem, TabOptionItem } from "../../../solution/fx-solution/question";
-import {
-  LocalSettingsAuthKeys,
-  LocalSettingsFrontendKeys,
-  LocalSettingsTeamsAppKeys,
-} from "../../../../common/localSettingsConstants";
 import { PluginNames } from "../../../solution/fx-solution/constants";
 
 type Site = WebSiteManagementModels.Site;
@@ -231,24 +225,14 @@ export class DotnetPluginImpl implements PluginImpl {
     let tenantId = "";
     let oauthAuthority = "";
 
-    if (isConfigUnifyEnabled()) {
-      clientId =
-        ctx.envInfo.state.get(PluginNames.AAD)?.get(DependentPluginInfo.aadClientId) ??
-        Placeholders.clientId;
-      clientSecret =
-        ctx.envInfo.state.get(PluginNames.AAD)?.get(DependentPluginInfo.aadClientSecret) ??
-        Placeholders.clientSecret;
-      tenantId = ctx.envInfo.state.get(PluginNames.APPST)?.get(DependentPluginInfo.appTenantId);
-      oauthAuthority = tenantId ? PathInfo.oauthHost(tenantId) : Placeholders.oauthAuthority;
-    } else {
-      clientId =
-        ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId) ?? Placeholders.clientId;
-      clientSecret =
-        ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientSecret) ??
-        Placeholders.clientSecret;
-      tenantId = ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TenantId) as string;
-      oauthAuthority = tenantId ? PathInfo.oauthHost(tenantId) : Placeholders.oauthAuthority;
-    }
+    clientId =
+      ctx.envInfo.state.get(PluginNames.AAD)?.get(DependentPluginInfo.aadClientId) ??
+      Placeholders.clientId;
+    clientSecret =
+      ctx.envInfo.state.get(PluginNames.AAD)?.get(DependentPluginInfo.aadClientSecret) ??
+      Placeholders.clientSecret;
+    tenantId = ctx.envInfo.state.get(PluginNames.APPST)?.get(DependentPluginInfo.appTenantId);
+    oauthAuthority = tenantId ? PathInfo.oauthHost(tenantId) : Placeholders.oauthAuthority;
 
     appSettings = appSettings.replace(RegularExpr.clientId, clientId);
     appSettings = appSettings.replace(RegularExpr.clientSecret, clientSecret);

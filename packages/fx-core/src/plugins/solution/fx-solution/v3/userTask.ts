@@ -129,7 +129,6 @@ export async function addCapability(
   if (telemetryProps) {
     telemetryProps[SolutionTelemetryProperty.Capabilities] = capabilitiesAnswer.join(";");
   }
-  const vsProject = isVSProject(ctx.projectSetting);
   const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
   const features: string[] = [];
   if (!solutionSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.aad)) {

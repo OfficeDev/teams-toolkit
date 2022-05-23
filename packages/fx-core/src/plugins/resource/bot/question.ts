@@ -1,6 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Inputs, MultiSelectQuestion, OptionItem, Platform } from "@microsoft/teamsfx-api";
+import {
+  Inputs,
+  MultiSelectQuestion,
+  OptionItem,
+  Platform,
+  SingleSelectQuestion,
+} from "@microsoft/teamsfx-api";
 import { isPreviewFeaturesEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import {
@@ -39,11 +45,45 @@ export const AppServiceOptionItem: HostTypeTriggerOptionItem = optionWithL10n({
   // trigger of app service host is hard-coded to http, so no need to set here
 });
 
+// TODO: this option will not be shown in UI, leave messages empty.
+export const AppServiceOptionItemForVS: HostTypeTriggerOptionItem = {
+  id: "http-webapi",
+  hostType: HostTypes.APP_SERVICE,
+  label: "",
+  cliName: "",
+  description: "",
+  detail: "",
+};
+
 export const HostTypeTriggerOptions: HostTypeTriggerOptionItem[] = [
   AppServiceOptionItem,
   FunctionsHttpTriggerOptionItem,
   FunctionsTimerTriggerOptionItem,
 ];
+
+export const HostTypeTriggerOptionsForVS: HostTypeTriggerOptionItem[] = [AppServiceOptionItemForVS];
+
+export function createHostTypeTriggerQuestionForVS(): SingleSelectQuestion {
+  const prefix = "plugins.bot.questionHostTypeTrigger";
+  return {
+    name: QuestionNames.BOT_HOST_TYPE_TRIGGER,
+    title: getLocalizedString(prefix + ".title"),
+    type: "singleSelect",
+    staticOptions: HostTypeTriggerOptionsForVS,
+    default: AppServiceOptionItemForVS.id,
+    placeholder: getLocalizedString(prefix + ".placeholder"),
+    skipSingleOption: true,
+    validation: {
+      validFunc: async (input: string[]): Promise<string | undefined> => {
+        const name = input as string[];
+        if (name.length === 0) {
+          return getLocalizedString(`${prefix}.error.emptySelection`);
+        }
+        return undefined;
+      },
+    },
+  };
+}
 
 // The restrictions of this question:
 //   - appService and function are mutually exclusive

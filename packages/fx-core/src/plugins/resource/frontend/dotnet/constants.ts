@@ -20,9 +20,8 @@ export class RegularExpr {
 }
 
 export class DotnetPluginInfo {
-  static readonly pluginName = "fx-resource-dotnet";
-  static readonly displayName = "Dotnet";
-  static readonly alias = "DN";
+  // TODO: Migrate DotNet plugin to frontend plugin
+  static readonly pluginName = "fx-resource-frontend";
   static readonly issueLink = "https://github.com/OfficeDev/TeamsFx/issues/new";
   static readonly helpLink = "https://aka.ms/teamsfx-bz-help";
 

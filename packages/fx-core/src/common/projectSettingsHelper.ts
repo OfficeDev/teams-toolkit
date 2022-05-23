@@ -102,7 +102,6 @@ export function hasAzureResource(projectSetting: ProjectSettings, excludeAad = f
   const azurePlugins = [
     BuiltInFeaturePluginNames.apim,
     BuiltInFeaturePluginNames.bot,
-    BuiltInFeaturePluginNames.dotnet,
     BuiltInFeaturePluginNames.frontend,
     BuiltInFeaturePluginNames.function,
     BuiltInFeaturePluginNames.identity,

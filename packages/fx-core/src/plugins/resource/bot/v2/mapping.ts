@@ -7,6 +7,7 @@ import {
   FunctionsHttpTriggerOptionItem,
   FunctionsTimerTriggerOptionItem,
   AppServiceOptionItem,
+  AppServiceOptionItemForVS,
 } from "../question";
 import { HostTypes } from "../resources/strings";
 import { ProgrammingLanguage } from "./enum";
@@ -47,6 +48,7 @@ const triggerScenariosMap: Map<string, string[]> = new Map<string, string[]>([
     ],
   ],
   [AppServiceOptionItem.id, [TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME]],
+  [AppServiceOptionItemForVS.id, [TemplateProjectsScenarios.NOTIFICATION_WEBAPI_SCENARIO_NAME]],
 ]);
 
 export function getRuntime(lang: ProgrammingLanguage): string {

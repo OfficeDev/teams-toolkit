@@ -1,7 +1,7 @@
 /* 
 Setting API configuration for cloud environment: 
-We have already set the configuration to .env.teamsfx.local based on your answers. 
-Before you deploy your code to cloud using TeamsFx, please follow https://aka.ms/teamsfx-add-appsettings to add following app settings with appropriate value to your Azure environment: 
+We have set configuration in `.env.teamsfx.local` based on your answers. 
+Before you deploy your code to Azure using TeamsFx, follow https://aka.ms/teamsfx-add-appsettings to add the following configuration (with their appropriate values) to your Azure environment: 
 TEAMSFX_API_{{capitalName}}_ENDPOINT
 {{#if (equals config.AuthConfig.AuthType "basic")}}
 TEAMSFX_API_{{capitalName}}_USERNAME
@@ -16,5 +16,5 @@ TEAMSFX_API_{{capitalName}}_CLIENT_SECRET
 TEAMSFX_API_{{capitalName}}_API_KEY
 {{/if}}
 
-You can refer https://aka.ms/teamsfx-connect-api to learn more. 
+Refer to https://aka.ms/teamsfx-connect-api to learn more. 
 */

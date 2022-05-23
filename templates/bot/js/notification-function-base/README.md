@@ -53,7 +53,7 @@ The following files provide the business logic for notifications. These files ca
 | `src/adaptiveCards/notification-default.json` | A generated Adaptive Card that is sent to Teams |
 | `src/cardModels.js` | The default Adaptive Card data model |
 
-The following files implement the core notification on the Bot Framework. You generally will not need to customize these files except when you want to implement your own storages, see [customize storage](#Customize-storage).
+The following files implement the core notification on the Bot Framework. You generally will not need to customize these files except when you want to implement your own storages, see [customize storage](#customize-storage).
 
 | File / Folder | Contents |
 | - | - |
@@ -88,7 +88,7 @@ If you selected `http` trigger, when this trigger is hit (via a HTTP request), t
 
 You can customize this behavior by customizing `src/*Trigger.js`. A typical implementation might make an API call to retrieve some events and/or data, and then send an Adaptive Card as appropriate.
 
-Teams Toolkit enables you to [easily connect to an existing API](#connect-to-existing-api).
+Teams Toolkit enables you to [easily connect to an existing API](#connect-to-existing-apis).
 
 ## Customize the Adaptive Card
 

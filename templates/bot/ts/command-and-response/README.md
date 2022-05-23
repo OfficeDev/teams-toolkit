@@ -68,7 +68,7 @@ This section outlines some customization you can do to adopt the application for
 
 The default command logic simply returns a hard-coded Adaptive Card. You can customize this logic with your customize business logic. Often your business logic might require you to call your existing APIs.
 
-Teams Toolkit enables you to [easily connect to an existing API](#connect-to-existing-api).
+Teams Toolkit enables you to [easily connect to an existing API](#connect-to-existing-apis).
 
 ## Customize the Adaptive Card
 

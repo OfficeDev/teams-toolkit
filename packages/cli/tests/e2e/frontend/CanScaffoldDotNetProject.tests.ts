@@ -39,7 +39,7 @@ describe(".NET projects", function () {
       });
       it(`should create a .NET project`, async () => {
         await CliHelper.createDotNetProject(appName, testFolder, Capability.Tab);
-        const programCsPath = path.join(testFolder, appName, "Program.cs");
+        const programCsPath = path.join(testFolder, appName, "App.razor");
         chai.assert.isTrue(await fs.pathExists(programCsPath));
       });
     }

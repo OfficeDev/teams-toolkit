@@ -220,19 +220,14 @@ export class DotnetPluginImpl implements PluginImpl {
       async () => await fs.readFile(appSettingsPath, "utf-8")
     );
 
-    let clientId = Placeholders.clientId;
-    let clientSecret = Placeholders.clientSecret;
-    let tenantId = "";
-    let oauthAuthority = "";
-
-    clientId =
+    const clientId =
       ctx.envInfo.state.get(PluginNames.AAD)?.get(DependentPluginInfo.aadClientId) ??
       Placeholders.clientId;
-    clientSecret =
+    const clientSecret =
       ctx.envInfo.state.get(PluginNames.AAD)?.get(DependentPluginInfo.aadClientSecret) ??
       Placeholders.clientSecret;
-    tenantId = ctx.envInfo.state.get(PluginNames.APPST)?.get(DependentPluginInfo.appTenantId);
-    oauthAuthority = tenantId ? PathInfo.oauthHost(tenantId) : Placeholders.oauthAuthority;
+    const tenantId = ctx.envInfo.state.get(PluginNames.APPST)?.get(DependentPluginInfo.appTenantId);
+    const oauthAuthority = tenantId ? PathInfo.oauthHost(tenantId) : Placeholders.oauthAuthority;
 
     appSettings = appSettings.replace(RegularExpr.clientId, clientId);
     appSettings = appSettings.replace(RegularExpr.clientSecret, clientSecret);

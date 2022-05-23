@@ -43,6 +43,12 @@ export class TeamsBotV2Impl {
   readonly name: string = PluginBot.PLUGIN_NAME;
 
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
+    const handler = await ProgressBarFactory.newProgressBar(
+      ProgressBarConstants.SCAFFOLD_TITLE,
+      ProgressBarConstants.SCAFFOLD_STEPS_NUM,
+      ctx
+    );
+    await handler?.start(ProgressBarConstants.SCAFFOLD_STEP_START);
     let workingPath = inputs.projectPath ?? "";
     const lang = getLanguage(ctx.projectSetting.programmingLanguage);
     if (lang !== ProgrammingLanguage.Csharp) {
@@ -50,14 +56,16 @@ export class TeamsBotV2Impl {
     }
     const hostType = resolveHostType(inputs);
     utils.checkAndSavePluginSettingV2(ctx, PluginBot.HOST_TYPE, hostType);
-
     const templateInfos = getTemplateInfos(ctx, inputs);
+
+    await handler?.next(ProgressBarConstants.SCAFFOLD_STEP_FETCH_ZIP);
     await Promise.all(
       templateInfos.map(async (templateInfo) => {
         await scaffold(templateInfo, workingPath);
       })
     );
 
+    await ProgressBarFactory.closeProgressBar(true, ProgressBarConstants.SCAFFOLD_TITLE);
     return ok(Void);
   }
 

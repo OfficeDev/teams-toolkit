@@ -53,8 +53,8 @@
       // Show error information
       function handleAuthError(errorType, errorMessage) {
         const err = JSON.stringify({
-          error: escape(errorType),
-          message: JSON.stringify(escape(errorMessage)),
+          error: encodeURIComponent(errorType),
+          message: encodeURIComponent(JSON.stringify(errorMessage)),
         });
         let para = document.createElement("p");
         let node = document.createTextNode(err);

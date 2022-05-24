@@ -361,7 +361,7 @@ jobs:
           rm -f release.txt
           echo ${{steps.version-change.outputs.CHANGED}} > release.txt
       
-      - name: output the tags
+      - name: update release info to artifact
         if: ${{ steps.version-change.outputs.CHANGED }}
         uses: actions/upload-artifact@v3
         with:

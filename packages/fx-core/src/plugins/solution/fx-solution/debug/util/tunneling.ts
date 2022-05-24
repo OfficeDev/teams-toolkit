@@ -2,14 +2,17 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
+import { FxError, Result, err, ok, Inputs } from "@microsoft/teamsfx-api";
 import axios from "axios";
-import { isMicrosoftTunnelingEnabled } from "../../../../../common/featureFlags";
+import { getTunnelingService, TunnelingService } from "../../../../../common";
 import { getCurrentTunnelPorts } from "../../../../../common/local/microsoftTunnelingManager";
 import { MicrosoftTunnelingNotConnected, NgrokTunnelNotConnected } from "../error";
 
-export async function getTunnelingHttpUrl(port: number): Promise<Result<string, FxError>> {
-  if (isMicrosoftTunnelingEnabled()) {
+export async function getTunnelingHttpUrl(
+  inputs: Inputs,
+  port: number
+): Promise<Result<string, FxError>> {
+  if (getTunnelingService(inputs) === TunnelingService.MicrosoftTunneling) {
     return await getMicrosoftTunnelingHttpUrl(port);
   } else {
     return await getNgrokHttpUrl(port);

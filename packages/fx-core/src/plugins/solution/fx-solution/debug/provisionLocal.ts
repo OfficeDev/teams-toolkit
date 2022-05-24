@@ -20,11 +20,14 @@ import {
   InvalidLocalBotEndpointFormat,
   LocalBotEndpointNotConfigured,
   SetupLocalDebugSettingsError,
-  NgrokTunnelNotConnected,
   ConfigLocalDebugSettingsError,
 } from "./error";
 import { getCodespaceName, getCodespaceUrl } from "./util/codespace";
 import { getNgrokHttpUrl, getTunnelingHttpUrl } from "./util/tunneling";
+import {
+  getTunnelingService,
+  getTunnelingEnabled,
+} from "../../../../common/local/tunnelingSettings";
 import {
   EnvKeysBackend,
   EnvKeysBot,
@@ -59,7 +62,9 @@ export async function setupLocalDebugSettings(
     function: includeBackend ? "true" : "false",
     bot: includeBot ? "true" : "false",
     auth: includeAAD && includeSimpleAuth ? "true" : "false",
-    "skip-ngrok": skipNgrok ? "true" : "false",
+    "skip-ngrok": skipNgrok ? "true" : "false", // only for telemetry backward compatibility
+    "use-tunneling": getTunnelingEnabled(inputs).toString(),
+    "tunneling-service": getTunnelingService(inputs),
     "bot-host-type": includeFuncHostedBot ? BotHostTypes.AzureFunctions : BotHostTypes.AppService,
     "bot-capabilities": JSON.stringify(botCapabilities),
   };
@@ -121,7 +126,7 @@ export async function setupLocalDebugSettings(
           localSettings.bot = {};
         }
 
-        if (skipNgrok) {
+        if (!getTunnelingEnabled(inputs)) {
           const localBotEndpoint = localSettings.bot.botEndpoint as string;
           if (localBotEndpoint === undefined) {
             const error = LocalBotEndpointNotConfigured();
@@ -139,7 +144,7 @@ export async function setupLocalDebugSettings(
           localSettings.bot.botEndpoint = localBotEndpoint;
           localSettings.bot.botDomain = localBotEndpoint.slice(8);
         } else {
-          const tunnelingHttpUrlResult = await getTunnelingHttpUrl(3978);
+          const tunnelingHttpUrlResult = await getTunnelingHttpUrl(inputs, 3978);
           if (tunnelingHttpUrlResult.isErr()) {
             const error = tunnelingHttpUrlResult.error;
             TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);
@@ -202,7 +207,9 @@ export async function setupLocalEnvironment(
     function: includeBackend ? "true" : "false",
     bot: includeBot ? "true" : "false",
     auth: includeAAD && includeSimpleAuth ? "true" : "false",
-    "skip-ngrok": skipNgrok ? "true" : "false",
+    "skip-ngrok": skipNgrok ? "true" : "false", // only for telemetry backward compatibility
+    "tunneling-enabled": getTunnelingEnabled(inputs).toString(),
+    "tunneling-service": getTunnelingService(inputs),
     "bot-host-type": includeFuncHostedBot ? BotHostTypes.AzureFunctions : BotHostTypes.AppService,
     "bot-capabilities": JSON.stringify(botCapabilities),
   };
@@ -264,7 +271,7 @@ export async function setupLocalEnvironment(
           envInfo.state[ResourcePlugins.Bot] = {};
         }
 
-        if (skipNgrok) {
+        if (!getTunnelingEnabled(inputs)) {
           const localBotEndpoint = envInfo.config.bot?.siteEndpoint as string;
           if (localBotEndpoint === undefined) {
             const error = LocalBotEndpointNotConfigured();
@@ -282,7 +289,7 @@ export async function setupLocalEnvironment(
           envInfo.state[ResourcePlugins.Bot].siteEndpoint = localBotEndpoint;
           envInfo.state[ResourcePlugins.Bot].validDomain = localBotEndpoint.slice(8);
         } else {
-          const tunnelingHttpUrlResult = await getTunnelingHttpUrl(3978);
+          const tunnelingHttpUrlResult = await getTunnelingHttpUrl(inputs, 3978);
           if (tunnelingHttpUrlResult.isErr()) {
             const error = tunnelingHttpUrlResult.error;
             TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);

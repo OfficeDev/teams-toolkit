@@ -10,6 +10,7 @@ import {
   DepsType,
   DepsCheckerError,
   defaultHelpLink,
+  TunnelingService,
 } from "@microsoft/teamsfx-core";
 import * as os from "os";
 
@@ -17,6 +18,7 @@ const expect = chai.expect;
 
 import { vscodeHelper } from "../../../src/debug/depsChecker/vscodeHelper";
 import { VSCodeDepsChecker } from "../../../src/debug/depsChecker/vscodeChecker";
+import * as commonUtils from "../../../src/utils/commonUtils";
 
 suite("[Checker UT - Extension]", () => {
   const logger: DepsLogger = <DepsLogger>{};
@@ -158,6 +160,27 @@ suite("[Checker UT - Extension]", () => {
       chai.util.addMethod(checker, "ensure", async function (deps: DepsType[]) {
         chai.assert.equal(deps.length, 0, `Unexpected: ${deps}`);
         return [];
+      });
+
+      const shouldContinue = await checker.resolve(deps);
+      expect(shouldContinue).to.be.true;
+    });
+
+    test("azure + f5: Microsoft tunneling enabled", async () => {
+      const checker = new VSCodeDepsChecker(logger, telemetry);
+      const deps = [DepsType.Ngrok];
+      sandbox.stub(os, "type").returns("Windows_NT");
+      sandbox.stub(vscodeHelper, "hasBot").resolves(true);
+      sandbox.stub(commonUtils, "getTunnelingServiceFromVSCodeSettings").callsFake(() => {
+        return TunnelingService.MicrosoftTunneling;
+      });
+
+      chai.util.addMethod(checker, "ensure", async function (deps: DepsType[]) {
+        chai.assert.equal(
+          deps.length,
+          0,
+          `Should not install ngrok if Microsoft tunneling is enabled`
+        );
       });
 
       const shouldContinue = await checker.resolve(deps);

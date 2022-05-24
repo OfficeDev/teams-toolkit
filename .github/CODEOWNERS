@@ -129,3 +129,7 @@
 /packages/server @chagong @Alive-Fish @jayzhang
 
 /Localize @HuihuiWu-Microsoft @tecton
+
+/packages/fx-core/src/component @jayzhang @xzf0587 @hund030
+/packages/fx-core/test/component @jayzhang @xzf0587 @hund030
+/packages/fx-core/templates/bicep @jayzhang @xzf0587 @hund030

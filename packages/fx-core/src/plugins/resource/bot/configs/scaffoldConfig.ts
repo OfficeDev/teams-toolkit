@@ -7,7 +7,6 @@ import {
   BotCapability,
   CommonStrings,
   HostType,
-  HostTypes,
   NotificationTrigger,
   PluginBot,
   QuestionBotScenarioToBotCapability,
@@ -113,7 +112,7 @@ export class ScaffoldConfig {
     const rawHostType = context.projectSettings?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[
       PluginBot.HOST_TYPE
     ] as string;
-    return utils.convertToConstValues(rawHostType, HostTypes);
+    return utils.convertToConstValues(rawHostType, HostType);
   }
 
   private static getBotCapabilities(context: PluginContext, isScaffold: boolean): BotCapability[] {

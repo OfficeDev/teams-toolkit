@@ -16,10 +16,7 @@ import { FxBotPluginResultFactory as ResultFactory } from "../../../../../src/pl
 import * as testUtils from "./utils";
 import { PluginActRoles } from "../../../../../src/plugins/resource/bot/enums/pluginActRoles";
 import * as factory from "../../../../../src/plugins/resource/bot/clientFactory";
-import {
-  CommonStrings,
-  HostTypes,
-} from "../../../../../src/plugins/resource/bot/resources/strings";
+import { CommonStrings, HostType } from "../../../../../src/plugins/resource/bot/resources/strings";
 import { AADRegistration } from "../../../../../src/plugins/resource/bot/aadRegistration";
 import { BotAuthCredential } from "../../../../../src/plugins/resource/bot/botAuthCredential";
 import { AppStudio } from "../../../../../src/plugins/resource/bot/appStudio/appStudio";
@@ -83,7 +80,7 @@ describe("Teams Bot Resource Plugin", () => {
     it("dispatches to function hosted bot", async () => {
       // Arrange
       const pluginContext = testUtils.newPluginContext();
-      sinon.stub(ScaffoldConfig, "getBotHostType").returns(HostTypes.AZURE_FUNCTIONS);
+      sinon.stub(ScaffoldConfig, "getBotHostType").returns(HostType.AZURE_FUNCTIONS);
 
       // Act
       const impl = botPlugin.getImpl(pluginContext);

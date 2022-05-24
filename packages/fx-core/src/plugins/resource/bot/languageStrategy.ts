@@ -3,7 +3,7 @@
 import * as utils from "./utils/common";
 import { ProgrammingLanguage } from "./enums/programmingLanguage";
 import { TemplateProjectsScenarios, TriggerTemplateScenarioMappings } from "./constants";
-import { Commands, HostTypes } from "./resources/strings";
+import { Commands, HostType } from "./resources/strings";
 
 import * as appService from "@azure/arm-appservice";
 import { NameValuePair } from "@azure/arm-appservice/esm/models";
@@ -156,7 +156,7 @@ export class LanguageStrategy {
     config: TeamsBotConfig
   ): TemplateProjectsScenarios {
     if (config.actRoles.includes(PluginActRoles.Notification)) {
-      if (config.scaffold.hostType === HostTypes.APP_SERVICE) {
+      if (config.scaffold.hostType === HostType.APP_SERVICE) {
         return TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME;
       } else {
         return TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME;

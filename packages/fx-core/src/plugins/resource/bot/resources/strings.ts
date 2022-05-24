@@ -123,12 +123,10 @@ export const QuestionBotScenarioToBotCapability = new Map<BotScenario, BotCapabi
   [BotScenario.CommandAndResponseBot, BotCapabilities.COMMAND_AND_RESPONSE],
 ]);
 
-export const HostTypes = {
-  APP_SERVICE: "app-service",
-  AZURE_FUNCTIONS: "azure-functions",
-} as const;
-
-export type HostType = typeof HostTypes[keyof typeof HostTypes];
+export enum HostType {
+  APP_SERVICE = "app-service",
+  AZURE_FUNCTIONS = "azure-functions",
+}
 
 export const NotificationTriggers = {
   HTTP: "http",

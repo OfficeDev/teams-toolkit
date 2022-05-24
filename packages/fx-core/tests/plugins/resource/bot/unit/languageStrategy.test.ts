@@ -26,7 +26,6 @@ import {
 import { PluginActRoles } from "../../../../../src/plugins/resource/bot/enums/pluginActRoles";
 import {
   HostType,
-  HostTypes,
   NotificationTriggers,
 } from "../../../../../src/plugins/resource/bot/resources/strings";
 import { BotNotificationTriggers } from "../../../../../src/plugins/solution/fx-solution/question";
@@ -139,7 +138,7 @@ describe("Language Strategy", () => {
 
     it("Fetch Notification with App Service hosting", async () => {
       // Arrange
-      const botConfig = createBotConfig(botDir, PluginActRoles.Notification, HostTypes.APP_SERVICE);
+      const botConfig = createBotConfig(botDir, PluginActRoles.Notification, HostType.APP_SERVICE);
       const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
 
       // Act
@@ -159,7 +158,7 @@ describe("Language Strategy", () => {
       const botConfig = createBotConfig(
         botDir,
         PluginActRoles.Notification,
-        HostTypes.AZURE_FUNCTIONS
+        HostType.AZURE_FUNCTIONS
       );
       const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
 
@@ -209,7 +208,7 @@ describe("Language Strategy", () => {
       const botConfig = createBotConfig(
         botDir,
         PluginActRoles.Notification,
-        HostTypes.AZURE_FUNCTIONS
+        HostType.AZURE_FUNCTIONS
       );
       const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
       botConfig.scaffold.triggers = [NotificationTriggers.HTTP];

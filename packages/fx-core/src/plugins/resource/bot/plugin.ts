@@ -26,7 +26,7 @@ import {
   PluginBot,
   ConfigNames,
   PluginLocalDebug,
-  HostTypes,
+  HostType,
 } from "./resources/strings";
 import {
   checkAndThrowIfMissing,
@@ -89,7 +89,7 @@ export class TeamsBotImpl implements PluginImpl {
     await handler?.start(ProgressBarConstants.SCAFFOLD_STEP_START);
 
     if (isBotNotificationEnabled()) {
-      this.config.scaffold.hostType = HostTypes.APP_SERVICE;
+      this.config.scaffold.hostType = HostType.APP_SERVICE;
     }
 
     // 1. Copy the corresponding template project into target directory.

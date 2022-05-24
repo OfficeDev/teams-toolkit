@@ -9,7 +9,7 @@ import { Stage, Json } from "@microsoft/teamsfx-api";
 import {
   BotCapabilities,
   BotCapability,
-  HostTypes,
+  HostType,
   NotificationTriggers,
   PluginBot,
 } from "../../../../../../src/plugins/resource/bot/resources/strings";
@@ -41,7 +41,7 @@ describe("getBotHostType Tests", () => {
     const hostType = ScaffoldConfig.getBotHostType(pluginContext, true);
 
     // Assert
-    chai.assert.equal(hostType, HostTypes.AZURE_FUNCTIONS);
+    chai.assert.equal(hostType, HostType.AZURE_FUNCTIONS);
   });
 
   it("resolves to function host type when provisioning", async () => {
@@ -60,7 +60,7 @@ describe("getBotHostType Tests", () => {
     const hostType = ScaffoldConfig.getBotHostType(pluginContext, false);
 
     // Assert
-    chai.assert.equal(hostType, HostTypes.AZURE_FUNCTIONS);
+    chai.assert.equal(hostType, HostType.AZURE_FUNCTIONS);
   });
 
   it("resolves to app service host type when scaffolding", async () => {
@@ -73,7 +73,7 @@ describe("getBotHostType Tests", () => {
     const hostType = ScaffoldConfig.getBotHostType(pluginContext, true);
 
     // Assert
-    chai.assert.equal(hostType, HostTypes.APP_SERVICE);
+    chai.assert.equal(hostType, HostType.APP_SERVICE);
   });
 
   it("resolves to app service host type when provisioning", async () => {
@@ -92,7 +92,7 @@ describe("getBotHostType Tests", () => {
     const hostType = ScaffoldConfig.getBotHostType(pluginContext, false);
 
     // Assert
-    chai.assert.equal(hostType, HostTypes.APP_SERVICE);
+    chai.assert.equal(hostType, HostType.APP_SERVICE);
   });
 });
 

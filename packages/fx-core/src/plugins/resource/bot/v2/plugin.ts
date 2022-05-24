@@ -36,7 +36,7 @@ import ignore, { Ignore } from "ignore";
 import { DeployConfigsConstants } from "../../../../common/azure-hosting/hostingConstant";
 import { getTemplateInfos, resolveHostType, resolveServiceType } from "./common";
 import { ProgrammingLanguage } from "./enum";
-import { getLanguage, getRuntime } from "./mapping";
+import { getLanguage, getProjectFileName, getRuntime } from "./mapping";
 
 export class TeamsBotV2Impl {
   readonly name: string = PluginBot.PLUGIN_NAME;
@@ -134,7 +134,12 @@ export class TeamsBotV2Impl {
     tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
     const projectPath = checkPrecondition(Messages.WorkingDirIsMissing, inputs.projectPath);
-    const workingDir = path.join(projectPath, CommonStrings.BOT_WORKING_DIR_NAME);
+    const language = getLanguage(ctx.projectSetting.programmingLanguage);
+    const workingDir =
+      language === ProgrammingLanguage.Csharp
+        ? projectPath
+        : path.join(projectPath, CommonStrings.BOT_WORKING_DIR_NAME);
+    const projectFileName = getProjectFileName(getRuntime(language), ctx.projectSetting.appName);
     const hostType = resolveServiceType(ctx);
     const deployDir = path.join(workingDir, DeployConfigs.DEPLOYMENT_FOLDER);
     const configFile = TeamsBotV2Impl.configFile(hostType, workingDir);
@@ -172,7 +177,7 @@ export class TeamsBotV2Impl {
     await progressBarHandler.start(ProgressBarConstants.DEPLOY_STEP_START);
     // build
     await progressBarHandler.next(ProgressBarConstants.DEPLOY_STEP_NPM_INSTALL);
-    await TeamsBotV2Impl.localBuild(ctx, inputs, projectPath);
+    await TeamsBotV2Impl.localBuild(language, workingDir, projectFileName);
 
     // pack
     await progressBarHandler.next(ProgressBarConstants.DEPLOY_STEP_ZIP_FOLDER);
@@ -228,20 +233,18 @@ export class TeamsBotV2Impl {
   }
 
   private static async localBuild(
-    ctx: Context,
-    inputs: Inputs,
-    projectPath: string
+    lang: ProgrammingLanguage,
+    workingDir: string,
+    projectFileName: string
   ): Promise<string> {
     // Return the folder path to be zipped and uploaded
 
-    const lang = getLanguage(ctx.projectSetting.programmingLanguage);
-    const packDir = path.join(projectPath, CommonStrings.BOT_WORKING_DIR_NAME);
     if (lang === ProgrammingLanguage.Ts) {
       //Typescript needs tsc build before deploy because of Windows app server. other languages don"t need it.
       try {
-        await utils.execute("npm install", packDir);
-        await utils.execute("npm run build", packDir);
-        return packDir;
+        await utils.execute("npm install", workingDir);
+        await utils.execute("npm run build", workingDir);
+        return workingDir;
       } catch (e) {
         throw new CommandExecutionError(
           `${Commands.NPM_INSTALL},${Commands.NPM_BUILD}`,
@@ -254,8 +257,8 @@ export class TeamsBotV2Impl {
     if (lang === ProgrammingLanguage.Js) {
       try {
         // fail to npm install @microsoft/teamsfx on azure web app, so pack it locally.
-        await utils.execute("npm install", packDir);
-        return packDir;
+        await utils.execute("npm install", workingDir);
+        return workingDir;
       } catch (e) {
         throw new CommandExecutionError(`${Commands.NPM_INSTALL}`, packDir, e);
       }
@@ -263,12 +266,11 @@ export class TeamsBotV2Impl {
 
     if (lang === ProgrammingLanguage.Csharp) {
       try {
-        const runtime = await TeamsBotV2Impl.getFrameworkVersion(projectPath);
-        await utils.execute(
-          `dotnet publish --configuration Release --runtime ${runtime} --self-contained`,
-          packDir
+        const framework = await TeamsBotV2Impl.getFrameworkVersion(
+          path.join(workingDir, projectFileName)
         );
-        return path.join(packDir, "bin", "release", runtime);
+        await utils.execute(`dotnet publish --configuration Release`, workingDir);
+        return path.join(workingDir, "bin", "release", framework);
       } catch (e) {
         throw new CommandExecutionError(`dotnet publish`, packDir, e);
       }

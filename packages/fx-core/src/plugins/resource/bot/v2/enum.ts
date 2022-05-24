@@ -6,3 +6,8 @@ export enum ProgrammingLanguage {
   Ts = "ts",
   Csharp = "csharp",
 }
+
+export enum Runtime {
+  Node = "node",
+  Dotnet = "csharp",
+}

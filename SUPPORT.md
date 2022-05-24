@@ -49,7 +49,9 @@ Teams Toolkit CLI/SDK will not be guaranteed to work on platforms and other depe
 |----|----|----|----|----|----|----|
 |Public Preview|v3.8.x|v17.2|v0.14.x|v0.7.x|v1.11.x,v1.12.x|v1.11|
 |GA|v4.0.0|v17.3|v1.0.0|v1.0.0|v1.12.x|v1.11|
-|Beta|v4.0.0|v17.3|v1.0.0|v2.0.0-beta|v2.0.0|m365DevPreview|
+|Beta*|v4.0.0|v17.3|v1.0.0|v2.0.0-beta|v2.0.0|m365DevPreview|
+
+*Enable extending Teams apps across Microsoft 365
 
 ## How to file issues and get help  
 

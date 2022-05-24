@@ -22,8 +22,8 @@ We’re planning to make Teams Toolkit for Visual Studio generally available lat
 ##### Free, secure, integrated network tunneling
 We know how challenging it can be to debug different capabilities and services with your Teams apps and that it’s not always possible to use existing options for network tunneling in your enterprise environments. To help with this, Teams Toolkit will use new tooling that provides a network tunnel that allows secure communication only from Microsoft Teams.
 
-##### Mobile debugging
-Teams Toolkit will continue to make running and debugging your apps simple including on mobile devices. We’re bringing support for launching and debugging to Teams and Outlook mobile first, and Office mobile will follow later this year.  
+##### Mobile preview
+Teams Toolkit will continue to make running your apps simple including on mobile devices. We’re bringing support for launching to Teams and Outlook mobile first, and Office mobile will follow later this year.  
 
 ##### Office add-ins
 We’re collaborating with the Office add-ins team to make it simpler to create add-ins with a single set of tools using Teams Toolkit. This will bring the same quick getting started and simple run and debug experience we’ve made for Teams to Office add-ins. 

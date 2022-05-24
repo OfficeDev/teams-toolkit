@@ -268,7 +268,7 @@ export class TeamsBotV2Impl {
           `dotnet publish --configuration Release --runtime ${runtime} --self-contained`,
           packDir
         );
-        return packDir;
+        return path.join(packDir, "bin", "release", runtime);
       } catch (e) {
         throw new CommandExecutionError(`dotnet publish`, packDir, e);
       }

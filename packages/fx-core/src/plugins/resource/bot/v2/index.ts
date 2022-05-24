@@ -33,18 +33,15 @@ import {
 import {
   configureLocalResourceAdapter,
   configureResourceAdapter,
-  deployAdapter,
   executeUserTaskAdapter,
-  generateResourceTemplateAdapter,
   getQuestionsForScaffoldingAdapter,
   getQuestionsForUserTaskAdapter,
   provisionLocalResourceAdapter,
   provisionResourceAdapter,
-  scaffoldSourceCodeAdapter,
-  updateResourceTemplateAdapter,
 } from "../../utils4v2";
 import { PluginBot } from "../resources/strings";
 import { TeamsBotV2Impl } from "./plugin";
+import { ProgressBarFactory } from "../progressBars";
 
 @Service(ResourcePluginsV2.BotPlugin)
 export class BotPluginV2 implements ResourcePlugin {
@@ -141,7 +138,7 @@ export class BotPluginV2 implements ResourcePlugin {
     envInfo: DeepReadonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
-    return this.impl.deploy(ctx, inputs, envInfo, tokenProvider);
+    return catchAndThrow(() => this.impl.deploy(ctx, inputs, envInfo, tokenProvider));
   }
 
   async getQuestionsForUserTask(
@@ -187,6 +184,7 @@ async function catchAndThrow<T>(
   try {
     return await fn();
   } catch (error: unknown) {
+    await ProgressBarFactory.closeProgressBar(false); // Close all progress bars.
     return err(error as FxError);
   }
 }

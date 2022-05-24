@@ -13,10 +13,6 @@ export enum TunnelingService {
   MicrosoftTunneling = "microsoftTunneling",
 }
 
-export function getTunnelingEnabled(inputs: Inputs): boolean {
-  return inputs.tunnelingService !== TunnelingService.None;
-}
-
 export function getTunnelingService(inputs: Inputs): TunnelingService {
   return inputs.tunnelingService in Object.values(TunnelingService)
     ? inputs.tunnelingService

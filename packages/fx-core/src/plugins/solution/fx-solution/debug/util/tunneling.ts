@@ -12,6 +12,7 @@ export async function getTunnelingHttpUrl(
   inputs: Inputs,
   port: number
 ): Promise<Result<string, FxError>> {
+  // Assuming tunneling is enabled
   if (getTunnelingService(inputs) === TunnelingService.MicrosoftTunneling) {
     return await getMicrosoftTunnelingHttpUrl(port);
   } else {

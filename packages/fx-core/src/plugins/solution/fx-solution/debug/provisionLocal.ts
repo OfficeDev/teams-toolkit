@@ -24,10 +24,7 @@ import {
 } from "./error";
 import { getCodespaceName, getCodespaceUrl } from "./util/codespace";
 import { getNgrokHttpUrl, getTunnelingHttpUrl } from "./util/tunneling";
-import {
-  getTunnelingService,
-  getTunnelingEnabled,
-} from "../../../../common/local/tunnelingSettings";
+import { getTunnelingService, TunnelingService } from "../../../../common/local/tunnelingSettings";
 import {
   EnvKeysBackend,
   EnvKeysBot,
@@ -51,7 +48,7 @@ export async function setupLocalDebugSettings(
   const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
   const includeAAD = ProjectSettingsHelper.includeAAD(ctx.projectSetting);
   const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(ctx.projectSetting);
-  const skipNgrok = inputs.checkerInfo?.skipNgrok as boolean;
+  const tunnelingService = getTunnelingService(inputs);
   const includeFuncHostedBot = ProjectSettingsHelper.includeFuncHostedBot(ctx.projectSetting);
   const botCapabilities = ProjectSettingsHelper.getBotCapabilities(ctx.projectSetting);
 
@@ -62,9 +59,7 @@ export async function setupLocalDebugSettings(
     function: includeBackend ? "true" : "false",
     bot: includeBot ? "true" : "false",
     auth: includeAAD && includeSimpleAuth ? "true" : "false",
-    "skip-ngrok": skipNgrok ? "true" : "false", // only for telemetry backward compatibility
-    "use-tunneling": getTunnelingEnabled(inputs).toString(),
-    "tunneling-service": getTunnelingService(inputs),
+    "tunneling-service": tunnelingService,
     "bot-host-type": includeFuncHostedBot ? BotHostTypes.AzureFunctions : BotHostTypes.AppService,
     "bot-capabilities": JSON.stringify(botCapabilities),
   };
@@ -126,7 +121,7 @@ export async function setupLocalDebugSettings(
           localSettings.bot = {};
         }
 
-        if (!getTunnelingEnabled(inputs)) {
+        if (tunnelingService === TunnelingService.None) {
           const localBotEndpoint = localSettings.bot.botEndpoint as string;
           if (localBotEndpoint === undefined) {
             const error = LocalBotEndpointNotConfigured();
@@ -196,7 +191,7 @@ export async function setupLocalEnvironment(
   const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
   const includeAAD = ProjectSettingsHelper.includeAAD(ctx.projectSetting);
   const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(ctx.projectSetting);
-  const skipNgrok = inputs.checkerInfo?.skipNgrok as boolean;
+  const tunnelingService = getTunnelingService(inputs);
   const includeFuncHostedBot = ProjectSettingsHelper.includeFuncHostedBot(ctx.projectSetting);
   const botCapabilities = ProjectSettingsHelper.getBotCapabilities(ctx.projectSetting);
 
@@ -207,9 +202,7 @@ export async function setupLocalEnvironment(
     function: includeBackend ? "true" : "false",
     bot: includeBot ? "true" : "false",
     auth: includeAAD && includeSimpleAuth ? "true" : "false",
-    "skip-ngrok": skipNgrok ? "true" : "false", // only for telemetry backward compatibility
-    "tunneling-enabled": getTunnelingEnabled(inputs).toString(),
-    "tunneling-service": getTunnelingService(inputs),
+    "tunneling-service": tunnelingService,
     "bot-host-type": includeFuncHostedBot ? BotHostTypes.AzureFunctions : BotHostTypes.AppService,
     "bot-capabilities": JSON.stringify(botCapabilities),
   };
@@ -271,7 +264,7 @@ export async function setupLocalEnvironment(
           envInfo.state[ResourcePlugins.Bot] = {};
         }
 
-        if (!getTunnelingEnabled(inputs)) {
+        if (tunnelingService === TunnelingService.None) {
           const localBotEndpoint = envInfo.config.bot?.siteEndpoint as string;
           if (localBotEndpoint === undefined) {
             const error = LocalBotEndpointNotConfigured();

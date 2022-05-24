@@ -1015,7 +1015,6 @@ export async function runCommand(
           inputs.ignoreEnvInfo = true;
         }
         inputs.checkerInfo = {
-          skipNgrok: !vscodeHelper.isNgrokCheckerEnabled(),
           trustDevCert: vscodeHelper.isTrustDevCertEnabled(),
         };
         setTunnelingService(inputs, getTunnelingServiceFromVSCodeSettings());

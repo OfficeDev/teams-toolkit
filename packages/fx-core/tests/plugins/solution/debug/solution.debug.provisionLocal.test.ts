@@ -11,6 +11,7 @@ import {
   configLocalEnvironment,
 } from "../../../../src/plugins/solution/fx-solution/debug/provisionLocal";
 import * as path from "path";
+import { setTunnelingService, TunnelingService } from "../../../../src/common";
 
 chai.use(chaiAsPromised);
 
@@ -117,8 +118,8 @@ describe("solution.debug.provisionLocal", () => {
       const inputs = {
         platform: Platform.VSCode,
         projectPath: path.resolve(__dirname, `./data/${projectSetting.projectId}`),
-        checkerInfo: { skipNgrok: true },
       };
+      setTunnelingService(inputs, TunnelingService.None);
       const v2Context = new MockedV2Context(projectSetting);
       const envInfo = {
         envName: "default",
@@ -157,8 +158,8 @@ describe("solution.debug.provisionLocal", () => {
       const inputs = {
         platform: Platform.VSCode,
         projectPath: path.resolve(__dirname, `./data/${projectSetting.projectId}`),
-        checkerInfo: { skipNgrok: true },
       };
+      setTunnelingService(inputs, TunnelingService.None);
       const v2Context = new MockedV2Context(projectSetting);
       const envInfo = {
         envName: "default",

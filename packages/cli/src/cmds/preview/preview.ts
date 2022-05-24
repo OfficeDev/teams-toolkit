@@ -45,6 +45,8 @@ import {
   isExistingTabApp as isExistingTabAppCore,
   isM365AppEnabled,
   validationSettingsHelpLink,
+  TunnelingService,
+  setTunnelingService,
 } from "@microsoft/teamsfx-core";
 
 import { YargsCommand } from "../../yargsCommand";
@@ -260,7 +262,10 @@ export default class Preview extends YargsCommand {
     }
     const core = coreResult.value;
 
-    const skipNgrok = !(await isNgrokCheckerEnabled());
+    // TODO: support Microsoft tunneling for CLI
+    const tunnelingService = (await isNgrokCheckerEnabled())
+      ? TunnelingService.Ngrok
+      : TunnelingService.None;
     const trustDevCert = await isTrustDevCertEnabled();
     let ignoreEnvInfo = true;
     if (isConfigUnifyEnabled()) {
@@ -271,11 +276,11 @@ export default class Preview extends YargsCommand {
       platform: Platform.CLI,
       ignoreEnvInfo: ignoreEnvInfo, // local debug does not require environments
       checkerInfo: {
-        skipNgrok: skipNgrok,
         trustDevCert: trustDevCert,
       },
       env: isConfigUnifyEnabled() ? environmentManager.getLocalEnvName() : undefined,
     };
+    setTunnelingService(inputs, tunnelingService);
 
     const localEnvManager = new LocalEnvManager(cliLogger, CliTelemetry.getReporter());
     const projectSettings = await localEnvManager.getProjectSettings(workspaceFolder);
@@ -382,7 +387,7 @@ export default class Preview extends YargsCommand {
     await this.serviceLogWriter.init();
 
     /* === start ngrok === */
-    if (includeBot && !skipNgrok) {
+    if (includeBot && tunnelingService !== TunnelingService.None) {
       const result = await this.startNgrok(workspaceFolder, depsManager);
       if (result.isErr()) {
         return result;

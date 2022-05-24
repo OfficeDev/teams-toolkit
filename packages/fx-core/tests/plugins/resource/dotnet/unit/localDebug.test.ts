@@ -56,7 +56,7 @@ describe("WebappPlugin", () => {
               [DependentPluginInfo.aadClientSecret, clientSecret],
             ]),
           ],
-          [PluginNames.APPST, new Map([[DependentPluginInfo.appTenantId, tenantId]])],
+          [PluginNames.SOLUTION, new Map([[DependentPluginInfo.appTenantId, tenantId]])],
         ]),
       } as EnvInfo;
       sinon.stub(core, "isConfigUnifyEnabled").returns(true);

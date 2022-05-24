@@ -14,7 +14,7 @@ export enum TunnelingService {
 }
 
 export function getTunnelingService(inputs: Inputs): TunnelingService {
-  return inputs.tunnelingService in Object.values(TunnelingService)
+  return Object.values(TunnelingService).includes(inputs.tunnelingService)
     ? inputs.tunnelingService
     : TunnelingService.Ngrok;
 }

@@ -21,7 +21,7 @@ export class RegularExpr {
 
 export class DotnetPluginInfo {
   // TODO: Migrate DotNet plugin to frontend plugin
-  static readonly pluginName = "fx-resource-frontend";
+  static readonly pluginName = "fx-resource-frontend-hosting";
   static readonly issueLink = "https://github.com/OfficeDev/TeamsFx/issues/new";
   static readonly helpLink = "https://aka.ms/teamsfx-bz-help";
 

@@ -7,8 +7,7 @@
       "launchUrl": "https://teams.microsoft.com/l/app/%TEAMSAPPID%?installAppPackage=true&webjoin=true&appTenantId=%TENANTID%&login_hint=%USERNAME%",
       "applicationUrl": "http://localhost:5130",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "TEAMSFX_NOTIFICATION_LOCALSTORE_DIR": "$(MSBuildProjectDirectory)"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "hotReloadProfile": "aspnetcore"
     },
@@ -17,8 +16,7 @@
       "dotnetRunMessages": "true",
       "applicationUrl": "https://localhost:7130;http://localhost:5130",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "TEAMSFX_NOTIFICATION_LOCALSTORE_DIR": "$(MSBuildProjectDirectory)"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "hotReloadProfile": "aspnetcore"
     }

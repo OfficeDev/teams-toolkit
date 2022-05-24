@@ -7,6 +7,8 @@
 
 Teams Toolkit for Visual Studio, Visual Studio Code, and Command Line Interface (CLI) are tools for building Teams apps, fast. Whether you are new to Teams platform or a seasoned developer, Teams Toolkit is the best way to create, build, debug, test, and deploy apps.
 
+<img width="1350" alt="MicrosoftTeams-image" src="https://aka.ms/teamsfx-hero-image">
+
 Teams Toolkit provides support for the end-to-end Teams development journey, including:
 
 - Support for all major Teams extensibility surfaces, including tabs, bots, and message extensions.
@@ -23,21 +25,37 @@ Pick your preferred tool to get started:
 
 - For JavaScript and TypeScript developers, install [Teams Toolkit for Visual Studio Code](https://docs.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals#install-teams-toolkit-for-visual-studio-code).
 - For .NET developers, install [Teams Toolkit for Visual Studio](https://docs.microsoft.com/microsoftteams/platform/toolkit/visual-studio-overview#install-teams-toolkit-for-visual-studio).
-- For command line users, install [TeamsFx CLI](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-cli#get-started): `npm install -g @microsoft/teamsfx-cli`
+- For command line users, install [Teams Toolkit CLI](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-cli#get-started): `npm install -g @microsoft/teamsfx-cli`
 
-Visit [the documentation](https://aka.ms/teamsfx-docs) to get started with building apps with Teams Toolkit today.
+Visit [Microsoft Teams developer documentation](https://aka.ms/teamsfx-docs) to get started with building apps with Teams Toolkit today.
+
+## Roadmap
+
+Teams Toolkit for Visual Studio, Visual Studio Code, and Command Line Interface (CLI) will be updated regularly with new features and bug fixes to continuously improve end-to-end Teams development experience. Visit our [product roadmap](https://aka.ms/teamsfx-roadmap) to find out what's coming.
+
+## Support Policy
+
+Teams Toolkit products will follow [Modern Lifecycle Policy](https://docs.microsoft.com/lifecycle/policies/modern) and extended support as described in our [lifecycle and support document](https://aka.ms/teamsfx-support).
+
+## Feedback
+
+- Ask a question on [Stack Overflow](https://stackoverflow.com/questions/tagged/teams-toolkit)
+- [Request a new feature](https://github.com/OfficeDev/TeamsFx/issues/new?assignees=&labels=&template=feature_request.md&title=)
+- [File an issue](https://github.com/OfficeDev/TeamsFx/issues/new?assignees=&labels=&template=bug_report.md&title=)
+- Send an email to ttkfeedback@microsoft.com to chat with the product team
+- Report security issues and bugs to the Microsoft Security Response Center (MSRC) via secure@microsoft.com. Further information can be found in the [Security TechCenter](https://www.microsoft.com/msrc/faqs-report-an-issue?rtc=1).
 
 ## Repository
 
 This repository contains the following packages:
 | Package | Description |
 | ----------- | ----------- |
-| **Visual Studio Code Extension** [packages/vscode-extension](https://github.com/OfficeDev/TeamsFx/tree/main/packages/vscode-extension) | The extension named "Teams Toolkit" enables you to scaffold, run, debug, and deploy custom Teams apps directly from Visual Studio Code. It provides all the features of the CLI tool `teamsfx` integrated into the IDE, as well as easy access to more samples, docs and tools. |
-| **TeamsFx CLI** [packages/cli](https://github.com/OfficeDev/TeamsFx/tree/main/packages/cli) | Whether you prefer keyboard-centric developer operations, or you are automating your CI/CD pipeline, the `teamsfx` command line tool offers the same features as the IDE extensions. |
-| **SDK** [packages/sdk](https://github.com/OfficeDev/TeamsFx/tree/main/packages/sdk) | The main TeamsFx code library encapsulating simple authentication for both client and server-side code tailored for Teams developers. |
-| **API** [packages/api](https://github.com/OfficeDev/TeamsFx/tree/main/packages/api) | The TeamsFx API is a collection of contracts supported by the IDE Extensions and CLI. It enables developers to write plugins to extend TeamsFx with new capabilities. |
+| **Teams Toolkit for Visual Studio Code** [packages/vscode-extension](https://github.com/OfficeDev/TeamsFx/tree/main/packages/vscode-extension) | Teams Toolkit for Visual Studio Code enables you to scaffold, run, debug, and deploy custom Teams apps directly from Visual Studio Code. It provides all the features of the Teams Toolkit CLI tool integrated into the IDE, as well as easy access to more samples, docs and tools. |
+| **Teams Toolkit CLI** [packages/cli](https://github.com/OfficeDev/TeamsFx/tree/main/packages/cli) | Whether you prefer keyboard-centric developer operations, or you are automating your CI/CD pipeline, the Teams Toolkit CLI tool offers the same features as the IDE extensions. |
+| **SDK** [packages/sdk](https://github.com/OfficeDev/TeamsFx/tree/main/packages/sdk) | The main code library encapsulating simple authentication for both client and server-side code tailored for Teams developers. |
+| **API** [packages/api](https://github.com/OfficeDev/TeamsFx/tree/main/packages/api) | The API package is a collection of contracts supported by the IDE Extensions and CLI. It enables developers to write plugins to extend TeamsFx with new capabilities. |
 | **Core** [packages/fx-core](https://github.com/OfficeDev/TeamsFx/tree/main/packages/fx-core) | The Core package centralizes implementation of capabilities shared by the IDE Extensions and the CLI. |
-| **Azure Functions Support** [packages/function-extension](https://github.com/OfficeDev/TeamsFx/tree/main/packages/function-extension) | TeamsFx helps developers include server-side code in their Teams application backed by [Azure Functions](https://docs.microsoft.com/azure/azure-functions/). This plugin adds support to simplify the integration of an authentication-aware Azure Function into your Teams app. |
+| **Azure Functions Support** [packages/function-extension](https://github.com/OfficeDev/TeamsFx/tree/main/packages/function-extension) | Teams Toolkit helps developers include server-side code in their Teams application backed by [Azure Functions](https://docs.microsoft.com/azure/azure-functions/). This plugin adds support to simplify the integration of an authentication-aware Azure Function into your Teams app. |
 
 ## Contributions
 
@@ -52,15 +70,9 @@ provided by the bot. You will only need to do this once across all repos using o
 - Download our latest daily Builds [here](https://github.com/OfficeDev/TeamsFx/releases)
 - Check out our [contribution](https://github.com/OfficeDev/TeamsFx/blob/main/CONTRIBUTING.md) page for more information
 
-## Data/Telemetry
+## Telemetry
 
 Teams Toolkit collects usage data and sends it to Microsoft to help improve our products and services. Read our [Privacy Statement](https://privacy.microsoft.com/privacystatement) and [Data Collection Notice](https://docs.opensource.microsoft.com/content/releasing/telemetry.html) to learn more. Learn more in our [FAQ](https://code.visualstudio.com/docs/supporting/faq#_how-to-disable-telemetry-reporting).
-
-## Feedback
-
-[Log an issue](https://github.com/OfficeDev/TeamsFx/issues/new?assignees=&labels=&template=bug_report.md&title=) or [request a feature](https://github.com/OfficeDev/TeamsFx/issues/new?assignees=&labels=&template=feature_request.md&title=) to us on GitHub.
-
-Report security issues and bugs privately, via email, to the Microsoft Security Response Center (MSRC) secure@microsoft.com. You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message. Further information, including the MSRC PGP key, can be found in the [Security TechCenter](https://www.microsoft.com/msrc/faqs-report-an-issue?rtc=1).
 
 ## Trademarks
 

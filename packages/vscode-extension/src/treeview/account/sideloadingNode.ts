@@ -28,7 +28,7 @@ export class SideloadingNode extends DynamicNode {
     let isSideloadingAllowed: boolean | undefined;
     if (this.token != "") {
       isSideloadingAllowed = await getSideloadingStatus(this.token);
-      if (!isSideloadingAllowed) {
+      if (isSideloadingAllowed === false) {
         await checkSideloadingCallback();
       }
     }

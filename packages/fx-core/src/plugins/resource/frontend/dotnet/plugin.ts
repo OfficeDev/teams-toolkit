@@ -226,7 +226,9 @@ export class DotnetPluginImpl implements PluginImpl {
     const clientSecret =
       ctx.envInfo.state.get(PluginNames.AAD)?.get(DependentPluginInfo.aadClientSecret) ??
       Placeholders.clientSecret;
-    const tenantId = ctx.envInfo.state.get(PluginNames.APPST)?.get(DependentPluginInfo.appTenantId);
+    const tenantId = ctx.envInfo.state
+      .get(PluginNames.SOLUTION)
+      ?.get(DependentPluginInfo.appTenantId);
     const oauthAuthority = tenantId ? PathInfo.oauthHost(tenantId) : Placeholders.oauthAuthority;
 
     appSettings = appSettings.replace(RegularExpr.clientId, clientId);

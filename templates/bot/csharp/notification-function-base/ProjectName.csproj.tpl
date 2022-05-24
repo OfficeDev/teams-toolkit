@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove=".notification.localstore.json" />
+    <None Include=".notification.localstore.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,7 +25,7 @@
     <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.16.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.0.1" />
-    <PackageReference Include="Microsoft.TeamsFx" Version="0.4.1-rc" />
+    <PackageReference Include="Microsoft.TeamsFx" Version="0.6.0-rc" />
   </ItemGroup>
 
   <ItemGroup>

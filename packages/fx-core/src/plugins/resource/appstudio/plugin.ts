@@ -67,8 +67,6 @@ import {
   WEB_APPLICATION_INFO_LOCAL_DEBUG,
   WEB_APPLICATION_INFO_MULTI_ENV,
   TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3,
-  DEVELOPER_PREVIEW_SCHEMA,
-  M365_DEVELOPER_PREVIEW_MANIFEST_VERSION,
   BOTS_TPL_FOR_COMMAND_AND_RESPONSE,
   BOTS_TPL_FOR_NOTIFICATION,
   COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV_M365,
@@ -1811,10 +1809,6 @@ export async function createLocalManifest(
     if (hasMessageExtension) {
       manifest.composeExtensions = COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG;
     }
-    if (isM365) {
-      manifest.$schema = DEVELOPER_PREVIEW_SCHEMA;
-      manifest.manifestVersion = M365_DEVELOPER_PREVIEW_MANIFEST_VERSION;
-    }
     return manifest;
   }
 }
@@ -1858,10 +1852,6 @@ export async function createManifest(
       manifest.composeExtensions = isM365
         ? COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV_M365
         : COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV;
-    }
-    if (isM365) {
-      manifest.$schema = DEVELOPER_PREVIEW_SCHEMA;
-      manifest.manifestVersion = M365_DEVELOPER_PREVIEW_MANIFEST_VERSION;
     }
 
     return manifest;

@@ -19,7 +19,7 @@ Run your app with local debugging by pressing `F5` in VSCode. Select `Debug (Edg
 >
 > To run locally, you will need:
 >
-> - `Node.ts` installed locally (recommended version: 14)
+> - `Node.js` installed locally (recommended version: 14)
 > - An [M365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
 >
 
@@ -60,7 +60,7 @@ The following files are project-related files. You generally will not need to cu
 
 # Customize your application
 
-By default a single command is generated that sends the `hellowworldComnmand.json` Adaptive Card when a user types `hello` in the private message chat with the bot.
+By default a single command is generated that sends the `helloworldCommand.json` Adaptive Card when a user types `hello` in the private message chat with the bot.
 
 This section outlines some customization you can do to adopt the application for your needs.
 

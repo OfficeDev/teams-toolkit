@@ -79,7 +79,6 @@ export class TeamsBotV2Impl {
     const bicepContext = {
       plugins: plugins.map((obj) => obj.name),
       configs: bicepConfigs,
-      useNode: getLanguage(ctx.projectSetting.programmingLanguage) !== ProgrammingLanguage.Csharp,
     };
 
     const serviceTypes = [resolveServiceType(ctx), ServiceType.BotService];

@@ -5,10 +5,10 @@ param userAssignedIdentityId string
 var resourceBaseName = provisionParameters.resourceBaseName
 var serverfarmsName = contains(provisionParameters, 'botServerfarmsName') ? provisionParameters['botServerfarmsName'] : '${resourceBaseName}bot' // Try to read name for App Service Plan from parameters
 var webAppSKU = contains(provisionParameters, 'botWebAppSKU') ? provisionParameters['botWebAppSKU'] : 'B1' // Try to read SKU for Azure Web App from parameters
-{{#if useNode}}
-var scriptGenerator = '--node'
+{{#if (contains "csharp" configs)}}
+var scmScriptGeneratorArgs = '--aspNetCore'
 {{else}}
-var scriptGenerator = '--aspNetCore'
+var scmScriptGeneratorArgs = '--node'
 {{/if}}
 var webAppName = contains(provisionParameters, 'botSitesName') ? provisionParameters['botSitesName'] : '${resourceBaseName}bot' // Try to read name for Azure Web App from parameters
 
@@ -48,7 +48,7 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
         }
         {
           name: 'SCM_SCRIPT_GENERATOR_ARGS'
-          value: scriptGenerator
+          value: scmScriptGeneratorArgs
         }
       ]
       ftpsState: 'FtpsOnly'

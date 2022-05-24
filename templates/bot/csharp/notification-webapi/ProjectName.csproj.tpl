@@ -14,14 +14,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove=".notification.localstore.json" />
+    <None Include=".notification.localstore.json" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AdaptiveCards.Templating" Version="1.2.2" />
     <PackageReference Include="Microsoft.Bot.Builder" Version="4.16.0" />
     <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.16.0" />
-    <PackageReference Include="Microsoft.TeamsFx" Version="0.4.1-rc" />
+    <PackageReference Include="Microsoft.TeamsFx" Version="0.5.0-rc" />
   </ItemGroup>
 
 </Project>

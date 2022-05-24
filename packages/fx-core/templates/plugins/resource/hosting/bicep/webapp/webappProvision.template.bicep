@@ -4,11 +4,7 @@ param userAssignedIdentityId string
 
 var resourceBaseName = provisionParameters.resourceBaseName
 var serverfarmsName = contains(provisionParameters, 'botServerfarmsName') ? provisionParameters['botServerfarmsName'] : '${resourceBaseName}bot' // Try to read name for App Service Plan from parameters
-{{#if enableAlwaysOn}}
 var webAppSKU = contains(provisionParameters, 'botWebAppSKU') ? provisionParameters['botWebAppSKU'] : 'B1' // Try to read SKU for Azure Web App from parameters
-{{else}}
-var webAppSKU = contains(provisionParameters, 'botWebAppSKU') ? provisionParameters['botWebAppSKU'] : 'F1' // Try to read SKU for Azure Web App from parameters
-{{/if}}
 {{#if useNode}}
 var scriptGenerator = '--node'
 {{else}}
@@ -36,9 +32,7 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
     keyVaultReferenceIdentity: userAssignedIdentityId // Use given user assigned identity to access Key Vault
     httpsOnly: true
     siteConfig: {
-      {{#if enableAlwaysOn}}
       alwaysOn: true
-      {{/if}}
       appSettings: [
         {
           name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
@@ -54,7 +48,7 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
         }
         {
           name: 'SCM_SCRIPT_GENERATOR_ARGS'
-          value: '${scriptGenerator}'
+          value: scriptGenerator
         }
       ]
       ftpsState: 'FtpsOnly'

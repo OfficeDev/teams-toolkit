@@ -17,7 +17,6 @@ import { AzureHostingFactory } from "../../../../common/azure-hosting/hostingFac
 import { Commands, CommonStrings, ConfigNames, PluginBot } from "../resources/strings";
 import { checkAndThrowIfMissing, checkPrecondition, CommandExecutionError } from "../errors";
 import { BicepConfigs, ServiceType } from "../../../../common/azure-hosting/interfaces";
-import { isBotNotificationEnabled } from "../../../../common";
 import {
   DEFAULT_DOTNET_FRAMEWORK,
   DeployConfigs,
@@ -80,7 +79,6 @@ export class TeamsBotV2Impl {
     const bicepContext = {
       plugins: plugins.map((obj) => obj.name),
       configs: bicepConfigs,
-      enableAlwaysOn: isBotNotificationEnabled(),
       useNode: getLanguage(ctx.projectSetting.programmingLanguage) !== ProgrammingLanguage.Csharp,
     };
 

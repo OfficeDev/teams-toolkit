@@ -2,6 +2,8 @@
 
 ## Teams Toolkit lifecycle and support policy
 
+The Teams Toolkit lifecycle and support policy covers GA and future versions.
+
 Teams Toolkit products will follow [Modern Lifecycle Policy](https://docs.microsoft.com/en-us/lifecycle/policies/modern) unless otherwise noted.
 
 In addition, we want to add additional support on top of Microsoft standard Modern Lifecycle Policy:

@@ -9,7 +9,7 @@ var webAppSKU = contains(provisionParameters, 'botWebAppSKU') ? provisionParamet
 {{else}}
 var webAppSKU = contains(provisionParameters, 'botWebAppSKU') ? provisionParameters['botWebAppSKU'] : 'F1' // Try to read SKU for Azure Web App from parameters
 {{/if}}
-{{#if (contains "js" configs || contains "ts" configs)}}
+{{#if useNode}}
 var scriptGenerator = '--node'
 {{else}}
 var scriptGenerator = '--aspNetCore'

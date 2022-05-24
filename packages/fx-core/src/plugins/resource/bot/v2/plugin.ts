@@ -17,7 +17,7 @@ import { AzureHostingFactory } from "../../../../common/azure-hosting/hostingFac
 import { Commands, CommonStrings, ConfigNames, PluginBot } from "../resources/strings";
 import { checkAndThrowIfMissing, checkPrecondition, CommandExecutionError } from "../errors";
 import { BicepConfigs, ServiceType } from "../../../../common/azure-hosting/interfaces";
-import { getSiteNameFromResourceId } from "../../../../common";
+import { isBotNotificationEnabled } from "../../../../common";
 import {
   DEFAULT_DOTNET_FRAMEWORK,
   DeployConfigs,
@@ -80,6 +80,8 @@ export class TeamsBotV2Impl {
     const bicepContext = {
       plugins: plugins.map((obj) => obj.name),
       configs: bicepConfigs,
+      enableAlwaysOn: isBotNotificationEnabled(),
+      useNode: getLanguage(ctx.projectSetting.programmingLanguage) !== ProgrammingLanguage.Csharp,
     };
 
     const serviceTypes = [resolveServiceType(ctx), ServiceType.BotService];
@@ -243,7 +245,11 @@ export class TeamsBotV2Impl {
         await utils.execute("npm run build", packDir);
         return packDir;
       } catch (e) {
-        throw new CommandExecutionError(`${Commands.NPM_INSTALL},${Commands.NPM_BUILD}`, e);
+        throw new CommandExecutionError(
+          `${Commands.NPM_INSTALL},${Commands.NPM_BUILD}`,
+          packDir,
+          e
+        );
       }
     }
 
@@ -253,7 +259,7 @@ export class TeamsBotV2Impl {
         await utils.execute("npm install", packDir);
         return packDir;
       } catch (e) {
-        throw new CommandExecutionError(`${Commands.NPM_INSTALL}`, e);
+        throw new CommandExecutionError(`${Commands.NPM_INSTALL}`, packDir, e);
       }
     }
 
@@ -266,7 +272,7 @@ export class TeamsBotV2Impl {
         );
         return packDir;
       } catch (e) {
-        throw new CommandExecutionError(`dotnet publish`, e);
+        throw new CommandExecutionError(`dotnet publish`, packDir, e);
       }
     }
 

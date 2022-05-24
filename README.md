@@ -29,9 +29,9 @@ Pick your preferred tool to get started:
 
 Visit [Microsoft Teams developer documentation](https://aka.ms/teamsfx-docs) to get started with building apps with Teams Toolkit today.
 
-## Road Map
+## Roadmap
 
-Teams Toolkit for Visual Studio, Visual Studio Code, and Command Line Interface (CLI) will be updated regularly with new features and bug fixes to continuously improve end-to-end Teams development experience. Visit our [product road map](https://aka.ms/teamsfx-roadmap) to find out what's coming.
+Teams Toolkit for Visual Studio, Visual Studio Code, and Command Line Interface (CLI) will be updated regularly with new features and bug fixes to continuously improve end-to-end Teams development experience. Visit our [product roadmap](https://aka.ms/teamsfx-roadmap) to find out what's coming.
 
 ## Support Policy
 

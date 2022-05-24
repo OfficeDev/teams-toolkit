@@ -1,4 +1,4 @@
-name: TeamsFx-CICD-Test Triggers 
+name: TeamsFx-CICD-Test Triggers
 
 on:
   workflow_run:
@@ -13,12 +13,12 @@ jobs:
     steps:
       - name: Trigger TeamsFx-CICD-Test
         run: |
-            curl \
-                -u :${{ secrets.TEAMSFX_BOT }} \
-                -X POST \
-                -H "Accept: application/vnd.github.v3+json" \
-                https://api.github.com/repos/OfficeDev/TeamsFx-CICD-Test/actions/workflows/trigger_cicd_by_${{ github.event.workflow_run.head_branch }}.yml/dispatches \
-                -d "{\"ref\":\"main\"}"
+          curl \
+              -u :${{ secrets.TEAMSFX_BOT }} \
+              -X POST \
+              -H "Accept: application/vnd.github.v3+json" \
+              https://api.github.com/repos/OfficeDev/TeamsFx-CICD-Test/actions/workflows/trigger_cicd_by_${{ github.event.workflow_run.head_branch }}.yml/dispatches \
+              -d "{\"ref\":\"main\"}"
 
   DownloadAndOutput:
     runs-on: ubuntu-latest
@@ -47,10 +47,10 @@ jobs:
             });
             let fs = require('fs');
             fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/release.zip`, Buffer.from(download.data));
-      
+
       - name: Unzip artifact
         run: unzip release.zip
-        
+
       - name: Get teamsfx-server version
         id: version
         uses: actions/github-script@v6
@@ -61,7 +61,7 @@ jobs:
             console.log("========================= result: ", server.split("@")[2])
             return server.split("@")[2]
 
-      - name: Get teamsfx-server preid 
+      - name: Get teamsfx-server preid
         id: preid
         uses: actions/github-script@v6
         with:
@@ -88,5 +88,5 @@ jobs:
         with:
           azure-devops-project-url: https://devdiv.visualstudio.com/InternalTools
           azure-pipeline-name: TeamsFx-Dev17-CD
-          azure-devops-token: ${{ secrets.ADO_PAT }}
+          azure-devops-token: ${{ secrets.VS_ADO_PAT }}
           azure-pipeline-variables: '{"PreId": ${{needs.downloadAndOutput.outputs.pre_id}}, "ServerVersion": ${{needs.downloadAndOutput.outputs.server_version}}}'

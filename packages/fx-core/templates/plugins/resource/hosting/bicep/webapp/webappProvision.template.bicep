@@ -9,6 +9,11 @@ var webAppSKU = contains(provisionParameters, 'botWebAppSKU') ? provisionParamet
 {{else}}
 var webAppSKU = contains(provisionParameters, 'botWebAppSKU') ? provisionParameters['botWebAppSKU'] : 'F1' // Try to read SKU for Azure Web App from parameters
 {{/if}}
+{{#if (contains "js" configs || contains "ts" configs)}}
+var scriptGenerator = '--node'
+{{else}}
+var scriptGenerator = '--aspNetCore'
+{{/if}}
 var webAppName = contains(provisionParameters, 'botSitesName') ? provisionParameters['botSitesName'] : '${resourceBaseName}bot' // Try to read name for Azure Web App from parameters
 
 // Compute resources for your Web App
@@ -46,6 +51,10 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
         {
           name: 'RUNNING_ON_AZURE'
           value: '1'
+        }
+        {
+          name: 'SCM_SCRIPT_GENERATOR_ARGS'
+          value: '${scriptGenerator}'
         }
       ]
       ftpsState: 'FtpsOnly'

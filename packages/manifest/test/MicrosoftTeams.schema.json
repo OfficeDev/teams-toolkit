@@ -9,8 +9,8 @@
     },
     "manifestVersion": {
       "type": "string",
-      "description": "The version of the schema this manifest is using.",
-      "const": "1.11"
+      "description": "The version of the schema this manifest is using. This schema version supports extending Teams apps to other parts of the Microsoft 365 ecosystem. More info at https://aka.ms/extendteamsapps.",
+      "const": "1.13"
     },
     "version": {
       "type": "string",
@@ -257,7 +257,7 @@
           },
           "contentUrl": {
             "$ref": "#/definitions/httpsUrl",
-            "description": "The url which points to the entity UI to be displayed in the Teams canvas."
+            "description": "The url which points to the entity UI to be displayed in the canvas."
           },
           "contentBotId": {
             "$ref": "#/definitions/guid",
@@ -451,7 +451,9 @@
           "maxLength": 2048
         }
       },
-      "required": [ "offerId" ],
+      "required": [
+        "offerId"
+      ],
       "additionalProperties": false
     },
     "composeExtensions": {
@@ -720,14 +722,6 @@
           "type": "string",
           "description": "Resource url of app for acquiring auth token for SSO.",
           "maxLength": 2048
-        },
-        "applicationPermissions": {
-          "type": "array",
-          "maxItems": 100,
-          "items": {
-            "type": "string",
-            "maxLength": 128
-          }
         }
       },
       "required": [
@@ -782,7 +776,11 @@
                 "maxLength": 128
               }
             },
-            "required": [ "type", "description", "templateText" ],
+            "required": [
+              "type",
+              "description",
+              "templateText"
+            ],
             "additionalProperties": false
           }
         }
@@ -897,7 +895,14 @@
                 "maximum": 50
               }
             },
-            "required": [ "id", "name", "file", "preview", "maxAudience", "seatsReservedForOrganizersOrPresenters" ]
+            "required": [
+              "id",
+              "name",
+              "file",
+              "preview",
+              "maxAudience",
+              "seatsReservedForOrganizersOrPresenters"
+            ]
           },
           "maxItems": 5,
           "type": "array",
@@ -923,7 +928,11 @@
                 "description": "A relative file path to a A/V filter's thumbnail."
               }
             },
-            "required": [ "id", "name", "thumbnail" ]
+            "required": [
+              "id",
+              "name",
+              "thumbnail"
+            ]
           },
           "maxItems": 100,
           "type": "array",
@@ -937,6 +946,49 @@
       },
       "description": "Specify meeting extension definition.",
       "additionalProperties": false
+    },
+    "authorization": {
+      "type": "object",
+      "description": "Specify and consolidates authorization related information for the App.",
+      "additionalProperties": false,
+      "properties": {
+        "permissions": {
+          "type": "object",
+          "description": "List of permissions that the app needs to function.",
+          "additionalProperties": false,
+          "properties": {
+            "resourceSpecific": {
+              "description": "Permissions that guard data access on a resource instance level.",
+              "maxItems": 16,
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "The name of the resource-specific permission.",
+                    "maxLength": 128
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "Application",
+                      "Delegated"
+                    ],
+                    "description": "The type of the resource-specific permission."
+                  }
+                },
+                "required": [
+                  "name",
+                  "type"
+                ]
+              }
+            }
+          }
+        }
+      }
     }
   },
   "required": [

@@ -245,7 +245,19 @@ describe("Multi Env Happy Path for Azure", function () {
 
           AppStudioValidator.init(context);
           await AppStudioValidator.validatePublish(appId);
-        }*/
+        }
+
+        // update published app
+        result = await execAsyncWithRetry(`teamsfx publish --env ${env}`, {
+          cwd: projectPath,
+          env: processEnv,
+          timeout: 0,
+        });
+
+        {
+          expect(result.stderr).to.be.empty;
+        }
+        */
       } catch (e) {
         console.log("Unexpected exception is thrown when running test: " + e);
         console.log(e.stack);

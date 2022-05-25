@@ -27,15 +27,8 @@ export enum FuncVersion {
 
 const FuncNodeVersionWhiteList: { [key: string]: { [key: string]: boolean } } = {
   // func-core-tools version
-  "1": {
-    "6": true, // node version
-  },
-  "2": {
-    "10": true,
-    "8": true,
-  },
   "3": {
-    "10": true,
+    "10": true, // node version
     "12": true,
     "14": true,
   },

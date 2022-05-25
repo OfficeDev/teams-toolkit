@@ -14,6 +14,7 @@ import {
   Void,
   Result,
   FxError,
+  ProjectSettings,
 } from "@microsoft/teamsfx-api";
 import AppStudioTokenInstance from "../../../src/commonlib/appStudioLogin";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
@@ -22,6 +23,7 @@ import { PanelType } from "../../../src/controls/PanelType";
 import { AzureAccountManager } from "../../../src/commonlib/azureLogin";
 import { MockCore } from "./mocks/mockCore";
 import * as commonUtils from "../../../src/utils/commonUtils";
+import { localize } from "../../../src/utils/localizeUtils";
 import * as extension from "../../../src/extension";
 import TreeViewManagerInstance from "../../../src/treeview/treeViewManager";
 import { CollaborationState, CoreHookContext } from "@microsoft/teamsfx-core";
@@ -30,7 +32,10 @@ import { Uri } from "vscode";
 import envTreeProviderInstance from "../../../src/treeview/environmentTreeViewProvider";
 import accountTreeViewProviderInstance from "../../../src/treeview/account/accountTreeViewProvider";
 import * as extTelemetryEvents from "../../../src/telemetry/extTelemetryEvents";
+import { ExtensionErrors } from "../../../src/error";
 import * as uuid from "uuid";
+import * as fs from "fs-extra";
+import * as util from "util";
 
 suite("handlers", () => {
   test("getWorkspacePath()", () => {
@@ -312,6 +317,63 @@ suite("handlers", () => {
         .oneOf([VsCodeEnv.remote, VsCodeEnv.codespaceVsCode, VsCodeEnv.codespaceBrowser]);
       getExtension.restore();
     });
+  });
+
+  test("openConfigStateFile() - remote", async () => {
+    const env = "dev";
+    sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+    sinon.stub(handlers, "getWorkspacePath").returns("workspace");
+    sinon.stub(handlers, "askTargetEnvironment").resolves(ok(env));
+
+    const projectSettings: ProjectSettings = {
+      appName: "myapp",
+      version: "1.0.0",
+      projectId: "123",
+    };
+    sinon.stub(fs, "readJsonSync").resolves(projectSettings);
+
+    const res = await handlers.openConfigStateFile([]);
+
+    if (res) {
+      chai.assert.isTrue(res.isErr());
+      console.log(JSON.stringify(res.error));
+      chai.assert.equal(res.error.name, ExtensionErrors.EnvStateNotFoundError);
+      chai.assert.isTrue(res.error.message.includes("Provision in the cloud"));
+      chai.assert.equal(
+        res.error.message,
+        util.format(localize("teamstoolkit.handlers.stateFileNotFound"), env)
+      );
+    }
+
+    sinon.restore();
+  });
+
+  test("openConfigStateFile() - local", async () => {
+    const env = "local";
+    sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+    sinon.stub(handlers, "getWorkspacePath").returns("workspace");
+    sinon.stub(handlers, "askTargetEnvironment").resolves(ok(env));
+
+    const projectSettings: ProjectSettings = {
+      appName: "myapp",
+      version: "1.0.0",
+      projectId: "123",
+    };
+    sinon.stub(fs, "readJsonSync").resolves(projectSettings);
+
+    const res = await handlers.openConfigStateFile([]);
+
+    if (res) {
+      chai.assert.isTrue(res.isErr());
+      console.log(JSON.stringify(res.error));
+      chai.assert.equal(res.error.name, ExtensionErrors.EnvStateNotFoundError);
+      chai.assert.equal(
+        res.error.message,
+        util.format(localize("teamstoolkit.handlers.localStateFileNotFound"), env)
+      );
+    }
+
+    sinon.restore();
   });
 
   test("openWelcomeHandler", async () => {

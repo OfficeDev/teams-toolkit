@@ -494,7 +494,11 @@ async function checkDependencies(
       for (const dep of depsStatus) {
         results.push({
           checker: dep.name,
-          result: dep.isInstalled ? ResultStatus.success : ResultStatus.failed,
+          result: dep.error
+            ? ResultStatus.warn
+            : dep.isInstalled
+            ? ResultStatus.success
+            : ResultStatus.failed,
           successMsg: dep.details.binFolders
             ? `${dep.name} (installed at ${dep.details.binFolders?.[0]})`
             : dep.name,

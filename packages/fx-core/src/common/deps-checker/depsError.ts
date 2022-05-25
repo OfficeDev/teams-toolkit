@@ -39,7 +39,7 @@ export class FuncNodeNotMatchedError extends DepsCheckerError {
   constructor(message: string, helpLink: string) {
     super(message, helpLink);
 
-    Object.setPrototypeOf(this, LinuxNotSupportedError.prototype);
+    Object.setPrototypeOf(this, FuncNodeNotMatchedError.prototype);
   }
 }
 

@@ -4,9 +4,6 @@
 
 ## TeamsFx class
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 A class providing credential and configuration.
 
 <b>Signature:</b>
@@ -20,18 +17,18 @@ export declare class TeamsFx implements TeamsFxConfiguration
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(identityType, customConfig)](./teamsfx.teamsfx._constructor_.md) |  | <b><i>(BETA)</i></b> Constructor of TeamsFx |
+|  [(constructor)(identityType, customConfig)](./teamsfx.teamsfx._constructor_.md) |  | Constructor of TeamsFx |
 
 ## Methods
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
-|  [getConfig(key)](./teamsfx.teamsfx.getconfig.md) |  | <b><i>(BETA)</i></b> Usually used by service plugins to retrieve specific config |
-|  [getConfigs()](./teamsfx.teamsfx.getconfigs.md) |  | <b><i>(BETA)</i></b> Get all configurations. |
-|  [getCredential()](./teamsfx.teamsfx.getcredential.md) |  | <b><i>(BETA)</i></b> Credential instance according to identity type choice. |
-|  [getIdentityType()](./teamsfx.teamsfx.getidentitytype.md) |  | <b><i>(BETA)</i></b> Identity type set by user. |
-|  [getUserInfo()](./teamsfx.teamsfx.getuserinfo.md) |  | <b><i>(BETA)</i></b> Get user information. |
-|  [hasConfig(key)](./teamsfx.teamsfx.hasconfig.md) |  | <b><i>(BETA)</i></b> Check the value of specific key. |
-|  [login(scopes)](./teamsfx.teamsfx.login.md) |  | <b><i>(BETA)</i></b> Popup login page to get user's access token with specific scopes. |
-|  [setSsoToken(ssoToken)](./teamsfx.teamsfx.setssotoken.md) |  | <b><i>(BETA)</i></b> Set SSO token when using user identity in NodeJS. |
+|  [getConfig(key)](./teamsfx.teamsfx.getconfig.md) |  | Usually used by service plugins to retrieve specific config |
+|  [getConfigs()](./teamsfx.teamsfx.getconfigs.md) |  | Get all configurations. |
+|  [getCredential()](./teamsfx.teamsfx.getcredential.md) |  | Credential instance according to identity type choice. |
+|  [getIdentityType()](./teamsfx.teamsfx.getidentitytype.md) |  | Identity type set by user. |
+|  [getUserInfo()](./teamsfx.teamsfx.getuserinfo.md) |  | Get user information. |
+|  [hasConfig(key)](./teamsfx.teamsfx.hasconfig.md) |  | Check the value of specific key. |
+|  [login(scopes)](./teamsfx.teamsfx.login.md) |  | Popup login page to get user's access token with specific scopes. |
+|  [setSsoToken(ssoToken)](./teamsfx.teamsfx.setssotoken.md) |  | Set SSO token when using user identity in NodeJS. |
 

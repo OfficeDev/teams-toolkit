@@ -4,9 +4,6 @@
 
 ## Member class
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team member.
 
 <b>Signature:</b>
@@ -24,20 +21,20 @@ It's recommended to get members from .
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(parent, account)](./teamsfx.member._constructor_.md) |  | <b><i>(BETA)</i></b> Constructor. |
+|  [(constructor)(parent, account)](./teamsfx.member._constructor_.md) |  | Constructor. |
 
 ## Properties
 
 |  Property | Modifiers | Type | Description |
 |  --- | --- | --- | --- |
-|  [account](./teamsfx.member.account.md) |  | TeamsChannelAccount | <b><i>(BETA)</i></b> Detailed member account information. |
-|  [parent](./teamsfx.member.parent.md) |  | [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) | <b><i>(BETA)</i></b> The parent [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) where this member is created from. |
-|  [type](./teamsfx.member.type.md) |  | [NotificationTargetType](./teamsfx.notificationtargettype.md) | <b><i>(BETA)</i></b> Notification target type. For member it's always "Person". |
+|  [account](./teamsfx.member.account.md) |  | TeamsChannelAccount | Detailed member account information. |
+|  [parent](./teamsfx.member.parent.md) |  | [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) | The parent [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) where this member is created from. |
+|  [type](./teamsfx.member.type.md) |  | [NotificationTargetType](./teamsfx.notificationtargettype.md) | Notification target type. For member it's always "Person". |
 
 ## Methods
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
-|  [sendAdaptiveCard(card)](./teamsfx.member.sendadaptivecard.md) |  | <b><i>(BETA)</i></b> Send an adaptive card message. |
-|  [sendMessage(text)](./teamsfx.member.sendmessage.md) |  | <b><i>(BETA)</i></b> Send a plain text message. |
+|  [sendAdaptiveCard(card)](./teamsfx.member.sendadaptivecard.md) |  | Send an adaptive card message. |
+|  [sendMessage(text)](./teamsfx.member.sendmessage.md) |  | Send a plain text message. |
 

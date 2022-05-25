@@ -4,9 +4,6 @@
 
 ## AuthProvider interface
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Defines method that injects authentication info to http requests
 
 <b>Signature:</b>
@@ -19,5 +16,5 @@ export interface AuthProvider
 
 |  Property | Type | Description |
 |  --- | --- | --- |
-|  [AddAuthenticationInfo](./teamsfx.authprovider.addauthenticationinfo.md) | (config: AxiosRequestConfig) =&gt; Promise&lt;AxiosRequestConfig&gt; | <b><i>(BETA)</i></b> Adds authentication info to http requests |
+|  [AddAuthenticationInfo](./teamsfx.authprovider.addauthenticationinfo.md) | (config: AxiosRequestConfig) =&gt; Promise&lt;AxiosRequestConfig&gt; | Adds authentication info to http requests |
 

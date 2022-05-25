@@ -233,7 +233,7 @@ export interface BaseQuestion {
     value?: unknown;
 }
 
-// @public (undocumented)
+// @public
 export abstract class BasicLogin {
     // (undocumented)
     abstract getStatus(tokenRequest: TokenRequest): Promise<Result<LoginStatus, FxError>>;

@@ -502,11 +502,16 @@ async function getQuestionsForCreateProjectWithDotNet(
     equals: RuntimeOptionDotNet.id,
   };
   runtimeNode.addChild(dotnetNode);
+
   const dotnetCapNode = new QTreeNode(createCapabilityForDotNet());
   dotnetNode.addChild(dotnetCapNode);
-  dotnetNode.addChild(new QTreeNode(ProgrammingLanguageQuestionForDotNet));
 
-  inputs[AzureSolutionQuestionNames.Solution] = TeamsAppSolutionNameV2;
+  const solutionNodeResult = await setSolutionScaffoldingQuestionNodeAsChild(inputs, dotnetCapNode);
+  if (solutionNodeResult.isErr()) {
+    return err(solutionNodeResult.error);
+  }
+
+  dotnetCapNode.addChild(new QTreeNode(ProgrammingLanguageQuestionForDotNet));
 
   // only CLI need folder input
   if (CLIPlatforms.includes(inputs.platform)) {

@@ -11,7 +11,6 @@ import { VsCodeUI } from "../../../src/qm/vsc_ui";
 suite("UI Unit Tests", async () => {
   suiteSetup(() => {
     // Mock user input.
-    // globalVariables.ui = new TestUserInput();
   });
 
   suite("Manually", () => {

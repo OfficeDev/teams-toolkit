@@ -88,10 +88,9 @@ suite("ExtTelemetry", () => {
     suiteSetup(() => {
       chai.util.addProperty(ExtTelemetry, "reporter", () => reporterSpy);
       sandbox.stub(commonUtils, "getIsExistingUser").returns(undefined);
-      // sandbox.stub(commonUtils, "isSPFxProject").returns(false);
       sandbox.stub(fs, "pathExistsSync").returns(false);
-      sandbox.stub(globalVariables, "workspaceUri").returns(Uri.file("test"));
-      sandbox.stub(globalVariables, "isSPFxProject").returns(false);
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(globalVariables, "isSPFxProject").value(false);
     });
 
     suiteTeardown(() => {

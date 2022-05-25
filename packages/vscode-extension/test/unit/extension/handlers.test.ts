@@ -444,7 +444,7 @@ suite("handlers", () => {
       });
 
       sinon.stub(globalVariables, "workspaceUri").value(Uri.parse("file://fakeProjectPath"));
-      // sinon.stub(commonUtils, "isSPFxProject").resolves(false);
+      sinon.stub(globalVariables, "isSPFxProject").value(false);
       sinon.stub(commonUtils, "getM365TenantFromEnv").callsFake(async (env: string) => {
         return "fake-tenant-id";
       });

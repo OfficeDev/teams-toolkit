@@ -48,6 +48,7 @@ import * as commonUtils from "../debug/commonUtils";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { getSubscriptionInfoFromEnv } from "../utils/commonUtils";
 import { getDefaultString, localize } from "../utils/localizeUtils";
+import * as globalVariables from "../globalVariables";
 
 export class AzureAccountManager extends login implements AzureAccountProvider {
   private static instance: AzureAccountManager;
@@ -572,16 +573,12 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   async getSubscriptionInfoPath(): Promise<string | undefined> {
-    if (vscode.workspace.workspaceFolders) {
-      const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
-      const workspacePath: string = workspaceFolder.uri.fsPath;
+    if (globalVariables.workspaceUri) {
+      const workspacePath: string = globalVariables.workspaceUri.fsPath;
       if (!(await commonUtils.isFxProject(workspacePath))) {
         return undefined;
       }
-      const configRoot = await commonUtils.getProjectRoot(
-        workspaceFolder.uri.fsPath,
-        `.${ConfigFolderName}`
-      );
+      const configRoot = await commonUtils.getProjectRoot(workspacePath, `.${ConfigFolderName}`);
       const subscriptionFile = path.join(configRoot!, subscriptionInfoFile);
       return subscriptionFile;
     } else {

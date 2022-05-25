@@ -7,16 +7,17 @@ import {
   FunctionsHttpTriggerOptionItem,
   FunctionsTimerTriggerOptionItem,
   AppServiceOptionItem,
+  AppServiceOptionItemForVS,
 } from "../question";
 import { HostTypes } from "../resources/strings";
-import { ProgrammingLanguage } from "./enum";
+import { ProgrammingLanguage, Runtime } from "./enum";
 
-const runtimeMap: Map<ProgrammingLanguage, string> = new Map<ProgrammingLanguage, string>([
-  [ProgrammingLanguage.Js, "node"],
-  [ProgrammingLanguage.Ts, "node"],
-  [ProgrammingLanguage.Csharp, "csharp"],
+const runtimeMap: Map<ProgrammingLanguage, Runtime> = new Map<ProgrammingLanguage, Runtime>([
+  [ProgrammingLanguage.Js, Runtime.Node],
+  [ProgrammingLanguage.Ts, Runtime.Node],
+  [ProgrammingLanguage.Csharp, Runtime.Dotnet],
 ]);
-const defaultRuntime = "node";
+const defaultRuntime = Runtime.Node;
 
 const serviceMap: Map<string, ServiceType> = new Map<string, ServiceType>([
   [HostTypes.APP_SERVICE, ServiceType.AppService],
@@ -47,14 +48,20 @@ const triggerScenariosMap: Map<string, string[]> = new Map<string, string[]>([
     ],
   ],
   [AppServiceOptionItem.id, [TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME]],
+  [AppServiceOptionItemForVS.id, [TemplateProjectsScenarios.NOTIFICATION_WEBAPI_SCENARIO_NAME]],
 ]);
 
-export function getRuntime(lang: ProgrammingLanguage): string {
+const projectFileMap = new Map<Runtime, (appName: string) => string>([
+  [Runtime.Node, (_: string) => "package.json"],
+  [Runtime.Dotnet, (appName: string) => `${appName}.csproj`],
+]);
+
+export function getRuntime(lang: ProgrammingLanguage): Runtime {
   const runtime = runtimeMap.get(lang);
   if (runtime) {
     return runtime;
   }
-  return defaultLang;
+  return defaultRuntime;
 }
 
 export function getServiceType(hostType?: string): ServiceType {
@@ -77,6 +84,14 @@ export function getTriggerScenarios(trigger: string): string[] {
   const scenarios = triggerScenariosMap.get(trigger);
   if (scenarios) {
     return scenarios;
+  }
+  throw new Error("invalid bot input");
+}
+
+export function getProjectFileName(runtime: Runtime, appName: string): string {
+  const projectFileName = projectFileMap.get(runtime);
+  if (projectFileName) {
+    return projectFileName(appName);
   }
   throw new Error("invalid bot input");
 }

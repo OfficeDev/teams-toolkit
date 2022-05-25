@@ -835,7 +835,9 @@ async function getStaticOptionsForAddCapability(
   if (botExceedRes.isErr()) {
     return err(botExceedRes.error);
   }
-  const isBotAddable = !botExceedRes.value;
+
+  const hasMe = settings?.capabilities.includes(MessageExtensionItem.id);
+  const isBotAddable = !botExceedRes.value && !hasMe;
   const meExceedRes = await appStudioPlugin.capabilityExceedLimit(
     ctx,
     inputs as v2.InputsWithProjectPath,

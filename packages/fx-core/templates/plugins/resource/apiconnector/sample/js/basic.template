@@ -1,8 +1,8 @@
 const teamsfxSdk = require("@microsoft/teamsfx");
 
-// Loads current app's configuration.
+// Load application configuration
 const teamsFx = new teamsfxSdk.TeamsFx();
-// Initializes a new axios instance to call {{config.APIName}} API.
+// Initialize a new axios instance to call {{config.APIName}}
 const authProvider = new teamsfxSdk.BasicAuthProvider(
   teamsFx.getConfig("TEAMSFX_API_{{capitalName}}_USERNAME"),
   teamsFx.getConfig("TEAMSFX_API_{{capitalName}}_PASSWORD")

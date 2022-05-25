@@ -6,6 +6,7 @@ import {
   Func,
   FxError,
   ok,
+  Platform,
   Plugin,
   PluginContext,
   QTreeNode,
@@ -39,7 +40,11 @@ import { PluginImpl } from "./interface";
 import { isVSProject, BotHostTypes, isBotNotificationEnabled } from "../../../common";
 import { FunctionsHostedBotImpl } from "./functionsHostedBot/plugin";
 import { ScaffoldConfig } from "./configs/scaffoldConfig";
-import { createHostTypeTriggerQuestion, showNotificationTriggerCondition } from "./question";
+import {
+  createHostTypeTriggerQuestion,
+  createHostTypeTriggerQuestionForVS,
+  showNotificationTriggerCondition,
+} from "./question";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { CommonHostingError } from "../../../common/azure-hosting/hostingError";
 
@@ -208,7 +213,11 @@ export class TeamsBot implements Plugin {
       return await TeamsBot.runWithExceptionCatching(
         context,
         async () => {
-          if (isBotNotificationEnabled()) {
+          if (isVSProject(context.projectSettings) || context.answers?.platform === Platform.VS) {
+            const res = new QTreeNode(createHostTypeTriggerQuestionForVS());
+            res.condition = showNotificationTriggerCondition;
+            return ok(res);
+          } else if (isBotNotificationEnabled()) {
             const res = new QTreeNode({
               type: "group",
             });

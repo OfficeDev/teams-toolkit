@@ -60,7 +60,7 @@ The following files are project-related files. You generally will not need to cu
 
 # Customize your application
 
-By default a single command is generated that sends the `hellowworldComnmand.json` Adaptive Card when a user types `hello` in the private message chat with the bot.
+By default a single command is generated that sends the `helloworldCommand.json` Adaptive Card when a user types `hello` in the private message chat with the bot.
 
 This section outlines some customization you can do to adopt the application for your needs.
 
@@ -68,7 +68,7 @@ This section outlines some customization you can do to adopt the application for
 
 The default command logic simply returns a hard-coded Adaptive Card. You can customize this logic with your customize business logic. Often your business logic might require you to call your existing APIs.
 
-Teams Toolkit enables you to [easily connect to an existing API](#connect-to-existing-api).
+Teams Toolkit enables you to [easily connect to an existing API](#connect-to-existing-apis).
 
 ## Customize the Adaptive Card
 

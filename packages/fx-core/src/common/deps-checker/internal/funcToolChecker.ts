@@ -108,6 +108,9 @@ export class FuncToolChecker implements DepsChecker {
       this._telemetry.sendEvent(DepsCheckerEvent.funcAlreadyInstalled, {
         "global-func-version": `${await this.queryGlobalFuncVersion()}`,
       });
+      if (!isPortableFuncInstalled) {
+        await this.cleanup();
+      }
     }
     if (isPortableFuncInstalled) {
       // avoid missing this event after first installation 60 days

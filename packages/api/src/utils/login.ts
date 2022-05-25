@@ -310,6 +310,9 @@ export type TokenProvider = {
   m365TokenProvider: M365TokenProvider;
 };
 
+/**
+ * Provide basic login framework
+ */
 export abstract class BasicLogin {
   statusChangeMap = new Map();
 

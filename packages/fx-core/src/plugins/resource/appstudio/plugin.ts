@@ -199,6 +199,7 @@ export class AppStudioPluginImpl {
         },
       },
     };
+    Mustache.escape = (value) => value;
     const manifestString = Mustache.render(JSON.stringify(manifest), view);
     manifest = JSON.parse(manifestString);
 
@@ -1656,6 +1657,7 @@ export class AppStudioPluginImpl {
         },
       },
     };
+    Mustache.escape = (value) => value;
     manifestString = Mustache.render(manifestString, view);
     const tokens = [
       ...new Set(
@@ -1762,6 +1764,7 @@ export class AppStudioPluginImpl {
         },
       },
     };
+    Mustache.escape = (value) => value;
     manifestString = Mustache.render(manifestString, view);
     return manifestString;
   }

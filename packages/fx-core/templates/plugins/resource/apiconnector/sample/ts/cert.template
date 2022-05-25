@@ -5,12 +5,14 @@ import {
   createPemCertOption,
 } from "@microsoft/teamsfx";
 
-// Loads current app's configuration.
+// Load application configuration
 const teamsFx = new TeamsFx();
-// Initializes a new axios instance to call {{config.APIName}} API.
+// Initialize a new axios instance to call {{config.APIName}}
 const authProvider = new CertificateAuthProvider(
-  // Please add code to read your cert and private key, replace "<your-cert>" and "<your-private-key>" with actual value.
-  // If you have a .pfx cert, you can use "createPfxCertOption" function to initialize your cert option.
+  // TODO: 
+  // 1. Add code to read your certificate and private key.
+  // 2. Replace "<your-cert>" and "<your-private-key>" with your actual certificate and private key values
+  // If you have a .pfx certificate, you can use the `createPfxCertOption` function to initialize your certificate
   createPemCertOption("<your-cert>", "<your-private-key>")
 );
 const {{config.APIName}}Client = createApiClient(teamsFx.getConfig("TEAMSFX_API_{{capitalName}}_ENDPOINT"), authProvider);

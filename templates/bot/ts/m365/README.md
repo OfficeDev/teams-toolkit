@@ -22,7 +22,7 @@ Follow below instructions to get started with this application template for loca
 1. Select a target Microsoft application where the message extension runs: `Debug in Teams`, `Debug in Outlook` and click the `Run and Debug` green arrow button.
 1. If you select `Debug in Outlook`, follow the instructions in a Visual Studio Code pop-up dialog.
 
-    ![VS Code Pop up](https://user-images.githubusercontent.com/11220663/167868654-97ab94d4-3057-46e8-8ff8-f3d7dc0b0ec4.png)
+    ![VS Code Pop up](https://user-images.githubusercontent.com/11220663/168991167-12a7078f-ea1a-4915-91f8-38648848bc51.png)
 
 1. Click **Install in Teams** first and install the app in a Teams web client.
 1. Click **Configure Outlook** to connect the bot with Outlook channel in the Bot Framework Portal.
@@ -62,6 +62,10 @@ This template provides a simple functionality to search for `npm` packages and r
 - Click the "More apps" icon under compose email area, find your message extension.
   
     ![InOutlook](https://user-images.githubusercontent.com/11220663/167869656-20225f14-f982-4e47-8dd0-050285d56853.png)
+
+## Known issue
+
+You might see `Something went wrong` from the message extension while local debugging this application. This is a known issue to us and we are actively working on a fix to resolve it. Meanwhile, to proceed with local debug, you can delete those two files: `.fx/states/local.userdata` and `.fx/states/state.local.json` and press `F5` again.
 
 ## References
 

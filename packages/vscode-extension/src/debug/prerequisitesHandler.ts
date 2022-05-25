@@ -615,13 +615,20 @@ function handleNodeNotSupportedError(
 ) {
   const node12Version = "v12";
   const supportedVersions = dep.details.supportedVersions.map((v) => "v" + v).join(" ,");
+  const isNode12Installed = dep.details.installVersion?.includes(node12Version);
+
   error.message = `${doctorConstant.NodeNotSupported.split("@CurrentVersion")
     .join(dep.details.installVersion)
     .split("@SupportedVersions")
-    .join(supportedVersions)}${os.EOL}${doctorConstant.WhiteSpace}${doctorConstant.RestartVSCode}`;
+    .join(supportedVersions)}`;
+
+  // a notification for node 12 with global function installed
+  error.message = isNode12Installed
+    ? `${error.message}${os.EOL}${doctorConstant.WhiteSpace}${doctorConstant.Node12MatchFunction}${os.EOL}${doctorConstant.WhiteSpace}${doctorConstant.RestartVSCode}`
+    : `${error.message}${os.EOL}${doctorConstant.WhiteSpace}${doctorConstant.RestartVSCode}`;
 
   // a workaround for node 12 user (node12 not in our supported version list for tab and function)
-  if (dep.details.installVersion?.includes(node12Version)) {
+  if (isNode12Installed) {
     const bypass = enabledCheckers?.includes(DepsType.FuncCoreTools)
       ? doctorConstant.BypassNode12AndFunction
       : doctorConstant.BypassNode12;

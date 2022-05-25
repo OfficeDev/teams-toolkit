@@ -14,12 +14,13 @@ import { PluginBot, HostType, HostTypes } from "../resources/strings";
 export function getTemplateInfos(ctx: Context, inputs: Inputs): CodeTemplateInfo[] {
   const lang = getLanguage(ctx.projectSetting.programmingLanguage);
   const scenarios = Array.from(decideTemplateScenarios(ctx, inputs));
+  const projectName = ctx.projectSetting.appName;
   return scenarios.map((scenario) => {
     return {
       group: TemplateProjectsConstants.GROUP_NAME_BOT,
       language: lang,
       scenario: scenario,
-      variables: {},
+      variables: { ProjectName: projectName },
     };
   });
 }
@@ -46,7 +47,8 @@ export function decideTemplateScenarios(ctx: Context, inputs: Inputs): Set<strin
         const notificationTriggerType = (inputs[
           QuestionNames.BOT_HOST_TYPE_TRIGGER
         ] as string[]) ?? [AppServiceOptionItem.id];
-        notificationTriggerType.forEach((triggerType) => {
+        // notificationTriggerType may be string in VS scenario
+        ([] as string[]).concat(notificationTriggerType).forEach((triggerType) => {
           getTriggerScenarios(triggerType).forEach((item) => templateScenarios.add(item));
         });
         break;

@@ -12,8 +12,6 @@ import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
  *
  * @remarks
  * Can only be used in server side.
- *
- * @beta
  */
 export class OnBehalfOfUserCredential implements TokenCredential {
   /**
@@ -21,7 +19,6 @@ export class OnBehalfOfUserCredential implements TokenCredential {
    *
    * @remarks
    * Can Only works in in server side.
-   * @beta
    */
   constructor(ssoToken: string, config: AuthenticationConfiguration) {
     throw new ErrorWithCode(
@@ -34,7 +31,6 @@ export class OnBehalfOfUserCredential implements TokenCredential {
    * Get access token from credential.
    * @remarks
    * Can only be used in server side.
-   * @beta
    */
   async getToken(
     scopes: string | string[],
@@ -50,7 +46,6 @@ export class OnBehalfOfUserCredential implements TokenCredential {
    * Get basic user info from SSO token.
    * @remarks
    * Can only be used in server side.
-   * @beta
    */
   public getUserInfo(): Promise<UserInfo> {
     throw new ErrorWithCode(

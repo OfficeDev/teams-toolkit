@@ -10,8 +10,6 @@ import { CommandResponseMiddleware } from "./middleware";
  *
  * @remarks
  * Ensure each command should ONLY be registered with the command once, otherwise it'll cause unexpected behavior if you register the same command more than once.
- *
- * @beta
  */
 export class CommandBot {
   private readonly adapter: BotFrameworkAdapter;
@@ -22,8 +20,6 @@ export class CommandBot {
    *
    * @param adapter The bound `BotFrameworkAdapter`.
    * @param options - initialize options
-   *
-   * @beta
    */
   constructor(adapter: BotFrameworkAdapter, options?: CommandOptions) {
     this.middleware = new CommandResponseMiddleware(options?.commands);
@@ -34,8 +30,6 @@ export class CommandBot {
    * Registers a command into the command bot.
    *
    * @param command The command to registered.
-   *
-   * @beta
    */
   public registerCommand(command: TeamsFxBotCommandHandler): void {
     if (command) {
@@ -47,8 +41,6 @@ export class CommandBot {
    * Registers commands into the command bot.
    *
    * @param commands The command to registered.
-   *
-   * @beta
    */
   public registerCommands(commands: TeamsFxBotCommandHandler[]): void {
     if (commands) {

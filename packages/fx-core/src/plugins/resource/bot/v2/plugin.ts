@@ -17,7 +17,6 @@ import { AzureHostingFactory } from "../../../../common/azure-hosting/hostingFac
 import { Commands, CommonStrings, ConfigNames, PluginBot } from "../resources/strings";
 import { checkAndThrowIfMissing, checkPrecondition, CommandExecutionError } from "../errors";
 import { BicepConfigs, ServiceType } from "../../../../common/azure-hosting/interfaces";
-import { getSiteNameFromResourceId } from "../../../../common";
 import {
   DEFAULT_DOTNET_FRAMEWORK,
   DeployConfigs,
@@ -159,14 +158,15 @@ export class TeamsBotV2Impl {
     // create config file if not exists
     await fs.ensureDir(deployDir);
     await TeamsBotV2Impl.initDeployConfig(ctx, configFile, envName);
-    if (!(await TeamsBotV2Impl.needDeploy(generalIgnore, workingDir, configFile, envName))) {
+    if (!(await TeamsBotV2Impl.needDeploy(workingDir, configFile, envName))) {
       await ctx.logProvider.warning(Messages.SkipDeployNoUpdates);
       return ok(Void);
     }
     const deployTimeCandidate = Date.now();
-    const progressBarHandler = ctx.userInteraction.createProgressBar(
+    const progressBarHandler = await ProgressBarFactory.newProgressBar(
       ProgressBarConstants.DEPLOY_TITLE,
-      ProgressBarConstants.DEPLOY_STEPS_NUM
+      ProgressBarConstants.DEPLOY_STEPS_NUM,
+      ctx
     );
     // progress start
     await progressBarHandler.start(ProgressBarConstants.DEPLOY_STEP_START);
@@ -243,7 +243,11 @@ export class TeamsBotV2Impl {
         await utils.execute("npm run build", packDir);
         return packDir;
       } catch (e) {
-        throw new CommandExecutionError(`${Commands.NPM_INSTALL},${Commands.NPM_BUILD}`, e);
+        throw new CommandExecutionError(
+          `${Commands.NPM_INSTALL},${Commands.NPM_BUILD}`,
+          packDir,
+          e
+        );
       }
     }
 
@@ -253,7 +257,7 @@ export class TeamsBotV2Impl {
         await utils.execute("npm install", packDir);
         return packDir;
       } catch (e) {
-        throw new CommandExecutionError(`${Commands.NPM_INSTALL}`, e);
+        throw new CommandExecutionError(`${Commands.NPM_INSTALL}`, packDir, e);
       }
     }
 
@@ -266,7 +270,7 @@ export class TeamsBotV2Impl {
         );
         return packDir;
       } catch (e) {
-        throw new CommandExecutionError(`dotnet publish`, e);
+        throw new CommandExecutionError(`dotnet publish`, packDir, e);
       }
     }
 
@@ -294,17 +298,11 @@ export class TeamsBotV2Impl {
 
   /**
    * determine if dir need deploy, or all file are not changed after last deploy
-   * @param generalIgnore none touch file
    * @param workingDir base dir
    * @param configFile config file location
    * @param env current env
    */
-  static async needDeploy(
-    generalIgnore: string[],
-    workingDir: string,
-    configFile: string,
-    env: string
-  ): Promise<boolean> {
+  static async needDeploy(workingDir: string, configFile: string, env: string): Promise<boolean> {
     const botDeployJson = await fs.readJSON(configFile);
     const lastTime = Math.max(botDeployJson[env]?.time ?? 0, 0);
     // prepare ignore file
@@ -312,7 +310,9 @@ export class TeamsBotV2Impl {
       DeployConfigsConstants.GIT_IGNORE_FILE,
       workingDir
     );
-    const totalIgnore = await TeamsBotV2Impl.prepareIgnore(generalIgnore.concat(gitIgnore));
+    // general ignore will ignore ts file, so source change will not trigger rebuild and redeploy
+    // so just use git ignore will be ok
+    const totalIgnore = await TeamsBotV2Impl.prepareIgnore(gitIgnore);
     const filter = (itemPath: string) => path.basename(itemPath) !== FolderNames.NODE_MODULES;
 
     let changed = false;

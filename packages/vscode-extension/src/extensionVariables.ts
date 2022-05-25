@@ -5,24 +5,23 @@
 "use strict";
 
 import * as vscode from "vscode";
-import { ExtensionContext, Uri } from "vscode";
-import { UserInput, IUserInput } from "./userInput";
 
 /**
  * Namespace for common variables used throughout the extension. They must be initialized in the activate() method of extension.ts
  */
 export namespace ext {
-  export let context: ExtensionContext;
-  export let ui: IUserInput;
-  export let workspaceUri: Uri;
+  export let context: vscode.ExtensionContext;
+  export let workspaceUri: vscode.Uri;
 }
 
-export function initializeExtensionVariables(ctx: ExtensionContext): void {
+export let context: vscode.ExtensionContext;
+export let workspaceUri: vscode.Uri | undefined;
+
+export function initializeExtensionVariables(ctx: vscode.ExtensionContext): void {
   if (vscode.workspace && vscode.workspace.workspaceFolders) {
     if (vscode.workspace.workspaceFolders.length > 0) {
-      ext.workspaceUri = vscode.workspace.workspaceFolders[0].uri;
+      ext.workspaceUri = workspaceUri = vscode.workspace.workspaceFolders[0].uri;
     }
   }
-  ext.context = ctx;
-  ext.ui = new UserInput();
+  ext.context = context = ctx;
 }

@@ -12,7 +12,7 @@ import { VsCodeUI } from "../../../src/qm/vsc_ui";
 suite("UI Unit Tests", async () => {
   suiteSetup(() => {
     // Mock user input.
-    ext.ui = new TestUserInput();
+    // ext.ui = new TestUserInput();
   });
 
   suite("Manually", () => {

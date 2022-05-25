@@ -35,6 +35,14 @@ export class LinuxNotSupportedError extends DepsCheckerError {
   }
 }
 
+export class FuncNodeNotMatchedError extends DepsCheckerError {
+  constructor(message: string, helpLink: string) {
+    super(message, helpLink);
+
+    Object.setPrototypeOf(this, FuncNodeNotMatchedError.prototype);
+  }
+}
+
 export class BackendExtensionsInstallError extends DepsCheckerError {
   constructor(message: string, helpLink: string) {
     super(message, helpLink);

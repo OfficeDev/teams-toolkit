@@ -4,6 +4,9 @@
   "private": true,
   "dependencies": {
     "@fluentui/react-northstar": "^0.60.1",
+    "@microsoft/mgt-element": "2.4.1-next.teamsfx.8d56785",
+    "@microsoft/mgt-react": "2.4.1-next.teamsfx.8d56785",
+    "@microsoft/mgt-teamsfx-provider": "2.4.1-next.teamsfx.8d56785",
     "@microsoft/microsoft-graph-client": "^3.0.1",
     "@microsoft/teams-js": "^2.0.0",
     "@microsoft/teamsfx": "^2.0.0-beta.0",

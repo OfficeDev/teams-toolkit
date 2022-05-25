@@ -16,6 +16,7 @@ export const Messages = {
   needInstallFuncCoreTool: getLocalizedString("depChecker.needInstallFuncCoreTool"),
   failToInstallFuncCoreTool: getLocalizedString("depChecker.failToInstallFuncCoreTool"),
   failToValidateFuncCoreTool: getLocalizedString("depChecker.failToValidateFuncCoreTool"),
+  funcNodeNotMatched: getLocalizedString("depChecker.funcNodeNotMatched"),
 
   startInstallNgrok: getLocalizedString("depChecker.startInstallNgrok"),
   finishInstallNgrok: getLocalizedString("depChecker.finishInstallNgrok"),

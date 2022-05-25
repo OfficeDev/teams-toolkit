@@ -42,6 +42,7 @@ import {
   DepsManager,
   getSideloadingStatus,
   NodeNotSupportedError,
+  DepsCheckerError,
   isExistingTabApp as isExistingTabAppCore,
   isM365AppEnabled,
   validationSettingsHelpLink,
@@ -1251,9 +1252,13 @@ export default class Preview extends YargsCommand {
       shouldContinue = shouldContinue && result;
       await bar.next(summaryMsg);
       await bar.end(result);
-      if (!result && depStatus.error && depStatus.error.helpLink) {
+
+      if (depStatus.error instanceof DepsCheckerError) {
+        cliLogger.necessaryLog(LogLevel.Warning, depStatus.error.message);
+      }
+      if (depStatus.error && depStatus.error.helpLink) {
         cliLogger.necessaryLog(
-          LogLevel.Info,
+          LogLevel.Warning,
           doctorResult.HelpLink.split("@Link").join(depStatus.error.helpLink)
         );
       }

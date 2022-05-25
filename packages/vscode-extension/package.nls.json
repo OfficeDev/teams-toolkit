@@ -7,6 +7,8 @@
     "teamstoolkit.accountTree.sideloadingMessage": "[Sideloading](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) is disabled in your Microsoft 365 account. Contact your Teams administrator to resolve this issue or get a testing tenant.",
     "teamstoolkit.accountTree.sideloadingPass": "Sideloading enabled",
     "teamstoolkit.accountTree.sideloadingPassTooltip": "You have sideloading permission already. You're good to install your app to Teams!",
+    "teamstoolkit.accountTree.sideloadingStatusUnknown": "Sideloading check failed",
+    "teamstoolkit.accountTree.sideloadingStatusUnknownTooltip": "The sideloading permission of this account is unknown due to network or service issue. Please refresh again later to check it.",
     "teamstoolkit.accountTree.sideloadingRefresh": "Refresh",
     "teamstoolkit.accountTree.sideloadingWarning": "Sideloading disabled",
     "teamstoolkit.accountTree.sideloadingWarningTooltip": "M365 account admin doesn't have enabled sideloading permission.\n· Contact your Teams administrator to resolve this issue. Visit: https://docs.microsoft.com/en-us/microsoftteams/platform/m365-apps/prerequisites\n· Create a testing tenant. Visit https://developer.microsoft.com/en-us/microsoft-365/dev-program",

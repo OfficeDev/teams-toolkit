@@ -79,6 +79,8 @@ describe("Bot Plugin v2", () => {
     it("Happy Path", async () => {
       sinon.stub(fetch, "fetchTemplateUrl").resolves(faker.internet.url());
       sinon.stub(fetch, "fetchZipFromUrl").resolves(new AdmZip());
+      const bar = new MockProgressHandler();
+      context.userInteraction["createProgressBar"] = () => bar;
 
       const result = await botPlugin.scaffoldSourceCode(context, inputs);
       chai.assert.isTrue(result.isOk());

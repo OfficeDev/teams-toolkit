@@ -2,9 +2,25 @@
 // Licensed under the MIT license.
 
 import { Middleware, NextFunction } from "@feathersjs/hooks";
-import { err, FxError, Inputs, ok, QTreeNode, Result, traverse } from "@microsoft/teamsfx-api";
+import {
+  err,
+  Func,
+  FxError,
+  Inputs,
+  ok,
+  QTreeNode,
+  Result,
+  SingleSelectQuestion,
+  traverse,
+} from "@microsoft/teamsfx-api";
+import { getLocalizedString } from "../../common/localizeUtils";
 import { createHostTypeTriggerQuestion } from "../../plugins/resource/bot/question";
-import { NotificationOptionItem } from "../../plugins/solution/fx-solution/question";
+import {
+  AzureResourceSQLNewUI,
+  AzureSolutionQuestionNames,
+  BotOptionItem,
+  NotificationOptionItem,
+} from "../../plugins/solution/fx-solution/question";
 import { TOOLS } from "../globalVars";
 import {
   createAppNameQuestion,
@@ -28,6 +44,11 @@ export const QuestionModelMW_V3: Middleware = async (ctx: CoreHookContext, next:
   let getQuestionRes: Result<QTreeNode | undefined, FxError> = ok(undefined);
   if (method === "createProjectV3") {
     getQuestionRes = await createProjectQuestionV3(inputs);
+  } else if (method === "executeUserTaskV3") {
+    const func = ctx.arguments[0] as Func;
+    if (func.method === "addFeature") {
+      getQuestionRes = await getQuestionsForAddFeature(inputs);
+    }
   }
   if (getQuestionRes.isErr()) {
     TOOLS?.logProvider.error(
@@ -71,7 +92,7 @@ async function createProjectQuestionV3(
 
   const triggerQuestion = createHostTypeTriggerQuestion(inputs.platform);
   const triggerNode = new QTreeNode(triggerQuestion);
-  triggerNode.condition = { contains: NotificationOptionItem.id };
+  triggerNode.condition = { equals: NotificationOptionItem.id };
   capNode.addChild(triggerNode);
 
   // Language
@@ -87,4 +108,17 @@ async function createProjectQuestionV3(
   sampleNode.condition = { equals: ScratchOptionNo.id };
   sampleNode.addChild(new QTreeNode(QuestionRootFolder));
   return ok(node.trim());
+}
+
+// for demo only
+async function getQuestionsForAddFeature(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const question: SingleSelectQuestion = {
+    name: "feature",
+    title: getLocalizedString("core.addFeatureQuestion.title"),
+    type: "singleSelect",
+    staticOptions: [AzureResourceSQLNewUI, BotOptionItem],
+  };
+  return ok(new QTreeNode(question));
 }

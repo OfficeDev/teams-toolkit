@@ -298,7 +298,7 @@ export class TeamsfxCore {
     const sqlComponent = getComponent(context.projectSetting, "azure-sql");
     const provisionType = sqlComponent ? "database" : "server";
     const actions: Action[] = [
-      LoadProjectSettingsAction,
+      // LoadProjectSettingsAction,
       {
         name: "fx.configSql",
         type: "function",
@@ -389,7 +389,7 @@ export class TeamsfxCore {
         targetAction: "azure-function-config.generateBicep",
       });
     }
-    actions.push(WriteProjectSettingsAction);
+    // actions.push(WriteProjectSettingsAction);
     const group: GroupAction = {
       type: "group",
       name: "fx.addSql",

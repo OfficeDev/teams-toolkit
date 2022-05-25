@@ -853,6 +853,7 @@
   "depChecker.needInstallFuncCoreTool": "You must have @NameVersion installed to debug your local functions.",
   "depChecker.failToInstallFuncCoreTool": "Failed to install @NameVersion. Install @NameVersion manually.",
   "depChecker.failToValidateFuncCoreTool": "Failed to validate @NameVersion after installation.",
+  "depChecker.funcNodeNotMatched": "Your own Node.js(@NodeVersion) is incompatible with your own Azure Functions Core Tools(@FuncVersion).",
   "depChecker.startInstallNgrok": "Downloading and installing @NameVersion.",
   "depChecker.finishInstallNgrok": "Successfully installed @NameVersion.",
   "depChecker.needInstallNgrok": "You must have @NameVersion installed to debug your local bot.",

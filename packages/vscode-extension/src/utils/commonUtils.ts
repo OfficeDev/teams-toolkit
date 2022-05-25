@@ -24,6 +24,7 @@ import {
   isExistingTabApp as isExistingTabAppCore,
   isValidProject,
   PluginNames,
+  TunnelingService,
 } from "@microsoft/teamsfx-core";
 
 import * as extensionPackage from "../../package.json";
@@ -282,13 +283,6 @@ export function syncFeatureFlags() {
     ConfigurationKey.generatorEnvCheckerEnable
   ).toString();
 
-  const configuration: vscode.WorkspaceConfiguration =
-    vscode.workspace.getConfiguration(CONFIGURATION_PREFIX);
-  const tunneling = configuration.get<TeamsfxTunnelingServices>(ConfigurationKey.Tunneling);
-  if (tunneling === TeamsfxTunnelingServices.MicrosoftTunneling) {
-    process.env["TEAMSFX_MICROSOFT_TUNNELING"] = "true";
-  }
-
   initializePreviewFeatureFlags();
 }
 
@@ -542,4 +536,20 @@ export function getTriggerFromProperty(args?: any[]) {
     default:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Unknow };
   }
+}
+
+export function getTunnelingServiceFromVSCodeSettings(): TunnelingService {
+  const configuration: vscode.WorkspaceConfiguration =
+    vscode.workspace.getConfiguration(CONFIGURATION_PREFIX);
+  // The actual meaning of "prerequisiteCheck.ngrok" is whether tunneling is enabled.
+  // The name is not changed for backward compatibility.
+  const tunnelingEnabled = configuration.get<boolean>("prerequisiteCheck.ngrok", false);
+  if (!tunnelingEnabled) {
+    return TunnelingService.None;
+  }
+
+  const tunneling = configuration.get<TeamsfxTunnelingServices>(ConfigurationKey.Tunneling);
+  return tunneling === TeamsfxTunnelingServices.MicrosoftTunneling
+    ? TunnelingService.MicrosoftTunneling
+    : TunnelingService.Ngrok;
 }

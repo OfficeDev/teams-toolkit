@@ -9,7 +9,7 @@ import { Json, ProductName, ProjectSettings, v2, VsCodeEnv } from "@microsoft/te
 import {
   FolderName,
   isConfigUnifyEnabled,
-  isMicrosoftTunnelingEnabled,
+  TunnelingService,
   LocalEnvManager,
 } from "@microsoft/teamsfx-core";
 import { VSCodeDepsChecker } from "./depsChecker/vscodeChecker";
@@ -24,8 +24,8 @@ import {
   ProgrammingLanguage,
   TaskDefinition,
 } from "@microsoft/teamsfx-core";
-import { vscodeHelper } from "./depsChecker/vscodeHelper";
 import { createMicrosoftTunnelingTask } from "./microsoftTunnelingTask";
+import { getTunnelingServiceFromVSCodeSettings } from "../utils/commonUtils";
 
 export class TeamsfxTaskProvider implements vscode.TaskProvider {
   public static readonly type: string = ProductName;
@@ -91,12 +91,10 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
 
       const botRoot = await commonUtils.getProjectRoot(workspacePath, FolderName.Bot);
       if (botRoot) {
-        const skipNgrok = !vscodeHelper.isNgrokCheckerEnabled();
         const tunnelingTasks = await this.createTunnelingStartTasks(
           projectSettings,
           workspaceFolder,
-          botRoot,
-          skipNgrok
+          botRoot
         );
         for (const task of tunnelingTasks) {
           tasks.push(task);
@@ -189,7 +187,6 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     projectSettings: ProjectSettings,
     workspaceFolder: vscode.WorkspaceFolder,
     projectRoot: string,
-    isSkipped: boolean,
     definition?: vscode.TaskDefinition
   ): Promise<vscode.Task[]> {
     // prepare PATH to execute `ngrok`
@@ -224,11 +221,14 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       );
     };
 
-    const _createTask = isSkipped
-      ? _createTunnelingSkippedTask
-      : isMicrosoftTunnelingEnabled()
-      ? _createMicrosoftTunnelingTask
-      : _createNgrokTunnelingTask;
+    const tunnelingService = getTunnelingServiceFromVSCodeSettings();
+
+    const _createTask =
+      tunnelingService === TunnelingService.None
+        ? _createTunnelingSkippedTask
+        : tunnelingService === TunnelingService.MicrosoftTunneling
+        ? _createMicrosoftTunnelingTask
+        : _createNgrokTunnelingTask;
 
     // Also provide ngrok task for backward compatibility.
     // For existing projects, even though it is called `ngrok start`, it may use Microsoft tunneling according to settings.

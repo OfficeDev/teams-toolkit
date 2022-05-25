@@ -79,6 +79,7 @@ import {
   isValidProject,
   LocalEnvManager,
   ProjectSettingsHelper,
+  setTunnelingService,
   UserTaskFunctionName,
 } from "@microsoft/teamsfx-core";
 
@@ -145,6 +146,7 @@ import {
   getSubscriptionInfoFromEnv,
   getTeamsAppTelemetryInfoByEnv,
   getTriggerFromProperty,
+  getTunnelingServiceFromVSCodeSettings,
   isExistingTabApp,
   isSPFxProject,
   isTeamsfx,
@@ -1013,9 +1015,9 @@ export async function runCommand(
           inputs.ignoreEnvInfo = true;
         }
         inputs.checkerInfo = {
-          skipNgrok: !vscodeHelper.isNgrokCheckerEnabled(),
           trustDevCert: vscodeHelper.isTrustDevCertEnabled(),
         };
+        setTunnelingService(inputs, getTunnelingServiceFromVSCodeSettings());
         result = await core.localDebug(inputs);
         break;
       }

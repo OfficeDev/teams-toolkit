@@ -4,7 +4,8 @@
 import { commands, MessageItem, Uri, window, workspace, WorkspaceConfiguration } from "vscode";
 import { hasTeamsfxBackend, hasTeamsfxBot } from "../commonUtils";
 import { vscodeTelemetry } from "./vscodeTelemetry";
-import { DepsCheckerEvent } from "@microsoft/teamsfx-core";
+import { DepsCheckerEvent, TunnelingService } from "@microsoft/teamsfx-core";
+import { getTunnelingServiceFromVSCodeSettings } from "../../utils/commonUtils";
 const configurationPrefix = "fx-extension";
 
 class VSCodeHelper {
@@ -38,7 +39,7 @@ class VSCodeHelper {
   }
 
   public isNgrokCheckerEnabled(): boolean {
-    return this.checkerEnabled("prerequisiteCheck.ngrok");
+    return getTunnelingServiceFromVSCodeSettings() === TunnelingService.Ngrok;
   }
 
   public isTrustDevCertEnabled(): boolean {

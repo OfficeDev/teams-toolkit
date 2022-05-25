@@ -29,7 +29,7 @@ import {
 import * as extensionPackage from "../../package.json";
 import { CONFIGURATION_PREFIX, ConfigurationKey, UserState } from "../constants";
 import * as commonUtils from "../debug/commonUtils";
-import { ext } from "../extensionVariables";
+import * as globalVariables from "../globalVariables";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
 import * as versionUtil from "./versionUtil";
 
@@ -79,7 +79,7 @@ export interface TeamsAppTelemetryInfo {
 // Only used for telemetry when multi-env is enabled
 export function getTeamsAppTelemetryInfoByEnv(env: string): TeamsAppTelemetryInfo | undefined {
   try {
-    const ws = ext.workspaceUri.fsPath;
+    const ws = globalVariables.workspaceUri!.fsPath;
 
     if (isValidProject(ws)) {
       const result = environmentManager.getEnvStateFilesPath(env, ws);
@@ -96,8 +96,11 @@ export function getTeamsAppTelemetryInfoByEnv(env: string): TeamsAppTelemetryInf
 }
 
 export function getProjectId(): string | undefined {
+  if (!globalVariables.workspaceUri) {
+    return undefined;
+  }
   try {
-    const ws = ext.workspaceUri.fsPath;
+    const ws = globalVariables.workspaceUri.fsPath;
     const settingsJsonPathNew = path.join(
       ws,
       `.${ConfigFolderName}`,
@@ -124,7 +127,7 @@ export function getProjectId(): string | undefined {
 }
 
 export function getAppName(): string | undefined {
-  const ws = ext.workspaceUri.fsPath;
+  const ws = globalVariables.workspaceUri!.fsPath;
   const settingsJsonPathNew = path.join(
     ws,
     `.${ConfigFolderName}`,
@@ -174,14 +177,6 @@ export async function isM365Project(workspacePath: string): Promise<boolean> {
   } else {
     return false;
   }
-}
-
-export function isSPFxProject(workspacePath: string): boolean {
-  if (fs.pathExistsSync(`${workspacePath}/SPFx`)) {
-    return true;
-  }
-
-  return false;
 }
 
 export function anonymizeFilePaths(stack?: string): string {
@@ -315,7 +310,7 @@ export function getAllFeatureFlags(): string[] | undefined {
 }
 
 export function getIsExistingUser(): string | undefined {
-  return ext.context.globalState.get<string>(UserState.IsExisting);
+  return globalVariables.context.globalState.get<string>(UserState.IsExisting);
 }
 
 export async function getSubscriptionInfoFromEnv(

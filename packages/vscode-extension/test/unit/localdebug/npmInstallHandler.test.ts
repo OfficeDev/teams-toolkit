@@ -11,7 +11,7 @@ import { LocalEnvManager } from "@microsoft/teamsfx-core";
 
 import * as commonUtils from "../../../src/utils/commonUtils";
 import * as extension from "../../../src/extension";
-import { ext } from "../../../src/extensionVariables";
+import * as globalVariables from "../../../src/globalVariables";
 import * as teamsfxTaskHandler from "../../../src/debug/teamsfxTaskHandler";
 import { automaticNpmInstallHandler } from "../../../src/debug/npmInstallHandler";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
@@ -23,7 +23,7 @@ suite("npmInstallHandler", () => {
       name: "test",
       index: 0,
     };
-    ext.workspaceUri = workspaceFolder.uri;
+    sinon.stub(globalVariables, "workspaceUri").value(workspaceFolder.uri);
     let state: any;
     const solutionSettings: AzureSolutionSettings = {
       name: "fx-solution-azure",

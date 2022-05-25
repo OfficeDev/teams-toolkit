@@ -7,7 +7,12 @@ import * as chai from "chai";
 import { err, ok, UserError } from "@microsoft/teamsfx-api";
 import { MicrosoftTunnelingManager } from "../../../src/common/local/microsoftTunnelingManager";
 import { TunnelManagementHttpClient, TunnelRequestOptions } from "@vs/tunnels-management";
-import { Tunnel, TunnelConnectionMode } from "@vs/tunnels-contracts";
+import {
+  Tunnel,
+  TunnelAccessScopes,
+  TunnelConnectionMode,
+  TunnelProtocol,
+} from "@vs/tunnels-contracts";
 import { TunnelRelayTunnelHost } from "@vs/tunnels-connections";
 import axios from "axios";
 import {
@@ -40,27 +45,34 @@ describe("MicrosoftTunnelingManager", () => {
       const createdTunnelClusterId = "some random tunnel cluster id";
       sandbox
         .stub(TunnelManagementHttpClient.prototype, "createTunnel")
-        .callsFake(async (tunnel: Tunnel, options?: TunnelRequestOptions): Promise<Tunnel> => {
-          return { tunnelId: createdTunnelId, clusterId: createdTunnelClusterId };
+        .callsFake(async (tunnel: Tunnel): Promise<Tunnel> => {
+          const additionalProperties: Partial<Tunnel> = {
+            tunnelId: createdTunnelId,
+            clusterId: createdTunnelClusterId,
+            accessTokens: {
+              [TunnelAccessScopes.Host]: "fake host token",
+              [TunnelAccessScopes.Connect]: "fake connect token",
+            },
+          };
+          return Object.assign(additionalProperties, tunnel);
         });
       sandbox
         .stub(TunnelRelayTunnelHost.prototype, "start")
         .callsFake(async (): Promise<void> => {});
       sandbox
         .stub(TunnelManagementHttpClient.prototype, "getTunnel")
-        .callsFake(
-          async (tunnel: Tunnel, options?: TunnelRequestOptions): Promise<Tunnel | null> => {
-            const result = Object.assign({}, tunnel);
-            result.endpoints = [
+        .callsFake(async (tunnel: Tunnel): Promise<Tunnel | null> => {
+          const additionalProperties: Partial<Tunnel> = {
+            endpoints: [
               {
                 connectionMode: TunnelConnectionMode.TunnelRelay,
                 portUriFormat: "{port} url",
                 hostId: "some host id",
               },
-            ];
-            return result;
-          }
-        );
+            ],
+          };
+          return Object.assign(additionalProperties, tunnel);
+        });
       const manager = new MicrosoftTunnelingManager(async () => ok("fake token"));
 
       // Act
@@ -90,19 +102,26 @@ describe("MicrosoftTunnelingManager", () => {
         .callsFake(async (): Promise<void> => {});
       sandbox
         .stub(TunnelManagementHttpClient.prototype, "getTunnel")
-        .callsFake(
-          async (tunnel: Tunnel, options?: TunnelRequestOptions): Promise<Tunnel | null> => {
-            const result = Object.assign({}, tunnel);
-            result.endpoints = [
+        .callsFake(async (tunnel: Tunnel): Promise<Tunnel | null> => {
+          const additionalProperties: Partial<Tunnel> = {
+            endpoints: [
               {
                 connectionMode: TunnelConnectionMode.TunnelRelay,
                 portUriFormat: `${tunnel.tunnelId}-{port}.${tunnel.clusterId}.example.com`,
                 hostId: "some host id",
               },
-            ];
-            return result;
-          }
-        );
+            ],
+            accessTokens: {
+              [TunnelAccessScopes.Host]: "fake host token",
+              [TunnelAccessScopes.Connect]: "fake connect token",
+            },
+            ports: [
+              { portNumber: 3978, protocol: TunnelProtocol.Http },
+              { portNumber: 3000, protocol: TunnelProtocol.Http },
+            ],
+          };
+          return Object.assign(additionalProperties, tunnel);
+        });
       const existingTunnelId = "testtunnel";
       const existingTunnelClusterId = "testcluster";
       const manager = new MicrosoftTunnelingManager(async () => ok("fake token"));
@@ -195,8 +214,16 @@ describe("MicrosoftTunnelingManager", () => {
       const createdTunnelClusterId = "some random tunnel cluster id";
       sandbox
         .stub(TunnelManagementHttpClient.prototype, "createTunnel")
-        .callsFake(async (tunnel: Tunnel, options?: TunnelRequestOptions): Promise<Tunnel> => {
-          return { tunnelId: createdTunnelId, clusterId: createdTunnelClusterId };
+        .callsFake(async (tunnel: Tunnel): Promise<Tunnel> => {
+          const additionalProperties: Partial<Tunnel> = {
+            tunnelId: createdTunnelId,
+            clusterId: createdTunnelClusterId,
+            accessTokens: {
+              [TunnelAccessScopes.Host]: "fake host token",
+              [TunnelAccessScopes.Connect]: "fake connect token",
+            },
+          };
+          return Object.assign(additionalProperties, tunnel);
         });
       sandbox
         .stub(TunnelRelayTunnelHost.prototype, "start")
@@ -258,19 +285,23 @@ describe("MicrosoftTunnelingManager", () => {
         .callsFake(async (): Promise<void> => {});
       sandbox
         .stub(TunnelManagementHttpClient.prototype, "getTunnel")
-        .callsFake(
-          async (tunnel: Tunnel, options?: TunnelRequestOptions): Promise<Tunnel | null> => {
-            const result = Object.assign({}, tunnel);
-            result.endpoints = [
+        .callsFake(async (tunnel: Tunnel): Promise<Tunnel | null> => {
+          const additionalProperties: Partial<Tunnel> = {
+            endpoints: [
               {
                 connectionMode: TunnelConnectionMode.TunnelRelay,
                 portUriFormat: `${tunnel.tunnelId}-{port}.${tunnel.clusterId}.example.com`,
                 hostId: "some host id",
               },
-            ];
-            return result;
-          }
-        );
+            ],
+            accessTokens: {
+              [TunnelAccessScopes.Host]: "fake host token",
+              [TunnelAccessScopes.Connect]: "fake connect token",
+            },
+            ports: [{ portNumber: 3978 }],
+          };
+          return Object.assign(additionalProperties, tunnel);
+        });
       const manager = new MicrosoftTunnelingManager(async () => ok("fake token"));
 
       // Act

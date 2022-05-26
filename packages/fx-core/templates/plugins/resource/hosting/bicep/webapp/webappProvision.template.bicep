@@ -36,7 +36,7 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
         }
         {
           name: 'SCM_SCRIPT_GENERATOR_ARGS'
-          value: '--node'' // Execute build steps on your site during deployment
+          value: '--node' // Execute build steps on your site during deployment
         }
         {{#else}}
         {

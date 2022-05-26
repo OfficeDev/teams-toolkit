@@ -5,7 +5,7 @@ export * from "./azureSql";
 export * from "./azureWebApp";
 export * from "./botService";
 // export * from "./spfx";
-export * from "./teamsManifest";
+export * from "./appManifest/appManifest";
 
 export const ResourceComponentNames = {
   teams: "teams-manifest",

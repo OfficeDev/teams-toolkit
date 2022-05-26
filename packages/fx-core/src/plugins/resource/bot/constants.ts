@@ -155,7 +155,7 @@ export class DeployConfigs {
   public static readonly DEPLOYMENT_FOLDER = ".deployment";
   public static readonly DEPLOYMENT_CONFIG_FILE = "bot.json";
   public static readonly WALK_SKIP_PATHS = [
-    "node_modules/.bin",
+    "/node_modules/.bin",
     `.${ConfigFolderName}`,
     DeployConfigs.DEPLOYMENT_FOLDER,
     ".vscode",
@@ -166,6 +166,8 @@ export class DeployConfigs {
     "test",
     "tsconfig.json",
     ".DS_Store",
+    "/node_modules/ts-node",
+    "/node_modules/typescript",
   ];
 }
 

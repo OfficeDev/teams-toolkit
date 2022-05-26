@@ -112,7 +112,7 @@ export class ScaffoldConfig {
     const rawHostType = context.projectSettings?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[
       PluginBot.HOST_TYPE
     ] as string;
-    return utils.convertToConstValues(rawHostType, HostType);
+    return utils.convertToEnumValues(rawHostType, HostType);
   }
 
   private static getBotCapabilities(context: PluginContext, isScaffold: boolean): BotCapability[] {

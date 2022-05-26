@@ -137,7 +137,7 @@ export class TeamsBotV2Impl {
     const projectFileName = getProjectFileName(getRuntime(language), ctx.projectSetting.appName);
     const hostType = resolveServiceType(ctx);
     const deployDir = path.join(workingPath, DeployConfigs.DEPLOYMENT_FOLDER);
-    const configFile = TeamsBotV2Impl.configFile(hostType, workingPath);
+    const configFile = TeamsBotV2Impl.configFile(workingPath);
     const deploymentZipCacheFile = path.join(
       deployDir,
       DeployConfigsConstants.DEPLOYMENT_ZIP_CACHE_FILE
@@ -159,10 +159,9 @@ export class TeamsBotV2Impl {
     await fs.ensureDir(deployDir);
     await TeamsBotV2Impl.initDeployConfig(ctx, configFile, envName);
     if (!(await TeamsBotV2Impl.needDeploy(workingPath, configFile, envName))) {
-      await ctx.logProvider.warning(Messages.SkipDeployNoUpdates);
+      await Logger.warning(Messages.SkipDeployNoUpdates);
       return ok(Void);
     }
-    const deployTimeCandidate = Date.now();
     const progressBarHandler = await ProgressBarFactory.newProgressBar(
       ProgressBarConstants.DEPLOY_TITLE,
       ProgressBarConstants.DEPLOY_STEPS_NUM,
@@ -184,8 +183,9 @@ export class TeamsBotV2Impl {
 
     // upload
     const host = AzureHostingFactory.createHosting(hostType);
-    await progressBarHandler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_DEPLOY);
+    await progressBarHandler.next(ProgressBarConstants.DEPLOY_STEP_ZIP_DEPLOY);
     await host.deploy(botWebAppResourceId, tokenProvider, zipBuffer);
+    const deployTimeCandidate = Date.now();
     await TeamsBotV2Impl.saveDeploymentInfo(
       configFile,
       envName,
@@ -286,7 +286,7 @@ export class TeamsBotV2Impl {
       try {
         await fs.writeJSON(configFile, { [envName]: { time: 0 } });
       } catch (e) {
-        await ctx.logProvider.debug(
+        await Logger.debug(
           `init deploy json failed with target file: ${configFile} with error: ${e}.`
         );
       }
@@ -410,19 +410,12 @@ export class TeamsBotV2Impl {
     }
   }
 
-  private static configFile(serviceType: ServiceType, workingPath: string): string {
-    switch (serviceType) {
-      case ServiceType.AppService:
-        return path.join(workingPath, DeployConfigs.DEPLOYMENT_CONFIG_FILE);
-      case ServiceType.Functions:
-        return path.join(
-          workingPath,
-          DeployConfigs.DEPLOYMENT_FOLDER,
-          DeployConfigsConstants.DEPLOYMENT_INFO_FILE
-        );
-      default:
-        return "";
-    }
+  private static configFile(workingDir: string): string {
+    return path.join(
+      workingDir,
+      DeployConfigs.DEPLOYMENT_FOLDER,
+      DeployConfigsConstants.DEPLOYMENT_INFO_FILE
+    );
   }
 
   /**

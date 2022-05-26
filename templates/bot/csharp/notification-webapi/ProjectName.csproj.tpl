@@ -11,10 +11,12 @@
 
   <ItemGroup>
     <None Include=".fx/**/*" />
+    <None Remove="build/**/*" />
+    <Content Remove="build/**/*" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include=".notification.localstore.json" />
+    <None Include=".notification.local*.json" />
   </ItemGroup>
 
   <ItemGroup>

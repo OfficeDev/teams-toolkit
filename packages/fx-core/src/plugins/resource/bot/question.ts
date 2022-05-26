@@ -14,7 +14,8 @@ import {
   NotificationOptionItem,
 } from "../../solution/fx-solution/question";
 import { QuestionNames } from "./constants";
-import { HostType, NotificationTrigger, NotificationTriggers } from "./resources/strings";
+import { NotificationTrigger, NotificationTriggers } from "./resources/strings";
+import { HostType } from "./v2/enum";
 
 export interface HostTypeTriggerOptionItem extends OptionItem {
   hostType: HostType;
@@ -24,26 +25,26 @@ export interface HostTypeTriggerOptionItem extends OptionItem {
 // NOTE: id must be the sample as cliName to prevent parsing error for CLI default value.
 export const FunctionsTimerTriggerOptionItem: HostTypeTriggerOptionItem = optionWithL10n({
   id: "timer-functions",
-  hostType: HostType.AZURE_FUNCTIONS,
+  hostType: HostType.Functions,
   trigger: NotificationTriggers.TIMER,
 });
 
 export const FunctionsHttpTriggerOptionItem: HostTypeTriggerOptionItem = optionWithL10n({
   id: "http-functions",
-  hostType: HostType.AZURE_FUNCTIONS,
+  hostType: HostType.Functions,
   trigger: NotificationTriggers.HTTP,
 });
 
 export const AppServiceOptionItem: HostTypeTriggerOptionItem = optionWithL10n({
   id: "http-restify",
-  hostType: HostType.APP_SERVICE,
+  hostType: HostType.AppService,
   // trigger of app service host is hard-coded to http, so no need to set here
 });
 
 // TODO: this option will not be shown in UI, leave messages empty.
 export const AppServiceOptionItemForVS: HostTypeTriggerOptionItem = {
   id: "http-webapi",
-  hostType: HostType.APP_SERVICE,
+  hostType: HostType.AppService,
   label: "",
   cliName: "",
   description: "",

@@ -6,7 +6,6 @@ import {
   BotCapabilities,
   BotCapability,
   CommonStrings,
-  HostType,
   NotificationTrigger,
   PluginBot,
   QuestionBotScenarioToBotCapability,
@@ -16,6 +15,7 @@ import path from "path";
 import { QuestionNames } from "../constants";
 import { HostTypeTriggerOptions } from "../question";
 import { AzureSolutionQuestionNames } from "../../../solution/fx-solution/question";
+import { HostType } from "../v2/enum";
 
 export class ScaffoldConfig {
   public botId?: string;

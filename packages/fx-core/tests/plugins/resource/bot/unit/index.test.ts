@@ -16,7 +16,7 @@ import { FxBotPluginResultFactory as ResultFactory } from "../../../../../src/pl
 import * as testUtils from "./utils";
 import { PluginActRoles } from "../../../../../src/plugins/resource/bot/enums/pluginActRoles";
 import * as factory from "../../../../../src/plugins/resource/bot/clientFactory";
-import { CommonStrings, HostType } from "../../../../../src/plugins/resource/bot/resources/strings";
+import { CommonStrings } from "../../../../../src/plugins/resource/bot/resources/strings";
 import { AADRegistration } from "../../../../../src/plugins/resource/bot/aadRegistration";
 import { BotAuthCredential } from "../../../../../src/plugins/resource/bot/botAuthCredential";
 import { AppStudio } from "../../../../../src/plugins/resource/bot/appStudio/appStudio";
@@ -52,6 +52,7 @@ import { ScaffoldConfig } from "../../../../../src/plugins/resource/bot/configs/
 import { DotnetBotImpl } from "../../../../../src/plugins/resource/bot/dotnet/plugin";
 import { FuncHostedDeployMgr } from "../../../../../src/plugins/resource/bot/functionsHostedBot/deployMgr";
 import { AzureOperations } from "../../../../../src/common/azure-hosting/azureOps";
+import { HostType } from "../../../../../src/plugins/resource/bot/v2/enum";
 
 describe("Teams Bot Resource Plugin", () => {
   describe("Test plugin implementation dispatching", () => {
@@ -80,7 +81,7 @@ describe("Teams Bot Resource Plugin", () => {
     it("dispatches to function hosted bot", async () => {
       // Arrange
       const pluginContext = testUtils.newPluginContext();
-      sinon.stub(ScaffoldConfig, "getBotHostType").returns(HostType.AZURE_FUNCTIONS);
+      sinon.stub(ScaffoldConfig, "getBotHostType").returns(HostType.Functions);
 
       // Act
       const impl = botPlugin.getImpl(pluginContext);

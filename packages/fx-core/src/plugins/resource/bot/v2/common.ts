@@ -9,7 +9,8 @@ import { AppServiceOptionItem, HostTypeTriggerOptions } from "../question";
 import { CodeTemplateInfo } from "./interface/codeTemplateInfo";
 import { getLanguage, getServiceType, getTriggerScenarios } from "./mapping";
 import { ServiceType } from "../../../../common/azure-hosting/interfaces";
-import { PluginBot, HostType } from "../resources/strings";
+import { HostType } from "./enum";
+import { PluginBot } from "../resources/strings";
 
 export function getTemplateInfos(ctx: Context, inputs: Inputs): CodeTemplateInfo[] {
   const lang = getLanguage(ctx.projectSetting.programmingLanguage);
@@ -66,7 +67,7 @@ export function resolveHostType(inputs: Inputs): HostType {
     );
     hostType = hostTypes ? hostTypes[0] : undefined;
   }
-  return hostType ? hostType : HostType.APP_SERVICE;
+  return hostType ? hostType : HostType.AppService;
 }
 
 export function resolveServiceType(ctx: Context): ServiceType {

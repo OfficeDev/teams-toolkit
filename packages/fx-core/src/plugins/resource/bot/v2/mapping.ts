@@ -9,8 +9,7 @@ import {
   AppServiceOptionItem,
   AppServiceOptionItemForVS,
 } from "../question";
-import { HostType } from "../resources/strings";
-import { ProgrammingLanguage, Runtime } from "./enum";
+import { HostType, ProgrammingLanguage, Runtime } from "./enum";
 
 const runtimeMap: Map<ProgrammingLanguage, Runtime> = new Map<ProgrammingLanguage, Runtime>([
   [ProgrammingLanguage.Js, Runtime.Node],
@@ -20,8 +19,8 @@ const runtimeMap: Map<ProgrammingLanguage, Runtime> = new Map<ProgrammingLanguag
 const defaultRuntime = Runtime.Node;
 
 const serviceMap: Map<string, ServiceType> = new Map<string, ServiceType>([
-  [HostType.APP_SERVICE, ServiceType.AppService],
-  [HostType.AZURE_FUNCTIONS, ServiceType.Functions],
+  [HostType.AppService, ServiceType.AppService],
+  [HostType.Functions, ServiceType.Functions],
 ]);
 const defaultServiceType = ServiceType.AppService;
 

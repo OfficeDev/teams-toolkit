@@ -24,11 +24,9 @@ import {
   unzipAction,
 } from "../../../../../src/common/template-utils/templatesActions";
 import { PluginActRoles } from "../../../../../src/plugins/resource/bot/enums/pluginActRoles";
-import {
-  HostType,
-  NotificationTriggers,
-} from "../../../../../src/plugins/resource/bot/resources/strings";
+import { NotificationTriggers } from "../../../../../src/plugins/resource/bot/resources/strings";
 import { BotNotificationTriggers } from "../../../../../src/plugins/solution/fx-solution/question";
+import { HostType } from "../../../../../src/plugins/resource/bot/v2/enum";
 
 describe("Language Strategy", () => {
   describe("getTemplateProject", () => {
@@ -138,7 +136,7 @@ describe("Language Strategy", () => {
 
     it("Fetch Notification with App Service hosting", async () => {
       // Arrange
-      const botConfig = createBotConfig(botDir, PluginActRoles.Notification, HostType.APP_SERVICE);
+      const botConfig = createBotConfig(botDir, PluginActRoles.Notification, HostType.AppService);
       const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
 
       // Act
@@ -155,11 +153,7 @@ describe("Language Strategy", () => {
 
     it("Fetch Notification with Functions hosting", async () => {
       // Arrange
-      const botConfig = createBotConfig(
-        botDir,
-        PluginActRoles.Notification,
-        HostType.AZURE_FUNCTIONS
-      );
+      const botConfig = createBotConfig(botDir, PluginActRoles.Notification, HostType.Functions);
       const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
 
       // Act
@@ -205,11 +199,7 @@ describe("Language Strategy", () => {
     it("Fetch notification triggers", async () => {
       const botDir = "some-dir";
       // Arrange
-      const botConfig = createBotConfig(
-        botDir,
-        PluginActRoles.Notification,
-        HostType.AZURE_FUNCTIONS
-      );
+      const botConfig = createBotConfig(botDir, PluginActRoles.Notification, HostType.Functions);
       const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
       botConfig.scaffold.triggers = [NotificationTriggers.HTTP];
 

@@ -11,3 +11,8 @@ export enum Runtime {
   Node = "node",
   Dotnet = "csharp",
 }
+
+export enum HostType {
+  AppService = "app-service",
+  Functions = "azure-functions",
+}

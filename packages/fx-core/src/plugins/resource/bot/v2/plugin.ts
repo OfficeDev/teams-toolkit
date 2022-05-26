@@ -159,7 +159,7 @@ export class TeamsBotV2Impl {
     await fs.ensureDir(deployDir);
     await TeamsBotV2Impl.initDeployConfig(ctx, configFile, envName);
     if (!(await TeamsBotV2Impl.needDeploy(workingPath, configFile, envName))) {
-      await Logger.warning(Messages.SkipDeployNoUpdates);
+      Logger.warning(Messages.SkipDeployNoUpdates);
       return ok(Void);
     }
     const progressBarHandler = await ProgressBarFactory.newProgressBar(
@@ -171,12 +171,12 @@ export class TeamsBotV2Impl {
     await progressBarHandler.start(ProgressBarConstants.DEPLOY_STEP_START);
     // build
     await progressBarHandler.next(ProgressBarConstants.DEPLOY_STEP_NPM_INSTALL);
-    await TeamsBotV2Impl.localBuild(language, workingPath, projectFileName);
+    const zippedPath = await TeamsBotV2Impl.localBuild(language, workingPath, projectFileName);
 
     // pack
     await progressBarHandler.next(ProgressBarConstants.DEPLOY_STEP_ZIP_FOLDER);
     const zipBuffer = await utils.zipFolderAsync(
-      workingPath,
+      zippedPath,
       deploymentZipCacheFile,
       await TeamsBotV2Impl.prepareIgnore(generalIgnore)
     );
@@ -265,7 +265,7 @@ export class TeamsBotV2Impl {
           path.join(workingPath, projectFileName)
         );
         await utils.execute(`dotnet publish --configuration Release`, workingPath);
-        return path.join(workingPath, "bin", "release", framework);
+        return path.join(workingPath, "bin", "release", framework, "publish");
       } catch (e) {
         throw new CommandExecutionError(`dotnet publish`, workingPath, e);
       }

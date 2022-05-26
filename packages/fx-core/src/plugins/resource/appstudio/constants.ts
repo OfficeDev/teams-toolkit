@@ -567,6 +567,6 @@ export const DEFAULT_DEVELOPER_PRIVACY_URL = "https://www.example.com/privacy";
 export const TEAMS_APP_SHORT_NAME_MAX_LENGTH = 30;
 export const STATIC_TABS_MAX_ITEMS = 16;
 
-export const DEVELOPER_PREVIEW_SCHEMA =
-  "https://raw.githubusercontent.com/OfficeDev/microsoft-teams-app-schema/preview/DevPreview/MicrosoftTeams.schema.json";
-export const M365_DEVELOPER_PREVIEW_MANIFEST_VERSION = "m365DevPreview";
+export const M365_SCHEMA =
+  "https://developer.microsoft.com/en-us/json-schemas/teams/v1.13/MicrosoftTeams.schema.json";
+export const M365_MANIFEST_VERSION = "1.13";

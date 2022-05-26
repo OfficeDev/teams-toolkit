@@ -271,14 +271,9 @@ export async function showPlanAndConfirm(
       plans.push(`shell command: ${effect.description}`);
     }
   }
-  // const res = await context.userInteraction.selectOption({
-  //   name: "confirm",
-  //   title: title + "\n" + plans.join("\n"),
-  //   options: ["Confirm", "Cancel"],
-  // });
-  // if (res.isOk() && res.value.type === "success" && res.value.result === "Confirm") {
-  //   return true;
-  // }
+  for (let i = 0; i < plans.length; ++i) {
+    plans[i] = `step ${i + 1} - ${plans[i]}`;
+  }
   const res = await context.userInteraction.showMessage(
     "info",
     title + "\n" + plans.join("\n"),

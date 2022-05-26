@@ -4,9 +4,6 @@
 
 ## AuthenticationConfiguration.authorityHost property
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Hostname of AAD authority. Default value comes from M365\_AUTHORITY\_HOST environment variable.
 
 <b>Signature:</b>

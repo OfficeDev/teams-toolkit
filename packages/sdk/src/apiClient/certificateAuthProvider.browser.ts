@@ -9,8 +9,6 @@ import { formatString } from "../util/utils";
 
 /**
  * Provider that handles Certificate authentication
- *
- * @beta
  */
 
 export class CertificateAuthProvider implements AuthProvider {
@@ -19,8 +17,6 @@ export class CertificateAuthProvider implements AuthProvider {
   /**
    *
    * @param { SecureContextOptions } certOption - information about the cert used in http requests
-   *
-   * @beta
    */
   constructor(certOption: SecureContextOptions) {
     throw new ErrorWithCode(
@@ -39,8 +35,6 @@ export class CertificateAuthProvider implements AuthProvider {
    *
    * @throws {@link ErrorCode|InvalidParameter} - when custom httpsAgent in the request has duplicate properties with certOption provided in constructor.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
-   *
-   * @beta
    */
   public async AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig> {
     throw new ErrorWithCode(

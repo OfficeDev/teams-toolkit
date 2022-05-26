@@ -4,9 +4,6 @@
 
 ## BasicAuthProvider class
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Provider that handles Basic authentication
 
 <b>Signature:</b>
@@ -20,11 +17,11 @@ export declare class BasicAuthProvider implements AuthProvider
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(userName, password)](./teamsfx.basicauthprovider._constructor_.md) |  | <b><i>(BETA)</i></b> Constructs a new instance of the <code>BasicAuthProvider</code> class |
+|  [(constructor)(userName, password)](./teamsfx.basicauthprovider._constructor_.md) |  | Constructs a new instance of the <code>BasicAuthProvider</code> class |
 
 ## Methods
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
-|  [AddAuthenticationInfo(config)](./teamsfx.basicauthprovider.addauthenticationinfo.md) |  | <b><i>(BETA)</i></b> Adds authentication info to http requests |
+|  [AddAuthenticationInfo(config)](./teamsfx.basicauthprovider.addauthenticationinfo.md) |  | Adds authentication info to http requests |
 

@@ -4,9 +4,6 @@
 
 ## TeamsUserCredential.getUserInfo() method
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Get basic user info from SSO token
 
 <b>Signature:</b>

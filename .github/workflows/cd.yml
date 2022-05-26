@@ -354,3 +354,16 @@ jobs:
           token: ${{ secrets.CD_PAT }}
           tag: ${{ steps.version-change.outputs.EXTENSION_VERSION }}
           artifacts: ./packages/**/*.vsix
+
+      - name: save release info
+        if: ${{ steps.version-change.outputs.CHANGED }}
+        run: |
+          rm -f release.txt
+          echo ${{steps.version-change.outputs.CHANGED}} > release.txt
+      
+      - name: update release info to artifact
+        if: ${{ steps.version-change.outputs.CHANGED }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: release
+          path: release.txt

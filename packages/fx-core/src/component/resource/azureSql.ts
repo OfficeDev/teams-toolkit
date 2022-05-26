@@ -18,7 +18,6 @@ import "reflect-metadata";
 import { Service } from "typedi";
 import { generateBicepFromFile, getUuid } from "../../common/tools";
 import { getTemplatesFolder } from "../../folder";
-import { persistBicepPlans, persistProvisionBicepPlans } from "../utils";
 @Service("azure-sql")
 export class AzureSqlResource implements CloudResource {
   readonly type = "cloud";

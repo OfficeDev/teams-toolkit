@@ -30,6 +30,7 @@ import {
   ProjectConfigV3,
   ProjectSettings,
   ProjectSettingsFileName,
+  ProjectSettingsV3,
   QTreeNode,
   Result,
   Stage,
@@ -862,7 +863,7 @@ export class FxCore implements v3.ICore {
     EnvInfoLoaderMW_V3(false),
     LocalSettingsLoaderMW,
     SolutionLoaderMW_V3,
-    QuestionModelMW,
+    QuestionModelMW_V3,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
     EnvInfoWriterMW(),
@@ -873,10 +874,15 @@ export class FxCore implements v3.ICore {
     ctx?: CoreHookContext
   ): Promise<Result<unknown, FxError>> {
     if (func.method === "addFeature") {
-      const features = inputs.features;
-      if (features === "sql") {
-        const context = createContextV3();
+      const feature = inputs.feature;
+      if (feature === "sql") {
+        const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
         await runAction("fx.addSql", context, inputs as InputsWithProjectPath);
+        ctx!.projectSettings = context.projectSetting;
+      } else if (feature === BotOptionItem.id) {
+        const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+        await runAction("fx.addBot", context, inputs as InputsWithProjectPath);
+        ctx!.projectSettings = context.projectSetting;
       }
     }
     return ok(undefined);

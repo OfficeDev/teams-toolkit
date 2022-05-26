@@ -132,7 +132,7 @@ export abstract class NodeChecker implements DepsChecker {
   }
 }
 
-async function getInstalledNodeVersion(): Promise<NodeVersion | null> {
+export async function getInstalledNodeVersion(): Promise<NodeVersion | null> {
   try {
     const output = await cpUtils.executeCommand(
       undefined,

@@ -3,7 +3,6 @@
 
 /**
  * Authentication related configuration.
- * @beta
  */
 export interface AuthenticationConfiguration {
   /**

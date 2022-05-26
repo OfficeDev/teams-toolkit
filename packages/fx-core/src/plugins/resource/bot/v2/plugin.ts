@@ -17,7 +17,6 @@ import { AzureHostingFactory } from "../../../../common/azure-hosting/hostingFac
 import { Commands, CommonStrings, ConfigNames, PluginBot } from "../resources/strings";
 import { checkAndThrowIfMissing, checkPrecondition, CommandExecutionError } from "../errors";
 import { BicepConfigs, ServiceType } from "../../../../common/azure-hosting/interfaces";
-import { getSiteNameFromResourceId } from "../../../../common";
 import {
   DEFAULT_DOTNET_FRAMEWORK,
   DeployConfigs,
@@ -37,7 +36,7 @@ import ignore, { Ignore } from "ignore";
 import { DeployConfigsConstants } from "../../../../common/azure-hosting/hostingConstant";
 import { getTemplateInfos, resolveHostType, resolveServiceType } from "./common";
 import { ProgrammingLanguage } from "./enum";
-import { getLanguage, getRuntime } from "./mapping";
+import { getLanguage, getProjectFileName, getRuntime } from "./mapping";
 
 export class TeamsBotV2Impl {
   readonly name: string = PluginBot.PLUGIN_NAME;
@@ -49,11 +48,9 @@ export class TeamsBotV2Impl {
       ctx
     );
     await handler?.start(ProgressBarConstants.SCAFFOLD_STEP_START);
-    let workingPath = inputs.projectPath ?? "";
     const lang = getLanguage(ctx.projectSetting.programmingLanguage);
-    if (lang !== ProgrammingLanguage.Csharp) {
-      workingPath = path.join(workingPath, "bot");
-    }
+    const projectPath = checkPrecondition(Messages.WorkingDirIsMissing, inputs.projectPath);
+    const workingPath = TeamsBotV2Impl.getWorkingPath(projectPath, lang);
     const hostType = resolveHostType(inputs);
     utils.checkAndSavePluginSettingV2(ctx, PluginBot.HOST_TYPE, hostType);
     const templateInfos = getTemplateInfos(ctx, inputs);
@@ -135,10 +132,12 @@ export class TeamsBotV2Impl {
     tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
     const projectPath = checkPrecondition(Messages.WorkingDirIsMissing, inputs.projectPath);
-    const workingDir = path.join(projectPath, CommonStrings.BOT_WORKING_DIR_NAME);
+    const language = getLanguage(ctx.projectSetting.programmingLanguage);
+    const workingPath = TeamsBotV2Impl.getWorkingPath(projectPath, language);
+    const projectFileName = getProjectFileName(getRuntime(language), ctx.projectSetting.appName);
     const hostType = resolveServiceType(ctx);
-    const deployDir = path.join(workingDir, DeployConfigs.DEPLOYMENT_FOLDER);
-    const configFile = TeamsBotV2Impl.configFile(hostType, workingDir);
+    const deployDir = path.join(workingPath, DeployConfigs.DEPLOYMENT_FOLDER);
+    const configFile = TeamsBotV2Impl.configFile(workingPath);
     const deploymentZipCacheFile = path.join(
       deployDir,
       DeployConfigsConstants.DEPLOYMENT_ZIP_CACHE_FILE
@@ -147,8 +146,8 @@ export class TeamsBotV2Impl {
 
     // list of files that need to be detected for both file changes and uploads
     const generalIgnore = await TeamsBotV2Impl.generateIgnoreRules(
-      await TeamsBotV2Impl.ensureIgnoreFile(hostType, workingDir),
-      workingDir
+      await TeamsBotV2Impl.ensureIgnoreFile(hostType, workingPath),
+      workingPath
     );
 
     // get Azure resources definition
@@ -159,33 +158,34 @@ export class TeamsBotV2Impl {
     // create config file if not exists
     await fs.ensureDir(deployDir);
     await TeamsBotV2Impl.initDeployConfig(ctx, configFile, envName);
-    if (!(await TeamsBotV2Impl.needDeploy(generalIgnore, workingDir, configFile, envName))) {
-      await ctx.logProvider.warning(Messages.SkipDeployNoUpdates);
+    if (!(await TeamsBotV2Impl.needDeploy(workingPath, configFile, envName))) {
+      await Logger.warning(Messages.SkipDeployNoUpdates);
       return ok(Void);
     }
-    const deployTimeCandidate = Date.now();
-    const progressBarHandler = ctx.userInteraction.createProgressBar(
+    const progressBarHandler = await ProgressBarFactory.newProgressBar(
       ProgressBarConstants.DEPLOY_TITLE,
-      ProgressBarConstants.DEPLOY_STEPS_NUM
+      ProgressBarConstants.DEPLOY_STEPS_NUM,
+      ctx
     );
     // progress start
     await progressBarHandler.start(ProgressBarConstants.DEPLOY_STEP_START);
     // build
     await progressBarHandler.next(ProgressBarConstants.DEPLOY_STEP_NPM_INSTALL);
-    await TeamsBotV2Impl.localBuild(ctx, inputs, projectPath);
+    await TeamsBotV2Impl.localBuild(language, workingPath, projectFileName);
 
     // pack
     await progressBarHandler.next(ProgressBarConstants.DEPLOY_STEP_ZIP_FOLDER);
     const zipBuffer = await utils.zipFolderAsync(
-      workingDir,
+      workingPath,
       deploymentZipCacheFile,
       await TeamsBotV2Impl.prepareIgnore(generalIgnore)
     );
 
     // upload
     const host = AzureHostingFactory.createHosting(hostType);
-    await progressBarHandler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_DEPLOY);
+    await progressBarHandler.next(ProgressBarConstants.DEPLOY_STEP_ZIP_DEPLOY);
     await host.deploy(botWebAppResourceId, tokenProvider, zipBuffer);
+    const deployTimeCandidate = Date.now();
     await TeamsBotV2Impl.saveDeploymentInfo(
       configFile,
       envName,
@@ -228,45 +228,46 @@ export class TeamsBotV2Impl {
   }
 
   private static async localBuild(
-    ctx: Context,
-    inputs: Inputs,
-    projectPath: string
+    lang: ProgrammingLanguage,
+    workingPath: string,
+    projectFileName: string
   ): Promise<string> {
     // Return the folder path to be zipped and uploaded
 
-    const lang = getLanguage(ctx.projectSetting.programmingLanguage);
-    const packDir = path.join(projectPath, CommonStrings.BOT_WORKING_DIR_NAME);
     if (lang === ProgrammingLanguage.Ts) {
       //Typescript needs tsc build before deploy because of Windows app server. other languages don"t need it.
       try {
-        await utils.execute("npm install", packDir);
-        await utils.execute("npm run build", packDir);
-        return packDir;
+        await utils.execute("npm install", workingPath);
+        await utils.execute("npm run build", workingPath);
+        return workingPath;
       } catch (e) {
-        throw new CommandExecutionError(`${Commands.NPM_INSTALL},${Commands.NPM_BUILD}`, e);
+        throw new CommandExecutionError(
+          `${Commands.NPM_INSTALL},${Commands.NPM_BUILD}`,
+          workingPath,
+          e
+        );
       }
     }
 
     if (lang === ProgrammingLanguage.Js) {
       try {
         // fail to npm install @microsoft/teamsfx on azure web app, so pack it locally.
-        await utils.execute("npm install", packDir);
-        return packDir;
+        await utils.execute("npm install", workingPath);
+        return workingPath;
       } catch (e) {
-        throw new CommandExecutionError(`${Commands.NPM_INSTALL}`, e);
+        throw new CommandExecutionError(`${Commands.NPM_INSTALL}`, workingPath, e);
       }
     }
 
     if (lang === ProgrammingLanguage.Csharp) {
       try {
-        const runtime = await TeamsBotV2Impl.getFrameworkVersion(projectPath);
-        await utils.execute(
-          `dotnet publish --configuration Release --runtime ${runtime} --self-contained`,
-          packDir
+        const framework = await TeamsBotV2Impl.getFrameworkVersion(
+          path.join(workingPath, projectFileName)
         );
-        return packDir;
+        await utils.execute(`dotnet publish --configuration Release`, workingPath);
+        return path.join(workingPath, "bin", "release", framework);
       } catch (e) {
-        throw new CommandExecutionError(`dotnet publish`, e);
+        throw new CommandExecutionError(`dotnet publish`, workingPath, e);
       }
     }
 
@@ -285,7 +286,7 @@ export class TeamsBotV2Impl {
       try {
         await fs.writeJSON(configFile, { [envName]: { time: 0 } });
       } catch (e) {
-        await ctx.logProvider.debug(
+        await Logger.debug(
           `init deploy json failed with target file: ${configFile} with error: ${e}.`
         );
       }
@@ -294,33 +295,29 @@ export class TeamsBotV2Impl {
 
   /**
    * determine if dir need deploy, or all file are not changed after last deploy
-   * @param generalIgnore none touch file
-   * @param workingDir base dir
+   * @param workingPath base dir
    * @param configFile config file location
    * @param env current env
    */
-  static async needDeploy(
-    generalIgnore: string[],
-    workingDir: string,
-    configFile: string,
-    env: string
-  ): Promise<boolean> {
+  static async needDeploy(workingPath: string, configFile: string, env: string): Promise<boolean> {
     const botDeployJson = await fs.readJSON(configFile);
     const lastTime = Math.max(botDeployJson[env]?.time ?? 0, 0);
     // prepare ignore file
     const gitIgnore = await TeamsBotV2Impl.generateIgnoreRules(
       DeployConfigsConstants.GIT_IGNORE_FILE,
-      workingDir
+      workingPath
     );
-    const totalIgnore = await TeamsBotV2Impl.prepareIgnore(generalIgnore.concat(gitIgnore));
+    // general ignore will ignore ts file, so source change will not trigger rebuild and redeploy
+    // so just use git ignore will be ok
+    const totalIgnore = await TeamsBotV2Impl.prepareIgnore(gitIgnore);
     const filter = (itemPath: string) => path.basename(itemPath) !== FolderNames.NODE_MODULES;
 
     let changed = false;
     try {
       await forEachFileAndDir(
-        workingDir,
+        workingPath,
         (itemPath, status) => {
-          const relativePath = path.relative(workingDir, itemPath);
+          const relativePath = path.relative(workingPath, itemPath);
           if (
             relativePath &&
             status.mtime.getTime() > lastTime &&
@@ -371,14 +368,17 @@ export class TeamsBotV2Impl {
   /**
    * read every line from workDir/filename and return workDir/[lineContent]
    * @param fileName file name
-   * @param workingDir base dir
+   * @param workingPath base dir
    */
-  public static async generateIgnoreRules(fileName: string, workingDir: string): Promise<string[]> {
+  public static async generateIgnoreRules(
+    fileName: string,
+    workingPath: string
+  ): Promise<string[]> {
     if (!fileName) {
       return [];
     }
     let result: string[] = [];
-    const ignoreFilePath = path.join(workingDir, fileName);
+    const ignoreFilePath = path.join(workingPath, fileName);
     if (await fs.pathExists(ignoreFilePath)) {
       const ignoreFileContent = await fs.readFile(ignoreFilePath);
       result = ignoreFileContent
@@ -392,7 +392,7 @@ export class TeamsBotV2Impl {
 
   private static async ensureIgnoreFile(
     hostType: ServiceType,
-    workingDir: string
+    workingPath: string
   ): Promise<string> {
     const defaultAppIgnore = DeployConfigs.WALK_SKIP_PATHS.join("\n");
     switch (hostType) {
@@ -400,8 +400,8 @@ export class TeamsBotV2Impl {
         return DeployConfigsConstants.FUNC_IGNORE_FILE;
       case ServiceType.AppService: {
         const fileName = `.${hostType.toString()}ignore`;
-        if (!fs.existsSync(path.join(workingDir, fileName))) {
-          await fs.writeFile(path.join(workingDir, fileName), defaultAppIgnore);
+        if (!fs.existsSync(path.join(workingPath, fileName))) {
+          await fs.writeFile(path.join(workingPath, fileName), defaultAppIgnore);
         }
         return fileName;
       }
@@ -410,19 +410,12 @@ export class TeamsBotV2Impl {
     }
   }
 
-  private static configFile(serviceType: ServiceType, workingDir: string): string {
-    switch (serviceType) {
-      case ServiceType.AppService:
-        return path.join(workingDir, DeployConfigs.DEPLOYMENT_CONFIG_FILE);
-      case ServiceType.Functions:
-        return path.join(
-          workingDir,
-          DeployConfigs.DEPLOYMENT_FOLDER,
-          DeployConfigsConstants.DEPLOYMENT_INFO_FILE
-        );
-      default:
-        return "";
-    }
+  private static configFile(workingDir: string): string {
+    return path.join(
+      workingDir,
+      DeployConfigs.DEPLOYMENT_FOLDER,
+      DeployConfigsConstants.DEPLOYMENT_INFO_FILE
+    );
   }
 
   /**
@@ -437,6 +430,12 @@ export class TeamsBotV2Impl {
       return framework[0].trim();
     }
     return DEFAULT_DOTNET_FRAMEWORK;
+  }
+
+  private static getWorkingPath(projectPath: string, language: ProgrammingLanguage): string {
+    return language === ProgrammingLanguage.Csharp
+      ? projectPath
+      : path.join(projectPath, CommonStrings.BOT_WORKING_DIR_NAME);
   }
 }
 

@@ -4,9 +4,6 @@
 
 ## AuthenticationConfiguration.tenantId property
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 AAD tenant id, default value comes from M365\_TENANT\_ID environment variable.
 
 <b>Signature:</b>

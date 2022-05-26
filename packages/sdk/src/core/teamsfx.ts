@@ -30,7 +30,6 @@ const ReservedKey: Set<string> = new Set<string>([
 
 /**
  * A class providing credential and configuration.
- * @beta
  */
 export class TeamsFx implements TeamsFxConfiguration {
   private configuration: Map<string, string | undefined>;
@@ -45,8 +44,6 @@ export class TeamsFx implements TeamsFxConfiguration {
    * @param customConfig - key/value pairs of customized configuration that overrides default ones.
    *
    * @throws {@link ErrorCode|IdentityTypeNotSupported} when setting app identity in browser.
-   *
-   * @beta
    */
   constructor(identityType?: IdentityType, customConfig?: Record<string, string>) {
     this.identityType = identityType ?? IdentityType.User;
@@ -66,7 +63,6 @@ export class TeamsFx implements TeamsFxConfiguration {
    * Identity type set by user.
    *
    * @returns identity type.
-   * @beta
    */
   getIdentityType(): IdentityType {
     return this.identityType;
@@ -80,7 +76,6 @@ export class TeamsFx implements TeamsFxConfiguration {
    * identity is chose, will return {@link AppCredential}.
    *
    * @returns instance implements TokenCredential interface.
-   * @beta
    */
   public getCredential(): TokenCredential {
     if (this.identityType === IdentityType.User) {
@@ -101,7 +96,6 @@ export class TeamsFx implements TeamsFxConfiguration {
   /**
    * Get user information.
    * @returns UserInfo object.
-   * @beta
    */
   public async getUserInfo(): Promise<UserInfo> {
     if (this.identityType !== IdentityType.User) {
@@ -135,8 +129,6 @@ export class TeamsFx implements TeamsFxConfiguration {
    * @throws {@link ErrorCode|ConsentFailed} when user canceled or failed to consent.
    * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
-   *
-   * @beta
    */
   public async login(scopes: string | string[]): Promise<void> {
     throw new ErrorWithCode(
@@ -149,7 +141,6 @@ export class TeamsFx implements TeamsFxConfiguration {
    * Set SSO token when using user identity in NodeJS.
    * @param {string} ssoToken - used for on behalf of user flow.
    * @returns self instance.
-   * @beta
    */
   public setSsoToken(ssoToken: string): TeamsFx {
     if (this.identityType !== IdentityType.User) {
@@ -166,7 +157,6 @@ export class TeamsFx implements TeamsFxConfiguration {
    * Usually used by service plugins to retrieve specific config
    * @param {string} key - configuration key.
    * @returns value in configuration.
-   * @beta
    */
   public getConfig(key: string): string {
     const value = this.configuration.get(key);
@@ -182,7 +172,6 @@ export class TeamsFx implements TeamsFxConfiguration {
    * Check the value of specific key.
    * @param {string} key - configuration key.
    * @returns true if corresponding value is not empty string.
-   * @beta
    */
   public hasConfig(key: string): boolean {
     const value = this.configuration.get(key);
@@ -192,7 +181,6 @@ export class TeamsFx implements TeamsFxConfiguration {
   /**
    * Get all configurations.
    * @returns key value mappings.
-   * @beta
    */
   public getConfigs(): Record<string, string> {
     const config: Record<string, string> = {};

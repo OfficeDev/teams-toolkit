@@ -88,11 +88,9 @@ export abstract class AzureHosting {
     module = AzureHosting.replacePluginId(module, pluginId);
 
     return {
-      Configuration: this.configurable
-        ? {
-            Modules: { [this.hostType]: module },
-          }
-        : undefined,
+      Configuration: {
+        Modules: { [this.hostType]: module },
+      },
       Reference: this.reference,
     } as ResourceTemplate;
   }

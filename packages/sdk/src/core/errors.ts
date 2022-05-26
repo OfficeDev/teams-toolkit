@@ -3,7 +3,6 @@
 
 /**
  * Error code to trace the error types.
- * @beta
  */
 export enum ErrorCode {
   /**
@@ -119,8 +118,6 @@ export class ErrorMessage {
 
 /**
  * Error class with code and message thrown by the SDK.
- *
- * @beta
  */
 export class ErrorWithCode extends Error {
   /**
@@ -135,8 +132,6 @@ export class ErrorWithCode extends Error {
    *
    * @param {string} message - error message.
    * @param {ErrorCode} code - error code.
-   *
-   * @beta
    */
   constructor(message?: string, code?: ErrorCode) {
     if (!code) {

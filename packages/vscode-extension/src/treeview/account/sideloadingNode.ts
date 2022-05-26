@@ -9,7 +9,7 @@ import { checkSideloadingCallback } from "../../handlers";
 import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
 import { localize } from "../../utils/localizeUtils";
 import { DynamicNode } from "../dynamicNode";
-import { errorIcon, passIcon } from "./common";
+import { errorIcon, passIcon, warningIcon } from "./common";
 
 export class SideloadingNode extends DynamicNode {
   constructor(
@@ -28,15 +28,15 @@ export class SideloadingNode extends DynamicNode {
     let isSideloadingAllowed: boolean | undefined;
     if (this.token != "") {
       isSideloadingAllowed = await getSideloadingStatus(this.token);
-      if (isSideloadingAllowed === undefined) {
-        // show nothing if internal error (TODO: may add back if full status is required later)
-      } else {
-        if (!isSideloadingAllowed) {
-          await checkSideloadingCallback();
-        }
+      if (isSideloadingAllowed === false) {
+        await checkSideloadingCallback();
       }
     }
-    if (isSideloadingAllowed) {
+    if (isSideloadingAllowed === undefined) {
+      this.label = localize("teamstoolkit.accountTree.sideloadingStatusUnknown");
+      this.iconPath = warningIcon;
+      this.tooltip = localize("teamstoolkit.accountTree.sideloadingStatusUnknownTooltip");
+    } else if (isSideloadingAllowed) {
       this.label = localize("teamstoolkit.accountTree.sideloadingPass");
       this.iconPath = passIcon;
       this.tooltip = localize("teamstoolkit.accountTree.sideloadingPassTooltip");

@@ -4,9 +4,6 @@
 
 ## ConversationOptions.adapter property
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 The bot adapter. If not provided, a default adapter will be created: - with `adapterConfig` as constructor parameter. - with a default error handler that logs error to console, sends trace activity, and sends error message to user.
 
 <b>Signature:</b>

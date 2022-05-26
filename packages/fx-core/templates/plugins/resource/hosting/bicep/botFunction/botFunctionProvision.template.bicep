@@ -65,10 +65,12 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
           name: 'WEBSITE_RUN_FROM_PACKAGE'
           value: '1' // Run Azure Functions from a package file
         }
+        {{#if (contains "node" configs)}}
         {
           name: 'WEBSITE_NODE_DEFAULT_VERSION'
           value: '~16' // Set NodeJS version to 16.x
         }
+        {{/if}}
         {{#if (contains "running-on-azure" configs)}}
         {
           name: 'RUNNING_ON_AZURE'

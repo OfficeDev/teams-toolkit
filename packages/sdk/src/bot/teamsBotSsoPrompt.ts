@@ -37,8 +37,6 @@ import { IdentityType } from "../models/identityType";
 const invokeResponseType = "invokeResponse";
 /**
  * Response body returned for a token exchange invoke activity.
- *
- * @beta
  */
 class TokenExchangeInvokeResponse {
   /**
@@ -59,8 +57,6 @@ class TokenExchangeInvokeResponse {
 
 /**
  * Settings used to configure an TeamsBotSsoPrompt instance.
- *
- * @beta
  */
 export interface TeamsBotSsoPromptSettings {
   /**
@@ -130,8 +126,6 @@ export interface TeamsBotSsoPromptSettings {
  *      }
  * ]));
  * ```
- *
- * @beta
  */
 export class TeamsBotSsoPrompt extends Dialog {
   /**
@@ -143,8 +137,6 @@ export class TeamsBotSsoPrompt extends Dialog {
    *
    * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
-   *
-   * @beta
    */
   constructor(
     private teamsfx: TeamsFx,
@@ -170,8 +162,6 @@ export class TeamsBotSsoPrompt extends Dialog {
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    *
    * @returns A `Promise` representing the asynchronous operation.
-   *
-   * @beta
    */
   public async beginDialog(dc: DialogContext): Promise<DialogTurnResult> {
     internalLogger.info("Begin Teams Bot SSO Prompt");
@@ -223,8 +213,6 @@ export class TeamsBotSsoPrompt extends Dialog {
    *
    * @throws {@link ErrorCode|ChannelNotSupported} when bot channel is not MS Teams.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
-   *
-   * @beta
    */
   public async continueDialog(dc: DialogContext): Promise<DialogTurnResult> {
     internalLogger.info("Continue Teams Bot SSO Prompt");

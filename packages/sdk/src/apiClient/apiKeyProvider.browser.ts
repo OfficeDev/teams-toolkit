@@ -8,8 +8,6 @@ import { formatString } from "../util/utils";
 
 /**
  * Provider that handles API Key authentication
- *
- * @beta
  */
 export class ApiKeyProvider implements AuthProvider {
   private keyName: string;
@@ -24,8 +22,6 @@ export class ApiKeyProvider implements AuthProvider {
    *
    * @throws {@link ErrorCode|InvalidParameter} - when key name or key value is empty.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
-   *
-   * @beta
    */
   constructor(keyName: string, keyValue: string, keyLocation: ApiKeyLocation) {
     throw new ErrorWithCode(
@@ -44,8 +40,6 @@ export class ApiKeyProvider implements AuthProvider {
    *
    * @throws {@link ErrorCode|AuthorizationInfoAlreadyExists} - when API key already exists in request header or url query parameter.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
-   *
-   * @beta
    */
   public async AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig> {
     throw new ErrorWithCode(
@@ -57,8 +51,6 @@ export class ApiKeyProvider implements AuthProvider {
 
 /**
  * Define available location for API Key location
- *
- * @beta
  */
 export enum ApiKeyLocation {
   /**

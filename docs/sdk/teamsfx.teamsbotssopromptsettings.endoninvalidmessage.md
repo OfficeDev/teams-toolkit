@@ -4,9 +4,6 @@
 
 ## TeamsBotSsoPromptSettings.endOnInvalidMessage property
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 (Optional) value indicating whether the TeamsBotSsoPrompt should end upon receiving an invalid message. Generally the TeamsBotSsoPrompt will end the auth flow when receives user message not related to the auth flow. Setting the flag to false ignores the user's message instead. Defaults to value `true`
 
 <b>Signature:</b>

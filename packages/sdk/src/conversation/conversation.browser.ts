@@ -15,8 +15,6 @@ import { formatString } from "../util/utils";
  *
  * @remarks
  * Only work on server side.
- *
- * @beta
  */
 export class ConversationBot {
   /**
@@ -24,8 +22,6 @@ export class ConversationBot {
    *
    * @remarks
    * Only work on server side.
-   *
-   * @beta
    */
   public readonly adapter: BotFrameworkAdapter;
 
@@ -34,8 +30,6 @@ export class ConversationBot {
    *
    * @remarks
    * Only work on server side.
-   *
-   * @beta
    */
   public readonly command?: CommandBot;
 
@@ -44,8 +38,6 @@ export class ConversationBot {
    *
    * @remarks
    * Only work on server side.
-   *
-   * @beta
    */
   public readonly notification?: NotificationBot;
 
@@ -56,8 +48,6 @@ export class ConversationBot {
    *
    * @remarks
    * Only work on server side.
-   *
-   * @beta
    */
   public constructor(options: ConversationOptions) {
     throw new ErrorWithCode(
@@ -75,8 +65,6 @@ export class ConversationBot {
    *
    * @remarks
    * Only work on server side.
-   *
-   * @beta
    */
   public async requestHandler(
     req: WebRequest,

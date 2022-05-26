@@ -6,14 +6,12 @@ import { IdentityType, UserInfo } from "..";
 
 /**
  * TeamsFx interface that provides credential and configuration.
- * @beta
  */
 export interface TeamsFxConfiguration {
   /**
    * Identity type set by user.
    *
    * @returns identity type.
-   * @beta
    */
   getIdentityType(): IdentityType;
 
@@ -25,14 +23,12 @@ export interface TeamsFxConfiguration {
    * identity is chose, will return {@link AppCredential}.
    *
    * @returns instance implements TokenCredential interface.
-   * @beta
    */
   getCredential(): TokenCredential;
 
   /**
    * Get user information.
    * @returns UserInfo object.
-   * @beta
    */
   getUserInfo(): Promise<UserInfo>;
 
@@ -55,8 +51,6 @@ export interface TeamsFxConfiguration {
    * @throws {@link ErrorCode|ConsentFailed} when user canceled or failed to consent.
    * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
-   *
-   * @beta
    */
   login(scopes: string | string[]): Promise<void>;
 
@@ -64,7 +58,6 @@ export interface TeamsFxConfiguration {
    * Set SSO token when using user identity in NodeJS.
    * @param {string} ssoToken - used for on behalf of user flow.
    * @returns self instance.
-   * @beta
    */
   setSsoToken(ssoToken: string): TeamsFxConfiguration;
 
@@ -72,7 +65,6 @@ export interface TeamsFxConfiguration {
    * Usually used by service plugins to retrieve specific config
    * @param {string} key - configuration key.
    * @returns value in configuration.
-   * @beta
    */
   getConfig(key: string): string;
 
@@ -80,14 +72,12 @@ export interface TeamsFxConfiguration {
    * Check the value of specific key.
    * @param {string} key - configuration key.
    * @returns true if corresponding value is not empty string.
-   * @beta
    */
   hasConfig(key: string): boolean;
 
   /**
    * Get all configurations.
    * @returns key value mappings.
-   * @beta
    */
   getConfigs(): Record<string, string>;
 }

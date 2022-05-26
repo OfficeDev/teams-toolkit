@@ -4,9 +4,6 @@
 
 ## NotificationTarget.type property
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 The type of target, could be "Channel" or "Group" or "Person".
 
 <b>Signature:</b>

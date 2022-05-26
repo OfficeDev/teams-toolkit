@@ -1,3 +1,10 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+import { FxError, ok, Result, TeamsAppManifest } from "@microsoft/teamsfx-api";
+import fs from "fs-extra";
+import * as path from "path";
+import "reflect-metadata";
+
 export async function readAppManifest(
   projectPath: string
 ): Promise<Result<TeamsAppManifest, FxError>> {

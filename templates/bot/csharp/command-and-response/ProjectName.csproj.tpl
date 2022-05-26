@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <None Include=".fx/**/*" />
+    <None Remove="build/**/*" />
   </ItemGroup>
 
   <ItemGroup>

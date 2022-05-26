@@ -116,7 +116,7 @@ import { ExtensionErrors, ExtensionSource } from "./error";
 import * as exp from "./exp/index";
 import { TreatmentVariables } from "./exp/treatmentVariables";
 import { VS_CODE_UI } from "./extension";
-import { ext } from "./extensionVariables";
+import * as globalVariables from "./globalVariables";
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import {
@@ -146,7 +146,6 @@ import {
   getTeamsAppTelemetryInfoByEnv,
   getTriggerFromProperty,
   isExistingTabApp,
-  isSPFxProject,
   isTeamsfx,
   isTriggerFromWalkThrough,
   openFolderInExplorer,
@@ -602,7 +601,9 @@ async function previewRemote(
       ExtTelemetry.reporter,
       VS_CODE_UI
     );
-    const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
+    const projectSettings = await localEnvManager.getProjectSettings(
+      globalVariables.workspaceUri!.fsPath
+    );
     const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
 
     let hub = constants.Hub.teams;
@@ -661,7 +662,9 @@ export async function addResourceHandler(args?: any[]): Promise<Result<null, FxE
       ExtTelemetry.reporter,
       VS_CODE_UI
     );
-    const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
+    const projectSettings = await localEnvManager.getProjectSettings(
+      globalVariables.workspaceUri!.fsPath
+    );
     excludeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
   } catch (error) {
     VsCodeLogInstance.warning(`${error}`);
@@ -688,7 +691,9 @@ export async function addCapabilityHandler(args?: any[]): Promise<Result<null, F
       ExtTelemetry.reporter,
       VS_CODE_UI
     );
-    const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
+    const projectSettings = await localEnvManager.getProjectSettings(
+      globalVariables.workspaceUri!.fsPath
+    );
     excludeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
     excludeBot = ProjectSettingsHelper.includeBot(projectSettings);
   } catch (error) {
@@ -719,7 +724,9 @@ export async function addFeatureHandler(args?: any[]): Promise<Result<null, FxEr
       ExtTelemetry.reporter,
       VS_CODE_UI
     );
-    const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
+    const projectSettings = await localEnvManager.getProjectSettings(
+      globalVariables.workspaceUri!.fsPath
+    );
     excludeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
     excludeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
     excludeBot = ProjectSettingsHelper.includeBot(projectSettings);
@@ -1628,7 +1635,7 @@ async function autoOpenProjectHandler(): Promise<void> {
     await openWelcomeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
   }
-  if (isOpenReadMe === ext.workspaceUri?.fsPath) {
+  if (isOpenReadMe === globalVariables.workspaceUri?.fsPath) {
     showLocalDebugMessage();
     showLocalPreviewMessage();
     await openReadMeHandler([TelemetryTriggerFrom.Auto]);
@@ -1674,7 +1681,7 @@ export async function openReadMeHandler(args: any[]) {
     let targetFolder: string | undefined;
     if (await getIsFromSample()) {
       openSampleReadmeHandler(args);
-    } else if (isSPFxProject(workspacePath)) {
+    } else if (globalVariables.isSPFxProject) {
       targetFolder = `${workspacePath}/SPFx`;
     } else {
       const tabFolder = await commonUtils.getProjectRoot(workspacePath, FolderName.Frontend);
@@ -1810,7 +1817,7 @@ async function showLocalDebugMessage() {
 
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalDebugNotification);
   const appName = getAppName() ?? "Teams App";
-  const folderLink = encodeURI(ext.workspaceUri.toString());
+  const folderLink = encodeURI(globalVariables.workspaceUri!.toString());
   const openFolderCommand = `command:fx-extension.openFolder?%5B%22${folderLink}%22%5D`;
   vscode.window
     .showInformationMessage(
@@ -1847,7 +1854,7 @@ async function showLocalPreviewMessage() {
 
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalPreviewNotification);
   const appName = getAppName() ?? "Teams App";
-  const folderLink = encodeURI(ext.workspaceUri.toString());
+  const folderLink = encodeURI(globalVariables.workspaceUri!.toString());
   const openFolderCommand = `command:fx-extension.openFolder?%5B%22${folderLink}%22%5D`;
   vscode.window
     .showInformationMessage(
@@ -2102,7 +2109,7 @@ export async function grantPermission(env: string): Promise<Result<any, FxError>
 
       let warningMsg = localize("teamstoolkit.handlers.grantPermissionWarning");
       let helpUrl = AzureAssignRoleHelpUrl;
-      if (isSPFxProject(ext.workspaceUri.fsPath)) {
+      if (globalVariables.isSPFxProject) {
         warningMsg = localize("teamstoolkit.handlers.grantPermissionWarningSpfx");
         helpUrl = SpfxManageSiteAdminUrl;
       }

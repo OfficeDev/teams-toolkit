@@ -46,7 +46,7 @@ import { registerTeamsfxTaskAndDebugEvents } from "./debug/teamsfxTaskHandler";
 import { TeamsfxTaskProvider } from "./debug/teamsfxTaskProvider";
 import * as exp from "./exp";
 import { TreatmentVariables, TreatmentVariableValue } from "./exp/treatmentVariables";
-import { initializeExtensionVariables } from "./extensionVariables";
+import { initializeExtensionVariables, isSPFxProject } from "./globalVariables";
 import * as handlers from "./handlers";
 import { ManifestTemplateHoverProvider } from "./hoverProvider";
 import { VsCodeUI } from "./qm/vsc_ui";
@@ -56,7 +56,6 @@ import {
   canUpgradeToArmAndMultiEnv,
   delay,
   isM365Project,
-  isSPFxProject,
   isSupportAutoOpenAPI,
   isValidNode,
   syncFeatureFlags,
@@ -466,11 +465,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(specifySubscription);
 
   const workspacePath = handlers.getWorkspacePath();
-  vscode.commands.executeCommand(
-    "setContext",
-    "fx-extension.isSPFx",
-    workspacePath && isSPFxProject(workspacePath)
-  );
+  vscode.commands.executeCommand("setContext", "fx-extension.isSPFx", isSPFxProject);
 
   vscode.commands.executeCommand(
     "setContext",

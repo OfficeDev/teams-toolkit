@@ -4,8 +4,7 @@
 "use strict";
 
 import { IProgressHandler, ok } from "@microsoft/teamsfx-api";
-import { ProgressLocation } from "vscode";
-import { ext } from "./extensionVariables";
+import { ProgressLocation, window } from "vscode";
 import { sleep } from "./utils/commonUtils";
 import * as util from "util";
 import { localize } from "./utils/localizeUtils";
@@ -49,7 +48,7 @@ export class ProgressHandler implements IProgressHandler {
       _this.resolve = resolve;
     });
 
-    ext.ui.withProgress(
+    window.withProgress(
       {
         location: ProgressLocation.Notification,
         cancellable: false,

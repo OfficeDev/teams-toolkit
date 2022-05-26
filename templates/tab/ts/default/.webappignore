@@ -1,0 +1,12 @@
+.fx
+.deployment
+.vscode
+*.js.map
+*.ts
+.git*
+local.settings.json
+test
+tsconfig.json
+.DS_Store
+.deployment
+node_modules/.bin

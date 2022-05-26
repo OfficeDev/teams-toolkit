@@ -3,8 +3,7 @@
 
 import { AzureHosting } from "./azureHosting";
 import { ServiceType } from "./interfaces";
-import { TokenProvider } from "@microsoft/teamsfx-api";
-import { Void } from "../../plugins";
+import { TokenProvider, Void } from "@microsoft/teamsfx-api";
 import { azureWebSiteDeploy } from "./utils";
 import { AzureOperations } from "./azureOps";
 import { getResourceGroupNameFromResourceId, getSiteNameFromResourceId } from "../tools";

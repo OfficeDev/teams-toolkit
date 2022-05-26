@@ -239,6 +239,7 @@ export class TeamsBotV2Impl {
       try {
         await utils.execute("npm install", workingPath);
         await utils.execute("npm run build", workingPath);
+        await utils.execute("npm prune --production", workingPath);
         return workingPath;
       } catch (e) {
         throw new CommandExecutionError(

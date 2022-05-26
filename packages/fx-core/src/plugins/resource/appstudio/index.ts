@@ -231,7 +231,7 @@ export class AppStudioPlugin implements Plugin {
     TelemetryUtils.sendStartEvent(TelemetryEventName.buildTeamsPackage);
     try {
       const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, isLocalDebug);
-      if (ctx.answers?.platform === Platform.CLI) {
+      if (ctx.answers?.platform === Platform.CLI || ctx.answers?.platform === Platform.VS) {
         const builtSuccess = [
           { content: "(√)Done: ", color: Colors.BRIGHT_GREEN },
           { content: "Teams Package ", color: Colors.BRIGHT_WHITE },

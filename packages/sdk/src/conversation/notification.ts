@@ -24,8 +24,6 @@ import * as utils from "./utils";
  * @param target - the notification target.
  * @param text - the plain text message.
  * @returns A `Promise` representing the asynchronous operation.
- *
- * @beta
  */
 export function sendMessage(target: NotificationTarget, text: string): Promise<void> {
   return target.sendMessage(text);
@@ -37,8 +35,6 @@ export function sendMessage(target: NotificationTarget, text: string): Promise<v
  * @param target - the notification target.
  * @param card - the adaptive card raw JSON.
  * @returns A `Promise` representing the asynchronous operation.
- *
- * @beta
  */
 export function sendAdaptiveCard(target: NotificationTarget, card: unknown): Promise<void> {
   return target.sendAdaptiveCard(card);
@@ -49,28 +45,20 @@ export function sendAdaptiveCard(target: NotificationTarget, card: unknown): Pro
  *
  * @remarks
  * It's recommended to get channels from {@link TeamsBotInstallation.channels()}.
- *
- * @beta
  */
 export class Channel implements NotificationTarget {
   /**
    * The parent {@link TeamsBotInstallation} where this channel is created from.
-   *
-   * @beta
    */
   public readonly parent: TeamsBotInstallation;
 
   /**
    * Detailed channel information.
-   *
-   * @beta
    */
   public readonly info: ChannelInfo;
 
   /**
    * Notification target type. For channel it's always "Channel".
-   *
-   * @beta
    */
   public readonly type: NotificationTargetType = "Channel";
 
@@ -82,8 +70,6 @@ export class Channel implements NotificationTarget {
    *
    * @param parent - The parent {@link TeamsBotInstallation} where this channel is created from.
    * @param info - Detailed channel information.
-   *
-   * @beta
    */
   constructor(parent: TeamsBotInstallation, info: ChannelInfo) {
     this.parent = parent;
@@ -95,8 +81,6 @@ export class Channel implements NotificationTarget {
    *
    * @param text - the plain text message.
    * @returns A `Promise` representing the asynchronous operation.
-   *
-   * @beta
    */
   public sendMessage(text: string): Promise<void> {
     return this.parent.adapter.continueConversation(
@@ -115,8 +99,6 @@ export class Channel implements NotificationTarget {
    *
    * @param card - the adaptive card raw JSON.
    * @returns A `Promise` representing the asynchronous operation.
-   *
-   * @beta
    */
   public async sendAdaptiveCard(card: unknown): Promise<void> {
     return this.parent.adapter.continueConversation(
@@ -149,28 +131,20 @@ export class Channel implements NotificationTarget {
  *
  * @remarks
  * It's recommended to get members from {@link TeamsBotInstallation.members()}.
- *
- * @beta
  */
 export class Member implements NotificationTarget {
   /**
    * The parent {@link TeamsBotInstallation} where this member is created from.
-   *
-   * @beta
    */
   public readonly parent: TeamsBotInstallation;
 
   /**
    * Detailed member account information.
-   *
-   * @beta
    */
   public readonly account: TeamsChannelAccount;
 
   /**
    * Notification target type. For member it's always "Person".
-   *
-   * @beta
    */
   public readonly type: NotificationTargetType = "Person";
 
@@ -182,8 +156,6 @@ export class Member implements NotificationTarget {
    *
    * @param parent - The parent {@link TeamsBotInstallation} where this member is created from.
    * @param account - Detailed member account information.
-   *
-   * @beta
    */
   constructor(parent: TeamsBotInstallation, account: TeamsChannelAccount) {
     this.parent = parent;
@@ -195,8 +167,6 @@ export class Member implements NotificationTarget {
    *
    * @param text - the plain text message.
    * @returns A `Promise` representing the asynchronous operation.
-   *
-   * @beta
    */
   public sendMessage(text: string): Promise<void> {
     return this.parent.adapter.continueConversation(
@@ -215,8 +185,6 @@ export class Member implements NotificationTarget {
    *
    * @param card - the adaptive card raw JSON.
    * @returns A `Promise` representing the asynchronous operation.
-   *
-   * @beta
    */
   public async sendAdaptiveCard(card: unknown): Promise<void> {
     return this.parent.adapter.continueConversation(
@@ -263,21 +231,15 @@ export class Member implements NotificationTarget {
  *
  * @remarks
  * It's recommended to get bot installations from {@link ConversationBot.installations()}.
- *
- * @beta
  */
 export class TeamsBotInstallation implements NotificationTarget {
   /**
    * The bound `BotFrameworkAdapter`.
-   *
-   * @beta
    */
   public readonly adapter: BotFrameworkAdapter;
 
   /**
    * The bound `ConversationReference`.
-   *
-   * @beta
    */
   public readonly conversationReference: Partial<ConversationReference>;
 
@@ -288,8 +250,6 @@ export class TeamsBotInstallation implements NotificationTarget {
    * - "Channel" means bot is installed into a team and notification will be sent to its "General" channel.
    * - "Group" means bot is installed into a group chat.
    * - "Person" means bot is installed into a personal scope and notification will be sent to personal chat.
-   *
-   * @beta
    */
   public readonly type?: NotificationTargetType;
 
@@ -301,8 +261,6 @@ export class TeamsBotInstallation implements NotificationTarget {
    *
    * @param adapter - the bound `BotFrameworkAdapter`.
    * @param conversationReference - the bound `ConversationReference`.
-   *
-   * @beta
    */
   constructor(adapter: BotFrameworkAdapter, conversationReference: Partial<ConversationReference>) {
     this.adapter = adapter;
@@ -315,8 +273,6 @@ export class TeamsBotInstallation implements NotificationTarget {
    *
    * @param text - the plain text message.
    * @returns A `Promise` representing the asynchronous operation.
-   *
-   * @beta
    */
   public sendMessage(text: string): Promise<void> {
     return this.adapter.continueConversation(this.conversationReference, async (context) => {
@@ -329,8 +285,6 @@ export class TeamsBotInstallation implements NotificationTarget {
    *
    * @param card - the adaptive card raw JSON.
    * @returns A `Promise` representing the asynchronous operation.
-   *
-   * @beta
    */
   public sendAdaptiveCard(card: unknown): Promise<void> {
     return this.adapter.continueConversation(this.conversationReference, async (context) => {
@@ -344,8 +298,6 @@ export class TeamsBotInstallation implements NotificationTarget {
    * Get channels from this bot installation.
    *
    * @returns an array of channels if bot is installed into a team, otherwise returns an empty array.
-   *
-   * @beta
    */
   public async channels(): Promise<Channel[]> {
     let teamsChannels: ChannelInfo[] = [];
@@ -368,8 +320,6 @@ export class TeamsBotInstallation implements NotificationTarget {
    * Get members from this bot installation.
    *
    * @returns an array of members from where the bot is installed.
-   *
-   * @beta
    */
   public async members(): Promise<Member[]> {
     const members: Member[] = [];
@@ -390,8 +340,6 @@ export class TeamsBotInstallation implements NotificationTarget {
 
 /**
  * Provide utilities to send notification to varies targets (e.g., member, group, channel).
- *
- * @beta
  */
 export class NotificationBot {
   private readonly conversationReferenceStore: ConversationReferenceStore;
@@ -405,8 +353,6 @@ export class NotificationBot {
    *
    * @param adapter - the bound `BotFrameworkAdapter`
    * @param options - initialize options
-   *
-   * @beta
    */
   public constructor(adapter: BotFrameworkAdapter, options?: NotificationOptions) {
     const storage =
@@ -430,8 +376,6 @@ export class NotificationBot {
    * The result is retrieving from the persisted storage.
    *
    * @returns - an array of {@link TeamsBotInstallation}.
-   *
-   * @beta
    */
   public async installations(): Promise<TeamsBotInstallation[]> {
     if (this.conversationReferenceStore === undefined || this.adapter === undefined) {

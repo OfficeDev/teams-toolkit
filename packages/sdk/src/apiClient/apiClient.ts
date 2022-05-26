@@ -15,8 +15,6 @@ import { AuthProvider } from "./authProvider";
  * ```typescript
  * const client = createApiClient("https://my-api-endpoint-base-url", new BasicAuthProvider("xxx","xxx"));
  * ```
- *
- * @beta
  */
 export function createApiClient(apiEndpoint: string, authProvider: AuthProvider): AxiosInstance {
   // Add a request interceptor

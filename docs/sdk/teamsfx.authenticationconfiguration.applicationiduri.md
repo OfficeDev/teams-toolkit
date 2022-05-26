@@ -4,9 +4,6 @@
 
 ## AuthenticationConfiguration.applicationIdUri property
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Application ID URI. Default value comes from M365\_APPLICATION\_ID\_URI environment variable.
 
 <b>Signature:</b>

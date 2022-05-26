@@ -16,12 +16,12 @@ export declare class MessageBuilder
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
-|  [attachAdaptiveCard(cardTemplate, data)](./teamsfx.messagebuilder.attachadaptivecard.md) | <code>static</code> | <b><i>(BETA)</i></b> Build a bot message activity attached with adaptive card. |
-|  [attachAdaptiveCardWithoutData(card)](./teamsfx.messagebuilder.attachadaptivecardwithoutdata.md) | <code>static</code> | <b><i>(BETA)</i></b> Build a bot message activity attached with an adaptive card. |
-|  [attachContent(attachement)](./teamsfx.messagebuilder.attachcontent.md) | <code>static</code> | <b><i>(BETA)</i></b> Add an attachement to a bot activity. |
-|  [attachHeroCard(title, images, buttons, other)](./teamsfx.messagebuilder.attachherocard.md) | <code>static</code> | <b><i>(BETA)</i></b> Build a bot message activity attached with an hero card. |
-|  [attachO365ConnectorCard(card)](./teamsfx.messagebuilder.attacho365connectorcard.md) | <code>static</code> | <b><i>(BETA)</i></b> Build a bot message activity attached with an Office 365 connector card. |
-|  [AttachReceiptCard(card)](./teamsfx.messagebuilder.attachreceiptcard.md) | <code>static</code> | <b><i>(BETA)</i></b> Build a message activity attached with a receipt card. |
-|  [attachSigninCard(title, url, text)](./teamsfx.messagebuilder.attachsignincard.md) | <code>static</code> | <b><i>(BETA)</i></b> Returns an attachment for a sign-in card. |
-|  [attachThumbnailCard(title, images, buttons, other)](./teamsfx.messagebuilder.attachthumbnailcard.md) | <code>static</code> | <b><i>(BETA)</i></b> |
+|  [attachAdaptiveCard(cardTemplate, data)](./teamsfx.messagebuilder.attachadaptivecard.md) | <code>static</code> | Build a bot message activity attached with adaptive card. |
+|  [attachAdaptiveCardWithoutData(card)](./teamsfx.messagebuilder.attachadaptivecardwithoutdata.md) | <code>static</code> | Build a bot message activity attached with an adaptive card. |
+|  [attachContent(attachement)](./teamsfx.messagebuilder.attachcontent.md) | <code>static</code> | Add an attachement to a bot activity. |
+|  [attachHeroCard(title, images, buttons, other)](./teamsfx.messagebuilder.attachherocard.md) | <code>static</code> | Build a bot message activity attached with an hero card. |
+|  [attachO365ConnectorCard(card)](./teamsfx.messagebuilder.attacho365connectorcard.md) | <code>static</code> | Build a bot message activity attached with an Office 365 connector card. |
+|  [AttachReceiptCard(card)](./teamsfx.messagebuilder.attachreceiptcard.md) | <code>static</code> | Build a message activity attached with a receipt card. |
+|  [attachSigninCard(title, url, text)](./teamsfx.messagebuilder.attachsignincard.md) | <code>static</code> | Returns an attachment for a sign-in card. |
+|  [attachThumbnailCard(title, images, buttons, other)](./teamsfx.messagebuilder.attachthumbnailcard.md) | <code>static</code> |  |
 

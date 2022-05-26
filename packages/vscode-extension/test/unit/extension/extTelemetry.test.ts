@@ -6,7 +6,7 @@ import { TelemetryEvent } from "../../../src/telemetry/extTelemetryEvents";
 import sinon = require("sinon");
 import * as commonUtils from "../../../src/utils/commonUtils";
 import * as fs from "fs-extra";
-import { ext } from "../../../src/extensionVariables";
+import * as globalVariables from "../../../src/globalVariables";
 import { Uri } from "vscode";
 
 chai.use(spies);
@@ -88,9 +88,9 @@ suite("ExtTelemetry", () => {
     suiteSetup(() => {
       chai.util.addProperty(ExtTelemetry, "reporter", () => reporterSpy);
       sandbox.stub(commonUtils, "getIsExistingUser").returns(undefined);
-      sandbox.stub(commonUtils, "isSPFxProject").returns(false);
       sandbox.stub(fs, "pathExistsSync").returns(false);
-      ext.workspaceUri = Uri.file("test");
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(globalVariables, "isSPFxProject").value(false);
     });
 
     suiteTeardown(() => {

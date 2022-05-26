@@ -112,7 +112,7 @@ export class TeamsfxCore {
         initProjectSettings,
         {
           type: "call",
-          targetAction: "teams-manifest.init",
+          targetAction: "app-manifest.init",
           required: true,
         },
         {
@@ -266,12 +266,12 @@ export class TeamsfxCore {
         targetAction: `${inputs.hosting}-config.generateBicep`,
       },
       {
-        name: "call:teams-manifest.addCapability",
+        name: "call:app-manifest.addCapability",
         type: "call",
         required: true,
-        targetAction: "teams-manifest.addCapability",
+        targetAction: "app-manifest.addCapability",
         inputs: {
-          capabilities: [{ name: "Bot" }],
+          capability: { name: "Bot" },
         },
       },
     ];
@@ -443,12 +443,12 @@ export class TeamsfxCore {
   //       },
   //     },
   //     {
-  //       name: "call:teams-manifest.addCapability",
+  //       name: "call:app-manifest.addCapability",
   //       type: "call",
   //       required: true,
-  //       targetAction: "teams-manifest.addCapability",
+  //       targetAction: "app-manifest.addCapability",
   //       inputs: {
-  //         "teams-manifest": {
+  //         "app-manifest": {
   //           capabilities: [{ name: "staticTab" }],
   //         },
   //       },
@@ -479,8 +479,8 @@ export class TeamsfxCore {
   //         | AzureSolutionSettings
   //         | undefined;
   //       // 1. check M365 tenant
-  //       if (!envInfo.state["teams-manifest"]) envInfo.state["teams-manifest"] = {};
-  //       const teamsAppResource = envInfo.state["teams-manifest"] as v3.TeamsAppResource;
+  //       if (!envInfo.state["app-manifest"]) envInfo.state["app-manifest"] = {};
+  //       const teamsAppResource = envInfo.state["app-manifest"] as v3.TeamsAppResource;
   //       if (!envInfo.state.solution) envInfo.state.solution = {};
   //       const solutionConfig = envInfo.state.solution as v3.AzureSolutionConfig;
   //       solutionConfig.provisionSucceeded = false;
@@ -542,7 +542,7 @@ export class TeamsfxCore {
   //       //   subscriptionId: "MockSubscriptionId",
   //       //   resourceGroup: "MockResourceGroup",
   //       // };
-  //       // ctx.envInfo.state["teams-manifest"] = {
+  //       // ctx.envInfo.state["app-manifest"] = {
   //       //   tenantId: "MockTenantId",
   //       // };
   //       return ok(["pre step before provision (tenant, subscription, resource group)"]);
@@ -603,14 +603,14 @@ export class TeamsfxCore {
   //   };
   //   const createTeamsAppStep: Action = {
   //     type: "call",
-  //     name: "call teams-manifest.provision",
-  //     targetAction: "teams-manifest.provision",
+  //     name: "call app-manifest.provision",
+  //     targetAction: "app-manifest.provision",
   //     required: true,
   //   };
   //   const updateTeamsAppStep: Action = {
   //     type: "call",
-  //     name: "call teams-manifest.configure",
-  //     targetAction: "teams-manifest.configure",
+  //     name: "call app-manifest.configure",
+  //     targetAction: "app-manifest.configure",
   //     required: true,
   //   };
   //   const provisionResourcesStep: Action = {

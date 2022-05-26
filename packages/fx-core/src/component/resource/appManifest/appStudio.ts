@@ -1,13 +1,15 @@
 import {
   AppPackageFolderName,
+  AppStudioTokenProvider,
   BuildFolderName,
   err,
   FxError,
   InputsWithProjectPath,
   ok,
-  ProvisionContextV3,
   Result,
   TeamsAppManifest,
+  TokenProvider,
+  v2,
   v3,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
@@ -25,8 +27,10 @@ import { convertToAppDefinition } from "../../../plugins/resource/appstudio/util
 import { readAppManifest } from "./utils";
 
 export async function createOrUpdateTeamsApp(
-  ctx: ProvisionContextV3,
-  inputs: InputsWithProjectPath
+  ctx: v2.Context,
+  inputs: InputsWithProjectPath,
+  envInfo: v3.EnvInfoV3,
+  tokenProvider: TokenProvider
 ): Promise<Result<string, FxError>> {
   let archivedFile;
   // User provided zip file
@@ -42,14 +46,14 @@ export async function createOrUpdateTeamsApp(
       );
     }
   } else {
-    const buildPackage = await buildTeamsAppPackage(inputs.projectPath, ctx.envInfo!);
+    const buildPackage = await buildTeamsAppPackage(inputs.projectPath, envInfo!);
     if (buildPackage.isErr()) {
       return err(buildPackage.error);
     }
     archivedFile = await fs.readFile(buildPackage.value);
   }
 
-  const appStudioToken = await ctx.tokenProvider!.appStudioToken.getAccessToken();
+  const appStudioToken = await tokenProvider.appStudioToken.getAccessToken();
   try {
     const appDefinition = await AppStudioClient.createApp(
       archivedFile,
@@ -125,8 +129,10 @@ export async function createOrUpdateTeamsApp(
 }
 
 export async function publishTeamsApp(
-  ctx: ProvisionContextV3,
-  inputs: InputsWithProjectPath
+  ctx: v2.Context,
+  inputs: InputsWithProjectPath,
+  envInfo: v3.EnvInfoV3,
+  tokenProvider: AppStudioTokenProvider
 ): Promise<Result<{ appName: string; publishedAppId: string; update: boolean }, FxError>> {
   let archivedFile;
   // User provided zip file
@@ -142,7 +148,7 @@ export async function publishTeamsApp(
       );
     }
   } else {
-    const buildPackage = await buildTeamsAppPackage(inputs.projectPath, ctx.envInfo!);
+    const buildPackage = await buildTeamsAppPackage(inputs.projectPath, envInfo!);
     if (buildPackage.isErr()) {
       return err(buildPackage.error);
     }
@@ -164,7 +170,7 @@ export async function publishTeamsApp(
   const manifest = JSON.parse(manifestString) as TeamsAppManifest;
 
   // manifest.id === externalID
-  const appStudioToken = await ctx.tokenProvider!.appStudioToken.getAccessToken();
+  const appStudioToken = await tokenProvider.getAccessToken();
   const existApp = await AppStudioClient.getAppByTeamsAppId(manifest.id, appStudioToken!);
   if (existApp) {
     let executePublishUpdate = false;

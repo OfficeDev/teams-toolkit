@@ -38,7 +38,7 @@ import {
   AzureSolutionQuestionNames,
   BotScenario,
 } from "../../../plugins/solution/fx-solution/question";
-import { createOrUpdateTeamsApp } from "./appStudio";
+import { createOrUpdateTeamsApp, publishTeamsApp } from "./appStudio";
 import {
   BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3,
   BOTS_TPL_FOR_NOTIFICATION_V3,
@@ -250,7 +250,7 @@ export class AppManifest implements CloudResource {
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const ctx = context as ProvisionContextV3;
-        const res = await createOrUpdateTeamsApp(ctx, inputs);
+        const res = await createOrUpdateTeamsApp(ctx, inputs, ctx.envInfo, ctx.tokenProvider);
         if (res.isErr()) return err(res.error);
         return ok([
           {
@@ -268,5 +268,41 @@ export class AppManifest implements CloudResource {
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     return this.provision(context, inputs);
+  }
+  publish(
+    context: ProvisionContextV3,
+    inputs: InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const action: Action = {
+      name: "app-manifest.publish",
+      type: "function",
+      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
+        return ok([
+          {
+            type: "service",
+            name: "teams.microsoft.com",
+            remarks: "publish teams app",
+          },
+        ]);
+      },
+      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+        const ctx = context as ProvisionContextV3;
+        const res = await publishTeamsApp(
+          ctx,
+          inputs,
+          ctx.envInfo,
+          ctx.tokenProvider.appStudioToken
+        );
+        if (res.isErr()) return err(res.error);
+        return ok([
+          {
+            type: "service",
+            name: "teams.microsoft.com",
+            remarks: "publish teams app",
+          },
+        ]);
+      },
+    };
+    return ok(action);
   }
 }

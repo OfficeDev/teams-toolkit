@@ -4,9 +4,6 @@
 
 ## ApiKeyProvider class
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Provider that handles API Key authentication
 
 <b>Signature:</b>
@@ -20,11 +17,11 @@ export declare class ApiKeyProvider implements AuthProvider
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(keyName, keyValue, keyLocation)](./teamsfx.apikeyprovider._constructor_.md) |  | <b><i>(BETA)</i></b> Constructs a new instance of the <code>ApiKeyProvider</code> class |
+|  [(constructor)(keyName, keyValue, keyLocation)](./teamsfx.apikeyprovider._constructor_.md) |  | Constructs a new instance of the <code>ApiKeyProvider</code> class |
 
 ## Methods
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
-|  [AddAuthenticationInfo(config)](./teamsfx.apikeyprovider.addauthenticationinfo.md) |  | <b><i>(BETA)</i></b> Adds authentication info to http requests |
+|  [AddAuthenticationInfo(config)](./teamsfx.apikeyprovider.addauthenticationinfo.md) |  | Adds authentication info to http requests |
 

@@ -56,28 +56,20 @@ import { NotificationBot } from "./notification";
  * For command and response, ensure each command should ONLY be registered with the command once, otherwise it'll cause unexpected behavior if you register the same command more than once.
  *
  * For notification, set `notification.storage` in {@link ConversationOptions} to use your own storage implementation.
- *
- * @beta
  */
 export class ConversationBot {
   /**
    * The bot adapter.
-   *
-   * @beta
    */
   public readonly adapter: BotFrameworkAdapter;
 
   /**
    * The entrypoint of command and response.
-   *
-   * @beta
    */
   public readonly command?: CommandBot;
 
   /**
    * The entrypoint of notification.
-   *
-   * @beta
    */
   public readonly notification?: NotificationBot;
 
@@ -88,8 +80,6 @@ export class ConversationBot {
    * It's recommended to create your own adapter and storage for production environment instead of the default one.
    *
    * @param options - initialize options
-   *
-   * @beta
    */
   public constructor(options: ConversationOptions) {
     if (options.adapter) {
@@ -157,8 +147,6 @@ export class ConversationBot {
    *   });
    * });
    * ```
-   *
-   * @beta
    */
   public async requestHandler(
     req: WebRequest,

@@ -4,9 +4,6 @@
 
 ## OnBehalfOfUserCredential class
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Represent on-behalf-of flow to get user identity, and it is designed to be used in server side.
 
 <b>Signature:</b>
@@ -31,12 +28,12 @@ const credential = new OnBehalfOfUserCredential(ssoToken);
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(ssoToken, config)](./teamsfx.onbehalfofusercredential._constructor_.md) |  | <b><i>(BETA)</i></b> Constructor of OnBehalfOfUserCredential |
+|  [(constructor)(ssoToken, config)](./teamsfx.onbehalfofusercredential._constructor_.md) |  | Constructor of OnBehalfOfUserCredential |
 
 ## Methods
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
-|  [getToken(scopes, options)](./teamsfx.onbehalfofusercredential.gettoken.md) |  | <b><i>(BETA)</i></b> Get access token from credential. |
-|  [getUserInfo()](./teamsfx.onbehalfofusercredential.getuserinfo.md) |  | <b><i>(BETA)</i></b> Get basic user info from SSO token. |
+|  [getToken(scopes, options)](./teamsfx.onbehalfofusercredential.gettoken.md) |  | Get access token from credential. |
+|  [getUserInfo()](./teamsfx.onbehalfofusercredential.getuserinfo.md) |  | Get basic user info from SSO token. |
 

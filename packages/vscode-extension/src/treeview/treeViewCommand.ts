@@ -6,7 +6,7 @@ import * as vscode from "vscode";
 
 import { TreeCategory } from "@microsoft/teamsfx-api";
 
-import { ext } from "../extensionVariables";
+import * as globalVariables from "../globalVariables";
 import { localize } from "../utils/localizeUtils";
 import { TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
 
@@ -84,14 +84,14 @@ export class TreeViewCommand extends vscode.TreeItem {
       } else {
         this.iconPath = {
           light: path.join(
-            ext.context.extensionPath,
+            globalVariables.context.extensionPath,
             "media",
             "treeview",
             "command",
             `${this.image.name}-light.svg`
           ),
           dark: path.join(
-            ext.context.extensionPath,
+            globalVariables.context.extensionPath,
             "media",
             "treeview",
             "command",

@@ -58,7 +58,7 @@ export class DependentPluginInfo {
 
   public static readonly aadClientId: string = "clientId";
   public static readonly aadClientSecret: string = "clientSecret";
-  public static readonly appTenantId: string = "tenantId";
+  public static readonly appTenantId: string = "teamsAppTenantId";
 }
 
 export class DotnetConfigInfo {

@@ -9,8 +9,8 @@ import { Correlator, globalStateGet, globalStateUpdate } from "@microsoft/teamsf
 
 import * as extensionPackage from "../../package.json";
 import { VSCodeTelemetryReporter } from "../commonlib/telemetry";
-import { ext } from "../extensionVariables";
-import { getIsExistingUser, getProjectId, isSPFxProject } from "../utils/commonUtils";
+import * as globalVariables from "../globalVariables";
+import { getIsExistingUser, getProjectId } from "../utils/commonUtils";
 import {
   TelemetryComponentType,
   TelemetryErrorType,
@@ -93,9 +93,8 @@ export namespace ExtTelemetry {
     const isExistingUser = getIsExistingUser();
     properties[TelemetryProperty.IsExistingUser] = isExistingUser ? isExistingUser : "";
 
-    if (ext.workspaceUri) {
-      const isSPFx = isSPFxProject(ext.workspaceUri.fsPath);
-      properties[TelemetryProperty.IsSpfx] = isSPFx.toString();
+    if (globalVariables.workspaceUri) {
+      properties[TelemetryProperty.IsSpfx] = globalVariables.isSPFxProject.toString();
     }
 
     if (isFromSample != undefined) {
@@ -141,9 +140,8 @@ export namespace ExtTelemetry {
       error.stack ? "\nstack:\n" + error.stack : ""
     }`;
 
-    if (ext.workspaceUri) {
-      const isSPFx = isSPFxProject(ext.workspaceUri.fsPath);
-      properties[TelemetryProperty.IsSpfx] = isSPFx.toString();
+    if (globalVariables.workspaceUri) {
+      properties[TelemetryProperty.IsSpfx] = globalVariables.isSPFxProject.toString();
     }
 
     if (isFromSample != undefined) {
@@ -175,9 +173,8 @@ export namespace ExtTelemetry {
     const isExistingUser = getIsExistingUser();
     properties[TelemetryProperty.IsExistingUser] = isExistingUser ? isExistingUser : "";
 
-    if (ext.workspaceUri) {
-      const isSPFx = isSPFxProject(ext.workspaceUri.fsPath);
-      properties[TelemetryProperty.IsSpfx] = isSPFx.toString();
+    if (globalVariables.workspaceUri) {
+      properties[TelemetryProperty.IsSpfx] = globalVariables.isSPFxProject.toString();
     }
 
     if (isFromSample != undefined) {

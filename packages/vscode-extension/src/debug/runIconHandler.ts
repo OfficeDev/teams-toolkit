@@ -1,12 +1,12 @@
 import { Result, FxError, err, ok, UserError } from "@microsoft/teamsfx-api";
 import { isValidProject } from "@microsoft/teamsfx-core";
-import { ext } from "../extensionVariables";
+import * as globalVariables from "../globalVariables";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import * as vscode from "vscode";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 
 export async function selectAndDebug(): Promise<Result<null, FxError>> {
-  if (ext.workspaceUri && isValidProject(ext.workspaceUri.fsPath)) {
+  if (globalVariables.workspaceUri && isValidProject(globalVariables.workspaceUri.fsPath)) {
     await vscode.commands.executeCommand("workbench.view.debug");
     await vscode.commands.executeCommand("workbench.action.debug.selectandstart");
     return ok(null);
@@ -23,12 +23,15 @@ export async function selectAndDebug(): Promise<Result<null, FxError>> {
 }
 
 export function registerRunIcon(): void {
-  ext.context.subscriptions.push(vscode.workspace.onDidChangeWorkspaceFolders(enableRunIcon));
+  globalVariables.context.subscriptions.push(
+    vscode.workspace.onDidChangeWorkspaceFolders(enableRunIcon)
+  );
   enableRunIcon();
 }
 
 function enableRunIcon(): void {
-  const validProject = ext.workspaceUri && isValidProject(ext.workspaceUri.fsPath);
+  const validProject =
+    globalVariables.workspaceUri && isValidProject(globalVariables.workspaceUri.fsPath);
   vscode.commands.executeCommand("setContext", "fx-extension.runIconActive", validProject);
 }
 

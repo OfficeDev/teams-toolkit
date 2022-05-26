@@ -15,7 +15,7 @@ import {
   InputConfigsFolderName,
   ProjectSettingsFileName,
 } from "@microsoft/teamsfx-api";
-import { ext } from "../../../src/extensionVariables";
+import * as globalVariables from "../../../src/globalVariables";
 import { Uri } from "vscode";
 import * as tmp from "tmp";
 
@@ -59,40 +59,6 @@ suite("CommonUtils", () => {
       sinon.stub(extensionPackage, "featureFlag").value("false");
 
       chai.expect(commonUtils.isFeatureFlag()).equals(false);
-
-      sinon.restore();
-    });
-  });
-
-  suite("isSPFxProject", () => {
-    test("return false for non-spfx project", async () => {
-      const testPath = "./testProject/SPFx";
-
-      sinon.stub(fs, "pathExists").callsFake((path: string) => {
-        if (path === testPath) {
-          return true;
-        }
-
-        return false;
-      });
-
-      chai.expect(commonUtils.isSPFxProject("./invalidPath")).equals(false);
-
-      sinon.restore();
-    });
-
-    test("return true for spfx project", async () => {
-      const testPath = "./testProject";
-
-      sinon.stub(fs, "pathExistsSync").callsFake((path: string) => {
-        if (path === `${testPath}/SPFx`) {
-          return true;
-        }
-
-        return false;
-      });
-
-      chai.expect(commonUtils.isSPFxProject(testPath)).equals(true);
 
       sinon.restore();
     });
@@ -173,11 +139,11 @@ suite("CommonUtils", () => {
       cleanupCallback = removeCallback;
       workspacePath = name;
 
-      if (!("workspaceUri" in ext)) {
+      if (!("workspaceUri" in globalVariables)) {
         // ensure the property exist to prevent sinon "Cannot stub non-existent property" error
-        (ext.workspaceUri as any) = undefined;
+        (globalVariables.workspaceUri as any) = undefined;
       }
-      sandbox.stub(ext, "workspaceUri").value(Uri.file(workspacePath));
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file(workspacePath));
     });
 
     teardown(() => {

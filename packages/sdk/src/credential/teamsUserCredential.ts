@@ -12,15 +12,12 @@ import { formatString } from "../util/utils";
  *
  * @remarks
  * Can only be used within Teams.
- *
- * @beta
  */
 export class TeamsUserCredential implements TokenCredential {
   /**
    * Constructor of TeamsUserCredential.
    * @remarks
    * Can only be used within Teams.
-   * @beta
    */
   constructor(authConfig: AuthenticationConfiguration) {
     throw new ErrorWithCode(
@@ -33,7 +30,6 @@ export class TeamsUserCredential implements TokenCredential {
    * Popup login page to get user's access token with specific scopes.
    * @remarks
    * Can only be used within Teams.
-   * @beta
    */
   public async login(scopes: string | string[]): Promise<void> {
     throw new ErrorWithCode(
@@ -46,7 +42,6 @@ export class TeamsUserCredential implements TokenCredential {
    * Get access token from credential.
    * @remarks
    * Can only be used within Teams.
-   * @beta
    */
   async getToken(
     scopes: string | string[],
@@ -62,7 +57,6 @@ export class TeamsUserCredential implements TokenCredential {
    * Get basic user info from SSO token
    * @remarks
    * Can only be used within Teams.
-   * @beta
    */
   public getUserInfo(): Promise<UserInfo> {
     throw new ErrorWithCode(

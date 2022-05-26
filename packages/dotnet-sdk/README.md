@@ -81,6 +81,86 @@ catch (ExceptionWithCode e)
 }
 ```
 
+### Using Conversation Bot for Command and Response
+
+1. Add your command handler class which implements the `ITeamsCommandHandler` interface.
+    - Define your trigger patters in the `TriggerPatterns` property, you can use `StringTrigger` or `RegExpTrigger`.
+    - Handle your command in `HandleCommandAsync` function, and return an `ActivityCommandResponse` or `TextommandResponse` object as the command response.
+
+    ```csharp
+    public class SampleCommandHandler : ITeamsCommandHandler
+    {
+        // Define your trigger patterns
+        public IEnumerable<ITriggerPattern> TriggerPatterns => new List<ITriggerPattern>
+        {      
+            new StringTrigger("helloworld")
+        };
+
+        // Handle your command and send response to Teams chat
+        public async Task<ICommandResponse> HandleCommandAsync(ITurnContext turnContext, CommandMessage message, CancellationToken cancellationToken = default)
+        {
+            // TODO: provide your implementation here.
+            return new TextCommandResponse("This is a sample response!");
+        }
+    }
+    ```
+
+2. Initialize the command bot and register your commands in your app's startup (usually it's in `Program.cs` or `Startup.cs`)
+    ```csharp
+    builder.Services.AddSingleton<SampleCommandHandler>();
+    builder.Services.AddSingleton(sp =>
+    {
+        var options = new ConversationOptions()
+        {
+            // NOTE: you need to register your CloudAdapter into your service before conversation bot initialization.
+            Adapter = sp.GetService<CloudAdapter>(),
+            Command = new CommandOptions()
+            {
+                Commands = new List<ITeamsCommandHandler> { sp.GetService<SampleCommandHandler>() }
+            }
+        };
+
+        return new ConversationBot(options);
+    });
+    ```
+
+3. Use the conversation bot in your bot controller
+    ```csharp
+    namespace SampleTeamsApp.Controllers
+    {
+        using Microsoft.AspNetCore.Mvc;
+        using Microsoft.Bot.Builder;
+        using Microsoft.Bot.Builder.Integration.AspNet.Core;
+        using Microsoft.TeamsFx.Conversation;
+
+        [Route("api/messages")]
+        [ApiController]
+        public class BotController : ControllerBase
+        {
+            private readonly ConversationBot _conversation;
+            private readonly IBot _bot;
+
+            public BotController(ConversationBot conversation, IBot bot)
+            {
+                _conversation = conversation;
+                _bot = bot;
+            }
+
+            [HttpPost]
+            public async Task PostAsync(CancellationToken cancellationToken = default)
+            {
+                await (_conversation.Adapter as CloudAdapter).ProcessAsync
+                (
+                    Request,
+                    Response,
+                    _bot,
+                    cancellationToken
+                );
+            }
+        }
+    }
+    ```
+
 ## SDK Upgrade Steps
 ### Upgrade from 0.1.0-rc to 0.3.0 (For projects created by Visual Studio 2019 toolkit)
 If there is an existing project created in VS2019, you can use the following steps to upgrade:

@@ -79,7 +79,7 @@ export async function listCollaborator(
     ctx,
     inputs,
     envInfo,
-    tokenProvider.appStudioToken
+    tokenProvider.m365TokenProvider
   );
   if (appStudioRes.isErr()) return err(appStudioRes.error);
   const teamsAppOwners = appStudioRes.value;
@@ -274,7 +274,7 @@ export async function checkPermission(
     ctx,
     inputs,
     envInfo,
-    tokenProvider.appStudioToken,
+    tokenProvider.m365TokenProvider,
     userInfo
   );
   if (appStudioRes.isErr()) {
@@ -417,7 +417,7 @@ export async function grantPermission(
       ctx,
       inputs,
       envInfo,
-      tokenProvider.appStudioToken,
+      tokenProvider.m365TokenProvider,
       userInfo
     );
     if (appStudioRes.isErr()) {

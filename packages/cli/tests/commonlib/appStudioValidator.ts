@@ -4,21 +4,22 @@
 import axios, { AxiosInstance } from "axios";
 import * as chai from "chai";
 
-import MockAppStudioTokenProvider from "../../src/commonlib/appStudioLoginUserPassword";
-import { AppStudioTokenProvider } from "@microsoft/teamsfx-api";
+import MockM365TokenProvider from "../../src/commonlib/m365LoginUserPassword";
+import { M365TokenProvider } from "@microsoft/teamsfx-api";
 import { IAppStudioObject } from "./interfaces/IAADDefinition";
+import { AppStudioScopes } from "@microsoft/teamsfx-core";
 
 const appStudioPluginName = "fx-resource-appstudio";
 
 export class AppStudioValidator {
-  public static provider: AppStudioTokenProvider;
+  public static provider: M365TokenProvider;
 
   public static setE2ETestProvider(): void {
-    this.provider = MockAppStudioTokenProvider;
+    this.provider = MockM365TokenProvider;
   }
 
-  public static init(ctx: any, provider?: AppStudioTokenProvider) {
-    AppStudioValidator.provider = provider || MockAppStudioTokenProvider;
+  public static init(ctx: any, provider?: M365TokenProvider) {
+    AppStudioValidator.provider = provider || MockM365TokenProvider;
 
     const appStudioObject: IAppStudioObject | undefined = ctx[appStudioPluginName];
     chai.assert.exists(appStudioObject);
@@ -28,10 +29,11 @@ export class AppStudioValidator {
   }
 
   public static async validatePublish(appId: string): Promise<void> {
-    const token = await this.provider.getAccessToken();
-    chai.assert.isNotEmpty(token);
+    const appStudioTokenRes = await this.provider.getAccessToken({ scopes: AppStudioScopes });
+    const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
+    chai.assert.isNotEmpty(appStudioToken);
 
-    const requester = this.createRequesterWithToken(token!);
+    const requester = this.createRequesterWithToken(appStudioToken!);
     const response = await requester.get(`/api/publishing/${appId}`);
     if (response.data.error) {
       chai.assert.fail(
@@ -46,9 +48,10 @@ export class AppStudioValidator {
   }
 
   public static async deleteApp(teamsAppId: string): Promise<void> {
-    const token = await this.provider.getAccessToken();
-    chai.assert.isNotEmpty(token);
-    const requester = AppStudioValidator.createRequesterWithToken(token!);
+    const appStudioTokenRes = await this.provider.getAccessToken({ scopes: AppStudioScopes });
+    const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
+    chai.assert.isNotEmpty(appStudioToken);
+    const requester = AppStudioValidator.createRequesterWithToken(appStudioToken!);
     try {
       const response = await requester.delete(`/api/appdefinitions/${teamsAppId}`);
       chai.assert.isTrue(response.status >= 200 && response.status < 300);
@@ -67,11 +70,12 @@ export class AppStudioValidator {
   }
 
   public static async checkWetherAppExists(teamsAppId: string): Promise<boolean> {
-    const token = await this.provider.getAccessToken();
-    if (!token) {
+    const appStudioTokenRes = await this.provider.getAccessToken({ scopes: AppStudioScopes });
+    const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
+    if (!appStudioToken) {
       throw new Error("Failed to get token");
     }
-    const requester = AppStudioValidator.createRequesterWithToken(token);
+    const requester = AppStudioValidator.createRequesterWithToken(appStudioToken);
     try {
       const response = await requester.get(`/api/appdefinitions/${teamsAppId}`);
       const app = response.data;
@@ -82,9 +86,10 @@ export class AppStudioValidator {
   }
 
   public static async getApp(teamsAppId: string): Promise<JSON> {
-    const token = await this.provider.getAccessToken();
-    chai.assert.isNotEmpty(token);
-    const requester = AppStudioValidator.createRequesterWithToken(token!);
+    const appStudioTokenRes = await this.provider.getAccessToken({ scopes: AppStudioScopes });
+    const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
+    chai.assert.isNotEmpty(appStudioToken);
+    const requester = AppStudioValidator.createRequesterWithToken(appStudioToken!);
     try {
       const response = await requester.get(`/api/appdefinitions/${teamsAppId}`);
       chai.assert.isTrue(response && response.data);

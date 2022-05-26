@@ -5,7 +5,7 @@ import { Result } from "neverthrow";
 import { FxError } from "../error";
 import { Func, QTreeNode } from "../qm/question";
 import { Inputs, Void } from "../types";
-import { AppStudioTokenProvider, TokenProvider } from "../utils/login";
+import { M365TokenProvider, TokenProvider } from "../utils/login";
 import { Context, DeepReadonly, InputsWithProjectPath } from "../v2/types";
 import { EnvInfoV3 } from "./types";
 
@@ -74,13 +74,13 @@ export interface ISolution {
     ctx: Context,
     inputs: InputsWithProjectPath,
     envInfo: DeepReadonly<EnvInfoV3>,
-    tokenProvider: AppStudioTokenProvider
+    tokenProvider: M365TokenProvider
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   publishApplication: (
     ctx: Context,
     inputs: InputsWithProjectPath,
     envInfo: DeepReadonly<EnvInfoV3>,
-    tokenProvider: AppStudioTokenProvider
+    tokenProvider: M365TokenProvider
   ) => Promise<Result<Void, FxError>>;
 
   //user task

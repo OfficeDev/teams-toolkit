@@ -4,21 +4,28 @@
 import axios, { AxiosInstance } from "axios";
 import * as chai from "chai";
 
-import MockSharepointTokenProvider from "../../src/commonlib/sharepointLoginUserPassword";
-import { SharepointTokenProvider } from "@microsoft/teamsfx-api";
+import MockM365TokenProvider from "../../src/commonlib/m365LoginUserPassword";
+import { M365TokenProvider } from "@microsoft/teamsfx-api";
+import { getSPFxTenant, GraphReadUserScopes, SPFxScopes } from "@microsoft/teamsfx-core";
 
 export class SharepointValidator {
-  public static provider: SharepointTokenProvider;
+  public static provider: M365TokenProvider;
 
-  public static init(provider?: SharepointTokenProvider) {
-    SharepointValidator.provider = provider || MockSharepointTokenProvider;
+  public static init(provider?: M365TokenProvider) {
+    SharepointValidator.provider = provider || MockM365TokenProvider;
   }
 
   public static async validateDeploy(appId: string) {
-    const token = await this.provider.getAccessToken();
-    chai.assert.isNotEmpty(token);
+    const graphToken = await this.provider.getAccessToken({ scopes: GraphReadUserScopes });
+    let spfxToken = undefined;
+    if (graphToken.isOk()) {
+      const tenant = await getSPFxTenant(graphToken.value);
+      const spfxTokenRes = await this.provider.getAccessToken({ scopes: SPFxScopes(tenant) });
+      spfxToken = spfxTokenRes.isOk() ? spfxTokenRes.value : undefined;
+    }
+    chai.assert.isNotEmpty(spfxToken);
 
-    const requester = this.createRequesterWithToken(token!);
+    const requester = this.createRequesterWithToken(spfxToken!);
     const response = await requester.get(
       `/_api/web/tenantappcatalog/AvailableApps/GetById('${appId}')`
     );
@@ -26,10 +33,16 @@ export class SharepointValidator {
   }
 
   public static async deleteApp(appId: string) {
-    const token = await this.provider.getAccessToken();
-    chai.assert.isNotEmpty(token);
+    const graphToken = await this.provider.getAccessToken({ scopes: GraphReadUserScopes });
+    let spfxToken = undefined;
+    if (graphToken.isOk()) {
+      const tenant = await getSPFxTenant(graphToken.value);
+      const spfxTokenRes = await this.provider.getAccessToken({ scopes: SPFxScopes(tenant) });
+      spfxToken = spfxTokenRes.isOk() ? spfxTokenRes.value : undefined;
+    }
+    chai.assert.isNotEmpty(spfxToken);
 
-    const requester = this.createRequesterWithToken(token!);
+    const requester = this.createRequesterWithToken(spfxToken!);
     await requester.post(`/_api/web/tenantappcatalog/AvailableApps/GetById('${appId}')/Remove`);
   }
 

@@ -5,15 +5,16 @@ import { Providers, ResourceManagementClientContext } from "@azure/arm-resources
 import {
   AzureAccountProvider,
   EnvInfo,
-  GraphTokenProvider,
   Json,
   LogProvider,
+  M365TokenProvider,
   Platform,
   ReadonlyPluginConfig,
   TelemetryReporter,
   v3,
 } from "@microsoft/teamsfx-api";
 import axios from "axios";
+import { GraphScopes } from "../../../common";
 import { ISolutionConfig, SolutionConfig } from "./config";
 import { AadDefaultValues, TeamsToolkitComponent } from "./constants";
 import { AssertNotEmpty, BuildError, NotImplemented } from "./error";
@@ -56,23 +57,23 @@ export class Factory {
   }
 
   public static async buildAadManager(
-    graphTokenProvider?: GraphTokenProvider,
+    m365TokenProvider?: M365TokenProvider,
     telemetryReporter?: TelemetryReporter,
     logProvider?: LogProvider
   ): Promise<AadManager> {
     const lazyAadService = new Lazy(
-      async () => await Factory.buildAadService(graphTokenProvider, telemetryReporter, logProvider)
+      async () => await Factory.buildAadService(m365TokenProvider, telemetryReporter, logProvider)
     );
     return new AadManager(lazyAadService, telemetryReporter, logProvider);
   }
 
   public static async buildTeamsAppAadManager(
-    graphTokenProvider?: GraphTokenProvider,
+    m365TokenProvider?: M365TokenProvider,
     telemetryReporter?: TelemetryReporter,
     logProvider?: LogProvider
   ): Promise<TeamsAppAadManager> {
     const lazyAadService = new Lazy(
-      async () => await Factory.buildAadService(graphTokenProvider, telemetryReporter, logProvider)
+      async () => await Factory.buildAadService(m365TokenProvider, telemetryReporter, logProvider)
     );
     return new TeamsAppAadManager(lazyAadService, telemetryReporter, logProvider);
   }
@@ -186,15 +187,18 @@ export class Factory {
   }
 
   public static async buildAadService(
-    graphTokenProvider?: GraphTokenProvider,
+    m365TokenProvider?: M365TokenProvider,
     telemetryReporter?: TelemetryReporter,
     logger?: LogProvider
   ): Promise<AadService> {
-    const accessToken = AssertNotEmpty("accessToken", await graphTokenProvider?.getAccessToken());
+    const graphTokenRes = await m365TokenProvider?.getAccessToken({ scopes: GraphScopes });
+    const graphToken = graphTokenRes?.isOk() ? graphTokenRes.value : undefined;
+    AssertNotEmpty("accessToken", graphToken);
+
     const axiosInstance = axios.create({
       baseURL: AadDefaultValues.graphApiBasePath,
       headers: {
-        authorization: `Bearer ${accessToken}`,
+        authorization: `Bearer ${graphToken}`,
         "content-type": "application/json",
       },
     });

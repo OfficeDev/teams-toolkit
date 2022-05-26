@@ -22,10 +22,12 @@ import * as path from "path";
 import { Service } from "typedi";
 import { Bicep, ConstantString } from "../../../../common/constants";
 import {
+  AppStudioScopes,
   generateBicepFromFile,
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,
+  GraphScopes,
 } from "../../../../common/tools";
 import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
 import { getTemplatesFolder } from "../../../../folder";
@@ -291,7 +293,10 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
     envInfo: v3.EnvInfoV3,
     tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
-    const token = await tokenProvider.graphTokenProvider.getAccessToken();
+    const graphTokenRes = await tokenProvider.m365TokenProvider.getAccessToken({
+      scopes: GraphScopes,
+    });
+    const token = graphTokenRes.isOk() ? graphTokenRes.value : undefined;
     CheckThrowSomethingMissing(ConfigNames.GRAPH_TOKEN, token);
     CheckThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, ctx.projectSetting.appName);
     let botConfig = envInfo.state[this.name];
@@ -331,7 +336,10 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
         callingEndpoint: "",
       };
       ctx.logProvider.info(Messages.ProvisioningBotRegistration);
-      const appStudioToken = await tokenProvider.appStudioToken.getAccessToken();
+      const appStudioTokenRes = await tokenProvider.m365TokenProvider.getAccessToken({
+        scopes: AppStudioScopes,
+      });
+      const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
       CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
       await AppStudio.createBotRegistration(appStudioToken!, botReg);
       ctx.logProvider.info(Messages.SuccessfullyProvisionedBotRegistration);
@@ -395,7 +403,10 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
     botId: string,
     endpoint: string
   ) {
-    const appStudioToken = await tokenProvider.appStudioToken.getAccessToken();
+    const appStudioTokenRes = await tokenProvider.m365TokenProvider.getAccessToken({
+      scopes: AppStudioScopes,
+    });
+    const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
     CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
     CheckThrowSomethingMissing(ConfigNames.LOCAL_BOT_ID, botId);
 

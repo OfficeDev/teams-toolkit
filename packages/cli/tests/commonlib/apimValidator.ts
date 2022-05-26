@@ -7,7 +7,7 @@ import { ApiManagementClient } from "@azure/arm-apimanagement";
 import fs from "fs-extra";
 import md5 from "md5";
 import { ResourceManagementClient } from "@azure/arm-resources";
-import { AzureAccountProvider, GraphTokenProvider } from "@microsoft/teamsfx-api";
+import { AzureAccountProvider, M365TokenProvider } from "@microsoft/teamsfx-api";
 import {
   getApimServiceNameFromResourceId,
   getAuthServiceNameFromResourceId,
@@ -15,6 +15,7 @@ import {
   getResourceGroupNameFromResourceId,
 } from "./utilities";
 import { PluginId, StateConfigKey } from "./constants";
+import { GraphScopes } from "@microsoft/teamsfx-core";
 
 export class ApimValidator {
   static apimClient?: ApiManagementClient;
@@ -24,12 +25,13 @@ export class ApimValidator {
   public static async init(
     subscriptionId: string,
     azureAccountProvider: AzureAccountProvider,
-    graphTokenProvider: GraphTokenProvider
+    m365TokenProvider: M365TokenProvider
   ): Promise<void> {
     const tokenCredential = await azureAccountProvider.getAccountCredentialAsync();
     this.apimClient = new ApiManagementClient(tokenCredential!, subscriptionId);
     this.resourceGroupClient = new ResourceManagementClient(tokenCredential!, subscriptionId);
-    const graphToken = await graphTokenProvider.getAccessToken();
+    const graphTokenRes = await m365TokenProvider.getAccessToken({ scopes: GraphScopes });
+    const graphToken = graphTokenRes.isOk() ? graphTokenRes.value : undefined;
     this.axiosInstance = axios.create({
       baseURL: "https://graph.microsoft.com/v1.0",
       headers: {

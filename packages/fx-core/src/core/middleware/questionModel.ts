@@ -308,7 +308,7 @@ export async function getQuestionsForPublish(
       context,
       inputs,
       envInfo,
-      TOOLS.tokenProvider.appStudioToken
+      TOOLS.tokenProvider.m365TokenProvider
     );
     return res;
   }

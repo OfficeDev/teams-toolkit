@@ -2,10 +2,10 @@
 // Licensed under the MIT license.
 
 import {
-  AppStudioTokenProvider,
   err,
   FxError,
   Inputs,
+  M365TokenProvider,
   ok,
   QTreeNode,
   Result,
@@ -42,7 +42,7 @@ export async function publishApplication(
   ctx: v2.Context,
   inputs: Inputs,
   envInfo: v2.EnvInfoV2,
-  tokenProvider: AppStudioTokenProvider
+  tokenProvider: M365TokenProvider
 ): Promise<Result<Void, FxError>> {
   return ok(Void);
 }

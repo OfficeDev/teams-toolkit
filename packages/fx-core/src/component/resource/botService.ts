@@ -21,7 +21,7 @@ import fs from "fs-extra";
 import * as path from "path";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
-import { compileHandlebarsTemplateString } from "../../common/tools";
+import { AppStudioScopes, compileHandlebarsTemplateString, GraphScopes } from "../../common/tools";
 import { getTemplatesFolder } from "../../folder";
 import {
   CommonStrings,
@@ -183,8 +183,11 @@ export class BotServiceResource implements CloudResource {
 }
 
 export async function createBotAAD(ctx: ProvisionContextV3): Promise<Result<any, FxError>> {
-  const token = await ctx.tokenProvider.graphTokenProvider.getAccessToken();
-  CheckThrowSomethingMissing(ConfigNames.GRAPH_TOKEN, token);
+  const graphTokenRes = await ctx.tokenProvider.m365TokenProvider.getAccessToken({
+    scopes: GraphScopes,
+  });
+  const graphToken = graphTokenRes.isOk() ? graphTokenRes.value : undefined;
+  CheckThrowSomethingMissing(ConfigNames.GRAPH_TOKEN, graphToken);
   CheckThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, ctx.projectSetting.appName);
   let botConfig = ctx.envInfo.state["bot-service"];
   if (!botConfig) {
@@ -203,7 +206,7 @@ export async function createBotAAD(ctx: ProvisionContextV3): Promise<Result<any,
       MaxLengths.AAD_DISPLAY_NAME
     );
     const botAuthCredentials = await AADRegistration.registerAADAppAndGetSecretByGraph(
-      token!,
+      graphToken!,
       aadDisplayName,
       botConfig.objectId,
       botConfig.botId
@@ -230,7 +233,10 @@ export async function createBotRegInAppStudio(
     callingEndpoint: "",
   };
   ctx.logProvider.info(Messages.ProvisioningBotRegistration);
-  const appStudioToken = await ctx.tokenProvider.appStudioToken.getAccessToken();
+  const appStudioTokenRes = await ctx.tokenProvider.m365TokenProvider.getAccessToken({
+    scopes: AppStudioScopes,
+  });
+  const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
   CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
   await AppStudio.createBotRegistration(appStudioToken!, botReg);
   ctx.logProvider.info(Messages.SuccessfullyProvisionedBotRegistration);

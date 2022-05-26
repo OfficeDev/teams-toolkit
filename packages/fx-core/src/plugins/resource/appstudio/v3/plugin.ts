@@ -12,7 +12,7 @@ import {
   TokenProvider,
   BuildFolderName,
   AppPackageFolderName,
-  AppStudioTokenProvider,
+  M365TokenProvider,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import path from "path";
@@ -23,7 +23,11 @@ import { IAppDefinition } from "../interfaces/IAppDefinition";
 import { AppStudioClient } from "../appStudio";
 import { AppStudioResultFactory } from "../results";
 import { AppStudioError } from "../errors";
-import { getAppDirectory, compileHandlebarsTemplateString } from "../../../../common";
+import {
+  getAppDirectory,
+  compileHandlebarsTemplateString,
+  AppStudioScopes,
+} from "../../../../common";
 import { Constants } from "../constants";
 import { convertToAppDefinition } from "../utils/utils";
 import { loadManifest } from "../manifestTemplate";
@@ -56,7 +60,13 @@ export class AppStudioPluginImpl {
       archivedFile = await fs.readFile(buildPackage.value);
     }
 
-    const appStudioToken = await tokenProvider.appStudioToken.getAccessToken();
+    const appStudioTokenRes = await tokenProvider.m365TokenProvider.getAccessToken({
+      scopes: AppStudioScopes,
+    });
+    if (appStudioTokenRes.isErr()) {
+      return err(appStudioTokenRes.error);
+    }
+    const appStudioToken = appStudioTokenRes.value;
     try {
       const appDefinition = await AppStudioClient.createApp(
         archivedFile,
@@ -135,7 +145,7 @@ export class AppStudioPluginImpl {
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     envInfo: v3.EnvInfoV3,
-    tokenProvider: AppStudioTokenProvider
+    tokenProvider: M365TokenProvider
   ): Promise<Result<{ appName: string; publishedAppId: string; update: boolean }, FxError>> {
     let archivedFile;
     // User provided zip file
@@ -173,7 +183,8 @@ export class AppStudioPluginImpl {
     const manifest = JSON.parse(manifestString) as TeamsAppManifest;
 
     // manifest.id === externalID
-    const appStudioToken = await tokenProvider?.getAccessToken();
+    const appStudioTokenRes = await tokenProvider?.getAccessToken({ scopes: AppStudioScopes });
+    const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
     const existApp = await AppStudioClient.getAppByTeamsAppId(manifest.id, appStudioToken!);
     if (existApp) {
       let executePublishUpdate = false;

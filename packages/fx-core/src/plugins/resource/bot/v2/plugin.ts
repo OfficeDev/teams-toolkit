@@ -254,6 +254,7 @@ export class TeamsBotV2Impl {
       try {
         // fail to npm install @microsoft/teamsfx on azure web app, so pack it locally.
         await utils.execute("npm install", workingPath);
+        await utils.execute("npm prune --production", workingPath);
         return workingPath;
       } catch (e) {
         throw new CommandExecutionError(`${Commands.NPM_INSTALL}`, workingPath, e);

@@ -2,8 +2,12 @@
 .deployment
 .vscode
 *.js.map
+*.ts.map
 *.ts
 .git*
+.tsbuildinfo
+CHANGELOG.md
+readme.md
 local.settings.json
 test
 tsconfig.json

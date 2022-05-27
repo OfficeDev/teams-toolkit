@@ -38,6 +38,10 @@ import { MockM365TokenProvider, randomAppName } from "../../core/utils";
 import { resourceGroupHelper } from "../../../src/plugins/solution/fx-solution/utils/ResourceGroupHelper";
 import { ResourceManagementClient } from "@azure/arm-resources";
 import * as appStudio from "../../../src/component/resource/appManifest/appStudio";
+import {
+  publishApplication,
+  getQuestionsForPublish,
+} from "../../../src/plugins/solution/fx-solution/v3/publish";
 describe("SolutionV3 - provision", () => {
   const sandbox = sinon.createSandbox();
   beforeEach(async () => {
@@ -171,6 +175,66 @@ describe("SolutionV3 - provision", () => {
       state: { solution: {} },
     };
     const res = await getQuestionsForProvision(ctx, inputs, envInfoV3, mockedTokenProvider);
+    assert.isTrue(res.isOk());
+  });
+  it("publish", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        name: BuiltInSolutionNames.azure,
+      },
+    };
+    sandbox.stub(appStudio, "publishTeamsApp").resolves(
+      ok({
+        publishedAppId: "1234",
+        update: true,
+        appName: "myapp",
+      })
+    );
+    const ctx = new MockedV2Context(projectSettings);
+    const inputs: v2.InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: path.join(os.tmpdir(), randomAppName()),
+    };
+    const envInfov3: v3.EnvInfoV3 = {
+      envName: "dev",
+      state: { solution: {} },
+      config: {},
+    };
+    const res = await publishApplication(
+      ctx,
+      inputs,
+      envInfov3,
+      new MockedAppStudioTokenProvider()
+    );
+    assert.isTrue(res.isErr());
+  });
+
+  it("getQuestionsForPublish", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        name: BuiltInSolutionNames.azure,
+      },
+    };
+    const ctx = new MockedV2Context(projectSettings);
+    const inputs: v2.InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: path.join(os.tmpdir(), randomAppName()),
+    };
+    const envInfov3: v2.DeepReadonly<v3.EnvInfoV3> = {
+      envName: "dev",
+      config: {},
+      state: { solution: {} },
+    };
+    const res = await getQuestionsForPublish(
+      ctx,
+      inputs,
+      envInfov3,
+      new MockedAppStudioTokenProvider()
+    );
     assert.isTrue(res.isOk());
   });
 });

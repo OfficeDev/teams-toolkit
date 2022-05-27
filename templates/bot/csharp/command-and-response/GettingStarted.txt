@@ -13,17 +13,16 @@ Quick start
 
 Before you run or Start Debugging for the first time, follow these steps:
 
-1. If your project only contains a Tab capability, skip to step #3.
+1. This is a bot project, so first use a Command Prompt to run this command: ngrok http 5130.
 
-2. For projects that contain a Bot or Message Extension capability, first use a Command Prompt to run this command: ngrok http 5130.
+2. In Visual Studio Solution Explorer, right click on your project file and select "Prepare Teams app dependencies" command to prepare local debug dependencies. When prompted, sign in using your M365 account.
 
-3. Select the Project > Teams Toolkit > Configure Microsoft Teams app menu in Visual Studio. When prompted, sign in using your M365 account.
+3. Select the Debug > Start Debugging menu in Visual Studio or press F5. Visual Studio will launch the app inside Microsoft Teams using a browser.
 
-4. Select the Debug > Start Debugging menu in Visual Studio or press F5. Visual Studio will launch the app inside Microsoft Teams using a browser.
+4. Once Microsoft Teams is loaded, select the Add button to install your app in Teams.
 
-5. Once Microsoft Teams is loaded, select the Add button to install your app in Teams.
+5. Send a "helloworld" command in your Teams chat, and you will receive an adaptive card message from your app.
 
-If you just want to launch the web app instead of Teams side-loading, first remove the 'launchUrl' in \Properties\launchSettings.json, then right click the solution, in Properties > Configuration Properties > Configuration, uncheck the 'Deploy' process and select 'OK'.
 
 
 Deploy your first Teams app on Azure

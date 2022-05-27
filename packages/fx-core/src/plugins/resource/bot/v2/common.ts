@@ -3,7 +3,7 @@
 
 import { Inputs } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
-import { AzureSolutionQuestionNames, BotScenario } from "../../../solution";
+import { AzureSolutionQuestionNames, BotScenario } from "../../../solution/fx-solution/question";
 import { QuestionNames, TemplateProjectsConstants, TemplateProjectsScenarios } from "../constants";
 import { AppServiceOptionItem, HostTypeTriggerOptions } from "../question";
 import { CodeTemplateInfo } from "./interface/codeTemplateInfo";

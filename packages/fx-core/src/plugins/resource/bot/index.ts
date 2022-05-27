@@ -19,7 +19,7 @@ import { ProgressBarFactory } from "./progressBars";
 import { CustomizedTasks, LifecycleFuncNames, ProgressBarConstants } from "./constants";
 import { runWithExceptionCatching } from "./errors";
 import { Logger } from "./logger";
-import { BotOptionItem, MessageExtensionItem } from "../../solution";
+import { BotOptionItem, MessageExtensionItem } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import "./v2";

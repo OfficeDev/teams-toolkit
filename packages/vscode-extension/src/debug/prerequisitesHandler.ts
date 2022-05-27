@@ -196,6 +196,7 @@ export async function checkPrerequisitesForGetStarted(): Promise<Result<any, FxE
 
 export async function checkAndInstall(): Promise<Result<any, FxError>> {
   let progressHelper: ProgressHelper | undefined;
+  const checkResults: CheckResult[] = [];
   try {
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPrerequisitesStart, {
       [TelemetryProperty.DebugProjectComponents]: (await commonUtils.getProjectComponents()) + "",
@@ -208,7 +209,6 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     }
 
     // [node] => [account, certificate, deps] => [backend extension, npm install] => [port]
-    const checkResults: CheckResult[] = [];
     const localEnvManager = new LocalEnvManager(
       VsCodeLogInstance,
       ExtTelemetry.reporter,
@@ -365,8 +365,9 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     const fxError = assembleError(error);
     showError(fxError);
     await progressHelper?.stop(false);
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPrerequisites, fxError);
-
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPrerequisites, fxError, {
+      [TelemetryProperty.DebugCheckResults]: JSON.stringify(checkResults),
+    });
     return err(fxError);
   }
 

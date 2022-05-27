@@ -25,12 +25,13 @@ export class AzureFunctionHosting extends AzureHosting {
 
   async deploy(resourceId: string, tokenProvider: TokenProvider, buffer: Buffer): Promise<Void> {
     await super.deploy(resourceId, tokenProvider, buffer);
-    const client = await azureWebSiteDeploy(resourceId, tokenProvider, buffer);
+    const client = await azureWebSiteDeploy(resourceId, tokenProvider, buffer, this.logger);
 
     await AzureOperations.restartWebApp(
       client,
       getResourceGroupNameFromResourceId(resourceId),
-      getSiteNameFromResourceId(resourceId)
+      getSiteNameFromResourceId(resourceId),
+      this.logger
     );
     return Void;
   }

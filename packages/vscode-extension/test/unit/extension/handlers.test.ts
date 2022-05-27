@@ -33,10 +33,6 @@ import * as extTelemetryEvents from "../../../src/telemetry/extTelemetryEvents";
 import * as uuid from "uuid";
 
 suite("handlers", () => {
-  test("getWorkspacePath()", () => {
-    chai.expect(handlers.getWorkspacePath()).equals(undefined);
-  });
-
   suite("activate()", function () {
     const sandbox = sinon.createSandbox();
     let setStatusChangeMap: any;
@@ -146,7 +142,6 @@ suite("handlers", () => {
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sinon.stub(handlers, "getWorkspacePath").resolves(undefined);
       const showMessage = sinon.spy(vscode.window, "showErrorMessage");
 
       await handlers.buildPackageHandler();

@@ -146,7 +146,6 @@ import {
   getTeamsAppTelemetryInfoByEnv,
   getTriggerFromProperty,
   isExistingTabApp,
-  isTeamsfx,
   isTriggerFromWalkThrough,
   openFolderInExplorer,
 } from "./utils/commonUtils";
@@ -154,18 +153,11 @@ import { localize, parseLocale } from "./utils/localizeUtils";
 
 export let core: FxCore;
 export let tools: Tools;
-export function getWorkspacePath(): string | undefined {
-  const workspacePath: string | undefined = workspace.workspaceFolders?.length
-    ? workspace.workspaceFolders[0].uri.fsPath
-    : undefined;
-  return workspacePath;
-}
 
 export async function activate(): Promise<Result<Void, FxError>> {
   const result: Result<Void, FxError> = ok(Void);
   try {
-    const workspacePath = getWorkspacePath();
-    const validProject = isValidProject(workspacePath);
+    const validProject = isValidProject(globalVariables.workspaceUri?.fsPath);
     if (validProject) {
       const projectId = (await getProjectId()) || "unknown";
       ExtTelemetry.addSharedProperty(TelemetryProperty.ProjectId, projectId);
@@ -242,6 +234,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
     registerCoreEvents();
     accountTreeViewProviderInstance.subscribeToStatusChanges(tools.tokenProvider);
     await envTreeProviderInstance.reloadEnvironments();
+    const workspacePath = globalVariables.workspaceUri?.fsPath;
     if (workspacePath) {
       const unifyConfigWatcher = vscode.workspace.createFileSystemWatcher(
         "**/unify-config-and-aad-manifest-change-logs.md"
@@ -433,7 +426,7 @@ export async function getAzureSolutionSettings(): Promise<AzureSolutionSettings 
 
 export function getSystemInputs(): Inputs {
   const answers: Inputs = {
-    projectPath: getWorkspacePath(),
+    projectPath: globalVariables.workspaceUri?.fsPath,
     platform: Platform.VSCode,
     vscodeEnv: detectVsCodeEnv(),
     "function-dotnet-checker-enabled": vscodeHelper.isDotnetCheckerEnabled(),
@@ -831,7 +824,7 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
  * Ask user to select environment, local is included
  */
 async function askTargetEnvironment(): Promise<Result<string, FxError>> {
-  const projectPath = getWorkspacePath();
+  const projectPath = globalVariables.workspaceUri?.fsPath;
   if (!isValidProject(projectPath)) {
     return err(new InvalidProjectError());
   }
@@ -1651,7 +1644,7 @@ async function autoOpenProjectHandler(): Promise<void> {
 
 export async function openReadMeHandler(args: any[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickOpenReadMe, getTriggerFromProperty(args));
-  if (!(await isTeamsfx())) {
+  if (!globalVariables.isTeamsFxProject) {
     const createProject = {
       title: localize("teamstoolkit.handlers.createProjectTitle"),
       run: async (): Promise<void> => {
@@ -1906,7 +1899,7 @@ export async function openManifestHandler(args?: any[]): Promise<Result<null, Fx
     TelemetryEvent.OpenManifestEditorStart,
     getTriggerFromProperty(args)
   );
-  const projectPath = getWorkspacePath();
+  const projectPath = globalVariables.workspaceUri?.fsPath;
   if (!projectPath) {
     ExtTelemetry.sendTelemetryErrorEvent(
       TelemetryEvent.OpenManifestEditor,
@@ -2189,7 +2182,7 @@ export async function openAzureAccountHandler() {
 }
 
 export function saveTextDocumentHandler(document: vscode.TextDocumentWillSaveEvent) {
-  if (!isValidProject(getWorkspacePath())) {
+  if (!isValidProject(globalVariables.workspaceUri?.fsPath)) {
     return;
   }
 
@@ -2237,7 +2230,9 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
   // } else {
   //   vscode.commands.executeCommand("setContext", "fx-extension.customizedTreeview", false);
   // }
-  const disposables = await TreeViewManagerInstance.registerTreeViews(getWorkspacePath());
+  const disposables = await TreeViewManagerInstance.registerTreeViews(
+    globalVariables.workspaceUri?.fsPath
+  );
   context.subscriptions.push(...disposables);
 
   // Register SignOut tree view command
@@ -2482,7 +2477,7 @@ export async function openPreviewAadFile(args: any[]): Promise<Result<any, FxErr
     TelemetryEvent.PreviewAadManifestFile,
     getTriggerFromProperty(args)
   );
-  const workspacePath = getWorkspacePath();
+  const workspacePath = globalVariables.workspaceUri?.fsPath;
   const validProject = isValidProject(workspacePath);
   if (!validProject) {
     ExtTelemetry.sendTelemetryErrorEvent(
@@ -2542,7 +2537,7 @@ export async function openPreviewAadFile(args: any[]): Promise<Result<any, FxErr
 export async function openPreviewManifest(args: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewManifestFile, getTriggerFromProperty(args));
 
-  const workspacePath = getWorkspacePath();
+  const workspacePath = globalVariables.workspaceUri?.fsPath;
   const validProject = isValidProject(workspacePath);
   if (!validProject) {
     ExtTelemetry.sendTelemetryErrorEvent(
@@ -2620,7 +2615,7 @@ export async function openConfigStateFile(args: any[]) {
   }
 
   ExtTelemetry.sendTelemetryEvent(telemetryStartName);
-  const workspacePath = getWorkspacePath();
+  const workspacePath = globalVariables.workspaceUri?.fsPath;
   if (!workspacePath) {
     const noOpenWorkspaceError = new UserError(
       ExtensionSource,
@@ -2776,7 +2771,7 @@ export async function updatePreviewManifest(args: any[]) {
   }
 
   if (!args || args.length === 0) {
-    const workspacePath = getWorkspacePath();
+    const workspacePath = globalVariables.workspaceUri?.fsPath;
     const inputs = getSystemInputs();
     inputs.ignoreEnvInfo = true;
     const env = await core.getSelectedEnv(inputs);
@@ -2801,7 +2796,7 @@ export async function editManifestTemplate(args: any[]) {
   if (args && args.length > 0) {
     const segments = args[0].fsPath.split(".");
     const env = segments[segments.length - 2] === "local" ? "local" : "remote";
-    const workspacePath = getWorkspacePath();
+    const workspacePath = globalVariables.workspaceUri?.fsPath;
     let manifestPath: string;
     if (isConfigUnifyEnabled()) {
       manifestPath = `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`;
@@ -2820,7 +2815,7 @@ export async function editAadManifestTemplate(args: any[]) {
     getTriggerFromProperty(args && args.length > 1 ? [args[1]] : undefined)
   );
   if (args && args.length > 1) {
-    const workspacePath = getWorkspacePath();
+    const workspacePath = globalVariables.workspaceUri?.fsPath;
     const manifestPath = `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/aad.template.json`;
     workspace.openTextDocument(manifestPath).then((document) => {
       window.showTextDocument(document);
@@ -3067,7 +3062,7 @@ export async function openDeploymentTreeview(args?: any[]) {
     TelemetryEvent.ClickOpenDeploymentTreeview,
     getTriggerFromProperty(args)
   );
-  if (await isTeamsfx()) {
+  if (globalVariables.isTeamsFxProject) {
     vscode.commands.executeCommand("teamsfx-deployment.focus");
   } else {
     vscode.commands.executeCommand("workbench.view.extension.teamsfx");

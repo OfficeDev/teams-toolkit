@@ -139,10 +139,10 @@ suite("CommonUtils", () => {
       cleanupCallback = removeCallback;
       workspacePath = name;
 
-      if (!("workspaceUri" in globalVariables)) {
-        // ensure the property exist to prevent sinon "Cannot stub non-existent property" error
-        (globalVariables.workspaceUri as any) = undefined;
-      }
+      // if (!("workspaceUri" in globalVariables)) {
+      //   // ensure the property exist to prevent sinon "Cannot stub non-existent property" error
+      //   (globalVariables.workspaceUri as any) = undefined;
+      // }
       sandbox.stub(globalVariables, "workspaceUri").value(Uri.file(workspacePath));
     });
 

@@ -46,7 +46,7 @@ import { registerTeamsfxTaskAndDebugEvents } from "./debug/teamsfxTaskHandler";
 import { TeamsfxTaskProvider } from "./debug/teamsfxTaskProvider";
 import * as exp from "./exp";
 import { TreatmentVariables, TreatmentVariableValue } from "./exp/treatmentVariables";
-import { initializeExtensionVariables, isSPFxProject } from "./globalVariables";
+import { initializeExtensionVariables, isSPFxProject, workspaceUri } from "./globalVariables";
 import * as handlers from "./handlers";
 import { ManifestTemplateHoverProvider } from "./hoverProvider";
 import { VsCodeUI } from "./qm/vsc_ui";
@@ -464,19 +464,18 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(specifySubscription);
 
-  const workspacePath = handlers.getWorkspacePath();
   vscode.commands.executeCommand("setContext", "fx-extension.isSPFx", isSPFxProject);
 
   vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isM365",
-    workspacePath && (await isM365Project(workspacePath))
+    workspaceUri && (await isM365Project(workspaceUri.fsPath))
   );
 
   vscode.commands.executeCommand(
     "setContext",
     "fx-extension.canUpgradeToArmAndMultiEnv",
-    await canUpgradeToArmAndMultiEnv(workspacePath)
+    await canUpgradeToArmAndMultiEnv(workspaceUri?.fsPath)
   );
 
   vscode.commands.executeCommand(

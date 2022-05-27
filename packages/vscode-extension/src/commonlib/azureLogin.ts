@@ -575,7 +575,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   async getSubscriptionInfoPath(): Promise<string | undefined> {
     if (globalVariables.workspaceUri) {
       const workspacePath: string = globalVariables.workspaceUri.fsPath;
-      if (!(await commonUtils.isFxProject(workspacePath))) {
+      if (!globalVariables.isTeamsFxProject) {
         return undefined;
       }
       const configRoot = await commonUtils.getProjectRoot(workspacePath, `.${ConfigFolderName}`);

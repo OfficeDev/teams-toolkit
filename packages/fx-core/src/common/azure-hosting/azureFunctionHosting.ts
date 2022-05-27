@@ -7,7 +7,6 @@ import { TokenProvider, Void } from "@microsoft/teamsfx-api";
 import { azureWebSiteDeploy } from "./utils";
 import { AzureOperations } from "./azureOps";
 import { getResourceGroupNameFromResourceId, getSiteNameFromResourceId } from "../tools";
-import { Messages } from "./messages";
 
 const functionResourceId = "provisionOutputs.functionOutput.value.botWebAppResourceId";
 const functionHostName = "provisionOutputs.functionOutput.value.validDomain";

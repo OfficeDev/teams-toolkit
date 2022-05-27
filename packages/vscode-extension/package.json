@@ -171,7 +171,7 @@
       "explorer/context": [
         {
           "command": "fx-extension.deployAadAppManifestFromCtxMenu",
-          "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled",
+          "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled && !fx-extension.isSPFx",
           "group": "deploy@0"
         },
         {
@@ -438,12 +438,12 @@
       {
         "command": "fx-extension.deployAadAppManifest",
         "title": "%teamstoolkit.commands.deployAadAppManifest.title%",
-        "enablement": "fx-extension.isAadManifestEnabled"
+        "enablement": "fx-extension.isAadManifestEnabled && !fx-extension.isSPFx"
       },
       {
         "command": "fx-extension.deployAadAppManifestFromCtxMenu",
         "title": "%teamstoolkit.commands.deployAadAppManifestFromCtxMenu.title%",
-        "enablement": "fx-extension.isAadManifestEnabled"
+        "enablement": "fx-extension.isAadManifestEnabled && !fx-extension.isSPFx"
       },
       {
         "command": "fx-extension.signOut",

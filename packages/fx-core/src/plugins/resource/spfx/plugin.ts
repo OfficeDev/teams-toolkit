@@ -46,6 +46,10 @@ import {
   getAppDirectory,
   isYoCheckerEnabled,
   isGeneratorCheckerEnabled,
+  GraphReadUserScopes,
+  getSPFxTenant,
+  SPFxScopes,
+  GraphScopes,
 } from "../../../common/tools";
 import { getTemplatesFolder } from "../../../folder";
 import {
@@ -333,7 +337,17 @@ export class SPFxPluginImpl {
       }
       SPOClient.setBaseUrl(tenant.value);
 
-      const spoToken = await ctx.sharepointTokenProvider?.getAccessToken();
+      const graphTokenRes = await ctx.m365TokenProvider?.getAccessToken({
+        scopes: GraphReadUserScopes,
+      });
+      let spoToken = undefined;
+      if (graphTokenRes && graphTokenRes.isOk()) {
+        const tenant = await getSPFxTenant(graphTokenRes.value);
+        const spfxTokenRes = await ctx.m365TokenProvider!.getAccessToken({
+          scopes: SPFxScopes(tenant),
+        });
+        spoToken = spfxTokenRes.isOk() ? spfxTokenRes.value : undefined;
+      }
       if (!spoToken) {
         return err(GetSPOTokenFailedError());
       }
@@ -434,7 +448,8 @@ export class SPFxPluginImpl {
   }
 
   private async getTenant(ctx: PluginContext): Promise<Result<string, FxError>> {
-    const graphToken = await ctx.graphTokenProvider?.getAccessToken();
+    const graphTokenRes = await ctx.m365TokenProvider?.getAccessToken({ scopes: GraphScopes });
+    const graphToken = graphTokenRes?.isOk() ? graphTokenRes.value : undefined;
     if (!graphToken) {
       return err(GetGraphTokenFailedError());
     }

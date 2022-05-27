@@ -1451,7 +1451,7 @@ interface ResourcePlugin {
     name: string;
     provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider, envInfo?: EnvInfoV2) => Promise<Result<Void, FxError>>;
     provisionResource?: (ctx: Context_2, inputs: ProvisionInputs, envInfo: EnvInfoV2, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    publishApplication?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
+    publishApplication?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: M365TokenProvider) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
     updateResourceTemplate?: (ctx: Context_2, inputs: Inputs & {
@@ -1660,7 +1660,7 @@ interface SolutionPlugin {
     name: string;
     provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider, envInfo?: EnvInfoV2) => Promise<FxResult<Json, FxError>>;
     provisionResources: (ctx: Context_2, inputs: Inputs, envInfo: EnvInfoV2, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    publishApplication: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
+    publishApplication: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: M365TokenProvider) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
 }
 

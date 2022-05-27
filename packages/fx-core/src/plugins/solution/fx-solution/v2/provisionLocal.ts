@@ -2,7 +2,7 @@ import { FxError, Inputs, Json, SystemError, TokenProvider, v2 } from "@microsof
 import { isUndefined } from "lodash";
 import { Container } from "typedi";
 import { isExistingTabApp } from "../../../../common/projectSettingsHelper";
-import { isConfigUnifyEnabled } from "../../../../common/tools";
+import { AppStudioScopes, isConfigUnifyEnabled } from "../../../../common/tools";
 import { environmentManager } from "../../../../core/environment";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
 import { PluginNames, SolutionError } from "../constants";
@@ -52,8 +52,12 @@ export async function provisionLocalResource(
   // Just to trigger M365 login before the concurrent execution of localDebug.
   // Because concurrent execution of localDebug may getAccessToken() concurrently, which
   // causes 2 M365 logins before the token caching in common lib takes effect.
-  await tokenProvider.appStudioToken.getAccessToken();
-
+  const appStudioTokenRes = await tokenProvider.m365TokenProvider.getAccessToken({
+    scopes: AppStudioScopes,
+  });
+  if (appStudioTokenRes.isErr()) {
+    return new v2.FxFailure(appStudioTokenRes.error);
+  }
   // Pop-up window to confirm if local debug in another tenant
   let localDebugTenantId = "";
   if (isConfigUnifyEnabled()) {

@@ -123,6 +123,10 @@ export class M365ProviderUserPassword implements M365TokenProvider {
   removeStatusChangeMap(name: string): Promise<Result<boolean, FxError>> {
     throw new Error("Method not implemented.");
   }
+
+  async signout(): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
 }
 
 export default M365ProviderUserPassword.getInstance();

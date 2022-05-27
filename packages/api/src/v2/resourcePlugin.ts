@@ -5,7 +5,7 @@ import { Result } from "neverthrow";
 import { FxError } from "../error";
 import { Func, QTreeNode } from "../qm/question";
 import { ProjectSettings, Inputs, Json, Void } from "../types";
-import { AppStudioTokenProvider, TokenProvider } from "../utils";
+import { M365TokenProvider, TokenProvider } from "../utils";
 import {
   Context,
   DeepReadonly,
@@ -168,7 +168,7 @@ export interface ResourcePlugin {
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {Inputs} inputs - system inputs.
    * @param {DeepReadonly<EnvInfoV2>} envInfo - a readonly view of environment info modeled after (config|state).${env}.json
-   * @param {AppStudioTokenProvider} tokenProvider - Token for AppStudio
+   * @param {M365TokenProvider} tokenProvider - Token for M365
    *
    * @returns Void because side effect is expected.
    */
@@ -176,7 +176,7 @@ export interface ResourcePlugin {
     ctx: Context,
     inputs: Inputs,
     envInfo: DeepReadonly<EnvInfoV2>,
-    tokenProvider: AppStudioTokenProvider
+    tokenProvider: M365TokenProvider
   ) => Promise<Result<Void, FxError>>;
 
   /**

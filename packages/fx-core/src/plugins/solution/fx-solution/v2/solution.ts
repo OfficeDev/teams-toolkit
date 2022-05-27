@@ -1,9 +1,9 @@
 import {
-  AppStudioTokenProvider,
   Func,
   FxError,
   Inputs,
   Json,
+  M365TokenProvider,
   QTreeNode,
   Result,
   TokenProvider,
@@ -57,7 +57,7 @@ export class TeamsAppSolutionV2 implements v2.SolutionPlugin {
     ctx: v2.Context,
     inputs: Inputs,
     envInfo: v2.EnvInfoV2,
-    tokenProvider: AppStudioTokenProvider
+    tokenProvider: M365TokenProvider
   ) => Promise<Result<Void, FxError>> = publishApplication;
   provisionLocalResource?: (
     ctx: v2.Context,

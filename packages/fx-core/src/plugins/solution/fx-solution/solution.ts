@@ -39,6 +39,7 @@ import { PluginDisplayName, HelpLinks } from "../../../common/constants";
 import { LocalSettingsTeamsAppKeys } from "../../../common/localSettingsConstants";
 import { ListCollaboratorResult, PermissionsResult } from "../../../common/permissionInterface";
 import {
+  AppStudioScopes,
   deepCopy,
   getHashedEnv,
   getResourceGroupInPortal,
@@ -412,7 +413,12 @@ export class TeamsAppSolution implements Solution {
       // Just to trigger M365 login before the concurrent execution of provision.
       // Because concurrent exectution of provision may getAccessToken() concurrently, which
       // causes 2 M365 logins before the token caching in common lib takes effect.
-      await ctx.appStudioToken?.getAccessToken();
+      const appStudioTokenRes = await ctx.m365TokenProvider!.getAccessToken({
+        scopes: AppStudioScopes,
+      });
+      if (appStudioTokenRes?.isErr()) {
+        return err(appStudioTokenRes.error);
+      }
 
       this.runningState = SolutionRunningState.ProvisionInProgress;
 
@@ -632,11 +638,16 @@ export class TeamsAppSolution implements Solution {
         // Just to trigger M365 login before the concurrent execution of deploy.
         // Because concurrent exectution of deploy may getAccessToken() concurrently, which
         // causes 2 M365 logins before the token caching in common lib takes effect.
-        const appStudioTokenJson = await ctx.appStudioToken?.getJsonObject();
+        const appStudioTokenJsonRes = await ctx.m365TokenProvider!.getJsonObject({
+          scopes: AppStudioScopes,
+        });
+        if (appStudioTokenJsonRes.isErr()) {
+          return err(appStudioTokenJsonRes.error);
+        }
 
         const checkM365 = await checkM365Tenant(
           { version: 1, data: ctx.envInfo },
-          appStudioTokenJson as object
+          appStudioTokenJsonRes.value as object
         );
         if (checkM365.isErr()) {
           return checkM365;
@@ -1061,7 +1072,12 @@ export class TeamsAppSolution implements Solution {
       // Just to trigger M365 login before the concurrent execution of localDebug.
       // Because concurrent exectution of localDebug may getAccessToken() concurrently, which
       // causes 2 M365 logins before the token caching in common lib takes effect.
-      await ctx.appStudioToken?.getAccessToken();
+      const appStudioTokenRes = await ctx.m365TokenProvider!.getAccessToken({
+        scopes: AppStudioScopes,
+      });
+      if (appStudioTokenRes?.isErr()) {
+        return err(appStudioTokenRes.error);
+      }
 
       // Pop-up window to confirm if local debug in another tenant
       const localDebugTenantId = isMultiEnvEnabled()

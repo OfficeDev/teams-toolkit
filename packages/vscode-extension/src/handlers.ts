@@ -60,6 +60,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   AddSsoParameters,
+  AppStudioScopes,
   askSubscription,
   CollaborationState,
   Correlator,
@@ -213,14 +214,9 @@ export async function activate(): Promise<Result<Void, FxError>> {
       }
       return Promise.resolve();
     };
-    appstudioLogin.setStatusChangeMap("successfully-sign-in-m365", m365NotificationCallback, false);
-    sharepointLogin.setStatusChangeMap(
+    M365TokenInstance.setStatusChangeMap(
       "successfully-sign-in-m365",
-      m365NotificationCallback,
-      false
-    );
-    GraphManagerInstance.setStatusChangeMap(
-      "successfully-sign-in-m365",
+      { scopes: AppStudioScopes },
       m365NotificationCallback,
       false
     );

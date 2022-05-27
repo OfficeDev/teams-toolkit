@@ -55,7 +55,7 @@ export async function listCollaborator(
   tokenProvider: TokenProvider,
   telemetryProps?: Json
 ): Promise<Result<ListCollaboratorResult, FxError>> {
-  const result = await CollaborationUtil.getCurrentUserInfo(tokenProvider.graphTokenProvider);
+  const result = await CollaborationUtil.getCurrentUserInfo(tokenProvider.m365TokenProvider);
   if (result.isErr()) {
     return err(result.error);
   }
@@ -232,7 +232,7 @@ export async function checkPermission(
   tokenProvider: TokenProvider,
   telemetryProps?: Json
 ): Promise<Result<PermissionsResult, FxError>> {
-  const result = await CollaborationUtil.getCurrentUserInfo(tokenProvider.graphTokenProvider);
+  const result = await CollaborationUtil.getCurrentUserInfo(tokenProvider.m365TokenProvider);
   if (result.isErr()) {
     return err(result.error);
   }
@@ -347,7 +347,7 @@ export async function grantPermission(
     1
   );
   try {
-    const result = await CollaborationUtil.getCurrentUserInfo(tokenProvider.graphTokenProvider);
+    const result = await CollaborationUtil.getCurrentUserInfo(tokenProvider.m365TokenProvider);
     if (result.isErr()) {
       return err(result.error);
     }
@@ -375,7 +375,7 @@ export async function grantPermission(
       );
     }
 
-    const userInfo = await CollaborationUtil.getUserInfo(tokenProvider.graphTokenProvider, email);
+    const userInfo = await CollaborationUtil.getUserInfo(tokenProvider.m365TokenProvider, email);
 
     if (!userInfo) {
       return err(

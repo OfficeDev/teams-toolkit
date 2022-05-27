@@ -9,7 +9,7 @@ import {
   ok,
   v3,
   EnvConfig,
-  GraphTokenProvider,
+  M365TokenProvider,
   LogProvider,
   PluginContext,
   v2,
@@ -39,7 +39,7 @@ import { TelemetryUtils } from "./telemetry";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { ResultFactory } from "../results";
 import { getPermissionRequest } from "../permissions";
-import { isAadManifestEnabled } from "../../../../common";
+import { GraphScopes, isAadManifestEnabled } from "../../../../common";
 
 export class Utils {
   public static addLogAndTelemetryWithLocalDebug(
@@ -83,8 +83,9 @@ export class Utils {
     return ConfigFilePath.Input(envName);
   }
 
-  public static async getCurrentTenantId(graphTokenProvider?: GraphTokenProvider): Promise<string> {
-    const tokenObject = await graphTokenProvider?.getJsonObject();
+  public static async getCurrentTenantId(m365TokenProvider?: M365TokenProvider): Promise<string> {
+    const tokenObjectRes = await m365TokenProvider?.getJsonObject({ scopes: GraphScopes });
+    const tokenObject = tokenObjectRes?.isOk() ? tokenObjectRes.value : undefined;
     const tenantId: string = (tokenObject as any)?.tid;
     return tenantId;
   }

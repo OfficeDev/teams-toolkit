@@ -142,7 +142,7 @@ export async function executeUserTask(
           ctx,
           inputs,
           envInfo,
-          tokenProvider.appStudioToken
+          tokenProvider.m365TokenProvider
         );
       }
     } else if (method === "validateManifest") {

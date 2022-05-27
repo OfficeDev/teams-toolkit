@@ -3,6 +3,7 @@ import {
   SolutionContext,
   Inputs,
   AppStudioTokenProvider,
+  M365TokenProvider,
   AzureAccountProvider,
   CryptoProvider,
   GraphTokenProvider,
@@ -39,6 +40,7 @@ class BaseSolutionContextAdaptor implements SolutionContext {
   azureAccountProvider?: AzureAccountProvider | undefined;
   graphTokenProvider?: GraphTokenProvider | undefined;
   appStudioToken?: AppStudioTokenProvider | undefined;
+  m365TokenProvider?: M365TokenProvider | undefined;
   treeProvider?: TreeProvider | undefined;
   answers?: Inputs | undefined;
   projectSettings?: ProjectSettings | undefined;
@@ -66,6 +68,7 @@ export class ScaffoldingContextAdapter extends BaseSolutionContextAdaptor {
     this.azureAccountProvider = undefined;
     this.graphTokenProvider = undefined;
     this.appStudioToken = undefined;
+    this.m365TokenProvider = undefined;
     this.treeProvider = undefined;
     this.answers = inputs;
     this.projectSettings = v2context.projectSetting;
@@ -94,6 +97,7 @@ export class ProvisionContextAdapter extends BaseSolutionContextAdaptor {
     this.azureAccountProvider = tokenProvider.azureAccountProvider;
     this.graphTokenProvider = tokenProvider.graphTokenProvider;
     this.appStudioToken = tokenProvider.appStudioToken;
+    this.m365TokenProvider = tokenProvider.m365TokenProvider;
     this.treeProvider = undefined;
     this.answers = inputs;
     this.projectSettings = v2context.projectSetting;
@@ -138,6 +142,7 @@ export class CollaboratorContextAdapter extends BaseSolutionContextAdaptor {
     this.azureAccountProvider = tokenProvider.azureAccountProvider;
     this.graphTokenProvider = tokenProvider.graphTokenProvider;
     this.appStudioToken = tokenProvider.appStudioToken;
+    this.m365TokenProvider = tokenProvider.m365TokenProvider;
     this.treeProvider = undefined;
     this.answers = inputs;
     this.projectSettings = v2context.projectSetting;

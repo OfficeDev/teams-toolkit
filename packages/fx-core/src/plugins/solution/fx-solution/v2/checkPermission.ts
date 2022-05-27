@@ -3,7 +3,7 @@ import {
   Colors,
   err,
   FxError,
-  GraphTokenProvider,
+  M365TokenProvider,
   ok,
   Platform,
   PluginContext,
@@ -120,7 +120,7 @@ async function checkPermissionImpl(
   envName?: string,
   telemetryReporter?: TelemetryReporter,
   ui?: UserInteraction,
-  graphTokenProvider?: GraphTokenProvider,
+  m365TokenProvider?: M365TokenProvider,
   logProvider?: LogProvider,
   platform?: string
 ): Promise<Result<PermissionsResult, FxError>> {
@@ -128,7 +128,7 @@ async function checkPermissionImpl(
     [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
   });
 
-  const result = await CollaborationUtil.getCurrentUserInfo(graphTokenProvider);
+  const result = await CollaborationUtil.getCurrentUserInfo(m365TokenProvider);
   if (result.isErr()) {
     return err(
       sendErrorTelemetryThenReturnError(
@@ -276,7 +276,7 @@ export async function checkPermission(
     const envName = param.ctx.envInfo.envName;
     const telemetryReporter = param.ctx.telemetryReporter;
     const ui = param.ctx.ui;
-    const graphTokenProvider = param.ctx.graphTokenProvider;
+    const m365TokenProvider = param.ctx.m365TokenProvider;
     const logProvider = param.ctx.logProvider;
     const platform = param.ctx.answers?.platform;
     return checkPermissionImpl(
@@ -285,7 +285,7 @@ export async function checkPermission(
       envName,
       telemetryReporter,
       ui,
-      graphTokenProvider,
+      m365TokenProvider,
       logProvider,
       platform
     );
@@ -307,7 +307,7 @@ export async function checkPermission(
     const envName = param.envInfo.envName;
     const telemetryReporter = param.ctx.telemetryReporter;
     const ui = param.ctx.userInteraction;
-    const graphTokenProvider = param.tokenProvider.graphTokenProvider;
+    const m365TokenProvider = param.tokenProvider.m365TokenProvider;
     const logProvider = param.ctx.logProvider;
     const platform = param.inputs?.platform;
     return checkPermissionImpl(
@@ -316,7 +316,7 @@ export async function checkPermission(
       envName,
       telemetryReporter,
       ui,
-      graphTokenProvider,
+      m365TokenProvider,
       logProvider,
       platform
     );

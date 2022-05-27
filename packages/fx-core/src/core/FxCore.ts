@@ -701,7 +701,7 @@ export class FxCore implements v3.ICore {
       ctx.contextV2,
       inputs,
       ctx.envInfoV2,
-      this.tools.tokenProvider.appStudioToken
+      this.tools.tokenProvider.m365TokenProvider
     );
   }
   @hooks([

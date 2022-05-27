@@ -37,7 +37,13 @@ import { ProgressHelper } from "../utils/progress-helper";
 import { SPOClient } from "../spoClient";
 import axios from "axios";
 import { getTemplatesFolder } from "../../../../folder";
-import { getAppDirectory } from "../../../../common/tools";
+import {
+  getAppDirectory,
+  getSPFxTenant,
+  GraphReadUserScopes,
+  GraphScopes,
+  SPFxScopes,
+} from "../../../../common/tools";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 
 export class SPFxPluginImpl {
@@ -277,7 +283,17 @@ export class SPFxPluginImpl {
       }
       SPOClient.setBaseUrl(tenant.value);
 
-      const spoToken = await tokenProvider.sharepointTokenProvider?.getAccessToken();
+      const graphTokenRes = await tokenProvider.m365TokenProvider?.getAccessToken({
+        scopes: GraphReadUserScopes,
+      });
+      let spoToken = undefined;
+      if (graphTokenRes && graphTokenRes.isOk()) {
+        const tenant = await getSPFxTenant(graphTokenRes.value);
+        const spfxTokenRes = await tokenProvider.m365TokenProvider!.getAccessToken({
+          scopes: SPFxScopes(tenant),
+        });
+        spoToken = spfxTokenRes.isOk() ? spfxTokenRes.value : undefined;
+      }
       if (!spoToken) {
         return err(GetSPOTokenFailedError());
       }
@@ -385,13 +401,18 @@ export class SPFxPluginImpl {
   }
 
   private async getTenant(tokenProvider: TokenProvider): Promise<Result<string, FxError>> {
-    const graphToken = await tokenProvider.graphTokenProvider?.getAccessToken();
+    const graphTokenRes = await tokenProvider.m365TokenProvider?.getAccessToken({
+      scopes: GraphScopes,
+    });
+    const graphToken = graphTokenRes.isOk() ? graphTokenRes.value : undefined;
     if (!graphToken) {
       return err(GetGraphTokenFailedError());
     }
 
-    const tokenJson = await tokenProvider.graphTokenProvider?.getJsonObject();
-    const username = (tokenJson as any).unique_name;
+    const tokenJsonRes = await tokenProvider.m365TokenProvider?.getJsonObject({
+      scopes: GraphScopes,
+    });
+    const username = (tokenJsonRes as any).value.unique_name;
 
     const instance = axios.create({
       baseURL: "https://graph.microsoft.com/v1.0",

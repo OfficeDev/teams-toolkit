@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import {
-  AppStudioTokenProvider,
+  M365TokenProvider,
   AzureSolutionSettings,
   Plugin,
   err,
@@ -139,11 +139,11 @@ export class AppStudioPluginV2 implements ResourcePlugin {
     ctx: Context,
     inputs: Inputs,
     envInfo: DeepReadonly<v2.EnvInfoV2>,
-    tokenProvider: AppStudioTokenProvider
+    tokenProvider: M365TokenProvider
   ): Promise<Result<Void, FxError>> {
     const pluginContext: PluginContext = convert2PluginContext(this.plugin.name, ctx, inputs);
     setEnvInfoV1ByStateV2(this.plugin.name, pluginContext, envInfo);
-    pluginContext.appStudioToken = tokenProvider;
+    pluginContext.m365TokenProvider = tokenProvider;
 
     // run question model for publish
     // const getQuestionRes = await this.plugin.getQuestions(Stage.publish, pluginContext);

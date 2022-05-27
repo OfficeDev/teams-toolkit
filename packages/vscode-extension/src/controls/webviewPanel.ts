@@ -3,6 +3,7 @@
 
 import { Inputs, Stage } from "@microsoft/teamsfx-api";
 import {
+  AppStudioScopes,
   Correlator,
   globalStateGet,
   globalStateUpdate,
@@ -16,6 +17,7 @@ import { glob } from "glob";
 import * as path from "path";
 import * as uuid from "uuid";
 import * as vscode from "vscode";
+import M365TokenInstance from "../commonlib/m365Login";
 import AppStudioTokenInstance from "../commonlib/appStudioLogin";
 import AzureAccountManager from "../commonlib/azureLogin";
 import GraphTokenInstance from "../commonlib/graphLogin";
@@ -239,9 +241,11 @@ export class WebviewPanel {
       return Promise.resolve();
     };
 
-    AppStudioTokenInstance.setStatusChangeMap("quick-start-webview", m365WebviewCallback);
-    SharepointTokenInstance.setStatusChangeMap("quick-start-webview", m365WebviewCallback);
-    GraphTokenInstance.setStatusChangeMap("quick-start-webview", m365WebviewCallback);
+    M365TokenInstance.setStatusChangeMap(
+      "quick-start-webview",
+      { scopes: AppStudioScopes },
+      m365WebviewCallback
+    );
 
     AzureAccountManager.setStatusChangeMap(
       "quick-start-webview",

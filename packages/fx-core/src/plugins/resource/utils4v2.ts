@@ -162,6 +162,7 @@ export async function provisionResourceAdapter(
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
+  pluginContext.m365TokenProvider = tokenProvider.m365TokenProvider;
   pluginContext.envInfo.state = flattenConfigMap(state);
   pluginContext.envInfo.config = envInfo.config as EnvConfig;
   pluginContext.config = pluginContext.envInfo.state.get(plugin.name) ?? new ConfigMap();
@@ -209,6 +210,7 @@ export async function configureResourceAdapter(
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
+  pluginContext.m365TokenProvider = tokenProvider.m365TokenProvider;
   pluginContext.envInfo.state = flattenConfigMap(state);
   pluginContext.envInfo.config = envInfo.config as EnvConfig;
   pluginContext.config = pluginContext.envInfo.state.get(plugin.name) ?? new ConfigMap();
@@ -235,6 +237,7 @@ export async function deployAdapter(
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.sharepointTokenProvider = tokenProvider.sharepointTokenProvider;
+  pluginContext.m365TokenProvider = tokenProvider.m365TokenProvider;
 
   if (plugin.preDeploy) {
     const preRes = await plugin.preDeploy(pluginContext);
@@ -400,6 +403,7 @@ export async function provisionLocalResourceAdapter(
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
+  pluginContext.m365TokenProvider = tokenProvider.m365TokenProvider;
   const res = await plugin.localDebug(pluginContext);
   if (res.isErr()) {
     return err(res.error);
@@ -435,6 +439,7 @@ export async function configureLocalResourceAdapter(
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
+  pluginContext.m365TokenProvider = tokenProvider.m365TokenProvider;
   const res = await plugin.postLocalDebug(pluginContext);
   if (res.isErr()) {
     return err(res.error);
@@ -460,6 +465,7 @@ export async function executeUserTaskAdapter(
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
+  pluginContext.m365TokenProvider = tokenProvider.m365TokenProvider;
   setEnvInfoV1ByStateV2(plugin.name, pluginContext, envInfo);
   const localSettingsAdaptor = new LocalSettingsAdaptor(localSettings, plugin.name);
   pluginContext.localSettings = localSettingsAdaptor;
@@ -492,6 +498,7 @@ export async function getQuestionsAdapter(
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
+  pluginContext.m365TokenProvider = tokenProvider.m365TokenProvider;
   return await plugin.getQuestions(inputs.stage!, pluginContext);
 }
 
@@ -509,6 +516,7 @@ export async function getQuestionsForUserTaskAdapter(
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
+  pluginContext.m365TokenProvider = tokenProvider.m365TokenProvider;
   return await plugin.getQuestionsForUserTask(func, pluginContext);
 }
 
@@ -581,6 +589,7 @@ export async function collaborationApiAdaptor(
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
+  pluginContext.m365TokenProvider = tokenProvider.m365TokenProvider;
   pluginContext.envInfo.state = flattenConfigMap(state);
   pluginContext.envInfo.config = envInfo.config as EnvConfig;
   pluginContext.config = pluginContext.envInfo.state.get(plugin.name) ?? new ConfigMap();

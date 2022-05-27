@@ -34,16 +34,11 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
           name: 'WEBSITE_NODE_DEFAULT_VERSION'
           value: '~14' // Set NodeJS version to 14.x for your site
         }
-        {
-          name: 'SCM_SCRIPT_GENERATOR_ARGS'
-          value: '--node' // Register as node server
-        }
-        {{else}}
+        {{/if}}
         {
           name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
           value: 'true' // Execute build steps on your site during deployment
         }
-        {{/if}}
         {
           name: 'RUNNING_ON_AZURE'
           value: '1'

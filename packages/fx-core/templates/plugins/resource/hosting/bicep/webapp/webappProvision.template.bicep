@@ -29,16 +29,16 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
     siteConfig: {
       alwaysOn: true
       appSettings: [
+        {
+          name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
+          value: 'true' // Execute build steps on your site during deployment
+        }
         {{#if (contains "node" configs)}}
         {
           name: 'WEBSITE_NODE_DEFAULT_VERSION'
           value: '~14' // Set NodeJS version to 14.x for your site
         }
         {{/if}}
-        {
-          name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
-          value: 'true' // Execute build steps on your site during deployment
-        }
         {
           name: 'RUNNING_ON_AZURE'
           value: '1'

@@ -4,9 +4,6 @@
 
 ## NotificationTargetStorage interface
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Interface for a storage provider that stores and retrieves notification target references.
 
 <b>Signature:</b>
@@ -19,8 +16,8 @@ export interface NotificationTargetStorage
 
 |  Method | Description |
 |  --- | --- |
-|  [delete(key)](./teamsfx.notificationtargetstorage.delete.md) | <b><i>(BETA)</i></b> Delete one notification target by its key. |
-|  [list()](./teamsfx.notificationtargetstorage.list.md) | <b><i>(BETA)</i></b> List all stored notification targets. |
-|  [read(key)](./teamsfx.notificationtargetstorage.read.md) | <b><i>(BETA)</i></b> Read one notification target by its key. |
-|  [write(key, object)](./teamsfx.notificationtargetstorage.write.md) | <b><i>(BETA)</i></b> Write one notification target by its key. |
+|  [delete(key)](./teamsfx.notificationtargetstorage.delete.md) | Delete one notification target by its key. |
+|  [list()](./teamsfx.notificationtargetstorage.list.md) | List all stored notification targets. |
+|  [read(key)](./teamsfx.notificationtargetstorage.read.md) | Read one notification target by its key. |
+|  [write(key, object)](./teamsfx.notificationtargetstorage.write.md) | Write one notification target by its key. |
 

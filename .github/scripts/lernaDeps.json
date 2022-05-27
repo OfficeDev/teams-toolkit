@@ -23,6 +23,7 @@
         "packages/manifest",
         "packages/api",
         "packages/fx-core",
+        "packages/server",
         "templates"
     ],
     "sdk": [

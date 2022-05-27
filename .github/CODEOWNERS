@@ -121,9 +121,15 @@
 /packages/function-extension @adashen @blackchoey @dilin-MS
 
 /packages/dotnet-sdk @tecton  @JerryYangKai
+/packages/dotnet-sdk/src/TeamsFx/Conversation @swatDong @dooriya @kimizhu
+/packages/dotnet-sdk/src/TeamsFx.Test/Conversation @swatDong @dooriya @kimizhu
 
 /.github/workflows/cd.yml @adashen @LongOddCode @IvanJobs @qinezh @wenytang-ms
 
 /packages/server @chagong @Alive-Fish @jayzhang
 
 /Localize @HuihuiWu-Microsoft @tecton
+
+/packages/fx-core/src/component @jayzhang @xzf0587 @hund030
+/packages/fx-core/test/component @jayzhang @xzf0587 @hund030
+/packages/fx-core/templates/bicep @jayzhang @xzf0587 @hund030

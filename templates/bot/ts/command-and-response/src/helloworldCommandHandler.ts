@@ -19,7 +19,6 @@ export class HelloWorldCommandHandler implements TeamsFxBotCommandHandler {
     context: TurnContext,
     message: CommandMessage
   ): Promise<string | Partial<Activity> | void> {
-
     console.log(`Bot received message: ${message.text}`);
 
     // Render your adaptive card for reply message

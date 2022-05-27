@@ -4,9 +4,6 @@
 
 ## BearerTokenAuthProvider class
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Provider that handles Bearer Token authentication
 
 <b>Signature:</b>
@@ -20,11 +17,11 @@ export declare class BearerTokenAuthProvider implements AuthProvider
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(getToken)](./teamsfx.bearertokenauthprovider._constructor_.md) |  | <b><i>(BETA)</i></b> Constructs a new instance of the <code>BearerTokenAuthProvider</code> class |
+|  [(constructor)(getToken)](./teamsfx.bearertokenauthprovider._constructor_.md) |  | Constructs a new instance of the <code>BearerTokenAuthProvider</code> class |
 
 ## Methods
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
-|  [AddAuthenticationInfo(config)](./teamsfx.bearertokenauthprovider.addauthenticationinfo.md) |  | <b><i>(BETA)</i></b> Adds authentication info to http requests |
+|  [AddAuthenticationInfo(config)](./teamsfx.bearertokenauthprovider.addauthenticationinfo.md) |  | Adds authentication info to http requests |
 

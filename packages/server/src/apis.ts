@@ -7,6 +7,7 @@ import {
   Inputs,
   InputTextConfig,
   InputTextResult,
+  LoginStatus,
   LogLevel,
   MultiSelectConfig,
   MultiSelectResult,
@@ -20,6 +21,7 @@ import {
   SingleSelectConfig,
   SingleSelectResult,
   SubscriptionInfo,
+  TokenRequest,
   Void,
 } from "@microsoft/teamsfx-api";
 import {
@@ -46,6 +48,7 @@ export enum Namespaces {
   Graph = "graph",
   AppStudio = "appStudio",
   SharePoint = "sharepoint",
+  M365 = "m365",
   UserInteraction = "ui",
   Telemetry = "telemetry",
 }
@@ -82,6 +85,10 @@ export interface IServerConnection {
     inputs: Inputs,
     token: CancellationToken
   ) => Promise<Result<Void, FxError>>;
+  deployTeamsAppManifestRequest: (
+    inputs: Inputs,
+    token: CancellationToken
+  ) => Promise<Result<any, FxError>>;
 
   customizeLocalFuncRequest: (
     funcId: number,
@@ -178,6 +185,17 @@ export const RequestTypes = {
     ),
     getJsonObject: new RequestType0<Result<string, FxError>, Error>(
       `${Namespaces.SharePoint}/getJsonObjectRequest`
+    ),
+  },
+  [Namespaces.M365]: {
+    getAccessToken: new RequestType1<TokenRequest, Result<string, FxError>, Error>(
+      `${Namespaces.M365}/getAccessTokenRequest`
+    ),
+    getJsonObject: new RequestType1<TokenRequest, Result<Record<string, unknown>, FxError>, Error>(
+      `${Namespaces.M365}/getJsonObjectRequest`
+    ),
+    getStatus: new RequestType1<TokenRequest, Result<LoginStatus, FxError>, Error>(
+      `${Namespaces.M365}/getStatusRequest`
     ),
   },
 

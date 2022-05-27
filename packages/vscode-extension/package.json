@@ -152,7 +152,8 @@
         {
           "id": "teamsfx-help-and-feedback",
           "name": "Help and feedback",
-          "when": "fx-extension.sidebarWelcome.treeview"
+          "when": "fx-extension.sidebarWelcome.treeview",
+          "visibility": "collapsed"
         },
         {
           "id": "teamsfx-empty-project",
@@ -170,7 +171,7 @@
       "explorer/context": [
         {
           "command": "fx-extension.deployAadAppManifestFromCtxMenu",
-          "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled",
+          "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled && !fx-extension.isSPFx",
           "group": "deploy@0"
         },
         {
@@ -437,12 +438,12 @@
       {
         "command": "fx-extension.deployAadAppManifest",
         "title": "%teamstoolkit.commands.deployAadAppManifest.title%",
-        "enablement": "fx-extension.isAadManifestEnabled"
+        "enablement": "fx-extension.isAadManifestEnabled && !fx-extension.isSPFx"
       },
       {
         "command": "fx-extension.deployAadAppManifestFromCtxMenu",
         "title": "%teamstoolkit.commands.deployAadAppManifestFromCtxMenu.title%",
-        "enablement": "fx-extension.isAadManifestEnabled"
+        "enablement": "fx-extension.isAadManifestEnabled && !fx-extension.isSPFx"
       },
       {
         "command": "fx-extension.signOut",
@@ -1048,7 +1049,7 @@
           {
             "id": "teamsToolkitExploreMore",
             "title": "What's next?",
-            "description": "Here are some recommendations to continue your journey with Teams Toolkit.\n • Explore [Tutorials](command:fx-extension.selectTutorials?%5B%22WalkThrough%22%5D) and get more practical guidances\n • Open [Readme.md](command:fx-extension.openReadMe?%5B%22WalkThrough%22%2Ctrue%5D) to understand how to develop this app\n • Read our [Documentation](command:fx-extension.openDocument?%5B%22WalkThrough%22%5D)",
+            "description": "Here are some recommendations to continue your journey with Teams Toolkit.\n • Explore [Tutorials](command:fx-extension.selectTutorials?%5B%22WalkThrough%22%5D) and get more practical guidances\n • Open [Readme.md](command:fx-extension.openReadMe?%5B%22WalkThrough%22%5D) to understand how to develop this app\n • Read our [Documentation](command:fx-extension.openDocument?%5B%22WalkThrough%22%5D)",
             "media": {
               "svg": "media/walkthrough/whatsnext.svg",
               "altText": "Tutorials, README.md and Documentation"

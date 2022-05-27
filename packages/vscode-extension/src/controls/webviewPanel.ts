@@ -21,7 +21,7 @@ import AzureAccountManager from "../commonlib/azureLogin";
 import GraphTokenInstance from "../commonlib/graphLogin";
 import SharepointTokenInstance from "../commonlib/sharepointLogin";
 import { GlobalKey } from "../constants";
-import { ext } from "../extensionVariables";
+import * as globalVariables from "../globalVariables";
 import { downloadSample, getSystemInputs } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
@@ -79,7 +79,9 @@ export class WebviewPanel {
         // Enable javascript in the webview
         enableScripts: true,
         retainContextWhenHidden: true,
-        localResourceRoots: [vscode.Uri.file(path.join(ext.context.extensionPath, "out"))],
+        localResourceRoots: [
+          vscode.Uri.file(path.join(globalVariables.context.extensionPath, "out")),
+        ],
       }
     );
 
@@ -148,7 +150,7 @@ export class WebviewPanel {
         }
       },
       undefined,
-      ext.context.subscriptions
+      globalVariables.context.subscriptions
     );
 
     // Set the webview's initial html content
@@ -325,11 +327,13 @@ export class WebviewPanel {
   }
 
   private getHtmlForWebview(panelType: PanelType) {
-    const scriptBasePathOnDisk = vscode.Uri.file(path.join(ext.context.extensionPath, "out/"));
+    const scriptBasePathOnDisk = vscode.Uri.file(
+      path.join(globalVariables.context.extensionPath, "out/")
+    );
     const scriptBaseUri = scriptBasePathOnDisk.with({ scheme: "vscode-resource" });
 
     const scriptPathOnDisk = vscode.Uri.file(
-      path.join(ext.context.extensionPath, "out/src", "client.js")
+      path.join(globalVariables.context.extensionPath, "out/src", "client.js")
     );
     const scriptUri = scriptPathOnDisk.with({ scheme: "vscode-resource" });
 

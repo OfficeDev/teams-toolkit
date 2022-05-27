@@ -1,0 +1,28 @@
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+namespace Microsoft.TeamsFx.Conversation
+{
+    using Microsoft.Bot.Builder;
+
+    /// <summary>
+    /// Represents the options used to initialize a <see cref="ConversationBot"/>.
+    /// </summary>
+    public class ConversationOptions
+    {
+        /// <summary>
+        /// Gets or sets the bot adapter 
+        /// </summary>
+        public BotAdapter Adapter { get; set; }
+
+        /// <summary>
+        /// Gets or sets the notification option used to initialize <see cref="ConversationBot.Notification"/>.
+        /// </summary>
+        public NotificationOptions Notification { get; set; }
+
+        /// <summary>
+        /// Gets or sets the command option used to initialize the <see cref="ConversationBot.Command"/> .
+        /// </summary>
+        public CommandOptions Command { get; set; }
+    }
+}

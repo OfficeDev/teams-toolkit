@@ -12,8 +12,8 @@ import { bot } from "./internal/initialize";
 //
 // In response to events, this function sends Adaptive Cards to Teams. You can update the logic in this function
 // to suit your needs. You can enrich the event with additional data and send an Adaptive Card as required.
-// 
-// You can add authentication / authorization for this API. Refer to 
+//
+// You can add authentication / authorization for this API. Refer to
 // https://aka.ms/teamsfx-notification for more details.
 const httpTrigger: AzureFunction = async function (
   context: Context,

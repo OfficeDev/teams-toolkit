@@ -4,9 +4,6 @@
 
 ## setLogger() function
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Set custom logger. Use the output functions if it's set. Priority is higher than setLogFunction.
 
 <b>Signature:</b>

@@ -11,21 +11,15 @@ import { Activity, TurnContext } from "botbuilder-core";
  * - "Channel" means to a team channel. (By default, notification to a team will be sent to its "General" channel.)
  * - "Group" means to a group chat.
  * - "Person" means to a personal chat.
- *
- * @beta
  */
 export type NotificationTargetType = "Channel" | "Group" | "Person";
 
 /**
  * Represent a notification target.
- *
- * @beta
  */
 export interface NotificationTarget {
   /**
    * The type of target, could be "Channel" or "Group" or "Person".
-   *
-   * @beta
    */
   readonly type?: NotificationTargetType;
 
@@ -33,8 +27,6 @@ export interface NotificationTarget {
    * Send a plain text message.
    *
    * @param text - the plain text message.
-   *
-   * @beta
    */
   sendMessage(text: string): Promise<void>;
 
@@ -42,16 +34,12 @@ export interface NotificationTarget {
    * Send an adaptive card message.
    *
    * @param card - the adaptive card raw JSON.
-   *
-   * @beta
    */
   sendAdaptiveCard(card: unknown): Promise<void>;
 }
 
 /**
  * Interface for a storage provider that stores and retrieves notification target references.
- *
- * @beta
  */
 export interface NotificationTargetStorage {
   /**
@@ -60,8 +48,6 @@ export interface NotificationTargetStorage {
    * @param key - the key of a notification target.
    *
    * @returns - the notification target. Or undefined if not found.
-   *
-   * @beta
    */
   read(key: string): Promise<{ [key: string]: unknown } | undefined>;
 
@@ -69,8 +55,6 @@ export interface NotificationTargetStorage {
    * List all stored notification targets.
    *
    * @returns - an array of notification target. Or an empty array if nothing is stored.
-   *
-   * @beta
    */
   list(): Promise<{ [key: string]: unknown }[]>;
 
@@ -79,8 +63,6 @@ export interface NotificationTargetStorage {
    *
    * @param key - the key of a notification target.
    * @param object - the notification target.
-   *
-   * @beta
    */
   write(key: string, object: { [key: string]: unknown }): Promise<void>;
 
@@ -88,16 +70,12 @@ export interface NotificationTargetStorage {
    * Delete one notification target by its key.
    *
    * @param key - the key of a notification target.
-   *
-   * @beta
    */
   delete(key: string): Promise<void>;
 }
 
 /**
  * Options to initialize {@link NotificationBot}.
- *
- * @beta
  */
 export interface NotificationOptions {
   /**
@@ -110,8 +88,6 @@ export interface NotificationOptions {
    *   - "${process.env.TEMP}/.notification.localstore.json" if `process.env.RUNNING_ON_AZURE` is set to "1"
    *
    * It's recommended to use your own shared storage for production environment.
-   *
-   * @beta
    */
   storage?: NotificationTargetStorage;
 }
@@ -138,8 +114,6 @@ export interface CommandMessage {
 
 /**
  * Interface for a command handler that can process command to a TeamsFx bot and return a response.
- *
- * @beta
  */
 export interface TeamsFxBotCommandHandler {
   /**
@@ -163,22 +137,16 @@ export interface TeamsFxBotCommandHandler {
 
 /**
  * Options to initialize {@link CommandBot}.
- *
- * @beta
  */
 export interface CommandOptions {
   /**
    * The commands to registered with the command bot. Each command should implement the interface {@link TeamsFxBotCommandHandler} so that it can be correctly handled by this command bot.
-   *
-   * @beta
    */
   commands?: TeamsFxBotCommandHandler[];
 }
 
 /**
  * Options to initialize {@link ConversationBot}
- *
- * @beta
  */
 export interface ConversationOptions {
   /**
@@ -188,8 +156,6 @@ export interface ConversationOptions {
    *
    * @remarks
    * If neither `adapter` nor `adapterConfig` is provided, will use BOT_ID and BOT_PASSWORD from environment variables.
-   *
-   * @beta
    */
   adapter?: BotFrameworkAdapter;
 
@@ -198,35 +164,25 @@ export interface ConversationOptions {
    *
    * @remarks
    * If neither `adapter` nor `adapterConfig` is provided, will use BOT_ID and BOT_PASSWORD from environment variables.
-   *
-   * @beta
    */
   adapterConfig?: { [key: string]: unknown };
 
   /**
    * The command part.
-   *
-   * @beta
    */
   command?: CommandOptions & {
     /**
      * Whether to enable command or not.
-     *
-     * @beta
      */
     enabled?: boolean;
   };
 
   /**
    * The notification part.
-   *
-   * @beta
    */
   notification?: NotificationOptions & {
     /**
      * Whether to enable notification or not.
-     *
-     * @beta
      */
     enabled?: boolean;
   };

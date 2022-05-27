@@ -8,8 +8,6 @@ import { formatString } from "../util/utils";
 
 /**
  * Provider that handles API Key authentication
- *
- * @beta
  */
 export class ApiKeyProvider implements AuthProvider {
   private keyName: string;
@@ -24,8 +22,6 @@ export class ApiKeyProvider implements AuthProvider {
    *
    * @throws {@link ErrorCode|InvalidParameter} - when key name or key value is empty.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
-   *
-   * @beta
    */
   constructor(keyName: string, keyValue: string, keyLocation: ApiKeyLocation) {
     if (!keyName) {
@@ -55,8 +51,6 @@ export class ApiKeyProvider implements AuthProvider {
    *
    * @throws {@link ErrorCode|AuthorizationInfoAlreadyExists} - when API key already exists in request header or url query parameter.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
-   *
-   * @beta
    */
   public async AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig> {
     switch (this.keyLocation) {
@@ -76,8 +70,12 @@ export class ApiKeyProvider implements AuthProvider {
         if (!config.params) {
           config.params = {};
         }
-        const url = new URL(config.url!, config.baseURL);
-        if (config.params[this.keyName] || url.searchParams.has(this.keyName)) {
+        let urlHasDefinedApiKey = false;
+        if (config.url) {
+          const url = new URL(config.url, config.baseURL);
+          urlHasDefinedApiKey = url.searchParams.has(this.keyName);
+        }
+        if (config.params[this.keyName] || urlHasDefinedApiKey) {
           throw new ErrorWithCode(
             formatString(ErrorMessage.DuplicateApiKeyInQueryParam, this.keyName),
             ErrorCode.AuthorizationInfoAlreadyExists
@@ -93,8 +91,6 @@ export class ApiKeyProvider implements AuthProvider {
 
 /**
  * Define available location for API Key location
- *
- * @beta
  */
 export enum ApiKeyLocation {
   /**

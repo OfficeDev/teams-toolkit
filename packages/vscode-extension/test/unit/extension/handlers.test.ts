@@ -25,7 +25,7 @@ import * as commonUtils from "../../../src/utils/commonUtils";
 import * as extension from "../../../src/extension";
 import TreeViewManagerInstance from "../../../src/treeview/treeViewManager";
 import { CollaborationState, CoreHookContext } from "@microsoft/teamsfx-core";
-import { ext } from "../../../src/extensionVariables";
+import * as globalVariables from "../../../src/globalVariables";
 import { Uri } from "vscode";
 import envTreeProviderInstance from "../../../src/treeview/environmentTreeViewProvider";
 import accountTreeViewProviderInstance from "../../../src/treeview/account/accountTreeViewProvider";
@@ -369,6 +369,7 @@ suite("handlers", () => {
       sinon.restore();
     });
     test("successfully update secret", async () => {
+      sinon.stub(globalVariables, "context").value({ extensionPath: "" });
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -399,6 +400,7 @@ suite("handlers", () => {
     });
 
     test("failed to update due to corrupted secret", async () => {
+      sinon.stub(globalVariables, "context").value({ extensionPath: "" });
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -443,8 +445,8 @@ suite("handlers", () => {
         tid: "fake-tenant-id",
       });
 
-      ext.workspaceUri = Uri.parse("file://fakeProjectPath");
-      sinon.stub(commonUtils, "isSPFxProject").resolves(false);
+      sinon.stub(globalVariables, "workspaceUri").value(Uri.parse("file://fakeProjectPath"));
+      sinon.stub(globalVariables, "isSPFxProject").value(false);
       sinon.stub(commonUtils, "getM365TenantFromEnv").callsFake(async (env: string) => {
         return "fake-tenant-id";
       });

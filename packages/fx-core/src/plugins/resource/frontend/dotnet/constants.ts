@@ -17,14 +17,11 @@ export class RegularExpr {
   static readonly clientId = /\$clientId\$/g;
   static readonly clientSecret = /\$client-secret\$/g;
   static readonly oauthAuthority = /\$oauthAuthority\$/g;
-  static readonly botId = /\$botId\$/g;
-  static readonly botPassword = /\$bot-password\$/g;
 }
 
 export class DotnetPluginInfo {
-  static readonly pluginName = "fx-resource-dotnet";
-  static readonly displayName = "Dotnet";
-  static readonly alias = "DN";
+  // TODO: Migrate DotNet plugin to frontend plugin
+  static readonly pluginName = "fx-resource-frontend-hosting";
   static readonly issueLink = "https://github.com/OfficeDev/TeamsFx/issues/new";
   static readonly helpLink = "https://aka.ms/teamsfx-bz-help";
 
@@ -61,9 +58,7 @@ export class DependentPluginInfo {
 
   public static readonly aadClientId: string = "clientId";
   public static readonly aadClientSecret: string = "clientSecret";
-  public static readonly botId: string = "botId";
-  public static readonly botPassword: string = "botPassword";
-  public static readonly appTenantId: string = "tenantId";
+  public static readonly appTenantId: string = "teamsAppTenantId";
 }
 
 export class DotnetConfigInfo {
@@ -73,11 +68,6 @@ export class DotnetConfigInfo {
   static readonly webAppDomain = "domain";
   static readonly projectFilePath = "projectFilePath";
   static readonly indexPath = "indexPath";
-}
-
-export class Capability {
-  static readonly tab = "Tab";
-  static readonly bot = "Bot";
 }
 
 export class WebappBicepFile {
@@ -105,6 +95,4 @@ export class AppSettingsPlaceholders {
   static readonly clientId = "$clientId$";
   static readonly clientSecret = "$client-secret$";
   static readonly oauthAuthority = "$oauthAuthority$";
-  static readonly botId = "$botId$";
-  static readonly botPassword = "$bot-password$";
 }

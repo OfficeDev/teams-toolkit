@@ -13,6 +13,7 @@ import {
   FxError,
   LogProvider,
   ok,
+  ProjectSettingsV3,
   Result,
   SolutionContext,
   SystemError,
@@ -1457,16 +1458,14 @@ function expandParameterPlaceholdersV3(
   envInfo: v3.EnvInfoV3,
   parameterContent: string
 ): string {
-  const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
-  const plugins = solutionSettings
-    ? solutionSettings.activeResourcePlugins.map((p) => Container.get<v3.PluginV3>(p))
-    : [];
+  const projectSettingsV3 = ctx.projectSetting as ProjectSettingsV3;
+  const componentNames = projectSettingsV3.components.map((c) => c.name);
   const stateVariables: Record<string, Record<string, any>> = {};
   const availableVariables: Record<string, Record<string, any>> = { state: stateVariables };
   const envState = envInfo.state as v3.TeamsFxAzureResourceStates;
   // Add plugin contexts to available variables
-  for (const plugin of plugins) {
-    const resourceState = envState[plugin.name] || {};
+  for (const componentName of componentNames) {
+    const resourceState = envState[componentName] || {};
     // const pluginContext = getPluginContext(ctx, plugin.name);
     const pluginVariables: Record<string, string> = {};
     for (const key of Object.keys(resourceState)) {
@@ -1475,7 +1474,7 @@ function expandParameterPlaceholdersV3(
         pluginVariables[key] = resourceState[key];
       }
     }
-    stateVariables[plugin.name] = pluginVariables;
+    stateVariables[componentName] = pluginVariables;
   }
   // Add solution config to available variables
   const solutionConfig = envState.solution as v3.AzureSolutionConfig;

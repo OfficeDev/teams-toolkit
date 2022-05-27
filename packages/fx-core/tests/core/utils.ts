@@ -18,8 +18,10 @@ import {
   InputTextResult,
   IProgressHandler,
   Json,
+  LoginStatus,
   LogLevel,
   LogProvider,
+  M365TokenProvider,
   MultiSelectConfig,
   MultiSelectResult,
   ok,
@@ -44,6 +46,7 @@ import {
   TaskConfig,
   TelemetryReporter,
   TokenProvider,
+  TokenRequest,
   Tools,
   UserInteraction,
   v2,
@@ -352,6 +355,69 @@ export class MockAppStudioTokenProvider implements AppStudioTokenProvider {
   }
 }
 
+export class MockM365TokenProvider implements M365TokenProvider {
+  /**
+   * Get M365 access token
+   * @param tokenRequest permission scopes or show user interactive UX
+   */
+  getAccessToken(tokenRequest: TokenRequest): Promise<Result<string, FxError>> {
+    throw new Error("Method not implemented.");
+  }
+
+  /**
+   * Get M365 token Json object
+   * - tid : tenantId
+   * - unique_name : user name
+   * - ...
+   * @param tokenRequest permission scopes or show user interactive UX
+   */
+  getJsonObject(tokenRequest: TokenRequest): Promise<Result<Record<string, unknown>, FxError>> {
+    throw new Error("Method not implemented.");
+  }
+
+  /**
+   * Get user login status
+   * @param tokenRequest permission scopes or show user interactive UX
+   */
+  getStatus(tokenRequest: TokenRequest): Promise<Result<LoginStatus, FxError>> {
+    throw new Error("Method not implemented.");
+  }
+  /**
+   * m365 sign out
+   */
+  signout(): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+
+  /**
+   * Add update account info callback
+   * @param name callback name
+   * @param tokenRequest permission scopes
+   * @param statusChange callback method
+   * @param immediateCall whether callback when register, the default value is true
+   */
+  setStatusChangeMap(
+    name: string,
+    tokenRequest: TokenRequest,
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>,
+    immediateCall?: boolean
+  ): Promise<Result<boolean, FxError>> {
+    throw new Error("Method not implemented.");
+  }
+
+  /**
+   * Remove update account info callback
+   * @param name callback name
+   */
+  removeStatusChangeMap(name: string): Promise<Result<boolean, FxError>> {
+    throw new Error("Method not implemented.");
+  }
+}
+
 export class MockSharepointTokenProvider implements SharepointTokenProvider {
   /**
    * Get sharepoint access token
@@ -503,6 +569,7 @@ export class MockTools implements Tools {
     graphTokenProvider: new MockGraphTokenProvider(),
     appStudioToken: new MockAppStudioTokenProvider(),
     sharepointTokenProvider: new MockSharepointTokenProvider(),
+    m365TokenProvider: new MockM365TokenProvider(),
   };
   telemetryReporter = new MockTelemetryReporter();
   ui = new MockUserInteraction();

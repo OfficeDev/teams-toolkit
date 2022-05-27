@@ -32,7 +32,7 @@ import {
   MockedSharepointProvider,
   MockedV2Context,
 } from "../plugins/solution/util";
-import { randomAppName } from "./utils";
+import { MockM365TokenProvider, randomAppName } from "./utils";
 import { Container } from "typedi";
 import { AadAppForTeamsPluginV3 } from "../../src/plugins/resource/aad/v3";
 describe("Collaborator APIs for V3", () => {
@@ -59,6 +59,7 @@ describe("Collaborator APIs for V3", () => {
     appStudioToken: new MockedAppStudioTokenProvider(),
     graphTokenProvider: new MockedGraphTokenProvider(),
     sharepointTokenProvider: new MockedSharepointProvider(),
+    m365TokenProvider: new MockM365TokenProvider(),
   };
   beforeEach(() => {});
   afterEach(() => {

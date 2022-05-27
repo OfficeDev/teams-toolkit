@@ -27,8 +27,8 @@ import {
   COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV,
   COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV_M365,
   CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV,
-  DEVELOPER_PREVIEW_SCHEMA,
-  M365_DEVELOPER_PREVIEW_MANIFEST_VERSION,
+  M365_SCHEMA,
+  M365_MANIFEST_VERSION,
   MANIFEST_TEMPLATE,
   MANIFEST_TEMPLATE_CONSOLIDATE,
   STATIC_TABS_TPL_FOR_MULTI_ENV,
@@ -160,8 +160,8 @@ describe("Scaffold", () => {
     const manifest: TeamsAppManifest = JSON.parse(
       fileContent.get(path.normalize(getManifestConsolidatePath(ctx.root)))
     );
-    chai.expect(manifest.$schema).to.deep.equal(DEVELOPER_PREVIEW_SCHEMA);
-    chai.expect(manifest.manifestVersion).to.deep.equal(M365_DEVELOPER_PREVIEW_MANIFEST_VERSION);
+    chai.expect(manifest.$schema).to.deep.equal(M365_SCHEMA);
+    chai.expect(manifest.manifestVersion).to.deep.equal(M365_MANIFEST_VERSION);
     chai.expect(manifest.staticTabs).to.deep.equal(STATIC_TABS_TPL_FOR_MULTI_ENV);
     chai.expect(manifest.configurableTabs).to.deep.equal([]);
     chai
@@ -406,8 +406,8 @@ describe("Scaffold", () => {
     const manifest: TeamsAppManifest = JSON.parse(
       fileContent.get(path.normalize(getManifestConsolidatePath(ctx.root)))
     );
-    chai.expect(manifest.$schema).to.deep.equal(DEVELOPER_PREVIEW_SCHEMA);
-    chai.expect(manifest.manifestVersion).to.deep.equal(M365_DEVELOPER_PREVIEW_MANIFEST_VERSION);
+    chai.expect(manifest.$schema).to.deep.equal(M365_SCHEMA);
+    chai.expect(manifest.manifestVersion).to.deep.equal(M365_MANIFEST_VERSION);
     chai
       .expect(manifest.staticTabs, "staticTabs should be empty, because only msgext is chosen")
       .to.deep.equal([]);

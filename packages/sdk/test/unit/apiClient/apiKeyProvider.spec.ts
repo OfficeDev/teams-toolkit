@@ -39,6 +39,21 @@ describe("ApiKeyProvider Tests - Node", () => {
     assert.equal(updatedConfig.params[keyName], keyVaule);
   });
 
+  it("AddAuthenticationInfo can add api key in axios request query parameter when url in configuration is undefined", async function () {
+    // Arrange
+    const keyName = "x-api-key";
+    const keyVaule = "mock-api-key-vaule";
+    const apiKeyProvider = new ApiKeyProvider(keyName, keyVaule, ApiKeyLocation.QueryParams);
+
+    // Act
+    const updatedConfig = await apiKeyProvider.AddAuthenticationInfo({
+      baseURL: "http://fake-base-url",
+    });
+
+    // Assert
+    assert.equal(updatedConfig.params[keyName], keyVaule);
+  });
+
   it("AddAuthenticationInfo should throw error if api key already exists in request header", async function () {
     // Arrange
     const keyName = "x-api-key";

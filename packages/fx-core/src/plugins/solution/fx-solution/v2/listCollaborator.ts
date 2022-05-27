@@ -50,6 +50,7 @@ import { flattenConfigMap } from "../../../resource/utils4v2";
 import * as util from "util";
 import { PluginsWithContext } from "../types";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
+import { VSCodeExtensionCommand } from "../../../../common/constants";
 
 export async function executeListCollaboratorV2(
   ctx: v2.Context,
@@ -301,7 +302,8 @@ async function listCollaboratorImpl(
           "core.collaboration.ListCollaboratorsSuccess",
           CollaborationUtil.isSpfxProject(param.ctx)
             ? ""
-            : getLocalizedString("core.collaboration.WithAadApp")
+            : getLocalizedString("core.collaboration.WithAadApp"),
+          VSCodeExtensionCommand.showOutputChannel
         ),
         false
       );

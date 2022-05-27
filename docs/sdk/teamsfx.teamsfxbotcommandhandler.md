@@ -4,9 +4,6 @@
 
 ## TeamsFxBotCommandHandler interface
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Interface for a command handler that can process command to a TeamsFx bot and return a response.
 
 <b>Signature:</b>
@@ -19,11 +16,11 @@ export interface TeamsFxBotCommandHandler
 
 |  Property | Type | Description |
 |  --- | --- | --- |
-|  [triggerPatterns](./teamsfx.teamsfxbotcommandhandler.triggerpatterns.md) | [TriggerPatterns](./teamsfx.triggerpatterns.md) | <b><i>(BETA)</i></b> The string or regular expression patterns that can trigger this handler. |
+|  [triggerPatterns](./teamsfx.teamsfxbotcommandhandler.triggerpatterns.md) | [TriggerPatterns](./teamsfx.triggerpatterns.md) | The string or regular expression patterns that can trigger this handler. |
 
 ## Methods
 
 |  Method | Description |
 |  --- | --- |
-|  [handleCommandReceived(context, message)](./teamsfx.teamsfxbotcommandhandler.handlecommandreceived.md) | <b><i>(BETA)</i></b> Handles a bot command received activity. |
+|  [handleCommandReceived(context, message)](./teamsfx.teamsfxbotcommandhandler.handlecommandreceived.md) | Handles a bot command received activity. |
 

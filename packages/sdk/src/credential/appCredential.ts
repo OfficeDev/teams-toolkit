@@ -20,8 +20,6 @@ import { createConfidentialClientApplication } from "../util/utils.node";
  *
  * @remarks
  * Only works in in server side.
- *
- * @beta
  */
 export class AppCredential implements TokenCredential {
   private readonly msalClient: ConfidentialClientApplication;
@@ -36,8 +34,6 @@ export class AppCredential implements TokenCredential {
    *
    * @throws {@link ErrorCode|InvalidConfiguration} when client id, client secret or tenant id is not found in config.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
-   *
-   * @beta
    */
   constructor(authConfig: AuthenticationConfiguration) {
     internalLogger.info("Create M365 tenant credential");
@@ -70,8 +66,6 @@ export class AppCredential implements TokenCredential {
    *
    * @returns Access token with expected scopes.
    * Throw error if get access token failed.
-   *
-   * @beta
    */
   async getToken(
     scopes: string | string[],

@@ -46,6 +46,7 @@ import { TOOLS } from "./globalVars";
 import { getUserEmailQuestion } from "../plugins/solution/fx-solution/question";
 import { hasAAD, hasAzureResource, hasSPFx } from "../common/projectSettingsHelper";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
+import { VSCodeExtensionCommand } from "../common/constants";
 
 export async function listCollaborator(
   ctx: v2.Context,
@@ -171,7 +172,8 @@ export async function listCollaborator(
         "info",
         getLocalizedString(
           "core.collaboration.ListCollaboratorsSuccess",
-          hasAad ? getLocalizedString("core.collaboration.WithAadApp") : ""
+          hasAad ? getLocalizedString("core.collaboration.WithAadApp") : "",
+          VSCodeExtensionCommand.showOutputChannel
         ),
         false
       );

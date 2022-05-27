@@ -14,8 +14,8 @@ import * as chai from "chai";
 import { isConfigUnifyEnabled } from "@microsoft/teamsfx-core";
 
 const m365ManifestSchema =
-  "https://raw.githubusercontent.com/OfficeDev/microsoft-teams-app-schema/preview/DevPreview/MicrosoftTeams.schema.json";
-const m365ManifestVersion = "m365DevPreview";
+  "https://developer.microsoft.com/en-us/json-schemas/teams/v1.13/MicrosoftTeams.schema.json";
+const m365ManifestVersion = "1.13";
 
 export class M365Validator {
   public static async validateProjectSettings(projectPath: string) {

@@ -4,9 +4,6 @@
 
 ## ConversationOptions.adapterConfig property
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 If `adapter` is not provided, this `adapterConfig` will be passed to the new `BotFrameworkAdapter` when created internally.
 
 <b>Signature:</b>

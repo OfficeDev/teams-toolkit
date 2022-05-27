@@ -84,6 +84,7 @@ import {
 
 import AppStudioCodeSpaceTokenInstance from "./commonlib/appStudioCodeSpaceLogin";
 import AppStudioTokenInstance from "./commonlib/appStudioLogin";
+import M365TokenInstance from "./commonlib/m365Login";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { signedIn, signedOut } from "./commonlib/common/constant";
 import GraphManagerInstance from "./commonlib/graphLogin";
@@ -115,7 +116,7 @@ import { ExtensionErrors, ExtensionSource } from "./error";
 import * as exp from "./exp/index";
 import { TreatmentVariables } from "./exp/treatmentVariables";
 import { VS_CODE_UI } from "./extension";
-import { ext } from "./extensionVariables";
+import * as globalVariables from "./globalVariables";
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import {
@@ -136,6 +137,7 @@ import TreeViewManagerInstance from "./treeview/treeViewManager";
 import { CommandsWebviewProvider } from "./treeview/webViewProvider/commandsWebviewProvider";
 import {
   anonymizeFilePaths,
+  getAppName,
   getM365TenantFromEnv,
   getProjectId,
   getProvisionSucceedFromEnv,
@@ -144,9 +146,9 @@ import {
   getTeamsAppTelemetryInfoByEnv,
   getTriggerFromProperty,
   isExistingTabApp,
-  isSPFxProject,
   isTeamsfx,
   isTriggerFromWalkThrough,
+  openFolderInExplorer,
 } from "./utils/commonUtils";
 import { localize, parseLocale } from "./utils/localizeUtils";
 
@@ -229,6 +231,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
         graphTokenProvider: GraphManagerInstance,
         appStudioToken: appstudioLogin,
         sharepointTokenProvider: SharepointTokenInstance,
+        m365TokenProvider: M365TokenInstance,
       },
       telemetryReporter: telemetry,
       treeProvider: TreeViewManagerInstance.getTreeView("teamsfx-accounts")!,
@@ -598,7 +601,9 @@ async function previewRemote(
       ExtTelemetry.reporter,
       VS_CODE_UI
     );
-    const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
+    const projectSettings = await localEnvManager.getProjectSettings(
+      globalVariables.workspaceUri!.fsPath
+    );
     const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
 
     let hub = constants.Hub.teams;
@@ -657,7 +662,9 @@ export async function addResourceHandler(args?: any[]): Promise<Result<null, FxE
       ExtTelemetry.reporter,
       VS_CODE_UI
     );
-    const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
+    const projectSettings = await localEnvManager.getProjectSettings(
+      globalVariables.workspaceUri!.fsPath
+    );
     excludeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
   } catch (error) {
     VsCodeLogInstance.warning(`${error}`);
@@ -684,7 +691,9 @@ export async function addCapabilityHandler(args?: any[]): Promise<Result<null, F
       ExtTelemetry.reporter,
       VS_CODE_UI
     );
-    const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
+    const projectSettings = await localEnvManager.getProjectSettings(
+      globalVariables.workspaceUri!.fsPath
+    );
     excludeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
     excludeBot = ProjectSettingsHelper.includeBot(projectSettings);
   } catch (error) {
@@ -715,7 +724,9 @@ export async function addFeatureHandler(args?: any[]): Promise<Result<null, FxEr
       ExtTelemetry.reporter,
       VS_CODE_UI
     );
-    const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
+    const projectSettings = await localEnvManager.getProjectSettings(
+      globalVariables.workspaceUri!.fsPath
+    );
     excludeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
     excludeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
     excludeBot = ProjectSettingsHelper.includeBot(projectSettings);
@@ -938,6 +949,17 @@ export async function addCICDWorkflowsHandler(args?: any[]): Promise<Result<null
 export async function showOutputChannel(args?: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowOutputChannel);
   VsCodeLogInstance.outputChannel.show();
+  return ok(null);
+}
+
+export async function openFolderHandler(args?: any[]): Promise<Result<any, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenFolder, {
+    [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Notification,
+  });
+  if (args && args.length > 0 && args[0]) {
+    const uri = Uri.parse(args[0]);
+    openFolderInExplorer(uri.fsPath);
+  }
   return ok(null);
 }
 
@@ -1613,10 +1635,10 @@ async function autoOpenProjectHandler(): Promise<void> {
     await openWelcomeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
   }
-  if (isOpenReadMe === ext.workspaceUri?.fsPath) {
+  if (isOpenReadMe === globalVariables.workspaceUri?.fsPath) {
     showLocalDebugMessage();
     showLocalPreviewMessage();
-    await openReadMeHandler([TelemetryTriggerFrom.Auto, false]);
+    await openReadMeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenReadMe, "");
   }
   if (isOpenSampleReadMe) {
@@ -1659,7 +1681,7 @@ export async function openReadMeHandler(args: any[]) {
     let targetFolder: string | undefined;
     if (await getIsFromSample()) {
       openSampleReadmeHandler(args);
-    } else if (isSPFxProject(workspacePath)) {
+    } else if (globalVariables.isSPFxProject) {
       targetFolder = `${workspacePath}/SPFx`;
     } else {
       const tabFolder = await commonUtils.getProjectRoot(workspacePath, FolderName.Frontend);
@@ -1684,24 +1706,11 @@ export async function openReadMeHandler(args: any[]) {
       ? Uri.file(autoGeneratedReadmePath)
       : Uri.file(`${targetFolder}/README.md`);
 
-    let isToSide = false;
-    if (args && args.length === 2) {
-      isToSide = args[1] as boolean;
-    }
-
-    // if it is open from walk through, "isToSide" flag is set to true.
-    // Otherwise, "isToSide" flag is false, which mean open the markdown in new windws.
-    if (isToSide) {
-      workspace.openTextDocument(uri).then(() => {
-        const PreviewMarkdownCommand = "markdown.showPreviewToSide";
-        commands.executeCommand(PreviewMarkdownCommand, uri);
-      });
-    } else {
-      workspace.openTextDocument(uri).then(() => {
-        const PreviewMarkdownCommand = "markdown.showPreview";
-        commands.executeCommand(PreviewMarkdownCommand, uri);
-      });
-    }
+    // Always open README.md in current panel instead of side-by-side.
+    workspace.openTextDocument(uri).then(() => {
+      const PreviewMarkdownCommand = "markdown.showPreview";
+      commands.executeCommand(PreviewMarkdownCommand, uri);
+    });
   }
 }
 
@@ -1807,8 +1816,18 @@ async function showLocalDebugMessage() {
   };
 
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalDebugNotification);
+  const appName = getAppName() ?? "Teams App";
+  const folderLink = encodeURI(globalVariables.workspaceUri!.toString());
+  const openFolderCommand = `command:fx-extension.openFolder?%5B%22${folderLink}%22%5D`;
   vscode.window
-    .showInformationMessage(localize("teamstoolkit.handlers.localDebugDescription"), localDebug)
+    .showInformationMessage(
+      util.format(
+        localize("teamstoolkit.handlers.localDebugDescription"),
+        appName,
+        openFolderCommand
+      ),
+      localDebug
+    )
     .then((selection) => {
       if (selection?.title === localize("teamstoolkit.handlers.localDebugTitle")) {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalDebug);
@@ -1834,8 +1853,18 @@ async function showLocalPreviewMessage() {
   };
 
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalPreviewNotification);
+  const appName = getAppName() ?? "Teams App";
+  const folderLink = encodeURI(globalVariables.workspaceUri!.toString());
+  const openFolderCommand = `command:fx-extension.openFolder?%5B%22${folderLink}%22%5D`;
   vscode.window
-    .showInformationMessage(localize("teamstoolkit.handlers.localPreviewDescription"), localPreview)
+    .showInformationMessage(
+      util.format(
+        localize("teamstoolkit.handlers.localPreviewDescription"),
+        appName,
+        openFolderCommand
+      ),
+      localPreview
+    )
     .then((selection) => {
       if (selection?.title === localize("teamstoolkit.handlers.localPreviewTitle")) {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalPreview);
@@ -2080,7 +2109,7 @@ export async function grantPermission(env: string): Promise<Result<any, FxError>
 
       let warningMsg = localize("teamstoolkit.handlers.grantPermissionWarning");
       let helpUrl = AzureAssignRoleHelpUrl;
-      if (isSPFxProject(ext.workspaceUri.fsPath)) {
+      if (globalVariables.isSPFxProject) {
         warningMsg = localize("teamstoolkit.handlers.grantPermissionWarningSpfx");
         helpUrl = SpfxManageSiteAdminUrl;
       }

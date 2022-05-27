@@ -21,11 +21,12 @@ import {
   StringValidation,
 } from "@microsoft/teamsfx-api";
 
-import { FxCore, isM365AppEnabled } from "@microsoft/teamsfx-core";
+import { FxCore, isCLIDotNetEnabled, isM365AppEnabled } from "@microsoft/teamsfx-core";
 import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenProvider from "./commonlib/appStudioLogin";
 import GraphTokenProvider from "./commonlib/graphLogin";
 import SharepointTokenProvider from "./commonlib/sharepointLogin";
+import M365TokenProvider from "./commonlib/m365Login";
 import CLILogProvider from "./commonlib/log";
 import CLIUIInstance from "./userInteraction";
 import { flattenNodes, getSingleOptionString, toYargsOptions } from "./utils";
@@ -71,6 +72,7 @@ export class HelpParamGenerator {
         graphTokenProvider: GraphTokenProvider,
         appStudioToken: AppStudioTokenProvider,
         sharepointTokenProvider: SharepointTokenProvider,
+        m365TokenProvider: M365TokenProvider,
       },
       telemetryReporter: undefined,
       ui: CLIUIInstance,
@@ -244,9 +246,12 @@ export class HelpParamGenerator {
       nodes = [rootCopy].concat(mustHaveNodes).concat(authNode ? flattenNodes(authNode) : []);
     } else if (root && stage === Stage.create) {
       const condition = "yes";
-      root.children = root?.children?.filter(
-        (value) => (value.condition as StringValidation).equals === condition
-      );
+      root.children = root?.children?.filter((value) => {
+        if (isCLIDotNetEnabled() || !value.condition) {
+          return true;
+        }
+        return (value.condition as StringValidation).equals === condition;
+      });
       nodes = flattenNodes(root);
     } else if (root) {
       nodes = flattenNodes(root);

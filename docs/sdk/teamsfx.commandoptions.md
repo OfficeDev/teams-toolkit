@@ -4,9 +4,6 @@
 
 ## CommandOptions interface
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Options to initialize [CommandBot](./teamsfx.commandbot.md)<!-- -->.
 
 <b>Signature:</b>
@@ -19,5 +16,5 @@ export interface CommandOptions
 
 |  Property | Type | Description |
 |  --- | --- | --- |
-|  [commands?](./teamsfx.commandoptions.commands.md) | [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md)<!-- -->\[\] | <b><i>(BETA)</i></b> <i>(Optional)</i> The commands to registered with the command bot. Each command should implement the interface [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) so that it can be correctly handled by this command bot. |
+|  [commands?](./teamsfx.commandoptions.commands.md) | [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md)<!-- -->\[\] | <i>(Optional)</i> The commands to registered with the command bot. Each command should implement the interface [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) so that it can be correctly handled by this command bot. |
 

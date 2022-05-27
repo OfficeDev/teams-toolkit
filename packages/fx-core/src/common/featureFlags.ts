@@ -33,3 +33,7 @@ export function isBotNotificationEnabled(): boolean {
 export function isPreviewFeaturesEnabled(): boolean {
   return true;
 }
+
+export function isCLIDotNetEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.CLIDotNet, false);
+}

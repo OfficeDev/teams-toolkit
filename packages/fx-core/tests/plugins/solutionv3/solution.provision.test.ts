@@ -34,7 +34,7 @@ import {
 import { MockFeaturePluginNames } from "./mockPlugins";
 import * as path from "path";
 import * as os from "os";
-import { randomAppName } from "../../core/utils";
+import { MockM365TokenProvider, randomAppName } from "../../core/utils";
 import { resourceGroupHelper } from "../../../src/plugins/solution/fx-solution/utils/ResourceGroupHelper";
 import { AppStudioPluginImpl } from "../../../src/plugins/resource/appstudio/v3/plugin";
 import { ResourceManagementClient } from "@azure/arm-resources";
@@ -97,6 +97,7 @@ describe("SolutionV3 - provision", () => {
       appStudioToken: new MockedAppStudioTokenProvider(),
       graphTokenProvider: new MockedGraphTokenProvider(),
       sharepointTokenProvider: new MockedSharepointProvider(),
+      m365TokenProvider: new MockM365TokenProvider(),
     };
     const mockSub: SubscriptionInfo = {
       subscriptionId: "mockSubId",
@@ -162,6 +163,7 @@ describe("SolutionV3 - provision", () => {
       appStudioToken: new MockedAppStudioTokenProvider(),
       graphTokenProvider: new MockedGraphTokenProvider(),
       sharepointTokenProvider: new MockedSharepointProvider(),
+      m365TokenProvider: new MockM365TokenProvider(),
     };
     const envInfoV3: v2.DeepReadonly<v3.EnvInfoV3> = {
       envName: "dev",

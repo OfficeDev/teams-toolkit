@@ -4,9 +4,6 @@
 
 ## Member.type property
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Notification target type. For member it's always "Person".
 
 <b>Signature:</b>

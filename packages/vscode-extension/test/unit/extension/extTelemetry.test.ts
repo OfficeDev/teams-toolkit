@@ -6,7 +6,7 @@ import { TelemetryEvent } from "../../../src/telemetry/extTelemetryEvents";
 import sinon = require("sinon");
 import * as commonUtils from "../../../src/utils/commonUtils";
 import * as fs from "fs-extra";
-import { ext } from "../../../src/extensionVariables";
+import * as globalVariables from "../../../src/globalVariables";
 import { Uri } from "vscode";
 
 chai.use(spies);
@@ -88,9 +88,9 @@ suite("ExtTelemetry", () => {
     suiteSetup(() => {
       chai.util.addProperty(ExtTelemetry, "reporter", () => reporterSpy);
       sandbox.stub(commonUtils, "getIsExistingUser").returns(undefined);
-      sandbox.stub(commonUtils, "isSPFxProject").returns(false);
       sandbox.stub(fs, "pathExistsSync").returns(false);
-      ext.workspaceUri = Uri.file("test");
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(globalVariables, "isSPFxProject").value(false);
     });
 
     suiteTeardown(() => {
@@ -117,7 +117,12 @@ suite("ExtTelemetry", () => {
     });
 
     test("sendTelemetryErrorEvent", () => {
-      const error = new UserError("test", "UserTestError", "test error message");
+      const error = new UserError(
+        "test",
+        "UserTestError",
+        "test error message",
+        "displayed test error message"
+      );
       ExtTelemetry.sendTelemetryErrorEvent(
         "sampleEvent",
         error,
@@ -136,6 +141,24 @@ suite("ExtTelemetry", () => {
           "is-spfx": "false",
           "error-type": "user",
           "error-message": `${error.message}${error.stack ? "\nstack:\n" + error.stack : ""}`,
+          "error-code": "test.UserTestError",
+        },
+        { numericMeasure: 123 },
+        ["errorProps"]
+      );
+
+      chai.expect(reporterSpy.sendTelemetryErrorEvent).to.not.have.been.called.with(
+        "sampleEvent",
+        {
+          stringProp: "some string",
+          component: "extension",
+          success: "no",
+          "is-existing-user": "",
+          "is-spfx": "false",
+          "error-type": "user",
+          "error-message": `${error.displayMessage}${
+            error.stack ? "\nstack:\n" + error.stack : ""
+          }`,
           "error-code": "test.UserTestError",
         },
         { numericMeasure: 123 },

@@ -40,7 +40,7 @@ import * as vscode from "vscode";
 import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionSource, ExtensionErrors } from "../error";
 import { VS_CODE_UI } from "../extension";
-import { ext } from "../extensionVariables";
+import * as globalVariables from "../globalVariables";
 import { showError, tools } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
@@ -214,7 +214,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
       ExtTelemetry.reporter,
       VS_CODE_UI
     );
-    const workspacePath = ext.workspaceUri.fsPath;
+    const workspacePath = globalVariables.workspaceUri!.fsPath;
 
     // Get project settings
     const projectSettings = await localEnvManager.getProjectSettings(workspacePath);
@@ -494,7 +494,11 @@ async function checkDependencies(
       for (const dep of depsStatus) {
         results.push({
           checker: dep.name,
-          result: dep.isInstalled ? ResultStatus.success : ResultStatus.failed,
+          result: dep.error
+            ? ResultStatus.warn
+            : dep.isInstalled
+            ? ResultStatus.success
+            : ResultStatus.failed,
           successMsg: dep.details.binFolders
             ? `${dep.name} (installed at ${dep.details.binFolders?.[0]})`
             : dep.name,
@@ -522,7 +526,7 @@ async function resolveBackendExtension(
     VsCodeLogInstance.outputChannel.appendLine(
       `${prefix} ${ProgressMessage[Checker.AzureFunctionsExtension]} ...`
     );
-    const backendRoot = path.join(ext.workspaceUri.fsPath, FolderName.Function);
+    const backendRoot = path.join(globalVariables.workspaceUri!.fsPath, FolderName.Function);
     const dotnet = (await depsManager.getStatus([DepsType.Dotnet]))[0];
     await installExtension(backendRoot, dotnet.command, new EmptyLogger());
     return {
@@ -848,7 +852,7 @@ async function getOrderedCheckers(
 
 async function detectNodeDepsType(): Promise<DepsType> {
   try {
-    const workspacePath = ext.workspaceUri.fsPath;
+    const workspacePath = globalVariables.workspaceUri!.fsPath;
     const localEnvManager = new LocalEnvManager(
       VsCodeLogInstance,
       ExtTelemetry.reporter,

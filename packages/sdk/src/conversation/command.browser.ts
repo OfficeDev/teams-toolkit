@@ -12,8 +12,6 @@ import { CommandResponseMiddleware } from "./middleware";
  *
  * @remarks
  * Only work on server side.
- *
- * @beta
  */
 export class CommandBot {
   private readonly adapter: BotFrameworkAdapter;
@@ -24,8 +22,6 @@ export class CommandBot {
    *
    * @param adapter The bound `BotFrameworkAdapter`.
    * @param commands The commands to registered with the command bot. Each command should implement the interface {@link TeamsFxBotCommandHandler} so that it can be correctly handled by this command bot.
-   *
-   * @beta
    */
   constructor(adapter: BotFrameworkAdapter, commands?: TeamsFxBotCommandHandler[]) {
     throw new ErrorWithCode(
@@ -41,8 +37,6 @@ export class CommandBot {
    *
    * @remarks
    * Only work on server side.
-   *
-   * @beta
    */
   public registerCommand(command: TeamsFxBotCommandHandler): void {
     throw new ErrorWithCode(
@@ -58,8 +52,6 @@ export class CommandBot {
    *
    * @remarks
    * Only work on server side.
-   *
-   * @beta
    */
   public registerCommands(commands: TeamsFxBotCommandHandler[]): void {
     throw new ErrorWithCode(

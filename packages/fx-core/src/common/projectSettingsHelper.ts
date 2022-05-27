@@ -5,6 +5,7 @@ import {
   ConfigFolderName,
   ProjectSettings,
   ProjectSettingsFileName,
+  ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
@@ -19,6 +20,7 @@ import {
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import * as uuid from "uuid";
 import { isAadManifestEnabled } from "./tools";
+import { ResourceComponentNames } from "../component/resource";
 
 export function validateProjectSettings(projectSettings: ProjectSettings): string | undefined {
   if (!projectSettings) return "empty projectSettings";
@@ -100,7 +102,6 @@ export function hasAzureResource(projectSetting: ProjectSettings, excludeAad = f
   const azurePlugins = [
     BuiltInFeaturePluginNames.apim,
     BuiltInFeaturePluginNames.bot,
-    BuiltInFeaturePluginNames.dotnet,
     BuiltInFeaturePluginNames.frontend,
     BuiltInFeaturePluginNames.function,
     BuiltInFeaturePluginNames.identity,
@@ -115,6 +116,23 @@ export function hasAzureResource(projectSetting: ProjectSettings, excludeAad = f
     if (azurePlugins.includes(pluginName)) return true;
   }
   return false;
+}
+
+export function hasAzureResourceV3(projectSetting: ProjectSettingsV3, excludeAad = false): boolean {
+  const azureResources = [
+    ResourceComponentNames.apim,
+    ResourceComponentNames.webApp,
+    ResourceComponentNames.function,
+    ResourceComponentNames.identity,
+    ResourceComponentNames.keyVault,
+    ResourceComponentNames.sql,
+    ResourceComponentNames.storage,
+  ];
+  if (!excludeAad) {
+    azureResources.push(ResourceComponentNames.aad);
+  }
+  const filtered = projectSetting.components.filter((c) => azureResources.includes(c.name));
+  return filtered.length > 0;
 }
 
 export function isExistingTabApp(projectSettings: ProjectSettings): boolean {

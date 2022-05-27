@@ -37,6 +37,9 @@ import {
   PermissionRequestProvider,
   GraphTokenProvider,
   SharepointTokenProvider,
+  M365TokenProvider,
+  TokenRequest,
+  LoginStatus,
 } from "@microsoft/teamsfx-api";
 import { MockPermissionRequestProvider } from "../../core/utils";
 
@@ -365,6 +368,43 @@ export class MockedSharepointProvider implements SharepointTokenProvider {
   }
   async removeStatusChangeMap(name: string): Promise<boolean> {
     return true;
+  }
+}
+
+export class MockedM365Provider implements M365TokenProvider {
+  async getAccessToken(tokenRequest: TokenRequest): Promise<Result<string, FxError>> {
+    return ok("fakeToken");
+  }
+  async getJsonObject(
+    tokenRequest: TokenRequest
+  ): Promise<Result<Record<string, unknown>, FxError>> {
+    return ok({
+      upn: "fakeUserPrincipalName@fake.com",
+    });
+  }
+  async signout(): Promise<boolean> {
+    return true;
+  }
+  async getStatus(tokenRequest: TokenRequest): Promise<Result<LoginStatus, FxError>> {
+    return ok({
+      status: "SignedIn",
+      token: "fakeToken",
+    });
+  }
+  async setStatusChangeMap(
+    name: string,
+    tokenRequest: TokenRequest,
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>,
+    immediateCall?: boolean
+  ): Promise<Result<boolean, FxError>> {
+    return ok(true);
+  }
+  async removeStatusChangeMap(name: string): Promise<Result<boolean, FxError>> {
+    return ok(true);
   }
 }
 

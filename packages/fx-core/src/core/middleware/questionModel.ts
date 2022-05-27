@@ -20,12 +20,17 @@ import {
   traverse,
   v2,
   v3,
+  Void,
 } from "@microsoft/teamsfx-api";
 import { Container } from "typedi";
 import { createV2Context, deepCopy, isExistingTabAppEnabled } from "../../common/tools";
 import { newProjectSettings } from "../../common/projectSettingsHelper";
 import { SPFxPluginV3 } from "../../plugins/resource/spfx/v3";
-import { ExistingTabOptionItem, TabSPFxItem } from "../../plugins/solution/fx-solution/question";
+import {
+  AzureSolutionQuestionNames,
+  ExistingTabOptionItem,
+  TabSPFxItem,
+} from "../../plugins/solution/fx-solution/question";
 import {
   BuiltInFeaturePluginNames,
   BuiltInSolutionNames,
@@ -34,20 +39,27 @@ import { getQuestionsForGrantPermission } from "../collaborator";
 import { CoreSource, FunctionRouterError } from "../error";
 import { TOOLS } from "../globalVars";
 import {
+  CoreQuestionNames,
   createAppNameQuestion,
+  createCapabilityForDotNet,
   createCapabilityQuestion,
   createCapabilityQuestionPreview,
   ExistingTabEndpointQuestion,
   getCreateNewOrFromSampleQuestion,
+  getRuntimeQuestion,
   ProgrammingLanguageQuestion,
+  ProgrammingLanguageQuestionForDotNet,
   QuestionRootFolder,
+  RuntimeOptionDotNet,
+  RuntimeOptionNodeJs,
   SampleSelect,
   ScratchOptionNo,
   ScratchOptionYes,
 } from "../question";
 import { getAllSolutionPluginsV2 } from "../SolutionPluginContainer";
 import { CoreHookContext } from "../types";
-import { isPreviewFeaturesEnabled } from "../../common";
+import { isPreviewFeaturesEnabled, isCLIDotNetEnabled } from "../../common";
+import { TeamsAppSolutionNameV2 } from "../../plugins/solution/fx-solution/v2/constants";
 
 /**
  * This middleware will help to collect input from question flow
@@ -61,7 +73,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
   if (method === "createProjectV2") {
     getQuestionRes = await core._getQuestionsForCreateProjectV2(inputs);
   } else if (method === "createProjectV3") {
-    getQuestionRes = await core._getQuestionsForCreateProjectV3(inputs);
+    getQuestionRes = await core._getQuestionsForCreateProjectV2(inputs);
   } else if (method === "init" || method === "_init") {
     getQuestionRes = await core._getQuestionsForInit(inputs);
   } else if (
@@ -377,8 +389,37 @@ export async function getQuestionsForCreateProjectV3(
   return ok(node.trim());
 }
 
-//////V2 questions
-export async function getQuestionsForCreateProjectV2(
+async function setSolutionScaffoldingQuestionNodeAsChild(
+  inputs: Inputs,
+  parent: QTreeNode
+): Promise<Result<Void, FxError>> {
+  const globalSolutions: v2.SolutionPlugin[] = await getAllSolutionPluginsV2();
+  const context = createV2Context(newProjectSettings());
+  for (const solutionPlugin of globalSolutions) {
+    let res: Result<QTreeNode | QTreeNode[] | undefined, FxError> = ok(undefined);
+    const v2plugin = solutionPlugin as v2.SolutionPlugin;
+    res = v2plugin.getQuestionsForScaffolding
+      ? await v2plugin.getQuestionsForScaffolding(context as v2.Context, inputs)
+      : ok(undefined);
+    if (res.isErr())
+      return err(
+        new SystemError({ source: CoreSource, name: "QuestionModelFail", error: res.error })
+      );
+    if (res.value) {
+      const solutionNode = Array.isArray(res.value)
+        ? (res.value as QTreeNode[])
+        : [res.value as QTreeNode];
+      for (const node of solutionNode) {
+        if (node.data) {
+          parent.addChild(node);
+        }
+      }
+    }
+  }
+  return ok(Void);
+}
+
+async function getQuestionsForCreateProjectWithoutDotNet(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
@@ -399,28 +440,9 @@ export async function getQuestionsForCreateProjectV2(
   }
   createNew.addChild(capNode);
 
-  const globalSolutions: v2.SolutionPlugin[] = await getAllSolutionPluginsV2();
-  const context = createV2Context(newProjectSettings());
-  for (const solutionPlugin of globalSolutions) {
-    let res: Result<QTreeNode | QTreeNode[] | undefined, FxError> = ok(undefined);
-    const v2plugin = solutionPlugin as v2.SolutionPlugin;
-    res = v2plugin.getQuestionsForScaffolding
-      ? await v2plugin.getQuestionsForScaffolding(context as v2.Context, inputs)
-      : ok(undefined);
-    if (res.isErr())
-      return err(
-        new SystemError({ source: CoreSource, name: "QuestionModelFail", error: res.error })
-      );
-    if (res.value) {
-      const solutionNode = Array.isArray(res.value)
-        ? (res.value as QTreeNode[])
-        : [res.value as QTreeNode];
-      for (const node of solutionNode) {
-        if (node.data) {
-          capNode.addChild(node);
-        }
-      }
-    }
+  const solutionNodeResult = await setSolutionScaffoldingQuestionNodeAsChild(inputs, capNode);
+  if (solutionNodeResult.isErr()) {
+    return err(solutionNodeResult.error);
   }
 
   // Language
@@ -456,6 +478,54 @@ export async function getQuestionsForCreateProjectV2(
   sampleNode.addChild(new QTreeNode(QuestionRootFolder));
 
   return ok(node.trim());
+}
+
+async function getQuestionsForCreateProjectWithDotNet(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const runtimeNode = new QTreeNode(getRuntimeQuestion());
+  const maybeNode = await getQuestionsForCreateProjectWithoutDotNet(inputs);
+  if (maybeNode.isErr()) {
+    return err(maybeNode.error);
+  }
+  const node = maybeNode.value;
+
+  if (node) {
+    node.condition = {
+      equals: RuntimeOptionNodeJs.id,
+    };
+    runtimeNode.addChild(node);
+  }
+
+  const dotnetNode = new QTreeNode({ type: "group" });
+  dotnetNode.condition = {
+    equals: RuntimeOptionDotNet.id,
+  };
+  runtimeNode.addChild(dotnetNode);
+  const dotnetCapNode = new QTreeNode(createCapabilityForDotNet());
+  dotnetNode.addChild(dotnetCapNode);
+  dotnetNode.addChild(new QTreeNode(ProgrammingLanguageQuestionForDotNet));
+
+  inputs[AzureSolutionQuestionNames.Solution] = TeamsAppSolutionNameV2;
+
+  // only CLI need folder input
+  if (CLIPlatforms.includes(inputs.platform)) {
+    runtimeNode.addChild(new QTreeNode(QuestionRootFolder));
+  }
+  runtimeNode.addChild(new QTreeNode(createAppNameQuestion()));
+
+  return ok(runtimeNode.trim());
+}
+
+//////V2 questions
+export async function getQuestionsForCreateProjectV2(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (isCLIDotNetEnabled() && CLIPlatforms.includes(inputs.platform)) {
+    return getQuestionsForCreateProjectWithDotNet(inputs);
+  } else {
+    return getQuestionsForCreateProjectWithoutDotNet(inputs);
+  }
 }
 
 export async function getQuestionsForUserTaskV2(

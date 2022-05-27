@@ -101,13 +101,13 @@ describe("Core basic APIs for v3", () => {
     assert.isTrue(res.isOk());
     projectPath = inputs.projectPath!;
     const solutionV3 = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
-    sandbox.stub<any, any>(solutionV3, "provisionResources").resolves(ok(Void));
-    const provisionRes = await core.provisionResources({
-      platform: Platform.VSCode,
-      projectPath: projectPath,
-      env: "dev",
-    });
-    assert.isTrue(provisionRes.isOk());
+    // sandbox.stub<any, any>(solutionV3, "provisionResources").resolves(ok(Void));
+    // const provisionRes = await core.provisionResources({
+    //   platform: Platform.VSCode,
+    //   projectPath: projectPath,
+    //   env: "dev",
+    // });
+    // assert.isTrue(provisionRes.isOk());
   });
   it("create from new (VSC, Tab+Bot)", async () => {
     appName = randomAppName();

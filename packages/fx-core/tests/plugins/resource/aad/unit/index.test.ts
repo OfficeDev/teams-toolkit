@@ -38,6 +38,7 @@ import {
 import * as tool from "../../../../../src/common/tools";
 import fs from "fs-extra";
 import { AadAppManifestManager } from "../../../../../src/plugins/resource/aad/aadAppManifestManager";
+import { MockM365TokenProvider } from "../../../../core/utils";
 
 dotenv.config();
 const testWithAzure: boolean = process.env.UT_TEST_ON_AZURE ? true : false;
@@ -67,6 +68,7 @@ const tokenProvider: TokenProvider = {
   appStudioToken: new MockedAppStudioTokenProvider(),
   graphTokenProvider: mockTokenProviderGraph(),
   sharepointTokenProvider: new MockedSharepointProvider(),
+  m365TokenProvider: new MockM365TokenProvider(),
 };
 describe("AadAppForTeamsPlugin: CI", () => {
   let plugin: AadAppForTeamsPlugin;

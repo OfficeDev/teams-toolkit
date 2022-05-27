@@ -12,6 +12,12 @@ export class HelpLinks {
   static readonly HowToAddCapability = "https://aka.ms/teamsfx-how-to-add-capability";
 }
 
+export class VSCodeExtensionCommand {
+  static readonly showOutputChannel = "command:fx-extension.showOutputChannel";
+  static readonly openFolder = "command:fx-extension.openFolder";
+  static readonly openReadme = "command:fx-extension.openReadMe?%5B%22Notification%22%5D";
+}
+
 export class Bicep {
   static readonly ParameterOrchestrationFileName: string = "param.template.bicep";
   static readonly ModuleOrchestrationFileName: string = "module.template.bicep";
@@ -75,6 +81,7 @@ export class FeatureFlagName {
   static readonly ApiConnect = "TEAMSFX_API_CONNECT_ENABLE";
   static readonly DeployManifest = "TEAMSFX_DEPLOY_MANIFEST";
   static readonly Preview = "TEAMSFX_PREVIEW";
+  static readonly CLIDotNet = "TEAMSFX_CLI_DOTNET";
 }
 
 export class ManifestVariables {

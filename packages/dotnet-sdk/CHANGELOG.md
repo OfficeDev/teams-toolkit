@@ -1,3 +1,6 @@
+# 0.5.0
+- Add conversation SDK for command / notification bot
+
 # 0.4.1-rc
 - Integrate auth-start and auth-end html pages
 - Remove "InitiateLoginEndpoint" option

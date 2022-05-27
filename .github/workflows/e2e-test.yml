@@ -97,11 +97,10 @@ jobs:
           node-version: 14
 
       - name: Setup project
-        uses: nick-invision/retry@v2
+        uses: nick-fields/retry@v2
         with:
           timeout_minutes: 10
-          max_attempts: 10
-          retry_on: error
+          max_attempts: 5
           command: |
             npm run setup
 
@@ -169,21 +168,19 @@ jobs:
           node-version: 14
 
       - name: Download Simple Auth bits
-        uses: nick-invision/retry@v2
+        uses: nick-fields/retry@v2
         with:
           timeout_minutes: 10
-          max_attempts: 10
-          retry_on: error
+          max_attempts: 5
           shell: pwsh
           command: |
             ./.github/scripts/download-simpleauth.sh
 
       - name: Setup project
-        uses: nick-invision/retry@v2
+        uses: nick-fields/retry@v2
         with:
           timeout_minutes: 10
-          max_attempts: 10
-          retry_on: error
+          max_attempts: 5
           command: |
             npm run setup
 

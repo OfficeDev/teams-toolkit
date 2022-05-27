@@ -3,7 +3,7 @@
 
 import * as path from "path";
 import * as fs from "fs-extra";
-import { ext } from "../extensionVariables";
+import * as globalVariables from "../globalVariables";
 
 let loadedCollection: Record<string, string> | undefined = undefined;
 let defaultCollection: Record<string, string> | undefined = undefined;
@@ -77,7 +77,7 @@ export function loadLocalizedStrings(): void {
   loadedLocale = parseLocale();
 
   const nlsFile = path.join(
-    ext.context ? ext.context.extensionPath : "",
+    globalVariables.context ? globalVariables.context.extensionPath : "",
     `package.nls.${loadedLocale}.json`
   );
   if (fs.pathExistsSync(nlsFile)) {
@@ -92,7 +92,7 @@ export function loadLocalizedStrings(): void {
 function loadDefaultStrings(): void {
   if (!defaultCollection) {
     const defaultNlsFile = path.join(
-      ext.context ? ext.context.extensionPath : "",
+      globalVariables.context ? globalVariables.context.extensionPath : "",
       "package.nls.json"
     );
     if (fs.pathExistsSync(defaultNlsFile)) {

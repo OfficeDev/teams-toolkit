@@ -8,12 +8,12 @@ import { TreeCategory } from "@microsoft/teamsfx-api";
 import { isPreviewFeaturesEnabled, isValidProject } from "@microsoft/teamsfx-core";
 
 import { AdaptiveCardCodeLensProvider } from "../codeLensProvider";
-import { isSPFxProject } from "../utils/commonUtils";
 import { localize } from "../utils/localizeUtils";
 import accountTreeViewProviderInstance from "./account/accountTreeViewProvider";
 import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
 import envTreeProviderInstance from "./environmentTreeViewProvider";
 import { CommandStatus, TreeViewCommand } from "./treeViewCommand";
+import { isSPFxProject } from "../globalVariables";
 
 class TreeViewManager {
   private static instance: TreeViewManager;
@@ -41,9 +41,8 @@ class TreeViewManager {
       return [];
     }
     const disposables: vscode.Disposable[] = [];
-    const isNonSPFx = (workspacePath && !isSPFxProject(workspacePath)) as boolean;
     const hasAdaptiveCard = await AdaptiveCardCodeLensProvider.detectedAdaptiveCards();
-    const developmentCommands = this.getDevelopmentCommands(isNonSPFx, hasAdaptiveCard);
+    const developmentCommands = this.getDevelopmentCommands(!isSPFxProject, hasAdaptiveCard);
 
     this.registerAccount(disposables);
     this.registerEnvironment(disposables);

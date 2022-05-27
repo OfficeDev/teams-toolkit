@@ -4,9 +4,6 @@
 
 ## TeamsBotSsoPrompt class
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Creates a new prompt that leverage Teams Single Sign On (SSO) support for bot to automatically sign in user and help receive oauth token, asks the user to consent if needed.
 
 <b>Signature:</b>
@@ -61,12 +58,12 @@ dialogs.add(new WaterfallDialog('taskNeedingLogin', [
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(teamsfx, dialogId, settings)](./teamsfx.teamsbotssoprompt._constructor_.md) |  | <b><i>(BETA)</i></b> Constructor of TeamsBotSsoPrompt. |
+|  [(constructor)(teamsfx, dialogId, settings)](./teamsfx.teamsbotssoprompt._constructor_.md) |  | Constructor of TeamsBotSsoPrompt. |
 
 ## Methods
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
-|  [beginDialog(dc)](./teamsfx.teamsbotssoprompt.begindialog.md) |  | <b><i>(BETA)</i></b> Called when a prompt dialog is pushed onto the dialog stack and is being activated. |
-|  [continueDialog(dc)](./teamsfx.teamsbotssoprompt.continuedialog.md) |  | <b><i>(BETA)</i></b> Called when a prompt dialog is the active dialog and the user replied with a new activity. |
+|  [beginDialog(dc)](./teamsfx.teamsbotssoprompt.begindialog.md) |  | Called when a prompt dialog is pushed onto the dialog stack and is being activated. |
+|  [continueDialog(dc)](./teamsfx.teamsbotssoprompt.continuedialog.md) |  | Called when a prompt dialog is the active dialog and the user replied with a new activity. |
 

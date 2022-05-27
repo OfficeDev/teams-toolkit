@@ -475,42 +475,47 @@ export async function loadContext(projectPath: string, env: string): Promise<Res
 export async function customizeBicepFilesToCustomizedRg(
   customizedRgName: string,
   projectPath: string,
-  provisionInsertionSearchString: string,
-  configInsertionSearchString?: string
+  provisionInsertionSearchStrings: string[] | string,
+  configInsertionSearchStrings?: string[] | string
 ): Promise<void> {
   const provisionFilePath = path.join(
     projectPath,
     TestFilePath.armTemplateBaseFolder,
     TestFilePath.provisionFileName
   );
-  let content = await fs.readFile(provisionFilePath, fileEncoding);
-  let insertionIndex = content.indexOf(provisionInsertionSearchString);
-
   const paramToAdd = `param customizedRg string = '${customizedRgName}'\r\n`;
   const scopeToAdd = `scope: resourceGroup(customizedRg)\r\n`;
-  content =
-    paramToAdd +
-    content.substring(0, insertionIndex) +
-    scopeToAdd +
-    content.substring(insertionIndex);
+
+  let content = await fs.readFile(provisionFilePath, fileEncoding);
+  content = paramToAdd + content;
+
+  const searchStrings: string[] = [];
+  searchStrings.concat(provisionInsertionSearchStrings).forEach((searchString) => {
+    const insertionIndex = content.indexOf(searchString);
+    content = content.substring(0, insertionIndex) + scopeToAdd + content.substring(insertionIndex);
+  });
+
   await fs.writeFile(provisionFilePath, content);
   console.log(
     `[Successfully] customize ${provisionFilePath} content to deploy cloud resources to ${customizedRgName}.`
   );
 
-  if (configInsertionSearchString) {
+  if (configInsertionSearchStrings) {
     const configFilePath = path.join(
       projectPath,
       TestFilePath.armTemplateBaseFolder,
       TestFilePath.configFileName
     );
-    content = await fs.readFile(configFilePath, fileEncoding);
-    insertionIndex = content.indexOf(configInsertionSearchString);
-    content =
-      paramToAdd +
-      content.substring(0, insertionIndex) +
-      scopeToAdd +
-      content.substring(insertionIndex);
+    let content = await fs.readFile(configFilePath, fileEncoding);
+    content = paramToAdd + content;
+
+    const searchStrings: string[] = [];
+    searchStrings.concat(configInsertionSearchStrings).forEach((searchString) => {
+      const insertionIndex = content.indexOf(searchString);
+      content =
+        content.substring(0, insertionIndex) + scopeToAdd + content.substring(insertionIndex);
+    });
+
     await fs.writeFile(configFilePath, content);
     console.log(
       `[Successfully] customize ${configFilePath} content to deploy cloud resources to ${customizedRgName}.`

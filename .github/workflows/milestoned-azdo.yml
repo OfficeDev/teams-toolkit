@@ -18,7 +18,7 @@ jobs:
       - name: Install Actions
         run: npm install --production --prefix ./actions
 
-      - name: Run Greeting 
+      - name: Create AZDO Item 
         uses: ./actions/milestoned
         with:
           token: ${{secrets.TEAMSFX_BOT}}

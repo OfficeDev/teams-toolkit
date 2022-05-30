@@ -13,9 +13,9 @@ Quick start
 
 Before you run or Start Debugging for the first time, follow these steps:
 
-1. This is a Bot project, so first use a Command Prompt to run this command: ngrok http 5130.
+1. This is a bot project, so first use a Command Prompt to run this command: ngrok http 5130.
 
-2. Select the Project > Teams Toolkit > Configure Microsoft Teams app menu in Visual Studio. When prompted, sign in using your M365 account.
+2. In Visual Studio Solution Explorer, right click on your project file and select "Prepare Teams app dependencies" command to prepare local debug dependencies. When prompted, sign in using your M365 account.
 
 3. Select the Debug > Start Debugging menu in Visual Studio or press F5. Visual Studio will launch the app inside Microsoft Teams using a browser.
 

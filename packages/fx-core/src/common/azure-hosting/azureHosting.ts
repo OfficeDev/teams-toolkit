@@ -8,13 +8,15 @@ import path from "path";
 import { generateBicepFromFile } from "..";
 import { Bicep } from "../constants";
 import { getTemplatesFolder } from "../../folder";
-import { BicepContext } from "./interfaces";
+import { BicepContext, Logger } from "./interfaces";
+import { Messages } from "./messages";
 
 export abstract class AzureHosting {
   abstract hostType: string;
   abstract configurable: boolean;
 
   reference: any = undefined;
+  logger?: Logger;
 
   protected getBicepTemplateFolder(): string {
     return path.join(
@@ -54,6 +56,8 @@ export abstract class AzureHosting {
       parameters = await fs.readJson(parameterFilePath);
     }
 
+    this.logger?.info?.(Messages.generateBicep(this.hostType));
+
     return {
       Provision: {
         Orchestration: modules[0],
@@ -79,6 +83,7 @@ export abstract class AzureHosting {
     // * The order matters.
     // * 0: Configuration Orchestration, 1: Configuration Module
     if (!this.configurable) {
+      this.logger?.debug?.(Messages.updateBicep(this.hostType));
       return {} as ResourceTemplate;
     }
     const bicepFile = `${this.hostType}Configuration.template.bicep`;
@@ -86,6 +91,8 @@ export abstract class AzureHosting {
     const bicepTemplateDir = this.getBicepTemplateFolder();
     let module = await generateBicepFromFile(path.join(bicepTemplateDir, bicepFile), bicepContext);
     module = AzureHosting.replacePluginId(module, pluginId);
+
+    this.logger?.info?.(Messages.updateBicep(this.hostType));
 
     return {
       Configuration: {
@@ -106,5 +113,9 @@ export abstract class AzureHosting {
    */
   async deploy(resourceId: string, tokenProvider: TokenProvider, buffer: Buffer): Promise<Void> {
     return Void;
+  }
+
+  setLogger(logger: any): void {
+    this.logger = logger;
   }
 }

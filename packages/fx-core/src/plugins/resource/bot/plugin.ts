@@ -430,6 +430,8 @@ export class TeamsBotImpl implements PluginImpl {
     const graphTokenRes = await this.ctx?.m365TokenProvider?.getAccessToken({
       scopes: GraphScopes,
     });
+    Logger.info(Messages.ProvisioningBotRegistration);
+
     const token = checkAndThrowIfMissing(
       ConfigNames.GRAPH_TOKEN,
       graphTokenRes?.isOk() ? graphTokenRes.value : undefined
@@ -471,14 +473,12 @@ export class TeamsBotImpl implements PluginImpl {
         .get(PluginBot.OBJECT_ID);
       Logger.debug(Messages.SuccessfullyGetExistingBotAadAppCredential);
     } else {
-      Logger.info(Messages.ProvisioningBotRegistration);
       botAuthCreds = await AADRegistration.registerAADAppAndGetSecretByGraph(
         token,
         aadDisplayName,
         this.config.localDebug.localObjectId,
         this.config.localDebug.localBotId
       );
-      Logger.info(Messages.SuccessfullyProvisionedBotRegistration);
     }
 
     // 2. Register bot by app studio.
@@ -495,13 +495,13 @@ export class TeamsBotImpl implements PluginImpl {
     const appStudioTokenRes = await this.ctx?.m365TokenProvider?.getAccessToken({
       scopes: AppStudioScopes,
     });
+
     const appStudioToken = checkAndThrowIfMissing(
       ConfigNames.APPSTUDIO_TOKEN,
       appStudioTokenRes?.isOk() ? appStudioTokenRes.value : undefined
     );
 
     await AppStudio.createBotRegistration(appStudioToken, botReg);
-    Logger.info(Messages.SuccessfullyProvisionedBotRegistration);
 
     if (isConfigUnifyEnabled()) {
       if (!this.config.scaffold.botId) {
@@ -526,6 +526,8 @@ export class TeamsBotImpl implements PluginImpl {
         this.config.localDebug.localObjectId = botAuthCreds.objectId;
       }
     }
+
+    Logger.info(Messages.SuccessfullyProvisionedBotRegistration);
   }
 
   private async registerBotApp() {

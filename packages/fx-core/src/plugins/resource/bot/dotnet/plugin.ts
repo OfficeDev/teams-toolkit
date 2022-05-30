@@ -16,7 +16,7 @@ import fs from "fs-extra";
 import { PathInfo, RegularExpr } from "./constants";
 import { TeamsBotImpl } from "../plugin";
 import { FileIOError } from "./errors";
-import { PluginNames } from "../../../solution";
+import { PluginNames } from "../../../solution/fx-solution/constants";
 import { PluginBot } from "../resources/strings";
 
 // Extends TeamsBotImpl to reuse provision method

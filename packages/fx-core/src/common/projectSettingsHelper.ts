@@ -19,8 +19,7 @@ import {
 } from "../plugins/solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import * as uuid from "uuid";
-import { isAadManifestEnabled } from "./tools";
-import { ResourceComponentNames } from "../component/resource";
+import { ComponentNames } from "../component/constants";
 
 export function validateProjectSettings(projectSettings: ProjectSettings): string | undefined {
   if (!projectSettings) return "empty projectSettings";
@@ -120,16 +119,16 @@ export function hasAzureResource(projectSetting: ProjectSettings, excludeAad = f
 
 export function hasAzureResourceV3(projectSetting: ProjectSettingsV3, excludeAad = false): boolean {
   const azureResources = [
-    ResourceComponentNames.apim,
-    ResourceComponentNames.webApp,
-    ResourceComponentNames.function,
-    ResourceComponentNames.identity,
-    ResourceComponentNames.keyVault,
-    ResourceComponentNames.sql,
-    ResourceComponentNames.storage,
+    ComponentNames.apim,
+    ComponentNames.webApp,
+    ComponentNames.function,
+    ComponentNames.identity,
+    ComponentNames.keyVault,
+    ComponentNames.sql,
+    ComponentNames.storage,
   ];
   if (!excludeAad) {
-    azureResources.push(ResourceComponentNames.aad);
+    azureResources.push(ComponentNames.aad);
   }
   const filtered = projectSetting.components.filter((c) => azureResources.includes(c.name));
   return filtered.length > 0;

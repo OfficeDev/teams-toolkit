@@ -4,13 +4,12 @@
 import * as vscode from "vscode";
 
 import { TokenProvider } from "@microsoft/teamsfx-api";
-
-import { getAzureSolutionSettings } from "../../handlers";
 import { DynamicNode } from "../dynamicNode";
 import envTreeProviderInstance from "../environmentTreeViewProvider";
 import { AzureAccountNode } from "./azureNode";
 import { M365AccountNode } from "./m365Node";
 import { AppStudioScopes } from "@microsoft/teamsfx-core";
+import { isSPFxProject } from "../../globalVariables";
 
 export class AccountTreeViewProvider implements vscode.TreeDataProvider<DynamicNode> {
   private static instance: AccountTreeViewProvider;
@@ -56,8 +55,7 @@ export class AccountTreeViewProvider implements vscode.TreeDataProvider<DynamicN
   }
 
   private async getAccountNodes(): Promise<DynamicNode[]> {
-    const solutionSettings = await getAzureSolutionSettings();
-    if (solutionSettings && "SPFx" === solutionSettings.hostType) {
+    if (isSPFxProject) {
       return [this.m365AccountNode];
     } else {
       return [this.m365AccountNode, this.azureAccountNode];

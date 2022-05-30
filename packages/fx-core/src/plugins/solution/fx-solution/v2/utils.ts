@@ -16,6 +16,7 @@ import {
   UserError,
   SystemError,
 } from "@microsoft/teamsfx-api";
+import fs from "fs-extra";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
 import { isAadManifestEnabled, isConfigUnifyEnabled } from "../../../../common/tools";
 import {
@@ -199,7 +200,8 @@ export function parseUserName(appStudioToken?: Record<string, unknown>): Result<
 
 export async function checkWhetherLocalDebugM365TenantMatches(
   localDebugTenantId?: string,
-  appStudioTokenProvider?: AppStudioTokenProvider
+  appStudioTokenProvider?: AppStudioTokenProvider,
+  projectPath?: string
 ): Promise<Result<Void, FxError>> {
   if (localDebugTenantId) {
     const maybeM365TenantId = parseTeamsAppTenantId(await appStudioTokenProvider?.getJsonObject());
@@ -213,11 +215,21 @@ export async function checkWhetherLocalDebugM365TenantMatches(
     }
 
     if (maybeM365TenantId.value !== localDebugTenantId) {
+      const localFiles = [".fx/states/state.local.json"];
+
+      // add notification local file if exist
+      if (
+        projectPath !== undefined &&
+        (await fs.pathExists(`${projectPath}/bot/.notification.localstore.json`))
+      ) {
+        localFiles.push("bot/.notification.localstore.json");
+      }
+
       const errorMessage = getLocalizedString(
         "core.localDebug.tenantConfirmNotice",
         localDebugTenantId,
         maybeM365UserAccount.value,
-        "state.local.json"
+        localFiles.join(", ")
       );
       return err(
         new UserError("Solution", SolutionError.CannotLocalDebugInDifferentTenant, errorMessage)

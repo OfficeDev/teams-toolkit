@@ -118,23 +118,6 @@ export function hasAzureResource(projectSetting: ProjectSettings, excludeAad = f
   return false;
 }
 
-export function hasAzureResourceV3(projectSetting: ProjectSettingsV3, excludeAad = false): boolean {
-  const azureResources = [
-    ResourceComponentNames.apim,
-    ResourceComponentNames.webApp,
-    ResourceComponentNames.function,
-    ResourceComponentNames.identity,
-    ResourceComponentNames.keyVault,
-    ResourceComponentNames.sql,
-    ResourceComponentNames.storage,
-  ];
-  if (!excludeAad) {
-    azureResources.push(ResourceComponentNames.aad);
-  }
-  const filtered = projectSetting.components.filter((c) => azureResources.includes(c.name));
-  return filtered.length > 0;
-}
-
 export function isExistingTabApp(projectSettings: ProjectSettings): boolean {
   const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
   if (!solutionSettings) {

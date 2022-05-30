@@ -35,8 +35,6 @@ import {
   persistBicepPlans,
   serviceEffectPlanString,
 } from "./utils";
-import fs from "fs-extra";
-import { getProjectSettingsPath } from "../core/middleware";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 
 export async function getAction(

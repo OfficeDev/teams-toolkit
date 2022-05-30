@@ -32,7 +32,7 @@ import { newProjectSettings } from "./../common/projectSettingsHelper";
 import "./bicep";
 import "./botCode";
 import "./connection";
-import "./debugManager";
+import "./debug";
 import "./envManager";
 import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "./projectSettingsManager";
 import "./resource";

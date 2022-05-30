@@ -54,15 +54,15 @@ import {
 } from "../plugins/solution/fx-solution/debug/util/telemetry";
 import { ComponentNames } from "./constants";
 
-@Service("debug-manager")
-export class DebugManager {
-  readonly name = "env-manager";
+@Service("debug")
+export class DebugComponent {
+  readonly name = "debug";
   setup(
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const action: Action = {
-      name: "debug-manager.setupLocalEnvironment",
+      name: "debug.setup",
       type: "function",
       plan: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         return ok([]);
@@ -84,7 +84,7 @@ export class DebugManager {
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const action: Action = {
       type: "function",
-      name: "debug-manager.configLocalEnvironment",
+      name: "debug.config",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         return ok([]);
       },

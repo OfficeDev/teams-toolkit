@@ -272,10 +272,18 @@ export async function readProjectSecrets(
     return err(new UserdataNotFound(env!));
   }
   try {
-    const secretData = await fs.readFile(secretFile);
-    return ok(dotenv.parse(secretData));
+    const fd = await fs.open(secretFile, "r");
+    const stat = await fs.fstat(fd);
+    const buffer = Buffer.alloc(stat.size);
+    await fs.read(fd, buffer, 0, buffer.length, null);
+    await fs.close(fd);
+    return ok(dotenv.parse(buffer.toString("utf8")));
   } catch (e) {
-    return err(ReadFileError(e));
+    if (e instanceof Error) {
+      return err(ReadFileError(e));
+    } else {
+      return err(ReadFileError(new Error()));
+    }
   }
 }
 

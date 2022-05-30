@@ -17,6 +17,7 @@ import {
   LocalSettings,
   ConfigMap,
   EnvConfig,
+  M365TokenProvider,
 } from "@microsoft/teamsfx-api";
 import sinon from "sinon";
 import {
@@ -381,5 +382,16 @@ export function mockTokenProviderAzureGraph(token: string): GraphTokenProvider {
 
   provider.getAccessToken = sinon.stub().returns(token);
   provider.getJsonObject = sinon.stub().returns(tokenObject);
+  return provider;
+}
+
+export function mockTokenProviderM365(): M365TokenProvider {
+  const provider = <M365TokenProvider>{};
+  const mockTokenObject = {
+    tid: faker.datatype.uuid(),
+  };
+
+  provider.getAccessToken = sinon.stub().returns(ok("token"));
+  provider.getJsonObject = sinon.stub().returns(ok(mockTokenObject));
   return provider;
 }

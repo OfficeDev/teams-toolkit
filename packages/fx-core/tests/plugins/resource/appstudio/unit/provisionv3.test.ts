@@ -30,7 +30,7 @@ import {
   MockedLogProvider,
   MockedTelemetryReporter,
 } from "../../../solution/util";
-import { MockUserInteraction } from "../helper";
+import { MockedM365TokenProvider, MockUserInteraction } from "../helper";
 import { MockM365TokenProvider } from "../../../../core/utils";
 
 describe("Provision Teams app with Azure", () => {
@@ -63,10 +63,10 @@ describe("Provision Teams app with Azure", () => {
 
     mockedTokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
-      graphTokenProvider: new MockedGraphTokenProvider(),
-      sharepointTokenProvider: new MockedSharepointProvider(),
-      m365TokenProvider: new MockM365TokenProvider(),
+      appStudioToken: undefined,
+      graphTokenProvider: undefined,
+      sharepointTokenProvider: undefined,
+      m365TokenProvider: new MockedM365TokenProvider(),
     };
 
     context = {

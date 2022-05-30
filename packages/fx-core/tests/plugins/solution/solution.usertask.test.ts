@@ -67,7 +67,7 @@ import "../../../src/plugins/resource/bot/v2";
 import { newEnvInfo } from "../../../src";
 import fs from "fs-extra";
 import { ProgrammingLanguage } from "../../../src/plugins/resource/bot/enums/programmingLanguage";
-import { MockGraphTokenProvider, MockM365TokenProvider, randomAppName } from "../../core/utils";
+import { MockM365TokenProvider, randomAppName } from "../../core/utils";
 import { createEnv } from "../../../src/plugins/solution/fx-solution/v2/createEnv";
 import { ScaffoldingContextAdapter } from "../../../src/plugins/solution/fx-solution/v2/adaptor";
 import { LocalCrypto } from "../../../src/core/crypto";
@@ -100,7 +100,7 @@ const apiConnectionPluginV2 = Container.get<v2.ResourcePlugin>(
 const mockedProvider: TokenProvider = {
   appStudioToken: new MockedAppStudioProvider(),
   azureAccountProvider: new MockedAzureAccountProvider(),
-  graphTokenProvider: new MockGraphTokenProvider(),
+  graphTokenProvider: undefined,
   sharepointTokenProvider: new MockedSharepointProvider(),
   m365TokenProvider: new MockM365TokenProvider(),
 };

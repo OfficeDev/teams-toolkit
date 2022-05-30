@@ -298,15 +298,15 @@ export type TokenProvider = {
   /**
    * @deprecated The method should not be used, please update to M365TokenProvider
    */
-  graphTokenProvider: GraphTokenProvider;
+  graphTokenProvider?: GraphTokenProvider;
   /**
    * @deprecated The method should not be used, please update to M365TokenProvider
    */
-  appStudioToken: AppStudioTokenProvider;
+  appStudioToken?: AppStudioTokenProvider;
   /**
    * @deprecated The method should not be used, please update to M365TokenProvider
    */
-  sharepointTokenProvider: SharepointTokenProvider;
+  sharepointTokenProvider?: SharepointTokenProvider;
   m365TokenProvider: M365TokenProvider;
 };
 

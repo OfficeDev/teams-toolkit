@@ -27,6 +27,7 @@ import { LanguageStrategy } from "../../../../../src/plugins/resource/bot/langua
 import { NodeJSBotPluginV3 } from "../../../../../src/plugins/resource/bot/v3";
 import {
   Func,
+  ok,
   Platform,
   ProjectSettings,
   Stage,
@@ -39,13 +40,11 @@ import {
   BuiltInSolutionNames,
 } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
 import {
-  MockedAppStudioTokenProvider,
   MockedAzureAccountProvider,
-  MockedGraphTokenProvider,
-  MockedSharepointProvider,
+  MockedM365Provider,
   MockedV2Context,
 } from "../../../solution/util";
-import { MockM365TokenProvider, randomAppName } from "../../../../core/utils";
+import { randomAppName } from "../../../../core/utils";
 import * as os from "os";
 import { ResourcePlugins } from "../../../../../src/common/constants";
 import { ConfigKeys } from "../../../../../src/plugins/resource/bot/constants";
@@ -224,7 +223,7 @@ describe("Teams Bot Resource Plugin", () => {
       pluginContext.projectSettings!.appName = "anything";
       botPluginImpl.config.saveConfigIntoContext(pluginContext);
 
-      sinon.stub(pluginContext.appStudioToken!, "getAccessToken").resolves("anything");
+      sinon.stub(pluginContext.m365TokenProvider!, "getAccessToken").resolves(ok("anything"));
       sinon.stub(botPluginImpl.config.scaffold, "botAADCreated").returns(true);
 
       // Act
@@ -283,10 +282,10 @@ describe("Teams Bot Resource Plugin", () => {
       };
       const mockedTokenProvider: TokenProvider = {
         azureAccountProvider: new MockedAzureAccountProvider(),
-        appStudioToken: new MockedAppStudioTokenProvider(),
-        graphTokenProvider: new MockedGraphTokenProvider(),
-        sharepointTokenProvider: new MockedSharepointProvider(),
-        m365TokenProvider: new MockM365TokenProvider(),
+        appStudioToken: undefined,
+        graphTokenProvider: undefined,
+        sharepointTokenProvider: undefined,
+        m365TokenProvider: new MockedM365Provider(),
       };
       const envInfoV3: v3.EnvInfoV3 = {
         envName: "dev",
@@ -310,7 +309,7 @@ describe("Teams Bot Resource Plugin", () => {
       };
       sinon.stub(factory, "createResourceProviderClient").returns(fakeRPClient);
 
-      sinon.stub(mockedTokenProvider.appStudioToken, "getAccessToken").resolves("anything");
+      sinon.stub(mockedTokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("anything"));
 
       sinon
         .stub(mockedTokenProvider.azureAccountProvider, "getAccountCredentialAsync")
@@ -345,7 +344,7 @@ describe("Teams Bot Resource Plugin", () => {
       botPluginImpl.config.provision.botChannelRegName = "anything";
       botPluginImpl.config.saveConfigIntoContext(pluginContext);
 
-      sinon.stub(pluginContext.appStudioToken!, "getAccessToken").resolves("anything");
+      sinon.stub(pluginContext.m365TokenProvider!, "getAccessToken").resolves(ok("anything"));
       sinon.stub(botPluginImpl.config.scaffold, "botAADCreated").returns(true);
       const fakeCreds = testUtils.generateFakeTokenCredentialsBase();
       sinon
@@ -386,10 +385,10 @@ describe("Teams Bot Resource Plugin", () => {
       };
       const mockedTokenProvider: TokenProvider = {
         azureAccountProvider: new MockedAzureAccountProvider(),
-        appStudioToken: new MockedAppStudioTokenProvider(),
-        graphTokenProvider: new MockedGraphTokenProvider(),
-        sharepointTokenProvider: new MockedSharepointProvider(),
-        m365TokenProvider: new MockM365TokenProvider(),
+        appStudioToken: undefined,
+        graphTokenProvider: undefined,
+        sharepointTokenProvider: undefined,
+        m365TokenProvider: new MockedM365Provider(),
       };
       const envInfoV3: v3.EnvInfoV3 = {
         envName: "dev",
@@ -404,7 +403,7 @@ describe("Teams Bot Resource Plugin", () => {
           },
         },
       };
-      sinon.stub(mockedTokenProvider.appStudioToken, "getAccessToken").resolves("anything");
+      sinon.stub(mockedTokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("anything"));
       const fakeCreds = testUtils.generateFakeTokenCredentialsBase();
       sinon
         .stub(mockedTokenProvider.azureAccountProvider, "getAccountCredentialAsync")
@@ -591,10 +590,10 @@ describe("Teams Bot Resource Plugin", () => {
       };
       const mockedTokenProvider: TokenProvider = {
         azureAccountProvider: new MockedAzureAccountProvider(),
-        appStudioToken: new MockedAppStudioTokenProvider(),
-        graphTokenProvider: new MockedGraphTokenProvider(),
-        sharepointTokenProvider: new MockedSharepointProvider(),
-        m365TokenProvider: new MockM365TokenProvider(),
+        appStudioToken: undefined,
+        graphTokenProvider: undefined,
+        sharepointTokenProvider: undefined,
+        m365TokenProvider: new MockedM365Provider(),
       };
       const envInfoV3: v3.EnvInfoV3 = {
         envName: "dev",
@@ -641,7 +640,7 @@ describe("Teams Bot Resource Plugin", () => {
       // Arrange
       const pluginContext = testUtils.newPluginContext();
       pluginContext.projectSettings!.appName = "anything";
-      sinon.stub(pluginContext.appStudioToken!, "getAccessToken").resolves("anything");
+      sinon.stub(pluginContext.m365TokenProvider!, "getAccessToken").resolves(ok("anything"));
       sinon.stub(botPluginImpl.config.localDebug, "botAADCreated").returns(false);
       const botAuthCreds = new BotAuthCredential();
       botAuthCreds.clientId = "anything";
@@ -686,10 +685,10 @@ describe("Teams Bot Resource Plugin", () => {
       };
       const mockedTokenProvider: TokenProvider = {
         azureAccountProvider: new MockedAzureAccountProvider(),
-        appStudioToken: new MockedAppStudioTokenProvider(),
-        graphTokenProvider: new MockedGraphTokenProvider(),
-        sharepointTokenProvider: new MockedSharepointProvider(),
-        m365TokenProvider: new MockM365TokenProvider(),
+        appStudioToken: undefined,
+        graphTokenProvider: undefined,
+        sharepointTokenProvider: undefined,
+        m365TokenProvider: new MockedM365Provider(),
       };
       const envInfoV3: v3.EnvInfoV3 = {
         envName: "local",
@@ -700,7 +699,7 @@ describe("Teams Bot Resource Plugin", () => {
         },
       };
 
-      sinon.stub(mockedTokenProvider.appStudioToken, "getAccessToken").resolves("anything");
+      sinon.stub(mockedTokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("anything"));
       const botAuthCreds = new BotAuthCredential();
       botAuthCreds.clientId = "anything";
       botAuthCreds.clientSecret = "anything";
@@ -743,7 +742,7 @@ describe("Teams Bot Resource Plugin", () => {
           [BOT_ID, "bot_id"],
         ])
       );
-      sinon.stub(pluginContext.appStudioToken!, "getAccessToken").resolves("anything");
+      sinon.stub(pluginContext.m365TokenProvider!, "getAccessToken").resolves(ok("anything"));
       sinon.stub(AppStudio, "updateMessageEndpoint").resolves();
 
       // Act
@@ -782,10 +781,10 @@ describe("Teams Bot Resource Plugin", () => {
       };
       const mockedTokenProvider: TokenProvider = {
         azureAccountProvider: new MockedAzureAccountProvider(),
-        appStudioToken: new MockedAppStudioTokenProvider(),
-        graphTokenProvider: new MockedGraphTokenProvider(),
-        sharepointTokenProvider: new MockedSharepointProvider(),
-        m365TokenProvider: new MockM365TokenProvider(),
+        appStudioToken: undefined,
+        graphTokenProvider: undefined,
+        sharepointTokenProvider: undefined,
+        m365TokenProvider: new MockedM365Provider(),
       };
       const envInfoV3: v3.EnvInfoV3 = {
         envName: "dev",
@@ -802,7 +801,7 @@ describe("Teams Bot Resource Plugin", () => {
       };
       // Arrange
       const pluginContext = testUtils.newPluginContext();
-      sinon.stub(pluginContext.appStudioToken!, "getAccessToken").resolves("anything");
+      sinon.stub(pluginContext.m365TokenProvider!, "getAccessToken").resolves(ok("anything"));
       sinon.stub(AppStudio, "updateMessageEndpoint").resolves();
 
       // Act

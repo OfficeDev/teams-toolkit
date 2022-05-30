@@ -138,9 +138,14 @@ export async function provisionLocalResource(
     }
   }
 
+  const appStudioTokenJsonRes = await tokenProvider.m365TokenProvider.getJsonObject({
+    scopes: AppStudioScopes,
+  });
+  const appStudioTokenJson = appStudioTokenJsonRes.isOk() ? appStudioTokenJsonRes.value : undefined;
+
   const parseTenantIdresult = loadTeamsAppTenantIdForLocal(
     localSettings as v2.LocalSettings,
-    await tokenProvider.appStudioToken.getJsonObject(),
+    appStudioTokenJson,
     envInfo
   );
   if (parseTenantIdresult.isErr()) {

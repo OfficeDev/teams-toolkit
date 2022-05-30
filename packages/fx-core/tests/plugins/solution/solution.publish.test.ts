@@ -14,6 +14,7 @@ import {
   Inputs,
   ok,
   Void,
+  M365TokenProvider,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs from "fs-extra";
@@ -38,7 +39,7 @@ import {
   TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import {
-  MockedAppStudioProvider,
+  MockedM365Provider,
   MockedV2Context,
   mockPublishThatAlwaysSucceed,
   validManifest,
@@ -49,7 +50,6 @@ import { ResourcePluginsV2 } from "../../../src/plugins/solution/fx-solution/Res
 import Container from "typedi";
 import { newEnvInfo } from "../../../src";
 import { TeamsAppSolutionV2 } from "../../../src/plugins/solution/fx-solution/v2/solution";
-import { AppStudioTokenProvider } from "@microsoft/teamsfx-api";
 import { LocalCrypto } from "../../../src/core/crypto";
 import { aadPlugin, botPlugin, fehostPlugin, spfxPlugin, appStudioPlugin } from "../../constants";
 import { SolutionRunningState } from "../../../src/plugins/solution/fx-solution/types";
@@ -277,7 +277,7 @@ describe("v2 implementation for publish()", () => {
       platform: Platform.VSCode,
       projectPath: "./",
     };
-    const mockedTokenProvider: AppStudioTokenProvider = new MockedAppStudioProvider();
+    const mockedTokenProvider: M365TokenProvider = new MockedM365Provider();
     const mockedEnvInfo: v2.EnvInfoV2 = {
       envName: "default",
       config: { manifest: { appName: { short: "test-app" } } },

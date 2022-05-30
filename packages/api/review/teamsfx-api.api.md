@@ -1884,9 +1884,9 @@ export interface TextInputQuestion extends UserInputQuestion {
 // @public (undocumented)
 export type TokenProvider = {
     azureAccountProvider: AzureAccountProvider;
-    graphTokenProvider: GraphTokenProvider;
-    appStudioToken: AppStudioTokenProvider;
-    sharepointTokenProvider: SharepointTokenProvider;
+    graphTokenProvider?: GraphTokenProvider;
+    appStudioToken?: AppStudioTokenProvider;
+    sharepointTokenProvider?: SharepointTokenProvider;
     m365TokenProvider: M365TokenProvider;
 };
 

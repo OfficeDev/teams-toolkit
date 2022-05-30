@@ -27,7 +27,7 @@ import {
   PermissionsResult,
   ResourcePermission,
 } from "../common/permissionInterface";
-import { getHashedEnv } from "../common/tools";
+import { AppStudioScopes, getHashedEnv } from "../common/tools";
 import { AadAppForTeamsPluginV3 } from "../plugins/resource/aad/v3";
 import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
 import {
@@ -479,7 +479,13 @@ export async function getQuestionsForGrantPermission(
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
   if (isDynamicQuestion) {
-    const jsonObject = await TOOLS.tokenProvider.appStudioToken.getJsonObject();
+    const jsonObjectRes = await TOOLS.tokenProvider.m365TokenProvider.getJsonObject({
+      scopes: AppStudioScopes,
+    });
+    if (jsonObjectRes.isErr()) {
+      return err(jsonObjectRes.error);
+    }
+    const jsonObject = jsonObjectRes.value;
     return ok(new QTreeNode(getUserEmailQuestion((jsonObject as any).upn)));
   }
   return ok(undefined);

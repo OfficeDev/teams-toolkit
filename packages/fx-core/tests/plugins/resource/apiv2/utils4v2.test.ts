@@ -29,11 +29,8 @@ import {
   setStateV2ByConfigMapInc,
 } from "../../../../src/plugins/resource/utils4v2";
 import {
-  MockAppStudioTokenProvider,
   MockAzureAccountProvider,
-  MockGraphTokenProvider,
   MockM365TokenProvider,
-  MockSharepointTokenProvider,
   MockTools,
   randomAppName,
 } from "../../../core/utils";
@@ -158,10 +155,7 @@ describe("API V2 adapter", () => {
       state: {},
     };
     const tokenProvider: TokenProvider = {
-      appStudioToken: new MockAppStudioTokenProvider(),
-      graphTokenProvider: new MockGraphTokenProvider(),
       azureAccountProvider: new MockAzureAccountProvider(),
-      sharepointTokenProvider: new MockSharepointTokenProvider(),
       m365TokenProvider: new MockM365TokenProvider(),
     };
 

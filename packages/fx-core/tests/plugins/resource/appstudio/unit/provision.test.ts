@@ -12,7 +12,7 @@ import { ConfigMap, PluginContext, Platform } from "@microsoft/teamsfx-api";
 import { getAzureProjectRoot } from "./../helper";
 import { newEnvInfo } from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
-import { mockTokenProvider } from "./../../aad/helper";
+import { mockTokenProviderM365 } from "./../../aad/helper";
 import { v4 as uuid } from "uuid";
 
 describe("Provision Teams app with Azure", () => {
@@ -40,7 +40,7 @@ describe("Provision Teams app with Azure", () => {
       root: getAzureProjectRoot(),
       envInfo: newEnvInfo(),
       config: new ConfigMap(),
-      appStudioToken: mockTokenProvider(),
+      m365TokenProvider: mockTokenProviderM365(),
       answers: { platform: Platform.VSCode },
       cryptoProvider: new LocalCrypto(""),
     };

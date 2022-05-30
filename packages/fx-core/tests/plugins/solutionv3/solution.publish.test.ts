@@ -10,7 +10,7 @@ import {
   getQuestionsForPublish,
 } from "../../../src/plugins/solution/fx-solution/v3/publish";
 import { BuiltInSolutionNames } from "../../../src/plugins/solution/fx-solution/v3/constants";
-import { MockedAppStudioTokenProvider, MockedV2Context } from "../solution/util";
+import { MockedM365Provider, MockedV2Context } from "../solution/util";
 import * as path from "path";
 import * as os from "os";
 import { randomAppName } from "../../core/utils";
@@ -33,12 +33,7 @@ describe("SolutionV3 - publish", () => {
       state: { solution: {} },
       config: {},
     };
-    const res = await publishApplication(
-      ctx,
-      inputs,
-      envInfov3,
-      new MockedAppStudioTokenProvider()
-    );
+    const res = await publishApplication(ctx, inputs, envInfov3, new MockedM365Provider());
     assert.isTrue(res.isErr());
   });
 
@@ -60,12 +55,7 @@ describe("SolutionV3 - publish", () => {
       config: {},
       state: { solution: {} },
     };
-    const res = await getQuestionsForPublish(
-      ctx,
-      inputs,
-      envInfov3,
-      new MockedAppStudioTokenProvider()
-    );
+    const res = await getQuestionsForPublish(ctx, inputs, envInfov3, new MockedM365Provider());
     assert.isTrue(res.isOk());
   });
 });

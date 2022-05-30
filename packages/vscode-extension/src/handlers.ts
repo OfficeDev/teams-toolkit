@@ -3178,7 +3178,11 @@ export async function signinM365Callback(args?: any[]): Promise<Result<null, FxE
     ...triggerFrom,
   });
 
-  const token = await tools.tokenProvider.appStudioToken.getJsonObject(true);
+  const tokenRes = await tools.tokenProvider.m365TokenProvider.getJsonObject({
+    scopes: AppStudioScopes,
+    showDialog: true,
+  });
+  const token = tokenRes.isOk() ? tokenRes.value : undefined;
   if (token !== undefined && node) {
     node.setSignedIn((token as any).upn ? (token as any).upn : "");
   }

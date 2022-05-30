@@ -42,10 +42,14 @@ fs.copyFile = function copyFile(src, dest, flags, callback) {
           callback(statError);
           return;
         }
-        fs.writeFile(dest, content, callback);
+        const fd = fs.openSync(dest, fs.O_CREAT | fs.O_EXCL | fs.O_RDWR, 0o600);
+        fs.writeFile(fd, content, callback);
+        fs.closeSync(fd);
       });
     } else {
-      fs.writeFile(dest, content, callback);
+      const fd = fs.openSync(dest, fs.O_CREAT | fs.O_EXCL | fs.O_RDWR, 0o600);
+      fs.writeFile(fd, content, callback);
+      fs.closeSync(fd);
     }
   });
 };
@@ -61,12 +65,16 @@ fs.copyFileSync = function copyFileSync(src, dest, flags) {
       fs.statSync(dest);
     } catch (statError) {
       if (statError.code !== "ENOENT") throw statError;
-      fs.writeFileSync(dest, content);
+      const fd = fs.openSync(dest, fs.O_CREAT | fs.O_EXCL | fs.O_RDWR, 0o600);
+      fs.writeFileSync(fd, content);
+      fs.closeSync(fd);
       return;
     }
     throw Object.assign(new Error("File already exists"), { code: "EEXIST" });
   }
-  fs.writeFileSync(dest, content);
+  const fd = fs.openSync(dest, fs.O_CREAT | fs.O_EXCL | fs.O_RDWR, 0o600);
+  fs.writeFileSync(fd, content);
+  fs.closeSync(fd);
 };
 
 if (!fs.promises) return;

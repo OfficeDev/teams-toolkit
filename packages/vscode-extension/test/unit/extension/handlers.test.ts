@@ -25,6 +25,7 @@ import * as commonUtils from "../../../src/utils/commonUtils";
 import * as extension from "../../../src/extension";
 import TreeViewManagerInstance from "../../../src/treeview/treeViewManager";
 import { CollaborationState, CoreHookContext } from "@microsoft/teamsfx-core";
+import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
 import * as globalVariables from "../../../src/globalVariables";
 import { Uri } from "vscode";
 import envTreeProviderInstance from "../../../src/treeview/environmentTreeViewProvider";
@@ -83,6 +84,7 @@ suite("handlers", () => {
       const disposeFunc = sinon.stub(ExtTelemetry, "dispose");
       const createProject = sinon.spy(handlers.core, "createProject");
       const executeCommandFunc = sinon.stub(vscode.commands, "executeCommand");
+      const globalStateUpdateStub = sinon.stub(globalState, "globalStateUpdate");
 
       await handlers.createNewProjectHandler();
 
@@ -98,7 +100,7 @@ suite("handlers", () => {
       clock.tick(3000);
       chai.assert.isTrue(executeCommandFunc.calledOnceWith("vscode.openFolder"));
       sinon.restore();
-      clock.restore;
+      clock.restore();
     });
 
     test("provisionHandler()", async () => {

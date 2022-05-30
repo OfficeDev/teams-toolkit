@@ -12,9 +12,6 @@ import {
   v3,
   Void,
 } from "@microsoft/teamsfx-api";
-import { Container } from "typedi";
-import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
-import { BuiltInFeaturePluginNames } from "./constants";
 
 export async function getQuestionsForPublish(
   ctx: v2.Context,
@@ -31,6 +28,5 @@ export async function publishApplication(
   tokenProvider: AppStudioTokenProvider,
   telemetryProps?: Json
 ): Promise<Result<Void, FxError>> {
-  const appstudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-  return await appstudio.publishTeamsApp(ctx, inputs, envInfo as v3.EnvInfoV3, tokenProvider);
+  return ok(Void);
 }

@@ -26,8 +26,6 @@ const loginPageHeight = 535;
  *
  * @remarks
  * Can only be used within Teams.
- *
- * @beta
  */
 export class TeamsUserCredential implements TokenCredential {
   private readonly config: AuthenticationConfiguration;
@@ -58,8 +56,6 @@ export class TeamsUserCredential implements TokenCredential {
    *
    * @throws {@link ErrorCode|InvalidConfiguration} when client id, initiate login endpoint or simple auth endpoint is not found in config.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
-   *
-   * @beta
    */
   constructor(authConfig: AuthenticationConfiguration) {
     internalLogger.info("Create teams user credential");
@@ -87,8 +83,6 @@ export class TeamsUserCredential implements TokenCredential {
    * @throws {@link ErrorCode|ConsentFailed} when user canceled or failed to consent.
    * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
-   *
-   * @beta
    */
   async login(scopes: string | string[]): Promise<void> {
     validateScopesType(scopes);
@@ -185,8 +179,6 @@ export class TeamsUserCredential implements TokenCredential {
    * If scopes is empty string or array, it returns SSO token.
    * If scopes is non-empty, it returns access token for target scope.
    * Throw error if get access token failed.
-   *
-   * @beta
    */
   async getToken(
     scopes: string | string[],
@@ -266,8 +258,6 @@ export class TeamsUserCredential implements TokenCredential {
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
    *
    * @returns Basic user info with user displayName, objectId and preferredUserName.
-   *
-   * @beta
    */
   public async getUserInfo(): Promise<UserInfo> {
     internalLogger.info("Get basic user info from SSO token");

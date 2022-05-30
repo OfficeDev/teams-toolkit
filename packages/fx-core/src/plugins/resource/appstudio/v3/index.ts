@@ -45,20 +45,21 @@ import {
   TEAMS_APP_MANIFEST_TEMPLATE_V3,
 } from "../constants";
 import { TelemetryUtils, TelemetryEventName, TelemetryPropertyKey } from "../utils/telemetry";
-import { AppStudioPluginImpl } from "./plugin";
 import { ResourcePermission, TeamsAppAdmin } from "../../../../common/permissionInterface";
 import isUUID from "validator/lib/isUUID";
 import { AppStudioClient } from "../appStudio";
 import { IUserList } from "../interfaces/IAppDefinition";
 import { isExistingTabApp } from "../../../../common/projectSettingsHelper";
 import { InitializedFileAlreadyExistError } from "../../../../core/error";
+import {
+  createOrUpdateTeamsApp,
+  publishTeamsApp,
+} from "../../../../component/resource/appManifest/appStudio";
 
 @Service(BuiltInFeaturePluginNames.appStudio)
 export class AppStudioPluginV3 {
   name = "fx-resource-appstudio";
   displayName = "App Studio";
-
-  private appStudioPluginImpl = new AppStudioPluginImpl();
 
   /**
    * Generate initial manifest template file, for both local debug & remote
@@ -260,12 +261,7 @@ export class AppStudioPluginV3 {
   ): Promise<Result<string, FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.provisionManifest);
-    const result = await this.appStudioPluginImpl.createOrUpdateTeamsApp(
-      ctx,
-      inputs,
-      envInfo,
-      tokenProvider
-    );
+    const result = await createOrUpdateTeamsApp(ctx, inputs, envInfo, tokenProvider);
     if (result.isOk()) {
       const properties: { [key: string]: string } = {};
       properties[TelemetryPropertyKey.appId] = result.value;
@@ -284,12 +280,7 @@ export class AppStudioPluginV3 {
   ): Promise<Result<string, FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.updateManifest);
-    const result = await this.appStudioPluginImpl.createOrUpdateTeamsApp(
-      ctx,
-      inputs,
-      envInfo,
-      tokenProvider
-    );
+    const result = await createOrUpdateTeamsApp(ctx, inputs, envInfo, tokenProvider);
     if (result.isOk()) {
       const properties: { [key: string]: string } = {};
       properties[TelemetryPropertyKey.appId] = result.value;
@@ -308,12 +299,7 @@ export class AppStudioPluginV3 {
   ): Promise<Result<Void, FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.publish);
-    const result = await this.appStudioPluginImpl.publishTeamsApp(
-      ctx,
-      inputs,
-      envInfo,
-      tokenProvider
-    );
+    const result = await publishTeamsApp(ctx, inputs, envInfo, tokenProvider);
     if (result.isOk()) {
       const properties: { [key: string]: string } = {};
       properties[TelemetryPropertyKey.publishedAppId] = result.value.publishedAppId;

@@ -18,7 +18,9 @@ import {
   AxiosZipDeployResult,
   AzurePublishingCredentials,
   AzureUploadConfig,
+  Logger,
 } from "./interfaces";
+import { Messages } from "./messages";
 
 /**
  * operate int azure
@@ -51,7 +53,8 @@ export class AzureOperations {
   public static async zipDeployPackage(
     zipDeployEndpoint: string,
     zipBuffer: Buffer,
-    config: AzureUploadConfig
+    config: AzureUploadConfig,
+    logger?: Logger
   ): Promise<string> {
     let res: AxiosZipDeployResult;
     try {
@@ -61,6 +64,9 @@ export class AzureOperations {
     }
 
     if (!res || !isHttpCodeAccepted(res?.status)) {
+      if (res?.status) {
+        logger?.error?.(Messages.deployFailed(res.status));
+      }
       throw new ZipDeployError();
     }
 
@@ -69,7 +75,8 @@ export class AzureOperations {
 
   public static async checkDeployStatus(
     location: string,
-    config: AzureUploadConfig
+    config: AzureUploadConfig,
+    logger?: Logger
   ): Promise<void> {
     let res: AxiosOnlyStatusResult;
     for (let i = 0; i < DeployStatusConstant.RETRY_TIMES; ++i) {
@@ -85,6 +92,9 @@ export class AzureOperations {
         } else if (isHttpCodeOkOrCreated(res?.status)) {
           return;
         } else {
+          if (res.status) {
+            logger?.error?.(Messages.deployFailed(res.status));
+          }
           throw new DeployStatusError();
         }
       }
@@ -96,8 +106,10 @@ export class AzureOperations {
   public static async restartWebApp(
     webSiteMgmtClient: appService.WebSiteManagementClient,
     resourceGroup: string,
-    siteName: string
+    siteName: string,
+    logger?: Logger
   ): Promise<void> {
+    logger?.info?.(Messages.restartFunction(siteName));
     let res: AxiosResponseWithStatusResult;
     try {
       res = await webSiteMgmtClient.webApps.restart(resourceGroup, siteName);

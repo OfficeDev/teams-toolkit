@@ -11,7 +11,7 @@ import VsCodeLogInstance from "../commonlib/log";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { getTeamsAppTelemetryInfoByEnv } from "../utils/commonUtils";
 import { core, getSystemInputs, showError } from "../handlers";
-import { ext } from "../extensionVariables";
+import * as globalVariables from "../globalVariables";
 import {
   LocalEnvManager,
   FolderName,
@@ -165,7 +165,9 @@ export async function getDebugConfig(
           return { appId: appInfo?.appId as string, env: env };
         } else {
           const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
-          const localSettings = await localEnvManager.getLocalSettings(ext.workspaceUri.fsPath);
+          const localSettings = await localEnvManager.getLocalSettings(
+            globalVariables.workspaceUri!.fsPath
+          );
           return { appId: localSettings?.teamsApp?.teamsAppId as string };
         }
       } else {
@@ -210,7 +212,7 @@ export async function getNpmInstallLogInfo(): Promise<any> {
 export async function getPortsInUse(): Promise<number[]> {
   const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
   try {
-    const projectPath = ext.workspaceUri.fsPath;
+    const projectPath = globalVariables.workspaceUri!.fsPath;
     const projectSettings = await localEnvManager.getProjectSettings(projectPath);
     return await localEnvManager.getPortsInUse(projectPath, projectSettings);
   } catch (error: any) {
@@ -223,16 +225,23 @@ export async function getTeamsAppTenantId(): Promise<string | undefined> {
   try {
     const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
     if (isConfigUnifyEnabled()) {
-      const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
-      const localEnvInfo = await localEnvManager.getLocalEnvInfo(ext.workspaceUri.fsPath, {
-        projectId: projectSettings.projectId,
-      });
+      const projectSettings = await localEnvManager.getProjectSettings(
+        globalVariables.workspaceUri!.fsPath
+      );
+      const localEnvInfo = await localEnvManager.getLocalEnvInfo(
+        globalVariables.workspaceUri!.fsPath,
+        {
+          projectId: projectSettings.projectId,
+        }
+      );
       if (localEnvInfo && localEnvInfo["state"] && localEnvInfo["state"][PluginNames.AAD]) {
         return localEnvInfo["state"][PluginNames.APPST].tenantId as string;
       }
       return undefined;
     } else {
-      const localSettings = await localEnvManager.getLocalSettings(ext.workspaceUri.fsPath);
+      const localSettings = await localEnvManager.getLocalSettings(
+        globalVariables.workspaceUri!.fsPath
+      );
       return localSettings?.teamsApp?.tenantId as string;
     }
   } catch {
@@ -245,16 +254,23 @@ export async function getLocalTeamsAppId(): Promise<string | undefined> {
   try {
     const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
     if (isConfigUnifyEnabled()) {
-      const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
-      const localEnvInfo = await localEnvManager.getLocalEnvInfo(ext.workspaceUri.fsPath, {
-        projectId: projectSettings.projectId,
-      });
+      const projectSettings = await localEnvManager.getProjectSettings(
+        globalVariables.workspaceUri!.fsPath
+      );
+      const localEnvInfo = await localEnvManager.getLocalEnvInfo(
+        globalVariables.workspaceUri!.fsPath,
+        {
+          projectId: projectSettings.projectId,
+        }
+      );
       if (localEnvInfo && localEnvInfo["state"] && localEnvInfo["state"][PluginNames.APPST]) {
         return localEnvInfo["state"][PluginNames.APPST].teamsAppId as string;
       }
       return undefined;
     } else {
-      const localSettings = await localEnvManager.getLocalSettings(ext.workspaceUri.fsPath);
+      const localSettings = await localEnvManager.getLocalSettings(
+        globalVariables.workspaceUri!.fsPath
+      );
       return localSettings?.teamsApp?.teamsAppId as string;
     }
   } catch {
@@ -268,13 +284,15 @@ export async function getLocalBotId(): Promise<string | undefined> {
     if (isConfigUnifyEnabled()) {
       const result = environmentManager.getEnvStateFilesPath(
         environmentManager.getLocalEnvName(),
-        ext.workspaceUri.fsPath
+        globalVariables.workspaceUri!.fsPath
       );
       const envJson = JSON.parse(fs.readFileSync(result.envState, "utf8"));
       return envJson[PluginNames.BOT].botId;
     } else {
       const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
-      const localSettings = await localEnvManager.getLocalSettings(ext.workspaceUri.fsPath);
+      const localSettings = await localEnvManager.getLocalSettings(
+        globalVariables.workspaceUri!.fsPath
+      );
       return localSettings?.bot?.botId as string;
     }
   } catch {
@@ -288,7 +306,10 @@ export async function getBotId(env: string): Promise<string | undefined> {
       return await getLocalBotId();
     }
 
-    const result = environmentManager.getEnvStateFilesPath(env, ext.workspaceUri.fsPath);
+    const result = environmentManager.getEnvStateFilesPath(
+      env,
+      globalVariables.workspaceUri!.fsPath
+    );
     const envJson = JSON.parse(fs.readFileSync(result.envState, "utf8"));
     return envJson[PluginNames.BOT].botId;
   } catch {
@@ -299,7 +320,7 @@ export async function getBotId(env: string): Promise<string | undefined> {
 async function getResourceBaseName(env: string): Promise<string | undefined> {
   try {
     const azureParametersFilePath = path.join(
-      ext.workspaceUri.fsPath,
+      globalVariables.workspaceUri!.fsPath,
       `.${ConfigFolderName}`,
       InputConfigsFolderName,
       `azure.parameters.${env}.json`
@@ -310,7 +331,7 @@ async function getResourceBaseName(env: string): Promise<string | undefined> {
     if (result.includes(placeholder)) {
       const envStateFilesPath = environmentManager.getEnvStateFilesPath(
         env,
-        ext.workspaceUri.fsPath
+        globalVariables.workspaceUri!.fsPath
       );
       const envJson = JSON.parse(fs.readFileSync(envStateFilesPath.envState, "utf8"));
       result = result.replace(placeholder, envJson[PluginNames.SOLUTION].resourceNameSuffix);
@@ -322,7 +343,7 @@ async function getResourceBaseName(env: string): Promise<string | undefined> {
 }
 
 export async function getBotOutlookChannelLink(env: string): Promise<string> {
-  const result = environmentManager.getEnvStateFilesPath(env, ext.workspaceUri.fsPath);
+  const result = environmentManager.getEnvStateFilesPath(env, globalVariables.workspaceUri!.fsPath);
   const envJson = JSON.parse(fs.readFileSync(result.envState, "utf8"));
   const tenantId = envJson[GLOBAL_CONFIG].tenantId;
   const subscriptionId = envJson[GLOBAL_CONFIG].subscriptionId;
@@ -382,7 +403,7 @@ export function checkAndSkipDebugging(): boolean {
 export async function getProjectComponents(): Promise<string | undefined> {
   const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
   try {
-    const projectPath = ext.workspaceUri.fsPath;
+    const projectPath = globalVariables.workspaceUri!.fsPath;
     const projectSettings = await localEnvManager.getProjectSettings(projectPath);
     const result: { [key: string]: any } = { components: [] };
     if (ProjectSettingsHelper.isSpfx(projectSettings)) {

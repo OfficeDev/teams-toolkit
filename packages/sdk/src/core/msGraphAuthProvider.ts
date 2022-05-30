@@ -11,8 +11,6 @@ const defaultScope = "https://graph.microsoft.com/.default";
 
 /**
  * Microsoft Graph auth provider for Teams Framework
- *
- * @beta
  */
 export class MsGraphAuthProvider implements AuthenticationProvider {
   private teamsfx: TeamsFxConfiguration;
@@ -27,8 +25,6 @@ export class MsGraphAuthProvider implements AuthenticationProvider {
    * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
    *
    * @returns An instance of MsGraphAuthProvider.
-   *
-   * @beta
    */
   constructor(teamsfx: TeamsFxConfiguration, scopes?: string | string[]) {
     this.teamsfx = teamsfx;

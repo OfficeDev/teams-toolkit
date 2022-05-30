@@ -5,7 +5,7 @@ import { ProductName } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import * as vscode from "vscode";
 import { endLocalDebugSession, getLocalDebugSessionId, getNpmInstallLogInfo } from "./commonUtils";
-import { ext } from "../extensionVariables";
+import * as globalVariables from "../globalVariables";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 import { Correlator, getHashedEnv, isValidProject } from "@microsoft/teamsfx-core";
@@ -216,7 +216,7 @@ function onDidEndTaskHandler(event: vscode.TaskEndEvent): void {
 }
 
 async function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent): Promise<void> {
-  if (ext.workspaceUri && isValidProject(ext.workspaceUri.fsPath)) {
+  if (globalVariables.workspaceUri && isValidProject(globalVariables.workspaceUri.fsPath)) {
     const task = event.execution.task;
     if (task.scope !== undefined && isTeamsfxTask(task)) {
       allRunningTeamsfxTasks.set(getTaskKey(task), event.processId);
@@ -279,7 +279,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
       const cwdOption = (task.execution as vscode.ShellExecution).options?.cwd;
       let cwd: string | undefined;
       if (cwdOption !== undefined) {
-        cwd = cwdOption.replace("${workspaceFolder}", ext.workspaceUri.fsPath);
+        cwd = cwdOption.replace("${workspaceFolder}", globalVariables.workspaceUri!.fsPath);
       }
       const npmInstallLogInfo = await getNpmInstallLogInfo();
       let validNpmInstallLogInfo = false;
@@ -359,7 +359,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
 }
 
 async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promise<void> {
-  if (ext.workspaceUri && isValidProject(ext.workspaceUri.fsPath)) {
+  if (globalVariables.workspaceUri && isValidProject(globalVariables.workspaceUri.fsPath)) {
     const debugConfig = event.configuration as TeamsfxDebugConfiguration;
     if (
       debugConfig &&
@@ -435,7 +435,7 @@ function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): void {
 export function registerTeamsfxTaskAndDebugEvents(): void {
   taskEndEventEmitter = new vscode.EventEmitter<{ id: string; name: string; exitCode?: number }>();
   taskStartEventEmitter = new vscode.EventEmitter<string>();
-  ext.context.subscriptions.push({
+  globalVariables.context.subscriptions.push({
     dispose() {
       taskEndEventEmitter.dispose();
       taskStartEventEmitter.dispose();
@@ -443,16 +443,16 @@ export function registerTeamsfxTaskAndDebugEvents(): void {
     },
   });
 
-  ext.context.subscriptions.push(vscode.tasks.onDidStartTask(onDidStartTaskHandler));
-  ext.context.subscriptions.push(vscode.tasks.onDidEndTask(onDidEndTaskHandler));
+  globalVariables.context.subscriptions.push(vscode.tasks.onDidStartTask(onDidStartTaskHandler));
+  globalVariables.context.subscriptions.push(vscode.tasks.onDidEndTask(onDidEndTaskHandler));
 
-  ext.context.subscriptions.push(
+  globalVariables.context.subscriptions.push(
     vscode.tasks.onDidStartTaskProcess((event: vscode.TaskProcessStartEvent) =>
       Correlator.runWithId(getLocalDebugSessionId(), onDidStartTaskProcessHandler, event)
     )
   );
 
-  ext.context.subscriptions.push(
+  globalVariables.context.subscriptions.push(
     vscode.tasks.onDidEndTaskProcess((event: vscode.TaskProcessEndEvent) =>
       Correlator.runWithId(getLocalDebugSessionId(), onDidEndTaskProcessHandler, event)
     )
@@ -460,7 +460,7 @@ export function registerTeamsfxTaskAndDebugEvents(): void {
 
   // debug session handler use correlation-id from event.configuration.teamsfxCorrelationId
   // to minimize concurrent debug session affecting correlation-id
-  ext.context.subscriptions.push(
+  globalVariables.context.subscriptions.push(
     vscode.debug.onDidStartDebugSession((event: vscode.DebugSession) =>
       Correlator.runWithId(
         // fallback to retrieve correlation id from the global variable.
@@ -470,7 +470,7 @@ export function registerTeamsfxTaskAndDebugEvents(): void {
       )
     )
   );
-  ext.context.subscriptions.push(
+  globalVariables.context.subscriptions.push(
     vscode.debug.onDidTerminateDebugSession((event: vscode.DebugSession) =>
       Correlator.runWithId(
         event.configuration.teamsfxCorrelationId || getLocalDebugSessionId(),

@@ -1069,7 +1069,8 @@ export class TeamsAppSolution implements Solution {
         : ctx.envInfo.state.get(PluginNames.AAD)?.get(LOCAL_TENANT_ID);
       const m365TenantMatches = await checkWhetherLocalDebugM365TenantMatches(
         localDebugTenantId,
-        ctx.appStudioToken
+        ctx.appStudioToken,
+        ctx.root
       );
       if (m365TenantMatches.isErr()) {
         return m365TenantMatches;

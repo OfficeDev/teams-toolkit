@@ -5,7 +5,6 @@ import {
   ConfigFolderName,
   ProjectSettings,
   ProjectSettingsFileName,
-  ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
@@ -19,8 +18,6 @@ import {
 } from "../plugins/solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import * as uuid from "uuid";
-import { isAadManifestEnabled } from "./tools";
-import { ResourceComponentNames } from "../component/resource";
 
 export function validateProjectSettings(projectSettings: ProjectSettings): string | undefined {
   if (!projectSettings) return "empty projectSettings";

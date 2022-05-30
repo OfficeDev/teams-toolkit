@@ -12,7 +12,7 @@ suite("Global Variables", () => {
         return false;
       });
 
-      globalVariables.initializeExtensionVariables({} as ExtensionContext);
+      globalVariables.initializeGlobalVariables({} as ExtensionContext);
 
       chai.expect(globalVariables.isSPFxProject).equals(false);
 
@@ -24,7 +24,7 @@ suite("Global Variables", () => {
         return true;
       });
 
-      globalVariables.initializeExtensionVariables({} as ExtensionContext);
+      globalVariables.initializeGlobalVariables({} as ExtensionContext);
 
       chai.expect(globalVariables.isSPFxProject).equals(true);
 

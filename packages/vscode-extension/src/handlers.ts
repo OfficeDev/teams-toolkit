@@ -154,45 +154,35 @@ import { localize, parseLocale } from "./utils/localizeUtils";
 export let core: FxCore;
 export let tools: Tools;
 
-export async function activate(): Promise<Result<Void, FxError>> {
+export function activate(): Result<Void, FxError> {
   const result: Result<Void, FxError> = ok(Void);
+  const validProject = isValidProject(globalVariables.workspaceUri?.fsPath);
+  if (validProject) {
+    const projectId = getProjectId() || "unknown";
+    ExtTelemetry.addSharedProperty(TelemetryProperty.ProjectId, projectId);
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTeamsApp, {});
+    AzureAccountManager.setStatusChangeMap(
+      "successfully-sign-in-azure",
+      (status, token, accountInfo) => {
+        if (status === signedIn) {
+          window.showInformationMessage(localize("teamstoolkit.handlers.azureSignIn"));
+        } else if (status === signedOut) {
+          window.showInformationMessage(localize("teamstoolkit.handlers.azureSignOut"));
+        }
+        return Promise.resolve();
+      },
+      false
+    );
+    vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.treeview", true);
+  } else {
+    vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.default", true);
+  }
   try {
-    const validProject = isValidProject(globalVariables.workspaceUri?.fsPath);
-    if (validProject) {
-      const projectId = (await getProjectId()) || "unknown";
-      ExtTelemetry.addSharedProperty(TelemetryProperty.ProjectId, projectId);
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTeamsApp, {});
-    }
-
-    if (!validProject) {
-      vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.default", true);
-    } else {
-      vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.treeview", true);
-    }
-
-    const telemetry = ExtTelemetry.reporter;
-    if (validProject) {
-      AzureAccountManager.setStatusChangeMap(
-        "successfully-sign-in-azure",
-        (status, token, accountInfo) => {
-          if (status === signedIn) {
-            window.showInformationMessage(localize("teamstoolkit.handlers.azureSignIn"));
-          } else if (status === signedOut) {
-            window.showInformationMessage(localize("teamstoolkit.handlers.azureSignOut"));
-          }
-          return Promise.resolve();
-        },
-        false
-      );
-    }
-
     let appstudioLogin: AppStudioTokenProvider = AppStudioTokenInstance;
     const vscodeEnv = detectVsCodeEnv();
     if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
       appstudioLogin = AppStudioCodeSpaceTokenInstance;
     }
-    const sharepointLogin: SharepointTokenProvider = SharepointTokenInstance;
-
     const m365NotificationCallback = (
       status: string,
       token: string | undefined,
@@ -206,6 +196,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
       return Promise.resolve();
     };
     appstudioLogin.setStatusChangeMap("successfully-sign-in-m365", m365NotificationCallback, false);
+    const sharepointLogin: SharepointTokenProvider = SharepointTokenInstance;
     sharepointLogin.setStatusChangeMap(
       "successfully-sign-in-m365",
       m365NotificationCallback,
@@ -225,15 +216,13 @@ export async function activate(): Promise<Result<Void, FxError>> {
         sharepointTokenProvider: SharepointTokenInstance,
         m365TokenProvider: M365TokenInstance,
       },
-      telemetryReporter: telemetry,
+      telemetryReporter: ExtTelemetry.reporter,
       treeProvider: TreeViewManagerInstance.getTreeView("teamsfx-accounts")!,
       ui: VS_CODE_UI,
       expServiceProvider: exp.getExpService(),
     };
     core = new FxCore(tools);
-    registerCoreEvents();
     accountTreeViewProviderInstance.subscribeToStatusChanges(tools.tokenProvider);
-    await envTreeProviderInstance.reloadEnvironments();
     const workspacePath = globalVariables.workspaceUri?.fsPath;
     if (workspacePath) {
       const unifyConfigWatcher = vscode.workspace.createFileSystemWatcher(
@@ -244,13 +233,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
         await openUnifyConfigMd(workspacePath, event.fsPath);
       });
     }
-    await autoOpenProjectHandler();
     automaticNpmInstallHandler(false, false, false);
-    await postUpgrade();
-    ExtTelemetry.isFromSample = await getIsFromSample();
-    ExtTelemetry.settingsVersion = await getSettingsVersion();
-    ExtTelemetry.isM365 = await getIsM365();
-    await ExtTelemetry.sendCachedTelemetryEventsAsync();
 
     if (workspacePath) {
       // refresh env tree when env config files added or deleted.
@@ -290,7 +273,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
   return result;
 }
 
-async function getIsFromSample() {
+export async function getIsFromSample() {
   if (core) {
     const input = getSystemInputs();
     input.ignoreEnvInfo = true;
@@ -301,7 +284,7 @@ async function getIsFromSample() {
   return undefined;
 }
 
-async function getIsM365(): Promise<boolean | undefined> {
+export async function getIsM365(): Promise<boolean | undefined> {
   if (core) {
     const input = getSystemInputs();
     input.ignoreEnvInfo = true;
@@ -315,7 +298,7 @@ async function getIsM365(): Promise<boolean | undefined> {
 }
 
 // only used for telemetry
-async function getSettingsVersion(): Promise<string | undefined> {
+export async function getSettingsVersion(): Promise<string | undefined> {
   if (core) {
     const input = getSystemInputs();
     input.ignoreEnvInfo = true;
@@ -379,6 +362,7 @@ async function refreshEnvTreeOnFileContentChanged(workspacePath: string, filePat
 }
 
 function registerCoreEvents() {
+  // legacy codes for webview provider
   const developmentView = TreeViewManagerInstance.getTreeView("teamsfx-development");
   if (developmentView instanceof CommandsWebviewProvider) {
     core.on(CoreCallbackEvent.lock, () => {
@@ -1618,7 +1602,7 @@ export async function openSurveyHandler(args?: any[]) {
   WebviewPanel.createOrShow(PanelType.Survey);
 }
 
-async function autoOpenProjectHandler(): Promise<void> {
+export async function autoOpenProjectHandler(): Promise<void> {
   const isOpenWalkThrough = await globalStateGet(GlobalKey.OpenWalkThrough, false);
   const isOpenReadMe = await globalStateGet(GlobalKey.OpenReadMe, "");
   const isOpenSampleReadMe = await globalStateGet(GlobalKey.OpenSampleReadMe, false);
@@ -1707,7 +1691,7 @@ export async function openReadMeHandler(args: any[]) {
   }
 }
 
-async function postUpgrade(): Promise<void> {
+export async function postUpgrade(): Promise<void> {
   await openUpgradeChangeLogsHandler();
   await popupAfterUpgrade();
 }

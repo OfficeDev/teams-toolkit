@@ -18,7 +18,7 @@ export let isTeamsFxProject = false;
 export let isSPFxProject = false;
 export let isExistingUser = "no";
 
-export function initializeExtensionVariables(ctx: vscode.ExtensionContext): void {
+export function initializeGlobalVariables(ctx: vscode.ExtensionContext): void {
   context = ctx;
   isExistingUser = context.globalState.get<string>(UserState.IsExisting) || "no";
   if (vscode.workspace && vscode.workspace.workspaceFolders) {

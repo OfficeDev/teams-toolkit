@@ -272,7 +272,7 @@ export async function readProjectSecrets(
     return err(new UserdataNotFound(env!));
   }
   try {
-    const fd = await fs.open(secretFile, "r");
+    const fd = fs.openSync(secretFile, "r");
     const stat = await fs.fstat(fd);
     const buffer = Buffer.alloc(stat.size);
     await fs.read(fd, buffer, 0, buffer.length, null);

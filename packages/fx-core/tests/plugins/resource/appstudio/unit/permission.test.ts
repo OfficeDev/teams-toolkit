@@ -22,7 +22,7 @@ import {
   PluginNames,
 } from "../../../../../src/plugins/solution/fx-solution/constants";
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
-import { getAzureProjectRoot, MockedAppStudioTokenProvider } from "../helper";
+import { getAzureProjectRoot } from "../helper";
 import { newEnvInfo } from "../../../../../src";
 import { IUserList } from "../../../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
 import { LocalCrypto } from "../../../../../src/core/crypto";
@@ -35,7 +35,6 @@ import {
   BuiltInFeaturePluginNames,
   BuiltInSolutionNames,
 } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
-import { mockTokenProviderGraph } from "../../aad/helper";
 import * as uuid from "uuid";
 import Container from "typedi";
 import { AadAppForTeamsPluginV3 } from "../../../../../src/plugins/resource/aad/v3";

@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 import {
   PluginContext,
-  SharepointTokenProvider,
   InputTextConfig,
   InputTextResult,
   IProgressHandler,
@@ -23,6 +22,7 @@ import {
   UserInteraction,
   FxError,
   Colors,
+  M365TokenProvider,
 } from "@microsoft/teamsfx-api";
 import { SPFXQuestionNames } from "../../../../src/plugins/resource/spfx/utils/questions";
 import faker from "faker";
@@ -41,7 +41,7 @@ export class TestHelper {
         appName: appName,
       },
       root: testFolder,
-      sharepointTokenProvider: mockTokenProvider(),
+      m365TokenProvider: mockM365TokenProvider(),
       answers: {},
     } as PluginContext;
     pluginContext.answers![SPFXQuestionNames.webpart_name] = webpartName
@@ -118,13 +118,13 @@ export class MockUserInteraction implements UserInteraction {
   }
 }
 
-function mockTokenProvider(): SharepointTokenProvider {
-  const provider = <SharepointTokenProvider>{};
+function mockM365TokenProvider(): M365TokenProvider {
+  const provider = <M365TokenProvider>{};
   const mockTokenObject = {
     tid: faker.datatype.uuid(),
   };
 
-  provider.getAccessToken = sinon.stub().returns("token");
-  provider.getJsonObject = sinon.stub().returns(mockTokenObject);
+  provider.getAccessToken = sinon.stub().returns(ok("token"));
+  provider.getJsonObject = sinon.stub().returns(ok(mockTokenObject));
   return provider;
 }

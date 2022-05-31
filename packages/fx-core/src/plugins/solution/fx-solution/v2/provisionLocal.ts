@@ -69,7 +69,7 @@ export async function provisionLocalResource(
 
   const m365TenantMatches = await checkWhetherLocalDebugM365TenantMatches(
     localDebugTenantId,
-    tokenProvider.appStudioToken,
+    tokenProvider.m365TokenProvider,
     inputs.projectPath
   );
   if (m365TenantMatches.isErr()) {

@@ -7,7 +7,7 @@ import { TeamsAppSolution } from " ../../../src/plugins/solution";
 import {
   SolutionContext,
   Platform,
-  GraphTokenProvider,
+  M365TokenProvider,
   ok,
   PluginContext,
   Result,
@@ -24,7 +24,7 @@ import {
 import { HostTypeOptionAzure } from "../../../src/plugins/solution/fx-solution/question";
 import * as uuid from "uuid";
 import sinon from "sinon";
-import { EnvConfig, MockGraphTokenProvider } from "../resource/apim/testUtil";
+import { EnvConfig, MockM365TokenProvider } from "../resource/apim/testUtil";
 import { CollaborationState } from "../../../src/common/permissionInterface";
 import { newEnvInfo } from "../../../src";
 import { LocalCrypto } from "../../../src/core/crypto";
@@ -39,7 +39,7 @@ describe("checkPermission() for Teamsfx projects", () => {
   const mockProjectTenantId = "mock_project_tenant_id";
 
   function mockSolutionContext(): SolutionContext {
-    const mockGraphTokenProvider = new MockGraphTokenProvider(
+    const mockM365TokenProvider = new MockM365TokenProvider(
       mockProjectTenantId,
       EnvConfig.servicePrincipalClientId,
       EnvConfig.servicePrincipalClientSecret
@@ -49,7 +49,7 @@ describe("checkPermission() for Teamsfx projects", () => {
       envInfo: newEnvInfo(),
       answers: { platform: Platform.VSCode },
       projectSettings: undefined,
-      graphTokenProvider: mockGraphTokenProvider,
+      m365TokenProvider: mockM365TokenProvider,
       cryptoProvider: new LocalCrypto(""),
     };
   }
@@ -72,12 +72,14 @@ describe("checkPermission() for Teamsfx projects", () => {
       },
     };
 
-    sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
-      tid: "fake_tid",
-      oid: "fake_oid",
-      unique_name: "fake_unique_name",
-      name: "fake_name",
-    });
+    sandbox.stub(mockedCtx.m365TokenProvider as M365TokenProvider, "getJsonObject").resolves(
+      ok({
+        tid: "fake_tid",
+        oid: "fake_oid",
+        unique_name: "fake_unique_name",
+        name: "fake_name",
+      })
+    );
 
     const result = await solution.checkPermission(mockedCtx);
     expect(result.isErr()).to.be.false;
@@ -102,8 +104,8 @@ describe("checkPermission() for Teamsfx projects", () => {
     mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
     sandbox
-      .stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject")
-      .resolves(undefined);
+      .stub(mockedCtx.m365TokenProvider as M365TokenProvider, "getJsonObject")
+      .resolves(err(new UserError("source", "FailedToRetrieveUserInfo", "message")));
 
     const result = await solution.checkPermission(mockedCtx);
     expect(result.isErr()).to.be.true;
@@ -125,12 +127,14 @@ describe("checkPermission() for Teamsfx projects", () => {
     };
     mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
-    sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
-      tid: "fake_tid",
-      oid: "fake_oid",
-      unique_name: "fake_unique_name",
-      name: "fake_name",
-    });
+    sandbox.stub(mockedCtx.m365TokenProvider as M365TokenProvider, "getJsonObject").resolves(
+      ok({
+        tid: "fake_tid",
+        oid: "fake_oid",
+        unique_name: "fake_unique_name",
+        name: "fake_name",
+      })
+    );
 
     mockedCtx.envInfo.state
       .get(PluginNames.SOLUTION)
@@ -158,12 +162,14 @@ describe("checkPermission() for Teamsfx projects", () => {
     };
     mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
-    sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
-      tid: mockProjectTenantId,
-      oid: "fake_oid",
-      unique_name: "fake_unique_name",
-      name: "fake_name",
-    });
+    sandbox.stub(mockedCtx.m365TokenProvider as M365TokenProvider, "getJsonObject").resolves(
+      ok({
+        tid: mockProjectTenantId,
+        oid: "fake_oid",
+        unique_name: "fake_unique_name",
+        name: "fake_name",
+      })
+    );
 
     appStudioPlugin.checkPermission = async function (
       _ctx: PluginContext
@@ -210,12 +216,14 @@ describe("checkPermission() for Teamsfx projects", () => {
     };
     mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
-    sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
-      tid: mockProjectTenantId,
-      oid: "fake_oid",
-      unique_name: "fake_unique_name",
-      name: "fake_name",
-    });
+    sandbox.stub(mockedCtx.m365TokenProvider as M365TokenProvider, "getJsonObject").resolves(
+      ok({
+        tid: mockProjectTenantId,
+        oid: "fake_oid",
+        unique_name: "fake_unique_name",
+        name: "fake_name",
+      })
+    );
 
     aadPlugin.checkPermission = async function (
       _ctx: PluginContext

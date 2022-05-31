@@ -7,12 +7,12 @@ import { TeamsAppSolution } from " ../../../src/plugins/solution";
 import {
   SolutionContext,
   Platform,
-  GraphTokenProvider,
   ok,
   PluginContext,
   Result,
   FxError,
   err,
+  M365TokenProvider,
 } from "@microsoft/teamsfx-api";
 import {
   GLOBAL_CONFIG,
@@ -27,7 +27,7 @@ import {
 } from "../../../src/plugins/solution/fx-solution/question";
 import * as uuid from "uuid";
 import sinon from "sinon";
-import { EnvConfig, MockGraphTokenProvider } from "../resource/apim/testUtil";
+import { EnvConfig, MockM365TokenProvider } from "../resource/apim/testUtil";
 import { CollaborationState } from "../../../src/common/permissionInterface";
 import { newEnvInfo } from "../../../src";
 import { LocalCrypto } from "../../../src/core/crypto";
@@ -43,7 +43,7 @@ describe("grantPermission() for Teamsfx projects", () => {
   const mockProjectTenantId = "mock_project_tenant_id";
 
   function mockSolutionContext(): SolutionContext {
-    const mockGraphTokenProvider = new MockGraphTokenProvider(
+    const mockM365TokenProvider = new MockM365TokenProvider(
       mockProjectTenantId,
       EnvConfig.servicePrincipalClientId,
       EnvConfig.servicePrincipalClientSecret
@@ -53,7 +53,7 @@ describe("grantPermission() for Teamsfx projects", () => {
       envInfo: newEnvInfo(),
       answers: { platform: Platform.VSCode, email: "your_collaborator@yourcompany.com" },
       projectSettings: undefined,
-      graphTokenProvider: mockGraphTokenProvider,
+      m365TokenProvider: mockM365TokenProvider,
       cryptoProvider: new LocalCrypto(""),
     };
   }
@@ -75,12 +75,14 @@ describe("grantPermission() for Teamsfx projects", () => {
         version: "1.0",
       },
     };
-    sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
-      tid: "fake_tid",
-      oid: "fake_oid",
-      unique_name: "fake_unique_name",
-      name: "fake_name",
-    });
+    sandbox.stub(mockedCtx.m365TokenProvider as M365TokenProvider, "getJsonObject").resolves(
+      ok({
+        tid: "fake_tid",
+        oid: "fake_oid",
+        unique_name: "fake_unique_name",
+        name: "fake_name",
+      })
+    );
 
     const result = await solution.grantPermission(mockedCtx);
     expect(result.isErr()).to.be.false;
@@ -105,8 +107,8 @@ describe("grantPermission() for Teamsfx projects", () => {
     mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
     sandbox
-      .stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject")
-      .resolves(undefined);
+      .stub(mockedCtx.m365TokenProvider as M365TokenProvider, "getJsonObject")
+      .resolves(err(new UserError("source", "FailedToRetrieveUserInfo", "message")));
 
     const result = await solution.grantPermission(mockedCtx);
     expect(result.isErr()).to.be.true;
@@ -128,12 +130,14 @@ describe("grantPermission() for Teamsfx projects", () => {
     };
     mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
-    sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
-      tid: "fake_tid",
-      oid: "fake_oid",
-      unique_name: "fake_unique_name",
-      name: "fake_name",
-    });
+    sandbox.stub(mockedCtx.m365TokenProvider as M365TokenProvider, "getJsonObject").resolves(
+      ok({
+        tid: "fake_tid",
+        oid: "fake_oid",
+        unique_name: "fake_unique_name",
+        name: "fake_name",
+      })
+    );
 
     mockedCtx.envInfo.state
       .get(PluginNames.SOLUTION)
@@ -166,16 +170,18 @@ describe("grantPermission() for Teamsfx projects", () => {
     };
 
     sandbox
-      .stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject")
+      .stub(mockedCtx.m365TokenProvider as M365TokenProvider, "getJsonObject")
       .onCall(0)
-      .resolves({
-        tid: mockProjectTenantId,
-        oid: "fake_oid",
-        unique_name: "fake_unique_name",
-        name: "fake_name",
-      })
+      .resolves(
+        ok({
+          tid: mockProjectTenantId,
+          oid: "fake_oid",
+          unique_name: "fake_unique_name",
+          name: "fake_name",
+        })
+      )
       .onCall(1)
-      .resolves(undefined);
+      .resolves(err(new UserError("source", "name", "message")));
 
     mockedCtx.envInfo.state
       .get(PluginNames.SOLUTION)
@@ -201,16 +207,18 @@ describe("grantPermission() for Teamsfx projects", () => {
     };
     mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
     sandbox
-      .stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject")
+      .stub(mockedCtx.m365TokenProvider as M365TokenProvider, "getJsonObject")
       .onCall(0)
-      .resolves({
-        tid: mockProjectTenantId,
-        oid: "fake_oid",
-        unique_name: "fake_unique_name",
-        name: "fake_name",
-      })
+      .resolves(
+        ok({
+          tid: mockProjectTenantId,
+          oid: "fake_oid",
+          unique_name: "fake_unique_name",
+          name: "fake_name",
+        })
+      )
       .onCall(1)
-      .resolves(undefined);
+      .resolves(err(new UserError("source", "name", "message")));
 
     mockedCtx.envInfo.state
       .get(PluginNames.SOLUTION)
@@ -237,21 +245,25 @@ describe("grantPermission() for Teamsfx projects", () => {
     mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
     sandbox
-      .stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject")
+      .stub(mockedCtx.m365TokenProvider as M365TokenProvider, "getJsonObject")
       .onCall(0)
-      .resolves({
-        tid: mockProjectTenantId,
-        oid: "fake_oid",
-        unique_name: "fake_unique_name",
-        name: "fake_name",
-      })
+      .resolves(
+        ok({
+          tid: mockProjectTenantId,
+          oid: "fake_oid",
+          unique_name: "fake_unique_name",
+          name: "fake_name",
+        })
+      )
       .onCall(1)
-      .resolves({
-        tid: mockProjectTenantId,
-        oid: "fake_oid_2",
-        unique_name: "fake_unique_name_2",
-        name: "fake_name_2",
-      });
+      .resolves(
+        ok({
+          tid: mockProjectTenantId,
+          oid: "fake_oid_2",
+          unique_name: "fake_unique_name_2",
+          name: "fake_name_2",
+        })
+      );
 
     sandbox
       .stub(CollaborationUtil, "getUserInfo")

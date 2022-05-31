@@ -46,11 +46,8 @@ describe("Update manifest preview file", () => {
     const buildTeamsPackage = sinon.stub(plugin, "buildTeamsAppPackage");
 
     try {
-      const res = await plugin.updateManifest(ctx, false);
-      console.log(res);
-    } catch (e) {
-      console.log(e);
-    }
+      await plugin.updateManifest(ctx, false);
+    } catch (e) {}
     chai.expect(buildTeamsPackage.calledOnce).to.be.true;
     sinon.restore();
   });

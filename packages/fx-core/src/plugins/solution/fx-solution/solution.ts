@@ -461,7 +461,12 @@ export class TeamsAppSolution implements Solution {
         ctx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
         if (!this.isAzureProject(ctx) && isMultiEnvEnabled()) {
-          const appStudioTokenJson = await ctx.appStudioToken?.getJsonObject();
+          const appStudioTokenJsonRes = await ctx.m365TokenProvider?.getJsonObject({
+            scopes: AppStudioScopes,
+          });
+          const appStudioTokenJson = appStudioTokenJsonRes?.isOk()
+            ? appStudioTokenJsonRes.value
+            : undefined;
           ctx.envInfo.state
             .get(GLOBAL_CONFIG)
             ?.set(REMOTE_TEAMS_APP_TENANT_ID, (appStudioTokenJson as any).tid);
@@ -503,12 +508,18 @@ export class TeamsAppSolution implements Solution {
     if (this.isAzureProject(ctx)) {
       //1. ask common questions for azure resources.
       const appName = ctx.projectSettings!.appName;
+      const appStudioTokenJsonRes = await ctx.m365TokenProvider?.getJsonObject({
+        scopes: AppStudioScopes,
+      });
+      const appStudioTokenJson = appStudioTokenJsonRes?.isOk()
+        ? appStudioTokenJsonRes.value
+        : undefined;
       const res = await fillInCommonQuestions(
         ctx,
         appName,
         ctx.envInfo.state,
         ctx.azureAccountProvider,
-        await ctx.appStudioToken?.getJsonObject()
+        appStudioTokenJson
       );
       if (res.isErr()) {
         return res;
@@ -754,7 +765,12 @@ export class TeamsAppSolution implements Solution {
     }
 
     try {
-      const appStudioTokenJson = await ctx.appStudioToken?.getJsonObject();
+      const appStudioTokenJsonRes = await ctx.m365TokenProvider?.getJsonObject({
+        scopes: AppStudioScopes,
+      });
+      const appStudioTokenJson = appStudioTokenJsonRes?.isOk()
+        ? appStudioTokenJsonRes.value
+        : undefined;
 
       const checkM365 = await checkM365Tenant(
         { version: 1, data: ctx.envInfo },
@@ -1023,7 +1039,12 @@ export class TeamsAppSolution implements Solution {
       }
     } else if (stage === Stage.grantPermission) {
       if (isDynamicQuestion) {
-        const appStudioTokenJson = await ctx.appStudioToken?.getJsonObject();
+        const appStudioTokenJsonRes = await ctx.m365TokenProvider?.getJsonObject({
+          scopes: AppStudioScopes,
+        });
+        const appStudioTokenJson = appStudioTokenJsonRes?.isOk()
+          ? appStudioTokenJsonRes.value
+          : undefined;
         node.addChild(new QTreeNode(getUserEmailQuestion((appStudioTokenJson as any)?.upn)));
       }
     }
@@ -1085,7 +1106,7 @@ export class TeamsAppSolution implements Solution {
         : ctx.envInfo.state.get(PluginNames.AAD)?.get(LOCAL_TENANT_ID);
       const m365TenantMatches = await checkWhetherLocalDebugM365TenantMatches(
         localDebugTenantId,
-        ctx.appStudioToken,
+        ctx.m365TokenProvider,
         ctx.root
       );
       if (m365TenantMatches.isErr()) {
@@ -1137,11 +1158,13 @@ export class TeamsAppSolution implements Solution {
 
       // check point 6
       // set local debug Teams app tenant id in context.
-      const result = this.loadTeamsAppTenantId(
-        ctx,
-        true,
-        await ctx.appStudioToken?.getJsonObject()
-      );
+      const appStudioTokenJsonRes = await ctx.m365TokenProvider?.getJsonObject({
+        scopes: AppStudioScopes,
+      });
+      const appStudioTokenJson = appStudioTokenJsonRes?.isOk()
+        ? appStudioTokenJsonRes.value
+        : undefined;
+      const result = this.loadTeamsAppTenantId(ctx, true, appStudioTokenJson);
       if (result.isErr()) {
         return result;
       }
@@ -1944,7 +1967,13 @@ export class TeamsAppSolution implements Solution {
     const teamsAppId = maybeTeamsAppId.value;
 
     const appSettingsJSONTpl = (await fs.readFile(appSettingsJSONPath)).toString();
-    const maybeTenantId = parseTeamsAppTenantId(await ctx.appStudioToken?.getJsonObject());
+    const appStudioTokenJsonRes = await ctx.m365TokenProvider?.getJsonObject({
+      scopes: AppStudioScopes,
+    });
+    const appStudioTokenJson = appStudioTokenJsonRes?.isOk()
+      ? appStudioTokenJsonRes.value
+      : undefined;
+    const maybeTenantId = parseTeamsAppTenantId(appStudioTokenJson);
     if (maybeTenantId.isErr()) {
       return err(maybeTenantId.error);
     }

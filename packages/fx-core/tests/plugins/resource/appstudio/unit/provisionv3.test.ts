@@ -23,10 +23,7 @@ import { IAppDefinition } from "./../../../../../src/plugins/resource/appstudio/
 import { newEnvInfoV3 } from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import {
-  MockedAppStudioTokenProvider,
   MockedAzureAccountProvider,
-  MockedGraphTokenProvider,
-  MockedSharepointProvider,
   MockedLogProvider,
   MockedTelemetryReporter,
 } from "../../../solution/util";

@@ -454,7 +454,8 @@ export class SPFxPluginImpl {
       return err(GetGraphTokenFailedError());
     }
 
-    const tokenJson = await ctx.graphTokenProvider?.getJsonObject();
+    const graphTokenJsonRes = await ctx.m365TokenProvider?.getJsonObject({ scopes: GraphScopes });
+    const tokenJson = graphTokenJsonRes?.isOk() ? graphTokenJsonRes.value : undefined;
     const username = (tokenJson as any).unique_name;
 
     const instance = axios.create({

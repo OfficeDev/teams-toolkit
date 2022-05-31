@@ -46,8 +46,6 @@
     "onCommand:fx-extension.openDocument",
     "onCommand:fx-extension.cmpAccounts",
     "onCommand:fx-extension.create",
-    "onCommand:fx-extension.addCapability",
-    "onCommand:fx-extension.update",
     "onCommand:fx-extension.openManifest",
     "onCommand:fx-extension.validateManifest",
     "onCommand:fx-extension.build",
@@ -62,9 +60,7 @@
     "onCommand:fx-extension.openReadMe",
     "onCommand:fx-extension.openDeploymentTreeview",
     "onCommand:fx-extension.selectTutorials",
-    "onCommand:fx-extension.connectExistingApi",
     "onCommand:workbench.action.tasks.runTask",
-    "onCommand:fx-extension.addSso",
     "workspaceContains:**/.fx/*",
     "onView:teamsfx-accounts",
     "onView:teamsfx-environment",
@@ -500,19 +496,9 @@
         "title": "%teamstoolkit.commands.createProject.title%"
       },
       {
-        "command": "fx-extension.update",
-        "title": "%teamstoolkit.commands.addCloudResource.title%",
-        "enablement": "!fx-entension.previewFeaturesEnabled && !fx-extension.isSPFx"
-      },
-      {
-        "command": "fx-extension.addCapability",
-        "title": "%teamstoolkit.commands.addCapability.title%",
-        "enablement": "!fx-entension.previewFeaturesEnabled && !fx-extension.isSPFx && !fx-extension.isM365"
-      },
-      {
         "command": "fx-extension.addFeature",
         "title": "%teamstoolkit.commands.addFeature.title%",
-        "enablement": "!fx-extension.isSPFx && fx-entension.previewFeaturesEnabled"
+        "enablement": "!fx-extension.isSPFx"
       },
       {
         "command": "fx-extension.openManifest",
@@ -521,11 +507,6 @@
       {
         "command": "fx-extension.validateManifest",
         "title": "%teamstoolkit.commands.validateManifest.title%"
-      },
-      {
-        "command": "fx-extension.connectExistingApi",
-        "title": "%teamstoolkit.commands.connectExistingApi.title%",
-        "enablement": "!fx-entension.previewFeaturesEnabled && fx-extension.isApiConnectEnabled"
       },
       {
         "command": "fx-extension.build",
@@ -599,12 +580,6 @@
         "command": "fx-extension.selectAndDebug",
         "title": "%teamstoolkit.commands.debug.title%",
         "icon": "$(run)"
-      },
-      {
-        "command": "fx-extension.addCICDWorkflows",
-        "title": "%teamstoolkit.commands.addCICDWorkflows.title%",
-        "enablement": "!fx-entension.previewFeaturesEnabled",
-        "icon": "$(sync)"
       },
       {
         "command": "fx-extension.openPreviewFile",
@@ -731,11 +706,6 @@
         "command": "fx-extension.openDeploymentTreeview",
         "title": "Teams: Open Deployment Treeview",
         "enablement": "never"
-      },
-      {
-        "command": "fx-extension.addSso",
-        "title": "%teamstoolkit.commands.addSso.title%",
-        "enablement": "!fx-entension.previewFeaturesEnabled && fx-extension.isAadManifestEnabled"
       },
       {
         "command": "fx-extension.selectTutorials",

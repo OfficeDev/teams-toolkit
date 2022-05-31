@@ -74,7 +74,6 @@ import {
   InvalidProjectError,
   isConfigUnifyEnabled,
   isExistingTabAppEnabled,
-  isPreviewFeaturesEnabled,
   isUserCancelError,
   isValidProject,
   LocalEnvManager,
@@ -626,66 +625,6 @@ async function previewRemote(
   return ok(null);
 }
 
-export async function addResourceHandler(args?: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddResourceStart, getTriggerFromProperty(args));
-  const func: Func = {
-    namespace: "fx-solution-azure",
-    method: "addResource",
-  };
-  let excludeBackend = true;
-  try {
-    const localEnvManager = new LocalEnvManager(
-      VsCodeLogInstance,
-      ExtTelemetry.reporter,
-      VS_CODE_UI
-    );
-    const projectSettings = await localEnvManager.getProjectSettings(
-      globalVariables.workspaceUri!.fsPath
-    );
-    excludeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
-  } catch (error) {
-    VsCodeLogInstance.warning(`${error}`);
-  }
-  const result = await runUserTask(func, TelemetryEvent.AddResource, true);
-  if (result.isOk() && !excludeBackend) {
-    await globalStateUpdate("automaticNpmInstall", true);
-    automaticNpmInstallHandler(true, excludeBackend, true);
-  }
-  return result;
-}
-
-export async function addCapabilityHandler(args?: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddCapStart, getTriggerFromProperty(args));
-  const func: Func = {
-    namespace: "fx-solution-azure",
-    method: "addCapability",
-  };
-  let excludeFrontend = true,
-    excludeBot = true;
-  try {
-    const localEnvManager = new LocalEnvManager(
-      VsCodeLogInstance,
-      ExtTelemetry.reporter,
-      VS_CODE_UI
-    );
-    const projectSettings = await localEnvManager.getProjectSettings(
-      globalVariables.workspaceUri!.fsPath
-    );
-    excludeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
-    excludeBot = ProjectSettingsHelper.includeBot(projectSettings);
-  } catch (error) {
-    VsCodeLogInstance.warning(`${error}`);
-  }
-  const result = await runUserTask(func, TelemetryEvent.AddCap, true);
-  if (result.isOk()) {
-    await globalStateUpdate("automaticNpmInstall", true);
-    automaticNpmInstallHandler(excludeFrontend, true, excludeBot);
-    await envTreeProviderInstance.reloadEnvironments();
-  }
-
-  return result;
-}
-
 export async function addFeatureHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddFeatureStart, getTriggerFromProperty(args));
   const func: Func = {
@@ -746,28 +685,6 @@ export async function addFeatureHandler(args?: any[]): Promise<Result<null, FxEr
   }
 
   return result;
-}
-
-export async function connectExistingApiHandler(args?: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.ConnectExistingApiStart,
-    getTriggerFromProperty(args)
-  );
-  const func: Func = {
-    namespace: "fx-solution-azure/fx-resource-api-connector",
-    method: "connectExistingApi",
-    params: {},
-  };
-
-  const res = await runUserTask(func, TelemetryEvent.ConnectExistingApi, true);
-  if (!res.isOk()) {
-    return err(res.error);
-  }
-
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ConnectExistingApi, {
-    [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-  });
-  return ok(null);
 }
 
 export async function validateManifestHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -896,31 +813,6 @@ export async function deployHandler(args?: any[]): Promise<Result<null, FxError>
 export async function publishHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PublishStart, getTriggerFromProperty(args));
   return await runCommand(Stage.publish);
-}
-
-export async function addCICDWorkflowsHandler(args?: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.AddCICDWorkflowsStart,
-    getTriggerFromProperty(args)
-  );
-
-  const func: Func = {
-    namespace: "fx-solution-azure/fx-resource-cicd",
-    method: "addCICDWorkflows",
-    params: {},
-  };
-
-  const res = await runUserTask(func, TelemetryEvent.AddCICDWorkflows, true);
-  if (!res.isOk()) {
-    showError(res.error);
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCICDWorkflows, res.error);
-    return err(res.error);
-  }
-
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddCICDWorkflows, {
-    [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-  });
-  return ok(null);
 }
 
 export async function showOutputChannel(args?: any[]): Promise<Result<any, FxError>> {
@@ -3053,17 +2945,6 @@ export async function openDeploymentTreeview(args?: any[]) {
   }
 }
 
-export async function addSsoHanlder(): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddSsoStart);
-  const func: Func = {
-    namespace: "fx-solution-azure",
-    method: "addSso",
-  };
-
-  const result = await runUserTask(func, TelemetryEvent.AddSso, true);
-  return result;
-}
-
 export async function deployAadAppManifest(args: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DeployAadManifestStart);
   const inputs = getSystemInputs();
@@ -3079,10 +2960,6 @@ export async function deployAadAppManifest(args: any[]): Promise<Result<null, Fx
 
 export async function selectTutorialsHandler(args?: any[]): Promise<Result<unknown, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ViewGuidedTutorials, getTriggerFromProperty(args));
-  if (!isPreviewFeaturesEnabled()) {
-    VS_CODE_UI.showMessage("info", localize("teamstoolkit.common.commingSoon"), false);
-    return ok(null);
-  }
   const config: SingleSelectConfig = {
     name: "tutorialName",
     title: "Tutorials",

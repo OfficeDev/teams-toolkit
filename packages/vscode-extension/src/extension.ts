@@ -23,7 +23,6 @@ import {
   isConfigUnifyEnabled,
   isDeployManifestEnabled,
   isExistingTabAppEnabled,
-  isPreviewFeaturesEnabled,
 } from "@microsoft/teamsfx-core";
 
 import {
@@ -194,12 +193,6 @@ async function initializeContextKey() {
     "fx-extension.isApiConnectEnabled",
     isApiConnectEnabled()
   );
-
-  vscode.commands.executeCommand(
-    "setContext",
-    "fx-entension.previewFeaturesEnabled",
-    isPreviewFeaturesEnabled()
-  );
 }
 
 function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext) {
@@ -228,22 +221,6 @@ function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext)
     "fx-extension.addFeature",
     handlers.addFeatureHandler,
     "addFeature"
-  );
-
-  // Add capabilities
-  registerInCommandController(
-    context,
-    "fx-extension.addCapability",
-    handlers.addCapabilityHandler,
-    "addCapabilities"
-  );
-
-  // Add cloud resources
-  registerInCommandController(
-    context,
-    "fx-extension.update",
-    handlers.addResourceHandler,
-    "addResources"
   );
 
   // Edit manifest file
@@ -284,14 +261,6 @@ function registerTreeViewCommandsInDeployment(context: vscode.ExtensionContext) 
 
   // Publish to Teams
   registerInCommandController(context, "fx-extension.publish", handlers.publishHandler, "publish");
-
-  // Add CI/CD Workflows
-  registerInCommandController(
-    context,
-    "fx-extension.addCICDWorkflows",
-    handlers.addCICDWorkflowsHandler,
-    "addCICDWorkflows"
-  );
 
   // Developer Portal for Teams
   registerInCommandController(
@@ -352,12 +321,6 @@ function registerCommands(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.validateManifestHandler, args)
   );
   context.subscriptions.push(validateManifestCmd);
-
-  const connectExistingApiCmd = vscode.commands.registerCommand(
-    "fx-extension.connectExistingApi",
-    (...args) => Correlator.run(handlers.connectExistingApiHandler, args)
-  );
-  context.subscriptions.push(connectExistingApiCmd);
 
   // 1.7 validate dependencies command (hide from UI)
   // localdebug session starts from environment checker
@@ -641,11 +604,6 @@ function registerCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(showOutputChannel);
 
   registerInCommandController(context, "fx-extension.openFolder", handlers.openFolderHandler);
-
-  const addSso = vscode.commands.registerCommand("fx-extension.addSso", () =>
-    Correlator.run(handlers.addSsoHanlder)
-  );
-  context.subscriptions.push(addSso);
 
   const openTutorial = vscode.commands.registerCommand("fx-extension.openTutorial", (...args) =>
     Correlator.run(handlers.openTutorialHandler, [TelemetryTriggerFrom.QuickPick, ...args])

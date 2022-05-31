@@ -35,14 +35,11 @@ class CommandController {
       "fx-extension.create",
       "fx-extension.init",
       "fx-extension.addFeature",
-      "fx-extension.addCapability",
-      "fx-extension.update",
       "fx-extension.openManifest",
       "fx-extension.provision",
       "fx-extension.build",
       "fx-extension.deploy",
       "fx-extension.publish",
-      "fx-extension.addCICDWorkflows",
     ]);
   }
 

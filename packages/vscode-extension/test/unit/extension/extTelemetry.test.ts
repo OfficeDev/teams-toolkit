@@ -5,7 +5,6 @@ import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 import * as telemetryModule from "../../../src/telemetry/extTelemetry";
 import { TelemetryEvent } from "../../../src/telemetry/extTelemetryEvents";
 import sinon = require("sinon");
-import * as commonUtils from "../../../src/utils/commonUtils";
 import * as fs from "fs-extra";
 import * as globalVariables from "../../../src/globalVariables";
 import { Uri } from "vscode";
@@ -89,10 +88,10 @@ suite("ExtTelemetry", () => {
     const sandbox = sinon.createSandbox();
     suiteSetup(() => {
       chai.util.addProperty(ExtTelemetry, "reporter", () => reporterSpy);
-      sandbox.stub(commonUtils, "getIsExistingUser").returns(undefined);
       sandbox.stub(fs, "pathExistsSync").returns(false);
       sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
       sandbox.stub(globalVariables, "isSPFxProject").value(false);
+      sandbox.stub(globalVariables, "isExistingUser").value("no");
     });
 
     suiteTeardown(() => {
@@ -111,7 +110,7 @@ suite("ExtTelemetry", () => {
         {
           stringProp: "some string",
           component: "extension",
-          "is-existing-user": "",
+          "is-existing-user": "no",
           "is-spfx": "false",
         },
         { numericMeasure: 123 }
@@ -139,7 +138,7 @@ suite("ExtTelemetry", () => {
           stringProp: "some string",
           component: "extension",
           success: "no",
-          "is-existing-user": "",
+          "is-existing-user": "no",
           "is-spfx": "false",
           "error-type": "user",
           "error-message": `${error.message}${error.stack ? "\nstack:\n" + error.stack : ""}`,
@@ -155,7 +154,7 @@ suite("ExtTelemetry", () => {
           stringProp: "some string",
           component: "extension",
           success: "no",
-          "is-existing-user": "",
+          "is-existing-user": "no",
           "is-spfx": "false",
           "error-type": "user",
           "error-message": `${error.displayMessage}${
@@ -181,7 +180,7 @@ suite("ExtTelemetry", () => {
         {
           stringProp: "some string",
           component: "extension",
-          "is-existing-user": "",
+          "is-existing-user": "no",
           "is-spfx": "false",
         },
         { numericMeasure: 123 }

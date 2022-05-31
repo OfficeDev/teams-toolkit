@@ -12,7 +12,7 @@ To run and debug Teams project on your local machine:
 
 1. Use a Command Prompt to run this command: ngrok http 5130.
 
-2. In Visual Studio Solution Explorer, right click on your project file and click "Prepare Teams app dependencies". You will be asked to login to your M365 account. This command will register a Teams app in the tenant which your account belongs to.
+2. In Visual Studio Solution Explorer, right click on your project file and select "Prepare Teams app dependencies". You will be asked to login to your M365 account. This command will prepare local debug dependencies and register a Teams app in the tenant which your account belongs to.
 
 Notes: your M365 account need to have the sideloading permission to ensure Teams app can be uploaded to your tenant, otherwise you will end up with failure to see your Teams app running in Teams client. Learn more about sideloading permission by visiting https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading. 
 

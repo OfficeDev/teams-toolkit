@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { initializePreviewFeatureFlags } from "@microsoft/teamsfx-core";
+initializePreviewFeatureFlags();
+
 import { createMessageConnection } from "vscode-jsonrpc/node";
 import WebSocket from "ws";
 

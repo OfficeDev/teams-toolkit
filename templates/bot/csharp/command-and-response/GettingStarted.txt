@@ -22,6 +22,7 @@ Notes: your M365 account need to have the sideloading permission to ensure Teams
 
 5. Send a "helloworld" command in your Teams chat with the command bot, and you will receive an adaptive card message from your app.
 
+Tips: if you made changes to Teams app manifest file (/templates/appPackage/manifest.template.json), please make sure you run the "Prepare Teams app dependencies" command before you try to locally run the Teams app again.
 
 Deploy your Teams app on Azure
 ------------------------------------
@@ -37,6 +38,8 @@ To run your Teams app on Azure:
 4. Once Microsoft Teams is loaded, select the "Add" button to install your app in Teams. You will see your app running remotely from Azure.
 
 Notes: there is an alternative way to find all the commands mentioned above, go to the "Project" menu in Visual Studio, select "Teams Toolkit" and you will find all the commands there.
+
+Tips: if you made changes to Teams app manifest file (/templates/appPackage/manifest.template.json), please make sure you run the "Update manifest in Teams Developer Portal" command before you try to run the Teams app remotely from Azure again.
 
 Report an issue
 ---------------

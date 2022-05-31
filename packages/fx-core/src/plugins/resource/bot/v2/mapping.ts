@@ -61,7 +61,7 @@ export function getRuntime(lang: ProgrammingLanguage): Runtime {
   if (runtime) {
     return runtime;
   }
-  return defaultRuntime;
+  throw new Error("invalid bot input");
 }
 
 export function getServiceType(hostType?: string): ServiceType {
@@ -69,7 +69,7 @@ export function getServiceType(hostType?: string): ServiceType {
   if (serviceType) {
     return serviceType;
   }
-  return defaultServiceType;
+  throw new Error("invalid bot input");
 }
 
 export function getLanguage(lang?: string): ProgrammingLanguage {
@@ -77,7 +77,7 @@ export function getLanguage(lang?: string): ProgrammingLanguage {
   if (language) {
     return language;
   }
-  return defaultLang;
+  throw new Error("invalid bot input");
 }
 
 export function getTriggerScenarios(trigger: string): string[] {

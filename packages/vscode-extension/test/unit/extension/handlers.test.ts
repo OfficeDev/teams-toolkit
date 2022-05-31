@@ -25,6 +25,7 @@ import * as commonUtils from "../../../src/utils/commonUtils";
 import * as extension from "../../../src/extension";
 import TreeViewManagerInstance from "../../../src/treeview/treeViewManager";
 import { CollaborationState, CoreHookContext } from "@microsoft/teamsfx-core";
+import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
 import * as globalVariables from "../../../src/globalVariables";
 import { Uri } from "vscode";
 import envTreeProviderInstance from "../../../src/treeview/environmentTreeViewProvider";
@@ -33,10 +34,6 @@ import * as extTelemetryEvents from "../../../src/telemetry/extTelemetryEvents";
 import * as uuid from "uuid";
 
 suite("handlers", () => {
-  test("getWorkspacePath()", () => {
-    chai.expect(handlers.getWorkspacePath()).equals(undefined);
-  });
-
   suite("activate()", function () {
     const sandbox = sinon.createSandbox();
     let setStatusChangeMap: any;
@@ -87,6 +84,7 @@ suite("handlers", () => {
       const disposeFunc = sinon.stub(ExtTelemetry, "dispose");
       const createProject = sinon.spy(handlers.core, "createProject");
       const executeCommandFunc = sinon.stub(vscode.commands, "executeCommand");
+      const globalStateUpdateStub = sinon.stub(globalState, "globalStateUpdate");
 
       await handlers.createNewProjectHandler();
 
@@ -102,7 +100,7 @@ suite("handlers", () => {
       clock.tick(3000);
       chai.assert.isTrue(executeCommandFunc.calledOnceWith("vscode.openFolder"));
       sinon.restore();
-      clock.restore;
+      clock.restore();
     });
 
     test("provisionHandler()", async () => {
@@ -146,7 +144,6 @@ suite("handlers", () => {
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sinon.stub(handlers, "getWorkspacePath").resolves(undefined);
       const showMessage = sinon.spy(vscode.window, "showErrorMessage");
 
       await handlers.buildPackageHandler();

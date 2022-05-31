@@ -9,7 +9,7 @@ import * as fs from "fs-extra";
 import * as globalVariables from "../../../src/globalVariables";
 import { Uri } from "vscode";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
-
+import * as commonUtils from "../../../src/utils/commonUtils";
 chai.use(spies);
 const spy = chai.spy;
 

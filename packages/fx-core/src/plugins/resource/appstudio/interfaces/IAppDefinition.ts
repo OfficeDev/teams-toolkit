@@ -37,6 +37,9 @@ export interface IAppDefinition {
   staticTabs?: IStaticTab[];
   bots?: IAppDefinitionBot[];
   connectors?: any[];
+  graphConnector?: {
+    notificationUrl: string;
+  };
   messagingExtensions?: IMessagingExtension[];
   validDomains?: string[];
   appStudioChecklistChecked?: any[];
@@ -67,8 +70,8 @@ export interface IAppDefinitionBot {
   needsChannelSelector?: boolean;
   isNotificationOnly: boolean;
   supportsFiles: boolean;
-  isAudioCallingBot?: boolean;
-  isVideoCallingBot?: boolean;
+  supportsCalling?: boolean;
+  supportsVideo?: boolean;
   scopes: string[];
   teamCommands?: ITeamCommand[];
   personalCommands?: IPersonalCommand[];

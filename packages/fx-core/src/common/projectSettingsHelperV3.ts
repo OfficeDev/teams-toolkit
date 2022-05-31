@@ -1,25 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import {
-  AzureSolutionSettings,
-  ConfigFolderName,
-  ProjectSettings,
-  ProjectSettingsFileName,
-  ProjectSettingsV3,
-} from "@microsoft/teamsfx-api";
-import fs from "fs-extra";
-import * as path from "path";
-import {
-  BotOptionItem,
-  MessageExtensionItem,
-  TabSsoItem,
-  BotSsoItem,
-  TabOptionItem,
-  TabSPFxItem,
-} from "../plugins/solution/fx-solution/question";
-import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
-import * as uuid from "uuid";
-import { isAadManifestEnabled } from "./tools";
+import { ProjectSettingsV3 } from "@microsoft/teamsfx-api";
 import { ComponentNames } from "../component/constants";
 import { getComponent } from "../component/workflow";
 
@@ -41,7 +22,7 @@ export function hasBot(projectSettings: ProjectSettingsV3): boolean {
 export function hasFunctionBot(projectSettings: ProjectSettingsV3): boolean {
   const botComponent = getComponent(projectSettings, ComponentNames.TeamsBot);
   if (!botComponent) return false;
-  return botComponent.hosting === ComponentNames.AzureFunction;
+  return botComponent.hosting === ComponentNames.Function;
 }
 export function hasAAD(projectSettings: ProjectSettingsV3): boolean {
   const components = projectSettings.components;
@@ -49,7 +30,7 @@ export function hasAAD(projectSettings: ProjectSettingsV3): boolean {
 }
 export function hasFunction(projectSettings: ProjectSettingsV3): boolean {
   const components = projectSettings.components;
-  return components.filter((c) => c.name === ComponentNames.FunctionCode).length > 0;
+  return components.filter((c) => c.name === ComponentNames.Function).length > 0;
 }
 export function hasSimpleAuth(projectSettings: ProjectSettingsV3): boolean {
   const components = projectSettings.components;
@@ -59,7 +40,7 @@ export function hasAzureResourceV3(projectSetting: ProjectSettingsV3, excludeAad
   const azureResources = [
     ComponentNames.APIM,
     ComponentNames.AzureWebApp,
-    ComponentNames.AzureFunction,
+    ComponentNames.Function,
     ComponentNames.Identity,
     ComponentNames.KeyVault,
     ComponentNames.AzureSQL,

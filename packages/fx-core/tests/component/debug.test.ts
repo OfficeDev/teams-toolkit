@@ -6,10 +6,15 @@ import * as uuid from "uuid";
 import * as path from "path";
 import { createContextV3 } from "../../src/component/utils";
 import { configLocalEnvironment, setupLocalEnvironment } from "../../src/component/debug";
+import { MockTools } from "../core/utils";
+import { setTools } from "../../src/core/globalVars";
+import { ComponentNames } from "../../src/component/constants";
 
 chai.use(chaiAsPromised);
 
 describe("DebugComponent", () => {
+  const tools = new MockTools();
+  setTools(tools);
   describe("setup", () => {
     it("happy path", async () => {
       const projectSetting: ProjectSettingsV3 = {
@@ -18,8 +23,18 @@ describe("DebugComponent", () => {
         programmingLanguage: "typescript",
         components: [
           {
-            name: "teams-bot",
-            hosting: "azure-web-app",
+            name: ComponentNames.TeamsBot,
+            hosting: ComponentNames.Function,
+          },
+          {
+            name: ComponentNames.TeamsTab,
+            hosting: ComponentNames.AzureStorage,
+          },
+          {
+            name: ComponentNames.Function,
+          },
+          {
+            name: ComponentNames.AadApp,
           },
         ],
       };
@@ -38,13 +53,14 @@ describe("DebugComponent", () => {
         },
         state: {
           solution: {},
-          "teams-bot": {
+          [ComponentNames.TeamsBot]: {
             siteEndPoint: "https://www.test.com",
           },
         },
       };
       const result = await setupLocalEnvironment(context, inputs, envInfo);
       chai.assert.isTrue(result.isOk());
+      console.log(envInfo.state);
     });
   });
 
@@ -56,8 +72,18 @@ describe("DebugComponent", () => {
         programmingLanguage: "typescript",
         components: [
           {
-            name: "teams-bot",
-            hosting: "azure-web-app",
+            name: ComponentNames.TeamsBot,
+            hosting: ComponentNames.Function,
+          },
+          {
+            name: ComponentNames.TeamsTab,
+            hosting: ComponentNames.AzureStorage,
+          },
+          {
+            name: ComponentNames.Function,
+          },
+          {
+            name: ComponentNames.AadApp,
           },
         ],
       };
@@ -74,8 +100,13 @@ describe("DebugComponent", () => {
           solution: {},
           "teams-bot": {
             siteEndPoint: "https://www.test.com",
+            siteEndpoint: "https://endpoint.com/",
+            validDomain: "endpoint.com/",
           },
-          "app-manifest": {
+          "simple-auth": {},
+          "teams-tab": { endpoint: "https://localhost:53000", domain: "localhost" },
+          function: { functionEndpoint: "http://localhost:7071" },
+          [ComponentNames.AppManifest]: {
             tenantId: "mockTenantId",
           },
         },

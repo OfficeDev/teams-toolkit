@@ -6,7 +6,6 @@ export const ComponentNames = {
   TeamsBot: "teams-bot",
   AppManifest: "app-manifest",
   AadApp: "aad-app",
-  AzureFunction: "azure-function",
   AzureWebApp: "azure-web-app",
   AzureStorage: "azure-storage",
   BotService: "bot-service",
@@ -17,6 +16,6 @@ export const ComponentNames = {
   AzureSQL: "azure-sql",
   TabCode: "tab-code",
   BotCode: "bot-code",
-  FunctionCode: "function-code",
+  Function: "function",
   SimpleAuth: "simple-auth",
 };

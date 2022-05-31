@@ -174,10 +174,10 @@ export async function setupLocalEnvironment(
       }
 
       if (includeBackend) {
-        if (!envInfo.state[ComponentNames.AzureFunction]) {
-          envInfo.state[ComponentNames.AzureFunction] = {};
+        if (!envInfo.state[ComponentNames.Function]) {
+          envInfo.state[ComponentNames.Function] = {};
         }
-        envInfo.state[ComponentNames.AzureFunction].functionEndpoint = localFuncEndpoint;
+        envInfo.state[ComponentNames.Function].functionEndpoint = localFuncEndpoint;
       }
 
       if (includeBot) {
@@ -287,7 +287,7 @@ export async function configLocalEnvironment(
       const applicationIdUri = envInfo.state[ComponentNames.AadApp]?.applicationIdUris;
       const teamsAppTenantId = envInfo.state[ComponentNames.AppManifest].tenantId;
       const localTabEndpoint = envInfo.state[ComponentNames.TeamsTab]?.endpoint;
-      const localFuncEndpoint = envInfo.state[ComponentNames.FunctionCode]?.functionEndpoint;
+      const localFuncEndpoint = envInfo.state[ComponentNames.Function]?.functionEndpoint;
 
       const localAuthEndpoint = envInfo.state[ComponentNames.SimpleAuth]?.endpoint as string;
       const localAuthPackagePath = envInfo.state[ComponentNames.SimpleAuth]

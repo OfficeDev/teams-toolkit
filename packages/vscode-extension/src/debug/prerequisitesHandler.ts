@@ -175,6 +175,7 @@ export async function checkPrerequisitesForGetStarted(): Promise<Result<any, FxE
     // node
     const checkResults: CheckResult[] = [];
     const nodeResult = await checkNode(
+      node,
       [node],
       depsManager,
       `(${currentStep++}/${totalSteps})`,
@@ -241,14 +242,18 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     VsCodeLogInstance.outputChannel.appendLine("");
 
     // node
-    const nodeResult = await checkNode(
-      enabledCheckers,
-      depsManager,
-      `(${currentStep++}/${totalSteps})`,
-      progressHelper
-    );
-    if (nodeResult) {
-      checkResults.push(nodeResult);
+    const nodeDep = getNodeDep(enabledCheckers);
+    if (nodeDep) {
+      const nodeResult = await checkNode(
+        nodeDep,
+        enabledCheckers,
+        depsManager,
+        `(${currentStep++}/${totalSteps})`,
+        progressHelper
+      );
+      if (nodeResult) {
+        checkResults.push(nodeResult);
+      }
     }
     await checkFailure(checkResults, progressHelper);
 
@@ -434,16 +439,12 @@ async function checkM365Account(prefix: string, showLoginPage: boolean): Promise
 }
 
 async function checkNode(
+  nodeDep: DepsType,
   enabledCheckers: (Checker | DepsType)[],
   depsManager: DepsManager,
   prefix: string,
   progressHelper?: ProgressHelper
 ): Promise<CheckResult | undefined> {
-  const nodeDep = getNodeDep(enabledCheckers);
-  if (!nodeDep) {
-    return undefined;
-  }
-
   try {
     VsCodeLogInstance.outputChannel.appendLine(`${prefix} ${ProgressMessage[nodeDep]} ...`);
     const nodeStatus = (

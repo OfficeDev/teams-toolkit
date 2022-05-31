@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { createMessageConnection } from "vscode-jsonrpc/node";
+import validator from "validator";
 import WebSocket from "ws";
 
 /**
@@ -17,7 +18,7 @@ wss.on("connection", async function cb(ws) {
   const wsStream = WebSocket.createWebSocketStream(ws, { encoding: "utf8" });
   const connection = new ServerConnection(createMessageConnection(wsStream, wsStream));
   ws.on("message", (ms) => {
-    console.log(`recv:${ms.toString()}`);
+    console.log(`recv:${validator.escape(ms.toString())}`);
   });
   connection.listen();
 });

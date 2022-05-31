@@ -20,10 +20,7 @@ Notes: your M365 account need to have the sideloading permission to ensure Teams
 
 4. Once Microsoft Teams is loaded, select the "Add" button to install your app in Teams.
 
-Tips: 
-1. If you want to launch the Teams app as a web app instead of running in Teams client, first remove the 'launchUrl' in \Properties\launchSettings.json, then right click on the solution, in Properties > Configuration Properties > Configuration, uncheck the 'Deploy' process and select 'OK'.
-
-2. If you made changes to Teams app manifest file (/templates/appPackage/manifest.template.json), please make sure you run the "Prepare Teams app dependencies" command before you try to locally run the Teams app again.
+Tips: if you made changes to Teams app manifest file (/templates/appPackage/manifest.template.json), please make sure you run the "Prepare Teams app dependencies" command before you try to locally run the Teams app again.
 
 Deploy your Teams app on Azure
 ------------------------------------

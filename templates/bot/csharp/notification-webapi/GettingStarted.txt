@@ -39,6 +39,8 @@ To run your Teams app on Azure:
 
 Notes: there is an alternative way to find all the commands mentioned above, go to the "Project" menu in Visual Studio, select "Teams Toolkit" and you will find all the commands there.
 
+Tips: if you made changes to Teams app manifest file (/templates/appPackage/manifest.template.json), please make sure you run the "Update manifest in Teams Developer Portal" command before you try to run the Teams app remotely from Azure again.
+
 Report an issue
 ---------------
 

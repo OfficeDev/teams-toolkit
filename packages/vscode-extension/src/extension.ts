@@ -51,7 +51,11 @@ import * as handlers from "./handlers";
 import { ManifestTemplateHoverProvider } from "./hoverProvider";
 import { VsCodeUI } from "./qm/vsc_ui";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
-import { TelemetryEvent, TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetryTriggerFrom,
+} from "./telemetry/extTelemetryEvents";
 import {
   canUpgradeToArmAndMultiEnv,
   delay,
@@ -109,9 +113,7 @@ export async function activate(context: vscode.ExtensionContext) {
   await initializeContextKey();
   await handlers.cmdHdlLoadTreeView(context);
 
-  ExtTelemetry.isFromSample = await handlers.getIsFromSample();
-  ExtTelemetry.settingsVersion = await handlers.getSettingsVersion();
-  ExtTelemetry.isM365 = await handlers.getIsM365();
+  await setSharedTelemetryProperties();
   await ExtTelemetry.sendCachedTelemetryEventsAsync();
 
   await handlers.autoOpenProjectHandler();
@@ -853,4 +855,24 @@ function registerInCommandController(
 
 function runCommand(commandName: string, args: unknown[]) {
   commandController.runCommand(commandName, args);
+}
+
+async function setSharedTelemetryProperties(): Promise<void> {
+  const addSharedProperty = (key: string, value: unknown): void => {
+    if (value !== undefined) {
+      ExtTelemetry.addSharedProperty(key, `${value}`);
+    }
+  };
+
+  addSharedProperty(TelemetryProperty.IsFromSample, await handlers.getIsFromSample());
+  addSharedProperty(TelemetryProperty.IsM365, await handlers.getIsM365());
+  addSharedProperty(TelemetryProperty.SettingsVersion, await handlers.getSettingsVersion());
+
+  const creationVersion = await handlers.getCreationVersion();
+  if (creationVersion) {
+    // Encode to prevent package name from being incorrectly identified as email address.
+    // Use base64 because kusto has native support.
+    const creationVersionEncoded = Buffer.from(creationVersion).toString("base64");
+    addSharedProperty(TelemetryProperty.CreationVersion, creationVersionEncoded);
+  }
 }

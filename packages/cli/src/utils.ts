@@ -403,6 +403,24 @@ export function getSettingsVersion(rootFolder: string | undefined): string | und
 }
 
 // Only used for telemetry
+export function getIsFromSample(rootFolder: string | undefined): string | undefined {
+  if (!rootFolder) {
+    return undefined;
+  }
+  try {
+    if (isWorkspaceSupported(rootFolder)) {
+      const result = readSettingsFileSync(rootFolder);
+      if (result.isOk()) {
+        return result.value.isFromSample;
+      }
+    }
+  } catch (e) {
+    // ignore errors for telemetry
+  }
+  return undefined;
+}
+
+// Only used for telemetry
 export function getIsM365(rootFolder: string | undefined): string | undefined {
   if (!rootFolder) {
     return undefined;
@@ -412,6 +430,24 @@ export function getIsM365(rootFolder: string | undefined): string | undefined {
       const result = readSettingsFileSync(rootFolder);
       if (result.isOk() && result.value.isM365 !== undefined) {
         return `${result.value.isM365}`;
+      }
+    }
+  } catch (e) {
+    // ignore errors for telemetry
+  }
+  return undefined;
+}
+
+// Only used for telemetry
+export function getCreationVersion(rootFolder: string | undefined): string | undefined {
+  if (!rootFolder) {
+    return undefined;
+  }
+  try {
+    if (isWorkspaceSupported(rootFolder)) {
+      const result = readSettingsFileSync(rootFolder);
+      if (result.isOk() && result.value.creationVersion !== undefined) {
+        return `${result.value.creationVersion}`;
       }
     }
   } catch (e) {

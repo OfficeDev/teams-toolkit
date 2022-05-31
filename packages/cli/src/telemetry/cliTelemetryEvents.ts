@@ -119,6 +119,7 @@ export enum TelemetryProperty {
   FeatureFlags = "feature-flags",
   Env = "env",
   SettingsVersion = "settings-version",
+  CreationVersion = "creation-version",
   NewProjectId = "new-project-id",
   IsM365 = "is-m365",
   IsCreatingM365 = "is-creating-m365",

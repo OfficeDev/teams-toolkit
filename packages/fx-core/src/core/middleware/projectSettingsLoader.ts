@@ -67,6 +67,7 @@ export const ProjectSettingsLoaderMW: Middleware = async (
     ctx.projectSettings = projectSettings;
     (ctx.self as any).isFromSample = projectSettings.isFromSample === true;
     (ctx.self as any).settingsVersion = projectSettings.version;
+    (ctx.self as any).creationVersion = projectSettings.creationVersion;
     (ctx.self as any).tools.cryptoProvider = new LocalCrypto(projectSettings.projectId);
     ctx.contextV2 = createV2Context(projectSettings);
   }

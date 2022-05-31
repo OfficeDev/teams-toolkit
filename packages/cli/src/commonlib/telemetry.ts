@@ -6,7 +6,14 @@ import Reporter from "../telemetry/telemetryReporter";
 import { TelemetryReporter } from "@microsoft/teamsfx-api";
 import { Correlator } from "@microsoft/teamsfx-core";
 import { TelemetryProperty } from "../telemetry/cliTelemetryEvents";
-import { getAllFeatureFlags, getProjectId } from "../utils";
+import {
+  getAllFeatureFlags,
+  getCreationVersion,
+  getIsFromSample,
+  getIsM365,
+  getProjectId,
+  getSettingsVersion,
+} from "../utils";
 import { CliConfigOptions, CliConfigRunFrom, UserSettings } from "../userSetttings";
 
 /**
@@ -55,6 +62,8 @@ export class CliTelemetryReporter implements TelemetryReporter {
     const featureFlags = getAllFeatureFlags();
     properties[TelemetryProperty.FeatureFlags] = featureFlags ? featureFlags.join(";") : "";
 
+    this.addSharedProperties(properties);
+
     this.reporter.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
   }
 
@@ -77,6 +86,8 @@ export class CliTelemetryReporter implements TelemetryReporter {
 
     const featureFlags = getAllFeatureFlags();
     properties[TelemetryProperty.FeatureFlags] = featureFlags ? featureFlags.join(";") : "";
+
+    this.addSharedProperties(properties);
 
     this.reporter.sendTelemetryEvent(eventName, properties, measurements);
   }
@@ -101,10 +112,37 @@ export class CliTelemetryReporter implements TelemetryReporter {
     const featureFlags = getAllFeatureFlags();
     properties[TelemetryProperty.FeatureFlags] = featureFlags ? featureFlags.join(";") : "";
 
+    this.addSharedProperties(properties);
+
     this.reporter.sendTelemetryException(error, properties, measurements);
   }
 
   async flush(): Promise<void> {
     await this.reporter.flush();
+  }
+
+  private async addSharedProperties(properties: { [p: string]: string }): Promise<void> {
+    const isFromSample = getIsFromSample(this.rootFolder);
+    if (isFromSample !== undefined) {
+      properties[TelemetryProperty.SettingsVersion] = isFromSample;
+    }
+
+    const settingsVersion = getSettingsVersion(this.rootFolder);
+    if (settingsVersion !== undefined) {
+      properties[TelemetryProperty.SettingsVersion] = settingsVersion;
+    }
+
+    const isM365 = getIsM365(this.rootFolder);
+    if (isM365 !== undefined) {
+      properties[TelemetryProperty.IsM365] = isM365;
+    }
+
+    const creationVersion = getCreationVersion(this.rootFolder);
+    if (creationVersion !== undefined) {
+      // Encode to prevent package name from being incorrectly identified as email address.
+      // Use base64 because kusto has native support.
+      const creationVersionEncoded = Buffer.from(creationVersion).toString("base64");
+      properties[TelemetryProperty.CreationVersion] = creationVersionEncoded;
+    }
   }
 }

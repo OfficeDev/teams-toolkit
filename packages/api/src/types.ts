@@ -184,6 +184,15 @@ export interface EnvMeta {
 export interface ProjectSettings {
   appName: string;
   version?: string;
+  /**
+   * The package and version of the tool that creates this project. In the format "packageName:version".
+   * Examples:
+   *  The project is created from scatch/sample using toolkit 1.2.3: "ms-teams-vscode-extension:1.2.3".
+   *  The project is directly cloned using git: The toolkit version when user opens the project for the first time.
+   *  Existing project before this property is added: "unknown".
+   *  Shared project between different users. The behavior is the same as projectId.
+   */
+  creationVersion?: string;
   projectId: string;
   programmingLanguage?: string;
   defaultFunctionName?: string;

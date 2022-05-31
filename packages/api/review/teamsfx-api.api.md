@@ -1305,6 +1305,7 @@ export interface ProjectConfigV3 {
 export interface ProjectSettings {
     // (undocumented)
     appName: string;
+    creationVersion?: string;
     // (undocumented)
     defaultFunctionName?: string;
     // (undocumented)

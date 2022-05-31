@@ -160,6 +160,7 @@ export class FxCore implements v3.ICore {
   tools: Tools;
   isFromSample?: boolean;
   settingsVersion?: string;
+  creationVersion?: string;
 
   constructor(tools: Tools) {
     this.tools = tools;

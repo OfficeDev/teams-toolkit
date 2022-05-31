@@ -317,6 +317,16 @@ export async function getSettingsVersion(): Promise<string | undefined> {
   return undefined;
 }
 
+export async function getCreationVersion(): Promise<string | undefined> {
+  if (core) {
+    const input = getSystemInputs();
+    input.ignoreEnvInfo = true;
+    await core.getProjectConfig(input);
+    return core.creationVersion;
+  }
+  return undefined;
+}
+
 async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonly Uri[]) {
   let needRefresh = false;
   for (const file of files) {

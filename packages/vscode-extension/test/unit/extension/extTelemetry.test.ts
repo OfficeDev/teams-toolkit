@@ -5,6 +5,7 @@ import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 import * as telemetryModule from "../../../src/telemetry/extTelemetry";
 import { TelemetryEvent } from "../../../src/telemetry/extTelemetryEvents";
 import sinon = require("sinon");
+import * as commonUtils from "../../../src/utils/commonUtils";
 import * as fs from "fs-extra";
 import * as globalVariables from "../../../src/globalVariables";
 import { Uri } from "vscode";

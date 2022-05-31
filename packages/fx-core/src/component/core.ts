@@ -3,59 +3,40 @@
 
 import {
   Action,
-  AzureSolutionSettings,
-  Component,
   ConfigFolderName,
   ContextV3,
-  err,
   FxError,
   GroupAction,
   InputsWithProjectPath,
   MaybePromise,
   ok,
   ProjectSettingsV3,
-  ProvisionContextV3,
   QTreeNode,
   Result,
   TextInputQuestion,
-  UserError,
-  v3,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
-import {
-  hasAzureResource,
-  hasAzureResourceV3,
-  newProjectSettings,
-} from "./../common/projectSettingsHelper";
 import { getProjectSettingsPath } from "../core/middleware/projectSettingsLoader";
 import { ProjectNamePattern } from "../core/question";
-import { getComponent, getEmbeddedValueByPath } from "./workflow";
-import "./resource";
-import "./bicep";
-import "./botCode";
-import "./connection";
-import "./envManager";
-import "./debugManager";
-import {
-  askForProvisionConsent,
-  fillInAzureConfigs,
-  getM365TenantId,
-} from "../plugins/solution/fx-solution/v3/provision";
-import { CommandAndResponseOptionItem, NotificationOptionItem, SolutionError } from "../plugins";
-import { resourceGroupHelper } from "../plugins/solution/fx-solution/utils/ResourceGroupHelper";
-import { getResourceGroupInPortal } from "../common";
-import { getLocalizedString } from "../common/localizeUtils";
-import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "./projectSettingsManager";
+import { CommandAndResponseOptionItem, NotificationOptionItem } from "../plugins";
 import { QuestionNames, TemplateProjectsScenarios } from "../plugins/resource/bot/constants";
 import {
   AppServiceOptionItem,
   FunctionsHttpTriggerOptionItem,
   FunctionsTimerTriggerOptionItem,
 } from "../plugins/resource/bot/question";
-import { scaffold } from "../plugins/resource/bot/v2/scaffold";
+import { newProjectSettings } from "./../common/projectSettingsHelper";
+import "./bicep";
+import "./botCode";
+import "./connection";
+import "./debug";
+import "./envManager";
+import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "./projectSettingsManager";
+import "./resource";
+import { getComponent, getEmbeddedValueByPath } from "./workflow";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";

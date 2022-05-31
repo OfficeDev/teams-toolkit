@@ -15,6 +15,7 @@ import {
   SourceCodeProvider,
   InputsWithProjectPath,
 } from "@microsoft/teamsfx-api";
+import { merge } from "lodash";
 import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
@@ -27,6 +28,7 @@ import {
 import { TemplateProjectsConstants } from "../plugins/resource/bot/constants";
 import { CommonStrings } from "../plugins/resource/bot/resources/strings";
 import { TemplateZipFallbackError, UnzipError } from "../plugins/resource/bot/v3/error";
+import { ComponentNames } from "./constants";
 import { getComponent } from "./workflow";
 
 /**
@@ -55,15 +57,8 @@ export class BotCodeProvider implements SourceCodeProvider {
         const language =
           inputs.language || context.projectSetting.programmingLanguage || "javascript";
         const botFolder = inputs.folder || CommonStrings.BOT_WORKING_DIR_NAME;
-        const component: Component = {
-          name: "bot-code",
-          hosting: inputs.hosting,
-          build: true,
-          language: language,
-          folder: botFolder,
-          scenarios: inputs.scenarios,
-        };
-        projectSettings.components.push(component);
+        const teamsBot = getComponent(projectSettings, ComponentNames.TeamsBot);
+        merge(teamsBot, { build: true, language: language, folder: botFolder });
         const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
         const lang = convertToLangKey(language);
         const workingDir = path.join(inputs.projectPath, botFolder);
@@ -93,7 +88,6 @@ export class BotCodeProvider implements SourceCodeProvider {
           });
         }
         return ok([
-          "add component 'bot-code' in projectSettings",
           `scaffold bot source code in folder: ${path.join(inputs.projectPath, botFolder)}`,
         ]);
       },

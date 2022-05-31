@@ -1269,7 +1269,9 @@ export class AppStudioPluginImpl {
     appDefinition.messagingExtensions = convertToAppDefinitionMessagingExtensions(appManifest);
 
     appDefinition.connectors = appManifest.connectors;
+    appDefinition.graphConnector = appManifest.graphConnector;
     appDefinition.devicePermissions = appManifest.devicePermissions;
+
     if (appManifest.localizationInfo) {
       let languages: ILanguage[] = [];
       if (appManifest.localizationInfo.additionalLanguages) {

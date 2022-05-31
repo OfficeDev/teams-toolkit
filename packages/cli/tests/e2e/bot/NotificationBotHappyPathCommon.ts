@@ -27,7 +27,7 @@ export function happyPathTest(runtime: "dotnet" | "nodejs"): void {
     const env = Object.assign({}, process.env);
     env["TEAMSFX_CONFIG_UNIFY"] = "true";
     env["BOT_NOTIFICATION_ENABLED"] = "true";
-    env["TEAMSFX_TEMPLATE_PRERELEASE"] = "beta";
+    env["TEAMSFX_TEMPLATE_PRERELEASE"] = "alpha";
     if (runtime === "dotnet") {
       env["TEAMSFX_CLI_DOTNET"] = "true";
     }

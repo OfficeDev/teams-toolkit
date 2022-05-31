@@ -20,7 +20,8 @@ import {
 } from "./extTelemetryEvents";
 
 const TelemetryCacheKey = "TelemetryEvents";
-let lastCorrelationId: string | undefined = undefined;
+// export for UT
+export let lastCorrelationId: string | undefined = undefined;
 
 export namespace ExtTelemetry {
   export let reporter: VSCodeTelemetryReporter;

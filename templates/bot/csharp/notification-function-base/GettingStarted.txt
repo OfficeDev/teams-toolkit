@@ -13,9 +13,9 @@ Quick start
 
 Before you run or Start Debugging for the first time, follow these steps:
 
-1. This is a Bot project, so first use a Command Prompt to run this command: ngrok http 5130.
+1. This is a bot project, so first use a Command Prompt to run this command: ngrok http 5130.
 
-2. Select the Project > Teams Toolkit > Configure Microsoft Teams app menu in Visual Studio. When prompted, sign in using your M365 account.
+2. In Visual Studio Solution Explorer, right click on your project file and select "Prepare Teams app dependencies" command to prepare local debug dependencies. When prompted, sign in using your M365 account.
 
 3. Select the Debug > Start Debugging menu in Visual Studio or press F5. Visual Studio will launch the app inside Microsoft Teams using a browser.
 
@@ -49,5 +49,5 @@ Q&A
 2. Why is my bot not working in Teams?
    Please check if the ngrok is running correctly in your local environment. ngrok will expire every 2 hours and you need to restart it unless you log in with a paid subscription. After the restart, the endpoint will change and you need to click the command Project > TeamsFx > Configure Microsoft Teams app to update the new endpoint.
 
-3. Why does the command Configure Microsoft Teams app show that ngrok is not running correctly?
+3. Why does the command Prepare Teams app dependencies show that ngrok is not running correctly?
    We only support the ngrok is running with default settings. Please make sure the ngrok web interface is http://127.0.0.1:4040.

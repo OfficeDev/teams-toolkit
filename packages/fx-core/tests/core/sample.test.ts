@@ -64,6 +64,10 @@ describe("Core basic APIs - create from sample", () => {
     const core = new FxCore(tools);
     const res = await core.createProject(inputs);
     assert.isTrue(res.isOk() && res.value === projectPath);
+    const projectSettings = await fs.readJson(
+      projectSettingsLoader.getProjectSettingsPath(projectPath)
+    );
+    assert.isTrue(projectSettings.projectId !== undefined);
   });
 
   it("downloadSample", async () => {

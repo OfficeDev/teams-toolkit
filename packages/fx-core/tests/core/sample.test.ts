@@ -17,6 +17,7 @@ import { SolutionPlugins, SolutionPluginsV2 } from "../../src/core/SolutionPlugi
 import { deleteFolder, MockSolution, MockSolutionV2, MockTools, randomAppName } from "./utils";
 import * as downloadSample from "../../src/core/downloadSample";
 import * as projectSettingsLoader from "../../src/core/middleware/projectSettingsLoader";
+
 describe("Core basic APIs - create from sample", () => {
   const sandbox = sinon.createSandbox();
   const mockSolutionV1 = new MockSolution();
@@ -64,6 +65,10 @@ describe("Core basic APIs - create from sample", () => {
     const core = new FxCore(tools);
     const res = await core.createProject(inputs);
     assert.isTrue(res.isOk() && res.value === projectPath);
+    const projectSettings = await fs.readJson(
+      projectSettingsLoader.getProjectSettingsPath(projectPath)
+    );
+    assert.isTrue(projectSettings.projectId !== undefined);
   });
 
   it("downloadSample", async () => {

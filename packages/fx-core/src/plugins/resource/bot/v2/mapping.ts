@@ -17,20 +17,17 @@ const runtimeMap: Map<ProgrammingLanguage, Runtime> = new Map<ProgrammingLanguag
   [ProgrammingLanguage.Ts, Runtime.Node],
   [ProgrammingLanguage.Csharp, Runtime.Dotnet],
 ]);
-const defaultRuntime = Runtime.Node;
 
 const serviceMap: Map<string, ServiceType> = new Map<string, ServiceType>([
   [HostTypes.APP_SERVICE, ServiceType.AppService],
   [HostTypes.AZURE_FUNCTIONS, ServiceType.Functions],
 ]);
-const defaultServiceType = ServiceType.AppService;
 
 const langMap: Map<string, ProgrammingLanguage> = new Map<string, ProgrammingLanguage>([
   ["javascript", ProgrammingLanguage.Js],
   ["typescript", ProgrammingLanguage.Ts],
   ["csharp", ProgrammingLanguage.Csharp],
 ]);
-const defaultLang = ProgrammingLanguage.Js;
 
 const triggerScenariosMap: Map<string, string[]> = new Map<string, string[]>([
   [

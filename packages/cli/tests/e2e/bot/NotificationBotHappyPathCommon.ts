@@ -29,7 +29,7 @@ export function happyPathTest(runtime: "dotnet" | "nodejs"): void {
     env["BOT_NOTIFICATION_ENABLED"] = "true";
     env["TEAMSFX_TEMPLATE_PRERELEASE"] = "beta";
     if (runtime === "dotnet") {
-      process.env["TEAMSFX_CLI_DOTNET"] = "true";
+      env["TEAMSFX_CLI_DOTNET"] = "true";
     }
 
     it("Provision Resource: app service hosted notification", async function () {

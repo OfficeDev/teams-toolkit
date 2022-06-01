@@ -118,6 +118,7 @@ export enum TelemetryProperty {
   ListAllCollaborators = "list-all-collaborators",
   FeatureFlags = "feature-flags",
   Env = "env",
+  IsFromSample = "is-from-sample",
   SettingsVersion = "settings-version",
   CreationVersion = "creation-version",
   NewProjectId = "new-project-id",

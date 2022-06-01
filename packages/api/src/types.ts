@@ -186,9 +186,15 @@ export interface ProjectSettings {
   version?: string;
   /**
    * The package and version of the tool that creates this project. In the format "packageName:version".
-   * Examples:
+   *
+   * Examples in different tools:
+   *  VSC: "ms-teams-vscode-extension:4.1.0"
+   *  CLI: "@microsoft/teamsfx-cli:1.1.0"
+   *  VS: // TODO: should be same format.
+   *
+   * Examples in different cases:
    *  The project is created from scatch/sample using toolkit 1.2.3: "ms-teams-vscode-extension:1.2.3".
-   *  The project is directly cloned using git: The toolkit version when user opens the project for the first time.
+   *  The project is directly cloned using git: The toolkit/CLI version when user opens the project for the first time.
    *  Existing project before this property is added: "unknown".
    *  Shared project between different users. The behavior is the same as projectId.
    */

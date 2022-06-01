@@ -124,7 +124,7 @@ export class CliTelemetryReporter implements TelemetryReporter {
   private async addSharedProperties(properties: { [p: string]: string }): Promise<void> {
     const isFromSample = getIsFromSample(this.rootFolder);
     if (isFromSample !== undefined) {
-      properties[TelemetryProperty.SettingsVersion] = isFromSample;
+      properties[TelemetryProperty.IsFromSample] = isFromSample;
     }
 
     const settingsVersion = getSettingsVersion(this.rootFolder);

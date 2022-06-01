@@ -22,7 +22,7 @@ import {
   isApiConnectEnabled,
   isConfigUnifyEnabled,
   isDeployManifestEnabled,
-  isExistingTabAppEnabled,
+  isValidProject,
 } from "@microsoft/teamsfx-core";
 
 import {
@@ -75,31 +75,37 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(new ExtTelemetry.Reporter(context));
   // Init context
   initializeGlobalVariables(context);
+  loadLocalizedStrings();
+  registerActivateCommands(context);
 
-  registerTreeViewCommandsInDevelopment(context);
-  registerTreeViewCommandsInDeployment(context);
-  registerTreeViewCommandsInHelper(context);
+  const isTeamsFxProject = isValidProject(workspaceUri?.fsPath);
 
-  registerCommands(context);
+  if (isTeamsFxProject) {
+    registerTreeViewCommandsInDevelopment(context);
+    registerTreeViewCommandsInDeployment(context);
+    registerTreeViewCommandsInHelper(context);
 
-  registerCodelensAndHoverProviders(context);
+    registerCommands(context);
 
-  registerDebugConfigProviders(context);
+    registerCodelensAndHoverProviders(context);
 
-  // Register task and debug event handlers, as well as sending telemetries
-  registerTeamsfxTaskAndDebugEvents();
+    registerDebugConfigProviders(context);
 
-  registerRunIcon();
+    // Register task and debug event handlers, as well as sending telemetries
+    registerTeamsfxTaskAndDebugEvents();
 
-  // Register teamsfx task provider
-  const taskProvider: TeamsfxTaskProvider = new TeamsfxTaskProvider();
-  context.subscriptions.push(
-    vscode.tasks.registerTaskProvider(TeamsfxTaskProvider.type, taskProvider)
-  );
+    registerRunIcon();
 
-  context.subscriptions.push(
-    vscode.workspace.onWillSaveTextDocument(handlers.saveTextDocumentHandler)
-  );
+    // Register teamsfx task provider
+    const taskProvider: TeamsfxTaskProvider = new TeamsfxTaskProvider();
+    context.subscriptions.push(
+      vscode.tasks.registerTaskProvider(TeamsfxTaskProvider.type, taskProvider)
+    );
+
+    context.subscriptions.push(
+      vscode.workspace.onWillSaveTextDocument(handlers.saveTextDocumentHandler)
+    );
+  }
 
   // Call activate function of toolkit core.
   handlers.activate();
@@ -107,7 +113,15 @@ export async function activate(context: vscode.ExtensionContext) {
   // Init VSC context key
   await initializeContextKey();
   await handlers.cmdHdlLoadTreeView(context);
+  await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
+  await vscode.commands.executeCommand("setContext", "fx-extension.initialized", true);
 
+  if (isTeamsFxProject) {
+    otherTasks(context);
+  }
+}
+
+async function otherTasks(context: vscode.ExtensionContext) {
   ExtTelemetry.isFromSample = await handlers.getIsFromSample();
   ExtTelemetry.settingsVersion = await handlers.getSettingsVersion();
   ExtTelemetry.isM365 = await handlers.getIsM365();
@@ -133,11 +147,9 @@ export async function activate(context: vscode.ExtensionContext) {
     survey.activate();
   }
 
-  openWelcomePageAfterExtensionInstallation();
+  await openWelcomePageAfterExtensionInstallation();
 
-  showDebugChangesNotification();
-
-  loadLocalizedStrings();
+  await showDebugChangesNotification();
 }
 
 // this method is called when your extension is deactivated
@@ -150,52 +162,51 @@ export async function deactivate() {
 
 async function initializeContextKey() {
   if (isValidNode()) {
-    vscode.commands.executeCommand("setContext", "fx-extension.isNotValidNode", false);
+    await vscode.commands.executeCommand("setContext", "fx-extension.isNotValidNode", false);
   } else {
-    vscode.commands.executeCommand("setContext", "fx-extension.isNotValidNode", true);
+    await vscode.commands.executeCommand("setContext", "fx-extension.isNotValidNode", true);
   }
-  vscode.commands.executeCommand("setContext", "fx-extension.customizedTreeview", false);
 
-  vscode.commands.executeCommand("setContext", "fx-extension.isSPFx", isSPFxProject);
+  await vscode.commands.executeCommand("setContext", "fx-extension.isSPFx", isSPFxProject);
 
-  vscode.commands.executeCommand(
+  await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isM365",
     workspaceUri && (await isM365Project(workspaceUri.fsPath))
   );
 
-  vscode.commands.executeCommand(
+  await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.canUpgradeToArmAndMultiEnv",
     await canUpgradeToArmAndMultiEnv(workspaceUri?.fsPath)
   );
 
-  vscode.commands.executeCommand(
+  await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isAadManifestEnabled",
     isAadManifestEnabled()
   );
 
-  vscode.commands.executeCommand(
+  await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isDeployManifestEnabled",
     isDeployManifestEnabled()
   );
 
-  vscode.commands.executeCommand(
+  await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isConfigUnifyEnabled",
     isConfigUnifyEnabled()
   );
 
-  vscode.commands.executeCommand(
+  await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isApiConnectEnabled",
     isApiConnectEnabled()
   );
 }
 
-function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext) {
+function registerActivateCommands(context: vscode.ExtensionContext) {
   // Create a new Teams app
   registerInCommandController(
     context,
@@ -204,6 +215,21 @@ function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext)
     "createProject"
   );
 
+  // View samples
+  registerInCommandController(context, "fx-extension.openSamples", handlers.openSamplesHandler);
+
+  // Quick start
+  registerInCommandController(context, "fx-extension.openWelcome", handlers.openWelcomeHandler);
+
+  // Tutorials
+  registerInCommandController(
+    context,
+    "fx-extension.selectTutorials",
+    handlers.selectTutorialsHandler
+  );
+}
+
+function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext) {
   // Initialize an existing application
   registerInCommandController(
     context,
@@ -211,9 +237,6 @@ function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext)
     handlers.initProjectHandler,
     "initProject"
   );
-
-  // View samples
-  registerInCommandController(context, "fx-extension.openSamples", handlers.openSamplesHandler);
 
   // Add features
   registerInCommandController(
@@ -271,16 +294,6 @@ function registerTreeViewCommandsInDeployment(context: vscode.ExtensionContext) 
 }
 
 function registerTreeViewCommandsInHelper(context: vscode.ExtensionContext) {
-  // Quick start
-  registerInCommandController(context, "fx-extension.openWelcome", handlers.openWelcomeHandler);
-
-  // Tutorials
-  registerInCommandController(
-    context,
-    "fx-extension.selectTutorials",
-    handlers.selectTutorialsHandler
-  );
-
   // Documentation
   registerInCommandController(context, "fx-extension.openDocument", handlers.openDocumentHandler);
 

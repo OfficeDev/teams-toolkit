@@ -172,9 +172,6 @@ export function activate(): Result<Void, FxError> {
       },
       false
     );
-    vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.treeview", true);
-  } else {
-    vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.default", true);
   }
   try {
     let appstudioLogin: AppStudioTokenProvider = AppStudioTokenInstance;

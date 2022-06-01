@@ -3077,10 +3077,7 @@ export async function deployAadAppManifest(args: any[]): Promise<Result<null, Fx
   } else {
     const selectedEnv = await askTargetEnvironment();
     if (selectedEnv.isErr()) {
-      ExtTelemetry.sendTelemetryErrorEvent(
-        TelemetryEvent.DeployAadManifestStart,
-        selectedEnv.error
-      );
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DeployAadManifest, selectedEnv.error);
       return err(selectedEnv.error);
     }
     const envName = selectedEnv.value;

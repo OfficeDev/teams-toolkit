@@ -869,7 +869,7 @@
   "depChecker.NodeNotSupported": "Node.js (@CurrentVersion) is not in the supported version list (@SupportedVersions).\n\nClick \"Learn more\" to learn more about the supported Node.js versions.\n\n(If you just installed Node.js (@SupportedVersions), restart Visual Studio Code for the change to take effect.)",
   "depChecker.dotnetNotFound": "Cannot find @NameVersion. For the details why .NET SDK is needed, refer to @HelpLink",
   "depChecker.depsNotFound": "Cannot find @SupportedPackages.\n\nTeams Toolkit requires these dependencies.\n\nClick \"Install\" to install @InstallPackages.",
-  "depChecker.linuxDepsNotFound": "Cannot find @SupportedPackages.\n\nTeams Toolkit requires these dependencies. \n\n(If you just installed @SupportedPackages, restart Visual Studio Code for the change to take effect.)",
+  "depChecker.linuxDepsNotFound": "Cannot find @NameVersion. Install @NameVersion manually and restart Visual Studio Code.",
   "depChecker.linuxDepsNotFoundHelpLinkMessage": "Cannot find @SupportedPackages.\n\nTeams Toolkit requires these dependencies.",
   "error.ActionNotExist": "Action not exist: %s"
 }

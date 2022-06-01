@@ -193,7 +193,7 @@ export interface ProjectSettings {
    *  VS: // TODO: should be same format.
    *
    * Examples in different cases:
-   *  The project is created from scatch/sample using toolkit 1.2.3: "ms-teams-vscode-extension:1.2.3".
+   *  The project is created from scratch/sample using toolkit 1.2.3: "ms-teams-vscode-extension:1.2.3".
    *  The project is directly cloned using git: The toolkit/CLI version when user opens the project for the first time.
    *  Existing project before this property is added: "unknown".
    *  Shared project between different users. The behavior is the same as projectId.

@@ -115,7 +115,7 @@ export class DotnetChecker implements DepsChecker {
   public async install(): Promise<void> {
     if (isLinux()) {
       throw new LinuxNotSupportedError(
-        Messages.linuxDepsNotFound.split("@NameVersion").join(installedNameWithVersion),
+        Messages.linuxDepsNotFound.split("@SupportedPackages").join(installedNameWithVersion),
         dotnetExplanationHelpLink
       );
     }

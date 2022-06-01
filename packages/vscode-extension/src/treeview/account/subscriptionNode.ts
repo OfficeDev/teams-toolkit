@@ -7,7 +7,6 @@ import * as vscode from "vscode";
 import { SubscriptionInfo } from "@microsoft/teamsfx-api";
 import { isValidProject } from "@microsoft/teamsfx-core";
 
-import AzureAccountManager from "../../commonlib/azureLogin";
 import { workspaceUri } from "../../globalVariables";
 import { localize } from "../../utils/localizeUtils";
 import { DynamicNode } from "../dynamicNode";
@@ -35,7 +34,6 @@ export class SubscriptionNode extends DynamicNode {
 
   public async setSubscription(subscription: SubscriptionInfo) {
     this.subscription = subscription;
-    await AzureAccountManager.setSubscription(subscription.subscriptionId);
     this.eventEmitter.fire(this);
   }
 

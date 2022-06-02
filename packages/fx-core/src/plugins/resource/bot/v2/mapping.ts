@@ -3,7 +3,6 @@
 
 import { ServiceType } from "../../../../common/azure-hosting/interfaces";
 import { TemplateProjectsScenarios } from "../constants";
-import { checkPrecondition } from "../errors";
 import {
   FunctionsHttpTriggerOptionItem,
   FunctionsTimerTriggerOptionItem,

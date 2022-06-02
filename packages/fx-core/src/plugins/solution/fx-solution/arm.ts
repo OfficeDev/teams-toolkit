@@ -57,7 +57,7 @@ import { ProgressHelper } from "./utils/progressHelper";
 import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
 import { NamedArmResourcePluginAdaptor } from "./v2/adaptor";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
-import { getProjectTemplatesFolderName } from "../../../common/utils";
+import { getProjectTemplatesFolderPath } from "../../../common/utils";
 
 const bicepOrchestrationFileName = "main.bicep";
 const bicepOrchestrationProvisionMainFileName = "mainProvision.bicep";
@@ -319,10 +319,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
   const bicepCommand = await ensureBicep(ctx, ctx.answers);
 
   // Compile bicep file to json
-  const templateDir = path.join(
-    await getProjectTemplatesFolderName(ctx.root, isVSProject(ctx.projectSettings)),
-    "azure"
-  );
+  const templateDir = path.join(await getProjectTemplatesFolderPath(ctx.root), "azure");
   const bicepOrchestrationFilePath = path.join(templateDir, bicepOrchestrationFileName);
   const armTemplateJson = await compileBicepToJson(
     bicepCommand,
@@ -473,10 +470,7 @@ export async function doDeployArmTemplatesV3(
   const bicepCommand = await ensureBicep(ctx, inputs);
 
   // Compile bicep file to json
-  const templateDir = path.join(
-    await getProjectTemplatesFolderName(inputs.projectPath, isVSProject(ctx.projectSetting)),
-    "azure"
-  );
+  const templateDir = path.join(await getProjectTemplatesFolderPath(inputs.projectPath), "azure");
   const bicepOrchestrationFilePath = path.join(templateDir, bicepOrchestrationFileName);
   const armTemplateJson = await compileBicepToJson(
     bicepCommand,
@@ -887,10 +881,7 @@ async function doGenerateArmTemplate(
 
   // In existing app scenario, arm template will not be added when adding sso
   // Thus here if main.bicep does not exist, will try to scaffold all
-  const templateFolderPath = path.join(
-    await getProjectTemplatesFolderName(ctx.root, isVSProject(ctx.projectSettings)),
-    "azure"
-  );
+  const templateFolderPath = path.join(await getProjectTemplatesFolderPath(ctx.root), "azure");
   if (!(await fs.pathExists(path.join(templateFolderPath, bicepOrchestrationFileName)))) {
     selectedPlugins = plugins;
   }
@@ -1135,10 +1126,7 @@ async function persistBicepTemplates(
       await fs.writeFile(parameterEnvFilePath, parameterFileContent.replace(/\r?\n/g, os.EOL));
     }
 
-    const templateFolderPath = path.join(
-      await getProjectTemplatesFolderName(projectPath, isVs),
-      "azure"
-    );
+    const templateFolderPath = path.join(await getProjectTemplatesFolderPath(projectPath), "azure");
     await fs.ensureDir(templateFolderPath);
     const templateSolitionPath = path.join(getTemplatesFolder(), "plugins", "solution");
     // Generate provision.bicep and module provision bicep files

@@ -54,7 +54,7 @@ import {
   createOrUpdateTeamsApp,
   publishTeamsApp,
 } from "../../../../component/resource/appManifest/appStudio";
-import { getProjectTemplatesFolderName } from "../../../../common/utils";
+import { getProjectTemplatesFolderPath } from "../../../../common/utils";
 
 @Service(BuiltInFeaturePluginNames.appStudio)
 export class AppStudioPluginV3 {
@@ -77,10 +77,7 @@ export class AppStudioPluginV3 {
     );
     if (res.isErr()) return err(res.error);
     const templatesFolder = getTemplatesFolder();
-    const projectTemplatesFolderName = await getProjectTemplatesFolderName(
-      inputs.projectPath,
-      isVSProject(ctx.projectSetting)
-    );
+    const projectTemplatesFolderName = await getProjectTemplatesFolderPath(inputs.projectPath);
     const defaultColorPath = path.join(templatesFolder, COLOR_TEMPLATE);
     const defaultOutlinePath = path.join(templatesFolder, OUTLINE_TEMPLATE);
     const appPackageDir = path.join(projectTemplatesFolderName, "appPackage");

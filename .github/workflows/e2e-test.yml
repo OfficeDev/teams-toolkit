@@ -171,6 +171,8 @@ jobs:
         uses: actions/setup-dotnet@v2
         with:
           dotnet-version: 6.0.x
+
+      - name: show .net info
         run: dotnet --info
 
       - name: Download Simple Auth bits

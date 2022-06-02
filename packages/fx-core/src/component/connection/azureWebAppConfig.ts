@@ -16,11 +16,11 @@ import "reflect-metadata";
 import { Container, Service } from "typedi";
 import * as path from "path";
 import fs from "fs-extra";
-import { getTemplatesFolder } from "../folder";
-import { getComponent } from "./workflow";
-import { compileHandlebarsTemplateString } from "../common/tools";
-import { AzureWebAppResource } from "./resource/azureWebApp";
-import { AzureStorageResource } from "./resource/azureStorage";
+import { getTemplatesFolder } from "../../folder";
+import { getComponent } from "../workflow";
+import { compileHandlebarsTemplateString } from "../../common/tools";
+import { AzureWebAppResource } from "../resource/azureWebApp";
+import { AzureStorageResource } from "../resource/azureStorage";
 @Service("azure-web-app-config")
 export class AzureWebAppConfig {
   readonly name = "azure-web-app-config";

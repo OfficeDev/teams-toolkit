@@ -100,7 +100,9 @@ suite("[Checker UT - Extension]", () => {
       const shouldContinue = await checker.resolve(deps);
 
       const depsNotFoundMatcher = sinon.match(function (msg: string) {
-        return msg.includes("Teams Toolkit requires these dependencies");
+        return (
+          msg.includes("Cannot find") && msg.includes("manually and restart Visual Studio Code.")
+        );
       });
       sandbox.assert.calledTwice(showSpy);
       sandbox.assert.calledWith(showSpy, depsNotFoundMatcher, sinon.match.any);

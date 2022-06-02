@@ -40,7 +40,7 @@
     "test:env-checker": "npx mocha \"tests/common/deps-checker/**/*.it.ts\"",
     "test:core:miniapp": "nyc mocha \"tests/core/miniapp.test.ts\"",
     "test:core:other": "nyc mocha \"tests/core/other.test.ts\"",
-    "test:workflow": "nyc mocha \"tests/component/workflow.test.ts\"",
+    "test:component": "nyc mocha \"tests/component/**/*.test.ts\"",
     "test:hosting": "nyc mocha \"tests/common/hosting/**/*.test.ts\"",
     "clean": "rm -rf build",
     "build": "rimraf build && npx tsc -p ./",

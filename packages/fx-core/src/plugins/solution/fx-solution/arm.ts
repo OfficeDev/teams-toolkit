@@ -64,7 +64,6 @@ const bicepOrchestrationProvisionMainFileName = "mainProvision.bicep";
 const bicepOrchestrationConfigMainFileName = "mainConfig.bicep";
 const bicepOrchestrationProvisionFileName = "provision.bicep";
 const bicepOrchestrationConfigFileName = "config.bicep";
-const templatesFolder = "./templates/azure";
 const configsFolder = `.${ConfigFolderName}/configs`;
 const parameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
 const pollWaitSeconds = 10;

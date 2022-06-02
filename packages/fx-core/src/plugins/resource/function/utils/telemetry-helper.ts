@@ -7,7 +7,6 @@ import { CommonConstants, DependentPluginInfo, FunctionPluginInfo } from "../con
 import { FxResult } from "../result";
 import { FunctionEvent, TelemetryKey, TelemetryValue } from "../enums";
 import { DepsCheckerEvent } from "../../../../common/deps-checker/constant/telemetry";
-import { FunctionPluginError } from "../resources/errors";
 
 export class TelemetryHelper {
   static ctx?: PluginContext;
@@ -62,7 +61,9 @@ export class TelemetryHelper {
       properties[TelemetryKey.ErrorType] = TelemetryValue.UserError;
     }
 
-    this.ctx?.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
+    this.ctx?.telemetryReporter?.sendTelemetryErrorEvent(eventName, properties, measurements, [
+      TelemetryKey.ErrorMessage,
+    ]);
   }
 
   static sendResultEvent(

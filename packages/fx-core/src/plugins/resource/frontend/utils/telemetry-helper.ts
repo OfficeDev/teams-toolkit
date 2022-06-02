@@ -74,7 +74,9 @@ export class TelemetryHelper {
       properties[TelemetryKey.ErrorCode] = e.code;
     }
 
-    this.ctx?.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
+    this.ctx?.telemetryReporter?.sendTelemetryErrorEvent(eventName, properties, measurements, [
+      TelemetryKey.ErrorMessage,
+    ]);
   }
 
   static sendScaffoldFallbackEvent(

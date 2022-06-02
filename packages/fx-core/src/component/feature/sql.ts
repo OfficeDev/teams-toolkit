@@ -15,6 +15,8 @@ import "reflect-metadata";
 import { Service } from "typedi";
 import { getProjectSettingsPath } from "../../core/middleware/projectSettingsLoader";
 import { getComponent } from "../workflow";
+import "../connection/azureWebAppConfig";
+import "../resource/azureSql";
 @Service("sql")
 export class Sql {
   name = "sql";

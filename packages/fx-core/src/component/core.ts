@@ -24,8 +24,8 @@ import { newProjectSettings } from "./../common/projectSettingsHelper";
 import "./bicep";
 import "./debug";
 import "./envManager";
+import "./resource/appManifest/appManifest";
 import { WriteProjectSettingsAction } from "./projectSettingsManager";
-import { getEmbeddedValueByPath } from "./workflow";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -60,7 +60,7 @@ export class TeamsfxCore {
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const projectSettings = newProjectSettings() as ProjectSettingsV3;
-        projectSettings.appName = getEmbeddedValueByPath(inputs, "app-name");
+        projectSettings.appName = inputs["app-name"];
         projectSettings.components = [];
         context.projectSetting = projectSettings;
         await fs.ensureDir(inputs.projectPath);

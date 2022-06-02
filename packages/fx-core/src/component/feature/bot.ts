@@ -23,7 +23,11 @@ import {
 } from "../../plugins/resource/bot/question";
 import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "../projectSettingsManager";
 import { getComponent } from "../workflow";
-
+import "../code/botCode";
+import "../resource/appManifest/appManifest";
+import "../resource/botService";
+import "../resource/azureWebApp";
+import "../connection/azureWebAppConfig";
 @Service("teams-bot")
 export class TeamsBot {
   name = "teams-bot";

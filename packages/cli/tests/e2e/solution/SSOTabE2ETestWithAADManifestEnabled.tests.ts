@@ -24,7 +24,7 @@ import {
 import fs from "fs-extra";
 import { expect } from "chai";
 import { AadValidator, BotValidator, FrontendValidator } from "../../commonlib";
-import appStudioLogin from "../../../src/commonlib/appStudioLogin";
+import M365Login from "../../../src/commonlib/m365Login";
 
 describe("SSO Tab with aad manifest enabled", () => {
   const testFolder = getTestFolder();
@@ -75,7 +75,7 @@ describe("SSO Tab with aad manifest enabled", () => {
     const context = await readContextMultiEnv(projectPath, "dev");
 
     // Validate Aad App
-    const aad = AadValidator.init(context, false, appStudioLogin);
+    const aad = AadValidator.init(context, false, M365Login);
     await AadValidator.validate(aad);
 
     // Validate Tab Frontend

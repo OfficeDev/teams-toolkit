@@ -16,7 +16,7 @@ import {
   setSimpleAuthSkuNameToB1Bicep,
   readContextMultiEnv,
 } from "../commonUtils";
-import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
+import M365Login from "../../../src/commonlib/m365Login";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { KeyVaultValidator } from "../../commonlib/keyVaultValidator";
 import { CliHelper } from "../../commonlib/cliHelper";
@@ -49,7 +49,7 @@ describe("Test Azure Key Vault", function () {
       const context = await readContextMultiEnv(projectPath, env);
 
       // Validate Aad App
-      const aad = AadValidator.init(context, false, AppStudioLogin);
+      const aad = AadValidator.init(context, false, M365Login);
       await AadValidator.validate(aad);
 
       // Validate Key Vault

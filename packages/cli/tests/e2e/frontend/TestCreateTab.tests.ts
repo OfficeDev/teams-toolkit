@@ -19,7 +19,7 @@ import {
   cleanUp,
   setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
-import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
+import M365Login from "../../../src/commonlib/m365Login";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
 import mockedEnv, { RestoreFn } from "mocked-env";
@@ -75,7 +75,7 @@ describe("Create single tab", function () {
           const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
 
           // Validate Aad App
-          const aad = AadValidator.init(context, false, AppStudioLogin);
+          const aad = AadValidator.init(context, false, M365Login);
           await AadValidator.validate(aad);
 
           // Validate Tab Frontend

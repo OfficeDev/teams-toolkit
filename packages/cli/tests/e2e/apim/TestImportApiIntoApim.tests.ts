@@ -17,7 +17,7 @@ import {
   setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
 import AzureLogin from "../../../src/commonlib/azureLogin";
-import GraphLogin from "../../../src/commonlib/graphLogin";
+import M365Login from "../../../src/commonlib/m365Login";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource, ResourceToDeploy } from "../../commonlib/constants";
@@ -60,7 +60,7 @@ describe("Import API into API Management", function () {
     `Create a new API version in Azure API Management`,
     { testPlanCaseId: 10107968 },
     async function () {
-      await ApimValidator.init(subscriptionId, AzureLogin, GraphLogin);
+      await ApimValidator.init(subscriptionId, AzureLogin, M365Login);
       await CliHelper.deployProject(
         ResourceToDeploy.Apim,
         projectPath,
@@ -77,7 +77,7 @@ describe("Import API into API Management", function () {
     `Update an existing API version in Azure API Management`,
     { testPlanCaseId: 10116782 },
     async function () {
-      await ApimValidator.init(subscriptionId, AzureLogin, GraphLogin);
+      await ApimValidator.init(subscriptionId, AzureLogin, M365Login);
       await CliHelper.deployProject(
         ResourceToDeploy.Apim,
         projectPath,

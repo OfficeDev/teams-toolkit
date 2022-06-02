@@ -17,7 +17,7 @@ import {
   createResourceGroup,
   deleteResourceGroupByName,
 } from "../commonUtils";
-import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
+import M365Login from "../../../src/commonlib/m365Login";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
@@ -61,7 +61,7 @@ describe("Deploy to customized resource group", function () {
       const context = await readContextMultiEnv(projectPath, env);
 
       // Validate Aad App
-      const aad = AadValidator.init(context, false, AppStudioLogin);
+      const aad = AadValidator.init(context, false, M365Login);
       await AadValidator.validate(aad);
 
       // Validate Key Vault

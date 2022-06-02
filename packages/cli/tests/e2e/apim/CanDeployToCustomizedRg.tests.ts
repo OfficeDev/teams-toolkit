@@ -25,7 +25,7 @@ import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource, ResourceToDeploy } from "../../commonlib/constants";
 import { customizeBicepFilesToCustomizedRg } from "../commonUtils";
 import AzureLogin from "../../../src/commonlib/azureLogin";
-import GraphLogin from "../../../src/commonlib/graphLogin";
+import M365Login from "../../../src/commonlib/m365Login";
 
 describe("Deploy to customized resource group", function () {
   const testFolder = getTestFolder();
@@ -62,7 +62,7 @@ describe("Deploy to customized resource group", function () {
 
     // Validate Provision
     const context = await readContextMultiEnv(projectPath, env);
-    await ApimValidator.init(subscription, AzureLogin, GraphLogin);
+    await ApimValidator.init(subscription, AzureLogin, M365Login);
     await ApimValidator.validateProvision(context);
 
     // deploy

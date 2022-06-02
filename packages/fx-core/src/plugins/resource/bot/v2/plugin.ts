@@ -281,7 +281,7 @@ export class TeamsBotV2Impl {
         );
         const output = await utils.execute(`dotnet publish --configuration Release`, workingPath);
         console.log(output);
-        return path.join(workingPath, "bin", "release", framework, "publish");
+        return path.join(workingPath, "bin", "Release", framework, "publish");
       } catch (e) {
         throw new CommandExecutionError(`dotnet publish`, workingPath, e);
       }

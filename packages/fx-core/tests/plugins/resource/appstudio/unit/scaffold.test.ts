@@ -33,13 +33,14 @@ import {
   MANIFEST_TEMPLATE_CONSOLIDATE,
   STATIC_TABS_TPL_FOR_MULTI_ENV,
 } from "../../../../../src/plugins/resource/appstudio/constants";
-import { newEnvInfo } from "../../../../../src";
+import { isVSProject, newEnvInfo } from "../../../../../src";
 import * as commonTools from "../../../../../src/common/tools";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import { getAzureProjectRoot } from "../helper";
 import * as path from "path";
 import { getManifestTemplatePath } from "../../../../../src/plugins/resource/appstudio/manifestTemplate";
 import { createManifest } from "../../../../../src/plugins/resource/appstudio/plugin";
+import { getProjectTemplatesFolderName } from "../../../../../src/common/utils";
 
 function getRemoteManifestPath(projectRoot: string): string {
   return `${projectRoot}/templates/${AppPackageFolderName}/${MANIFEST_TEMPLATE}`;
@@ -130,12 +131,22 @@ describe("Scaffold", () => {
     // Maybe we can refactor this later.
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
+        path.join(
+          await getProjectTemplatesFolderName(ctx.root, isVSProject(ctx.projectSettings)),
+          AppPackageFolderName,
+          "resources",
+          "color.png"
+        )
       )
     ).to.be.true;
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
+        path.join(
+          await getProjectTemplatesFolderName(ctx.root, isVSProject(ctx.projectSettings)),
+          AppPackageFolderName,
+          "resources",
+          "outline.png"
+        )
       )
     ).to.be.true;
   });
@@ -189,12 +200,22 @@ describe("Scaffold", () => {
     // Maybe we can refactor this later.
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
+        path.join(
+          await getProjectTemplatesFolderName(ctx.root, isVSProject(ctx.projectSettings)),
+          AppPackageFolderName,
+          "resources",
+          "color.png"
+        )
       )
     ).to.be.true;
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
+        path.join(
+          await getProjectTemplatesFolderName(ctx.root, isVSProject(ctx.projectSettings)),
+          AppPackageFolderName,
+          "resources",
+          "outline.png"
+        )
       )
     ).to.be.true;
   });
@@ -235,12 +256,22 @@ describe("Scaffold", () => {
 
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
+        path.join(
+          await getProjectTemplatesFolderName(ctx.root, isVSProject(ctx.projectSettings)),
+          AppPackageFolderName,
+          "resources",
+          "color.png"
+        )
       )
     ).to.be.true;
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
+        path.join(
+          await getProjectTemplatesFolderName(ctx.root, isVSProject(ctx.projectSettings)),
+          AppPackageFolderName,
+          "resources",
+          "outline.png"
+        )
       )
     ).to.be.true;
   });
@@ -278,12 +309,22 @@ describe("Scaffold", () => {
 
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
+        path.join(
+          await getProjectTemplatesFolderName(ctx.root, isVSProject(ctx.projectSettings)),
+          AppPackageFolderName,
+          "resources",
+          "color.png"
+        )
       )
     ).to.be.true;
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
+        path.join(
+          await getProjectTemplatesFolderName(ctx.root, isVSProject(ctx.projectSettings)),
+          AppPackageFolderName,
+          "resources",
+          "outline.png"
+        )
       )
     ).to.be.true;
   });
@@ -328,12 +369,22 @@ describe("Scaffold", () => {
 
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
+        path.join(
+          await getProjectTemplatesFolderName(ctx.root, isVSProject(ctx.projectSettings)),
+          AppPackageFolderName,
+          "resources",
+          "color.png"
+        )
       )
     ).to.be.true;
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
+        path.join(
+          await getProjectTemplatesFolderName(ctx.root, isVSProject(ctx.projectSettings)),
+          AppPackageFolderName,
+          "resources",
+          "outline.png"
+        )
       )
     ).to.be.true;
   });
@@ -378,12 +429,22 @@ describe("Scaffold", () => {
 
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
+        path.join(
+          await getProjectTemplatesFolderName(ctx.root, isVSProject(ctx.projectSettings)),
+          AppPackageFolderName,
+          "resources",
+          "color.png"
+        )
       )
     ).to.be.true;
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
+        path.join(
+          await getProjectTemplatesFolderName(ctx.root, isVSProject(ctx.projectSettings)),
+          AppPackageFolderName,
+          "resources",
+          "outline.png"
+        )
       )
     ).to.be.true;
   });
@@ -426,12 +487,22 @@ describe("Scaffold", () => {
 
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
+        path.join(
+          await getProjectTemplatesFolderName(ctx.root, isVSProject(ctx.projectSettings)),
+          AppPackageFolderName,
+          "resources",
+          "color.png"
+        )
       )
     ).to.be.true;
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
+        path.join(
+          await getProjectTemplatesFolderName(ctx.root, isVSProject(ctx.projectSettings)),
+          AppPackageFolderName,
+          "resources",
+          "outline.png"
+        )
       )
     ).to.be.true;
   });
@@ -461,12 +532,22 @@ describe("Scaffold", () => {
 
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
+        path.join(
+          await getProjectTemplatesFolderName(ctx.root, isVSProject(ctx.projectSettings)),
+          AppPackageFolderName,
+          "resources",
+          "color.png"
+        )
       )
     ).to.be.true;
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
+        path.join(
+          await getProjectTemplatesFolderName(ctx.root, isVSProject(ctx.projectSettings)),
+          AppPackageFolderName,
+          "resources",
+          "outline.png"
+        )
       )
     ).to.be.true;
   });
@@ -492,12 +573,22 @@ describe("Scaffold", () => {
 
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
+        path.join(
+          await getProjectTemplatesFolderName(ctx.root, isVSProject(ctx.projectSettings)),
+          AppPackageFolderName,
+          "resources",
+          "color.png"
+        )
       )
     ).to.be.true;
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
+        path.join(
+          await getProjectTemplatesFolderName(ctx.root, isVSProject(ctx.projectSettings)),
+          AppPackageFolderName,
+          "resources",
+          "outline.png"
+        )
       )
     ).to.be.true;
   });
@@ -543,8 +634,10 @@ describe("Scaffold", () => {
     chai.expect(result.isOk()).equals(true);
     const manifest: TeamsAppManifest = JSON.parse(
       fileContent.get(
-        path.normalize(
-          `${ctx.root}/templates/${AppPackageFolderName}/${MANIFEST_TEMPLATE_CONSOLIDATE}`
+        path.join(
+          await getProjectTemplatesFolderName(ctx.root, isVSProject(ctx.projectSettings)),
+          AppPackageFolderName,
+          MANIFEST_TEMPLATE_CONSOLIDATE
         )
       )
     );
@@ -567,12 +660,22 @@ describe("Scaffold", () => {
 
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
+        path.join(
+          await getProjectTemplatesFolderName(ctx.root, isVSProject(ctx.projectSettings)),
+          AppPackageFolderName,
+          "resources",
+          "color.png"
+        )
       )
     ).to.be.true;
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
+        path.join(
+          await getProjectTemplatesFolderName(ctx.root, isVSProject(ctx.projectSettings)),
+          AppPackageFolderName,
+          "resources",
+          "outline.png"
+        )
       )
     ).to.be.true;
   });

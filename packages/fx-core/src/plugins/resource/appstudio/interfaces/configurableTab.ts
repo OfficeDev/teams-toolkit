@@ -1,5 +1,5 @@
 export interface ConfigurableTab {
-  objectId: string | null;
+  objectId?: string;
   configurationUrl: string;
   canUpdateConfiguration: boolean;
   scopes: string[];

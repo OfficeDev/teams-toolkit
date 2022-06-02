@@ -1,8 +1,8 @@
 import { BotCommand } from "./botCommand";
 
 export interface Bot {
-  objectId: string | null;
-  botId: string | null;
+  objectId?: string;
+  botId?: string;
   needsChannelSelector: boolean;
   isNotificationOnly: boolean;
   supportsFiles: boolean;

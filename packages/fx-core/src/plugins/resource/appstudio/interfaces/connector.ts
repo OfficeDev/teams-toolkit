@@ -1,6 +1,6 @@
 export interface Connector {
-  objectId: string | null;
-  connectorId: string | null;
+  objectId?: string;
+  connectorId?: string;
   name: string;
   configurationUrl: string;
   scopes: string[];

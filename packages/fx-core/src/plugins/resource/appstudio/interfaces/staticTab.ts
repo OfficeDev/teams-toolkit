@@ -5,7 +5,7 @@ export enum StaticTabActionType {
 }
 
 export interface StaticTab {
-  objectId: string | null;
+  objectId?: string;
   entityId: string;
   name: string;
   contentUrl: string;

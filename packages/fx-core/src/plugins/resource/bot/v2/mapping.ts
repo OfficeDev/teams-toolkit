@@ -3,6 +3,7 @@
 
 import { ServiceType } from "../../../../common/azure-hosting/interfaces";
 import { TemplateProjectsScenarios } from "../constants";
+import { checkPrecondition } from "../errors";
 import {
   FunctionsHttpTriggerOptionItem,
   FunctionsTimerTriggerOptionItem,
@@ -48,6 +49,8 @@ const triggerScenariosMap: Map<string, string[]> = new Map<string, string[]>([
   [AppServiceOptionItemForVS.id, [TemplateProjectsScenarios.NOTIFICATION_WEBAPI_SCENARIO_NAME]],
 ]);
 
+const invalidInputMsg = "Invalid bot input";
+
 const projectFileMap = new Map<Runtime, (appName: string) => string>([
   [Runtime.Node, (_: string) => "package.json"],
   [Runtime.Dotnet, (appName: string) => `${appName}.csproj`],
@@ -58,7 +61,7 @@ export function getRuntime(lang: ProgrammingLanguage): Runtime {
   if (runtime) {
     return runtime;
   }
-  throw new Error("invalid bot input");
+  throw new Error(invalidInputMsg);
 }
 
 export function getServiceType(hostType?: string): ServiceType {
@@ -66,7 +69,7 @@ export function getServiceType(hostType?: string): ServiceType {
   if (serviceType) {
     return serviceType;
   }
-  throw new Error("invalid bot input");
+  throw new Error(invalidInputMsg);
 }
 
 export function getLanguage(lang?: string): ProgrammingLanguage {
@@ -74,7 +77,7 @@ export function getLanguage(lang?: string): ProgrammingLanguage {
   if (language) {
     return language;
   }
-  throw new Error("invalid bot input");
+  throw new Error(invalidInputMsg);
 }
 
 export function getTriggerScenarios(trigger: string): string[] {
@@ -82,7 +85,7 @@ export function getTriggerScenarios(trigger: string): string[] {
   if (scenarios) {
     return scenarios;
   }
-  throw new Error("invalid bot input");
+  throw new Error(invalidInputMsg);
 }
 
 export function getProjectFileName(runtime: Runtime, appName: string): string {
@@ -90,5 +93,5 @@ export function getProjectFileName(runtime: Runtime, appName: string): string {
   if (projectFileName) {
     return projectFileName(appName);
   }
-  throw new Error("invalid bot input");
+  throw new Error(invalidInputMsg);
 }

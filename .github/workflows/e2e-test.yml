@@ -172,9 +172,6 @@ jobs:
         with:
           dotnet-version: 6.0.x
 
-      - name: show .net info
-        run: dotnet --info
-
       - name: Download Simple Auth bits
         uses: nick-fields/retry@v2
         with:

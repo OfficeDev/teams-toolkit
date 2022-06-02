@@ -568,8 +568,7 @@ export class AppStudioPluginImpl {
 
     // cannot use getAppDirectory before creating the manifest file
     const appDir = path.join(
-      ctx.root,
-      getProjectTemplatesFolderName(isVSProject(ctx.projectSettings)),
+      await getProjectTemplatesFolderName(ctx.root, isVSProject(ctx.projectSettings)),
       "appPackage"
     );
 
@@ -826,20 +825,21 @@ export class AppStudioPluginImpl {
       if (await fs.pathExists(formerZipFileName)) {
         await fs.remove(formerZipFileName);
       }
-      const projectTemplatesFolderName = getProjectTemplatesFolderName(
+      const projectTemplatesFolderName = await getProjectTemplatesFolderName(
+        ctx.root,
         isVSProject(ctx.projectSettings)
       );
       await fs.move(
         `${appDirectory}/${manifest.icons.color}`,
-        `${ctx.root}/${projectTemplatesFolderName}/appPackage/${MANIFEST_RESOURCES}/${manifest.icons.color}`
+        `${projectTemplatesFolderName}/appPackage/${MANIFEST_RESOURCES}/${manifest.icons.color}`
       );
       await fs.move(
         `${appDirectory}/${manifest.icons.outline}`,
-        `${ctx.root}/${projectTemplatesFolderName}/appPackage/${MANIFEST_RESOURCES}/${manifest.icons.outline}`
+        `${projectTemplatesFolderName}/appPackage/${MANIFEST_RESOURCES}/${manifest.icons.outline}`
       );
       await fs.move(
         `${appDirectory}/${REMOTE_MANIFEST}`,
-        `${ctx.root}/${projectTemplatesFolderName}/appPackage/${MANIFEST_TEMPLATE}`
+        `${projectTemplatesFolderName}/appPackage/${MANIFEST_TEMPLATE}`
       );
     }
 

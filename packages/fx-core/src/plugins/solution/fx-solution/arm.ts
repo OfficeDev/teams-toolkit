@@ -320,8 +320,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
 
   // Compile bicep file to json
   const templateDir = path.join(
-    ctx.root,
-    getProjectTemplatesFolderName(isVSProject(ctx.projectSettings)),
+    await getProjectTemplatesFolderName(ctx.root, isVSProject(ctx.projectSettings)),
     "azure"
   );
   const bicepOrchestrationFilePath = path.join(templateDir, bicepOrchestrationFileName);
@@ -475,8 +474,7 @@ export async function doDeployArmTemplatesV3(
 
   // Compile bicep file to json
   const templateDir = path.join(
-    inputs.projectPath,
-    getProjectTemplatesFolderName(isVSProject(ctx.projectSetting)),
+    await getProjectTemplatesFolderName(inputs.projectPath, isVSProject(ctx.projectSetting)),
     "azure"
   );
   const bicepOrchestrationFilePath = path.join(templateDir, bicepOrchestrationFileName);
@@ -890,8 +888,7 @@ async function doGenerateArmTemplate(
   // In existing app scenario, arm template will not be added when adding sso
   // Thus here if main.bicep does not exist, will try to scaffold all
   const templateFolderPath = path.join(
-    ctx.root,
-    getProjectTemplatesFolderName(isVSProject(ctx.projectSettings)),
+    await getProjectTemplatesFolderName(ctx.root, isVSProject(ctx.projectSettings)),
     "azure"
   );
   if (!(await fs.pathExists(path.join(templateFolderPath, bicepOrchestrationFileName)))) {
@@ -1138,7 +1135,10 @@ async function persistBicepTemplates(
       await fs.writeFile(parameterEnvFilePath, parameterFileContent.replace(/\r?\n/g, os.EOL));
     }
 
-    const templateFolderPath = path.join(projectPath, getProjectTemplatesFolderName(isVs), "azure");
+    const templateFolderPath = path.join(
+      await getProjectTemplatesFolderName(projectPath, isVs),
+      "azure"
+    );
     await fs.ensureDir(templateFolderPath);
     const templateSolitionPath = path.join(getTemplatesFolder(), "plugins", "solution");
     // Generate provision.bicep and module provision bicep files

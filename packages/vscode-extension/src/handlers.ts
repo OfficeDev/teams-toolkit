@@ -2103,46 +2103,48 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
   // } else {
   //   vscode.commands.executeCommand("setContext", "fx-extension.customizedTreeview", false);
   // }
-  const disposables = await TreeViewManagerInstance.registerTreeViews(
-    globalVariables.workspaceUri?.fsPath
-  );
-  context.subscriptions.push(...disposables);
+}
 
+export function registerAccountMenuCommands(context: ExtensionContext) {
   // Register SignOut tree view command
-  commands.registerCommand("fx-extension.signOut", async (node: TreeViewCommand) => {
-    try {
-      switch (node.contextValue) {
-        case "signedinM365": {
-          Correlator.run(() => {
-            signOutM365(true);
-          });
-          break;
+  context.subscriptions.push(
+    commands.registerCommand("fx-extension.signOut", async (node: TreeViewCommand) => {
+      try {
+        switch (node.contextValue) {
+          case "signedinM365": {
+            Correlator.run(() => {
+              signOutM365(true);
+            });
+            break;
+          }
+          case "signedinAzure": {
+            Correlator.run(() => {
+              signOutAzure(true);
+            });
+            break;
+          }
         }
-        case "signedinAzure": {
-          Correlator.run(() => {
-            signOutAzure(true);
-          });
-          break;
-        }
+      } catch (e) {
+        showError(e);
       }
-    } catch (e) {
-      showError(e);
-    }
-  });
+    })
+  );
 
-  commands.registerCommand("fx-extension.signInGuideline", async (node: TreeViewCommand) => {
-    // TODO: update the link when documentation is ready
-    switch (node.contextValue) {
-      case "signinM365": {
-        await env.openExternal(Uri.parse("https://www.office.com/"));
-        break;
+  context.subscriptions.push(
+    commands.registerCommand("fx-extension.signInGuideline", async (node: TreeViewCommand) => {
+      // TODO: update the link when documentation is ready
+      switch (node.contextValue) {
+        case "signinM365": {
+          await env.openExternal(Uri.parse("https://www.office.com/"));
+          break;
+        }
+        case "signinAzure": {
+          await env.openExternal(Uri.parse("https://portal.azure.com/"));
+          break;
+        }
       }
-      case "signinAzure": {
-        await env.openExternal(Uri.parse("https://portal.azure.com/"));
-        break;
-      }
-    }
-  });
+    })
+  );
 }
 
 export function cmdHdlDisposeTreeView() {

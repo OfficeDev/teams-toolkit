@@ -20,6 +20,16 @@ To scaffold from alpha release templates, set `TEAMSFX_TEMPLATE_PRERELEASE=alpha
   ```
 2. In cd pipeline, all templates in the list will be zipped and be released to GitHub.
 
+3. If your commit contains breaking changes, please include `BREAKING CHANGE:` phrase in your commit footer. The body of the footer has to be multi-line and the footer line must start with “BREAKING CHANGE:”
+```
+$ git add .
+
+$ git commit -m "feat(tab): upgrade react-scirpts
+BREAKING CHANGE: drop support for Node 12"
+
+$ git push
+```
+
 ## How to debug templates?
 
 1. Set `TEAMSFX_DEBUG_TEMPLATE=true` to your environment variables.

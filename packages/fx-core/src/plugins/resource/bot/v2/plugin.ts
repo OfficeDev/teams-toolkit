@@ -279,7 +279,8 @@ export class TeamsBotV2Impl {
         const framework = await TeamsBotV2Impl.getFrameworkVersion(
           path.join(workingPath, projectFileName)
         );
-        await utils.execute(`dotnet publish --configuration Release`, workingPath);
+        const output = await utils.execute(`dotnet publish --configuration Release`, workingPath);
+        console.log(output);
         return path.join(workingPath, "bin", "release", framework, "publish");
       } catch (e) {
         throw new CommandExecutionError(`dotnet publish`, workingPath, e);

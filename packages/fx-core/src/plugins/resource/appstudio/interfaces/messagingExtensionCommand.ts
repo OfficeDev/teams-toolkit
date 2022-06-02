@@ -10,5 +10,5 @@ export interface MessagingExtensionCommand {
   fetchTask: boolean;
   context: string[];
   parameters: MessagingExtensionCommandParameter[];
-  taskInfo: MessagingExtensionCommandTaskInfo;
+  taskInfo?: MessagingExtensionCommandTaskInfo;
 }

@@ -49,6 +49,7 @@ import {
   getProjectSettingsVersion,
   isExistingTabApp,
   isValidProject,
+  isVSProject,
   newProjectSettings,
 } from "../common/projectSettingsHelper";
 import { TelemetryReporterInstance } from "../common/telemetry";
@@ -95,7 +96,7 @@ import {
   TaskNotSupportError,
   WriteFileError,
 } from "./error";
-import { isV3, setCurrentStage, setTools, TOOLS } from "./globalVars";
+import { globalVars, isV3, setCurrentStage, setTools, TOOLS } from "./globalVars";
 import { AadManifestMigrationMW } from "./middleware/aadManifestMigration";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ProjectConsolidateMW } from "./middleware/consolidateLocalRemote";
@@ -262,6 +263,7 @@ export class FxCore implements v3.ICore {
         version: "1.0.0",
       };
       projectSettings.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
+      globalVars.isVS = isVSProject(projectSettings);
       ctx.projectSettings = projectSettings;
       const createEnvResult = await this.createEnvWithName(
         environmentManager.getDefaultEnvName(),
@@ -388,12 +390,13 @@ export class FxCore implements v3.ICore {
       }
       projectPath = path.join(folder, appName);
       inputs.projectPath = projectPath;
+      globalVars.isVS = isVSProject(context.projectSetting);
       await runAction("fx.init", context, inputs as InputsWithProjectPath);
       const feature = inputs.capabilities;
       delete inputs.folder;
       if (BotFeatureIds.includes(feature)) {
         inputs.feature = feature;
-        await runAction("fx.addBot", context, inputs as InputsWithProjectPath);
+        await runAction("teams-bot.add", context, inputs as InputsWithProjectPath);
       }
     }
     if (inputs.platform === Platform.VSCode) {

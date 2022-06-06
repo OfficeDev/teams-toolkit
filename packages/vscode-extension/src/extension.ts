@@ -16,13 +16,7 @@ import {
   Result,
   TemplateFolderName,
 } from "@microsoft/teamsfx-api";
-import {
-  Correlator,
-  isApiConnectEnabled,
-  isConfigUnifyEnabled,
-  isDeployManifestEnabled,
-  isValidProject,
-} from "@microsoft/teamsfx-core";
+import { Correlator, isConfigUnifyEnabled, isValidProject } from "@microsoft/teamsfx-core";
 
 import {
   AadAppTemplateCodeLensProvider,
@@ -89,6 +83,8 @@ export async function activate(context: vscode.ExtensionContext) {
     registerMenuCommands(context);
     handlers.registerAccountMenuCommands(context);
 
+    TreeViewManagerInstance.registerTreeViews(context);
+
     registerCodelensAndHoverProviders(context);
 
     registerDebugConfigProviders(context);
@@ -114,10 +110,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Init VSC context key
   await initializeContextKey();
-  await handlers.cmdHdlLoadTreeView(context);
-  const disposables = await TreeViewManagerInstance.registerTreeViews(workspaceUri?.fsPath);
-  context.subscriptions.push(...disposables);
 
+  // UI is ready to show & interact
   await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
   await vscode.commands.executeCommand("setContext", "fx-extension.initialized", true);
 
@@ -637,20 +631,8 @@ async function initializeContextKey() {
 
   await vscode.commands.executeCommand(
     "setContext",
-    "fx-extension.isDeployManifestEnabled",
-    isDeployManifestEnabled()
-  );
-
-  await vscode.commands.executeCommand(
-    "setContext",
     "fx-extension.isConfigUnifyEnabled",
     isConfigUnifyEnabled()
-  );
-
-  await vscode.commands.executeCommand(
-    "setContext",
-    "fx-extension.isApiConnectEnabled",
-    isApiConnectEnabled()
   );
 }
 
@@ -813,6 +795,7 @@ async function runBackgroundAsyncTasks(
 
   if (isTeamsFxProject) {
     await handlers.autoOpenProjectHandler();
+    await TreeViewManagerInstance.updateTreeViewsByContent();
   }
 
   await exp.initialize(context);

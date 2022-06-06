@@ -9,7 +9,16 @@ export enum ServiceType {
 
 export type BicepConfigs = string[];
 
-export type BicepContext = { plugins: string[]; configs: BicepConfigs };
+export type BicepContext = {
+  plugins: string[];
+  configs: BicepConfigs;
+  moduleNames: { [key: string]: string };
+  moduleNamesCapitalized: { [key: string]: string };
+  moduleName?: string;
+  moduleNameCapitalized?: string;
+  moduleAlias: string;
+  pluginId: string;
+};
 
 export type AzureUploadConfig = {
   headers: {

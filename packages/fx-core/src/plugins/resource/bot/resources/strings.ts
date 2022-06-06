@@ -72,6 +72,7 @@ export class PluginBot {
   public static readonly VALID_DOMAIN = "validDomain";
   public static readonly BOT_CHANNEL_REGISTRATION = "botChannelReg";
   public static readonly BOT_WEB_APP_RESOURCE_ID = "botWebAppResourceId";
+  public static readonly RESOURCE_ID = "resourceId";
   public static readonly UNPACK_FLAG = "unPackFlag";
   public static readonly HOST_TYPE = "host-type";
   // Bot capabilities, for example: notification, command-and-response.

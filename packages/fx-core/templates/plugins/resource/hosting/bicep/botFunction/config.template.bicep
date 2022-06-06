@@ -1,12 +1,12 @@
 // Get existing app settings for merge
-var botFunctionCurrentAppSettings = list('${provisionOutputs.botFunctionOutput.value.botWebAppResourceId}/config/appsettings', '2021-02-01').properties
+var {{moduleName}}CurrentAppSettings = list('${ provisionOutputs.{{moduleName}}Output.value.resourceId }/config/appsettings', '2021-02-01').properties
 
 // Merge TeamsFx configurations to Function resources
-module teamsFxBotFunctionConfig '\{{PluginIdPlaceholder.Configuration.botFunction.path}}' = {
-  name: 'addTeamsFxBotFunctionConfiguration'
+module teamsFx{{moduleNameCapitalized}}Config './teamsfx/{{moduleName}}.bicep' = {
+  name: 'addTeamsFx{{moduleNameCapitalized}}Configuration'
   params: {
     provisionParameters: provisionParameters
     provisionOutputs: provisionOutputs
-    currentAppSettings: botFunctionCurrentAppSettings
+    currentAppSettings: {{moduleName}}CurrentAppSettings
   }
 }

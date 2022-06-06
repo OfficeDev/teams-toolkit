@@ -329,11 +329,11 @@ export type AppManifest = Record<string, any>;
  */
 export class TeamsAppManifest implements AppManifest {
   $schema?: string =
-    "https://developer.microsoft.com/en-us/json-schemas/teams/v1.8/MicrosoftTeams.schema.json";
+    "https://developer.microsoft.com/en-us/json-schemas/teams/v1.11/MicrosoftTeams.schema.json";
   /**
    * The version of the schema this manifest is using.
    */
-  manifestVersion = "1.8";
+  manifestVersion = "1.11";
   /**
    * The version of the app. Changes to your manifest should cause a version change. This version string must follow the semver standard (http://semver.org).
    */
@@ -388,6 +388,13 @@ export class TeamsAppManifest implements AppManifest {
    * The set of Office365 connectors for this app. Currently only one connector per app is supported.
    */
   connectors?: IConnector[];
+
+  /**
+   * Specify the app's Graph connector configuration. If this is present then webApplicationInfo.id must also be specified.
+   */
+  graphConnector?: {
+    notificationUrl: string;
+  };
   /**
    * The set of compose extensions for this app. Currently only one compose extension per app is supported.
    */

@@ -10,7 +10,7 @@ import { Correlator, globalStateGet, globalStateUpdate } from "@microsoft/teamsf
 import * as extensionPackage from "../../package.json";
 import { VSCodeTelemetryReporter } from "../commonlib/telemetry";
 import * as globalVariables from "../globalVariables";
-import { getIsExistingUser, getProjectId } from "../utils/commonUtils";
+import { getProjectId } from "../utils/commonUtils";
 import {
   TelemetryComponentType,
   TelemetryErrorType,
@@ -20,7 +20,8 @@ import {
 } from "./extTelemetryEvents";
 
 const TelemetryCacheKey = "TelemetryEvents";
-let lastCorrelationId: string | undefined = undefined;
+// export for UT
+export let lastCorrelationId: string | undefined = undefined;
 
 export namespace ExtTelemetry {
   export let reporter: VSCodeTelemetryReporter;
@@ -90,8 +91,7 @@ export namespace ExtTelemetry {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
 
-    const isExistingUser = getIsExistingUser();
-    properties[TelemetryProperty.IsExistingUser] = isExistingUser ? isExistingUser : "";
+    properties[TelemetryProperty.IsExistingUser] = globalVariables.isExistingUser;
 
     if (globalVariables.workspaceUri) {
       properties[TelemetryProperty.IsSpfx] = globalVariables.isSPFxProject.toString();
@@ -125,8 +125,7 @@ export namespace ExtTelemetry {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
 
-    const isExistingUser = getIsExistingUser();
-    properties[TelemetryProperty.IsExistingUser] = isExistingUser ? isExistingUser : "";
+    properties[TelemetryProperty.IsExistingUser] = globalVariables.isExistingUser;
 
     properties[TelemetryProperty.Success] = TelemetrySuccess.No;
     if (error instanceof UserError) {
@@ -170,8 +169,7 @@ export namespace ExtTelemetry {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
 
-    const isExistingUser = getIsExistingUser();
-    properties[TelemetryProperty.IsExistingUser] = isExistingUser ? isExistingUser : "";
+    properties[TelemetryProperty.IsExistingUser] = globalVariables.isExistingUser;
 
     if (globalVariables.workspaceUri) {
       properties[TelemetryProperty.IsSpfx] = globalVariables.isSPFxProject.toString();

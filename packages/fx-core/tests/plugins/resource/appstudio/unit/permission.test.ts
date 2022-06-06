@@ -23,7 +23,7 @@ import {
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
 import { getAzureProjectRoot, MockedAppStudioTokenProvider } from "../helper";
 import { newEnvInfo } from "../../../../../src";
-import { IUserList } from "../../../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
+import { AppUser } from "../../../../../src/plugins/resource/appstudio/interfaces/appUser";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import {
   MockedAzureAccountProvider,
@@ -41,7 +41,7 @@ import { AadAppForTeamsPluginV3 } from "../../../../../src/plugins/resource/aad/
 import { AppStudioPluginV3 } from "../../../../../src/plugins/resource/appstudio/v3";
 import { MockM365TokenProvider } from "../../../../core/utils";
 
-const userList: IUserList = {
+const userList: AppUser = {
   tenantId: faker.datatype.uuid(),
   aadId: faker.datatype.uuid(),
   displayName: "displayName",

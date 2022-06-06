@@ -426,7 +426,6 @@
           "command": "fx-extension.specifySubscription",
           "when": "false"
         },
-
         {
           "command": "fx-extension.checkProjectUpgrade",
           "when": "fx-extension.canUpgradeToArmAndMultiEnv"
@@ -484,7 +483,6 @@
         "title": "Teams - Validate Get Started Prerequisites",
         "enablement": "never"
       },
-
       {
         "command": "fx-extension.addEnvironment",
         "title": "%teamstoolkit.commands.createEnvironment.title%",
@@ -583,7 +581,6 @@
         "enablement": "fx-extension.isTeamsFx",
         "category": "Teams"
       },
-
       {
         "command": "fx-extension.azureAccountSettings",
         "title": "%teamstoolkit.commands.azureAccountSettings.title%",

@@ -35,11 +35,7 @@ import {
 } from "../../../common";
 import { FunctionsHostedBotImpl } from "./functionsHostedBot/plugin";
 import { ScaffoldConfig } from "./configs/scaffoldConfig";
-import {
-  createHostTypeTriggerQuestion,
-  createHostTypeTriggerQuestionForVS,
-  showNotificationTriggerCondition,
-} from "./question";
+import { createHostTypeTriggerQuestion, showNotificationTriggerCondition } from "./question";
 import { CoreQuestionNames } from "../../../core/question";
 
 @Service(ResourcePlugins.BotPlugin)

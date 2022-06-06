@@ -18,7 +18,9 @@ import {
   UserError,
 } from "@microsoft/teamsfx-api";
 import { AppStudioClient } from "./appStudio";
-import { IAppDefinition, IUserList, ILanguage } from "./interfaces/IAppDefinition";
+import { AppDefinition } from "./interfaces/appDefinition";
+import { AppUser } from "./interfaces/appUser";
+import { Language } from "./interfaces/language";
 import {
   AzureSolutionQuestionNames,
   BotOptionItem,
@@ -280,7 +282,7 @@ export class AppStudioPluginImpl {
       manifestString = JSON.stringify(manifestResult.value);
     }
 
-    let appDefinition: IAppDefinition;
+    let appDefinition: AppDefinition;
     if (isSPFxProject(ctx.projectSettings)) {
       manifestString = await this.getSPFxManifest(ctx, false);
       const appDefinitionRes = await this.convertToAppDefinition(
@@ -406,7 +408,7 @@ export class AppStudioPluginImpl {
       manifestString = JSON.stringify(manifestResult.value);
     }
 
-    let appDefinition: IAppDefinition;
+    let appDefinition: AppDefinition;
     if (isSPFxProject(ctx.projectSettings)) {
       manifestString = await this.getSPFxManifest(ctx, isLocalDebug);
       manifest = JSON.parse(manifestString);
@@ -936,7 +938,7 @@ export class AppStudioPluginImpl {
 
   public async checkPermission(
     ctx: PluginContext,
-    userInfo: IUserList
+    userInfo: AppUser
   ): Promise<ResourcePermission[]> {
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
 
@@ -1001,7 +1003,7 @@ export class AppStudioPluginImpl {
 
   public async grantPermission(
     ctx: PluginContext,
-    userInfo: IUserList
+    userInfo: AppUser
   ): Promise<ResourcePermission[]> {
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
 
@@ -1245,10 +1247,10 @@ export class AppStudioPluginImpl {
     ctx: PluginContext,
     appManifest: TeamsAppManifest,
     ignoreIcon: boolean
-  ): Promise<Result<IAppDefinition, FxError>> {
-    const appDefinition: IAppDefinition = {
+  ): Promise<Result<AppDefinition, FxError>> {
+    const appDefinition: AppDefinition = {
       appName: appManifest.name.short,
-      validDomains: appManifest.validDomains,
+      validDomains: appManifest.validDomains || [],
     };
 
     appDefinition.showLoadingIndicator = appManifest.showLoadingIndicator;
@@ -1273,18 +1275,44 @@ export class AppStudioPluginImpl {
     appDefinition.shortDescription = appManifest.description.short;
     appDefinition.longDescription = appManifest.description.full;
 
-    appDefinition.staticTabs = appManifest.staticTabs;
-    appDefinition.configurableTabs = appManifest.configurableTabs;
-
+    appDefinition.staticTabs = appManifest.staticTabs?.map((x) => {
+      return {
+        objectId: x.objectId,
+        entityId: x.entityId,
+        name: x.name ?? "",
+        contentUrl: x.contentUrl ?? "",
+        websiteUrl: x.websiteUrl ?? "",
+        scopes: x.scopes,
+        context: x.context ?? [],
+      };
+    });
+    appDefinition.configurableTabs = appManifest.configurableTabs?.map((x) => {
+      return {
+        objectId: x.objectId,
+        configurationUrl: x.configurationUrl,
+        canUpdateConfiguration: x.canUpdateConfiguration ?? false,
+        scopes: x.scopes,
+        context: x.context ?? [],
+        sharePointPreviewImage: x.sharePointPreviewImage ?? "",
+        supportedSharePointHosts: x.supportedSharePointHosts ?? [],
+      };
+    });
     appDefinition.bots = convertToAppDefinitionBots(appManifest);
     appDefinition.messagingExtensions = convertToAppDefinitionMessagingExtensions(appManifest);
 
-    appDefinition.connectors = appManifest.connectors;
+    appDefinition.connectors = appManifest.connectors?.map((x) => {
+      return {
+        connectorId: x.connectorId,
+        configurationUrl: x.configurationUrl ?? "",
+        name: "",
+        scopes: x.scopes,
+      };
+    });
     appDefinition.graphConnector = appManifest.graphConnector;
     appDefinition.devicePermissions = appManifest.devicePermissions;
 
     if (appManifest.localizationInfo) {
-      let languages: ILanguage[] = [];
+      let languages: Language[] = [];
       if (appManifest.localizationInfo.additionalLanguages) {
         try {
           languages = await Promise.all(
@@ -1319,7 +1347,9 @@ export class AppStudioPluginImpl {
       appDefinition.webApplicationInfoResource = appManifest.webApplicationInfo.resource;
     }
 
-    appDefinition.activities = appManifest.activities;
+    appDefinition.activities = {
+      activityTypes: appManifest.activities?.activityTypes ?? [],
+    };
 
     if (!ignoreIcon && appManifest.icons.color) {
       appDefinition.colorIcon = appManifest.icons.color;
@@ -1335,7 +1365,7 @@ export class AppStudioPluginImpl {
   private async createApp(
     ctx: PluginContext,
     isLocalDebug: boolean
-  ): Promise<Result<IAppDefinition, FxError>> {
+  ): Promise<Result<AppDefinition, FxError>> {
     const appDirectory = await getAppDirectory(ctx.root);
     const status = await fs.lstat(appDirectory);
 
@@ -1404,7 +1434,7 @@ export class AppStudioPluginImpl {
 
   private async updateApp(
     ctx: PluginContext,
-    appDefinition: IAppDefinition,
+    appDefinition: AppDefinition,
     appStudioToken: string,
     isLocalDebug: boolean,
     createIfNotExist: boolean,
@@ -1526,7 +1556,7 @@ export class AppStudioPluginImpl {
   private async getAppDefinitionAndManifest(
     ctx: PluginContext,
     isLocalDebug: boolean
-  ): Promise<Result<[IAppDefinition, TeamsAppManifest], FxError>> {
+  ): Promise<Result<[AppDefinition, TeamsAppManifest], FxError>> {
     const {
       tabEndpoint,
       tabDomain,

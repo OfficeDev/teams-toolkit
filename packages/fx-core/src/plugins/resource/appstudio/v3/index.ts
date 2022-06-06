@@ -47,7 +47,7 @@ import { TelemetryUtils, TelemetryEventName, TelemetryPropertyKey } from "../uti
 import { ResourcePermission, TeamsAppAdmin } from "../../../../common/permissionInterface";
 import isUUID from "validator/lib/isUUID";
 import { AppStudioClient } from "../appStudio";
-import { IUserList } from "../interfaces/IAppDefinition";
+import { AppUser } from "../interfaces/appUser";
 import { isExistingTabApp, isVSProject } from "../../../../common/projectSettingsHelper";
 import { InitializedFileAlreadyExistError } from "../../../../core/error";
 import {
@@ -380,7 +380,7 @@ export class AppStudioPluginV3 {
     inputs: v2.InputsWithProjectPath,
     envInfo: v3.EnvInfoV3,
     appStudioTokenProvider: AppStudioTokenProvider,
-    userInfo: IUserList
+    userInfo: AppUser
   ): Promise<Result<ResourcePermission[], FxError>> {
     const appStudioToken = await appStudioTokenProvider.getAccessToken();
 
@@ -418,7 +418,7 @@ export class AppStudioPluginV3 {
     inputs: v2.InputsWithProjectPath,
     envInfo: v3.EnvInfoV3,
     appStudioTokenProvider: AppStudioTokenProvider,
-    userInfo: IUserList
+    userInfo: AppUser
   ): Promise<Result<ResourcePermission[], FxError>> {
     const appStudioToken = await appStudioTokenProvider.getAccessToken();
 

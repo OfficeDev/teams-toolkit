@@ -19,7 +19,7 @@ import {
 import { AppStudioPluginV3 } from "../../../../../src/plugins/resource/appstudio/v3";
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
 import { Constants } from "../../../../../src/plugins/resource/appstudio/constants";
-import { IAppDefinition } from "./../../../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
+import { AppDefinition } from "./../../../../../src/plugins/resource/appstudio/interfaces/appDefinition";
 import { newEnvInfoV3 } from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import {
@@ -36,7 +36,7 @@ import { MockM365TokenProvider } from "../../../../core/utils";
 describe("Provision Teams app with Azure", () => {
   const sandbox = sinon.createSandbox();
 
-  const appDef: IAppDefinition = {
+  const appDef: AppDefinition = {
     appName: "fake",
     teamsAppId: uuid(),
     userList: [],

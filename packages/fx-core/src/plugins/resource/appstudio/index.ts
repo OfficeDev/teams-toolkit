@@ -33,7 +33,7 @@ import { Links } from "../bot/constants";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import "./v2";
 import "./v3";
-import { IUserList } from "./interfaces/IAppDefinition";
+import { AppUser } from "./interfaces/appUser";
 import { getManifestTemplatePath } from "./manifestTemplate";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { isDeployManifestEnabled } from "../../../common";
@@ -467,7 +467,7 @@ export class AppStudioPlugin implements Plugin {
     try {
       const checkPermissionResult = await this.appStudioPluginImpl.checkPermission(
         ctx,
-        userInfo as IUserList
+        userInfo as AppUser
       );
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.checkPermission);
       return ok(checkPermissionResult);
@@ -497,7 +497,7 @@ export class AppStudioPlugin implements Plugin {
     try {
       const grantPermissionResult = await this.appStudioPluginImpl.grantPermission(
         ctx,
-        userInfo as IUserList
+        userInfo as AppUser
       );
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.grantPermission);
       return ok(grantPermissionResult);

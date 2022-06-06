@@ -23,7 +23,7 @@ import { compileHandlebarsTemplateString } from "../../../common/tools";
 import { AppStudioClient } from "../../../plugins/resource/appstudio/appStudio";
 import { Constants } from "../../../plugins/resource/appstudio/constants";
 import { AppStudioError } from "../../../plugins/resource/appstudio/errors";
-import { IAppDefinition } from "../../../plugins/resource/appstudio/interfaces/IAppDefinition";
+import { AppDefinition } from "../../../plugins/resource/appstudio/interfaces/appDefinition";
 import { AppStudioResultFactory } from "../../../plugins/resource/appstudio/results";
 import { convertToAppDefinition } from "../../../plugins/resource/appstudio/utils/utils";
 import { readAppManifest } from "./utils";
@@ -282,7 +282,7 @@ export async function validateManifest(
 async function getAppDefinitionAndManifest(
   projectPath: string,
   envInfo: v3.EnvInfoV3
-): Promise<Result<[IAppDefinition, TeamsAppManifest], FxError>> {
+): Promise<Result<[AppDefinition, TeamsAppManifest], FxError>> {
   // Read template
   const manifestTemplateRes = await readAppManifest(projectPath);
   if (manifestTemplateRes.isErr()) {

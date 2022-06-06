@@ -21,7 +21,7 @@ import { getAppStudioToken, getGraphToken } from "../tokenProvider";
 import { ConfigKeys } from "../../../../../src/plugins/resource/aad/constants";
 import { ProvisionConfig } from "../../../../../src/plugins/resource/aad/utils/configs";
 import faker from "faker";
-import { IUserList } from "../../../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
+import { AppUser } from "../../../../../src/plugins/resource/appstudio/interfaces/appUser";
 import { AadAppForTeamsPluginV3 } from "../../../../../src/plugins/resource/aad/v3";
 import {
   BuiltInFeaturePluginNames,
@@ -43,7 +43,7 @@ import { MockM365TokenProvider } from "../../../../core/utils";
 dotenv.config();
 const testWithAzure: boolean = process.env.UT_TEST_ON_AZURE ? true : false;
 
-const userList: IUserList = {
+const userList: AppUser = {
   tenantId: faker.datatype.uuid(),
   aadId: faker.datatype.uuid(),
   displayName: "displayName",

@@ -54,11 +54,6 @@ suite("ExtTelemetry", () => {
       chai.expect(ExtTelemetry.stageToEvent(stage)).equals(TelemetryEvent.CreateProject);
     });
 
-    test("Stage.update", () => {
-      const stage = Stage.update;
-      chai.expect(ExtTelemetry.stageToEvent(stage)).equals(TelemetryEvent.AddResource);
-    });
-
     test("Stage.provision", () => {
       const stage = Stage.provision;
       chai.expect(ExtTelemetry.stageToEvent(stage)).equals(TelemetryEvent.Provision);

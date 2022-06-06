@@ -2,9 +2,9 @@
 // Licensed under the MIT license.
 
 /**
- * @author Xiaofu Huang <xiaofhua@microsoft.com>
+ * @author Yefu Wang <yefuwang@microsoft.com>
  */
 
 import { happyPathTest } from "./CommandBotHappyPathCommon";
 
-happyPathTest("nodejs");
+happyPathTest("dotnet");

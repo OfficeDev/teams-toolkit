@@ -75,6 +75,7 @@ import {
   TabOptionItem,
   TabSPFxItem,
   TabSsoItem,
+  BotFeatureIds,
 } from "../plugins/solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { CallbackRegistry } from "./callback";
@@ -153,7 +154,6 @@ import { runAction } from "../component/workflow";
 import { TemplateProjectsScenarios } from "../plugins/resource/bot/constants";
 import { createContextV3 } from "../component/utils";
 import "../component/core";
-import { BotFeatureIds } from "../plugins/solution/fx-solution/question";
 import { QuestionModelMW_V3 } from "./middleware/questionModelV3";
 import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
 
@@ -450,42 +450,17 @@ export class FxCore implements v3.ICore {
     return result;
   }
 
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectMigratorMW,
-    ProjectConsolidateMW,
-    AadManifestMigrationMW,
-    ProjectVersionCheckerMW,
-    ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(false),
-    SolutionLoaderMW_V3,
-    QuestionModelMW,
-    ContextInjectorMW,
-    ProjectSettingsWriterMW,
-    EnvInfoWriterMW_V3(),
-  ])
+  @hooks([ErrorHandlerMW, QuestionModelMW_V3, ContextInjectorMW])
   async provisionResourcesV3(
     inputs: Inputs,
     ctx?: CoreHookContext
   ): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.provision);
     inputs.stage = Stage.provision;
-    if (
-      ctx &&
-      ctx.solutionV3 &&
-      ctx.contextV2 &&
-      ctx.envInfoV3 &&
-      ctx.solutionV3.provisionResources
-    ) {
-      const res = await ctx.solutionV3.provisionResources(
-        ctx.contextV2,
-        inputs as v2.InputsWithProjectPath,
-        ctx.envInfoV3,
-        TOOLS.tokenProvider
-      );
-      return res;
-    }
+    const context = createContextV3();
+    context.tokenProvider = TOOLS.tokenProvider;
+    await runAction("fx.provision", context, inputs as InputsWithProjectPath);
+    ctx!.projectSettings = context.projectSetting;
     return ok(Void);
   }
 

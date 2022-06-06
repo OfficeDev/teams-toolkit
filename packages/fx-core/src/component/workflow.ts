@@ -446,7 +446,7 @@ export async function executeFunctionAction(
         if (bicep) {
           const bicepPlans = persistBicepPlans(inputs.projectPath, bicep);
           bicepPlans.forEach((p) => effects.push(p));
-          await persistBicep(inputs.projectPath, bicep);
+          await persistBicep(inputs.projectPath, context.projectSetting.appName, bicep);
         }
       } else {
         effects.push(effect);

@@ -522,6 +522,9 @@ export async function doDeployArmTemplatesV3(
         syncArmOutput(envInfo, result.properties?.outputs);
         return result;
       })
+      .catch((reason) => {
+        ctx.logProvider.error(reason);
+      })
       .finally(() => {
         deployCtx.finished = true;
       });
@@ -1506,7 +1509,7 @@ function expandParameterPlaceholdersV3(
   return compileHandlebarsTemplateString(parameterContent, availableVariables);
 }
 
-function generateResourceBaseName(appName: string, envName: string): string {
+export function generateResourceBaseName(appName: string, envName: string): string {
   const maxAppNameLength = 10;
   const maxEnvNameLength = 4;
   const normalizedAppName = appName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();

@@ -81,7 +81,7 @@ export class AzureSqlResource implements CloudResource {
             Orchestration: orch,
           },
         };
-        if (inputs.provisionType === "database") {
+        if (inputs.provisionType === "server") {
           bicep.Parameters = await fs.readJson(
             path.join(getTemplatesFolder(), "bicep", "azureSql.parameters.json")
           );
@@ -90,6 +90,27 @@ export class AzureSqlResource implements CloudResource {
       },
     };
     return ok(action);
+  }
+  provision(
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    //TODO
+    const action: Action = {
+      name: "azure-sql.provision",
+      type: "function",
+      question: (context: ContextV3, inputs: InputsWithProjectPath) => {
+        return ok(undefined);
+      },
+      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
+        return ok(["collect user inputs for sql account"]);
+      },
+      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+        context.envInfo!.state["azure-sql"].password = "MockSqlPassword";
+        return ok([{ type: "service", name: "azure", remarks: "configure azure-sql" }]);
+      },
+    };
+    return ok(undefined);
   }
   configure(
     context: ContextV3,

@@ -8,7 +8,7 @@ import {
   ICommand,
   ICommandList,
 } from "@microsoft/teamsfx-api";
-import { ITeamCommand, IGroupChatCommand, IPersonalCommand } from "../interfaces/IAppDefinition";
+import { BotCommand } from "../interfaces/botCommand";
 import { AppDefinition } from "../interfaces/appDefinition";
 import { Bot } from "../interfaces/bot";
 import { MessagingExtension } from "../interfaces/messagingExtension";
@@ -169,9 +169,9 @@ export function convertToAppDefinitionBots(appManifest: TeamsAppManifest): Bot[]
   const bots: Bot[] = [];
   if (appManifest.bots) {
     appManifest.bots.forEach((manBot: IBot) => {
-      const teamCommands: ITeamCommand[] = [];
-      const groupCommands: IGroupChatCommand[] = [];
-      const personalCommands: IPersonalCommand[] = [];
+      const teamCommands: BotCommand[] = [];
+      const groupCommands: BotCommand[] = [];
+      const personalCommands: BotCommand[] = [];
 
       manBot?.commandLists?.forEach((list: ICommandList) => {
         list.commands.forEach((command: ICommand) => {

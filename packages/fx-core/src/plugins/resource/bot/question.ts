@@ -9,6 +9,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { isPreviewFeaturesEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { CoreQuestionNames } from "../../../core/question";
 import {
   AzureSolutionQuestionNames,
   NotificationOptionItem,
@@ -63,45 +64,29 @@ export const HostTypeTriggerOptions: HostTypeTriggerOptionItem[] = [
 
 export const HostTypeTriggerOptionsForVS: HostTypeTriggerOptionItem[] = [AppServiceOptionItemForVS];
 
-export function createHostTypeTriggerQuestionForVS(): SingleSelectQuestion {
-  const prefix = "plugins.bot.questionHostTypeTrigger";
-  return {
-    name: QuestionNames.BOT_HOST_TYPE_TRIGGER,
-    title: getLocalizedString(prefix + ".title"),
-    type: "singleSelect",
-    staticOptions: HostTypeTriggerOptionsForVS,
-    default: AppServiceOptionItemForVS.id,
-    placeholder: getLocalizedString(prefix + ".placeholder"),
-    skipSingleOption: true,
-    validation: {
-      validFunc: async (input: string[]): Promise<string | undefined> => {
-        const name = input as string[];
-        if (name.length === 0) {
-          return getLocalizedString(`${prefix}.error.emptySelection`);
-        }
-        return undefined;
-      },
-    },
-  };
-}
-
 // The restrictions of this question:
 //   - appService and function are mutually exclusive
 //   - users must select at least one trigger.
-export function createHostTypeTriggerQuestion(platform?: Platform): MultiSelectQuestion {
+export function createHostTypeTriggerQuestion(
+  platform?: Platform,
+  runtime?: string
+): MultiSelectQuestion {
   const prefix = "plugins.bot.questionHostTypeTrigger";
 
-  let staticOptions: HostTypeTriggerOptionItem[];
+  let staticOptions: HostTypeTriggerOptionItem[] = HostTypeTriggerOptions;
+  let defaultOptionItem = AppServiceOptionItem;
+  if (runtime === "dotnet" || platform === Platform.VS) {
+    staticOptions = HostTypeTriggerOptionsForVS;
+    defaultOptionItem = AppServiceOptionItemForVS;
+  }
   if (platform === Platform.CLI) {
     // The UI in CLI is different. It does not have description. So we need to merge that into label.
-    staticOptions = HostTypeTriggerOptions.map((option) => {
+    staticOptions = staticOptions.map((option) => {
       // do not change the original option
       const cliOption = Object.assign({}, option);
       cliOption.label = `${option.label} (${option.description})`;
       return cliOption;
     });
-  } else {
-    staticOptions = HostTypeTriggerOptions;
   }
 
   return {
@@ -109,8 +94,9 @@ export function createHostTypeTriggerQuestion(platform?: Platform): MultiSelectQ
     title: getLocalizedString(`${prefix}.title`),
     type: "multiSelect",
     staticOptions: staticOptions,
-    default: [AppServiceOptionItem.id],
+    default: [defaultOptionItem.id],
     placeholder: getLocalizedString(`${prefix}.placeholder`),
+    skipSingleOption: true,
     validation: {
       validFunc: async (input: string[]): Promise<string | undefined> => {
         const name = input as string[];
@@ -118,7 +104,7 @@ export function createHostTypeTriggerQuestion(platform?: Platform): MultiSelectQ
           return getLocalizedString(`${prefix}.error.emptySelection`);
         }
 
-        if (name.includes(AppServiceOptionItem.id) && name.length > 1) {
+        if (name.includes(defaultOptionItem.id) && name.length > 1) {
           return getLocalizedString(`${prefix}.error.hostTypeConflict`);
         }
 
@@ -129,11 +115,11 @@ export function createHostTypeTriggerQuestion(platform?: Platform): MultiSelectQ
       currentSelectedIds: Set<string>,
       previousSelectedIds: Set<string>
     ): Promise<Set<string>> {
-      if (currentSelectedIds.size > 1 && currentSelectedIds.has(AppServiceOptionItem.id)) {
-        if (previousSelectedIds.has(AppServiceOptionItem.id)) {
-          currentSelectedIds.delete(AppServiceOptionItem.id);
+      if (currentSelectedIds.size > 1 && currentSelectedIds.has(defaultOptionItem.id)) {
+        if (previousSelectedIds.has(defaultOptionItem.id)) {
+          currentSelectedIds.delete(defaultOptionItem.id);
         } else {
-          currentSelectedIds = new Set([AppServiceOptionItem.id]);
+          currentSelectedIds = new Set([defaultOptionItem.id]);
         }
       }
 

@@ -207,11 +207,12 @@ export class TeamsBot implements Plugin {
       return await runWithExceptionCatching(
         context,
         async () => {
-          if (isCLIDotNetEnabled()) {
-            const node = new QTreeNode({ type: "group" });
-            node.condition = showNotificationTriggerCondition;
-
-            const dotnetNode = new QTreeNode(createHostTypeTriggerQuestionForVS());
+          const inputs = context.answers as Inputs;
+          const res = new QTreeNode({
+            type: "group",
+          });
+          if (inputs.platform === Platform.CLI && isCLIDotNetEnabled()) {
+            const dotnetNode = new QTreeNode(createHostTypeTriggerQuestion(Platform.CLI, "dotnet"));
             dotnetNode.condition = {
               validFunc: async (input: unknown, inputs?: Inputs) => {
                 if (inputs && inputs[CoreQuestionNames.Runtime] === "dotnet") {
@@ -221,11 +222,8 @@ export class TeamsBot implements Plugin {
                 }
               },
             };
-            node.addChild(dotnetNode);
-
-            const nodejsNode = new QTreeNode(
-              createHostTypeTriggerQuestion(context.answers?.platform)
-            );
+            res.addChild(dotnetNode);
+            const nodejsNode = new QTreeNode(createHostTypeTriggerQuestion(Platform.CLI, "nodejs"));
             nodejsNode.condition = {
               validFunc: async (input: unknown, inputs?: Inputs) => {
                 if (inputs && inputs[CoreQuestionNames.Runtime] === "nodejs") {
@@ -235,26 +233,15 @@ export class TeamsBot implements Plugin {
                 }
               },
             };
-
-            node.addChild(nodejsNode);
-
-            return ok(node);
           } else {
-            if (isVSProject(context.projectSettings) || context.answers?.platform === Platform.VS) {
-              const res = new QTreeNode(createHostTypeTriggerQuestionForVS());
-              res.condition = showNotificationTriggerCondition;
-              return ok(res);
-            } else if (isBotNotificationEnabled()) {
-              const res = new QTreeNode({
-                type: "group",
-              });
-              res.addChild(new QTreeNode(createHostTypeTriggerQuestion(context.answers?.platform)));
-              res.condition = showNotificationTriggerCondition;
-              return ok(res);
-            } else {
-              return ok(undefined);
-            }
+            res.addChild(
+              new QTreeNode(
+                createHostTypeTriggerQuestion(inputs.platform, inputs[CoreQuestionNames.Runtime])
+              )
+            );
           }
+          res.condition = showNotificationTriggerCondition;
+          return ok(res);
         },
         true,
         LifecycleFuncNames.GET_QUETSIONS_FOR_SCAFFOLDING

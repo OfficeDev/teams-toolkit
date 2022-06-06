@@ -140,6 +140,13 @@ export async function deactivate() {
  * They are used in welcome view and walkthrough.
  */
 function registerActivateCommands(context: vscode.ExtensionContext) {
+  // non-teamsfx project upgrade
+  const checkUpgradeCmd = vscode.commands.registerCommand(
+    "fx-extension.checkProjectUpgrade",
+    (...args) => Correlator.run(handlers.checkUpgrade, args)
+  );
+  context.subscriptions.push(checkUpgradeCmd);
+
   // Create a new Teams app
   registerInCommandController(
     context,
@@ -203,13 +210,6 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.validateGetStartedPrerequisitesHandler, args)
   );
   context.subscriptions.push(validateGetStartedPrerequisitesCmd);
-
-  // non-teamsfx project upgrade
-  const checkUpgradeCmd = vscode.commands.registerCommand(
-    "fx-extension.checkProjectUpgrade",
-    (...args) => Correlator.run(handlers.checkUpgrade, args)
-  );
-  context.subscriptions.push(checkUpgradeCmd);
 }
 
 /**

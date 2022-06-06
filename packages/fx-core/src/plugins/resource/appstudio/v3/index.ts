@@ -34,7 +34,6 @@ import { getTemplatesFolder } from "../../../../folder";
 import * as path from "path";
 import fs from "fs-extra";
 import {
-  APP_PACKAGE_FOLDER_FOR_MULTI_ENV,
   COLOR_TEMPLATE,
   Constants,
   DEFAULT_COLOR_PNG_FILENAME,
@@ -49,12 +48,13 @@ import { ResourcePermission, TeamsAppAdmin } from "../../../../common/permission
 import isUUID from "validator/lib/isUUID";
 import { AppStudioClient } from "../appStudio";
 import { IUserList } from "../interfaces/IAppDefinition";
-import { isExistingTabApp } from "../../../../common/projectSettingsHelper";
+import { isExistingTabApp, isVSProject } from "../../../../common/projectSettingsHelper";
 import { InitializedFileAlreadyExistError } from "../../../../core/error";
 import {
   createOrUpdateTeamsApp,
   publishTeamsApp,
 } from "../../../../component/resource/appManifest/appStudio";
+import { getProjectTemplatesFolderPath } from "../../../../common/utils";
 
 @Service(BuiltInFeaturePluginNames.appStudio)
 export class AppStudioPluginV3 {
@@ -77,9 +77,10 @@ export class AppStudioPluginV3 {
     );
     if (res.isErr()) return err(res.error);
     const templatesFolder = getTemplatesFolder();
+    const projectTemplatesFolderName = await getProjectTemplatesFolderPath(inputs.projectPath);
     const defaultColorPath = path.join(templatesFolder, COLOR_TEMPLATE);
     const defaultOutlinePath = path.join(templatesFolder, OUTLINE_TEMPLATE);
-    const appPackageDir = path.resolve(inputs.projectPath, APP_PACKAGE_FOLDER_FOR_MULTI_ENV);
+    const appPackageDir = path.join(projectTemplatesFolderName, "appPackage");
     const resourcesDir = path.resolve(appPackageDir, MANIFEST_RESOURCES);
     await fs.ensureDir(resourcesDir);
     await fs.copy(defaultColorPath, path.join(resourcesDir, DEFAULT_COLOR_PNG_FILENAME));
@@ -93,24 +94,22 @@ export class AppStudioPluginV3 {
    */
   async preCheck(projectPath: string): Promise<string[]> {
     const existFiles = new Array<string>();
-
-    const appPackageDir = path.resolve(projectPath, APP_PACKAGE_FOLDER_FOR_MULTI_ENV);
-    const manifestPath = path.resolve(appPackageDir, TEAMS_APP_MANIFEST_TEMPLATE_V3);
-    if (await fs.pathExists(manifestPath)) {
-      existFiles.push(manifestPath);
+    for (const templates of ["Templates", "templates"]) {
+      const appPackageDir = path.join(projectPath, templates, "appPackage");
+      const manifestPath = path.resolve(appPackageDir, TEAMS_APP_MANIFEST_TEMPLATE_V3);
+      if (await fs.pathExists(manifestPath)) {
+        existFiles.push(manifestPath);
+      }
+      const resourcesDir = path.resolve(appPackageDir, MANIFEST_RESOURCES);
+      const defaultColorPath = path.join(resourcesDir, DEFAULT_COLOR_PNG_FILENAME);
+      if (await fs.pathExists(defaultColorPath)) {
+        existFiles.push(defaultColorPath);
+      }
+      const defaultOutlinePath = path.join(resourcesDir, DEFAULT_OUTLINE_PNG_FILENAME);
+      if (await fs.pathExists(defaultOutlinePath)) {
+        existFiles.push(defaultOutlinePath);
+      }
     }
-
-    const resourcesDir = path.resolve(appPackageDir, MANIFEST_RESOURCES);
-    const defaultColorPath = path.join(resourcesDir, DEFAULT_COLOR_PNG_FILENAME);
-    if (await fs.pathExists(defaultColorPath)) {
-      existFiles.push(defaultColorPath);
-    }
-
-    const defaultOutlinePath = path.join(resourcesDir, DEFAULT_OUTLINE_PNG_FILENAME);
-    if (await fs.pathExists(defaultOutlinePath)) {
-      existFiles.push(defaultOutlinePath);
-    }
-
     return existFiles;
   }
 

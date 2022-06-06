@@ -393,7 +393,7 @@ export class FxCore implements v3.ICore {
       delete inputs.folder;
       if (BotFeatureIds.includes(feature)) {
         inputs.feature = feature;
-        await runAction("fx.addBot", context, inputs as InputsWithProjectPath);
+        await runAction("teams-bot.add", context, inputs as InputsWithProjectPath);
       }
     }
     if (inputs.platform === Platform.VSCode) {
@@ -877,11 +877,11 @@ export class FxCore implements v3.ICore {
       const feature = inputs.feature;
       if (feature === "sql") {
         const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-        await runAction("fx.addSql", context, inputs as InputsWithProjectPath);
+        await runAction("sql.add", context, inputs as InputsWithProjectPath);
         ctx!.projectSettings = context.projectSetting;
       } else if (feature === BotOptionItem.id) {
         const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-        await runAction("fx.addBot", context, inputs as InputsWithProjectPath);
+        await runAction("teams-bot.add", context, inputs as InputsWithProjectPath);
         ctx!.projectSettings = context.projectSetting;
       }
     }

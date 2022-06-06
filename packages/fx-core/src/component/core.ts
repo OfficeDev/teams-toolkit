@@ -25,6 +25,23 @@ import "./bicep";
 import "./debug";
 import "./envManager";
 import "./resource/appManifest/appManifest";
+import "./resource/azureSql";
+import "./resource/aad";
+import "./resource/azureFunction";
+import "./resource/azureStorage";
+import "./resource/azureWebApp";
+import "./resource/botService";
+import "./resource/spfx";
+import "./feature/bot";
+import "./feature/sql";
+import "./feature/tab";
+import "./code/botCode";
+import "./code/tabCode";
+import "./code/apiCode";
+import "./connection/aadConfig";
+import "./connection/azureWebAppConfig";
+import "./connection/azureFunctionConfig";
+
 import { WriteProjectSettingsAction } from "./projectSettingsManager";
 @Service("fx")
 export class TeamsfxCore {

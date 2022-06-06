@@ -61,7 +61,6 @@ import {
   DEFAULT_COLOR_PNG_FILENAME,
   DEFAULT_OUTLINE_PNG_FILENAME,
   MANIFEST_RESOURCES,
-  APP_PACKAGE_FOLDER_FOR_MULTI_ENV,
   FRONTEND_INDEX_PATH,
   TEAMS_APP_MANIFEST_TEMPLATE_V3,
   WEB_APPLICATION_INFO_LOCAL_DEBUG,
@@ -83,6 +82,7 @@ import {
   isAADEnabled,
   isConfigUnifyEnabled,
   isSPFxProject,
+  isVSProject,
 } from "../../../common";
 import {
   LocalSettingsAuthKeys,
@@ -106,6 +106,7 @@ import { HelpLinks, ResourcePlugins } from "../../../common/constants";
 import { getCapabilities, getManifestTemplatePath, loadManifest } from "./manifestTemplate";
 import { environmentManager } from "../../../core/environment";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
+import { getProjectTemplatesFolderPath } from "../../../common/utils";
 
 export class AppStudioPluginImpl {
   public commonProperties: { [key: string]: string } = {};
@@ -566,7 +567,7 @@ export class AppStudioPluginImpl {
     const templatesFolder = getTemplatesFolder();
 
     // cannot use getAppDirectory before creating the manifest file
-    const appDir = `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}`;
+    const appDir = path.join(await getProjectTemplatesFolderPath(ctx.root), "appPackage");
 
     if (isSPFxProject(ctx.projectSettings)) {
       const templateManifestFolder = path.join(templatesFolder, "plugins", "resource", "spfx");
@@ -634,8 +635,8 @@ export class AppStudioPluginImpl {
     const defaultOutlinePath = path.join(templatesFolder, OUTLINE_TEMPLATE);
     const resourcesDir = path.join(appDir, MANIFEST_RESOURCES);
     await fs.ensureDir(resourcesDir);
-    await fs.copy(defaultColorPath, `${resourcesDir}/${DEFAULT_COLOR_PNG_FILENAME}`);
-    await fs.copy(defaultOutlinePath, `${resourcesDir}/${DEFAULT_OUTLINE_PNG_FILENAME}`);
+    await fs.copy(defaultColorPath, path.join(resourcesDir, DEFAULT_COLOR_PNG_FILENAME));
+    await fs.copy(defaultOutlinePath, path.join(resourcesDir, DEFAULT_OUTLINE_PNG_FILENAME));
 
     return undefined;
   }
@@ -814,25 +815,35 @@ export class AppStudioPluginImpl {
       }
     }
 
-    if (appDirectory === `${ctx.root}/.${ConfigFolderName}`) {
+    if (appDirectory === path.join(ctx.root, `.${ConfigFolderName}`)) {
       await fs.ensureDir(path.join(ctx.root, `${AppPackageFolderName}`));
 
       const formerZipFileName = `${appDirectory}/appPackage.zip`;
       if (await fs.pathExists(formerZipFileName)) {
         await fs.remove(formerZipFileName);
       }
-
+      const projectTemplatesFolderPath = await getProjectTemplatesFolderPath(ctx.root);
       await fs.move(
-        `${appDirectory}/${manifest.icons.color}`,
-        `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}/${MANIFEST_RESOURCES}/${manifest.icons.color}`
+        path.join(appDirectory, "manifest.icons.color"),
+        path.join(
+          projectTemplatesFolderPath,
+          "appPackage",
+          MANIFEST_RESOURCES,
+          manifest.icons.color
+        )
       );
       await fs.move(
-        `${appDirectory}/${manifest.icons.outline}`,
-        `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}/${MANIFEST_RESOURCES}/${manifest.icons.outline}`
+        path.join(appDirectory, "manifest.icons.outline"),
+        path.join(
+          projectTemplatesFolderPath,
+          "appPackage",
+          MANIFEST_RESOURCES,
+          manifest.icons.outline
+        )
       );
       await fs.move(
-        `${appDirectory}/${REMOTE_MANIFEST}`,
-        `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}/${MANIFEST_TEMPLATE}`
+        path.join(appDirectory, REMOTE_MANIFEST),
+        path.join(projectTemplatesFolderPath, "appPackage", MANIFEST_TEMPLATE)
       );
     }
 

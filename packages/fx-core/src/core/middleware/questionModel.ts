@@ -26,11 +26,7 @@ import { Container } from "typedi";
 import { createV2Context, deepCopy, isExistingTabAppEnabled } from "../../common/tools";
 import { newProjectSettings } from "../../common/projectSettingsHelper";
 import { SPFxPluginV3 } from "../../plugins/resource/spfx/v3";
-import {
-  AzureSolutionQuestionNames,
-  ExistingTabOptionItem,
-  TabSPFxItem,
-} from "../../plugins/solution/fx-solution/question";
+import { ExistingTabOptionItem, TabSPFxItem } from "../../plugins/solution/fx-solution/question";
 import {
   BuiltInFeaturePluginNames,
   BuiltInSolutionNames,
@@ -39,7 +35,6 @@ import { getQuestionsForGrantPermission } from "../collaborator";
 import { CoreSource, FunctionRouterError } from "../error";
 import { TOOLS } from "../globalVars";
 import {
-  CoreQuestionNames,
   createAppNameQuestion,
   createCapabilityForDotNet,
   createCapabilityQuestion,
@@ -59,7 +54,6 @@ import {
 import { getAllSolutionPluginsV2 } from "../SolutionPluginContainer";
 import { CoreHookContext } from "../types";
 import { isPreviewFeaturesEnabled, isCLIDotNetEnabled } from "../../common";
-import { TeamsAppSolutionNameV2 } from "../../plugins/solution/fx-solution/v2/constants";
 
 /**
  * This middleware will help to collect input from question flow

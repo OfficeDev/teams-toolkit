@@ -40,13 +40,7 @@ import {
   createHostTypeTriggerQuestionForVS,
   showNotificationTriggerCondition,
 } from "./question";
-import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
-import { CommonHostingError } from "../../../common/azure-hosting/hostingError";
-import {
-  CoreQuestionNames,
-  RuntimeOptionDotNet,
-  RuntimeOptionNodeJs,
-} from "../../../core/question";
+import { CoreQuestionNames } from "../../../core/question";
 
 @Service(ResourcePlugins.BotPlugin)
 export class TeamsBot implements Plugin {

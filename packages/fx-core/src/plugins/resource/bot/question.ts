@@ -9,7 +9,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import { isPreviewFeaturesEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { RuntimeOptionDotNet } from "../../../core/question";
 import {
   AzureSolutionQuestionNames,
   NotificationOptionItem,

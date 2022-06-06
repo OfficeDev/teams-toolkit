@@ -229,6 +229,7 @@ export class TeamsBot implements Plugin {
                 }
               },
             };
+            res.addChild(nodejsNode);
           } else {
             res.addChild(
               new QTreeNode(

@@ -1,15 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import {
-  Inputs,
-  MultiSelectQuestion,
-  OptionItem,
-  Platform,
-  SingleSelectQuestion,
-} from "@microsoft/teamsfx-api";
+import { Inputs, MultiSelectQuestion, OptionItem, Platform } from "@microsoft/teamsfx-api";
 import { isPreviewFeaturesEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { CoreQuestionNames } from "../../../core/question";
 import {
   AzureSolutionQuestionNames,
   NotificationOptionItem,

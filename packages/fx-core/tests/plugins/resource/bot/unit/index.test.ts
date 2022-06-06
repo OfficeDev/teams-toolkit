@@ -866,8 +866,10 @@ describe("Teams Bot Resource Plugin", () => {
         const result = await botPlugin.getQuestions(Stage.create, pluginContext);
 
         chai.assert.isTrue(result.isOk());
+        const node = result._unsafeUnwrap();
+        chai.assert.isNotNull(node?.children);
         // one for .net, one for nodejs
-        chai.assert.equal(result._unsafeUnwrap()?.children.length, 2);
+        chai.assert.equal(node?.children?.length, 2);
       });
     });
   });

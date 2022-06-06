@@ -119,6 +119,7 @@ export function convertToAppDefinition(appManifest: TeamsAppManifest): IAppDefin
   appDefinition.messagingExtensions = convertToAppDefinitionMessagingExtensions(appManifest);
 
   appDefinition.connectors = appManifest.connectors;
+  appDefinition.graphConnector = appManifest.graphConnector;
   appDefinition.devicePermissions = appManifest.devicePermissions;
 
   if (appManifest.webApplicationInfo) {
@@ -170,6 +171,8 @@ export function convertToAppDefinitionBots(appManifest: TeamsAppManifest): IAppD
         botId: manBot.botId,
         isNotificationOnly: manBot.isNotificationOnly ?? false,
         supportsFiles: manBot.supportsFiles ?? false,
+        supportsCalling: manBot.supportsCalling,
+        supportsVideo: manBot.supportsVideo,
         scopes: manBot.scopes,
         teamCommands: teamCommands,
         groupChatCommands: groupCommands,

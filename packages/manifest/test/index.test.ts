@@ -83,7 +83,7 @@ describe("Manifest manipulation", async () => {
   });
 
   describe("validateManifestAgainstSchema", async () => {
-    it("should return empty arry when validation passes", async () => {
+    it("should return empty array when validation passes", async () => {
       const schema = await loadSchema();
       const filePath = path.join(__dirname, "manifest.json");
       const validManifest = await ManifestUtil.loadFromPath(filePath);
@@ -91,16 +91,16 @@ describe("Manifest manipulation", async () => {
       chai.expect(result).to.be.empty;
     });
 
-    it("should return error string arry when manifestVersion doesn't match", async () => {
+    it("should return error string array", async () => {
       // schema has version 1.11
       const schema = await loadSchema();
       const manifest = new TeamsAppManifest();
-      chai.expect(manifest.manifestVersion).equals("1.8");
+      chai.expect(manifest.manifestVersion).equals("1.11");
       const result = await ManifestUtil.validateManifestAgainstSchema(manifest, schema);
       chai.expect(result).not.to.be.empty;
       chai.expect(result.length).equals(1);
       // 1.11 doesn't match 1.8, so it should return an error
-      chai.expect(result[0]).to.contain("manifestVersion must be equal to constant");
+      chai.expect(result[0]).to.contain("/id must match pattern");
     });
   });
 });

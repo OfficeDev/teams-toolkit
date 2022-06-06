@@ -20,6 +20,7 @@ import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
 import { isBotNotificationEnabled } from "../../../common/featureFlags";
+import { hasTab } from "../../../common/projectSettingsHelperV3";
 import { getTemplatesFolder } from "../../../folder";
 import {
   BOTS_TPL_EXISTING_APP,
@@ -87,7 +88,7 @@ export class AppManifest implements CloudResource {
         const existingApp = inputs.existingApp as boolean;
         const manifestString = TEAMS_APP_MANIFEST_TEMPLATE;
         const manifest = JSON.parse(manifestString);
-        if (existingApp) {
+        if (existingApp || !hasTab(context.projectSetting)) {
           manifest.developer = {
             name: "Teams App, Inc.",
             websiteUrl: DEFAULT_DEVELOPER_WEBSITE_URL,

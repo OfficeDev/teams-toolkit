@@ -11,6 +11,8 @@ import sinon from "sinon";
 import { setTools } from "../../src";
 import * as templateAction from "../../src/common/template-utils/templatesActions";
 import "../../src/component/core";
+import "../../src/component/feature/bot";
+import "../../src/component/feature/sql";
 import { createContextV3 } from "../../src/component/utils";
 import { runAction } from "../../src/component/workflow";
 import { getProjectSettingsPath } from "../../src/core/middleware/projectSettingsLoader";
@@ -37,7 +39,8 @@ describe("Workflow test for v3", () => {
       platform: Platform.VSCode,
       "app-name": appName,
     };
-    await runAction("fx.init", context, inputs);
+    const res = await runAction("fx.init", context, inputs);
+    assert.isTrue(res.isOk());
     assert.equal(context.projectSetting!.appName, appName);
     assert.deepEqual(context.projectSetting.components, []);
     assert.isTrue(fs.pathExistsSync(getProjectSettingsPath(inputs.projectPath)));
@@ -48,7 +51,7 @@ describe("Workflow test for v3", () => {
     );
   });
 
-  it("fx.addBot", async () => {
+  it("teams-bot.add", async () => {
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
@@ -56,16 +59,22 @@ describe("Workflow test for v3", () => {
       language: "typescript",
     };
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
-    const res = await runAction("fx.addBot", context, inputs);
+    const res = await runAction("teams-bot.add", context, inputs);
+    if (res.isErr()) {
+      console.log(res.error);
+    }
     assert.isTrue(res.isOk());
   });
 
-  it("fx.addSql", async () => {
+  it("sql.add", async () => {
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
     };
-    const res = await runAction("fx.addSql", context, inputs);
+    const res = await runAction("sql.add", context, inputs);
+    if (res.isErr()) {
+      console.log(res.error);
+    }
     assert.isTrue(res.isOk());
   });
 

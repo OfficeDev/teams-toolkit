@@ -84,33 +84,32 @@ export async function isFxProject(folderPath: string): Promise<boolean> {
 }
 
 export async function hasTeamsfxBackend(): Promise<boolean> {
-  if (!vscode.workspace.workspaceFolders) {
+  if (!globalVariables.workspaceUri) {
     return false;
   }
 
-  const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
-  const workspacePath: string = workspaceFolder.uri.fsPath;
-  if (!(await isFxProject(workspacePath))) {
+  if (!globalVariables.isTeamsFxProject) {
     return false;
   }
 
-  const backendRoot = await getProjectRoot(workspacePath, FolderName.Function);
+  const backendRoot = await getProjectRoot(
+    globalVariables.workspaceUri.fsPath,
+    FolderName.Function
+  );
 
   return backendRoot !== undefined;
 }
 
 export async function hasTeamsfxBot(): Promise<boolean> {
-  if (!vscode.workspace.workspaceFolders) {
+  if (!globalVariables.workspaceUri) {
     return false;
   }
 
-  const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
-  const workspacePath: string = workspaceFolder.uri.fsPath;
-  if (!(await isFxProject(workspacePath))) {
+  if (!globalVariables.isTeamsFxProject) {
     return false;
   }
 
-  const botRoot = await getProjectRoot(workspacePath, FolderName.Bot);
+  const botRoot = await getProjectRoot(globalVariables.workspaceUri.fsPath, FolderName.Bot);
 
   return botRoot !== undefined;
 }

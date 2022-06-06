@@ -207,7 +207,7 @@ export class TeamsBot implements Plugin {
           const res = new QTreeNode({
             type: "group",
           });
-          if (inputs.platform === Platform.CLI && isCLIDotNetEnabled()) {
+          if (isCLIDotNetEnabled()) {
             const dotnetNode = new QTreeNode(createHostTypeTriggerQuestion(Platform.CLI, "dotnet"));
             dotnetNode.condition = {
               validFunc: async (input: unknown, inputs?: Inputs) => {
@@ -230,15 +230,19 @@ export class TeamsBot implements Plugin {
               },
             };
             res.addChild(nodejsNode);
-          } else {
+            res.condition = showNotificationTriggerCondition;
+            return ok(res);
+          } else if (isBotNotificationEnabled()) {
             res.addChild(
               new QTreeNode(
                 createHostTypeTriggerQuestion(inputs.platform, inputs[CoreQuestionNames.Runtime])
               )
             );
+            res.condition = showNotificationTriggerCondition;
+            return ok(res);
+          } else {
+            return ok(undefined);
           }
-          res.condition = showNotificationTriggerCondition;
-          return ok(res);
         },
         true,
         LifecycleFuncNames.GET_QUETSIONS_FOR_SCAFFOLDING

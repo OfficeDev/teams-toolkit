@@ -18,6 +18,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   Correlator,
+  isAADEnabled,
   isAadManifestEnabled,
   isApiConnectEnabled,
   isConfigUnifyEnabled,
@@ -171,11 +172,16 @@ async function initializeContextKey() {
     await canUpgradeToArmAndMultiEnv(workspaceUri?.fsPath)
   );
 
-  vscode.commands.executeCommand(
-    "setContext",
-    "fx-extension.isAadManifestEnabled",
-    isAadManifestEnabled()
-  );
+  const workspacePath = workspaceUri?.fsPath;
+  if (workspacePath) {
+    const aadTemplateWatcher = vscode.workspace.createFileSystemWatcher("**/aad.template.json");
+
+    aadTemplateWatcher.onDidCreate(async (event) => {
+      await setAadManifestEnabledContext();
+    });
+  }
+
+  await setAadManifestEnabledContext();
 
   vscode.commands.executeCommand(
     "setContext",
@@ -199,6 +205,14 @@ async function initializeContextKey() {
     "setContext",
     "fx-entension.previewFeaturesEnabled",
     isPreviewFeaturesEnabled()
+  );
+}
+
+async function setAadManifestEnabledContext() {
+  vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isAadManifestEnabled",
+    isAADEnabled(await handlers.getAzureSolutionSettings())
   );
 }
 

@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 export enum StaticTabActionType {
   Default = 0,
   MoveUp = 1,

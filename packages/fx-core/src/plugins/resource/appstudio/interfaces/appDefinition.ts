@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { AppUser } from "./appUser";
 import { AppUserSetting } from "./appUserSetting";
 import { AppEnvironment } from "./appEnvironment";

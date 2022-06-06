@@ -4,8 +4,8 @@ param userAssignedIdentityId string
 
 var resourceBaseName = provisionParameters.resourceBaseName
 var serverfarmsName = contains(provisionParameters, 'botServerfarmsName') ? provisionParameters['botServerfarmsName'] : '${resourceBaseName}bot' // Try to read name for App Service Plan from parameters
-var functionSKU = contains(provisionParameters, 'botFunctionAppSKU') ? provisionParameters['botFunctionAppSKU'] : 'B1' // Try to read SKU for Azure Web App from parameters
-var functionAppName = contains(provisionParameters, 'botSitesName') ? provisionParameters['botSitesName'] : '${resourceBaseName}bot' // Try to read name for Azure Web App from parameters
+var functionSKU = contains(provisionParameters, 'botFunctionAppSKU') ? provisionParameters['botFunctionAppSKU'] : 'B1' // Try to read SKU for Azure Functions from parameters
+var functionAppName = contains(provisionParameters, 'botSitesName') ? provisionParameters['botSitesName'] : '${resourceBaseName}bot' // Try to read name for Azure Functions from parameters
 var storageName = contains(provisionParameters, 'botStorageName') ? provisionParameters['botStorageName'] : '${resourceBaseName}bot' // Try to read name for Azure Storage from parameters
 var storageSku = contains(provisionParameters, 'botStorageSku') ? provisionParameters['botStorageSku'] : 'Standard_LRS' // Try to read SKU for Azure Storage from parameters
 
@@ -29,7 +29,7 @@ resource storage 'Microsoft.Storage/storageAccounts@2021-06-01' = {
   }
 }
 
-// Function App that hosts your bot
+// Function App
 resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
   kind: 'functionapp'
   location: resourceGroup().location

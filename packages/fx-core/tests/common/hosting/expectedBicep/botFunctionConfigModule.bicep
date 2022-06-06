@@ -6,7 +6,7 @@ param provisionOutputs object
 @secure()
 param currentAppSettings object
 
-var functionName = split(provisionOutputs.botFunctionOutput.value.botWebAppResourceId, '/')[8]
+var functionName = split(provisionOutputs.botFunctionOutput.value.resourceId, '/')[8]
 
 var m365ClientId = provisionParameters['m365ClientId']
 var m365ClientSecret = provisionParameters['m365ClientSecret']

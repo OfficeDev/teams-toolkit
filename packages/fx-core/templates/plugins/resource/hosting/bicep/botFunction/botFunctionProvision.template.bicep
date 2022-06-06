@@ -4,8 +4,8 @@ param userAssignedIdentityId string
 
 var resourceBaseName = provisionParameters.resourceBaseName
 var serverfarmsName = contains(provisionParameters, '{{moduleAlias}}ServerfarmsName') ? provisionParameters['{{moduleAlias}}ServerfarmsName'] : '${resourceBaseName}{{moduleAlias}}' // Try to read name for App Service Plan from parameters
-var functionSKU = contains(provisionParameters, '{{moduleName}}AppSKU') ? provisionParameters['{{moduleName}}AppSKU'] : 'B1' // Try to read SKU for Azure Web App from parameters
-var functionAppName = contains(provisionParameters, '{{moduleAlias}}SitesName') ? provisionParameters['{{moduleAlias}}SitesName'] : '${resourceBaseName}{{moduleAlias}}' // Try to read name for Azure Function App from parameters
+var functionSKU = contains(provisionParameters, '{{moduleName}}AppSKU') ? provisionParameters['{{moduleName}}AppSKU'] : 'B1' // Try to read SKU for Azure Functions from parameters
+var functionAppName = contains(provisionParameters, '{{moduleAlias}}SitesName') ? provisionParameters['{{moduleAlias}}SitesName'] : '${resourceBaseName}{{moduleAlias}}' // Try to read name for Azure Functions from parameters
 var storageName = contains(provisionParameters, '{{moduleAlias}}StorageName') ? provisionParameters['{{moduleAlias}}StorageName'] : '${resourceBaseName}{{moduleAlias}}' // Try to read name for Azure Storage from parameters
 var storageSku = contains(provisionParameters, '{{moduleAlias}}StorageSku') ? provisionParameters['{{moduleAlias}}StorageSku'] : 'Standard_LRS' // Try to read SKU for Azure Storage from parameters
 

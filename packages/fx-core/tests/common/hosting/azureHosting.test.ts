@@ -14,12 +14,16 @@ describe("azure hosting", () => {
     const bicepContext: BicepContext = {
       plugins: [ResourcePlugins.Aad, ResourcePlugins.Bot],
       configs: ["node"],
+      moduleNames: { [ServiceType.Functions]: "botFunction" },
+      moduleNamesCapitalized: { [ServiceType.Functions]: "BotFunction" },
+      moduleAlias: "bot",
+      pluginId: ResourcePlugins.Bot,
     };
     const pluginId = ResourcePlugins.Bot;
 
     it("generate bicep", async () => {
       const functionHosting = AzureHostingFactory.createHosting(ServiceType.Functions);
-      const template = await functionHosting.generateBicep(bicepContext, pluginId);
+      const template = await functionHosting.generateBicep(bicepContext);
 
       chai.assert.exists(template.Configuration);
       chai.assert.deepEqual(template.Reference, functionHosting.reference);

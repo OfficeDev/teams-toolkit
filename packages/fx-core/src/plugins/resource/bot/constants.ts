@@ -159,6 +159,19 @@ export class DeployConfigs {
     `.${ConfigFolderName}`,
     DeployConfigs.DEPLOYMENT_FOLDER,
     ".vscode",
+    "*.js.map",
+    "*.ts.map",
+    "*.ts",
+    ".git*",
+    ".tsbuildinfo",
+    "CHANGELOG.md",
+    "readme.md",
+    "local.settings.json",
+    "test",
+    "tsconfig.json",
+    ".DS_Store",
+    "node_modules/ts-node",
+    "node_modules/typescript",
   ];
 }
 

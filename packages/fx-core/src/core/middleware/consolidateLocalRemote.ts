@@ -38,6 +38,7 @@ import { addPathToGitignore, needMigrateToArmAndMultiEnv } from "./projectMigrat
 import * as util from "util";
 import { ManifestTemplate } from "../../plugins/resource/spfx/utils/constants";
 import {
+  generateAadManifest,
   needMigrateToAadManifest,
   Permission,
   permissionsToRequiredResourceAccess,
@@ -351,25 +352,14 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
     }
 
     if (needMigrateAadManifest) {
-      const permissionFilePath = path.join(inputs.projectPath as string, "permissions.json");
+      const projectSettingsJson = await fs.readJson(projectSettingsPath);
 
-      // add aad.template.file
-      const permissions = (await fs.readJson(permissionFilePath)) as Permission[];
-
-      const requiredResourceAccess = permissionsToRequiredResourceAccess(permissions);
+      await generateAadManifest(inputs.projectPath!, projectSettingsJson);
       const aadManifestPath = path.join(
         inputs.projectPath as string,
         "templates",
         "appPackage",
         "aad.template.json"
-      );
-      const projectSettingsJson = await fs.readJson(projectSettingsPath);
-
-      await generateAadManifestTemplate(
-        inputs.projectPath!,
-        projectSettingsJson,
-        requiredResourceAccess,
-        true
       );
       fileList.push(aadManifestPath);
 

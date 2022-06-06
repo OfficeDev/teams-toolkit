@@ -6,7 +6,6 @@ import {
   ConfigFolderName,
   ContextV3,
   FxError,
-  GroupAction,
   InputsWithProjectPath,
   MaybePromise,
   ok,
@@ -21,22 +20,29 @@ import "reflect-metadata";
 import { Service } from "typedi";
 import { getProjectSettingsPath } from "../core/middleware/projectSettingsLoader";
 import { ProjectNamePattern } from "../core/question";
-import { CommandAndResponseOptionItem, NotificationOptionItem } from "../plugins";
-import { QuestionNames, TemplateProjectsScenarios } from "../plugins/resource/bot/constants";
-import {
-  AppServiceOptionItem,
-  FunctionsHttpTriggerOptionItem,
-  FunctionsTimerTriggerOptionItem,
-} from "../plugins/resource/bot/question";
 import { newProjectSettings } from "./../common/projectSettingsHelper";
 import "./bicep";
-import "./botCode";
-import "./connection";
 import "./debug";
 import "./envManager";
-import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "./projectSettingsManager";
-import "./resource";
-import { getComponent, getEmbeddedValueByPath } from "./workflow";
+import "./resource/appManifest/appManifest";
+import "./resource/azureSql";
+import "./resource/aad";
+import "./resource/azureFunction";
+import "./resource/azureStorage";
+import "./resource/azureWebApp";
+import "./resource/botService";
+import "./resource/spfx";
+import "./feature/bot";
+import "./feature/sql";
+import "./feature/tab";
+import "./code/botCode";
+import "./code/tabCode";
+import "./code/apiCode";
+import "./connection/aadConfig";
+import "./connection/azureWebAppConfig";
+import "./connection/azureFunctionConfig";
+
+import { WriteProjectSettingsAction } from "./projectSettingsManager";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -71,7 +77,7 @@ export class TeamsfxCore {
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const projectSettings = newProjectSettings() as ProjectSettingsV3;
-        projectSettings.appName = getEmbeddedValueByPath(inputs, "app-name");
+        projectSettings.appName = inputs["app-name"];
         projectSettings.components = [];
         context.projectSetting = projectSettings;
         await fs.ensureDir(inputs.projectPath);
@@ -106,343 +112,6 @@ export class TeamsfxCore {
     };
     return ok(action);
   }
-
-  /**
-   *
-   *   capability = Notification
-   *     bot-host-type-trigger = http-restify
-   *       group=bot, scenario=notification-restify, host=app-service
-   *     bot-host-type-trigger = [http-functions, timer-functions]
-   *       group=bot, host=function, scenario=notification-function-base + [notification-trigger-http, notification-trigger-timer]
-   *   capability = command-bot:
-   *     group=bot, host=app-service, scenario=command-and-response
-   *   capability = Bot
-   *     group=bot, host=app-service, scenario=default
-   *   capability = MessagingExtension
-   *     group=bot, host=app-service, scenario=default
-   */
-
-  /**
-   * 1. config bot in project settings
-   * 2. generate bot source code
-   * 3. generate bot-service and hosting bicep
-   * 3. overwrite hosting config bicep
-   * 4. persist bicep
-   * 5. add capability in teams manifest
-   */
-  addBot(
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const feature = inputs.feature as string;
-    const triggers = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] as string[];
-    inputs.hosting = "azure-web-app";
-    const scenarios: string[] = [];
-    if (feature === NotificationOptionItem.id) {
-      if (triggers.includes(AppServiceOptionItem.id)) {
-        scenarios.push(TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME);
-      } else {
-        inputs.hosting = "azure-function";
-        if (triggers.includes(FunctionsHttpTriggerOptionItem.id)) {
-          scenarios.push(
-            TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_HTTP_SCENARIO_NAME
-          );
-        }
-        if (triggers.includes(FunctionsTimerTriggerOptionItem.id)) {
-          scenarios.push(
-            TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_TIMER_SCENARIO_NAME
-          );
-        }
-      }
-    } else if (feature === CommandAndResponseOptionItem.id) {
-      scenarios.push(TemplateProjectsScenarios.COMMAND_AND_RESPONSE_SCENARIO_NAME);
-    } else {
-      scenarios.push(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
-    }
-    const actions: Action[] = [
-      LoadProjectSettingsAction,
-      {
-        name: "fx.configBot",
-        type: "function",
-        plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-          const remarks = [
-            `add components 'teams-bot', '${inputs.hosting}', 'bot-service' in projectSettings`,
-          ];
-          // connect to azure-sql
-          if (getComponent(context.projectSetting, "azure-sql")) {
-            remarks.push(
-              `connect 'azure-sql' to hosting component '${inputs.hosting}' in projectSettings`
-            );
-          }
-          return ok(remarks);
-        },
-        execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-          const projectSettings = context.projectSetting;
-          // add teams-bot
-          projectSettings.components.push({
-            name: "teams-bot",
-            hosting: inputs.hosting,
-          });
-          // add hosting component
-          const hostingComponent = {
-            name: inputs.hosting,
-            connections: ["teams-bot"],
-          };
-          projectSettings.components.push(hostingComponent);
-          //add bot-service
-          projectSettings.components.push({
-            name: "bot-service",
-            provision: true,
-          });
-          const remarks = [
-            `add components 'teams-bot', '${inputs.hosting}', 'bot-service' in projectSettings`,
-          ];
-          // connect azure-sql to hosting component
-          if (getComponent(context.projectSetting, "azure-sql")) {
-            hostingComponent.connections.push("azure-sql");
-            remarks.push(
-              `connect 'azure-sql' to hosting component '${inputs.hosting}' in projectSettings`
-            );
-          }
-          return ok([
-            {
-              type: "file",
-              operate: "replace",
-              filePath: getProjectSettingsPath(inputs.projectPath),
-              remarks: remarks.join(";"),
-            },
-          ]);
-        },
-      },
-      {
-        name: "call:bot-code.generate",
-        type: "call",
-        required: true,
-        targetAction: "bot-code.generate",
-        inputs: {
-          scenarios: scenarios,
-        },
-      },
-      {
-        type: "call",
-        targetAction: "bicep.init",
-        required: true,
-      },
-      {
-        name: `call:${inputs.hosting}.generateBicep`,
-        type: "call",
-        required: true,
-        targetAction: `${inputs.hosting}.generateBicep`,
-      },
-      {
-        name: "call:bot-service.generateBicep",
-        type: "call",
-        required: true,
-        targetAction: "bot-service.generateBicep",
-      },
-      {
-        name: `call:${inputs.hosting}-config.generateBicep`,
-        type: "call",
-        required: true,
-        targetAction: `${inputs.hosting}-config.generateBicep`,
-      },
-      {
-        name: "call:app-manifest.addCapability",
-        type: "call",
-        required: true,
-        targetAction: "app-manifest.addCapability",
-        inputs: {
-          capability: { name: "Bot" },
-        },
-      },
-    ];
-    actions.push(WriteProjectSettingsAction);
-    const group: GroupAction = {
-      type: "group",
-      name: "fx.addBot",
-      mode: "sequential",
-      actions: actions,
-    };
-    return ok(group);
-  }
-
-  /**
-   * 1. config sql
-   * 2. add sql provision bicep
-   * 3. re-generate resources that connect to sql
-   * 4. persist bicep
-   */
-  addSql(
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const sqlComponent = getComponent(context.projectSetting, "azure-sql");
-    const provisionType = sqlComponent ? "database" : "server";
-    const actions: Action[] = [
-      // LoadProjectSettingsAction,
-      {
-        name: "fx.configSql",
-        type: "function",
-        plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-          const sqlComponent = getComponent(context.projectSetting, "azure-sql");
-          if (sqlComponent) {
-            return ok([]);
-          }
-          const remarks: string[] = ["add component 'azure-sql' in projectSettings"];
-          const webAppComponent = getComponent(context.projectSetting, "azure-web-app");
-          if (webAppComponent) {
-            remarks.push("connect 'azure-sql' to component 'azure-web-app' in projectSettings");
-          }
-          const functionComponent = getComponent(context.projectSetting, "azure-function");
-          if (functionComponent) {
-            remarks.push("connect 'azure-sql' to component 'azure-function' in projectSettings");
-          }
-          return ok([
-            {
-              type: "file",
-              operate: "replace",
-              filePath: getProjectSettingsPath(inputs.projectPath),
-              remarks: remarks.join(";"),
-            },
-          ]);
-        },
-        execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-          const sqlComponent = getComponent(context.projectSetting, "azure-sql");
-          if (sqlComponent) return ok([]);
-          const projectSettings = context.projectSetting;
-          const remarks: string[] = ["add component 'azure-sql' in projectSettings"];
-          projectSettings.components.push({
-            name: "azure-sql",
-            provision: true,
-          });
-          const webAppComponent = getComponent(context.projectSetting, "azure-web-app");
-          if (webAppComponent) {
-            if (!webAppComponent.connections) webAppComponent.connections = [];
-            webAppComponent.connections.push("azure-sql");
-            remarks.push("connect 'azure-sql' to component 'azure-web-app' in projectSettings");
-          }
-          const functionComponent = getComponent(context.projectSetting, "azure-function");
-          if (functionComponent) {
-            if (!functionComponent.connections) functionComponent.connections = [];
-            functionComponent.connections.push("azure-sql");
-            remarks.push("connect 'azure-sql' to component 'azure-function' in projectSettings");
-          }
-          return ok([
-            {
-              type: "file",
-              operate: "replace",
-              filePath: getProjectSettingsPath(inputs.projectPath),
-              remarks: remarks.join(";"),
-            },
-          ]);
-        },
-      },
-      {
-        type: "call",
-        targetAction: "bicep.init",
-        required: true,
-      },
-      {
-        name: "call:azure-sql.generateBicep",
-        type: "call",
-        required: true,
-        targetAction: "azure-sql.generateBicep",
-        inputs: {
-          provisionType: provisionType,
-        },
-      },
-    ];
-    const webAppComponent = getComponent(context.projectSetting, "azure-web-app");
-    if (webAppComponent) {
-      actions.push({
-        name: "call:azure-web-app-config.generateBicep",
-        type: "call",
-        required: true,
-        targetAction: "azure-web-app-config.generateBicep",
-      });
-    }
-    const functionComponent = getComponent(context.projectSetting, "azure-function");
-    if (functionComponent) {
-      actions.push({
-        name: "call:azure-function-config.generateBicep",
-        type: "call",
-        required: true,
-        targetAction: "azure-function-config.generateBicep",
-      });
-    }
-    // actions.push(WriteProjectSettingsAction);
-    const group: GroupAction = {
-      type: "group",
-      name: "fx.addSql",
-      mode: "sequential",
-      actions: actions,
-    };
-    return ok(group);
-  }
-  // addTab(
-  //   context: ContextV3,
-  //   inputs: InputsWithProjectPath
-  // ): MaybePromise<Result<Action | undefined, FxError>> {
-  //   const actions: Action[] = [
-  //     {
-  //       name: "fx.configTab",
-  //       type: "function",
-  //       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-  //         return ok([`add component 'teams-tab' in projectSettings: ${JSON.stringify(inputs)}`]);
-  //       },
-  //       execute: async (
-  //         context: ContextV3,
-  //         inputs: InputsWithProjectPath
-  //       ): Promise<Result<undefined, FxError>> => {
-  //         const projectSettings = context.projectSetting as ProjectSettingsV3;
-  //         const teamsTabResource: Component = {
-  //           name: "teams-tab",
-  //           ...inputs,
-  //         };
-  //         projectSettings.components.push(teamsTabResource);
-  //         console.log(
-  //           `add component 'teams-tab' in projectSettings: ${JSON.stringify(teamsTabResource)}`
-  //         );
-  //         return ok(undefined);
-  //       },
-  //     },
-  //     {
-  //       name: "call:tab-code.generate",
-  //       type: "call",
-  //       required: true,
-  //       targetAction: "tab-code.generate",
-  //     },
-  //     {
-  //       name: "call:azure-bicep.generate",
-  //       type: "call",
-  //       required: false,
-  //       targetAction: "azure-bicep.generate",
-  //       inputs: {
-  //         "azure-bicep": {
-  //           resources: [inputs.hosting],
-  //         },
-  //       },
-  //     },
-  //     {
-  //       name: "call:app-manifest.addCapability",
-  //       type: "call",
-  //       required: true,
-  //       targetAction: "app-manifest.addCapability",
-  //       inputs: {
-  //         "app-manifest": {
-  //           capabilities: [{ name: "staticTab" }],
-  //         },
-  //       },
-  //     },
-  //   ];
-  //   const group: GroupAction = {
-  //     type: "group",
-  //     name: "fx.addTab",
-  //     mode: "parallel",
-  //     actions: actions,
-  //   };
-  //   return ok(group);
-  // }
   // preProvision(
   //   context: ContextV3,
   //   inputs: InputsWithProjectPath

@@ -164,7 +164,10 @@ export class FuncToolChecker implements DepsChecker {
 
   public async install(): Promise<void> {
     if (isLinux()) {
-      throw new LinuxNotSupportedError(defaultHelpLink);
+      throw new LinuxNotSupportedError(
+        Messages.linuxDepsNotFound.split("@SupportedPackages").join(displayFuncName),
+        defaultHelpLink
+      );
     }
     if (!(await this.hasNPM())) {
       this.handleNpmNotFound();

@@ -11,7 +11,6 @@ import {
   GroupAction,
   MaybePromise,
   ProjectSettingsV3,
-  Component,
   SourceCodeProvider,
   InputsWithProjectPath,
 } from "@microsoft/teamsfx-api";
@@ -24,19 +23,18 @@ import {
   ScaffoldActionName,
   ScaffoldContext,
   scaffoldFromTemplates,
-} from "../common/template-utils/templatesActions";
-import { TemplateProjectsConstants } from "../plugins/resource/bot/constants";
-import { CommonStrings } from "../plugins/resource/bot/resources/strings";
-import { TemplateZipFallbackError, UnzipError } from "../plugins/resource/bot/v3/error";
-import { ComponentNames } from "./constants";
-import { getComponent } from "./workflow";
+} from "../../common/template-utils/templatesActions";
+import { TemplateProjectsConstants } from "../../plugins/resource/bot/constants";
+import { CommonStrings } from "../../plugins/resource/bot/resources/strings";
+import { TemplateZipFallbackError, UnzipError } from "../../plugins/resource/bot/v3/error";
+import { ComponentNames } from "../constants";
+import { getComponent } from "../workflow";
 
 /**
  * bot scaffold plugin
  */
 @Service("bot-code")
 export class BotCodeProvider implements SourceCodeProvider {
-  readonly type = "code";
   name = "bot-code";
   generate(
     context: ContextV3,

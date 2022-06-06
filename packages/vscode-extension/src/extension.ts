@@ -18,7 +18,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   Correlator,
-  isAadManifestEnabled,
   isApiConnectEnabled,
   isConfigUnifyEnabled,
   isDeployManifestEnabled,
@@ -204,6 +203,13 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.validateGetStartedPrerequisitesHandler, args)
   );
   context.subscriptions.push(validateGetStartedPrerequisitesCmd);
+
+  // non-teamsfx project upgrade
+  const checkUpgradeCmd = vscode.commands.registerCommand(
+    "fx-extension.checkProjectUpgrade",
+    (...args) => Correlator.run(handlers.checkUpgrade, args)
+  );
+  context.subscriptions.push(checkUpgradeCmd);
 }
 
 /**
@@ -347,23 +353,10 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(createNewEnvironment);
 
-  const checkUpgradeCmd = vscode.commands.registerCommand(
-    "fx-extension.checkProjectUpgrade",
-    (...args) => Correlator.run(handlers.checkUpgrade, args)
-  );
-  context.subscriptions.push(checkUpgradeCmd);
-
   const cmpAccountsCmd = vscode.commands.registerCommand("fx-extension.cmpAccounts", () =>
     Correlator.run(handlers.cmpAccountsHandler)
   );
   context.subscriptions.push(cmpAccountsCmd);
-
-  const createAccountCmd = vscode.commands.registerCommand(
-    "fx-extension.createAccount",
-    (...args) =>
-      Correlator.run(handlers.createAccountHandler, [TelemetryTriggerFrom.ViewTitleNavigation])
-  );
-  context.subscriptions.push(createAccountCmd);
 
   const deployAadAppManifest = vscode.commands.registerCommand(
     "fx-extension.deployAadAppManifest",
@@ -459,6 +452,13 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
     () => Correlator.run(handlers.openAzureAccountHandler)
   );
   context.subscriptions.push(azureAccountSettingsCmd);
+
+  const createAccountCmd = vscode.commands.registerCommand(
+    "fx-extension.createAccount",
+    (...args) =>
+      Correlator.run(handlers.createAccountHandler, [TelemetryTriggerFrom.ViewTitleNavigation])
+  );
+  context.subscriptions.push(createAccountCmd);
 
   const deployAadAppManifestFromCtxMenu = vscode.commands.registerCommand(
     "fx-extension.deployAadAppManifestFromCtxMenu",
@@ -633,12 +633,6 @@ async function initializeContextKey() {
     "setContext",
     "fx-extension.canUpgradeToArmAndMultiEnv",
     await canUpgradeToArmAndMultiEnv(workspaceUri?.fsPath)
-  );
-
-  await vscode.commands.executeCommand(
-    "setContext",
-    "fx-extension.isAadManifestEnabled",
-    isAadManifestEnabled()
   );
 
   await vscode.commands.executeCommand(

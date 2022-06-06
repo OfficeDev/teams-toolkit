@@ -56,6 +56,7 @@ import {
 import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { ExtensionUpgrade } from "./utils/upgrade";
+import { isAADEnabled } from "@microsoft/teamsfx-core";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -623,6 +624,17 @@ async function initializeContextKey() {
     workspaceUri && (await isM365Project(workspaceUri.fsPath))
   );
 
+  const workspacePath = workspaceUri?.fsPath;
+  if (workspacePath) {
+    const aadTemplateWatcher = vscode.workspace.createFileSystemWatcher("**/aad.template.json");
+
+    aadTemplateWatcher.onDidCreate(async (event) => {
+      await setAadManifestEnabledContext();
+    });
+  }
+
+  await setAadManifestEnabledContext();
+
   await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.canUpgradeToArmAndMultiEnv",
@@ -633,6 +645,14 @@ async function initializeContextKey() {
     "setContext",
     "fx-extension.isConfigUnifyEnabled",
     isConfigUnifyEnabled()
+  );
+}
+
+async function setAadManifestEnabledContext() {
+  vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isAadManifestEnabled",
+    isAADEnabled(await handlers.getAzureSolutionSettings())
   );
 }
 

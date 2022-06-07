@@ -21,9 +21,14 @@ import { CliConfigOptions, CliConfigRunFrom, UserSettings } from "../userSetttin
 export class CliTelemetryReporter implements TelemetryReporter {
   private readonly reporter: Reporter;
   private rootFolder: string | undefined;
+  private isFromSample: boolean | undefined = undefined;
 
   constructor(key: string, cliName: string, cliVersion: string, appRoot?: string) {
     this.reporter = new Reporter(cliName, cliVersion, key, appRoot);
+  }
+
+  setIsFromSample(isFromSample?: boolean) {
+    this.isFromSample = isFromSample;
   }
 
   withRootFolder(rootPath: string | undefined): CliTelemetryReporter {
@@ -42,6 +47,10 @@ export class CliTelemetryReporter implements TelemetryReporter {
   ): void {
     if (!properties) {
       properties = {};
+    }
+
+    if (this.isFromSample !== undefined) {
+      properties[TelemetryProperty.IsFromSample] = this.isFromSample.toString();
     }
 
     const projectId = getProjectId(this.rootFolder);
@@ -67,6 +76,10 @@ export class CliTelemetryReporter implements TelemetryReporter {
       properties = {};
     }
 
+    if (this.isFromSample !== undefined) {
+      properties[TelemetryProperty.IsFromSample] = this.isFromSample.toString();
+    }
+
     const projectId = getProjectId(this.rootFolder);
     properties[TelemetryProperty.ProjectId] = projectId ? projectId : "";
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
@@ -88,6 +101,10 @@ export class CliTelemetryReporter implements TelemetryReporter {
   ): void {
     if (!properties) {
       properties = {};
+    }
+
+    if (this.isFromSample !== undefined) {
+      properties[TelemetryProperty.IsFromSample] = this.isFromSample.toString();
     }
 
     const projectId = getProjectId(this.rootFolder);

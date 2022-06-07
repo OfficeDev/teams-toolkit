@@ -207,7 +207,7 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
       );
       if (tokenRes.isOk()) {
         const tokenJson = ConvertTokenToJson(tokenRes.value);
-        return ok({ status: signedIn, token: tokenRes.value, tokenJson });
+        return ok({ status: signedIn, token: tokenRes.value, accountInfo: tokenJson as any });
       } else {
         if (
           tokenRes.error.name !==

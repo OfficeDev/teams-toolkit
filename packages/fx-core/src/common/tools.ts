@@ -422,7 +422,7 @@ export function isApiConnectEnabled(): boolean {
 // This method is for deciding whether AAD should be activated.
 // Currently AAD plugin will always be activated when scaffold.
 // This part will be updated when we support adding aad separately.
-export function isAADEnabled(solutionSettings: AzureSolutionSettings): boolean {
+export function isAADEnabled(solutionSettings: AzureSolutionSettings | undefined): boolean {
   if (!solutionSettings) {
     return false;
   }

@@ -219,16 +219,6 @@ export class TeamsfxCore {
         targetAction: `${r.name}.provision`,
       };
     });
-    const loadEnvStep: Action = {
-      type: "call",
-      targetAction: "env-manager.read",
-      required: true,
-    };
-    const writeEnvStep: Action = {
-      type: "call",
-      targetAction: "env-manager.write",
-      required: true,
-    };
     const configureActions: Action[] = resourcesToProvision.map((r) => {
       return {
         type: "call",
@@ -321,12 +311,19 @@ export class TeamsfxCore {
         return ok([]);
       },
       execute: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const projectSettings = context.projectSetting as ProjectSettingsV3;
-        const teamsTab = getComponent(projectSettings, ComponentNames.TeamsTab);
-        const aad = getComponent(projectSettings, ComponentNames.AadApp);
-        if (aad) {
-          if (teamsTab) {
-            const tabEndpoint = context.envInfo?.state[teamsTab.hosting!].endpoint;
+        const ctx = context as ProvisionContextV3;
+        const teamsBot = getComponent(ctx.projectSetting, ComponentNames.TeamsBot);
+        if (teamsBot) {
+          teamsBot.endpoint = ctx.envInfo.state[teamsBot.hosting!].endpoint;
+          teamsBot.domain = ctx.envInfo.state[teamsBot.hosting!].domain;
+        }
+        const teamsTab = getComponent(ctx.projectSetting, ComponentNames.TeamsTab);
+        if (teamsTab) {
+          teamsTab.endpoint = ctx.envInfo.state[teamsTab.hosting!].endpoint;
+          teamsTab.domain = ctx.envInfo.state[teamsTab.hosting!].domain;
+          const aad = getComponent(ctx.projectSetting, ComponentNames.AadApp);
+          if (aad) {
+            const tabEndpoint = ctx.envInfo.state[teamsTab.hosting!].endpoint;
             inputs.m365ApplicationIdUri = `api://${tabEndpoint}`;
           }
         }
@@ -334,18 +331,14 @@ export class TeamsfxCore {
       },
     };
     const provisionSequences: Action[] = [
-      LoadProjectSettingsAction,
-      loadEnvStep,
       preProvisionStep,
       createTeamsAppStep,
       provisionResourcesStep,
-      inputs.targetEnvName !== "local" ? deployBicepStep : setupLocalEnvironmentStep,
+      ctx.envInfo.envName !== "local" ? deployBicepStep : setupLocalEnvironmentStep,
       preConfigureStep,
       configureResourcesStep,
-      inputs.targetEnvName === "local" ? configLocalEnvironmentStep : postProvisionStep,
+      ctx.envInfo.envName === "local" ? configLocalEnvironmentStep : postProvisionStep,
       updateTeamsAppStep,
-      writeEnvStep,
-      WriteProjectSettingsAction,
     ];
     const result: Action = {
       name: "fx.provision",

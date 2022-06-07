@@ -409,3 +409,8 @@ export function createContextV3(projectSettings?: ProjectSettingsV3): ContextV3 
   };
   return context;
 }
+
+export function normalizeName(appName: string): string {
+  const normalizedAppName = appName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+  return normalizedAppName;
+}

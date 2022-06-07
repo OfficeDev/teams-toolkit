@@ -450,7 +450,15 @@ export class FxCore implements v3.ICore {
     return result;
   }
 
-  @hooks([ErrorHandlerMW, QuestionModelMW_V3, ContextInjectorMW])
+  @hooks([
+    ErrorHandlerMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW_V3(false),
+    QuestionModelMW_V3,
+    ContextInjectorMW,
+    ProjectSettingsWriterMW,
+    EnvInfoWriterMW_V3(),
+  ])
   async provisionResourcesV3(
     inputs: Inputs,
     ctx?: CoreHookContext
@@ -458,6 +466,8 @@ export class FxCore implements v3.ICore {
     setCurrentStage(Stage.provision);
     inputs.stage = Stage.provision;
     const context = createContextV3();
+    context.envInfo = ctx!.envInfoV3!;
+    context.projectSetting = ctx!.projectSettings! as ProjectSettingsV3;
     context.tokenProvider = TOOLS.tokenProvider;
     await runAction("fx.provision", context, inputs as InputsWithProjectPath);
     ctx!.projectSettings = context.projectSetting;

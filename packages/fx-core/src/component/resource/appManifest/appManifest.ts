@@ -39,6 +39,7 @@ import {
   AzureSolutionQuestionNames,
   BotScenario,
 } from "../../../plugins/solution/fx-solution/question";
+import { ComponentNames } from "../../constants";
 import { createOrUpdateTeamsApp, publishTeamsApp } from "./appStudio";
 import {
   BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3,
@@ -245,7 +246,7 @@ export class AppManifest implements CloudResource {
           {
             type: "service",
             name: "teams.microsoft.com",
-            remarks: "register or update teams app",
+            remarks: "create or update teams app",
           },
         ]);
       },
@@ -253,11 +254,13 @@ export class AppManifest implements CloudResource {
         const ctx = context as ProvisionContextV3;
         const res = await createOrUpdateTeamsApp(ctx, inputs, ctx.envInfo, ctx.tokenProvider);
         if (res.isErr()) return err(res.error);
+        ctx.envInfo.state[ComponentNames.AppManifest].teamsAppId = res.value;
+        ctx.logProvider.info(`teams app created/updated: ${res.value}`);
         return ok([
           {
             type: "service",
             name: "teams.microsoft.com",
-            remarks: "register or update teams app",
+            remarks: "create or update teams app",
           },
         ]);
       },

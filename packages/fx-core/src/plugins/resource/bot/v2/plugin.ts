@@ -173,6 +173,7 @@ export class TeamsBotV2Impl {
       workingPath
     );
 
+    // For backward compatibility, get resource id from both key `botWebAppResourceId` and `resourceId`
     // get Azure resources definition
     const botWebAppResourceId = (envInfo as v2.EnvInfoV2).state[this.name][
       PluginBot.BOT_WEB_APP_RESOURCE_ID

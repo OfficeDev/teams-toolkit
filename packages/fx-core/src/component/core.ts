@@ -45,7 +45,7 @@ import "./connection/aadConfig";
 import "./connection/azureWebAppConfig";
 import "./connection/azureFunctionConfig";
 
-import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "./projectSettingsManager";
+import { WriteProjectSettingsAction } from "./projectSettingsManager";
 import { ComponentNames } from "./constants";
 import {
   askForProvisionConsent,

@@ -45,6 +45,7 @@ import {
 import { ComponentNames } from "../constants";
 import { normalizeName } from "../utils";
 import { getComponent } from "../workflow";
+import * as clientFactory from "../../plugins/resource/bot/clientFactory";
 @Service("bot-service")
 export class BotService implements CloudResource {
   outputs = {
@@ -160,11 +161,14 @@ export class BotService implements CloudResource {
             ctx.tokenProvider.azureAccountProvider
           );
           const solutionConfig = ctx.envInfo.state.solution as v3.AzureSolutionConfig;
-          const rpClient = createResourceProviderClient(
+          const rpClient = clientFactory.createResourceProviderClient(
             azureCredential,
             solutionConfig.subscriptionId!
           );
-          await ensureResourceProvider(rpClient, AzureConstants.requiredResourceProviders);
+          await clientFactory.ensureResourceProvider(
+            rpClient,
+            AzureConstants.requiredResourceProviders
+          );
           const aadRes = await createBotAAD(ctx);
           if (aadRes.isErr()) return err(aadRes.error);
           plans.push({

@@ -5,7 +5,7 @@ import { ArmTemplateResult } from "../armInterface";
 import { TokenProvider } from "@microsoft/teamsfx-api";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import * as appService from "@azure/arm-appservice";
-import { AzureUploadConfig, Logger } from "./interfaces";
+import { AzureUploadConfig, BicepContext, Logger, ServiceType } from "./interfaces";
 import { Base64 } from "js-base64";
 import { AzureOperations } from "./azureOps";
 import { AzureOperationCommonConstants, AzureOpsConstant } from "./hostingConstant";
@@ -16,6 +16,17 @@ import {
   getSubscriptionIdFromResourceId,
 } from "../tools";
 import { Messages } from "./messages";
+
+export function fulfillBicepContext(
+  bicepContext: BicepContext,
+  serviceType: ServiceType
+): BicepContext {
+  return {
+    moduleName: bicepContext.moduleNames?.[serviceType] ?? serviceType,
+    moduleNameCapitalized: bicepContext.moduleNamesCapitalized?.[serviceType] ?? serviceType,
+    ...bicepContext,
+  };
+}
 
 export function mergeTemplates(templates: ArmTemplateResult[]): ArmTemplateResult {
   const existsProvision = templates.some((it) => it.Provision);

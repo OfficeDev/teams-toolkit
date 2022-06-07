@@ -22,6 +22,7 @@ import {
   ServiceType,
 } from "../../../../common/azure-hosting/interfaces";
 import {
+  Alias,
   DEFAULT_DOTNET_FRAMEWORK,
   DeployConfigs,
   FolderNames,
@@ -40,7 +41,13 @@ import ignore, { Ignore } from "ignore";
 import { DeployConfigsConstants } from "../../../../common/azure-hosting/hostingConstant";
 import { getTemplateInfos, resolveHostType, resolveServiceType } from "./common";
 import { ProgrammingLanguage } from "./enum";
-import { getLanguage, getProjectFileName, getRuntime } from "./mapping";
+import {
+  getLanguage,
+  getProjectFileName,
+  getRuntime,
+  moduleMap,
+  moduleMapCapitalized,
+} from "./mapping";
 
 export class TeamsBotV2Impl {
   readonly name: string = PluginBot.PLUGIN_NAME;
@@ -79,19 +86,7 @@ export class TeamsBotV2Impl {
   ): Promise<Result<ResourceTemplate, FxError>> {
     Logger.info(Messages.GeneratingArmTemplatesBot);
 
-    const plugins = getActivatedV2ResourcePlugins(ctx.projectSetting).map(
-      (p) => new NamedArmResourcePluginAdaptor(p)
-    );
-    const bicepConfigs = TeamsBotV2Impl.getBicepConfigs(ctx, inputs);
-    const bicepContext: BicepContext = {
-      plugins: plugins.map((obj) => obj.name),
-      configs: bicepConfigs,
-      moduleNames: { [ServiceType.Functions]: "botFunction" },
-      moduleNamesCapitalized: { [ServiceType.Functions]: "BotFunction" },
-      moduleAlias: "bot",
-      pluginId: ResourcePlugins.Bot,
-    };
-
+    const bicepContext = TeamsBotV2Impl.getBicepContext(ctx, inputs);
     const serviceTypes = [resolveServiceType(ctx), ServiceType.BotService];
     const templates = await Promise.all(
       serviceTypes.map((serviceType) => {
@@ -112,19 +107,7 @@ export class TeamsBotV2Impl {
   ): Promise<Result<ResourceTemplate, FxError>> {
     Logger.info(Messages.UpdatingArmTemplatesBot);
 
-    const plugins = getActivatedV2ResourcePlugins(ctx.projectSetting).map(
-      (p) => new NamedArmResourcePluginAdaptor(p)
-    );
-    const bicepConfigs = TeamsBotV2Impl.getBicepConfigs(ctx, inputs);
-    const bicepContext: BicepContext = {
-      plugins: plugins.map((obj) => obj.name),
-      configs: bicepConfigs,
-      moduleNames: { [ServiceType.Functions]: "botFunction" },
-      moduleNamesCapitalized: { [ServiceType.Functions]: "BotFunction" },
-      moduleAlias: "bot",
-      pluginId: ResourcePlugins.Bot,
-    };
-
+    const bicepContext = TeamsBotV2Impl.getBicepContext(ctx, inputs);
     const serviceTypes = [resolveServiceType(ctx), ServiceType.BotService];
     const templates = await Promise.all(
       serviceTypes.map((serviceType) => {
@@ -137,6 +120,21 @@ export class TeamsBotV2Impl {
 
     Logger.info(Messages.SuccessfullyUpdateArmTemplatesBot);
     return ok({ kind: "bicep", template: result });
+  }
+
+  static getBicepContext(ctx: v2.Context, inputs: Inputs): BicepContext {
+    const plugins = getActivatedV2ResourcePlugins(ctx.projectSetting).map(
+      (p) => new NamedArmResourcePluginAdaptor(p)
+    );
+    const bicepConfigs = TeamsBotV2Impl.getBicepConfigs(ctx, inputs);
+    return {
+      plugins: plugins.map((obj) => obj.name),
+      configs: bicepConfigs,
+      moduleNames: moduleMap,
+      moduleNamesCapitalized: moduleMapCapitalized,
+      moduleAlias: Alias.BICEP_MODULE,
+      pluginId: ResourcePlugins.Bot,
+    };
   }
 
   async configureResource(

@@ -278,3 +278,7 @@ export function generateAppServicePlanConfig(
     },
   };
 }
+
+export function capitalizeFirstLetter([first, ...rest]: Iterable<string>): string {
+  return [first?.toUpperCase(), ...rest].join("");
+}

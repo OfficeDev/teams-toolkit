@@ -8,11 +8,12 @@ import path from "path";
 import { generateBicepFromFile } from "..";
 import { Bicep } from "../constants";
 import { getTemplatesFolder } from "../../folder";
-import { BicepContext, Logger } from "./interfaces";
+import { BicepContext, Logger, ServiceType } from "./interfaces";
 import { Messages } from "./messages";
+import { fulfillBicepContext } from "./utils";
 
 export abstract class AzureHosting {
-  abstract hostType: string;
+  abstract hostType: ServiceType;
   abstract configurable: boolean;
 
   reference: any = undefined;
@@ -38,11 +39,7 @@ export abstract class AzureHosting {
       bicepFiles.push(`${this.hostType}Configuration.template.bicep`);
     }
 
-    const context = {
-      moduleName: bicepContext.moduleNames?.[this.hostType] ?? this.hostType,
-      moduleNameCapitalized: bicepContext.moduleNamesCapitalized?.[this.hostType] ?? this.hostType,
-      ...bicepContext,
-    };
+    const context = fulfillBicepContext(bicepContext, this.hostType);
 
     const bicepTemplateDir = this.getBicepTemplateFolder();
     const modules = await Promise.all(
@@ -64,13 +61,13 @@ export abstract class AzureHosting {
     return {
       Provision: {
         Orchestration: modules[0],
-        Modules: { [context.moduleName]: modules[1] },
+        Modules: { [context.moduleName!]: modules[1] },
       },
       Configuration: this.configurable
         ? {
             Orchestration: modules[2],
             Modules: {
-              [context.moduleName]: modules[3],
+              [context.moduleName!]: modules[3],
             },
           }
         : undefined,
@@ -87,11 +84,7 @@ export abstract class AzureHosting {
       return {} as ResourceTemplate;
     }
     const bicepFile = `${this.hostType}Configuration.template.bicep`;
-    const context = {
-      moduleName: bicepContext.moduleNames?.[this.hostType] ?? this.hostType,
-      moduleNameCapitalized: bicepContext.moduleNamesCapitalized?.[this.hostType] ?? this.hostType,
-      ...bicepContext,
-    };
+    const context = fulfillBicepContext(bicepContext, this.hostType);
 
     const bicepTemplateDir = this.getBicepTemplateFolder();
     const module = await generateBicepFromFile(path.join(bicepTemplateDir, bicepFile), context);
@@ -100,11 +93,12 @@ export abstract class AzureHosting {
 
     return {
       Configuration: {
-        Modules: { [context.moduleName]: module },
+        Modules: { [context.moduleName!]: module },
       },
       Reference: this.reference,
     } as ResourceTemplate;
   }
+
   async configure(ctx: Context): Promise<Void> {
     return Void;
   }

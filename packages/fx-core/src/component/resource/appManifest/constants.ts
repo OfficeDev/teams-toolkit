@@ -8,8 +8,8 @@ export const TAB_COMPONENT_NAME = "teams-tab";
 export const AAD_COMPONENT_NAME = "aad-app";
 
 export const TEAMS_APP_MANIFEST_TEMPLATE = `{
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.11",
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.13/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.13",
   "version": "1.0.0",
   "id": "{{state.app-manifest.teamsAppId}}",
   "packageName": "com.microsoft.teams.extension",

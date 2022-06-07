@@ -95,12 +95,12 @@ describe("Manifest manipulation", async () => {
       // schema has version 1.11
       const schema = await loadSchema();
       const manifest = new TeamsAppManifest();
-      chai.expect(manifest.manifestVersion).equals("1.11");
+      chai.expect(manifest.manifestVersion).equals("1.13");
       const result = await ManifestUtil.validateManifestAgainstSchema(manifest, schema);
       chai.expect(result).not.to.be.empty;
       chai.expect(result.length).equals(1);
-      // 1.11 doesn't match 1.8, so it should return an error
-      chai.expect(result[0]).to.contain("/id must match pattern");
+      // 1.13 doesn't match 1.11, so it should return an error
+      chai.expect(result[0]).to.contain("/manifestVersion");
     });
   });
 });

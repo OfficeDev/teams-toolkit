@@ -82,7 +82,7 @@ export class AzureWebAppConfig {
           "bicep",
           "azureWebApp.config.orchestration.bicep"
         );
-        const orch = !webAppComponent ? await fs.readFile(orchPath, "utf-8") : undefined;
+        const orch = webAppComponent ? await fs.readFile(orchPath, "utf-8") : undefined;
         const bicep: Bicep = {
           type: "bicep",
           Configuration: { Modules: { azureWebAppConfig: module }, Orchestration: orch },

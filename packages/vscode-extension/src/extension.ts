@@ -43,12 +43,7 @@ import { registerTeamsfxTaskAndDebugEvents } from "./debug/teamsfxTaskHandler";
 import { TeamsfxTaskProvider } from "./debug/teamsfxTaskProvider";
 import * as exp from "./exp";
 import { TreatmentVariables, TreatmentVariableValue } from "./exp/treatmentVariables";
-import {
-  initializeGlobalVariables,
-  isSPFxProject,
-  isTeamsFxProject,
-  workspaceUri,
-} from "./globalVariables";
+import { initializeGlobalVariables, isSPFxProject, workspaceUri } from "./globalVariables";
 import * as handlers from "./handlers";
 import { ManifestTemplateHoverProvider } from "./hoverProvider";
 import { VsCodeUI } from "./qm/vsc_ui";
@@ -119,7 +114,7 @@ export async function activate(context: vscode.ExtensionContext) {
   handlers.activate();
 
   // Init VSC context key
-  await initializeContextKey();
+  await initializeContextKey(isTeamsFxProject);
 
   // UI is ready to show & interact
   await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
@@ -622,7 +617,7 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(specifySubscription);
 }
 
-async function initializeContextKey() {
+async function initializeContextKey(isTeamsFxProject: boolean) {
   await vscode.commands.executeCommand("setContext", "fx-extension.isNotValidNode", !isValidNode());
 
   await vscode.commands.executeCommand("setContext", "fx-extension.isSPFx", isSPFxProject);

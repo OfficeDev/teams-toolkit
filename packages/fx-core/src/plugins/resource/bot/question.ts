@@ -3,6 +3,7 @@
 import { Inputs, MultiSelectQuestion, OptionItem, Platform } from "@microsoft/teamsfx-api";
 import { isPreviewFeaturesEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { CoreQuestionNames } from "../../../core/question";
 import {
   AzureSolutionQuestionNames,
   NotificationOptionItem,
@@ -62,13 +63,13 @@ export const HostTypeTriggerOptionsForVS: HostTypeTriggerOptionItem[] = [AppServ
 //   - users must select at least one trigger.
 export function createHostTypeTriggerQuestion(
   platform?: Platform,
-  runtime?: string
+  cliRuntime?: string
 ): MultiSelectQuestion {
   const prefix = "plugins.bot.questionHostTypeTrigger";
 
   let staticOptions: HostTypeTriggerOptionItem[] = HostTypeTriggerOptions;
   let defaultOptionItem = AppServiceOptionItem;
-  if (runtime === "dotnet" || platform === Platform.VS) {
+  if (cliRuntime === "dotnet" || platform === Platform.VS) {
     staticOptions = HostTypeTriggerOptionsForVS;
     defaultOptionItem = AppServiceOptionItemForVS;
   }
@@ -149,6 +150,18 @@ export const showNotificationTriggerCondition = {
   // Workaround for CLI: it requires containsAny to be set, or it will crash.
   containsAny: [NotificationOptionItem.id],
 };
+
+export function getCliTriggerCondition(runtime: string) {
+  return {
+    validFunc: async (input: unknown, inputs?: Inputs) => {
+      if (inputs && inputs[CoreQuestionNames.Runtime] === runtime) {
+        return undefined;
+      } else {
+        return `Runtime is not ${runtime}.`;
+      }
+    },
+  };
+}
 
 type HostTypeTriggerOptionItemWithoutText = Omit<
   HostTypeTriggerOptionItem,

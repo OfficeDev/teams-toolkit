@@ -4,6 +4,7 @@ import {
   AzureSolutionSettings,
   Func,
   FxError,
+  getValidationFunction,
   Inputs,
   ok,
   Platform,
@@ -35,7 +36,11 @@ import {
 } from "../../../common";
 import { FunctionsHostedBotImpl } from "./functionsHostedBot/plugin";
 import { ScaffoldConfig } from "./configs/scaffoldConfig";
-import { createHostTypeTriggerQuestion, showNotificationTriggerCondition } from "./question";
+import {
+  createHostTypeTriggerQuestion,
+  getCliTriggerCondition,
+  showNotificationTriggerCondition,
+} from "./question";
 import { CoreQuestionNames } from "../../../core/question";
 
 @Service(ResourcePlugins.BotPlugin)
@@ -203,46 +208,25 @@ export class TeamsBot implements Plugin {
       return await runWithExceptionCatching(
         context,
         async () => {
-          const inputs = context.answers as Inputs;
           const res = new QTreeNode({
             type: "group",
           });
           if (isCLIDotNetEnabled()) {
             const dotnetNode = new QTreeNode(createHostTypeTriggerQuestion(Platform.CLI, "dotnet"));
-            dotnetNode.condition = {
-              validFunc: async (input: unknown, inputs?: Inputs) => {
-                if (inputs && inputs[CoreQuestionNames.Runtime] === "dotnet") {
-                  return undefined;
-                } else {
-                  return "Runtime is not .net.";
-                }
-              },
-            };
+            dotnetNode.condition = getCliTriggerCondition("dotnet");
             res.addChild(dotnetNode);
             const nodejsNode = new QTreeNode(createHostTypeTriggerQuestion(Platform.CLI, "nodejs"));
-            nodejsNode.condition = {
-              validFunc: async (input: unknown, inputs?: Inputs) => {
-                if (inputs && inputs[CoreQuestionNames.Runtime] === "nodejs") {
-                  return undefined;
-                } else {
-                  return "Runtime is not node.js";
-                }
-              },
-            };
+            nodejsNode.condition = getCliTriggerCondition("nodejs");
             res.addChild(nodejsNode);
             res.condition = showNotificationTriggerCondition;
             return ok(res);
-          } else if (isBotNotificationEnabled()) {
-            res.addChild(
-              new QTreeNode(
-                createHostTypeTriggerQuestion(inputs.platform, inputs[CoreQuestionNames.Runtime])
-              )
-            );
+          }
+          if (isBotNotificationEnabled()) {
+            res.addChild(new QTreeNode(createHostTypeTriggerQuestion(context.answers?.platform)));
             res.condition = showNotificationTriggerCondition;
             return ok(res);
-          } else {
-            return ok(undefined);
           }
+          return ok(undefined);
         },
         true,
         LifecycleFuncNames.GET_QUETSIONS_FOR_SCAFFOLDING

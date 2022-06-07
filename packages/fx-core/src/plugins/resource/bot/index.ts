@@ -4,8 +4,6 @@ import {
   AzureSolutionSettings,
   Func,
   FxError,
-  getValidationFunction,
-  Inputs,
   ok,
   Platform,
   Plugin,
@@ -41,7 +39,6 @@ import {
   getCliTriggerCondition,
   showNotificationTriggerCondition,
 } from "./question";
-import { CoreQuestionNames } from "../../../core/question";
 
 @Service(ResourcePlugins.BotPlugin)
 export class TeamsBot implements Plugin {

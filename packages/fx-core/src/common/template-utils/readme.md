@@ -20,7 +20,7 @@ To scaffold from alpha release templates, set `TEAMSFX_TEMPLATE_PRERELEASE=alpha
   ```
 2. In cd pipeline, all templates in the list will be zipped and be released to GitHub.
 
-3. If your commit contains breaking changes, please include `BREAKING CHANGE:` phrase in your commit footer. The body of the footer has to be multi-line and the footer line must start with “BREAKING CHANGE:”
+3. If your new template can not be scaffolded by older version Teams Toolkit, you need to commit your changes with a `BREAKING CHANGE` footer. The body of the footer has to be multi-line and the footer line must start with `BREAKING CHANGE:`
 ```
 $ git add .
 
@@ -29,6 +29,18 @@ BREAKING CHANGE: drop support for Node 12"
 
 $ git push
 ```
+
+Some breaking change cases:
+
+* Involve new placeholder in templates.
+* Upgrade template's dependencies which deprecates support to lower version NodeJs. Latest Teams Toolkit notices users to upgrade their environment but older version Teams Toolkit does not.
+* Remove or rename templates.
+
+Cases that are not breaking changes:
+
+* Add new templates that old Teams Toolkit does not have entry to get and scaffold them.
+* Add new features to templates that does not require any change in Teams Toolkit.
+* Totally rewrite a template but old Teams Toolkit can still work with it.
 
 ## How to debug templates?
 

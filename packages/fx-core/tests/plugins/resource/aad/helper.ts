@@ -33,7 +33,7 @@ import {
   ARM_TEMPLATE_OUTPUT,
 } from "../../../../src/plugins/solution/fx-solution/constants";
 import { newEnvInfo } from "../../../../src";
-import { IUserList } from "../../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
+import { AppUser } from "../../../../src/plugins/resource/appstudio/interfaces/appUser";
 import { SOLUTION } from "../../../../src/plugins/resource/appstudio/constants";
 import {
   LocalSettingsBotKeys,
@@ -125,7 +125,7 @@ const mockTelemetryReporter: TelemetryReporter = {
   },
 };
 
-const userList: IUserList = {
+const userList: AppUser = {
   tenantId: faker.datatype.uuid(),
   aadId: faker.datatype.uuid(),
   displayName: "displayName",

@@ -70,6 +70,8 @@ import { isExistingTabApp } from "./projectSettingsHelper";
 import { ExistingTemplatesStat } from "../plugins/resource/cicd/utils/existingTemplatesStat";
 import { environmentManager } from "../core/environment";
 import { NoProjectOpenedError } from "../plugins/resource/cicd/errors";
+import { getProjectTemplatesFolderPath } from "./utils";
+import * as path from "path";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -420,7 +422,7 @@ export function isApiConnectEnabled(): boolean {
 // This method is for deciding whether AAD should be activated.
 // Currently AAD plugin will always be activated when scaffold.
 // This part will be updated when we support adding aad separately.
-export function isAADEnabled(solutionSettings: AzureSolutionSettings): boolean {
+export function isAADEnabled(solutionSettings: AzureSolutionSettings | undefined): boolean {
   if (!solutionSettings) {
     return false;
   }
@@ -638,13 +640,15 @@ export function compileHandlebarsTemplateString(templateString: string, context:
 
 export async function getAppDirectory(projectRoot: string): Promise<string> {
   const REMOTE_MANIFEST = "manifest.source.json";
-  const appDirNewLocForMultiEnv = `${projectRoot}/templates/${AppPackageFolderName}`;
-  const appDirNewLoc = `${projectRoot}/${AppPackageFolderName}`;
-  const appDirOldLoc = `${projectRoot}/.${ConfigFolderName}`;
-
-  if (await fs.pathExists(`${appDirNewLocForMultiEnv}`)) {
+  const appDirNewLocForMultiEnv = path.resolve(
+    await getProjectTemplatesFolderPath(projectRoot),
+    AppPackageFolderName
+  );
+  const appDirNewLoc = path.join(projectRoot, AppPackageFolderName);
+  const appDirOldLoc = path.join(projectRoot, `.${ConfigFolderName}`);
+  if (await fs.pathExists(appDirNewLocForMultiEnv)) {
     return appDirNewLocForMultiEnv;
-  } else if (await fs.pathExists(`${appDirNewLoc}/${REMOTE_MANIFEST}`)) {
+  } else if (await fs.pathExists(path.join(appDirNewLoc, REMOTE_MANIFEST))) {
     return appDirNewLoc;
   } else {
     return appDirOldLoc;

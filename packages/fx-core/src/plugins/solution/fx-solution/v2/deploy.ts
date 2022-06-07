@@ -62,7 +62,7 @@ export async function deploy(
   const botTroubleShootMsg = getBotTroubleShootMessage(getAzureSolutionSettings(ctx));
   const provisioned =
     (provisionOutputs[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] as boolean) ||
-    inputs[Constants.DEPLOY_AAD_FROM_CODELENS] === "yes";
+    inputs[Constants.DEPLOY_AAD] === "yes";
 
   if (inAzureProject && !provisioned) {
     return err(
@@ -106,7 +106,7 @@ export async function deploy(
         )
       );
     }
-  } else {
+  } else if (envInfo.envName !== "local") {
     const checkAzure = await checkSubscription(
       { version: 2, data: envInfo },
       tokenProvider.azureAccountProvider

@@ -67,7 +67,7 @@ import {
   HostTypeOptionSPFx,
 } from "../../../src/plugins/solution/fx-solution/question";
 import { MockedM365Provider, MockedV2Context, validManifest } from "./util";
-import { IAppDefinition } from "../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
+import { AppDefinition } from "../../../src/plugins/resource/appstudio/interfaces/appDefinition";
 import _ from "lodash";
 import { TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase, UserTokenCredentials } from "@azure/ms-rest-nodeauth";
@@ -332,7 +332,7 @@ describe("provision() simple cases", () => {
   mockedManifest.icons.color = "";
   mockedManifest.icons.outline = "";
 
-  const mockedAppDef: IAppDefinition = {
+  const mockedAppDef: AppDefinition = {
     appName: "MyApp",
     teamsAppId: "qwertasdf",
   };
@@ -452,7 +452,7 @@ describe("provision() with permission.json file missing", () => {
 describe("provision() happy path for SPFx projects", () => {
   const mocker = sinon.createSandbox();
   const fileContent: Map<string, any> = new Map();
-  const mockedAppDef: IAppDefinition = {
+  const mockedAppDef: AppDefinition = {
     appName: "MyApp",
     teamsAppId: "qwertasdf",
   };
@@ -520,7 +520,7 @@ function mockAzureProjectDeps(
   mocker: sinon.SinonSandbox,
   permissionsJsonPath: string,
   mockedManifest: typeof validManifest,
-  mockedAppDef: IAppDefinition
+  mockedAppDef: AppDefinition
 ) {
   mocker.stub<any, any>(fs, "pathExists").withArgs(permissionsJsonPath).resolves(true);
   mocker
@@ -539,7 +539,7 @@ function mockAzureProjectDeps(
 describe("Resource group creation failed for provision() in Azure projects", () => {
   const mocker = sinon.createSandbox();
   const permissionsJsonPath = "./permissions.json";
-  const mockedAppDef: IAppDefinition = {
+  const mockedAppDef: AppDefinition = {
     appName: "MyApp",
     teamsAppId: "qwertasdf",
   };
@@ -589,7 +589,7 @@ describe("provision() happy path for Azure projects", () => {
   const permissionsJsonPath = "./permissions.json";
   const resourceGroupName = "test-rg";
 
-  const mockedAppDef: IAppDefinition = {
+  const mockedAppDef: AppDefinition = {
     appName: "MyApp",
     teamsAppId: "qwertasdf",
   };

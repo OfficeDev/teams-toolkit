@@ -21,7 +21,7 @@ import {
   UserError,
 } from "@microsoft/teamsfx-api";
 import { CollaborationState, PermissionsResult, ResourcePermission } from "../../../../common";
-import { IUserList } from "../../../resource/appstudio/interfaces/IAppDefinition";
+import { AppUser } from "../../../resource/appstudio/interfaces/appUser";
 import {
   PluginNames,
   REMOTE_TEAMS_APP_TENANT_ID,
@@ -45,7 +45,7 @@ import { getDefaultString, getLocalizedString } from "../../../../common/localiz
 
 async function executeCheckPermissionV1(
   ctx: SolutionContext,
-  userInfo: IUserList
+  userInfo: AppUser
 ): Promise<[ResourcePermission[], Err<any, FxError>[]]> {
   const plugins = getActivatedResourcePlugins(
     ctx.projectSettings?.solutionSettings as AzureSolutionSettings
@@ -88,7 +88,7 @@ async function executeCheckPermissionV2(
   inputs: v2.InputsWithProjectPath,
   envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
   tokenProvider: TokenProvider,
-  userInfo: IUserList
+  userInfo: AppUser
 ): Promise<[ResourcePermission[], Err<any, FxError>[]]> {
   const plugins: v2.ResourcePlugin[] = [
     Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin),
@@ -151,7 +151,7 @@ async function checkPermissionImpl(
     });
   }
 
-  const userInfo = result.value as IUserList;
+  const userInfo = result.value as AppUser;
 
   if (platform === Platform.CLI) {
     const aadAppTenantId = envState.get(PluginNames.SOLUTION)?.get(REMOTE_TEAMS_APP_TENANT_ID);

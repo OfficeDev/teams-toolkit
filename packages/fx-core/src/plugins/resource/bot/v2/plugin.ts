@@ -280,7 +280,7 @@ export class TeamsBotV2Impl {
           path.join(workingPath, projectFileName)
         );
         await utils.execute(`dotnet publish --configuration Release`, workingPath);
-        return path.join(workingPath, "bin", "release", framework, "publish");
+        return path.join(workingPath, "bin", "Release", framework, "publish");
       } catch (e) {
         throw new CommandExecutionError(`dotnet publish`, workingPath, e);
       }

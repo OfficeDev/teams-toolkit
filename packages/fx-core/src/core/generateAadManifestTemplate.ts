@@ -113,29 +113,6 @@ export async function generateAadManifestTemplate(
   });
 }
 
-export function permissionsToRequiredResourceAccess(
-  permissions: Permission[]
-): RequiredResourceAccess[] {
-  const result: RequiredResourceAccess[] = [];
-  permissions.forEach((permission) => {
-    const res: RequiredResourceAccess = {
-      resourceAppId: permission.resource,
-      resourceAccess: permission.application
-        .map((item) => {
-          return { id: item, type: "Role" };
-        })
-        .concat(
-          permission.delegated.map((item) => {
-            return { id: item, type: "Scope" };
-          })
-        ),
-    };
-
-    result.push(res);
-  });
-  return result;
-}
-
 function isRedirectUrlExist(replyUrls: ReplyUrlsWithType[], url: string, type: string) {
   return (
     replyUrls.filter((item: ReplyUrlsWithType) => item.url === url && item.type === type).length > 0

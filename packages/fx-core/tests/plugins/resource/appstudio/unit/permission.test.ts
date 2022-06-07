@@ -24,7 +24,7 @@ import {
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
 import { getAzureProjectRoot } from "../helper";
 import { newEnvInfo } from "../../../../../src";
-import { IUserList } from "../../../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
+import { AppUser } from "../../../../../src/plugins/resource/appstudio/interfaces/appUser";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import {
   MockedAzureAccountProvider,
@@ -40,7 +40,7 @@ import Container from "typedi";
 import { AadAppForTeamsPluginV3 } from "../../../../../src/plugins/resource/aad/v3";
 import { AppStudioPluginV3 } from "../../../../../src/plugins/resource/appstudio/v3";
 
-const userList: IUserList = {
+const userList: AppUser = {
   tenantId: faker.datatype.uuid(),
   aadId: faker.datatype.uuid(),
   displayName: "displayName",

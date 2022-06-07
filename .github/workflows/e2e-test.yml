@@ -167,6 +167,11 @@ jobs:
         with:
           node-version: 14
 
+      - name: Setup .net
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: 6.0.x
+
       - name: Download Simple Auth bits
         uses: nick-fields/retry@v2
         with:

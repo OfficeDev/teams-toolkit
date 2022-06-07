@@ -28,12 +28,6 @@ export enum TelemetryEvent {
   RunIconDebugStart = "run-icon-debug-start",
   RunIconDebug = "run-icon-debug",
 
-  AddResourceStart = "add-resource-start",
-  AddResource = "add-resource",
-
-  AddCapStart = "add-capability-start",
-  AddCap = "add-capability",
-
   AddFeatureStart = "add-feature-start",
   AddFeature = "add-feature",
 
@@ -45,9 +39,6 @@ export enum TelemetryEvent {
 
   UpdatePreviewManifestStart = "update-preview-manifest-start",
   UpdatePreviewManifest = "update-preview-manifest",
-
-  ConnectExistingApiStart = "connect-existing-api-start",
-  ConnectExistingApi = "connect-existing-api",
 
   EditManifestTemplate = "edit-manifest-template",
   EditAadManifestTemplate = "edit-aad-manifest-template",
@@ -74,9 +65,6 @@ export enum TelemetryEvent {
 
   PublishStart = "publish-start",
   Publish = "publish",
-
-  AddCICDWorkflowsStart = "add-cicd-workflows-start",
-  AddCICDWorkflows = "add-cicd-workflows",
 
   ManageTeamsApp = "manage-teams-app",
 
@@ -183,9 +171,6 @@ export enum TelemetryEvent {
 
   ShowOutputChannel = "show-output-channel",
   OpenFolder = "open-folder",
-
-  AddSsoStart = "add-sso-start",
-  AddSso = "add-sso",
 
   // To track the effect of UX changes
   // that prevents user performing concurrent operations.

@@ -314,13 +314,19 @@ export class TeamsfxCore {
         const ctx = context as ProvisionContextV3;
         const teamsBot = getComponent(ctx.projectSetting, ComponentNames.TeamsBot);
         if (teamsBot) {
-          teamsBot.endpoint = ctx.envInfo.state[teamsBot.hosting!].endpoint;
-          teamsBot.domain = ctx.envInfo.state[teamsBot.hosting!].domain;
+          const teamsBotConfig: any = {
+            endpoint: ctx.envInfo.state[teamsBot.hosting!].endpoint!,
+            domain: ctx.envInfo.state[teamsBot.hosting!].domain,
+          };
+          ctx.envInfo.state[ComponentNames.TeamsBot] = teamsBotConfig;
         }
         const teamsTab = getComponent(ctx.projectSetting, ComponentNames.TeamsTab);
         if (teamsTab) {
-          teamsTab.endpoint = ctx.envInfo.state[teamsTab.hosting!].endpoint;
-          teamsTab.domain = ctx.envInfo.state[teamsTab.hosting!].domain;
+          const teamsTabConfig: any = {
+            endpoint: ctx.envInfo.state[teamsTab.hosting!].endpoint!,
+            domain: ctx.envInfo.state[teamsTab.hosting!].domain,
+          };
+          ctx.envInfo.state[ComponentNames.TeamsBot] = teamsTabConfig;
           const aad = getComponent(ctx.projectSetting, ComponentNames.AadApp);
           if (aad) {
             const tabEndpoint = ctx.envInfo.state[teamsTab.hosting!].endpoint;

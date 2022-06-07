@@ -221,7 +221,7 @@ export class TeamsBot implements Plugin {
             res.condition = showNotificationTriggerCondition;
             return ok(res);
           }
-          if (isBotNotificationEnabled()) {
+          if (context.answers?.platform === Platform.VS || isBotNotificationEnabled()) {
             res.addChild(new QTreeNode(createHostTypeTriggerQuestion(context.answers?.platform)));
             res.condition = showNotificationTriggerCondition;
             return ok(res);

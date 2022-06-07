@@ -476,7 +476,7 @@
   "error.apiConnector.pkgFileNotExistError": "In %s project, there is no package.json exist",
   "error.apiConnector.componentNotExistError": "Component %s not exist, please add first",
   "error.apiConnector.envVarExistError": "Please provide a different API name to avoid conflicts with existing env variables %s in .env.teamsfx.local",
-  "core.QuestionAppName.validation.pattern": "Application name must start with a letter and can only contain letters and digits.",
+  "core.QuestionAppName.validation.pattern": "Application name must start with letters and contain at least two letters or digits. It can not contain some special characters.",
   "core.QuestionAppName.validation.maxlength": "Application name is longer than the maximum length of 30.",
   "core.QuestionAppName.validation.pathExist": "Path exists: %s. Select a different application name.",
   "core.ProgrammingLanguageQuestion.title": "Programming Language",

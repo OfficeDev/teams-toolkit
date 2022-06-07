@@ -6,9 +6,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.TeamsFx.Conversation;
 
-[assembly: FunctionsStartup(typeof({{ProjectName}}.Startup))]
+[assembly: FunctionsStartup(typeof({{SafeProjectName}}.Startup))]
 
-namespace {{ProjectName}}
+namespace {{SafeProjectName}}
 {
     public class Startup : FunctionsStartup
     {

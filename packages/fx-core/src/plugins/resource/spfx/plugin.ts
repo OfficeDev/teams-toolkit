@@ -107,7 +107,7 @@ export class SPFxPluginImpl {
 
       await progressHandler?.next(ScaffoldProgressMessage.ScaffoldProject);
       const framework = ctx.answers![SPFXQuestionNames.framework_type] as string;
-      const solutionName = ctx.projectSettings?.appName as string;
+      const solutionName = ctx.projectSettings?.appName as string; // I did not change this.
       if (ctx.answers?.platform === Platform.VSCode) {
         (ctx.logProvider as any).outputChannel.show();
       }

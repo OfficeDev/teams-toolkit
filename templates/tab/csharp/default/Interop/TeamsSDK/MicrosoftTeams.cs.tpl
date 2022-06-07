@@ -1,6 +1,6 @@
 ﻿using Microsoft.JSInterop;
 
-namespace {{ProjectName}}.Interop.TeamsSDK;
+namespace {{SafeProjectName}}.Interop.TeamsSDK;
 
 public class MicrosoftTeams : InteropModuleBase
 {

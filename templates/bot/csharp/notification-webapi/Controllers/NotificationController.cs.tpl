@@ -1,6 +1,6 @@
-﻿namespace {{ProjectName}}.Controllers
+﻿namespace {{SafeProjectName}}.Controllers
 {
-    using {{ProjectName}}.Models;
+    using {{SafeProjectName}}.Models;
     using AdaptiveCards.Templating;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.TeamsFx.Conversation;

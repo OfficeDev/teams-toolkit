@@ -1,5 +1,5 @@
 @page "/"
-@namespace {{ProjectName}}.Pages
+@namespace {{SafeProjectName}}.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
     Layout = null;

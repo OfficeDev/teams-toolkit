@@ -1,6 +1,6 @@
-namespace {{ProjectName}}
+namespace {{SafeProjectName}}
 {
-    using {{ProjectName}}.Models;
+    using {{SafeProjectName}}.Models;
     using AdaptiveCards.Templating;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;

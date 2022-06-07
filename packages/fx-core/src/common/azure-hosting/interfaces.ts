@@ -3,7 +3,7 @@
 
 export enum ServiceType {
   AppService = "webapp",
-  Functions = "botFunction",
+  Functions = "function",
   BotService = "botservice",
 }
 

@@ -33,19 +33,13 @@ describe("azure hosting", () => {
         path.resolve(path.join(__dirname, "expectedBicep", "botFunctionConfigModule.bicep")),
         "utf-8"
       );
-      chai.assert.equal(
-        template.Configuration.Modules[functionHosting.hostType],
-        expectedConfigModule
-      );
+      chai.assert.equal(template.Configuration.Modules["botFunction"], expectedConfigModule);
 
       const expectedProvisionModule = await fs.readFile(
         path.resolve(path.join(__dirname, "expectedBicep", "botFunctionProvisionModule.bicep")),
         "utf-8"
       );
-      chai.assert.equal(
-        template.Provision.Modules[functionHosting.hostType],
-        expectedProvisionModule
-      );
+      chai.assert.equal(template.Provision.Modules["botFunction"], expectedProvisionModule);
 
       const expectedProvisionOrchestration = await fs.readFile(
         path.resolve(

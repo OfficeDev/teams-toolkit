@@ -16,7 +16,12 @@ import {
   Result,
   TemplateFolderName,
 } from "@microsoft/teamsfx-api";
-import { Correlator, isConfigUnifyEnabled, isValidProject } from "@microsoft/teamsfx-core";
+import {
+  Correlator,
+  isConfigUnifyEnabled,
+  isValidProject,
+  isAADEnabled,
+} from "@microsoft/teamsfx-core";
 
 import {
   AadAppTemplateCodeLensProvider,
@@ -38,7 +43,12 @@ import { registerTeamsfxTaskAndDebugEvents } from "./debug/teamsfxTaskHandler";
 import { TeamsfxTaskProvider } from "./debug/teamsfxTaskProvider";
 import * as exp from "./exp";
 import { TreatmentVariables, TreatmentVariableValue } from "./exp/treatmentVariables";
-import { initializeGlobalVariables, isSPFxProject, workspaceUri } from "./globalVariables";
+import {
+  initializeGlobalVariables,
+  isSPFxProject,
+  isTeamsFxProject,
+  workspaceUri,
+} from "./globalVariables";
 import * as handlers from "./handlers";
 import { ManifestTemplateHoverProvider } from "./hoverProvider";
 import { VsCodeUI } from "./qm/vsc_ui";
@@ -56,7 +66,6 @@ import {
 import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { ExtensionUpgrade } from "./utils/upgrade";
-import { isAADEnabled } from "@microsoft/teamsfx-core";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -624,8 +633,7 @@ async function initializeContextKey() {
     workspaceUri && (await isM365Project(workspaceUri.fsPath))
   );
 
-  const workspacePath = workspaceUri?.fsPath;
-  if (workspacePath) {
+  if (isTeamsFxProject) {
     const aadTemplateWatcher = vscode.workspace.createFileSystemWatcher("**/aad.template.json");
 
     aadTemplateWatcher.onDidCreate(async (event) => {

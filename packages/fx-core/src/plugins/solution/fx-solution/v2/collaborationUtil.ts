@@ -46,7 +46,7 @@ export type CollabApiParam =
 export class CollaborationUtil {
   static async getCurrentUserInfo(
     m365TokenProvider?: M365TokenProvider
-  ): Promise<Result<IUserList, FxError>> {
+  ): Promise<Result<AppUser, FxError>> {
     const user = await CollaborationUtil.getUserInfo(m365TokenProvider);
 
     if (!user) {

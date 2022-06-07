@@ -170,7 +170,7 @@ suite("handlers", () => {
 
     test("openConfigStateFile() - local", async () => {
       const env = "local";
-      const tmpDir = fs.mkdtempSync(os.tmpdir());
+      const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
 
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");

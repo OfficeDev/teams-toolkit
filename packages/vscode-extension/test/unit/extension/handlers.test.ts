@@ -14,6 +14,9 @@ import {
   Void,
   Result,
   FxError,
+  ProjectSettings,
+  ConfigFolderName,
+  ProjectSettingsFileName,
 } from "@microsoft/teamsfx-api";
 import AppStudioTokenInstance from "../../../src/commonlib/appStudioLogin";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
@@ -22,6 +25,7 @@ import { PanelType } from "../../../src/controls/PanelType";
 import { AzureAccountManager } from "../../../src/commonlib/azureLogin";
 import { MockCore } from "./mocks/mockCore";
 import * as commonUtils from "../../../src/utils/commonUtils";
+import { localize } from "../../../src/utils/localizeUtils";
 import * as extension from "../../../src/extension";
 import TreeViewManagerInstance from "../../../src/treeview/treeViewManager";
 import { CollaborationState, CoreHookContext } from "@microsoft/teamsfx-core";
@@ -31,7 +35,12 @@ import { Uri } from "vscode";
 import envTreeProviderInstance from "../../../src/treeview/environmentTreeViewProvider";
 import accountTreeViewProviderInstance from "../../../src/treeview/account/accountTreeViewProvider";
 import * as extTelemetryEvents from "../../../src/telemetry/extTelemetryEvents";
+import { ExtensionErrors } from "../../../src/error";
 import * as uuid from "uuid";
+import * as fs from "fs-extra";
+import * as path from "path";
+import * as util from "util";
+import * as os from "os";
 
 suite("handlers", () => {
   suite("activate()", function () {
@@ -158,6 +167,43 @@ suite("handlers", () => {
     this.afterEach(() => {
       sinon.restore();
     });
+
+    test("openConfigStateFile() - local", async () => {
+      const env = "local";
+      const tmpDir = fs.mkdtempSync(os.tmpdir());
+
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+
+      sinon.stub(globalVariables, "workspaceUri").value(Uri.file(tmpDir));
+      const projectSettings: ProjectSettings = {
+        appName: "myapp",
+        version: "1.0.0",
+        projectId: "123",
+      };
+      const configFolder = path.resolve(tmpDir, `.${ConfigFolderName}`, "configs");
+      await fs.mkdir(configFolder, { recursive: true });
+      const settingsFile = path.resolve(configFolder, ProjectSettingsFileName);
+      await fs.writeJSON(settingsFile, JSON.stringify(projectSettings, null, 4));
+
+      sinon.stub(globalVariables, "context").value({ extensionPath: path.resolve("../../") });
+      sinon.stub(extension, "VS_CODE_UI").value({
+        selectOption: () => Promise.resolve(ok({ type: "success", result: env })),
+      });
+
+      const res = await handlers.openConfigStateFile([]);
+      await fs.remove(tmpDir);
+
+      if (res) {
+        chai.assert.isTrue(res.isErr());
+        chai.assert.equal(res.error.name, ExtensionErrors.EnvStateNotFoundError);
+        chai.assert.equal(
+          res.error.message,
+          util.format(localize("teamstoolkit.handlers.localStateFileNotFound"), env)
+        );
+      }
+    });
+
     test("create sample with projectid", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");

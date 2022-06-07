@@ -4,6 +4,7 @@
 import { MessageConnection } from "vscode-jsonrpc";
 
 import {
+  err,
   FxError,
   LoginStatus,
   M365TokenProvider,
@@ -26,7 +27,7 @@ export default class ServerM365TokenProvider implements M365TokenProvider {
     const promise = this.connection.sendRequest(RequestTypes.m365.getAccessToken, tokenRequest);
     const result = await getResponseWithErrorHandling(promise);
     if (result.isErr()) {
-      throw result.error;
+      return err(result.error);
     }
     return result;
   }
@@ -37,7 +38,7 @@ export default class ServerM365TokenProvider implements M365TokenProvider {
     const promise = this.connection.sendRequest(RequestTypes.m365.getJsonObject, tokenRequest);
     const result = await getResponseWithErrorHandling(promise);
     if (result.isErr()) {
-      throw result.error;
+      return err(result.error);
     }
     return result;
   }
@@ -46,7 +47,7 @@ export default class ServerM365TokenProvider implements M365TokenProvider {
     const promise = this.connection.sendRequest(RequestTypes.m365.getStatus, tokenRequest);
     const result = await getResponseWithErrorHandling(promise);
     if (result.isErr()) {
-      throw result.error;
+      return err(result.error);
     }
     return result;
   }

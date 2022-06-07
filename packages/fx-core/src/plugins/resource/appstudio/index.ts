@@ -33,7 +33,7 @@ import { Links } from "../bot/constants";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import "./v2";
 import "./v3";
-import { IUserList } from "./interfaces/IAppDefinition";
+import { AppUser } from "./interfaces/appUser";
 import { getManifestTemplatePath } from "./manifestTemplate";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { isDeployManifestEnabled } from "../../../common";
@@ -231,7 +231,7 @@ export class AppStudioPlugin implements Plugin {
     TelemetryUtils.sendStartEvent(TelemetryEventName.buildTeamsPackage);
     try {
       const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, isLocalDebug);
-      if (ctx.answers?.platform === Platform.CLI) {
+      if (ctx.answers?.platform === Platform.CLI || ctx.answers?.platform === Platform.VS) {
         const builtSuccess = [
           { content: "(√)Done: ", color: Colors.BRIGHT_GREEN },
           { content: "Teams Package ", color: Colors.BRIGHT_WHITE },
@@ -467,7 +467,7 @@ export class AppStudioPlugin implements Plugin {
     try {
       const checkPermissionResult = await this.appStudioPluginImpl.checkPermission(
         ctx,
-        userInfo as IUserList
+        userInfo as AppUser
       );
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.checkPermission);
       return ok(checkPermissionResult);
@@ -497,7 +497,7 @@ export class AppStudioPlugin implements Plugin {
     try {
       const grantPermissionResult = await this.appStudioPluginImpl.grantPermission(
         ctx,
-        userInfo as IUserList
+        userInfo as AppUser
       );
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.grantPermission);
       return ok(grantPermissionResult);

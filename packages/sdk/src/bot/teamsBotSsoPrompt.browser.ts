@@ -11,8 +11,6 @@ import { TeamsFx } from "../core/teamsfx";
  *
  * @remarks
  * Only works in in server side.
- *
- * @beta
  */
 export interface TeamsBotSsoPromptSettings {
   /**
@@ -82,8 +80,6 @@ export interface TeamsBotSsoPromptSettings {
  *      }
  * ]));
  * ```
- *
- * @beta
  */
 export class TeamsBotSsoPrompt {
   /**
@@ -94,8 +90,6 @@ export class TeamsBotSsoPrompt {
    *
    * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
-   *
-   * @beta
    */
   constructor(
     private teamsfx: TeamsFx,
@@ -121,8 +115,6 @@ export class TeamsBotSsoPrompt {
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    *
    * @returns A `Promise` representing the asynchronous operation.
-   *
-   * @beta
    */
   public async beginDialog(dc: DialogContext): Promise<DialogTurnResult> {
     throw new ErrorWithCode(
@@ -146,8 +138,6 @@ export class TeamsBotSsoPrompt {
    *
    * @throws {@link ErrorCode|ChannelNotSupported} when bot channel is not MS Teams.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
-   *
-   * @beta
    */
   public async continueDialog(dc: DialogContext): Promise<DialogTurnResult> {
     throw new ErrorWithCode(

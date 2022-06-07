@@ -4,9 +4,6 @@
 
 ## TeamsFx.setSsoToken() method
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Set SSO token when using user identity in NodeJS.
 
 <b>Signature:</b>

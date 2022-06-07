@@ -25,7 +25,8 @@ import * as commonUtils from "../../../src/utils/commonUtils";
 import * as extension from "../../../src/extension";
 import TreeViewManagerInstance from "../../../src/treeview/treeViewManager";
 import { CollaborationState, CoreHookContext } from "@microsoft/teamsfx-core";
-import { ext } from "../../../src/extensionVariables";
+import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
+import * as globalVariables from "../../../src/globalVariables";
 import { Uri } from "vscode";
 import envTreeProviderInstance from "../../../src/treeview/environmentTreeViewProvider";
 import accountTreeViewProviderInstance from "../../../src/treeview/account/accountTreeViewProvider";
@@ -33,10 +34,6 @@ import * as extTelemetryEvents from "../../../src/telemetry/extTelemetryEvents";
 import * as uuid from "uuid";
 
 suite("handlers", () => {
-  test("getWorkspacePath()", () => {
-    chai.expect(handlers.getWorkspacePath()).equals(undefined);
-  });
-
   suite("activate()", function () {
     const sandbox = sinon.createSandbox();
     let setStatusChangeMap: any;
@@ -87,6 +84,7 @@ suite("handlers", () => {
       const disposeFunc = sinon.stub(ExtTelemetry, "dispose");
       const createProject = sinon.spy(handlers.core, "createProject");
       const executeCommandFunc = sinon.stub(vscode.commands, "executeCommand");
+      const globalStateUpdateStub = sinon.stub(globalState, "globalStateUpdate");
 
       await handlers.createNewProjectHandler();
 
@@ -102,7 +100,7 @@ suite("handlers", () => {
       clock.tick(3000);
       chai.assert.isTrue(executeCommandFunc.calledOnceWith("vscode.openFolder"));
       sinon.restore();
-      clock.restore;
+      clock.restore();
     });
 
     test("provisionHandler()", async () => {
@@ -146,7 +144,6 @@ suite("handlers", () => {
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sinon.stub(handlers, "getWorkspacePath").resolves(undefined);
       const showMessage = sinon.spy(vscode.window, "showErrorMessage");
 
       await handlers.buildPackageHandler();
@@ -369,6 +366,7 @@ suite("handlers", () => {
       sinon.restore();
     });
     test("successfully update secret", async () => {
+      sinon.stub(globalVariables, "context").value({ extensionPath: "" });
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -399,6 +397,7 @@ suite("handlers", () => {
     });
 
     test("failed to update due to corrupted secret", async () => {
+      sinon.stub(globalVariables, "context").value({ extensionPath: "" });
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -443,8 +442,8 @@ suite("handlers", () => {
         tid: "fake-tenant-id",
       });
 
-      ext.workspaceUri = Uri.parse("file://fakeProjectPath");
-      sinon.stub(commonUtils, "isSPFxProject").resolves(false);
+      sinon.stub(globalVariables, "workspaceUri").value(Uri.parse("file://fakeProjectPath"));
+      sinon.stub(globalVariables, "isSPFxProject").value(false);
       sinon.stub(commonUtils, "getM365TenantFromEnv").callsFake(async (env: string) => {
         return "fake-tenant-id";
       });
@@ -594,8 +593,7 @@ suite("handlers", () => {
     sinon.stub(ExtTelemetry, "sendTelemetryEvent");
     sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
     const deployArtifacts = sinon.spy(handlers.core, "deployArtifacts");
-    await handlers.deployAadAppManifest([]);
-
+    await handlers.deployAadAppManifest([{ fsPath: "path/aad.dev.template" }, "CodeLens"]);
     sinon.assert.calledOnce(deployArtifacts);
     chai.assert.equal(deployArtifacts.getCall(0).args[0]["include-aad-manifest"], "yes");
     sinon.restore();

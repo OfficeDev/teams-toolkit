@@ -3,8 +3,6 @@
 
 /**
  * Identity type to use in authentication.
- *
- * @beta
  */
 export enum IdentityType {
   /**

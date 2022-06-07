@@ -29,7 +29,7 @@ import {
 import * as extensionPackage from "../../package.json";
 import { CONFIGURATION_PREFIX, ConfigurationKey, UserState } from "../constants";
 import * as commonUtils from "../debug/commonUtils";
-import { ext } from "../extensionVariables";
+import * as globalVariables from "../globalVariables";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
 import * as versionUtil from "./versionUtil";
 
@@ -79,7 +79,7 @@ export interface TeamsAppTelemetryInfo {
 // Only used for telemetry when multi-env is enabled
 export function getTeamsAppTelemetryInfoByEnv(env: string): TeamsAppTelemetryInfo | undefined {
   try {
-    const ws = ext.workspaceUri.fsPath;
+    const ws = globalVariables.workspaceUri!.fsPath;
 
     if (isValidProject(ws)) {
       const result = environmentManager.getEnvStateFilesPath(env, ws);
@@ -96,8 +96,11 @@ export function getTeamsAppTelemetryInfoByEnv(env: string): TeamsAppTelemetryInf
 }
 
 export function getProjectId(): string | undefined {
+  if (!globalVariables.workspaceUri) {
+    return undefined;
+  }
   try {
-    const ws = ext.workspaceUri.fsPath;
+    const ws = globalVariables.workspaceUri.fsPath;
     const settingsJsonPathNew = path.join(
       ws,
       `.${ConfigFolderName}`,
@@ -124,7 +127,7 @@ export function getProjectId(): string | undefined {
 }
 
 export function getAppName(): string | undefined {
-  const ws = ext.workspaceUri.fsPath;
+  const ws = globalVariables.workspaceUri!.fsPath;
   const settingsJsonPathNew = path.join(
     ws,
     `.${ConfigFolderName}`,
@@ -174,14 +177,6 @@ export async function isM365Project(workspacePath: string): Promise<boolean> {
   } else {
     return false;
   }
-}
-
-export function isSPFxProject(workspacePath: string): boolean {
-  if (fs.pathExistsSync(`${workspacePath}/SPFx`)) {
-    return true;
-  }
-
-  return false;
 }
 
 export function anonymizeFilePaths(stack?: string): string {
@@ -248,16 +243,6 @@ export function anonymizeFilePaths(stack?: string): string {
   return updatedStack;
 }
 
-export async function isTeamsfx(): Promise<boolean> {
-  if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
-    const workspaceFolder = vscode.workspace.workspaceFolders[0];
-
-    return await commonUtils.isFxProject(workspaceFolder.uri.fsPath);
-  }
-
-  return false;
-}
-
 export function getConfiguration(key: string): boolean {
   const configuration: vscode.WorkspaceConfiguration =
     vscode.workspace.getConfiguration(CONFIGURATION_PREFIX);
@@ -312,10 +297,6 @@ export function getAllFeatureFlags(): string[] | undefined {
     });
 
   return result;
-}
-
-export function getIsExistingUser(): string | undefined {
-  return ext.context.globalState.get<string>(UserState.IsExisting);
 }
 
 export async function getSubscriptionInfoFromEnv(
@@ -402,18 +383,13 @@ export async function getProvisionSucceedFromEnv(env: string): Promise<boolean |
 }
 
 async function getProvisionResultJson(env: string): Promise<Json | undefined> {
-  if (vscode.workspace.workspaceFolders) {
-    const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
-
-    const workspacePath: string = workspaceFolder.uri.fsPath;
-
-    if (!(await commonUtils.isFxProject(workspacePath))) {
+  if (globalVariables.workspaceUri) {
+    if (!globalVariables.isTeamsFxProject) {
       return undefined;
     }
 
     const configRoot = await commonUtils.getProjectRoot(
-      workspaceFolder.uri.fsPath,
-
+      globalVariables.workspaceUri.fsPath,
       `.${ConfigFolderName}`
     );
 

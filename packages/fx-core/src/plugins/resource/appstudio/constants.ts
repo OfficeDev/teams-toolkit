@@ -55,7 +55,6 @@ export const OUTLINE_TEMPLATE = "plugins/resource/appstudio/defaultOutline.png";
 export const DEFAULT_COLOR_PNG_FILENAME = "color.png";
 export const DEFAULT_OUTLINE_PNG_FILENAME = "outline.png";
 export const MANIFEST_RESOURCES = "resources";
-export const APP_PACKAGE_FOLDER_FOR_MULTI_ENV = "templates/appPackage";
 /**
  * Config Keys that are useful for remote collaboration
  */
@@ -567,6 +566,6 @@ export const DEFAULT_DEVELOPER_PRIVACY_URL = "https://www.example.com/privacy";
 export const TEAMS_APP_SHORT_NAME_MAX_LENGTH = 30;
 export const STATIC_TABS_MAX_ITEMS = 16;
 
-export const DEVELOPER_PREVIEW_SCHEMA =
-  "https://raw.githubusercontent.com/OfficeDev/microsoft-teams-app-schema/preview/DevPreview/MicrosoftTeams.schema.json";
-export const M365_DEVELOPER_PREVIEW_MANIFEST_VERSION = "m365DevPreview";
+export const M365_SCHEMA =
+  "https://developer.microsoft.com/en-us/json-schemas/teams/v1.13/MicrosoftTeams.schema.json";
+export const M365_MANIFEST_VERSION = "1.13";

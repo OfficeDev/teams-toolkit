@@ -3,11 +3,11 @@
 
 import {
   AzureSolutionSettings,
-  err,
   Func,
   FxError,
   Inputs,
   Json,
+  PluginContext,
   ProjectSettings,
   QTreeNode,
   Result,
@@ -25,7 +25,7 @@ import {
   EnvInfoV2,
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
-import { TeamsBot } from "..";
+import { TeamsBot } from "../index";
 import {
   ResourcePlugins,
   ResourcePluginsV2,
@@ -33,15 +33,19 @@ import {
 import {
   configureLocalResourceAdapter,
   configureResourceAdapter,
+  convert2PluginContext,
   executeUserTaskAdapter,
   getQuestionsForScaffoldingAdapter,
   getQuestionsForUserTaskAdapter,
   provisionLocalResourceAdapter,
   provisionResourceAdapter,
+  setEnvInfoV1ByStateV2,
 } from "../../utils4v2";
+import { Logger } from "../logger";
 import { PluginBot } from "../resources/strings";
 import { TeamsBotV2Impl } from "./plugin";
-import { ProgressBarFactory } from "../progressBars";
+import { runWithExceptionCatching } from "../errors";
+import { LifecycleFuncNames } from "../constants";
 
 @Service(ResourcePluginsV2.BotPlugin)
 export class BotPluginV2 implements ResourcePlugin {
@@ -64,21 +68,39 @@ export class BotPluginV2 implements ResourcePlugin {
   }
 
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
-    return catchAndThrow(() => this.impl.scaffoldSourceCode(ctx, inputs));
+    Logger.setLogger(ctx.logProvider);
+    return runWithExceptionCatching(
+      getV1Context(ctx, inputs),
+      () => this.impl.scaffoldSourceCode(ctx, inputs),
+      true,
+      LifecycleFuncNames.SCAFFOLD
+    );
   }
 
   async generateResourceTemplate(
     ctx: Context,
     inputs: Inputs
   ): Promise<Result<ResourceTemplate, FxError>> {
-    return catchAndThrow(() => this.impl.generateResourceTemplate(ctx, inputs));
+    Logger.setLogger(ctx.logProvider);
+    return runWithExceptionCatching(
+      getV1Context(ctx, inputs),
+      () => this.impl.generateResourceTemplate(ctx, inputs),
+      true,
+      LifecycleFuncNames.GENERATE_ARM_TEMPLATES
+    );
   }
 
   async updateResourceTemplate(
     ctx: Context,
     inputs: Inputs
   ): Promise<Result<v2.ResourceTemplate, FxError>> {
-    return catchAndThrow(() => this.impl.updateResourceTemplate(ctx, inputs));
+    Logger.setLogger(ctx.logProvider);
+    return runWithExceptionCatching(
+      getV1Context(ctx, inputs),
+      () => this.impl.updateResourceTemplate(ctx, inputs),
+      true,
+      LifecycleFuncNames.GENERATE_ARM_TEMPLATES
+    );
   }
 
   async provisionResource(
@@ -138,7 +160,13 @@ export class BotPluginV2 implements ResourcePlugin {
     envInfo: DeepReadonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
-    return catchAndThrow(() => this.impl.deploy(ctx, inputs, envInfo, tokenProvider));
+    Logger.setLogger(ctx.logProvider);
+    return runWithExceptionCatching(
+      getV1Context(ctx, inputs, envInfo),
+      () => this.impl.deploy(ctx, inputs, envInfo, tokenProvider),
+      true,
+      LifecycleFuncNames.DEPLOY
+    );
   }
 
   async getQuestionsForUserTask(
@@ -178,13 +206,10 @@ export class BotPluginV2 implements ResourcePlugin {
   }
 }
 
-async function catchAndThrow<T>(
-  fn: () => Promise<Result<T, FxError>>
-): Promise<Result<T, FxError>> {
-  try {
-    return await fn();
-  } catch (error: unknown) {
-    await ProgressBarFactory.closeProgressBar(false); // Close all progress bars.
-    return err(error as FxError);
+function getV1Context(ctx: Context, inputs: Inputs, envInfo?: v2.EnvInfoV2): PluginContext {
+  const context = convert2PluginContext(PluginBot.PLUGIN_NAME, ctx, inputs, true);
+  if (envInfo) {
+    setEnvInfoV1ByStateV2(PluginBot.PLUGIN_NAME, context, envInfo);
   }
+  return context;
 }

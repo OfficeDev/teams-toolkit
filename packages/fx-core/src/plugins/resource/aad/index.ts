@@ -28,7 +28,7 @@ import { Links } from "../bot/constants";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 import "./v2";
 import "./v3";
-import { IUserList } from "../appstudio/interfaces/IAppDefinition";
+import { AppUser } from "../appstudio/interfaces/appUser";
 import { isAADEnabled } from "../../../common";
 import { getLocalizedString } from "../../../common/localizeUtils";
 @Service(ResourcePlugins.AadPlugin)
@@ -112,7 +112,7 @@ export class AadAppForTeamsPlugin implements Plugin {
     userInfo: Record<string, any>
   ): Promise<Result<ResourcePermission[], FxError>> {
     return await this.runWithExceptionCatchingAsync(
-      () => this.pluginImpl.checkPermission(ctx, userInfo as IUserList),
+      () => this.pluginImpl.checkPermission(ctx, userInfo as AppUser),
       ctx,
       Messages.EndCheckPermission.telemetry
     );
@@ -123,7 +123,7 @@ export class AadAppForTeamsPlugin implements Plugin {
     userInfo: Record<string, any>
   ): Promise<Result<ResourcePermission[], FxError>> {
     return await this.runWithExceptionCatchingAsync(
-      () => this.pluginImpl.grantPermission(ctx, userInfo as IUserList),
+      () => this.pluginImpl.grantPermission(ctx, userInfo as AppUser),
       ctx,
       Messages.EndCheckPermission.telemetry
     );

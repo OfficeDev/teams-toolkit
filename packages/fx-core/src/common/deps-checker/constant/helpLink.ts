@@ -4,6 +4,8 @@
 export const defaultHelpLink = "https://aka.ms/teamsfx-envchecker-help";
 export const validationSettingsHelpLink = `${defaultHelpLink}#teams-toolkit-validation-settings`;
 
+export const functionDepsVersionsLink = "https://aka.ms/functions-node-versions";
+
 export const nodeNotFoundHelpLink = `${defaultHelpLink}#nodenotfound`;
 export const nodeNotSupportedForAzureHelpLink = `${defaultHelpLink}#nodenotsupported-azure-hosting`;
 export const nodeNotSupportedForFunctionsHelpLink = `${defaultHelpLink}#nodenotsupported-azure-functions`;

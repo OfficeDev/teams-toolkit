@@ -3,6 +3,7 @@
 
 import { PluginContext, SystemError, UserError, v2 } from "@microsoft/teamsfx-api";
 import { Constants } from "./../constants";
+import { deepCopy } from "../../../../common";
 import { PluginNames, REMOTE_TEAMS_APP_TENANT_ID } from "../../../solution/fx-solution/constants";
 
 export enum TelemetryPropertyKey {
@@ -55,11 +56,14 @@ export class TelemetryUtils {
 
   public static sendStartEvent(
     eventName: string,
-    properties?: { [key: string]: string },
+    _properties?: { [key: string]: string },
     measurements?: { [key: string]: number }
   ) {
+    let properties;
     if (!properties) {
       properties = {};
+    } else {
+      properties = deepCopy(_properties!);
     }
     properties[TelemetryPropertyKey.component] = Constants.PLUGIN_NAME;
     const tenantId = (this.ctx as PluginContext).envInfo?.state
@@ -83,11 +87,14 @@ export class TelemetryUtils {
 
   public static sendSuccessEvent(
     eventName: string,
-    properties?: { [key: string]: string },
+    _properties?: { [key: string]: string },
     measurements?: { [key: string]: number }
   ) {
+    let properties;
     if (!properties) {
       properties = {};
+    } else {
+      properties = deepCopy(_properties!);
     }
     properties[TelemetryPropertyKey.component] = Constants.PLUGIN_NAME;
     properties[TelemetryPropertyKey.success] = TelemetryPropertyValue.success;
@@ -109,11 +116,14 @@ export class TelemetryUtils {
   public static sendErrorEvent(
     eventName: string,
     error: SystemError | UserError,
-    properties?: { [key: string]: string },
+    _properties?: { [key: string]: string },
     measurements?: { [key: string]: number }
   ) {
+    let properties;
     if (!properties) {
       properties = {};
+    } else {
+      properties = deepCopy(_properties!);
     }
     properties[TelemetryPropertyKey.component] = Constants.PLUGIN_NAME;
     if (error instanceof SystemError) {

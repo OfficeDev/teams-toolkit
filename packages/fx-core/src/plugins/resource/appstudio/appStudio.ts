@@ -3,13 +3,21 @@
 
 import axios, { AxiosInstance } from "axios";
 import { SystemError, LogProvider } from "@microsoft/teamsfx-api";
-import { IAppDefinition, IUserList } from "./interfaces/IAppDefinition";
+import { AppDefinition } from "./interfaces/appDefinition";
+import { AppUser } from "./interfaces/appUser";
 import { AppStudioError } from "./errors";
 import { IPublishingAppDenition } from "./interfaces/IPublishingAppDefinition";
 import { AppStudioResultFactory } from "./results";
-import { getAppStudioEndpoint } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { Constants, ErrorMessages } from "./constants";
+
+export function getAppStudioEndpoint(): string {
+  if (process.env.APP_STUDIO_ENV && process.env.APP_STUDIO_ENV === "int") {
+    return "https://dev-int.teams.microsoft.com";
+  } else {
+    return "https://dev.teams.microsoft.com";
+  }
+}
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -44,20 +52,20 @@ export namespace AppStudioClient {
    * @param {Buffer}  file - Zip file with manifest.json and two icons
    * @param {string}  appStudioToken
    * @param {LogProvider} logProvider
-   * @returns {Promise<IAppDefinition>}
+   * @returns {Promise<AppDefinition>}
    */
   export async function createApp(
     file: Buffer,
     appStudioToken: string,
     logProvider?: LogProvider
-  ): Promise<IAppDefinition> {
+  ): Promise<AppDefinition> {
     try {
       const requester = createRequesterWithToken(appStudioToken);
       const response = await requester.post(`/api/appdefinitions/v2/import`, file, {
         headers: { "Content-Type": "application/zip" },
       });
       if (response && response.data) {
-        const app = <IAppDefinition>response.data;
+        const app = <AppDefinition>response.data;
         await logProvider?.debug(`recieved data from app studio ${JSON.stringify(app)}`);
         return app;
       } else {
@@ -124,12 +132,12 @@ export namespace AppStudioClient {
     teamsAppId: string,
     appStudioToken: string,
     logProvider?: LogProvider
-  ): Promise<IAppDefinition> {
+  ): Promise<AppDefinition> {
     const requester = createRequesterWithToken(appStudioToken);
     try {
       const response = await requester.get(`/api/appdefinitions/${teamsAppId}`);
       if (response && response.data) {
-        const app = <IAppDefinition>response.data;
+        const app = <AppDefinition>response.data;
         if (app && app.teamsAppId && app.teamsAppId === teamsAppId) {
           return app;
         } else {
@@ -165,12 +173,12 @@ export namespace AppStudioClient {
    */
   export async function updateApp(
     teamsAppId: string,
-    appDefinition: IAppDefinition,
+    appDefinition: AppDefinition,
     appStudioToken: string,
     logProvider?: LogProvider,
     colorIconContent?: string,
     outlineIconContent?: string
-  ): Promise<IAppDefinition> {
+  ): Promise<AppDefinition> {
     // Get userlist from existing app
     const existingAppDefinition = await getApp(teamsAppId, appStudioToken, logProvider);
     const userlist = existingAppDefinition.userList;
@@ -199,7 +207,7 @@ export namespace AppStudioClient {
         appDefinition
       );
       if (response && response.data) {
-        const app = <IAppDefinition>response.data;
+        const app = <AppDefinition>response.data;
         return app;
       } else {
         throw new Error(
@@ -405,7 +413,7 @@ export namespace AppStudioClient {
   export async function getUserList(
     teamsAppId: string,
     appStudioToken: string
-  ): Promise<IUserList[] | undefined> {
+  ): Promise<AppUser[] | undefined> {
     let app;
     try {
       app = await getApp(teamsAppId, appStudioToken);
@@ -428,7 +436,7 @@ export namespace AppStudioClient {
       return Constants.PERMISSIONS.noPermission;
     }
 
-    const findUser = userList?.find((user: IUserList) => user.aadId === userObjectId);
+    const findUser = userList?.find((user: AppUser) => user.aadId === userObjectId);
     if (!findUser) {
       return Constants.PERMISSIONS.noPermission;
     }
@@ -443,7 +451,7 @@ export namespace AppStudioClient {
   export async function grantPermission(
     teamsAppId: string,
     appStudioToken: string,
-    newUser: IUserList
+    newUser: AppUser
   ): Promise<void> {
     let app;
     try {
@@ -456,7 +464,7 @@ export namespace AppStudioClient {
       return;
     }
 
-    const findUser = app.userList?.findIndex((user: IUserList) => user["aadId"] === newUser.aadId);
+    const findUser = app.userList?.findIndex((user: AppUser) => user["aadId"] === newUser.aadId);
     if (findUser && findUser >= 0) {
       return;
     }
@@ -464,13 +472,13 @@ export namespace AppStudioClient {
     app.userList?.push(newUser);
     const requester = createRequesterWithToken(appStudioToken);
     const response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
-    if (!response || !response.data || !checkUser(response.data as IAppDefinition, newUser)) {
+    if (!response || !response.data || !checkUser(response.data as AppDefinition, newUser)) {
       throw new Error(ErrorMessages.GrantPermissionFailed);
     }
   }
 
-  function checkUser(app: IAppDefinition, newUser: IUserList): boolean {
-    const findUser = app.userList?.findIndex((user: IUserList) => user["aadId"] === newUser.aadId);
+  function checkUser(app: AppDefinition, newUser: AppUser): boolean {
+    const findUser = app.userList?.findIndex((user: AppUser) => user["aadId"] === newUser.aadId);
     if (findUser != undefined && findUser >= 0) {
       return true;
     } else {

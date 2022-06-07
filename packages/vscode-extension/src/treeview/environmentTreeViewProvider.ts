@@ -4,10 +4,10 @@
 import { Mutex } from "async-mutex";
 import * as vscode from "vscode";
 
-import { err, FxError, LocalEnvironmentName, ok, Result, Void } from "@microsoft/teamsfx-api";
+import { FxError, LocalEnvironmentName, ok, Result, Void } from "@microsoft/teamsfx-api";
 import { environmentManager, isValidProject } from "@microsoft/teamsfx-core";
 
-import { ext } from "../extensionVariables";
+import * as globalVariables from "../globalVariables";
 import { DynamicNode } from "./dynamicNode";
 import { EnvironmentNode } from "./environmentTreeItem";
 
@@ -18,6 +18,7 @@ export class EnvironmentTreeViewProvider implements vscode.TreeDataProvider<Dyna
   readonly onDidChangeTreeData: vscode.Event<DynamicNode | undefined | void> =
     this._onDidChangeTreeData.event;
 
+  private needRefresh = true;
   private environments: DynamicNode[] = [];
   private mutex = new Mutex();
 
@@ -31,19 +32,14 @@ export class EnvironmentTreeViewProvider implements vscode.TreeDataProvider<Dyna
   }
 
   public async reloadEnvironments(): Promise<Result<Void, FxError>> {
-    if (!ext.workspaceUri || !isValidProject(ext.workspaceUri.fsPath)) {
+    if (!globalVariables.workspaceUri || !isValidProject(globalVariables.workspaceUri.fsPath)) {
       return ok(Void);
     }
-    const workspacePath: string = ext.workspaceUri.fsPath;
     return await this.mutex.runExclusive(async () => {
-      const envNamesResult = await environmentManager.listRemoteEnvConfigs(workspacePath);
-      if (envNamesResult.isErr()) {
-        return err(envNamesResult.error);
+      if (!this.needRefresh) {
+        this.needRefresh = true;
+        this._onDidChangeTreeData.fire();
       }
-
-      const envNames = [LocalEnvironmentName].concat(envNamesResult.value);
-      this.environments = envNames.map((env) => new EnvironmentNode(env));
-      this._onDidChangeTreeData.fire();
       return ok(Void);
     });
   }
@@ -67,9 +63,30 @@ export class EnvironmentTreeViewProvider implements vscode.TreeDataProvider<Dyna
 
   public getChildren(element?: DynamicNode): Thenable<DynamicNode[] | undefined | null> {
     if (!element) {
-      return Promise.resolve(this.environments);
+      return this.getEnvironments();
     }
     return element.getChildren();
+  }
+
+  private async getEnvironments(): Promise<DynamicNode[] | undefined | null> {
+    if (!globalVariables.workspaceUri) {
+      return null;
+    }
+    const workspacePath: string = globalVariables.workspaceUri.fsPath;
+    return await this.mutex.runExclusive(async () => {
+      if (this.needRefresh) {
+        const envNamesResult = await environmentManager.listRemoteEnvConfigs(workspacePath);
+        if (envNamesResult.isErr()) {
+          this.needRefresh = false;
+          return null;
+        }
+
+        const envNames = [LocalEnvironmentName].concat(envNamesResult.value);
+        this.environments = envNames.map((env) => new EnvironmentNode(env));
+        this.needRefresh = false;
+      }
+      return this.environments;
+    });
   }
 }
 

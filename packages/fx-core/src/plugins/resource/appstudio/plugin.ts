@@ -18,7 +18,9 @@ import {
   UserError,
 } from "@microsoft/teamsfx-api";
 import { AppStudioClient } from "./appStudio";
-import { IAppDefinition, IUserList, ILanguage } from "./interfaces/IAppDefinition";
+import { AppDefinition } from "./interfaces/appDefinition";
+import { AppUser } from "./interfaces/appUser";
+import { Language } from "./interfaces/language";
 import {
   AzureSolutionQuestionNames,
   BotOptionItem,
@@ -61,14 +63,13 @@ import {
   DEFAULT_COLOR_PNG_FILENAME,
   DEFAULT_OUTLINE_PNG_FILENAME,
   MANIFEST_RESOURCES,
-  APP_PACKAGE_FOLDER_FOR_MULTI_ENV,
   FRONTEND_INDEX_PATH,
   TEAMS_APP_MANIFEST_TEMPLATE_V3,
   WEB_APPLICATION_INFO_LOCAL_DEBUG,
   WEB_APPLICATION_INFO_MULTI_ENV,
   TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3,
-  DEVELOPER_PREVIEW_SCHEMA,
-  M365_DEVELOPER_PREVIEW_MANIFEST_VERSION,
+  M365_SCHEMA,
+  M365_MANIFEST_VERSION,
   BOTS_TPL_FOR_COMMAND_AND_RESPONSE,
   BOTS_TPL_FOR_NOTIFICATION,
   COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV_M365,
@@ -83,6 +84,7 @@ import {
   isAADEnabled,
   isConfigUnifyEnabled,
   isSPFxProject,
+  isVSProject,
 } from "../../../common";
 import {
   LocalSettingsAuthKeys,
@@ -106,6 +108,7 @@ import { HelpLinks, ResourcePlugins } from "../../../common/constants";
 import { getCapabilities, getManifestTemplatePath, loadManifest } from "./manifestTemplate";
 import { environmentManager } from "../../../core/environment";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
+import { getProjectTemplatesFolderPath } from "../../../common/utils";
 
 export class AppStudioPluginImpl {
   public commonProperties: { [key: string]: string } = {};
@@ -279,7 +282,7 @@ export class AppStudioPluginImpl {
       manifestString = JSON.stringify(manifestResult.value);
     }
 
-    let appDefinition: IAppDefinition;
+    let appDefinition: AppDefinition;
     if (isSPFxProject(ctx.projectSettings)) {
       manifestString = await this.getSPFxManifest(ctx, false);
       const appDefinitionRes = await this.convertToAppDefinition(
@@ -405,7 +408,7 @@ export class AppStudioPluginImpl {
       manifestString = JSON.stringify(manifestResult.value);
     }
 
-    let appDefinition: IAppDefinition;
+    let appDefinition: AppDefinition;
     if (isSPFxProject(ctx.projectSettings)) {
       manifestString = await this.getSPFxManifest(ctx, isLocalDebug);
       manifest = JSON.parse(manifestString);
@@ -566,7 +569,7 @@ export class AppStudioPluginImpl {
     const templatesFolder = getTemplatesFolder();
 
     // cannot use getAppDirectory before creating the manifest file
-    const appDir = `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}`;
+    const appDir = path.join(await getProjectTemplatesFolderPath(ctx.root), "appPackage");
 
     if (isSPFxProject(ctx.projectSettings)) {
       const templateManifestFolder = path.join(templatesFolder, "plugins", "resource", "spfx");
@@ -634,8 +637,8 @@ export class AppStudioPluginImpl {
     const defaultOutlinePath = path.join(templatesFolder, OUTLINE_TEMPLATE);
     const resourcesDir = path.join(appDir, MANIFEST_RESOURCES);
     await fs.ensureDir(resourcesDir);
-    await fs.copy(defaultColorPath, `${resourcesDir}/${DEFAULT_COLOR_PNG_FILENAME}`);
-    await fs.copy(defaultOutlinePath, `${resourcesDir}/${DEFAULT_OUTLINE_PNG_FILENAME}`);
+    await fs.copy(defaultColorPath, path.join(resourcesDir, DEFAULT_COLOR_PNG_FILENAME));
+    await fs.copy(defaultOutlinePath, path.join(resourcesDir, DEFAULT_OUTLINE_PNG_FILENAME));
 
     return undefined;
   }
@@ -814,25 +817,35 @@ export class AppStudioPluginImpl {
       }
     }
 
-    if (appDirectory === `${ctx.root}/.${ConfigFolderName}`) {
+    if (appDirectory === path.join(ctx.root, `.${ConfigFolderName}`)) {
       await fs.ensureDir(path.join(ctx.root, `${AppPackageFolderName}`));
 
       const formerZipFileName = `${appDirectory}/appPackage.zip`;
       if (await fs.pathExists(formerZipFileName)) {
         await fs.remove(formerZipFileName);
       }
-
+      const projectTemplatesFolderPath = await getProjectTemplatesFolderPath(ctx.root);
       await fs.move(
-        `${appDirectory}/${manifest.icons.color}`,
-        `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}/${MANIFEST_RESOURCES}/${manifest.icons.color}`
+        path.join(appDirectory, "manifest.icons.color"),
+        path.join(
+          projectTemplatesFolderPath,
+          "appPackage",
+          MANIFEST_RESOURCES,
+          manifest.icons.color
+        )
       );
       await fs.move(
-        `${appDirectory}/${manifest.icons.outline}`,
-        `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}/${MANIFEST_RESOURCES}/${manifest.icons.outline}`
+        path.join(appDirectory, "manifest.icons.outline"),
+        path.join(
+          projectTemplatesFolderPath,
+          "appPackage",
+          MANIFEST_RESOURCES,
+          manifest.icons.outline
+        )
       );
       await fs.move(
-        `${appDirectory}/${REMOTE_MANIFEST}`,
-        `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}/${MANIFEST_TEMPLATE}`
+        path.join(appDirectory, REMOTE_MANIFEST),
+        path.join(projectTemplatesFolderPath, "appPackage", MANIFEST_TEMPLATE)
       );
     }
 
@@ -925,7 +938,7 @@ export class AppStudioPluginImpl {
 
   public async checkPermission(
     ctx: PluginContext,
-    userInfo: IUserList
+    userInfo: AppUser
   ): Promise<ResourcePermission[]> {
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
 
@@ -990,7 +1003,7 @@ export class AppStudioPluginImpl {
 
   public async grantPermission(
     ctx: PluginContext,
-    userInfo: IUserList
+    userInfo: AppUser
   ): Promise<ResourcePermission[]> {
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
 
@@ -1234,10 +1247,10 @@ export class AppStudioPluginImpl {
     ctx: PluginContext,
     appManifest: TeamsAppManifest,
     ignoreIcon: boolean
-  ): Promise<Result<IAppDefinition, FxError>> {
-    const appDefinition: IAppDefinition = {
+  ): Promise<Result<AppDefinition, FxError>> {
+    const appDefinition: AppDefinition = {
       appName: appManifest.name.short,
-      validDomains: appManifest.validDomains,
+      validDomains: appManifest.validDomains || [],
     };
 
     appDefinition.showLoadingIndicator = appManifest.showLoadingIndicator;
@@ -1262,16 +1275,44 @@ export class AppStudioPluginImpl {
     appDefinition.shortDescription = appManifest.description.short;
     appDefinition.longDescription = appManifest.description.full;
 
-    appDefinition.staticTabs = appManifest.staticTabs;
-    appDefinition.configurableTabs = appManifest.configurableTabs;
-
+    appDefinition.staticTabs = appManifest.staticTabs?.map((x) => {
+      return {
+        objectId: x.objectId,
+        entityId: x.entityId,
+        name: x.name ?? "",
+        contentUrl: x.contentUrl ?? "",
+        websiteUrl: x.websiteUrl ?? "",
+        scopes: x.scopes,
+        context: x.context ?? [],
+      };
+    });
+    appDefinition.configurableTabs = appManifest.configurableTabs?.map((x) => {
+      return {
+        objectId: x.objectId,
+        configurationUrl: x.configurationUrl,
+        canUpdateConfiguration: x.canUpdateConfiguration ?? false,
+        scopes: x.scopes,
+        context: x.context ?? [],
+        sharePointPreviewImage: x.sharePointPreviewImage ?? "",
+        supportedSharePointHosts: x.supportedSharePointHosts ?? [],
+      };
+    });
     appDefinition.bots = convertToAppDefinitionBots(appManifest);
     appDefinition.messagingExtensions = convertToAppDefinitionMessagingExtensions(appManifest);
 
-    appDefinition.connectors = appManifest.connectors;
+    appDefinition.connectors = appManifest.connectors?.map((x) => {
+      return {
+        connectorId: x.connectorId,
+        configurationUrl: x.configurationUrl ?? "",
+        name: "",
+        scopes: x.scopes,
+      };
+    });
+    appDefinition.graphConnector = appManifest.graphConnector;
     appDefinition.devicePermissions = appManifest.devicePermissions;
+
     if (appManifest.localizationInfo) {
-      let languages: ILanguage[] = [];
+      let languages: Language[] = [];
       if (appManifest.localizationInfo.additionalLanguages) {
         try {
           languages = await Promise.all(
@@ -1306,7 +1347,9 @@ export class AppStudioPluginImpl {
       appDefinition.webApplicationInfoResource = appManifest.webApplicationInfo.resource;
     }
 
-    appDefinition.activities = appManifest.activities;
+    appDefinition.activities = {
+      activityTypes: appManifest.activities?.activityTypes ?? [],
+    };
 
     if (!ignoreIcon && appManifest.icons.color) {
       appDefinition.colorIcon = appManifest.icons.color;
@@ -1322,7 +1365,7 @@ export class AppStudioPluginImpl {
   private async createApp(
     ctx: PluginContext,
     isLocalDebug: boolean
-  ): Promise<Result<IAppDefinition, FxError>> {
+  ): Promise<Result<AppDefinition, FxError>> {
     const appDirectory = await getAppDirectory(ctx.root);
     const status = await fs.lstat(appDirectory);
 
@@ -1391,7 +1434,7 @@ export class AppStudioPluginImpl {
 
   private async updateApp(
     ctx: PluginContext,
-    appDefinition: IAppDefinition,
+    appDefinition: AppDefinition,
     appStudioToken: string,
     isLocalDebug: boolean,
     createIfNotExist: boolean,
@@ -1513,7 +1556,7 @@ export class AppStudioPluginImpl {
   private async getAppDefinitionAndManifest(
     ctx: PluginContext,
     isLocalDebug: boolean
-  ): Promise<Result<[IAppDefinition, TeamsAppManifest], FxError>> {
+  ): Promise<Result<[AppDefinition, TeamsAppManifest], FxError>> {
     const {
       tabEndpoint,
       tabDomain,
@@ -1812,8 +1855,8 @@ export async function createLocalManifest(
       manifest.composeExtensions = COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG;
     }
     if (isM365) {
-      manifest.$schema = DEVELOPER_PREVIEW_SCHEMA;
-      manifest.manifestVersion = M365_DEVELOPER_PREVIEW_MANIFEST_VERSION;
+      manifest.$schema = M365_SCHEMA;
+      manifest.manifestVersion = M365_MANIFEST_VERSION;
     }
     return manifest;
   }
@@ -1860,8 +1903,8 @@ export async function createManifest(
         : COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV;
     }
     if (isM365) {
-      manifest.$schema = DEVELOPER_PREVIEW_SCHEMA;
-      manifest.manifestVersion = M365_DEVELOPER_PREVIEW_MANIFEST_VERSION;
+      manifest.$schema = M365_SCHEMA;
+      manifest.manifestVersion = M365_MANIFEST_VERSION;
     }
 
     return manifest;

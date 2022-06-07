@@ -1,0 +1,20 @@
+# Azure Functions localsettings file, ignore local.settings.json if it contains your own credentials
+# local.settings.json
+
+# User-specific files
+*.user
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+
+# Notification local store
+.notification.localstore.json

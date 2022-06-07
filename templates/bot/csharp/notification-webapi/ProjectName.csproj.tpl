@@ -11,17 +11,19 @@
 
   <ItemGroup>
     <None Include=".fx/**/*" />
+    <None Remove="build/**/*" />
+    <Content Remove="build/**/*" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include=".notification.localstore.json" />
+    <None Include=".notification.local*.json" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AdaptiveCards.Templating" Version="1.2.2" />
     <PackageReference Include="Microsoft.Bot.Builder" Version="4.16.0" />
     <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.16.0" />
-    <PackageReference Include="Microsoft.TeamsFx" Version="0.5.0-rc">
+    <PackageReference Include="Microsoft.TeamsFx" Version="0.5.0">
       <!-- Exclude TeamsFx wwwroot static files which are for frontend only. -->
       <ExcludeAssets>contentFiles</ExcludeAssets>
     </PackageReference>

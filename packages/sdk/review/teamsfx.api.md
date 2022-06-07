@@ -37,25 +37,25 @@ import { TurnContext as TurnContext_2 } from 'botbuilder';
 import { WebRequest } from 'botbuilder';
 import { WebResponse } from 'botbuilder';
 
-// @beta
+// @public
 export enum ApiKeyLocation {
     Header = 0,
     QueryParams = 1
 }
 
-// @beta
+// @public
 export class ApiKeyProvider implements AuthProvider {
     constructor(keyName: string, keyValue: string, keyLocation: ApiKeyLocation);
     AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig>;
 }
 
-// @beta
+// @public
 export class AppCredential implements TokenCredential {
     constructor(authConfig: AuthenticationConfiguration);
     getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
 }
 
-// @beta
+// @public
 export interface AuthenticationConfiguration {
     readonly applicationIdUri?: string;
     readonly authorityHost?: string;
@@ -66,32 +66,32 @@ export interface AuthenticationConfiguration {
     readonly tenantId?: string;
 }
 
-// @beta
+// @public
 export interface AuthProvider {
     AddAuthenticationInfo: (config: AxiosRequestConfig) => Promise<AxiosRequestConfig>;
 }
 
 export { AxiosInstance }
 
-// @beta
+// @public
 export class BasicAuthProvider implements AuthProvider {
     constructor(userName: string, password: string);
     AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig>;
 }
 
-// @beta
+// @public
 export class BearerTokenAuthProvider implements AuthProvider {
     constructor(getToken: () => Promise<string>);
     AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig>;
 }
 
-// @beta
+// @public
 export class CertificateAuthProvider implements AuthProvider {
     constructor(certOption: SecureContextOptions);
     AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig>;
 }
 
-// @beta
+// @public
 export class Channel implements NotificationTarget {
     constructor(parent: TeamsBotInstallation, info: ChannelInfo);
     readonly info: ChannelInfo;
@@ -101,7 +101,7 @@ export class Channel implements NotificationTarget {
     readonly type: NotificationTargetType;
 }
 
-// @beta
+// @public
 export class CommandBot {
     constructor(adapter: BotFrameworkAdapter, options?: CommandOptions);
     registerCommand(command: TeamsFxBotCommandHandler): void;
@@ -114,12 +114,12 @@ export interface CommandMessage {
     text: string;
 }
 
-// @beta
+// @public
 export interface CommandOptions {
     commands?: TeamsFxBotCommandHandler[];
 }
 
-// @beta
+// @public
 export class ConversationBot {
     constructor(options: ConversationOptions);
     readonly adapter: BotFrameworkAdapter;
@@ -128,7 +128,7 @@ export class ConversationBot {
     requestHandler(req: WebRequest, res: WebResponse, logic?: (context: TurnContext_2) => Promise<any>): Promise<void>;
 }
 
-// @beta
+// @public
 export interface ConversationOptions {
     adapter?: BotFrameworkAdapter;
     adapterConfig?: {
@@ -142,12 +142,12 @@ export interface ConversationOptions {
     };
 }
 
-// @beta
+// @public
 export function createApiClient(apiEndpoint: string, authProvider: AuthProvider): AxiosInstance;
 
 // Warning: (ae-forgotten-export) The symbol "TeamsFxConfiguration" needs to be exported by the entry point index.d.ts
 //
-// @beta
+// @public
 export function createMicrosoftGraphClient(teamsfx: TeamsFxConfiguration, scopes?: string | string[]): Client;
 
 // @public
@@ -161,7 +161,7 @@ export function createPfxCertOption(pfx: string | Buffer, options?: {
     passphrase?: string;
 }): SecureContextOptions;
 
-// @beta
+// @public
 export enum ErrorCode {
     AuthorizationInfoAlreadyExists = "AuthorizationInfoAlreadyExists",
     ChannelNotSupported = "ChannelNotSupported",
@@ -179,28 +179,28 @@ export enum ErrorCode {
     UiRequiredError = "UiRequiredError"
 }
 
-// @beta
+// @public
 export class ErrorWithCode extends Error {
     constructor(message?: string, code?: ErrorCode);
     code: string | undefined;
 }
 
-// @beta
+// @public
 export function getLogLevel(): LogLevel | undefined;
 
-// @beta
+// @public
 export function getTediousConnectionConfig(teamsfx: TeamsFx, databaseName?: string): Promise<ConnectionConfig>;
 
-// @beta
+// @public
 export enum IdentityType {
     App = "Application",
     User = "User"
 }
 
-// @beta
+// @public
 export type LogFunction = (level: LogLevel, message: string) => void;
 
-// @beta
+// @public
 export interface Logger {
     error(message: string): void;
     info(message: string): void;
@@ -208,7 +208,7 @@ export interface Logger {
     warn(message: string): void;
 }
 
-// @beta
+// @public
 export enum LogLevel {
     Error = 3,
     Info = 1,
@@ -216,7 +216,7 @@ export enum LogLevel {
     Warn = 2
 }
 
-// @beta
+// @public
 export class Member implements NotificationTarget {
     constructor(parent: TeamsBotInstallation, account: TeamsChannelAccount);
     readonly account: TeamsChannelAccount;
@@ -228,50 +228,43 @@ export class Member implements NotificationTarget {
 
 // @public
 export class MessageBuilder {
-    // @beta
     static attachAdaptiveCard<TData extends object>(cardTemplate: unknown, data: TData): Partial<Activity_2>;
-    // @beta
     static attachAdaptiveCardWithoutData(card: unknown): Partial<Activity_2>;
-    // @beta
     static attachContent(attachement: Attachment): Partial<Activity_2>;
-    // @beta
     static attachHeroCard(title: string, images?: (CardImage | string)[], buttons?: (CardAction | string)[], other?: Partial<HeroCard>): Partial<Activity_2>;
-    // @beta
     static attachO365ConnectorCard(card: O365ConnectorCard): Partial<Activity_2>;
-    // @beta
     static AttachReceiptCard(card: ReceiptCard): Partial<Activity_2>;
-    // @beta
     static attachSigninCard(title: string, url: string, text?: string): Partial<Activity_2>;
-    // @beta (undocumented)
+    // (undocumented)
     static attachThumbnailCard(title: string, images?: (CardImage | string)[], buttons?: (CardAction | string)[], other?: Partial<ThumbnailCard>): Partial<Activity_2>;
 }
 
-// @beta
+// @public
 export class MsGraphAuthProvider implements AuthenticationProvider {
     constructor(teamsfx: TeamsFxConfiguration, scopes?: string | string[]);
     getAccessToken(): Promise<string>;
 }
 
-// @beta
+// @public
 export class NotificationBot {
     constructor(adapter: BotFrameworkAdapter, options?: NotificationOptions_2);
     installations(): Promise<TeamsBotInstallation[]>;
 }
 
-// @beta
+// @public
 interface NotificationOptions_2 {
     storage?: NotificationTargetStorage;
 }
 export { NotificationOptions_2 as NotificationOptions }
 
-// @beta
+// @public
 export interface NotificationTarget {
     sendAdaptiveCard(card: unknown): Promise<void>;
     sendMessage(text: string): Promise<void>;
     readonly type?: NotificationTargetType;
 }
 
-// @beta
+// @public
 export interface NotificationTargetStorage {
     delete(key: string): Promise<void>;
     list(): Promise<{
@@ -285,32 +278,32 @@ export interface NotificationTargetStorage {
     }): Promise<void>;
 }
 
-// @beta
+// @public
 export type NotificationTargetType = "Channel" | "Group" | "Person";
 
-// @beta
+// @public
 export class OnBehalfOfUserCredential implements TokenCredential {
     constructor(ssoToken: string, config: AuthenticationConfiguration);
     getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
     getUserInfo(): UserInfo;
 }
 
-// @beta
+// @public
 export function sendAdaptiveCard(target: NotificationTarget, card: unknown): Promise<void>;
 
-// @beta
+// @public
 export function sendMessage(target: NotificationTarget, text: string): Promise<void>;
 
-// @beta
+// @public
 export function setLogFunction(logFunction?: LogFunction): void;
 
-// @beta
+// @public
 export function setLogger(logger?: Logger): void;
 
-// @beta
+// @public
 export function setLogLevel(level: LogLevel): void;
 
-// @beta
+// @public
 export class TeamsBotInstallation implements NotificationTarget {
     constructor(adapter: BotFrameworkAdapter, conversationReference: Partial<ConversationReference>);
     readonly adapter: BotFrameworkAdapter;
@@ -322,27 +315,27 @@ export class TeamsBotInstallation implements NotificationTarget {
     readonly type?: NotificationTargetType;
 }
 
-// @beta
+// @public
 export class TeamsBotSsoPrompt extends Dialog {
     constructor(teamsfx: TeamsFx, dialogId: string, settings: TeamsBotSsoPromptSettings);
     beginDialog(dc: DialogContext): Promise<DialogTurnResult>;
     continueDialog(dc: DialogContext): Promise<DialogTurnResult>;
 }
 
-// @beta
+// @public
 export interface TeamsBotSsoPromptSettings {
     endOnInvalidMessage?: boolean;
     scopes: string[];
     timeout?: number;
 }
 
-// @beta
+// @public
 export interface TeamsBotSsoPromptTokenResponse extends TokenResponse {
     ssoToken: string;
     ssoTokenExpiration: string;
 }
 
-// @beta
+// @public
 export class TeamsFx implements TeamsFxConfiguration {
     constructor(identityType?: IdentityType, customConfig?: Record<string, string>);
     getConfig(key: string): string;
@@ -355,13 +348,13 @@ export class TeamsFx implements TeamsFxConfiguration {
     setSsoToken(ssoToken: string): TeamsFx;
 }
 
-// @beta
+// @public
 export interface TeamsFxBotCommandHandler {
     handleCommandReceived(context: TurnContext, message: CommandMessage): Promise<string | Partial<Activity> | void>;
     triggerPatterns: TriggerPatterns;
 }
 
-// @beta
+// @public
 export class TeamsUserCredential implements TokenCredential {
     constructor(authConfig: AuthenticationConfiguration);
     getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
@@ -372,7 +365,7 @@ export class TeamsUserCredential implements TokenCredential {
 // @public
 export type TriggerPatterns = string | RegExp | (string | RegExp)[];
 
-// @beta
+// @public
 export interface UserInfo {
     displayName: string;
     objectId: string;

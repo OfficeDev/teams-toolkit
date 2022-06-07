@@ -4,9 +4,6 @@
 
 ## ApiKeyLocation enum
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Define available location for API Key location
 
 <b>Signature:</b>
@@ -19,6 +16,6 @@ export declare enum ApiKeyLocation
 
 |  Member | Value | Description |
 |  --- | --- | --- |
-|  Header | <code>0</code> | <b><i>(BETA)</i></b> The API Key is placed in request header |
-|  QueryParams | <code>1</code> | <b><i>(BETA)</i></b> The API Key is placed in query parameter |
+|  Header | <code>0</code> | The API Key is placed in request header |
+|  QueryParams | <code>1</code> | The API Key is placed in query parameter |
 

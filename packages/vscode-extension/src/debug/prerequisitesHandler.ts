@@ -40,7 +40,7 @@ import * as vscode from "vscode";
 import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionSource, ExtensionErrors } from "../error";
 import { VS_CODE_UI } from "../extension";
-import { ext } from "../extensionVariables";
+import * as globalVariables from "../globalVariables";
 import { showError, tools } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
@@ -175,6 +175,7 @@ export async function checkPrerequisitesForGetStarted(): Promise<Result<any, FxE
     // node
     const checkResults: CheckResult[] = [];
     const nodeResult = await checkNode(
+      node,
       [node],
       depsManager,
       `(${currentStep++}/${totalSteps})`,
@@ -196,6 +197,7 @@ export async function checkPrerequisitesForGetStarted(): Promise<Result<any, FxE
 
 export async function checkAndInstall(): Promise<Result<any, FxError>> {
   let progressHelper: ProgressHelper | undefined;
+  const checkResults: CheckResult[] = [];
   try {
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPrerequisitesStart, {
       [TelemetryProperty.DebugProjectComponents]: (await commonUtils.getProjectComponents()) + "",
@@ -208,13 +210,12 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     }
 
     // [node] => [account, certificate, deps] => [backend extension, npm install] => [port]
-    const checkResults: CheckResult[] = [];
     const localEnvManager = new LocalEnvManager(
       VsCodeLogInstance,
       ExtTelemetry.reporter,
       VS_CODE_UI
     );
-    const workspacePath = ext.workspaceUri.fsPath;
+    const workspacePath = globalVariables.workspaceUri!.fsPath;
 
     // Get project settings
     const projectSettings = await localEnvManager.getProjectSettings(workspacePath);
@@ -241,14 +242,18 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     VsCodeLogInstance.outputChannel.appendLine("");
 
     // node
-    const nodeResult = await checkNode(
-      enabledCheckers,
-      depsManager,
-      `(${currentStep++}/${totalSteps})`,
-      progressHelper
-    );
-    if (nodeResult) {
-      checkResults.push(nodeResult);
+    const nodeDep = getNodeDep(enabledCheckers);
+    if (nodeDep) {
+      const nodeResult = await checkNode(
+        nodeDep,
+        enabledCheckers,
+        depsManager,
+        `(${currentStep++}/${totalSteps})`,
+        progressHelper
+      );
+      if (nodeResult) {
+        checkResults.push(nodeResult);
+      }
     }
     await checkFailure(checkResults, progressHelper);
 
@@ -365,8 +370,9 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     const fxError = assembleError(error);
     showError(fxError);
     await progressHelper?.stop(false);
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPrerequisites, fxError);
-
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPrerequisites, fxError, {
+      [TelemetryProperty.DebugCheckResults]: JSON.stringify(checkResults),
+    });
     return err(fxError);
   }
 
@@ -433,16 +439,12 @@ async function checkM365Account(prefix: string, showLoginPage: boolean): Promise
 }
 
 async function checkNode(
+  nodeDep: DepsType,
   enabledCheckers: (Checker | DepsType)[],
   depsManager: DepsManager,
   prefix: string,
   progressHelper?: ProgressHelper
 ): Promise<CheckResult | undefined> {
-  const nodeDep = getNodeDep(enabledCheckers);
-  if (!nodeDep) {
-    return undefined;
-  }
-
   try {
     VsCodeLogInstance.outputChannel.appendLine(`${prefix} ${ProgressMessage[nodeDep]} ...`);
     const nodeStatus = (
@@ -494,7 +496,11 @@ async function checkDependencies(
       for (const dep of depsStatus) {
         results.push({
           checker: dep.name,
-          result: dep.isInstalled ? ResultStatus.success : ResultStatus.failed,
+          result: dep.isInstalled
+            ? dep.error
+              ? ResultStatus.warn
+              : ResultStatus.success
+            : ResultStatus.failed,
           successMsg: dep.details.binFolders
             ? `${dep.name} (installed at ${dep.details.binFolders?.[0]})`
             : dep.name,
@@ -522,7 +528,7 @@ async function resolveBackendExtension(
     VsCodeLogInstance.outputChannel.appendLine(
       `${prefix} ${ProgressMessage[Checker.AzureFunctionsExtension]} ...`
     );
-    const backendRoot = path.join(ext.workspaceUri.fsPath, FolderName.Function);
+    const backendRoot = path.join(globalVariables.workspaceUri!.fsPath, FolderName.Function);
     const dotnet = (await depsManager.getStatus([DepsType.Dotnet]))[0];
     await installExtension(backendRoot, dotnet.command, new EmptyLogger());
     return {
@@ -848,7 +854,7 @@ async function getOrderedCheckers(
 
 async function detectNodeDepsType(): Promise<DepsType> {
   try {
-    const workspacePath = ext.workspaceUri.fsPath;
+    const workspacePath = globalVariables.workspaceUri!.fsPath;
     const localEnvManager = new LocalEnvManager(
       VsCodeLogInstance,
       ExtTelemetry.reporter,

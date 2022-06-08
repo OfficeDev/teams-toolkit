@@ -365,6 +365,8 @@ export interface Component extends Json {
     // (undocumented)
     build?: boolean;
     // (undocumented)
+    code?: string;
+    // (undocumented)
     connections?: string[];
     // (undocumented)
     deployType?: "folder" | "zip";

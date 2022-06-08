@@ -7,6 +7,7 @@ import {
   ContextV3,
   err,
   FxError,
+  GroupAction,
   InputsWithProjectPath,
   MaybePromise,
   ok,
@@ -354,58 +355,57 @@ export class TeamsfxCore {
     return ok(result);
   }
 
-  // build(context: ContextV3, inputs: InputsWithProjectPath): Result<Action | undefined, FxError> {
-  //   const projectSettings = context.projectSetting as ProjectSettingsV3;
-  //   const actions: Action[] = projectSettings.components
-  //     .filter((resource) => resource.build)
-  //     .map((resource) => {
-  //       return {
-  //         name: `call:${resource.name}.build`,
-  //         type: "call",
-  //         targetAction: `${resource.name}.build`,
-  //         required: false,
-  //       };
-  //     });
-  //   const group: Action = {
-  //     type: "group",
-  //     mode: "parallel",
-  //     actions: actions,
-  //   };
-  //   return ok(group);
-  // }
+  build(context: ContextV3, inputs: InputsWithProjectPath): Result<Action | undefined, FxError> {
+    const projectSettings = context.projectSetting as ProjectSettingsV3;
+    const actions: Action[] = projectSettings.components
+      .filter((resource) => resource.build)
+      .map((resource) => {
+        const component = resource.code || resource.name;
+        return {
+          name: `call:${component}.build`,
+          type: "call",
+          targetAction: `${component}.build`,
+          required: false,
+        };
+      });
+    const group: Action = {
+      type: "group",
+      mode: "parallel",
+      actions: actions,
+    };
+    return ok(group);
+  }
 
-  // deploy(
-  //   context: ContextV3,
-  //   inputs: InputsWithProjectPath
-  // ): MaybePromise<Result<Action | undefined, FxError>> {
-  //   const projectSettings = context.projectSetting as ProjectSettingsV3;
-  //   const actions: Action[] = [
-  //     {
-  //       name: "call:fx.build",
-  //       type: "call",
-  //       targetAction: "fx.build",
-  //       required: false,
-  //     },
-  //   ];
-  //   projectSettings.components
-  //     .filter((resource) => resource.build && resource.hosting)
-  //     .forEach((resource) => {
-  //       actions.push({
-  //         type: "call",
-  //         targetAction: `${resource.hosting}.deploy`,
-  //         required: false,
-  //         inputs: {
-  //           [resource.hosting!]: {
-  //             folder: resource.folder,
-  //           },
-  //         },
-  //       });
-  //     });
-  //   const action: GroupAction = {
-  //     type: "group",
-  //     name: "fx.deploy",
-  //     actions: actions,
-  //   };
-  //   return ok(action);
-  // }
+  deploy(
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const projectSettings = context.projectSetting as ProjectSettingsV3;
+    const actions: Action[] = [
+      {
+        name: "call:fx.build",
+        type: "call",
+        targetAction: "fx.build",
+        required: false,
+      },
+    ];
+    projectSettings.components
+      .filter((resource) => resource.build && resource.hosting)
+      .forEach((resource) => {
+        actions.push({
+          type: "call",
+          targetAction: `${resource.hosting}.deploy`,
+          required: false,
+          inputs: {
+            folder: resource.folder,
+          },
+        });
+      });
+    const action: GroupAction = {
+      type: "group",
+      name: "fx.deploy",
+      actions: actions,
+    };
+    return ok(action);
+  }
 }

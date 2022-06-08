@@ -6,9 +6,14 @@ import fs from "fs-extra";
 import Ajv from "ajv-draft-04";
 import { JSONSchemaType } from "ajv";
 import axios, { AxiosResponse } from "axios";
+import { DevPreviewSchema } from "./devPreviewManifest";
 
 export * from "./manifest";
+export * as devPreview from "./devPreviewManifest";
 export type TeamsAppManifestJSONSchema = JSONSchemaType<TeamsAppManifest>;
+export type DevPreviewManifestJSONSchema = JSONSchemaType<DevPreviewSchema>;
+
+export type Manifest = TeamsAppManifest | DevPreviewSchema;
 
 export class ManifestUtil {
   /**
@@ -19,7 +24,7 @@ export class ManifestUtil {
    *
    * @returns The Manifest Object.
    */
-  static async loadFromPath(path: string): Promise<TeamsAppManifest> {
+  static async loadFromPath<T extends Manifest = TeamsAppManifest>(path: string): Promise<T> {
     return fs.readJson(path);
   }
 
@@ -31,7 +36,10 @@ export class ManifestUtil {
    * @throws Will propagate any error thrown by the fs-extra#writeJson.
    *
    */
-  static async writeToPath(path: string, manifest: TeamsAppManifest): Promise<void> {
+  static async writeToPath<T extends Manifest = TeamsAppManifest>(
+    path: string,
+    manifest: T
+  ): Promise<void> {
     return fs.writeJson(path, manifest, { spaces: 4 });
   }
 
@@ -42,9 +50,9 @@ export class ManifestUtil {
    * @param schema - teams-app-manifest schema
    * @returns An empty array if it passes validation, or an array of error string otherwise.
    */
-  static async validateManifestAgainstSchema(
-    manifest: TeamsAppManifest,
-    schema: TeamsAppManifestJSONSchema
+  static async validateManifestAgainstSchema<T extends Manifest = TeamsAppManifest>(
+    manifest: T,
+    schema: JSONSchemaType<T>
   ): Promise<string[]> {
     const ajv = new Ajv({ formats: { uri: true } });
     const validate = ajv.compile(schema);
@@ -65,7 +73,9 @@ export class ManifestUtil {
    *
    * @returns An empty array if schema validation passes, or an array of error string otherwise.
    */
-  static async validateManifest(manifest: TeamsAppManifest): Promise<string[]> {
+  static async validateManifest<T extends Manifest = TeamsAppManifest>(
+    manifest: T
+  ): Promise<string[]> {
     if (!manifest.$schema) {
       throw new Error("Manifest does not have a $schema property");
     }

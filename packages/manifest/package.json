@@ -40,6 +40,7 @@
     "scripts": {
         "prebuild": "npm run generate-manifest",
         "build": "rimraf build && npx tsc -p ./",
+        "postbuild": "eslint \"**/*.ts\" --fix",
         "test": "npm run test:unit",
         "test:unit": "npx nyc mocha --no-timeouts --require ts-node/register test/**/*.test.ts",
         "lint": "eslint \"**/*.ts\"",

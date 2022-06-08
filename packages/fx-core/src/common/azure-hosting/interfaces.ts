@@ -13,9 +13,15 @@ export type BicepContext = {
   plugins: string[];
   configs: BicepConfigs;
   moduleNames: { [key: string]: string };
-  moduleNamesCapitalized: { [key: string]: string };
-  moduleName?: string;
-  moduleNameCapitalized?: string;
+  moduleAlias: string;
+  pluginId: string;
+};
+
+export type HandlebarsContext = {
+  plugins: string[];
+  configs: BicepConfigs;
+  moduleName: string;
+  moduleNameCapitalized: string;
   moduleAlias: string;
   pluginId: string;
 };

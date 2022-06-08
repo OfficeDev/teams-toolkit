@@ -5,7 +5,13 @@ import { ArmTemplateResult } from "../armInterface";
 import { TokenProvider } from "@microsoft/teamsfx-api";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import * as appService from "@azure/arm-appservice";
-import { AzureUploadConfig, BicepContext, Logger, ServiceType } from "./interfaces";
+import {
+  AzureUploadConfig,
+  BicepContext,
+  HandlebarsContext,
+  Logger,
+  ServiceType,
+} from "./interfaces";
 import { Base64 } from "js-base64";
 import { AzureOperations } from "./azureOps";
 import { AzureOperationCommonConstants, AzureOpsConstant } from "./hostingConstant";
@@ -17,15 +23,23 @@ import {
 } from "../tools";
 import { Messages } from "./messages";
 
-export function fulfillBicepContext(
+export function getHandlebarContext(
   bicepContext: BicepContext,
   serviceType: ServiceType
-): BicepContext {
+): HandlebarsContext {
+  const moduleName = bicepContext.moduleNames?.[serviceType] ?? serviceType;
   return {
-    moduleName: bicepContext.moduleNames?.[serviceType] ?? serviceType,
-    moduleNameCapitalized: bicepContext.moduleNamesCapitalized?.[serviceType] ?? serviceType,
-    ...bicepContext,
+    plugins: bicepContext.plugins,
+    configs: bicepContext.configs,
+    moduleName: moduleName,
+    moduleNameCapitalized: capitalizeFirstLetter(moduleName),
+    moduleAlias: bicepContext.moduleAlias,
+    pluginId: bicepContext.pluginId,
   };
+}
+
+export function capitalizeFirstLetter([first, ...rest]: Iterable<string>): string {
+  return [first?.toUpperCase(), ...rest].join("");
 }
 
 export function mergeTemplates(templates: ArmTemplateResult[]): ArmTemplateResult {

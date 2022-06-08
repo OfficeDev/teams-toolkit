@@ -15,7 +15,6 @@ describe("azure hosting", () => {
       plugins: [ResourcePlugins.Aad, ResourcePlugins.Bot],
       configs: ["node"],
       moduleNames: { [ServiceType.Functions]: "botFunction" },
-      moduleNamesCapitalized: { [ServiceType.Functions]: "BotFunction" },
       moduleAlias: "bot",
       pluginId: ResourcePlugins.Bot,
     };

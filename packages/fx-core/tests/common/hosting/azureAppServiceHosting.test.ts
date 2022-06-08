@@ -25,7 +25,6 @@ describe("azure app service hosting", () => {
     ],
     configs: ["node", "running-on-azure"],
     moduleNames: { [ServiceType.Functions]: "botFunction" },
-    moduleNamesCapitalized: { [ServiceType.Functions]: "BotFunction" },
     moduleAlias: "bot",
     pluginId: ResourcePlugins.Bot,
   };

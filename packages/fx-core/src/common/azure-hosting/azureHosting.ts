@@ -10,7 +10,7 @@ import { Bicep } from "../constants";
 import { getTemplatesFolder } from "../../folder";
 import { BicepContext, Logger, ServiceType } from "./interfaces";
 import { Messages } from "./messages";
-import { fulfillBicepContext } from "./utils";
+import { getHandlebarContext } from "./utils";
 
 export abstract class AzureHosting {
   abstract hostType: ServiceType;
@@ -39,7 +39,7 @@ export abstract class AzureHosting {
       bicepFiles.push(`${this.hostType}Configuration.template.bicep`);
     }
 
-    const context = fulfillBicepContext(bicepContext, this.hostType);
+    const context = getHandlebarContext(bicepContext, this.hostType);
 
     const bicepTemplateDir = this.getBicepTemplateFolder();
     const modules = await Promise.all(
@@ -84,7 +84,7 @@ export abstract class AzureHosting {
       return {} as ResourceTemplate;
     }
     const bicepFile = `${this.hostType}Configuration.template.bicep`;
-    const context = fulfillBicepContext(bicepContext, this.hostType);
+    const context = getHandlebarContext(bicepContext, this.hostType);
 
     const bicepTemplateDir = this.getBicepTemplateFolder();
     const module = await generateBicepFromFile(path.join(bicepTemplateDir, bicepFile), context);

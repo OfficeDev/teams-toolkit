@@ -10,7 +10,6 @@ import {
   AppServiceOptionItemForVS,
 } from "../question";
 import { HostTypes } from "../resources/strings";
-import { capitalizeFirstLetter } from "../utils/common";
 import { BicepModules, ProgrammingLanguage, Runtime } from "./enum";
 
 const runtimeMap: Map<ProgrammingLanguage, Runtime> = new Map<ProgrammingLanguage, Runtime>([
@@ -59,11 +58,6 @@ const projectFileMap = new Map<Runtime, (appName: string) => string>([
 export const moduleMap: { [key: string]: string } = {
   [ServiceType.Functions]: BicepModules.Functions,
 };
-
-export const moduleMapCapitalized = Object.keys(moduleMap).reduce(
-  (result, key) => ({ ...result, [key]: capitalizeFirstLetter(moduleMap[key]) }),
-  {}
-);
 
 export function getRuntime(lang: ProgrammingLanguage): Runtime {
   const runtime = runtimeMap.get(lang);

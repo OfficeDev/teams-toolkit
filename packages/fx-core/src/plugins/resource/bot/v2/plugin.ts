@@ -41,13 +41,7 @@ import ignore, { Ignore } from "ignore";
 import { DeployConfigsConstants } from "../../../../common/azure-hosting/hostingConstant";
 import { getTemplateInfos, resolveHostType, resolveServiceType } from "./common";
 import { ProgrammingLanguage } from "./enum";
-import {
-  getLanguage,
-  getProjectFileName,
-  getRuntime,
-  moduleMap,
-  moduleMapCapitalized,
-} from "./mapping";
+import { getLanguage, getProjectFileName, getRuntime, moduleMap } from "./mapping";
 
 export class TeamsBotV2Impl {
   readonly name: string = PluginBot.PLUGIN_NAME;
@@ -131,7 +125,6 @@ export class TeamsBotV2Impl {
       plugins: plugins.map((obj) => obj.name),
       configs: bicepConfigs,
       moduleNames: moduleMap,
-      moduleNamesCapitalized: moduleMapCapitalized,
       moduleAlias: Alias.BICEP_MODULE,
       pluginId: ResourcePlugins.Bot,
     };

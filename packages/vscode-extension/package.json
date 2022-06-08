@@ -41,7 +41,6 @@
   ],
   "activationEvents": [
     "onStartupFinished",
-    "onCommand:fx-extension.cmpAccounts",
     "onCommand:fx-extension.create",
     "onCommand:fx-extension.getNewProjectPath",
     "onCommand:fx-extension.openDeploymentTreeview",
@@ -51,6 +50,7 @@
     "onCommand:fx-extension.openWelcome",
     "onCommand:fx-extension.selectAndDebug",
     "onCommand:fx-extension.selectTutorials",
+    "onCommand:fx-extension.signinM365",
     "onCommand:fx-extension.validate-getStarted-prerequisites",
     "onCommand:workbench.action.tasks.runTask",
     "workspaceContains:**/.fx/*",
@@ -984,7 +984,7 @@
           {
             "id": "teamsToolkitCreateFreeAccount",
             "title": "Create a M365 testing tenant for free",
-            "description": "Create a free M365 testing tenant to install and preview your Teams apps in Teams.\n If you already have an M365 organizational account, [sign in to M365](command:fx-extension.cmpAccounts?%5B%22WalkThrough%22%5D) and validate [sideloading](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) is enabled.\n[Create a M365 testing tenant](https://developer.microsoft.com/en-us/microsoft-365/dev-program)",
+            "description": "Create a free M365 testing tenant to install and preview your Teams apps in Teams.\n If you already have an M365 organizational account, [sign in to M365](command:fx-extension.signinM365?%5B%22WalkThrough%22%5D) and validate [sideloading](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) is enabled.\n[Create a M365 testing tenant](https://developer.microsoft.com/en-us/microsoft-365/dev-program)",
             "media": {
               "markdown": "media/itp/itp.md"
             }

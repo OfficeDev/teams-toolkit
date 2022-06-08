@@ -136,7 +136,7 @@ export async function deactivate() {
 
 /**
  * Commands that always show in command palette. They will activate extension and wait for its completion.
- * They are used in welcome view and walkthrough.
+ * They are usually used in welcome view and walkthrough.
  */
 function registerActivateCommands(context: vscode.ExtensionContext) {
   // non-teamsfx project upgrade
@@ -203,6 +203,11 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
     "fx-extension.selectTutorials",
     handlers.selectTutorialsHandler
   );
+
+  const signinM365 = vscode.commands.registerCommand("fx-extension.signinM365", (...args) =>
+    Correlator.run(handlers.signinM365Callback, args)
+  );
+  context.subscriptions.push(signinM365);
 
   // Prerequisites check
   const validateGetStartedPrerequisitesCmd = vscode.commands.registerCommand(
@@ -605,11 +610,6 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
     Correlator.run(handlers.selectAndDebugHandler, args)
   );
   context.subscriptions.push(runIconCmd);
-
-  const signinM365 = vscode.commands.registerCommand("fx-extension.signinM365", (...args) =>
-    Correlator.run(handlers.signinM365Callback, args)
-  );
-  context.subscriptions.push(signinM365);
 
   const specifySubscription = vscode.commands.registerCommand(
     "fx-extension.specifySubscription",

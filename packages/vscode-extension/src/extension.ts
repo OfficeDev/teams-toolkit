@@ -146,6 +146,12 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(checkUpgradeCmd);
 
+  // user can manage account in non-teamsfx project
+  const cmpAccountsCmd = vscode.commands.registerCommand("fx-extension.cmpAccounts", () =>
+    Correlator.run(handlers.cmpAccountsHandler)
+  );
+  context.subscriptions.push(cmpAccountsCmd);
+
   // Create a new Teams app
   registerInCommandController(
     context,
@@ -197,11 +203,6 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
     "fx-extension.selectTutorials",
     handlers.selectTutorialsHandler
   );
-
-  const signinM365 = vscode.commands.registerCommand("fx-extension.signinM365", (...args) =>
-    Correlator.run(handlers.signinM365Callback, args)
-  );
-  context.subscriptions.push(signinM365);
 
   // Prerequisites check
   const validateGetStartedPrerequisitesCmd = vscode.commands.registerCommand(
@@ -351,11 +352,6 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
       Correlator.run(handlers.createNewEnvironment, [TelemetryTriggerFrom.ViewTitleNavigation])
   );
   context.subscriptions.push(createNewEnvironment);
-
-  const cmpAccountsCmd = vscode.commands.registerCommand("fx-extension.cmpAccounts", () =>
-    Correlator.run(handlers.cmpAccountsHandler)
-  );
-  context.subscriptions.push(cmpAccountsCmd);
 
   const deployAadAppManifest = vscode.commands.registerCommand(
     "fx-extension.deployAadAppManifest",
@@ -609,6 +605,11 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
     Correlator.run(handlers.selectAndDebugHandler, args)
   );
   context.subscriptions.push(runIconCmd);
+
+  const signinM365 = vscode.commands.registerCommand("fx-extension.signinM365", (...args) =>
+    Correlator.run(handlers.signinM365Callback, args)
+  );
+  context.subscriptions.push(signinM365);
 
   const specifySubscription = vscode.commands.registerCommand(
     "fx-extension.specifySubscription",

@@ -157,7 +157,7 @@
       "explorer/context": [
         {
           "command": "fx-extension.deployAadAppManifestFromCtxMenu",
-          "when": "resourceFilename == aad.template.json && && fx-extension.isAadManifestEnabled",
+          "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled",
           "group": "deploy@0"
         },
         {
@@ -313,7 +313,7 @@
         },
         {
           "command": "fx-extension.openPreviewAadFile",
-          "when": "resourceFilename == aad.template.json",
+          "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled",
           "group": "navigation"
         }
       ],

@@ -21,6 +21,7 @@ import { AppStudioClient } from "./appStudio";
 import { AppDefinition } from "./interfaces/appDefinition";
 import { AppUser } from "./interfaces/appUser";
 import { Language } from "./interfaces/language";
+import { AppPermissionNodeItemType } from "./interfaces/appPermissionNodeItemType";
 import {
   AzureSolutionQuestionNames,
   BotOptionItem,
@@ -1367,6 +1368,7 @@ export class AppStudioPluginImpl {
         scopes: x.scopes,
       };
     });
+    appDefinition.subscriptionOffer = appManifest.subscriptionOffer;
     appDefinition.graphConnector = appManifest.graphConnector;
     appDefinition.devicePermissions = appManifest.devicePermissions;
 
@@ -1416,6 +1418,37 @@ export class AppStudioPluginImpl {
 
     if (!ignoreIcon && appManifest.icons.outline) {
       appDefinition.outlineIcon = appManifest.icons.outline;
+    }
+
+    appDefinition.configurableProperties = appManifest.configurableProperties;
+    appDefinition.defaultBlockUntilAdminAction = appManifest.defaultBlockUntilAdminAction;
+    appDefinition.defaultInstallScope = appManifest.defaultInstallScope;
+    appDefinition.defaultGroupCapability = appManifest.defaultGroupCapability;
+    appDefinition.meetingExtensionDefinition = {
+      scenes: appManifest.meetingExtensionDefinition?.scenes ?? [],
+    };
+    appDefinition.publisherDocsUrl = appManifest.publisherDocsUrl;
+
+    if (appManifest.authorization?.permissions?.resourceSpecific) {
+      appDefinition.authorization = {
+        permissions: {
+          resourceSpecific: appManifest.authorization!.permissions!.resourceSpecific!.map((x) => {
+            let type: AppPermissionNodeItemType;
+            switch (x.type) {
+              case "Application":
+                type = AppPermissionNodeItemType.Application;
+                break;
+              case "Delegated":
+                type = AppPermissionNodeItemType.Delegated;
+            }
+            return {
+              name: x.name,
+              type: type,
+            };
+          }),
+          orgWide: [],
+        },
+      };
     }
 
     return ok(appDefinition);

@@ -62,8 +62,8 @@ export const SOLUTION = "solution";
 export const SOLUTION_USERINFO = "userinfo";
 
 export const TEAMS_APP_MANIFEST_TEMPLATE_V3 = `{
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.11",
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.13/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.13",
   "version": "1.0.0",
   "id": "{{state.fx-resource-appstudio.teamsAppId}}",
   "packageName": "com.microsoft.teams.extension",
@@ -98,8 +98,8 @@ export const TEAMS_APP_MANIFEST_TEMPLATE_V3 = `{
 }`;
 
 export const TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV = `{
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.11",
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.13/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.13",
   "version": "1.0.0",
   "id": "{{state.fx-resource-appstudio.teamsAppId}}",
   "packageName": "com.microsoft.teams.extension",
@@ -138,8 +138,8 @@ export const TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV = `{
 }`;
 
 export const TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3 = `{
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.11",
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.13/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.13",
   "version": "1.0.0",
   "id": "{{localSettings.teamsApp.teamsAppId}}",
   "packageName": "com.microsoft.teams.extension",
@@ -174,8 +174,8 @@ export const TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3 = `{
 }`;
 
 export const TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG = `{
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.11",
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.13/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.13",
   "version": "1.0.0",
   "id": "{{localSettings.teamsApp.teamsAppId}}",
   "packageName": "com.microsoft.teams.extension",

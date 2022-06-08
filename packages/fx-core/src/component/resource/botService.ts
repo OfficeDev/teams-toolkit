@@ -42,8 +42,12 @@ import {
   createResourceProviderClient,
   ensureResourceProvider,
 } from "../../plugins/resource/bot/clientFactory";
+import { ComponentNames } from "../constants";
+import { normalizeName } from "../utils";
+import { getComponent } from "../workflow";
+import * as clientFactory from "../../plugins/resource/bot/clientFactory";
 @Service("bot-service")
-export class BotServiceResource implements CloudResource {
+export class BotService implements CloudResource {
   outputs = {
     botId: {
       key: "botId",
@@ -96,159 +100,212 @@ export class BotServiceResource implements CloudResource {
     };
     return ok(action);
   }
-  // provision(
-  //   context: ContextV3,
-  //   inputs: InputsWithProjectPath
-  // ): MaybePromise<Result<Action | undefined, FxError>> {
-  //   const action: Action = {
-  //     name: "bot-service.provision",
-  //     type: "function",
-  //     plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-  //       const ctx = context as ProvisionContextV3;
-  //       const plans: Effect[] = [];
-  //       if (ctx.envInfo.envName === "local") {
-  //         plans.push({
-  //           type: "service",
-  //           name: "graph.microsoft.com",
-  //           remarks: "create AAD app for bot service (botId, botPassword)",
-  //         });
-  //         plans.push({
-  //           type: "service",
-  //           name: "teams.microsoft.com",
-  //           remarks: "create bot registration",
-  //         });
-  //       } else {
-  //         plans.push({
-  //           type: "service",
-  //           name: "management.azure.com",
-  //           remarks: "ensure resource providers for: " + AzureConstants.requiredResourceProviders,
-  //         });
-  //         plans.push({
-  //           type: "service",
-  //           name: "graph.microsoft.com",
-  //           remarks: "create AAD app for bot service (botId, botPassword)",
-  //         });
-  //       }
-  //       return ok(plans);
-  //     },
-  //     execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-  //       // create bot aad app by API call
-  //       const ctx = context as ProvisionContextV3;
-  //       const plans: Effect[] = [];
-  //       if (ctx.envInfo.envName === "local") {
-  //         const aadRes = await createBotAAD(ctx);
-  //         if (aadRes.isErr()) return err(aadRes.error);
-  //         const botConfig = aadRes.value;
-  //         const regRes = await createBotRegInAppStudio(botConfig, ctx);
-  //         if (regRes.isErr()) return err(regRes.error);
-  //         plans.push({
-  //           type: "service",
-  //           name: "graph.microsoft.com",
-  //           remarks: "create AAD app for bot service (botId, botPassword)",
-  //         });
-  //         plans.push({
-  //           type: "service",
-  //           name: "teams.microsoft.com",
-  //           remarks: "create bot registration",
-  //         });
-  //       } else {
-  //         // Check Resource Provider
-  //         const azureCredential = await getAzureAccountCredential(
-  //           ctx.tokenProvider.azureAccountProvider
-  //         );
-  //         const solutionConfig = ctx.envInfo.state.solution as v3.AzureSolutionConfig;
-  //         const rpClient = createResourceProviderClient(
-  //           azureCredential,
-  //           solutionConfig.subscriptionId!
-  //         );
-  //         await ensureResourceProvider(rpClient, AzureConstants.requiredResourceProviders);
-  //         const aadRes = await createBotAAD(ctx);
-  //         if (aadRes.isErr()) return err(aadRes.error);
-  //         plans.push({
-  //           type: "service",
-  //           name: "management.azure.com",
-  //           remarks: "ensure resource providers for: " + AzureConstants.requiredResourceProviders,
-  //         });
-  //         plans.push({
-  //           type: "service",
-  //           name: "graph.microsoft.com",
-  //           remarks: "create AAD app for bot service (botId, botPassword)",
-  //         });
-  //       }
-  //       return ok(plans);
-  //     },
-  //   };
-  //   return ok(action);
-  // }
+  provision(
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const action: Action = {
+      name: "bot-service.provision",
+      type: "function",
+      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
+        const ctx = context as ProvisionContextV3;
+        const plans: Effect[] = [];
+        if (ctx.envInfo.envName === "local") {
+          plans.push({
+            type: "service",
+            name: "graph.microsoft.com",
+            remarks: "create AAD app for bot service (botId, botPassword)",
+          });
+          plans.push({
+            type: "service",
+            name: "teams.microsoft.com",
+            remarks: "create bot registration",
+          });
+        } else {
+          plans.push({
+            type: "service",
+            name: "graph.microsoft.com",
+            remarks: "create AAD app for bot service (botId, botPassword)",
+          });
+          plans.push({
+            type: "service",
+            name: "management.azure.com",
+            remarks: "ensure resource providers for: " + AzureConstants.requiredResourceProviders,
+          });
+        }
+        return ok(plans);
+      },
+      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+        // create bot aad app by API call
+        const ctx = context as ProvisionContextV3;
+        const plans: Effect[] = [];
+        if (ctx.envInfo.envName === "local") {
+          const aadRes = await createBotAAD(ctx);
+          if (aadRes.isErr()) return err(aadRes.error);
+          const botConfig = aadRes.value;
+          const regRes = await createBotRegInAppStudio(botConfig, ctx);
+          if (regRes.isErr()) return err(regRes.error);
+          plans.push({
+            type: "service",
+            name: "graph.microsoft.com",
+            remarks: "create AAD app for bot service (botId, botPassword)",
+          });
+          plans.push({
+            type: "service",
+            name: "teams.microsoft.com",
+            remarks: "create bot registration",
+          });
+        } else {
+          // Check Resource Provider
+          const azureCredential = await getAzureAccountCredential(
+            ctx.tokenProvider.azureAccountProvider
+          );
+          const solutionConfig = ctx.envInfo.state.solution as v3.AzureSolutionConfig;
+          const rpClient = clientFactory.createResourceProviderClient(
+            azureCredential,
+            solutionConfig.subscriptionId!
+          );
+          await clientFactory.ensureResourceProvider(
+            rpClient,
+            AzureConstants.requiredResourceProviders
+          );
+          const aadRes = await createBotAAD(ctx);
+          if (aadRes.isErr()) return err(aadRes.error);
+          plans.push({
+            type: "service",
+            name: "management.azure.com",
+            remarks: "ensure resource providers for: " + AzureConstants.requiredResourceProviders,
+          });
+          plans.push({
+            type: "service",
+            name: "graph.microsoft.com",
+            remarks: "create AAD app for bot service (botId, botPassword)",
+          });
+        }
+        return ok(plans);
+      },
+    };
+    return ok(action);
+  }
+  configure(
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const action: Action = {
+      name: "bot-service.configure",
+      type: "function",
+      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
+        const ctx = context as ProvisionContextV3;
+        const plans: Effect[] = [];
+        if (ctx.envInfo.envName === "local") {
+          plans.push({
+            type: "service",
+            name: "graph.microsoft.com",
+            remarks: "update message endpoint in AppStudio",
+          });
+        }
+        return ok(plans);
+      },
+      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+        // create bot aad app by API call
+        const ctx = context as ProvisionContextV3;
+        const plans: Effect[] = [];
+        if (ctx.envInfo.envName === "local") {
+          plans.push({
+            type: "service",
+            name: "graph.microsoft.com",
+            remarks: "update message endpoint in AppStudio",
+          });
+          const botConfig = ctx.envInfo.state[ComponentNames.BotService];
+          const appStudioTokenRes = await ctx.tokenProvider.m365TokenProvider.getAccessToken({
+            scopes: AppStudioScopes,
+          });
+          const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
+          CheckThrowSomethingMissing(ConfigNames.LOCAL_ENDPOINT, botConfig.siteEndpoint);
+          CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
+          CheckThrowSomethingMissing(ConfigNames.LOCAL_BOT_ID, botConfig.botId);
+          const teamsBot = getComponent(ctx.projectSetting, ComponentNames.TeamsBot);
+          const botReg: IBotRegistration = {
+            botId: botConfig.botId,
+            name: normalizeName(ctx.projectSetting.appName) + PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
+            description: "",
+            iconUrl: "",
+            messagingEndpoint: `${teamsBot!.endpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`,
+            callingEndpoint: "",
+          };
+          await AppStudio.updateMessageEndpoint(appStudioToken!, botReg.botId!, botReg);
+        }
+        return ok(plans);
+      },
+    };
+    return ok(action);
+  }
 }
 
-// export async function createBotAAD(ctx: ProvisionContextV3): Promise<Result<any, FxError>> {
-//   const graphTokenRes = await ctx.tokenProvider.m365TokenProvider.getAccessToken({
-//     scopes: GraphScopes,
-//   });
-//   const graphToken = graphTokenRes.isOk() ? graphTokenRes.value : undefined;
-//   CheckThrowSomethingMissing(ConfigNames.GRAPH_TOKEN, graphToken);
-//   CheckThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, ctx.projectSetting.appName);
-//   let botConfig = ctx.envInfo.state["bot-service"];
-//   if (!botConfig) {
-//     botConfig = {};
-//     ctx.envInfo.state["bot-service"] = botConfig;
-//   }
-//   const botAADCreated = botConfig?.botId !== undefined && botConfig?.botPassword !== undefined;
-//   if (!botAADCreated) {
-//     const solutionConfig = ctx.envInfo.state.solution as v3.AzureSolutionConfig;
-//     const resourceNameSuffix = solutionConfig.resourceNameSuffix
-//       ? solutionConfig.resourceNameSuffix
-//       : uuid.v4();
-//     const aadDisplayName = ResourceNameFactory.createCommonName(
-//       resourceNameSuffix,
-//       ctx.projectSetting.appName,
-//       MaxLengths.AAD_DISPLAY_NAME
-//     );
-//     const botAuthCredentials = await AADRegistration.registerAADAppAndGetSecretByGraph(
-//       graphToken!,
-//       aadDisplayName,
-//       botConfig.objectId,
-//       botConfig.botId
-//     );
-//     botConfig.botId = botAuthCredentials.clientId;
-//     botConfig.botPassword = botAuthCredentials.clientSecret;
-//     botConfig.objectId = botAuthCredentials.objectId;
-//     ctx.logProvider.info(Messages.SuccessfullyCreatedBotAadApp);
-//   }
-//   return ok(botConfig);
-// }
+export async function createBotAAD(ctx: ProvisionContextV3): Promise<Result<any, FxError>> {
+  const graphTokenRes = await ctx.tokenProvider.m365TokenProvider.getAccessToken({
+    scopes: GraphScopes,
+  });
+  const graphToken = graphTokenRes.isOk() ? graphTokenRes.value : undefined;
+  CheckThrowSomethingMissing(ConfigNames.GRAPH_TOKEN, graphToken);
+  CheckThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, ctx.projectSetting.appName);
+  ctx.envInfo.state[ComponentNames.BotService] = ctx.envInfo.state[ComponentNames.BotService] || {};
+  const botConfig = ctx.envInfo.state[ComponentNames.BotService];
+  const botAADCreated = botConfig?.botId !== undefined && botConfig?.botPassword !== undefined;
+  if (!botAADCreated) {
+    const solutionConfig = ctx.envInfo.state.solution as v3.AzureSolutionConfig;
+    const resourceNameSuffix = solutionConfig.resourceNameSuffix
+      ? solutionConfig.resourceNameSuffix
+      : uuid.v4();
+    const aadDisplayName = ResourceNameFactory.createCommonName(
+      resourceNameSuffix,
+      ctx.projectSetting.appName,
+      MaxLengths.AAD_DISPLAY_NAME
+    );
+    const botAuthCredentials = await AADRegistration.registerAADAppAndGetSecretByGraph(
+      graphToken!,
+      aadDisplayName,
+      botConfig.objectId,
+      botConfig.botId
+    );
+    botConfig.botId = botAuthCredentials.clientId;
+    botConfig.botPassword = botAuthCredentials.clientSecret;
+    botConfig.objectId = botAuthCredentials.objectId;
+    ctx.logProvider.info(Messages.SuccessfullyCreatedBotAadApp);
+  }
+  return ok(botConfig);
+}
 
-// export async function createBotRegInAppStudio(
-//   botConfig: any,
-//   ctx: ProvisionContextV3
-// ): Promise<Result<undefined, FxError>> {
-//   // 2. Register bot by app studio.
-//   const botReg: IBotRegistration = {
-//     botId: botConfig.botId,
-//     name: ctx.projectSetting.appName + PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
-//     description: "",
-//     iconUrl: "",
-//     messagingEndpoint: "",
-//     callingEndpoint: "",
-//   };
-//   ctx.logProvider.info(Messages.ProvisioningBotRegistration);
-//   const appStudioTokenRes = await ctx.tokenProvider.m365TokenProvider.getAccessToken({
-//     scopes: AppStudioScopes,
-//   });
-//   const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
-//   CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
-//   await AppStudio.createBotRegistration(appStudioToken!, botReg);
-//   ctx.logProvider.info(Messages.SuccessfullyProvisionedBotRegistration);
-//   return ok(undefined);
-// }
+export async function createBotRegInAppStudio(
+  botConfig: any,
+  ctx: ProvisionContextV3
+): Promise<Result<undefined, FxError>> {
+  // 2. Register bot by app studio.
+  const botReg: IBotRegistration = {
+    botId: botConfig.botId,
+    name: normalizeName(ctx.projectSetting.appName) + PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
+    description: "",
+    iconUrl: "",
+    messagingEndpoint: "",
+    callingEndpoint: "",
+  };
+  ctx.logProvider.info(Messages.ProvisioningBotRegistration);
+  const appStudioTokenRes = await ctx.tokenProvider.m365TokenProvider.getAccessToken({
+    scopes: AppStudioScopes,
+  });
+  const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
+  CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
+  await AppStudio.createBotRegistration(appStudioToken!, botReg);
+  ctx.logProvider.info(Messages.SuccessfullyProvisionedBotRegistration);
+  return ok(undefined);
+}
 
-// export async function getAzureAccountCredential(
-//   tokenProvider: AzureAccountProvider
-// ): Promise<TokenCredentialsBase> {
-//   const serviceClientCredentials = await tokenProvider.getAccountCredentialAsync();
-//   if (!serviceClientCredentials) {
-//     throw new PreconditionError(Messages.FailToGetAzureCreds, [Messages.TryLoginAzure]);
-//   }
-//   return serviceClientCredentials;
-// }
+export async function getAzureAccountCredential(
+  tokenProvider: AzureAccountProvider
+): Promise<TokenCredentialsBase> {
+  const serviceClientCredentials = await tokenProvider.getAccountCredentialAsync();
+  if (!serviceClientCredentials) {
+    throw new PreconditionError(Messages.FailToGetAzureCreds, [Messages.TryLoginAzure]);
+  }
+  return serviceClientCredentials;
+}

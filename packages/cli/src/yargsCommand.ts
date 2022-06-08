@@ -116,7 +116,7 @@ export abstract class YargsCommand {
           getSystemInputs(args.folder as string)
         );
         if (configResult.isOk()) {
-          reporter.setIsFromSample(configResult.value?.settings?.isFromSample);
+          CliTelemetry.setIsFromSample(configResult.value?.settings?.isFromSample);
         }
       }
     }

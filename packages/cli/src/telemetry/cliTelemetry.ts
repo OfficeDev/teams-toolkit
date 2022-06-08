@@ -34,6 +34,7 @@ export class CliTelemetry {
   private static instance: CliTelemetry;
   private static reporter: CliTelemetryReporter;
   private static rootFolder: string | undefined;
+  private static isFromSample: boolean | undefined = undefined;
 
   public static setReporter(reporter: CliTelemetryReporter): void {
     CliTelemetry.reporter = reporter;
@@ -41,6 +42,10 @@ export class CliTelemetry {
 
   public static getReporter(): CliTelemetryReporter {
     return CliTelemetry.reporter;
+  }
+
+  public static setIsFromSample(isFromSample?: boolean) {
+    CliTelemetry.isFromSample = isFromSample;
   }
 
   public static getInstance(): CliTelemetry {
@@ -67,6 +72,10 @@ export class CliTelemetry {
 
     if (TelemetryProperty.Component in properties === false) {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
+    }
+
+    if (CliTelemetry.isFromSample !== undefined) {
+      properties[TelemetryProperty.IsFromSample] = CliTelemetry.isFromSample.toString();
     }
 
     const settingsVersion = getSettingsVersion(CliTelemetry.rootFolder);
@@ -97,6 +106,10 @@ export class CliTelemetry {
 
     if (TelemetryProperty.Component in properties === false) {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
+    }
+
+    if (CliTelemetry.isFromSample !== undefined) {
+      properties[TelemetryProperty.IsFromSample] = CliTelemetry.isFromSample.toString();
     }
 
     const settingsVersion = getSettingsVersion(CliTelemetry.rootFolder);
@@ -135,6 +148,10 @@ export class CliTelemetry {
 
     if (TelemetryProperty.Component in properties === false) {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
+    }
+
+    if (CliTelemetry.isFromSample !== undefined) {
+      properties[TelemetryProperty.IsFromSample] = CliTelemetry.isFromSample.toString();
     }
 
     const settingsVersion = getSettingsVersion(CliTelemetry.rootFolder);

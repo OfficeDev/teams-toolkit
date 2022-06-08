@@ -147,8 +147,8 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(checkUpgradeCmd);
 
   // user can manage account in non-teamsfx project
-  const cmpAccountsCmd = vscode.commands.registerCommand("fx-extension.cmpAccounts", () =>
-    Correlator.run(handlers.cmpAccountsHandler)
+  const cmpAccountsCmd = vscode.commands.registerCommand("fx-extension.cmpAccounts", (...args) =>
+    Correlator.run(handlers.cmpAccountsHandler, args)
   );
   context.subscriptions.push(cmpAccountsCmd);
 

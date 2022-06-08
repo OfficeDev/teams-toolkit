@@ -58,16 +58,16 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
           value: 'node' // Set runtime to NodeJS
         }
         {
+          name: 'WEBSITE_NODE_DEFAULT_VERSION'
+          value: '~16' // Set NodeJS version to 16.x
+        }
+        {
           name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
           value: 'DefaultEndpointsProtocol=https;AccountName=${storage.name};AccountKey=${listKeys(storage.id, storage.apiVersion).keys[0].value};EndpointSuffix=${environment().suffixes.storage}' // Azure Functions internal setting
         }
         {
           name: 'WEBSITE_RUN_FROM_PACKAGE'
           value: '1' // Run Azure Functions from a package file
-        }
-        {
-          name: 'WEBSITE_NODE_DEFAULT_VERSION'
-          value: '~16' // Set NodeJS version to 16.x
         }
       ]
       ftpsState: 'FtpsOnly'

@@ -35,8 +35,6 @@ import {
   persistBicepPlans,
   serviceEffectPlanString,
 } from "./utils";
-import fs from "fs-extra";
-import { getProjectSettingsPath } from "../core/middleware";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 
 export async function getAction(
@@ -353,6 +351,7 @@ export async function executeAction(
   inputs: InputsWithProjectPath,
   effects: Effect[]
 ): Promise<Result<undefined, FxError>> {
+  console.log(`executeAction: ${action.name}`);
   if (action.type === "function") {
     return await executeFunctionAction(action, context, inputs, effects);
   } else if (action.type === "shell") {
@@ -448,7 +447,7 @@ export async function executeFunctionAction(
         if (bicep) {
           const bicepPlans = persistBicepPlans(inputs.projectPath, bicep);
           bicepPlans.forEach((p) => effects.push(p));
-          await persistBicep(inputs.projectPath, bicep);
+          await persistBicep(inputs.projectPath, context.projectSetting.appName, bicep);
         }
       } else {
         effects.push(effect);

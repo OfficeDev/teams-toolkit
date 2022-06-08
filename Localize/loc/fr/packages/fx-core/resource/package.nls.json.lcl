@@ -10,6 +10,33 @@
     <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
     <Item ItemId=";Strings" ItemType="0" PsrId="306" Leaf="false">
       <Disp Icon="Str" Disp="true" LocTbl="false" />
+      <Item ItemId=";core.ApiConnectionOption.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Connect to an API with authentication support using TeamsFx SDK]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Connecter à une API avec prise en charge de l’authentification à l’aide du Kit de développement logiciel (SDK) TeamsFx]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.ApiConnectionOption.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[API Connection]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Connexion d'API]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.AppStudioJsonUndefined" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[App Studio json is undefined]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[App Studio json n’est pas défini.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.AzureResourceApim.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Azure Function App will be also selected to be published as an API]]></Val>
@@ -28,11 +55,47 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.AzureResourceApimNewUI.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[A hybrid, multicloud management platform for APIs across all environments]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Plateforme de gestion hybride et multi-cloud pour les API dans tous les environnements]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.AzureResourceApimNewUI.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Azure API Management]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Gestion des API Azure]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.AzureResourceFunction.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Azure Function App]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Application de fonction Azure]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.AzureResourceFunctionNewUI.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[A serverless, event-driven compute solution that allows you to write less code]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Solution de calcul serverless pilotée par les événements qui vous permet d’écrire moins de code]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.AzureResourceFunctionNewUI.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Azure Functions]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure Functions]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -47,6 +110,24 @@
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.AzureResourceKeyVault.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Azure Key Vault]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure Key Vault]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.AzureResourceKeyVaultNewUI.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[A cloud service for securely storing and accessing secrets]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Service cloud pour le stockage et l’accès sécurisés aux secrets]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.AzureResourceKeyVaultNewUI.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Azure Key Vault]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -73,6 +154,42 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.AzureResourceSQLNewUI.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[An always-up-to-date relational database service built for the cloud]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Service de base de données relationnelle toujours à jour conçu pour le cloud]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.AzureResourceSQLNewUI.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Azure SQL Database]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure SQL Database]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.BotNewUIOption.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Hello world chatbot to run simple and repetitive tasks by user]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Chatbot Hello World pour exécuter des tâches simples et répétitives par utilisateur]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.BotNewUIOption.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Bot]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Bot]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.BotOption.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Conversational Agent]]></Val>
@@ -87,6 +204,87 @@
           <Val><![CDATA[Running simple and repetitive automated tasks through conversations]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Exécution de tâches automatisées simples et répétitives via des conversations]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.BotSso.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Single Sign On for Bot]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Signature unique pour le bot]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.BotSso.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Enable Single Sign On in your Teams Bot app]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Activer l’authentification unique dans votre bot d’application Teams]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.CommandAndResponseOption.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Respond to simple commands in Microsoft Teams chat]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Répondre aux commandes simples dans la conversation Microsoft Teams]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.CommandAndResponseOption.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Command bot]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Bot de commandes]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.ExistingTabEndpointQuestion.placeholder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Input your existing tab endpoint]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Entrer votre point de terminaison d’onglet existant]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.ExistingTabEndpointQuestion.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Enter your web app's local endpoint]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Entrer le point de terminaison local de votre application web]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.ExistingTabEndpointQuestion.validation" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Please enter a valid URL started with https://]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Entrez une URL valide commençant par https://.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.ExistingTabOption.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Bring your own static webpages and embed in Microsoft Teams]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Apportez vos propres pages web statiques et incorporez-les dans Microsoft Teams.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.ExistingTabOption.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Embed existing web app]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Incorporer des applications web existantes]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -109,6 +307,51 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.InvalidOption" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[invalid options: [%s]5D;]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Options non valides : [%s]5D;]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.M365SearchAppOptionItem.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Insert search result when user composes messages in Microsoft Teams or emails in Outlook]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Insérer un résultat de recherche lorsque l’utilisateur compose des messages dans Microsoft Teams ou des e-mails dans Outlook]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.M365SearchAppOptionItem.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Search-based message extension]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Extension de message basée sur la recherche]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.M365SsoLaunchPageOptionItem.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Identity aware webpages embedded in Microsoft Teams, Outlook and Office.com]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Pages web prenant en charge l’identité incorporées dans Microsoft Teams, Outlook et Office.com]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.M365SsoLaunchPageOptionItem.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[SSO enabled personal tab]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Onglet personnel activé pour SSO]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.MessageExtensionOption.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Custom UI when users compose messages in Teams]]></Val>
@@ -120,9 +363,39 @@
       </Item>
       <Item ItemId=";core.MessageExtensionOption.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Inserting app content or acting on a message without leaving the conversation]]></Val>
+          <Val><![CDATA[Hello world message extension allowing interactions via buttons and forms]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Insérer du contenu d’application ou agir sur un message sans quitter la conversation]]></Val>
+            <Val><![CDATA[Extension de message Hello World autorisant les interactions via les boutons et les formulaires]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Inserting app content or acting on a message without leaving the conversation]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.MessageExtensionOption.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Message Extension]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Message Extension]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.MessageExtensionOption.labelNew" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Message extension]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Message Extension]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.NoPluginSelected" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No plugin selected]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Aucun plug-in sélectionné]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -136,20 +409,41 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";core.NotificationOption.description" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";core.Notification.ReadMore" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Notification]]></Val>
+          <Val><![CDATA[Read more]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Notification]]></Val>
+            <Val><![CDATA[En savoir plus]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.NotificationOption.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Sending a message in response to stimulus not originating from the user]]></Val>
+          <Val><![CDATA[Send notification to Microsoft Teams via various triggers]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Envoi d’un message en réponse à un stimulus ne provenant pas de l’utilisateur]]></Val>
+            <Val><![CDATA[Envoyer une notification à Microsoft Teams via divers déclencheurs]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Sending a message in response to stimulus not originating from the user]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.NotificationOption.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Notification bot]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Bot de notification]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.Option.recommend" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Recommended]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Recommandé]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -177,6 +471,15 @@
           <Val><![CDATA[Programming Language]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Langage de programmation]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.QuestionAppName.validation.maxlength" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Application name is longer than the maximum length of 30.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le nom de l’application dépasse la longueur maximale de 30.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -262,6 +565,33 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.RuntimeOptionDotNet.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Free. Cross-platform. Open Source.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Gratuit. Multiplateforme. Source ouverte.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.RuntimeOptionNodeJS.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[A fast JavaScript server runtime]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Un runtime de serveur JavaScript rapide]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.SampleSelect.buttons.viewSamples" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[View samples]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Afficher des exemples]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.SampleSelect.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Select a sample]]></Val>
@@ -318,10 +648,13 @@
       </Item>
       <Item ItemId=";core.ScratchOptionYes.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Use the Teams Toolkit to create a new application.]]></Val>
+          <Val><![CDATA[Use the Teams Toolkit to create a new Teams application.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Utiliser la boîte à outils Teams pour créer une nouvelle application.]]></Val>
+            <Val><![CDATA[Utiliser la boîte à outils Teams pour créer une nouvelle application Teams]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Use the Teams Toolkit to create a new application.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -336,10 +669,13 @@
       </Item>
       <Item ItemId=";core.ScratchOptionYesVSC.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Use the Teams Toolkit to create a new application.]]></Val>
+          <Val><![CDATA[Use the Teams Toolkit to create a new Teams application.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Utiliser la boîte à outils Teams pour créer une nouvelle application.]]></Val>
+            <Val><![CDATA[Utiliser la boîte à outils Teams pour créer une nouvelle application Teams]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Use the Teams Toolkit to create a new application.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -352,20 +688,38 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";core.Sso.description" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";core.SingleSignOnOption.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Single Sign On]]></Val>
+          <Val><![CDATA[Develop a Single Sign-On feature for Teams Launch pages and Bot capability]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Développer une fonctionnalité d’authentification unique pour les pages de lancement Teams et la fonctionnalité de bot]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.SingleSignOnOption.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Single Sign-On]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Authentification unique]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";core.Sso.detail" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";core.TabNonSso.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Enable Single Sign On in your Teams app]]></Val>
+          <Val><![CDATA[Hello world webpages embedded in Microsoft Teams]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Activer l’authentification unique dans votre application Teams]]></Val>
+            <Val><![CDATA[Pages web Hello World intégrées dans Microsoft Teams]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.TabNonSso.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Tab]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Onglet]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -388,57 +742,174 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.TabOption.detailNew" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams identity aware webpages embedded in Microsoft Teams]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Pages web sensibles à l'identité Teams intégrées dans Microsoft Teams]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.TabOption.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Tab]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Onglet]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.TabOption.labelNew" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[SSO-enabled tab]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Onglet SSO activé]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.TabSPFxOption.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[UI-base app with SPFx framework]]></Val>
+          <Val><![CDATA[Client-side app with SharePoint Framework]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Application basée sur l’interface utilisateur avec cadre SPFx]]></Val>
+            <Val><![CDATA[Application côté client avec SharePoint Framework]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[UI-base app with SPFx framework]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.TabSPFxOption.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams-aware webpages with SPFx framework embedded in Microsoft Teams]]></Val>
+          <Val><![CDATA[Auto-hosted SPFx web part tightly integrated with Microsoft Teams]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Pages Web compatibles avec les équipes avec cadre SPFx intégré dans Microsoft Teams]]></Val>
+            <Val><![CDATA[Composant WebPart SPFx hébergé automatiquement étroitement intégré à Microsoft Teams]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Teams-aware webpages with SPFx framework embedded in Microsoft Teams]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.TabSPFxOption.detailNew" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams-aware webpages with SharePoint Framework embedded in Microsoft Teams]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Pages Web compatibles avec les équipes avec SharePoint Framework intégré dans Microsoft Teams]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.TabSPFxOption.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Tab (SPFx)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Onglet (SPFx)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.TabSPFxOption.labelNew" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[SPFx tab]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[onglet SPFx]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.TabSso.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Single Sign On for Tab]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Signature unique pour l'onglet]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.TabSso.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Enable Single Sign On in your Teams Tab app]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Activer l’authentification unique dans votre onglet d’application Teams]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.aad.includeAadQuestionTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Whether to deploy aad manifest]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Indique s’il faut déployer le manifeste aad.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.aadManifestMigration.SuccessMessage" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Congratulations! AAD manifest has been added, and please start to use this file to customize your AAD App registration. We have added aad.template.json, updated your projectSettings.json and backed up projectSettings.json to .backup folder. For more information about AAD manifest, please refer %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Félicitations! Le manifeste AAD a été ajouté. Veuillez commencer à utiliser ce fichier pour personnaliser l’inscription de votre application AAD. Nous avons ajouté aad.template.json, mis à jour votre projectSettings.json et sauvegardé projectSettings.json dans le dossier .backup. Pour plus d’informations sur le manifeste AAD, consultez %s.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.aadManifestMigration.outputMsg" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Congratulations! AAD manifest has been added, and please start to use this file to customize your AAD App registration. We have added aad.template.json, updated your projectSettings.json file and backed up projectSettings.json to .backup folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Félicitations! Le manifeste AAD a été ajouté. Veuillez commencer à utiliser ce fichier pour personnaliser l’inscription de votre application AAD. Nous avons ajouté le fichier aad.template.json, mis à jour votre projectSettings.json et sauvegardé projectSettings.json dans le dossier .backup.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.addCapability.addCapabilitiesNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[[Teams Toolkit]5D; Capabilities %s have been successfully added to your project. F5 to local debug the application or trigger 'Teams: Provision in the cloud' to create resources in your Azure subscription for hosting.]]></Val>
+          <Val><![CDATA[Capabilities %s have been successfully added to your project. F5 to local debug the application or trigger 'Teams: Provision in the cloud' to create resources in your Azure subscription for hosting.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[[Teams Toolkit]5D; Les capacités %s ont été ajoutées avec succès à votre projet. F5 pour déboguer l’application en local ou déclencher "Teams : Provisionner dans le cloud" pour créer des ressources dans votre souscription Azure pour l’hébergement.]]></Val>
+            <Val><![CDATA[Les capacités %s ont été ajoutées avec succès à votre projet. F5 pour déboguer l’application en local ou déclencher "Teams : approvisionner dans le cloud" pour créer des ressources dans votre souscription Azure pour l’hébergement.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[[Teams Toolkit]5D; Capabilities %s have been successfully added to your project. F5 to local debug the application or trigger 'Teams: Provision in the cloud' to create resources in your Azure subscription for hosting.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.addCapability.addCapabilitiesNoticeForCli" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[[Teams Toolkit]5D; Capabilities %s have been successfully added to your project. Run 'teamsfx provision' to create resources in your Azure subscription for hosting.]]></Val>
+          <Val><![CDATA[Capabilities %s have been successfully added to your project. Run 'teamsfx provision' to create resources in your Azure subscription for hosting.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[[Teams Toolkit]5D; fonctionnalités %s ont été ajoutées à votre projet. Exécutez « teamsfx provision » pour créer des ressources dans votre souscription Azure pour l’hébergement.]]></Val>
+            <Val><![CDATA[Les fonctionnalités %s ont été ajoutées à votre projet. Exécutez « teamsfx provision » pour créer des ressources dans votre souscription Azure pour l’hébergement.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[[Teams Toolkit]5D; Capabilities %s have been successfully added to your project. Run 'teamsfx provision' to create resources in your Azure subscription for hosting.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.addCapability.addCapabilityNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[[Teams Toolkit]5D; Capability %s has been successfully added to your project. F5 to local debug the application or trigger 'Teams: Provision in the cloud' to create resources in your Azure subscription for hosting.]]></Val>
+          <Val><![CDATA[Capability %s has been successfully added to your project. F5 to local debug the application or trigger 'Teams: Provision in the cloud' to create resources in your Azure subscription for hosting.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[[Teams Toolkit]5D; La capacité %s a été ajoutée avec succès à votre projet. F5 pour déboguer l’application en local ou déclencher "Teams : Provisionner dans le cloud" pour créer des ressources dans votre souscription Azure pour l’hébergement.]]></Val>
+            <Val><![CDATA[La capacité %s a été ajoutée avec succès à votre projet. F5 pour déboguer l’application en local ou déclencher "Teams : approvisionner dans le cloud" pour créer des ressources dans votre abonnement Azure pour l’hébergement.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[[Teams Toolkit]5D; Capability %s has been successfully added to your project. F5 to local debug the application or trigger 'Teams: Provision in the cloud' to create resources in your Azure subscription for hosting.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.addCapability.addCapabilityNoticeForCli" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[[Teams Toolkit]5D; Capability %s has been successfully added to your project. Run 'teamsfx provision' to create resources in your Azure subscription for hosting.]]></Val>
+          <Val><![CDATA[Capability %s has been successfully added to your project. Run 'teamsfx provision' to create resources in your Azure subscription for hosting.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[[Teams Toolkit]5D; La capacité %s a été ajoutée avec succès à votre projet. Exécutez « teamsfx provision » pour créer des ressources dans votre souscription Azure pour l’hébergement.]]></Val>
+            <Val><![CDATA[La capacité %s a été ajoutée avec succès à votre projet. Exécutez « teamsfx provision » pour créer des ressources dans votre abonnement Azure pour l’hébergement.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[[Teams Toolkit]5D; Capability %s has been successfully added to your project. Run 'teamsfx provision' to create resources in your Azure subscription for hosting.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -447,6 +918,15 @@
           <Val><![CDATA[Your App reaches maximal limit for Tabs, Bot and Message Extension.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Votre application atteint la limite maximale pour les onglets, les bots et les extensions de message.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.addCapability.notSupportedForM365Project" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Add capability is not supported for Microsoft 365 project]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[La fonctionnalité d’ajout n’est pas prise en charge pour Microsoft 365 projet.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -460,39 +940,87 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.addCapabilityQuestion.notificationCommandAndResponseConflict" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Notification and Command and Response capabilities are in conflict]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Les fonctionnalités de notification et de commande et de réponse sont en conflit.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.addCapabilityQuestion.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Choose Capabilities]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Choisir des fonctionnalités]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.addCapabilityQuestion.titleNew" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Capabilities]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Fonctionnalités]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.addFeatureQuestion.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Add features]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ajouter des fonctionnalités]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.addResource.addResourceNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[[Teams Toolkit]5D; Resource "%s" has been successfully configured for your project, trigger 'Teams: Provision in the cloud' will create the resource in your Azure subscription.]]></Val>
+          <Val><![CDATA[Resource "%s" has been successfully configured for your project, trigger 'Teams: Provision in the cloud' will create the resource in your Azure subscription.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[[Teams Toolkit]5D; La ressource "%s" a été configurée avec succès pour votre projet, le déclencheur "Teams : Provisionner dans le cloud" créera la ressource dans votre souscription Azure.]]></Val>
+            <Val><![CDATA[La ressource "%s" a été configurée avec succès pour votre projet, le déclencheur "Teams : approvisionner dans le cloud" créera la ressource dans votre souscription Azure.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[[Teams Toolkit]5D; Resource "%s" has been successfully configured for your project, trigger 'Teams: Provision in the cloud' will create the resource in your Azure subscription.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.addResource.addResourceNoticeForCli" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[[Teams Toolkit]5D; Resource "%s" has been successfully configured for your project, run 'teamsfx provision' will create the resource in your Azure subscription.]]></Val>
+          <Val><![CDATA[Resource "%s" has been successfully configured for your project, run 'teamsfx provision' will create the resource in your Azure subscription.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[[Teams Toolkit]5D; La ressource "%s" a été configurée avec succès pour votre projet, exécutez "teamsfx provision" pour créer la ressource dans votre souscription Azure.]]></Val>
+            <Val><![CDATA[La ressource "%s" a été configurée avec succès pour votre projet, exécutez "teamsfx provision" pour créer la ressource dans votre abonnement Azure.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[[Teams Toolkit]5D; Resource "%s" has been successfully configured for your project, run 'teamsfx provision' will create the resource in your Azure subscription.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.addResource.addResourcesNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[[Teams Toolkit]5D; Resources "%s" have been successfully configured for your project, trigger 'Teams: Provision in the cloud' will create the resources in your Azure subscription.]]></Val>
+          <Val><![CDATA[Resources "%s" have been successfully configured for your project, trigger 'Teams: Provision in the cloud' will create the resources in your Azure subscription.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[[Teams Toolkit]5D; Les ressources "%s" ont été configurées avec succès pour votre projet, le déclencheur "Teams : Provisionner dans le cloud" créera les ressources dans votre souscription Azure.]]></Val>
+            <Val><![CDATA[Les ressources "%s" ont été configurées avec succès pour votre projet, le déclencheur "Teams : Provisionner dans le cloud" créera les ressources dans votre abonnement Azure.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[[Teams Toolkit]5D; Resources "%s" have been successfully configured for your project, trigger 'Teams: Provision in the cloud' will create the resources in your Azure subscription.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.addResource.addResourcesNoticeForCli" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[[Teams Toolkit]5D; Resources "%s" have been successfully configured for your project, run 'teamsfx provision' will create the resources in your Azure subscription.]]></Val>
+          <Val><![CDATA[Resources "%s" have been successfully configured for your project, run 'teamsfx provision' will create the resources in your Azure subscription.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[[Teams Toolkit]5D; Les ressources "%s" ont été configurées avec succès pour votre projet, exécutez "teamsfx provision" pour créer les ressources dans votre souscription Azure.]]></Val>
+            <Val><![CDATA[Les ressources "%s" ont été configurées avec succès pour votre projet, exécutez "teamsfx provision" pour créer les ressources dans votre abonnement Azure.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[[Teams Toolkit]5D; Resources "%s" have been successfully configured for your project, run 'teamsfx provision' will create the resources in your Azure subscription.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -510,6 +1038,168 @@
           <Val><![CDATA[Add resource is only supported for project hosted in Azure]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Ajouter une ressource n’est pris en charge que pour les projets hébergés dans Azure]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.addSso.functionNotSupport" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Add SSO is not supported for Bot hosted on Azure Function]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[L’ajout de SSO n’est pas pris en charge pour le bot hébergé sur Azure Function.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.addSso.invalidSsoProject" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Invalid project. You may have modified '.fx/projectSettings.json' file.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Projet non valide. Vous avez peut-être modifié le fichier '.fx/projectSettings.json'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.addSso.learnMore" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[SSO is successfully added in your project. We have generated sample code and README in 'auth/'. Click on '%s' for more detail.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[L’authentification unique (SSO) a été ajoutée dans votre projet. Nous avons généré des exemples de code et README dans 'auth/'. Cliquez sur '%s' pour plus de détails.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.addSso.needCapability" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Add SSO is only supported for project with Tab, Bot and/or Message Extension. You need to run 'add component' first]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[L’ajout de SSO est uniquement pris en charge pour le projet avec l’extension Tab, Bot et/ou Message. Vous devez d’abord exécuter « ajouter un composant ».]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.addSso.needEnableFeatureFlag" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Need to set 'TEAMSFX_AAD_MANIFEST' in env to use add SSO feature]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Vous devez définir 'TEAMSFX_AAD_MANIFEST' dans env pour utiliser la fonctionnalité d’ajout de SSO.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.addSso.onlyMeNotSupport" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Add SSO is not supported on Message Extension only projects]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[L’ajout de SSO n’est pas pris en charge sur les projets d’extension de message uniquement.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.addSso.onlySupportAzure" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Add SSO is only supported for project hosted in Azure]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ajouter une SSO n’est pris en charge que pour les projets hébergés dans Azure.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.addSso.ssoEnabled" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[SSO is already enabled]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SSO est déjà activé.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.addSsoFiles.FailedToCreateAuthFiles" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to create files for add sso. Detail error: %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de la création de fichiers pour l’ajout de sso. Erreur détaillée : %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.addSsoFiles.canNotAddNonSsoTabWhenSsoEnabled" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to add non SSO Tab. SSO is enabled in this project]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de l’ajout de l’onglet non SSO. L’authentification unique est activée dans ce projet.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.addSsoFiles.canNotAddTabWhenSsoNotEnabled" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to add Tab. You need to run 'add SSO' first]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de l’ajout de l’onglet. Vous devez d’abord exécuter « ajouter l’authentification unique ».]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.addSsoFiles.emptyProjectPath" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Project path is empty]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Project chemin d’accès est vide.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.addSsoFiles.invalidLanguage" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Invalid language. Please make sure '.fx/projectSettings.json' is not modified and try again.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Langue non valide. Vérifiez que '.fx/projectSettings.json' n’est pas modifié, puis réessayez.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.addSsoFiles.projectPathNotExists" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Project path does not exist]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le chemin du projet n'existe pas.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.capability.validation" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Invalid capability combinations: %s, option sets: %s are mutually exclusive]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Combinaisons de fonctionnalités non valides : %s, groupes d’options : %s s’excluent mutuellement]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.capability.validation.spfx" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Add SPFx Tab is only permitted for minimal app]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ajouter un onglet SPFx est autorisé uniquement pour une application minimale]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.cicdWorkflowOption.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Add CI/CD Workflows for GitHub, Azure DevOps or Jenkins]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ajouter des flux de travail CI/CD pour GitHub, Azure DevOps ou Jenkins]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.cicdWorkflowOption.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[CI/CD workflows]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Flux de travail CI/CD]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -642,10 +1332,13 @@
       </Item>
       <Item ItemId=";core.collaboration.ListCollaboratorsSuccess" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[List M365 Teams App%s owners success, you can view it in Teams Toolkit output window]]></Val>
+          <Val><![CDATA[List M365 Teams App%s owners success, you can view it in [output channel]5D;(%s).]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Répertorier le succès des propriétaires de l’application M365 Teams, vous pouvez l’afficher dans la fenêtre de sortie de Teams Toolkit]]></Val>
+            <Val><![CDATA[Répertorier le succès des propriétaires de l’application M365 Teams, vous pouvez l’afficher dans [output channel]5D;(%s)]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[List M365 Teams App%s owners success, you can view it in Teams Toolkit output window]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -777,18 +1470,186 @@
       </Item>
       <Item ItemId=";core.collaboration.WithAadApp" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[(With AAD App)]]></Val>
+          <Val><![CDATA[(with AAD App)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[(Avec l’application AAD)]]></Val>
+            <Val><![CDATA[(avec l’application AAD)]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[(With AAD App)]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.common.OfficeDesktopClientName" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Office desktop client id]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[ID client Office desktop]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.common.OfficeWebClientName1" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Office.com client id 1]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[ID client Office.com 1]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.common.OfficeWebClientName2" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Office.com client id 2]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[ID client Office.com 2]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.common.OutlookDesktopClientName" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Outlook desktop client id]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[ID du client de bureau Outlook]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.common.OutlookWebClientName1" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Outlook web access client id 1]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Outlook l’ID client d’accès Web 1]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.common.OutlookWebClientName2" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Outlook web access client id 2]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Outlook l’ID client d’accès Web 2]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.common.TeamsMobileDesktopClientName" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams desktop, mobile client id]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Bureau Teams, ID client mobile]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.common.TeamsWebClientName" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams web client id]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[ID du client web Teams]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.consolidateLocalRemote.DifferentManifest" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Since Teams Toolkit will use manifest.remote.template.json as a single manifest template file after the upgrade, if you have customized the manifest.local.template.json, you will need to update the manifest.template.json to include your change.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Dans la mesure où le kit de ressources Teams utilise manifest.remote.template.json comme fichier de modèle de manifeste unique après la mise à niveau, si vous avez personnalisé manifest.local.template.json, vous devez mettre à jour manifest.template.json pour inclure votre modification.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.consolidateLocalRemote.Message" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Your project will be upgraded to work with the latest version of Teams Toolkit. The upgrade will only add config.local.json, manifest.template.json files and backup manifest.remote.template.json, manifest.local.template.json files without changing your custom code. If you want to skip auto-upgrade, please install older version of Teams Toolkit (<=3.7.0)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Votre projet sera mis à niveau pour fonctionner avec la dernière version du kit de ressources de Teams. La mise à niveau ajoutera uniquement les fichiers config.local.json, manifest.template.json et sauvegardera les fichiers manifest.remote.template.json, manifest.local.template.json sans modifier votre code personnalisé. Si vous voulez éviter la mise à niveau automatique, veuillez installer une version plus ancienne du kit de ressources de Teams (<=3.7.0).]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.consolidateLocalRemote.SuccessMessage" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Congratulations! You have successfully upgraded your Teams App project structure. We have added config.local.json for local debug and manifest.template.json for both Teams app running locally and remotely. And we have backed up localSettings.json, manifest.local.template.json and manifest.remote.template.json to .backup folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Félicitations! Vous avez mis à jour avec succès la structure de votre projet Teams App. Nous avons ajouté config.local.json pour le débogage local et manifest.template.json pour les deux applications Teams fonctionnant localement et à distance. Et nous avons sauvegardé localSettings.json, manifest.local.template.json et manifest.remote.template.json dans le dossier .backup.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.consolidateLocalRemoteWithAadManifest.Message" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Your project will be upgraded to work with the latest version of Teams Toolkit. The upgrade will only add config.local.json, manifest.template.json, aad.template.json files, update projectSettings.json file and backup manifest.remote.template.json, manifest.local.template.json, projectSettings.json files without changing your custom code. If you want to skip auto-upgrade, please install older version of Teams Toolkit (<=3.7.0)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Votre projet va être mis à niveau pour fonctionner avec la dernière version du kit de ressources de Teams. La mise à niveau ajoute uniquement les fichiers config.local.json, manifest.template.json, aad.template.json, met à jour le fichier projectSettings.json et sauvegarde les fichiers manifest.remote.template.json, manifest.local.template.json, projectSettings.json sans modifier votre code personnalisé. Si vous voulez ignorer la mise à niveau automatique, installez une ancienne version du kit de ressources de Teams (<=3.7.0)]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.consolidateLocalRemoteWithAadManifest.SuccessMessage" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Congratulations! You have successfully upgraded your Teams App project structure. We have added config.local.json for local debug, manifest.template.json for both Teams app running locally and remotely and aad.template.json for AAD manifest template. And we have backed up localSettings.json, manifest.local.template.json, manifest.remote.template.json, projectSettings.json to .backup folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Félicitations! Vous avez mis à niveau votre structure de projet d’application Teams. Nous avons ajouté config.local.json pour le débogage local, manifest.template.json pour Teams application s’exécutant localement et à distance, et aad.template.json pour le modèle de manifeste AAD. Nous avons sauvegardé localSettings.json, manifest.local.template.json, manifest.remote.template.json, projectSettings.json dans le dossier .backup.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.create.successNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[[Teams Toolkit]5D; Scaffold successfully.]]></Val>
+          <Val><![CDATA[Scaffold successfully.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[[Teams Toolkit]5D; Échafaudage réussi.]]></Val>
+            <Val><![CDATA[Génération de la structure réussie]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[[Teams Toolkit]5D; Scaffold successfully.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.createCapabilityQuestion.botCommandAndResponseConflict" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Bot and Command and Response capabilities are in conflict]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Les fonctionnalités de bot et de commande et de réponse sont en conflit.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.createCapabilityQuestion.botNotificationConflict" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Bot and Notification capabilities are in conflict]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Les fonctionnalités Bot et Notification sont en conflit.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.createCapabilityQuestion.meCommandAndResponseConflict" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Message Extension and Command and Response capabilities are in conflict]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Les fonctionnalités de Message Extension et de commande et de réponse sont en conflit.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.createCapabilityQuestion.meNotificationConflict" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Message Extension and Notification capabilities are in conflict]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Message Extension et la capacité de notification sont en conflit.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.createCapabilityQuestion.notificationCommandAndResponseConflict" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Notification and Command and Response capabilities are in conflict]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Les fonctionnalités de notification et de commande et de réponse sont en conflit.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -802,6 +1663,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.createCapabilityQuestion.single.placeholder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select an option]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Sélectionner une option]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.createCapabilityQuestion.single.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Capability]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Capacité]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.createCapabilityQuestion.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Select capabilities]]></Val>
@@ -811,30 +1690,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.createCapabilityQuestion.titleNew" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Capabilities]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Fonctionnalités]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.createCapabilityQuestion.validation1" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams Toolkit offers only the Tab capability in a Teams app with Visual Studio Code and SharePoint Framework. The Bot and Messaging extension capabilities are not available]]></Val>
+          <Val><![CDATA[Teams Toolkit offers only the Tab capability in a Teams app with Visual Studio Code and SharePoint Framework. The Bot and Message extension capabilities are not available]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams Toolkit offre uniquement la fonctionnalité Tab dans une application Teams avec Visual Studio Code et SharePoint Framework. Les fonctionnalités d’extension Bot et Xamarin Messaging ne sont pas disponibles]]></Val>
+            <Val><![CDATA[Teams Toolkit offre uniquement la fonctionnalité Tab dans une application Teams avec Visual Studio Code et SharePoint Framework. Les fonctionnalités d’extension Bot et Xamarin Messaging ne sont pas disponibles.]]></Val>
           </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";core.createCapabilityQuestion.validation2" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Bot and Notification capability are in conflict]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Les fonctionnalités Bot et Notification sont en conflit]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";core.createCapabilityQuestion.validation3" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Messaging extension and Notification capability are in conflict]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[L’extension Xamarin messaging et la capacité de notification sont en conflit]]></Val>
-          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Teams Toolkit offers only the Tab capability in a Teams app with Visual Studio Code and SharePoint Framework. The Bot and Messaging extension capabilities are not available]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -843,6 +1716,51 @@
           <Val><![CDATA[Failed to deploy because the resources have not been provisioned yet. Make sure you do the provision first. Click Get Help to learn more about why you need to provision.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Échec du déploiement, car les ressources n’ont pas encore été provisionnées. Assurez-vous de faire la provision en premier. Cliquez sur Obtenir de l’aide pour en savoir plus sur les raisons pour lesquelles vous devez provisionner.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.deploy.aadManifestLearnMore" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Learn more]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[En savoir plus]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.deploy.aadManifestSuccessNotice" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Your Azure Active Directory application has been successfully deployed. Click "Learn more" to check how to view your Azure Active Directory application.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Votre application Azure Active Directory a été déployée. Cliquez sur « En savoir plus » pour voir comment afficher votre application Azure Active Directory.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.deploy.botTroubleShoot" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[To troubleshoot bot application in azure, please click learn more for documentation.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Pour résoudre les problèmes liés à l’application bot dans Azure, cliquez sur En savoir plus pour obtenir de la documentation.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.deploy.botTroubleShoot.learnMore" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Learn more]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[En savoir plus]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.deploy.confirmEnvNotice" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Do you want to deploy resources in %s environment?]A;Azure account (%s) with subscription (%s) will be used for deployment.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Voulez-vous déployer des ressources dans %s environnement?]A;Le compte Azure (%s) avec un abonnement (%s) sera utilisé pour le déploiement.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -939,19 +1857,25 @@
       </Item>
       <Item ItemId=";core.deployArmTemplates.FailedToExpandParameter" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[[Teams Toolkit]5D; Failed to get expanded parameter from %s]]></Val>
+          <Val><![CDATA[Failed to get expanded parameter from %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[[Teams Toolkit]5D; Impossible d’obtenir le paramètre étendu de %s]]></Val>
+            <Val><![CDATA[Impossible d’obtenir le paramètre étendu de %s]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[[Teams Toolkit]5D; Failed to get expanded parameter from %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.deployArmTemplates.FailedToGetDeploymentError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[[Teams Toolkit]5D; Failed to get deployment error for %s]]></Val>
+          <Val><![CDATA[Failed to get deployment error for %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[[Teams Toolkit]5D; Impossible d’obtenir l’erreur de déploiement pour %s]]></Val>
+            <Val><![CDATA[Impossible d’obtenir l’erreur de déploiement pour %s]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[[Teams Toolkit]5D; Failed to get deployment error for %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1002,10 +1926,13 @@
       </Item>
       <Item ItemId=";core.deployArmTemplates.ParameterNotExist" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[[Teams Toolkit]5D; %s does not exist.]]></Val>
+          <Val><![CDATA[%s does not exist.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[[Teams Toolkit]5D; %s n’existe pas.]]></Val>
+            <Val><![CDATA[%s n'existe pas.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[[Teams Toolkit]5D; %s does not exist.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1065,10 +1992,13 @@
       </Item>
       <Item ItemId=";core.deployArmTemplates.RetryGetDeploymentStatus" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[[Teams Toolkit]5D; %s -> waiting to get deployment status [Retry time: %s]5D;]]></Val>
+          <Val><![CDATA[%s -> waiting to get deployment status [Retry time: %s]5D;]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[[Teams Toolkit]5D; %s -> en attente d’obtenir l’état du déploiement [Heure de la nouvelle tentative : %s]5D;]]></Val>
+            <Val><![CDATA[%s -> en attente d’obtenir l’état du déploiement [Heure de la nouvelle tentative : %s]5D;]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[[Teams Toolkit]5D; %s -> waiting to get deployment status [Retry time: %s]5D;]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1198,6 +2128,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.getRuntimeQuestion.placeholder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select a runtime]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Sélectionner une exécution]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.getRuntimeQuestion.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams Toolkit: select runtime for your app]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Kit de ressources Teams : sélectionnez un runtime pour votre application.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.getUserEmailQuestion.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Add owner to Teams/AAD app for the account under the same M365 tenant (email)]]></Val>
@@ -1288,6 +2236,78 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.option.tutorial" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Open tutorial]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ouvrir le didacticiel]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.options.separator.additional" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Additional features]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Fonctionnalités supplémentaires]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.options.separator.basic" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Basic Teams apps]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Applications Teams de base]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.options.separator.m365" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Extended Teams apps across Microsoft 365]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Applications Teams étendues dans Microsoft 365]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.options.separator.resource" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cloud resources]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ressources cloud]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.options.separator.scenario" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Scenario-based Teams apps]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Applications Teams basées sur des scénarios]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.projectVersionChecker.cliUseNewVersion" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[[core]5D; Your TeamsFx CLI is too old to support current project, please update to latest version using command below:]A;npm install -g @microsoft/teamsfx-cli@latest]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[[core]5D; votre interface CLI TeamsFx est trop ancienne pour prendre en charge le projet actuel. Effectuez une mise à jour vers la dernière version à l’aide de la commande ci-dessous :]A;npm installer -g @microsoft/teamsfx-cli@latest]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.projectVersionChecker.vscodeUseNewVersion" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Your Teams Toolkit extension is too old to support current project, please update the extension to latest version and try to open this project again]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Votre extension de kit de ressources Teams est trop ancienne pour prendre en charge le projet actuel. Mettez à jour l’extension vers la dernière version, puis réessayez d’ouvrir ce projet.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.provision.ProvisionFinishNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[[%s]5D; Provision finished!]]></Val>
@@ -1317,19 +2337,25 @@
       </Item>
       <Item ItemId=";core.provision.confirmEnvNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Do you want to provision resources in %s environment?]A;%s (Azure account) with %s (subscription) will be used to provision. the resources. Cost may incur according to the usage.]]></Val>
+          <Val><![CDATA[Do you want to provision resources in %s environment?]A;Azure account (%s) with subscription (%s) will be used to provision the resources. Cost may incur according to the usage.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Voulez-vous provisionner des ressources dans l’environnement %s ? ]A;%s (compte Azure) avec %s (souscription) sera utilisé pour provisionner. les ressources. Des frais peuvent survenir en fonction de l’utilisation.]]></Val>
+            <Val><![CDATA[Voulez-vous approvisionner des ressources dans l'environnement %s?]A; Le compte Azure (%s) avec l'abonnement (%s) sera utilisé pour fournir les ressources. Des frais peuvent être engagés en fonction de l'utilisation.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Do you want to provision resources in %s environment?]A;%s (Azure account) with %s (subscription) will be used to provision. the resources. Cost may incur according to the usage.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.provision.confirmNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[The Teams Toolkit will provision resources and register corresponding resource providers under %s (Azure account) with %s (subscription). Costs may incur according to the pricing calculator.]]></Val>
+          <Val><![CDATA[The Teams Toolkit will provision resources and register corresponding resource providers under Azure account (%s) with subscription (%s). Costs may incur according to the pricing calculator.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[La boîte à outils Teams fournira des ressources et enregistrera les fournisseurs de ressources correspondants sous %s (compte Azure) avec %s (souscription). Des frais peuvent survenir selon le calculateur de prix.]]></Val>
+            <Val><![CDATA[Le kit de ressources Teams va fournir des ressources et enregistrer les fournisseurs de ressources correspondants sous le compte Azure (%s) avec l'abonnement (%s). Des coûts peuvent être encourus selon le calculateur de prix.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[The Teams Toolkit will provision resources and register corresponding resource providers under %s (Azure account) with %s (subscription). Costs may incur according to the pricing calculator.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1407,19 +2433,25 @@
       </Item>
       <Item ItemId=";core.updateArmTemplate.successNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[The Azure resource template is updated based on your resource and capability selection. We recommend to initialize your project workspace with git init to track all changes.]]></Val>
+          <Val><![CDATA[The Azure resource template is updated based on your resource and capability selection.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Le modèle de ressource Azure est mis à jour en fonction de votre sélection de ressources et de capacités. Nous vous recommandons d’initialiser l’espace de travail de votre projet avec git init pour suivre toutes les modifications.]]></Val>
+            <Val><![CDATA[Le modèle de ressources Azure est mis à jour en fonction de votre sélection de ressources et de capacités.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[The Azure resource template is updated based on your resource and capability selection. We recommend to initialize your project workspace with git init to track all changes.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";depChecker.NodeNotFound" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Cannot find Node.js.]A;]A;Teams Toolkit requires Node.js; the recommended version is v14.]A;]A;Click "Learn more" to learn how to install the Node.js.]A;]A;(If you just installed Node.js, restart Visual Studio Code for the change to take effect.)]]></Val>
+          <Val><![CDATA[Cannot find Node.js.]A;]A;Teams Toolkit requires Node.js; the recommended version is @NodeVersion.]A;]A;Click "Learn more" to learn how to install the Node.js.]A;]A;(If you just installed Node.js, restart Visual Studio Code for the change to take effect.)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Impossible de trouver Node.js.]A;]A;La boîte à outils Teams nécessite Node.js ; la version recommandée est v14.]A;]A;Cliquez sur "En savoir plus" pour savoir comment installer Node.js.]A;]A;(Si vous venez d’installer Node.js, redémarrez Visual Studio Code pour que la modification prenne effet.)]]></Val>
+            <Val><![CDATA[Impossible de trouver Node.js.]A;]A;La boîte à outils Teams nécessite Node.js; la version recommandée est @NodeVersion.]A;]A;Cliquez sur "En savoir plus" pour savoir comment installer Node.js.]A;]A;(Si vous venez d’installer Node.js, redémarrez Visual Studio Code pour que la modification prenne effet.)]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Cannot find Node.js.]A;]A;Teams Toolkit requires Node.js; the recommended version is v14.]A;]A;Click "Learn more" to learn how to install the Node.js.]A;]A;(If you just installed Node.js, restart Visual Studio Code for the change to take effect.)]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1549,6 +2581,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";depChecker.funcNodeNotMatched" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Your own Node.js(@NodeVersion) is incompatible with your own Azure Functions Core Tools(@FuncVersion).]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Votre propre Node.js (@NodeVersion) n’est pas compatible avec votre propre Azure Functions Core Tools (@FuncVersion).]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";depChecker.learnMoreButtonText" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Learn more]]></Val>
@@ -1630,11 +2671,29 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.ActionNotExist" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Action not exist: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[L’action n’existe pas : %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.BicepGenerationError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to generate bicep file %s. Reason: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Impossible de générer le fichier biceps %s. Les raisons]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.ConsolidateCanceledError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[If you don't want to upgrade your project, please install another version of Teams Toolkit (version <= 3.7.0).]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Si vous ne voulez pas mettre à niveau votre projet, installez une autre version du kit de ressources de Teams (version <= 3.7.0).]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1707,6 +2766,15 @@
           <Val><![CDATA[Failed to route function call: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Échec du routage de l’appel de fonction : %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.InitializedFileExistError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Initialized file(s) %s already exist, please clean up and try again.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le ou les fichiers initialisés %s existent déjà, nettoyez et réessayez.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1794,9 +2862,21 @@
       </Item>
       <Item ItemId=";error.LocalBotEndpointNotConfigured" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Local bot endpoint is not configured. Set "fx-resource-local-debug.localBotEndpoint" in ".fx/default.user.data" and try again.]]></Val>
+          <Val><![CDATA[Local bot endpoint is not configured. Set "bot.siteEndpoint" in ".fx/configs/config.local.json" and try again.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Le point de terminaison du bot local n’est pas configuré. Définissez "fx-resource-local-debug.localBotEndpoint" dans ".fx/default.user.data" et réessayez.]]></Val>
+            <Val><![CDATA[Le point de terminaison de bot local n’est pas configuré. Définissez « bot.siteEndpoint » dans « .fx/configs/config.local.json », puis réessayez.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Local bot endpoint is not configured. Set "fx-resource-local-debug.localBotEndpoint" in ".fx/default.user.data" and try again.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.M365AccountNotMatch" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The signed in M365 account does not match the M365 tenant in config file for '%s' environment. Please sign out and sign in with the correct M365 account.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le compte M365 connecté ne correspond pas au client M365 dans le fichier de configuration pour l'environnement '%s'. Veuillez vous déconnecter et vous connecter avec le compte M365 correct.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1896,6 +2976,15 @@
           <Val><![CDATA[Operation is not permitted: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[L’opération n’est pas autorisée : %s.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.OperationNotSupportedForExistingAppError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Operation is not supported for existing app: %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[L’opération n’est pas prise en charge pour l’application existante : %s.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2044,11 +3133,92 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.aad.AadManifestLoadError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to load manifest file from %s, due to %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec du chargement du fichier manifeste à partir de %s en raison de %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.aad.AadManifestMissingIdentifierUris" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[identifierUris property is missing or invalid in AAD manifest file, you need to run provision or local debug first]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[La propriété identifierUris est manquante ou non valide dans le fichier manifeste AAD. Vous devez d’abord exécuter l’approvisionnement ou le débogage local.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.aad.AadManifestMissingName" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[name property is empty or invalid in AAD manifest file]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[le nom de la propriété est vide ou non valide dans le fichier manifeste AAD.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.aad.AadManifestMissingObjectId" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[id property is missing or invalid in AAD manifest file, you need to run provision or local debug first]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[La propriété id est manquante ou non valide dans le fichier manifeste AAD. Vous devez d’abord exécuter l’approvisionnement ou le débogage local.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.aad.AadManifestMissingReplyUrlsWithType" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[replyUrlsWithType property is missing or invalid in AAD manifest file, you need to run provision or local debug first]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[La propriété replyUrlsWithType est manquante ou non valide dans le fichier manifeste AAD. Vous devez d’abord exécuter l’approvisionnement ou le débogage local.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.aad.AadManifestMissingScopeIdForTeamsApp" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[oauth2Permissions property missing item which value should be access_as_user]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Élément manquant dans la propriété oauth2Permissions dont la valeur doit être access_as_user]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.aad.AadManifestNotFoundError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Aad manifest file not found]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Fichier manifeste Aad non trouvé]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.aad.AadManifestNotProvisioned" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to generate AAD manifest because the resources have not been provisioned yet. You need to run provision or local debug first.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de la génération du manifeste AAD, car les ressources n’ont pas encore été approvisionnées. Vous devez d’abord exécuter l’approvisionnement ou le débogage local.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.aad.AppIdUriInvalidError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Invalid Application ID URI. Provision your application before continuing.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[URI d’ID d’application non valide. Approvisionnez votre application avant de continuer.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.aad.CannotGenerateIdentifierUris" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cannot generate identifierUris because no botId or frontend domain found, you need to specified at least one of them in config file]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Impossible de générer identifierUris, car aucun botId ou domaine frontal n’a été trouvé. Vous devez spécifier au moins l’un d’entre eux dans le fichier de configuration.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2233,6 +3403,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.aad.UpdateAadAppError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to update application in Azure Active Directory: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de la mise à jour de l'application dans Azure Active Directory : %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.aad.UpdateAppIdUriError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to update Application ID URI in Azure Active Directory. %s]]></Val>
@@ -2346,6 +3525,231 @@
           <Val><![CDATA[Failed to update application registration in Azure Active Directory.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Échec de la mise à jour de l’inscription de l’application dans Azure Active Directory]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.aad.manifest.AADManifestIssues" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[AAD manifest has following issues that may potentially break the Teams App:]A;]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le manifeste AAD présente les problèmes suivants qui peuvent endommager l’application Teams :]A;]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.aad.manifest.AccessTokenAcceptedVersionIs1" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[accessTokenAcceptedVersion is 1]A;]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[accessTokenAcceptedVersion est 1]A;.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.aad.manifest.NameIsMissing" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[name is missing]A;]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le nom est manquant.]A;]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.aad.manifest.Oauth2PermissionsIsMissing" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[oauth2Permissions is missing]A;]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[oauth2Permissions est manquant]A;.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.aad.manifest.OptionalClaimsIsMissing" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[optionalClaims is missing]A;]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[optionalClaims est manquant]A;.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.aad.manifest.OptionalClaimsMissingIdtypClaim" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[optionalClaims access token doesn't contain idtyp claim]A;]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[le jeton d’accès optionalClaims ne contient pas de revendication d’IDtyp]A;.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.aad.manifest.PreAuthorizedApplicationsIsMissing" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[preAuthorizedApplications is missing]A;]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[PreAuthorizedApplications est manquant]A;.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.aad.manifest.RequiredResourceAccessIsMissing" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[requiredResourceAccess is missing]A;]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[requiredResourceAccess est manquant]A;.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.aad.manifest.SignInAudienceIsMissing" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[signInAudience is missing]A;]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[signInAudience est manquant]A;.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.aad.manifest.UnknownResourceAccessId" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unknown resourceAccess id: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Identifiant d'accès aux ressources inconnu : %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.aad.manifest.UnknownResourceAccessType" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unknown resourceAccess: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[ResourceAccess inconnu : %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.aad.manifest.UnknownResourceAppId" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unknown resourceAppId %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[%s resourceAppId inconnu]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.apiConnector.ApiConnectorCreateFileFail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to create %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de la création de %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.apiConnector.ApiConnectorFunctionRouteError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to route function call: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec du routage de l’appel de fonction : %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.apiConnector.ApiConnectorInputError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Api connector input %s is invalid]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le %s d’entrée du connecteur d’API n’est pas valide.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.apiConnector.ApiConnectorPathNotExistError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Path %s not exists. Select a valid folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le chemin %s n’existe pas. Sélectionnez un dossier valide.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.apiConnector.InvalidProjectError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Please select a valid TeamsFx project]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Veuillez sélectionner un projet TeamsFx valide.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.apiConnector.NoActivePluginsExistError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Please create active resource first.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Créez d’abord une ressource active.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.apiConnector.NoBotOrFunctionExistError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Please create bot or function resource first.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Créez d’abord un bot ou une ressource de fonction.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.apiConnector.SDKVersionImcompatibleError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[In %s project, @microsoft/teamsfx version %s is not compatible. Please upgrade your package version to %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Dans %s projet, %s version @microsoft/teamsfx n’est pas compatible. Mettez à niveau la version de votre package vers %s.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.apiConnector.SampleCodeCreateFailError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to scaffold API connection samples. Reason: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de génération de modèles automatique d’échantillons de connexion d’API. Raison : %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.apiConnector.ScaffoldApiFilesError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to scaffold connect API files, Reason: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de la génération de modèles automatique pour connecter les fichiers API. Raison : %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.apiConnector.componentNotExistError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Component %s not exist, please add first]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le composant n%s n’existe pas, ajoutez d’abord.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.apiConnector.envVarExistError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Please provide a different API name to avoid conflicts with existing env variables %s in .env.teamsfx.local]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Fournissez un autre nom d’API pour éviter les conflits avec les variables env existantes %s dans .env.teamsfx.local.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.apiConnector.pkgFileNotExistError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[In %s project, there is no package.json exist]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Dans %s projet, il n’existe aucun package.json.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2634,6 +4038,33 @@
           <Val><![CDATA[Manifest schema is not defined]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Le schéma du manifeste n’est pas défini]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.cicd.FailedToListMultiEnv" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to list multi env: %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de la liste des env multiples : %s.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.cicd.NoProjectOpened.details" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No project opened.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Aucun projet ouvert]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.cicd.PreconditionNotMet" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Some preconditions of inputs are not met.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Certaines conditions préalables des entrées ne sont pas remplies.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3153,12 +4584,12 @@
       </Item>
       <Item ItemId=";error.sa.VersionFileNotExist" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to load version file from %s]]></Val>
+          <Val><![CDATA[`Failed to load version file from %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Échec du chargement du fichier de version à partir de %s]]></Val>
+            <Val><![CDATA['Échec du chargement du fichier de version à partir de %s]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[`Failed to load version file from %s]]></Val>
+            <Val><![CDATA[Failed to load version file from %s]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -3177,6 +4608,168 @@
           <Val><![CDATA[Failed to download Simple Auth bits: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Échec du téléchargement des bits d’authentification simple : %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.sql.DatabaseUserCreateError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to create user '%s' in database %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de la création de la '%s' utilisateur dans la base de données %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.sql.DomainError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Conditional Access policy requires a compliant device, and the device is not compliant. %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[La stratégie d'accès conditionnel requiert un appareil conforme, et l’appareil n'est pas conforme. %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.sql.GetDetail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Get the detailed error message in output.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Obtenez le message d’erreur détaillé dans la sortie.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.sql.GuestAdminError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[SQL admin does not have enough permission to add database user. %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[L’administrateur SQL n’a pas les autorisations suffisantes pour ajouter un utilisateur de base de données. %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.sql.IdentityCredentialUndefine" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cannot access database to add managed identity user %s. Please add the user for database %s manually]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Impossible d’accéder à la base de données pour ajouter des %s utilisateur d’identité managée. Ajoutez manuellement l’utilisateur pour la base de données %s.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.sql.LinkHelpMessage" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You can follow %s to handle it.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Vous pouvez suivre %s pour le gérer.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.sql.ServicePrincipalWarning" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[service principal admin in azure sql can't add database user <%s>. You can add the user for %s manually]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le service principal admin dans azure sql ne peut pas ajouter l'utilisateur de la base de données <%s>. Vous pouvez ajouter l'utilisateur pour %s manuellement.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.sql.SqlAddAdminError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to add AAD admin '%s'. %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de l’ajout du '%s' d’administration AAD. %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.sql.SqlAskInputError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to get answer for SQL questions]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de l’obtention d’une réponse aux questions SQL]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.sql.SqlCheckAdminError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to check AAD admin '%s'. %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de la vérification de l''%s' d’administration AAD. %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.sql.SqlCheckError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to check SQL Server '%s'. %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Impossible de vérifier SQL Server '%s'. %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.sql.SqlDeleteLocalFirwallError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to delete local firewall for '%s'. Delete '%s' manually. %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de la suppression du pare-feu local pour '%s'. Supprimez '%s' manuellement. %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.sql.SqlEndpointError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[SQL Server %s is invalid.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SQL Server %s n’est pas valide.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.sql.SqlGetConfigError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to get config value of '%s' from '%s'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de l’obtention de la valeur de configuration de '%s' à partir de '%s']]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.sql.SqlInputError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[SQL admin name or password is empty]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le nom ou le mot de passe de l’administrateur SQL est vide.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.sql.SqlInvalidConfigError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The config value of '%s' is invalid for %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[La valeur de configuration de '%s' n’est pas valide pour %s.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.sql.SqlLocalFirwallError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to add local firewall for '%s'. %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de l’ajout du pare-feu local pour '%s'. %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.sql.SqlUserInfoError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to get login user info.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Impossible d'obtenir les informations de connexion de l'utilisateur]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3213,6 +4806,15 @@
           <Val><![CDATA[Failed in step: %s. You need to go to Azure Portal and manually %s for the provided Azure AD app.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Échec à l’étape : %s. Vous devez accéder au portail Azure et %s manuellement pour l’application Azure AD fournie.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.aad.UpdateAadHelpMessage" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[update Azure AD app manifest]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[mettre à jour Microsoft Azure Active Directory manifeste de l’application]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3258,6 +4860,429 @@
           <Val><![CDATA[Selection is cancelled by user.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[La sélection est annulée par l’utilisateur.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.AADAuthOption.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Use access token issued by Azure Active Directory to authenticate requests]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Utiliser le jeton d’accès émis par Azure Active Directory pour authentifier les demandes]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.APIKeyOption.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Use API Key to authenticate requests]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Utiliser la clé API pour authentifier les requêtes]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.BasicAuthOption.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Use username and password to authentication requests]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Utiliser le nom d’utilisateur et le mot de passe pour les demandes d’authentification]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.CertAuthOption.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Use certificate to authenticate requests]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Utiliser un certificat pour authentifier les demandes]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.ImplementMyselfOption.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Use customized logic to authenticate requests]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Utiliser une logique personnalisée pour authentifier les demandes]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.Log.CommandSuccess" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[We have successfully updated your project to call target API. Here is a list of created/updated files:]A;]A;%s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nous avons mis à jour votre projet pour appeler l’API cible. Voici la liste des fichiers créés/mis à jour :]A;]A;%s.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.Notification.GenerateFiles" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[We have generated sample code to call your API at %s. Please open the file(s) and follow the instructions in it to start invoking your APIs.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nous avons généré un exemple de code pour appeler votre API à %s. Ouvrez le ou les fichiers et suivez les instructions qu’il contient pour commencer à appeler vos API.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.Notification.LinkNotification" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You can visit %s to understand how to call your API with TeamsFx SDK.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Vous pouvez visiter %s pour comprendre comment appeler votre API avec le Kit de développement logiciel (SDK) TeamsFx.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.Question.validation.EmptyValue" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The value should not be empty]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[La valeur ne doit pas être vide.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.Question.validation.NotGuid" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The value should be guid]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[La valeur doit être guid.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.QuestionApiEndpoint.validation.NotHttp" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The API endpoint should be a valid http(s) url]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le point de terminaison d’API doit être une URL HTTP(s) valide(s).]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.QuestionAppName.validation.ApiNameAlphanumeric" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Please provide a different API name contains alphanumeric only]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Fournissez un autre nom d’API contenant uniquement des caractères alphanumériques.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.QuestionAppName.validation.ApiNameExist" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Please provide a different API name to avoid conflicts with existing file %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Fournissez un autre nom d’API pour éviter les conflits avec les %s de fichiers existants.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.QuestionAppName.validation.ApiNameNumberPrefix" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Please provide a different API name without number beginning]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Indiquez un autre nom d’API sans début de numéro.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.anotherAppOption.placeholder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Provide information for your AAD app registration.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Fournissez des informations pour l’inscription de votre application AAD.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.anotherAppOption.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Use another app registration]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Utiliser une autre inscription d’application]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.appId.placeholder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[AAD application id (client id) will be added to local app setting.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[L’ID d’application AAD (ID client) sera ajouté au paramètre d’application locale.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.appId.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Enter an AAD application id (client id).]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Entrez un ID d’application AAD (ID client).]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.appTenantId.placeholder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[AAD tenant id will be added to local app setting.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[L'identifiant du locataire de l'AAD sera ajouté aux paramètres de l'application locale.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.appTenantId.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Enter an AAD tenant id.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Entrez un ID de locataire AAD.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.botOption.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Notification / Command & Response]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Notification/Commande & Réponse]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.errorMessage.ApiConnectorCreateFileFail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to create %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de la création de %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.errorMessage.ApiConnectorFunctionRouteError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to route function call: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec du routage de l’appel de fonction : %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.errorMessage.ApiConnectorPathNotExistError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Path %s not exists. Select a valid folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le chemin %s n’existe pas. Sélectionnez un dossier valide.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.errorMessage.InvalidProjectError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Please select a valid TeamsFx project]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Veuillez sélectionner un projet TeamsFx valide.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.errorMessage.NoActivePluginsExistError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Please create an active resource first.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Créez d’abord une ressource active.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.errorMessage.NoBotOrFunctionExistError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Please create bot or function resource first.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Créez d’abord un bot ou une ressource de fonction.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.functionOption.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Azure Function App]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Application de fonction Azure]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.getQuestion.apiKeyLocation.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select the API Key position in request.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Sélectionnez la position de la clé API dans la requête.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.getQuestion.apiKeyName.placeholder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[We will add the key name to generated file.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nous allons ajouter le nom de clé au fichier généré.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.getQuestion.apiKeyName.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Enter an API Key name.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Entrez un nom de clé API.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.getQuestion.appType.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select an AAD app registration you want to use.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Sélectionnez une inscription d’application AAD à utiliser.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.getQuestion.basicAuth.userName.placeholder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Username will be added to local app setting.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le nom d’utilisateur sera ajouté au paramètre d’application locale.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.getQuestion.basicAuth.userName.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Enter the username for Basic Auth.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Entrez le nom d'utilisateur pour l'authentification de base.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.getQuestionApiName.placeholder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[API alias will be used to generate app setting names.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[L’alias d’API sera utilisé pour générer des noms de paramètres d’application.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.getQuestionApiName.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Enter a friendly name for your API.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Entrez un nom convivial pour votre API.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.getQuestionEndpoint.placeholder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[API endpoint will be added to local app setting.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le point de terminaison d’API sera ajouté au paramètre d’application locale.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.getQuestionEndpoint.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Enter an API endpoint for local debugging.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Entrez un point de terminaison d’API pour le débogage local.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.queryParamsOption.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Query parameter]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Paramètre de requête]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.questionComponentSelect.emptySelection" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You have to select at least one component.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Vous devez sélectionner au moins un composant.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.requestHeaderOption.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Request header]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[En-tête de requête]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.reuseAppOption.placeholder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Use the AAD app registration created for current Teams app.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Utilisez l’inscription d’application AAD créée pour l’application Teams actuelle.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.reuseAppOption.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Reuse app registration in current Teams app]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Réutiliser l’inscription de l’application dans l’application Teams actuelle]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.whichAuthType.placeholder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[We will generate sample code based on your selection.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nous allons générer un exemple de code en fonction de votre sélection.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.whichAuthType.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select an API authentication type.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Sélectionnez un type d'authentification API.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.whichService.placeholder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[We will import packages and add app settings.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nous allons importer des packages et ajouter des paramètres d’application.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.apiConnector.whichService.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select component(s) to invoke the API.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Sélectionnez le ou les composants pour appeler l’API.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3676,6 +5701,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";plugins.appstudio.adminPortal" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Go to admin portal]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Allez sur le portail d'administration.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";plugins.appstudio.autoPublishDescription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Send your app to your Teams administrator for approval via the Teams App Portal.]]></Val>
@@ -3699,6 +5733,15 @@
           <Val><![CDATA[Teams Package build failed!]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[La construction du package Teams a échoué !]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.appstudio.buildSucceedNotice" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams package is successfully built at [local address]5D;(%s).]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le package de Teams a été généré sur [local address]5D;(%s).]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3739,11 +5782,38 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";plugins.appstudio.postProvisionProgress" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Updating Teams app %s...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Mise à jour de l’application Teams %s...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.appstudio.provisionProgress" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Registering Teams app %s...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Inscription de l’application Teams %s...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";plugins.appstudio.provisionTip" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[You must run 'Provision in the cloud' first to fill out certain fields in manifest. Click Get Help to learn more about why you need to provision.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Vous devez d’abord exécuter « Approvisionner dans le cloud » pour remplir certains champs dans le manifeste. Cliquez Aide pour en savoir plus sur la raison pour laquelle vous devez effectuer l’approvisionnement.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.appstudio.provisionTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Provision Teams app]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Approvisionner l’application Teams]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3786,9 +5856,21 @@
       </Item>
       <Item ItemId=";plugins.appstudio.publishSucceedNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Success: %s successfully published to the [admin portal]5D;(%s). Once approved, your app will be available for your organization.]]></Val>
+          <Val><![CDATA[[%s]5D; successfully published to the admin portal. Once approved, your app will be available for your organization. [Learn more]5D;(%s)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Opération réussie : %s correctement publiée sur le [admin portal]5D;(%s). Une fois approuvée, votre application sera disponible pour votre organisation.]]></Val>
+            <Val><![CDATA[[%s]5D; correctement publiée sur le [admin portal]5D;(%s). Une fois approuvée, votre application sera disponible pour votre organisation.[Learn more]5D;(%s)]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Success: %s successfully published to the [admin portal]5D;(%s). Once approved, your app will be available for your organization.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.appstudio.publishSucceedNotice.cli" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[[%s]5D; successfully published to the admin portal(%s). Once approved, your app will be available for your organization. Learn more from %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[[%s]5D; a été publiée avec succès sur le portail d'administration (%s). Une fois approuvée, votre application sera disponible pour votre organisation. En savoir plus sur %s]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3820,12 +5902,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";plugins.appstudio.teamsAppUpdatedNotice" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";plugins.appstudio.teamsAppUpdatedLog" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Teams app updated %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Application Teams mise à jour %s]]></Val>
           </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.appstudio.teamsAppUpdatedNotice" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Your Teams application manifest has been successfully deployed. Click "View in Developer Portal" to view your application in Teams Developer Portal.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le manifeste de votre application Teams a été déployé. Cliquez sur « Afficher dans Developer Portal » pour afficher votre application dans le Portail des développeurs Teams.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Teams app updated %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3879,6 +5973,15 @@
           <Val><![CDATA[Manifest Validation succeed!]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[La validation du manifeste a réussi !]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.appstudio.whetherToDeployManifest" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Whether to deploy app manifest to Teams platform]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Indique si le manifeste d’application doit être déployé sur la plateforme Teams.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3951,6 +6054,15 @@
           <Val><![CDATA[Please check the command output and try to fix it.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Vérifiez la sortie de la commande et essayez de la corriger.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.bot.CheckDeployStatusTimeout" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The deployment status is timeout.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le délai d’attente de l’état du déploiement est dépassé.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4090,6 +6202,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";plugins.bot.FailedCheckDeployStatus" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to check deployment status.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de la vérification de l’état du déploiement]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";plugins.bot.FailedDeployZipFile" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to deploy zip file.]]></Val>
@@ -4104,6 +6225,15 @@
           <Val><![CDATA[Failed to list publishing credentials.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Échec de la liste des informations d'identification de publication]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.bot.FailedRestartWebApp" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to restart web app.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de redémarrage de l'application web]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4315,6 +6445,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";plugins.bot.RunFailedCommand" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Please run failed command '%s' in the folder: '%s'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Exécutez le '%s' de commande ayant échoué dans le dossier : '%s'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";plugins.bot.ScaffoldingBot" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Scaffolding bot.]]></Val>
@@ -4504,70 +6643,34 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";plugins.bot.triggers.appService.cliName" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";plugins.bot.triggers.http-functions.cliName" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[http-restify]]></Val>
+          <Val><![CDATA[http-functions]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[http-restify]]></Val>
+            <Val><![CDATA[http-functions]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";plugins.bot.triggers.appService.description" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";plugins.bot.triggers.http-functions.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[A restify server that will be run whenever it receives an HTTP request.]]></Val>
+          <Val><![CDATA[Azure Functions]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Un serveur restify qui sera exécuté chaque fois qu'il recevra une requête HTTP]]></Val>
+            <Val><![CDATA[Azure Functions]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";plugins.bot.triggers.appService.detail" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";plugins.bot.triggers.http-functions.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[A restify server hosted on Azure App Service that will be run whenever it receives an HTTP request.]]></Val>
+          <Val><![CDATA[A running function hosted on Azure Functions can listen to HTTP requests.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Serveur restify hébergé sur Azure App Service qui est exécuté chaque fois qu’il reçoit une requête HTTP.]]></Val>
+            <Val><![CDATA[Une fonction en cours d’exécution hébergée sur Azure Functions peut écouter les requêtes HTTP.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";plugins.bot.triggers.appService.label" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[HTTP Trigger (Restify)]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Déclencheur HTTP (Restify)]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";plugins.bot.triggers.functionsHttp.cliName" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[http]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[http]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";plugins.bot.triggers.functionsHttp.description" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[A function that will be run whenever it receives an HTTP request.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Fonction qui est exécutée quand elle reçoit une requête HTTP.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";plugins.bot.triggers.functionsHttp.detail" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[A function hosted on Azure Functions that will be run whenever it receives an HTTP request.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Une fonction hébergée sur Azure Functions qui sera exécutée chaque fois qu'elle recevra une requête HTTP.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";plugins.bot.triggers.functionsHttp.label" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";plugins.bot.triggers.http-functions.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[HTTP Trigger]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -4576,38 +6679,200 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";plugins.bot.triggers.functionsTimer.cliName" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";plugins.bot.triggers.http-restify.cliName" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[timer]]></Val>
+          <Val><![CDATA[http-restify]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[minuteur]]></Val>
+            <Val><![CDATA[http-restify]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";plugins.bot.triggers.functionsTimer.description" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";plugins.bot.triggers.http-restify.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[A function that will be run on a specific schedule.]]></Val>
+          <Val><![CDATA[Restify Server]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Une fonction qui sera exécutée selon un calendrier spécifique]]></Val>
+            <Val><![CDATA[Serveur Restify]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";plugins.bot.triggers.functionsTimer.detail" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";plugins.bot.triggers.http-restify.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[A function hosted on Azure Functions that will be run on a specific schedule.]]></Val>
+          <Val><![CDATA[A running restify server hosted on Azure App Service can listen to HTTP requests.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Fonction hébergée sur Azure Functions qui sera exécutée selon une planification spécifique.]]></Val>
+            <Val><![CDATA[Un serveur restify en cours d’exécution hébergé sur Azure App Service peut écouter les requêtes HTTP.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";plugins.bot.triggers.functionsTimer.label" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";plugins.bot.triggers.http-restify.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[HTTP Trigger]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Déclencheur HTTP]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.bot.triggers.timer-functions.cliName" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[timer-functions]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[fonctions de minuteur]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.bot.triggers.timer-functions.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Azure Functions]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure Functions]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.bot.triggers.timer-functions.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[A running function hosted on Azure Functions can respond based on a specific schedule.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Une fonction en cours d’exécution hébergée sur Azure Functions peut répondre en fonction d’une planification spécifique.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.bot.triggers.timer-functions.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Timer Trigger]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Déclencheur de minuteur]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.cicd.ProgressBar.scaffold.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Scaffolding workflow file for %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Génération de modèles automatique du fichier de workflow pour %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.cicd.ProgressBar.scaffold.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Scaffolding workflow automation files]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Génération de modèles automatique des fichiers d’automatisation du flux de travail]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.cicd.cdOption.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Help checkout code, build, test and deploy to cloud.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Aidez-nous à extraire du code, à générer, à tester et à déployer sur le cloud.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.cicd.ciOption.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Help checkout code, build and run test.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Aidez-nous à extraire le code, à générer et à exécuter le test.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.cicd.provisionOption.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Help create/update resources in cloud and Teams app registration.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Aidez-nous à créer/mettre à jour des ressources dans le cloud et Teams l’inscription de l’application.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.cicd.publishOption.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Help publish Teams app to tenants.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Aidez-nous à publier Teams application pour les clients.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.cicd.result.scaffold.created" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Workflow automation - including %s using %s for %s environment - has been successfully added to your project. Follow the instructions in [README]5D;(%s) to configure your workflow(s).]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[L’automatisation du flux de travail, y compris %s à l’aide de %s pour %s environnement, a été ajoutée à votre projet. Suivez les instructions du fichier [README]5D;(%s) pour configurer vos flux de travail.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.cicd.result.scaffold.created.cli" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Workflow automation - including %s using %s for %s environment - has been successfully added to your project. Follow the instructions in README file to configure your workflow(s).]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[L’automatisation du flux de travail, y compris %s à l’aide de %s pour %s environnement, a été ajoutée à votre projet. Suivez les instructions du fichier README pour configurer vos flux de travail.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.cicd.result.scaffold.skipped" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You have already created template(s) of %s using %s for %s environment, please customize it or remove it to create a new one.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Vous avez déjà créé un ou plusieurs modèles de %s à l’aide de %s pour %s environnement. Personnalisez-le ou supprimez-le pour en créer un nouveau.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.cicd.suggestions.checkPermission" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Please check if you got sufficient permission.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Vérifiez si vous disposez des autorisations suffisantes.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.cicd.suggestions.createProjectOrOpenExisting" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You can create a new project or open an existing one.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Vous pouvez créer un projet ou en ouvrir un existant.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.cicd.whichEnvironment.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select an environment]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Sélectionner un environnement]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.cicd.whichProvider.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select a CI/CD Provider]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Sélectionner un fournisseur CI/CD]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.cicd.whichTemplate.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select template(s)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Sélectionner un modèle(s)]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5424,10 +7689,13 @@
       </Item>
       <Item ItemId=";plugins.spfx.deploy.createAppcatalog" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Create Sharepoint app catalog]]></Val>
+          <Val><![CDATA[Create SharePoint app catalog]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Créer un catalogue d’applications SharePoint]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Create Sharepoint app catalog]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -5467,11 +7735,74 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";plugins.spfx.error.installDependency" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to install package %s. Learn how to remediate in the [output]5D;(command:fx-extension.showOutputChannel).]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de l’installation du package %s. Découvrez comment corriger dans le [output]5D;(command:fx-extension.showOutputChannel).]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.error.invalidDependency" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to validate package %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de validation du package %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.error.npmInstallFailed" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to run 'npm install' due to %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de l’exécution de « npm’install » en raison de %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.error.npmNotFound" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Npm not found on your machine!]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Npm introuvable sur votre ordinateur!]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";plugins.spfx.insufficientPermission" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[You don't have permission to upload and deploy package to App Catalog %s, please use site admin account.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Vous n’êtes pas autorisé à charger et déployer le package sur le catalogue d’applications %s. Utilisez le compte d’administrateur de site.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.scaffold.dependencyCheck" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Checking dependencies...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Vérification des dépendances...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.scaffold.dependencyInstall" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Installing dependencies. This may take more than 5 minutes to finish.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Installation des dépendances. Cette opération peut prendre plus de 5 minutes.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.scaffold.scaffoldProject" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Generate SPFx project using Yeoman CLI]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Générer SPFx projet à l’aide de Yoman CLI]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5485,173 +7816,20 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";plugins.spfx.scaffold.updateManifest" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Update webpart manifest]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Mettre à jour le manifeste du composant WebPart]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";plugins.spfx.uploadAppcatalogFail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to upload app package, due to %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Échec du chargement du package d’application en raison de %s]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";plugins.sql.errorMessage.DatabaseUserCreateError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Failed to create user '%s' in database %s]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Échec de la création de la '%s' utilisateur dans la base de données %s]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";plugins.sql.errorMessage.DomainError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Conditional Access policy requires a compliant device, and the device is not compliant. %s]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[La stratégie d'accès conditionnel requiert un appareil conforme, et l’appareil n'est pas conforme. %s]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";plugins.sql.errorMessage.GetDetail" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Get the detailed error message in output.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Obtenez le message d’erreur détaillé dans la sortie.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";plugins.sql.errorMessage.GuestAdminError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[SQL admin does not have enough permission to add database user. %s]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[L’administrateur SQL n’a pas les autorisations suffisantes pour ajouter un utilisateur de base de données. %s]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";plugins.sql.errorMessage.IdentityCredentialUndefine" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Cannot access database to add managed identity user %s. Please add the user for database %s manually]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Impossible d’accéder à la base de données pour ajouter des %s utilisateur d’identité managée. Ajoutez manuellement l’utilisateur pour la base de données %s.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";plugins.sql.errorMessage.LinkHelpMessage" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[You can follow %s to handle it.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Vous pouvez suivre %s pour le gérer.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";plugins.sql.errorMessage.ServicePrincipalWarning" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[service principal admin in azure sql can't add database user <%s>. You can add the user for %s manually]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Le service principal admin dans azure sql ne peut pas ajouter l'utilisateur de la base de données <%s>. Vous pouvez ajouter l'utilisateur pour %s manuellement.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";plugins.sql.errorMessage.SqlAddAdminError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Failed to add AAD admin '%s'. %s]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Échec de l’ajout du '%s' d’administration AAD. %s]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";plugins.sql.errorMessage.SqlAskInputError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Failed to get answer for SQL questions]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Échec de l’obtention d’une réponse aux questions SQL]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";plugins.sql.errorMessage.SqlCheckAdminError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Failed to check AAD admin '%s'. %s]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Échec de la vérification de l''%s' d’administration AAD. %s]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";plugins.sql.errorMessage.SqlCheckError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Failed to check SQL Server '%s'. %s]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Impossible de vérifier SQL Server '%s'. %s]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";plugins.sql.errorMessage.SqlDeleteLocalFirwallError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Failed to delete local firewall for '%s'. Delete '%s' manually. %s]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Échec de la suppression du pare-feu local pour '%s'. Supprimez '%s' manuellement. %s]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";plugins.sql.errorMessage.SqlEndpointError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[SQL Server %s is invalid.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[SQL Server %s n’est pas valide.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";plugins.sql.errorMessage.SqlGetConfigError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Failed to get config value of '%s' from '%s'.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Échec de l’obtention de la valeur de configuration de '%s' à partir de '%s']]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";plugins.sql.errorMessage.SqlInputError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[SQL admin name or password is empty]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Le nom ou le mot de passe de l’administrateur SQL est vide.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";plugins.sql.errorMessage.SqlInvalidConfigError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[The config value of '%s' is invalid for %s.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[La valeur de configuration de '%s' n’est pas valide pour %s.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";plugins.sql.errorMessage.SqlLocalFirwallError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Failed to add local firewall for '%s'. %s]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Échec de l’ajout du pare-feu local pour '%s'. %s]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";plugins.sql.errorMessage.SqlUserInfoError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Failed to get login user info.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Impossible d'obtenir les informations de connexion de l'utilisateur]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -5769,6 +7947,15 @@
           <Val><![CDATA[Password and password confirmation must match]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Le mot de passe et le mot de passe de confirmation doivent concorder.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";suggestions.retryTheCurrentStep" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Please retry the current step.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Réessayez l’étape actuelle.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

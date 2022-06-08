@@ -28,7 +28,7 @@ import {
   ListCollaboratorResult,
   TeamsAppAdmin,
 } from "../../../../common";
-import { IUserList } from "../../../resource/appstudio/interfaces/IAppDefinition";
+import { AppUser } from "../../../resource/appstudio/interfaces/appUser";
 import {
   PluginNames,
   SolutionError,
@@ -57,7 +57,7 @@ export async function executeListCollaboratorV2(
   inputs: v2.InputsWithProjectPath,
   envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
   tokenProvider: TokenProvider,
-  userInfo: IUserList
+  userInfo: AppUser
 ): Promise<[Result<any, FxError>[], Err<any, FxError>[]]> {
   const plugins: v2.ResourcePlugin[] = [
     Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin),
@@ -91,7 +91,7 @@ export async function executeListCollaboratorV2(
 
 export async function executeListCollaboratorV1(
   ctx: SolutionContext,
-  userInfo: IUserList
+  userInfo: AppUser
 ): Promise<[Result<any, FxError>[], Err<any, FxError>[]]> {
   const plugins = [Container.get<Plugin>(ResourcePlugins.AppStudioPlugin)];
 
@@ -164,7 +164,7 @@ async function listCollaboratorImpl(
     });
   }
 
-  const userInfo = result.value as IUserList;
+  const userInfo = result.value as AppUser;
 
   if (!envName) {
     return err(

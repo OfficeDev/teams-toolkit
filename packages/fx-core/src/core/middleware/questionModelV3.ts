@@ -33,6 +33,7 @@ import {
   ScratchOptionYes,
 } from "../question";
 import { CoreHookContext } from "../types";
+import { getQuestionsForTargetEnv } from "./envInfoLoader";
 
 /**
  * This middleware will help to collect input from question flow
@@ -49,6 +50,8 @@ export const QuestionModelMW_V3: Middleware = async (ctx: CoreHookContext, next:
     if (func.method === "addFeature") {
       getQuestionRes = await getQuestionsForAddFeature(inputs);
     }
+  } else if (method === "provisionResourcesV3") {
+    getQuestionRes = await getQuestionsForTargetEnv(inputs);
   }
   if (getQuestionRes.isErr()) {
     TOOLS?.logProvider.error(

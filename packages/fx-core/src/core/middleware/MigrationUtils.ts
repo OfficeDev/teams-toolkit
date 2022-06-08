@@ -8,6 +8,9 @@ import { CoreHookContext } from "../types";
 import fs from "fs-extra";
 import { PluginNames } from "../../plugins";
 import { RequiredResourceAccess } from "../../plugins/resource/aad/interfaces/AADManifest";
+import { getLocalizedString } from "../../common/localizeUtils";
+import { TOOLS } from "../globalVars";
+import { generateAadManifestTemplate } from "../generateAadManifestTemplate";
 
 export interface Permission {
   resource: string;
@@ -17,25 +20,48 @@ export interface Permission {
 
 export function permissionsToRequiredResourceAccess(
   permissions: Permission[]
-): RequiredResourceAccess[] {
+): RequiredResourceAccess[] | undefined {
   const result: RequiredResourceAccess[] = [];
-  permissions.forEach((permission) => {
-    const res: RequiredResourceAccess = {
-      resourceAppId: permission.resource,
-      resourceAccess: permission.application
-        .map((item) => {
-          return { id: item, type: "Role" };
-        })
-        .concat(
-          permission.delegated.map((item) => {
-            return { id: item, type: "Scope" };
+  try {
+    permissions.forEach((permission) => {
+      const res: RequiredResourceAccess = {
+        resourceAppId: permission.resource,
+        resourceAccess: permission.application
+          .map((item) => {
+            return { id: item, type: "Role" };
           })
-        ),
-    };
+          .concat(
+            permission.delegated.map((item) => {
+              return { id: item, type: "Scope" };
+            })
+          ),
+      };
+      result.push(res);
+    });
+  } catch (err) {
+    return undefined;
+  }
 
-    result.push(res);
-  });
   return result;
+}
+
+export async function generateAadManifest(
+  projectPath: string,
+  projectSettingsJson: any
+): Promise<void> {
+  const permissionFilePath = path.join(projectPath, "permissions.json");
+
+  // add aad.template.file
+  const permissions = (await fs.readJson(permissionFilePath)) as Permission[];
+
+  const requiredResourceAccess = permissionsToRequiredResourceAccess(permissions);
+  if (!requiredResourceAccess) {
+    TOOLS?.logProvider.warning(
+      getLocalizedString("core.aadManifestMigration.ParsePermissionsFailedWarning")
+    );
+  }
+
+  await generateAadManifestTemplate(projectPath, projectSettingsJson, requiredResourceAccess, true);
 }
 
 export async function needMigrateToAadManifest(ctx: CoreHookContext): Promise<boolean> {

@@ -108,11 +108,13 @@ export class AzureAccountNode extends DynamicNode {
         this.subscriptionNode.setEmptySubscription();
       } else if (subscriptions.length === 1) {
         await this.subscriptionNode.setSubscription(subscriptions[0]);
+        await AzureAccountManager.setSubscription(subscriptions[0].subscriptionId);
       } else {
         this.subscriptionNode.unsetSubscription(subscriptions.length);
       }
     } else if (activeSubscription) {
       await this.subscriptionNode.setSubscription(activeSubscription);
+      await AzureAccountManager.setSubscription(activeSubscription.subscriptionId);
     }
     return (
       (activeSubscriptionId === undefined || activeSubscription === undefined) &&

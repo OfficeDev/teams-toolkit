@@ -18,20 +18,24 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
     this.commands.push(...commands);
   }
 
-  refresh(): void {
+  public refresh(): void {
     this._onDidChangeTreeData.fire();
   }
 
-  getTreeItem(element: TreeViewCommand): vscode.TreeItem {
+  public getTreeItem(element: TreeViewCommand): vscode.TreeItem {
     return element;
   }
 
-  getChildren(element?: TreeViewCommand): Thenable<TreeViewCommand[]> {
+  public getChildren(element?: TreeViewCommand): Thenable<TreeViewCommand[]> {
     if (element && element.children) {
       return Promise.resolve(element.children);
     } else {
       return Promise.resolve(this.commands);
     }
+  }
+
+  public getCommands(): TreeViewCommand[] {
+    return this.commands;
   }
 
   dispose() {

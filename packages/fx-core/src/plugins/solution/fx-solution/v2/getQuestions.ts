@@ -416,7 +416,7 @@ export async function getQuestions(
       }
     }
   } else if (stage === Stage.deploy) {
-    if (inputs[Constants.DEPLOY_AAD_FROM_CODELENS] === "yes") {
+    if (inputs[Constants.DEPLOY_AAD] === "yes") {
       return ok(node);
     }
 

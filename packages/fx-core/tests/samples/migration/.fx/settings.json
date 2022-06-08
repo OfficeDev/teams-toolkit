@@ -5,8 +5,15 @@
     "name": "fx-solution-azure",
     "version": "1.0.0",
     "hostType": "Azure",
-    "capabilities": ["Tab", "Bot", "MessagingExtension"],
-    "azureResources": ["sql", "function"],
+    "capabilities": [
+      "Tab",
+      "Bot",
+      "MessagingExtension"
+    ],
+    "azureResources": [
+      "sql",
+      "function"
+    ],
     "activeResourcePlugins": [
       "fx-resource-frontend-hosting",
       "fx-resource-identity",
@@ -20,5 +27,10 @@
     ]
   },
   "programmingLanguage": "javascript",
-  "defaultFunctionName": "getUserProfile"
+  "defaultFunctionName": "getUserProfile",
+  "pluginSettings": {
+    "fx-resource-bot": {
+      "host-type": "app-service"
+    }
+  }
 }

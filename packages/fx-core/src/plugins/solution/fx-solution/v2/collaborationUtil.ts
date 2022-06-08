@@ -22,7 +22,7 @@ import {
   CollaborationStateResult,
   ResourcePermission,
 } from "../../../../common";
-import { IUserList } from "../../../resource/appstudio/interfaces/IAppDefinition";
+import { AppUser } from "../../../resource/appstudio/interfaces/appUser";
 import {
   GLOBAL_CONFIG,
   PluginNames,
@@ -45,7 +45,7 @@ export type CollabApiParam =
 export class CollaborationUtil {
   static async getCurrentUserInfo(
     graphTokenProvider?: GraphTokenProvider
-  ): Promise<Result<IUserList, FxError>> {
+  ): Promise<Result<AppUser, FxError>> {
     const user = await CollaborationUtil.getUserInfo(graphTokenProvider);
 
     if (!user) {
@@ -64,7 +64,7 @@ export class CollaborationUtil {
   static async getUserInfo(
     graphTokenProvider?: GraphTokenProvider,
     email?: string
-  ): Promise<IUserList | undefined> {
+  ): Promise<AppUser | undefined> {
     const currentUser = await graphTokenProvider?.getJsonObject();
 
     if (!currentUser) {
@@ -120,7 +120,7 @@ export class CollaborationUtil {
 
   static getCurrentCollaborationState(
     envState: Map<string, any>,
-    user: IUserList
+    user: AppUser
   ): CollaborationStateResult {
     const provisioned = CollaborationUtil.checkWetherProvisionSucceeded(envState);
     if (!provisioned) {

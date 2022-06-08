@@ -21,6 +21,7 @@ For contributing to different packages, find the instructions below:
 - [Contributing to Function Extension](https://github.com/OfficeDev/TeamsFx/blob/main/packages/function-extension/CONTRIBUTING.md)
 - [Contributing to Simple Auth](https://github.com/OfficeDev/TeamsFx/blob/main/packages/simpleauth/CONTRIBUTING.md)
 - [Contributing to .NET SDK](https://github.com/OfficeDev/TeamsFx/blob/main/packages/dotnet-sdk/CONTRIBUTING.md)
+- [Contributing to Scaffolding Template](https://github.com/OfficeDev/TeamsFx/blob/main/templates/CONTRIBUTING.md)
 
 # Code of Conduct
 

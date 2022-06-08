@@ -422,6 +422,8 @@ export class TeamsBotImpl implements PluginImpl {
     await AppStudio.updateMessageEndpoint(appStudioToken, botReg.botId!, botReg);
   }
   private async createNewBotRegistrationOnAppStudio() {
+    Logger.info(Messages.ProvisioningBotRegistration);
+
     const token = checkAndThrowIfMissing(
       ConfigNames.GRAPH_TOKEN,
       await this.ctx?.graphTokenProvider?.getAccessToken()
@@ -463,14 +465,12 @@ export class TeamsBotImpl implements PluginImpl {
         .get(PluginBot.OBJECT_ID);
       Logger.debug(Messages.SuccessfullyGetExistingBotAadAppCredential);
     } else {
-      Logger.info(Messages.ProvisioningBotRegistration);
       botAuthCreds = await AADRegistration.registerAADAppAndGetSecretByGraph(
         token,
         aadDisplayName,
         this.config.localDebug.localObjectId,
         this.config.localDebug.localBotId
       );
-      Logger.info(Messages.SuccessfullyProvisionedBotRegistration);
     }
 
     // 2. Register bot by app studio.
@@ -483,14 +483,12 @@ export class TeamsBotImpl implements PluginImpl {
       callingEndpoint: "",
     };
 
-    Logger.info(Messages.ProvisioningBotRegistration);
     const appStudioToken = checkAndThrowIfMissing(
       ConfigNames.APPSTUDIO_TOKEN,
       await this.ctx?.appStudioToken?.getAccessToken()
     );
 
     await AppStudio.createBotRegistration(appStudioToken, botReg);
-    Logger.info(Messages.SuccessfullyProvisionedBotRegistration);
 
     if (isConfigUnifyEnabled()) {
       if (!this.config.scaffold.botId) {
@@ -515,6 +513,8 @@ export class TeamsBotImpl implements PluginImpl {
         this.config.localDebug.localObjectId = botAuthCreds.objectId;
       }
     }
+
+    Logger.info(Messages.SuccessfullyProvisionedBotRegistration);
   }
 
   private async registerBotApp() {

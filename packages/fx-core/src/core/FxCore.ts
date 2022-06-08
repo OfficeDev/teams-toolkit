@@ -49,6 +49,7 @@ import {
   getProjectSettingsVersion,
   isExistingTabApp,
   isValidProject,
+  isVSProject,
   newProjectSettings,
 } from "../common/projectSettingsHelper";
 import { TelemetryReporterInstance } from "../common/telemetry";
@@ -74,6 +75,7 @@ import {
   TabOptionItem,
   TabSPFxItem,
   TabSsoItem,
+  BotFeatureIds,
 } from "../plugins/solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { CallbackRegistry } from "./callback";
@@ -95,7 +97,7 @@ import {
   TaskNotSupportError,
   WriteFileError,
 } from "./error";
-import { isV3, setCurrentStage, setTools, TOOLS } from "./globalVars";
+import { globalVars, isV3, setCurrentStage, setTools, TOOLS } from "./globalVars";
 import { AadManifestMigrationMW } from "./middleware/aadManifestMigration";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ProjectConsolidateMW } from "./middleware/consolidateLocalRemote";
@@ -152,7 +154,6 @@ import { runAction } from "../component/workflow";
 import { TemplateProjectsScenarios } from "../plugins/resource/bot/constants";
 import { createContextV3 } from "../component/utils";
 import "../component/core";
-import { BotFeatureIds } from "../plugins/solution/fx-solution/question";
 import { QuestionModelMW_V3 } from "./middleware/questionModelV3";
 import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
 
@@ -262,6 +263,7 @@ export class FxCore implements v3.ICore {
         version: "1.0.0",
       };
       projectSettings.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
+      globalVars.isVS = isVSProject(projectSettings);
       ctx.projectSettings = projectSettings;
       const createEnvResult = await this.createEnvWithName(
         environmentManager.getDefaultEnvName(),
@@ -388,12 +390,13 @@ export class FxCore implements v3.ICore {
       }
       projectPath = path.join(folder, appName);
       inputs.projectPath = projectPath;
+      globalVars.isVS = isVSProject(context.projectSetting);
       await runAction("fx.init", context, inputs as InputsWithProjectPath);
       const feature = inputs.capabilities;
       delete inputs.folder;
       if (BotFeatureIds.includes(feature)) {
         inputs.feature = feature;
-        await runAction("fx.addBot", context, inputs as InputsWithProjectPath);
+        await runAction("teams-bot.add", context, inputs as InputsWithProjectPath);
       }
     }
     if (inputs.platform === Platform.VSCode) {
@@ -449,15 +452,9 @@ export class FxCore implements v3.ICore {
 
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectMigratorMW,
-    ProjectConsolidateMW,
-    AadManifestMigrationMW,
-    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
-    SolutionLoaderMW_V3,
-    QuestionModelMW,
+    QuestionModelMW_V3,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
     EnvInfoWriterMW_V3(),
@@ -468,21 +465,12 @@ export class FxCore implements v3.ICore {
   ): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.provision);
     inputs.stage = Stage.provision;
-    if (
-      ctx &&
-      ctx.solutionV3 &&
-      ctx.contextV2 &&
-      ctx.envInfoV3 &&
-      ctx.solutionV3.provisionResources
-    ) {
-      const res = await ctx.solutionV3.provisionResources(
-        ctx.contextV2,
-        inputs as v2.InputsWithProjectPath,
-        ctx.envInfoV3,
-        TOOLS.tokenProvider
-      );
-      return res;
-    }
+    const context = createContextV3();
+    context.envInfo = ctx!.envInfoV3!;
+    context.projectSetting = ctx!.projectSettings! as ProjectSettingsV3;
+    context.tokenProvider = TOOLS.tokenProvider;
+    await runAction("fx.provision", context, inputs as InputsWithProjectPath);
+    ctx!.projectSettings = context.projectSetting;
     return ok(Void);
   }
 
@@ -877,11 +865,11 @@ export class FxCore implements v3.ICore {
       const feature = inputs.feature;
       if (feature === "sql") {
         const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-        await runAction("fx.addSql", context, inputs as InputsWithProjectPath);
+        await runAction("sql.add", context, inputs as InputsWithProjectPath);
         ctx!.projectSettings = context.projectSetting;
       } else if (feature === BotOptionItem.id) {
         const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-        await runAction("fx.addBot", context, inputs as InputsWithProjectPath);
+        await runAction("teams-bot.add", context, inputs as InputsWithProjectPath);
         ctx!.projectSettings = context.projectSetting;
       }
     }

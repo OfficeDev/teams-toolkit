@@ -5,25 +5,18 @@ import "mocha";
 import * as chai from "chai";
 import axios from "axios";
 import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
-import { AppStudioPluginImpl } from "./../../../../../src/plugins/resource/appstudio/plugin";
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
-import { IAppDefinition } from "./../../../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
+import { AppDefinition } from "../../../../../src/plugins/resource/appstudio/interfaces/appDefinition";
 import {
   FRONTEND_ENDPOINT,
   FRONTEND_DOMAIN,
-  LOCAL_BOT_ID,
   BOT_ID,
   Constants,
   FRONTEND_INDEX_PATH,
 } from "./../../../../../src/plugins/resource/appstudio/constants";
 import {
-  LOCAL_DEBUG_TAB_ENDPOINT,
-  LOCAL_DEBUG_TAB_DOMAIN,
-  LOCAL_DEBUG_AAD_ID,
   REMOTE_AAD_ID,
-  LOCAL_DEBUG_BOT_DOMAIN,
   BOT_DOMAIN,
-  LOCAL_WEB_APPLICATION_INFO_SOURCE,
   WEB_APPLICATION_INFO_SOURCE,
   PluginNames,
   TEAMS_APP_ID,
@@ -62,7 +55,7 @@ describe("Get AppDefinition and Update", () => {
   const localDebugBotId = uuid.v4();
   const localDebugBotDomain = "local debug bot domain";
 
-  const appDef: IAppDefinition = {
+  const appDef: AppDefinition = {
     appName: "my app",
     teamsAppId: "appId",
     userList: [
@@ -380,7 +373,7 @@ describe("Get AppDefinition and Update", () => {
       },
     };
 
-    const appDef: IAppDefinition = {
+    const appDef: AppDefinition = {
       appName: "my app",
       teamsAppId: "appId",
       userList: [
@@ -441,7 +434,7 @@ describe("Get AppDefinition and Update", () => {
       },
     };
 
-    const appDef: IAppDefinition = {
+    const appDef: AppDefinition = {
       appName: "my app",
       teamsAppId: "appId",
       userList: [
@@ -531,7 +524,7 @@ describe("Get AppDefinition and Update", () => {
       },
     };
 
-    const appDef: IAppDefinition = {
+    const appDef: AppDefinition = {
       appName: "my app",
       teamsAppId: "appId",
       userList: [

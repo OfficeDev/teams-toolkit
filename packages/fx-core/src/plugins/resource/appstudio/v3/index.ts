@@ -34,7 +34,6 @@ import { getTemplatesFolder } from "../../../../folder";
 import * as path from "path";
 import fs from "fs-extra";
 import {
-  APP_PACKAGE_FOLDER_FOR_MULTI_ENV,
   COLOR_TEMPLATE,
   Constants,
   DEFAULT_COLOR_PNG_FILENAME,
@@ -45,20 +44,22 @@ import {
   TEAMS_APP_MANIFEST_TEMPLATE_V3,
 } from "../constants";
 import { TelemetryUtils, TelemetryEventName, TelemetryPropertyKey } from "../utils/telemetry";
-import { AppStudioPluginImpl } from "./plugin";
 import { ResourcePermission, TeamsAppAdmin } from "../../../../common/permissionInterface";
 import isUUID from "validator/lib/isUUID";
 import { AppStudioClient } from "../appStudio";
-import { IUserList } from "../interfaces/IAppDefinition";
-import { isExistingTabApp } from "../../../../common/projectSettingsHelper";
+import { AppUser } from "../interfaces/appUser";
+import { isExistingTabApp, isVSProject } from "../../../../common/projectSettingsHelper";
 import { InitializedFileAlreadyExistError } from "../../../../core/error";
+import {
+  createOrUpdateTeamsApp,
+  publishTeamsApp,
+} from "../../../../component/resource/appManifest/appStudio";
+import { getProjectTemplatesFolderPath } from "../../../../common/utils";
 
 @Service(BuiltInFeaturePluginNames.appStudio)
 export class AppStudioPluginV3 {
   name = "fx-resource-appstudio";
   displayName = "App Studio";
-
-  private appStudioPluginImpl = new AppStudioPluginImpl();
 
   /**
    * Generate initial manifest template file, for both local debug & remote
@@ -76,9 +77,10 @@ export class AppStudioPluginV3 {
     );
     if (res.isErr()) return err(res.error);
     const templatesFolder = getTemplatesFolder();
+    const projectTemplatesFolderName = await getProjectTemplatesFolderPath(inputs.projectPath);
     const defaultColorPath = path.join(templatesFolder, COLOR_TEMPLATE);
     const defaultOutlinePath = path.join(templatesFolder, OUTLINE_TEMPLATE);
-    const appPackageDir = path.resolve(inputs.projectPath, APP_PACKAGE_FOLDER_FOR_MULTI_ENV);
+    const appPackageDir = path.join(projectTemplatesFolderName, "appPackage");
     const resourcesDir = path.resolve(appPackageDir, MANIFEST_RESOURCES);
     await fs.ensureDir(resourcesDir);
     await fs.copy(defaultColorPath, path.join(resourcesDir, DEFAULT_COLOR_PNG_FILENAME));
@@ -92,24 +94,22 @@ export class AppStudioPluginV3 {
    */
   async preCheck(projectPath: string): Promise<string[]> {
     const existFiles = new Array<string>();
-
-    const appPackageDir = path.resolve(projectPath, APP_PACKAGE_FOLDER_FOR_MULTI_ENV);
-    const manifestPath = path.resolve(appPackageDir, TEAMS_APP_MANIFEST_TEMPLATE_V3);
-    if (await fs.pathExists(manifestPath)) {
-      existFiles.push(manifestPath);
+    for (const templates of ["Templates", "templates"]) {
+      const appPackageDir = path.join(projectPath, templates, "appPackage");
+      const manifestPath = path.resolve(appPackageDir, TEAMS_APP_MANIFEST_TEMPLATE_V3);
+      if (await fs.pathExists(manifestPath)) {
+        existFiles.push(manifestPath);
+      }
+      const resourcesDir = path.resolve(appPackageDir, MANIFEST_RESOURCES);
+      const defaultColorPath = path.join(resourcesDir, DEFAULT_COLOR_PNG_FILENAME);
+      if (await fs.pathExists(defaultColorPath)) {
+        existFiles.push(defaultColorPath);
+      }
+      const defaultOutlinePath = path.join(resourcesDir, DEFAULT_OUTLINE_PNG_FILENAME);
+      if (await fs.pathExists(defaultOutlinePath)) {
+        existFiles.push(defaultOutlinePath);
+      }
     }
-
-    const resourcesDir = path.resolve(appPackageDir, MANIFEST_RESOURCES);
-    const defaultColorPath = path.join(resourcesDir, DEFAULT_COLOR_PNG_FILENAME);
-    if (await fs.pathExists(defaultColorPath)) {
-      existFiles.push(defaultColorPath);
-    }
-
-    const defaultOutlinePath = path.join(resourcesDir, DEFAULT_OUTLINE_PNG_FILENAME);
-    if (await fs.pathExists(defaultOutlinePath)) {
-      existFiles.push(defaultOutlinePath);
-    }
-
     return existFiles;
   }
 
@@ -260,12 +260,7 @@ export class AppStudioPluginV3 {
   ): Promise<Result<string, FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.provisionManifest);
-    const result = await this.appStudioPluginImpl.createOrUpdateTeamsApp(
-      ctx,
-      inputs,
-      envInfo,
-      tokenProvider
-    );
+    const result = await createOrUpdateTeamsApp(ctx, inputs, envInfo, tokenProvider);
     if (result.isOk()) {
       const properties: { [key: string]: string } = {};
       properties[TelemetryPropertyKey.appId] = result.value;
@@ -284,12 +279,7 @@ export class AppStudioPluginV3 {
   ): Promise<Result<string, FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.updateManifest);
-    const result = await this.appStudioPluginImpl.createOrUpdateTeamsApp(
-      ctx,
-      inputs,
-      envInfo,
-      tokenProvider
-    );
+    const result = await createOrUpdateTeamsApp(ctx, inputs, envInfo, tokenProvider);
     if (result.isOk()) {
       const properties: { [key: string]: string } = {};
       properties[TelemetryPropertyKey.appId] = result.value;
@@ -308,12 +298,7 @@ export class AppStudioPluginV3 {
   ): Promise<Result<Void, FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.publish);
-    const result = await this.appStudioPluginImpl.publishTeamsApp(
-      ctx,
-      inputs,
-      envInfo,
-      tokenProvider
-    );
+    const result = await publishTeamsApp(ctx, inputs, envInfo, tokenProvider);
     if (result.isOk()) {
       const properties: { [key: string]: string } = {};
       properties[TelemetryPropertyKey.publishedAppId] = result.value.publishedAppId;
@@ -395,7 +380,7 @@ export class AppStudioPluginV3 {
     inputs: v2.InputsWithProjectPath,
     envInfo: v3.EnvInfoV3,
     appStudioTokenProvider: AppStudioTokenProvider,
-    userInfo: IUserList
+    userInfo: AppUser
   ): Promise<Result<ResourcePermission[], FxError>> {
     const appStudioToken = await appStudioTokenProvider.getAccessToken();
 
@@ -433,7 +418,7 @@ export class AppStudioPluginV3 {
     inputs: v2.InputsWithProjectPath,
     envInfo: v3.EnvInfoV3,
     appStudioTokenProvider: AppStudioTokenProvider,
-    userInfo: IUserList
+    userInfo: AppUser
   ): Promise<Result<ResourcePermission[], FxError>> {
     const appStudioToken = await appStudioTokenProvider.getAccessToken();
 

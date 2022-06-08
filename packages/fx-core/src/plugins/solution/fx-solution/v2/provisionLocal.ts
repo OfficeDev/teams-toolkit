@@ -65,7 +65,8 @@ export async function provisionLocalResource(
 
   const m365TenantMatches = await checkWhetherLocalDebugM365TenantMatches(
     localDebugTenantId,
-    tokenProvider.appStudioToken
+    tokenProvider.appStudioToken,
+    inputs.projectPath
   );
   if (m365TenantMatches.isErr()) {
     return new v2.FxFailure(m365TenantMatches.error);

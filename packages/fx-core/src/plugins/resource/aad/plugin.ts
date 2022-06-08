@@ -65,7 +65,7 @@ import { ArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString } from "../../../common/constants";
 import { getTemplatesFolder } from "../../../folder";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
-import { IUserList } from "../appstudio/interfaces/IAppDefinition";
+import { AppUser } from "../appstudio/interfaces/appUser";
 import { isAadManifestEnabled, isConfigUnifyEnabled } from "../../../common/tools";
 import { getPermissionMap } from "./permissions";
 import { AadAppManifestManager } from "./aadAppManifestManager";
@@ -485,7 +485,7 @@ export class AadAppForTeamsImpl {
 
   public async checkPermission(
     ctx: PluginContext,
-    userInfo: IUserList
+    userInfo: AppUser
   ): Promise<Result<ResourcePermission[], FxError>> {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartCheckPermission);
@@ -543,7 +543,7 @@ export class AadAppForTeamsImpl {
 
   public async grantPermission(
     ctx: PluginContext,
-    userInfo: IUserList
+    userInfo: AppUser
   ): Promise<Result<ResourcePermission[], FxError>> {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGrantPermission);
@@ -811,27 +811,31 @@ export class AadAppForTeamsImpl {
     if (isAadManifestEnabled() && isConfigUnifyEnabled()) {
       TelemetryUtils.init(ctx);
       Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartDeploy);
-      DialogUtils.init(ctx.ui, ProgressTitle.Deploy, ProgressTitle.DeploySteps);
 
-      await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
+      try {
+        DialogUtils.init(ctx.ui, ProgressTitle.Deploy, ProgressTitle.DeploySteps);
+        await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
 
-      await DialogUtils.progress?.start(ProgressDetail.Starting);
+        await DialogUtils.progress?.start(ProgressDetail.Starting);
 
-      const skip = Utils.skipAADProvision(ctx, false);
+        const skip = Utils.skipAADProvision(ctx, false);
 
-      const manifest = await this.loadAndBuildManifest(ctx);
+        const manifest = await this.loadAndBuildManifest(ctx);
 
-      this.validateDeployManifest(manifest);
+        this.validateDeployManifest(manifest);
 
-      await AadAppClient.updateAadAppUsingManifest(Messages.EndDeploy.telemetry, manifest, skip);
+        await AadAppClient.updateAadAppUsingManifest(Messages.EndDeploy.telemetry, manifest, skip);
 
-      await DialogUtils.progress?.end(true);
-
-      Utils.addLogAndTelemetry(
-        ctx.logProvider,
-        Messages.EndDeploy,
-        skip ? { [Telemetry.skip]: Telemetry.yes } : {}
-      );
+        Utils.addLogAndTelemetry(
+          ctx.logProvider,
+          Messages.EndDeploy,
+          skip ? { [Telemetry.skip]: Telemetry.yes } : {}
+        );
+      } catch (err) {
+        throw err;
+      } finally {
+        await DialogUtils.progress?.end(true);
+      }
     }
     return ResultFactory.Success();
   }
@@ -839,7 +843,7 @@ export class AadAppForTeamsImpl {
   public async loadAndBuildManifest(ctx: PluginContext): Promise<AADManifest> {
     const isProvisionSucceeded =
       !!(ctx.envInfo.state.get("solution")?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean) ||
-      ctx.answers![Constants.DEPLOY_AAD_FROM_CODELENS] === "yes" ||
+      ctx.answers![Constants.DEPLOY_AAD] === "yes" ||
       ctx.envInfo.envName === "local";
 
     if (!isProvisionSucceeded) {

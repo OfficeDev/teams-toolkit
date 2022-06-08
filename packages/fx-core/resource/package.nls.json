@@ -45,7 +45,7 @@
   "core.generateArmTemplate.failNotice": "'%s' Failed to create ARM template for required Azure services.",
   "core.updateArmTemplate.failNotice": "'%s' Failed to update ARM template for required Azure services.",
   "core.updateArmTemplate.successNotice": "The Azure resource template is updated based on your resource and capability selection.",
-  "core.localDebug.tenantConfirmNotice": "You already run local debug for the Teams app in another tenant '%s'. You can sign out %s and sign in with the matched M365 account to re-use the previous local debug resource. If you really want to switch tenant for local debug, you can delete the %s file and re-run local debug.",
+  "core.localDebug.tenantConfirmNotice": "You already run local debug for the Teams app in another tenant '%s'. You can sign out %s and sign in with the matched M365 account to re-use the previous local debug resource. If you really want to switch tenant for local debug, you can delete the local file(s) (%s) and re-run local debug.",
   "core.migrationToArmAndMultiEnv.Message": "Teams Toolkit will upgrade your project configuration files to support the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.\nNotice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version, please find Teams Toolkit in Extension and install the version <= 2.10.0",
   "core.migrationToArmAndMultiEnv.SuccessMessage": "Upgrade succeeded. Your project is upgraded to new configuration files.",
   "core.migrationToArmAndMultiEnv.ErrorMessage": "Upgrade Failed. Please check the error message in Output window to troubleshoot and fix. You can also click Learn More for the FAQ and how to upgrade manually.",
@@ -57,6 +57,7 @@
   "core.consolidateLocalRemoteWithAadManifest.SuccessMessage": "Congratulations! You have successfully upgraded your Teams App project structure. We have added config.local.json for local debug, manifest.template.json for both Teams app running locally and remotely and aad.template.json for AAD manifest template. And we have backed up localSettings.json, manifest.local.template.json, manifest.remote.template.json, projectSettings.json to .backup folder.",
   "core.aadManifestMigration.outputMsg": "Congratulations! AAD manifest has been added, and please start to use this file to customize your AAD App registration. We have added aad.template.json, updated your projectSettings.json file and backed up projectSettings.json to .backup folder.",
   "core.aadManifestMigration.SuccessMessage": "Congratulations! AAD manifest has been added, and please start to use this file to customize your AAD App registration. We have added aad.template.json, updated your projectSettings.json and backed up projectSettings.json to .backup folder. For more information about AAD manifest, please refer %s",
+  "core.aadManifestMigration.ParsePermissionsFailedWarning": "Cannot parse permissions.json file when migration, and please follow this link to update permissions in aad.template.json file if necessary: https://aka.ms/teamsfx-aad-manifest#customize-requiredresourceaccess",
   "core.projectVersionChecker.vscodeUseNewVersion":"Your Teams Toolkit extension is too old to support current project, please update the extension to latest version and try to open this project again",
   "core.projectVersionChecker.cliUseNewVersion": "[core] Your TeamsFx CLI is too old to support current project, please update to latest version using command below:\nnpm install -g @microsoft/teamsfx-cli@latest",
   "core.aad.includeAadQuestionTitle": "Whether to deploy aad manifest",
@@ -869,7 +870,7 @@
   "depChecker.NodeNotSupported": "Node.js (@CurrentVersion) is not in the supported version list (@SupportedVersions).\n\nClick \"Learn more\" to learn more about the supported Node.js versions.\n\n(If you just installed Node.js (@SupportedVersions), restart Visual Studio Code for the change to take effect.)",
   "depChecker.dotnetNotFound": "Cannot find @NameVersion. For the details why .NET SDK is needed, refer to @HelpLink",
   "depChecker.depsNotFound": "Cannot find @SupportedPackages.\n\nTeams Toolkit requires these dependencies.\n\nClick \"Install\" to install @InstallPackages.",
-  "depChecker.linuxDepsNotFound": "Cannot find @SupportedPackages.\n\nTeams Toolkit requires these dependencies. \n\n(If you just installed @SupportedPackages, restart Visual Studio Code for the change to take effect.)",
+  "depChecker.linuxDepsNotFound": "Cannot find @SupportedPackages. Install @SupportedPackages manually and restart Visual Studio Code.",
   "depChecker.linuxDepsNotFoundHelpLinkMessage": "Cannot find @SupportedPackages.\n\nTeams Toolkit requires these dependencies.",
   "error.ActionNotExist": "Action not exist: %s"
 }

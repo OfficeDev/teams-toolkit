@@ -16,8 +16,13 @@ import path from "path";
 import { AzureHostingFactory } from "../../../../common/azure-hosting/hostingFactory";
 import { Commands, CommonStrings, ConfigNames, PluginBot } from "../resources/strings";
 import { checkAndThrowIfMissing, checkPrecondition, CommandExecutionError } from "../errors";
-import { BicepConfigs, ServiceType } from "../../../../common/azure-hosting/interfaces";
 import {
+  BicepConfigs,
+  BicepContext,
+  ServiceType,
+} from "../../../../common/azure-hosting/interfaces";
+import {
+  Alias,
   DEFAULT_DOTNET_FRAMEWORK,
   DeployConfigs,
   FolderNames,
@@ -36,7 +41,7 @@ import ignore, { Ignore } from "ignore";
 import { DeployConfigsConstants } from "../../../../common/azure-hosting/hostingConstant";
 import { getTemplateInfos, resolveHostType, resolveServiceType } from "./common";
 import { ProgrammingLanguage } from "./enum";
-import { getLanguage, getProjectFileName, getRuntime } from "./mapping";
+import { getLanguage, getProjectFileName, getRuntime, moduleMap } from "./mapping";
 
 export class TeamsBotV2Impl {
   readonly name: string = PluginBot.PLUGIN_NAME;
@@ -75,21 +80,13 @@ export class TeamsBotV2Impl {
   ): Promise<Result<ResourceTemplate, FxError>> {
     Logger.info(Messages.GeneratingArmTemplatesBot);
 
-    const plugins = getActivatedV2ResourcePlugins(ctx.projectSetting).map(
-      (p) => new NamedArmResourcePluginAdaptor(p)
-    );
-    const bicepConfigs = TeamsBotV2Impl.getBicepConfigs(ctx, inputs);
-    const bicepContext = {
-      plugins: plugins.map((obj) => obj.name),
-      configs: bicepConfigs,
-    };
-
+    const bicepContext = TeamsBotV2Impl.getBicepContext(ctx, inputs);
     const serviceTypes = [resolveServiceType(ctx), ServiceType.BotService];
     const templates = await Promise.all(
       serviceTypes.map((serviceType) => {
         const hosting = AzureHostingFactory.createHosting(serviceType);
         hosting.setLogger(Logger);
-        return hosting.generateBicep(bicepContext, ResourcePlugins.Bot);
+        return hosting.generateBicep(bicepContext);
       })
     );
     const result = mergeTemplates(templates);
@@ -104,27 +101,33 @@ export class TeamsBotV2Impl {
   ): Promise<Result<ResourceTemplate, FxError>> {
     Logger.info(Messages.UpdatingArmTemplatesBot);
 
-    const plugins = getActivatedV2ResourcePlugins(ctx.projectSetting).map(
-      (p) => new NamedArmResourcePluginAdaptor(p)
-    );
-    const bicepConfigs = TeamsBotV2Impl.getBicepConfigs(ctx, inputs);
-    const bicepContext = {
-      plugins: plugins.map((obj) => obj.name),
-      configs: bicepConfigs,
-    };
-
+    const bicepContext = TeamsBotV2Impl.getBicepContext(ctx, inputs);
     const serviceTypes = [resolveServiceType(ctx), ServiceType.BotService];
     const templates = await Promise.all(
       serviceTypes.map((serviceType) => {
         const hosting = AzureHostingFactory.createHosting(serviceType);
         hosting.setLogger(Logger);
-        return hosting.updateBicep(bicepContext, ResourcePlugins.Bot);
+        return hosting.updateBicep(bicepContext);
       })
     );
     const result = mergeTemplates(templates);
 
     Logger.info(Messages.SuccessfullyUpdateArmTemplatesBot);
     return ok({ kind: "bicep", template: result });
+  }
+
+  static getBicepContext(ctx: v2.Context, inputs: Inputs): BicepContext {
+    const plugins = getActivatedV2ResourcePlugins(ctx.projectSetting).map(
+      (p) => new NamedArmResourcePluginAdaptor(p)
+    );
+    const bicepConfigs = TeamsBotV2Impl.getBicepConfigs(ctx, inputs);
+    return {
+      plugins: plugins.map((obj) => obj.name),
+      configs: bicepConfigs,
+      moduleNames: moduleMap,
+      moduleAlias: Alias.BICEP_MODULE,
+      pluginId: ResourcePlugins.Bot,
+    };
   }
 
   async configureResource(
@@ -163,10 +166,15 @@ export class TeamsBotV2Impl {
       workingPath
     );
 
+    // For backward compatibility, get resource id from both key `botWebAppResourceId` and `resourceId`
     // get Azure resources definition
     const botWebAppResourceId = (envInfo as v2.EnvInfoV2).state[this.name][
       PluginBot.BOT_WEB_APP_RESOURCE_ID
     ];
+    const resourceId = checkPrecondition(
+      Messages.SomethingIsMissing(PluginBot.RESOURCE_ID),
+      (envInfo as v2.EnvInfoV2).state[this.name][PluginBot.RESOURCE_ID] ?? botWebAppResourceId
+    );
 
     // create config file if not exists
     await fs.ensureDir(deployDir);
@@ -198,7 +206,7 @@ export class TeamsBotV2Impl {
     const host = AzureHostingFactory.createHosting(hostType);
     host.setLogger(Logger);
     await progressBarHandler.next(ProgressBarConstants.DEPLOY_STEP_ZIP_DEPLOY);
-    await host.deploy(botWebAppResourceId, tokenProvider, zipBuffer);
+    await host.deploy(resourceId, tokenProvider, zipBuffer);
     const deployTimeCandidate = Date.now();
     await TeamsBotV2Impl.saveDeploymentInfo(
       configFile,
@@ -280,7 +288,7 @@ export class TeamsBotV2Impl {
           path.join(workingPath, projectFileName)
         );
         await utils.execute(`dotnet publish --configuration Release`, workingPath);
-        return path.join(workingPath, "bin", "release", framework, "publish");
+        return path.join(workingPath, "bin", "Release", framework, "publish");
       } catch (e) {
         throw new CommandExecutionError(`dotnet publish`, workingPath, e);
       }

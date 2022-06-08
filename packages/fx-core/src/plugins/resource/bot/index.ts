@@ -4,6 +4,7 @@ import {
   AzureSolutionSettings,
   Func,
   FxError,
+  Inputs,
   ok,
   Platform,
   Plugin,
@@ -19,14 +20,19 @@ import { ProgressBarFactory } from "./progressBars";
 import { CustomizedTasks, LifecycleFuncNames, ProgressBarConstants } from "./constants";
 import { runWithExceptionCatching } from "./errors";
 import { Logger } from "./logger";
-import { BotOptionItem, MessageExtensionItem } from "../../solution/fx-solution/question";
+import { BotOptionItem, MessageExtensionItem } from "../../solution";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import "./v2";
 import "./v3";
 import { DotnetBotImpl } from "./dotnet/plugin";
 import { PluginImpl } from "./interface";
-import { isVSProject, BotHostTypes, isBotNotificationEnabled } from "../../../common";
+import {
+  isVSProject,
+  BotHostTypes,
+  isBotNotificationEnabled,
+  isCLIDotNetEnabled,
+} from "../../../common";
 import { FunctionsHostedBotImpl } from "./functionsHostedBot/plugin";
 import { ScaffoldConfig } from "./configs/scaffoldConfig";
 import {
@@ -34,6 +40,7 @@ import {
   createHostTypeTriggerQuestionForVS,
   showNotificationTriggerCondition,
 } from "./question";
+import { CoreQuestionNames } from "../../../core/question";
 
 @Service(ResourcePlugins.BotPlugin)
 export class TeamsBot implements Plugin {
@@ -200,19 +207,53 @@ export class TeamsBot implements Plugin {
       return await runWithExceptionCatching(
         context,
         async () => {
-          if (isVSProject(context.projectSettings) || context.answers?.platform === Platform.VS) {
-            const res = new QTreeNode(createHostTypeTriggerQuestionForVS());
-            res.condition = showNotificationTriggerCondition;
-            return ok(res);
-          } else if (isBotNotificationEnabled()) {
-            const res = new QTreeNode({
-              type: "group",
-            });
-            res.addChild(new QTreeNode(createHostTypeTriggerQuestion(context.answers?.platform)));
-            res.condition = showNotificationTriggerCondition;
-            return ok(res);
+          if (isCLIDotNetEnabled()) {
+            const node = new QTreeNode({ type: "group" });
+            node.condition = showNotificationTriggerCondition;
+
+            const dotnetNode = new QTreeNode(createHostTypeTriggerQuestionForVS());
+            dotnetNode.condition = {
+              validFunc: async (input: unknown, inputs?: Inputs) => {
+                if (inputs && inputs[CoreQuestionNames.Runtime] === "dotnet") {
+                  return undefined;
+                } else {
+                  return "Runtime is not .net.";
+                }
+              },
+            };
+            node.addChild(dotnetNode);
+
+            const nodejsNode = new QTreeNode(
+              createHostTypeTriggerQuestion(context.answers?.platform)
+            );
+            nodejsNode.condition = {
+              validFunc: async (input: unknown, inputs?: Inputs) => {
+                if (inputs && inputs[CoreQuestionNames.Runtime] === "nodejs") {
+                  return undefined;
+                } else {
+                  return "Runtime is not node.js";
+                }
+              },
+            };
+
+            node.addChild(nodejsNode);
+
+            return ok(node);
           } else {
-            return ok(undefined);
+            if (isVSProject(context.projectSettings) || context.answers?.platform === Platform.VS) {
+              const res = new QTreeNode(createHostTypeTriggerQuestionForVS());
+              res.condition = showNotificationTriggerCondition;
+              return ok(res);
+            } else if (isBotNotificationEnabled()) {
+              const res = new QTreeNode({
+                type: "group",
+              });
+              res.addChild(new QTreeNode(createHostTypeTriggerQuestion(context.answers?.platform)));
+              res.condition = showNotificationTriggerCondition;
+              return ok(res);
+            } else {
+              return ok(undefined);
+            }
           }
         },
         true,

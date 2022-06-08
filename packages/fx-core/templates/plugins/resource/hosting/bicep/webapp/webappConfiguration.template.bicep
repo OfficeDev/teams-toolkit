@@ -6,7 +6,7 @@ param provisionOutputs object
 @secure()
 param currentAppSettings object
 
-var botWebAppName = split(provisionOutputs.webAppOutput.value.botWebAppResourceId, '/')[8]
+var botWebAppName = split(provisionOutputs.webAppOutput.value.resourceId, '/')[8]
 
 {{#if (contains "fx-resource-aad-app-for-teams" plugins)}}
 var m365ClientId = provisionParameters['m365ClientId']

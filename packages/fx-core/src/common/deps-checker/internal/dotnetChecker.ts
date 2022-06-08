@@ -114,7 +114,10 @@ export class DotnetChecker implements DepsChecker {
 
   public async install(): Promise<void> {
     if (isLinux()) {
-      throw new LinuxNotSupportedError(dotnetExplanationHelpLink);
+      throw new LinuxNotSupportedError(
+        Messages.linuxDepsNotFound.split("@SupportedPackages").join(installedNameWithVersion),
+        dotnetExplanationHelpLink
+      );
     }
 
     await this._logger.debug(`[start] cleanup bin/dotnet and config`);

@@ -850,6 +850,28 @@ describe("Teams Bot Resource Plugin", () => {
       chai.assert.isTrue(result.isOk());
       chai.assert.equal(result._unsafeUnwrap(), undefined);
     });
+
+    describe(".net project support", async () => {
+      beforeEach(() => {
+        process.env["TEAMSFX_CLI_DOTNET"] = "true";
+      });
+
+      afterEach(() => {
+        process.env["TEAMSFX_CLI_DOTNET"] = "false";
+      });
+
+      it("should return 2 options on scaffolding", async () => {
+        const pluginContext = testUtils.newPluginContext();
+
+        const result = await botPlugin.getQuestions(Stage.create, pluginContext);
+
+        chai.assert.isTrue(result.isOk());
+        const node = result._unsafeUnwrap();
+        chai.assert.isNotNull(node?.children);
+        // one for .net, one for nodejs
+        chai.assert.equal(node?.children?.length, 2);
+      });
+    });
   });
 
   describe("Test getQuestionsForUserTask", () => {

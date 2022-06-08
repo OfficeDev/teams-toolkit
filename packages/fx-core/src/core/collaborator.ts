@@ -40,7 +40,7 @@ import {
 import { CollaborationUtil } from "../plugins/solution/fx-solution/v2/collaborationUtil";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import * as util from "util";
-import { IUserList } from "../plugins/resource/appstudio/interfaces/IAppDefinition";
+import { AppUser } from "../plugins/resource/appstudio/interfaces/appUser";
 import { CoreSource } from "./error";
 import { TOOLS } from "./globalVars";
 import { getUserEmailQuestion } from "../plugins/solution/fx-solution/question";
@@ -196,7 +196,7 @@ export async function listCollaborator(
 
 function getCurrentCollaborationState(
   envInfo: v3.EnvInfoV3,
-  user: IUserList
+  user: AppUser
 ): CollaborationStateResult {
   const provisioned =
     envInfo.state.solution[SOLUTION_PROVISION_SUCCEEDED] === "true" ||
@@ -247,7 +247,7 @@ export async function checkPermission(
       message: stateResult.message,
     });
   }
-  const userInfo = result.value as IUserList;
+  const userInfo = result.value as AppUser;
 
   if (inputs.platform === Platform.CLI) {
     const aadAppTenantId = envInfo.state[BuiltInFeaturePluginNames.appStudio]?.tenantId;

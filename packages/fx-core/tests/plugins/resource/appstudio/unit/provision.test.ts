@@ -7,7 +7,7 @@ import sinon from "sinon";
 import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
 import { AppStudioPluginImpl } from "./../../../../../src/plugins/resource/appstudio/plugin";
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
-import { IAppDefinition } from "./../../../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
+import { AppDefinition } from "../../../../../src/plugins/resource/appstudio/interfaces/appDefinition";
 import { ConfigMap, PluginContext, Platform } from "@microsoft/teamsfx-api";
 import { getAzureProjectRoot } from "./../helper";
 import { newEnvInfo } from "../../../../../src";
@@ -20,7 +20,7 @@ describe("Provision Teams app with Azure", () => {
   let plugin: AppStudioPlugin;
   let ctx: PluginContext;
 
-  const appDef: IAppDefinition = {
+  const appDef: AppDefinition = {
     appName: "my app",
     teamsAppId: "appId",
     userList: [

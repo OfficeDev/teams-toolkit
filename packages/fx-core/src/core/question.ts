@@ -286,7 +286,12 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
 }
 
 export function createCapabilityForDotNet(): SingleSelectQuestion {
-  const staticOptions: StaticOptions = [TabOptionItem, BotOptionItem];
+  const staticOptions: StaticOptions = [
+    NotificationOptionItem,
+    CommandAndResponseOptionItem,
+    TabOptionItem,
+    MessageExtensionItem,
+  ];
   return {
     name: CoreQuestionNames.Capabilities,
     title: getLocalizedString("core.createCapabilityQuestion.title"),

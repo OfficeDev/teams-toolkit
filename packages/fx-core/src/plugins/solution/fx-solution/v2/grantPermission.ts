@@ -21,7 +21,7 @@ import {
   SystemError,
 } from "@microsoft/teamsfx-api";
 import { CollaborationState, PermissionsResult, ResourcePermission } from "../../../../common";
-import { IUserList } from "../../../resource/appstudio/interfaces/IAppDefinition";
+import { AppUser } from "../../../resource/appstudio/interfaces/appUser";
 import {
   AzureRoleAssignmentsHelpLink,
   PluginNames,
@@ -305,7 +305,7 @@ export async function grantPermission(
 // Execute plugins' grantPermission() using legacy API
 async function executeGrantPermissionsV1(
   ctx: SolutionContext,
-  userInfo: IUserList
+  userInfo: AppUser
 ): Promise<[ResourcePermission[], Err<any, FxError>[]]> {
   const plugins = getActivatedResourcePlugins(
     ctx.projectSettings?.solutionSettings as AzureSolutionSettings
@@ -349,7 +349,7 @@ async function executeGrantPermissionsV2(
   inputs: v2.InputsWithProjectPath,
   envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
   tokenProvider: TokenProvider,
-  userInfo: IUserList
+  userInfo: AppUser
 ): Promise<[ResourcePermission[], Err<any, FxError>[]]> {
   const plugins: v2.ResourcePlugin[] = [
     Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin),

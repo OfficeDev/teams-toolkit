@@ -23,7 +23,7 @@ import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHan
 import { getTemplatesFolder } from "../../../../folder";
 import { ensureSolutionSettings } from "../../../solution/fx-solution/utils/solutionSettingsHelper";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
-import { IUserList } from "../../appstudio/interfaces/IAppDefinition";
+import { AppUser } from "../../appstudio/interfaces/appUser";
 import { AadAppClient } from "../aadAppClient";
 import {
   ConfigKeys,
@@ -313,7 +313,7 @@ export class AadAppForTeamsPluginV3 implements v3.PluginV3 {
     ctx: v2.Context,
     envInfo: v3.EnvInfoV3,
     tokenProvider: TokenProviderInAPI,
-    userInfo: IUserList
+    userInfo: AppUser
   ): Promise<Result<ResourcePermission[], FxError>> {
     ctx.logProvider.info(Messages.StartCheckPermission.log);
     await TokenProvider.init(
@@ -352,7 +352,7 @@ export class AadAppForTeamsPluginV3 implements v3.PluginV3 {
     ctx: v2.Context,
     envInfo: v3.EnvInfoV3,
     tokenProvider: TokenProviderInAPI,
-    userInfo: IUserList
+    userInfo: AppUser
   ): Promise<Result<ResourcePermission[], FxError>> {
     ctx.logProvider.info(Messages.StartGrantPermission.log);
     await TokenProvider.init(

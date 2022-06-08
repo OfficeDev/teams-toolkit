@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 export enum TelemetryEvent {
+  ManageAccount = "manage-account",
   CreateAccountStart = "create-account-start",
   CreateAccount = "create-account",
 

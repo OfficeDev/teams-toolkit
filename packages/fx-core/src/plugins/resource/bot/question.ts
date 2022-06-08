@@ -69,7 +69,7 @@ export function createHostTypeTriggerQuestion(
 
   let staticOptions: HostTypeTriggerOptionItem[] = HostTypeTriggerOptions;
   let defaultOptionItem = AppServiceOptionItem;
-  if (cliRuntime === "dotnet" || platform === Platform.VS) {
+  if (platform === Platform.VS || cliRuntime === "dotnet") {
     staticOptions = HostTypeTriggerOptionsForVS;
     defaultOptionItem = AppServiceOptionItemForVS;
   }

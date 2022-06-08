@@ -16,8 +16,9 @@ import { readFileSync } from "fs";
 import path from "path";
 import { Correlator } from "@microsoft/teamsfx-core";
 import Progress from "./console/progress";
-import { getColorizedString } from "./utils";
+import { getColorizedString, getSystemInputs } from "./utils";
 import UI from "./userInteraction";
+import activate from "./activate";
 
 export abstract class YargsCommand {
   /**
@@ -107,6 +108,18 @@ export abstract class YargsCommand {
       cliPackage.version
     );
     CliTelemetry.setReporter(reporter);
+
+    {
+      const result = await activate();
+      if (result.isOk()) {
+        const configResult = await result.value.getProjectConfig(
+          getSystemInputs(args.folder as string)
+        );
+        if (configResult.isOk()) {
+          CliTelemetry.setIsFromSample(configResult.value?.settings?.isFromSample);
+        }
+      }
+    }
 
     try {
       const result = await Correlator.run(

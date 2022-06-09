@@ -13,8 +13,8 @@ import { HostTypes } from "../resources/strings";
 import { BicepModules, ProgrammingLanguage, Runtime } from "./enum";
 
 const runtimeMap: Map<ProgrammingLanguage, Runtime> = new Map<ProgrammingLanguage, Runtime>([
-  [ProgrammingLanguage.Js, Runtime.NodeJs],
-  [ProgrammingLanguage.Ts, Runtime.NodeJs],
+  [ProgrammingLanguage.Js, Runtime.Node],
+  [ProgrammingLanguage.Ts, Runtime.Node],
   [ProgrammingLanguage.Csharp, Runtime.Dotnet],
 ]);
 
@@ -51,7 +51,7 @@ const triggerScenariosMap: Map<string, string[]> = new Map<string, string[]>([
 const invalidInputMsg = "Invalid bot input";
 
 const projectFileMap = new Map<Runtime, (appName: string) => string>([
-  [Runtime.NodeJs, (_: string) => "package.json"],
+  [Runtime.Node, (_: string) => "package.json"],
   [Runtime.Dotnet, (appName: string) => `${appName}.csproj`],
 ]);
 

@@ -11,7 +11,7 @@ import * as Utils from "../../../src/utils";
 import LogProvider from "../../../src/commonlib/log";
 import { expect } from "../utils";
 import { NotFoundSubscriptionId } from "../../../src/error";
-import M365TokenProvider from "../../../src/commonlib/M365Login";
+import M365TokenProvider from "../../../src/commonlib/m365Login";
 import AzureTokenProvider from "../../../src/commonlib/azureLogin";
 import { signedIn, signedOut } from "../../../src/commonlib/common/constant";
 

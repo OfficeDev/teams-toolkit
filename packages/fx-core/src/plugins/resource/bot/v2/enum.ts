@@ -8,7 +8,7 @@ export enum ProgrammingLanguage {
 }
 
 export enum Runtime {
-  NodeJs = "nodejs",
+  NodeJs = "node",
   Dotnet = "dotnet",
 }
 

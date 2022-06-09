@@ -28,6 +28,7 @@ describe("SPFxDeploy", function () {
     sandbox.stub(SPFxPluginImpl.prototype, "buildSPPackage" as any).returns(ok(undefined));
     sandbox.stub(SPFxPluginImpl.prototype, "getTenant" as any).returns(ok("TENANT_URL"));
     sandbox.stub(tools, "getSPFxTenant").returns(Promise.resolve("tenant"));
+    sandbox.stub(tools, "getSPFxToken").returns(Promise.resolve("fakeToken"));
   });
 
   afterEach(() => {

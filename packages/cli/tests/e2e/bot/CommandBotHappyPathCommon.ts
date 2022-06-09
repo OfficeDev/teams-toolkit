@@ -24,7 +24,7 @@ import { environmentManager } from "@microsoft/teamsfx-core";
 
 import { it } from "../../commonlib/it";
 
-export function happyPathTest(runtime: "dotnet" | "nodejs"): void {
+export function happyPathTest(runtime: "dotnet" | "node"): void {
   describe("Provision", function () {
     const testFolder = getTestFolder();
     const appName = getUniqueAppName();
@@ -42,7 +42,7 @@ export function happyPathTest(runtime: "dotnet" | "nodejs"): void {
 
     it("Provision Resource: command and response", async function () {
       const cmd =
-        runtime === "nodejs"
+        runtime === "node"
           ? `teamsfx new --interactive false --app-name ${appName} --capabilities command-bot --programming-language typescript`
           : `teamsfx new --interactive false --runtime ${runtime} --app-name ${appName} --capabilities command-bot`;
       await execAsync(cmd, {

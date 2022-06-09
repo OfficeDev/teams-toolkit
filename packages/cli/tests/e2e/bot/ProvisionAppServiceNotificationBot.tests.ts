@@ -7,4 +7,4 @@
 
 import { happyPathTest } from "./NotificationBotHappyPathCommon";
 
-happyPathTest("nodejs");
+happyPathTest("node");

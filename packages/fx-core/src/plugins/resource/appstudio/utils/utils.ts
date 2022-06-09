@@ -240,12 +240,7 @@ export function convertToAppDefinitionMessagingExtensions(
                   choices: p.choices ?? [],
                 };
               }) ?? [],
-            taskInfo: {
-              title: x.taskInfo?.title ?? "",
-              width: x.taskInfo?.width ?? "",
-              height: x.taskInfo?.height ?? "",
-              url: x.taskInfo?.url ?? "",
-            },
+            taskInfo: x.taskInfo,
           };
         }),
         messageHandlers:

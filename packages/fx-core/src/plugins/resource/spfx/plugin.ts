@@ -50,6 +50,7 @@ import {
   getSPFxTenant,
   SPFxScopes,
   GraphScopes,
+  getSPFxToken,
 } from "../../../common/tools";
 import { getTemplatesFolder } from "../../../folder";
 import {
@@ -337,17 +338,7 @@ export class SPFxPluginImpl {
       }
       SPOClient.setBaseUrl(tenant.value);
 
-      const graphTokenRes = await ctx.m365TokenProvider?.getAccessToken({
-        scopes: GraphReadUserScopes,
-      });
-      let spoToken = undefined;
-      if (graphTokenRes && graphTokenRes.isOk()) {
-        const tenant = await getSPFxTenant(graphTokenRes.value);
-        const spfxTokenRes = await ctx.m365TokenProvider!.getAccessToken({
-          scopes: SPFxScopes(tenant),
-        });
-        spoToken = spfxTokenRes.isOk() ? spfxTokenRes.value : undefined;
-      }
+      const spoToken = await getSPFxToken(ctx.m365TokenProvider!);
       if (!spoToken) {
         return err(GetSPOTokenFailedError());
       }

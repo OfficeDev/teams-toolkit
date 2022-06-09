@@ -68,7 +68,7 @@ describe("Account Command Tests", function () {
       .onSecondCall()
       .returns(Promise.resolve(ok({ upn: "M365@xxx.com" })))
       .onThirdCall()
-      .returns(Promise.resolve(undefined));
+      .returns(Promise.resolve(err(new UserError("login", "not login", "not login"))));
     sandbox
       .stub(M365TokenProvider, "signout")
       .onFirstCall()

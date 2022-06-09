@@ -98,6 +98,7 @@ export function createHostTypeTriggerQuestion(
           return getLocalizedString(`${prefix}.error.emptySelection`);
         }
 
+        //invalid if both appService and function items are selected
         if (name.includes(defaultOptionItem.id) && name.length > 1) {
           return getLocalizedString(`${prefix}.error.hostTypeConflict`);
         }

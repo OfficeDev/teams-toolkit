@@ -218,22 +218,6 @@ export class TeamsBot implements Plugin {
           });
           res.condition = showNotificationTriggerCondition;
           return ok(res);
-          // if (isCLIDotNetEnabled()) {
-          //   const dotnetNode = new QTreeNode(createHostTypeTriggerQuestion(Platform.CLI, "dotnet"));
-          //   dotnetNode.condition = getCliTriggerCondition("dotnet");
-          //   res.addChild(dotnetNode);
-          //   const nodejsNode = new QTreeNode(createHostTypeTriggerQuestion(Platform.CLI, "nodejs"));
-          //   nodejsNode.condition = getCliTriggerCondition("nodejs");
-          //   res.addChild(nodejsNode);
-          //   res.condition = showNotificationTriggerCondition;
-          //   return ok(res);
-          // }
-          // if (context.answers?.platform === Platform.VS || isBotNotificationEnabled()) {
-          //   res.addChild(new QTreeNode(createHostTypeTriggerQuestion(context.answers?.platform)));
-          //   res.condition = showNotificationTriggerCondition;
-          //   return ok(res);
-          // }
-          // return ok(undefined);
         },
         true,
         LifecycleFuncNames.GET_QUETSIONS_FOR_SCAFFOLDING

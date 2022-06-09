@@ -13,8 +13,8 @@ import { HostTypes } from "../resources/strings";
 import { ProgrammingLanguage, Runtime } from "./enum";
 
 const runtimeMap: Map<ProgrammingLanguage, Runtime> = new Map<ProgrammingLanguage, Runtime>([
-  [ProgrammingLanguage.Js, Runtime.Node],
-  [ProgrammingLanguage.Ts, Runtime.Node],
+  [ProgrammingLanguage.Js, Runtime.NodeJs],
+  [ProgrammingLanguage.Ts, Runtime.NodeJs],
   [ProgrammingLanguage.Csharp, Runtime.Dotnet],
 ]);
 
@@ -51,7 +51,7 @@ const triggerScenariosMap: Map<string, string[]> = new Map<string, string[]>([
 const invalidInputMsg = "Invalid bot input";
 
 const projectFileMap = new Map<Runtime, (appName: string) => string>([
-  [Runtime.Node, (_: string) => "package.json"],
+  [Runtime.NodeJs, (_: string) => "package.json"],
   [Runtime.Dotnet, (appName: string) => `${appName}.csproj`],
 ]);
 

@@ -39,6 +39,7 @@ import {
   getTriggerQuestionCondition,
   showNotificationTriggerCondition,
 } from "./question";
+import { Runtime } from "./v2/enum";
 
 @Service(ResourcePlugins.BotPlugin)
 export class TeamsBot implements Plugin {
@@ -208,7 +209,7 @@ export class TeamsBot implements Plugin {
           const res = new QTreeNode({
             type: "group",
           });
-          const runtimes = ["dotnet", "nodejs"];
+          const runtimes = [Runtime.Dotnet, Runtime.NodeJs];
           runtimes.forEach((runtime) => {
             const node = new QTreeNode(
               createHostTypeTriggerQuestion(context.answers?.platform, runtime)

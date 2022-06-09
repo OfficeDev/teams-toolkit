@@ -15,6 +15,7 @@ import {
   NotificationTrigger,
   NotificationTriggers,
 } from "./resources/strings";
+import { Runtime } from "./v2/enum";
 
 export interface HostTypeTriggerOptionItem extends OptionItem {
   hostType: HostType;
@@ -160,14 +161,14 @@ export function getTriggerQuestionCondition(runtime: string) {
           if (inputs && inputs[CoreQuestionNames.Runtime] === runtime) {
             return undefined;
           }
-        } else if (runtime == "nodejs") {
+        } else if (runtime == Runtime.NodeJs) {
           return undefined;
         }
       }
-      if (inputs?.platform === Platform.VS && runtime === "dotnet") {
+      if (inputs?.platform === Platform.VS && runtime === Runtime.Dotnet) {
         return undefined;
       }
-      if (inputs?.platform === Platform.VSCode && runtime == "nodejs") {
+      if (inputs?.platform === Platform.VSCode && runtime == Runtime.NodeJs) {
         return undefined;
       }
       return `runtime is not ${runtime}`;

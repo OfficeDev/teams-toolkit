@@ -2196,7 +2196,8 @@ export async function showError(e: UserError | SystemError) {
   }
 }
 
-export async function cmpAccountsHandler() {
+export async function cmpAccountsHandler(args: any[]) {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ManageAccount, getTriggerFromProperty(args));
   const signInAzureOption: VscQuickPickItem = {
     id: "signInAzure",
     label: localize("teamstoolkit.handlers.signInAzure"),

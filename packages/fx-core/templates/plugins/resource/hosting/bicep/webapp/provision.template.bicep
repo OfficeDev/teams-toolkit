@@ -1,5 +1,5 @@
 // Resources for bot
-module webAppProvision '\{{PluginIdPlaceholder.Provision.webapp.path}}' = {
+module webAppProvision './provision/webapp.bicep' = {
   name: 'webAppProvision'
   params: {
     provisionParameters: provisionParameters
@@ -10,11 +10,11 @@ module webAppProvision '\{{PluginIdPlaceholder.Provision.webapp.path}}' = {
 }
 
 output webAppOutput object = {
-  teamsFxPluginId: 'PluginIdPlaceholder'
+  teamsFxPluginId: '{{pluginId}}'
   skuName: webAppProvision.outputs.webAppSKU
   siteName: webAppProvision.outputs.webAppName
   validDomain: webAppProvision.outputs.webAppDomain
   appServicePlanName: webAppProvision.outputs.appServicePlanName
-  botWebAppResourceId: webAppProvision.outputs.webAppResourceId
+  resourceId: webAppProvision.outputs.webAppResourceId
   siteEndpoint: webAppProvision.outputs.webAppEndpoint
 }

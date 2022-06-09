@@ -1,5 +1,5 @@
 // Resources for bot
-module webAppProvision '{{fx-resource-bot.Provision.webapp.path}}' = {
+module webAppProvision './provision/webapp.bicep' = {
   name: 'webAppProvision'
   params: {
     provisionParameters: provisionParameters
@@ -13,6 +13,6 @@ output webAppOutput object = {
   siteName: webAppProvision.outputs.webAppName
   validDomain: webAppProvision.outputs.webAppDomain
   appServicePlanName: webAppProvision.outputs.appServicePlanName
-  botWebAppResourceId: webAppProvision.outputs.webAppResourceId
+  resourceId: webAppProvision.outputs.webAppResourceId
   siteEndpoint: webAppProvision.outputs.webAppEndpoint
 }

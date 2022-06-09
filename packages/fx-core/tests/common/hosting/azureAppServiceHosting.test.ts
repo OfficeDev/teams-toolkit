@@ -24,6 +24,9 @@ describe("azure app service hosting", () => {
       ResourcePlugins.LocalDebug,
     ],
     configs: ["node", "running-on-azure"],
+    moduleNames: { [ServiceType.Functions]: "botFunction" },
+    moduleAlias: "bot",
+    pluginId: ResourcePlugins.Bot,
   };
   const pluginId = ResourcePlugins.Bot;
 
@@ -42,7 +45,7 @@ describe("azure app service hosting", () => {
   describe("create bicep", () => {
     it("create bicep", async () => {
       const hosting = AzureHostingFactory.createHosting(ServiceType.AppService);
-      const template = await hosting.generateBicep(context, pluginId);
+      const template = await hosting.generateBicep(context);
 
       chai.assert.exists(template.Configuration);
       chai.assert.deepEqual(template.Reference, hosting.reference);
@@ -70,7 +73,7 @@ describe("azure app service hosting", () => {
   describe("update bicep", () => {
     it("update bicep", async () => {
       const hosting = AzureHostingFactory.createHosting(ServiceType.AppService);
-      const template = await hosting.updateBicep(context, pluginId);
+      const template = await hosting.updateBicep(context);
 
       chai.assert.exists(template.Configuration);
       chai.assert.exists(template.Reference);

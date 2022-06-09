@@ -522,9 +522,6 @@ export async function doDeployArmTemplatesV3(
         syncArmOutput(envInfo, result.properties?.outputs);
         return result;
       })
-      .catch((reason) => {
-        ctx.logProvider.error(reason);
-      })
       .finally(() => {
         deployCtx.finished = true;
       });

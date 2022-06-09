@@ -596,7 +596,7 @@ export const ExampleMultiSelectQuestion: MultiSelectQuestion = {
   type: "multiSelect",
   staticOptions: [MultiSelectOptionOne, MultiSelectOptionTwo],
   default: undefined,
-  placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
+  placeholder: "This is placeholder",
 };
 
 export const RuntimeOptionNodeJs: OptionItem = {

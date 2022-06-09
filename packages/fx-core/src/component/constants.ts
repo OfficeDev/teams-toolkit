@@ -19,3 +19,29 @@ export const ComponentNames = {
   Function: "function",
   SimpleAuth: "simple-auth",
 };
+
+export const ActionNames = {
+  provision: "provision",
+  configure: "configure",
+  generateBicep: "generateBicep",
+};
+
+export const ActionTypeFunction = "function";
+export const ActionTypeCall = "call";
+export const ActionTypeGroup = "group";
+export const ActionTypeShell = "shell";
+
+export const AzureSqlOutputs = {
+  sqlResourceId: {
+    key: "resourceId",
+    bicepVariable: "provisionOutputs.azureSqlOutput.value.resourceId",
+  },
+  sqlEndpoint: {
+    key: "endpoint",
+    bicepVariable: "provisionOutputs.azureSqlOutput.value.sqlEndpoint",
+  },
+  sqlDatabaseName: {
+    key: "databaseName",
+    bicepVariable: "provisionOutputs.azureSqlOutput.value.sqlDatabaseName",
+  },
+};

@@ -125,7 +125,6 @@ export async function showInstallAppInTeamsMessage(
 }
 
 export async function getTeamsAppInternalId(appId: string): Promise<string | undefined> {
-  // TODO: handle GraphTokenProviderUserPassword
   const graphLoginStatusRes = await m365LoginInstance.getStatus({ scopes: GraphScopes });
   const loginStatus = graphLoginStatusRes.isOk() ? graphLoginStatusRes.value : undefined;
   if (

@@ -356,6 +356,7 @@ export async function executeAction(
     return await executeFunctionAction(action, context, inputs, effects);
   } else if (action.type === "shell") {
     effects.push(`shell executed: ${action.command}`);
+    return ok(undefined);
   } else if (action.type === "call") {
     if (action.inputs) {
       resolveVariables(inputs, action.inputs);
@@ -365,8 +366,9 @@ export async function executeAction(
       return err(new ActionNotExist(action.targetAction));
     }
     if (targetAction) {
-      await executeAction(targetAction, context, inputs, effects);
+      return await executeAction(targetAction, context, inputs, effects);
     }
+    return ok(undefined);
   } else {
     if (action.inputs) {
       resolveVariables(inputs, action.inputs);
@@ -383,8 +385,8 @@ export async function executeAction(
         if (res.isErr()) return err(res.error);
       }
     }
+    return ok(undefined);
   }
-  return ok(undefined);
 }
 
 export class ValidationError extends UserError {

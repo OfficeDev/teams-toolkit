@@ -64,13 +64,13 @@ export const HostTypeTriggerOptionsForVS: HostTypeTriggerOptionItem[] = [AppServ
 //   - users must select at least one trigger.
 export function createHostTypeTriggerQuestion(
   platform?: Platform,
-  runtime?: string
+  runtime?: Runtime
 ): MultiSelectQuestion {
   const prefix = "plugins.bot.questionHostTypeTrigger";
 
   let staticOptions: HostTypeTriggerOptionItem[] = HostTypeTriggerOptions;
   let defaultOptionItem = AppServiceOptionItem;
-  if (runtime === "dotnet") {
+  if (runtime === Runtime.Dotnet) {
     staticOptions = HostTypeTriggerOptionsForVS;
     defaultOptionItem = AppServiceOptionItemForVS;
   }
@@ -153,7 +153,7 @@ export const showNotificationTriggerCondition = {
   containsAny: [NotificationOptionItem.id],
 };
 
-export function getTriggerQuestionCondition(runtime: string) {
+export function getTriggerQuestionCondition(runtime: Runtime) {
   return {
     validFunc: async (input: unknown, inputs?: Inputs) => {
       if (inputs?.platform === Platform.CLI) {

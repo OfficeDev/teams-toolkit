@@ -153,7 +153,7 @@ export const showNotificationTriggerCondition = {
   containsAny: [NotificationOptionItem.id],
 };
 
-export function getTriggerQuestionCondition(runtime: Runtime) {
+export function getNotificationTriggerQuestionCondition(runtime: Runtime) {
   return {
     validFunc: async (input: unknown, inputs?: Inputs) => {
       if (inputs?.platform === Platform.CLI) {

@@ -469,7 +469,8 @@ export class FxCore implements v3.ICore {
     context.envInfo = ctx!.envInfoV3!;
     context.projectSetting = ctx!.projectSettings! as ProjectSettingsV3;
     context.tokenProvider = TOOLS.tokenProvider;
-    await runAction("fx.provision", context, inputs as InputsWithProjectPath);
+    const res = await runAction("fx.provision", context, inputs as InputsWithProjectPath);
+    if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
     return ok(Void);
   }

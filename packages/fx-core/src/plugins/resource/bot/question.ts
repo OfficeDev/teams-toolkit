@@ -161,14 +161,14 @@ export function getNotificationTriggerQuestionCondition(runtime: Runtime) {
           if (inputs && inputs[CoreQuestionNames.Runtime] === runtime) {
             return undefined;
           }
-        } else if (runtime == Runtime.Node) {
+        } else if (runtime === Runtime.Node) {
           return undefined;
         }
       }
       if (inputs?.platform === Platform.VS && runtime === Runtime.Dotnet) {
         return undefined;
       }
-      if (inputs?.platform === Platform.VSCode && runtime == Runtime.Node) {
+      if (inputs?.platform === Platform.VSCode && runtime === Runtime.Node) {
         return undefined;
       }
       return `runtime is not ${runtime}`;

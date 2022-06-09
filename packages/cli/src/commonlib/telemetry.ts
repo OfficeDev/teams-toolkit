@@ -7,8 +7,8 @@ import { TelemetryReporter } from "@microsoft/teamsfx-api";
 import { Correlator } from "@microsoft/teamsfx-core";
 import { TelemetryProperty } from "../telemetry/cliTelemetryEvents";
 import { getAllFeatureFlags, getProjectId } from "../utils";
-import { CliConfigOptions, CliConfigRunFrom, UserSettings } from "../userSetttings";
-import { tryDetectCICDPlatform } from "./common/cicdPlatformSenser";
+import { CliConfigOptions } from "../userSetttings";
+import { tryDetectCICDPlatform } from "./common/cicdPlatformDetector";
 
 /**
  *  CLI telemetry reporter used by fx-core.

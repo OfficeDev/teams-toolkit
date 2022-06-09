@@ -40,6 +40,7 @@ import { getTemplatesFolder } from "../../../../folder";
 import {
   getAppDirectory,
   getSPFxTenant,
+  getSPFxToken,
   GraphReadUserScopes,
   GraphScopes,
   SPFxScopes,
@@ -283,17 +284,7 @@ export class SPFxPluginImpl {
       }
       SPOClient.setBaseUrl(tenant.value);
 
-      const graphTokenRes = await tokenProvider.m365TokenProvider?.getAccessToken({
-        scopes: GraphReadUserScopes,
-      });
-      let spoToken = undefined;
-      if (graphTokenRes && graphTokenRes.isOk()) {
-        const tenant = await getSPFxTenant(graphTokenRes.value);
-        const spfxTokenRes = await tokenProvider.m365TokenProvider!.getAccessToken({
-          scopes: SPFxScopes(tenant),
-        });
-        spoToken = spfxTokenRes.isOk() ? spfxTokenRes.value : undefined;
-      }
+      const spoToken = await getSPFxToken(tokenProvider.m365TokenProvider);
       if (!spoToken) {
         return err(GetSPOTokenFailedError());
       }

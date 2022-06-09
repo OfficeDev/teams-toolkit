@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { M365TokenProvider, PluginContext } from "@microsoft/teamsfx-api";
+import { M365TokenProvider } from "@microsoft/teamsfx-api";
 import { ResultFactory } from "../results";
 import { GetTokenError, TenantNotExistError } from "../errors";
 import { AppStudioScopes, GraphScopes } from "../../../../common";

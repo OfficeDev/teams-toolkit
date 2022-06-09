@@ -136,7 +136,7 @@ export async function deactivate() {
 
 /**
  * Commands that always show in command palette. They will activate extension and wait for its completion.
- * They are used in welcome view and walkthrough.
+ * They are usually used in welcome view and walkthrough.
  */
 function registerActivateCommands(context: vscode.ExtensionContext) {
   // non-teamsfx project upgrade
@@ -145,6 +145,12 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.checkUpgrade, args)
   );
   context.subscriptions.push(checkUpgradeCmd);
+
+  // user can manage account in non-teamsfx project
+  const cmpAccountsCmd = vscode.commands.registerCommand("fx-extension.cmpAccounts", (...args) =>
+    Correlator.run(handlers.cmpAccountsHandler, args)
+  );
+  context.subscriptions.push(cmpAccountsCmd);
 
   // Create a new Teams app
   registerInCommandController(
@@ -351,11 +357,6 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
       Correlator.run(handlers.createNewEnvironment, [TelemetryTriggerFrom.ViewTitleNavigation])
   );
   context.subscriptions.push(createNewEnvironment);
-
-  const cmpAccountsCmd = vscode.commands.registerCommand("fx-extension.cmpAccounts", () =>
-    Correlator.run(handlers.cmpAccountsHandler)
-  );
-  context.subscriptions.push(cmpAccountsCmd);
 
   const deployAadAppManifest = vscode.commands.registerCommand(
     "fx-extension.deployAadAppManifest",

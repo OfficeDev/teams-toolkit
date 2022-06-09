@@ -57,7 +57,8 @@ describe("m365", () => {
       const stub = sandbox.stub(msgConn, "sendRequest").callsFake(() => {
         return promise;
       });
-      await chai.expect(appStudio.getAccessToken({ scopes: ["test"] })).to.be.rejected;
+      const res = await appStudio.getAccessToken({ scopes: ["test"] });
+      await chai.expect(res.isErr()).equal(true);
       stub.restore();
     });
 
@@ -79,16 +80,13 @@ describe("m365", () => {
       const stub = sandbox.stub(msgConn, "sendRequest").callsFake(() => {
         return promise;
       });
-      await chai.expect(appStudio.getJsonObject({ scopes: ["test"] })).to.be.rejected;
+      const res = await appStudio.getJsonObject({ scopes: ["test"] });
+      chai.expect(res.isErr()).equal(true);
       stub.restore();
     });
 
     it("signout", async () => {
       await chai.expect(appStudio.signout()).to.be.rejected;
-    });
-
-    it("getStatus", async () => {
-      await chai.expect(appStudio.getStatus({ scopes: ["test"] })).to.be.rejected;
     });
 
     it("setStatusChangeMap", async () => {

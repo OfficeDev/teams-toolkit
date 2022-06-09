@@ -209,7 +209,8 @@ export class TeamsBot implements Plugin {
           const res = new QTreeNode({
             type: "group",
           });
-          Object.values(Runtime).forEach((runtime) => {
+          const runtimes = [Runtime.Dotnet, Runtime.Node];
+          runtimes.forEach((runtime) => {
             const node = new QTreeNode(
               createHostTypeTriggerQuestion(context.answers?.platform, runtime)
             );

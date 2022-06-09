@@ -100,7 +100,7 @@ export async function deploy(
         )
       );
     }
-  } else if (envInfo.envName !== "local") {
+  } else if (envInfo.envName !== "local" && inputs[Constants.DEPLOY_AAD] !== "yes") {
     const checkAzure = await checkSubscription(
       { version: 2, data: envInfo },
       tokenProvider.azureAccountProvider

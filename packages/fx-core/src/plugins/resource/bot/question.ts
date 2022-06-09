@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { Inputs, MultiSelectQuestion, OptionItem, Platform } from "@microsoft/teamsfx-api";
-import { isPreviewFeaturesEnabled } from "../../../common/featureFlags";
+import { isCLIDotNetEnabled, isPreviewFeaturesEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { CoreQuestionNames } from "../../../core/question";
 import {
@@ -63,13 +63,13 @@ export const HostTypeTriggerOptionsForVS: HostTypeTriggerOptionItem[] = [AppServ
 //   - users must select at least one trigger.
 export function createHostTypeTriggerQuestion(
   platform?: Platform,
-  cliRuntime?: string
+  runtime?: string
 ): MultiSelectQuestion {
   const prefix = "plugins.bot.questionHostTypeTrigger";
 
   let staticOptions: HostTypeTriggerOptionItem[] = HostTypeTriggerOptions;
   let defaultOptionItem = AppServiceOptionItem;
-  if (platform === Platform.VS || cliRuntime === "dotnet") {
+  if (runtime === "dotnet") {
     staticOptions = HostTypeTriggerOptionsForVS;
     defaultOptionItem = AppServiceOptionItemForVS;
   }
@@ -151,14 +151,25 @@ export const showNotificationTriggerCondition = {
   containsAny: [NotificationOptionItem.id],
 };
 
-export function getCliTriggerCondition(runtime: string) {
+export function getTriggerQuestionCondition(runtime: string) {
   return {
     validFunc: async (input: unknown, inputs?: Inputs) => {
-      if (inputs && inputs[CoreQuestionNames.Runtime] === runtime) {
-        return undefined;
-      } else {
-        return `Runtime is not ${runtime}.`;
+      if (inputs?.platform === Platform.CLI) {
+        if (isCLIDotNetEnabled()) {
+          if (inputs && inputs[CoreQuestionNames.Runtime] === runtime) {
+            return undefined;
+          }
+        } else if (runtime == "nodejs") {
+          return undefined;
+        }
       }
+      if (inputs?.platform === Platform.VS && runtime === "dotnet") {
+        return undefined;
+      }
+      if (inputs?.platform === Platform.VSCode && runtime == "nodejs") {
+        return undefined;
+      }
+      return `runtime is not ${runtime}`;
     },
   };
 }

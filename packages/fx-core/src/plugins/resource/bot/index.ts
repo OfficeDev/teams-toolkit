@@ -36,7 +36,7 @@ import { FunctionsHostedBotImpl } from "./functionsHostedBot/plugin";
 import { ScaffoldConfig } from "./configs/scaffoldConfig";
 import {
   createHostTypeTriggerQuestion,
-  getCliTriggerCondition,
+  getTriggerQuestionCondition,
   showNotificationTriggerCondition,
 } from "./question";
 
@@ -208,22 +208,32 @@ export class TeamsBot implements Plugin {
           const res = new QTreeNode({
             type: "group",
           });
-          if (isCLIDotNetEnabled()) {
-            const dotnetNode = new QTreeNode(createHostTypeTriggerQuestion(Platform.CLI, "dotnet"));
-            dotnetNode.condition = getCliTriggerCondition("dotnet");
-            res.addChild(dotnetNode);
-            const nodejsNode = new QTreeNode(createHostTypeTriggerQuestion(Platform.CLI, "nodejs"));
-            nodejsNode.condition = getCliTriggerCondition("nodejs");
-            res.addChild(nodejsNode);
-            res.condition = showNotificationTriggerCondition;
-            return ok(res);
-          }
-          if (context.answers?.platform === Platform.VS || isBotNotificationEnabled()) {
-            res.addChild(new QTreeNode(createHostTypeTriggerQuestion(context.answers?.platform)));
-            res.condition = showNotificationTriggerCondition;
-            return ok(res);
-          }
-          return ok(undefined);
+          const runtimes = ["dotnet", "nodejs"];
+          runtimes.forEach((runtime) => {
+            const node = new QTreeNode(
+              createHostTypeTriggerQuestion(context.answers?.platform, runtime)
+            );
+            node.condition = getTriggerQuestionCondition(runtime);
+            res.addChild(node);
+          });
+          res.condition = showNotificationTriggerCondition;
+          return ok(res);
+          // if (isCLIDotNetEnabled()) {
+          //   const dotnetNode = new QTreeNode(createHostTypeTriggerQuestion(Platform.CLI, "dotnet"));
+          //   dotnetNode.condition = getCliTriggerCondition("dotnet");
+          //   res.addChild(dotnetNode);
+          //   const nodejsNode = new QTreeNode(createHostTypeTriggerQuestion(Platform.CLI, "nodejs"));
+          //   nodejsNode.condition = getCliTriggerCondition("nodejs");
+          //   res.addChild(nodejsNode);
+          //   res.condition = showNotificationTriggerCondition;
+          //   return ok(res);
+          // }
+          // if (context.answers?.platform === Platform.VS || isBotNotificationEnabled()) {
+          //   res.addChild(new QTreeNode(createHostTypeTriggerQuestion(context.answers?.platform)));
+          //   res.condition = showNotificationTriggerCondition;
+          //   return ok(res);
+          // }
+          // return ok(undefined);
         },
         true,
         LifecycleFuncNames.GET_QUETSIONS_FOR_SCAFFOLDING

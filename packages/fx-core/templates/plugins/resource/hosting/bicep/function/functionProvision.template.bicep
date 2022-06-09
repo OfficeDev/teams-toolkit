@@ -53,10 +53,22 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
           name: 'FUNCTIONS_EXTENSION_VERSION'
           value: '~4' // Use Azure Functions runtime v4
         }
+        {{#if (contains "node" configs)}}
         {
           name: 'FUNCTIONS_WORKER_RUNTIME'
           value: 'node' // Set runtime to NodeJS
         }
+        {
+          name: 'WEBSITE_NODE_DEFAULT_VERSION'
+          value: '~16' // Set NodeJS version to 16.x
+        }
+        {{/if}}
+        {{#if (contains "dotnet" configs)}}
+        {
+          name: 'FUNCTIONS_WORKER_RUNTIME'
+          value: 'dotnet' // Set runtime to .NET
+        }
+        {{/if}}
         {
           name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
           value: 'DefaultEndpointsProtocol=https;AccountName=${storage.name};AccountKey=${listKeys(storage.id, storage.apiVersion).keys[0].value};EndpointSuffix=${environment().suffixes.storage}' // Azure Functions internal setting
@@ -65,12 +77,6 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
           name: 'WEBSITE_RUN_FROM_PACKAGE'
           value: '1' // Run Azure Functions from a package file
         }
-        {{#if (contains "node" configs)}}
-        {
-          name: 'WEBSITE_NODE_DEFAULT_VERSION'
-          value: '~16' // Set NodeJS version to 16.x
-        }
-        {{/if}}
         {{#if (contains "running-on-azure" configs)}}
         {
           name: 'RUNNING_ON_AZURE'

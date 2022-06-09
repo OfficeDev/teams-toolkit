@@ -157,7 +157,7 @@
       "explorer/context": [
         {
           "command": "fx-extension.deployAadAppManifestFromCtxMenu",
-          "when": "resourceFilename == aad.template.json && !fx-extension.isSPFx",
+          "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled",
           "group": "deploy@0"
         },
         {
@@ -313,7 +313,7 @@
         },
         {
           "command": "fx-extension.openPreviewAadFile",
-          "when": "resourceFilename == aad.template.json",
+          "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled",
           "group": "navigation"
         }
       ],
@@ -439,6 +439,11 @@
         "category": "Teams"
       },
       {
+        "command": "fx-extension.cmpAccounts",
+        "title": "%teamstoolkit.commands.accounts.title%",
+        "category": "Teams"
+      },
+      {
         "command": "fx-extension.getNewProjectPath",
         "title": "Teams - Get Path",
         "enablement": "never"
@@ -509,12 +514,6 @@
         "category": "Teams"
       },
       {
-        "command": "fx-extension.cmpAccounts",
-        "title": "%teamstoolkit.commands.accounts.title%",
-        "enablement": "fx-extension.initialized",
-        "category": "Teams"
-      },
-      {
         "command": "fx-extension.deploy",
         "title": "%teamstoolkit.commands.deploy.title%",
         "enablement": "fx-extension.isTeamsFx",
@@ -523,7 +522,7 @@
       {
         "command": "fx-extension.deployAadAppManifest",
         "title": "%teamstoolkit.commands.deployAadAppManifest.title%",
-        "enablement": "fx-extension.isTeamsFx && !fx-extension.isSPFx",
+        "enablement": "fx-extension.isTeamsFx && fx-extension.isAadManifestEnabled",
         "category": "Teams"
       },
       {
@@ -594,7 +593,7 @@
       {
         "command": "fx-extension.deployAadAppManifestFromCtxMenu",
         "title": "%teamstoolkit.commands.deployAadAppManifestFromCtxMenu.title%",
-        "enablement": "!fx-extension.isSPFx"
+        "enablement": "fx-extension.isAadManifestEnabled"
       },
       {
         "command": "fx-extension.deployManifestFromCtxMenu",

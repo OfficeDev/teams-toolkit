@@ -6,7 +6,7 @@ param provisionOutputs object
 @secure()
 param currentAppSettings object
 
-var functionName = split(provisionOutputs.botFunctionOutput.value.botWebAppResourceId, '/')[8]
+var functionName = split(provisionOutputs.{{moduleName}}Output.value.resourceId, '/')[8]
 
 {{#if (contains "fx-resource-aad-app-for-teams" plugins)}}
 var m365ClientId = provisionParameters['m365ClientId']
@@ -35,7 +35,7 @@ var botAadAppClientSecret = provisionParameters['botAadAppClientSecret']
   {{/if}}
 {{/if}}
 
-resource botFunctionSettings 'Microsoft.Web/sites/config@2021-02-01' = {
+resource {{moduleName}}Settings 'Microsoft.Web/sites/config@2021-02-01' = {
   name: '${functionName}/appsettings'
   properties: union({
 {{#if (contains "fx-resource-aad-app-for-teams" plugins)}}

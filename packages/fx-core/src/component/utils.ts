@@ -29,6 +29,7 @@ import { SolutionError } from "../plugins/solution/fx-solution/constants";
 import * as uuid from "uuid";
 import { getProjectSettingsVersion } from "../common/projectSettingsHelper";
 import { DefaultManifestProvider } from "../plugins/solution/fx-solution/v3/addFeature";
+import { generateResourceBaseName } from "../plugins/solution/fx-solution/arm";
 
 export async function persistProvisionBicep(
   projectPath: string,
@@ -173,8 +174,10 @@ export function persistParamsBicepPlans(
 
 export async function persistParams(
   projectPath: string,
+  appName: string,
   params: Record<string, string>
 ): Promise<Result<any, FxError>> {
+  params.resourceBaseName = generateResourceBaseName(appName, "");
   const envListResult = await environmentManager.listRemoteEnvConfigs(projectPath);
   if (envListResult.isErr()) {
     return err(envListResult.error);
@@ -228,6 +231,7 @@ export async function persistParams(
 
 export async function persistBicep(
   projectPath: string,
+  appName: string,
   bicep: Bicep
 ): Promise<Result<any, FxError>> {
   if (bicep.Provision) {
@@ -239,7 +243,7 @@ export async function persistBicep(
     if (res.isErr()) return err(res.error);
   }
   if (bicep.Parameters) {
-    const res = await persistParams(projectPath, bicep.Parameters);
+    const res = await persistParams(projectPath, appName, bicep.Parameters);
     if (res.isErr()) return err(res.error);
   }
   return ok(undefined);
@@ -404,4 +408,9 @@ export function createContextV3(projectSettings?: ProjectSettingsV3): ContextV3 
     manifestProvider: new DefaultManifestProvider(),
   };
   return context;
+}
+
+export function normalizeName(appName: string): string {
+  const normalizedAppName = appName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+  return normalizedAppName;
 }

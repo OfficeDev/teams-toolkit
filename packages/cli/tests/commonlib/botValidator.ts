@@ -59,7 +59,9 @@ export class BotValidator {
     this.projectPath = projectPath;
     this.env = env;
 
-    const resourceId = ctx[PluginId.Bot][StateConfigKey.botWebAppResourceId];
+    const botWebAppResourceId = ctx[PluginId.Bot][StateConfigKey.botWebAppResourceId];
+    const botResourceId = ctx[PluginId.Bot][StateConfigKey.botResourceId];
+    const resourceId = botResourceId ?? botWebAppResourceId;
     chai.assert.exists(resourceId);
     this.subscriptionId = getSubscriptionIdFromResourceId(resourceId);
     chai.assert.exists(this.subscriptionId);

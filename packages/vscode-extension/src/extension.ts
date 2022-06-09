@@ -16,7 +16,12 @@ import {
   Result,
   TemplateFolderName,
 } from "@microsoft/teamsfx-api";
-import { Correlator, isConfigUnifyEnabled, isValidProject } from "@microsoft/teamsfx-core";
+import {
+  Correlator,
+  isConfigUnifyEnabled,
+  isValidProject,
+  isAADEnabled,
+} from "@microsoft/teamsfx-core";
 
 import {
   AadAppTemplateCodeLensProvider,
@@ -109,7 +114,7 @@ export async function activate(context: vscode.ExtensionContext) {
   handlers.activate();
 
   // Init VSC context key
-  await initializeContextKey();
+  await initializeContextKey(isTeamsFxProject);
 
   // UI is ready to show & interact
   await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
@@ -131,7 +136,7 @@ export async function deactivate() {
 
 /**
  * Commands that always show in command palette. They will activate extension and wait for its completion.
- * They are used in welcome view and walkthrough.
+ * They are usually used in welcome view and walkthrough.
  */
 function registerActivateCommands(context: vscode.ExtensionContext) {
   // non-teamsfx project upgrade
@@ -140,6 +145,12 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.checkUpgrade, args)
   );
   context.subscriptions.push(checkUpgradeCmd);
+
+  // user can manage account in non-teamsfx project
+  const cmpAccountsCmd = vscode.commands.registerCommand("fx-extension.cmpAccounts", (...args) =>
+    Correlator.run(handlers.cmpAccountsHandler, args)
+  );
+  context.subscriptions.push(cmpAccountsCmd);
 
   // Create a new Teams app
   registerInCommandController(
@@ -346,11 +357,6 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
       Correlator.run(handlers.createNewEnvironment, [TelemetryTriggerFrom.ViewTitleNavigation])
   );
   context.subscriptions.push(createNewEnvironment);
-
-  const cmpAccountsCmd = vscode.commands.registerCommand("fx-extension.cmpAccounts", () =>
-    Correlator.run(handlers.cmpAccountsHandler)
-  );
-  context.subscriptions.push(cmpAccountsCmd);
 
   const deployAadAppManifest = vscode.commands.registerCommand(
     "fx-extension.deployAadAppManifest",
@@ -612,7 +618,7 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(specifySubscription);
 }
 
-async function initializeContextKey() {
+async function initializeContextKey(isTeamsFxProject: boolean) {
   await vscode.commands.executeCommand("setContext", "fx-extension.isNotValidNode", !isValidNode());
 
   await vscode.commands.executeCommand("setContext", "fx-extension.isSPFx", isSPFxProject);
@@ -622,6 +628,16 @@ async function initializeContextKey() {
     "fx-extension.isM365",
     workspaceUri && (await isM365Project(workspaceUri.fsPath))
   );
+
+  if (isTeamsFxProject) {
+    const aadTemplateWatcher = vscode.workspace.createFileSystemWatcher("**/aad.template.json");
+
+    aadTemplateWatcher.onDidCreate(async (event) => {
+      await setAadManifestEnabledContext();
+    });
+  }
+
+  await setAadManifestEnabledContext();
 
   await vscode.commands.executeCommand(
     "setContext",
@@ -633,6 +649,14 @@ async function initializeContextKey() {
     "setContext",
     "fx-extension.isConfigUnifyEnabled",
     isConfigUnifyEnabled()
+  );
+}
+
+async function setAadManifestEnabledContext() {
+  vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isAadManifestEnabled",
+    isAADEnabled(await handlers.getAzureSolutionSettings())
   );
 }
 

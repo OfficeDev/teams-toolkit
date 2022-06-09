@@ -179,8 +179,8 @@ export class TeamsBot {
           capability: { name: "Bot" },
         },
       },
+      WriteProjectSettingsAction,
     ];
-    actions.push(WriteProjectSettingsAction);
     const group: GroupAction = {
       type: "group",
       name: "teams-bot.add",

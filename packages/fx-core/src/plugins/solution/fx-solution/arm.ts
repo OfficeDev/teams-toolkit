@@ -444,7 +444,7 @@ export async function doDeployArmTemplatesV3(
   inputs: v2.InputsWithProjectPath,
   envInfo: v3.EnvInfoV3,
   azureAccountProvider: AzureAccountProvider
-): Promise<Result<void, FxError>> {
+): Promise<Result<undefined, FxError>> {
   const progressHandler = await ProgressHelper.startDeployArmTemplatesProgressHandler(
     ctx.userInteraction
   );
@@ -685,11 +685,11 @@ export async function deployArmTemplatesV3(
   inputs: v2.InputsWithProjectPath,
   envInfo: v3.EnvInfoV3,
   azureAccountProvider: AzureAccountProvider
-): Promise<Result<void, FxError>> {
+): Promise<Result<undefined, FxError>> {
   ctx.logProvider?.info(
     getLocalizedString("core.deployArmTemplates.StartNotice", PluginDisplayName.Solution)
   );
-  let result: Result<void, FxError>;
+  let result: Result<undefined, FxError>;
   ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.ArmDeploymentStart, {
     [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
   });
@@ -1506,7 +1506,7 @@ function expandParameterPlaceholdersV3(
   return compileHandlebarsTemplateString(parameterContent, availableVariables);
 }
 
-function generateResourceBaseName(appName: string, envName: string): string {
+export function generateResourceBaseName(appName: string, envName: string): string {
   const maxAppNameLength = 10;
   const maxEnvNameLength = 4;
   const normalizedAppName = appName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
@@ -1681,7 +1681,7 @@ class Arm {
     inputs: v2.InputsWithProjectPath,
     envInfo: v3.EnvInfoV3,
     azureAccountProvider: AzureAccountProvider
-  ): Promise<Result<void, FxError>> {
+  ): Promise<Result<undefined, FxError>> {
     return deployArmTemplatesV3(ctx, inputs, envInfo, azureAccountProvider);
   }
 }

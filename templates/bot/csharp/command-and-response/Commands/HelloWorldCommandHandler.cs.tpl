@@ -1,7 +1,10 @@
 ﻿namespace {{ProjectName}}.Commands
 {
+    using AdaptiveCards.Templating;
     using Microsoft.Bot.Builder;
+    using Microsoft.Bot.Schema;
     using Microsoft.TeamsFx.Conversation;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// The <see cref="HelloWorldCommandHandler"/> registers a pattern with the <see cref="ITeamsCommandHandler"/> and 
@@ -29,15 +32,27 @@
             // Read adaptive card template
             var cardTemplate = await File.ReadAllTextAsync(_adaptiveCardFilePath, cancellationToken);
 
-            // Render card and send response
-            var activity = MessageFactory.Attachment(AdaptiveCardHelper.CreateAdaptiveCard(
-                cardTemplate,
+            // Render adaptive card content
+            var cardContent = new AdaptiveCardTemplate(cardTemplate).Expand
+            (
                 new CardModel
                 {
                     Title = "Your Hello World Bot is Running",
                     Body = "Congratulations! Your hello world bot is running. Click the documentation below to learn more about Bots and the Teams Toolkit.",
-                }));
+                }
+            );
 
+            // Build attachment
+            var activity = MessageFactory.Attachment
+            (
+                new Attachment
+                {
+                    ContentType = "application/vnd.microsoft.card.adaptive",
+                    Content = JsonConvert.DeserializeObject(cardContent),
+                }
+            );
+
+            // send response
             return new ActivityCommandResponse(activity);
         }
     }

@@ -10,7 +10,7 @@ import {
   AppServiceOptionItemForVS,
 } from "../question";
 import { HostTypes } from "../resources/strings";
-import { ProgrammingLanguage, Runtime } from "./enum";
+import { BicepModules, ProgrammingLanguage, Runtime } from "./enum";
 
 const runtimeMap: Map<ProgrammingLanguage, Runtime> = new Map<ProgrammingLanguage, Runtime>([
   [ProgrammingLanguage.Js, Runtime.NodeJs],
@@ -54,6 +54,10 @@ const projectFileMap = new Map<Runtime, (appName: string) => string>([
   [Runtime.NodeJs, (_: string) => "package.json"],
   [Runtime.Dotnet, (appName: string) => `${appName}.csproj`],
 ]);
+
+export const moduleMap: { [key: string]: string } = {
+  [ServiceType.Functions]: BicepModules.Functions,
+};
 
 export function getRuntime(lang: ProgrammingLanguage): Runtime {
   const runtime = runtimeMap.get(lang);

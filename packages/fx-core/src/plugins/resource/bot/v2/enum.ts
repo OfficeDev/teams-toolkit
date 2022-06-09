@@ -11,3 +11,7 @@ export enum Runtime {
   NodeJs = "nodejs",
   Dotnet = "dotnet",
 }
+
+export enum BicepModules {
+  Functions = "botFunction",
+}

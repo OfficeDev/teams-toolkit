@@ -9,6 +9,7 @@ import sinon from "sinon";
 import { createMessageConnection } from "vscode-jsonrpc";
 import ServerM365TokenProvider from "../../../src/providers/token/m365";
 import { err, ok } from "@microsoft/teamsfx-api";
+import { AppStudioScopes } from "../../../../fx-core/src";
 
 chai.use(chaiAsPromised);
 
@@ -82,6 +83,24 @@ describe("m365", () => {
       });
       const res = await appStudio.getJsonObject({ scopes: ["test"] });
       chai.expect(res.isErr()).equal(true);
+      stub.restore();
+    });
+
+    it("getStatus: ok", async () => {
+      const promise1 = Promise.resolve(
+        ok("eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ")
+      );
+      const promise2 = Promise.resolve(
+        ok(JSON.stringify('{"sub": "1234567890","name": "John Doe","iat": 1516239022}'))
+      );
+      const stub = sandbox
+        .stub(msgConn, "sendRequest")
+        .onFirstCall()
+        .returns(Promise.resolve(promise1))
+        .onSecondCall()
+        .returns(Promise.resolve(promise2));
+      const res = await appStudio.getStatus({ scopes: ["test"] });
+      chai.expect(res.isOk()).equal(true);
       stub.restore();
     });
 

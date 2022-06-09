@@ -19,7 +19,11 @@ import * as os from "os";
 import { environmentManager } from "./environment";
 import { sampleProvider } from "../common/samples";
 import { isAadManifestEnabled, isExistingTabAppEnabled, isM365AppEnabled } from "../common/tools";
-import { isBotNotificationEnabled, isPreviewFeaturesEnabled } from "../common/featureFlags";
+import {
+  isBotNotificationEnabled,
+  isOfficeAddinEnabled,
+  isPreviewFeaturesEnabled,
+} from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import {
   BotOptionItem,
@@ -59,6 +63,8 @@ export enum CoreQuestionNames {
   NewResourceGroupLocation = "newResourceGroupLocation",
   NewTargetEnvName = "newTargetEnvName",
   ExistingTabEndpoint = "existing-tab-endpoint",
+  ExampleSingleSelectQuestion = "example-single-select",
+  ExampleMultiSelectQuestion = "example-multi-select",
 }
 
 export const ProjectNamePattern = "^[a-zA-Z][\\da-zA-Z]+$";
@@ -534,6 +540,65 @@ export const ScratchOptionNoVSC: OptionItem = {
   detail: getLocalizedString("core.ScratchOptionNoVSC.detail"),
 };
 
+// TODO: localize the strings
+export const CreateNewOfficeAddinOption: OptionItem = {
+  id: "create-office-addin",
+  label: "Create an Office Addin",
+  detail: `Create an Office Addin`,
+};
+
+export const SingleSelectOptionOne: OptionItem = {
+  id: "option1",
+  label: "Option 1 label",
+  detail: "Option 1 detail",
+  groupName: "group1",
+};
+
+export const SingleSelectOptionTwo: OptionItem = {
+  id: "option2",
+  label: "Option 2 label",
+  detail: "Option 2 detail",
+  groupName: "group1",
+};
+
+export const SingleSelectOptionThree: OptionItem = {
+  id: "option3",
+  label: "Option 3 label",
+  detail: "Option 3 detail",
+  groupName: "group2",
+};
+
+// TODO: localize the strings
+export const ExampleSingleSelectQuestion: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: CoreQuestionNames.ExampleSingleSelectQuestion,
+  title: "This is a single select question",
+  staticOptions: [SingleSelectOptionOne, SingleSelectOptionTwo, SingleSelectOptionThree],
+  default: SingleSelectOptionOne.id,
+  placeholder: "This is placeholder",
+};
+
+export const MultiSelectOptionOne: OptionItem = {
+  id: "multi-option1",
+  label: "Option 1 label",
+  detail: "Option 1 detail",
+};
+
+export const MultiSelectOptionTwo: OptionItem = {
+  id: "multi-option2",
+  label: "Option 2 label",
+  detail: "Option 2 detail",
+};
+
+export const ExampleMultiSelectQuestion: MultiSelectQuestion = {
+  name: CoreQuestionNames.ExampleMultiSelectQuestion,
+  title: "This is title",
+  type: "multiSelect",
+  staticOptions: [MultiSelectOptionOne, MultiSelectOptionTwo],
+  default: undefined,
+  placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
+};
+
 export const RuntimeOptionNodeJs: OptionItem = {
   id: "nodejs",
   label: "Node.js",
@@ -578,6 +643,9 @@ export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSele
   } else {
     staticOptions.push(ScratchOptionYes);
     staticOptions.push(ScratchOptionNo);
+  }
+  if (isOfficeAddinEnabled()) {
+    staticOptions.push(CreateNewOfficeAddinOption);
   }
   return {
     type: "singleSelect",

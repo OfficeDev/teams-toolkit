@@ -39,6 +39,9 @@ import {
   createCapabilityForDotNet,
   createCapabilityQuestion,
   createCapabilityQuestionPreview,
+  CreateNewOfficeAddinOption,
+  ExampleMultiSelectQuestion,
+  ExampleSingleSelectQuestion,
   ExistingTabEndpointQuestion,
   getCreateNewOrFromSampleQuestion,
   getRuntimeQuestion,
@@ -53,7 +56,7 @@ import {
 } from "../question";
 import { getAllSolutionPluginsV2 } from "../SolutionPluginContainer";
 import { CoreHookContext } from "../types";
-import { isPreviewFeaturesEnabled, isCLIDotNetEnabled } from "../../common";
+import { isPreviewFeaturesEnabled, isCLIDotNetEnabled, isOfficeAddinEnabled } from "../../common";
 
 /**
  * This middleware will help to collect input from question flow
@@ -413,10 +416,22 @@ async function setSolutionScaffoldingQuestionNodeAsChild(
   return ok(Void);
 }
 
+function addOfficeAddinQuestions(root: QTreeNode): void {
+  const officeAddinRoot = new QTreeNode({ type: "group" });
+  officeAddinRoot.condition = { equals: CreateNewOfficeAddinOption.id };
+  root.addChild(officeAddinRoot);
+
+  officeAddinRoot.addChild(new QTreeNode(ExampleSingleSelectQuestion));
+  officeAddinRoot.addChild(new QTreeNode(ExampleMultiSelectQuestion));
+}
+
 async function getQuestionsForCreateProjectWithoutDotNet(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
+  if (isOfficeAddinEnabled()) {
+    addOfficeAddinQuestions(node);
+  }
 
   // create new
   const createNew = new QTreeNode({ type: "group" });

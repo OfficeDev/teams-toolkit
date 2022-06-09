@@ -82,6 +82,7 @@ export class FeatureFlagName {
   static readonly DeployManifest = "TEAMSFX_DEPLOY_MANIFEST";
   static readonly Preview = "TEAMSFX_PREVIEW";
   static readonly CLIDotNet = "TEAMSFX_CLI_DOTNET";
+  static readonly OfficeAddin = "TEAMSFX_OFFICE_ADDIN";
 }
 
 export class ManifestVariables {

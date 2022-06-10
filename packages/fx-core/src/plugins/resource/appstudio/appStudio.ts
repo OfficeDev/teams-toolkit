@@ -249,6 +249,7 @@ export namespace AppStudioClient {
         headers: { "Content-Type": "application/zip" },
       });
 
+      const requestPath = `${response.request?.method} ${response.request?.path}`;
       if (response && response.data) {
         if (response.data.error) {
           // To avoid App Studio BadGateway error
@@ -261,7 +262,7 @@ export namespace AppStudioClient {
           }
           throw AppStudioResultFactory.SystemError(
             AppStudioError.TeamsAppPublishFailedError.name,
-            AppStudioError.TeamsAppPublishFailedError.message(teamsAppId),
+            AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, requestPath),
             `code: ${response.data.error.code}, message: ${response.data.error.message}`
           );
         } else {
@@ -270,7 +271,7 @@ export namespace AppStudioClient {
       } else {
         throw AppStudioResultFactory.SystemError(
           AppStudioError.TeamsAppPublishFailedError.name,
-          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId)
+          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, requestPath)
         );
       }
     } catch (e: any) {
@@ -278,9 +279,10 @@ export namespace AppStudioClient {
         throw e;
       } else {
         const correlationId = e.response?.headers[Constants.CORRELATION_ID];
+        const requestPath = `${e.response?.request?.method} ${e.response.request?.path}`;
         throw AppStudioResultFactory.SystemError(
           AppStudioError.TeamsAppPublishFailedError.name,
-          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, correlationId),
+          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, requestPath, correlationId),
           e
         );
       }
@@ -315,15 +317,19 @@ export namespace AppStudioClient {
       } else {
         throw AppStudioResultFactory.SystemError(
           AppStudioError.TeamsAppPublishFailedError.name,
-          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId)
+          AppStudioError.TeamsAppPublishFailedError.message(
+            teamsAppId,
+            `GET /api/publishing/${teamsAppId}`
+          )
         );
       }
 
+      const requestPath = `${response.request?.method} ${response.request?.path}`;
       if (response && response.data) {
         if (response.data.error || response.data.errorMessage) {
           throw AppStudioResultFactory.SystemError(
             AppStudioError.TeamsAppPublishFailedError.name,
-            AppStudioError.TeamsAppPublishFailedError.message(teamsAppId),
+            AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, requestPath),
             response.data.error?.message || response.data.errorMessage
           );
         } else {
@@ -332,7 +338,7 @@ export namespace AppStudioClient {
       } else {
         throw AppStudioResultFactory.SystemError(
           AppStudioError.TeamsAppPublishFailedError.name,
-          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId)
+          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, requestPath)
         );
       }
     } catch (error: any) {
@@ -340,9 +346,10 @@ export namespace AppStudioClient {
         throw error;
       } else {
         const correlationId = error.response?.headers[Constants.CORRELATION_ID];
+        const requestPath = `${error.response?.request?.method} ${error.response.request?.path}`;
         throw AppStudioResultFactory.SystemError(
           AppStudioError.TeamsAppPublishFailedError.name,
-          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, correlationId),
+          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, requestPath, correlationId),
           error
         );
       }

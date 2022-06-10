@@ -36,7 +36,7 @@ import { FunctionsHostedBotImpl } from "./functionsHostedBot/plugin";
 import { ScaffoldConfig } from "./configs/scaffoldConfig";
 import {
   createHostTypeTriggerQuestion,
-  getNotificationTriggerQuestionCondition,
+  getConditionForNotificationTriggerQuestion,
   showNotificationTriggerCondition,
 } from "./question";
 import { Runtime } from "./v2/enum";
@@ -216,7 +216,7 @@ export class TeamsBot implements Plugin {
               const node = new QTreeNode(
                 createHostTypeTriggerQuestion(context.answers?.platform, runtime)
               );
-              node.condition = getNotificationTriggerQuestionCondition(runtime);
+              node.condition = getConditionForNotificationTriggerQuestion(runtime);
               res.addChild(node);
             });
           } else {

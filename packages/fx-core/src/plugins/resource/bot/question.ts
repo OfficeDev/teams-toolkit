@@ -151,25 +151,14 @@ export const showNotificationTriggerCondition = {
   containsAny: [NotificationOptionItem.id],
 };
 
-export function getNotificationTriggerQuestionCondition(runtime: Runtime) {
+export function getConditionForNotificationTriggerQuestion(runtime: Runtime) {
   return {
     validFunc: async (input: unknown, inputs?: Inputs) => {
-      if (inputs?.platform === Platform.CLI) {
-        if (isCLIDotNetEnabled()) {
-          if (inputs && inputs[CoreQuestionNames.Runtime] === runtime) {
-            return undefined;
-          }
-        } else if (runtime === Runtime.Node) {
-          return undefined;
-        }
-      }
-      if (inputs?.platform === Platform.VS && runtime === Runtime.Dotnet) {
+      if (inputs && inputs[CoreQuestionNames.Runtime] === runtime) {
         return undefined;
+      } else {
+        return `runtime is not ${runtime}`;
       }
-      if (inputs?.platform === Platform.VSCode && runtime === Runtime.Node) {
-        return undefined;
-      }
-      return `runtime is not ${runtime}`;
     },
   };
 }

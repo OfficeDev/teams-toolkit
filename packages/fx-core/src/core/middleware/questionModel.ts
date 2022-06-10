@@ -37,11 +37,10 @@ import { TOOLS } from "../globalVars";
 import {
   createAppNameQuestion,
   createCapabilityForDotNet,
+  createCapabilityForOfficeAddin,
   createCapabilityQuestion,
   createCapabilityQuestionPreview,
   CreateNewOfficeAddinOption,
-  ExampleMultiSelectQuestion,
-  ExampleSingleSelectQuestion,
   ExistingTabEndpointQuestion,
   getCreateNewOrFromSampleQuestion,
   getRuntimeQuestion,
@@ -416,13 +415,25 @@ async function setSolutionScaffoldingQuestionNodeAsChild(
   return ok(Void);
 }
 
-function addOfficeAddinQuestions(root: QTreeNode): void {
+async function addOfficeAddinQuestions(
+  inputs: Inputs,
+  root: QTreeNode
+): Promise<Result<Void, FxError>> {
   const officeAddinRoot = new QTreeNode({ type: "group" });
   officeAddinRoot.condition = { equals: CreateNewOfficeAddinOption.id };
   root.addChild(officeAddinRoot);
 
-  officeAddinRoot.addChild(new QTreeNode(ExampleSingleSelectQuestion));
-  officeAddinRoot.addChild(new QTreeNode(ExampleMultiSelectQuestion));
+  const capNode = new QTreeNode(createCapabilityForOfficeAddin());
+  officeAddinRoot.addChild(capNode);
+
+  const solutionNodeResult = await setSolutionScaffoldingQuestionNodeAsChild(inputs, capNode);
+  if (solutionNodeResult.isErr()) {
+    return err(solutionNodeResult.error);
+  }
+  officeAddinRoot.addChild(new QTreeNode(QuestionRootFolder));
+  officeAddinRoot.addChild(new QTreeNode(createAppNameQuestion()));
+
+  return ok(Void);
 }
 
 async function getQuestionsForCreateProjectWithoutDotNet(
@@ -430,7 +441,7 @@ async function getQuestionsForCreateProjectWithoutDotNet(
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
   if (isOfficeAddinEnabled()) {
-    addOfficeAddinQuestions(node);
+    await addOfficeAddinQuestions(inputs, node);
   }
 
   // create new

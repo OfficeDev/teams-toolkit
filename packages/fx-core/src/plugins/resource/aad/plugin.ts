@@ -62,7 +62,7 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import * as os from "os";
 import { ArmTemplateResult } from "../../../common/armInterface";
-import { Bicep, ConstantString } from "../../../common/constants";
+import { Bicep, ConstantString, HelpLinks } from "../../../common/constants";
 import { getTemplatesFolder } from "../../../folder";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 import { AppUser } from "../appstudio/interfaces/appUser";
@@ -76,7 +76,7 @@ import {
   TabOptionItem,
 } from "../../solution/fx-solution/question";
 import { format, Formats } from "./utils/format";
-import { SOLUTION_PROVISION_SUCCEEDED } from "../../solution";
+import { PluginNames, REMOTE_AAD_ID, SOLUTION_PROVISION_SUCCEEDED } from "../../solution";
 import { generateAadManifestTemplate } from "../../../core/generateAadManifestTemplate";
 
 export class AadAppForTeamsImpl {
@@ -841,15 +841,22 @@ export class AadAppForTeamsImpl {
   }
 
   public async loadAndBuildManifest(ctx: PluginContext): Promise<AADManifest> {
-    const isProvisionSucceeded =
-      !!(ctx.envInfo.state.get("solution")?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean) ||
-      ctx.answers![Constants.DEPLOY_AAD] === "yes" ||
-      ctx.envInfo.envName === "local";
+    let isProvisionSucceeded;
+    if (ctx.envInfo.envName === "local") {
+      isProvisionSucceeded = !!ctx.envInfo.state.get(PluginNames.AAD)?.get(REMOTE_AAD_ID);
+    } else {
+      isProvisionSucceeded = !!(ctx.envInfo.state
+        .get("solution")
+        ?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean);
+    }
 
     if (!isProvisionSucceeded) {
       throw ResultFactory.UserError(
         AadManifestNotProvisioned.name,
-        AadManifestNotProvisioned.message()
+        AadManifestNotProvisioned.message(),
+        undefined,
+        undefined,
+        HelpLinks.WhyNeedProvision
       );
     }
 

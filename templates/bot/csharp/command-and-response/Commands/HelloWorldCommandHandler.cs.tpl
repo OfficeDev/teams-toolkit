@@ -1,5 +1,6 @@
 ﻿namespace {{ProjectName}}.Commands
 {
+    using {{ProjectName}}.Models;
     using AdaptiveCards.Templating;
     using Microsoft.Bot.Builder;
     using Microsoft.Bot.Schema;
@@ -35,7 +36,7 @@
             // Render adaptive card content
             var cardContent = new AdaptiveCardTemplate(cardTemplate).Expand
             (
-                new CardModel
+                new HelloWorldModel
                 {
                     Title = "Your Hello World Bot is Running",
                     Body = "Congratulations! Your hello world bot is running. Click the documentation below to learn more about Bots and the Teams Toolkit.",

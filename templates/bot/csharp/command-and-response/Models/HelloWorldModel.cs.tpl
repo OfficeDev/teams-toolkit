@@ -1,6 +1,6 @@
-﻿namespace {{ProjectName}}
+﻿namespace {{ProjectName}}.Models
 {
-    public class CardModel
+    public class HelloWorldModel
     {
         public string Title { get; set; }
         

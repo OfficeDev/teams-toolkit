@@ -21,10 +21,10 @@ import {
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 import { environmentManager } from "@microsoft/teamsfx-core";
-
+import { Runtime } from "@microsoft/teamsfx-core/src/plugins/resource/bot/v2/enum";
 import { it } from "../../commonlib/it";
 
-export function happyPathTest(runtime: "dotnet" | "node"): void {
+export function happyPathTest(runtime: Runtime): void {
   describe("Provision", function () {
     const testFolder = getTestFolder();
     const appName = getUniqueAppName();
@@ -42,7 +42,7 @@ export function happyPathTest(runtime: "dotnet" | "node"): void {
 
     it("Provision Resource: command and response", async function () {
       const cmd =
-        runtime === "node"
+        runtime === Runtime.Node
           ? `teamsfx new --interactive false --app-name ${appName} --capabilities command-bot --programming-language typescript`
           : `teamsfx new --interactive false --runtime ${runtime} --app-name ${appName} --capabilities command-bot`;
       await execAsync(cmd, {

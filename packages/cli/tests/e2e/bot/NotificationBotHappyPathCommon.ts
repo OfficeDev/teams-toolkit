@@ -15,8 +15,9 @@ import {
 import { environmentManager } from "@microsoft/teamsfx-core";
 
 import { it } from "../../commonlib/it";
+import { Runtime } from "@microsoft/teamsfx-core/src/plugins/resource/bot/v2/enum";
 
-export function happyPathTest(runtime: "dotnet" | "node"): void {
+export function happyPathTest(runtime: Runtime): void {
   describe(`Provision for ${runtime}`, function () {
     const testFolder = getTestFolder();
     const appName = getUniqueAppName();

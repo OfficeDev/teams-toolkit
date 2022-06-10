@@ -5,6 +5,7 @@
  * @author Xiaofu Huang <xiaofhua@microsoft.com>
  */
 
+import { Runtime } from "@microsoft/teamsfx-core/src/plugins/resource/bot/v2/enum";
 import { happyPathTest } from "./CommandBotHappyPathCommon";
 
-happyPathTest("node");
+happyPathTest(Runtime.Node);

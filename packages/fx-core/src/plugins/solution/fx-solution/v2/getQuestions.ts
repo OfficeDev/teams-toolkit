@@ -416,7 +416,7 @@ export async function getQuestions(
       }
     }
   } else if (stage === Stage.deploy) {
-    if (inputs[Constants.DEPLOY_AAD] === "yes") {
+    if (inputs.platform === Platform.VSCode && inputs[Constants.INCLUDE_AAD_MANIFEST] === "yes") {
       return ok(node);
     }
 
@@ -457,11 +457,6 @@ export async function getQuestions(
 
     if (plugins.length === 0 && inputs[Constants.INCLUDE_AAD_MANIFEST] !== "yes") {
       return err(new NoCapabilityFoundError(Stage.deploy));
-    }
-
-    // trigger from Deploy AAD App manifest command in VSCode
-    if (inputs.platform === Platform.VSCode && inputs[Constants.INCLUDE_AAD_MANIFEST] === "yes") {
-      return ok(node);
     }
 
     // On VS, users are not expected to select plugins to deploy.

@@ -29,7 +29,6 @@ export enum GlobalKey {
 }
 
 export enum AadManifestDeployConstants {
-  DEPLOY_AAD = "deploy-aad",
   INCLUDE_AAD_MANIFEST = "include-aad-manifest",
 }
 

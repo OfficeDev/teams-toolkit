@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import { getLocalizedString } from "../../../../common/localizeUtils";
-import { Message } from "./message";
 export function sqlUserNameValidator(name: string): string | undefined {
   name = name?.trim();
 

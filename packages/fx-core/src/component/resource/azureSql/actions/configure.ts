@@ -17,7 +17,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import { ComponentNames, ActionNames, ActionTypeFunction } from "../../../constants";
 import { ProgressBarMW } from "../../../middleware/progressbar";
-import { RunWithCatchErrorMW } from "../../../middleware/runWithCatchError";
 import { ManagementClient } from "../clients/management";
 import { SqlClient } from "../clients/sql";
 import { LoadManagementConfig, LoadSqlConfig } from "../config";
@@ -39,7 +38,7 @@ export function GetActionConfigure(): FunctionAction {
 }
 
 export class ConfigureActionImplement {
-  static readonly stage = "";
+  static readonly stage = "post-provision";
   static readonly progressTitle: string = "Configuring SQL";
   static readonly progressMessage = {
     addAadmin: "Configure aad admin for SQL",
@@ -57,7 +56,6 @@ export class ConfigureActionImplement {
     inputs: InputsWithProjectPath
   ): Promise<Result<Effect[], FxError>> {
     const ctx = context as ProvisionContextV3;
-    ctx.tokenProvider.azureAccountProvider.getAccountCredentialAsync;
     const solutionConfig = ctx.envInfo.state.solution as v3.AzureSolutionConfig;
     const state = ctx.envInfo.state[ComponentNames.AzureSQL];
     const sqlMgrConfig = LoadManagementConfig(state);
@@ -201,21 +199,4 @@ class UtilFunctions {
       }
     }
   }
-}
-function stage(stage: any): import("@feathersjs/hooks/lib").Middleware<any> {
-  throw new Error("Function not implemented.");
-}
-
-function progressTitle(
-  progressTitle: any,
-  progressMessage: any
-): import("@feathersjs/hooks/lib").Middleware<any> {
-  throw new Error("Function not implemented.");
-}
-
-function progressMessage(
-  progressTitle: any,
-  progressMessage: any
-): import("@feathersjs/hooks/lib").Middleware<any> {
-  throw new Error("Function not implemented.");
 }

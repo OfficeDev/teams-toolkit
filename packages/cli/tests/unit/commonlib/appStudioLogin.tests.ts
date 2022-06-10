@@ -44,4 +44,19 @@ describe("App studio login Tests", function () {
     const result = await AppStudioTokenProvider.getStatus();
     expect(result.status).equal("SignedOut");
   });
+
+  it("StatusChangeMap", async () => {
+    await AppStudioTokenProvider.setStatusChangeMap(
+      "abc",
+      (
+        status: string,
+        token: string | undefined,
+        accountInfo: Record<string, unknown> | undefined
+      ) => {
+        return Promise.resolve();
+      }
+    );
+    const res = await AppStudioTokenProvider.removeStatusChangeMap("abc");
+    expect(res).equal(true);
+  });
 });

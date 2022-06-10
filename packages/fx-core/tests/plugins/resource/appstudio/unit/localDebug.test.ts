@@ -27,6 +27,7 @@ import {
   TeamsAppManifest,
   LocalSettings,
   ManifestUtil,
+  ok,
 } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import sinon from "sinon";
@@ -41,6 +42,7 @@ import {
 } from "../../../../../src/common/localSettingsConstants";
 import { getAzureProjectRoot } from "../helper";
 import { ResourcePlugins } from "../../../../../src/common/constants";
+import { AppStudioPluginImpl } from "../../../../../src/plugins/resource/appstudio/plugin";
 
 class MockedAppStudioTokenProvider implements AppStudioTokenProvider {
   async getAccessToken(showDialog?: boolean): Promise<string> {
@@ -143,7 +145,7 @@ describe("Post Local Debug", () => {
     configOfOtherPlugins.set(PluginNames.APPST, APPSTUDIO_ConfigMap);
     configOfOtherPlugins.set(PluginNames.FE, FE_ConfigMap);
 
-    sandbox.stub(AppStudioClient, "validateManifest").resolves([]);
+    sandbox.stub(AppStudioPluginImpl.prototype, "validateManifest").resolves(ok([]));
   });
 
   afterEach(() => {

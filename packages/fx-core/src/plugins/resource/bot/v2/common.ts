@@ -70,8 +70,9 @@ export function resolveHostType(inputs: Inputs): HostType {
 }
 
 export function resolveServiceType(ctx: Context): ServiceType {
-  const rawHostType = ctx.projectSetting?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[
-    PluginBot.HOST_TYPE
-  ] as string;
+  const rawHostType =
+    (ctx.projectSetting?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[
+      PluginBot.HOST_TYPE
+    ] as string) ?? HostTypes.APP_SERVICE;
   return getServiceType(rawHostType);
 }

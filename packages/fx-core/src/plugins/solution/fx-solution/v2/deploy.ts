@@ -14,14 +14,9 @@ import {
   v3,
 } from "@microsoft/teamsfx-api";
 import { isUndefined } from "lodash";
-import Container from "typedi";
 import { PluginDisplayName } from "../../../../common/constants";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
-import {
-  getAzurePlugins,
-  hasAzureResource,
-  isVSProject,
-} from "../../../../common/projectSettingsHelper";
+import { getAzurePlugins, isVSProject } from "../../../../common/projectSettingsHelper";
 import { Constants } from "../../../resource/aad/constants";
 import { checkM365Tenant, checkSubscription } from "../commonQuestions";
 import {

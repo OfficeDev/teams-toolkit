@@ -31,6 +31,10 @@ export const ActionTypeCall = "call";
 export const ActionTypeGroup = "group";
 export const ActionTypeShell = "shell";
 
+export const BicepConstants = {
+  writeFile: "1",
+};
+
 export const AzureSqlOutputs = {
   sqlResourceId: {
     key: "resourceId",

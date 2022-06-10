@@ -35,11 +35,6 @@ export class ManagementClient {
       });
       if (result.available) {
         return false;
-      } else if (result.reason === "Invalid") {
-        throw SqlResultFactory.UserError(
-          ErrorMessage.SqlEndpointError.name,
-          ErrorMessage.SqlEndpointError.message(this.config.sqlEndpoint)
-        );
       } else {
         return true;
       }
@@ -132,14 +127,16 @@ export class ManagementClient {
 
   async deleteLocalFirewallRule(): Promise<void> {
     try {
-      for (let i = 0; i < this.totalFirewallRuleCount; i++) {
-        const ruleName = this.getRuleName(i);
-        await this.manager.firewallRules.deleteMethod(
-          this.config.resourceGroup,
-          this.config.sqlServer,
-          ruleName
-        );
-      }
+      await Promise.all(
+        Array.from(Array(this.totalFirewallRuleCount).keys()).map(async (i: number) => {
+          const ruleName = this.getRuleName(i);
+          await this.manager.firewallRules.deleteMethod(
+            this.config.resourceGroup,
+            this.config.sqlServer,
+            ruleName
+          );
+        })
+      );
     } catch (error) {
       throw SqlResultFactory.UserError(
         ErrorMessage.SqlDeleteLocalFirwallError.name,

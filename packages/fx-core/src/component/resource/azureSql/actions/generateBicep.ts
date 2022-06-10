@@ -11,7 +11,12 @@ import {
 import * as path from "path";
 import { getUuid, generateBicepFromFile } from "../../../../common";
 import { getTemplatesFolder } from "../../../../folder";
-import { ComponentNames, ActionNames, ActionTypeFunction } from "../../../constants";
+import {
+  ComponentNames,
+  ActionNames,
+  ActionTypeFunction,
+  BicepConstants,
+} from "../../../constants";
 import fs from "fs-extra";
 
 export function GetActionGenerateBicep(): FunctionAction {
@@ -22,8 +27,8 @@ export function GetActionGenerateBicep(): FunctionAction {
       const bicep: Bicep = {
         type: "bicep",
         Provision: {
-          Modules: { azureSql: "1" },
-          Orchestration: "1",
+          Modules: { azureSql: BicepConstants.writeFile },
+          Orchestration: BicepConstants.writeFile,
         },
       };
       if (inputs.provisionType === "database") {

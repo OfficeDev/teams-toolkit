@@ -10,4 +10,4 @@ export interface ActionContext extends ContextV3 {
   progressBar?: IProgressHandler;
 }
 
-export type ErrorHanlder = (context: ActionContext, error: any) => Promise<FxError>;
+export type ErrorHandler = (context: ActionContext, error: any) => Promise<FxError>;

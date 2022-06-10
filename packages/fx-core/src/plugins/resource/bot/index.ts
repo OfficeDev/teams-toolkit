@@ -211,8 +211,7 @@ export class TeamsBot implements Plugin {
             type: "group",
           });
           if (isCLIDotNetEnabled()) {
-            const runtimes = [Runtime.Dotnet, Runtime.Node];
-            runtimes.forEach((runtime) => {
+            Object.values(Runtime).forEach((runtime) => {
               const node = new QTreeNode(
                 createHostTypeTriggerQuestion(context.answers?.platform, runtime)
               );

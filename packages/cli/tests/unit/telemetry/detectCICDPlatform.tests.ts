@@ -2,10 +2,9 @@
 // Licensed under the MIT license.
 
 import sinon from "sinon";
-import { describe } from "yargs";
 import { tryDetectCICDPlatform } from "../../../src/commonlib/common/cicdPlatformDetector";
 import { CliConfigRunFrom } from "../../../src/userSetttings";
-
+import "mocha";
 import { expect } from "../utils";
 
 describe("Detect CI/CD Platforms", () => {

@@ -40,6 +40,7 @@ import {
   showNotificationTriggerCondition,
 } from "./question";
 import { Runtime } from "./v2/enum";
+import { getPlatformRuntime } from "./v2/mapping";
 
 @Service(ResourcePlugins.BotPlugin)
 export class TeamsBot implements Plugin {
@@ -209,14 +210,22 @@ export class TeamsBot implements Plugin {
           const res = new QTreeNode({
             type: "group",
           });
-          const runtimes = [Runtime.Dotnet, Runtime.Node];
-          runtimes.forEach((runtime) => {
+          if (isCLIDotNetEnabled()) {
+            const runtimes = [Runtime.Dotnet, Runtime.Node];
+            runtimes.forEach((runtime) => {
+              const node = new QTreeNode(
+                createHostTypeTriggerQuestion(context.answers?.platform, runtime)
+              );
+              node.condition = getNotificationTriggerQuestionCondition(runtime);
+              res.addChild(node);
+            });
+          } else {
+            const platformRuntime = getPlatformRuntime(context.answers!.platform);
             const node = new QTreeNode(
-              createHostTypeTriggerQuestion(context.answers?.platform, runtime)
+              createHostTypeTriggerQuestion(context.answers?.platform, platformRuntime)
             );
-            node.condition = getNotificationTriggerQuestionCondition(runtime);
             res.addChild(node);
-          });
+          }
           res.condition = showNotificationTriggerCondition;
           return ok(res);
         },

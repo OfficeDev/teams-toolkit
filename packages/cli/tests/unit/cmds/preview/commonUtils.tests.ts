@@ -191,6 +191,7 @@ describe("commonUtils", () => {
       };
       const s2 = await getBotOutlookChannelLink("folder", "abc", projectConfig, "abc");
       chai.assert.isNotEmpty(s2);
+      sinon.restore();
     });
   });
 });

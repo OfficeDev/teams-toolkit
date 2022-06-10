@@ -54,7 +54,6 @@ describe("Publish Teams app with Azure", () => {
     BotPlugin.name = "fx-resource-bot";
     BotPlugin.displayName = "Bot";
     selectedPlugins = [BotPlugin];
-    sandbox.stub(AppStudioClient, "validateManifest").resolves([]);
     sandbox.stub(AppStudioClient, "publishTeamsApp").resolves(uuid());
     sandbox.stub(AppStudioClient, "publishTeamsAppUpdate").resolves(uuid());
     sandbox.stub(AppStudioClient, "updateApp").resolves();
@@ -163,7 +162,6 @@ describe("Publish Teams app with SPFx", () => {
         activeResourcePlugins: ["fx-resource-spfx"],
       },
     };
-    sandbox.stub(AppStudioClient, "validateManifest").resolves([]);
     sandbox.stub(AppStudioClient, "publishTeamsApp").resolves(uuid());
     sandbox.stub(AppStudioClient, "publishTeamsAppUpdate").resolves(uuid());
     sandbox.stub(AppStudioClient, "updateApp").resolves();

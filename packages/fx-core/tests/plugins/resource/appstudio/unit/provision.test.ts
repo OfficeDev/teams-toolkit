@@ -44,8 +44,6 @@ describe("Provision Teams app with Azure", () => {
       answers: { platform: Platform.VSCode },
       cryptoProvider: new LocalCrypto(""),
     };
-
-    sandbox.stub(AppStudioClient, "validateManifest").resolves([]);
   });
 
   afterEach(async () => {

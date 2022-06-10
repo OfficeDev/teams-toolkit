@@ -3,7 +3,7 @@
 import { Inputs, MultiSelectQuestion, OptionItem, Platform } from "@microsoft/teamsfx-api";
 import { isCLIDotNetEnabled, isPreviewFeaturesEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { CoreQuestionNames } from "../../../core/question";
+import { CoreQuestionNames, handleSelectionConflict } from "../../../core/question";
 import {
   AzureSolutionQuestionNames,
   NotificationOptionItem,
@@ -111,15 +111,14 @@ export function createHostTypeTriggerQuestion(
       currentSelectedIds: Set<string>,
       previousSelectedIds: Set<string>
     ): Promise<Set<string>> {
-      if (currentSelectedIds.size > 1 && currentSelectedIds.has(defaultOptionItem.id)) {
-        if (previousSelectedIds.has(defaultOptionItem.id)) {
-          currentSelectedIds.delete(defaultOptionItem.id);
-        } else {
-          currentSelectedIds = new Set([defaultOptionItem.id]);
-        }
-      }
-
-      return currentSelectedIds;
+      return handleSelectionConflict(
+        [
+          new Set([defaultOptionItem.id]),
+          new Set([FunctionsHttpTriggerOptionItem.id, FunctionsTimerTriggerOptionItem.id]),
+        ],
+        previousSelectedIds,
+        currentSelectedIds
+      );
     },
   };
 }

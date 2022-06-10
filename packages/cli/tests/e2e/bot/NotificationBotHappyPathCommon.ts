@@ -29,13 +29,13 @@ export function happyPathTest(runtime: Runtime): void {
     env["TEAMSFX_CONFIG_UNIFY"] = "true";
     env["BOT_NOTIFICATION_ENABLED"] = "true";
     env["TEAMSFX_TEMPLATE_PRERELEASE"] = "alpha";
-    if (runtime === "dotnet") {
+    if (runtime === Runtime.Dotnet) {
       env["TEAMSFX_CLI_DOTNET"] = "true";
     }
 
     it("Provision Resource: app service hosted notification", async function () {
       const cmd =
-        runtime === "node"
+        runtime === Runtime.Node
           ? `teamsfx new --interactive false --app-name ${appName} --capabilities notification --bot-host-type-trigger http-restify --programming-language typescript`
           : `teamsfx new --runtime dotnet --interactive false --app-name ${appName} --capabilities notification`;
       await execAsync(cmd, {

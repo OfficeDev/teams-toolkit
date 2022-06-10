@@ -36,7 +36,7 @@ export function happyPathTest(runtime: Runtime): void {
     env["TEAMSFX_CONFIG_UNIFY"] = "true";
     env["BOT_NOTIFICATION_ENABLED"] = "true";
     env["TEAMSFX_TEMPLATE_PRERELEASE"] = "alpha";
-    if (runtime === "dotnet") {
+    if (runtime === Runtime.Dotnet) {
       env["TEAMSFX_CLI_DOTNET"] = "true";
     }
 

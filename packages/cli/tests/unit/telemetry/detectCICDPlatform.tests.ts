@@ -1,20 +1,32 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import sinon from "sinon";
 import { tryDetectCICDPlatform } from "../../../src/commonlib/common/cicdPlatformDetector";
 import { CliConfigRunFrom } from "../../../src/userSetttings";
 import "mocha";
 import { expect } from "../utils";
 
+function backupAndSetEnv(key: string, value: string) {
+  if (key in process.env) {
+    process.env[`${key}_BACKUP`] = process.env[key];
+  } else {
+    process.env[`${key}_BACKUP`] = "NOT-EXISTED";
+  }
+  process.env[key] = value;
+}
+
+function restoreAndDeleteEnv(key: string) {
+  if (process.env[`${key}_BACKUP`] === "NOT-EXISTED") {
+    delete process.env[key];
+  } else {
+    process.env[key] = process.env[`${key}_BACKUP`];
+  }
+
+  delete process.env[`${key}_BACKUP`];
+}
+
 describe("Detect CI/CD Platforms", () => {
   describe("Detect CI/CD Platforms", () => {
-    const sandbox = sinon.createSandbox();
-
-    afterEach(() => {
-      sandbox.restore();
-    });
-
     it("No CI/CD Platform Detected", () => {
       // Arrange
       // Act
@@ -25,29 +37,34 @@ describe("Detect CI/CD Platforms", () => {
 
     it("GitHub Detected", () => {
       // Arrange
-      sandbox.stub(process.env, "GITHUB_ACTIONS").value("true");
+      backupAndSetEnv("GITHUB_ACTIONS", "true");
       // Act
       const plat = tryDetectCICDPlatform();
+      restoreAndDeleteEnv("GITHUB_ACTIONS");
       // Assert
       expect(plat).to.be.equals(CliConfigRunFrom.GitHub);
     });
 
     it("Azure DevOps Detected", () => {
       // Arrange
-      sandbox.stub(process.env, "BUILD_SOURCEBRANCHNAME").value("anything");
-      sandbox.stub(process.env, "AGENT_BUILDDIRECTORY").value("anything");
+      backupAndSetEnv("BUILD_SOURCEBRANCHNAME", "anything");
+      backupAndSetEnv("AGENT_BUILDDIRECTORY", "anything");
       // Act
       const plat = tryDetectCICDPlatform();
+      restoreAndDeleteEnv("BUILD_SOURCEBRANCHNAME");
+      restoreAndDeleteEnv("AGENT_BUILDDIRECTORY");
       // Assert
       expect(plat).to.be.equals(CliConfigRunFrom.AzDo);
     });
 
     it("Jenkins Detected", () => {
       // Arrange
-      sandbox.stub(process.env, "JENKINS_URL").value("anything");
-      sandbox.stub(process.env, "BUILD_URL").value("anything");
+      backupAndSetEnv("JENKINS_URL", "anything");
+      backupAndSetEnv("BUILD_URL", "anything");
       // Act
       const plat = tryDetectCICDPlatform();
+      restoreAndDeleteEnv("JENKINS_URL");
+      restoreAndDeleteEnv("BUILD_URL");
       // Assert
       expect(plat).to.be.equals(CliConfigRunFrom.Jenkins);
     });

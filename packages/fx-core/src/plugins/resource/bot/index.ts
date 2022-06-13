@@ -36,7 +36,7 @@ import { FunctionsHostedBotImpl } from "./functionsHostedBot/plugin";
 import { ScaffoldConfig } from "./configs/scaffoldConfig";
 import {
   createHostTypeTriggerQuestion,
-  getConditionForNotificationTriggerQuestion,
+  getConditionOfNotificationTriggerQuestion,
   showNotificationTriggerCondition,
 } from "./question";
 import { Runtime } from "./v2/enum";
@@ -215,13 +215,13 @@ export class TeamsBot implements Plugin {
               const node = new QTreeNode(
                 createHostTypeTriggerQuestion(context.answers?.platform, runtime)
               );
-              node.condition = getConditionForNotificationTriggerQuestion(runtime);
+              node.condition = getConditionOfNotificationTriggerQuestion(runtime);
               res.addChild(node);
             });
           } else {
-            const platformRuntime = getPlatformRuntime(context.answers!.platform);
+            const runtime = getPlatformRuntime(context.answers!.platform);
             const node = new QTreeNode(
-              createHostTypeTriggerQuestion(context.answers?.platform, platformRuntime)
+              createHostTypeTriggerQuestion(context.answers?.platform, runtime)
             );
             res.addChild(node);
           }

@@ -16,7 +16,10 @@ import {
   Effect,
 } from "@microsoft/teamsfx-api";
 import { ComponentNames, ActionNames, ActionTypeFunction } from "../../../constants";
+import { LoggerMW } from "../../../middleware/logger";
 import { ProgressBarMW } from "../../../middleware/progressbar";
+import { ActionErrorHandler, RunWithCatchErrorMW } from "../../../middleware/runWithCatchError";
+import { TelemetryMW } from "../../../middleware/telemetry";
 import { ManagementClient } from "../clients/management";
 import { SqlClient } from "../clients/sql";
 import { LoadManagementConfig, LoadSqlConfig } from "../config";
@@ -38,18 +41,22 @@ export function GetActionConfigure(): FunctionAction {
 }
 
 export class ConfigureActionImplement {
+  static readonly source = "SQL";
   static readonly stage = "post-provision";
+  static readonly componentName = "fx-resource-azure-sql";
   static readonly progressTitle: string = "Configuring SQL";
   static readonly progressMessage = {
     addAadmin: "Configure aad admin for SQL",
     addUser: "Configure database user",
   };
   @hooks([
-    // RunWithCatchErrorMW(ConfigureActionImplement.stage),
+    RunWithCatchErrorMW(ConfigureActionImplement.source, ActionErrorHandler),
     ProgressBarMW(
       ConfigureActionImplement.progressTitle,
       Object.keys(ConfigureActionImplement.progressMessage).length
     ),
+    LoggerMW(),
+    TelemetryMW(ConfigureActionImplement.stage, ConfigureActionImplement.componentName),
   ]) // the @hooks decorator
   static async execute(
     context: ContextV3,

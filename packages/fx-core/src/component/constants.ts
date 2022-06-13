@@ -35,6 +35,28 @@ export const BicepConstants = {
   writeFile: "1",
 };
 
+export const TelemetryConstants = {
+  eventPrefix: "-start",
+  properties: {
+    component: "component",
+    success: "success",
+    errorCode: "error-code",
+    errorType: "error-type",
+    errorMessage: "error-message",
+  },
+  values: {
+    yes: "yes",
+    no: "no",
+    userError: "user",
+    systemError: "system",
+  },
+};
+
+export const ErrorConstants = {
+  unhandledError: "UnhandledError",
+  unhandledErrorMessage: "Unhandled Error",
+};
+
 export const AzureSqlOutputs = {
   sqlResourceId: {
     key: "resourceId",

@@ -2,18 +2,43 @@
 // Licensed under the MIT license.
 
 import { Middleware, HookContext, NextFunction } from "@feathersjs/hooks/lib";
+import { err, FxError, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { ErrorConstants } from "../constants";
 import { ActionContext, ErrorHandler } from "./types";
 
-export function RunWithCatchErrorMW(stage: string, errorHanlder: ErrorHandler): Middleware {
+export function RunWithCatchErrorMW(source: string, errorHanlder: ErrorHandler): Middleware {
   return async (ctx: HookContext, next: NextFunction) => {
     const actionContext = ctx.arguments[0] as ActionContext;
-    actionContext.stage = stage;
+    actionContext.source = source;
     try {
       await next();
     } catch (error) {
       actionContext.progressBar?.end(false);
-      const res = await errorHanlder(actionContext, error);
-      ctx.result = res;
+      const res = errorHanlder(actionContext, error);
+      actionContext.telemetry?.sendEndEventWithError?.(actionContext, res);
+      ctx.result = err(res);
     }
   };
 }
+
+export const ActionErrorHandler: (ctx: ActionContext, error: any) => FxError = (
+  ctx: ActionContext,
+  error: any
+) => {
+  if (error instanceof SystemError || error instanceof UserError) {
+    return error;
+  } else {
+    if (!(error instanceof Error)) {
+      error = new Error(error.toString());
+    }
+    ctx.logger?.error(error.message);
+    const wrapError = new SystemError({
+      error,
+      source: ctx.source,
+      name: ErrorConstants.unhandledError,
+      message: ErrorConstants.unhandledErrorMessage,
+      displayMessage: ErrorConstants.unhandledErrorMessage,
+    });
+    return wrapError;
+  }
+};

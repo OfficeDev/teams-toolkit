@@ -1,13 +1,31 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ContextV3, FxError, IProgressHandler, LogProvider } from "@microsoft/teamsfx-api";
+import {
+  ContextV3,
+  FxError,
+  IProgressHandler,
+  LogProvider,
+  TelemetryReporter,
+} from "@microsoft/teamsfx-api";
 
 export interface ActionContext extends ContextV3 {
+  source?: string;
   local?: Record<string, any>;
-  stage: string;
   logger?: LogProvider;
   progressBar?: IProgressHandler;
+  telemetry?: ActionTelemetryReporter;
 }
 
-export type ErrorHandler = (context: ActionContext, error: any) => Promise<FxError>;
+export interface ActionTelemetryReporter extends TelemetryReporter {
+  stage: string;
+  componentName: string;
+  properties: { [key: string]: string };
+  measurements: { [key: string]: number };
+  sendStartEvent?: ActionHandler;
+  sendEndEvent?: ActionHandler;
+  sendEndEventWithError?: (context: ActionContext, error: FxError) => void;
+}
+
+export type ErrorHandler = (context: ActionContext, error: any) => FxError;
+export type ActionHandler = (context: ActionContext) => void;

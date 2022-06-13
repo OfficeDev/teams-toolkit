@@ -50,7 +50,7 @@ export const MultiSelectOptionTwo: OptionItem = {
 
 export const ExampleMultiSelectQuestion: MultiSelectQuestion = {
   name: QuestionName.ExampleMultiSelectQuestion,
-  title: "This is title",
+  title: "This is a multi-select question",
   type: "multiSelect",
   staticOptions: [MultiSelectOptionOne, MultiSelectOptionTwo],
   default: undefined,

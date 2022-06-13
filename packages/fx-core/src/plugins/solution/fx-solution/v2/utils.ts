@@ -122,11 +122,14 @@ export function setActivatedResourcePluginsV2(projectSettings: ProjectSettings):
   if (isOfficeAddinEnabled()) {
     // TODO: avoid hard coding activeResourcePlugins when we know how office addin co-exists
     // with existing resources.
-    projectSettings.solutionSettings!.activeResourcePlugins = [
-      "fx-resource-office-addin",
-      "fx-resource-frontend-hosting",
-      "fx-resource-local-debug",
-    ];
+    if (projectSettings.solutionSettings) {
+      projectSettings.solutionSettings.activeResourcePlugins = [
+        "fx-resource-office-addin",
+        "fx-resource-local-debug",
+        "fx-resource-frontend-hosting",
+        "fx-resource-appstudio",
+      ];
+    }
     return;
   }
   const activatedPluginNames = getAllV2ResourcePlugins()
@@ -332,7 +335,9 @@ export function fillInSolutionSettings(
     capabilities = [MessageExtensionItem.id];
     hostType = HostTypeOptionAzure.id;
   } else if (isOfficeAddinEnabled() && capabilities.includes(OfficeAddinItem.id)) {
-    capabilities = [OfficeAddinItem.id];
+    // Hard code Tab here, so that createEnv can pass.
+    // Needs to be changed once we figure out how office addin works with other resources.
+    capabilities = [OfficeAddinItem.id, TabOptionItem.id];
     hostType = HostTypeOptionAzure.id;
   }
   if (!hostType) {

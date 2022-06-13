@@ -26,6 +26,15 @@ function restoreAndDeleteEnv(key: string) {
 }
 
 describe("Detect CI/CD Platforms", () => {
+  before(() => {
+    // As the UT is to be executed under GitHub, reset the predefined var.
+    backupAndSetEnv("GITHUB_ACTIONS", "false");
+  });
+
+  after(() => {
+    restoreAndDeleteEnv("GITHUB_ACTIONS");
+  });
+
   describe("Detect CI/CD Platforms", () => {
     it("No CI/CD Platform Detected", () => {
       // Arrange

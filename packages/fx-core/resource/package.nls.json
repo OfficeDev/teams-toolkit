@@ -163,6 +163,7 @@
   "plugins.baseErrorMessage": "%s Suggestions: %s",
   "suggestions.retryTheCurrentStep": "Please retry the current step.",
   "plugins.appstudio.buildSucceedNotice": "Teams package is successfully built at [local address](%s).",
+  "plugins.appstudio.buildSucceedNotice.fallback": "Teams package is successfully built at %s.",
   "plugins.appstudio.publishTip": "Teams: Publish to Teams",
   "plugins.appstudio.whetherToDeployManifest": "Whether to deploy app manifest to Teams platform",
   "plugins.appstudio.validationFailedNotice": "Manifest Validation failed!",

@@ -35,9 +35,18 @@ export class OfficeAddinPlugin implements v2.ResourcePlugin {
       return err(UndefinedProjectPathError());
     }
     const folderName = "office-addin";
+
+    // You can access the answers(id of options selected) to the questions defined in getQuestionsForScaffolding();
+    const singleSelectAnswer = inputs[ExampleSingleSelectQuestion.name] as string;
+    const multiSelectAnswer = inputs[ExampleMultiSelectQuestion.name] as string[];
+
     // TODO: add logic for generating office addin templates
+    // we just persist answers here for example.
     await mkdir(resolve(projectRoot, folderName));
-    await writeJSON(resolve(projectRoot, folderName, "someFile.json"), { key: "value" });
+    await writeJSON(resolve(projectRoot, folderName, "inputs.json"), {
+      singleSelect: singleSelectAnswer,
+      multiSelect: multiSelectAnswer,
+    });
 
     return ok(Void);
   }

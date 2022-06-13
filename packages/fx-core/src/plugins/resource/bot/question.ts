@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { Inputs, MultiSelectQuestion, OptionItem, Platform } from "@microsoft/teamsfx-api";
-import { isCLIDotNetEnabled, isPreviewFeaturesEnabled } from "../../../common/featureFlags";
+import { isPreviewFeaturesEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { CoreQuestionNames, handleSelectionConflict } from "../../../core/question";
 import {

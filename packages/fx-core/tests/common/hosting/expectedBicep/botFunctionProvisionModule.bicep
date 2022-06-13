@@ -4,8 +4,8 @@ param userAssignedIdentityId string
 
 var resourceBaseName = provisionParameters.resourceBaseName
 var serverfarmsName = contains(provisionParameters, 'botServerfarmsName') ? provisionParameters['botServerfarmsName'] : '${resourceBaseName}bot' // Try to read name for App Service Plan from parameters
-var functionSKU = contains(provisionParameters, 'botFunctionAppSKU') ? provisionParameters['botFunctionAppSKU'] : 'B1' // Try to read SKU for Azure Web App from parameters
-var functionAppName = contains(provisionParameters, 'botSitesName') ? provisionParameters['botSitesName'] : '${resourceBaseName}bot' // Try to read name for Azure Web App from parameters
+var functionSKU = contains(provisionParameters, 'botFunctionAppSKU') ? provisionParameters['botFunctionAppSKU'] : 'B1' // Try to read SKU for Azure Functions from parameters
+var functionAppName = contains(provisionParameters, 'botSitesName') ? provisionParameters['botSitesName'] : '${resourceBaseName}bot' // Try to read name for Azure Functions from parameters
 var storageName = contains(provisionParameters, 'botStorageName') ? provisionParameters['botStorageName'] : '${resourceBaseName}bot' // Try to read name for Azure Storage from parameters
 var storageSku = contains(provisionParameters, 'botStorageSku') ? provisionParameters['botStorageSku'] : 'Standard_LRS' // Try to read SKU for Azure Storage from parameters
 
@@ -29,7 +29,7 @@ resource storage 'Microsoft.Storage/storageAccounts@2021-06-01' = {
   }
 }
 
-// Function App that hosts your bot
+// Function App
 resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
   kind: 'functionapp'
   location: resourceGroup().location
@@ -58,16 +58,16 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
           value: 'node' // Set runtime to NodeJS
         }
         {
+          name: 'WEBSITE_NODE_DEFAULT_VERSION'
+          value: '~16' // Set NodeJS version to 16.x
+        }
+        {
           name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
           value: 'DefaultEndpointsProtocol=https;AccountName=${storage.name};AccountKey=${listKeys(storage.id, storage.apiVersion).keys[0].value};EndpointSuffix=${environment().suffixes.storage}' // Azure Functions internal setting
         }
         {
           name: 'WEBSITE_RUN_FROM_PACKAGE'
           value: '1' // Run Azure Functions from a package file
-        }
-        {
-          name: 'WEBSITE_NODE_DEFAULT_VERSION'
-          value: '~16' // Set NodeJS version to 16.x
         }
       ]
       ftpsState: 'FtpsOnly'

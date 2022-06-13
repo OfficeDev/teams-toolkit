@@ -3,13 +3,28 @@
 
 export enum ServiceType {
   AppService = "webapp",
-  Functions = "botFunction",
+  Functions = "function",
   BotService = "botservice",
 }
 
 export type BicepConfigs = string[];
 
-export type BicepContext = { plugins: string[]; configs: BicepConfigs };
+export type BicepContext = {
+  plugins: string[];
+  configs: BicepConfigs;
+  moduleNames: { [key: string]: string };
+  moduleAlias: string;
+  pluginId: string;
+};
+
+export type HandlebarsContext = {
+  plugins: string[];
+  configs: BicepConfigs;
+  moduleName: string;
+  moduleNameCapitalized: string;
+  moduleAlias: string;
+  pluginId: string;
+};
 
 export type AzureUploadConfig = {
   headers: {

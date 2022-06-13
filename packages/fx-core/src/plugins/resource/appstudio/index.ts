@@ -238,7 +238,11 @@ export class AppStudioPlugin implements Plugin {
           { content: appPackagePath, color: Colors.BRIGHT_MAGENTA },
           { content: " built successfully!", color: Colors.BRIGHT_WHITE },
         ];
-        ctx.ui?.showMessage("info", builtSuccess, false);
+        if (ctx.answers?.platform === Platform.VS) {
+          ctx.logProvider?.info(builtSuccess);
+        } else {
+          ctx.ui?.showMessage("info", builtSuccess, false);
+        }
       } else {
         const folderLink = pathToFileURL(path.dirname(appPackagePath));
         const appPackageLink = `${VSCodeExtensionCommand.openFolder}?%5B%22${folderLink}%22%5D`;

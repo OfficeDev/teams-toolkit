@@ -155,7 +155,7 @@ export const showNotificationTriggerCondition = {
 export function getConditionOfNotificationTriggerQuestion(runtime: Runtime) {
   return {
     validFunc: async (input: unknown, inputs?: Inputs) => {
-      if (inputs && inputs[CoreQuestionNames.Runtime] === runtime) {
+      if (inputs?.[CoreQuestionNames.Runtime] === runtime) {
         return undefined;
       } else {
         return `runtime is not ${runtime}`;

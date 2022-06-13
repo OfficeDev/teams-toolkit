@@ -13,6 +13,7 @@ import {
   SharepointTokenProvider,
   TreeProvider,
   PermissionRequestProvider,
+  M365TokenProvider,
 } from "./utils";
 import { UserInteraction } from "./qm";
 import { CryptoProvider } from "./utils";
@@ -37,6 +38,8 @@ export interface Context {
   appStudioToken?: AppStudioTokenProvider;
 
   sharepointTokenProvider?: SharepointTokenProvider;
+
+  m365TokenProvider?: M365TokenProvider;
 
   treeProvider?: TreeProvider;
 

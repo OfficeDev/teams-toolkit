@@ -1,8 +1,8 @@
 import {
-  AppStudioTokenProvider,
   err,
   FxError,
   Inputs,
+  M365TokenProvider,
   ok,
   Result,
   UserError,
@@ -28,7 +28,7 @@ export async function publishApplication(
   ctx: v2.Context,
   inputs: Inputs,
   envInfo: v2.EnvInfoV2,
-  tokenProvider: AppStudioTokenProvider
+  tokenProvider: M365TokenProvider
 ): Promise<Result<Void, FxError>> {
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
   const provisioned = envInfo.state[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED];

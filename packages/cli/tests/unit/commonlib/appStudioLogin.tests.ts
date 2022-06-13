@@ -7,19 +7,21 @@ import { CodeFlowLogin } from "../../../src/commonlib/codeFlowLogin";
 import { expect } from "../utils";
 
 describe("App studio login Tests", function () {
-  sinon.stub(CodeFlowLogin.prototype, "reloadCache").callsFake(async () => {
-    return;
-  });
-  sinon.stub(CodeFlowLogin.prototype, "getToken").callsFake(async () => {
-    return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
-  });
-  sinon.stub(CodeFlowLogin.prototype, "logout").callsFake(async () => {
-    return true;
+  before(async () => {
+    sinon.stub(CodeFlowLogin.prototype, "reloadCache").callsFake(async () => {
+      return;
+    });
+    sinon.stub(CodeFlowLogin.prototype, "getToken").callsFake(async () => {
+      return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+    });
+    sinon.stub(CodeFlowLogin.prototype, "logout").callsFake(async () => {
+      return true;
+    });
   });
 
-  before(async () => {});
-
-  after(() => {});
+  after(() => {
+    sinon.restore();
+  });
 
   beforeEach(() => {});
 
@@ -43,5 +45,20 @@ describe("App studio login Tests", function () {
   it("GetStatus", async () => {
     const result = await AppStudioTokenProvider.getStatus();
     expect(result.status).equal("SignedOut");
+  });
+
+  it("StatusChangeMap", async () => {
+    await AppStudioTokenProvider.setStatusChangeMap(
+      "abc",
+      (
+        status: string,
+        token: string | undefined,
+        accountInfo: Record<string, unknown> | undefined
+      ) => {
+        return Promise.resolve();
+      }
+    );
+    const res = await AppStudioTokenProvider.removeStatusChangeMap("abc");
+    expect(res).equal(true);
   });
 });

@@ -60,6 +60,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   AddSsoParameters,
+  AppStudioScopes,
   askSubscription,
   CollaborationState,
   Correlator,
@@ -191,15 +192,10 @@ export function activate(): Result<Void, FxError> {
       }
       return Promise.resolve();
     };
-    appstudioLogin.setStatusChangeMap("successfully-sign-in-m365", m365NotificationCallback, false);
-    const sharepointLogin: SharepointTokenProvider = SharepointTokenInstance;
-    sharepointLogin.setStatusChangeMap(
+
+    M365TokenInstance.setStatusChangeMap(
       "successfully-sign-in-m365",
-      m365NotificationCallback,
-      false
-    );
-    GraphManagerInstance.setStatusChangeMap(
-      "successfully-sign-in-m365",
+      { scopes: AppStudioScopes },
       m365NotificationCallback,
       false
     );
@@ -3047,7 +3043,11 @@ export async function signinM365Callback(args?: any[]): Promise<Result<null, FxE
     ...triggerFrom,
   });
 
-  const token = await tools.tokenProvider.appStudioToken.getJsonObject(true);
+  const tokenRes = await tools.tokenProvider.m365TokenProvider.getJsonObject({
+    scopes: AppStudioScopes,
+    showDialog: true,
+  });
+  const token = tokenRes.isOk() ? tokenRes.value : undefined;
   if (token !== undefined && node) {
     node.setSignedIn((token as any).upn ? (token as any).upn : "");
   }

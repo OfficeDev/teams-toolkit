@@ -200,7 +200,7 @@ async function _provision(ctx: PluginContext, progressBar: ProgressBar): Promise
     ctx.logProvider
   );
   const aadManager = await Factory.buildAadManager(
-    ctx.graphTokenProvider,
+    ctx.m365TokenProvider,
     ctx.telemetryReporter,
     ctx.logProvider
   );
@@ -250,12 +250,12 @@ async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Pro
   const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
   const aadConfig = new AadPluginConfig(ctx.envInfo);
   const aadManager = await Factory.buildAadManager(
-    ctx.graphTokenProvider,
+    ctx.m365TokenProvider,
     ctx.telemetryReporter,
     ctx.logProvider
   );
   const teamsAppAadManager = await Factory.buildTeamsAppAadManager(
-    ctx.graphTokenProvider,
+    ctx.m365TokenProvider,
     ctx.telemetryReporter,
     ctx.logProvider
   );

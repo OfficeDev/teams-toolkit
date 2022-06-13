@@ -31,11 +31,7 @@ import {
   UpdateRedirectUriError,
 } from "../../../../../src/plugins/resource/aad/errors";
 import { ConfigKeys, Constants } from "../../../../../src/plugins/resource/aad/constants";
-import {
-  MockAppStudioTokenProvider,
-  MockGraphTokenProvider,
-  MockTools,
-} from "../../../../core/utils";
+import { MockM365TokenProvider, MockTools } from "../../../../core/utils";
 import { setTools } from "../../../../../src";
 import { AadAppManifestManager } from "../../../../../src/plugins/resource/aad/aadAppManifestManager";
 
@@ -43,8 +39,7 @@ describe("AAD App Client Test", () => {
   let ctx: PluginContext;
   let config: ProvisionConfig;
   const mockTokenProviders: GraphAndAppStudioTokenProvider = {
-    graph: new MockGraphTokenProvider(),
-    appStudio: new MockAppStudioTokenProvider(),
+    m365: new MockM365TokenProvider(),
   };
   beforeEach(async () => {
     setTools(new MockTools());
@@ -519,7 +514,7 @@ describe("AAD App Client Test", () => {
         objectId,
         secret,
         oauth2PermissionScopeId,
-        new MockGraphTokenProvider()
+        new MockM365TokenProvider()
       );
       chai.assert.equal(getResult.objectId, objectId);
       chai.assert.equal(getResult.clientId, clientId);
@@ -546,7 +541,7 @@ describe("AAD App Client Test", () => {
         objectId,
         secret,
         existingScopeId,
-        new MockGraphTokenProvider()
+        new MockM365TokenProvider()
       );
 
       chai.assert.equal(getResult.oauth2PermissionScopeId, existingScopeId);
@@ -576,7 +571,7 @@ describe("AAD App Client Test", () => {
           objectId,
           secret,
           undefined,
-          new MockGraphTokenProvider()
+          new MockM365TokenProvider()
         );
       } catch (error) {
         chai.assert.isTrue(error instanceof SystemError);
@@ -608,7 +603,7 @@ describe("AAD App Client Test", () => {
           objectId,
           secret,
           undefined,
-          new MockGraphTokenProvider()
+          new MockM365TokenProvider()
         );
       } catch (error) {
         chai.assert.isTrue(error instanceof UserError);
@@ -652,7 +647,7 @@ describe("AAD App Client Test", () => {
         "getAadApp",
         objectId,
         secret,
-        new MockGraphTokenProvider()
+        new MockM365TokenProvider()
       );
       chai.assert.equal(getResult.objectId, objectId);
       chai.assert.equal(getResult.clientId, clientId);
@@ -692,7 +687,7 @@ describe("AAD App Client Test", () => {
         "getAadApp",
         objectId,
         secret,
-        new MockGraphTokenProvider()
+        new MockM365TokenProvider()
       );
       chai.assert.equal(getResult.objectId, objectId);
       chai.assert.equal(getResult.clientId, clientId);
@@ -726,7 +721,7 @@ describe("AAD App Client Test", () => {
           "getAadApp",
           objectId,
           secret,
-          new MockGraphTokenProvider()
+          new MockM365TokenProvider()
         );
       } catch (error) {
         chai.assert.isTrue(error instanceof UserError);
@@ -758,7 +753,7 @@ describe("AAD App Client Test", () => {
           "getAadApp",
           objectId,
           secret,
-          new MockGraphTokenProvider()
+          new MockM365TokenProvider()
         );
       } catch (error) {
         chai.assert.isTrue(error instanceof SystemError);
@@ -787,7 +782,7 @@ describe("AAD App Client Test", () => {
           "getAadApp",
           objectId,
           secret,
-          new MockGraphTokenProvider()
+          new MockM365TokenProvider()
         );
       } catch (error) {
         chai.assert.isTrue(error instanceof UserError);

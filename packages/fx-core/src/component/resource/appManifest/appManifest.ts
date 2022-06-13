@@ -295,7 +295,7 @@ export class AppManifest implements CloudResource {
           ctx,
           inputs,
           ctx.envInfo,
-          ctx.tokenProvider.appStudioToken
+          ctx.tokenProvider.m365TokenProvider
         );
         if (res.isErr()) return err(res.error);
         return ok([

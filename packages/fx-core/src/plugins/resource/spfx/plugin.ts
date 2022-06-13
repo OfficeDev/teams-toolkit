@@ -46,6 +46,11 @@ import {
   getAppDirectory,
   isYoCheckerEnabled,
   isGeneratorCheckerEnabled,
+  GraphReadUserScopes,
+  getSPFxTenant,
+  SPFxScopes,
+  GraphScopes,
+  getSPFxToken,
 } from "../../../common/tools";
 import { getTemplatesFolder } from "../../../folder";
 import {
@@ -333,7 +338,7 @@ export class SPFxPluginImpl {
       }
       SPOClient.setBaseUrl(tenant.value);
 
-      const spoToken = await ctx.sharepointTokenProvider?.getAccessToken();
+      const spoToken = await getSPFxToken(ctx.m365TokenProvider!);
       if (!spoToken) {
         return err(GetSPOTokenFailedError());
       }
@@ -434,12 +439,14 @@ export class SPFxPluginImpl {
   }
 
   private async getTenant(ctx: PluginContext): Promise<Result<string, FxError>> {
-    const graphToken = await ctx.graphTokenProvider?.getAccessToken();
+    const graphTokenRes = await ctx.m365TokenProvider?.getAccessToken({ scopes: GraphScopes });
+    const graphToken = graphTokenRes?.isOk() ? graphTokenRes.value : undefined;
     if (!graphToken) {
       return err(GetGraphTokenFailedError());
     }
 
-    const tokenJson = await ctx.graphTokenProvider?.getJsonObject();
+    const graphTokenJsonRes = await ctx.m365TokenProvider?.getJsonObject({ scopes: GraphScopes });
+    const tokenJson = graphTokenJsonRes?.isOk() ? graphTokenJsonRes.value : undefined;
     const username = (tokenJson as any).unique_name;
 
     const instance = axios.create({

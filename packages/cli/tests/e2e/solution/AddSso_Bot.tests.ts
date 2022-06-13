@@ -23,7 +23,7 @@ import { Capability, PluginId, ProjectSettingKey, TestFilePath } from "../../com
 import fs from "fs-extra";
 import { expect } from "chai";
 import { AadValidator, BotValidator } from "../../commonlib";
-import appStudioLogin from "../../../src/commonlib/appStudioLogin";
+import M365Login from "../../../src/commonlib/m365Login";
 
 describe("Add SSO", () => {
   const testFolder = getTestFolder();
@@ -88,7 +88,7 @@ describe("Add SSO", () => {
 
     const context = await readContextMultiEnv(projectPath, "dev");
     // Validate Aad App
-    const aad = AadValidator.init(context, false, appStudioLogin);
+    const aad = AadValidator.init(context, false, M365Login);
     await AadValidator.validate(aad);
 
     // Validate Bot Provision

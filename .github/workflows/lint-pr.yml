@@ -135,3 +135,21 @@ jobs:
       - name: check content
         run: |
           python .github/detect/sensitive-detect.py repo
+
+  show-git-feat-display:
+    if: ${{ github.event_name ==  'pull_request' && github.base_ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout branch
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.CD_PAT }}
+          ref: ${{ github.ref }}
+      - name: check feature history in cli
+        run: | 
+          head=$(git describe --first-parent --abbrev=0)
+          git log --pretty=format:"%s %h" $head...HEAD -- packages/cli | grep "^feat"
+      - name: check featurs history in extension
+        run: |
+          head=$(git describe --first-parent --abbrev=0)
+          git log --pretty=format:"%s %h" $head...HEAD -- packages/vscode-extension | grep "^feat"

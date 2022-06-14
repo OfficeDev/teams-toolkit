@@ -589,38 +589,40 @@ async function resolveLocalCertificate(
   localEnvManager: LocalEnvManager,
   prefix: string
 ): Promise<CheckResult> {
-  let result = ResultStatus.success;
-  let error = undefined;
-  try {
-    VsCodeLogInstance.outputChannel.appendLine(
-      `${prefix} ${ProgressMessage[Checker.LocalCertificate]} ...`
-    );
-    const trustDevCert = vscodeHelper.isTrustDevCertEnabled();
-    const localCertResult = await localEnvManager.resolveLocalCertificate(trustDevCert);
+  return await runWithCheckResultTelemetry(TelemetryEvent.DebugPrereqsCheckCert, async () => {
+    let result = ResultStatus.success;
+    let error = undefined;
+    try {
+      VsCodeLogInstance.outputChannel.appendLine(
+        `${prefix} ${ProgressMessage[Checker.LocalCertificate]} ...`
+      );
+      const trustDevCert = vscodeHelper.isTrustDevCertEnabled();
+      const localCertResult = await localEnvManager.resolveLocalCertificate(trustDevCert);
 
-    if (typeof localCertResult.isTrusted === "undefined") {
-      result = ResultStatus.warn;
-      error = new UserError({
-        source: ExtensionSource,
-        name: "SkipTrustDevCertError",
-        helpLink: trustDevCertHelpLink,
-        message: "Skip trusting development certificate for localhost.",
-      });
-    } else if (localCertResult.isTrusted === false) {
+      if (typeof localCertResult.isTrusted === "undefined") {
+        result = ResultStatus.warn;
+        error = new UserError({
+          source: ExtensionSource,
+          name: "SkipTrustDevCertError",
+          helpLink: trustDevCertHelpLink,
+          message: "Skip trusting development certificate for localhost.",
+        });
+      } else if (localCertResult.isTrusted === false) {
+        result = ResultStatus.failed;
+        error = localCertResult.error;
+      }
+    } catch (err: unknown) {
       result = ResultStatus.failed;
-      error = localCertResult.error;
+      error = assembleError(err);
     }
-  } catch (err: any) {
-    result = ResultStatus.failed;
-    error = assembleError(err);
-  }
-  return {
-    checker: Checker.LocalCertificate,
-    result: result,
-    successMsg: doctorConstant.CertSuccess,
-    failureMsg: doctorConstant.Cert,
-    error: error,
-  };
+    return {
+      checker: Checker.LocalCertificate,
+      result: result,
+      successMsg: doctorConstant.CertSuccess,
+      failureMsg: doctorConstant.Cert,
+      error: error,
+    };
+  });
 }
 
 function handleDepsCheckerError(

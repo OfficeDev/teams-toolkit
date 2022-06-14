@@ -146,6 +146,10 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.CD_PAT }}
           ref: ${{ github.ref }}
+      - name: pull-request
+        uses: repo-sync/pull-request@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: check feature history
         id: description
         run: | 

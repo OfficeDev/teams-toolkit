@@ -137,7 +137,7 @@ jobs:
           python .github/detect/sensitive-detect.py repo
 
   attension-on-version:
-    if: ${{ github.event_name ==  'pull_request' && github.event.pull_request.base.ref == 'main' }}
+    if: ${{ github.event_name ==  'pull_request' && github.event.pull_request.base.ref == 'main' && github.event.action != 'edited' }}
     runs-on: ubuntu-latest
     steps:
       - name: checkout branch
@@ -152,7 +152,7 @@ jobs:
           head=$(git describe --first-parent --abbrev=0)
           history_cli=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/cli | grep "^feat")
           history_toolkit=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/vscode-extension | grep "^feat")
-          info=$(echo -e '=====CLI feat commits: \n' "$history_cli" '\n======Extension-toolkit feat commits:\n' "$history_toolkit")
+          info=$(echo -e 'CLI feat commits: \n' "$history_cli" '\n\nExtension-toolkit feat commits:\n' "$history_toolkit")
           echo "MY_STRING<<EOF" >> $GITHUB_ENV
           echo "$info" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV

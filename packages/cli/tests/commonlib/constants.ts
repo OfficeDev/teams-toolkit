@@ -60,6 +60,12 @@ export enum ResourceToDeploy {
   Apim = "apim",
   AadManifest = "aad-manifest",
 }
+
+export enum Runtime {
+  Dotnet = "dotnet",
+  Node = "node",
+}
+
 export class StateConfigKey {
   // solution
   static readonly subscriptionId = "subscriptionId";

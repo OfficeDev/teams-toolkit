@@ -5,7 +5,7 @@ import { Inputs } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import { AzureSolutionQuestionNames, BotScenario } from "../../../solution/fx-solution/question";
 import { QuestionNames, TemplateProjectsConstants, TemplateProjectsScenarios } from "../constants";
-import { AppServiceOptionItem, HostTypeTriggerOptions } from "../question";
+import { AppServiceOptionItem, FunctionsOptionItems } from "../question";
 import { CodeTemplateInfo } from "./interface/codeTemplateInfo";
 import { getLanguage, getServiceType, getTriggerScenarios } from "./mapping";
 import { ServiceType } from "../../../../common/azure-hosting/interfaces";
@@ -58,14 +58,15 @@ export function decideTemplateScenarios(ctx: Context, inputs: Inputs): Set<strin
 
 export function resolveHostType(inputs: Inputs): HostType {
   const notificationTriggerType = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER];
-  let hostType;
+  let hostType: HostType = HostTypes.APP_SERVICE;
   if (Array.isArray(notificationTriggerType)) {
-    const hostTypes = notificationTriggerType.map(
-      (item) => HostTypeTriggerOptions.find((option) => option.id === item)?.hostType
-    );
-    hostType = hostTypes ? hostTypes[0] : undefined;
+    FunctionsOptionItems.forEach((item) => {
+      if (notificationTriggerType.includes(item.id)) {
+        hostType = HostTypes.AZURE_FUNCTIONS;
+      }
+    });
   }
-  return hostType ? hostType : HostTypes.APP_SERVICE;
+  return hostType;
 }
 
 export function resolveServiceType(ctx: Context): ServiceType {

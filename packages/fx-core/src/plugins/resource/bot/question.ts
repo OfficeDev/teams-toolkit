@@ -47,7 +47,7 @@ export const AppServiceOptionItemForVS: HostTypeTriggerOptionItem = optionWithL1
   hostType: HostTypes.APP_SERVICE,
 });
 
-export const HostTypeTriggerOptions: HostTypeTriggerOptionItem[] = [
+export const FunctionsOptionItems: HostTypeTriggerOptionItem[] = [
   FunctionsHttpTriggerOptionItem,
   FunctionsTimerTriggerOptionItem,
 ];
@@ -65,7 +65,7 @@ export function createHostTypeTriggerQuestion(
   if (runtime === Runtime.Dotnet) {
     defaultOptionItem = AppServiceOptionItemForVS;
   }
-  let staticOptions = [defaultOptionItem, ...HostTypeTriggerOptions];
+  let staticOptions = [defaultOptionItem, ...FunctionsOptionItems];
   if (platform === Platform.CLI) {
     // The UI in CLI is different. It does not have description. So we need to merge that into label.
     staticOptions = staticOptions.map((option) => {

@@ -150,9 +150,11 @@ jobs:
         id: description
         run: | 
           head=$(git describe --first-parent --abbrev=0)
-          git log --pretty=format:"%s %h" $head...HEAD -- packages/cli | grep "^feat"
-          git log --pretty=format:"%s %h" $head...HEAD -- packages/vscode-extension | grep "^feat"
+          history_cli=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/cli | grep "^feat")
+          history_toolkit=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/vscode-extension | grep "^feat")
+          info=$(echo -e $history_cli '\n' $history_toolkit)
+          echo "info=$info" >> $GITHUB_ENV
       - uses: riskledger/update-pr-description@v2
         with:
-          body: ${{ steps.description.outputs.description }}
+          body: ${{ env.info }}
           token: ${{ secrets.GITHUB_TOKEN }}

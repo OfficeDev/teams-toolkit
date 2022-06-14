@@ -143,6 +143,7 @@ jobs:
       - name: checkout branch
         uses: actions/checkout@v2
         with:
+          fetch-depth: 0
           token: ${{ secrets.CD_PAT }}
           ref: ${{ github.ref }}
       - name: check feature history in cli

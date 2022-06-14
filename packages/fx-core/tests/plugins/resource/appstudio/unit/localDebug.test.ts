@@ -104,8 +104,6 @@ describe("Post Local Debug", () => {
     configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
     configOfOtherPlugins.set(PluginNames.APPST, APPSTUDIO_ConfigMap);
     configOfOtherPlugins.set(PluginNames.FE, FE_ConfigMap);
-
-    sandbox.stub(AppStudioClient, "validateManifest").resolves([]);
   });
 
   afterEach(() => {

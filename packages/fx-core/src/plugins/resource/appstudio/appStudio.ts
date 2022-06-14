@@ -75,7 +75,8 @@ export namespace AppStudioClient {
       const correlationId = e.response?.headers[Constants.CORRELATION_ID];
       const message =
         (e.response?.data ? `data: ${JSON.stringify(e.response.data)}` : "") +
-        (correlationId ? `X-Correlation-ID: ${correlationId}` : "");
+        (correlationId ? `X-Correlation-ID: ${correlationId}` : "") +
+        (e.request?.path ? `Request path: ${e.request.method} ${e.request.path}` : "");
       const error = new Error(
         getLocalizedString("error.appstudio.teamsAppCreateFailed", e.name, e.message, message)
       );
@@ -118,7 +119,8 @@ export namespace AppStudioClient {
       const correlationId = e.response?.headers[Constants.CORRELATION_ID];
       const message =
         `Failed to upload icon for app ${teamsAppId}, due to ${e.name}: ${e.message}` +
-        (correlationId ? `X-Correlation-ID: ${correlationId}` : "");
+        (correlationId ? `X-Correlation-ID: ${correlationId}` : "") +
+        (e.request?.path ? `Request path: ${e.request.method} ${e.request.path}` : "");
       await logProvider?.warning(message);
       const error = new Error(message);
       if (e.response?.status) {
@@ -150,7 +152,8 @@ export namespace AppStudioClient {
       const correlationId = e.response?.headers[Constants.CORRELATION_ID];
       const message =
         `Cannot get the app definition with app ID ${teamsAppId}, due to ${e.name}: ${e.message}` +
-        (correlationId ? `X-Correlation-ID: ${correlationId}` : "");
+        (correlationId ? `X-Correlation-ID: ${correlationId}` : "") +
+        (e.request?.path ? `Request path: ${e.request.method} ${e.request.path}` : "");
       await logProvider?.warning(message);
       const err = new Error(message);
       if (e.response?.status) {
@@ -218,52 +221,13 @@ export namespace AppStudioClient {
       const correlationId = e.response?.headers[Constants.CORRELATION_ID];
       const message =
         `Cannot create teams app due to ${e.name}: ${e.message}` +
-        (correlationId ? `X-Correlation-ID: ${correlationId}` : "");
+        (correlationId ? `X-Correlation-ID: ${correlationId}` : "") +
+        (e.request?.path ? `Request path: ${e.request.method} ${e.request.path}` : "");
       const error = new Error(message);
       if (e.response?.status) {
         error.name = e.response?.status;
       }
       throw error;
-    }
-  }
-
-  /**
-   * @deprecated Please DO NOT use this method any more, it will be removed in near future.
-   */
-  export async function validateManifest(
-    manifestString: string,
-    appStudioToken: string
-  ): Promise<string[]> {
-    try {
-      const requester = createRequesterWithToken(appStudioToken);
-      const buffer = Buffer.from(manifestString, "utf8");
-      const response = await requester.post("/api/appdefinitions/prevalidation", buffer, {
-        headers: { "Content-Type": "application/json" },
-      });
-      if (response && response.data) {
-        let validationResult: string[] = [];
-        validationResult = validationResult.concat(response.data.errors);
-        validationResult = validationResult.concat(response.data.warnings);
-        validationResult = validationResult.concat(response.data.info);
-        return validationResult;
-      } else {
-        throw AppStudioResultFactory.SystemError(
-          AppStudioError.ValidationFailedError.name,
-          AppStudioError.ValidationFailedError.message([
-            `Validation failed, response: ${JSON.stringify(response)}`,
-          ])
-        );
-      }
-    } catch (e: any) {
-      const correlationId = e.response?.headers[Constants.CORRELATION_ID];
-      const message =
-        `Cannot create teams app due to ${e.name}: ${e.message}` +
-        (correlationId ? `X-Correlation-ID: ${correlationId}` : "");
-      throw AppStudioResultFactory.SystemError(
-        AppStudioError.ValidationFailedError.name,
-        AppStudioError.ValidationFailedError.message([message]),
-        e
-      );
     }
   }
 
@@ -285,6 +249,7 @@ export namespace AppStudioClient {
         headers: { "Content-Type": "application/zip" },
       });
 
+      const requestPath = `${response.request?.method} ${response.request?.path}`;
       if (response && response.data) {
         if (response.data.error) {
           // To avoid App Studio BadGateway error
@@ -297,7 +262,7 @@ export namespace AppStudioClient {
           }
           throw AppStudioResultFactory.SystemError(
             AppStudioError.TeamsAppPublishFailedError.name,
-            AppStudioError.TeamsAppPublishFailedError.message(teamsAppId),
+            AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, requestPath),
             `code: ${response.data.error.code}, message: ${response.data.error.message}`
           );
         } else {
@@ -306,7 +271,7 @@ export namespace AppStudioClient {
       } else {
         throw AppStudioResultFactory.SystemError(
           AppStudioError.TeamsAppPublishFailedError.name,
-          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId)
+          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, requestPath)
         );
       }
     } catch (e: any) {
@@ -314,9 +279,10 @@ export namespace AppStudioClient {
         throw e;
       } else {
         const correlationId = e.response?.headers[Constants.CORRELATION_ID];
+        const requestPath = `${e.response?.request?.method} ${e.response.request?.path}`;
         throw AppStudioResultFactory.SystemError(
           AppStudioError.TeamsAppPublishFailedError.name,
-          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, correlationId),
+          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, requestPath, correlationId),
           e
         );
       }
@@ -351,15 +317,19 @@ export namespace AppStudioClient {
       } else {
         throw AppStudioResultFactory.SystemError(
           AppStudioError.TeamsAppPublishFailedError.name,
-          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId)
+          AppStudioError.TeamsAppPublishFailedError.message(
+            teamsAppId,
+            `GET /api/publishing/${teamsAppId}`
+          )
         );
       }
 
+      const requestPath = `${response.request?.method} ${response.request?.path}`;
       if (response && response.data) {
         if (response.data.error || response.data.errorMessage) {
           throw AppStudioResultFactory.SystemError(
             AppStudioError.TeamsAppPublishFailedError.name,
-            AppStudioError.TeamsAppPublishFailedError.message(teamsAppId),
+            AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, requestPath),
             response.data.error?.message || response.data.errorMessage
           );
         } else {
@@ -368,7 +338,7 @@ export namespace AppStudioClient {
       } else {
         throw AppStudioResultFactory.SystemError(
           AppStudioError.TeamsAppPublishFailedError.name,
-          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId)
+          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, requestPath)
         );
       }
     } catch (error: any) {
@@ -376,9 +346,10 @@ export namespace AppStudioClient {
         throw error;
       } else {
         const correlationId = error.response?.headers[Constants.CORRELATION_ID];
+        const requestPath = `${error.response?.request?.method} ${error.response.request?.path}`;
         throw AppStudioResultFactory.SystemError(
           AppStudioError.TeamsAppPublishFailedError.name,
-          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, correlationId),
+          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, requestPath, correlationId),
           error
         );
       }

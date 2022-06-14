@@ -4,7 +4,6 @@ import {
   AzureSolutionSettings,
   Func,
   FxError,
-  Inputs,
   ok,
   Platform,
   Plugin,
@@ -37,10 +36,11 @@ import { FunctionsHostedBotImpl } from "./functionsHostedBot/plugin";
 import { ScaffoldConfig } from "./configs/scaffoldConfig";
 import {
   createHostTypeTriggerQuestion,
-  createHostTypeTriggerQuestionForVS,
+  getConditionOfNotificationTriggerQuestion,
   showNotificationTriggerCondition,
 } from "./question";
-import { CoreQuestionNames } from "../../../core/question";
+import { Runtime } from "./v2/enum";
+import { getPlatformRuntime } from "./v2/mapping";
 
 @Service(ResourcePlugins.BotPlugin)
 export class TeamsBot implements Plugin {
@@ -207,54 +207,26 @@ export class TeamsBot implements Plugin {
       return await runWithExceptionCatching(
         context,
         async () => {
+          const res = new QTreeNode({
+            type: "group",
+          });
           if (isCLIDotNetEnabled()) {
-            const node = new QTreeNode({ type: "group" });
-            node.condition = showNotificationTriggerCondition;
-
-            const dotnetNode = new QTreeNode(createHostTypeTriggerQuestionForVS());
-            dotnetNode.condition = {
-              validFunc: async (input: unknown, inputs?: Inputs) => {
-                if (inputs && inputs[CoreQuestionNames.Runtime] === "dotnet") {
-                  return undefined;
-                } else {
-                  return "Runtime is not .net.";
-                }
-              },
-            };
-            node.addChild(dotnetNode);
-
-            const nodejsNode = new QTreeNode(
-              createHostTypeTriggerQuestion(context.answers?.platform)
-            );
-            nodejsNode.condition = {
-              validFunc: async (input: unknown, inputs?: Inputs) => {
-                if (inputs && inputs[CoreQuestionNames.Runtime] === "nodejs") {
-                  return undefined;
-                } else {
-                  return "Runtime is not node.js";
-                }
-              },
-            };
-
-            node.addChild(nodejsNode);
-
-            return ok(node);
+            Object.values(Runtime).forEach((runtime) => {
+              const node = new QTreeNode(
+                createHostTypeTriggerQuestion(context.answers?.platform, runtime)
+              );
+              node.condition = getConditionOfNotificationTriggerQuestion(runtime);
+              res.addChild(node);
+            });
           } else {
-            if (isVSProject(context.projectSettings) || context.answers?.platform === Platform.VS) {
-              const res = new QTreeNode(createHostTypeTriggerQuestionForVS());
-              res.condition = showNotificationTriggerCondition;
-              return ok(res);
-            } else if (isBotNotificationEnabled()) {
-              const res = new QTreeNode({
-                type: "group",
-              });
-              res.addChild(new QTreeNode(createHostTypeTriggerQuestion(context.answers?.platform)));
-              res.condition = showNotificationTriggerCondition;
-              return ok(res);
-            } else {
-              return ok(undefined);
-            }
+            const runtime = getPlatformRuntime(context.answers!.platform);
+            const node = new QTreeNode(
+              createHostTypeTriggerQuestion(context.answers?.platform, runtime)
+            );
+            res.addChild(node);
           }
+          res.condition = showNotificationTriggerCondition;
+          return ok(res);
         },
         true,
         LifecycleFuncNames.GET_QUETSIONS_FOR_SCAFFOLDING

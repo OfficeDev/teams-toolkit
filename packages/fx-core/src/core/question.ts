@@ -535,7 +535,7 @@ export const ScratchOptionNoVSC: OptionItem = {
 };
 
 export const RuntimeOptionNodeJs: OptionItem = {
-  id: "nodejs",
+  id: "node",
   label: "Node.js",
   detail: getLocalizedString("core.RuntimeOptionNodeJS.detail"),
 };

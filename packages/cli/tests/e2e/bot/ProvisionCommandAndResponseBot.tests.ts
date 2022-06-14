@@ -7,4 +7,4 @@
 
 import { happyPathTest } from "./CommandBotHappyPathCommon";
 
-happyPathTest("nodejs");
+happyPathTest(Runtime.Node);

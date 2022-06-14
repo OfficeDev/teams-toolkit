@@ -439,11 +439,6 @@
         "category": "Teams"
       },
       {
-        "command": "fx-extension.cmpAccounts",
-        "title": "%teamstoolkit.commands.accounts.title%",
-        "category": "Teams"
-      },
-      {
         "command": "fx-extension.getNewProjectPath",
         "title": "Teams - Get Path",
         "enablement": "never"
@@ -512,6 +507,12 @@
         "title": "%teamstoolkit.commands.upgradeProject.title%",
         "enablement": "fx-extension.initialized",
         "category": "Teams"
+      },
+      {
+        "command": "fx-extension.cmpAccounts",
+        "title": "%teamstoolkit.commands.accounts.title%",
+        "category": "Teams",
+        "enablement": "fx-extension.initialized"
       },
       {
         "command": "fx-extension.deploy",

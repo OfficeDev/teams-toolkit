@@ -11,7 +11,10 @@ import {
   UserError,
 } from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
-import { checkAzureSubscription } from "../../plugins/solution/fx-solution/v3/provision";
+import {
+  askForDeployConsent,
+  checkAzureSubscription,
+} from "../../plugins/solution/fx-solution/v3/provision";
 
 export class FxPreDeployAction implements FunctionAction {
   type: "function" = "function";
@@ -39,6 +42,14 @@ export class FxPreDeployAction implements FunctionAction {
     );
     if (subscriptionResult.isErr()) {
       return err(subscriptionResult.error);
+    }
+    const consent = await askForDeployConsent(
+      ctx,
+      ctx.tokenProvider.azureAccountProvider,
+      ctx.envInfo
+    );
+    if (consent.isErr()) {
+      return err(consent.error);
     }
     return ok([]);
   }

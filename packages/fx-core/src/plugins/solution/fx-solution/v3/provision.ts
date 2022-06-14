@@ -292,8 +292,8 @@ export async function checkAzureSubscription(
 ): Promise<Result<Void, FxError>> {
   const subscriptionIdInConfig =
     envInfo.config.azure?.subscriptionId || (envInfo.state.solution.subscriptionId as string);
+  const subscriptionInAccount = await azureAccountProvider.getSelectedSubscription(true);
   if (!subscriptionIdInConfig) {
-    const subscriptionInAccount = await azureAccountProvider.getSelectedSubscription(true);
     if (subscriptionInAccount) {
       envInfo.state.solution.subscriptionId = subscriptionInAccount.subscriptionId;
       envInfo.state.solution.subscriptionName = subscriptionInAccount.subscriptionName;

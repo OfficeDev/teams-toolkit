@@ -146,10 +146,6 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.CD_PAT }}
           ref: ${{ github.ref }}
-      - name: pull-request
-        uses: repo-sync/pull-request@v2
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: check feature history
         id: description
         run: | 
@@ -160,4 +156,4 @@ jobs:
         uses: kt3k/update-pr-description@v1.0.1
         with:
           pr_body: ${{ steps.description.outputs.description }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.CD_PAT }}

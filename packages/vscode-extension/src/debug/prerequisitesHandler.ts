@@ -397,7 +397,7 @@ async function _checkAndInstall(ctx: TelemetryContext): Promise<Result<void, FxE
   return ok(undefined);
 }
 
-async function checkM365Account(prefix: string, showLoginPage: boolean): Promise<CheckResult> {
+function checkM365Account(prefix: string, showLoginPage: boolean): Promise<CheckResult> {
   return runWithCheckResultTelemetry(
     TelemetryEvent.DebugPrereqsCheckM365Account,
     async (): Promise<CheckResult> => {

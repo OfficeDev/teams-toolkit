@@ -40,7 +40,8 @@ export class AzureOperations {
         siteName
       );
     } catch (e) {
-      throw new ListPublishingCredentialsError(e);
+      // throw new ListPublishingCredentialsError(e);
+      throw e;
     }
 
     if (!listResponse || !isHttpCodeOkOrCreated(listResponse._response.status)) {

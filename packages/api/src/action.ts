@@ -30,6 +30,13 @@ export interface GroupAction {
   mode?: "sequential" | "parallel";
   actions: Action[];
   inputs?: Json;
+  /**
+   * question is to define inputs of the task
+   */
+  question?: (
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
 }
 
 /**

@@ -3,6 +3,7 @@
 
 import {
   Action,
+  CallAction,
   ContextV3,
   FxError,
   GroupAction,
@@ -23,6 +24,7 @@ import {
 } from "../../plugins/resource/bot/question";
 import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "../projectSettingsManager";
 import { getComponent } from "../workflow";
+import { CoreQuestionNames } from "../../core/question";
 import "../code/botCode";
 import "../resource/appManifest/appManifest";
 import "../resource/botService";
@@ -128,6 +130,7 @@ export class TeamsBot {
               `connect 'azure-sql' to hosting component '${inputs.hosting}' in projectSettings`
             );
           }
+          projectSettings.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
           return ok([
             {
               type: "file",
@@ -188,5 +191,17 @@ export class TeamsBot {
       actions: actions,
     };
     return ok(group);
+  }
+  build(
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const action: CallAction = {
+      name: "teams-bot.build",
+      type: "call",
+      targetAction: "bot-code.build",
+      required: true,
+    };
+    return ok(action);
   }
 }

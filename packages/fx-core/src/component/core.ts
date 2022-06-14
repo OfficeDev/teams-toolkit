@@ -365,11 +365,12 @@ export class TeamsfxCore {
           name: `call:${component}.build`,
           type: "call",
           targetAction: `${component}.build`,
-          required: false,
+          required: true,
         };
       });
     const group: Action = {
       type: "group",
+      name: "fx.build",
       mode: "parallel",
       actions: actions,
     };
@@ -386,7 +387,7 @@ export class TeamsfxCore {
         name: "call:fx.build",
         type: "call",
         targetAction: "fx.build",
-        required: false,
+        required: true,
       },
     ];
     projectSettings.components

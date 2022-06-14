@@ -7,11 +7,14 @@ import {
   Func,
   FxError,
   Inputs,
+  MultiSelectQuestion,
   ok,
+  ProjectSettingsV3,
   QTreeNode,
   Result,
   SingleSelectQuestion,
   traverse,
+  v2,
 } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { createHostTypeTriggerQuestion } from "../../plugins/resource/bot/question";
@@ -21,6 +24,7 @@ import {
   BotOptionItem,
   NotificationOptionItem,
 } from "../../plugins/solution/fx-solution/question";
+import { selectMultiPluginsQuestion } from "../../plugins/solution/utils/questions";
 import { TOOLS } from "../globalVars";
 import {
   createAppNameQuestion,
@@ -52,6 +56,9 @@ export const QuestionModelMW_V3: Middleware = async (ctx: CoreHookContext, next:
     }
   } else if (method === "provisionResourcesV3") {
     getQuestionRes = await getQuestionsForTargetEnv(inputs);
+  } else if (method === "deployArtifactsV3") {
+    const context = ctx.contextV2;
+    getQuestionRes = await getQuestionsForDeploy(context!, inputs);
   }
   if (getQuestionRes.isErr()) {
     TOOLS?.logProvider.error(
@@ -123,5 +130,15 @@ async function getQuestionsForAddFeature(
     type: "singleSelect",
     staticOptions: [AzureResourceSQLNewUI, BotOptionItem],
   };
+  return ok(new QTreeNode(question));
+}
+
+async function getQuestionsForDeploy(
+  ctx: v2.Context,
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const projectSetting = ctx.projectSetting as ProjectSettingsV3;
+  const question = selectMultiPluginsQuestion;
+  question.staticOptions = projectSetting.components.filter((c) => c.build).map((c) => c.name);
   return ok(new QTreeNode(question));
 }

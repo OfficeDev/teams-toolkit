@@ -46,6 +46,8 @@ export class BotCodeProvider implements SourceCodeProvider {
       name: "bot-code.generate",
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
+        const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
+        if (!teamsBot) return ok([]);
         const folder = inputs.folder || CommonStrings.BOT_WORKING_DIR_NAME;
         return ok([
           "add component 'bot-code' in projectSettings",
@@ -58,6 +60,7 @@ export class BotCodeProvider implements SourceCodeProvider {
           inputs.language || context.projectSetting.programmingLanguage || "javascript";
         const botFolder = inputs.folder || CommonStrings.BOT_WORKING_DIR_NAME;
         const teamsBot = getComponent(projectSettings, ComponentNames.TeamsBot);
+        if (!teamsBot) return ok([]);
         merge(teamsBot, { build: true, folder: botFolder });
         const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
         const lang = convertToLangKey(language);
@@ -95,7 +98,7 @@ export class BotCodeProvider implements SourceCodeProvider {
     return ok(action);
   }
   build(
-    context: v2.Context,
+    context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const action: Action = {
@@ -103,14 +106,15 @@ export class BotCodeProvider implements SourceCodeProvider {
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
+        if (!teamsBot) return ok([]);
         const packDir = teamsBot?.folder;
         if (!packDir) return ok([]);
         return ok([`build project: ${packDir}`]);
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
-        const packDir = teamsBot?.folder;
-        if (!packDir) return ok([]);
+        if (!teamsBot) return ok([]);
+        const packDir = path.join(inputs.projectPath, teamsBot.folder!);
         const language = context.projectSetting.programmingLanguage || "javascript";
         if (language === ProgrammingLanguage.TypeScript) {
           //Typescript needs tsc build before deploy because of windows app server. other languages don"t need it.

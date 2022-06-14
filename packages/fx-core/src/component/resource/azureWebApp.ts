@@ -123,7 +123,7 @@ export class AzureWebAppResource implements CloudResource {
             name: "azure",
             remarks: `deploy azure web app in folder: ${path.join(
               inputs.projectPath,
-              inputs["azure-web-app"].folder
+              inputs.folder
             )}`,
           },
         ]);
@@ -132,7 +132,7 @@ export class AzureWebAppResource implements CloudResource {
         const ctx = context as ProvisionContextV3;
         ctx.logProvider.info(Messages.DeployingBot);
         // Preconditions checking.
-        const workingDir = inputs.folder;
+        const workingDir = path.join(inputs.projectPath, inputs.folder);
         if (!workingDir) {
           throw new PreconditionError(Messages.WorkingDirIsMissing, []);
         }
@@ -173,12 +173,12 @@ export class AzureWebAppResource implements CloudResource {
         );
         await handler?.start(ProgressBarConstants.DEPLOY_STEP_START);
         await handler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_FOLDER);
-        const unPackFlag = (ctx.envInfo.config as EnvConfig).bot?.unPackFlag as string;
-        await LanguageStrategy.localBuild(
-          programmingLanguage as ProgrammingLanguage,
-          workingDir,
-          unPackFlag === "false" ? false : true
-        );
+        // const unPackFlag = (ctx.envInfo.config as EnvConfig).bot?.unPackFlag as string;
+        // await LanguageStrategy.localBuild(
+        //   programmingLanguage as ProgrammingLanguage,
+        //   workingDir,
+        //   unPackFlag === "false" ? false : true
+        // );
 
         const zipBuffer = utils.zipAFolder(workingDir, DeployConfigs.UN_PACK_DIRS, [
           `${FolderNames.NODE_MODULES}/${FolderNames.KEYTAR}`,

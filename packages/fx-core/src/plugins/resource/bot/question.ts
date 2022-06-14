@@ -48,13 +48,6 @@ export const AppServiceOptionItemForVS: HostTypeTriggerOptionItem = optionWithL1
 });
 
 export const HostTypeTriggerOptions: HostTypeTriggerOptionItem[] = [
-  AppServiceOptionItem,
-  FunctionsHttpTriggerOptionItem,
-  FunctionsTimerTriggerOptionItem,
-];
-
-export const HostTypeTriggerOptionsForVS: HostTypeTriggerOptionItem[] = [
-  AppServiceOptionItemForVS,
   FunctionsHttpTriggerOptionItem,
   FunctionsTimerTriggerOptionItem,
 ];
@@ -68,12 +61,11 @@ export function createHostTypeTriggerQuestion(
 ): MultiSelectQuestion {
   const prefix = "plugins.bot.questionHostTypeTrigger";
 
-  let staticOptions: HostTypeTriggerOptionItem[] = HostTypeTriggerOptions;
   let defaultOptionItem = AppServiceOptionItem;
   if (runtime === Runtime.Dotnet) {
-    staticOptions = HostTypeTriggerOptionsForVS;
     defaultOptionItem = AppServiceOptionItemForVS;
   }
+  let staticOptions = [defaultOptionItem, ...HostTypeTriggerOptions];
   if (platform === Platform.CLI) {
     // The UI in CLI is different. It does not have description. So we need to merge that into label.
     staticOptions = staticOptions.map((option) => {

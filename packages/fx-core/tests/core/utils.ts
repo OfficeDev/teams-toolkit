@@ -465,7 +465,7 @@ export class MockSharepointTokenProvider implements SharepointTokenProvider {
   }
 }
 
-class MockTelemetryReporter implements TelemetryReporter {
+export class MockTelemetryReporter implements TelemetryReporter {
   sendTelemetryErrorEvent(
     eventName: string,
     properties?: { [key: string]: string },

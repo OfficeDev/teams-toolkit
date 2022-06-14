@@ -16,10 +16,10 @@ import {
   Effect,
 } from "@microsoft/teamsfx-api";
 import { ComponentNames, ActionNames, ActionTypeFunction } from "../../../constants";
-import { LoggerMW } from "../../../middleware/logger";
+import { ActionLogger, LoggerMW } from "../../../middleware/logger";
 import { ProgressBarMW } from "../../../middleware/progressbar";
 import { ActionErrorHandler, RunWithCatchErrorMW } from "../../../middleware/runWithCatchError";
-import { TelemetryMW } from "../../../middleware/telemetry";
+import { ActionTelemetryImplement, TelemetryMW } from "../../../middleware/telemetry";
 import { ManagementClient } from "../clients/management";
 import { SqlClient } from "../clients/sql";
 import { LoadManagementConfig, LoadSqlConfig } from "../config";
@@ -28,17 +28,6 @@ import { ErrorMessage } from "../errors";
 import { SqlResultFactory } from "../results";
 import { parseToken, TokenInfo, UserType } from "../utils/common";
 import { Message } from "../utils/message";
-
-export function GetActionConfigure(): FunctionAction {
-  return {
-    name: `${ComponentNames.AzureSQL}.${ActionNames.configure}`,
-    type: ActionTypeFunction,
-    plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-      return ok([{ type: "service", name: "azure", remarks: "configure azure-sql" }]);
-    },
-    execute: ConfigureActionImplement.execute,
-  };
-}
 
 export class ConfigureActionImplement {
   static readonly source = "SQL";
@@ -49,14 +38,24 @@ export class ConfigureActionImplement {
     addAadmin: "Configure aad admin for SQL",
     addUser: "Configure database user",
   };
+  static readonly loggerPrefix = "[SQL Plugin]";
+  static readonly logFormatter = (message: string) =>
+    `${ConfigureActionImplement.loggerPrefix} ${message}`;
+
   @hooks([
+    TelemetryMW(
+      ActionTelemetryImplement.bind(
+        null,
+        ConfigureActionImplement.stage,
+        ConfigureActionImplement.componentName
+      )
+    ),
     RunWithCatchErrorMW(ConfigureActionImplement.source, ActionErrorHandler),
     ProgressBarMW(
       ConfigureActionImplement.progressTitle,
       Object.keys(ConfigureActionImplement.progressMessage).length
     ),
-    LoggerMW(),
-    TelemetryMW(ConfigureActionImplement.stage, ConfigureActionImplement.componentName),
+    LoggerMW(ActionLogger.bind(null, ConfigureActionImplement.logFormatter)),
   ]) // the @hooks decorator
   static async execute(
     context: ContextV3,
@@ -113,6 +112,17 @@ export class ConfigureActionImplement {
     }
     await sqlMgrClient.deleteLocalFirewallRule();
     return ok([{ type: "service", name: "azure", remarks: "configure azure-sql" }]);
+  }
+
+  static get(): FunctionAction {
+    return {
+      name: `${ComponentNames.AzureSQL}.${ActionNames.configure}`,
+      type: ActionTypeFunction,
+      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
+        return ok([{ type: "service", name: "azure", remarks: "configure azure-sql" }]);
+      },
+      execute: ConfigureActionImplement.execute,
+    };
   }
 }
 

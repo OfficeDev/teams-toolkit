@@ -5,22 +5,20 @@ import { Middleware, HookContext, NextFunction } from "@feathersjs/hooks/lib";
 import { Colors, LogLevel, LogProvider } from "@microsoft/teamsfx-api";
 import { ActionContext } from "./types";
 
-export function LoggerMW(formatter?: (message: string) => string): Middleware {
+export function LoggerMW(loggerCreater: new (logger: LogProvider) => LogProvider): Middleware {
   return async (ctx: HookContext, next: NextFunction) => {
     const actionContext = ctx.arguments[0] as ActionContext;
-    actionContext.logger = new ActionLogger(actionContext.logProvider, formatter);
+    actionContext.logger = new loggerCreater(actionContext.logProvider);
     await next();
   };
 }
 
 export class ActionLogger implements LogProvider {
   logger: LogProvider;
-  formatter: (message: string) => string = (message) => message;
-  constructor(logger: LogProvider, formatter?: (message: string) => string) {
+  formatter: (message: string) => string;
+  constructor(formatter: (message: string) => string, logger: LogProvider) {
     this.logger = logger;
-    if (formatter) {
-      this.formatter = formatter;
-    }
+    this.formatter = formatter;
   }
 
   log(logLevel: LogLevel, message: string): Promise<boolean> {

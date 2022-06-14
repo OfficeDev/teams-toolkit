@@ -2,27 +2,30 @@
 // Licensed under the MIT license.
 
 import { Middleware, HookContext, NextFunction } from "@feathersjs/hooks/lib";
-import { FxError, SystemError, TelemetryReporter } from "@microsoft/teamsfx-api";
+import { Effect, FxError, Result, SystemError, TelemetryReporter } from "@microsoft/teamsfx-api";
 import { TelemetryConstants } from "../constants";
 import { ActionContext, ActionTelemetryReporter } from "./types";
-export function TelemetryMW(stage: string, componentName: string): Middleware {
+export function TelemetryMW(
+  telemetryCreater: new (reporter: TelemetryReporter) => ActionTelemetryReporter
+): Middleware {
   return async (ctx: HookContext, next: NextFunction) => {
     const actionContext = ctx.arguments[0] as ActionContext;
-    const telemetry = new ActionTelemetryImplement(
-      actionContext.telemetryReporter,
-      stage,
-      componentName
-    );
+    const telemetry = new telemetryCreater(actionContext.telemetryReporter);
     actionContext.telemetry = telemetry;
     actionContext.telemetry.sendStartEvent?.(actionContext);
     await next();
-    actionContext.telemetry.sendEndEvent?.(actionContext);
+    const result = ctx.result as Result<Effect[], FxError>;
+    if (result.isOk()) {
+      actionContext.telemetry.sendEndEvent?.(actionContext);
+    } else {
+      actionContext.telemetry?.sendEndEventWithError?.(actionContext, result.error);
+    }
   };
 }
 
 export class ActionTelemetryImplement implements ActionTelemetryReporter {
   reporter: TelemetryReporter;
-  constructor(reporter: TelemetryReporter, stage: string, componentName: string) {
+  constructor(stage: string, componentName: string, reporter: TelemetryReporter) {
     this.reporter = reporter;
     this.stage = stage;
     this.componentName = componentName;
@@ -32,6 +35,8 @@ export class ActionTelemetryImplement implements ActionTelemetryReporter {
   componentName: string;
   properties = {} as { [key: string]: string };
   measurements = {} as { [key: string]: number };
+  errorProps = [TelemetryConstants.properties.errorMessage];
+
   sendStartEvent = (ctx: ActionContext) => {
     this.sendTelemetryEvent(this.stage + TelemetryConstants.eventPrefix);
   };
@@ -74,7 +79,7 @@ export class ActionTelemetryImplement implements ActionTelemetryReporter {
       eventName,
       { ...properties, ...this.properties },
       { ...measurements, ...this.measurements },
-      errorProps
+      this.errorProps
     );
   }
   sendTelemetryException(

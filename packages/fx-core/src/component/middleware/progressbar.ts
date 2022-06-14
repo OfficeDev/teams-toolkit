@@ -11,7 +11,12 @@ export function ProgressBarMW(progressTitle: string, processStep: number): Middl
       processStep
     );
     actionContext.progressBar.start();
-    await next();
+    try {
+      await next();
+    } catch (error) {
+      actionContext.progressBar.end(false);
+      throw error;
+    }
     actionContext.progressBar.end(true);
   };
 }

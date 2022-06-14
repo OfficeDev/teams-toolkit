@@ -14,7 +14,7 @@ import {
 import "reflect-metadata";
 import { Service } from "typedi";
 import { AzureSqlOutputs, ComponentNames } from "../../constants";
-import { GetActionConfigure } from "./actions/configure";
+import { ConfigureActionImplement } from "./actions/configure";
 import { GetActionGenerateBicep } from "./actions/generateBicep";
 import { GetActionProvision } from "./actions/provision";
 @Service("azure-sql")
@@ -38,6 +38,6 @@ export class AzureSqlResource implements CloudResource {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    return ok(GetActionConfigure());
+    return ok(ConfigureActionImplement.get());
   }
 }

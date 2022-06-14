@@ -13,9 +13,7 @@ export function RunWithCatchErrorMW(source: string, errorHanlder: ErrorHandler):
     try {
       await next();
     } catch (error) {
-      actionContext.progressBar?.end(false);
       const res = errorHanlder(actionContext, error);
-      actionContext.telemetry?.sendEndEventWithError?.(actionContext, res);
       ctx.result = err(res);
     }
   };

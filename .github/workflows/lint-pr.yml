@@ -157,3 +157,4 @@ jobs:
         with:
           pr_body: ${{ steps.description.outputs.description }}
           github_token: ${{ secrets.CD_PAT }}
+          destination_branch: ${{ github.ref }}

@@ -144,8 +144,8 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-          token: ${{ secrets.CD_PAT }}
-          ref: ${{ github.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.event.pull_request.head.ref }}
       - name: check feature history
         id: description
         run: | 
@@ -153,10 +153,25 @@ jobs:
           history_cli=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/cli | grep "^feat")
           history_toolkit=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/vscode-extension | grep "^feat")
           info=$(echo -e 'CLI feat commits: \n' "$history_cli" '\n\nExtension-toolkit feat commits:\n' "$history_toolkit")
-          echo "MY_STRING<<EOF" >> $GITHUB_ENV
+          echo "LERNA_HISTORY<<EOF" >> $GITHUB_ENV
           echo "$info" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: 14
+      - name: lerna expect rc version
+        run: |
+          npx lerna version --conventional-commits --conventional-prerelease --no-git-tag-version --allow-branch ${{ github.event.pull_request.head.ref }} --yes
+          echo "LERNA_PKG_INFO<<EOF" >> $GITHUB_ENV
+          echo "$(npx lerna changed -l)" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+      - name: get description
+        id: set-output
+        with:
+          script: |
+            core.setOutput("result", `${{ env.LERNA_PKG_INFO }}\n\n${{ env.LERNA_HISTORY }}`); 
       - uses: riskledger/update-pr-description@v2
         with:
-          body: ${{ env.MY_STRING  }}
+          body: ${{steps.set-output.outputs.result}}
           token: ${{ secrets.GITHUB_TOKEN }}

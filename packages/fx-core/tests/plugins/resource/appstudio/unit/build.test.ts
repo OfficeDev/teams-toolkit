@@ -145,23 +145,4 @@ describe("Build Teams Package", () => {
     console.log(builtPackage);
     chai.assert.isTrue(builtPackage.isOk());
   });
-
-  it("Build Teams app package should not call app studio API", async () => {
-    ctx.localSettings = localSettings;
-    const spy = sandbox.spy(AppStudioClient, "validateManifest");
-    sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns({
-      tabEndpoint: "https://tabEndpoint",
-      tabDomain: "tabDomain",
-      aadId: uuid(),
-      botDomain: "botDomain",
-      botId: uuid(),
-      webApplicationInfoResource: "webApplicationInfoResource",
-      teamsAppId: uuid(),
-    });
-    sandbox.stub(fs, "move").resolves();
-
-    await plugin.buildTeamsPackage(ctx, true);
-
-    chai.assert.isTrue(spy.notCalled);
-  });
 });

@@ -152,7 +152,7 @@ jobs:
           head=$(git describe --first-parent --abbrev=0)
           git log --pretty=format:"%s %h" $head...HEAD -- packages/cli | grep "^feat"
           git log --pretty=format:"%s %h" $head...HEAD -- packages/vscode-extension | grep "^feat"
-      - uses: riskledger/update-pr-description@dev
+      - uses: riskledger/update-pr-description@v2
         with:
           body: ${{ steps.description.outputs.description }}
           token: ${{ secrets.GITHUB_TOKEN }}

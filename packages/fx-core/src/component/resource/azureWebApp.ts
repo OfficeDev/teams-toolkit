@@ -61,6 +61,10 @@ export class AzureWebAppResource implements CloudResource {
       key: "endpoint",
       bicepVariable: "provisionOutputs.azureWebAppOutput.value.endpoint",
     },
+    appName: {
+      key: "appName",
+      bicepVariable: "provisionOutputs.azureWebAppOutput.value.appName",
+    },
   };
   readonly finalOutputKeys = ["resourceId", "endpoint"];
   generateBicep(
@@ -166,20 +170,6 @@ export class AzureWebAppResource implements CloudResource {
           return ok([]);
         }
 
-        const handler = await ProgressBarFactory.newProgressBar(
-          ProgressBarConstants.DEPLOY_TITLE,
-          2,
-          ctx
-        );
-        await handler?.start(ProgressBarConstants.DEPLOY_STEP_START);
-        await handler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_FOLDER);
-        // const unPackFlag = (ctx.envInfo.config as EnvConfig).bot?.unPackFlag as string;
-        // await LanguageStrategy.localBuild(
-        //   programmingLanguage as ProgrammingLanguage,
-        //   workingDir,
-        //   unPackFlag === "false" ? false : true
-        // );
-
         const zipBuffer = utils.zipAFolder(workingDir, DeployConfigs.UN_PACK_DIRS, [
           `${FolderNames.NODE_MODULES}/${FolderNames.KEYTAR}`,
         ]);
@@ -214,29 +204,19 @@ export class AzureWebAppResource implements CloudResource {
           maxBodyLength: Infinity,
         } as AzureUploadConfig;
 
-        const zipDeployEndpoint: string = getZipDeployEndpoint(botConfig.siteName);
-        await handler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_DEPLOY);
+        const zipDeployEndpoint: string = getZipDeployEndpoint(botConfig.appName);
         const statusUrl = await AzureOperations.zipDeployPackage(
           zipDeployEndpoint,
           zipBuffer,
           config
         );
         await AzureOperations.checkDeployStatus(statusUrl, config);
-
         await deployMgr.updateLastDeployTime(deployTimeCandidate);
-
-        await handler?.end(true);
-
-        ctx.logProvider.info(Messages.SuccessfullyDeployedBot);
-
         return ok([
           {
             type: "service",
             name: "azure",
-            remarks: `deploy azure web app in folder: ${path.join(
-              inputs.projectPath,
-              inputs.folder
-            )}`,
+            remarks: `deploy azure web app in folder: ${workingDir}`,
           },
         ]);
       },

@@ -146,18 +146,13 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.CD_PAT }}
           ref: ${{ github.ref }}
-      - name: Extract branch name
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-        id: extract_branch
       - name: check feature history
         id: description
         run: | 
           head=$(git describe --first-parent --abbrev=0)
           git log --pretty=format:"%s %h" $head...HEAD -- packages/cli | grep "^feat"
           git log --pretty=format:"%s %h" $head...HEAD -- packages/vscode-extension | grep "^feat"
-      - name: update-pull-request
-        uses: kt3k/update-pr-description@v1.0.1
+      - uses: riskledger/update-pr-description@dev
         with:
-          pr_body: ${{ steps.description.outputs.description }}
-          github_token: ${{ secrets.CD_PAT }}
-          destination_branch: ${{ steps.extract_branch.outputs.branch }}
+          body: ${{ steps.description.outputs.description }}
+          token: ${{ secrets.GITHUB_TOKEN }}

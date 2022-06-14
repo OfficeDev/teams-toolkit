@@ -134,7 +134,7 @@ async function runWithCheckResultTelemetry(
     eventName,
     action,
     (result: CheckResult) => {
-      return result.result == ResultStatus.success ? undefined : result.error;
+      return result.result === ResultStatus.success ? undefined : result.error;
     }
   );
 }

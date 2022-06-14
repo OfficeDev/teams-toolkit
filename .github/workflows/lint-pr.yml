@@ -136,8 +136,8 @@ jobs:
         run: |
           python .github/detect/sensitive-detect.py repo
 
-  show-git-feat-display:
-    if: ${{ github.event_name ==  'pull_request' && github.base_ref == 'refs/heads/main' }}
+  attension-on-version:
+    if: ${{ github.event_name ==  'pull_request' }}
     runs-on: ubuntu-latest
     steps:
       - name: checkout branch

@@ -275,6 +275,11 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
     () => Correlator.runWithId(startLocalDebugSession(), handlers.validateSpfxDependenciesHandler)
   );
   context.subscriptions.push(validateSpfxDependenciesCmd);
+
+  const signinAzure = vscode.commands.registerCommand("fx-extension.signinAzure", (...args) =>
+    Correlator.run(handlers.signinAzureCallback, args)
+  );
+  context.subscriptions.push(signinAzure);
 }
 
 function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext) {
@@ -436,11 +441,6 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.checkSideloadingCallback, args)
   );
   context.subscriptions.push(checkSideloading);
-
-  const signinAzure = vscode.commands.registerCommand("fx-extension.signinAzure", (...args) =>
-    Correlator.run(handlers.signinAzureCallback, args)
-  );
-  context.subscriptions.push(signinAzure);
 }
 
 /**

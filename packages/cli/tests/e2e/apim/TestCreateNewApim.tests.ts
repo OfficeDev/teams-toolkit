@@ -18,7 +18,7 @@ import {
   setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
 import AzureLogin from "../../../src/commonlib/azureLogin";
-import GraphLogin from "../../../src/commonlib/graphLogin";
+import M365Login from "../../../src/commonlib/m365Login";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource, ResourceToDeploy } from "../../commonlib/constants";
@@ -44,7 +44,7 @@ describe("Create a new API Management Service", function () {
         Capability.Tab,
         testProcessEnv
       );
-      await ApimValidator.init(subscriptionId, AzureLogin, GraphLogin);
+      await ApimValidator.init(subscriptionId, AzureLogin, M365Login);
       await CliHelper.addResourceToProject(projectPath, Resource.AzureApim, "", testProcessEnv);
 
       await setSimpleAuthSkuNameToB1Bicep(projectPath, env);

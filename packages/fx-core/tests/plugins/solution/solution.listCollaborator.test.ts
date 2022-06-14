@@ -9,12 +9,12 @@ import {
   SolutionConfig,
   SolutionContext,
   Platform,
-  GraphTokenProvider,
   ok,
   PluginContext,
   Result,
   FxError,
   err,
+  M365TokenProvider,
 } from "@microsoft/teamsfx-api";
 import {
   GLOBAL_CONFIG,
@@ -29,7 +29,7 @@ import {
 } from "../../../src/plugins/solution/fx-solution/question";
 import * as uuid from "uuid";
 import sinon from "sinon";
-import { EnvConfig, MockGraphTokenProvider } from "../resource/apim/testUtil";
+import { EnvConfig, MockM365TokenProvider } from "../resource/apim/testUtil";
 import { CollaborationState } from "../../../src/common/permissionInterface";
 import { newEnvInfo } from "../../../src";
 import { LocalCrypto } from "../../../src/core/crypto";
@@ -47,7 +47,7 @@ describe("listCollaborator() for Teamsfx projects", () => {
   function mockSolutionContext(): SolutionContext {
     const config: SolutionConfig = new Map();
     config.set(GLOBAL_CONFIG, new ConfigMap());
-    const mockGraphTokenProvider = new MockGraphTokenProvider(
+    const mockM365TokenProvider = new MockM365TokenProvider(
       mockProjectTenantId,
       EnvConfig.servicePrincipalClientId,
       EnvConfig.servicePrincipalClientSecret
@@ -57,7 +57,7 @@ describe("listCollaborator() for Teamsfx projects", () => {
       envInfo: newEnvInfo(),
       answers: { platform: Platform.VSCode },
       projectSettings: undefined,
-      graphTokenProvider: mockGraphTokenProvider,
+      m365TokenProvider: mockM365TokenProvider,
       cryptoProvider: new LocalCrypto(""),
     };
   }
@@ -114,8 +114,8 @@ describe("listCollaborator() for Teamsfx projects", () => {
     mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
     sandbox
-      .stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject")
-      .resolves(undefined);
+      .stub(mockedCtx.m365TokenProvider as M365TokenProvider, "getJsonObject")
+      .resolves(err(new UserError("source", "name", "message")));
 
     const result = await solution.listCollaborator(mockedCtx);
     expect(result.isErr()).to.be.true;
@@ -137,12 +137,14 @@ describe("listCollaborator() for Teamsfx projects", () => {
     };
     mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
-    sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
-      tid: "fake_tid",
-      oid: "fake_oid",
-      unique_name: "fake_unique_name",
-      name: "fake_name",
-    });
+    sandbox.stub(mockedCtx.m365TokenProvider as M365TokenProvider, "getJsonObject").resolves(
+      ok({
+        tid: "fake_tid",
+        oid: "fake_oid",
+        unique_name: "fake_unique_name",
+        name: "fake_name",
+      })
+    );
 
     mockedCtx.envInfo.state
       .get(PluginNames.SOLUTION)
@@ -170,12 +172,14 @@ describe("listCollaborator() for Teamsfx projects", () => {
     };
     mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
-    sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
-      tid: mockProjectTenantId,
-      oid: "fake_oid",
-      unique_name: "fake_unique_name",
-      name: "fake_name",
-    });
+    sandbox.stub(mockedCtx.m365TokenProvider as M365TokenProvider, "getJsonObject").resolves(
+      ok({
+        tid: mockProjectTenantId,
+        oid: "fake_oid",
+        unique_name: "fake_unique_name",
+        name: "fake_name",
+      })
+    );
 
     appStudioPlugin.listCollaborator = async function (
       _ctx: PluginContext
@@ -233,12 +237,14 @@ describe("listCollaborator() for Teamsfx projects", () => {
     };
     mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
-    sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
-      tid: mockProjectTenantId,
-      oid: "fake_oid",
-      unique_name: "fake_unique_name",
-      name: "fake_name",
-    });
+    sandbox.stub(mockedCtx.m365TokenProvider as M365TokenProvider, "getJsonObject").resolves(
+      ok({
+        tid: mockProjectTenantId,
+        oid: "fake_oid",
+        unique_name: "fake_unique_name",
+        name: "fake_name",
+      })
+    );
 
     aadPlugin.listCollaborator = async function (
       _ctx: PluginContext
@@ -301,12 +307,14 @@ describe("listCollaborator() for Teamsfx projects", () => {
     };
     mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
-    sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
-      tid: mockProjectTenantId,
-      oid: "fake_oid",
-      unique_name: "fake_unique_name",
-      name: "fake_name",
-    });
+    sandbox.stub(mockedCtx.m365TokenProvider as M365TokenProvider, "getJsonObject").resolves(
+      ok({
+        tid: mockProjectTenantId,
+        oid: "fake_oid",
+        unique_name: "fake_unique_name",
+        name: "fake_name",
+      })
+    );
 
     appStudioPlugin.listCollaborator = async function (
       _ctx: PluginContext

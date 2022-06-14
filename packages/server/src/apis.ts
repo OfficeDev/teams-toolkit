@@ -191,11 +191,8 @@ export const RequestTypes = {
     getAccessToken: new RequestType1<TokenRequest, Result<string, FxError>, Error>(
       `${Namespaces.M365}/getAccessTokenRequest`
     ),
-    getJsonObject: new RequestType1<TokenRequest, Result<Record<string, unknown>, FxError>, Error>(
+    getJsonObject: new RequestType1<TokenRequest, Result<string, FxError>, Error>(
       `${Namespaces.M365}/getJsonObjectRequest`
-    ),
-    getStatus: new RequestType1<TokenRequest, Result<LoginStatus, FxError>, Error>(
-      `${Namespaces.M365}/getStatusRequest`
     ),
   },
 

@@ -80,8 +80,10 @@ describe("Workflow test for v3", () => {
 
   it("fx.provision", async () => {
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
-    sandbox.stub(tools.tokenProvider.appStudioToken, "getAccessToken").resolves();
-    sandbox.stub(tools.tokenProvider.appStudioToken, "getJsonObject").resolves({ tid: "mockTid" });
+    sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
+    sandbox
+      .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
+      .resolves(ok({ tid: "mockTid" }));
     sandbox
       .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
       .resolves(TestHelper.fakeCredential);

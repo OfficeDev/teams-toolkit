@@ -66,13 +66,7 @@ import {
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
 } from "../../../src/plugins/solution/fx-solution/question";
-import {
-  MockedAppStudioTokenProvider,
-  MockedGraphTokenProvider,
-  MockedSharepointProvider,
-  MockedV2Context,
-  validManifest,
-} from "./util";
+import { MockedM365Provider, MockedV2Context, validManifest } from "./util";
 import { AppDefinition } from "../../../src/plugins/resource/appstudio/interfaces/appDefinition";
 import _ from "lodash";
 import { TokenCredential } from "@azure/core-auth";
@@ -84,6 +78,7 @@ import * as solutionUtil from "../../../src/plugins/solution/fx-solution/utils/u
 import * as uuid from "uuid";
 import { ResourcePluginsV2 } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import { newEnvInfo } from "../../../src";
+import * as tools from "../../../src/common/tools";
 import Container from "typedi";
 import {
   askResourceGroupInfo,
@@ -105,7 +100,6 @@ import { assert } from "sinon";
 import { resourceGroupHelper } from "../../../src/plugins/solution/fx-solution/utils/ResourceGroupHelper";
 import * as manifestTemplate from "../../../src/plugins/resource/appstudio/manifestTemplate";
 import { SolutionRunningState } from "../../../src/plugins/solution/fx-solution/types";
-import { MockM365TokenProvider } from "../../core/utils";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -263,8 +257,9 @@ function mockSolutionContext(): SolutionContext {
     ui: new MockUserInteraction(),
     answers: { platform: Platform.VSCode },
     projectSettings: undefined,
-    appStudioToken: new MockedAppStudioTokenProvider(),
+    appStudioToken: undefined,
     azureAccountProvider: new MockedAzureTokenProvider(),
+    m365TokenProvider: new MockedM365Provider(),
     cryptoProvider: new LocalCrypto(""),
   };
 }
@@ -407,6 +402,7 @@ describe("provision() with permission.json file missing", () => {
       fileContent.set(file, JSON.stringify(obj));
     });
     mocker.stub<any, any>(fs, "pathExists").withArgs(permissionsJsonPath).resolves(false);
+    mocker.stub(tools, "getSPFxTenant").returns(Promise.resolve("tenant"));
   });
 
   afterEach(() => {
@@ -483,6 +479,7 @@ describe("provision() happy path for SPFx projects", () => {
     mocker.stub(AppStudioClient, "validateManifest").resolves([]);
     mocker.stub(manifestTemplate, "loadManifest").resolves(ok(new TeamsAppManifest()));
     mocker.stub(AppStudioPluginImpl.prototype, "buildTeamsAppPackage").resolves("");
+    mocker.stub(tools, "getSPFxTenant").returns(Promise.resolve("tenant"));
   });
 
   afterEach(() => {
@@ -606,6 +603,7 @@ describe("provision() happy path for Azure projects", () => {
     mocker
       .stub(ResourceGroups.prototype, "get")
       .resolves({ name: "my_app-rg", location: "West US" });
+    mocker.stub(tools, "getSPFxTenant").returns(Promise.resolve("tenant"));
   });
 
   afterEach(() => {
@@ -1057,10 +1055,10 @@ describe("API v2 implementation", () => {
       };
       const mockedTokenProvider: TokenProvider = {
         azureAccountProvider: new MockedAzureTokenProvider(),
-        appStudioToken: new MockedAppStudioTokenProvider(),
-        graphTokenProvider: new MockedGraphTokenProvider(),
-        sharepointTokenProvider: new MockedSharepointProvider(),
-        m365TokenProvider: new MockM365TokenProvider(),
+        appStudioToken: undefined,
+        graphTokenProvider: undefined,
+        sharepointTokenProvider: undefined,
+        m365TokenProvider: new MockedM365Provider(),
       };
       const mockedEnvInfo: v2.EnvInfoV2 = {
         envName: "default",
@@ -1132,10 +1130,10 @@ describe("API v2 implementation", () => {
       };
       const mockedTokenProvider: TokenProvider = {
         azureAccountProvider: new MockedAzureTokenProvider(),
-        appStudioToken: new MockedAppStudioTokenProvider(),
-        graphTokenProvider: new MockedGraphTokenProvider(),
-        sharepointTokenProvider: new MockedSharepointProvider(),
-        m365TokenProvider: new MockM365TokenProvider(),
+        appStudioToken: undefined,
+        graphTokenProvider: undefined,
+        sharepointTokenProvider: undefined,
+        m365TokenProvider: new MockedM365Provider(),
       };
       const mockedEnvInfo: v2.EnvInfoV2 = {
         envName: "default",
@@ -1176,10 +1174,10 @@ describe("API v2 implementation", () => {
       };
       const mockedTokenProvider: TokenProvider = {
         azureAccountProvider: new MockedAzureTokenProvider(),
-        appStudioToken: new MockedAppStudioTokenProvider(),
-        graphTokenProvider: new MockedGraphTokenProvider(),
-        sharepointTokenProvider: new MockedSharepointProvider(),
-        m365TokenProvider: new MockM365TokenProvider(),
+        appStudioToken: undefined,
+        graphTokenProvider: undefined,
+        sharepointTokenProvider: undefined,
+        m365TokenProvider: new MockedM365Provider(),
       };
       const mockedEnvInfo: v2.EnvInfoV2 = {
         envName: "default",

@@ -198,7 +198,7 @@ export class ApimPluginV3 implements v3.PluginV3 {
       ctx.logProvider
     );
     const aadManager = await Factory.buildAadManager(
-      tokenProvider.graphTokenProvider,
+      tokenProvider.m365TokenProvider,
       ctx.telemetryReporter,
       ctx.logProvider
     );
@@ -232,12 +232,12 @@ export class ApimPluginV3 implements v3.PluginV3 {
     const apimConfig = new ApimPluginConfig(apimResource, envInfo.envName);
     const aadConfig = new AadPluginConfig(envInfo);
     const aadManager = await Factory.buildAadManager(
-      tokenProvider.graphTokenProvider,
+      tokenProvider.m365TokenProvider,
       ctx.telemetryReporter,
       ctx.logProvider
     );
     const teamsAppAadManager = await Factory.buildTeamsAppAadManager(
-      tokenProvider.graphTokenProvider,
+      tokenProvider.m365TokenProvider,
       ctx.telemetryReporter,
       ctx.logProvider
     );

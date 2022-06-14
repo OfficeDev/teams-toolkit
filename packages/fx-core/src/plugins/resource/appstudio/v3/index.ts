@@ -13,7 +13,7 @@ import {
   TokenProvider,
   Void,
   v3,
-  AppStudioTokenProvider,
+  M365TokenProvider,
   UserError,
 } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
@@ -50,6 +50,7 @@ import { AppStudioClient } from "../appStudio";
 import { AppUser } from "../interfaces/appUser";
 import { isExistingTabApp, isVSProject } from "../../../../common/projectSettingsHelper";
 import { InitializedFileAlreadyExistError } from "../../../../core/error";
+import { AppStudioScopes } from "../../../../common";
 import {
   createOrUpdateTeamsApp,
   publishTeamsApp,
@@ -294,7 +295,7 @@ export class AppStudioPluginV3 {
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     envInfo: v3.EnvInfoV3,
-    tokenProvider: AppStudioTokenProvider
+    tokenProvider: M365TokenProvider
   ): Promise<Result<Void, FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.publish);
@@ -332,7 +333,7 @@ export class AppStudioPluginV3 {
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     envInfo: v3.EnvInfoV3,
-    appStudioTokenProvider: AppStudioTokenProvider
+    m365TokenProvider: M365TokenProvider
   ): Promise<Result<TeamsAppAdmin[], FxError>> {
     const teamsAppId = await this.getTeamsAppId(ctx, inputs, envInfo);
     if (!teamsAppId) {
@@ -345,7 +346,8 @@ export class AppStudioPluginV3 {
       );
     }
 
-    const appStudioToken = await appStudioTokenProvider.getAccessToken();
+    const appStudioTokenRes = await m365TokenProvider.getAccessToken({ scopes: AppStudioScopes });
+    const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
     let userLists;
     try {
       userLists = await AppStudioClient.getUserList(teamsAppId, appStudioToken as string);
@@ -379,10 +381,11 @@ export class AppStudioPluginV3 {
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     envInfo: v3.EnvInfoV3,
-    appStudioTokenProvider: AppStudioTokenProvider,
+    m365TokenProvider: M365TokenProvider,
     userInfo: AppUser
   ): Promise<Result<ResourcePermission[], FxError>> {
-    const appStudioToken = await appStudioTokenProvider.getAccessToken();
+    const appStudioTokenRes = await m365TokenProvider.getAccessToken({ scopes: AppStudioScopes });
+    const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
 
     const teamsAppId = await this.getTeamsAppId(ctx, inputs, envInfo);
     if (!teamsAppId) {
@@ -417,10 +420,11 @@ export class AppStudioPluginV3 {
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     envInfo: v3.EnvInfoV3,
-    appStudioTokenProvider: AppStudioTokenProvider,
+    m365TokenProvider: M365TokenProvider,
     userInfo: AppUser
   ): Promise<Result<ResourcePermission[], FxError>> {
-    const appStudioToken = await appStudioTokenProvider.getAccessToken();
+    const appStudioTokenRes = await m365TokenProvider.getAccessToken({ scopes: AppStudioScopes });
+    const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
 
     const teamsAppId = await this.getTeamsAppId(ctx, inputs, envInfo);
     if (!teamsAppId) {

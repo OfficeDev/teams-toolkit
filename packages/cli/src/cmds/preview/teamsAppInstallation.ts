@@ -4,7 +4,7 @@
 import axios from "axios";
 import { LogLevel, OptionItem, SingleSelectConfig } from "@microsoft/teamsfx-api";
 
-import graphLoginInstance, { GraphLogin } from "../../commonlib/graphLogin";
+import m365LoginInstance from "../../commonlib/m365Login";
 import { GetTeamsAppInstallationFailed, M365AccountInfoNotFound } from "./errors";
 import CLIUIInstance from "../../userInteraction";
 import { installApp } from "./constants";
@@ -12,6 +12,7 @@ import cliLogger from "../../commonlib/log";
 import * as constants from "./constants";
 import { openHubWebClient, openUrlWithNewProfile } from "./launch";
 import open from "open";
+import { GraphScopes } from "@microsoft/teamsfx-core";
 
 const installOptionItem: OptionItem = {
   id: installApp.installInTeams,
@@ -124,9 +125,13 @@ export async function showInstallAppInTeamsMessage(
 }
 
 export async function getTeamsAppInternalId(appId: string): Promise<string | undefined> {
-  // TODO: handle GraphTokenProviderUserPassword
-  const loginStatus = await (graphLoginInstance as GraphLogin).getStatus();
-  if (loginStatus.accountInfo?.oid === undefined || loginStatus.token === undefined) {
+  const graphLoginStatusRes = await m365LoginInstance.getStatus({ scopes: GraphScopes });
+  const loginStatus = graphLoginStatusRes.isOk() ? graphLoginStatusRes.value : undefined;
+  if (
+    loginStatus === undefined ||
+    loginStatus.accountInfo?.oid === undefined ||
+    loginStatus.token === undefined
+  ) {
     throw M365AccountInfoNotFound();
   }
   const url = `https://graph.microsoft.com/v1.0/users/${loginStatus.accountInfo.oid}/teamwork/installedApps?$expand=teamsApp,teamsAppDefinition&$filter=teamsApp/externalId eq '${appId}'`;

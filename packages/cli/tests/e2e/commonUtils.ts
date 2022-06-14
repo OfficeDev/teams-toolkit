@@ -38,7 +38,7 @@ import {
   ProjectSettingKey,
 } from "../commonlib/constants";
 import { environmentManager } from "@microsoft/teamsfx-core";
-import appStudioLogin from "../../src/commonlib/appStudioLogin";
+import m365Login from "../../src/commonlib/m365Login";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 import { getWebappServicePlan } from "../commonlib/utilities";
 
@@ -526,7 +526,7 @@ export async function customizeBicepFilesToCustomizedRg(
 export async function validateTabAndBotProjectProvision(projectPath: string, env: string) {
   const context = await readContextMultiEnv(projectPath, env);
   // Validate Aad App
-  const aad = AadValidator.init(context, false, appStudioLogin);
+  const aad = AadValidator.init(context, false, m365Login);
   await AadValidator.validate(aad);
 
   // Validate Tab Frontend

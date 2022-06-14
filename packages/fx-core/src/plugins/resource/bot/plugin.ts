@@ -54,6 +54,8 @@ import {
   isBotNotificationEnabled,
   generateBicepFromFile,
   isConfigUnifyEnabled,
+  AppStudioScopes,
+  GraphScopes,
 } from "../../../common";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
@@ -397,9 +399,12 @@ export class TeamsBotImpl implements PluginImpl {
   }
 
   private async updateMessageEndpointOnAppStudio(endpoint: string) {
+    const appStudioTokenRes = await this.ctx?.m365TokenProvider?.getAccessToken({
+      scopes: AppStudioScopes,
+    });
     const appStudioToken = checkAndThrowIfMissing(
       ConfigNames.APPSTUDIO_TOKEN,
-      await this.ctx?.appStudioToken?.getAccessToken()
+      appStudioTokenRes?.isOk() ? appStudioTokenRes.value : undefined
     );
     checkAndThrowIfMissing(
       ConfigNames.LOCAL_BOT_ID,
@@ -422,11 +427,14 @@ export class TeamsBotImpl implements PluginImpl {
     await AppStudio.updateMessageEndpoint(appStudioToken, botReg.botId!, botReg);
   }
   private async createNewBotRegistrationOnAppStudio() {
+    const graphTokenRes = await this.ctx?.m365TokenProvider?.getAccessToken({
+      scopes: GraphScopes,
+    });
     Logger.info(Messages.ProvisioningBotRegistration);
 
     const token = checkAndThrowIfMissing(
       ConfigNames.GRAPH_TOKEN,
-      await this.ctx?.graphTokenProvider?.getAccessToken()
+      graphTokenRes?.isOk() ? graphTokenRes.value : undefined
     );
     const name = checkAndThrowIfMissing(
       CommonStrings.SHORT_APP_NAME,
@@ -483,9 +491,14 @@ export class TeamsBotImpl implements PluginImpl {
       callingEndpoint: "",
     };
 
+    Logger.info(Messages.ProvisioningBotRegistration);
+    const appStudioTokenRes = await this.ctx?.m365TokenProvider?.getAccessToken({
+      scopes: AppStudioScopes,
+    });
+
     const appStudioToken = checkAndThrowIfMissing(
       ConfigNames.APPSTUDIO_TOKEN,
-      await this.ctx?.appStudioToken?.getAccessToken()
+      appStudioTokenRes?.isOk() ? appStudioTokenRes.value : undefined
     );
 
     await AppStudio.createBotRegistration(appStudioToken, botReg);
@@ -518,9 +531,12 @@ export class TeamsBotImpl implements PluginImpl {
   }
 
   private async registerBotApp() {
+    const graphTokenRes = await this.ctx?.m365TokenProvider?.getAccessToken({
+      scopes: GraphScopes,
+    });
     const token = checkAndThrowIfMissing(
       ConfigNames.GRAPH_TOKEN,
-      await this.ctx?.graphTokenProvider?.getAccessToken()
+      graphTokenRes?.isOk() ? graphTokenRes.value : undefined
     );
     const name = checkAndThrowIfMissing(
       CommonStrings.SHORT_APP_NAME,

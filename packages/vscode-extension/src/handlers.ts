@@ -60,6 +60,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   AddSsoParameters,
+  AppStudioScopes,
   askSubscription,
   CollaborationState,
   Correlator,
@@ -191,15 +192,10 @@ export function activate(): Result<Void, FxError> {
       }
       return Promise.resolve();
     };
-    appstudioLogin.setStatusChangeMap("successfully-sign-in-m365", m365NotificationCallback, false);
-    const sharepointLogin: SharepointTokenProvider = SharepointTokenInstance;
-    sharepointLogin.setStatusChangeMap(
+
+    M365TokenInstance.setStatusChangeMap(
       "successfully-sign-in-m365",
-      m365NotificationCallback,
-      false
-    );
-    GraphManagerInstance.setStatusChangeMap(
-      "successfully-sign-in-m365",
+      { scopes: AppStudioScopes },
       m365NotificationCallback,
       false
     );
@@ -1683,23 +1679,27 @@ async function showLocalDebugMessage() {
 
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalDebugNotification);
   const appName = getAppName() ?? "Teams App";
-  const folderLink = encodeURI(globalVariables.workspaceUri!.toString());
-  const openFolderCommand = `command:fx-extension.openFolder?%5B%22${folderLink}%22%5D`;
-  vscode.window
-    .showInformationMessage(
-      util.format(
-        localize("teamstoolkit.handlers.localDebugDescription"),
-        appName,
-        openFolderCommand
-      ),
-      localDebug
-    )
-    .then((selection) => {
-      if (selection?.title === localize("teamstoolkit.handlers.localDebugTitle")) {
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalDebug);
-        selection.run();
-      }
-    });
+  const isWindows = process.platform === "win32";
+  let message = util.format(
+    localize("teamstoolkit.handlers.localDebugDescription.fallback"),
+    appName,
+    globalVariables.workspaceUri?.fsPath
+  );
+  if (isWindows) {
+    const folderLink = encodeURI(globalVariables.workspaceUri!.toString());
+    const openFolderCommand = `command:fx-extension.openFolder?%5B%22${folderLink}%22%5D`;
+    message = util.format(
+      localize("teamstoolkit.handlers.localDebugDescription"),
+      appName,
+      openFolderCommand
+    );
+  }
+  vscode.window.showInformationMessage(message, localDebug).then((selection) => {
+    if (selection?.title === localize("teamstoolkit.handlers.localDebugTitle")) {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalDebug);
+      selection.run();
+    }
+  });
 }
 
 async function showLocalPreviewMessage() {
@@ -1720,23 +1720,27 @@ async function showLocalPreviewMessage() {
 
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalPreviewNotification);
   const appName = getAppName() ?? "Teams App";
-  const folderLink = encodeURI(globalVariables.workspaceUri!.toString());
-  const openFolderCommand = `command:fx-extension.openFolder?%5B%22${folderLink}%22%5D`;
-  vscode.window
-    .showInformationMessage(
-      util.format(
-        localize("teamstoolkit.handlers.localPreviewDescription"),
-        appName,
-        openFolderCommand
-      ),
-      localPreview
-    )
-    .then((selection) => {
-      if (selection?.title === localize("teamstoolkit.handlers.localPreviewTitle")) {
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalPreview);
-        selection.run();
-      }
-    });
+  const isWindows = process.platform === "win32";
+  let message = util.format(
+    localize("teamstoolkit.handlers.localPreviewDescription.fallback"),
+    appName,
+    globalVariables.workspaceUri?.fsPath
+  );
+  if (isWindows) {
+    const folderLink = encodeURI(globalVariables.workspaceUri!.toString());
+    const openFolderCommand = `command:fx-extension.openFolder?%5B%22${folderLink}%22%5D`;
+    message = util.format(
+      localize("teamstoolkit.handlers.localPreviewDescription"),
+      appName,
+      openFolderCommand
+    );
+  }
+  vscode.window.showInformationMessage(message, localPreview).then((selection) => {
+    if (selection?.title === localize("teamstoolkit.handlers.localPreviewTitle")) {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalPreview);
+      selection.run();
+    }
+  });
 }
 
 export async function openSamplesHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -3047,7 +3051,11 @@ export async function signinM365Callback(args?: any[]): Promise<Result<null, FxE
     ...triggerFrom,
   });
 
-  const token = await tools.tokenProvider.appStudioToken.getJsonObject(true);
+  const tokenRes = await tools.tokenProvider.m365TokenProvider.getJsonObject({
+    scopes: AppStudioScopes,
+    showDialog: true,
+  });
+  const token = tokenRes.isOk() ? tokenRes.value : undefined;
   if (token !== undefined && node) {
     node.setSignedIn((token as any).upn ? (token as any).upn : "");
   }

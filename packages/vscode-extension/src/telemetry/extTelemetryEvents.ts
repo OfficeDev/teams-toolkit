@@ -113,6 +113,7 @@ export enum TelemetryEvent {
   DebugPrereqsCheckM365Account = "debug-prereqs-check-m365-account",
   DebugPrereqsCheckNode = "debug-prereqs-check-node",
   DebugPrereqsCheckPorts = "debug-prereqs-check-ports",
+  DebugPrereqsCheckCert = "debug-prereqs-check-cert",
   DebugPrereqsCheckDependencies = "debug-prereqs-check-dependencies",
   DebugPrereqsEnsureDependencies = "debug-prereqs-ensure-dependencies",
   DebugPrereqsInstallPackages = "debug-prereqs-install-packages",

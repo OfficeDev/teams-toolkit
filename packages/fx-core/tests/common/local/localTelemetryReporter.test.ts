@@ -1,9 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT license.
-
 import "mocha";
 import * as chai from "chai";
 import * as sinon from "sinon";

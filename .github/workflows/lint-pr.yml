@@ -137,7 +137,7 @@ jobs:
           python .github/detect/sensitive-detect.py repo
 
   attension-on-version:
-    if: ${{ github.event_name ==  'pull_request' && github.base_ref == 'refs/heads/main' }}
+    if: ${{ github.event_name ==  'pull_request' }}
     runs-on: ubuntu-latest
     steps:
       - name: checkout branch
@@ -146,11 +146,14 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.CD_PAT }}
           ref: ${{ github.ref }}
-      - name: check feature history in cli
+      - name: check feature history
+        id: description
         run: | 
           head=$(git describe --first-parent --abbrev=0)
           git log --pretty=format:"%s %h" $head...HEAD -- packages/cli | grep "^feat"
-      - name: check featurs history in extension
-        run: |
-          head=$(git describe --first-parent --abbrev=0)
           git log --pretty=format:"%s %h" $head...HEAD -- packages/vscode-extension | grep "^feat"
+      - name: update-pull-request
+        uses: kt3k/update-pr-description@v1.0.1
+        with:
+          pr_body: ${{ steps.description.outputs.description }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}

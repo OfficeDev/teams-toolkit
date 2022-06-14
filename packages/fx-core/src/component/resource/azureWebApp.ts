@@ -145,15 +145,18 @@ export class AzureWebAppResource implements CloudResource {
           throw new PackDirectoryExistenceError();
         }
 
-        const botConfig = ctx.envInfo.state[this.name];
+        const webAppState = ctx.envInfo.state[this.name];
         const programmingLanguage = ctx.projectSetting.programmingLanguage;
-        CheckThrowSomethingMissing(this.outputs.endpoint.key, botConfig[this.outputs.endpoint.key]);
+        CheckThrowSomethingMissing(
+          this.outputs.endpoint.key,
+          webAppState[this.outputs.endpoint.key]
+        );
         CheckThrowSomethingMissing(ConfigNames.PROGRAMMING_LANGUAGE, programmingLanguage);
         CheckThrowSomethingMissing(
           this.outputs.resourceId.key,
-          botConfig[this.outputs.resourceId.key]
+          webAppState[this.outputs.resourceId.key]
         );
-        const resourceId = botConfig[this.outputs.resourceId.key];
+        const resourceId = webAppState[this.outputs.resourceId.key];
         const subscriptionId = getSubscriptionIdFromResourceId(resourceId);
         const resourceGroup = getResourceGroupNameFromResourceId(resourceId);
         const siteName = getSiteNameFromResourceId(resourceId);
@@ -204,7 +207,7 @@ export class AzureWebAppResource implements CloudResource {
           maxBodyLength: Infinity,
         } as AzureUploadConfig;
 
-        const zipDeployEndpoint: string = getZipDeployEndpoint(botConfig.appName);
+        const zipDeployEndpoint: string = getZipDeployEndpoint(webAppState.appName);
         const statusUrl = await AzureOperations.zipDeployPackage(
           zipDeployEndpoint,
           zipBuffer,

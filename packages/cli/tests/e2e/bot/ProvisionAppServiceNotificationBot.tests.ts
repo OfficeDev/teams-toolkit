@@ -5,7 +5,7 @@
  * @author Xiaofu Huang <xiaofhua@microsoft.com>
  */
 
-import { Runtime } from "@microsoft/teamsfx-core/src/plugins/resource/bot/v2/enum";
+import { Runtime } from "../../commonlib/constants";
 import { happyPathTest } from "./NotificationBotHappyPathCommon";
 
 happyPathTest(Runtime.Node);

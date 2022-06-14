@@ -15,7 +15,7 @@ import {
 import { environmentManager } from "@microsoft/teamsfx-core";
 
 import { it } from "../../commonlib/it";
-import { Runtime } from "@microsoft/teamsfx-core/src/plugins/resource/bot/v2/enum";
+import { Runtime } from "../../commonlib/constants";
 
 export function happyPathTest(runtime: Runtime): void {
   describe(`Provision for ${runtime}`, function () {

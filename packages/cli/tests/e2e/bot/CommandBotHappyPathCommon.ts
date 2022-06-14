@@ -21,8 +21,8 @@ import {
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 import { environmentManager } from "@microsoft/teamsfx-core";
-import { Runtime } from "@microsoft/teamsfx-core/src/plugins/resource/bot/v2/enum";
 import { it } from "../../commonlib/it";
+import { Runtime } from "../../commonlib/constants";
 
 export function happyPathTest(runtime: Runtime): void {
   describe("Provision", function () {

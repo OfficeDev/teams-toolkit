@@ -40,9 +40,7 @@ export class AzureOperations {
         siteName
       );
     } catch (e) {
-      const error = new ListPublishingCredentialsError(e);
-      error.message = (e as any)["message"];
-      throw error;
+      throw new ListPublishingCredentialsError(e);
     }
 
     if (!listResponse || !isHttpCodeOkOrCreated(listResponse._response.status)) {

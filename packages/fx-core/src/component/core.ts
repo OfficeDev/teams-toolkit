@@ -5,7 +5,9 @@ import {
   Action,
   ConfigFolderName,
   ContextV3,
+  DynamicPlatforms,
   err,
+  FunctionAction,
   FxError,
   GroupAction,
   InputsWithProjectPath,
@@ -58,6 +60,7 @@ import { hasAzureResourceV3 } from "../common/projectSettingsHelperV3";
 import { resourceGroupHelper } from "../plugins/solution/fx-solution/utils/ResourceGroupHelper";
 import { getResourceGroupInPortal } from "../common/tools";
 import { getComponent } from "./workflow";
+import { FxPreDeployAction } from "./fx/preDeployAction";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -383,6 +386,7 @@ export class TeamsfxCore {
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const projectSettings = context.projectSetting as ProjectSettingsV3;
     const actions: Action[] = [
+      new FxPreDeployAction(),
       {
         name: "call:fx.build",
         type: "call",
@@ -390,18 +394,20 @@ export class TeamsfxCore {
         required: true,
       },
     ];
-    projectSettings.components
-      .filter((resource) => resource.build && resource.hosting)
-      .forEach((resource) => {
+    const components = inputs["deploy-plugin"] as string[];
+    components.forEach((componentName) => {
+      const componentConfig = getComponent(projectSettings, componentName);
+      if (componentConfig) {
         actions.push({
           type: "call",
-          targetAction: `${resource.hosting}.deploy`,
+          targetAction: `${componentConfig.hosting}.deploy`,
           required: false,
           inputs: {
-            folder: resource.folder,
+            folder: componentConfig.folder,
           },
         });
-      });
+      }
+    });
     const action: GroupAction = {
       type: "group",
       name: "fx.deploy",

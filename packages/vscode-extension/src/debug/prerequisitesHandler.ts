@@ -211,7 +211,7 @@ export async function checkPrerequisitesForGetStarted(): Promise<Result<any, FxE
 
 export async function checkAndInstall(): Promise<Result<void, FxError>> {
   const projectComponents = await commonUtils.getProjectComponents();
-  return localTelemetryReporter.runWithTelemetryProperties(
+  return await localTelemetryReporter.runWithTelemetryProperties(
     TelemetryEvent.DebugPrerequisites,
     { [TelemetryProperty.DebugProjectComponents]: JSON.stringify(projectComponents) },
     _checkAndInstall

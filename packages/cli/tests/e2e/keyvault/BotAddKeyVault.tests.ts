@@ -16,7 +16,6 @@ import {
   readContextMultiEnv,
   setBotSkuNameToB1Bicep,
 } from "../commonUtils";
-import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { KeyVaultValidator } from "../../commonlib/keyVaultValidator";
 import { CliHelper } from "../../commonlib/cliHelper";

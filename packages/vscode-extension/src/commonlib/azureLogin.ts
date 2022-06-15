@@ -66,7 +66,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
 
   private constructor() {
     super();
-    this.addStatusChangeEvent();
   }
 
   /**

@@ -18,9 +18,9 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   Correlator,
+  isAADEnabled,
   isConfigUnifyEnabled,
   isValidProject,
-  isAADEnabled,
 } from "@microsoft/teamsfx-core";
 
 import {
@@ -32,6 +32,7 @@ import {
   ProjectSettingsCodeLensProvider,
 } from "./codeLensProvider";
 import commandController from "./commandController";
+import AzureAccountManager from "./commonlib/azureLogin";
 import VsCodeLogInstance from "./commonlib/log";
 import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcomePage";
 import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUtils";
@@ -820,6 +821,7 @@ async function runBackgroundAsyncTasks(
   if (isTeamsFxProject) {
     await handlers.autoOpenProjectHandler();
     await TreeViewManagerInstance.updateTreeViewsByContent();
+    await AzureAccountManager.addStatusChangeEvent();
   }
 
   await exp.initialize(context);

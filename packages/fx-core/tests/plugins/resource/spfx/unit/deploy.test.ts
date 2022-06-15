@@ -11,6 +11,7 @@ import * as Utils from "../../../../../src/plugins/resource/spfx/utils/utils";
 import { ok, PluginContext } from "@microsoft/teamsfx-api";
 import { TestHelper, MockUserInteraction } from "../helper";
 import { SPOClient } from "../../../../../src/plugins/resource/spfx/spoClient";
+import * as tools from "../../../../../src/common/tools";
 
 describe("SPFxDeploy", function () {
   let plugin: SpfxPlugin;
@@ -26,6 +27,8 @@ describe("SPFxDeploy", function () {
     );
     sandbox.stub(SPFxPluginImpl.prototype, "buildSPPackage" as any).returns(ok(undefined));
     sandbox.stub(SPFxPluginImpl.prototype, "getTenant" as any).returns(ok("TENANT_URL"));
+    sandbox.stub(tools, "getSPFxTenant").returns(Promise.resolve("tenant"));
+    sandbox.stub(tools, "getSPFxToken").returns(Promise.resolve("fakeToken"));
   });
 
   afterEach(() => {

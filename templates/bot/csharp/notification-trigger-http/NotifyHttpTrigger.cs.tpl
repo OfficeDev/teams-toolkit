@@ -1,5 +1,6 @@
 namespace {{ProjectName}}
 {
+    using {{ProjectName}}.Models;
     using AdaptiveCards.Templating;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -35,7 +36,7 @@ namespace {{ProjectName}}
                 // Build and send adaptive card
                 var cardContent = new AdaptiveCardTemplate(cardTemplate).Expand
                 (
-                    new CardModel
+                    new NotificationDefaultModel
                     {
                         Title = "New Event Occurred!",
                         AppName = "Contoso App Notification",

@@ -146,7 +146,7 @@ export class TeamsfxCore {
         const solutionConfig = envInfo.state.solution;
         solutionConfig.provisionSucceeded = false;
         const tenantIdInConfig = appManifest.tenantId;
-        const tenantIdInTokenRes = await getM365TenantId(ctx.tokenProvider.appStudioToken);
+        const tenantIdInTokenRes = await getM365TenantId(ctx.tokenProvider.m365TokenProvider);
         if (tenantIdInTokenRes.isErr()) {
           return err(tenantIdInTokenRes.error);
         }

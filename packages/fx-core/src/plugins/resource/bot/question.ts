@@ -1,14 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import {
-  Inputs,
-  MultiSelectQuestion,
-  OptionItem,
-  Platform,
-  SingleSelectQuestion,
-} from "@microsoft/teamsfx-api";
+import { Inputs, MultiSelectQuestion, OptionItem, Platform } from "@microsoft/teamsfx-api";
 import { isPreviewFeaturesEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { CoreQuestionNames, handleSelectionConflict } from "../../../core/question";
 import {
   AzureSolutionQuestionNames,
   NotificationOptionItem,
@@ -20,6 +15,7 @@ import {
   NotificationTrigger,
   NotificationTriggers,
 } from "./resources/strings";
+import { Runtime } from "./v2/enum";
 
 export interface HostTypeTriggerOptionItem extends OptionItem {
   hostType: HostType;
@@ -63,45 +59,29 @@ export const HostTypeTriggerOptions: HostTypeTriggerOptionItem[] = [
 
 export const HostTypeTriggerOptionsForVS: HostTypeTriggerOptionItem[] = [AppServiceOptionItemForVS];
 
-export function createHostTypeTriggerQuestionForVS(): SingleSelectQuestion {
-  const prefix = "plugins.bot.questionHostTypeTrigger";
-  return {
-    name: QuestionNames.BOT_HOST_TYPE_TRIGGER,
-    title: getLocalizedString(prefix + ".title"),
-    type: "singleSelect",
-    staticOptions: HostTypeTriggerOptionsForVS,
-    default: AppServiceOptionItemForVS.id,
-    placeholder: getLocalizedString(prefix + ".placeholder"),
-    skipSingleOption: true,
-    validation: {
-      validFunc: async (input: string[]): Promise<string | undefined> => {
-        const name = input as string[];
-        if (name.length === 0) {
-          return getLocalizedString(`${prefix}.error.emptySelection`);
-        }
-        return undefined;
-      },
-    },
-  };
-}
-
 // The restrictions of this question:
 //   - appService and function are mutually exclusive
 //   - users must select at least one trigger.
-export function createHostTypeTriggerQuestion(platform?: Platform): MultiSelectQuestion {
+export function createHostTypeTriggerQuestion(
+  platform?: Platform,
+  runtime?: Runtime
+): MultiSelectQuestion {
   const prefix = "plugins.bot.questionHostTypeTrigger";
 
-  let staticOptions: HostTypeTriggerOptionItem[];
+  let staticOptions: HostTypeTriggerOptionItem[] = HostTypeTriggerOptions;
+  let defaultOptionItem = AppServiceOptionItem;
+  if (runtime === Runtime.Dotnet) {
+    staticOptions = HostTypeTriggerOptionsForVS;
+    defaultOptionItem = AppServiceOptionItemForVS;
+  }
   if (platform === Platform.CLI) {
     // The UI in CLI is different. It does not have description. So we need to merge that into label.
-    staticOptions = HostTypeTriggerOptions.map((option) => {
+    staticOptions = staticOptions.map((option) => {
       // do not change the original option
       const cliOption = Object.assign({}, option);
       cliOption.label = `${option.label} (${option.description})`;
       return cliOption;
     });
-  } else {
-    staticOptions = HostTypeTriggerOptions;
   }
 
   return {
@@ -109,8 +89,9 @@ export function createHostTypeTriggerQuestion(platform?: Platform): MultiSelectQ
     title: getLocalizedString(`${prefix}.title`),
     type: "multiSelect",
     staticOptions: staticOptions,
-    default: [AppServiceOptionItem.id],
+    default: [defaultOptionItem.id],
     placeholder: getLocalizedString(`${prefix}.placeholder`),
+    skipSingleOption: true,
     validation: {
       validFunc: async (input: string[]): Promise<string | undefined> => {
         const name = input as string[];
@@ -118,7 +99,8 @@ export function createHostTypeTriggerQuestion(platform?: Platform): MultiSelectQ
           return getLocalizedString(`${prefix}.error.emptySelection`);
         }
 
-        if (name.includes(AppServiceOptionItem.id) && name.length > 1) {
+        //invalid if both appService and function items are selected
+        if (name.includes(defaultOptionItem.id) && name.length > 1) {
           return getLocalizedString(`${prefix}.error.hostTypeConflict`);
         }
 
@@ -129,15 +111,14 @@ export function createHostTypeTriggerQuestion(platform?: Platform): MultiSelectQ
       currentSelectedIds: Set<string>,
       previousSelectedIds: Set<string>
     ): Promise<Set<string>> {
-      if (currentSelectedIds.size > 1 && currentSelectedIds.has(AppServiceOptionItem.id)) {
-        if (previousSelectedIds.has(AppServiceOptionItem.id)) {
-          currentSelectedIds.delete(AppServiceOptionItem.id);
-        } else {
-          currentSelectedIds = new Set([AppServiceOptionItem.id]);
-        }
-      }
-
-      return currentSelectedIds;
+      return handleSelectionConflict(
+        [
+          new Set([defaultOptionItem.id]),
+          new Set([FunctionsHttpTriggerOptionItem.id, FunctionsTimerTriggerOptionItem.id]),
+        ],
+        previousSelectedIds,
+        currentSelectedIds
+      );
     },
   };
 }
@@ -170,6 +151,18 @@ export const showNotificationTriggerCondition = {
   // Workaround for CLI: it requires containsAny to be set, or it will crash.
   containsAny: [NotificationOptionItem.id],
 };
+
+export function getConditionOfNotificationTriggerQuestion(runtime: Runtime) {
+  return {
+    validFunc: async (input: unknown, inputs?: Inputs) => {
+      if (inputs?.[CoreQuestionNames.Runtime] === runtime) {
+        return undefined;
+      } else {
+        return `runtime is not ${runtime}`;
+      }
+    },
+  };
+}
 
 type HostTypeTriggerOptionItemWithoutText = Omit<
   HostTypeTriggerOptionItem,

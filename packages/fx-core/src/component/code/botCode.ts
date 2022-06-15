@@ -19,6 +19,7 @@ import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
 import {
+  genTemplateRenderReplaceFn,
   ScaffoldAction,
   ScaffoldActionName,
   ScaffoldContext,
@@ -52,9 +53,13 @@ export class BotCodeProvider implements SourceCodeProvider {
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const projectSettings = context.projectSetting as ProjectSettingsV3;
+        const appName = projectSettings.appName;
         const language =
-          inputs.language || context.projectSetting.programmingLanguage || "javascript";
-        const botFolder = inputs.folder || CommonStrings.BOT_WORKING_DIR_NAME;
+          inputs?.["programming-language"] ||
+          context.projectSetting.programmingLanguage ||
+          "javascript";
+        const botFolder =
+          inputs.folder || language === "csharp" ? "" : CommonStrings.BOT_WORKING_DIR_NAME;
         const teamsBot = getComponent(projectSettings, ComponentNames.TeamsBot);
         merge(teamsBot, { build: true, language: language, folder: botFolder });
         const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
@@ -66,6 +71,9 @@ export class BotCodeProvider implements SourceCodeProvider {
             lang: lang,
             scenario: scenario,
             dst: workingDir,
+            fileDataReplaceFn: genTemplateRenderReplaceFn({ ProjectName: appName }),
+            fileNameReplaceFn: (name: string, data: Buffer) =>
+              name.replace(/ProjectName/, appName).replace(/\.tpl/, ""),
             onActionError: async (
               action: ScaffoldAction,
               context: ScaffoldContext,
@@ -140,6 +148,9 @@ export function convertToLangKey(programmingLanguage: string): string {
     }
     case "typescript": {
       return "ts";
+    }
+    case "csharp": {
+      return "csharp";
     }
     default: {
       return "js";

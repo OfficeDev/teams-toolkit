@@ -81,6 +81,7 @@ import { getTemplatesFolder } from "../../../folder";
 import path from "path";
 import * as util from "util";
 import {
+  AppStudioScopes,
   getAppDirectory,
   isAADEnabled,
   isConfigUnifyEnabled,
@@ -123,7 +124,13 @@ export class AppStudioPluginImpl {
   ): Promise<Result<string, FxError>> {
     let teamsAppId: Result<string, FxError>;
     const appDirectory = await getAppDirectory(ctx.root);
-    const appStudioToken = await ctx.appStudioToken?.getAccessToken();
+    const appStudioTokenRes = await ctx.m365TokenProvider!.getAccessToken({
+      scopes: AppStudioScopes,
+    });
+    if (appStudioTokenRes.isErr()) {
+      return err(appStudioTokenRes.error);
+    }
+    const appStudioToken = appStudioTokenRes.value;
 
     if (isLocalDebug) {
       const appDefinitionAndManifest = await this.getAppDefinitionAndManifest(ctx, true);
@@ -138,9 +145,8 @@ export class AppStudioPluginImpl {
       if (!localTeamsAppID) {
         createIfNotExist = true;
       } else {
-        const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
         try {
-          await AppStudioClient.getApp(localTeamsAppID, appStudioToken!, ctx.logProvider);
+          await AppStudioClient.getApp(localTeamsAppID, appStudioToken, ctx.logProvider);
         } catch (error) {
           createIfNotExist = true;
         }
@@ -149,7 +155,7 @@ export class AppStudioPluginImpl {
       teamsAppId = await this.updateApp(
         ctx,
         appDefinitionAndManifest.value[0],
-        appStudioToken!,
+        appStudioToken,
         isLocalDebug,
         createIfNotExist,
         appDirectory,
@@ -167,7 +173,7 @@ export class AppStudioPluginImpl {
       teamsAppId = await this.updateApp(
         ctx,
         appDefinitionRes.value,
-        appStudioToken!,
+        appStudioToken,
         isLocalDebug,
         true,
         appDirectory,
@@ -184,12 +190,18 @@ export class AppStudioPluginImpl {
     manifest: TeamsAppManifest
   ): Promise<Result<string, FxError>> {
     const appDirectory = await getAppDirectory(ctx.root);
-    const appStudioToken = await ctx.appStudioToken?.getAccessToken();
+    const appStudioTokenRes = await ctx.m365TokenProvider!.getAccessToken({
+      scopes: AppStudioScopes,
+    });
+    if (appStudioTokenRes.isErr()) {
+      return err(appStudioTokenRes.error);
+    }
+    const appStudioToken = appStudioTokenRes.value;
     const localTeamsAppID = await this.getTeamsAppId(ctx, true);
     let create = !localTeamsAppID;
     if (localTeamsAppID) {
       try {
-        await AppStudioClient.getApp(localTeamsAppID, appStudioToken!, ctx.logProvider);
+        await AppStudioClient.getApp(localTeamsAppID, appStudioToken, ctx.logProvider);
       } catch (error) {
         create = true;
       }
@@ -214,7 +226,7 @@ export class AppStudioPluginImpl {
     const teamsAppId = await this.updateApp(
       ctx,
       appDefinition.value,
-      appStudioToken!,
+      appStudioToken,
       true,
       create,
       appDirectory,
@@ -240,9 +252,15 @@ export class AppStudioPluginImpl {
     if (!remoteTeamsAppId) {
       create = true;
     } else {
-      const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
+      const appStudioTokenRes = await ctx?.m365TokenProvider!.getAccessToken({
+        scopes: AppStudioScopes,
+      });
+      if (appStudioTokenRes.isErr()) {
+        return err(appStudioTokenRes.error);
+      }
+      const appStudioToken = appStudioTokenRes.value;
       try {
-        await AppStudioClient.getApp(remoteTeamsAppId, appStudioToken!, ctx.logProvider);
+        await AppStudioClient.getApp(remoteTeamsAppId, appStudioToken, ctx.logProvider);
       } catch (error) {
         create = true;
       }
@@ -306,11 +324,17 @@ export class AppStudioPluginImpl {
     }
 
     const appDirectory = await getAppDirectory(ctx.root);
-    const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
+    const appStudioTokenRes = await ctx?.m365TokenProvider!.getAccessToken({
+      scopes: AppStudioScopes,
+    });
+    if (appStudioTokenRes.isErr()) {
+      return err(appStudioTokenRes.error);
+    }
+    const appStudioToken = appStudioTokenRes.value;
     const result = await this.updateApp(
       ctx,
       appDefinition,
-      appStudioToken!,
+      appStudioToken,
       false,
       false,
       appDirectory,
@@ -496,13 +520,19 @@ export class AppStudioPluginImpl {
       }
     }
 
-    const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
+    const appStudioTokenRes = await ctx?.m365TokenProvider!.getAccessToken({
+      scopes: AppStudioScopes,
+    });
+    if (appStudioTokenRes.isErr()) {
+      return err(appStudioTokenRes.error);
+    }
+    const appStudioToken = appStudioTokenRes.value;
     try {
       const localUpdateTime = isLocalDebug
         ? undefined
         : (ctx.envInfo.state.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_UPDATED_AT) as number);
       if (localUpdateTime) {
-        const app = await AppStudioClient.getApp(teamsAppId, appStudioToken!, ctx.logProvider);
+        const app = await AppStudioClient.getApp(teamsAppId, appStudioToken, ctx.logProvider);
         const devPortalUpdateTime = new Date(app.updatedAt!)?.getTime() ?? -1;
         if (localUpdateTime < devPortalUpdateTime) {
           const res = await ctx.ui?.showMessage(
@@ -877,8 +907,14 @@ export class AppStudioPluginImpl {
     }
 
     // manifest.id === externalID
-    const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
-    const existApp = await AppStudioClient.getAppByTeamsAppId(manifest.id, appStudioToken!);
+    const appStudioTokenRes = await ctx?.m365TokenProvider!.getAccessToken({
+      scopes: AppStudioScopes,
+    });
+    if (appStudioTokenRes.isErr()) {
+      throw appStudioTokenRes.error;
+    }
+    const appStudioToken = appStudioTokenRes.value;
+    const existApp = await AppStudioClient.getAppByTeamsAppId(manifest.id, appStudioToken);
     if (existApp) {
       let executePublishUpdate = false;
       let description = getLocalizedString(
@@ -941,7 +977,13 @@ export class AppStudioPluginImpl {
     ctx: PluginContext,
     userInfo: AppUser
   ): Promise<ResourcePermission[]> {
-    const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
+    const appStudioTokenRes = await ctx?.m365TokenProvider!.getAccessToken({
+      scopes: AppStudioScopes,
+    });
+    if (appStudioTokenRes.isErr()) {
+      throw appStudioTokenRes.error;
+    }
+    const appStudioToken = appStudioTokenRes.value;
 
     const teamsAppId = await this.getTeamsAppId(ctx, false);
     if (!teamsAppId) {
@@ -967,7 +1009,13 @@ export class AppStudioPluginImpl {
   }
 
   public async listCollaborator(ctx: PluginContext): Promise<TeamsAppAdmin[]> {
-    const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
+    const appStudioTokenRes = await ctx?.m365TokenProvider!.getAccessToken({
+      scopes: AppStudioScopes,
+    });
+    if (appStudioTokenRes.isErr()) {
+      throw appStudioTokenRes.error;
+    }
+    const appStudioToken = appStudioTokenRes.value;
     const teamsAppId = await this.getTeamsAppId(ctx, false);
     if (!teamsAppId) {
       throw new Error(ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, PluginNames.APPST));
@@ -1006,7 +1054,13 @@ export class AppStudioPluginImpl {
     ctx: PluginContext,
     userInfo: AppUser
   ): Promise<ResourcePermission[]> {
-    const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
+    const appStudioTokenRes = await ctx?.m365TokenProvider!.getAccessToken({
+      scopes: AppStudioScopes,
+    });
+    if (appStudioTokenRes.isErr()) {
+      throw appStudioTokenRes.error;
+    }
+    const appStudioToken = appStudioTokenRes.value;
 
     const teamsAppId = await this.getTeamsAppId(ctx, false);
     if (!teamsAppId) {
@@ -1065,7 +1119,13 @@ export class AppStudioPluginImpl {
       if (appDefinitionRes.isErr()) {
         throw appDefinitionRes.error;
       }
-      let appStudioToken = await ctx?.appStudioToken?.getAccessToken();
+      const appStudioTokenRes = await ctx?.m365TokenProvider!.getAccessToken({
+        scopes: AppStudioScopes,
+      });
+      if (appStudioTokenRes.isErr()) {
+        throw appStudioTokenRes.error;
+      }
+      const appStudioToken = appStudioTokenRes.value;
       const colorIconContent = manifest.icons.color
         ? (await fs.readFile(`${appDirectory}/${manifest.icons.color}`)).toString("base64")
         : undefined;
@@ -1076,7 +1136,7 @@ export class AppStudioPluginImpl {
         const app = await AppStudioClient.updateApp(
           remoteTeamsAppId,
           appDefinitionRes.value,
-          appStudioToken!,
+          appStudioToken,
           undefined,
           colorIconContent,
           outlineIconContent
@@ -1104,7 +1164,6 @@ export class AppStudioPluginImpl {
       const appPackage = await this.buildTeamsAppPackage(ctx, false);
 
       const appContent = await fs.readFile(appPackage);
-      appStudioToken = await ctx.appStudioToken?.getAccessToken();
       await publishProgress?.next(
         getLocalizedString("plugins.appstudio.publishProgressPublish", manifest.name.short)
       );
@@ -1441,12 +1500,17 @@ export class AppStudioPluginImpl {
     zip.addLocalFile(outlineFile);
 
     const archivedFile = zip.toBuffer();
-    const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
-
+    const appStudioTokenRes = await ctx?.m365TokenProvider!.getAccessToken({
+      scopes: AppStudioScopes,
+    });
+    if (appStudioTokenRes.isErr()) {
+      return err(appStudioTokenRes.error);
+    }
+    const appStudioToken = appStudioTokenRes.value;
     try {
       const appDefinition = await AppStudioClient.createApp(
         archivedFile,
-        appStudioToken!,
+        appStudioToken,
         ctx.logProvider
       );
       return ok(appDefinition);

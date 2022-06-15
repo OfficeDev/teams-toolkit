@@ -20,7 +20,7 @@ import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
 import { ApimValidator } from "../../commonlib";
 import AzureLogin from "../../../src/commonlib/azureLogin";
-import GraphLogin from "../../../src/commonlib/graphLogin";
+import M365Login from "../../../src/commonlib/m365Login";
 
 describe("Configuration successfully changed when with different plugins", function () {
   const testFolder = getTestFolder();
@@ -35,7 +35,7 @@ describe("Configuration successfully changed when with different plugins", funct
 
   it(`bot + apim`, async function () {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
-    await ApimValidator.init(subscription, AzureLogin, GraphLogin);
+    await ApimValidator.init(subscription, AzureLogin, M365Login);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureApim);
 
     // Provision

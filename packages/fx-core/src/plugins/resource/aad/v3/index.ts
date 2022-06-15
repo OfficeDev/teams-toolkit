@@ -130,8 +130,7 @@ export class AadAppForTeamsPluginV3 implements v3.PluginV3 {
     const telemetryMessage = "provision";
 
     await TokenProvider.init({
-      graph: tokenProvider.graphTokenProvider,
-      appStudio: tokenProvider.appStudioToken,
+      m365: tokenProvider.m365TokenProvider,
     });
 
     //init aad part in local settings or env state
@@ -157,7 +156,7 @@ export class AadAppForTeamsPluginV3 implements v3.PluginV3 {
           telemetryMessage,
           config.objectId,
           config.password,
-          tokenProvider.graphTokenProvider,
+          tokenProvider.m365TokenProvider,
           envInfo.envName
         );
         ctx.logProvider?.info(Messages.getLog(Messages.GetAadAppSuccess));
@@ -214,8 +213,7 @@ export class AadAppForTeamsPluginV3 implements v3.PluginV3 {
     );
 
     await TokenProvider.init({
-      graph: tokenProvider.graphTokenProvider,
-      appStudio: tokenProvider.appStudioToken,
+      m365: tokenProvider.m365TokenProvider,
     });
     const config: PostProvisionConfig = new PostProvisionConfig(isLocalDebug);
     config.restoreConfigFromEnvInfo(ctx, envInfo);
@@ -285,10 +283,7 @@ export class AadAppForTeamsPluginV3 implements v3.PluginV3 {
     tokenProvider: TokenProviderInAPI
   ): Promise<Result<AadOwner[], FxError>> {
     ctx.logProvider.info(Messages.StartListCollaborator.log);
-    await TokenProvider.init(
-      { graph: tokenProvider.graphTokenProvider, appStudio: tokenProvider.appStudioToken },
-      TokenAudience.Graph
-    );
+    await TokenProvider.init({ m365: tokenProvider.m365TokenProvider }, TokenAudience.Graph);
     const aadState = envInfo.state[this.name] as v3.AADApp;
     const objectId = aadState.objectId;
     if (!objectId) {
@@ -316,10 +311,7 @@ export class AadAppForTeamsPluginV3 implements v3.PluginV3 {
     userInfo: AppUser
   ): Promise<Result<ResourcePermission[], FxError>> {
     ctx.logProvider.info(Messages.StartCheckPermission.log);
-    await TokenProvider.init(
-      { graph: tokenProvider.graphTokenProvider, appStudio: tokenProvider.appStudioToken },
-      TokenAudience.Graph
-    );
+    await TokenProvider.init({ m365: tokenProvider.m365TokenProvider }, TokenAudience.Graph);
     const aadState = envInfo.state[this.name] as v3.AADApp;
     const objectId = aadState.objectId;
     if (!objectId) {
@@ -355,10 +347,7 @@ export class AadAppForTeamsPluginV3 implements v3.PluginV3 {
     userInfo: AppUser
   ): Promise<Result<ResourcePermission[], FxError>> {
     ctx.logProvider.info(Messages.StartGrantPermission.log);
-    await TokenProvider.init(
-      { graph: tokenProvider.graphTokenProvider, appStudio: tokenProvider.appStudioToken },
-      TokenAudience.Graph
-    );
+    await TokenProvider.init({ m365: tokenProvider.m365TokenProvider }, TokenAudience.Graph);
     const aadState = envInfo.state[this.name] as v3.AADApp;
     const objectId = aadState.objectId;
     if (!objectId) {

@@ -121,10 +121,16 @@ export class AppStudioError {
 
   public static readonly TeamsAppPublishFailedError = {
     name: "TeamsAppPublishFailed",
-    message: (teamsAppId: string, correlationId?: string): [string, string] => [
+    message: (
+      teamsAppId: string,
+      requestPath: string,
+      correlationId?: string
+    ): [string, string] => [
       getDefaultString("error.appstudio.publishFailed", teamsAppId) +
+        `Request path: ${requestPath}` +
         (correlationId ? `X-Correlation-ID: ${correlationId}` : ""),
       getLocalizedString("error.appstudio.publishFailed", teamsAppId) +
+        `Request path: ${requestPath}` +
         (correlationId ? `X-Correlation-ID: ${correlationId}` : ""),
     ],
   };

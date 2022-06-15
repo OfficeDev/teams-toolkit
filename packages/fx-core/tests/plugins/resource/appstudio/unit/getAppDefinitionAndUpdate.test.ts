@@ -32,7 +32,11 @@ import {
 } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import sinon from "sinon";
-import { getAzureProjectRoot, MockedAppStudioTokenProvider } from "../helper";
+import {
+  getAzureProjectRoot,
+  MockedM365TokenProvider,
+  MockedM365TokenProviderFail,
+} from "../helper";
 import { newEnvInfo } from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import {
@@ -137,6 +141,7 @@ describe("Get AppDefinition and Update", () => {
       envInfo: newEnvInfo(),
       config: new ConfigMap(),
       cryptoProvider: new LocalCrypto(""),
+      m365TokenProvider: new MockedM365TokenProvider(),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -168,6 +173,7 @@ describe("Get AppDefinition and Update", () => {
       config: new ConfigMap(),
       cryptoProvider: new LocalCrypto(""),
       localSettings: localSettings,
+      m365TokenProvider: new MockedM365TokenProvider(),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -199,6 +205,7 @@ describe("Get AppDefinition and Update", () => {
       config: new ConfigMap(),
       cryptoProvider: new LocalCrypto(""),
       localSettings,
+      m365TokenProvider: new MockedM365TokenProvider(),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -227,6 +234,7 @@ describe("Get AppDefinition and Update", () => {
       config: new ConfigMap(),
       cryptoProvider: new LocalCrypto(""),
       localSettings,
+      m365TokenProvider: new MockedM365TokenProvider(),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -254,7 +262,7 @@ describe("Get AppDefinition and Update", () => {
       root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
+      m365TokenProvider: new MockedM365TokenProvider(),
       cryptoProvider: new LocalCrypto(""),
       localSettings,
     };
@@ -287,6 +295,7 @@ describe("Get AppDefinition and Update", () => {
       config: new ConfigMap(),
       cryptoProvider: new LocalCrypto(""),
       localSettings,
+      m365TokenProvider: new MockedM365TokenProviderFail(),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -316,7 +325,7 @@ describe("Get AppDefinition and Update", () => {
       root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
+      m365TokenProvider: new MockedM365TokenProvider(),
       cryptoProvider: new LocalCrypto(""),
       localSettings,
     };
@@ -359,7 +368,7 @@ describe("Get AppDefinition and Update", () => {
       root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
+      m365TokenProvider: new MockedM365TokenProvider(),
       cryptoProvider: new LocalCrypto(""),
       localSettings,
     };
@@ -420,7 +429,7 @@ describe("Get AppDefinition and Update", () => {
       root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
+      m365TokenProvider: new MockedM365TokenProvider(),
       cryptoProvider: new LocalCrypto(""),
       localSettings,
     };
@@ -478,7 +487,7 @@ describe("Get AppDefinition and Update", () => {
       root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
+      m365TokenProvider: new MockedM365TokenProvider(),
       cryptoProvider: new LocalCrypto(""),
       localSettings,
     };
@@ -510,7 +519,7 @@ describe("Get AppDefinition and Update", () => {
       root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
+      m365TokenProvider: new MockedM365TokenProvider(),
       cryptoProvider: new LocalCrypto(""),
       localSettings,
     };
@@ -571,7 +580,7 @@ describe("Get AppDefinition and Update", () => {
       root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
+      m365TokenProvider: new MockedM365TokenProvider(),
       cryptoProvider: new LocalCrypto(""),
       localSettings,
     };

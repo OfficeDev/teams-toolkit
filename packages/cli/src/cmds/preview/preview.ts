@@ -46,6 +46,7 @@ import {
   isExistingTabApp as isExistingTabAppCore,
   isM365AppEnabled,
   validationSettingsHelpLink,
+  AppStudioScopes,
 } from "@microsoft/teamsfx-core";
 
 import { YargsCommand } from "../../yargsCommand";
@@ -57,7 +58,7 @@ import cliLogger from "../../commonlib/log";
 import * as errors from "./errors";
 import activate from "../../activate";
 import { Task, TaskResult } from "./task";
-import AppStudioTokenInstance from "../../commonlib/appStudioLogin";
+import M365TokenInstance from "../../commonlib/m365Login";
 import cliTelemetry, { CliTelemetry } from "../../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
@@ -1353,10 +1354,15 @@ export default class Preview extends YargsCommand {
     await accountBar.next(ProgressMessage[Checker.M365Account]);
     let loginHint = undefined;
     try {
-      const loginStatus = await AppStudioTokenInstance.getStatus();
-      let token = loginStatus.token;
-      if (loginStatus.status === signedOut) {
-        token = await AppStudioTokenInstance.getAccessToken(true);
+      let loginStatusRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+      let token = loginStatusRes.isOk() ? loginStatusRes.value.token : undefined;
+      if (loginStatusRes.isOk() && loginStatusRes.value.status === signedOut) {
+        const tokenRes = await M365TokenInstance.getAccessToken({
+          scopes: AppStudioScopes,
+          showDialog: true,
+        });
+        token = tokenRes.isOk() ? tokenRes.value : undefined;
+        loginStatusRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
       }
 
       if (token === undefined) {
@@ -1371,7 +1377,7 @@ export default class Preview extends YargsCommand {
         }
       }
 
-      const tokenObject = loginStatus.accountInfo;
+      const tokenObject = loginStatusRes.isOk() ? loginStatusRes.value.accountInfo : undefined;
       if (tokenObject && tokenObject.upn) {
         loginHint = tokenObject.upn;
       }

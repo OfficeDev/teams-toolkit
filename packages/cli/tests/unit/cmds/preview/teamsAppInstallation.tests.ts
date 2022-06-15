@@ -4,7 +4,7 @@
 import * as sinon from "sinon";
 import { expect } from "../../utils";
 import cliLogger from "../../../../src/commonlib/log";
-import graphLoginInstance, { GraphLogin } from "../../../../src/commonlib/graphLogin";
+import m365LoginInstance, { M365Login } from "../../../../src/commonlib/m365Login";
 import { signedIn, signedOut } from "../../../../src/commonlib/common/constant";
 import { getTeamsAppInternalId } from "../../../../src/cmds/preview/teamsAppInstallation";
 import {
@@ -12,6 +12,7 @@ import {
   M365AccountInfoNotFound,
 } from "../../../../src/cmds/preview/errors";
 import axios from "axios";
+import { ok } from "@microsoft/teamsfx-api";
 
 describe("teamsAppInstallation", () => {
   const sandbox = sinon.createSandbox();
@@ -43,39 +44,45 @@ describe("teamsAppInstallation", () => {
     };
 
     it("not signed", async () => {
-      sandbox.stub(graphLoginInstance as GraphLogin, "getStatus").returns(
-        Promise.resolve({
-          status: signedOut,
-          accountInfo: undefined,
-          token: undefined,
-        })
+      sandbox.stub(m365LoginInstance as M365Login, "getStatus").returns(
+        Promise.resolve(
+          ok({
+            status: signedOut,
+            accountInfo: undefined,
+            token: undefined,
+          })
+        )
       );
       expect(getTeamsAppInternalId(appId)).to.be.rejectedWith(M365AccountInfoNotFound());
     });
 
     it("happy path", async () => {
-      sandbox.stub(graphLoginInstance as GraphLogin, "getStatus").returns(
-        Promise.resolve({
-          status: signedIn,
-          accountInfo: {
-            oid,
-          },
-          token,
-        })
+      sandbox.stub(m365LoginInstance as M365Login, "getStatus").returns(
+        Promise.resolve(
+          ok({
+            status: signedIn,
+            accountInfo: {
+              oid,
+            },
+            token,
+          })
+        )
       );
       sandbox.stub(axios, "get").returns(Promise.resolve(response));
       expect(await getTeamsAppInternalId(appId)).to.deep.equals(internalId);
     });
 
     it("axios.get exception", async () => {
-      sandbox.stub(graphLoginInstance as GraphLogin, "getStatus").returns(
-        Promise.resolve({
-          status: signedIn,
-          accountInfo: {
-            oid,
-          },
-          token,
-        })
+      sandbox.stub(m365LoginInstance as M365Login, "getStatus").returns(
+        Promise.resolve(
+          ok({
+            status: signedIn,
+            accountInfo: {
+              oid,
+            },
+            token,
+          })
+        )
       );
       sandbox.stub(axios, "get").throws("500");
       expect(getTeamsAppInternalId(appId)).to.be.rejectedWith(

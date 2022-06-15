@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { Platform } from "@microsoft/teamsfx-api";
 import { ServiceType } from "../../../../common/azure-hosting/interfaces";
 import { TemplateProjectsScenarios } from "../constants";
 import {
@@ -48,6 +49,13 @@ const triggerScenariosMap: Map<string, string[]> = new Map<string, string[]>([
   [AppServiceOptionItemForVS.id, [TemplateProjectsScenarios.NOTIFICATION_WEBAPI_SCENARIO_NAME]],
 ]);
 
+const PlatformRuntimeMap: Map<Platform, Runtime> = new Map<Platform, Runtime>([
+  [Platform.VS, Runtime.Dotnet],
+  [Platform.VSCode, Runtime.Node],
+  [Platform.CLI, Runtime.Node],
+  [Platform.CLI_HELP, Runtime.Node],
+]);
+
 const invalidInputMsg = "Invalid bot input";
 
 const projectFileMap = new Map<Runtime, (appName: string) => string>([
@@ -58,6 +66,14 @@ const projectFileMap = new Map<Runtime, (appName: string) => string>([
 export const moduleMap: { [key: string]: string } = {
   [ServiceType.Functions]: BicepModules.Functions,
 };
+
+export function getPlatformRuntime(platform: Platform): Runtime {
+  const runtime = PlatformRuntimeMap.get(platform);
+  if (runtime) {
+    return runtime;
+  }
+  throw new Error(invalidInputMsg);
+}
 
 export function getRuntime(lang: ProgrammingLanguage): Runtime {
   const runtime = runtimeMap.get(lang);

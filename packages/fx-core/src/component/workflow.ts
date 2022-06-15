@@ -423,6 +423,7 @@ export async function executeFunctionAction(
   inputs: InputsWithProjectPath,
   effects: Effect[]
 ): Promise<Result<undefined, FxError>> {
+  context.logProvider.info(`executeFunctionAction [${action.name}] start!`);
   // validate inputs
   if (action.question) {
     const getQuestionRes = await action.question(context, inputs);
@@ -456,7 +457,7 @@ export async function executeFunctionAction(
       }
     }
   }
-  context.logProvider.info(`##### executed [${action.name}]`);
+  context.logProvider.info(`executeFunctionAction [${action.name}] finish!`);
   return ok(undefined);
 }
 

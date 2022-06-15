@@ -820,7 +820,8 @@ describe("Teams Bot Resource Plugin", () => {
 
       // Assert
       chai.assert.isTrue(result.isOk());
-      chai.assert.equal(result._unsafeUnwrap(), undefined);
+      const node = result._unsafeUnwrap();
+      chai.assert.isNotNull(node?.children);
     });
 
     it("Lifecycles other than create", async () => {

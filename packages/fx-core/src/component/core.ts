@@ -5,8 +5,11 @@ import {
   Action,
   ConfigFolderName,
   ContextV3,
+  DynamicPlatforms,
   err,
+  FunctionAction,
   FxError,
+  GroupAction,
   InputsWithProjectPath,
   MaybePromise,
   ok,
@@ -57,6 +60,7 @@ import { hasAzureResourceV3 } from "../common/projectSettingsHelperV3";
 import { resourceGroupHelper } from "../plugins/solution/fx-solution/utils/ResourceGroupHelper";
 import { getResourceGroupInPortal } from "../common/tools";
 import { getComponent } from "./workflow";
+import { FxPreDeployAction } from "./fx/preDeployAction";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -354,58 +358,61 @@ export class TeamsfxCore {
     return ok(result);
   }
 
-  // build(context: ContextV3, inputs: InputsWithProjectPath): Result<Action | undefined, FxError> {
-  //   const projectSettings = context.projectSetting as ProjectSettingsV3;
-  //   const actions: Action[] = projectSettings.components
-  //     .filter((resource) => resource.build)
-  //     .map((resource) => {
-  //       return {
-  //         name: `call:${resource.name}.build`,
-  //         type: "call",
-  //         targetAction: `${resource.name}.build`,
-  //         required: false,
-  //       };
-  //     });
-  //   const group: Action = {
-  //     type: "group",
-  //     mode: "parallel",
-  //     actions: actions,
-  //   };
-  //   return ok(group);
-  // }
+  build(context: ContextV3, inputs: InputsWithProjectPath): Result<Action | undefined, FxError> {
+    const projectSettings = context.projectSetting as ProjectSettingsV3;
+    const actions: Action[] = projectSettings.components
+      .filter((resource) => resource.build)
+      .map((resource) => {
+        const component = resource.code || resource.name;
+        return {
+          name: `call:${component}.build`,
+          type: "call",
+          targetAction: `${component}.build`,
+          required: true,
+        };
+      });
+    const group: Action = {
+      type: "group",
+      name: "fx.build",
+      mode: "parallel",
+      actions: actions,
+    };
+    return ok(group);
+  }
 
-  // deploy(
-  //   context: ContextV3,
-  //   inputs: InputsWithProjectPath
-  // ): MaybePromise<Result<Action | undefined, FxError>> {
-  //   const projectSettings = context.projectSetting as ProjectSettingsV3;
-  //   const actions: Action[] = [
-  //     {
-  //       name: "call:fx.build",
-  //       type: "call",
-  //       targetAction: "fx.build",
-  //       required: false,
-  //     },
-  //   ];
-  //   projectSettings.components
-  //     .filter((resource) => resource.build && resource.hosting)
-  //     .forEach((resource) => {
-  //       actions.push({
-  //         type: "call",
-  //         targetAction: `${resource.hosting}.deploy`,
-  //         required: false,
-  //         inputs: {
-  //           [resource.hosting!]: {
-  //             folder: resource.folder,
-  //           },
-  //         },
-  //       });
-  //     });
-  //   const action: GroupAction = {
-  //     type: "group",
-  //     name: "fx.deploy",
-  //     actions: actions,
-  //   };
-  //   return ok(action);
-  // }
+  deploy(
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const projectSettings = context.projectSetting as ProjectSettingsV3;
+    const actions: Action[] = [
+      new FxPreDeployAction(),
+      {
+        name: "call:fx.build",
+        type: "call",
+        targetAction: "fx.build",
+        required: true,
+      },
+    ];
+    const components = inputs["deploy-plugin"] as string[];
+    components.forEach((componentName) => {
+      const componentConfig = getComponent(projectSettings, componentName);
+      if (componentConfig) {
+        actions.push({
+          type: "call",
+          targetAction: `${componentConfig.hosting}.deploy`,
+          required: false,
+          inputs: {
+            folder: componentConfig.folder,
+          },
+        });
+      }
+    });
+    const action: GroupAction = {
+      type: "group",
+      name: "fx.deploy",
+      actions: actions,
+    };
+    return ok(action);
+  }
 }

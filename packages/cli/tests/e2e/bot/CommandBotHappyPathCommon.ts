@@ -20,10 +20,10 @@ import {
   readContextMultiEnv,
 } from "../commonUtils";
 import { environmentManager } from "@microsoft/teamsfx-core";
-
 import { it } from "../../commonlib/it";
+import { Runtime } from "../../commonlib/constants";
 
-export function happyPathTest(runtime: "dotnet" | "nodejs"): void {
+export function happyPathTest(runtime: Runtime): void {
   describe("Provision", function () {
     const testFolder = getTestFolder();
     const appName = getUniqueAppName();
@@ -35,13 +35,13 @@ export function happyPathTest(runtime: "dotnet" | "nodejs"): void {
     env["TEAMSFX_CONFIG_UNIFY"] = "true";
     env["BOT_NOTIFICATION_ENABLED"] = "true";
     env["TEAMSFX_TEMPLATE_PRERELEASE"] = "alpha";
-    if (runtime === "dotnet") {
+    if (runtime === Runtime.Dotnet) {
       env["TEAMSFX_CLI_DOTNET"] = "true";
     }
 
     it("Provision Resource: command and response", async function () {
       const cmd =
-        runtime === "nodejs"
+        runtime === Runtime.Node
           ? `teamsfx new --interactive false --app-name ${appName} --capabilities command-bot --programming-language typescript`
           : `teamsfx new --interactive false --runtime ${runtime} --app-name ${appName} --capabilities command-bot`;
       await execAsync(cmd, {

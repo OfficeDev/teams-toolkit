@@ -9,6 +9,7 @@ import { MockLogProvider, MockTelemetryReporter, MockTools } from "../../core/ut
 import { setTools } from "../../../src/core/globalVars";
 import { MockAction, mockProgressHandler } from "./helper";
 import sinon from "sinon";
+import { TelemetryConstants } from "../../../src/component/constants";
 
 chai.use(chaiAsPromised);
 
@@ -16,9 +17,6 @@ describe("Action Middleware", () => {
   const tools = new MockTools();
   const sandbox = sinon.createSandbox();
   setTools(tools);
-  beforeEach(() => {
-    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
-  });
 
   afterEach(() => {
     sandbox.restore();
@@ -116,7 +114,39 @@ describe("Action Middleware", () => {
 
     const mockAction = new MockAction();
     const result = await mockAction.execute(context, inputs);
-    chai.assert.isTrue(sendEvent.calledThrice, "send event times is not 3");
+    chai.assert.isTrue(sendEvent.calledThrice, "send event count is not 3");
+    const startEventArg = sendEvent.args[0];
+    chai.assert.equal(
+      startEventArg[0],
+      MockAction.stage + TelemetryConstants.eventPrefix,
+      "start telemetry event is not expected"
+    );
+    chai.assert.equal(
+      startEventArg[1]![TelemetryConstants.properties.component],
+      MockAction.componentName,
+      "start telemetry component name is not expected"
+    );
+
+    const innerEventArg = sendEvent.args[1];
+    chai.assert.equal(innerEventArg[0], "inner telemetry", "inner telemetry event is not expected");
+    chai.assert.equal(
+      innerEventArg[1]![TelemetryConstants.properties.component],
+      MockAction.componentName,
+      "inner telemetry component name is not expected"
+    );
+
+    const EndEventArg = sendEvent.args[2];
+    chai.assert.equal(EndEventArg[0], MockAction.stage, "end telemetry event is not expected");
+    chai.assert.equal(
+      EndEventArg[1]![TelemetryConstants.properties.component],
+      MockAction.componentName,
+      "end telemetry component name is not expected"
+    );
+    chai.assert.equal(
+      EndEventArg[1]![TelemetryConstants.properties.success],
+      TelemetryConstants.values.yes,
+      "end telemetry sucess is not expected"
+    );
   });
 
   it("throw error for telemetry", async () => {
@@ -133,7 +163,25 @@ describe("Action Middleware", () => {
     const mockAction = new MockAction();
     mockAction.throwError = true;
     const result = await mockAction.execute(context, inputs);
-    chai.assert.isTrue(sendEvent.calledTwice, "send event times is not 2");
-    chai.assert.isTrue(sendErrorEvent.calledOnce, "send event times is not 1");
+    chai.assert.isTrue(sendEvent.calledTwice, "send event count is not 2");
+    chai.assert.isTrue(sendErrorEvent.calledOnce, "send error event count is not 1");
+
+    const errorEventArg = sendErrorEvent.args[0];
+    chai.assert.equal(errorEventArg[0], MockAction.stage, "error telemetry event is not expected");
+    chai.assert.equal(
+      errorEventArg[1]![TelemetryConstants.properties.component],
+      MockAction.componentName,
+      "error telemetry component name is not expected"
+    );
+    chai.assert.equal(
+      errorEventArg[1]![TelemetryConstants.properties.success],
+      TelemetryConstants.values.no,
+      "error telemetry sucess is not expected"
+    );
+    chai.assert.equal(
+      errorEventArg[3]![0],
+      TelemetryConstants.properties.errorMessage,
+      "error telemetry error props is not expected"
+    );
   });
 });

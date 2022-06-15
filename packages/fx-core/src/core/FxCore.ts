@@ -555,15 +555,9 @@ export class FxCore implements v3.ICore {
 
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectMigratorMW,
-    ProjectConsolidateMW,
-    AadManifestMigrationMW,
-    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
-    SolutionLoaderMW_V3,
-    QuestionModelMW,
+    QuestionModelMW_V3,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
     EnvInfoWriterMW_V3(),
@@ -571,15 +565,13 @@ export class FxCore implements v3.ICore {
   async deployArtifactsV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.deploy);
     inputs.stage = Stage.deploy;
-    if (ctx && ctx.solutionV3 && ctx.contextV2 && ctx.envInfoV3 && ctx.solutionV3.deploy) {
-      const res = await ctx.solutionV3.deploy(
-        ctx.contextV2,
-        inputs as v2.InputsWithProjectPath,
-        ctx.envInfoV3,
-        TOOLS.tokenProvider
-      );
-      return res;
-    }
+    const context = createContextV3();
+    context.envInfo = ctx!.envInfoV3!;
+    context.projectSetting = ctx!.projectSettings! as ProjectSettingsV3;
+    context.tokenProvider = TOOLS.tokenProvider;
+    const res = await runAction("fx.deploy", context, inputs as InputsWithProjectPath);
+    if (res.isErr()) return err(res.error);
+    ctx!.projectSettings = context.projectSetting;
     return ok(Void);
   }
   async localDebug(inputs: Inputs): Promise<Result<Void, FxError>> {

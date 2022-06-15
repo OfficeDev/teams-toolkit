@@ -365,6 +365,8 @@ export interface Component extends Json {
     // (undocumented)
     build?: boolean;
     // (undocumented)
+    code?: string;
+    // (undocumented)
     connections?: string[];
     // (undocumented)
     deployType?: "folder" | "zip";
@@ -836,6 +838,7 @@ export interface GroupAction {
     mode?: "sequential" | "parallel";
     // (undocumented)
     name?: string;
+    question?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     type: "group";
 }

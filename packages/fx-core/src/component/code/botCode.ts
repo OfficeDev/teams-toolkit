@@ -26,11 +26,13 @@ import {
   scaffoldFromTemplates,
 } from "../../common/template-utils/templatesActions";
 import { TemplateProjectsConstants } from "../../plugins/resource/bot/constants";
-import { CommonStrings } from "../../plugins/resource/bot/resources/strings";
+import { ProgrammingLanguage } from "../../plugins/resource/bot/enums/programmingLanguage";
+import { Commands, CommonStrings } from "../../plugins/resource/bot/resources/strings";
 import { TemplateZipFallbackError, UnzipError } from "../../plugins/resource/bot/v3/error";
 import { ComponentNames } from "../constants";
 import { getComponent } from "../workflow";
-
+import * as utils from "../../plugins/resource/bot/utils/common";
+import { CommandExecutionError } from "../../plugins/resource/bot/errors";
 /**
  * bot scaffold plugin
  */
@@ -45,6 +47,8 @@ export class BotCodeProvider implements SourceCodeProvider {
       name: "bot-code.generate",
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
+        const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
+        if (!teamsBot) return ok([]);
         const folder = inputs.folder || CommonStrings.BOT_WORKING_DIR_NAME;
         return ok([
           "add component 'bot-code' in projectSettings",
@@ -61,7 +65,8 @@ export class BotCodeProvider implements SourceCodeProvider {
         const botFolder =
           inputs.folder || language === "csharp" ? "" : CommonStrings.BOT_WORKING_DIR_NAME;
         const teamsBot = getComponent(projectSettings, ComponentNames.TeamsBot);
-        merge(teamsBot, { build: true, language: language, folder: botFolder });
+        if (!teamsBot) return ok([]);
+        merge(teamsBot, { build: true, folder: botFolder });
         const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
         const lang = convertToLangKey(language);
         const workingDir = path.join(inputs.projectPath, botFolder);
@@ -101,43 +106,50 @@ export class BotCodeProvider implements SourceCodeProvider {
     return ok(action);
   }
   build(
-    context: v2.Context,
+    context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const component = getComponent(context.projectSetting as ProjectSettingsV3, "bot-code");
-    if (component) {
-      const language = component.language || context.projectSetting.programmingLanguage;
-      if (language === "typescript") {
-        const group: GroupAction = {
-          type: "group",
-          name: "bot-code.build",
-          actions: [
-            {
-              type: "shell",
-              command: "npm install",
-              description: `npm install (${path.resolve(inputs.projectPath, "bot")})`,
-              cwd: path.resolve(inputs.projectPath, "bot"),
-            },
-            {
-              type: "shell",
-              command: "npm run build",
-              description: `npm run build (${path.resolve(inputs.projectPath, "bot")})`,
-              cwd: path.resolve(inputs.projectPath, "bot"),
-            },
-          ],
-        };
-        return ok(group);
-      } else if (language === "csharp") {
-        return ok({
-          type: "shell",
-          name: "bot-code.build",
-          command: "MsBuild",
-          description: `MsBuild (${path.resolve(inputs.projectPath, "bot")})`,
-          cwd: path.resolve(inputs.projectPath, "bot"),
-        });
-      } else return ok(undefined);
-    }
-    return ok(undefined);
+    const action: Action = {
+      name: "bot-code.build",
+      type: "function",
+      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
+        const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
+        if (!teamsBot) return ok([]);
+        const packDir = teamsBot?.folder;
+        if (!packDir) return ok([]);
+        return ok([`build project: ${packDir}`]);
+      },
+      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+        const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
+        if (!teamsBot) return ok([]);
+        const packDir = path.join(inputs.projectPath, teamsBot.folder!);
+        const language = context.projectSetting.programmingLanguage || "javascript";
+        if (language === ProgrammingLanguage.TypeScript) {
+          //Typescript needs tsc build before deploy because of windows app server. other languages don"t need it.
+          try {
+            await utils.execute("npm install", packDir);
+            await utils.execute("npm run build", packDir);
+          } catch (e) {
+            throw new CommandExecutionError(
+              `${Commands.NPM_INSTALL}, ${Commands.NPM_BUILD}`,
+              packDir,
+              e
+            );
+          }
+        } else if (language === ProgrammingLanguage.JavaScript) {
+          try {
+            // fail to npm install @microsoft/teamsfx on azure web app, so pack it locally.
+            await utils.execute("npm install", packDir);
+          } catch (e) {
+            throw new CommandExecutionError(`${Commands.NPM_INSTALL}`, packDir, e);
+          }
+        } else if (language === ProgrammingLanguage.Csharp) {
+          //TODO for dotnet
+        }
+        return ok([`build project: ${packDir}`]);
+      },
+    };
+    return ok(action);
   }
 }
 

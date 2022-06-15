@@ -137,7 +137,7 @@ jobs:
           python .github/detect/sensitive-detect.py repo
 
   attension-on-version:
-    if: ${{ github.event_name ==  'pull_request'  && github.event.action != 'edited' }}
+    if: ${{ github.event_name ==  'pull_request'}}
     runs-on: ubuntu-latest
     steps:
       - name: checkout branch

@@ -16,7 +16,7 @@ export const ComponentNames = {
   AzureSQL: "azure-sql",
   TabCode: "tab-code",
   BotCode: "bot-code",
-  Function: "function",
+  Function: "azure-function",
   SimpleAuth: "simple-auth",
 };
 

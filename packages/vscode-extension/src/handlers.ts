@@ -3143,7 +3143,6 @@ export async function selectSubscriptionCallback(args?: any[]): Promise<Result<n
     undefined
   );
   if (askSubRes.isErr()) return err(askSubRes.error);
-  await AzureAccountManager.saveSubscription(askSubRes.value);
-  await accountTreeViewProviderInstance.azureAccountNode.setSubscription(askSubRes.value);
+  await AzureAccountManager.setSubscription(askSubRes.value.subscriptionId);
   return ok(null);
 }

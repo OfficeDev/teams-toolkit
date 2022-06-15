@@ -14,7 +14,6 @@ import {
   AppPackageFolderName,
   BuildFolderName,
   ManifestUtil,
-  SystemError,
   UserError,
 } from "@microsoft/teamsfx-api";
 import { AppStudioClient } from "./appStudio";
@@ -86,7 +85,6 @@ import {
   isAADEnabled,
   isConfigUnifyEnabled,
   isSPFxProject,
-  isVSProject,
 } from "../../../common";
 import {
   LocalSettingsAuthKeys,
@@ -111,6 +109,7 @@ import { getCapabilities, getManifestTemplatePath, loadManifest } from "./manife
 import { environmentManager } from "../../../core/environment";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { getProjectTemplatesFolderPath } from "../../../common/utils";
+import { renderTemplate } from "./utils/utils";
 
 export class AppStudioPluginImpl {
   public commonProperties: { [key: string]: string } = {};
@@ -215,8 +214,7 @@ export class AppStudioPluginImpl {
         },
       },
     };
-    Mustache.escape = (value) => value;
-    const manifestString = Mustache.render(JSON.stringify(manifest), view);
+    const manifestString = renderTemplate(JSON.stringify(manifest), view);
     manifest = JSON.parse(manifestString);
 
     const appDefinition = await this.convertToAppDefinition(ctx, manifest, false);
@@ -1797,8 +1795,7 @@ export class AppStudioPluginImpl {
         },
       },
     };
-    Mustache.escape = (value) => value;
-    manifestString = Mustache.render(manifestString, view);
+    manifestString = renderTemplate(manifestString, view);
     const tokens = [
       ...new Set(
         Mustache.parse(manifestString)
@@ -1904,8 +1901,7 @@ export class AppStudioPluginImpl {
         },
       },
     };
-    Mustache.escape = (value) => value;
-    manifestString = Mustache.render(manifestString, view);
+    manifestString = renderTemplate(manifestString, view);
     return manifestString;
   }
 }

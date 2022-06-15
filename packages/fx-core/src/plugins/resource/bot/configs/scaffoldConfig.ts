@@ -99,15 +99,12 @@ export class ScaffoldConfig {
   private static getHostTypeFromHostTypeTriggerQuestion(answers: Inputs): HostType {
     // intersection of hostTypeTriggers and HostTypeTriggerOptions
     const hostTypeTriggers = answers[QuestionNames.BOT_HOST_TYPE_TRIGGER];
-    let hostType: HostType = HostTypes.APP_SERVICE;
     if (Array.isArray(hostTypeTriggers)) {
-      FunctionsOptionItems.forEach((item) => {
-        if (hostTypeTriggers.includes(item.id)) {
-          hostType = HostTypes.AZURE_FUNCTIONS;
-        }
-      });
+      return FunctionsOptionItems.some((item) => hostTypeTriggers.includes(item.id))
+        ? HostTypes.AZURE_FUNCTIONS
+        : HostTypes.APP_SERVICE;
     }
-    return hostType;
+    return HostTypes.APP_SERVICE;
   }
 
   private static getHostTypeFromProjectSettings(context: PluginContext): HostType | undefined {

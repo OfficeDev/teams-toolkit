@@ -58,15 +58,12 @@ export function decideTemplateScenarios(ctx: Context, inputs: Inputs): Set<strin
 
 export function resolveHostType(inputs: Inputs): HostType {
   const notificationTriggerType = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER];
-  let hostType: HostType = HostTypes.APP_SERVICE;
   if (Array.isArray(notificationTriggerType)) {
-    FunctionsOptionItems.forEach((item) => {
-      if (notificationTriggerType.includes(item.id)) {
-        hostType = HostTypes.AZURE_FUNCTIONS;
-      }
-    });
+    return FunctionsOptionItems.some((item) => notificationTriggerType.includes(item.id))
+      ? HostTypes.AZURE_FUNCTIONS
+      : HostTypes.APP_SERVICE;
   }
-  return hostType;
+  return HostTypes.APP_SERVICE;
 }
 
 export function resolveServiceType(ctx: Context): ServiceType {

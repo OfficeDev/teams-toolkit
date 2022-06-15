@@ -61,10 +61,8 @@ export function createHostTypeTriggerQuestion(
 ): MultiSelectQuestion {
   const prefix = "plugins.bot.questionHostTypeTrigger";
 
-  let defaultOptionItem = AppServiceOptionItem;
-  if (runtime === Runtime.Dotnet) {
-    defaultOptionItem = AppServiceOptionItemForVS;
-  }
+  const defaultOptionItem =
+    runtime === Runtime.Dotnet ? AppServiceOptionItemForVS : AppServiceOptionItem;
   let staticOptions = [defaultOptionItem, ...FunctionsOptionItems];
   if (platform === Platform.CLI) {
     // The UI in CLI is different. It does not have description. So we need to merge that into label.

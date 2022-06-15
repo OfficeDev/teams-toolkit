@@ -37,7 +37,7 @@ export function happyPathTest(runtime: Runtime): void {
       const cmd =
         runtime === Runtime.Node
           ? `teamsfx new --interactive false --app-name ${appName} --capabilities notification --bot-host-type-trigger http-restify --programming-language typescript`
-          : `teamsfx new --runtime dotnet --interactive false --app-name ${appName} --capabilities notification`;
+          : `teamsfx new --runtime dotnet --interactive false --app-name ${appName} --capabilities notification --bot-host-type-trigger http-webapi`;
       await execAsync(cmd, {
         cwd: testFolder,
         env: env,

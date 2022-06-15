@@ -42,22 +42,15 @@ export const AppServiceOptionItem: HostTypeTriggerOptionItem = optionWithL10n({
 });
 
 // TODO: this option will not be shown in UI, leave messages empty.
-export const AppServiceOptionItemForVS: HostTypeTriggerOptionItem = {
+export const AppServiceOptionItemForVS: HostTypeTriggerOptionItem = optionWithL10n({
   id: "http-webapi",
   hostType: HostTypes.APP_SERVICE,
-  label: "",
-  cliName: "",
-  description: "",
-  detail: "",
-};
+});
 
-export const HostTypeTriggerOptions: HostTypeTriggerOptionItem[] = [
-  AppServiceOptionItem,
+export const FunctionsOptionItems: HostTypeTriggerOptionItem[] = [
   FunctionsHttpTriggerOptionItem,
   FunctionsTimerTriggerOptionItem,
 ];
-
-export const HostTypeTriggerOptionsForVS: HostTypeTriggerOptionItem[] = [AppServiceOptionItemForVS];
 
 // The restrictions of this question:
 //   - appService and function are mutually exclusive
@@ -68,12 +61,9 @@ export function createHostTypeTriggerQuestion(
 ): MultiSelectQuestion {
   const prefix = "plugins.bot.questionHostTypeTrigger";
 
-  let staticOptions: HostTypeTriggerOptionItem[] = HostTypeTriggerOptions;
-  let defaultOptionItem = AppServiceOptionItem;
-  if (runtime === Runtime.Dotnet) {
-    staticOptions = HostTypeTriggerOptionsForVS;
-    defaultOptionItem = AppServiceOptionItemForVS;
-  }
+  const defaultOptionItem =
+    runtime === Runtime.Dotnet ? AppServiceOptionItemForVS : AppServiceOptionItem;
+  let staticOptions = [defaultOptionItem, ...FunctionsOptionItems];
   if (platform === Platform.CLI) {
     // The UI in CLI is different. It does not have description. So we need to merge that into label.
     staticOptions = staticOptions.map((option) => {
@@ -91,7 +81,6 @@ export function createHostTypeTriggerQuestion(
     staticOptions: staticOptions,
     default: [defaultOptionItem.id],
     placeholder: getLocalizedString(`${prefix}.placeholder`),
-    skipSingleOption: true,
     validation: {
       validFunc: async (input: string[]): Promise<string | undefined> => {
         const name = input as string[];

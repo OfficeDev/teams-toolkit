@@ -153,6 +153,7 @@ jobs:
           history_cli=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/cli | grep "^feat")
           history_toolkit=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/vscode-extension | grep "^feat")
           info=$(echo -e 'CLI feat commits: \n' "$history_cli" '\n\nExtension-toolkit feat commits:\n' "$history_toolkit")
+          echo "$info"
           echo "LERNA_HISTORY<<EOF" >> $GITHUB_ENV
           echo "$info" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
@@ -163,6 +164,7 @@ jobs:
       - name: lerna expect rc version
         run: |
           npx lerna version --conventional-commits --conventional-prerelease --no-git-tag-version --allow-branch ${{ github.event.pull_request.head.ref }} --yes
+          echo "$(npx lerna changed -l)"
           echo "LERNA_PKG_INFO<<EOF" >> $GITHUB_ENV
           echo "$(npx lerna changed -l)" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV

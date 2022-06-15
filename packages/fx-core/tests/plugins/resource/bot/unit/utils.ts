@@ -6,7 +6,6 @@ import {
   PluginContext,
   LogLevel,
   Platform,
-  GraphTokenProvider,
   Inputs,
   AzureSolutionSettings,
   TelemetryReporter,

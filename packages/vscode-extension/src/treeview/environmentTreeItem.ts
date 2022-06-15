@@ -6,7 +6,7 @@ import * as vscode from "vscode";
 
 import { LocalEnvironmentName, SubscriptionInfo } from "@microsoft/teamsfx-api";
 
-import { AppStudioLogin } from "../commonlib/appStudioLogin";
+import { M365Login } from "../commonlib/m365Login";
 import AzureAccountManager from "../commonlib/azureLogin";
 import { signedIn } from "../commonlib/common/constant";
 import * as globalVariables from "../globalVariables";
@@ -19,6 +19,7 @@ import {
 } from "../utils/commonUtils";
 import { localize } from "../utils/localizeUtils";
 import { DynamicNode } from "./dynamicNode";
+import { AppStudioScopes } from "@microsoft/teamsfx-core";
 
 enum EnvInfo {
   Local = "local",
@@ -94,8 +95,9 @@ export class EnvironmentNode extends DynamicNode {
     const warnings: string[] = [];
 
     // Check M365 account status
-    const loginStatus = await AppStudioLogin.getInstance().getStatus();
-    if (loginStatus.status == signedIn) {
+    const loginStatusRes = await M365Login.getInstance().getStatus({ scopes: AppStudioScopes });
+    const loginStatus = loginStatusRes.isOk() ? loginStatusRes.value : undefined;
+    if (loginStatus && loginStatus.status == signedIn) {
       // Signed account doesn't match
       const m365TenantId = await getM365TenantFromEnv(env);
       if (m365TenantId && (loginStatus.accountInfo as any).tid !== m365TenantId) {

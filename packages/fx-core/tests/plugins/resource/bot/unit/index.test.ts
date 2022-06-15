@@ -282,9 +282,6 @@ describe("Teams Bot Resource Plugin", () => {
       };
       const mockedTokenProvider: TokenProvider = {
         azureAccountProvider: new MockedAzureAccountProvider(),
-        appStudioToken: undefined,
-        graphTokenProvider: undefined,
-        sharepointTokenProvider: undefined,
         m365TokenProvider: new MockedM365Provider(),
       };
       const envInfoV3: v3.EnvInfoV3 = {
@@ -385,9 +382,6 @@ describe("Teams Bot Resource Plugin", () => {
       };
       const mockedTokenProvider: TokenProvider = {
         azureAccountProvider: new MockedAzureAccountProvider(),
-        appStudioToken: undefined,
-        graphTokenProvider: undefined,
-        sharepointTokenProvider: undefined,
         m365TokenProvider: new MockedM365Provider(),
       };
       const envInfoV3: v3.EnvInfoV3 = {
@@ -590,9 +584,6 @@ describe("Teams Bot Resource Plugin", () => {
       };
       const mockedTokenProvider: TokenProvider = {
         azureAccountProvider: new MockedAzureAccountProvider(),
-        appStudioToken: undefined,
-        graphTokenProvider: undefined,
-        sharepointTokenProvider: undefined,
         m365TokenProvider: new MockedM365Provider(),
       };
       const envInfoV3: v3.EnvInfoV3 = {
@@ -685,9 +676,6 @@ describe("Teams Bot Resource Plugin", () => {
       };
       const mockedTokenProvider: TokenProvider = {
         azureAccountProvider: new MockedAzureAccountProvider(),
-        appStudioToken: undefined,
-        graphTokenProvider: undefined,
-        sharepointTokenProvider: undefined,
         m365TokenProvider: new MockedM365Provider(),
       };
       const envInfoV3: v3.EnvInfoV3 = {
@@ -781,9 +769,6 @@ describe("Teams Bot Resource Plugin", () => {
       };
       const mockedTokenProvider: TokenProvider = {
         azureAccountProvider: new MockedAzureAccountProvider(),
-        appStudioToken: undefined,
-        graphTokenProvider: undefined,
-        sharepointTokenProvider: undefined,
         m365TokenProvider: new MockedM365Provider(),
       };
       const envInfoV3: v3.EnvInfoV3 = {

@@ -427,9 +427,6 @@ export class MockTools implements Tools {
   logProvider = new MockLogProvider();
   tokenProvider: TokenProvider = {
     azureAccountProvider: new MockAzureAccountProvider(),
-    graphTokenProvider: undefined,
-    appStudioToken: undefined,
-    sharepointTokenProvider: undefined,
     m365TokenProvider: new MockM365TokenProvider(),
   };
   telemetryReporter = new MockTelemetryReporter();

@@ -68,9 +68,6 @@ describe("Remote Collaboration", () => {
   const ctxV2 = new MockedV2Context(projectSettings);
   const tokenProvider: TokenProvider = {
     azureAccountProvider: new MockedAzureAccountProvider(),
-    appStudioToken: undefined,
-    graphTokenProvider: undefined,
-    sharepointTokenProvider: undefined,
     m365TokenProvider: new MockedM365Provider(),
   };
   beforeEach(async () => {

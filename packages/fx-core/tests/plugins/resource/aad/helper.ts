@@ -6,8 +6,6 @@ import {
   PluginContext,
   TelemetryReporter,
   LogProvider,
-  AppStudioTokenProvider,
-  GraphTokenProvider,
   UserInteraction,
   LogLevel,
   PermissionRequestProvider,

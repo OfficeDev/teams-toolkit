@@ -56,9 +56,6 @@ const projectSettings: ProjectSettings = {
 const ctx = new MockedV2Context(projectSettings);
 const tokenProvider: TokenProvider = {
   azureAccountProvider: new MockedAzureAccountProvider(),
-  appStudioToken: undefined,
-  graphTokenProvider: undefined,
-  sharepointTokenProvider: undefined,
   m365TokenProvider: new MockedM365Provider(),
 };
 describe("AadAppForTeamsPlugin: CI", () => {

@@ -1,10 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Correlator, environmentManager, isConfigUnifyEnabled } from "@microsoft/teamsfx-core";
+import {
+  AppStudioScopes,
+  Correlator,
+  environmentManager,
+  isConfigUnifyEnabled,
+} from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 
-import AppStudioTokenInstance from "../commonlib/appStudioLogin";
+import M365TokenInstance from "../commonlib/m365Login";
 import { getTeamsAppInternalId } from "./teamsAppInstallation";
 import * as commonUtils from "./commonUtils";
 import { showError } from "../handlers";
@@ -142,7 +147,8 @@ export async function generateAccountHint(includeTenantId = true): Promise<strin
   let tenantId = undefined,
     loginHint = undefined;
   try {
-    const tokenObject = (await AppStudioTokenInstance.getStatus())?.accountInfo;
+    const tokenObjectRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+    const tokenObject = tokenObjectRes.isOk() ? tokenObjectRes.value.accountInfo : undefined;
     if (tokenObject) {
       // user signed in
       tenantId = tokenObject.tid;

@@ -96,7 +96,7 @@ export class ScaffoldConfig {
     }
   }
 
-  private static getHostTypeFromHostTypeTriggerQuestion(answers: Inputs): HostType | undefined {
+  private static getHostTypeFromHostTypeTriggerQuestion(answers: Inputs): HostType {
     // intersection of hostTypeTriggers and HostTypeTriggerOptions
     const hostTypeTriggers = answers[QuestionNames.BOT_HOST_TYPE_TRIGGER];
     let hostType: HostType = HostTypes.APP_SERVICE;

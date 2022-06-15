@@ -50,17 +50,11 @@ import "./connection/azureFunctionConfig";
 
 import { WriteProjectSettingsAction } from "./projectSettingsManager";
 import { ComponentNames } from "./constants";
-import {
-  askForProvisionConsent,
-  fillInAzureConfigs,
-  getM365TenantId,
-} from "../plugins/solution/fx-solution/v3/provision";
 import { getLocalizedString } from "../common/localizeUtils";
-import { hasAzureResourceV3 } from "../common/projectSettingsHelperV3";
-import { resourceGroupHelper } from "../plugins/solution/fx-solution/utils/ResourceGroupHelper";
 import { getResourceGroupInPortal } from "../common/tools";
 import { getComponent } from "./workflow";
 import { FxPreDeployAction } from "./fx/preDeployAction";
+import { FxPreProvisionAction } from "./fx/preProvisionAction";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -130,83 +124,6 @@ export class TeamsfxCore {
     };
     return ok(action);
   }
-  preProvision(
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const action: Action = {
-      type: "function",
-      name: "fx.preProvision",
-      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok(["pre step before provision (tenant, subscription, resource group)"]);
-      },
-      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const ctx = context as ProvisionContextV3;
-        const envInfo = ctx.envInfo;
-        // 1. check M365 tenant
-        envInfo.state[ComponentNames.AppManifest] = envInfo.state[ComponentNames.AppManifest] || {};
-        envInfo.state.solution = envInfo.state.solution || {};
-        const appManifest = envInfo.state[ComponentNames.AppManifest];
-        const solutionConfig = envInfo.state.solution;
-        solutionConfig.provisionSucceeded = false;
-        const tenantIdInConfig = appManifest.tenantId;
-        const tenantIdInTokenRes = await getM365TenantId(ctx.tokenProvider.m365TokenProvider);
-        if (tenantIdInTokenRes.isErr()) {
-          return err(tenantIdInTokenRes.error);
-        }
-        const tenantIdInToken = tenantIdInTokenRes.value;
-        if (tenantIdInConfig && tenantIdInToken && tenantIdInToken !== tenantIdInConfig) {
-          return err(
-            new UserError(
-              "Solution",
-              "TeamsAppTenantIdNotRight",
-              getLocalizedString("error.M365AccountNotMatch", envInfo.envName)
-            )
-          );
-        }
-        if (!tenantIdInConfig) {
-          appManifest.tenantId = tenantIdInToken;
-          solutionConfig.teamsAppTenantId = tenantIdInToken;
-        }
-        // 3. check Azure configs
-        if (hasAzureResourceV3(ctx.projectSetting) && envInfo.envName !== "local") {
-          // ask common question and fill in solution config
-          const solutionConfigRes = await fillInAzureConfigs(
-            ctx,
-            inputs,
-            envInfo,
-            ctx.tokenProvider
-          );
-          if (solutionConfigRes.isErr()) {
-            return err(solutionConfigRes.error);
-          }
-          // ask for provision consent
-          const consentResult = await askForProvisionConsent(
-            ctx,
-            ctx.tokenProvider.azureAccountProvider,
-            envInfo
-          );
-          if (consentResult.isErr()) {
-            return err(consentResult.error);
-          }
-          // create resource group if needed
-          if (solutionConfig.needCreateResourceGroup) {
-            const createRgRes = await resourceGroupHelper.createNewResourceGroup(
-              solutionConfig.resourceGroupName,
-              ctx.tokenProvider.azureAccountProvider,
-              solutionConfig.subscriptionId,
-              solutionConfig.location
-            );
-            if (createRgRes.isErr()) {
-              return err(createRgRes.error);
-            }
-          }
-        }
-        return ok(["pre step before provision (tenant, subscription, resource group)"]);
-      },
-    };
-    return ok(action);
-  }
   async provision(
     context: ContextV3,
     inputs: InputsWithProjectPath
@@ -243,12 +160,7 @@ export class TeamsfxCore {
       targetAction: "debug-manager.configLocalEnvironmentStep",
       required: false,
     };
-    const preProvisionStep: Action = {
-      type: "call",
-      name: "call fx.preProvision",
-      targetAction: "fx.preProvision",
-      required: true,
-    };
+    const preProvisionStep: Action = new FxPreProvisionAction();
     const createTeamsAppStep: Action = {
       type: "call",
       name: "call app-manifest.provision",

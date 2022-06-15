@@ -27,12 +27,10 @@ import { hasAzureResourceV3 } from "../../common/projectSettingsHelperV3";
 import { createHostTypeTriggerQuestion } from "../../plugins/resource/bot/question";
 import {
   AzureResourceSQLNewUI,
-  AzureSolutionQuestionNames,
   BotOptionItem,
   NotificationOptionItem,
 } from "../../plugins/solution/fx-solution/question";
 import { checkWetherProvisionSucceeded } from "../../plugins/solution/fx-solution/v2/utils";
-import { selectMultiPluginsQuestion } from "../../plugins/solution/utils/questions";
 import { NoCapabilityFoundError } from "../error";
 import { TOOLS } from "../globalVars";
 import {

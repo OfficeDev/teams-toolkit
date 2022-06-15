@@ -821,7 +821,7 @@ async function runBackgroundAsyncTasks(
   if (isTeamsFxProject) {
     await handlers.autoOpenProjectHandler();
     await TreeViewManagerInstance.updateTreeViewsByContent();
-    await AzureAccountManager.addStatusChangeEvent();
+    await AzureAccountManager.updateSubscriptionInfo();
   }
 
   await exp.initialize(context);

@@ -18,9 +18,9 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   Correlator,
+  isAADEnabled,
   isConfigUnifyEnabled,
   isValidProject,
-  isAADEnabled,
 } from "@microsoft/teamsfx-core";
 
 import {
@@ -32,6 +32,7 @@ import {
   ProjectSettingsCodeLensProvider,
 } from "./codeLensProvider";
 import commandController from "./commandController";
+import AzureAccountManager from "./commonlib/azureLogin";
 import VsCodeLogInstance from "./commonlib/log";
 import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcomePage";
 import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUtils";
@@ -275,6 +276,11 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
     () => Correlator.runWithId(startLocalDebugSession(), handlers.validateSpfxDependenciesHandler)
   );
   context.subscriptions.push(validateSpfxDependenciesCmd);
+
+  const signinAzure = vscode.commands.registerCommand("fx-extension.signinAzure", (...args) =>
+    Correlator.run(handlers.signinAzureCallback, args)
+  );
+  context.subscriptions.push(signinAzure);
 }
 
 function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext) {
@@ -436,11 +442,6 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.checkSideloadingCallback, args)
   );
   context.subscriptions.push(checkSideloading);
-
-  const signinAzure = vscode.commands.registerCommand("fx-extension.signinAzure", (...args) =>
-    Correlator.run(handlers.signinAzureCallback, args)
-  );
-  context.subscriptions.push(signinAzure);
 }
 
 /**
@@ -820,6 +821,7 @@ async function runBackgroundAsyncTasks(
   if (isTeamsFxProject) {
     await handlers.autoOpenProjectHandler();
     await TreeViewManagerInstance.updateTreeViewsByContent();
+    await AzureAccountManager.updateSubscriptionInfo();
   }
 
   await exp.initialize(context);

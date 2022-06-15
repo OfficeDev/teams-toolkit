@@ -687,18 +687,12 @@ export class FxCore implements v3.ICore {
   }
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectMigratorMW,
-    ProjectConsolidateMW,
-    AadManifestMigrationMW,
-    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(false),
-    SolutionLoaderMW,
-    QuestionModelMW,
+    EnvInfoLoaderMW_V3(false),
+    QuestionModelMW_V3,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW(),
+    EnvInfoWriterMW_V3(),
   ])
   async publishApplicationV3(
     inputs: Inputs,
@@ -706,21 +700,13 @@ export class FxCore implements v3.ICore {
   ): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.publish);
     inputs.stage = Stage.publish;
-    if (
-      ctx &&
-      ctx.solutionV3 &&
-      ctx.contextV2 &&
-      ctx.envInfoV3 &&
-      ctx.solutionV3.publishApplication
-    ) {
-      const res = await ctx.solutionV3.publishApplication(
-        ctx.contextV2,
-        inputs as v2.InputsWithProjectPath,
-        ctx.envInfoV3,
-        TOOLS.tokenProvider.m365TokenProvider
-      );
-      return res;
-    }
+    const context = createContextV3();
+    context.envInfo = ctx!.envInfoV3!;
+    context.projectSetting = ctx!.projectSettings! as ProjectSettingsV3;
+    context.tokenProvider = TOOLS.tokenProvider;
+    const res = await runAction("app-manifest.publish", context, inputs as InputsWithProjectPath);
+    if (res.isErr()) return err(res.error);
+    ctx!.projectSettings = context.projectSetting;
     return ok(Void);
   }
   async executeUserTask(func: Func, inputs: Inputs): Promise<Result<unknown, FxError>> {

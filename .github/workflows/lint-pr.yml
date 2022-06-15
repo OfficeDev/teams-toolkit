@@ -168,14 +168,14 @@ jobs:
           echo "LERNA_PKG_INFO<<EOF" >> $GITHUB_ENV
           echo "$(npx lerna changed -l)" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
-      - name: get description
-        id: set-output
-        uses: actions/github-script@v6
+      - uses: mkungla/actions-set-text-output@v1
+        id: content
         with:
-          script: |
-            return `${{ env.LERNA_PKG_INFO }}\n\n${{ env.LERNA_HISTORY }}`
+          text: |
+            `${{ env.LERNA_PKG_INFO }}`
+            `${{ env.LERNA_HISTORY }}`
       - name: update PR description
         uses: riskledger/update-pr-description@v2
         with:
-          body: ${{steps.set-output.outputs.result}}
+          body: ${{steps.content.outputs.value}}
           token: ${{ secrets.GITHUB_TOKEN }}

@@ -412,6 +412,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     const azureAccount: AzureAccount =
       vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
     AzureAccountManager.currentStatus = azureAccount.status;
+    await this.updateSubscriptionInfo();
     azureAccount.onStatusChanged(async (event) => {
       if (this.isLegacyVersion()) {
         if (AzureAccountManager.currentStatus === "Initializing") {

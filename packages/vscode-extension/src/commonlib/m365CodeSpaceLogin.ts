@@ -4,9 +4,9 @@
 "use strict";
 
 import * as vscode from "vscode";
-import { login, LoginStatus } from "./common/login";
+import { LoginStatus } from "./common/login";
 import { signedIn, signedOut } from "./common/constant";
-import { AppStudioScopes, getAppStudioEndpoint } from "@microsoft/teamsfx-core";
+import { AppStudioScopes } from "@microsoft/teamsfx-core";
 import {
   BasicLogin,
   err,
@@ -47,8 +47,6 @@ export class M365CodeSpaceLogin extends BasicLogin implements M365TokenProvider 
       // ask user to login
       session = await this.tryAuthenticate(true, tokenRequest.scopes);
       if (session && session.accessToken) {
-        // login success
-        const tokenJson = this.parseToken(session.accessToken);
         await this.notifyStatus(tokenRequest);
         return ok(session.accessToken);
       }

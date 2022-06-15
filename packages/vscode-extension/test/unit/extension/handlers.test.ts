@@ -62,12 +62,6 @@ suite("handlers", () => {
       const result = await handlers.activate();
       chai.assert.deepEqual(result.isOk() ? result.value : result.error.name, {});
     });
-
-    test("Don't listen to Azure account notify for non-Teamsfx project", async () => {
-      await handlers.activate();
-
-      chai.assert.isTrue(setStatusChangeMap.notCalled);
-    });
   });
 
   test("getSystemInputs()", () => {

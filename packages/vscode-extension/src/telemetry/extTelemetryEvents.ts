@@ -117,6 +117,11 @@ export enum TelemetryEvent {
   DebugPrereqsCheckDependencies = "debug-prereqs-check-dependencies",
   DebugPrereqsEnsureDependencies = "debug-prereqs-ensure-dependencies",
   DebugPrereqsInstallPackages = "debug-prereqs-install-packages",
+  DebugPreCheckCoreLocalDebug = "debug-precheck-core-local-debug",
+  DebugTaskProvider = "debug-task-provider",
+  DebugProviderResolveDebugConfiguration = "debug-provider-resolve-debug-configuration",
+  DebugAllStart = "debug-all-start",
+  DebugAll = "debug-all",
 
   AutomaticNpmInstallStart = "automatic-npm-install-start",
   AutomaticNpmInstall = "automatic-npm-install",

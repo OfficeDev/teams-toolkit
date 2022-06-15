@@ -5,8 +5,22 @@ import * as vscode from "vscode";
 
 import * as constants from "./constants";
 import * as commonUtils from "./commonUtils";
-import { Json, ProductName, ProjectSettings, v2, VsCodeEnv } from "@microsoft/teamsfx-api";
-import { FolderName, isConfigUnifyEnabled, LocalEnvManager } from "@microsoft/teamsfx-core";
+import {
+  ok,
+  FxError,
+  Json,
+  ProductName,
+  ProjectSettings,
+  Result,
+  v2,
+  VsCodeEnv,
+} from "@microsoft/teamsfx-api";
+import {
+  Correlator,
+  FolderName,
+  isConfigUnifyEnabled,
+  LocalEnvManager,
+} from "@microsoft/teamsfx-core";
 import { VSCodeDepsChecker } from "./depsChecker/vscodeChecker";
 import { vscodeLogger } from "./depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
@@ -20,11 +34,21 @@ import {
   TaskDefinition,
 } from "@microsoft/teamsfx-core";
 import { vscodeHelper } from "./depsChecker/vscodeHelper";
+import { localTelemetryReporter, sendDebugAllEvent } from "./localTelemetryReporter";
+import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 
 export class TeamsfxTaskProvider implements vscode.TaskProvider {
   public static readonly type: string = ProductName;
 
-  public async provideTasks(token?: vscode.CancellationToken | undefined): Promise<vscode.Task[]> {
+  public provideTasks(token?: vscode.CancellationToken | undefined): Promise<vscode.Task[]> {
+    return Correlator.runWithId(commonUtils.getLocalDebugSessionId(), () =>
+      this._provideTasks(token)
+    );
+  }
+
+  private async _provideTasks(
+    token?: vscode.CancellationToken | undefined
+  ): Promise<vscode.Task[]> {
     const tasks: vscode.Task[] = [];
     if (vscode.workspace.workspaceFolders) {
       const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
@@ -33,75 +57,91 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
         return tasks;
       }
 
-      const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
-      let projectSettings: ProjectSettings;
-      let localSettings: Json | undefined;
-      let localEnvInfo: v2.EnvInfoV2 | undefined;
-      let localEnv: { [key: string]: string } | undefined;
+      const result = await localTelemetryReporter.runWithTelemetry(
+        TelemetryEvent.DebugTaskProvider,
+        async (): Promise<Result<void, FxError>> => {
+          const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
+          let projectSettings: ProjectSettings;
+          let localSettings: Json | undefined;
+          let localEnvInfo: v2.EnvInfoV2 | undefined;
+          let localEnv: { [key: string]: string } | undefined;
 
-      try {
-        projectSettings = await localEnvManager.getProjectSettings(workspacePath);
-        localSettings = await localEnvManager.getLocalSettings(workspacePath, {
-          projectId: projectSettings.projectId,
-        });
-        if (isConfigUnifyEnabled()) {
-          localEnvInfo = await localEnvManager.getLocalEnvInfo(workspacePath, {
-            projectId: projectSettings.projectId,
-          });
+          try {
+            projectSettings = await localEnvManager.getProjectSettings(workspacePath);
+            localSettings = await localEnvManager.getLocalSettings(workspacePath, {
+              projectId: projectSettings.projectId,
+            });
+            if (isConfigUnifyEnabled()) {
+              localEnvInfo = await localEnvManager.getLocalEnvInfo(workspacePath, {
+                projectId: projectSettings.projectId,
+              });
+            }
+            localEnv = await localEnvManager.getLocalDebugEnvs(
+              workspacePath,
+              projectSettings,
+              localSettings,
+              localEnvInfo
+            );
+          } catch (error: any) {
+            showError(error);
+            return error;
+          }
+
+          const programmingLanguage = projectSettings?.programmingLanguage;
+
+          // Always provide the following tasks no matter whether it is defined in tasks.json
+          const frontendRoot = await commonUtils.getProjectRoot(workspacePath, FolderName.Frontend);
+          if (frontendRoot) {
+            tasks.push(await this.createFrontendStartTask(workspaceFolder, localEnv));
+          }
+
+          const backendRoot = await commonUtils.getProjectRoot(workspacePath, FolderName.Function);
+          if (backendRoot) {
+            tasks.push(
+              await this.createBackendStartTask(workspaceFolder, programmingLanguage, localEnv)
+            );
+            if (programmingLanguage === ProgrammingLanguage.typescript) {
+              tasks.push(await this.createBackendWatchTask(workspaceFolder));
+            }
+          }
+
+          const authRoot = commonUtils.getAuthServicePath(localEnv);
+          if (authRoot) {
+            tasks.push(await this.createAuthStartTask(workspaceFolder, authRoot, localEnv));
+          }
+
+          const botRoot = await commonUtils.getProjectRoot(workspacePath, FolderName.Bot);
+          if (botRoot) {
+            const skipNgrok = !vscodeHelper.isNgrokCheckerEnabled();
+            tasks.push(await this.createNgrokStartTask(workspaceFolder, botRoot, skipNgrok));
+            const silent: boolean = frontendRoot !== undefined;
+            tasks.push(
+              await this.createBotStartTask(workspaceFolder, programmingLanguage, localEnv, silent)
+            );
+          }
+
+          const vscodeEnv = detectVsCodeEnv();
+          const isCodeSpaceEnv =
+            vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode;
+          if (isCodeSpaceEnv) {
+            const localTeamsAppId = localSettings?.teamsApp?.teamsAppId as string;
+            const debugConfig = { appId: localTeamsAppId };
+            tasks.push(await this.createOpenTeamsWebClientTask(workspaceFolder, debugConfig));
+          }
+
+          return ok(undefined);
         }
-        localEnv = await localEnvManager.getLocalDebugEnvs(
-          workspacePath,
-          projectSettings,
-          localSettings,
-          localEnvInfo
-        );
-      } catch (error: any) {
-        showError(error);
-        return tasks;
-      }
+      );
 
-      const programmingLanguage = projectSettings?.programmingLanguage;
-
-      // Always provide the following tasks no matter whether it is defined in tasks.json
-      const frontendRoot = await commonUtils.getProjectRoot(workspacePath, FolderName.Frontend);
-      if (frontendRoot) {
-        tasks.push(await this.createFrontendStartTask(workspaceFolder, localEnv));
-      }
-
-      const backendRoot = await commonUtils.getProjectRoot(workspacePath, FolderName.Function);
-      if (backendRoot) {
-        tasks.push(
-          await this.createBackendStartTask(workspaceFolder, programmingLanguage, localEnv)
-        );
-        if (programmingLanguage === ProgrammingLanguage.typescript) {
-          tasks.push(await this.createBackendWatchTask(workspaceFolder));
+      if (result.isErr()) {
+        // In case user manually run the task
+        if (commonUtils.getLocalDebugSessionId() !== commonUtils.DebugNoSessionId) {
+          await sendDebugAllEvent(result.error);
+          commonUtils.endLocalDebugSession();
         }
-      }
-
-      const authRoot = commonUtils.getAuthServicePath(localEnv);
-      if (authRoot) {
-        tasks.push(await this.createAuthStartTask(workspaceFolder, authRoot, localEnv));
-      }
-
-      const botRoot = await commonUtils.getProjectRoot(workspacePath, FolderName.Bot);
-      if (botRoot) {
-        const skipNgrok = !vscodeHelper.isNgrokCheckerEnabled();
-        tasks.push(await this.createNgrokStartTask(workspaceFolder, botRoot, skipNgrok));
-        const silent: boolean = frontendRoot !== undefined;
-        tasks.push(
-          await this.createBotStartTask(workspaceFolder, programmingLanguage, localEnv, silent)
-        );
-      }
-
-      const vscodeEnv = detectVsCodeEnv();
-      const isCodeSpaceEnv =
-        vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode;
-      if (isCodeSpaceEnv) {
-        const localTeamsAppId = localSettings?.teamsApp?.teamsAppId as string;
-        const debugConfig = { appId: localTeamsAppId };
-        tasks.push(await this.createOpenTeamsWebClientTask(workspaceFolder, debugConfig));
       }
     }
+
     return tasks;
   }
 

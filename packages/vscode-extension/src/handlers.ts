@@ -150,6 +150,11 @@ import {
   openFolderInExplorer,
 } from "./utils/commonUtils";
 import { localize, parseLocale } from "./utils/localizeUtils";
+import {
+  localTelemetryReporter,
+  sendDebugAllEvent,
+  sendDebugAllStartEvent,
+} from "./debug/localTelemetryReporter";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -1217,8 +1222,10 @@ export async function validateLocalPrerequisitesHandler(): Promise<string | unde
     return "1";
   }
 
+  await sendDebugAllStartEvent();
   const result = await localPrerequisites.checkAndInstall();
   if (result.isErr()) {
+    await sendDebugAllEvent(result.error);
     commonUtils.endLocalDebugSession();
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
@@ -1326,60 +1333,57 @@ export async function getFuncPathHandler(): Promise<string> {
  */
 export async function preDebugCheckHandler(): Promise<string | undefined> {
   const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPreCheckStart, {
-    [TelemetryProperty.DebugAppId]: localAppId,
-  });
-
-  let result: Result<any, FxError> = ok(null);
-  result = await runCommand(Stage.debug);
-  if (result.isErr()) {
-    const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, result.error, {
-      [TelemetryProperty.DebugAppId]: localAppId,
-    });
-    terminateAllRunningTeamsfxTasks();
-    await debug.stopDebugging();
-    commonUtils.endLocalDebugSession();
-    // return non-zero value to let task "exit ${command:xxx}" to exit
-    return "1";
-  }
-
-  const portsInUse = await commonUtils.getPortsInUse();
-  if (portsInUse.length > 0) {
-    let message: string;
-    if (portsInUse.length > 1) {
-      message = util.format(
-        localize("teamstoolkit.localDebug.portsAlreadyInUse"),
-        portsInUse.join(", ")
+  const result = await localTelemetryReporter.runWithTelemetryProperties(
+    TelemetryEvent.DebugPreCheck,
+    { [TelemetryProperty.DebugAppId]: localAppId },
+    async (): Promise<Result<void, FxError>> => {
+      const result = await localTelemetryReporter.runWithTelemetry(
+        TelemetryEvent.DebugPreCheckCoreLocalDebug,
+        () => runCommand(Stage.debug)
       );
-    } else {
-      message = util.format(localize("teamstoolkit.localDebug.portAlreadyInUse"), portsInUse[0]);
+      if (result.isErr()) {
+        return err(result.error);
+      }
+
+      const portsInUse = await commonUtils.getPortsInUse();
+      if (portsInUse.length > 0) {
+        let message: string;
+        if (portsInUse.length > 1) {
+          message = util.format(
+            localize("teamstoolkit.localDebug.portsAlreadyInUse"),
+            portsInUse.join(", ")
+          );
+        } else {
+          message = util.format(
+            localize("teamstoolkit.localDebug.portAlreadyInUse"),
+            portsInUse[0]
+          );
+        }
+        const error = new UserError(ExtensionSource, ExtensionErrors.PortAlreadyInUse, message);
+        VS_CODE_UI.showMessage(
+          "error",
+          message,
+          false,
+          localize("teamstoolkit.localDebug.learnMore")
+        ).then(async (result) => {
+          if (result.isOk() && result.value === localize("teamstoolkit.localDebug.learnMore")) {
+            await VS_CODE_UI.openUrl(constants.portInUseHelpLink);
+          }
+        });
+        return err(error);
+      }
+      return ok(undefined);
     }
-    const error = new UserError(ExtensionSource, ExtensionErrors.PortAlreadyInUse, message);
-    const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, error, {
-      [TelemetryProperty.DebugAppId]: localAppId,
-    });
+  );
+
+  if (result.isErr()) {
     terminateAllRunningTeamsfxTasks();
     await debug.stopDebugging();
+    await sendDebugAllEvent(result.error);
     commonUtils.endLocalDebugSession();
-    VS_CODE_UI.showMessage(
-      "error",
-      message,
-      false,
-      localize("teamstoolkit.localDebug.learnMore")
-    ).then(async (result) => {
-      if (result.isOk() && result.value === localize("teamstoolkit.localDebug.learnMore")) {
-        await VS_CODE_UI.openUrl(constants.portInUseHelpLink);
-      }
-    });
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
   }
-
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPreCheck, {
-    [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-  });
 }
 
 export async function openDocumentHandler(args?: any[]): Promise<Result<boolean, FxError>> {
@@ -2485,7 +2489,7 @@ export async function openPreviewManifest(args: any[]): Promise<Result<any, FxEr
     return err(error);
   }
 }
-export async function openConfigStateFile(args: any[]) {
+export async function openConfigStateFile(args: any[]): Promise<any> {
   let telemetryStartName = TelemetryEvent.OpenManifestConfigStateStart;
   let telemetryName = TelemetryEvent.OpenManifestConfigState;
 
@@ -2608,7 +2612,7 @@ export async function openConfigStateFile(args: any[]) {
   });
 }
 
-export async function updatePreviewManifest(args: any[]) {
+export async function updatePreviewManifest(args: any[]): Promise<any> {
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.UpdatePreviewManifestStart,
     getTriggerFromProperty(args && args.length > 1 ? [args[1]] : undefined)

@@ -24,6 +24,7 @@ import {
   getResourceGroupInPortal,
 } from "@microsoft/teamsfx-core";
 import { allRunningDebugSessions } from "./teamsfxTaskHandler";
+import { performance } from "perf_hooks";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -369,29 +370,47 @@ export async function loadPackageJson(path: string): Promise<any> {
   }
 }
 
+export interface LocalDebugSession {
+  id: string;
+  startTime?: number;
+  properties: { [key: string]: string };
+}
+
+export const DebugNoSessionId = "no-session-id";
 // Helper functions for local debug correlation-id, only used for telemetry
 // Use a 2-element tuple to handle concurrent F5
-const localDebugCorrelationIds: [string, string] = ["no-session-id", "no-session-id"];
+const localDebugCorrelationIds: [LocalDebugSession, LocalDebugSession] = [
+  { id: DebugNoSessionId, properties: {} },
+  { id: DebugNoSessionId, properties: {} },
+];
 let current = 0;
 export function startLocalDebugSession(): string {
   current = (current + 1) % 2;
-  localDebugCorrelationIds[current] = uuid.v4();
+  localDebugCorrelationIds[current] = {
+    id: uuid.v4(),
+    startTime: performance.now(),
+    properties: {},
+  };
   return getLocalDebugSessionId();
 }
 
 export function endLocalDebugSession() {
-  localDebugCorrelationIds[current] = "no-session-id";
+  localDebugCorrelationIds[current] = { id: DebugNoSessionId, properties: {} };
   current = (current + 1) % 2;
 }
 
-export function getLocalDebugSessionId(): string {
+export function getLocalDebugSession(): LocalDebugSession {
   return localDebugCorrelationIds[current];
+}
+
+export function getLocalDebugSessionId(): string {
+  return localDebugCorrelationIds[current].id;
 }
 
 export function checkAndSkipDebugging(): boolean {
   // skip debugging if there is already a debug session
   if (allRunningDebugSessions.size > 0) {
-    VsCodeLogInstance.warning("SKip debugging because there is already a debug session.");
+    VsCodeLogInstance.warning("Skip debugging because there is already a debug session.");
     endLocalDebugSession();
     return true;
   }

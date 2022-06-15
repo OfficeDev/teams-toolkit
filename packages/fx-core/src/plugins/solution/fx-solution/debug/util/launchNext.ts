@@ -46,6 +46,16 @@ export function generateConfigurations(
 
   if (isOfficeAddinEnabled() && includeOfficeAddin) {
     // add an entry to the launchConfigurations
+    launchConfigurations.push({
+      name: "Office Add-in sample",
+      type: "pwa-msedge",
+      url: "https://www.bing.com",
+      presentation: {
+        hidden: false,
+        group: "office-addin",
+        order: 1,
+      },
+    });
   }
 
   return launchConfigurations;

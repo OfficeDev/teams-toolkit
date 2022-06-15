@@ -150,14 +150,14 @@ export class TeamsfxCore {
     });
     const setupLocalEnvironmentStep: Action = {
       type: "call",
-      name: "call debug-manager.setupLocalEnvironment",
-      targetAction: "debug-manager.setupLocalEnvironment",
+      name: "call debug.setupLocalEnvInfo",
+      targetAction: "debug.setupLocalEnvInfo",
       required: false,
     };
     const configLocalEnvironmentStep: Action = {
       type: "call",
-      name: "call debug-manager.configLocalEnvironmentStep",
-      targetAction: "debug-manager.configLocalEnvironmentStep",
+      name: "call debug.configLocalEnvInfo",
+      targetAction: "debug.configLocalEnvInfo",
       required: false,
     };
     const preProvisionStep: Action = new FxPreProvisionAction();

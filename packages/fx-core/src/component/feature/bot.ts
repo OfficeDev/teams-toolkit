@@ -182,6 +182,12 @@ export class TeamsBot {
           capability: { name: "Bot" },
         },
       },
+      {
+        name: "call:debug.generateLocalDebugSettings",
+        type: "call",
+        required: true,
+        targetAction: "debug.generateLocalDebugSettings",
+      },
       WriteProjectSettingsAction,
     ];
     const group: GroupAction = {

@@ -252,6 +252,8 @@ export enum SolutionTelemetryProperty {
   ErrorMessage = "error-message",
   HostType = "host-type",
   SubscriptionId = "subscription-id",
+  AddTabSso = "tab-sso",
+  AddBotSso = "bot-sso",
 }
 
 export enum SolutionTelemetrySuccess {

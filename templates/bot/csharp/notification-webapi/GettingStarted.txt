@@ -20,7 +20,7 @@ Notes: your M365 account need to have the sideloading permission to ensure Teams
 
 4. Once Microsoft Teams is loaded, select the "Add" button to install your app in Teams.
 
-5. Post HTTP request to http://localhost:5130/api/notification to trigger notification. You can use any API tool: curl, Postman, etc.
+5. Post HTTP request to http://localhost:5130/api/notification to trigger notification. You can use any API tool: curl (Windows Command Prompt), Postman, etc.
 
 Tips: if you made changes to Teams app manifest file (/templates/appPackage/manifest.template.json), please make sure you run the "Prepare Teams app dependencies" command before you try to locally run the Teams app again.
 

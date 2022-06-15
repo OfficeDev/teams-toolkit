@@ -152,30 +152,22 @@ jobs:
           head=$(git describe --first-parent --abbrev=0)
           history_cli=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/cli | grep "^feat")
           history_toolkit=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/vscode-extension | grep "^feat")
-          info=$(echo -e 'CLI feat commits: \n' "$history_cli" '\n\nExtension-toolkit feat commits:\n' "$history_toolkit")
-          echo "$info"
-          echo "LERNA_HISTORY<<EOF" >> $GITHUB_ENV
-          echo "$info" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          echo -e '\nCLI feat commits: \n' "$history_cli" '\n\nExtension-toolkit feat commits:\n' "$history_toolkit" > history.txt
       - name: Setup node
         uses: actions/setup-node@v2.1.2
         with:
           node-version: 14
       - name: lerna expect rc version
         run: |
-          npx lerna version --conventional-commits --conventional-prerelease --no-git-tag-version --allow-branch ${{ github.event.pull_request.head.ref }} --yes
-          echo "$(npx lerna changed -l)"
-          echo "LERNA_PKG_INFO<<EOF" >> $GITHUB_ENV
-          echo "$(npx lerna changed -l)" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-      - uses: mkungla/actions-set-text-output@v1
-        id: content
+          npx lerna version --conventional-commits --conventional-prerelease --preid=rc --no-git-tag-version --allow-branch ${{ github.event.pull_request.head.ref }} --yes
+          npx lerna changed -l | awk '{ print $1 "\t" $2 }'> info.txt
+      - uses: edwardgeorge/file-outputs-action@main
+        id: test
         with:
-          text: |
-            `${{ env.LERNA_PKG_INFO }}`
-            `${{ env.LERNA_HISTORY }}`
-      - name: update PR description
+          files: |
+            output1=info.txt
+            output2=history.txt
         uses: riskledger/update-pr-description@v2
         with:
-          body: ${{steps.content.outputs.value}}
+          body: ${{join(steps.test.outputs.*, '')}}
           token: ${{ secrets.GITHUB_TOKEN }}

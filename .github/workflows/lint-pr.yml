@@ -173,10 +173,9 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            core.setOutput("output1", `${{ env.LERNA_PKG_INFO }}`);
-            core.setOutput("outout2", `${{ env.LERNA_HISTORY }}`)
+            return `${{ env.LERNA_PKG_INFO }}\n\n${{ env.LERNA_HISTORY }}`
       - name: update PR description
         uses: riskledger/update-pr-description@v2
         with:
-          body: ${{join(steps.set-output.outputs.*, '\n')}}
+          body: ${{steps.set-output.outputs.result}}
           token: ${{ secrets.GITHUB_TOKEN }}

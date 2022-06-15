@@ -3,7 +3,6 @@
 
 import {
   Action,
-  Component,
   ContextV3,
   FxError,
   GroupAction,
@@ -51,11 +50,6 @@ export class TeamsfxCore {
         type: "call",
         required: true,
         targetAction: "tab-code.generate",
-      },
-      {
-        type: "call",
-        targetAction: "bicep.init",
-        required: true,
       },
       {
         name: `call:${inputs.hosting}.generateBicep`,

@@ -9,6 +9,7 @@ import {
   MaybePromise,
   ok,
   ProjectSettingsV3,
+  ProvisionContextV3,
   Result,
   SourceCodeProvider,
 } from "@microsoft/teamsfx-api";
@@ -30,6 +31,7 @@ import { Commands } from "../../plugins/resource/bot/resources/strings";
 import * as utils from "../../plugins/resource/bot/utils/common";
 import { TemplateZipFallbackError } from "../../plugins/resource/bot/v3/error";
 import { Constants, FrontendPathInfo } from "../../plugins/resource/frontend/constants";
+import { FrontendDeployment } from "../../plugins/resource/frontend/ops/deploy";
 import {
   UnknownScaffoldError,
   UnzipTemplateError,
@@ -121,40 +123,19 @@ export class TabCodeProvider implements SourceCodeProvider {
       name: "tab-code.build",
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
-        if (!teamsBot) return ok([]);
-        const packDir = teamsBot?.folder;
-        if (!packDir) return ok([]);
-        return ok([`build project: ${packDir}`]);
+        const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
+        if (!teamsTab) return ok([]);
+        const tabDir = teamsTab?.folder;
+        if (!tabDir) return ok([]);
+        return ok([`build project: ${tabDir}`]);
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
-        if (!teamsBot) return ok([]);
-        const packDir = path.join(inputs.projectPath, teamsBot.folder!);
-        const language = context.projectSetting.programmingLanguage || "javascript";
-        if (language === ProgrammingLanguage.TypeScript) {
-          //Typescript needs tsc build before deploy because of windows app server. other languages don"t need it.
-          try {
-            await utils.execute("npm install", packDir);
-            await utils.execute("npm run build", packDir);
-          } catch (e) {
-            throw new CommandExecutionError(
-              `${Commands.NPM_INSTALL}, ${Commands.NPM_BUILD}`,
-              packDir,
-              e
-            );
-          }
-        } else if (language === ProgrammingLanguage.JavaScript) {
-          try {
-            // fail to npm install @microsoft/teamsfx on azure web app, so pack it locally.
-            await utils.execute("npm install", packDir);
-          } catch (e) {
-            throw new CommandExecutionError(`${Commands.NPM_INSTALL}`, packDir, e);
-          }
-        } else if (language === ProgrammingLanguage.Csharp) {
-          //TODO for dotnet
-        }
-        return ok([`build project: ${packDir}`]);
+        const ctx = context as ProvisionContextV3;
+        const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
+        if (!teamsTab) return ok([]);
+        const tabDir = path.join(inputs.projectPath, teamsTab.folder!);
+        await FrontendDeployment.doFrontendBuildV3(tabDir, ctx.envInfo.envName);
+        return ok([`build project: ${tabDir}`]);
       },
     };
     return ok(action);

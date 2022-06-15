@@ -167,7 +167,7 @@ jobs:
           files: |
             output1=info.txt
             output2=history.txt
-        uses: riskledger/update-pr-description@v2
+      - uses: riskledger/update-pr-description@v2
         with:
           body: ${{join(steps.test.outputs.*, '')}}
           token: ${{ secrets.GITHUB_TOKEN }}

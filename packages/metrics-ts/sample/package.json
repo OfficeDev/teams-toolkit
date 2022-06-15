@@ -1,0 +1,16 @@
+{
+  "name": "transformer-sample",
+  "version": "0.0.1",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "license": "MIT",
+  "scripts": {
+    "build": "npx ttsc -p ."
+  },
+  "devDependencies": {
+    "@microsoft/metrics-ts": "file:../",
+    "@types/node": "^17.0.43",
+    "ts-node": "^10.8.1",
+    "ttypescript": "^1.5.12"
+  }
+}

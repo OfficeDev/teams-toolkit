@@ -1,0 +1,33 @@
+{
+  "name": "eslint-plugin-metrics",
+  "version": "0.0.0",
+  "description": "auto add metrics for each method",
+  "private": "true",
+  "keywords": [
+    "eslint",
+    "eslintplugin",
+    "eslint-plugin"
+  ],
+  "author": "Long",
+  "main": "lib/index.js",
+  "scripts": {
+    "lint": "eslint .",
+    "test": "mocha tests --recursive"
+  },
+  "dependencies": {
+    "requireindex": "^1.2.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.19.0",
+    "eslint-plugin-eslint-plugin": "^4.0.1",
+    "eslint-plugin-node": "^11.1.0",
+    "mocha": "^9.1.3"
+  },
+  "engines": {
+    "node": "12.x || 14.x || >= 16"
+  },
+  "peerDependencies": {
+    "eslint": ">=6"
+  },
+  "license": "MIT"
+}

@@ -353,6 +353,8 @@ packages/vscode-extension/out/
 packages/failpoint-ts/build/
 packages/server/lib/
 packages/manifest/build/
+packages/metrics-ts/build/
+packages/metrics-ts/sample/build/
 ## tmp files
 .nyc_output
 coverage
@@ -383,4 +385,7 @@ mochawesome-report
 
 # verdaccio
 **/verdaccio/storage/
+
+# metrics
+.metrics
 

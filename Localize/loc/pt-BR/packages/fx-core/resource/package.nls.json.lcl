@@ -2193,10 +2193,13 @@
       </Item>
       <Item ItemId=";core.localDebug.tenantConfirmNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[You already run local debug for the Teams app in another tenant '%s'. You can sign out %s and sign in with the matched M365 account to re-use the previous local debug resource. If you really want to switch tenant for local debug, you can delete the %s file and re-run local debug.]]></Val>
+          <Val><![CDATA[You already run local debug for the Teams app in another tenant '%s'. You can sign out %s and sign in with the matched M365 account to re-use the previous local debug resource. If you really want to switch tenant for local debug, you can delete the local file(s) (%s) and re-run local debug.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Você já executa a depuração local para o aplicativo Teams em outro locatário '%s'. Você pode sair %s e entrar com a conta M365 correspondente para reutilizar o recurso de depuração local anterior. Se você realmente deseja alternar o locatário para depuração local, você pode excluir o arquivo %s e executar novamente a depuração local.]]></Val>
+            <Val><![CDATA[Você já executa a depuração local para o aplicativo Teams em outro locatário '%s'. Você pode sair %s e entrar com a conta M365 correspondente para reutilizar o recurso de depuração local anterior. Se você realmente deseja alternar o locatário para depuração local, você pode excluir o(s) arquivo(s) local(is) (%s) e executar novamente a depuração local.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[You already run local debug for the Teams app in another tenant '%s'. You can sign out %s and sign in with the matched M365 account to re-use the previous local debug resource. If you really want to switch tenant for local debug, you can delete the %s file and re-run local debug.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2601,10 +2604,13 @@
       </Item>
       <Item ItemId=";depChecker.linuxDepsNotFound" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Cannot find @SupportedPackages.]A;]A;Teams Toolkit requires these dependencies. ]A;]A;(If you just installed @SupportedPackages, restart Visual Studio Code for the change to take effect.)]]></Val>
+          <Val><![CDATA[Cannot find @SupportedPackages. Install @SupportedPackages manually and restart Visual Studio Code.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Não é possível localizar @SupportedPackages.]A;]A;O Kit de ferramentas do Teams requer essas dependências. ]A;]A;(Se você acabou de instalar @SupportedPackages, reinicie o Visual Studio Code para que a alteração entre em vigor.)]]></Val>
+            <Val><![CDATA[Não é possível localizar @SupportedPackages. Instale @SupportedPackages manualmente e reinicie o Visual Studio Code.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Cannot find @SupportedPackages.]A;]A;Teams Toolkit requires these dependencies. ]A;]A;(If you just installed @SupportedPackages, restart Visual Studio Code for the change to take effect.)]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4008,10 +4014,13 @@
       </Item>
       <Item ItemId=";error.appstudio.updateManifestFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Update manifest failed]]></Val>
+          <Val><![CDATA[Update manifest failed. ]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Falha na atualização do manifesto]]></Val>
+            <Val><![CDATA[Falha na atualização do manifesto. ]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Update manifest failed]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

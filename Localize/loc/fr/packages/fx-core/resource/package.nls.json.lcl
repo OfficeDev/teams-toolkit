@@ -2193,10 +2193,13 @@
       </Item>
       <Item ItemId=";core.localDebug.tenantConfirmNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[You already run local debug for the Teams app in another tenant '%s'. You can sign out %s and sign in with the matched M365 account to re-use the previous local debug resource. If you really want to switch tenant for local debug, you can delete the %s file and re-run local debug.]]></Val>
+          <Val><![CDATA[You already run local debug for the Teams app in another tenant '%s'. You can sign out %s and sign in with the matched M365 account to re-use the previous local debug resource. If you really want to switch tenant for local debug, you can delete the local file(s) (%s) and re-run local debug.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Vous exécutez déjà le débogage local pour l’application Teams dans un autre locataire '%s'. Vous pouvez vous déconnecter %s et vous connecter avec le compte M365 correspondant pour réutiliser la ressource de débogage locale précédente. Si vous voulez vraiment changer de locataire pour le débogage local, vous pouvez supprimer le fichier %s et relancer le débogage local.]]></Val>
+            <Val><![CDATA[Vous exécutez déjà le débogage local pour l’application Teams dans un autre locataire '%s'. Vous pouvez vous déconnecter %s et vous connecter avec le compte M365 correspondant pour réutiliser la ressource de débogage locale précédente. Si vous voulez vraiment changer de locataire pour le débogage local, vous pouvez supprimer les fichiers locaux (%s) et relancer le débogage local.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[You already run local debug for the Teams app in another tenant '%s'. You can sign out %s and sign in with the matched M365 account to re-use the previous local debug resource. If you really want to switch tenant for local debug, you can delete the %s file and re-run local debug.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2601,10 +2604,13 @@
       </Item>
       <Item ItemId=";depChecker.linuxDepsNotFound" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Cannot find @SupportedPackages.]A;]A;Teams Toolkit requires these dependencies. ]A;]A;(If you just installed @SupportedPackages, restart Visual Studio Code for the change to take effect.)]]></Val>
+          <Val><![CDATA[Cannot find @SupportedPackages. Install @SupportedPackages manually and restart Visual Studio Code.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Impossible de trouver @SupportedPackages.]A;]A;Teams Toolkit nécessite ces dépendances. ]A;]A;(Si vous venez d’installer @SupportedPackages, redémarrez Visual Studio Code pour que la modification prenne effet.)]]></Val>
+            <Val><![CDATA[Impossible de trouver @SupportedPackages. Installez @SupportedPackages manuellement et redémarrez Visual Studio Code.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Cannot find @SupportedPackages.]A;]A;Teams Toolkit requires these dependencies. ]A;]A;(If you just installed @SupportedPackages, restart Visual Studio Code for the change to take effect.)]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4008,10 +4014,13 @@
       </Item>
       <Item ItemId=";error.appstudio.updateManifestFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Update manifest failed]]></Val>
+          <Val><![CDATA[Update manifest failed. ]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Échec de la mise à jour du manifeste]]></Val>
+            <Val><![CDATA[Échec de la mise à jour du manifeste. ]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Update manifest failed]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

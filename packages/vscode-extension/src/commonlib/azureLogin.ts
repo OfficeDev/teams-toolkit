@@ -66,6 +66,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
 
   private constructor() {
     super();
+    this.addStatusChangeEvent();
   }
 
   /**
@@ -78,6 +79,18 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
 
     return AzureAccountManager.instance;
+  }
+
+  /**
+   * Update TeamsFx project subscription information.
+   */
+  public async updateSubscriptionInfo(): Promise<void> {
+    if (AzureAccountManager.currentStatus === "LoggedIn") {
+      const subscriptioninfo = await this.readSubscription();
+      if (subscriptioninfo) {
+        this.setSubscription(subscriptioninfo.subscriptionId);
+      }
+    }
   }
 
   /**
@@ -399,12 +412,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     const azureAccount: AzureAccount =
       vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
     AzureAccountManager.currentStatus = azureAccount.status;
-    if (AzureAccountManager.currentStatus === "LoggedIn") {
-      const subscriptioninfo = await this.readSubscription();
-      if (subscriptioninfo) {
-        this.setSubscription(subscriptioninfo.subscriptionId);
-      }
-    }
     azureAccount.onStatusChanged(async (event) => {
       if (this.isLegacyVersion()) {
         if (AzureAccountManager.currentStatus === "Initializing") {

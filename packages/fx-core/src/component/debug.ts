@@ -17,7 +17,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { hasSPFx } from "../common";
 import { BotHostTypes } from "../common/local/constants";
 import { LocalCertificateManager } from "../common/local/localCertificateManager";
 import {

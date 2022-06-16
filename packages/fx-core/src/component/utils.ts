@@ -406,6 +406,7 @@ export function createContextV3(projectSettings?: ProjectSettingsV3): ContextV3 
     permissionRequestProvider: TOOLS.permissionRequest,
     projectSetting: projectSettings,
     manifestProvider: new DefaultManifestProvider(),
+    tokenProvider: TOOLS.tokenProvider,
   };
   return context;
 }

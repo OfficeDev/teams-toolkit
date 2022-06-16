@@ -374,14 +374,15 @@ export interface LocalDebugSession {
   id: string;
   startTime?: number;
   properties: { [key: string]: string };
+  failedServices: { name: string; exitCode: number | undefined }[];
 }
 
 export const DebugNoSessionId = "no-session-id";
 // Helper functions for local debug correlation-id, only used for telemetry
 // Use a 2-element tuple to handle concurrent F5
 const localDebugCorrelationIds: [LocalDebugSession, LocalDebugSession] = [
-  { id: DebugNoSessionId, properties: {} },
-  { id: DebugNoSessionId, properties: {} },
+  { id: DebugNoSessionId, properties: {}, failedServices: [] },
+  { id: DebugNoSessionId, properties: {}, failedServices: [] },
 ];
 let current = 0;
 export function startLocalDebugSession(): string {
@@ -390,12 +391,13 @@ export function startLocalDebugSession(): string {
     id: uuid.v4(),
     startTime: performance.now(),
     properties: {},
+    failedServices: [],
   };
   return getLocalDebugSessionId();
 }
 
 export function endLocalDebugSession() {
-  localDebugCorrelationIds[current] = { id: DebugNoSessionId, properties: {} };
+  localDebugCorrelationIds[current] = { id: DebugNoSessionId, properties: {}, failedServices: [] };
   current = (current + 1) % 2;
 }
 

@@ -41,7 +41,10 @@ export async function sendDebugAllStartEvent(): Promise<void> {
   localTelemetryReporter.sendTelemetryEvent(TelemetryEvent.DebugAllStart, properties);
 }
 
-export async function sendDebugAllEvent(error?: FxError): Promise<void> {
+export async function sendDebugAllEvent(
+  error?: FxError,
+  additionalProperties?: { [key: string]: string }
+): Promise<void> {
   const session = getLocalDebugSession();
   const now = performance.now();
 
@@ -50,13 +53,13 @@ export async function sendDebugAllEvent(error?: FxError): Promise<void> {
     duration = (now - session.startTime) / 1000;
   }
 
-  const properties = Object.assign(
-    {
-      [TelemetryProperty.CorrelationId]: session.id,
-      [TelemetryProperty.Success]: error === undefined ? TelemetrySuccess.Yes : TelemetrySuccess.No,
-    },
-    session.properties
-  );
+  const properties = {
+    [TelemetryProperty.CorrelationId]: session.id,
+    [TelemetryProperty.Success]: error === undefined ? TelemetrySuccess.Yes : TelemetrySuccess.No,
+    ...session.properties,
+    ...additionalProperties,
+  };
+
   if (error === undefined) {
     localTelemetryReporter.sendTelemetryEvent(TelemetryEvent.DebugAll, properties, {
       [LocalTelemetryReporter.PropertyDuration]: duration,

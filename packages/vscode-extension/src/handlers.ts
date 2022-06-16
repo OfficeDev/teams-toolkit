@@ -2957,7 +2957,6 @@ export async function deployAadAppManifest(args: any[]): Promise<Result<null, Fx
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DeployAadManifestStart);
   const inputs = getSystemInputs();
   inputs[AadManifestDeployConstants.INCLUDE_AAD_MANIFEST] = "yes";
-  inputs[AadManifestDeployConstants.DEPLOY_AAD] = "yes";
 
   if (args && args.length > 1 && args[1] === "CodeLens") {
     const segments = args[0].fsPath.split(".");
@@ -3144,6 +3143,6 @@ export async function selectSubscriptionCallback(args?: any[]): Promise<Result<n
     undefined
   );
   if (askSubRes.isErr()) return err(askSubRes.error);
-  await accountTreeViewProviderInstance.azureAccountNode.setSubscription(askSubRes.value);
+  await AzureAccountManager.setSubscription(askSubRes.value.subscriptionId);
   return ok(null);
 }

@@ -2,8 +2,8 @@ import React from "react";
 
 export function AddSSO(props) {
   const { ssoDocUrl, fluentDocUrl, readmeUrl } = {
-    ssoDocUrl: "https://docs.microsoft.com/en-us/microsoftteams/platform/tabs/how-to/authentication/auth-aad-sso?tabs=dotnet",
-    fluentDocUrl: "https://developer.microsoft.com/en-us/fluentui#/get-started/web",
+    ssoDocUrl: "https://aka.ms/teamsfx-sso-doc",
+    fluentDocUrl: "https://aka.ms/teamsfax-fluent-doc",
     readmeUrl: "https://aka.ms/teamsfx-add-sso", 
     ...props,
   }

@@ -112,9 +112,9 @@ export abstract class YargsCommand {
     {
       const result = await activate();
       if (result.isOk()) {
-        const configResult = await result.value.getProjectConfig(
-          getSystemInputs(args.folder as string)
-        );
+        const inputs = getSystemInputs(args.folder as string);
+        inputs.ignoreEnvInfo = true;
+        const configResult = await result.value.getProjectConfig(inputs);
         if (configResult.isOk()) {
           CliTelemetry.setIsFromSample(configResult.value?.settings?.isFromSample);
         }

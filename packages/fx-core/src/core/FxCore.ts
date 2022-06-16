@@ -821,19 +821,12 @@ export class FxCore implements v3.ICore {
   }
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectMigratorMW,
-    ProjectConsolidateMW,
-    AadManifestMigrationMW,
-    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
-    LocalSettingsLoaderMW,
-    SolutionLoaderMW_V3,
     QuestionModelMW_V3,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW(),
+    EnvInfoWriterMW_V3(),
   ])
   async executeUserTaskV3(
     func: Func,
@@ -846,7 +839,7 @@ export class FxCore implements v3.ICore {
         const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
         await runAction("sql.add", context, inputs as InputsWithProjectPath);
         ctx!.projectSettings = context.projectSetting;
-      } else if (feature === BotOptionItem.id) {
+      } else if (BotFeatureIds.includes(feature)) {
         const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
         await runAction("teams-bot.add", context, inputs as InputsWithProjectPath);
         ctx!.projectSettings = context.projectSetting;

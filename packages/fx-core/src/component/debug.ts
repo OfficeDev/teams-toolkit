@@ -28,12 +28,13 @@ import {
 import { ProjectSettingsHelper } from "../common/local/projectSettingsHelper";
 import {
   hasAAD,
+  hasAzureTab,
   hasBot,
   hasFunction,
   hasFunctionBot,
   hasSimpleAuth,
   hasTab,
-  isSPFx,
+  hasSPFxTab,
 } from "../common/projectSettingsHelperV3";
 import { getAllowedAppIds } from "../common/tools";
 import {
@@ -141,7 +142,7 @@ export async function setupLocalEnvironment(
   envInfo: v3.EnvInfoV3
 ): Promise<Result<undefined, FxError>> {
   const vscEnv = inputs.vscodeEnv;
-  const includeTab = hasTab(ctx.projectSetting);
+  const includeTab = hasAzureTab(ctx.projectSetting);
   const includeBackend = hasFunction(ctx.projectSetting);
   const includeBot = hasBot(ctx.projectSetting);
   const includeAAD = hasAAD(ctx.projectSetting);
@@ -282,7 +283,7 @@ export async function configLocalEnvironment(
   inputs: InputsWithProjectPath,
   envInfo: v3.EnvInfoV3
 ): Promise<Result<undefined, FxError>> {
-  const includeTab = hasTab(ctx.projectSetting);
+  const includeTab = hasAzureTab(ctx.projectSetting);
   const includeBackend = hasFunction(ctx.projectSetting);
   const includeBot = hasBot(ctx.projectSetting);
   const includeAAD = hasAAD(ctx.projectSetting);
@@ -432,7 +433,7 @@ export async function generateLocalDebugSettings(
   context: ContextV3,
   inputs: InputsWithProjectPath
 ): Promise<Result<undefined, FxError>> {
-  const isSpfx = isSPFx(context.projectSetting);
+  const isSpfx = hasSPFxTab(context.projectSetting);
   const includeFrontend = hasTab(context.projectSetting);
   const includeBackend = hasFunction(context.projectSetting);
   const includeBot = hasBot(context.projectSetting);

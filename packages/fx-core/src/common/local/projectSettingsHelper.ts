@@ -17,24 +17,25 @@ import { BotCapabilities, BotHostTypeName, BotHostTypes } from "./constants";
 import { isV3 } from "../../core";
 import {
   hasAAD,
+  hasAzureTab,
   hasBot,
   hasFunction,
   hasFunctionBot,
   hasSimpleAuth,
   hasTab,
-  isSPFx,
+  hasSPFxTab,
 } from "../projectSettingsHelperV3";
 
 export class ProjectSettingsHelper {
   // keep the same logic as plugin.activate()
   public static isSpfx = (projectSettings: ProjectSettings | undefined): boolean =>
     isV3()
-      ? isSPFx(projectSettings as ProjectSettingsV3)
+      ? hasSPFxTab(projectSettings as ProjectSettingsV3)
       : (projectSettings?.solutionSettings as AzureSolutionSettings)?.hostType ===
         HostTypeOptionSPFx.id;
 
   public static includeFrontend(projectSettings: ProjectSettings | undefined): boolean {
-    if (isV3()) return hasTab(projectSettings as ProjectSettingsV3);
+    if (isV3()) return hasAzureTab(projectSettings as ProjectSettingsV3);
     const solutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
     const cap = solutionSettings?.capabilities || [];
     return solutionSettings?.hostType === HostTypeOptionAzure.id && cap.includes(TabOptionItem.id);

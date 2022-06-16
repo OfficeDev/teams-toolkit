@@ -23,7 +23,7 @@ import * as clientFactory from "../../src/plugins/resource/bot/clientFactory";
 import { AADRegistration } from "../../src/plugins/resource/bot/aadRegistration";
 import { TestHelper } from "../plugins/resource/frontend/helper";
 import arm from "../../src/plugins/solution/fx-solution/arm";
-import { newEnvInfoV3 } from "../../src/core/environment";
+import { FrontendDeployment } from "../../src/plugins/resource/frontend/ops/deploy";
 describe("Workflow test for v3", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -148,5 +148,43 @@ describe("Workflow test for v3", () => {
       console.log(provisionRes.error);
     }
     assert.isTrue(provisionRes.isOk());
+  });
+
+  it("azure-storage.deploy", async () => {
+    sandbox.stub(FrontendDeployment, "doFrontendDeploymentV3").resolves();
+    sandbox
+      .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
+      .resolves(TestHelper.fakeCredential);
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+      folder: "tabs",
+    };
+    context.envInfo = newEnvInfoV3();
+    context.tokenProvider = tools.tokenProvider;
+    context.envInfo.state = {
+      solution: {
+        provisionSucceeded: true,
+        needCreateResourceGroup: false,
+        resourceGroupName: "mockRG",
+        location: "eastasia",
+        resourceNameSuffix: "3bf854123",
+        teamsAppTenantId: "mockTid",
+        subscriptionId: "mockSid",
+        subscriptionName: "mockSname",
+        tenantId: "mockAzureTid",
+      },
+      "azure-storage": {
+        location: "centreus",
+        resourceId:
+          "/subscriptions/mockSid/resourceGroups/jay-texas/providers/Microsoft.Storage/storageAccounts/testaccount",
+        endpoint: "https://testaccount.azurewebsites.net",
+      },
+    };
+    const res = await runAction("azure-storage.deploy", context, inputs);
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    assert.isTrue(res.isOk());
   });
 });

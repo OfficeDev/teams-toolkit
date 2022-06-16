@@ -5,9 +5,6 @@ import {
   Action,
   ConfigFolderName,
   ContextV3,
-  DynamicPlatforms,
-  err,
-  FunctionAction,
   FxError,
   GroupAction,
   InputsWithProjectPath,
@@ -18,7 +15,6 @@ import {
   QTreeNode,
   Result,
   TextInputQuestion,
-  UserError,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import path from "path";

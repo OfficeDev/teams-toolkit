@@ -23,7 +23,7 @@ export class AzureAppServiceHosting extends AzureHosting {
 
   async deploy(resourceId: string, tokenProvider: TokenProvider, buffer: Buffer): Promise<Void> {
     await super.deploy(resourceId, tokenProvider, buffer);
-    await azureWebSiteDeploy(resourceId, tokenProvider, buffer);
+    await azureWebSiteDeploy(resourceId, tokenProvider, buffer, this.logger);
     return Void;
   }
 }

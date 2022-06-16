@@ -40,7 +40,7 @@ import {
   SUBSCRIPTION_ID,
 } from "./constants";
 import { environmentManager } from "../../../core/environment";
-import { compileHandlebarsTemplateString } from "../../../common";
+import { compileHandlebarsTemplateString, isVSProject } from "../../../common";
 import { ArmTemplateResult, NamedArmResourcePlugin } from "../../../common/armInterface";
 import { ConstantString, HelpLinks, PluginDisplayName } from "../../../common/constants";
 import { executeCommand } from "../../../common/cpUtils";
@@ -57,13 +57,13 @@ import { ProgressHelper } from "./utils/progressHelper";
 import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
 import { NamedArmResourcePluginAdaptor } from "./v2/adaptor";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
+import { getProjectTemplatesFolderPath } from "../../../common/utils";
 
 const bicepOrchestrationFileName = "main.bicep";
 const bicepOrchestrationProvisionMainFileName = "mainProvision.bicep";
 const bicepOrchestrationConfigMainFileName = "mainConfig.bicep";
 const bicepOrchestrationProvisionFileName = "provision.bicep";
 const bicepOrchestrationConfigFileName = "config.bicep";
-const templatesFolder = "./templates/azure";
 const configsFolder = `.${ConfigFolderName}/configs`;
 const parameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
 const pollWaitSeconds = 10;
@@ -319,7 +319,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
   const bicepCommand = await ensureBicep(ctx, ctx.answers);
 
   // Compile bicep file to json
-  const templateDir = path.join(ctx.root, templatesFolder);
+  const templateDir = path.join(await getProjectTemplatesFolderPath(ctx.root), "azure");
   const bicepOrchestrationFilePath = path.join(templateDir, bicepOrchestrationFileName);
   const armTemplateJson = await compileBicepToJson(
     bicepCommand,
@@ -444,7 +444,7 @@ export async function doDeployArmTemplatesV3(
   inputs: v2.InputsWithProjectPath,
   envInfo: v3.EnvInfoV3,
   azureAccountProvider: AzureAccountProvider
-): Promise<Result<void, FxError>> {
+): Promise<Result<undefined, FxError>> {
   const progressHandler = await ProgressHelper.startDeployArmTemplatesProgressHandler(
     ctx.userInteraction
   );
@@ -470,7 +470,7 @@ export async function doDeployArmTemplatesV3(
   const bicepCommand = await ensureBicep(ctx, inputs);
 
   // Compile bicep file to json
-  const templateDir = path.join(inputs.projectPath, templatesFolder);
+  const templateDir = path.join(await getProjectTemplatesFolderPath(inputs.projectPath), "azure");
   const bicepOrchestrationFilePath = path.join(templateDir, bicepOrchestrationFileName);
   const armTemplateJson = await compileBicepToJson(
     bicepCommand,
@@ -685,11 +685,11 @@ export async function deployArmTemplatesV3(
   inputs: v2.InputsWithProjectPath,
   envInfo: v3.EnvInfoV3,
   azureAccountProvider: AzureAccountProvider
-): Promise<Result<void, FxError>> {
+): Promise<Result<undefined, FxError>> {
   ctx.logProvider?.info(
     getLocalizedString("core.deployArmTemplates.StartNotice", PluginDisplayName.Solution)
   );
-  let result: Result<void, FxError>;
+  let result: Result<undefined, FxError>;
   ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.ArmDeploymentStart, {
     [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
   });
@@ -881,7 +881,7 @@ async function doGenerateArmTemplate(
 
   // In existing app scenario, arm template will not be added when adding sso
   // Thus here if main.bicep does not exist, will try to scaffold all
-  const templateFolderPath = path.join(ctx.root, templatesFolder);
+  const templateFolderPath = path.join(await getProjectTemplatesFolderPath(ctx.root), "azure");
   if (!(await fs.pathExists(path.join(templateFolderPath, bicepOrchestrationFileName)))) {
     selectedPlugins = plugins;
   }
@@ -938,7 +938,8 @@ async function doGenerateArmTemplate(
     bicepOrchestrationTemplate,
     moduleProvisionFiles,
     moduleConfigFiles,
-    ctx.root
+    ctx.root,
+    isVSProject(ctx.projectSettings)
   );
 
   return ok(undefined); // Nothing to return when success
@@ -1039,7 +1040,8 @@ async function doGenerateBicep(
     bicepOrchestrationTemplate,
     moduleProvisionFiles,
     moduleConfigFiles,
-    inputs.projectPath
+    inputs.projectPath,
+    isVSProject(ctx.projectSetting)
   );
   if (persistRes.isErr()) {
     return err(persistRes.error);
@@ -1051,7 +1053,8 @@ async function persistBicepTemplates(
   bicepOrchestrationTemplate: BicepOrchestrationContent,
   moduleProvisionFiles: Map<string, string>,
   moduleConfigFiles: Map<string, string>,
-  projectPath: string
+  projectPath: string,
+  isVs: boolean
 ): Promise<Result<undefined, FxError>> {
   // Write bicep content to project folder
   if (bicepOrchestrationTemplate.needsGenerateTemplate()) {
@@ -1123,7 +1126,7 @@ async function persistBicepTemplates(
       await fs.writeFile(parameterEnvFilePath, parameterFileContent.replace(/\r?\n/g, os.EOL));
     }
 
-    const templateFolderPath = path.join(projectPath, templatesFolder);
+    const templateFolderPath = path.join(await getProjectTemplatesFolderPath(projectPath), "azure");
     await fs.ensureDir(templateFolderPath);
     const templateSolitionPath = path.join(getTemplatesFolder(), "plugins", "solution");
     // Generate provision.bicep and module provision bicep files
@@ -1503,7 +1506,7 @@ function expandParameterPlaceholdersV3(
   return compileHandlebarsTemplateString(parameterContent, availableVariables);
 }
 
-function generateResourceBaseName(appName: string, envName: string): string {
+export function generateResourceBaseName(appName: string, envName: string): string {
   const maxAppNameLength = 10;
   const maxEnvNameLength = 4;
   const normalizedAppName = appName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
@@ -1678,7 +1681,7 @@ class Arm {
     inputs: v2.InputsWithProjectPath,
     envInfo: v3.EnvInfoV3,
     azureAccountProvider: AzureAccountProvider
-  ): Promise<Result<void, FxError>> {
+  ): Promise<Result<undefined, FxError>> {
     return deployArmTemplatesV3(ctx, inputs, envInfo, azureAccountProvider);
   }
 }

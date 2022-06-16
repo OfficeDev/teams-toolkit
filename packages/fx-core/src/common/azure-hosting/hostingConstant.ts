@@ -4,7 +4,7 @@
 import { getDefaultString, getLocalizedString } from "../localizeUtils";
 
 export class AppServiceBicepConstant {
-  static readonly resourceId: string = "provisionOutputs.botOutput.value.botWebAppResourceId";
+  static readonly resourceId: string = "provisionOutputs.botOutput.value.resourceId";
   static readonly hostName: string = "provisionOutputs.botOutput.value.validDomain";
   static readonly webAppEndpoint: string = "provisionOutputs.botOutputs.value.botWebAppEndpoint";
 }

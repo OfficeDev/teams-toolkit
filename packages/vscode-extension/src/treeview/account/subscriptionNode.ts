@@ -7,8 +7,7 @@ import * as vscode from "vscode";
 import { SubscriptionInfo } from "@microsoft/teamsfx-api";
 import { isValidProject } from "@microsoft/teamsfx-core";
 
-import AzureAccountManager from "../../commonlib/azureLogin";
-import { getWorkspacePath } from "../../handlers";
+import { workspaceUri } from "../../globalVariables";
 import { localize } from "../../utils/localizeUtils";
 import { DynamicNode } from "../dynamicNode";
 import { infoIcon, keyIcon, warningIcon } from "./common";
@@ -35,7 +34,6 @@ export class SubscriptionNode extends DynamicNode {
 
   public async setSubscription(subscription: SubscriptionInfo) {
     this.subscription = subscription;
-    await AzureAccountManager.setSubscription(subscription.subscriptionId);
     this.eventEmitter.fire(this);
   }
 
@@ -52,7 +50,7 @@ export class SubscriptionNode extends DynamicNode {
   }
 
   public setEmptySubscription() {
-    const validProject = isValidProject(getWorkspacePath());
+    const validProject = isValidProject(workspaceUri?.fsPath);
     this.contextValue = validProject ? "emptySubscription" : "invalidFxProject";
     this.label = localize("teamstoolkit.accountTree.noSubscriptions");
     this.tooltip = localize("teamstoolkit.accountTree.noSubscriptionsTooltip");

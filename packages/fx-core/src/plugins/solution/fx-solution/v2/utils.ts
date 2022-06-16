@@ -11,13 +11,18 @@ import {
   Json,
   SolutionContext,
   Plugin,
-  AppStudioTokenProvider,
   ProjectSettings,
   UserError,
   SystemError,
+  M365TokenProvider,
 } from "@microsoft/teamsfx-api";
+import fs from "fs-extra";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
-import { isAadManifestEnabled, isConfigUnifyEnabled } from "../../../../common/tools";
+import {
+  AppStudioScopes,
+  isAadManifestEnabled,
+  isConfigUnifyEnabled,
+} from "../../../../common/tools";
 import {
   GLOBAL_CONFIG,
   SolutionError,
@@ -199,25 +204,42 @@ export function parseUserName(appStudioToken?: Record<string, unknown>): Result<
 
 export async function checkWhetherLocalDebugM365TenantMatches(
   localDebugTenantId?: string,
-  appStudioTokenProvider?: AppStudioTokenProvider
+  m365TokenProvider?: M365TokenProvider,
+  projectPath?: string
 ): Promise<Result<Void, FxError>> {
   if (localDebugTenantId) {
-    const maybeM365TenantId = parseTeamsAppTenantId(await appStudioTokenProvider?.getJsonObject());
+    const appStudioTokenJsonRes = await m365TokenProvider?.getJsonObject({
+      scopes: AppStudioScopes,
+    });
+    const appStudioTokenJson = appStudioTokenJsonRes?.isOk()
+      ? appStudioTokenJsonRes.value
+      : undefined;
+    const maybeM365TenantId = parseTeamsAppTenantId(appStudioTokenJson);
     if (maybeM365TenantId.isErr()) {
       return maybeM365TenantId;
     }
 
-    const maybeM365UserAccount = parseUserName(await appStudioTokenProvider?.getJsonObject());
+    const maybeM365UserAccount = parseUserName(appStudioTokenJson);
     if (maybeM365UserAccount.isErr()) {
       return maybeM365UserAccount;
     }
 
     if (maybeM365TenantId.value !== localDebugTenantId) {
+      const localFiles = [".fx/states/state.local.json"];
+
+      // add notification local file if exist
+      if (
+        projectPath !== undefined &&
+        (await fs.pathExists(`${projectPath}/bot/.notification.localstore.json`))
+      ) {
+        localFiles.push("bot/.notification.localstore.json");
+      }
+
       const errorMessage = getLocalizedString(
         "core.localDebug.tenantConfirmNotice",
         localDebugTenantId,
         maybeM365UserAccount.value,
-        "state.local.json"
+        localFiles.join(", ")
       );
       return err(
         new UserError("Solution", SolutionError.CannotLocalDebugInDifferentTenant, errorMessage)

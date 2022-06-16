@@ -15,7 +15,7 @@ import {
   Json,
   TelemetryReporter,
 } from "@microsoft/teamsfx-api";
-import { getResourceGroupInPortal } from "../../../../common/tools";
+import { AppStudioScopes, getResourceGroupInPortal } from "../../../../common/tools";
 import { executeConcurrently } from "./executor";
 import {
   ensurePermissionRequest,
@@ -113,7 +113,12 @@ async function provisionResourceImpl(
   // Just to trigger M365 login before the concurrent execution of localDebug.
   // Because concurrent execution of localDebug may getAccessToken() concurrently, which
   // causes 2 M365 logins before the token caching in common lib takes effect.
-  await tokenProvider.appStudioToken.getAccessToken();
+  const appStudioTokenRes = await tokenProvider.m365TokenProvider.getAccessToken({
+    scopes: AppStudioScopes,
+  });
+  if (appStudioTokenRes.isErr()) {
+    return err(appStudioTokenRes.error);
+  }
 
   const inputsNew: v2.InputsWithProjectPath = inputs as v2.InputsWithProjectPath;
   const projectPath: string = inputs.projectPath;
@@ -125,7 +130,7 @@ async function provisionResourceImpl(
   if (!envInfo.state.solution) envInfo.state.solution = {};
   const solutionConfig = envInfo.state.solution;
   const tenantIdInConfig = teamsAppResource.tenantId;
-  const tenantIdInTokenRes = await getM365TenantId(tokenProvider.appStudioToken);
+  const tenantIdInTokenRes = await getM365TenantId(tokenProvider.m365TokenProvider);
   if (tenantIdInTokenRes.isErr()) {
     return err(tenantIdInTokenRes.error);
   }

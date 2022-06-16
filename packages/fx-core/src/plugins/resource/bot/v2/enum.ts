@@ -9,7 +9,11 @@ export enum ProgrammingLanguage {
 
 export enum Runtime {
   Node = "node",
-  Dotnet = "csharp",
+  Dotnet = "dotnet",
+}
+
+export enum BicepModules {
+  Functions = "botFunction",
 }
 
 export enum HostType {

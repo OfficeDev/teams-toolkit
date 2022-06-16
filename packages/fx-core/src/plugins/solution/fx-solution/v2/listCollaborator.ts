@@ -1,7 +1,7 @@
 import {
   err,
   FxError,
-  GraphTokenProvider,
+  M365TokenProvider,
   ok,
   Platform,
   PluginContext,
@@ -28,7 +28,7 @@ import {
   ListCollaboratorResult,
   TeamsAppAdmin,
 } from "../../../../common";
-import { IUserList } from "../../../resource/appstudio/interfaces/IAppDefinition";
+import { AppUser } from "../../../resource/appstudio/interfaces/appUser";
 import {
   PluginNames,
   SolutionError,
@@ -57,7 +57,7 @@ export async function executeListCollaboratorV2(
   inputs: v2.InputsWithProjectPath,
   envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
   tokenProvider: TokenProvider,
-  userInfo: IUserList
+  userInfo: AppUser
 ): Promise<[Result<any, FxError>[], Err<any, FxError>[]]> {
   const plugins: v2.ResourcePlugin[] = [
     Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin),
@@ -91,7 +91,7 @@ export async function executeListCollaboratorV2(
 
 export async function executeListCollaboratorV1(
   ctx: SolutionContext,
-  userInfo: IUserList
+  userInfo: AppUser
 ): Promise<[Result<any, FxError>[], Err<any, FxError>[]]> {
   const plugins = [Container.get<Plugin>(ResourcePlugins.AppStudioPlugin)];
 
@@ -131,7 +131,7 @@ async function listCollaboratorImpl(
   envName?: string,
   telemetryReporter?: TelemetryReporter,
   ui?: UserInteraction,
-  graphTokenProvider?: GraphTokenProvider,
+  m365TokenProvider?: M365TokenProvider,
   logProvider?: LogProvider,
   platform?: string
 ): Promise<Result<ListCollaboratorResult, FxError>> {
@@ -139,7 +139,7 @@ async function listCollaboratorImpl(
     [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
   });
 
-  const result = await CollaborationUtil.getCurrentUserInfo(graphTokenProvider);
+  const result = await CollaborationUtil.getCurrentUserInfo(m365TokenProvider);
   if (result.isErr()) {
     return err(
       sendErrorTelemetryThenReturnError(
@@ -164,7 +164,7 @@ async function listCollaboratorImpl(
     });
   }
 
-  const userInfo = result.value as IUserList;
+  const userInfo = result.value as AppUser;
 
   if (!envName) {
     return err(
@@ -336,7 +336,7 @@ export async function listCollaborator(
     const envName = param.ctx.envInfo.envName;
     const telemetryReporter = param.ctx.telemetryReporter;
     const ui = param.ctx.ui;
-    const graphTokenProvider = param.ctx.graphTokenProvider;
+    const m365TokenProvider = param.ctx.m365TokenProvider;
     const logProvider = param.ctx.logProvider;
     const platform = param.ctx.answers?.platform;
     return listCollaboratorImpl(
@@ -345,7 +345,7 @@ export async function listCollaborator(
       envName,
       telemetryReporter,
       ui,
-      graphTokenProvider,
+      m365TokenProvider,
       logProvider,
       platform
     );
@@ -367,7 +367,7 @@ export async function listCollaborator(
     const envName = param.envInfo.envName;
     const telemetryReporter = param.ctx.telemetryReporter;
     const ui = param.ctx.userInteraction;
-    const graphTokenProvider = param.tokenProvider.graphTokenProvider;
+    const m365TokenProvider = param.tokenProvider.m365TokenProvider;
     const logProvider = param.ctx.logProvider;
     const platform = param.inputs?.platform;
     return listCollaboratorImpl(
@@ -376,7 +376,7 @@ export async function listCollaborator(
       envName,
       telemetryReporter,
       ui,
-      graphTokenProvider,
+      m365TokenProvider,
       logProvider,
       platform
     );

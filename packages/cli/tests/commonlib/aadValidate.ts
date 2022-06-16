@@ -6,10 +6,11 @@
 import * as chai from "chai";
 import axios from "axios";
 
-import { AppStudioTokenProvider } from "@microsoft/teamsfx-api";
+import { M365TokenProvider } from "@microsoft/teamsfx-api";
 
-import MockAppStudioTokenProvider from "../../src/commonlib/appStudioLoginUserPassword";
+import MockM365TokenProvider from "../../src/commonlib/m365LoginUserPassword";
 import { IAADDefinition, IAadObject, IAadObjectLocal } from "./interfaces/IAADDefinition";
+import { AppStudioScopes } from "@microsoft/teamsfx-core";
 
 const aadPluginName = "fx-resource-aad-app-for-teams";
 const baseUrl = "https://dev.teams.microsoft.com/api/aadapp/v2";
@@ -20,16 +21,12 @@ function delay(ms: number) {
 }
 
 export class AadValidator {
-  public static provider: AppStudioTokenProvider;
+  public static provider: M365TokenProvider;
 
-  public static init(
-    ctx: any,
-    isLocalDebug = false,
-    provider?: AppStudioTokenProvider
-  ): IAadObject {
+  public static init(ctx: any, isLocalDebug = false, provider?: M365TokenProvider): IAadObject {
     console.log("Start to init validator for Azure AD app.");
 
-    AadValidator.provider = provider || MockAppStudioTokenProvider;
+    AadValidator.provider = provider || MockM365TokenProvider;
 
     const aadObject: IAadObject | undefined = AadValidator.parseConfig(
       ctx[aadPluginName],
@@ -78,13 +75,14 @@ export class AadValidator {
   }
 
   private static async getAadApp(objectId: string) {
-    const token = await this.provider.getAccessToken();
+    const appStudioTokenRes = await this.provider.getAccessToken({ scopes: AppStudioScopes });
+    const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
 
     let retries = 10;
     while (retries > 0) {
       try {
         retries = retries - 1;
-        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        axios.defaults.headers.common["Authorization"] = `Bearer ${appStudioToken}`;
         const aadGetResponse = await axios.get(`${baseUrl}/${objectId}`);
         if (aadGetResponse && aadGetResponse.data && aadGetResponse.data["identifierUris"][0]) {
           return <IAADDefinition>aadGetResponse.data;

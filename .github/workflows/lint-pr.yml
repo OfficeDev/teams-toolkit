@@ -135,3 +135,39 @@ jobs:
       - name: check content
         run: |
           python .github/detect/sensitive-detect.py repo
+
+  attension-on-version:
+    if: ${{ github.event_name ==  'pull_request' && github.event.pull_request.base.ref == 'main' && github.event.action != 'edited' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout branch
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.event.pull_request.head.ref }}
+      - name: check feature history
+        id: description
+        run: | 
+          head=$(git describe --first-parent --abbrev=0)
+          history_cli=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/cli | grep "^feat")
+          history_toolkit=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/vscode-extension | grep "^feat")
+          echo -e '\nCLI feat commits: \n' "$history_cli" '\n\nExtension-toolkit feat commits:\n' "$history_toolkit" > history.txt
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: 14
+      - name: lerna expect rc version
+        run: |
+          npx lerna version --conventional-commits --conventional-prerelease --preid=rc --no-git-tag-version --allow-branch ${{ github.event.pull_request.head.ref }} --yes
+          npx lerna changed -l | awk '{ print $1 "\t" $2 }'> info.txt
+      - uses: edwardgeorge/file-outputs-action@main
+        id: test
+        with:
+          files: |
+            output1=info.txt
+            output2=history.txt
+      - uses: riskledger/update-pr-description@v2
+        with:
+          body: ${{join(steps.test.outputs.*, '')}}
+          token: ${{ secrets.GITHUB_TOKEN }}

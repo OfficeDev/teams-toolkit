@@ -8,6 +8,7 @@ import { DynamicNode } from "../dynamicNode";
 import envTreeProviderInstance from "../environmentTreeViewProvider";
 import { AzureAccountNode } from "./azureNode";
 import { M365AccountNode } from "./m365Node";
+import { AppStudioScopes } from "@microsoft/teamsfx-core";
 import { isSPFxProject } from "../../globalVariables";
 
 export class AccountTreeViewProvider implements vscode.TreeDataProvider<DynamicNode> {
@@ -30,19 +31,11 @@ export class AccountTreeViewProvider implements vscode.TreeDataProvider<DynamicN
   }
 
   public subscribeToStatusChanges(tokenProvider: TokenProvider) {
-    tokenProvider.appStudioToken?.setStatusChangeMap("tree-view", (status, token, accountInfo) =>
-      m365AccountStatusChangeHandler("appStudio", status, token, accountInfo)
-    );
-    // TODO: remove after m365 account providers are unified
-    tokenProvider.sharepointTokenProvider?.setStatusChangeMap(
+    tokenProvider.m365TokenProvider?.setStatusChangeMap(
       "tree-view",
+      { scopes: AppStudioScopes },
       (status, token, accountInfo) =>
-        m365AccountStatusChangeHandler("sharepoint", status, token, accountInfo)
-    );
-    tokenProvider.graphTokenProvider?.setStatusChangeMap(
-      "tree-view",
-      (status, token, accountInfo) =>
-        m365AccountStatusChangeHandler("graph", status, token, accountInfo)
+        m365AccountStatusChangeHandler("appStudio", status, token, accountInfo)
     );
     tokenProvider.azureAccountProvider?.setStatusChangeMap(
       "tree-view",

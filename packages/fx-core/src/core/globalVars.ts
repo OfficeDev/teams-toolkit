@@ -25,6 +25,7 @@ export let Logger: LogProvider;
 export let currentStage: Stage;
 export let TOOLS: Tools;
 export let Locale: string | undefined;
+export const isVS = false;
 export function setTools(tools: Tools): void {
   TOOLS = tools;
   Logger = tools.logProvider;
@@ -35,3 +36,7 @@ export function setLocale(locale?: string): void {
 export function setCurrentStage(stage: Stage): void {
   currentStage = stage;
 }
+export class GlobalVars {
+  isVS?: boolean = false;
+}
+export const globalVars = new GlobalVars();

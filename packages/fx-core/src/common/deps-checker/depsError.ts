@@ -28,8 +28,8 @@ export class NodeNotSupportedError extends DepsCheckerError {
   }
 }
 export class LinuxNotSupportedError extends DepsCheckerError {
-  constructor(helpLink: string) {
-    super("Linux is not supported.", helpLink);
+  constructor(message: string, helpLink: string) {
+    super(message, helpLink);
 
     Object.setPrototypeOf(this, LinuxNotSupportedError.prototype);
   }

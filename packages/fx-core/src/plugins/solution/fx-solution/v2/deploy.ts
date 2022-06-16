@@ -15,6 +15,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { isUndefined } from "lodash";
 import Container from "typedi";
+import { AppStudioScopes } from "../../../../common";
 import { PluginDisplayName } from "../../../../common/constants";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { hasAzureResource, isVSProject } from "../../../../common/projectSettingsHelper";
@@ -61,7 +62,7 @@ export async function deploy(
   const botTroubleShootMsg = getBotTroubleShootMessage(getAzureSolutionSettings(ctx));
   const provisioned =
     (provisionOutputs[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] as boolean) ||
-    inputs[Constants.DEPLOY_AAD_FROM_CODELENS] === "yes";
+    inputs[Constants.DEPLOY_AAD] === "yes";
 
   if (inAzureProject && !provisioned) {
     return err(
@@ -79,7 +80,12 @@ export async function deploy(
   }
 
   if (!inAzureProject) {
-    const appStudioTokenJson = await tokenProvider.appStudioToken.getJsonObject();
+    const appStudioTokenJsonRes = await tokenProvider.m365TokenProvider.getJsonObject({
+      scopes: AppStudioScopes,
+    });
+    const appStudioTokenJson = appStudioTokenJsonRes.isOk()
+      ? appStudioTokenJsonRes.value
+      : undefined;
 
     if (appStudioTokenJson) {
       const checkM365 = await checkM365Tenant({ version: 2, data: envInfo }, appStudioTokenJson);
@@ -100,7 +106,7 @@ export async function deploy(
         )
       );
     }
-  } else {
+  } else if (envInfo.envName !== "local") {
     const checkAzure = await checkSubscription(
       { version: 2, data: envInfo },
       tokenProvider.azureAccountProvider

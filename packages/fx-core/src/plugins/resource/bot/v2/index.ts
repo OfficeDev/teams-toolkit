@@ -3,7 +3,6 @@
 
 import {
   AzureSolutionSettings,
-  err,
   Func,
   FxError,
   Inputs,
@@ -26,7 +25,7 @@ import {
   EnvInfoV2,
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
-import { TeamsBot } from "..";
+import { TeamsBot } from "../index";
 import {
   ResourcePlugins,
   ResourcePluginsV2,

@@ -3,24 +3,35 @@
 
 import { Middleware, NextFunction } from "@feathersjs/hooks";
 import {
+  DynamicPlatforms,
   err,
   Func,
   FxError,
   Inputs,
+  MultiSelectQuestion,
   ok,
+  OptionItem,
+  ProjectSettingsV3,
   QTreeNode,
   Result,
   SingleSelectQuestion,
+  Stage,
   traverse,
+  UserError,
+  v2,
 } from "@microsoft/teamsfx-api";
-import { getLocalizedString } from "../../common/localizeUtils";
+import { EnvInfoV3 } from "@microsoft/teamsfx-api/build/v3";
+import { HelpLinks } from "../../common/constants";
+import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
+import { hasAzureResourceV3 } from "../../common/projectSettingsHelperV3";
 import { createHostTypeTriggerQuestion } from "../../plugins/resource/bot/question";
 import {
   AzureResourceSQLNewUI,
-  AzureSolutionQuestionNames,
   BotOptionItem,
   NotificationOptionItem,
 } from "../../plugins/solution/fx-solution/question";
+import { checkWetherProvisionSucceeded } from "../../plugins/solution/fx-solution/v2/utils";
+import { NoCapabilityFoundError } from "../error";
 import { TOOLS } from "../globalVars";
 import {
   createAppNameQuestion,
@@ -33,6 +44,7 @@ import {
   ScratchOptionYes,
 } from "../question";
 import { CoreHookContext } from "../types";
+import { getQuestionsForTargetEnv } from "./envInfoLoader";
 
 /**
  * This middleware will help to collect input from question flow
@@ -49,6 +61,10 @@ export const QuestionModelMW_V3: Middleware = async (ctx: CoreHookContext, next:
     if (func.method === "addFeature") {
       getQuestionRes = await getQuestionsForAddFeature(inputs);
     }
+  } else if (method === "provisionResourcesV3") {
+    getQuestionRes = await getQuestionsForTargetEnv(inputs);
+  } else if (method === "deployArtifactsV3") {
+    getQuestionRes = await getQuestionsForDeploy(ctx.contextV2!, ctx.envInfoV3!, inputs);
   }
   if (getQuestionRes.isErr()) {
     TOOLS?.logProvider.error(
@@ -121,4 +137,51 @@ async function getQuestionsForAddFeature(
     staticOptions: [AzureResourceSQLNewUI, BotOptionItem],
   };
   return ok(new QTreeNode(question));
+}
+
+async function getQuestionsForDeploy(
+  ctx: v2.Context,
+  envInfo: EnvInfoV3,
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
+  const projectSetting = ctx.projectSetting as ProjectSettingsV3;
+  if (isDynamicQuestion) {
+    const hasAzureResource = hasAzureResourceV3(projectSetting);
+    const provisioned = checkWetherProvisionSucceeded(envInfo.state);
+    if (hasAzureResource && !provisioned) {
+      return err(
+        new UserError({
+          source: "fx",
+          name: "CannotDeployBeforeProvision",
+          message: getDefaultString("core.deploy.FailedToDeployBeforeProvision"),
+          displayMessage: getLocalizedString("core.deploy.FailedToDeployBeforeProvision"),
+          helpLink: HelpLinks.WhyNeedProvision,
+        })
+      );
+    }
+    const selectComponentsQuestion: MultiSelectQuestion = {
+      name: "deploy-plugin",
+      title: "Select component(s) to deploy",
+      type: "multiSelect",
+      skipSingleOption: false,
+      staticOptions: [],
+      default: [],
+    };
+    selectComponentsQuestion.staticOptions = projectSetting.components
+      .filter((component) => component.build && component.hosting)
+      .map((component) => {
+        const item: OptionItem = {
+          id: component.name,
+          label: component.name,
+          cliName: component.name,
+        };
+        return item;
+      });
+    if (selectComponentsQuestion.staticOptions.length === 0) {
+      return err(new NoCapabilityFoundError(Stage.deploy));
+    }
+    return ok(new QTreeNode(selectComponentsQuestion));
+  }
+  return ok(undefined);
 }

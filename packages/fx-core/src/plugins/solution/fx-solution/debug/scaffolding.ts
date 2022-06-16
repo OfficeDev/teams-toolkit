@@ -180,11 +180,6 @@ export async function _scaffoldLocalDebugSettings(
         Settings.generateSettings(includeBackend || includeFuncHostedBot, isSpfx),
         Settings.mergeSettings
       );
-    } else if (inputs.platform === Platform.VS) {
-      // generate localSettings.json
-      localSettings = generateLocalSettingsFile
-        ? await scaffoldLocalSettingsJson(projectSetting, inputs, cryptoProvider, localSettings)
-        : undefined;
     }
   } catch (error: any) {
     const systemError = ScaffoldLocalDebugSettingsError(error);

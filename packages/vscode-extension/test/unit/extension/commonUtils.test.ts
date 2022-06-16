@@ -138,11 +138,6 @@ suite("CommonUtils", () => {
       const { name, removeCallback } = tmp.dirSync({ unsafeCleanup: true });
       cleanupCallback = removeCallback;
       workspacePath = name;
-
-      if (!("workspaceUri" in globalVariables)) {
-        // ensure the property exist to prevent sinon "Cannot stub non-existent property" error
-        (globalVariables.workspaceUri as any) = undefined;
-      }
       sandbox.stub(globalVariables, "workspaceUri").value(Uri.file(workspacePath));
     });
 
@@ -183,6 +178,16 @@ suite("CommonUtils", () => {
     test("Multi env enabled and neither new nor old files exist", async () => {
       const result = commonUtils.getProjectId();
       chai.expect(result).equals(undefined);
+    });
+
+    suite("menus", async () => {
+      test("preview", async () => {
+        const previewCommand = extensionPackage.contributes.menus["editor/title"].find(
+          (x) => x.command === "fx-extension.openPreviewFile"
+        );
+        chai.assert.isTrue(previewCommand !== undefined);
+        chai.assert.isTrue(previewCommand?.when.includes("manifest.template.json"));
+      });
     });
   });
 });

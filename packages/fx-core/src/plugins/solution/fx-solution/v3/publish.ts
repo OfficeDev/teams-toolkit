@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import {
-  AppStudioTokenProvider,
+  M365TokenProvider,
   FxError,
   Json,
   ok,
@@ -12,15 +12,12 @@ import {
   v3,
   Void,
 } from "@microsoft/teamsfx-api";
-import { Container } from "typedi";
-import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
-import { BuiltInFeaturePluginNames } from "./constants";
 
 export async function getQuestionsForPublish(
   ctx: v2.Context,
   inputs: v2.InputsWithProjectPath,
   envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-  tokenProvider: AppStudioTokenProvider
+  tokenProvider: M365TokenProvider
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   return ok(undefined);
 }
@@ -28,9 +25,8 @@ export async function publishApplication(
   ctx: v2.Context,
   inputs: v2.InputsWithProjectPath,
   envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-  tokenProvider: AppStudioTokenProvider,
+  tokenProvider: M365TokenProvider,
   telemetryProps?: Json
 ): Promise<Result<Void, FxError>> {
-  const appstudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-  return await appstudio.publishTeamsApp(ctx, inputs, envInfo as v3.EnvInfoV3, tokenProvider);
+  return ok(Void);
 }

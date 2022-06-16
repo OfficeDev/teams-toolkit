@@ -13,7 +13,7 @@ import {
 import { ProgrammingLanguage } from "../enums/programmingLanguage";
 import path from "path";
 import { QuestionNames } from "../constants";
-import { HostTypeTriggerOptions } from "../question";
+import { FunctionsOptionItems } from "../question";
 import { AzureSolutionQuestionNames } from "../../../solution/fx-solution/question";
 import { HostType } from "../v2/enum";
 
@@ -63,7 +63,7 @@ export class ScaffoldConfig {
       // convert HostTypeTrigger question to trigger name
       this.triggers = rawHostTypeTriggers
         .map((hostTypeTrigger) => {
-          const option = HostTypeTriggerOptions.find((option) => option.id === hostTypeTrigger);
+          const option = FunctionsOptionItems.find((option) => option.id === hostTypeTrigger);
           return option?.trigger;
         })
         .filter((item): item is NotificationTrigger => item !== undefined);
@@ -95,17 +95,15 @@ export class ScaffoldConfig {
     }
   }
 
-  private static getHostTypeFromHostTypeTriggerQuestion(answers: Inputs): HostType | undefined {
+  private static getHostTypeFromHostTypeTriggerQuestion(answers: Inputs): HostType {
     // intersection of hostTypeTriggers and HostTypeTriggerOptions
-    const hostTypeTriggers = answers[QuestionNames.BOT_HOST_TYPE_TRIGGER] as unknown;
+    const hostTypeTriggers = answers[QuestionNames.BOT_HOST_TYPE_TRIGGER];
     if (Array.isArray(hostTypeTriggers)) {
-      const hostTypes = hostTypeTriggers.map(
-        (item) => HostTypeTriggerOptions.find((option) => option.id === item)?.hostType
-      );
-      return hostTypes ? hostTypes[0] : undefined;
-    } else {
-      return undefined;
+      return FunctionsOptionItems.some((item) => hostTypeTriggers.includes(item.id))
+        ? HostTypes.AZURE_FUNCTIONS
+        : HostTypes.APP_SERVICE;
     }
+    return HostTypes.APP_SERVICE;
   }
 
   private static getHostTypeFromProjectSettings(context: PluginContext): HostType | undefined {

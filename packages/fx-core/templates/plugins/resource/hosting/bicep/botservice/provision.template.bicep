@@ -1,5 +1,5 @@
 // Resources for bot
-module botProvision '\{{fx-resource-bot.Provision.botservice.path}}' = {
+module botProvision './provision/botservice.bicep' = {
   name: 'botProvision'
   params: {
     provisionParameters: provisionParameters

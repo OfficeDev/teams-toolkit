@@ -13,7 +13,7 @@ import {
 import { Stage } from "../constants";
 import { EnvInfo } from "../context";
 import {
-  AppStudioTokenProvider,
+  M365TokenProvider,
   AzureAccountProvider,
   Func,
   FxError,
@@ -97,13 +97,13 @@ export interface SolutionPlugin {
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {Inputs} inputs - User answers to questions defined in {@link getQuestionsForLifecycleTask}
    * @param {DeepReadonly<EnvInfoV2>} envInfo - a readonly view to the current env
-   * @param {AppStudioTokenProvider} tokenProvider - Token for AppStudio
+   * @param {M365TokenProvider} tokenProvider - Token for M365
    */
   publishApplication: (
     ctx: Context,
     inputs: Inputs,
     envInfo: DeepReadonly<EnvInfoV2>,
-    tokenProvider: AppStudioTokenProvider
+    tokenProvider: M365TokenProvider
   ) => Promise<Result<Void, FxError>>;
 
   /**

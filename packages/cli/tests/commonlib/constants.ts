@@ -60,6 +60,12 @@ export enum ResourceToDeploy {
   Apim = "apim",
   AadManifest = "aad-manifest",
 }
+
+export enum Runtime {
+  Dotnet = "dotnet",
+  Node = "node",
+}
+
 export class StateConfigKey {
   // solution
   static readonly subscriptionId = "subscriptionId";
@@ -88,6 +94,7 @@ export class StateConfigKey {
   static readonly botId = "botId";
   static readonly botPassword = "botPassword";
   static readonly botWebAppResourceId = "botWebAppResourceId";
+  static readonly botResourceId = "resourceId";
   // sql
   static readonly skipAddingUser = "skipAddingUser";
   static readonly sqlEndpoint: string = "sqlEndpoint";

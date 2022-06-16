@@ -49,6 +49,7 @@ import { environmentManager } from "@microsoft/teamsfx-core";
 import { getSubscriptionInfoFromEnv } from "../utils/commonUtils";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 import * as globalVariables from "../globalVariables";
+import accountTreeViewProviderInstance from "../treeview/account/accountTreeViewProvider";
 
 export class AzureAccountManager extends login implements AzureAccountProvider {
   private static instance: AzureAccountManager;
@@ -347,11 +348,13 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
           AzureAccountManager.tenantId = item.session.tenantId;
           AzureAccountManager.subscriptionId = subscriptionId;
           AzureAccountManager.subscriptionName = item.subscription.displayName;
-          await this.saveSubscription({
+          const subscriptionInfo = {
             subscriptionId: item.subscription.subscriptionId!,
             subscriptionName: item.subscription.displayName!,
             tenantId: item.session.tenantId,
-          });
+          };
+          await this.saveSubscription(subscriptionInfo);
+          await accountTreeViewProviderInstance.azureAccountNode.setSubscription(subscriptionInfo);
           return;
         }
       }
@@ -575,7 +578,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   async getSubscriptionInfoPath(): Promise<string | undefined> {
     if (globalVariables.workspaceUri) {
       const workspacePath: string = globalVariables.workspaceUri.fsPath;
-      if (!(await commonUtils.isFxProject(workspacePath))) {
+      if (!globalVariables.isTeamsFxProject) {
         return undefined;
       }
       const configRoot = await commonUtils.getProjectRoot(workspacePath, `.${ConfigFolderName}`);

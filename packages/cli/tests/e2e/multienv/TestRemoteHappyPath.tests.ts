@@ -10,7 +10,7 @@ import * as chai from "chai";
 import fs from "fs-extra";
 import { describe } from "mocha";
 import path from "path";
-import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
+import M365Login from "../../../src/commonlib/m365Login";
 import {
   AadValidator,
   AppStudioValidator,
@@ -138,7 +138,7 @@ describe("Multi Env Happy Path for Azure", function () {
           const context = contextResult.value;
 
           // Validate Aad App
-          const aad = AadValidator.init(context, false, AppStudioLogin);
+          const aad = AadValidator.init(context, false, M365Login);
           await AadValidator.validate(aad);
 
           // Validate Tab Frontend

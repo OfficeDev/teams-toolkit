@@ -57,19 +57,25 @@
       </Item>
       <Item ItemId=";teamstoolkit.accountTree.sideloadingJoinM365" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Join M365 Developer Program]]></Val>
+          <Val><![CDATA[Create a M365 testing tenant]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Rejoindre le programme pour développeurs M365]]></Val>
+            <Val><![CDATA[Créer un client de test M365]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Join M365 Developer Program]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.accountTree.sideloadingMessage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[[Teams Toolkit]5D; Your Microsoft 365 tenant admin hasn't enabled sideloading permission for your account. You can't install your app to Teams! Please applying for a Microsoft 365 developer tenant by joining Microsoft developer program or contact your tenant admin to resolve the issue.]]></Val>
+          <Val><![CDATA[[Sideloading]5D;(https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) is disabled in your Microsoft 365 account. Contact your Teams administrator to resolve this issue or get a testing tenant.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[[Teams Toolkit]5D; Votre administrateur client Microsoft 365 n’a pas activé l’autorisation de chargement indépendant pour votre compte. Vous ne pouvez pas installer votre application sur Teams ! Veuillez postuler pour un client développeur Microsoft 365 en rejoignant le programme pour développeurs Microsoft ou contactez votre administrateur client pour résoudre le problème.]]></Val>
+            <Val><![CDATA[[Sideloading]5D;(https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) est désactivé dans votre compte Microsoft 365. Contactez votre administrateur Teams pour résoudre ce problème ou obtenir un client de test.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[[Teams Toolkit]5D; Your Microsoft 365 tenant admin hasn't enabled sideloading permission for your account. You can't install your app to Teams! Please applying for a Microsoft 365 developer tenant by joining Microsoft developer program or contact your tenant admin to resolve the issue.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -100,6 +106,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.accountTree.sideloadingStatusUnknown" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Sideloading check failed]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de la vérification du chargement indépendant]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.accountTree.sideloadingStatusUnknownTooltip" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The sideloading permission of this account is unknown due to network or service issue. Please refresh again later to check it.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[L’autorisation de chargement indépendant de ce compte est inconnue en raison d’un problème réseau ou de service. Veuillez actualiser ultérieurement pour le vérifier.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.accountTree.sideloadingWarning" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Sideloading disabled]]></Val>
@@ -111,10 +135,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.accountTree.sideloadingWarningTooltip" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Your M365 tenant admin hasn't enabled sideloading permission for your account. You can't install your app to Teams!]]></Val>
+          <Val><![CDATA[M365 account admin doesn't have enabled sideloading permission.]A;· Contact your Teams administrator to resolve this issue. Visit: https://docs.microsoft.com/en-us/microsoftteams/platform/m365-apps/prerequisites]A;· Create a testing tenant. Visit https://developer.microsoft.com/en-us/microsoft-365/dev-program]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Votre administrateur de locataire M365 n’a pas activé l’autorisation de chargement indépendant pour votre compte. Vous ne pouvez pas installer votre application sur Teams !]]></Val>
+            <Val><![CDATA[L’administrateur de compte M365 n’a pas d’autorisation de chargement indépendant activée.]A;· Contactez votre administrateur Teams pour résoudre ce problème. Visitez : https://docs.microsoft.com/en-us/microsoftteams/platform/m365-apps/prerequisites]A;· Créez un client de test. Visiter https://developer.microsoft.com/en-us/microsoft-365/dev-program]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Your M365 tenant admin hasn't enabled sideloading permission for your account. You can't install your app to Teams!]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -154,6 +181,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.appStudioLogin.createM365TestingTenant" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Create a M365 testing tenant]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Créer un client de test M365]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.appStudioLogin.learnMore" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Learn More]]></Val>
@@ -165,10 +201,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.appStudioLogin.loginCancel" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Sign in canceled. The Teams Toolkit requires a Microsoft 365 organizational account where Teams is running and has been registered.]]></Val>
+          <Val><![CDATA[Sign in canceled. The Teams Toolkit requires a Microsoft 365 (organizational account) with sideloading option.]A;If your account is not ready, create a free M365 testing tenant to start your Teams App development.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Connexion annulée. La boîte à outils Teams nécessite un compte d’organisation Microsoft 365 sur lequel Teams s’exécute et a été enregistré.]]></Val>
+            <Val><![CDATA[Connexion annulée. Le kit de ressources Teams nécessite un Microsoft 365 (compte d’organisation) avec l’option de chargement indépendant.]A;Si votre compte n’est pas prêt, créez un client de test M365 gratuit pour démarrer le développement de votre application Teams.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Sign in canceled. The Teams Toolkit requires a Microsoft 365 organizational account where Teams is running and has been registered.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -237,45 +276,78 @@
       </Item>
       <Item ItemId=";teamstoolkit.cacheAccess.readHomeAccountIdFail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[read home account id fail: ]]></Val>
+          <Val><![CDATA[Cannot read home account id from cache, clean up account cache. ]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[échec de la lecture de l’identifiant du compte personnel : ]]></Val>
+            <Val><![CDATA[Impossible de lire l’ID de compte personnel à partir du cache. Nettoyez le cache du compte. ]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[read home account id fail: ]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.cacheAccess.readTokenFail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[read token fail: ]]></Val>
+          <Val><![CDATA[Cannot read token from cache, clean up account cache. ]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[échec de lecture du jeton : ]]></Val>
+            <Val><![CDATA[Impossible de lire le jeton à partir du cache. Nettoyez le cache du compte. ]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[read token fail: ]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.cacheAccess.saveHomeAccountIdFail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[save home account id fail: ]]></Val>
+          <Val><![CDATA[Cannot save home account id to cache, clean up account cache. ]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Échec de l’enregistrement de l’identifiant du compte personnel : ]]></Val>
+            <Val><![CDATA[Impossible d’enregistrer l’ID de compte personnel dans le cache. Nettoyez le cache du compte. ]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[save home account id fail: ]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.cacheAccess.saveTokenFail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[save token fail: ]]></Val>
+          <Val><![CDATA[Cannot save token to cache, clean up account cache. ]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Échec de l’enregistrement du jeton : ]]></Val>
+            <Val><![CDATA[Impossible d’enregistrer le jeton dans le cache. Nettoyez le cache du compte.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[save token fail: ]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.cacheAccess.writeTokenFail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[write token fail: ]]></Val>
+          <Val><![CDATA[Cannot write token to cache, clean up account cache. ]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Échec d’écriture du jeton : ]]></Val>
+            <Val><![CDATA[Impossible d’écrire le jeton dans le cache. Nettoyez le cache du compte.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[write token fail: ]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.codeFlowLogin.checkOnlineFailDetail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You appear to be offline. Please check your network connection.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Vous semblez être hors connexion. Veuillez vérifier votre connexion réseau.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.codeFlowLogin.checkOnlineFailTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[CheckOnlineFail]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[CheckOnlineFail]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -379,6 +451,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.codeLens.projectSettingsNotice" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[This file is maintained by Teams Toolkit, please do not modify it]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ce fichier est conservé par le kit de ressources Teams, ne le modifiez pas.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.commands.accounts.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Teams: Accounts]]></Val>
@@ -433,6 +514,69 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.commands.addFeature.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams: Add features]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams : ajouter des fonctionnalités]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commands.addSso.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams: Add SSO]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams : ajouter l’authentification unique]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commands.connectExistingApi.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams: Add connection to an API]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams : ajouter une connexion à une API]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commands.createAccount.azure" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Create an Azure account]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Créer un compte Azure]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commands.createAccount.free" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Free]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Gratuit]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commands.createAccount.m365" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Create a M365 testing tenant]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Créer un client de test M365]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commands.createAccount.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Create an account]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Créer un compte]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.commands.createEnvironment.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Teams: Create new environment]]></Val>
@@ -465,6 +609,33 @@
           <Val><![CDATA[Teams: Deploy to the cloud]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Teams : Déployer dans le cloud]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commands.deployAadAppManifest.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams: Deploy Azure Active Directory app manifest]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams : déployer le manifeste d’application d’Azure Active Directory]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commands.deployAadAppManifestFromCtxMenu.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Deploy Azure Active Directory app manifest]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Déployer le manifeste d’application d’Azure Active Directory]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commands.deployManifest.ctxMenu.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Deploy Teams app manifest]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Déployer le manifeste d’application Teams]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -532,6 +703,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.commands.getstarted.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams: Get Started]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams : Commençons!]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.commands.listAppOwner.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[List M365 Teams App (with AAD App) Owners]]></Val>
@@ -552,19 +732,25 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.migrateApp.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams: Upgrade Teams JS SDK references to support Outlook and Office apps]]></Val>
+          <Val><![CDATA[Teams: Upgrade Teams JS SDK and code references]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams : mettre à niveau les références du SDK Teams JS pour prendre en charge les applications Outlook et Office]]></Val>
+            <Val><![CDATA[Teams : mettre à niveau Teams SDK JS et les références de code]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Teams: Upgrade Teams JS SDK references to support Outlook and Office apps]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commands.migrateManifest.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams: Upgrade Teams manifest to support Outlook and Office apps]]></Val>
+          <Val><![CDATA[Teams: Upgrade Teams manifest]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams : mettre à niveau le manifeste Teams pour prendre en charge les applications Outlook et Office]]></Val>
+            <Val><![CDATA[Teams : mettre à niveau le manifeste Teams]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Teams: Upgrade Teams manifest to support Outlook and Office apps]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -582,6 +768,15 @@
           <Val><![CDATA[Open manifest schema]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Ouvrir le schéma du manifeste]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commands.previewAadManifest.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Preview AAD manifest file]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Aperçu manifeste du fichier AAD]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -622,15 +817,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.commands.quickStart.title" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Teams: Quick Start]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams : Démarrage rapide]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";teamstoolkit.commands.refresh.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Refresh]]></Val>
@@ -645,6 +831,15 @@
           <Val><![CDATA[Teams: Report issues on GitHub]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Teams : Signaler des problèmes sur GitHub]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commands.selectTutorials.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams: View Guided Tutorials]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams : afficher les didacticiels guidés]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -687,10 +882,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.updateManifest.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams: Update manifest to Teams platform]]></Val>
+          <Val><![CDATA[Teams: Deploy Teams app manifest]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams : Mettre à jour le manifeste sur la plateforme Teams]]></Val>
+            <Val><![CDATA[Teams : déployer le manifeste d’application Teams]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Teams: Update manifest to Teams platform]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -757,6 +955,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addCICDWorkflows.blockTooltip" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cannot run command when adding CI/CD workflows. Try again when adding operation is finished.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Impossible d'exécuter la commande lors de l'ajout de flux de travail CI/CD. Réessayez lorsque l'opération d'ajout est terminée.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addCICDWorkflows.running" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Adding CI/CD workflows...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ajouter des flux de travail CI/CD]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addCICDWorkflowsDescription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create workflow automation templates for Github, Azure DevOps and Jenkins]]></Val>
@@ -771,6 +987,24 @@
           <Val><![CDATA[Add CI/CD Workflows]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Ajouter des workflows CI/CD]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addCapabilities.blockTooltip" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cannot run command when adding capabilities. Try again when adding operation is finished.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Impossible d’exécuter la commande lors de l’ajout de fonctionnalités. Réessayez une fois l’opération d’ajout terminée.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addCapabilities.running" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Adding capabilities...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ajouter des capacités...]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -798,6 +1032,60 @@
           <Val><![CDATA[Add capabilities]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Ajouter des fonctions]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addFeature.blockTooltip" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cannot run command when adding features. Try again when adding operation is finished.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Impossible d’exécuter la commande lors de l’ajout de fonctionnalités. Réessayez une fois l’opération d’ajout terminée.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addFeature.running" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Adding features...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ajout de fonctionnalités...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addFeatureDescription" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Add features to your Teams app]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ajouter des fonctionnalités à votre application Teams]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addFeatureTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Add features]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ajouter des fonctionnalités]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addResources.blockTooltip" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cannot run command when adding resources. Try again when adding operation is finished.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Impossible d’exécuter la commande lors de l’ajout de ressources. Réessayez une fois l’opération d’ajout terminée.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.addResources.running" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Adding resources...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ajout de ressources...]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -883,6 +1171,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.buildPackage.blockTooltip" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cannot run command when building package. Try again when building is finished.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Impossible d’exécuter la commande lors de la génération du package. Réessayez une fois la génération terminée.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.buildPackage.running" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Building package...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Génération du package...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.buildPackageDescription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Build your Teams app into a package for publishing]]></Val>
@@ -910,6 +1216,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.createProject.blockTooltip" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cannot run command when creating. Try again when creation is finished.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Impossible d’exécuter la commande lors de la création. Réessayez une fois la création terminée.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.createProject.running" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Creating a new Teams app...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Création d’une nouvelle application Teams...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.createProjectDescription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create a new Teams app from scratch or start from a sample app]]></Val>
@@ -933,6 +1257,24 @@
           <Val><![CDATA[Create a new Teams app]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Créer une nouvelle application Teams]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.deploy.blockTooltip" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cannot run command when deploying. Try again when deployment is finished.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Impossible d’exécuter la commande lors du déploiement. Réessayez une fois le déploiement terminé.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.deploy.running" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Deploying to the cloud...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Déploiement dans le cloud...]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1018,6 +1360,42 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.getStartedDescription" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Quick tips to start building a Teams app]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Conseils rapides pour commencer à créer une application Teams]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.getStartedTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Get started]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Démarrer]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.initProject.blockTooltip" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cannot run command when initializing. Try again when initialization is finished.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Impossible d’exécuter la commande lors de l’initialisation. Réessayez une fois l’initialisation terminée.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.initProject.running" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Initializing an existing application...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Initialisation d’une application existante...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.initProjectDescription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Initialize an existing application]]></Val>
@@ -1059,6 +1437,24 @@
           <Val><![CDATA[The M365 tenant id(which is used to provision before) does not match the current account.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[L’ID de locataire M365 (qui est utilisé pour provisionner auparavant) ne correspond pas au compte actuel.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.manifestEditor.blockTooltip" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cannot run command when opening manifest editor. Try again when manifest is opened.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Impossible d’exécuter la commande lors de l’ouverture de l’éditeur de manifeste. Réessayez à l’ouverture du manifeste.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.manifestEditor.running" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Opening manifest...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ouverture du manifeste...]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1126,6 +1522,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.provision.blockTooltip" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cannot run command when provisioning. Try again when provision operation is finished.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Impossible d’exécuter la commande lors de l’approvisionnement. Réessayez une fois l’opération d’approvisionnement terminée.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.provision.running" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Provisioning...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Approvisionnement...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.provisionDescription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Provision the Teams app resources in Azure]]></Val>
@@ -1153,6 +1567,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.publish.blockTooltip" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cannot run command when publishing package. Try again when publish is finished.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Impossible d’exécuter la commande lors de la publication du package. Réessayez une fois la publication terminée.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.publish.running" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Publishing...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Publication...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.publishDescription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Publish to Teams]]></Val>
@@ -1167,24 +1599,6 @@
           <Val><![CDATA[Publish to Teams]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Publier dans Teams]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.quickStartDescription" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Quick tips to start building a Teams app]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Conseils rapides pour commencer à créer une application Teams]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.quickStartTitle" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Quick start]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Démarrage rapide]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1297,6 +1711,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.tutorialDescription" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[View guided tutorials]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Afficher les didacticiels guidés]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.tutorialTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Tutorials]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Didactaciels]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.validateManifestDescription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Validate the Teams app manifest file]]></Val>
@@ -1329,6 +1761,15 @@
           <Val><![CDATA[Cancel]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Annuler]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.common.commingSoon" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Tutorials are in active development and will come soon in future release, please stay tuned.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Les didacticiels sont en développement actif et seront bientôt disponibles dans la prochaine version. Veuillez rester à l’écoute.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1387,6 +1828,33 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.envTree.missingAzureAccount" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Sign in with your correct Azure account]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Vous connecter avec votre compte Azure correct]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.envTree.missingAzureAndM365Account" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Sign in with your correct Azure / M365 account]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Vous connecter avec votre compte Azure / M365 correct]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.envTree.missingM365Account" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Sign in with your correct M365 account]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Vous connecter avec votre compte M365 correct]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.envTree.subscriptionTooltip" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA['%s' environment is provisioned in Azure subscription '%s' (ID: %s)]]></Val>
@@ -1410,6 +1878,114 @@
           <Val><![CDATA[The Teams Toolkit requires a Microsoft 365 account. This is the account that you use to log in to Microsoft Teams. The Teams Toolkit will use this account to manage applications and service principals.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[La boîte à outils Teams nécessite un compte Microsoft 365. Il s’agit du compte que vous utilisez pour vous connecter à Microsoft Teams. La boîte à outils Teams utilisera ce compte pour gérer les applications et les principaux de service.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.addFeature.additional.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Add additional features to your Teams application]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ajouter des fonctionnalités supplémentaires à votre application Teams]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.addFeature.additional.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Additional features]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Fonctionnalités supplémentaires]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.addFeature.api.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Connect to an API with authentication support using TeamsFx SDK]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Connecter à une API avec prise en charge de l’authentification à l’aide du Kit de développement logiciel (SDK) TeamsFx]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.addFeature.api.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[API Connection]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Connexion d'API]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.addFeature.capability.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Add Teams app core capabilities]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ajouter les fonctionnalités principales de l’application Teams]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.addFeature.capability.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Capabilities]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Fonctionnalités]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.addFeature.cicd.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Add CI/CD Workflows for GitHub, Azure DevOps or Jenkins]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ajouter des flux de travail CI/CD pour GitHub, Azure DevOps ou Jenkins]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.addFeature.cicd.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[CI/CD Workflows]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Flux de travail CI/CD]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.addFeature.resource.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Include a cloud resource to serve your development needs]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Inclure une ressource cloud pour répondre à vos besoins de développement]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.addFeature.resource.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cloud resources]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ressources cloud]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.addFeature.sso.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Develop a Single Sign-On feature for the Teams Launch pages and Bot capability]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Développer une fonctionnalité d’authentification unique pour les pages de lancement Teams et la fonctionnalité de bot]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.addFeature.sso.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Single Sign-On]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Authentification unique]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1446,15 +2022,6 @@
           <Val><![CDATA[Task '%s' is still running. Wait for it to complete before starting another task.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[La tâche '%s' est toujours en cours d’exécution. Attendez qu’il soit terminé avant de commencer une autre tâche.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.handlers.configTitle" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Change location]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Modifier l’emplacement]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1587,10 +2154,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.handlers.localDebugDescription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Your project is successfully created at %s (You can change default location in settings). You can continue to run local debug for the app.]]></Val>
+          <Val><![CDATA[[%s]5D; is successfully created at [local address]5D;(%s). You can continue to debug your app.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Votre projet est créé avec succès à %s (vous pouvez modifier l’emplacement par défaut dans les paramètres). Vous pouvez continuer à exécuter le débogage local pour l’application.]]></Val>
+            <Val><![CDATA[[%s]5D; a été créé au [local address]5D;(%s). Vous pouvez continuer à déboguer votre application.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Your project is successfully created at %s (You can change default location in settings). You can continue to run local debug for the app.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1599,6 +2169,33 @@
           <Val><![CDATA[Local debug]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Débogage local]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.localPreviewDescription" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[[%s]5D; is successfully created at [local address]5D;(%s). You can continue to preview your app.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[[%s]5D; a été créé au [local address]5D;(%s). Vous pouvez continuer à déboguer votre application.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.localPreviewTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Local preview]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Aperçu local]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.localStateFileNotFound" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[State file not found in environment %s. You must run `Local debug` first to generate related state file.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Fichier d'état non trouvé dans l'environnement %s. Vous devez d'abord exécuter `Local debug` pour générer le fichier d'état correspondant.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1792,6 +2389,60 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.localDebug.howToFixIssues" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[How to fix the issues]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Comment corriger les problèmes?]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.installApp.bot.configureOutlook" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Configure Outlook]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Configurer Outlook]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.installApp.bot.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[To continue to debug your application in Outlook, you need to follow two steps:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Pour continuer à déboguer votre application dans Outlook, vous devez suivre deux étapes :]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.installApp.bot.finish" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Once you have finished the above two steps, please come back and click 'Continue']]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Une fois que vous avez terminé les deux étapes ci-dessus, revenez et cliquez sur "Continuer".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.installApp.bot.guide1" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[First, please click 'Install in Teams' to install the app in Teams.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Tout d’abord, cliquez sur Installer dans Teams pour installer l’application dans Teams.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.installApp.bot.guide2" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Second, please click 'Configure Outlook', sign in to the portal with the same Microsoft 365 account you used in Teams Toolkit. Click the 'Save' button in the portal to connect your bot to the Outlook channel.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ensuite, cliquez sur « Configurer Outlook », connectez-vous au portail avec le même compte Microsoft 365 que celui utilisé dans le kit de ressources de Teams. Cliquez sur le bouton « Enregistrer » dans le portail pour connecter votre bot au canal Outlook.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.localDebug.installApp.cancel" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Cancel]]></Val>
@@ -1812,28 +2463,34 @@
       </Item>
       <Item ItemId=";teamstoolkit.localDebug.installApp.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[To continue debug your application in Outlook, you need to install the app via Teams first.]A;]A;]]></Val>
+          <Val><![CDATA[To continue to debug your application in Outlook or Office.com, you need to install the app via Teams manually.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Pour continuer à déboguer votre application dans Outlook, vous devez d’abord installer l’application via Teams.]A;]A;]]></Val>
+            <Val><![CDATA[Pour continuer à déboguer votre application dans Outlook ou Office.com, vous devez installer manuellement l'application via Teams.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[To continue debug your application in Outlook, you need to install the app via Teams first.]A;]A;]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.localDebug.installApp.detection" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";teamstoolkit.localDebug.installApp.finish" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[We detected that you have not yet installed the app in Teams first, please make sure the app is installed.]A;]A;]]></Val>
+          <Val><![CDATA[Once you have finished the installation, please come back and click 'Continue'.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Nous avons détecté que vous n’avez pas encore installé l’application dans Teams en premier, veuillez vous assurer que l’application est installée.]A;]A;]]></Val>
+            <Val><![CDATA[Une fois l’installation terminée, veuillez retourner et cliquer sur Continuer.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.localDebug.installApp.guide" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Clicking "Install in Teams" will pop up Teams Web Client for you to install app. Once you have finished, please come back and click "Continue".]]></Val>
+          <Val><![CDATA[Click 'Install in Teams' will pop up Teams web client for you to install the app.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[En cliquant sur "Installer dans Teams", le client Web Teams s’affiche pour vous permettre d’installer l’application. Une fois que vous avez terminé, veuillez revenir et cliquer sur "Continuer".]]></Val>
+            <Val><![CDATA[Cliquez sur Installer dans Teams pour afficher le client web de Teams afin que vous puissiez installer l’application.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Clicking "Install in Teams" will pop up Teams Web Client for you to install app. Once you have finished, please come back and click "Continue".]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1846,11 +2503,29 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.localDebug.installApp.m365AccountInfoNotFound" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[M365 account info not found. Please sign in to M365.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Informations sur le compte M365 introuvables. Connectez-vous à M365.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.localDebug.learnMore" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Learn More]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[En savoir plus]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.m365TenantHintMessage" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Please note that after you enrolled your developer tenant in Office 365 Target Release, it may take couple days for the enrollment to take effect. Please click 'Learn More' button for more information about setting up dev environment for extending Teams apps across Microsoft 365.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Notez qu’après avoir inscrit votre client de développeur dans Office 365 version cible, l’application de l’inscription peut prendre quelques jours. Cliquez sur le bouton « En savoir plus » pour plus d’informations sur la configuration de l’environnement de développement pour étendre les applications Teams à Microsoft 365.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1902,10 +2577,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.localDebug.prerequisitesCheckFailure" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Error occurs when checking prerequisites. Refer to the Output window for detailed error messages. (Fail to check: %s)]]></Val>
+          <Val><![CDATA[Prerequisites Check Failed. Please check the %s to see the details. If you wish to bypass checking and installing any prerequisites, you can disable them in Visual Studio Code settings.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Une erreur se produit lors de la vérification des prérequis. Reportez-vous à la fenêtre Sortie pour les messages d’erreur détaillés. (Échec de la vérification : %s)]]></Val>
+            <Val><![CDATA[La vérification des conditions préalables a échoué. Veuillez consulter le %s pour voir les détails. Si vous souhaitez éviter la vérification et l'installation des prérequis, vous pouvez les désactiver dans les paramètres de Visual Studio Code.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Error occurs when checking prerequisites. Refer to the Output window for detailed error messages. (Fail to check: %s)]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2089,11 +2767,56 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.preview.installApp.bot.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[To continue to preview your application in Outlook, you need to follow two steps:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Pour continuer à afficher un aperçu de votre application dans Outlook, vous devez suivre deux étapes :]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.preview.installApp.bot.guide2" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Second, please click 'Configure Outlook', sign in to the portal with the same Azure account you used in Teams Toolkit. Select 'Outlook' in the portal and click the 'Apply' button to connect your bot to the Outlook channel.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ensuite, cliquez sur "Configurer Outlook", connectez-vous au portail avec le même compte Azure que vous avez utilisé dans le kit de ressources Teams. Sélectionnez 'Outlook' dans le portail et cliquez sur le bouton 'Appliquer' pour connecter votre robot au canal Outlook.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.preview.installApp.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[To continue to preview your application in Outlook or Office.com, you need to install the app via Teams manually.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Pour continuer à afficher un aperçu de votre application dans Outlook ou Office.com, vous devez installer manuellement l'application via Teams.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.preview.launchTeamsApp" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Preparing to launch Teams app...]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Préparation du lancement de l’application Teams...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.preview.platform.placeholder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select a platform to preview the app]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Sélectionner une plateforme pour afficher un aperçu de l’application]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.preview.platform.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Platform]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Plateforme]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2134,11 +2857,11 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.progressHandler.teamsToolkitComponent" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";teamstoolkit.progressHandler.showOutputLink" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[[Teams Toolkit]5D;]]></Val>
+          <Val><![CDATA[Check [output window]5D;(%s) for details.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[[Teams Toolkit]5D;]]></Val>
+            <Val><![CDATA[Pour plus d’informations, consultez [output window]5D;(%s).]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2170,11 +2893,20 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.qm.selectFileOrFolder" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";teamstoolkit.qm.selectFile" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Select file/folder]]></Val>
+          <Val><![CDATA[Select file]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Sélectionner un fichier/dossier]]></Val>
+            <Val><![CDATA[Sélectionner un fichier]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.qm.selectFolder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select folder]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Sélectionner un dossier]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2256,6 +2988,96 @@
           <Val><![CDATA[Take Survey]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Répondre à l'enquête]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.tutorials.addSso.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Develop a single sign-on feature for the Teams Launch pages and bot capability]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Développer une fonctionnalité d’authentification unique pour les pages de lancement Teams et la fonctionnalité de bot]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.tutorials.addSso.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Add Single Sign-On]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ajouter l'authentification unique]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.tutorials.commandAndResponse.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Automate repetitive tasks with a simple command and response in conversation]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Automatiser les tâches répétitives à l’aide d’une simple commande et d’une réponse dans la conversation.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.tutorials.commandAndResponse.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Build command and response]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Générer la commande et la réponse]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.tutorials.connectApi.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Connect to an API with authentication support using TeamsFx SDK]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Connecter à une API avec prise en charge de l’authentification à l’aide du Kit de développement logiciel (SDK) TeamsFx]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.tutorials.connectApi.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Connect to an API]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Connecter à une API]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.tutorials.embedWebPages.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Bring your own static webpages and embed in Microsoft Teams]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Apportez vos propres pages web statiques et incorporez-les dans Microsoft Teams.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.tutorials.embedWebPages.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Embed existing web pages]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Incorporer des pages web existantes]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.tutorials.sendNotification.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Send notifications to Teams from your web services with Bot or incoming webhook]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Envoyer des notifications à Teams à partir de vos services web avec bot ou webhook entrant]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.tutorials.sendNotification.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Send notification to Teams]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Envoyer une notification à Teams]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2409,15 +3231,6 @@
           <Val><![CDATA[Invalid folder]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Dossier non valide]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.webview.quickStartPageTitle" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Quick Start]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Démarrage rapide]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

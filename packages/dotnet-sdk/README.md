@@ -161,6 +161,79 @@ catch (ExceptionWithCode e)
     }
     ```
 
+### Using Conversation Bot for Notification
+
+1. Initialize your own bot adapter and the `ConversationBot` in your app's startup (usually it's in `Program.cs` or `Startup.cs`)
+    ```csharp
+    // Create the Conversation with notification feature enabled.
+    builder.Services.AddSingleton(sp =>
+    {
+        var options = new ConversationOptions()
+        {
+            // NOTE: you need to register your CloudAdapter into your service before conversation bot initialization.
+            Adapter = sp.GetService<CloudAdapter>(),
+            Notification = new NotificationOptions
+            {
+                BotAppId = botAppId, // Your bot app ID
+            },
+        };
+
+        return new ConversationBot(options);
+    });
+    ```
+
+2. Reference the conversation bot in your bot message controller/handler to ensure it's initialized before handling any bot message
+    ```csharp
+    namespace SampleTeamsApp.Controllers
+    {
+        using Microsoft.AspNetCore.Mvc;
+        using Microsoft.Bot.Builder;
+        using Microsoft.Bot.Builder.Integration.AspNet.Core;
+        using Microsoft.TeamsFx.Conversation;
+
+        [Route("api/messages")]
+        [ApiController]
+        public class BotController : ControllerBase
+        {
+            private readonly ConversationBot _conversation;
+            private readonly IBot _bot;
+
+            public BotController(ConversationBot conversation, IBot bot)
+            {
+                _conversation = conversation;
+                _bot = bot;
+            }
+
+            [HttpPost]
+            public async Task PostAsync(CancellationToken cancellationToken = default)
+            {
+                await (_conversation.Adapter as CloudAdapter).ProcessAsync
+                (
+                    Request,
+                    Response,
+                    _bot,
+                    cancellationToken
+                );
+            }
+        }
+    }
+    ```
+
+3. Send notification (called by your own controller or trigger)
+    ``` csharp
+    public async Task NotifyAsync(ConversationBot conversation, CancellationToken cancellationToken)
+    {
+        var installations = await conversation.Notification.GetInstallationsAsync(cancellationToken);
+        foreach (var installation in installations)
+        {
+            await installation.SendMessage("Hello.", cancellationToken);
+
+            // Or, send adaptive card (need to build your own card object)
+            // await installation.SendAdaptiveCard(cardObject, cancellationToken);
+        }
+    }
+    ```
+
 ## SDK Upgrade Steps
 ### Upgrade from 0.1.0-rc to 0.3.0 (For projects created by Visual Studio 2019 toolkit)
 If there is an existing project created in VS2019, you can use the following steps to upgrade:

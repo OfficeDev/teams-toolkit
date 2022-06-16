@@ -40,37 +40,21 @@
     "out/**/*"
   ],
   "activationEvents": [
-    "*",
-    "onCommand:fx-extension.openWelcome",
-    "onCommand:fx-extension.openSamples",
-    "onCommand:fx-extension.openDocument",
-    "onCommand:fx-extension.cmpAccounts",
+    "onStartupFinished",
     "onCommand:fx-extension.create",
-    "onCommand:fx-extension.addCapability",
-    "onCommand:fx-extension.update",
-    "onCommand:fx-extension.openManifest",
-    "onCommand:fx-extension.validateManifest",
-    "onCommand:fx-extension.build",
-    "onCommand:fx-extension.provision",
-    "onCommand:fx-extension.deploy",
-    "onCommand:fx-extension.publish",
-    "onCommand:fx-extension.updateAad",
-    "onCommand:fx-extension.openAppManagement",
-    "onCommand:fx-extension.openBotManagement",
-    "onCommand:fx-extension.openReportIssues",
     "onCommand:fx-extension.getNewProjectPath",
-    "onCommand:fx-extension.openReadMe",
     "onCommand:fx-extension.openDeploymentTreeview",
+    "onCommand:fx-extension.openDocument",
+    "onCommand:fx-extension.openReadMe",
+    "onCommand:fx-extension.openSamples",
+    "onCommand:fx-extension.openWelcome",
+    "onCommand:fx-extension.selectAndDebug",
     "onCommand:fx-extension.selectTutorials",
-    "onCommand:fx-extension.connectExistingApi",
+    "onCommand:fx-extension.signinM365",
+    "onCommand:fx-extension.validate-getStarted-prerequisites",
     "onCommand:workbench.action.tasks.runTask",
-    "onCommand:fx-extension.addSso",
     "workspaceContains:**/.fx/*",
-    "onView:teamsfx-accounts",
-    "onView:teamsfx-environment",
-    "onView:teamsfx-development",
-    "onView:teamsfx-deployment",
-    "onView:teamsfx-help-and-feedback"
+    "onView:teamsfx-empty-project"
   ],
   "contributes": {
     "icons": {
@@ -108,11 +92,13 @@
     "viewsWelcome": [
       {
         "view": "teamsfx-empty-project",
-        "contents": "To start Teams app development experience, create a project or explore our samples. For more information, visit [Get Started](command:fx-extension.openWelcome?%5B%22SideBar%22%5D), [Tutorials](command:fx-extension.selectTutorials?%5B%22SideBar%22%5D) or [Documentation](command:fx-extension.openDocument?%5B%22SideBar%22%5D).\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)"
+        "contents": "To start Teams app development experience, create a project or explore our samples. For more information, visit [Get Started](command:fx-extension.openWelcome?%5B%22SideBar%22%5D), [Tutorials](command:fx-extension.selectTutorials?%5B%22SideBar%22%5D) or [Documentation](command:fx-extension.openDocument?%5B%22SideBar%22%5D).\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)",
+        "enablement": "fx-extension.initialized"
       },
       {
         "view": "teamsfx-empty-project-and-check-upgrade",
-        "contents": "To start Teams app development experience, create a project or explore our samples. For more information, visit [Get Started](command:fx-extension.openWelcome?%5B%22SideBar%22%5D), [Tutorials](command:fx-extension.selectTutorials?%5B%22SideBar%22%5D) or [Documentation](command:fx-extension.openDocument?%5B%22SideBar%22%5D).\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)\nYou need to upgrade the project to the new configuration files to use the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.\nNotice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <=2.10.0.\n[Upgrade project](command:fx-extension.checkProjectUpgrade)"
+        "contents": "To start Teams app development experience, create a project or explore our samples. For more information, visit [Get Started](command:fx-extension.openWelcome?%5B%22SideBar%22%5D), [Tutorials](command:fx-extension.selectTutorials?%5B%22SideBar%22%5D) or [Documentation](command:fx-extension.openDocument?%5B%22SideBar%22%5D).\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)\nYou need to upgrade the project to the new configuration files to use the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.\nNotice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <=2.10.0.\n[Upgrade project](command:fx-extension.checkProjectUpgrade)",
+        "enablement": "fx-extension.initialized"
       }
     ],
     "views": {
@@ -120,50 +106,50 @@
         {
           "id": "teamsfx-accounts",
           "name": "Accounts",
-          "when": "fx-extension.sidebarWelcome.treeview"
+          "when": "fx-extension.isTeamsFx"
         },
         {
           "id": "teamsfx-environment",
           "name": "Environment",
-          "when": "fx-extension.sidebarWelcome.treeview"
+          "when": "fx-extension.isTeamsFx"
         },
         {
           "id": "teamsfx-development",
           "name": "Development",
-          "when": "fx-extension.sidebarWelcome.treeview && !fx-extension.customizedTreeview"
+          "when": "fx-extension.isTeamsFx"
         },
         {
           "type": "webview",
           "id": "teamsfx-development-webview",
           "name": "Development",
-          "when": "fx-extension.sidebarWelcome.treeview && fx-extension.customizedTreeview"
+          "when": "fx-extension.isTeamsFx && fx-extension.customizedTreeview"
         },
         {
           "id": "teamsfx-deployment",
           "name": "Deployment",
-          "when": "fx-extension.sidebarWelcome.treeview && !fx-extension.customizedTreeview"
+          "when": "fx-extension.isTeamsFx"
         },
         {
           "type": "webview",
           "id": "teamsfx-deployment-webview",
           "name": "Deployment",
-          "when": "fx-extension.sidebarWelcome.treeview && fx-extension.customizedTreeview"
+          "when": "fx-extension.isTeamsFx && fx-extension.customizedTreeview"
         },
         {
           "id": "teamsfx-help-and-feedback",
           "name": "Help and feedback",
-          "when": "fx-extension.sidebarWelcome.treeview",
+          "when": "fx-extension.isTeamsFx",
           "visibility": "collapsed"
         },
         {
           "id": "teamsfx-empty-project",
           "name": "Teams Toolkit",
-          "when": "fx-extension.sidebarWelcome.default && !fx-extension.canUpgradeToArmAndMultiEnv"
+          "when": "!fx-extension.isTeamsFx && !fx-extension.canUpgradeToArmAndMultiEnv"
         },
         {
           "id": "teamsfx-empty-project-and-check-upgrade",
           "name": "Teams Toolkit",
-          "when": "fx-extension.sidebarWelcome.default && fx-extension.canUpgradeToArmAndMultiEnv"
+          "when": "!fx-extension.isTeamsFx && fx-extension.canUpgradeToArmAndMultiEnv"
         }
       ]
     },
@@ -176,12 +162,12 @@
         },
         {
           "command": "fx-extension.deployManifestFromCtxMenu",
-          "when": "fx-extension.isDeployManifestEnabled && resourceFilename =~ /^manifest.(local|remote).template.json$/ && !fx-extension.isConfigUnifyEnabled",
+          "when": "resourceFilename =~ /^manifest.(local|remote).template.json$/ && !fx-extension.isConfigUnifyEnabled",
           "group": "deploy@0"
         },
         {
           "command": "fx-extension.deployManifestFromCtxMenu",
-          "when": "fx-extension.isDeployManifestEnabled && resourceFilename == manifest.template.json && fx-extension.isConfigUnifyEnabled",
+          "when": "resourceFilename == manifest.template.json && fx-extension.isConfigUnifyEnabled",
           "group": "deploy@0"
         }
       ],
@@ -327,13 +313,21 @@
         },
         {
           "command": "fx-extension.openPreviewAadFile",
-          "when": "resourceFilename == aad.template.json",
+          "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled",
           "group": "navigation"
         }
       ],
       "commandPalette": [
         {
-          "command": "fx-extension.signOut",
+          "command": "fx-extension.azureAccountSettings",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.createAccount",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.deployAadAppManifestFromCtxMenu",
           "when": "false"
         },
         {
@@ -341,39 +335,11 @@
           "when": "false"
         },
         {
-          "command": "fx-extension.signInGuideline",
+          "command": "fx-extension.grantPermission",
           "when": "false"
         },
         {
-          "command": "fx-extension.m365AccountSettings",
-          "when": "false"
-        },
-        {
-          "command": "fx-extension.refreshSideloading",
-          "when": "false"
-        },
-        {
-          "command": "fx-extension.azureAccountSettings",
-          "when": "false"
-        },
-        {
-          "command": "fx-extension.specifySubscription",
-          "when": "false"
-        },
-        {
-          "command": "fx-extension.selectAndDebug",
-          "when": "false"
-        },
-        {
-          "command": "fx-extension.refreshEnvironment",
-          "when": "false"
-        },
-        {
-          "command": "fx-extension.preview",
-          "when": "false"
-        },
-        {
-          "command": "fx-extension.previewWithIcon",
+          "command": "fx-extension.listCollaborator",
           "when": "false"
         },
         {
@@ -385,39 +351,11 @@
           "when": "false"
         },
         {
-          "command": "fx-extension.listCollaborator",
+          "command": "fx-extension.m365AccountSettings",
           "when": "false"
-        },
-        {
-          "command": "fx-extension.openSubscriptionInPortal",
-          "when": "false"
-        },
-        {
-          "command": "fx-extension.openResourceGroupInPortal",
-          "when": "false"
-        },
-        {
-          "command": "fx-extension.grantPermission",
-          "when": "false"
-        },
-        {
-          "command": "fx-extension.openSurvey",
-          "when": "false"
-        },
-        {
-          "command": "fx-extension.checkProjectUpgrade",
-          "when": "fx-extension.canUpgradeToArmAndMultiEnv"
         },
         {
           "command": "fx-extension.openAccountLink",
-          "when": "false"
-        },
-        {
-          "command": "fx-extension.openEnvLink",
-          "when": "false"
-        },
-        {
-          "command": "fx-extension.openDevelopmentLink",
           "when": "false"
         },
         {
@@ -425,175 +363,115 @@
           "when": "false"
         },
         {
+          "command": "fx-extension.openDevelopmentLink",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openEnvLink",
+          "when": "false"
+        },
+        {
           "command": "fx-extension.openHelpFeedbackLink",
           "when": "false"
         },
         {
-          "command": "fx-extension.deployAadAppManifestFromCtxMenu",
+          "command": "fx-extension.openPreviewAadFile",
           "when": "false"
+        },
+        {
+          "command": "fx-extension.openPreviewFile",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openResourceGroupInPortal",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openSchema",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openSubscriptionInPortal",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.preview",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.previewWithIcon",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.refreshEnvironment",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.refreshSideloading",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.selectAndDebug",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.signInGuideline",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.signOut",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.specifySubscription",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.checkProjectUpgrade",
+          "when": "fx-extension.canUpgradeToArmAndMultiEnv"
         }
       ]
     },
     "commands": [
       {
-        "command": "fx-extension.deployAadAppManifest",
-        "title": "%teamstoolkit.commands.deployAadAppManifest.title%",
-        "enablement": "fx-extension.isAadManifestEnabled"
-      },
-      {
-        "command": "fx-extension.deployAadAppManifestFromCtxMenu",
-        "title": "%teamstoolkit.commands.deployAadAppManifestFromCtxMenu.title%",
-        "enablement": "fx-extension.isAadManifestEnabled"
-      },
-      {
-        "command": "fx-extension.signOut",
-        "title": "%teamstoolkit.commands.signOut.title%",
-        "icon": "$(sign-out)"
-      },
-      {
-        "command": "fx-extension.signInGuideline",
-        "title": "%teamstoolkit.commands.signInGuideline.title%",
-        "icon": "$(info)"
-      },
-      {
-        "command": "fx-extension.m365AccountSettings",
-        "title": "M365 portal",
-        "icon": "$(settings-gear)"
-      },
-      {
-        "command": "fx-extension.refreshSideloading",
-        "title": "%teamstoolkit.commands.refresh.title%",
-        "icon": "$(refresh)"
-      },
-      {
-        "command": "fx-extension.azureAccountSettings",
-        "title": "Azure portal",
-        "icon": "$(settings-gear)"
-      },
-      {
-        "command": "fx-extension.specifySubscription",
-        "title": "%teamstoolkit.commands.specifySubscription.title%",
-        "icon": "$(list-selection)"
+        "command": "fx-extension.create",
+        "title": "%teamstoolkit.commands.createProject.title%",
+        "category": "Teams"
       },
       {
         "command": "fx-extension.cmpAccounts",
-        "title": "%teamstoolkit.commands.accounts.title%"
+        "title": "%teamstoolkit.commands.accounts.title%",
+        "category": "Teams"
       },
       {
-        "command": "fx-extension.openWelcome",
-        "title": "%teamstoolkit.commands.getstarted.title%"
+        "command": "fx-extension.getNewProjectPath",
+        "title": "Teams - Get Path",
+        "enablement": "never"
       },
       {
-        "command": "fx-extension.openSurvey",
-        "title": "%teamstoolkit.commands.survey.title%"
-      },
-      {
-        "command": "fx-extension.openSamples",
-        "title": "%teamstoolkit.commands.viewSamples.title%"
+        "command": "fx-extension.openDeploymentTreeview",
+        "title": "Teams - Open Deployment Treeview",
+        "enablement": "never"
       },
       {
         "command": "fx-extension.openDocument",
-        "title": "%teamstoolkit.commands.document.title%"
+        "title": "%teamstoolkit.commands.document.title%",
+        "category": "Teams"
       },
       {
-        "command": "fx-extension.create",
-        "title": "%teamstoolkit.commands.createProject.title%"
-      },
-      {
-        "command": "fx-extension.update",
-        "title": "%teamstoolkit.commands.addCloudResource.title%",
-        "enablement": "!fx-entension.previewFeaturesEnabled && !fx-extension.isSPFx"
-      },
-      {
-        "command": "fx-extension.addCapability",
-        "title": "%teamstoolkit.commands.addCapability.title%",
-        "enablement": "!fx-entension.previewFeaturesEnabled && !fx-extension.isSPFx && !fx-extension.isM365"
-      },
-      {
-        "command": "fx-extension.addFeature",
-        "title": "%teamstoolkit.commands.addFeature.title%",
-        "enablement": "!fx-extension.isSPFx && fx-entension.previewFeaturesEnabled"
-      },
-      {
-        "command": "fx-extension.openManifest",
-        "title": "%teamstoolkit.commands.editManifest.title%"
-      },
-      {
-        "command": "fx-extension.validateManifest",
-        "title": "%teamstoolkit.commands.validateManifest.title%"
-      },
-      {
-        "command": "fx-extension.connectExistingApi",
-        "title": "%teamstoolkit.commands.connectExistingApi.title%",
-        "enablement": "!fx-entension.previewFeaturesEnabled && fx-extension.isApiConnectEnabled"
-      },
-      {
-        "command": "fx-extension.build",
-        "title": "%teamstoolkit.commands.zipPackage.title%"
-      },
-      {
-        "command": "fx-extension.provision",
-        "title": "%teamstoolkit.commands.provision.title%"
-      },
-      {
-        "command": "fx-extension.checkProjectUpgrade",
-        "title": "%teamstoolkit.commands.upgradeProject.title%"
-      },
-      {
-        "command": "fx-extension.deploy",
-        "title": "%teamstoolkit.commands.deploy.title%"
-      },
-      {
-        "command": "fx-extension.publish",
-        "title": "%teamstoolkit.commands.publish.title%"
-      },
-      {
-        "command": "fx-extension.openAppManagement",
-        "title": "%teamstoolkit.commands.devPortal.title%"
-      },
-      {
-        "command": "fx-extension.openReportIssues",
-        "title": "%teamstoolkit.commands.reportIssue.title%"
-      },
-      {
-        "command": "fx-extension.validate-dependencies",
-        "title": "Teams - Validate Dependencies",
+        "command": "fx-extension.openReadMe",
+        "title": "Teams - Open Read Me",
         "enablement": "never"
       },
       {
-        "command": "fx-extension.validate-spfx-dependencies",
-        "title": "Teams - Validate SPFx Dependencies",
-        "enablement": "never"
+        "command": "fx-extension.openSamples",
+        "title": "%teamstoolkit.commands.viewSamples.title%",
+        "category": "Teams"
       },
       {
-        "command": "fx-extension.validate-local-prerequisites",
-        "title": "Teams - Validate Local Prerequisites",
-        "enablement": "never"
-      },
-      {
-        "command": "fx-extension.install-app-in-teams",
-        "title": "Teams - Install App in Teams",
-        "enablement": "never"
-      },
-      {
-        "command": "fx-extension.validate-getStarted-prerequisites",
-        "title": "Teams - Validate Get Started Prerequisites",
-        "enablement": "never"
-      },
-      {
-        "command": "fx-extension.get-func-path",
-        "title": "Teams - Get Func Path for Environment Variable",
-        "enablement": "never"
-      },
-      {
-        "command": "fx-extension.pre-debug-check",
-        "title": "Teams - Pre Debug Check",
-        "enablement": "never"
-      },
-      {
-        "command": "fx-extension.backend-extensions-install",
-        "title": "Teams - Backend Extensions Install",
-        "enablement": "never"
+        "command": "fx-extension.openWelcome",
+        "title": "%teamstoolkit.commands.getstarted.title%",
+        "category": "Teams"
       },
       {
         "command": "fx-extension.selectAndDebug",
@@ -601,54 +479,135 @@
         "icon": "$(run)"
       },
       {
-        "command": "fx-extension.addCICDWorkflows",
-        "title": "%teamstoolkit.commands.addCICDWorkflows.title%",
-        "enablement": "!fx-entension.previewFeaturesEnabled",
-        "icon": "$(sync)"
+        "command": "fx-extension.selectTutorials",
+        "title": "%teamstoolkit.commands.selectTutorials.title%",
+        "category": "Teams"
       },
       {
-        "command": "fx-extension.openPreviewFile",
-        "title": "%teamstoolkit.commands.previewManifest.title%",
-        "icon": "$(file-code)"
+        "command": "fx-extension.validate-getStarted-prerequisites",
+        "title": "Teams - Validate Get Started Prerequisites",
+        "enablement": "never"
       },
       {
-        "command": "fx-extension.openPreviewAadFile",
-        "title": "%teamstoolkit.commands.previewAadManifest.title%",
-        "icon": "$(file-code)",
-        "enablement": "fx-extension.isAadManifestEnabled"
+        "command": "fx-extension.addEnvironment",
+        "title": "%teamstoolkit.commands.createEnvironment.title%",
+        "icon": "$(add)",
+        "enablement": "fx-extension.isTeamsFx",
+        "category": "Teams"
       },
       {
-        "command": "fx-extension.openSchema",
-        "title": "%teamstoolkit.commands.openManifestSchema.title%",
-        "icon": "$(file-code)"
+        "command": "fx-extension.addFeature",
+        "title": "%teamstoolkit.commands.addFeature.title%",
+        "enablement": "fx-extension.isTeamsFx && !fx-extension.isSPFx",
+        "category": "Teams"
+      },
+      {
+        "command": "fx-extension.build",
+        "title": "%teamstoolkit.commands.zipPackage.title%",
+        "enablement": "fx-extension.isTeamsFx",
+        "category": "Teams"
+      },
+      {
+        "command": "fx-extension.checkProjectUpgrade",
+        "title": "%teamstoolkit.commands.upgradeProject.title%",
+        "enablement": "fx-extension.initialized",
+        "category": "Teams"
+      },
+      {
+        "command": "fx-extension.deploy",
+        "title": "%teamstoolkit.commands.deploy.title%",
+        "enablement": "fx-extension.isTeamsFx",
+        "category": "Teams"
+      },
+      {
+        "command": "fx-extension.deployAadAppManifest",
+        "title": "%teamstoolkit.commands.deployAadAppManifest.title%",
+        "enablement": "fx-extension.isTeamsFx && fx-extension.isAadManifestEnabled",
+        "category": "Teams"
+      },
+      {
+        "command": "fx-extension.migrateTeamsManifest",
+        "title": "%teamstoolkit.commands.migrateManifest.title%",
+        "enablement": "fx-extension.isTeamsFx",
+        "category": "Teams"
+      },
+      {
+        "command": "fx-extension.migrateTeamsTabApp",
+        "title": "%teamstoolkit.commands.migrateApp.title%",
+        "enablement": "fx-extension.isTeamsFx",
+        "category": "Teams"
+      },
+      {
+        "command": "fx-extension.openAppManagement",
+        "title": "%teamstoolkit.commands.devPortal.title%",
+        "enablement": "fx-extension.isTeamsFx",
+        "category": "Teams"
+      },
+      {
+        "command": "fx-extension.openManifest",
+        "title": "%teamstoolkit.commands.editManifest.title%",
+        "enablement": "fx-extension.isTeamsFx",
+        "category": "Teams"
+      },
+      {
+        "command": "fx-extension.openReportIssues",
+        "title": "%teamstoolkit.commands.reportIssue.title%",
+        "enablement": "fx-extension.isTeamsFx",
+        "category": "Teams"
+      },
+      {
+        "command": "fx-extension.provision",
+        "title": "%teamstoolkit.commands.provision.title%",
+        "enablement": "fx-extension.isTeamsFx",
+        "category": "Teams"
+      },
+      {
+        "command": "fx-extension.publish",
+        "title": "%teamstoolkit.commands.publish.title%",
+        "enablement": "fx-extension.isTeamsFx",
+        "category": "Teams"
       },
       {
         "command": "fx-extension.updatePreviewFile",
         "title": "%teamstoolkit.commands.updateManifest.title%",
-        "icon": "$(sync)"
+        "icon": "$(sync)",
+        "enablement": "fx-extension.isTeamsFx",
+        "category": "Teams"
+      },
+      {
+        "command": "fx-extension.validateManifest",
+        "title": "%teamstoolkit.commands.validateManifest.title%",
+        "enablement": "fx-extension.isTeamsFx",
+        "category": "Teams"
+      },
+      {
+        "command": "fx-extension.azureAccountSettings",
+        "title": "%teamstoolkit.commands.azureAccountSettings.title%",
+        "icon": "$(settings-gear)"
+      },
+      {
+        "command": "fx-extension.createAccount",
+        "title": "%teamstoolkit.commands.createAccount.title%",
+        "icon": "$(add)"
+      },
+      {
+        "command": "fx-extension.deployAadAppManifestFromCtxMenu",
+        "title": "%teamstoolkit.commands.deployAadAppManifestFromCtxMenu.title%",
+        "enablement": "fx-extension.isAadManifestEnabled"
       },
       {
         "command": "fx-extension.deployManifestFromCtxMenu",
         "title": "%teamstoolkit.commands.deployManifest.ctxMenu.title%"
       },
       {
-        "command": "fx-extension.addEnvironment",
-        "title": "%teamstoolkit.commands.createEnvironment.title%",
-        "icon": "$(add)"
+        "command": "fx-extension.grantPermission",
+        "title": "%teamstoolkit.commands.addAppOwner.title%",
+        "icon": "$(person-add)"
       },
       {
-        "command": "fx-extension.refreshEnvironment",
-        "title": "%teamstoolkit.commands.refresh.title%",
-        "icon": "$(refresh)"
-      },
-      {
-        "command": "fx-extension.preview",
-        "title": "%teamstoolkit.commands.previewApp.title%"
-      },
-      {
-        "command": "fx-extension.previewWithIcon",
-        "title": "%teamstoolkit.commands.previewApp.title%",
-        "icon": "$(run)"
+        "command": "fx-extension.listCollaborator",
+        "title": "%teamstoolkit.commands.listAppOwner.title%",
+        "icon": "$(organization)"
       },
       {
         "command": "fx-extension.localdebug",
@@ -660,51 +619,13 @@
         "icon": "$(debug-alt)"
       },
       {
-        "command": "fx-extension.listCollaborator",
-        "title": "%teamstoolkit.commands.listAppOwner.title%",
-        "icon": "$(organization)"
-      },
-      {
-        "command": "fx-extension.openSubscriptionInPortal",
-        "title": "%teamstoolkit.commands.openInPortal.title%",
-        "icon": "$(ports-open-browser-icon)"
-      },
-      {
-        "command": "fx-extension.openResourceGroupInPortal",
-        "title": "%teamstoolkit.commands.openInPortal.title%",
-        "icon": "$(ports-open-browser-icon)"
-      },
-      {
-        "command": "fx-extension.grantPermission",
-        "title": "%teamstoolkit.commands.addAppOwner.title%",
-        "icon": "$(person-add)"
-      },
-      {
-        "command": "fx-extension.migrateTeamsTabApp",
-        "title": "%teamstoolkit.commands.migrateApp.title%"
-      },
-      {
-        "command": "fx-extension.migrateTeamsManifest",
-        "title": "%teamstoolkit.commands.migrateManifest.title%"
+        "command": "fx-extension.m365AccountSettings",
+        "title": "%teamstoolkit.commands.m365AccountSettings.title%",
+        "icon": "$(settings-gear)"
       },
       {
         "command": "fx-extension.openAccountLink",
         "title": "%teamstoolkit.commands.accountsLink.title%",
-        "icon": "$(info)"
-      },
-      {
-        "command": "fx-extension.createAccount",
-        "title": "%teamstoolkit.commands.createAccount.title%",
-        "icon": "$(add)"
-      },
-      {
-        "command": "fx-extension.openEnvLink",
-        "title": "%teamstoolkit.commands.environmentsLink.title%",
-        "icon": "$(info)"
-      },
-      {
-        "command": "fx-extension.openDevelopmentLink",
-        "title": "%teamstoolkit.commands.developmentLink.title%",
         "icon": "$(info)"
       },
       {
@@ -713,38 +634,78 @@
         "icon": "$(info)"
       },
       {
+        "command": "fx-extension.openDevelopmentLink",
+        "title": "%teamstoolkit.commands.developmentLink.title%",
+        "icon": "$(info)"
+      },
+      {
+        "command": "fx-extension.openEnvLink",
+        "title": "%teamstoolkit.commands.environmentsLink.title%",
+        "icon": "$(info)"
+      },
+      {
         "command": "fx-extension.openHelpFeedbackLink",
         "title": "%teamstoolkit.commands.feedbackLink.title%",
         "icon": "$(info)"
       },
       {
-        "command": "fx-extension.getNewProjectPath",
-        "title": "Teams: Get Path",
-        "enablement": "never"
+        "command": "fx-extension.openPreviewAadFile",
+        "title": "%teamstoolkit.commands.previewAadManifest.title%",
+        "icon": "$(file-code)"
       },
       {
-        "command": "fx-extension.openReadMe",
-        "title": "Teams: Open Read Me",
-        "enablement": "never"
+        "command": "fx-extension.openPreviewFile",
+        "title": "%teamstoolkit.commands.previewManifest.title%",
+        "icon": "$(file-code)"
       },
       {
-        "command": "fx-extension.openDeploymentTreeview",
-        "title": "Teams: Open Deployment Treeview",
-        "enablement": "never"
+        "command": "fx-extension.openResourceGroupInPortal",
+        "title": "%teamstoolkit.commands.openInPortal.title%",
+        "icon": "$(ports-open-browser-icon)"
       },
       {
-        "command": "fx-extension.addSso",
-        "title": "%teamstoolkit.commands.addSso.title%",
-        "enablement": "!fx-entension.previewFeaturesEnabled && fx-extension.isAadManifestEnabled"
+        "command": "fx-extension.openSchema",
+        "title": "%teamstoolkit.commands.openManifestSchema.title%",
+        "icon": "$(file-code)"
       },
       {
-        "command": "fx-extension.selectTutorials",
-        "title": "%teamstoolkit.commands.selectTutorials.title%"
+        "command": "fx-extension.openSubscriptionInPortal",
+        "title": "%teamstoolkit.commands.openInPortal.title%",
+        "icon": "$(ports-open-browser-icon)"
       },
       {
-        "command": "fx-extension.openTutorial",
-        "title": "Teams: Open Guided Tutorial",
-        "enablement": "never"
+        "command": "fx-extension.preview",
+        "title": "%teamstoolkit.commands.previewApp.title%"
+      },
+      {
+        "command": "fx-extension.previewWithIcon",
+        "title": "%teamstoolkit.commands.previewApp.title%",
+        "icon": "$(run)"
+      },
+      {
+        "command": "fx-extension.refreshEnvironment",
+        "title": "%teamstoolkit.commands.refresh.title%",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "fx-extension.refreshSideloading",
+        "title": "%teamstoolkit.commands.refresh.title%",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "fx-extension.signInGuideline",
+        "title": "%teamstoolkit.commands.signInGuideline.title%",
+        "icon": "$(info)"
+      },
+      {
+        "command": "fx-extension.signOut",
+        "title": "%teamstoolkit.commands.signOut.title%",
+        "icon": "$(sign-out)"
+      },
+      {
+        "command": "fx-extension.specifySubscription",
+        "title": "%teamstoolkit.commands.specifySubscription.title%",
+        "icon": "$(list-selection)"
       }
     ],
     "taskDefinitions": [
@@ -1176,8 +1137,8 @@
     "@azure/identity": "^1.2.1",
     "@azure/ms-rest-nodeauth": "^3.1.1",
     "@azure/msal-node": "^1.0.0-beta.5",
-    "@microsoft/teamsfx-api": "^0.19.0",
-    "@microsoft/teamsfx-core": "^1.9.0",
+    "@microsoft/teamsfx-api": "^0.20.0-rc.0",
+    "@microsoft/teamsfx-core": "^1.10.0-rc.0",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/extension-telemetry": "^0.4.8",
     "@vscode/webview-ui-toolkit": "^0.9.3",

@@ -243,16 +243,6 @@ export function anonymizeFilePaths(stack?: string): string {
   return updatedStack;
 }
 
-export async function isTeamsfx(): Promise<boolean> {
-  if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
-    const workspaceFolder = vscode.workspace.workspaceFolders[0];
-
-    return await commonUtils.isFxProject(workspaceFolder.uri.fsPath);
-  }
-
-  return false;
-}
-
 export function getConfiguration(key: string): boolean {
   const configuration: vscode.WorkspaceConfiguration =
     vscode.workspace.getConfiguration(CONFIGURATION_PREFIX);
@@ -307,10 +297,6 @@ export function getAllFeatureFlags(): string[] | undefined {
     });
 
   return result;
-}
-
-export function getIsExistingUser(): string | undefined {
-  return globalVariables.context.globalState.get<string>(UserState.IsExisting);
 }
 
 export async function getSubscriptionInfoFromEnv(
@@ -397,18 +383,13 @@ export async function getProvisionSucceedFromEnv(env: string): Promise<boolean |
 }
 
 async function getProvisionResultJson(env: string): Promise<Json | undefined> {
-  if (vscode.workspace.workspaceFolders) {
-    const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
-
-    const workspacePath: string = workspaceFolder.uri.fsPath;
-
-    if (!(await commonUtils.isFxProject(workspacePath))) {
+  if (globalVariables.workspaceUri) {
+    if (!globalVariables.isTeamsFxProject) {
       return undefined;
     }
 
     const configRoot = await commonUtils.getProjectRoot(
-      workspaceFolder.uri.fsPath,
-
+      globalVariables.workspaceUri.fsPath,
       `.${ConfigFolderName}`
     );
 

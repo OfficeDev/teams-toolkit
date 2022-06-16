@@ -7,12 +7,12 @@ import sinon from "sinon";
 import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
 import { AppStudioPluginImpl } from "./../../../../../src/plugins/resource/appstudio/plugin";
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
-import { IAppDefinition } from "./../../../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
+import { AppDefinition } from "../../../../../src/plugins/resource/appstudio/interfaces/appDefinition";
 import { ConfigMap, PluginContext, Platform } from "@microsoft/teamsfx-api";
 import { getAzureProjectRoot } from "./../helper";
 import { newEnvInfo } from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
-import { mockTokenProvider } from "./../../aad/helper";
+import { mockTokenProviderM365 } from "./../../aad/helper";
 import { v4 as uuid } from "uuid";
 
 describe("Provision Teams app with Azure", () => {
@@ -20,7 +20,7 @@ describe("Provision Teams app with Azure", () => {
   let plugin: AppStudioPlugin;
   let ctx: PluginContext;
 
-  const appDef: IAppDefinition = {
+  const appDef: AppDefinition = {
     appName: "my app",
     teamsAppId: "appId",
     userList: [
@@ -40,12 +40,10 @@ describe("Provision Teams app with Azure", () => {
       root: getAzureProjectRoot(),
       envInfo: newEnvInfo(),
       config: new ConfigMap(),
-      appStudioToken: mockTokenProvider(),
+      m365TokenProvider: mockTokenProviderM365(),
       answers: { platform: Platform.VSCode },
       cryptoProvider: new LocalCrypto(""),
     };
-
-    sandbox.stub(AppStudioClient, "validateManifest").resolves([]);
   });
 
   afterEach(async () => {

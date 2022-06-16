@@ -5,10 +5,19 @@
 
 import { Argv, Options } from "yargs";
 
-import { Colors, FxError, LogLevel, ok, Question, Result, UserError } from "@microsoft/teamsfx-api";
+import {
+  Colors,
+  err,
+  FxError,
+  LogLevel,
+  ok,
+  Question,
+  Result,
+  UserError,
+} from "@microsoft/teamsfx-api";
 
 import { YargsCommand } from "../yargsCommand";
-import AppStudioTokenProvider from "../commonlib/appStudioLogin";
+import M365TokenProvider from "../commonlib/m365Login";
 import AzureTokenProvider, { getAzureProvider } from "../commonlib/azureLogin";
 import AzureTokenCIProvider from "../commonlib/azureLoginCI";
 import {
@@ -22,9 +31,11 @@ import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
 import { getColorizedString, setSubscriptionId, toLocaleLowerCase, toYargsOptions } from "../utils";
 import { checkIsOnline } from "../commonlib/codeFlowLogin";
+import { AppStudioScopes } from "@microsoft/teamsfx-core";
 
 async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
-  const result = await AppStudioTokenProvider.getJsonObject();
+  const appStudioTokenJsonRes = await M365TokenProvider.getJsonObject({ scopes: AppStudioScopes });
+  const result = appStudioTokenJsonRes.isOk() ? appStudioTokenJsonRes.value : undefined;
   if (result) {
     if (commandType === "login") {
       const message = [
@@ -162,7 +173,11 @@ class AccountShow extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    const m365Status = await AppStudioTokenProvider.getStatus();
+    const m365StatusRes = await M365TokenProvider.getStatus({ scopes: AppStudioScopes });
+    if (m365StatusRes.isErr()) {
+      return err(m365StatusRes.error);
+    }
+    const m365Status = m365StatusRes.value;
     if (m365Status.status === signedIn) {
       (await checkIsOnline())
         ? await outputM365Info("show")
@@ -217,7 +232,7 @@ export class M365Login extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    await AppStudioTokenProvider.signout();
+    await M365TokenProvider.signout();
     await outputM365Info("login");
     return ok(null);
   }
@@ -318,7 +333,7 @@ class AccountLogout extends YargsCommand {
         break;
       }
       case "m365": {
-        const result = await AppStudioTokenProvider.signout();
+        const result = await M365TokenProvider.signout();
         if (result) {
           CLILogProvider.necessaryLog(
             LogLevel.Info,

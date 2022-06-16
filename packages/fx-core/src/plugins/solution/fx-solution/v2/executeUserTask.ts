@@ -142,7 +142,7 @@ export async function executeUserTask(
           ctx,
           inputs,
           envInfo,
-          tokenProvider.appStudioToken
+          tokenProvider.m365TokenProvider
         );
       }
     } else if (method === "validateManifest") {
@@ -1062,6 +1062,12 @@ export async function addSso(
   ctx.telemetryReporter.sendTelemetryEvent(SolutionTelemetryEvent.AddSso, {
     [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
     [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
+    [SolutionTelemetryProperty.AddTabSso]: needsTab
+      ? SolutionTelemetrySuccess.Yes
+      : SolutionTelemetrySuccess.No,
+    [SolutionTelemetryProperty.AddBotSso]: needsBot
+      ? SolutionTelemetrySuccess.Yes
+      : SolutionTelemetrySuccess.No,
   });
 
   return ok({

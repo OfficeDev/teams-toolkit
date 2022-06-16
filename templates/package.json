@@ -1,6 +1,6 @@
 {
     "name": "templates",
-    "version": "0.7.2",
+    "version": "0.8.0",
     "private": "true",
     "license": "MIT",
     "scripts": {
@@ -24,6 +24,9 @@
         "bot/ts/notification-trigger-http",
         "bot/ts/notification-trigger-timer",
         "bot/csharp/default",
+        "bot/csharp/notification-function-base",
+        "bot/csharp/notification-trigger-http",
+        "bot/csharp/notification-trigger-timer",
         "bot/csharp/notification-webapi",
         "bot/csharp/command-and-response",
         "function-base/js/default",

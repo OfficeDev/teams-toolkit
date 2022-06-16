@@ -11,7 +11,7 @@ import * as Utils from "../../../src/utils";
 import LogProvider from "../../../src/commonlib/log";
 import { expect } from "../utils";
 import { NotFoundSubscriptionId } from "../../../src/error";
-import AppStudioTokenProvider from "../../../src/commonlib/appStudioLogin";
+import M365TokenProvider from "../../../src/commonlib/m365Login";
 import AzureTokenProvider from "../../../src/commonlib/azureLogin";
 import { signedIn, signedOut } from "../../../src/commonlib/common/constant";
 
@@ -54,23 +54,23 @@ describe("Account Command Tests", function () {
     });
 
     sandbox
-      .stub(AppStudioTokenProvider, "getStatus")
+      .stub(M365TokenProvider, "getStatus")
       .onFirstCall()
-      .returns(Promise.resolve({ status: signedIn }))
+      .returns(Promise.resolve(ok({ status: signedIn })))
       .onSecondCall()
-      .returns(Promise.resolve({ status: signedOut }))
+      .returns(Promise.resolve(ok({ status: signedOut })))
       .onThirdCall()
-      .returns(Promise.resolve({ status: signedOut }));
+      .returns(Promise.resolve(ok({ status: signedOut })));
     sandbox
-      .stub(AppStudioTokenProvider, "getJsonObject")
+      .stub(M365TokenProvider, "getJsonObject")
       .onFirstCall()
-      .returns(Promise.resolve({ upn: "M365@xxx.com" }))
+      .returns(Promise.resolve(ok({ upn: "M365@xxx.com" })))
       .onSecondCall()
-      .returns(Promise.resolve({ upn: "M365@xxx.com" }))
+      .returns(Promise.resolve(ok({ upn: "M365@xxx.com" })))
       .onThirdCall()
-      .returns(Promise.resolve(undefined));
+      .returns(Promise.resolve(err(new UserError("login", "not login", "not login"))));
     sandbox
-      .stub(AppStudioTokenProvider, "signout")
+      .stub(M365TokenProvider, "signout")
       .onFirstCall()
       .returns(Promise.resolve(true))
       .onSecondCall()

@@ -268,6 +268,7 @@ export interface ProjectConfigV3 {
 export interface Component extends Json {
   name: string;
   hosting?: string;
+  code?: string;
   deployType?: "folder" | "zip";
   language?: string;
   folder?: string;

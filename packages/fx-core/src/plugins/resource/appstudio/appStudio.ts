@@ -3,13 +3,21 @@
 
 import axios, { AxiosInstance } from "axios";
 import { SystemError, LogProvider } from "@microsoft/teamsfx-api";
-import { IAppDefinition, IUserList } from "./interfaces/IAppDefinition";
+import { AppDefinition } from "./interfaces/appDefinition";
+import { AppUser } from "./interfaces/appUser";
 import { AppStudioError } from "./errors";
 import { IPublishingAppDenition } from "./interfaces/IPublishingAppDefinition";
 import { AppStudioResultFactory } from "./results";
-import { getAppStudioEndpoint } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { Constants, ErrorMessages } from "./constants";
+
+export function getAppStudioEndpoint(): string {
+  if (process.env.APP_STUDIO_ENV && process.env.APP_STUDIO_ENV === "int") {
+    return "https://dev-int.teams.microsoft.com";
+  } else {
+    return "https://dev.teams.microsoft.com";
+  }
+}
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -44,20 +52,20 @@ export namespace AppStudioClient {
    * @param {Buffer}  file - Zip file with manifest.json and two icons
    * @param {string}  appStudioToken
    * @param {LogProvider} logProvider
-   * @returns {Promise<IAppDefinition>}
+   * @returns {Promise<AppDefinition>}
    */
   export async function createApp(
     file: Buffer,
     appStudioToken: string,
     logProvider?: LogProvider
-  ): Promise<IAppDefinition> {
+  ): Promise<AppDefinition> {
     try {
       const requester = createRequesterWithToken(appStudioToken);
       const response = await requester.post(`/api/appdefinitions/v2/import`, file, {
         headers: { "Content-Type": "application/zip" },
       });
       if (response && response.data) {
-        const app = <IAppDefinition>response.data;
+        const app = <AppDefinition>response.data;
         await logProvider?.debug(`recieved data from app studio ${JSON.stringify(app)}`);
         return app;
       } else {
@@ -67,7 +75,8 @@ export namespace AppStudioClient {
       const correlationId = e.response?.headers[Constants.CORRELATION_ID];
       const message =
         (e.response?.data ? `data: ${JSON.stringify(e.response.data)}` : "") +
-        (correlationId ? `X-Correlation-ID: ${correlationId}` : "");
+        (correlationId ? `X-Correlation-ID: ${correlationId}` : "") +
+        (e.request?.path ? `Request path: ${e.request.method} ${e.request.path}` : "");
       const error = new Error(
         getLocalizedString("error.appstudio.teamsAppCreateFailed", e.name, e.message, message)
       );
@@ -110,7 +119,8 @@ export namespace AppStudioClient {
       const correlationId = e.response?.headers[Constants.CORRELATION_ID];
       const message =
         `Failed to upload icon for app ${teamsAppId}, due to ${e.name}: ${e.message}` +
-        (correlationId ? `X-Correlation-ID: ${correlationId}` : "");
+        (correlationId ? `X-Correlation-ID: ${correlationId}` : "") +
+        (e.request?.path ? `Request path: ${e.request.method} ${e.request.path}` : "");
       await logProvider?.warning(message);
       const error = new Error(message);
       if (e.response?.status) {
@@ -124,12 +134,12 @@ export namespace AppStudioClient {
     teamsAppId: string,
     appStudioToken: string,
     logProvider?: LogProvider
-  ): Promise<IAppDefinition> {
+  ): Promise<AppDefinition> {
     const requester = createRequesterWithToken(appStudioToken);
     try {
       const response = await requester.get(`/api/appdefinitions/${teamsAppId}`);
       if (response && response.data) {
-        const app = <IAppDefinition>response.data;
+        const app = <AppDefinition>response.data;
         if (app && app.teamsAppId && app.teamsAppId === teamsAppId) {
           return app;
         } else {
@@ -142,7 +152,8 @@ export namespace AppStudioClient {
       const correlationId = e.response?.headers[Constants.CORRELATION_ID];
       const message =
         `Cannot get the app definition with app ID ${teamsAppId}, due to ${e.name}: ${e.message}` +
-        (correlationId ? `X-Correlation-ID: ${correlationId}` : "");
+        (correlationId ? `X-Correlation-ID: ${correlationId}` : "") +
+        (e.request?.path ? `Request path: ${e.request.method} ${e.request.path}` : "");
       await logProvider?.warning(message);
       const err = new Error(message);
       if (e.response?.status) {
@@ -165,12 +176,12 @@ export namespace AppStudioClient {
    */
   export async function updateApp(
     teamsAppId: string,
-    appDefinition: IAppDefinition,
+    appDefinition: AppDefinition,
     appStudioToken: string,
     logProvider?: LogProvider,
     colorIconContent?: string,
     outlineIconContent?: string
-  ): Promise<IAppDefinition> {
+  ): Promise<AppDefinition> {
     // Get userlist from existing app
     const existingAppDefinition = await getApp(teamsAppId, appStudioToken, logProvider);
     const userlist = existingAppDefinition.userList;
@@ -199,7 +210,7 @@ export namespace AppStudioClient {
         appDefinition
       );
       if (response && response.data) {
-        const app = <IAppDefinition>response.data;
+        const app = <AppDefinition>response.data;
         return app;
       } else {
         throw new Error(
@@ -210,52 +221,13 @@ export namespace AppStudioClient {
       const correlationId = e.response?.headers[Constants.CORRELATION_ID];
       const message =
         `Cannot create teams app due to ${e.name}: ${e.message}` +
-        (correlationId ? `X-Correlation-ID: ${correlationId}` : "");
+        (correlationId ? `X-Correlation-ID: ${correlationId}` : "") +
+        (e.request?.path ? `Request path: ${e.request.method} ${e.request.path}` : "");
       const error = new Error(message);
       if (e.response?.status) {
         error.name = e.response?.status;
       }
       throw error;
-    }
-  }
-
-  /**
-   * @deprecated Please DO NOT use this method any more, it will be removed in near future.
-   */
-  export async function validateManifest(
-    manifestString: string,
-    appStudioToken: string
-  ): Promise<string[]> {
-    try {
-      const requester = createRequesterWithToken(appStudioToken);
-      const buffer = Buffer.from(manifestString, "utf8");
-      const response = await requester.post("/api/appdefinitions/prevalidation", buffer, {
-        headers: { "Content-Type": "application/json" },
-      });
-      if (response && response.data) {
-        let validationResult: string[] = [];
-        validationResult = validationResult.concat(response.data.errors);
-        validationResult = validationResult.concat(response.data.warnings);
-        validationResult = validationResult.concat(response.data.info);
-        return validationResult;
-      } else {
-        throw AppStudioResultFactory.SystemError(
-          AppStudioError.ValidationFailedError.name,
-          AppStudioError.ValidationFailedError.message([
-            `Validation failed, response: ${JSON.stringify(response)}`,
-          ])
-        );
-      }
-    } catch (e: any) {
-      const correlationId = e.response?.headers[Constants.CORRELATION_ID];
-      const message =
-        `Cannot create teams app due to ${e.name}: ${e.message}` +
-        (correlationId ? `X-Correlation-ID: ${correlationId}` : "");
-      throw AppStudioResultFactory.SystemError(
-        AppStudioError.ValidationFailedError.name,
-        AppStudioError.ValidationFailedError.message([message]),
-        e
-      );
     }
   }
 
@@ -277,6 +249,7 @@ export namespace AppStudioClient {
         headers: { "Content-Type": "application/zip" },
       });
 
+      const requestPath = `${response.request?.method} ${response.request?.path}`;
       if (response && response.data) {
         if (response.data.error) {
           // To avoid App Studio BadGateway error
@@ -289,7 +262,7 @@ export namespace AppStudioClient {
           }
           throw AppStudioResultFactory.SystemError(
             AppStudioError.TeamsAppPublishFailedError.name,
-            AppStudioError.TeamsAppPublishFailedError.message(teamsAppId),
+            AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, requestPath),
             `code: ${response.data.error.code}, message: ${response.data.error.message}`
           );
         } else {
@@ -298,7 +271,7 @@ export namespace AppStudioClient {
       } else {
         throw AppStudioResultFactory.SystemError(
           AppStudioError.TeamsAppPublishFailedError.name,
-          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId)
+          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, requestPath)
         );
       }
     } catch (e: any) {
@@ -306,9 +279,10 @@ export namespace AppStudioClient {
         throw e;
       } else {
         const correlationId = e.response?.headers[Constants.CORRELATION_ID];
+        const requestPath = `${e.response?.request?.method} ${e.response.request?.path}`;
         throw AppStudioResultFactory.SystemError(
           AppStudioError.TeamsAppPublishFailedError.name,
-          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, correlationId),
+          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, requestPath, correlationId),
           e
         );
       }
@@ -343,15 +317,19 @@ export namespace AppStudioClient {
       } else {
         throw AppStudioResultFactory.SystemError(
           AppStudioError.TeamsAppPublishFailedError.name,
-          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId)
+          AppStudioError.TeamsAppPublishFailedError.message(
+            teamsAppId,
+            `GET /api/publishing/${teamsAppId}`
+          )
         );
       }
 
+      const requestPath = `${response.request?.method} ${response.request?.path}`;
       if (response && response.data) {
         if (response.data.error || response.data.errorMessage) {
           throw AppStudioResultFactory.SystemError(
             AppStudioError.TeamsAppPublishFailedError.name,
-            AppStudioError.TeamsAppPublishFailedError.message(teamsAppId),
+            AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, requestPath),
             response.data.error?.message || response.data.errorMessage
           );
         } else {
@@ -360,7 +338,7 @@ export namespace AppStudioClient {
       } else {
         throw AppStudioResultFactory.SystemError(
           AppStudioError.TeamsAppPublishFailedError.name,
-          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId)
+          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, requestPath)
         );
       }
     } catch (error: any) {
@@ -368,9 +346,10 @@ export namespace AppStudioClient {
         throw error;
       } else {
         const correlationId = error.response?.headers[Constants.CORRELATION_ID];
+        const requestPath = `${error.response?.request?.method} ${error.response.request?.path}`;
         throw AppStudioResultFactory.SystemError(
           AppStudioError.TeamsAppPublishFailedError.name,
-          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, correlationId),
+          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, requestPath, correlationId),
           error
         );
       }
@@ -405,7 +384,7 @@ export namespace AppStudioClient {
   export async function getUserList(
     teamsAppId: string,
     appStudioToken: string
-  ): Promise<IUserList[] | undefined> {
+  ): Promise<AppUser[] | undefined> {
     let app;
     try {
       app = await getApp(teamsAppId, appStudioToken);
@@ -428,7 +407,7 @@ export namespace AppStudioClient {
       return Constants.PERMISSIONS.noPermission;
     }
 
-    const findUser = userList?.find((user: IUserList) => user.aadId === userObjectId);
+    const findUser = userList?.find((user: AppUser) => user.aadId === userObjectId);
     if (!findUser) {
       return Constants.PERMISSIONS.noPermission;
     }
@@ -443,7 +422,7 @@ export namespace AppStudioClient {
   export async function grantPermission(
     teamsAppId: string,
     appStudioToken: string,
-    newUser: IUserList
+    newUser: AppUser
   ): Promise<void> {
     let app;
     try {
@@ -456,7 +435,7 @@ export namespace AppStudioClient {
       return;
     }
 
-    const findUser = app.userList?.findIndex((user: IUserList) => user["aadId"] === newUser.aadId);
+    const findUser = app.userList?.findIndex((user: AppUser) => user["aadId"] === newUser.aadId);
     if (findUser && findUser >= 0) {
       return;
     }
@@ -464,13 +443,13 @@ export namespace AppStudioClient {
     app.userList?.push(newUser);
     const requester = createRequesterWithToken(appStudioToken);
     const response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
-    if (!response || !response.data || !checkUser(response.data as IAppDefinition, newUser)) {
+    if (!response || !response.data || !checkUser(response.data as AppDefinition, newUser)) {
       throw new Error(ErrorMessages.GrantPermissionFailed);
     }
   }
 
-  function checkUser(app: IAppDefinition, newUser: IUserList): boolean {
-    const findUser = app.userList?.findIndex((user: IUserList) => user["aadId"] === newUser.aadId);
+  function checkUser(app: AppDefinition, newUser: AppUser): boolean {
+    const findUser = app.userList?.findIndex((user: AppUser) => user["aadId"] === newUser.aadId);
     if (findUser != undefined && findUser >= 0) {
       return true;
     } else {

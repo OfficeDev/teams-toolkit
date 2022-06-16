@@ -65,22 +65,6 @@ export class DevelopmentView extends React.Component<any, any> {
           command="fx-extension.openSamples"
         ></TreeItem>
         <TreeItem
-          label={localize("teamstoolkit.commandsTreeViewProvider.addCapabilitiesTitleNew")}
-          tooltip={localize("teamstoolkit.commandsTreeViewProvider.addCapabilitiesDescription")}
-          icon={this.state.colorTheme === Theme.Dark ? addCapability_dark : addCapability_light}
-          customized={true}
-          disable={this.state.locked}
-          command="fx-extension.addCapability"
-        ></TreeItem>
-        <TreeItem
-          label={localize("teamstoolkit.commandsTreeViewProvider.addResourcesTitleNew")}
-          tooltip={localize("teamstoolkit.commandsTreeViewProvider.addResourcesDescription")}
-          icon={this.state.colorTheme === Theme.Dark ? addResources_dark : addResources_light}
-          customized={true}
-          disable={this.state.locked}
-          command="fx-extension.update"
-        ></TreeItem>
-        <TreeItem
           label={localize("teamstoolkit.commandsTreeViewProvider.manifestEditorTitleNew")}
           tooltip={localize("teamstoolkit.commandsTreeViewProvider.manifestEditorDescription")}
           icon="codicon codicon-edit"

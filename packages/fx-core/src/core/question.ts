@@ -286,7 +286,12 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
 }
 
 export function createCapabilityForDotNet(): SingleSelectQuestion {
-  const staticOptions: StaticOptions = [TabOptionItem, BotOptionItem];
+  const staticOptions: StaticOptions = [
+    NotificationOptionItem,
+    CommandAndResponseOptionItem,
+    TabOptionItem,
+    MessageExtensionItem,
+  ];
   return {
     name: CoreQuestionNames.Capabilities,
     title: getLocalizedString("core.createCapabilityQuestion.title"),
@@ -530,7 +535,7 @@ export const ScratchOptionNoVSC: OptionItem = {
 };
 
 export const RuntimeOptionNodeJs: OptionItem = {
-  id: "nodejs",
+  id: "node",
   label: "Node.js",
   detail: getLocalizedString("core.RuntimeOptionNodeJS.detail"),
 };

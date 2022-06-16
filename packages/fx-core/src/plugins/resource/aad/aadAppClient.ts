@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, GraphTokenProvider, PluginContext, v2 } from "@microsoft/teamsfx-api";
+import { FxError, M365TokenProvider, PluginContext, v2 } from "@microsoft/teamsfx-api";
 import { AadOwner } from "../../../common/permissionInterface";
 import { AppStudio } from "./appStudio";
 import { ConfigKeys, Constants, Messages, ProgressDetail, Telemetry, UILevels } from "./constants";
@@ -239,7 +239,7 @@ export class AadAppClient {
     objectId: string,
     clientSecret: string | undefined,
     oauth2PermissionScopeId: string | undefined,
-    graphTokenProvider?: GraphTokenProvider,
+    m365TokenProvider?: M365TokenProvider,
     envName?: string
   ): Promise<ProvisionConfig> {
     let manifest: AADManifest;
@@ -248,7 +248,7 @@ export class AadAppClient {
         AadAppManifestManager.getAadAppManifest(TokenProvider.token as string, objectId)
       )) as AADManifest;
     } catch (error) {
-      const tenantId = await Utils.getCurrentTenantId(graphTokenProvider);
+      const tenantId = await Utils.getCurrentTenantId(m365TokenProvider);
       const fileName = Utils.getConfigFileName(envName);
       throw AadAppClient.handleError(error, GetAppError, objectId, tenantId, fileName);
     }
@@ -277,7 +277,7 @@ export class AadAppClient {
     stage: string,
     objectId: string,
     clientSecret: string | undefined,
-    graphTokenProvider?: GraphTokenProvider,
+    m365TokenProvider?: M365TokenProvider,
     envName?: string,
     skip = false
   ): Promise<ProvisionConfig> {
@@ -293,7 +293,7 @@ export class AadAppClient {
         )) as IAADDefinition;
       }
     } catch (error) {
-      const tenantId = await Utils.getCurrentTenantId(graphTokenProvider);
+      const tenantId = await Utils.getCurrentTenantId(m365TokenProvider);
       const fileName = Utils.getConfigFileName(envName);
       throw AadAppClient.handleError(error, GetAppError, objectId, tenantId, fileName);
     }

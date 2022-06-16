@@ -209,6 +209,8 @@ export class BotService implements CloudResource {
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         // create bot aad app by API call
         const ctx = context as ProvisionContextV3;
+        const teamsBot = getComponent(ctx.projectSetting, ComponentNames.TeamsBot);
+        if (!teamsBot) return ok([]);
         const plans: Effect[] = [];
         if (ctx.envInfo.envName === "local") {
           plans.push({
@@ -216,21 +218,21 @@ export class BotService implements CloudResource {
             name: "graph.microsoft.com",
             remarks: "update message endpoint in AppStudio",
           });
-          const botConfig = ctx.envInfo.state[ComponentNames.BotService];
+          const botServiceState = ctx.envInfo.state[ComponentNames.BotService];
+          const teamsBotState = ctx.envInfo.state[ComponentNames.TeamsBot];
           const appStudioTokenRes = await ctx.tokenProvider.m365TokenProvider.getAccessToken({
             scopes: AppStudioScopes,
           });
           const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
-          CheckThrowSomethingMissing(ConfigNames.LOCAL_ENDPOINT, botConfig.siteEndpoint);
+          CheckThrowSomethingMissing(ConfigNames.LOCAL_ENDPOINT, teamsBotState.endpoint);
           CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
-          CheckThrowSomethingMissing(ConfigNames.LOCAL_BOT_ID, botConfig.botId);
-          const teamsBot = getComponent(ctx.projectSetting, ComponentNames.TeamsBot);
+          CheckThrowSomethingMissing(ConfigNames.LOCAL_BOT_ID, botServiceState.botId);
           const botReg: IBotRegistration = {
-            botId: botConfig.botId,
+            botId: botServiceState.botId,
             name: normalizeName(ctx.projectSetting.appName) + PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
             description: "",
             iconUrl: "",
-            messagingEndpoint: `${teamsBot!.endpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`,
+            messagingEndpoint: `${teamsBotState.endpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`,
             callingEndpoint: "",
           };
           await AppStudio.updateMessageEndpoint(appStudioToken!, botReg.botId!, botReg);

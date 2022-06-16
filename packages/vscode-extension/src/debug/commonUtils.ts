@@ -130,7 +130,7 @@ export async function getDebugConfig(
         const envInfo = config.envInfos["local"];
         if (!envInfo)
           throw new UserError("extension", "EnvConfigNotExist", "Local Env config not exist");
-        const appId = envInfo.state["fx-resource-appstudio"].teamsAppId as string;
+        const appId = envInfo.state["app-manifest"].teamsAppId as string;
         return { appId: appId, env: "local" };
       } else {
         if (env === undefined) {
@@ -153,7 +153,7 @@ export async function getDebugConfig(
         const envInfo = config.envInfos[env];
         if (!envInfo)
           throw new UserError("extension", "EnvConfigNotExist", `Env '${env} ' config not exist`);
-        const appId = envInfo.state["fx-resource-appstudio"].teamsAppId as string;
+        const appId = envInfo.state["app-manifest"].teamsAppId as string;
         return { appId: appId, env: env };
       }
     } else {

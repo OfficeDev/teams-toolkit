@@ -25,6 +25,7 @@ import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import { TeamsfxDebugConfiguration } from "./teamsfxDebugProvider";
 import { localize } from "../utils/localizeUtils";
 import { VS_CODE_UI } from "../extension";
+import { sendDebugAllEvent } from "./localTelemetryReporter";
 
 export const allRunningTeamsfxTasks: Map<string, number> = new Map<string, number>();
 export const allRunningDebugSessions: Set<string> = new Set<string>();
@@ -399,6 +400,10 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
         [TelemetryProperty.DebugAppId]: debugConfig.teamsfxAppId + "",
         [TelemetryProperty.Env]: env,
       });
+      // This is the launch browser local debug session.
+      if (debugConfig.request === "launch" && !debugConfig.teamsfxIsRemote) {
+        await sendDebugAllEvent();
+      }
     }
   }
 }

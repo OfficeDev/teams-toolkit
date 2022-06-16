@@ -146,14 +146,14 @@ export class TeamsfxCore {
     });
     const setupLocalEnvironmentStep: Action = {
       type: "call",
-      name: "call debug-manager.setupLocalEnvironment",
-      targetAction: "debug-manager.setupLocalEnvironment",
+      name: "call debug.setupLocalEnvInfo",
+      targetAction: "debug.setupLocalEnvInfo",
       required: false,
     };
     const configLocalEnvironmentStep: Action = {
       type: "call",
-      name: "call debug-manager.configLocalEnvironmentStep",
-      targetAction: "debug-manager.configLocalEnvironmentStep",
+      name: "call debug.configLocalEnvInfo",
+      targetAction: "debug.configLocalEnvInfo",
       required: false,
     };
     const preProvisionStep: Action = new FxPreProvisionAction();
@@ -225,14 +225,16 @@ export class TeamsfxCore {
       execute: (context: ContextV3, inputs: InputsWithProjectPath) => {
         const ctx = context as ProvisionContextV3;
         const teamsBot = getComponent(ctx.projectSetting, ComponentNames.TeamsBot);
-        if (teamsBot) {
-          const teamsBotConfig: any = {
-            endpoint: ctx.envInfo.state[teamsBot.hosting!].endpoint!,
-            domain: ctx.envInfo.state[teamsBot.hosting!].domain,
-          };
-          ctx.envInfo.state[ComponentNames.TeamsBot] = teamsBotConfig;
-        }
         const teamsTab = getComponent(ctx.projectSetting, ComponentNames.TeamsTab);
+        if (teamsBot) {
+          if (ctx.envInfo.envName !== "local") {
+            const teamsBotConfig: any = {
+              endpoint: ctx.envInfo.state[teamsBot.hosting!].endpoint!,
+              domain: ctx.envInfo.state[teamsBot.hosting!].domain,
+            };
+            ctx.envInfo.state[ComponentNames.TeamsBot] = teamsBotConfig;
+          }
+        }
         if (teamsTab) {
           const teamsTabConfig: any = {
             endpoint: ctx.envInfo.state[teamsTab.hosting!].endpoint!,

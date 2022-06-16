@@ -8,7 +8,7 @@ import "mocha";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { newEnvInfoV3, setTools } from "../../src";
+import { setTools } from "../../src/core/globalVars";
 import * as templateAction from "../../src/common/template-utils/templatesActions";
 import "../../src/component/core";
 import "../../src/component/feature/bot";
@@ -24,6 +24,7 @@ import { AADRegistration } from "../../src/plugins/resource/bot/aadRegistration"
 import { TestHelper } from "../plugins/resource/frontend/helper";
 import arm from "../../src/plugins/solution/fx-solution/arm";
 import { FrontendDeployment } from "../../src/plugins/resource/frontend/ops/deploy";
+import { newEnvInfoV3 } from "../../src/core/environment";
 describe("Workflow test for v3", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -90,12 +91,8 @@ describe("Workflow test for v3", () => {
       .resolves(TestHelper.fakeCredential);
     sandbox.stub(provisionV3, "fillInAzureConfigs").resolves(ok(Void));
     sandbox.stub(provisionV3, "askForProvisionConsent").resolves(ok(Void));
-    sandbox
-      .stub(AppStudioClient, "createApp")
-      .onFirstCall()
-      .resolves({ teamsAppId: "mockTeamsAppId" })
-      .onSecondCall()
-      .throws({ name: 409 });
+    sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
+    sandbox.stub(AppStudioClient, "createApp").resolves({ teamsAppId: "mockTeamsAppId" });
     sandbox.stub(AppStudioClient, "updateApp").resolves({ teamsAppId: "mockTeamsAppId" });
     sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
     sandbox.stub(clientFactory, "ensureResourceProvider").resolves();

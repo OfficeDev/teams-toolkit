@@ -15,6 +15,10 @@ export function hasTab(projectSettings: ProjectSettingsV3): boolean {
   const components = projectSettings.components;
   return components.filter((c) => c.name === ComponentNames.TeamsTab).length > 0;
 }
+export function hasAzureTab(projectSettings: ProjectSettingsV3): boolean {
+  const tab = getComponent(projectSettings, ComponentNames.TeamsTab);
+  return tab !== undefined && tab.hosting !== ComponentNames.SPFx;
+}
 export function hasBot(projectSettings: ProjectSettingsV3): boolean {
   const components = projectSettings.components;
   return components.filter((c) => c.name === ComponentNames.TeamsBot).length > 0;
@@ -51,4 +55,8 @@ export function hasAzureResourceV3(projectSetting: ProjectSettingsV3, excludeAad
   }
   const filtered = projectSetting.components.filter((c) => azureResources.includes(c.name));
   return filtered.length > 0;
+}
+export function hasSPFxTab(projectSetting: ProjectSettingsV3): boolean {
+  const tab = getComponent(projectSetting, ComponentNames.TeamsTab);
+  return tab?.hosting === ComponentNames.SPFx;
 }

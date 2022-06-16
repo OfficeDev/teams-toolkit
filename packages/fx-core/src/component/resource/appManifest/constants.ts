@@ -15,9 +15,9 @@ export const TEAMS_APP_MANIFEST_TEMPLATE = `{
   "packageName": "com.microsoft.teams.extension",
   "developer": {
       "name": "Teams App, Inc.",
-      "websiteUrl": "{{state.${TAB_COMPONENT_NAME}.endpoint}}",
-      "privacyUrl": "{{state.${TAB_COMPONENT_NAME}.endpoint}}{{state.${TAB_COMPONENT_NAME}.indexPath}}/privacy",
-      "termsOfUseUrl": "{{state.${TAB_COMPONENT_NAME}.endpoint}}{{state.${TAB_COMPONENT_NAME}.indexPath}}/termsofuse"
+      "websiteUrl": "{{{state.${TAB_COMPONENT_NAME}.endpoint}}}",
+      "privacyUrl": "{{{state.${TAB_COMPONENT_NAME}.endpoint}}}{{{state.${TAB_COMPONENT_NAME}.indexPath}}}/privacy",
+      "termsOfUseUrl": "{{{state.${TAB_COMPONENT_NAME}.endpoint}}}{{{state.${TAB_COMPONENT_NAME}.indexPath}}}/termsofuse"
   },
   "icons": {
       "color": "resources/color.png",
@@ -47,15 +47,15 @@ export const STATIC_TABS_TPL_V3: IStaticTab[] = [
   {
     entityId: "index",
     name: "Personal Tab",
-    contentUrl: `{{state.${TAB_COMPONENT_NAME}.endpoint}}{{state.${TAB_COMPONENT_NAME}.indexPath}}/tab`,
-    websiteUrl: `{{state.${TAB_COMPONENT_NAME}.endpoint}}{{state.${TAB_COMPONENT_NAME}.indexPath}}/tab`,
+    contentUrl: `{{{state.${TAB_COMPONENT_NAME}.endpoint}}}{{{state.${TAB_COMPONENT_NAME}.indexPath}}}/tab`,
+    websiteUrl: `{{{state.${TAB_COMPONENT_NAME}.endpoint}}}{{{state.${TAB_COMPONENT_NAME}.indexPath}}}/tab`,
     scopes: ["personal"],
   },
 ];
 
 export const CONFIGURABLE_TABS_TPL_V3: IConfigurableTab[] = [
   {
-    configurationUrl: `{{state.${TAB_COMPONENT_NAME}.endpoint}}{{state.${TAB_COMPONENT_NAME}.indexPath}}/config`,
+    configurationUrl: `{{{state.${TAB_COMPONENT_NAME}.endpoint}}}{{{state.${TAB_COMPONENT_NAME}.indexPath}}}/config`,
     canUpdateConfiguration: true,
     scopes: ["team", "groupchat"],
   },
@@ -191,5 +191,5 @@ export const COMPOSE_EXTENSIONS_TPL_V3: IComposeExtension[] = [
 
 export const WEB_APPLICATION_INFO_V3 = {
   id: `{{state.${AAD_COMPONENT_NAME}.clientId}}`,
-  resource: `{{state.${AAD_COMPONENT_NAME}.applicationIdUris}}`,
+  resource: `{{{state.${AAD_COMPONENT_NAME}.applicationIdUris}}}`,
 };

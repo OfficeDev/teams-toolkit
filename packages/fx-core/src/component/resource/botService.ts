@@ -29,7 +29,6 @@ import {
   PluginLocalDebug,
 } from "../../plugins/resource/bot/resources/strings";
 import { CheckThrowSomethingMissing, PreconditionError } from "../../plugins/resource/bot/v3/error";
-import { AzureWebAppResource } from "./azureWebApp";
 import * as uuid from "uuid";
 import { ResourceNameFactory } from "../../plugins/resource/bot/utils/resourceNameFactory";
 import { AzureConstants, MaxLengths } from "../../plugins/resource/bot/constants";
@@ -38,14 +37,11 @@ import { Messages } from "../../plugins/resource/bot/resources/messages";
 import { IBotRegistration } from "../../plugins/resource/bot/appStudio/interfaces/IBotRegistration";
 import { AppStudio } from "../../plugins/resource/bot/appStudio/appStudio";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import {
-  createResourceProviderClient,
-  ensureResourceProvider,
-} from "../../plugins/resource/bot/clientFactory";
 import { ComponentNames } from "../constants";
 import { normalizeName } from "../utils";
 import { getComponent } from "../workflow";
 import * as clientFactory from "../../plugins/resource/bot/clientFactory";
+import { AzureResource } from "./azureResource";
 @Service("bot-service")
 export class BotService implements CloudResource {
   outputs = {
@@ -85,10 +81,10 @@ export class BotService implements CloudResource {
         );
         let module = await fs.readFile(mPath, "utf-8");
         const templateContext: any = {};
-        if (inputs.hosting === "azure-web-app") {
-          const resource = Container.get("azure-web-app") as AzureWebAppResource;
+        try {
+          const resource = Container.get(inputs.hosting) as AzureResource;
           templateContext.endpointVarName = resource.outputs.endpoint.bicepVariable;
-        }
+        } catch {}
         module = compileHandlebarsTemplateString(module, templateContext);
         const orch = await fs.readFile(oPath, "utf-8");
         const bicep: Bicep = {

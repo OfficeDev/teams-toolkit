@@ -100,10 +100,10 @@ export class ScaffoldConfig {
     const hostTypeTriggers = answers[QuestionNames.BOT_HOST_TYPE_TRIGGER];
     if (Array.isArray(hostTypeTriggers)) {
       return FunctionsOptionItems.some((item) => hostTypeTriggers.includes(item.id))
-        ? HostTypes.AZURE_FUNCTIONS
-        : HostTypes.APP_SERVICE;
+        ? HostType.Functions
+        : HostType.AppService;
     }
-    return HostTypes.APP_SERVICE;
+    return HostType.AppService;
   }
 
   private static getHostTypeFromProjectSettings(context: PluginContext): HostType | undefined {

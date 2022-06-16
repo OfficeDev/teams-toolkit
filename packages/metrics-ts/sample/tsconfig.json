@@ -2,7 +2,7 @@
   "compilerOptions": {
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "module": "ES6",
+    "module": "CommonJS",
     "target": "es2017",
     "outDir": "build",
     "lib": ["es6", "dom.iterable", "dom"],

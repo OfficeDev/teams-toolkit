@@ -1,4 +1,4 @@
-import typescript, { ModuleKind } from "typescript";
+import typescript from "typescript";
 
 /**
  * unused right now.
@@ -21,16 +21,15 @@ export default function (program: typescript.Program, config?: PluginConfig) {
     ctx: typescript.TransformationContext
   ) => {
     return (sourceFile: typescript.SourceFile) => {
-      console.log(ctx.getCompilerOptions());
       /**
        * find source file node and add "import" statements
        * TODO: check imports,
        * @see {@link https://stackoverflow.com/questions/67723545/how-to-update-or-insert-to-import-using-typescript-compiler-api}
        * TODO: can't trans to commonjs is there's no import statement of source file.
+       * TODO: make import name unique
        */
       function sourfileVisitor(node: typescript.Node): typescript.Node {
         if (typescript.isSourceFile(node)) {
-          const members = ["timer"];
           const myLib = "@microsoft/metrics-ts";
           return ctx.factory.updateSourceFile(node as typescript.SourceFile, [
             ctx.factory.createImportDeclaration(
@@ -39,15 +38,7 @@ export default function (program: typescript.Program, config?: PluginConfig) {
               ctx.factory.createImportClause(
                 false,
                 undefined,
-                ctx.factory.createNamedImports(
-                  Array.from(members).map((name) =>
-                    ctx.factory.createImportSpecifier(
-                      false,
-                      undefined,
-                      ctx.factory.createIdentifier(name)
-                    )
-                  )
-                )
+                ctx.factory.createNamespaceImport(ctx.factory.createIdentifier("metrics_9527"))
               ),
               ctx.factory.createStringLiteral(myLib)
             ),
@@ -66,7 +57,11 @@ export default function (program: typescript.Program, config?: PluginConfig) {
            * create metric decorator for function declaration
            */
           const decorator = ctx.factory.createDecorator(
-            ctx.factory.createCallExpression(ctx.factory.createIdentifier("timer"), undefined, [])
+            ctx.factory.createCallExpression(
+              ctx.factory.createIdentifier("metrics_9527.timer"),
+              undefined,
+              []
+            )
           );
 
           /**

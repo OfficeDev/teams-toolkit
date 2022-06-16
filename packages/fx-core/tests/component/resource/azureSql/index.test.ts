@@ -94,4 +94,20 @@ describe("Azure-SQL Component", () => {
     const result = await action.execute(context, inputs);
     chai.assert.isTrue(result.isOk());
   });
+
+  it("provision happy path", async function () {
+    const provisionAction = await component.provision(context, inputs);
+    chai.assert.isTrue(provisionAction.isOk());
+    const action = provisionAction._unsafeUnwrap() as FunctionAction;
+    const result = await action.execute(context, inputs);
+    chai.assert.isTrue(result.isOk());
+  });
+
+  it("generateBicep happy path", async function () {
+    const generateBicepAction = await component.provision(context, inputs);
+    chai.assert.isTrue(generateBicepAction.isOk());
+    const action = generateBicepAction._unsafeUnwrap() as FunctionAction;
+    const result = await action.execute(context, inputs);
+    chai.assert.isTrue(result.isOk());
+  });
 });

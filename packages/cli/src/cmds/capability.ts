@@ -173,7 +173,7 @@ export class CapabilityAddCommandAndResponse extends CapabilityAddBotBase {
   public readonly commandHead = "command-and-response";
   public readonly command = `${this.commandHead}`;
   public readonly description = "Respond to simple commands in Microsoft Teams chat";
-  public readonly yargsHelp = "addCapability-CommandAndResponse";
+  public readonly yargsHelp = "addCapability-command-bot";
 }
 
 export class CapabilityAdd extends YargsCommand {

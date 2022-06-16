@@ -64,7 +64,7 @@ export const NotificationOptionItem: OptionItem = {
 
 export const CommandAndResponseOptionItem: OptionItem = {
   // id must match cli `yargsHelp`
-  id: "CommandAndResponse",
+  id: "command-bot",
   label: `$(hubot) ${getLocalizedString("core.CommandAndResponseOption.label")}`,
   description: getLocalizedString("core.Option.recommend"),
   cliName: "command-bot",

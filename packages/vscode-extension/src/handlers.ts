@@ -2158,11 +2158,11 @@ export function cmdHdlDisposeTreeView() {
 export async function showError(e: UserError | SystemError) {
   const notificationMessage = e.displayMessage ?? e.message;
 
-  // if (e.stack && e instanceof SystemError) {
-  VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}, stack: ${e.stack}`);
-  // } else {
-  //   VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}`);
-  // }
+  if (e.stack && e instanceof SystemError) {
+    VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}, stack: ${e.stack}`);
+  } else {
+    VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}`);
+  }
 
   const errorCode = `${e.source}.${e.name}`;
   if (isUserCancelError(e)) {

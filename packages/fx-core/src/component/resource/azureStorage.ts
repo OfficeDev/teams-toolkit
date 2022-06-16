@@ -29,7 +29,6 @@ import {
 } from "../../common/tools";
 import { UnauthenticatedError } from "../../plugins/resource/frontend/v3/error";
 import { AzureStorageClient } from "../../plugins/resource/frontend/clients";
-import { FrontendPathInfo } from "../../plugins/resource/frontend/constants";
 import { FrontendDeployment } from "../../plugins/resource/frontend/ops/deploy";
 @Service("azure-storage")
 export class AzureStorageResource implements CloudResource {

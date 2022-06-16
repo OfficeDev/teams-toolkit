@@ -49,6 +49,7 @@ export class AzureFunctionResource extends AzureResource {
         context: ContextV3,
         inputs: InputsWithProjectPath
       ): Promise<Result<Effect[], FxError>> => {
+        // Configure APIM
         return ok([
           {
             type: "service",

@@ -326,11 +326,12 @@ export class MockM365TokenProvider implements M365TokenProvider {
   }
 }
 
-class MockTelemetryReporter implements TelemetryReporter {
+export class MockTelemetryReporter implements TelemetryReporter {
   sendTelemetryErrorEvent(
     eventName: string,
     properties?: { [key: string]: string },
-    measurements?: { [key: string]: number }
+    measurements?: { [key: string]: number },
+    errorProps?: string[]
   ): void {
     // do nothing
   }

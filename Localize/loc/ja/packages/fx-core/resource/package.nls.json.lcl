@@ -2193,10 +2193,13 @@
       </Item>
       <Item ItemId=";core.localDebug.tenantConfirmNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[You already run local debug for the Teams app in another tenant '%s'. You can sign out %s and sign in with the matched M365 account to re-use the previous local debug resource. If you really want to switch tenant for local debug, you can delete the %s file and re-run local debug.]]></Val>
+          <Val><![CDATA[You already run local debug for the Teams app in another tenant '%s'. You can sign out %s and sign in with the matched M365 account to re-use the previous local debug resource. If you really want to switch tenant for local debug, you can delete the local file(s) (%s) and re-run local debug.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[別のテナント '%s' で Teams アプリのローカル デバッグを既に実行しています。%s をサインアウトし、一致した M365 アカウントでサインインして、以前のローカル デバッグ リソースを再利用できます。ローカル デバッグ用にテナントを切り替える場合は、%s ファイルを削除してローカル デバッグを再実行できます。]]></Val>
+            <Val><![CDATA[別のテナント '%s' で Teams アプリのローカル デバッグを既に実行しています。%s をサインアウトし、対応する Microsoft 365 アカウントでサインインして、以前のローカル デバッグ リソースを再利用できます。ローカル デバッグ用にテナントを切り替える場合は、ローカル ファイル (%s) を削除し、ローカル デバッグを再実行できます。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[You already run local debug for the Teams app in another tenant '%s'. You can sign out %s and sign in with the matched M365 account to re-use the previous local debug resource. If you really want to switch tenant for local debug, you can delete the %s file and re-run local debug.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2601,10 +2604,13 @@
       </Item>
       <Item ItemId=";depChecker.linuxDepsNotFound" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Cannot find @SupportedPackages.]A;]A;Teams Toolkit requires these dependencies. ]A;]A;(If you just installed @SupportedPackages, restart Visual Studio Code for the change to take effect.)]]></Val>
+          <Val><![CDATA[Cannot find @SupportedPackages. Install @SupportedPackages manually and restart Visual Studio Code.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[@SupportedPackages が見つかりません。]A;]A;Teams ツールキットにはこれらの依存関係が必要です。]A;]A;(@SupportedPackages をインストールしたばかりの場合は、Visual Studio Code を再起動して変更を有効にします。)]]></Val>
+            <Val><![CDATA[@SupportedPackages が見つかりません。@SupportedPackages を手動でインストールし、Visual Studio Code を再起動してください。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Cannot find @SupportedPackages.]A;]A;Teams Toolkit requires these dependencies. ]A;]A;(If you just installed @SupportedPackages, restart Visual Studio Code for the change to take effect.)]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4008,10 +4014,13 @@
       </Item>
       <Item ItemId=";error.appstudio.updateManifestFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Update manifest failed]]></Val>
+          <Val><![CDATA[Update manifest failed. ]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[マニフェストの更新に失敗しました]]></Val>
+            <Val><![CDATA[マニフェストの更新に失敗しました。 ]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Update manifest failed]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

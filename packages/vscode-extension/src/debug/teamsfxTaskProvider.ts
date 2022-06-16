@@ -5,8 +5,24 @@ import * as vscode from "vscode";
 
 import * as constants from "./constants";
 import * as commonUtils from "./commonUtils";
-import { Json, ProductName, ProjectSettings, v2, VsCodeEnv } from "@microsoft/teamsfx-api";
-import { FolderName, isConfigUnifyEnabled, LocalEnvManager } from "@microsoft/teamsfx-core";
+import {
+  ok,
+  FxError,
+  Json,
+  ProductName,
+  ProjectSettings,
+  Result,
+  v2,
+  VsCodeEnv,
+  err,
+  assembleError,
+} from "@microsoft/teamsfx-api";
+import {
+  Correlator,
+  FolderName,
+  isConfigUnifyEnabled,
+  LocalEnvManager,
+} from "@microsoft/teamsfx-core";
 import { VSCodeDepsChecker } from "./depsChecker/vscodeChecker";
 import { vscodeLogger } from "./depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
@@ -20,17 +36,46 @@ import {
   TaskDefinition,
 } from "@microsoft/teamsfx-core";
 import { vscodeHelper } from "./depsChecker/vscodeHelper";
+import { localTelemetryReporter } from "./localTelemetryReporter";
+import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 
 export class TeamsfxTaskProvider implements vscode.TaskProvider {
   public static readonly type: string = ProductName;
 
-  public async provideTasks(token?: vscode.CancellationToken | undefined): Promise<vscode.Task[]> {
-    const tasks: vscode.Task[] = [];
+  public provideTasks(token?: vscode.CancellationToken | undefined): Promise<vscode.Task[]> {
+    return Correlator.runWithId(
+      commonUtils.getLocalDebugSessionId(),
+      async (): Promise<vscode.Task[]> => {
+        const tasks: vscode.Task[] = [];
+        if (commonUtils.getLocalDebugSessionId() === commonUtils.DebugNoSessionId) {
+          await this._provideTasks(tasks, token);
+        } else {
+          // Only send telemetry within a local debug session.
+          await localTelemetryReporter.runWithTelemetry(TelemetryEvent.DebugTaskProvider, () =>
+            this._provideTasks(tasks, token)
+          );
+
+          // Currently do not send end event if task provider failed.
+          // The reason:
+          // If task provider fails (only for ngrok task),
+          // vscode will continue to run "prepare local environment" task (after a long timeout).
+          // "prepare local environment" will fail when checking ngrok.
+          // The "debug-all" event will be sent in "pre-debug-check" command.
+        }
+        return tasks;
+      }
+    );
+  }
+
+  private async _provideTasks(
+    tasks: vscode.Task[],
+    token?: vscode.CancellationToken | undefined
+  ): Promise<Result<void, FxError>> {
     if (vscode.workspace.workspaceFolders) {
       const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
       const workspacePath: string = workspaceFolder.uri.fsPath;
       if (!(await commonUtils.isFxProject(workspacePath))) {
-        return tasks;
+        return ok(undefined);
       }
 
       const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
@@ -55,9 +100,10 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
           localSettings,
           localEnvInfo
         );
-      } catch (error: any) {
-        showError(error);
-        return tasks;
+      } catch (error: unknown) {
+        const fxError = assembleError(error);
+        showError(fxError);
+        return err(fxError);
       }
 
       const programmingLanguage = projectSettings?.programmingLanguage;
@@ -101,8 +147,11 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
         const debugConfig = { appId: localTeamsAppId };
         tasks.push(await this.createOpenTeamsWebClientTask(workspaceFolder, debugConfig));
       }
+
+      return ok(undefined);
     }
-    return tasks;
+
+    return ok(undefined);
   }
 
   public async resolveTask(

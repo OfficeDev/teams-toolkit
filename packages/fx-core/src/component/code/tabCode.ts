@@ -25,10 +25,6 @@ import {
   ScaffoldContext,
   scaffoldFromTemplates,
 } from "../../common/template-utils/templatesActions";
-import { ProgrammingLanguage } from "../../plugins/resource/bot/enums/programmingLanguage";
-import { CommandExecutionError } from "../../plugins/resource/bot/errors";
-import { Commands } from "../../plugins/resource/bot/resources/strings";
-import * as utils from "../../plugins/resource/bot/utils/common";
 import { TemplateZipFallbackError } from "../../plugins/resource/bot/v3/error";
 import { Constants, FrontendPathInfo } from "../../plugins/resource/frontend/constants";
 import { FrontendDeployment } from "../../plugins/resource/frontend/ops/deploy";

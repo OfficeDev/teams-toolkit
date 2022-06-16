@@ -24,6 +24,7 @@ import { AADRegistration } from "../../src/plugins/resource/bot/aadRegistration"
 import { TestHelper } from "../plugins/resource/frontend/helper";
 import arm from "../../src/plugins/solution/fx-solution/arm";
 import { FrontendDeployment } from "../../src/plugins/resource/frontend/ops/deploy";
+import { newEnvInfoV3 } from "../../src/core/environment";
 describe("Workflow test for v3", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();

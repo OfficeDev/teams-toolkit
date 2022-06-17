@@ -318,7 +318,17 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
         properties[TelemetryProperty.DebugNpmInstallErrorMessage] =
           npmInstallLogInfo?.errorMessage?.join("\n") + ""; // "undefined" or string value
       }
-      localTelemetryReporter.sendTelemetryEvent(TelemetryEvent.DebugNpmInstall, properties);
+      if (event.exitCode !== 0 || properties[TelemetryProperty.DebugNpmInstallErrorMessage]) {
+        localTelemetryReporter.sendTelemetryErrorEvent(
+          TelemetryEvent.DebugNpmInstall,
+          new UserError({ name: ExtensionErrors.DebugNpmInstallError, source: ExtensionSource }),
+          properties,
+          {},
+          [TelemetryProperty.DebugNpmInstallErrorMessage]
+        );
+      } else {
+        localTelemetryReporter.sendTelemetryEvent(TelemetryEvent.DebugNpmInstall, properties);
+      }
 
       if (cwd !== undefined && event.exitCode !== undefined && event.exitCode !== 0) {
         // Do not show this hint message for prerequisites check and automatic npm install

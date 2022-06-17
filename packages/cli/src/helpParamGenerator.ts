@@ -173,6 +173,11 @@ export class HelpParamGenerator {
     return ok(true);
   }
 
+  private splitFirst(s: string, sep: string): [string, string] {
+    const [first, ...rest] = s.split(sep);
+    return [first, rest.join(sep)];
+  }
+
   public getYargsParamForHelp(stage: string, inputs?: Inputs): { [_: string]: Options } {
     if (!this.initialized) {
       throw NoInitializedHelpGenerator();
@@ -184,7 +189,7 @@ export class HelpParamGenerator {
       resourceName = stage.split("-")[1];
       stage = "addResource";
     } else if (stage.startsWith("addCapability")) {
-      capabilityId = stage.split("-")[1];
+      capabilityId = this.splitFirst(stage, "-")[1];
       stage = "addCapability";
     } else if (stage.startsWith("connectExistingApi")) {
       authType = stage.split("-")[1];

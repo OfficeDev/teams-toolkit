@@ -36,6 +36,10 @@
         {
             "placeholder": "crypto_025d3c0a85c31e192ff0d8b8d0c9f44e3d5044fa95e642ce6c46d8ee5c4e2ad6b90c3ab385589e7c0d52862898efea47433586f4a14c9f899a7769b3ec73eff372161bbe4b98eb8ba928d58a4ad942bfc880585fe0de737c2f3e5d1a0509e844a4adaf55fa8dd0ecd1e6b3f52dc9812cf6bebb0e",
             "_justification": "This is the secret place holder used by TeamsFx project."
+        },
+        {
+            "placeholder": "user!",
+            "_justification": "This is the secret place holder used by TeamsFx project."
         }
     ]
 }

@@ -19,7 +19,6 @@ import {
   cleanUp,
   readContextMultiEnv,
 } from "../commonUtils";
-import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 import { environmentManager } from "@microsoft/teamsfx-core";
 
 import { it } from "../../commonlib/it";

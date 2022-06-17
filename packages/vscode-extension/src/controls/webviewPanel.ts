@@ -18,10 +18,7 @@ import * as path from "path";
 import * as uuid from "uuid";
 import * as vscode from "vscode";
 import M365TokenInstance from "../commonlib/m365Login";
-import AppStudioTokenInstance from "../commonlib/appStudioLogin";
 import AzureAccountManager from "../commonlib/azureLogin";
-import GraphTokenInstance from "../commonlib/graphLogin";
-import SharepointTokenInstance from "../commonlib/sharepointLogin";
 import { GlobalKey } from "../constants";
 import * as globalVariables from "../globalVariables";
 import { downloadSample, getSystemInputs } from "../handlers";
@@ -112,7 +109,7 @@ export class WebviewPanel {
                 [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
                 [TelemetryProperty.AccountType]: AccountType.M365,
               });
-              await AppStudioTokenInstance.getJsonObject(false);
+              await M365TokenInstance.getJsonObject({ scopes: AppStudioScopes });
             });
             break;
           case Commands.SigninAzure:
@@ -397,8 +394,6 @@ export class WebviewPanel {
 
   public dispose() {
     WebviewPanel.currentPanels.splice(WebviewPanel.currentPanels.indexOf(this), 1);
-
-    AppStudioTokenInstance.removeStatusChangeMap("quick-start-webview");
 
     AzureAccountManager.removeStatusChangeMap("quick-start-webview");
 

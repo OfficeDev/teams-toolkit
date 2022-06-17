@@ -59,9 +59,6 @@ describe("Provision Teams app with Azure", () => {
 
     mockedTokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: undefined,
-      graphTokenProvider: undefined,
-      sharepointTokenProvider: undefined,
       m365TokenProvider: new MockedM365TokenProvider(),
     };
 

@@ -93,9 +93,6 @@ describe("SolutionV3 - provision", () => {
     };
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: undefined,
-      graphTokenProvider: undefined,
-      sharepointTokenProvider: undefined,
       m365TokenProvider: new MockedM365Provider(),
     };
     const mockSub: SubscriptionInfo = {
@@ -161,9 +158,6 @@ describe("SolutionV3 - provision", () => {
     };
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: undefined,
-      graphTokenProvider: undefined,
-      sharepointTokenProvider: undefined,
       m365TokenProvider: new MockedM365Provider(),
     };
     const envInfoV3: v2.DeepReadonly<v3.EnvInfoV3> = {

@@ -21,6 +21,10 @@ import { MockedLogProvider, MockedTelemetryReporter } from "../../../solution/ut
 import { BuiltInFeaturePluginNames } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
 import { AppStudioError } from "../../../../../src/plugins/resource/appstudio/errors";
 import {
+  STATIC_TABS_TPL_FOR_MULTI_ENV,
+  STATIC_TABS_TPL_LOCAL_DEBUG,
+} from "../../../../../src/plugins/resource/appstudio/constants";
+import {
   AzureSolutionQuestionNames,
   BotScenario,
 } from "../../../../../src/plugins/solution/fx-solution/question";
@@ -148,6 +152,10 @@ describe("Add capability", () => {
       capabilities
     );
     chai.assert.isTrue(addCapabilityResult.isOk());
+
+    // The index should not be modified after add capability
+    chai.assert.equal(STATIC_TABS_TPL_FOR_MULTI_ENV[0].entityId, "index");
+    chai.assert.equal(STATIC_TABS_TPL_LOCAL_DEBUG[0].entityId, "index");
 
     const loadedManifestTemplate = await plugin.loadManifest(ctx, inputsWithStaticTabs);
     chai.assert.isTrue(loadedManifestTemplate.isOk());

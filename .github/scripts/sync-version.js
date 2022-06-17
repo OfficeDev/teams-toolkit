@@ -42,8 +42,14 @@ function updateFileDeps(file, deps) {
     let fileChange = false;
     for(let [key,value] of Object.entries(deps)){
         if(dep_[key] && semver.prerelease(semver.minVersion(dep_[key]))) {
-            if(!(semver.prerelease(semver.minVersion(dep_[key])).includes("alpha") || semver.prerelease(semver.minVersion(dep_[key])).includes("rc"))){
+            if(!(semver.prerelease(semver.minVersion(dep_[key])).includes("alpha") || semver.prerelease(semver.minVersion(dep_[key])).includes("rc") || semver.prerelease(semver.minVersion(dep_[key])).includes("beta"))){
                 continue;
+            }
+            if(key === "@microsoft/teamsfx") {
+                const m365VersionPattern = /^\^?\d+\.\d+\.\d+-beta\.\d+$/;
+                if (dep_[key].match(m365VersionPattern)) {
+                    continue;
+                }
             }
             fileChange = true;
             if(semver.prerelease(value)){

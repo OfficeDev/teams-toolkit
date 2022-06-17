@@ -71,6 +71,7 @@
     position: relative;
     cursor: pointer;
     padding-bottom: 8px;
+    box-shadow: 0px 2px 16px rgb(0 0 0 / 36%);
 
     .section {
       display: flex;
@@ -221,7 +222,7 @@
 
 @media only screen and (max-width: 1024px) {
   .sample-gallery{
-    .box1, .box4, .box7, .box10, .box13, .box14, .box17 {
+    .box1, .box4, .box7, .box10, .box13, .box16 {
       grid-column: 1/5;
     }
     .box2, .box5, .box8, .box11, .box14, .box17 {
@@ -236,10 +237,10 @@
 
 @media only screen and (max-width: 813px){
   .sample-gallery{
-    .box1, .box3, .box5, .box7, .box9, .box11, .box13, .box15 {
+    .box1, .box3, .box5, .box7, .box9, .box11, .box13, .box15, .box17 {
       grid-column: 1/7;
     }
-    .box2, .box4,.box6,.box8, .box10,.box12, .box14 {
+    .box2, .box4,.box6,.box8, .box10,.box12, .box14, .box16 {
       grid-column: 7/13;
     }
   }
@@ -255,7 +256,7 @@
   .sample-gallery {
     min-width: 320px;
 
-  .box1, .box2, .box3, .box4, .box5, .box6, .box7, .box8, .box9, .box10, .box11, .box12, .box13, .box14, .box15 {
+  .box1, .box2, .box3, .box4, .box5, .box6, .box7, .box8, .box9, .box10, .box11, .box12, .box13, .box14, .box15, .box16, .box17 {
       grid-column: 1/13;
     }
   }

@@ -38,4 +38,4 @@ jobs:
         TEAMS_SIMPLE_AUTH_IntegrationTestSettings__TestUserName2: ${{secrets.SIMPLE_AUTH_TEST_USER_NAME_2}}
         TEAMS_SIMPLE_AUTH_IntegrationTestSettings__TestPassword2: ${{secrets.SIMPLE_AUTH_TEST_PASSWORD_2}}
       run:
-        chmod +x "scripts/test.sh" && "scripts/test.sh"
+        dotnet test Microsoft.TeamsFx.SimpleAuth.sln --filter TestCategory="P0"

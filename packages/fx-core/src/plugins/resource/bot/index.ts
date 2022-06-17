@@ -2,45 +2,45 @@
 // Licensed under the MIT license.
 import {
   AzureSolutionSettings,
-  err,
   Func,
   FxError,
   ok,
+  Platform,
   Plugin,
   PluginContext,
   QTreeNode,
   Result,
   Stage,
-  SystemError,
-  UserError,
 } from "@microsoft/teamsfx-api";
 
-import { FxBotPluginResultFactory as ResultFactory, FxResult } from "./result";
+import { FxResult } from "./result";
 import { TeamsBotImpl } from "./plugin";
 import { ProgressBarFactory } from "./progressBars";
 import { CustomizedTasks, LifecycleFuncNames, ProgressBarConstants } from "./constants";
-import {
-  ErrorType,
-  InnerError,
-  isErrorWithMessage,
-  isHttpError,
-  isPluginError,
-  PluginError,
-} from "./errors";
+import { runWithExceptionCatching } from "./errors";
 import { Logger } from "./logger";
-import { telemetryHelper } from "./utils/telemetry-helper";
-import { BotOptionItem, MessageExtensionItem } from "../../solution/fx-solution/question";
+import { BotOptionItem, MessageExtensionItem } from "../../solution";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import "./v2";
 import "./v3";
 import { DotnetBotImpl } from "./dotnet/plugin";
 import { PluginImpl } from "./interface";
-import { isVSProject, BotHostTypes, isBotNotificationEnabled } from "../../../common";
+import {
+  isVSProject,
+  BotHostTypes,
+  isBotNotificationEnabled,
+  isCLIDotNetEnabled,
+} from "../../../common";
 import { FunctionsHostedBotImpl } from "./functionsHostedBot/plugin";
 import { ScaffoldConfig } from "./configs/scaffoldConfig";
-import { createHostTypeTriggerQuestion, showNotificationTriggerCondition } from "./question";
-import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
+import {
+  createHostTypeTriggerQuestion,
+  getConditionOfNotificationTriggerQuestion,
+  showNotificationTriggerCondition,
+} from "./question";
+import { Runtime } from "./v2/enum";
+import { getPlatformRuntime } from "./v2/mapping";
 
 @Service(ResourcePlugins.BotPlugin)
 export class TeamsBot implements Plugin {
@@ -56,6 +56,7 @@ export class TeamsBot implements Plugin {
 
   /**
    * @param isScaffold true for `scaffold` lifecycle, false otherwise.
+   * @param context context of plugin
    */
   public getImpl(context: PluginContext, isScaffold = false): PluginImpl {
     if (isVSProject(context.projectSettings)) {
@@ -70,7 +71,7 @@ export class TeamsBot implements Plugin {
   public async scaffold(context: PluginContext): Promise<FxResult> {
     Logger.setLogger(context.logProvider);
 
-    const result = await TeamsBot.runWithExceptionCatching(
+    const result = await runWithExceptionCatching(
       context,
       () => this.getImpl(context, true).scaffold(context),
       true,
@@ -85,7 +86,7 @@ export class TeamsBot implements Plugin {
   public async preProvision(context: PluginContext): Promise<FxResult> {
     Logger.setLogger(context.logProvider);
 
-    return await TeamsBot.runWithExceptionCatching(
+    return await runWithExceptionCatching(
       context,
       () => this.getImpl(context).preProvision(context),
       true,
@@ -96,7 +97,7 @@ export class TeamsBot implements Plugin {
   public async provision(context: PluginContext): Promise<FxResult> {
     Logger.setLogger(context.logProvider);
 
-    const result = await TeamsBot.runWithExceptionCatching(
+    const result = await runWithExceptionCatching(
       context,
       () => this.getImpl(context).provision(context),
       true,
@@ -111,7 +112,7 @@ export class TeamsBot implements Plugin {
   public async postProvision(context: PluginContext): Promise<FxResult> {
     Logger.setLogger(context.logProvider);
 
-    return await TeamsBot.runWithExceptionCatching(
+    return await runWithExceptionCatching(
       context,
       () => this.getImpl(context).postProvision(context),
       true,
@@ -122,7 +123,7 @@ export class TeamsBot implements Plugin {
   public async updateArmTemplates(context: PluginContext): Promise<FxResult> {
     Logger.setLogger(context.logProvider);
 
-    return await TeamsBot.runWithExceptionCatching(
+    return await runWithExceptionCatching(
       context,
       () => this.getImpl(context).updateArmTemplates(context),
       true,
@@ -133,7 +134,7 @@ export class TeamsBot implements Plugin {
   public async generateArmTemplates(context: PluginContext): Promise<FxResult> {
     Logger.setLogger(context.logProvider);
 
-    return await TeamsBot.runWithExceptionCatching(
+    return await runWithExceptionCatching(
       context,
       () => this.getImpl(context).generateArmTemplates(context),
       true,
@@ -144,7 +145,7 @@ export class TeamsBot implements Plugin {
   public async preDeploy(context: PluginContext): Promise<FxResult> {
     Logger.setLogger(context.logProvider);
 
-    return await TeamsBot.runWithExceptionCatching(
+    return await runWithExceptionCatching(
       context,
       () => this.getImpl(context).preDeploy(context),
       true,
@@ -155,7 +156,7 @@ export class TeamsBot implements Plugin {
   public async deploy(context: PluginContext): Promise<FxResult> {
     Logger.setLogger(context.logProvider);
 
-    const result = await TeamsBot.runWithExceptionCatching(
+    const result = await runWithExceptionCatching(
       context,
       () => this.getImpl(context).deploy(context),
       true,
@@ -170,7 +171,7 @@ export class TeamsBot implements Plugin {
   public async localDebug(context: PluginContext): Promise<FxResult> {
     Logger.setLogger(context.logProvider);
 
-    const result = await TeamsBot.runWithExceptionCatching(
+    const result = await runWithExceptionCatching(
       context,
       () => this.getImpl(context).localDebug(context),
       false,
@@ -188,7 +189,7 @@ export class TeamsBot implements Plugin {
   public async postLocalDebug(context: PluginContext): Promise<FxResult> {
     Logger.setLogger(context.logProvider);
 
-    return await TeamsBot.runWithExceptionCatching(
+    return await runWithExceptionCatching(
       context,
       () => this.getImpl(context).postLocalDebug(context),
       false,
@@ -203,19 +204,29 @@ export class TeamsBot implements Plugin {
     Logger.setLogger(context.logProvider);
 
     if (stage === Stage.create) {
-      return await TeamsBot.runWithExceptionCatching(
+      return await runWithExceptionCatching(
         context,
         async () => {
-          if (isBotNotificationEnabled()) {
-            const res = new QTreeNode({
-              type: "group",
+          const res = new QTreeNode({
+            type: "group",
+          });
+          if (isCLIDotNetEnabled()) {
+            Object.values(Runtime).forEach((runtime) => {
+              const node = new QTreeNode(
+                createHostTypeTriggerQuestion(context.answers?.platform, runtime)
+              );
+              node.condition = getConditionOfNotificationTriggerQuestion(runtime);
+              res.addChild(node);
             });
-            res.addChild(new QTreeNode(createHostTypeTriggerQuestion()));
-            res.condition = showNotificationTriggerCondition;
-            return ok(res);
           } else {
-            return ok(undefined);
+            const runtime = getPlatformRuntime(context.answers!.platform);
+            const node = new QTreeNode(
+              createHostTypeTriggerQuestion(context.answers?.platform, runtime)
+            );
+            res.addChild(node);
           }
+          res.condition = showNotificationTriggerCondition;
+          return ok(res);
         },
         true,
         LifecycleFuncNames.GET_QUETSIONS_FOR_SCAFFOLDING
@@ -231,14 +242,18 @@ export class TeamsBot implements Plugin {
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     Logger.setLogger(context.logProvider);
 
-    return await TeamsBot.runWithExceptionCatching(
+    return await runWithExceptionCatching(
       context,
       async () => {
-        if (func.method === CustomizedTasks.addCapability && isBotNotificationEnabled()) {
+        if (
+          (func.method === CustomizedTasks.addCapability ||
+            func.method === CustomizedTasks.addFeature) &&
+          isBotNotificationEnabled()
+        ) {
           const res = new QTreeNode({
             type: "group",
           });
-          res.addChild(new QTreeNode(createHostTypeTriggerQuestion()));
+          res.addChild(new QTreeNode(createHostTypeTriggerQuestion(context.answers?.platform)));
           res.condition = showNotificationTriggerCondition;
           return ok(res);
         } else {
@@ -248,90 +263,6 @@ export class TeamsBot implements Plugin {
       true,
       LifecycleFuncNames.GET_QUETSIONS_FOR_USER_TASK
     );
-  }
-
-  private static wrapError(
-    e: InnerError,
-    context: PluginContext,
-    sendTelemetry: boolean,
-    name: string
-  ): FxResult {
-    let errorMsg = isErrorWithMessage(e) ? e.message : "";
-    const innerError = isPluginError(e) ? e.innerError : undefined;
-    if (innerError) {
-      errorMsg += getLocalizedString(
-        "plugins.bot.DetailedError",
-        isErrorWithMessage(innerError) ? innerError.message : ""
-      );
-      if (isHttpError(innerError)) {
-        if (innerError.response?.data?.errorMessage) {
-          errorMsg += getLocalizedString(
-            "plugins.bot.DetailedErrorReason",
-            innerError.response?.data?.errorMessage
-          );
-        } else if (innerError.response?.data?.error?.message) {
-          // For errors return from Graph API
-          errorMsg += getLocalizedString(
-            "plugins.bot.DetailedErrorReason",
-            innerError.response?.data?.error?.message
-          );
-        }
-      }
-    }
-    Logger.error(errorMsg);
-    if (e instanceof UserError || e instanceof SystemError) {
-      const res = err(e);
-      sendTelemetry && telemetryHelper.sendResultEvent(context, name, res);
-      return res;
-    }
-
-    if (e instanceof PluginError) {
-      const result =
-        e.errorType === ErrorType.SYSTEM
-          ? ResultFactory.SystemError(e.name, [e.genMessage(), e.genDisplayMessage()], e.innerError)
-          : ResultFactory.UserError(
-              e.name,
-              [e.genMessage(), e.genDisplayMessage()],
-              e.innerError,
-              e.helpLink
-            );
-      sendTelemetry && telemetryHelper.sendResultEvent(context, name, result);
-      return result;
-    } else {
-      // Unrecognized Exception.
-      const UnhandledErrorCode = "UnhandledError";
-      sendTelemetry &&
-        telemetryHelper.sendResultEvent(
-          context,
-          name,
-          ResultFactory.SystemError(
-            UnhandledErrorCode,
-            [
-              getDefaultString("plugins.bot.UnhandledError", errorMsg),
-              getLocalizedString("plugins.bot.UnhandledError", errorMsg),
-            ],
-            isPluginError(e) ? e.innerError : undefined
-          )
-        );
-      return ResultFactory.SystemError(UnhandledErrorCode, [errorMsg, errorMsg], innerError);
-    }
-  }
-
-  private static async runWithExceptionCatching(
-    context: PluginContext,
-    fn: () => Promise<FxResult>,
-    sendTelemetry: boolean,
-    name: string
-  ): Promise<FxResult> {
-    try {
-      sendTelemetry && telemetryHelper.sendStartEvent(context, name);
-      const res: FxResult = await fn();
-      sendTelemetry && telemetryHelper.sendResultEvent(context, name, res);
-      return res;
-    } catch (e) {
-      await ProgressBarFactory.closeProgressBar(false); // Close all progress bars.
-      return TeamsBot.wrapError(e, context, sendTelemetry, name);
-    }
   }
 
   private static isFunctionsHostedBot(context: PluginContext, isScaffold: boolean): boolean {

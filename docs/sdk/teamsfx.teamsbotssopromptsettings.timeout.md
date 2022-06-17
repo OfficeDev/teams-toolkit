@@ -4,9 +4,6 @@
 
 ## TeamsBotSsoPromptSettings.timeout property
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 (Optional) number of milliseconds the prompt will wait for the user to authenticate. Defaults to a value `900,000` (15 minutes.)
 
 <b>Signature:</b>

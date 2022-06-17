@@ -7,9 +7,11 @@ export class Constants {
   public static readonly PLUGIN_NAME = "AppStudioPlugin";
   public static readonly PUBLISH_PATH_QUESTION = "manifest-folder";
   public static readonly BUILD_OR_PUBLISH_QUESTION = "build-or-publish";
+  public static readonly INCLUDE_APP_MANIFEST = "include-app-manifest";
   public static readonly READ_MORE = "Read more";
-  public static readonly LEARN_MORE = "Learn more";
-  public static readonly ADMIN_PORTAL = "Admin portal";
+  public static readonly VIEW_DEVELOPER_PORTAL = "View in Developer Portal";
+  public static readonly DEVELOPER_PORTAL_APP_PACKAGE_URL =
+    "https://dev.teams.microsoft.com/apps/%s/app-package";
   public static readonly PUBLISH_GUIDE = "https://aka.ms/teamsfx-publish";
   public static readonly TEAMS_ADMIN_PORTAL = "https://aka.ms/teamsfx-mtac";
   public static readonly TEAMS_MANAGE_APP_DOC = "https://aka.ms/teamsfx-mtac-doc";
@@ -53,7 +55,6 @@ export const OUTLINE_TEMPLATE = "plugins/resource/appstudio/defaultOutline.png";
 export const DEFAULT_COLOR_PNG_FILENAME = "color.png";
 export const DEFAULT_OUTLINE_PNG_FILENAME = "outline.png";
 export const MANIFEST_RESOURCES = "resources";
-export const APP_PACKAGE_FOLDER_FOR_MULTI_ENV = "templates/appPackage";
 /**
  * Config Keys that are useful for remote collaboration
  */
@@ -61,16 +62,16 @@ export const SOLUTION = "solution";
 export const SOLUTION_USERINFO = "userinfo";
 
 export const TEAMS_APP_MANIFEST_TEMPLATE_V3 = `{
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.11",
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.13/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.13",
   "version": "1.0.0",
   "id": "{{state.fx-resource-appstudio.teamsAppId}}",
   "packageName": "com.microsoft.teams.extension",
   "developer": {
       "name": "Teams App, Inc.",
-      "websiteUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}",
-      "privacyUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/privacy",
-      "termsOfUseUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/termsofuse"
+      "websiteUrl": "{{state.fx-resource-frontend-hosting.endpoint}}",
+      "privacyUrl": "{{state.fx-resource-frontend-hosting.endpoint}}{{state.fx-resource-frontend-hosting.indexPath}}/privacy",
+      "termsOfUseUrl": "{{state.fx-resource-frontend-hosting.endpoint}}{{state.fx-resource-frontend-hosting.indexPath}}/termsofuse"
   },
   "icons": {
       "color": "resources/color.png",
@@ -97,16 +98,16 @@ export const TEAMS_APP_MANIFEST_TEMPLATE_V3 = `{
 }`;
 
 export const TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV = `{
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.11",
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.13/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.13",
   "version": "1.0.0",
   "id": "{{state.fx-resource-appstudio.teamsAppId}}",
   "packageName": "com.microsoft.teams.extension",
   "developer": {
       "name": "Teams App, Inc.",
-      "websiteUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}",
-      "privacyUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/privacy",
-      "termsOfUseUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/termsofuse"
+      "websiteUrl": "{{state.fx-resource-frontend-hosting.endpoint}}",
+      "privacyUrl": "{{state.fx-resource-frontend-hosting.endpoint}}{{state.fx-resource-frontend-hosting.indexPath}}/privacy",
+      "termsOfUseUrl": "{{state.fx-resource-frontend-hosting.endpoint}}{{state.fx-resource-frontend-hosting.indexPath}}/termsofuse"
   },
   "icons": {
       "color": "resources/color.png",
@@ -132,21 +133,21 @@ export const TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV = `{
   "validDomains": [],
   "webApplicationInfo": {
       "id": "{{state.fx-resource-aad-app-for-teams.clientId}}",
-      "resource": "{{{state.fx-resource-aad-app-for-teams.applicationIdUris}}}"
+      "resource": "{{state.fx-resource-aad-app-for-teams.applicationIdUris}}"
   }
 }`;
 
 export const TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3 = `{
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.11",
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.13/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.13",
   "version": "1.0.0",
   "id": "{{localSettings.teamsApp.teamsAppId}}",
   "packageName": "com.microsoft.teams.extension",
   "developer": {
       "name": "Teams App, Inc.",
-      "websiteUrl": "{{{localSettings.frontend.tabEndpoint}}}",
-      "privacyUrl": "{{{localSettings.frontend.tabEndpoint}}}{{{localSettings.frontend.tabIndexPath}}}/privacy",
-      "termsOfUseUrl": "{{{localSettings.frontend.tabEndpoint}}}{{{localSettings.frontend.tabIndexPath}}}/termsofuse"
+      "websiteUrl": "{{localSettings.frontend.tabEndpoint}}",
+      "privacyUrl": "{{localSettings.frontend.tabEndpoint}}{{localSettings.frontend.tabIndexPath}}/privacy",
+      "termsOfUseUrl": "{{localSettings.frontend.tabEndpoint}}{{localSettings.frontend.tabIndexPath}}/termsofuse"
   },
   "icons": {
       "color": "resources/color.png",
@@ -173,16 +174,16 @@ export const TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3 = `{
 }`;
 
 export const TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG = `{
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.11",
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.13/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.13",
   "version": "1.0.0",
   "id": "{{localSettings.teamsApp.teamsAppId}}",
   "packageName": "com.microsoft.teams.extension",
   "developer": {
       "name": "Teams App, Inc.",
-      "websiteUrl": "{{{localSettings.frontend.tabEndpoint}}}",
-      "privacyUrl": "{{{localSettings.frontend.tabEndpoint}}}{{{localSettings.frontend.tabIndexPath}}}/privacy",
-      "termsOfUseUrl": "{{{localSettings.frontend.tabEndpoint}}}{{{localSettings.frontend.tabIndexPath}}}/termsofuse"
+      "websiteUrl": "{{localSettings.frontend.tabEndpoint}}",
+      "privacyUrl": "{{localSettings.frontend.tabEndpoint}}{{localSettings.frontend.tabIndexPath}}/privacy",
+      "termsOfUseUrl": "{{localSettings.frontend.tabEndpoint}}{{localSettings.frontend.tabIndexPath}}/termsofuse"
   },
   "icons": {
       "color": "resources/color.png",
@@ -208,7 +209,7 @@ export const TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG = `{
   "validDomains": [],
   "webApplicationInfo": {
       "id": "{{localSettings.auth.clientId}}",
-      "resource": "{{{localSettings.auth.applicationIdUris}}}"
+      "resource": "{{localSettings.auth.applicationIdUris}}"
   }
 }`;
 
@@ -217,9 +218,9 @@ export const STATIC_TABS_TPL_FOR_MULTI_ENV: IStaticTab[] = [
     entityId: "index",
     name: "Personal Tab",
     contentUrl:
-      "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/tab",
+      "{{state.fx-resource-frontend-hosting.endpoint}}{{state.fx-resource-frontend-hosting.indexPath}}/tab",
     websiteUrl:
-      "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/tab",
+      "{{state.fx-resource-frontend-hosting.endpoint}}{{state.fx-resource-frontend-hosting.indexPath}}/tab",
     scopes: ["personal"],
   },
 ];
@@ -228,8 +229,8 @@ export const STATIC_TABS_TPL_EXISTING_APP: IStaticTab[] = [
   {
     entityId: "index",
     name: "Personal Tab",
-    contentUrl: "{{{config.manifest.tabContentUrl}}}",
-    websiteUrl: "{{{config.manifest.tabWebsiteUrl}}}",
+    contentUrl: "{{config.manifest.tabContentUrl}}",
+    websiteUrl: "{{config.manifest.tabWebsiteUrl}}",
     scopes: ["personal"],
   },
 ];
@@ -237,7 +238,7 @@ export const STATIC_TABS_TPL_EXISTING_APP: IStaticTab[] = [
 export const CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV: IConfigurableTab[] = [
   {
     configurationUrl:
-      "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/config",
+      "{{state.fx-resource-frontend-hosting.endpoint}}{{state.fx-resource-frontend-hosting.indexPath}}/config",
     canUpdateConfiguration: true,
     scopes: ["team", "groupchat"],
   },
@@ -245,7 +246,7 @@ export const CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV: IConfigurableTab[] = [
 
 export const CONFIGURABLE_TABS_TPL_EXISTING_APP: IConfigurableTab[] = [
   {
-    configurationUrl: "{{{config.manifest.tabConfigurationUrl}}}",
+    configurationUrl: "{{config.manifest.tabConfigurationUrl}}",
     canUpdateConfiguration: true,
     scopes: ["team", "groupchat"],
   },
@@ -434,10 +435,8 @@ export const STATIC_TABS_TPL_LOCAL_DEBUG: IStaticTab[] = [
   {
     entityId: "index",
     name: "Personal Tab",
-    contentUrl:
-      "{{{localSettings.frontend.tabEndpoint}}}{{{localSettings.frontend.tabIndexPath}}}/tab",
-    websiteUrl:
-      "{{{localSettings.frontend.tabEndpoint}}}{{{localSettings.frontend.tabIndexPath}}}/tab",
+    contentUrl: "{{localSettings.frontend.tabEndpoint}}{{localSettings.frontend.tabIndexPath}}/tab",
+    websiteUrl: "{{localSettings.frontend.tabEndpoint}}{{localSettings.frontend.tabIndexPath}}/tab",
     scopes: ["personal"],
   },
 ];
@@ -445,7 +444,7 @@ export const STATIC_TABS_TPL_LOCAL_DEBUG: IStaticTab[] = [
 export const CONFIGURABLE_TABS_TPL_LOCAL_DEBUG: IConfigurableTab[] = [
   {
     configurationUrl:
-      "{{{localSettings.frontend.tabEndpoint}}}{{{localSettings.frontend.tabIndexPath}}}/config",
+      "{{localSettings.frontend.tabEndpoint}}{{localSettings.frontend.tabIndexPath}}/config",
     canUpdateConfiguration: true,
     scopes: ["team", "groupchat"],
   },
@@ -549,12 +548,12 @@ export const BOTS_TPL_LOCAL_DEBUG: IBot[] = [
 
 export const WEB_APPLICATION_INFO_LOCAL_DEBUG = {
   id: "{{localSettings.auth.clientId}}",
-  resource: "{{{localSettings.auth.applicationIdUris}}}",
+  resource: "{{localSettings.auth.applicationIdUris}}",
 };
 
 export const WEB_APPLICATION_INFO_MULTI_ENV = {
   id: "{{state.fx-resource-aad-app-for-teams.clientId}}",
-  resource: "{{{state.fx-resource-aad-app-for-teams.applicationIdUris}}}",
+  resource: "{{state.fx-resource-aad-app-for-teams.applicationIdUris}}",
 };
 
 // Default values for the developer fields in manifest.
@@ -565,6 +564,6 @@ export const DEFAULT_DEVELOPER_PRIVACY_URL = "https://www.example.com/privacy";
 export const TEAMS_APP_SHORT_NAME_MAX_LENGTH = 30;
 export const STATIC_TABS_MAX_ITEMS = 16;
 
-export const DEVELOPER_PREVIEW_SCHEMA =
-  "https://raw.githubusercontent.com/OfficeDev/microsoft-teams-app-schema/preview/DevPreview/MicrosoftTeams.schema.json";
-export const M365_DEVELOPER_PREVIEW_MANIFEST_VERSION = "m365DevPreview";
+export const M365_SCHEMA =
+  "https://developer.microsoft.com/en-us/json-schemas/teams/v1.13/MicrosoftTeams.schema.json";
+export const M365_MANIFEST_VERSION = "1.13";

@@ -3,7 +3,6 @@
 
 /**
  * Interface for customized logger.
- * @beta
  */
 export interface Logger {
   /**
@@ -26,15 +25,11 @@ export interface Logger {
 
 /**
  * Log function for customized logging.
- *
- * @beta
  */
 export type LogFunction = (level: LogLevel, message: string) => void;
 
 /**
  * Log level.
- *
- * @beta
  */
 export enum LogLevel {
   /**
@@ -59,8 +54,6 @@ export enum LogLevel {
  * Update log level helper.
  *
  * @param { LogLevel } level - log level in configuration
- *
- * @beta
  */
 export function setLogLevel(level: LogLevel): void {
   internalLogger.level = level;
@@ -70,8 +63,6 @@ export function setLogLevel(level: LogLevel): void {
  * Get log level.
  *
  * @returns Log level
- *
- * @beta
  */
 export function getLogLevel(): LogLevel | undefined {
   return internalLogger.level;
@@ -160,8 +151,6 @@ export const internalLogger: InternalLogger = new InternalLogger();
  *   error: console.error,
  * });
  * ```
- *
- * @beta
  */
 export function setLogger(logger?: Logger): void {
   internalLogger.customLogger = logger;
@@ -180,8 +169,6 @@ export function setLogger(logger?: Logger): void {
  *   }
  * });
  * ```
- *
- * @beta
  */
 export function setLogFunction(logFunction?: LogFunction): void {
   internalLogger.customLogFunction = logFunction;

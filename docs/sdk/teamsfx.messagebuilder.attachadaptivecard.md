@@ -4,22 +4,19 @@
 
 ## MessageBuilder.attachAdaptiveCard() method
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Build a bot message activity attached with adaptive card.
 
 <b>Signature:</b>
 
 ```typescript
-static attachAdaptiveCard<TData>(cardTemplate: any, data: TData): Partial<Activity>;
+static attachAdaptiveCard<TData extends object>(cardTemplate: unknown, data: TData): Partial<Activity>;
 ```
 
 ## Parameters
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  cardTemplate | any | The adaptive card template. |
+|  cardTemplate | unknown | The adaptive card template. |
 |  data | TData | card data used to render the template. |
 
 <b>Returns:</b>

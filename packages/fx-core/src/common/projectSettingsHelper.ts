@@ -18,7 +18,6 @@ import {
 } from "../plugins/solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import * as uuid from "uuid";
-import { isAadManifestEnabled } from "./tools";
 
 export function validateProjectSettings(projectSettings: ProjectSettings): string | undefined {
   if (!projectSettings) return "empty projectSettings";
@@ -97,10 +96,17 @@ export function hasSPFx(projectSetting: ProjectSettings): boolean {
 export function hasAzureResource(projectSetting: ProjectSettings, excludeAad = false): boolean {
   const solutionSettings = projectSetting.solutionSettings as AzureSolutionSettings | undefined;
   if (!solutionSettings) return false;
+  const azurePlugins = getAzurePlugins(excludeAad);
+  for (const pluginName of solutionSettings.activeResourcePlugins) {
+    if (azurePlugins.includes(pluginName)) return true;
+  }
+  return false;
+}
+
+export function getAzurePlugins(excludeAad = false): string[] {
   const azurePlugins = [
     BuiltInFeaturePluginNames.apim,
     BuiltInFeaturePluginNames.bot,
-    BuiltInFeaturePluginNames.dotnet,
     BuiltInFeaturePluginNames.frontend,
     BuiltInFeaturePluginNames.function,
     BuiltInFeaturePluginNames.identity,
@@ -111,14 +117,24 @@ export function hasAzureResource(projectSetting: ProjectSettings, excludeAad = f
   if (!excludeAad) {
     azurePlugins.push(BuiltInFeaturePluginNames.aad);
   }
-  for (const pluginName of solutionSettings.activeResourcePlugins) {
-    if (azurePlugins.includes(pluginName)) return true;
-  }
-  return false;
+  return azurePlugins;
 }
 
-export function isPureExistingApp(projectSettings: ProjectSettings): boolean {
-  return projectSettings.solutionSettings === undefined;
+export function isExistingTabApp(projectSettings: ProjectSettings): boolean {
+  const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
+  if (!solutionSettings) {
+    return true;
+  }
+
+  // Scenario: SSO is added to existing tab app
+  if (
+    solutionSettings.capabilities?.length === 1 &&
+    solutionSettings.capabilities.includes(TabSsoItem.id)
+  ) {
+    return true;
+  }
+
+  return false;
 }
 
 export function getProjectSettingsVersion() {

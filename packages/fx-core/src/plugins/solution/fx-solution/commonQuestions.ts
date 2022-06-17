@@ -156,7 +156,7 @@ export async function checkM365Tenant(
       new UserError(
         "Solution",
         SolutionError.TeamsAppTenantIdNotRight,
-        `The signed in M365 account does not match the M365 tenant used in previous provision for '${envInfo.data.envName}' environment. Please sign out and sign in with the correct M365 account.`
+        getLocalizedString("error.M365AccountNotMatch", envInfo.data.envName)
       )
     );
   }

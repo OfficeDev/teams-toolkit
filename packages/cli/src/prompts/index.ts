@@ -6,14 +6,15 @@ import CustomizedCheckboxPrompt from "./customizedCheckboxPrompt";
 import CustomizedListPrompt from "./customizedListPrompt";
 
 export interface ChoiceOptions {
-    name: string;
-    extra: {
-        description?: string;
-        detail?: string;
-    }
+  name: string;
+  extra: {
+    title: string;
+    description?: string;
+    detail?: string;
+  };
 }
 
 export function registerPrompts() {
-    inquirer.registerPrompt("checkbox", CustomizedCheckboxPrompt);
-    inquirer.registerPrompt("list", CustomizedListPrompt);
+  inquirer.registerPrompt("checkbox", CustomizedCheckboxPrompt);
+  inquirer.registerPrompt("list", CustomizedListPrompt);
 }

@@ -3,7 +3,8 @@
 
 import { commands, MessageItem, Uri, window, workspace, WorkspaceConfiguration } from "vscode";
 import { hasTeamsfxBackend, hasTeamsfxBot } from "../commonUtils";
-
+import { vscodeTelemetry } from "./vscodeTelemetry";
+import { DepsCheckerEvent } from "@microsoft/teamsfx-core";
 const configurationPrefix = "fx-extension";
 
 class VSCodeHelper {
@@ -21,11 +22,19 @@ class VSCodeHelper {
   }
 
   public isFuncCoreToolsEnabled(): boolean {
-    return this.checkerEnabled("prerequisiteCheck.funcCoreTools");
+    const isFuncCoreToolsEnabled = this.checkerEnabled("prerequisiteCheck.funcCoreTools");
+    if (!isFuncCoreToolsEnabled) {
+      vscodeTelemetry.sendEvent(DepsCheckerEvent.funcCheckSkipped);
+    }
+    return isFuncCoreToolsEnabled;
   }
 
   public isNodeCheckerEnabled(): boolean {
-    return this.checkerEnabled("prerequisiteCheck.node");
+    const isNodeCheckerEnabled = this.checkerEnabled("prerequisiteCheck.node");
+    if (!isNodeCheckerEnabled) {
+      vscodeTelemetry.sendEvent(DepsCheckerEvent.nodeCheckSkipped);
+    }
+    return isNodeCheckerEnabled;
   }
 
   public isNgrokCheckerEnabled(): boolean {

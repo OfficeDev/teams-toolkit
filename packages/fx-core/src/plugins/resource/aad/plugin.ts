@@ -37,6 +37,7 @@ import {
   AadManifestMissingName,
   CannotGenerateIdentifierUrisError,
   AadManifestNotProvisioned,
+  AADManifestMissingScopeIdForTeamsApp,
 } from "./errors";
 import { Envs } from "./interfaces/models";
 import { DialogUtils } from "./utils/dialog";
@@ -61,10 +62,10 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import * as os from "os";
 import { ArmTemplateResult } from "../../../common/armInterface";
-import { Bicep, ConstantString } from "../../../common/constants";
+import { Bicep, ConstantString, HelpLinks } from "../../../common/constants";
 import { getTemplatesFolder } from "../../../folder";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
-import { IUserList } from "../appstudio/interfaces/IAppDefinition";
+import { AppUser } from "../appstudio/interfaces/appUser";
 import { isAadManifestEnabled, isConfigUnifyEnabled } from "../../../common/tools";
 import { getPermissionMap } from "./permissions";
 import { AadAppManifestManager } from "./aadAppManifestManager";
@@ -75,7 +76,8 @@ import {
   TabOptionItem,
 } from "../../solution/fx-solution/question";
 import { format, Formats } from "./utils/format";
-import { SOLUTION_PROVISION_SUCCEEDED } from "../../solution";
+import { PluginNames, REMOTE_AAD_ID, SOLUTION_PROVISION_SUCCEEDED } from "../../solution";
+import { generateAadManifestTemplate } from "../../../core/generateAadManifestTemplate";
 
 export class AadAppForTeamsImpl {
   public async provision(ctx: PluginContext, isLocalDebug = false): Promise<AadResult> {
@@ -95,7 +97,7 @@ export class AadAppForTeamsImpl {
       ? Messages.EndLocalDebug.telemetry
       : Messages.EndProvision.telemetry;
 
-    await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
+    await TokenProvider.init({ m365: ctx.m365TokenProvider });
 
     // Move objectId etc. from input to output.
     const skip = Utils.skipAADProvision(
@@ -121,7 +123,7 @@ export class AadAppForTeamsImpl {
           telemetryMessage,
           config.objectId,
           config.password,
-          ctx.graphTokenProvider,
+          ctx.m365TokenProvider,
           isLocalDebug
             ? isConfigUnifyEnabled()
               ? ctx.envInfo.envName
@@ -180,7 +182,7 @@ export class AadAppForTeamsImpl {
       ? Messages.EndLocalDebug.telemetry
       : Messages.EndProvision.telemetry;
 
-    await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
+    await TokenProvider.init({ m365: ctx.m365TokenProvider });
 
     // Move objectId etc. from input to output.
     const skip = Utils.skipAADProvision(ctx, false);
@@ -190,17 +192,19 @@ export class AadAppForTeamsImpl {
     await config.restoreConfigFromContext(ctx);
 
     const manifest = await AadAppManifestManager.loadAadManifest(ctx);
-    config.oauth2PermissionScopeId = manifest.oauth2Permissions[0]?.id;
 
     await DialogUtils.progress?.start(ProgressDetail.Starting);
     if (manifest.id) {
-      if (!skip) {
+      const existingOauth2PermissionScopeId = ctx.envInfo.config.auth?.accessAsUserScopeId;
+
+      if (!skip || !existingOauth2PermissionScopeId) {
         await DialogUtils.progress?.next(ProgressDetail.GetAadApp);
         config = await AadAppClient.getAadAppUsingManifest(
           telemetryMessage,
           manifest.id,
           config.password,
-          ctx.graphTokenProvider,
+          await this.getScopeIdForTeams(manifest),
+          ctx.m365TokenProvider,
           ctx.envInfo.envName
         );
         ctx.logProvider?.info(Messages.getLog(Messages.GetAadAppSuccess));
@@ -213,6 +217,7 @@ export class AadAppForTeamsImpl {
           AadManifestMissingName.message()
         );
       }
+      config.oauth2PermissionScopeId = await this.getScopeIdForTeams(manifest);
       await AadAppClient.createAadAppUsingManifest(telemetryMessage, manifest, config);
       config.password = undefined;
       ctx.logProvider?.info(Messages.getLog(Messages.CreateAadAppSuccess));
@@ -235,6 +240,26 @@ export class AadAppForTeamsImpl {
       skip ? { [Telemetry.skip]: Telemetry.yes } : {}
     );
     return ResultFactory.Success();
+  }
+
+  private getScopeIdForTeams(manifest: AADManifest) {
+    let scopeId;
+    let findAccessAsUser;
+    manifest.oauth2Permissions?.forEach((oauth2Permission) => {
+      if (oauth2Permission.value === "access_as_user") {
+        scopeId = oauth2Permission.id;
+        findAccessAsUser = true;
+      }
+    });
+
+    if (!findAccessAsUser) {
+      throw ResultFactory.UserError(
+        AADManifestMissingScopeIdForTeamsApp.name,
+        AADManifestMissingScopeIdForTeamsApp.message()
+      );
+    }
+
+    return scopeId;
   }
 
   public setApplicationInContext(ctx: PluginContext, isLocalDebug = false): AadResult {
@@ -299,7 +324,7 @@ export class AadAppForTeamsImpl {
     );
     DialogUtils.init(ctx.ui, ProgressTitle.PostProvision, ProgressTitle.PostProvisionSteps);
 
-    await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
+    await TokenProvider.init({ m365: ctx.m365TokenProvider });
     const config: PostProvisionConfig = new PostProvisionConfig(
       isLocalDebug ? (isConfigUnifyEnabled() ? false : true) : false
     );
@@ -360,7 +385,7 @@ export class AadAppForTeamsImpl {
       ProgressTitle.PostProvisionUsingManifestSteps
     );
 
-    await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
+    await TokenProvider.init({ m365: ctx.m365TokenProvider });
 
     await DialogUtils.progress?.start(ProgressDetail.Starting);
 
@@ -404,7 +429,7 @@ export class AadAppForTeamsImpl {
       return ResultFactory.Success();
     }
 
-    await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
+    await TokenProvider.init({ m365: ctx.m365TokenProvider });
 
     const permissions = AadAppForTeamsImpl.parsePermission(
       configs[0].permissionRequest as string,
@@ -460,15 +485,12 @@ export class AadAppForTeamsImpl {
 
   public async checkPermission(
     ctx: PluginContext,
-    userInfo: IUserList
+    userInfo: AppUser
   ): Promise<Result<ResourcePermission[], FxError>> {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartCheckPermission);
 
-    await TokenProvider.init(
-      { graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken },
-      TokenAudience.Graph
-    );
+    await TokenProvider.init({ m365: ctx.m365TokenProvider }, TokenAudience.Graph);
     const config = new CheckGrantPermissionConfig();
     await config.restoreConfigFromContext(ctx);
 
@@ -495,10 +517,7 @@ export class AadAppForTeamsImpl {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartListCollaborator);
 
-    await TokenProvider.init(
-      { graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken },
-      TokenAudience.Graph
-    );
+    await TokenProvider.init({ m365: ctx.m365TokenProvider }, TokenAudience.Graph);
 
     const objectId = ConfigUtils.getAadConfig(ctx, ConfigKeys.objectId, false);
     if (!objectId) {
@@ -518,15 +537,12 @@ export class AadAppForTeamsImpl {
 
   public async grantPermission(
     ctx: PluginContext,
-    userInfo: IUserList
+    userInfo: AppUser
   ): Promise<Result<ResourcePermission[], FxError>> {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGrantPermission);
 
-    await TokenProvider.init(
-      { graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken },
-      TokenAudience.Graph
-    );
+    await TokenProvider.init({ m365: ctx.m365TokenProvider }, TokenAudience.Graph);
     const config = new CheckGrantPermissionConfig(true);
     await config.restoreConfigFromContext(ctx);
 
@@ -776,130 +792,73 @@ export class AadAppForTeamsImpl {
     if (isAadManifestEnabled() && isConfigUnifyEnabled()) {
       TelemetryUtils.init(ctx);
       Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartScaffold);
-
-      const templatesFolder = getTemplatesFolder();
-      const appDir = `${ctx.root}/${Constants.appPackageFolder}`;
-      const aadManifestTemplate = `${templatesFolder}/${Constants.aadManifestTemplateFolder}/${Constants.aadManifestTemplateName}`;
-      await fs.ensureDir(appDir);
-
-      const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
-
-      const aadManifestPath = `${appDir}/${Constants.aadManifestTemplateName}`;
-
-      let aadJson;
-
-      if (await fs.pathExists(aadManifestPath)) {
-        aadJson = await fs.readJSON(aadManifestPath);
-      } else {
-        aadJson = await fs.readJSON(aadManifestTemplate);
-      }
-
-      if (!aadJson.replyUrlsWithType) {
-        aadJson.replyUrlsWithType = [];
-      }
-
-      if (azureSolutionSettings.capabilities.includes("Tab")) {
-        const tabRedirectUrl1 =
-          "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/auth-end.html";
-
-        if (!this.isRedirectUrlExist(aadJson.replyUrlsWithType, tabRedirectUrl1, "Web")) {
-          aadJson.replyUrlsWithType.push({
-            url: tabRedirectUrl1,
-            type: "Web",
-          });
-        }
-
-        const tabRedirectUrl2 =
-          "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/auth-end.html?clientId={{state.fx-resource-aad-app-for-teams.clientId}}";
-
-        if (!this.isRedirectUrlExist(aadJson.replyUrlsWithType, tabRedirectUrl2, "Spa")) {
-          aadJson.replyUrlsWithType.push({
-            url: tabRedirectUrl2,
-            type: "Spa",
-          });
-        }
-
-        const tabRedirectUrl3 =
-          "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/blank-auth-end.html";
-
-        if (!this.isRedirectUrlExist(aadJson.replyUrlsWithType, tabRedirectUrl3, "Spa")) {
-          aadJson.replyUrlsWithType.push({
-            url: tabRedirectUrl3,
-            type: "Spa",
-          });
-        }
-      }
-
-      if (azureSolutionSettings.capabilities.includes("Bot")) {
-        const botRedirectUrl = "{{state.fx-resource-aad-app-for-teams.botEndpoint}}/auth-end.html";
-
-        if (!this.isRedirectUrlExist(aadJson.replyUrlsWithType, botRedirectUrl, "Web")) {
-          aadJson.replyUrlsWithType.push({
-            url: botRedirectUrl,
-            type: "Web",
-          });
-        }
-      }
-
-      await fs.writeJSON(`${appDir}/${Constants.aadManifestTemplateName}`, aadJson, {
-        spaces: 4,
-        EOL: os.EOL,
-      });
-
+      await generateAadManifestTemplate(ctx.root, ctx.projectSettings);
       Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndScaffold);
     }
     return ResultFactory.Success();
-  }
-
-  private isRedirectUrlExist(replyUrls: ReplyUrlsWithType[], url: string, type: string) {
-    return (
-      replyUrls.filter((item: ReplyUrlsWithType) => item.url === url && item.type === type).length >
-      0
-    );
   }
 
   public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
     if (isAadManifestEnabled() && isConfigUnifyEnabled()) {
       TelemetryUtils.init(ctx);
       Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartDeploy);
-      DialogUtils.init(ctx.ui, ProgressTitle.Deploy, ProgressTitle.DeploySteps);
 
-      await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
+      try {
+        DialogUtils.init(ctx.ui, ProgressTitle.Deploy, ProgressTitle.DeploySteps);
+        await TokenProvider.init({ m365: ctx.m365TokenProvider });
 
-      await DialogUtils.progress?.start(ProgressDetail.Starting);
+        await DialogUtils.progress?.start(ProgressDetail.Starting);
 
-      const skip = Utils.skipAADProvision(ctx, false);
+        const skip = Utils.skipAADProvision(ctx, false);
 
-      const manifest = await this.loadAndBuildManifest(ctx);
+        const manifest = await this.loadAndBuildManifest(ctx);
 
-      this.validateDeployManifest(manifest);
+        this.validateDeployManifest(manifest);
 
-      await AadAppClient.updateAadAppUsingManifest(Messages.EndDeploy.telemetry, manifest, skip);
+        await AadAppClient.updateAadAppUsingManifest(Messages.EndDeploy.telemetry, manifest, skip);
 
-      await DialogUtils.progress?.end(true);
-
-      Utils.addLogAndTelemetry(
-        ctx.logProvider,
-        Messages.EndDeploy,
-        skip ? { [Telemetry.skip]: Telemetry.yes } : {}
-      );
+        Utils.addLogAndTelemetry(
+          ctx.logProvider,
+          Messages.EndDeploy,
+          skip ? { [Telemetry.skip]: Telemetry.yes } : {}
+        );
+      } catch (err) {
+        throw err;
+      } finally {
+        await DialogUtils.progress?.end(true);
+      }
     }
     return ResultFactory.Success();
   }
 
   public async loadAndBuildManifest(ctx: PluginContext): Promise<AADManifest> {
-    const isProvisionSucceeded = !!(ctx.envInfo.state
-      .get("solution")
-      ?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean);
+    let isProvisionSucceeded;
+    if (ctx.envInfo.envName === "local") {
+      isProvisionSucceeded = !!ctx.envInfo.state.get(PluginNames.AAD)?.get(REMOTE_AAD_ID);
+    } else {
+      isProvisionSucceeded = !!(ctx.envInfo.state
+        .get("solution")
+        ?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean);
+    }
 
     if (!isProvisionSucceeded) {
       throw ResultFactory.UserError(
         AadManifestNotProvisioned.name,
-        AadManifestNotProvisioned.message()
+        AadManifestNotProvisioned.message(),
+        undefined,
+        undefined,
+        HelpLinks.WhyNeedProvision
       );
     }
 
     const manifest = await AadAppManifestManager.loadAadManifest(ctx);
+
+    if (!manifest.id) {
+      throw ResultFactory.UserError(
+        AadManifestMissingObjectId.name,
+        AadManifestMissingObjectId.message()
+      );
+    }
     await this.writeManifestFileToBuildFolder(manifest, ctx);
     return manifest;
   }

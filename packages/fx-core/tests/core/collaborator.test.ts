@@ -26,10 +26,8 @@ import {
   BuiltInSolutionNames,
 } from "../../src/plugins/solution/fx-solution/v3/constants";
 import {
-  MockedAppStudioTokenProvider,
+  MockedM365Provider,
   MockedAzureAccountProvider,
-  MockedGraphTokenProvider,
-  MockedSharepointProvider,
   MockedV2Context,
 } from "../plugins/solution/util";
 import { randomAppName } from "./utils";
@@ -56,9 +54,7 @@ describe("Collaborator APIs for V3", () => {
   };
   const tokenProvider: TokenProvider = {
     azureAccountProvider: new MockedAzureAccountProvider(),
-    appStudioToken: new MockedAppStudioTokenProvider(),
-    graphTokenProvider: new MockedGraphTokenProvider(),
-    sharepointTokenProvider: new MockedSharepointProvider(),
+    m365TokenProvider: new MockedM365Provider(),
   };
   beforeEach(() => {});
   afterEach(() => {
@@ -141,18 +137,20 @@ describe("Collaborator APIs for V3", () => {
         state: { solution: { provisionSucceeded: true } },
         config: {},
       };
-      sandbox.stub(tokenProvider.graphTokenProvider, "getJsonObject").resolves(undefined);
+      sandbox.stub(tokenProvider.m365TokenProvider, "getJsonObject").resolves(undefined);
       const result = await listCollaborator(ctx, inputs, envInfo, tokenProvider);
       assert.isTrue(result.isErr() && result.error.name === SolutionError.FailedToRetrieveUserInfo);
     });
 
     it("should return M365TenantNotMatch state if tenant is not match", async () => {
-      sandbox.stub(tokenProvider.graphTokenProvider, "getJsonObject").resolves({
-        tid: "fake_tid",
-        oid: "fake_oid",
-        unique_name: "fake_unique_name",
-        name: "fake_name",
-      });
+      sandbox.stub(tokenProvider.m365TokenProvider, "getJsonObject").resolves(
+        ok({
+          tid: "fake_tid",
+          oid: "fake_oid",
+          unique_name: "fake_unique_name",
+          name: "fake_name",
+        })
+      );
       const envInfo: v3.EnvInfoV3 = {
         envName: "dev",
         state: {
@@ -166,12 +164,14 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("should return error if list collaborator failed", async () => {
-      sandbox.stub(tokenProvider.graphTokenProvider, "getJsonObject").resolves({
-        tid: "mock_project_tenant_id",
-        oid: "fake_oid",
-        unique_name: "fake_unique_name",
-        name: "fake_name",
-      });
+      sandbox.stub(tokenProvider.m365TokenProvider, "getJsonObject").resolves(
+        ok({
+          tid: "mock_project_tenant_id",
+          oid: "fake_oid",
+          unique_name: "fake_unique_name",
+          name: "fake_name",
+        })
+      );
       const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
       sandbox
         .stub(appStudio, "listCollaborator")
@@ -213,12 +213,14 @@ describe("Collaborator APIs for V3", () => {
         config: {},
       };
 
-      sandbox.stub(tokenProvider.graphTokenProvider, "getJsonObject").resolves({
-        tid: "mock_project_tenant_id",
-        oid: "fake_oid",
-        unique_name: "fake_unique_name",
-        name: "fake_name",
-      });
+      sandbox.stub(tokenProvider.m365TokenProvider, "getJsonObject").resolves(
+        ok({
+          tid: "mock_project_tenant_id",
+          oid: "fake_oid",
+          unique_name: "fake_unique_name",
+          name: "fake_name",
+        })
+      );
       const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
       const aadPlugin = Container.get<AadAppForTeamsPluginV3>(BuiltInFeaturePluginNames.aad);
       sandbox.stub(appStudio, "listCollaborator").resolves(
@@ -260,12 +262,14 @@ describe("Collaborator APIs for V3", () => {
         config: {},
       };
 
-      sandbox.stub(tokenProvider.graphTokenProvider, "getJsonObject").resolves({
-        tid: "mock_project_tenant_id",
-        oid: "fake_oid",
-        unique_name: "fake_unique_name",
-        name: "fake_name",
-      });
+      sandbox.stub(tokenProvider.m365TokenProvider, "getJsonObject").resolves(
+        ok({
+          tid: "mock_project_tenant_id",
+          oid: "fake_oid",
+          unique_name: "fake_unique_name",
+          name: "fake_name",
+        })
+      );
       const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
       sandbox.stub(appStudio, "listCollaborator").resolves(
         ok([
@@ -306,18 +310,22 @@ describe("Collaborator APIs for V3", () => {
         state: { solution: { provisionSucceeded: true } },
         config: {},
       };
-      sandbox.stub(tokenProvider.graphTokenProvider, "getJsonObject").resolves(undefined);
+      sandbox
+        .stub(tokenProvider.m365TokenProvider, "getJsonObject")
+        .resolves(err(new UserError("source", "name", "message")));
       const result = await checkPermission(ctx, inputs, envInfo, tokenProvider);
       assert.isTrue(result.isErr() && result.error.name === SolutionError.FailedToRetrieveUserInfo);
     });
 
     it("should return M365TenantNotMatch state if tenant is not match", async () => {
-      sandbox.stub(tokenProvider.graphTokenProvider, "getJsonObject").resolves({
-        tid: "fake_tid",
-        oid: "fake_oid",
-        unique_name: "fake_unique_name",
-        name: "fake_name",
-      });
+      sandbox.stub(tokenProvider.m365TokenProvider, "getJsonObject").resolves(
+        ok({
+          tid: "fake_tid",
+          oid: "fake_oid",
+          unique_name: "fake_unique_name",
+          name: "fake_name",
+        })
+      );
       const envInfo: v3.EnvInfoV3 = {
         envName: "dev",
         state: {
@@ -331,12 +339,14 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("should return error if check permission failed", async () => {
-      sandbox.stub(tokenProvider.graphTokenProvider, "getJsonObject").resolves({
-        tid: "mock_project_tenant_id",
-        oid: "fake_oid",
-        unique_name: "fake_unique_name",
-        name: "fake_name",
-      });
+      sandbox.stub(tokenProvider.m365TokenProvider, "getJsonObject").resolves(
+        ok({
+          tid: "mock_project_tenant_id",
+          oid: "fake_oid",
+          unique_name: "fake_unique_name",
+          name: "fake_name",
+        })
+      );
       const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
       sandbox
         .stub(appStudio, "checkPermission")
@@ -376,12 +386,14 @@ describe("Collaborator APIs for V3", () => {
         config: {},
       };
 
-      sandbox.stub(tokenProvider.graphTokenProvider, "getJsonObject").resolves({
-        tid: "mock_project_tenant_id",
-        oid: "fake_oid",
-        unique_name: "fake_unique_name",
-        name: "fake_name",
-      });
+      sandbox.stub(tokenProvider.m365TokenProvider, "getJsonObject").resolves(
+        ok({
+          tid: "mock_project_tenant_id",
+          oid: "fake_oid",
+          unique_name: "fake_unique_name",
+          name: "fake_name",
+        })
+      );
       const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
       const aadPlugin = Container.get<AadAppForTeamsPluginV3>(BuiltInFeaturePluginNames.aad);
       sandbox.stub(appStudio, "checkPermission").resolves(
@@ -432,17 +444,21 @@ describe("Collaborator APIs for V3", () => {
         state: { solution: { provisionSucceeded: true } },
         config: {},
       };
-      sandbox.stub(tokenProvider.graphTokenProvider, "getJsonObject").resolves(undefined);
+      sandbox
+        .stub(tokenProvider.m365TokenProvider, "getJsonObject")
+        .resolves(err(new UserError("source", "name", "message")));
       const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
       assert.isTrue(result.isErr() && result.error.name === SolutionError.FailedToRetrieveUserInfo);
     });
     it("should return M365TenantNotMatch state if tenant is not match", async () => {
-      sandbox.stub(tokenProvider.graphTokenProvider, "getJsonObject").resolves({
-        tid: "fake_tid",
-        oid: "fake_oid",
-        unique_name: "fake_unique_name",
-        name: "fake_name",
-      });
+      sandbox.stub(tokenProvider.m365TokenProvider, "getJsonObject").resolves(
+        ok({
+          tid: "fake_tid",
+          oid: "fake_oid",
+          unique_name: "fake_unique_name",
+          name: "fake_name",
+        })
+      );
       const envInfo: v3.EnvInfoV3 = {
         envName: "dev",
         state: {
@@ -456,14 +472,16 @@ describe("Collaborator APIs for V3", () => {
     });
     it("should return error if user email is undefined", async () => {
       sandbox
-        .stub(tokenProvider.graphTokenProvider, "getJsonObject")
+        .stub(tokenProvider.m365TokenProvider, "getJsonObject")
         .onCall(0)
-        .resolves({
-          tid: "mock_project_tenant_id",
-          oid: "fake_oid",
-          unique_name: "fake_unique_name",
-          name: "fake_name",
-        })
+        .resolves(
+          ok({
+            tid: "mock_project_tenant_id",
+            oid: "fake_oid",
+            unique_name: "fake_unique_name",
+            name: "fake_name",
+          })
+        )
         .onCall(1)
         .resolves(undefined);
       const envInfo: v3.EnvInfoV3 = {
@@ -479,14 +497,16 @@ describe("Collaborator APIs for V3", () => {
     });
     it("should return error if cannot find user from email", async () => {
       sandbox
-        .stub(tokenProvider.graphTokenProvider, "getJsonObject")
+        .stub(tokenProvider.m365TokenProvider, "getJsonObject")
         .onCall(0)
-        .resolves({
-          tid: "mock_project_tenant_id",
-          oid: "fake_oid",
-          unique_name: "fake_unique_name",
-          name: "fake_name",
-        })
+        .resolves(
+          ok({
+            tid: "mock_project_tenant_id",
+            oid: "fake_oid",
+            unique_name: "fake_unique_name",
+            name: "fake_name",
+          })
+        )
         .onCall(1)
         .resolves(undefined);
       const envInfo: v3.EnvInfoV3 = {
@@ -514,21 +534,25 @@ describe("Collaborator APIs for V3", () => {
         config: {},
       };
       sandbox
-        .stub(tokenProvider.graphTokenProvider, "getJsonObject")
+        .stub(tokenProvider.m365TokenProvider, "getJsonObject")
         .onCall(0)
-        .resolves({
-          tid: "mock_project_tenant_id",
-          oid: "fake_oid",
-          unique_name: "fake_unique_name",
-          name: "fake_name",
-        })
+        .resolves(
+          ok({
+            tid: "mock_project_tenant_id",
+            oid: "fake_oid",
+            unique_name: "fake_unique_name",
+            name: "fake_name",
+          })
+        )
         .onCall(1)
-        .resolves({
-          tid: "mock_project_tenant_id",
-          oid: "fake_oid_2",
-          unique_name: "fake_unique_name_2",
-          name: "fake_name_2",
-        });
+        .resolves(
+          ok({
+            tid: "mock_project_tenant_id",
+            oid: "fake_oid_2",
+            unique_name: "fake_unique_name_2",
+            name: "fake_name_2",
+          })
+        );
 
       sandbox
         .stub(CollaborationUtil, "getUserInfo")

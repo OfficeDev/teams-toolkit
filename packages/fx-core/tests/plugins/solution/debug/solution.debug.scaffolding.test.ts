@@ -19,7 +19,7 @@ import {
   BotScenario,
 } from "../../../../src/plugins/solution/fx-solution/question";
 import { BotCapabilities, PluginBot } from "../../../../src/plugins/resource/bot/resources/strings";
-import { BotHostTypes } from "../../../../src/common";
+import { BotHostTypes, isAadManifestEnabled } from "../../../../src/common";
 
 const numAADLocalEnvs = 2;
 const numSimpleAuthLocalEnvs = 10;
@@ -108,7 +108,17 @@ describe("solution.debug.scaffolding", () => {
           Object.keys(settings).some((key) => key === "azureFunctions.stopFuncTaskPostDebug")
         );
         chai.assert.equal(settings["azureFunctions.stopFuncTaskPostDebug"], false);
-        chai.assert.equal(Object.keys(settings).length, 4);
+        if (isAadManifestEnabled()) {
+          chai.assert.equal(Object.keys(settings).length, 5);
+          chai.assert.deepEqual(settings["json.schemas"], [
+            {
+              fileMatch: ["/aad.*.json"],
+              schema: {},
+            },
+          ]);
+        } else {
+          chai.assert.equal(Object.keys(settings).length, 4);
+        }
       });
     });
 
@@ -160,7 +170,17 @@ describe("solution.debug.scaffolding", () => {
 
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
-        chai.assert.equal(Object.keys(settings).length, 1);
+        if (isAadManifestEnabled()) {
+          chai.assert.equal(Object.keys(settings).length, 2);
+          chai.assert.deepEqual(settings["json.schemas"], [
+            {
+              fileMatch: ["/aad.*.json"],
+              schema: {},
+            },
+          ]);
+        } else {
+          chai.assert.equal(Object.keys(settings).length, 1);
+        }
       });
 
       it(`happy path: tab with Simple Auth and without function (${parameter.programmingLanguage})`, async () => {
@@ -194,7 +214,17 @@ describe("solution.debug.scaffolding", () => {
 
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
-        chai.assert.equal(Object.keys(settings).length, 1);
+        if (isAadManifestEnabled()) {
+          chai.assert.equal(Object.keys(settings).length, 2);
+          chai.assert.deepEqual(settings["json.schemas"], [
+            {
+              fileMatch: ["/aad.*.json"],
+              schema: {},
+            },
+          ]);
+        } else {
+          chai.assert.equal(Object.keys(settings).length, 1);
+        }
       });
 
       it(`happy path: tab without function (${parameter.programmingLanguage}) and AAD`, async () => {
@@ -228,7 +258,17 @@ describe("solution.debug.scaffolding", () => {
 
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
-        chai.assert.equal(Object.keys(settings).length, 1);
+        if (isAadManifestEnabled()) {
+          chai.assert.equal(Object.keys(settings).length, 2);
+          chai.assert.deepEqual(settings["json.schemas"], [
+            {
+              fileMatch: ["/aad.*.json"],
+              schema: {},
+            },
+          ]);
+        } else {
+          chai.assert.equal(Object.keys(settings).length, 1);
+        }
       });
     });
 
@@ -279,7 +319,17 @@ describe("solution.debug.scaffolding", () => {
 
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
-        chai.assert.equal(Object.keys(settings).length, 1);
+        if (isAadManifestEnabled()) {
+          chai.assert.equal(Object.keys(settings).length, 2);
+          chai.assert.deepEqual(settings["json.schemas"], [
+            {
+              fileMatch: ["/aad.*.json"],
+              schema: {},
+            },
+          ]);
+        } else {
+          chai.assert.equal(Object.keys(settings).length, 1);
+        }
       });
 
       it(`happy path: app service hosted command and response bot (${parameter.programmingLanguage})`, async () => {
@@ -319,7 +369,17 @@ describe("solution.debug.scaffolding", () => {
 
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
-        chai.assert.equal(Object.keys(settings).length, 1);
+        if (isAadManifestEnabled()) {
+          chai.assert.equal(Object.keys(settings).length, 2);
+          chai.assert.deepEqual(settings["json.schemas"], [
+            {
+              fileMatch: ["/aad.*.json"],
+              schema: {},
+            },
+          ]);
+        } else {
+          chai.assert.equal(Object.keys(settings).length, 1);
+        }
       });
     });
     const parameters99: TestParameter[] = [
@@ -381,7 +441,17 @@ describe("solution.debug.scaffolding", () => {
           Object.keys(settings).some((key) => key === "azureFunctions.stopFuncTaskPostDebug")
         );
         chai.assert.equal(settings["azureFunctions.stopFuncTaskPostDebug"], false);
-        chai.assert.equal(Object.keys(settings).length, 4);
+        if (isAadManifestEnabled()) {
+          chai.assert.equal(Object.keys(settings).length, 5);
+          chai.assert.deepEqual(settings["json.schemas"], [
+            {
+              fileMatch: ["/aad.*.json"],
+              schema: {},
+            },
+          ]);
+        } else {
+          chai.assert.equal(Object.keys(settings).length, 4);
+        }
       });
     });
 
@@ -438,7 +508,17 @@ describe("solution.debug.scaffolding", () => {
           Object.keys(settings).some((key) => key === "azureFunctions.stopFuncTaskPostDebug")
         );
         chai.assert.equal(settings["azureFunctions.stopFuncTaskPostDebug"], false);
-        chai.assert.equal(Object.keys(settings).length, 4);
+        if (isAadManifestEnabled()) {
+          chai.assert.equal(Object.keys(settings).length, 5);
+          chai.assert.deepEqual(settings["json.schemas"], [
+            {
+              fileMatch: ["/aad.*.json"],
+              schema: {},
+            },
+          ]);
+        } else {
+          chai.assert.equal(Object.keys(settings).length, 4);
+        }
       });
     });
 
@@ -490,7 +570,17 @@ describe("solution.debug.scaffolding", () => {
 
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
-        chai.assert.equal(Object.keys(settings).length, 1);
+        if (isAadManifestEnabled()) {
+          chai.assert.equal(Object.keys(settings).length, 2);
+          chai.assert.deepEqual(settings["json.schemas"], [
+            {
+              fileMatch: ["/aad.*.json"],
+              schema: {},
+            },
+          ]);
+        } else {
+          chai.assert.equal(Object.keys(settings).length, 1);
+        }
       });
 
       it(`happy path: tab with Simple Auth and without function and bot (${parameter.programmingLanguage})`, async () => {
@@ -524,7 +614,17 @@ describe("solution.debug.scaffolding", () => {
 
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
-        chai.assert.equal(Object.keys(settings).length, 1);
+        if (isAadManifestEnabled()) {
+          chai.assert.equal(Object.keys(settings).length, 2);
+          chai.assert.deepEqual(settings["json.schemas"], [
+            {
+              fileMatch: ["/aad.*.json"],
+              schema: {},
+            },
+          ]);
+        } else {
+          chai.assert.equal(Object.keys(settings).length, 1);
+        }
       });
 
       it(`happy path: tab without function and bot (${parameter.programmingLanguage}) and AAD`, async () => {
@@ -558,7 +658,17 @@ describe("solution.debug.scaffolding", () => {
 
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
-        chai.assert.equal(Object.keys(settings).length, 1);
+        if (isAadManifestEnabled()) {
+          chai.assert.equal(Object.keys(settings).length, 2);
+          chai.assert.deepEqual(settings["json.schemas"], [
+            {
+              fileMatch: ["/aad.*.json"],
+              schema: {},
+            },
+          ]);
+        } else {
+          chai.assert.equal(Object.keys(settings).length, 1);
+        }
       });
     });
 
@@ -611,7 +721,17 @@ describe("solution.debug.scaffolding", () => {
 
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
-        chai.assert.equal(Object.keys(settings).length, 1);
+        if (isAadManifestEnabled()) {
+          chai.assert.equal(Object.keys(settings).length, 2);
+          chai.assert.deepEqual(settings["json.schemas"], [
+            {
+              fileMatch: ["/aad.*.json"],
+              schema: {},
+            },
+          ]);
+        } else {
+          chai.assert.equal(Object.keys(settings).length, 1);
+        }
       });
     });
 
@@ -663,7 +783,17 @@ describe("solution.debug.scaffolding", () => {
 
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
-        chai.assert.equal(Object.keys(settings).length, 1);
+        if (isAadManifestEnabled()) {
+          chai.assert.equal(Object.keys(settings).length, 2);
+          chai.assert.deepEqual(settings["json.schemas"], [
+            {
+              fileMatch: ["/aad.*.json"],
+              schema: {},
+            },
+          ]);
+        } else {
+          chai.assert.equal(Object.keys(settings).length, 1);
+        }
       });
     });
 
@@ -819,7 +949,7 @@ describe("solution.debug.scaffolding", () => {
         version: "2.0.0",
         tasks: [
           {
-            label: "Pre Debug Check & Start All",
+            label: "Pre Debug Check",
             dependsOn: "dependency check",
           },
           {
@@ -856,6 +986,76 @@ describe("solution.debug.scaffolding", () => {
       const tasksAll = fs.readJSONSync(expectedTasksFile);
       const tasks: [] = tasksAll["tasks"];
       chai.assert.equal(tasks.length, 9);
+    });
+
+    it("happy path: .vscode exists", async () => {
+      fs.ensureDirSync(`${inputs.projectPath}/.vscode`);
+      fs.writeJSONSync(expectedLaunchFile, {
+        version: "0.2.0",
+        configurations: [
+          {
+            name: "My Launch Configuration 1",
+            foo1: "bar1",
+          },
+        ],
+        compounds: [
+          {
+            name: "My Launch Compound 1",
+            foo2: "bar2",
+          },
+        ],
+      });
+      fs.writeJSONSync(expectedSettingsFile, {
+        "my.setting": "my setting value",
+      });
+      fs.writeJSONSync(expectedTasksFile, {
+        version: "2.0.0",
+        tasks: [
+          {
+            label: "My Task 1",
+            foo: "bar",
+          },
+        ],
+        inputs: [
+          {
+            id: "My Input 1",
+            foo: "bar",
+          },
+        ],
+      });
+      const projectSetting = {
+        appName: "",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          name: "",
+          version: "",
+          hostType: "Azure",
+          capabilities: ["Tab", "Bot"],
+          activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
+        },
+        programmingLanguage: "javascript",
+      };
+      const v2Context = new MockedV2Context(projectSetting);
+      const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+      chai.assert.isTrue(result.isOk());
+
+      //assert output launch.json
+      const launch = fs.readJSONSync(expectedLaunchFile);
+      const configurations: [] = launch["configurations"];
+      const compounds: [] = launch["compounds"];
+      chai.assert.equal(configurations.length, 6);
+      chai.assert.equal(compounds.length, 3);
+
+      //assert output tasks.json
+      const tasksAll = fs.readJSONSync(expectedTasksFile);
+      const tasks: [] = tasksAll["tasks"];
+      const taskInputs: [] = tasksAll["inputs"];
+      chai.assert.equal(tasks.length, 10);
+      chai.assert.equal(taskInputs.length, 1);
+
+      //assert output settings.json
+      const settingsAll = fs.readJSONSync(expectedSettingsFile);
+      chai.assert.equal(Object.keys(settingsAll).length, 2);
     });
   });
 });

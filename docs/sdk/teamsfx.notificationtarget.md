@@ -4,9 +4,6 @@
 
 ## NotificationTarget interface
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Represent a notification target.
 
 <b>Signature:</b>
@@ -19,12 +16,12 @@ export interface NotificationTarget
 
 |  Property | Type | Description |
 |  --- | --- | --- |
-|  [type?](./teamsfx.notificationtarget.type.md) | [NotificationTargetType](./teamsfx.notificationtargettype.md) | <b><i>(BETA)</i></b> <i>(Optional)</i> The type of target, could be "Channel" or "Group" or "Person". |
+|  [type?](./teamsfx.notificationtarget.type.md) | [NotificationTargetType](./teamsfx.notificationtargettype.md) | <i>(Optional)</i> The type of target, could be "Channel" or "Group" or "Person". |
 
 ## Methods
 
 |  Method | Description |
 |  --- | --- |
-|  [sendAdaptiveCard(card)](./teamsfx.notificationtarget.sendadaptivecard.md) | <b><i>(BETA)</i></b> Send an adaptive card message. |
-|  [sendMessage(text)](./teamsfx.notificationtarget.sendmessage.md) | <b><i>(BETA)</i></b> Send a plain text message. |
+|  [sendAdaptiveCard(card)](./teamsfx.notificationtarget.sendadaptivecard.md) | Send an adaptive card message. |
+|  [sendMessage(text)](./teamsfx.notificationtarget.sendmessage.md) | Send a plain text message. |
 

@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import { Commands } from "../../controls/Commands";
-import { ext } from "../../extensionVariables";
+import * as globalVariables from "../../globalVariables";
 import { TreeContainerType } from "./treeContainerType";
 
 export class CommandsWebviewProvider implements vscode.WebviewViewProvider {
@@ -45,11 +45,13 @@ export class CommandsWebviewProvider implements vscode.WebviewViewProvider {
   }
 
   private _getHtmlForWebview(webview: vscode.Webview) {
-    const scriptBasePathOnDisk = vscode.Uri.file(path.join(ext.context.extensionPath, "out/"));
+    const scriptBasePathOnDisk = vscode.Uri.file(
+      path.join(globalVariables.context.extensionPath, "out/")
+    );
     const scriptBaseUri = scriptBasePathOnDisk.with({ scheme: "vscode-resource" });
     // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
     const scriptPathOnDisk = vscode.Uri.file(
-      path.join(ext.context.extensionPath, "out/src", "tree.js")
+      path.join(globalVariables.context.extensionPath, "out/src", "tree.js")
     );
     const scriptUri = scriptPathOnDisk.with({ scheme: "vscode-resource" });
     // // Do the same for the stylesheet.
@@ -57,7 +59,9 @@ export class CommandsWebviewProvider implements vscode.WebviewViewProvider {
     // const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'vscode.css'));
     // const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'media', 'main.css'));
     const codiconsUri = webview.asWebviewUri(
-      vscode.Uri.file(path.join(ext.context.extensionPath, "out", "resource", "codicon.css"))
+      vscode.Uri.file(
+        path.join(globalVariables.context.extensionPath, "out", "resource", "codicon.css")
+      )
     );
     // Use a nonce to only allow a specific script to be run.
     const nonce = getNonce();

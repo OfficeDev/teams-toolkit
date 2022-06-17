@@ -7,21 +7,18 @@
   "main": "./lib/index.js",
   "scripts": {
     "dev:teamsfx": "env-cmd --silent -f .env.teamsfx.local npm run dev",
-    "dev": "nodemon --exec node --inspect=9239 --signal SIGINT -r ts-node/register ./index.ts",
-    "build": "tsc --build && shx cp -r ./adaptiveCards ./lib/",
+    "dev": "nodemon --watch ./src --exec node --inspect=9239 --signal SIGINT -r ts-node/register ./index.ts",
+    "build": "tsc --build",
     "start": "node ./lib/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "nodemon --watch ./src -e ts --exec \"npm run start\""
+    "watch": "nodemon --watch ./src --exec \"npm run start\""
   },
   "repository": {
     "type": "git",
     "url": "https://github.com"
   },
   "dependencies": {
-    "@microsoft/adaptivecards-tools": "^0.1.2",
     "botbuilder": "~4.14.0",
-    "botbuilder-dialogs": "~4.14.0",
-    "isomorphic-fetch": "^3.0.0",
     "restify": "^8.5.1"
   },
   "devDependencies": {

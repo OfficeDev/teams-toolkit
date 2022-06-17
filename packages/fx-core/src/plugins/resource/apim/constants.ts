@@ -420,6 +420,7 @@ export enum OpenApiSchemaVersion {
 
 export class UserTask {
   static addResourceFuncName = "addResource";
+  static addFeatureFuncName = "addFeature";
 }
 
 export class ApimOutputBicepSnippet {

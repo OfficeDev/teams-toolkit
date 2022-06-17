@@ -87,9 +87,10 @@ async function _saveEnvFile(envPath: string, envs: RemoteEnvs, configs: RemoteEn
 
   if (
     Utils.isKvPairEqual(newConfigs.teamsfxRemoteEnvs, configs.teamsfxRemoteEnvs) &&
-    Utils.isKvPairEqual(newConfigs.customizedRemoteEnvs, configs.customizedRemoteEnvs)
+    Utils.isKvPairEqual(newConfigs.customizedRemoteEnvs, configs.customizedRemoteEnvs) &&
+    (await fs.pathExists(envPath))
   ) {
-    // Avoid updating dotenv file's modified time if nothing changes.
+    // Avoid updating dotenv file's modified time if path already exists and nothing changes.
     // We decide whether to skip deployment by comparing the mtime of all project files and last deployment time.
     return;
   }

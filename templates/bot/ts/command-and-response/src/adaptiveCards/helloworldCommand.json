@@ -5,11 +5,11 @@
         "type": "TextBlock",
         "size": "Medium",
         "weight": "Bolder",
-        "text": "Your Hello World Bot is Running"
+        "text": "${title}"
       },
       {
         "type": "TextBlock",
-        "text": "Congratulations! Your hello world bot is running. Click the documentation below to learn more about Bots and the Teams Toolkit.",
+        "text": "${body}",
         "wrap": true
       }
     ],

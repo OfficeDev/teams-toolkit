@@ -9,8 +9,6 @@ import { formatString } from "../util/utils";
 
 /**
  * Provider that handles Certificate authentication
- *
- * @beta
  */
 
 export class CertificateAuthProvider implements AuthProvider {
@@ -19,8 +17,6 @@ export class CertificateAuthProvider implements AuthProvider {
   /**
    *
    * @param { SecureContextOptions } certOption - information about the cert used in http requests
-   *
-   * @beta
    */
   constructor(certOption: SecureContextOptions) {
     throw new ErrorWithCode(
@@ -38,8 +34,7 @@ export class CertificateAuthProvider implements AuthProvider {
    * @returns Updated axios request config.
    *
    * @throws {@link ErrorCode|InvalidParameter} - when custom httpsAgent in the request has duplicate properties with certOption provided in constructor.
-   *
-   * @beta
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    */
   public async AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig> {
     throw new ErrorWithCode(
@@ -54,19 +49,21 @@ export class CertificateAuthProvider implements AuthProvider {
  *
  * @param { string | Buffer } cert - The cert chain in PEM format
  * @param { string | Buffer } key - The private key for the cert chain
- * @param { string? } passphrase - The passphrase for private key
- * @param { string? | Buffer? } ca - Overrides the trusted CA certificates
+ * @param { {passphrase?: string; ca?: string | Buffer} } options - Optional settings when create the cert options.
  *
  * @returns Instance of SecureContextOptions
  *
  * @throws {@link ErrorCode|InvalidParameter} - when any parameter is empty
+ * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
  *
  */
 export function createPemCertOption(
   cert: string | Buffer,
   key: string | Buffer,
-  passphrase?: string,
-  ca?: string | Buffer
+  options?: {
+    passphrase?: string;
+    ca?: string | Buffer;
+  }
 ): SecureContextOptions {
   throw new ErrorWithCode(
     formatString(ErrorMessage.BrowserRuntimeNotSupported, "createPemCertOption"),
@@ -78,16 +75,19 @@ export function createPemCertOption(
  * Helper to create SecureContextOptions from PFX format cert
  *
  * @param { string | Buffer } pfx - The content of .pfx file
- * @param { string? } passphrase - Optional. The passphrase of .pfx file
+ * @param { {passphrase?: string} } options - Optional settings when create the cert options.
  *
  * @returns Instance of SecureContextOptions
  *
  * @throws {@link ErrorCode|InvalidParameter} - when any parameter is empty
+ * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
  *
  */
 export function createPfxCertOption(
   pfx: string | Buffer,
-  passphrase?: string
+  options?: {
+    passphrase?: string;
+  }
 ): SecureContextOptions {
   throw new ErrorWithCode(
     formatString(ErrorMessage.BrowserRuntimeNotSupported, "createPfxCertOption"),

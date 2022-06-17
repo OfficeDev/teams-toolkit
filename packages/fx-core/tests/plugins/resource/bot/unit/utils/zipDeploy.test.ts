@@ -16,7 +16,7 @@ describe("Test zipDeploy", () => {
 
       // Assert
       chai.assert.isTrue(
-        deployEndpoint === `https://${siteName}.scm.azurewebsites.net/api/zipdeploy`
+        deployEndpoint === `https://${siteName}.scm.azurewebsites.net/api/zipdeploy?isAsync=true`
       );
     });
   });

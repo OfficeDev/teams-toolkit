@@ -6,9 +6,9 @@ import * as path from "path";
 import * as os from "os";
 import { ConfigFolderName, Result, ok, err } from "@microsoft/teamsfx-api";
 
-import { defaultHelpLink } from "../constant/helpLink";
+import { defaultHelpLink, functionDepsVersionsLink } from "../constant/helpLink";
 import { runWithProgressIndicator } from "../util/progressIndicator";
-import { DepsCheckerError, LinuxNotSupportedError } from "../depsError";
+import { DepsCheckerError, LinuxNotSupportedError, FuncNodeNotMatchedError } from "../depsError";
 import { cpUtils } from "../util/cpUtils";
 import { isLinux, isWindows } from "../util/system";
 import { DepsCheckerEvent, TelemtryMessages } from "../constant/telemetry";
@@ -16,19 +16,34 @@ import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
 import { DepsInfo, DepsChecker } from "../depsChecker";
 import { Messages } from "../constant/message";
+import { getInstalledNodeVersion } from "./nodeChecker";
 
 export enum FuncVersion {
   v1 = "1",
   v2 = "2",
   v3 = "3",
+  v4 = "4",
 }
+
+const FuncNodeVersionWhiteList: { [key: string]: { [key: string]: boolean } } = {
+  // func-core-tools version
+  "3": {
+    "10": true, // node version
+    "12": true,
+    "14": true,
+  },
+  "4": {
+    "14": true,
+    "16": true,
+  },
+};
 
 const funcPackageName = "azure-functions-core-tools";
 const funcToolName = "Azure Functions Core Tools";
 
-const installVersion = FuncVersion.v3;
-const supportedVersions = [FuncVersion.v3];
-const displayFuncName = `${funcToolName} (v${FuncVersion.v3})`;
+const installVersion = FuncVersion.v4;
+const supportedVersions = [FuncVersion.v4];
+const displayFuncName = `${funcToolName} (v${FuncVersion.v4})`;
 
 const timeout = 5 * 60 * 1000;
 
@@ -70,6 +85,11 @@ export class FuncToolChecker implements DepsChecker {
       this._logger.cleanup();
     }
 
+    const error = await this.checkGlobalFuncAndNode();
+    if (error) {
+      return err(error);
+    }
+
     return ok(true);
   }
 
@@ -81,6 +101,9 @@ export class FuncToolChecker implements DepsChecker {
       this._telemetry.sendEvent(DepsCheckerEvent.funcAlreadyInstalled, {
         "global-func-version": `${await this.queryGlobalFuncVersion()}`,
       });
+      if (!isPortableFuncInstalled) {
+        await this.cleanup();
+      }
     }
     if (isPortableFuncInstalled) {
       // avoid missing this event after first installation 60 days
@@ -88,6 +111,28 @@ export class FuncToolChecker implements DepsChecker {
     }
 
     return isPortableFuncInstalled || isGlobalFuncInstalled;
+  }
+
+  private async checkGlobalFuncAndNode(): Promise<FuncNodeNotMatchedError | undefined> {
+    const funcVersion = await this.queryGlobalFuncVersion();
+    if (!funcVersion) {
+      return undefined;
+    }
+    const nodeVersion = (await getInstalledNodeVersion())?.majorVersion;
+    if (!nodeVersion) {
+      return undefined;
+    }
+    if (FuncNodeVersionWhiteList[funcVersion.toString()]![nodeVersion]) {
+      return undefined;
+    }
+    return new FuncNodeNotMatchedError(
+      Messages.funcNodeNotMatched
+        .split("@FuncVersion")
+        .join(`v${funcVersion.toString()}`)
+        .split("@NodeVersion")
+        .join(`v${nodeVersion}`),
+      functionDepsVersionsLink
+    );
   }
 
   public async isPortableFuncInstalled(): Promise<boolean> {
@@ -119,7 +164,10 @@ export class FuncToolChecker implements DepsChecker {
 
   public async install(): Promise<void> {
     if (isLinux()) {
-      throw new LinuxNotSupportedError(defaultHelpLink);
+      throw new LinuxNotSupportedError(
+        Messages.linuxDepsNotFound.split("@SupportedPackages").join(displayFuncName),
+        defaultHelpLink
+      );
     }
     if (!(await this.hasNPM())) {
       this.handleNpmNotFound();
@@ -295,7 +343,7 @@ export class FuncToolChecker implements DepsChecker {
       DepsCheckerEvent.funcInstallScriptCompleted,
       async () => {
         await runWithProgressIndicator(
-          async () => await this.doInstallPortableFunc(FuncVersion.v3),
+          async () => await this.doInstallPortableFunc(FuncVersion.v4),
           this._logger
         );
       }
@@ -384,6 +432,8 @@ export function mapToFuncToolsVersion(output: string): FuncVersion | null {
       return FuncVersion.v2;
     case FuncVersion.v3:
       return FuncVersion.v3;
+    case FuncVersion.v4:
+      return FuncVersion.v4;
     default:
       return null;
   }

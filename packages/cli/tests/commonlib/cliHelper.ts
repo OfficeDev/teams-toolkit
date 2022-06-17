@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { isGAPreviewEnabled } from "@microsoft/teamsfx-core";
+import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core";
 
 import { execAsync, execAsyncWithRetry } from "../e2e/commonUtils";
 import { Capability, Resource, ResourceToDeploy } from "./constants";
@@ -75,6 +75,29 @@ export class CliHelper {
     }
   }
 
+  static async addApiConnection(
+    projectPath: string,
+    commonInputs: string,
+    authType: string,
+    options = ""
+  ) {
+    const result = await execAsyncWithRetry(
+      `teamsfx add api-connection ${authType} ${commonInputs} ${options} --interactive false`,
+      {
+        cwd: projectPath,
+        timeout: 0,
+      }
+    );
+
+    if (result.stderr) {
+      console.error(
+        `[Failed] addApiConnection for ${projectPath}. Error message: ${result.stderr}`
+      );
+    } else {
+      console.log(`[Successfully] addApiConnection for ${projectPath}`);
+    }
+  }
+
   static async addCICDWorkflows(projectPath: string, option = "", processEnv?: NodeJS.ProcessEnv) {
     const result = await execAsyncWithRetry(`teamsfx add cicd ${option}`, {
       cwd: projectPath,
@@ -103,6 +126,31 @@ export class CliHelper {
     }
   }
 
+  static async deployAll(
+    projectPath: string,
+    option = "",
+    processEnv?: NodeJS.ProcessEnv,
+    retries?: number,
+    newCommand?: string
+  ) {
+    const result = await execAsyncWithRetry(
+      `teamsfx deploy ${option}`,
+      {
+        cwd: projectPath,
+        env: processEnv ? processEnv : process.env,
+        timeout: 0,
+      },
+      retries,
+      newCommand
+    );
+    const message = `deploy all resources for ${projectPath}`;
+    if (result.stderr) {
+      console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
+    } else {
+      console.log(`[Successfully] ${message}`);
+    }
+  }
+
   static async deployProject(
     resourceToDeploy: ResourceToDeploy,
     projectPath: string,
@@ -126,6 +174,38 @@ export class CliHelper {
       console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
     } else {
       console.log(`[Successfully] ${message}`);
+    }
+  }
+
+  static async createDotNetProject(
+    appName: string,
+    testFolder: string,
+    capability: "tab" | "bot",
+    processEnv?: NodeJS.ProcessEnv,
+    options = ""
+  ): Promise<void> {
+    const command = `teamsfx new --interactive false --runtime dotnet --app-name ${appName} --capabilities ${capability} ${options}`;
+    const timeout = 100000;
+    try {
+      const result = await execAsync(command, {
+        cwd: testFolder,
+        env: processEnv ? processEnv : process.env,
+        timeout: timeout,
+      });
+      const message = `scaffold project to ${path.resolve(
+        testFolder,
+        appName
+      )} with capability ${capability}`;
+      if (result.stderr) {
+        console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
+      } else {
+        console.log(`[Successfully] ${message}`);
+      }
+    } catch (e) {
+      console.log(`Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`);
+      if (e.killed && e.signal == "SIGTERM") {
+        console.log(`Command ${command} killed due to timeout ${timeout}`);
+      }
     }
   }
 
@@ -162,7 +242,7 @@ export class CliHelper {
   }
 
   static async addCapabilityToProject(projectPath: string, capabilityToAdd: Capability) {
-    const command = isGAPreviewEnabled()
+    const command = isPreviewFeaturesEnabled()
       ? `teamsfx add ${capabilityToAdd}`
       : `teamsfx capability add ${capabilityToAdd}`;
     const timeout = 100000;
@@ -192,7 +272,7 @@ export class CliHelper {
     options = "",
     processEnv?: NodeJS.ProcessEnv
   ) {
-    const command = isGAPreviewEnabled()
+    const command = isPreviewFeaturesEnabled()
       ? `teamsfx add ${resourceToAdd} ${options}`
       : `teamsfx resource add ${resourceToAdd} ${options}`;
     const timeout = 100000;

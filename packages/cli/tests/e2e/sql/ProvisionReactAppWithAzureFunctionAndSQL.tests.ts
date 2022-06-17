@@ -12,7 +12,7 @@ import path from "path";
 
 import { SqlValidator } from "../../commonlib";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { Capability } from "../../commonlib/constants";
+import { Capability, Resource } from "../../commonlib/constants";
 import { getUuid } from "../../commonlib/utilities";
 import { it } from "../../commonlib/it";
 
@@ -35,13 +35,9 @@ describe("Provision to Azure with SQL", function () {
     { testPlanCaseId: 12700953 },
     async function () {
       // new a project ( tab + function + sql )
-      await CliHelper.createProjectWithCapability(
-        appName,
-        testFolder,
-        Capability.Tab,
-        process.env,
-        "--azure-resources function sql"
-      );
+      await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
+      await CliHelper.addResourceToProject(projectPath, Resource.AzureSql);
+      await CliHelper.addResourceToProject(projectPath, Resource.AzureFunction);
 
       await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
 

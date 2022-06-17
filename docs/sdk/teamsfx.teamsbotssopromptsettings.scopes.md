@@ -4,9 +4,6 @@
 
 ## TeamsBotSsoPromptSettings.scopes property
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 The array of strings that declare the desired permissions and the resources requested.
 
 <b>Signature:</b>

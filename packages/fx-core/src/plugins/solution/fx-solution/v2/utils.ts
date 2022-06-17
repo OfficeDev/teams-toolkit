@@ -11,13 +11,18 @@ import {
   Json,
   SolutionContext,
   Plugin,
-  AppStudioTokenProvider,
   ProjectSettings,
   UserError,
   SystemError,
+  M365TokenProvider,
 } from "@microsoft/teamsfx-api";
+import fs from "fs-extra";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
-import { isAadManifestEnabled, isConfigUnifyEnabled } from "../../../../common/tools";
+import {
+  AppStudioScopes,
+  isAadManifestEnabled,
+  isConfigUnifyEnabled,
+} from "../../../../common/tools";
 import {
   GLOBAL_CONFIG,
   SolutionError,
@@ -59,6 +64,38 @@ export function getAzureSolutionSettings(ctx: v2.Context): AzureSolutionSettings
 
 export function isAzureProject(azureSettings: AzureSolutionSettings | undefined): boolean {
   return azureSettings !== undefined && HostTypeOptionAzure.id === azureSettings.hostType;
+}
+
+function isBotProject(azureSettings: AzureSolutionSettings | undefined): boolean {
+  return (
+    azureSettings !== undefined &&
+    (azureSettings.capabilities?.includes(BotOptionItem.id) ||
+      azureSettings.capabilities?.includes(MessageExtensionItem.id))
+  );
+}
+
+export interface BotTroubleShootMessage {
+  troubleShootLink: string;
+  textForLogging: string;
+  textForMsgBox: string;
+  textForActionButton: string;
+}
+
+export function getBotTroubleShootMessage(
+  azureSettings: AzureSolutionSettings | undefined
+): BotTroubleShootMessage {
+  const botTroubleShootLink =
+    "https://aka.ms/teamsfx-bot-help#how-can-i-troubleshoot-issues-when-teams-bot-isnt-responding-on-azure";
+  const botTroubleShootDesc = getLocalizedString("core.deploy.botTroubleShoot");
+  const botTroubleShootLearnMore = getLocalizedString("core.deploy.botTroubleShoot.learnMore");
+  const botTroubleShootMsg = `${botTroubleShootDesc} ${botTroubleShootLearnMore}: ${botTroubleShootLink}.`;
+
+  return {
+    troubleShootLink: botTroubleShootLink,
+    textForLogging: isBotProject(azureSettings) ? botTroubleShootMsg : "",
+    textForMsgBox: botTroubleShootDesc,
+    textForActionButton: botTroubleShootLearnMore,
+  } as BotTroubleShootMessage;
 }
 
 export function combineRecords<T>(records: { name: string; result: T }[]): Record<string, T> {
@@ -167,25 +204,42 @@ export function parseUserName(appStudioToken?: Record<string, unknown>): Result<
 
 export async function checkWhetherLocalDebugM365TenantMatches(
   localDebugTenantId?: string,
-  appStudioTokenProvider?: AppStudioTokenProvider
+  m365TokenProvider?: M365TokenProvider,
+  projectPath?: string
 ): Promise<Result<Void, FxError>> {
   if (localDebugTenantId) {
-    const maybeM365TenantId = parseTeamsAppTenantId(await appStudioTokenProvider?.getJsonObject());
+    const appStudioTokenJsonRes = await m365TokenProvider?.getJsonObject({
+      scopes: AppStudioScopes,
+    });
+    const appStudioTokenJson = appStudioTokenJsonRes?.isOk()
+      ? appStudioTokenJsonRes.value
+      : undefined;
+    const maybeM365TenantId = parseTeamsAppTenantId(appStudioTokenJson);
     if (maybeM365TenantId.isErr()) {
       return maybeM365TenantId;
     }
 
-    const maybeM365UserAccount = parseUserName(await appStudioTokenProvider?.getJsonObject());
+    const maybeM365UserAccount = parseUserName(appStudioTokenJson);
     if (maybeM365UserAccount.isErr()) {
       return maybeM365UserAccount;
     }
 
     if (maybeM365TenantId.value !== localDebugTenantId) {
+      const localFiles = [".fx/states/state.local.json"];
+
+      // add notification local file if exist
+      if (
+        projectPath !== undefined &&
+        (await fs.pathExists(`${projectPath}/bot/.notification.localstore.json`))
+      ) {
+        localFiles.push("bot/.notification.localstore.json");
+      }
+
       const errorMessage = getLocalizedString(
         "core.localDebug.tenantConfirmNotice",
         localDebugTenantId,
         maybeM365UserAccount.value,
-        "localSettings.json"
+        localFiles.join(", ")
       );
       return err(
         new UserError("Solution", SolutionError.CannotLocalDebugInDifferentTenant, errorMessage)
@@ -268,6 +322,9 @@ export function fillInSolutionSettings(
     hostType = HostTypeOptionSPFx.id;
   } else if (capabilities.includes(M365SsoLaunchPageOptionItem.id)) {
     capabilities = [TabOptionItem.id];
+    if (isAadManifestEnabled()) {
+      capabilities.push(TabSsoItem.id);
+    }
     hostType = HostTypeOptionAzure.id;
   } else if (capabilities.includes(M365SearchAppOptionItem.id)) {
     capabilities = [MessageExtensionItem.id];

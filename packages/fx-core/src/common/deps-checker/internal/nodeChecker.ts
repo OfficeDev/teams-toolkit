@@ -60,8 +60,17 @@ export abstract class NodeChecker implements DepsChecker {
     const currentVersion = await getInstalledNodeVersion();
     if (currentVersion === null) {
       this._telemetry.sendUserErrorEvent(DepsCheckerEvent.nodeNotFound, "Node.js can't be found.");
-      throw new NodeNotFoundError(Messages.NodeNotFound, this._nodeNotFoundHelpLink);
+      throw new NodeNotFoundError(
+        Messages.NodeNotFound.split("@NodeVersion").join(
+          supportedVersions[supportedVersions.length - 1]
+        ),
+        this._nodeNotFoundHelpLink
+      );
     }
+    this._telemetry.sendEvent(DepsCheckerEvent.nodeVersion, {
+      "global-version": `${currentVersion.version}`,
+      "global-major-version": `${currentVersion.majorVersion}`,
+    });
 
     if (!NodeChecker.isVersionSupported(supportedVersions, currentVersion)) {
       const supportedVersionsString = supportedVersions.map((v) => "v" + v).join(" ,");
@@ -123,7 +132,7 @@ export abstract class NodeChecker implements DepsChecker {
   }
 }
 
-async function getInstalledNodeVersion(): Promise<NodeVersion | null> {
+export async function getInstalledNodeVersion(): Promise<NodeVersion | null> {
   try {
     const output = await cpUtils.executeCommand(
       undefined,
@@ -162,7 +171,7 @@ export class SPFxNodeChecker extends NodeChecker {
   }
 
   protected async getSupportedVersions(): Promise<string[]> {
-    return ["10", "12", "14"];
+    return ["12", "14"];
   }
 }
 
@@ -175,7 +184,7 @@ export class AzureNodeChecker extends NodeChecker {
   }
 
   protected async getSupportedVersions(): Promise<string[]> {
-    return ["10", "12", "14", "16"];
+    return ["14", "16"];
   }
 }
 
@@ -188,6 +197,6 @@ export class FunctionNodeChecker extends NodeChecker {
   }
 
   protected async getSupportedVersions(): Promise<string[]> {
-    return ["10", "12", "14"];
+    return ["14", "16"];
   }
 }

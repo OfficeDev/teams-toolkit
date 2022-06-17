@@ -9,6 +9,7 @@ import {
   OptionItem,
   Platform,
   ProjectSettings,
+  SingleSelectQuestion,
   Stage,
   TokenProvider,
   v2,
@@ -30,15 +31,28 @@ import "../../../src/plugins/resource/localdebug/v2";
 import "../../../src/plugins/resource/spfx/v2";
 import "../../../src/plugins/resource/sql/v2";
 import * as tool from "../../../src/common/tools";
+import * as featureFlags from "../../../src/common/featureFlags";
 import {
   GLOBAL_CONFIG,
   SOLUTION_PROVISION_SUCCEEDED,
 } from "../../../src/plugins/solution/fx-solution/constants";
 import {
+  AzureResourceApimNewUI,
+  AzureResourceFunctionNewUI,
+  AzureResourceKeyVaultNewUI,
+  AzureResourceSQLNewUI,
+  BotNewUIOptionItem,
   BotOptionItem,
+  CicdOptionItem,
+  CommandAndResponseOptionItem,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
+  TabNewUIOptionItem,
   MessageExtensionItem,
+  MessageExtensionNewUIItem,
+  NotificationOptionItem,
+  ApiConnectionOptionItem,
+  TabNonSsoItem,
   TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import { ResourcePluginsV2 } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
@@ -48,8 +62,9 @@ import {
   getQuestionsForUserTask,
 } from "../../../src/plugins/solution/fx-solution/v2/getQuestions";
 import { BuiltInFeaturePluginNames } from "../../../src/plugins/solution/fx-solution/v3/constants";
-import { MockGraphTokenProvider, MockSharepointTokenProvider } from "../../core/utils";
-import { MockedAppStudioProvider, MockedAzureAccountProvider, MockedV2Context } from "./util";
+import { MockedM365Provider, MockedAzureAccountProvider, MockedV2Context } from "./util";
+import { BotCapabilities, PluginBot } from "../../../src/plugins/resource/bot/resources/strings";
+import { BotHostTypes } from "../../../src";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -58,11 +73,10 @@ const sqlPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SqlPlugin
 const spfxPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SpfxPlugin);
 const frontendPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FrontendPlugin);
 const botPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.BotPlugin);
+const cicdPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.CICDPlugin);
 const mockedProvider: TokenProvider = {
-  appStudioToken: new MockedAppStudioProvider(),
   azureAccountProvider: new MockedAzureAccountProvider(),
-  graphTokenProvider: new MockGraphTokenProvider(),
-  sharepointTokenProvider: new MockSharepointTokenProvider(),
+  m365TokenProvider: new MockedM365Provider(),
 };
 const envInfo: EnvInfoV2 = {
   envName: "default",
@@ -99,6 +113,9 @@ describe("getQuestionsForScaffolding()", async () => {
       return ok(undefined);
     };
     botPluginV2.getQuestionsForScaffolding = async function () {
+      return ok(undefined);
+    };
+    cicdPlugin.getQuestionsForUserTask = async function () {
       return ok(undefined);
     };
   });
@@ -238,6 +255,8 @@ describe("getQuestionsForScaffolding()", async () => {
       namespace: "fx-solution-azure",
     };
     const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    sandbox.stub<any, any>(featureFlags, "isBotNotificationEnabled").returns(false);
+    sandbox.stub<any, any>(tool, "isAadManifestEnabled").returns(false);
     sandbox
       .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
       .callsFake(
@@ -276,6 +295,7 @@ describe("getQuestionsForScaffolding()", async () => {
       }
     }
   });
+
   it("getQuestionsForUserTask - addCapability failed because of capabilityExceedLimit", async () => {
     const mockedCtx = new MockedV2Context(projectSettings);
     const mockedInputs: Inputs = {
@@ -361,6 +381,247 @@ describe("getQuestionsForScaffolding()", async () => {
       if (res.isOk()) {
         const node = res.value;
         assert.isTrue(node !== undefined && node.data !== undefined);
+      }
+    }
+  });
+
+  it("getQuestionsForUserTask - addFeature success", async () => {
+    sandbox.stub<any, any>(featureFlags, "isPreviewFeaturesEnabled").returns(true);
+    sandbox.stub<any, any>(tool, "canAddCICDWorkflows").resolves(true);
+    const mockedCtx = new MockedV2Context(projectSettings);
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+      stage: Stage.grantPermission,
+      projectPath: "test path",
+    };
+    const func: Func = {
+      method: "addFeature",
+      namespace: "fx-solution-azure",
+    };
+    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    sandbox
+      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
+      .callsFake(
+        async (
+          ctx: v2.Context,
+          inputs: v2.InputsWithProjectPath,
+          capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
+        ) => {
+          return ok(false);
+        }
+      );
+    (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType =
+      HostTypeOptionAzure.id;
+    const res = await getQuestionsForUserTask(
+      mockedCtx,
+      mockedInputs,
+      func,
+      envInfo,
+      mockedProvider
+    );
+    assert.isTrue(res.isOk() && res.value && res.value.data !== undefined);
+    if (res.isOk()) {
+      const node = res.value;
+      assert.isTrue(
+        node &&
+          node.data &&
+          node.data.type === "singleSelect" &&
+          node.data.staticOptions.length === 10,
+        "option item count check"
+      );
+      if (node && node.data && node.data.type === "singleSelect") {
+        const options = (node.data as SingleSelectQuestion).staticOptions as OptionItem[];
+        assert.deepEqual(
+          options,
+          [
+            NotificationOptionItem,
+            CommandAndResponseOptionItem,
+            TabNonSsoItem,
+            BotNewUIOptionItem,
+            MessageExtensionNewUIItem,
+            AzureResourceFunctionNewUI,
+            AzureResourceApimNewUI,
+            AzureResourceSQLNewUI,
+            AzureResourceKeyVaultNewUI,
+            CicdOptionItem,
+          ],
+          "option item should match"
+        );
+      }
+    }
+  });
+  it("getQuestionsForUserTask - addFeature: message extension", async () => {
+    sandbox.stub(featureFlags, "isPreviewFeaturesEnabled").returns(true);
+    sandbox.stub(featureFlags, "isBotNotificationEnabled").returns(true);
+    sandbox.stub<any, any>(tool, "canAddCICDWorkflows").resolves(true);
+    const projectSettingsWithNotification = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "test",
+        version: "1.0",
+        activeResourcePlugins: [
+          "fx-resource-frontend-hosting",
+          "fx-resource-aad-app-for-teams",
+          BuiltInFeaturePluginNames.bot,
+        ],
+        capabilities: [BotOptionItem.id],
+        azureResources: [],
+      },
+      pluginSettings: {
+        [BuiltInFeaturePluginNames.bot]: {
+          [PluginBot.BOT_CAPABILITIES]: [BotCapabilities.NOTIFICATION],
+          [PluginBot.HOST_TYPE]: BotHostTypes.AzureFunctions,
+        },
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettingsWithNotification);
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+      stage: Stage.addFeature,
+      projectPath: "test path",
+    };
+    const func: Func = {
+      method: "addFeature",
+      namespace: "fx-solution-azure",
+    };
+    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    sandbox
+      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
+      .callsFake(
+        async (
+          ctx: v2.Context,
+          inputs: v2.InputsWithProjectPath,
+          capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
+        ) => {
+          if (capability === "Bot") {
+            return ok(true);
+          } else {
+            return ok(false);
+          }
+        }
+      );
+    (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType =
+      HostTypeOptionAzure.id;
+    const res = await getQuestionsForUserTask(
+      mockedCtx,
+      mockedInputs,
+      func,
+      envInfo,
+      mockedProvider
+    );
+    assert.isTrue(res.isOk() && res.value && res.value.data !== undefined);
+    if (res.isOk()) {
+      const node = res.value;
+      assert.isTrue(
+        node && node.data && node.data.type === "singleSelect",
+        "result should be singleSelect"
+      );
+      if (node && node.data && node.data.type === "singleSelect") {
+        const options = (node.data as SingleSelectQuestion).staticOptions as OptionItem[];
+        assert.deepEqual(
+          options,
+          [
+            TabNewUIOptionItem,
+            TabNonSsoItem,
+            AzureResourceFunctionNewUI,
+            AzureResourceApimNewUI,
+            AzureResourceSQLNewUI,
+            AzureResourceKeyVaultNewUI,
+            ApiConnectionOptionItem,
+            CicdOptionItem,
+          ],
+          "option item should match"
+        );
+      }
+    }
+  });
+  it("getQuestionsForUserTask - addFeature: can add message extension for legacy bot", async () => {
+    sandbox.stub(featureFlags, "isPreviewFeaturesEnabled").returns(true);
+    sandbox.stub(featureFlags, "isBotNotificationEnabled").returns(true);
+    sandbox.stub<any, any>(tool, "canAddCICDWorkflows").resolves(true);
+    const projectSettingsWithNotification = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "test",
+        version: "1.0",
+        activeResourcePlugins: [
+          "fx-resource-frontend-hosting",
+          "fx-resource-aad-app-for-teams",
+          BuiltInFeaturePluginNames.bot,
+        ],
+        capabilities: [BotOptionItem.id],
+        azureResources: [],
+      },
+      pluginSettings: {
+        [BuiltInFeaturePluginNames.bot]: {
+          [PluginBot.BOT_CAPABILITIES]: [],
+          [PluginBot.HOST_TYPE]: BotHostTypes.AzureFunctions,
+        },
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettingsWithNotification);
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+      stage: Stage.addFeature,
+      projectPath: "test path",
+    };
+    const func: Func = {
+      method: "addFeature",
+      namespace: "fx-solution-azure",
+    };
+    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    sandbox
+      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
+      .callsFake(
+        async (
+          ctx: v2.Context,
+          inputs: v2.InputsWithProjectPath,
+          capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
+        ) => {
+          if (capability === "Bot") {
+            return ok(true);
+          } else {
+            return ok(false);
+          }
+        }
+      );
+    (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType =
+      HostTypeOptionAzure.id;
+    const res = await getQuestionsForUserTask(
+      mockedCtx,
+      mockedInputs,
+      func,
+      envInfo,
+      mockedProvider
+    );
+    assert.isTrue(res.isOk() && res.value && res.value.data !== undefined);
+    if (res.isOk()) {
+      const node = res.value;
+      assert.isTrue(
+        node && node.data && node.data.type === "singleSelect",
+        "result should be singleSelect"
+      );
+      if (node && node.data && node.data.type === "singleSelect") {
+        const options = (node.data as SingleSelectQuestion).staticOptions as OptionItem[];
+        assert.deepEqual(
+          options,
+          [
+            TabNewUIOptionItem,
+            TabNonSsoItem,
+            MessageExtensionNewUIItem,
+            AzureResourceFunctionNewUI,
+            AzureResourceApimNewUI,
+            AzureResourceSQLNewUI,
+            AzureResourceKeyVaultNewUI,
+            ApiConnectionOptionItem,
+            CicdOptionItem,
+          ],
+          "option item should match"
+        );
       }
     }
   });

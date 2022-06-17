@@ -4,8 +4,6 @@ import { TokenResponse } from "botframework-schema";
 
 /**
  * Token response provided by Teams Bot SSO prompt
- *
- * @beta
  */
 export interface TeamsBotSsoPromptTokenResponse extends TokenResponse {
   /**

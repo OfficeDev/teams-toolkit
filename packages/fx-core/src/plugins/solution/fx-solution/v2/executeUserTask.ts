@@ -20,6 +20,7 @@ import {
   UserInteraction,
   v2,
   v3,
+  Stage,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { cloneDeep } from "lodash";
@@ -29,12 +30,17 @@ import * as util from "util";
 import {
   BotHostTypeName,
   BotHostTypes,
+  canAddSso,
   isAADEnabled,
   isAadManifestEnabled,
 } from "../../../../common";
 import { ResourcePlugins } from "../../../../common/constants";
-import { isVSProject } from "../../../../common/projectSettingsHelper";
-import { InvalidInputError, OperationNotPermittedError } from "../../../../core/error";
+import { isExistingTabApp, isVSProject } from "../../../../common/projectSettingsHelper";
+import {
+  InvalidInputError,
+  NoCapabilityFoundError,
+  OperationNotPermittedError,
+} from "../../../../core/error";
 import { CoreQuestionNames, validateCapabilities } from "../../../../core/question";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import {
@@ -52,6 +58,7 @@ import {
 } from "../constants";
 import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
 import {
+  ApiConnectionOptionItem,
   AzureResourceApim,
   AzureResourceFunction,
   AzureResourceKeyVault,
@@ -59,16 +66,18 @@ import {
   AzureSolutionQuestionNames,
   BotOptionItem,
   BotScenario,
+  BotSsoItem,
+  CicdOptionItem,
   CommandAndResponseOptionItem,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
   MessageExtensionItem,
   NotificationOptionItem,
-  TabSsoItem,
-  BotSsoItem,
+  SingleSignOnOptionItem,
   TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
+  TabSsoItem,
 } from "../question";
 import { getAllV2ResourcePluginMap, ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { sendErrorTelemetryThenReturnError } from "../utils/util";
@@ -101,6 +110,9 @@ export async function executeUserTask(
   if (method === "addResource") {
     return addResource(ctx, inputs, localSettings, func, envInfo, tokenProvider);
   }
+  if (method === "addFeature") {
+    return addFeature(ctx, inputs, localSettings, func, envInfo, tokenProvider);
+  }
   if (method === "addSso") {
     return addSso(ctx, inputs, localSettings);
   }
@@ -130,7 +142,7 @@ export async function executeUserTask(
           ctx,
           inputs,
           envInfo,
-          tokenProvider.appStudioToken
+          tokenProvider.m365TokenProvider
         );
       }
     } else if (method === "validateManifest") {
@@ -234,6 +246,9 @@ export function canAddResource(
     return err(
       sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddResource, e, telemetryReporter)
     );
+  }
+  if (isExistingTabApp(projectSetting)) {
+    return err(new NoCapabilityFoundError(Stage.addResource));
   }
   const solutionSettings = projectSetting.solutionSettings as AzureSolutionSettings;
   if (!(solutionSettings.hostType === HostTypeOptionAzure.id)) {
@@ -459,6 +474,15 @@ export async function addCapability(
       if (toAddTab && !alreadyHasTabSso) {
         newCapabilitySet.add(TabSsoItem.id);
         pluginNamesToScaffold.add(ResourcePluginsV2.AadPlugin);
+        pluginNamesToArm.add(ResourcePluginsV2.AadPlugin);
+
+        // Add webapplicationInfo in teams app manifest
+        const appStudioPlugin = Container.get<AppStudioPluginV3>(
+          BuiltInFeaturePluginNames.appStudio
+        );
+        await appStudioPlugin.addCapabilities(ctx, inputs as v2.InputsWithProjectPath, [
+          { name: "WebApplicationInfo" },
+        ]);
       }
     }
 
@@ -666,22 +690,25 @@ export async function addResource(
   const pluginsToScaffold: v2.ResourcePlugin[] = [];
   const pluginsToDoArm: v2.ResourcePlugin[] = [];
   let scaffoldApim = false;
+  let addSsoRes = {};
   // 4. check Function
   if (addFunc) {
     // AAD plugin needs to be activated when adding function.
     // Since APIM also have dependency on Function, will only add depenedency here.
     if (!isAADEnabled(solutionSettings)) {
       if (isAadManifestEnabled()) {
-        const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
-        pluginsToScaffold.push(aadPlugin);
-        pluginsToDoArm.push(aadPlugin);
-
-        if (solutionSettings.capabilities.includes(TabOptionItem.id)) {
-          solutionSettings.capabilities.push(TabSsoItem.id);
+        const res = await addSso(ctx, inputs, localSettings);
+        if (res.isErr()) {
+          ctx.projectSetting.solutionSettings = originalSettings;
+          return err(
+            sendErrorTelemetryThenReturnError(
+              SolutionTelemetryEvent.AddResource,
+              res.error,
+              ctx.telemetryReporter
+            )
+          );
         }
-        if (solutionSettings.capabilities.includes(TabOptionItem.id)) {
-          solutionSettings.capabilities.push(BotSsoItem.id);
-        }
+        addSsoRes = res.value as any;
       } else {
         solutionSettings.activeResourcePlugins?.push(PluginNames.AAD);
       }
@@ -780,9 +807,72 @@ export async function addResource(
   });
   return ok(
     pluginsToDoArm.length > 0
-      ? { solutionSettings: solutionSettings, solutionConfig: { provisionSucceeded: false } }
+      ? {
+          solutionSettings: solutionSettings,
+          solutionConfig: { provisionSucceeded: false },
+          ...addSsoRes,
+        }
       : Void
   );
+}
+
+export async function addFeature(
+  ctx: v2.Context,
+  inputs: Inputs,
+  localSettings: Json,
+  func: Func,
+  envInfo: v2.EnvInfoV2,
+  tokenProvider: TokenProvider
+): Promise<Result<unknown, FxError>> {
+  const featureAnswer = inputs[AzureSolutionQuestionNames.Features] as string;
+  const capabilityAnswers = new Set([
+    TabOptionItem.id,
+    BotOptionItem.id,
+    CommandAndResponseOptionItem.id,
+    NotificationOptionItem.id,
+    TabNonSsoItem.id,
+    MessageExtensionItem.id,
+  ]);
+  const resourceAnswers = new Set([
+    AzureResourceFunction.id,
+    AzureResourceSQL.id,
+    AzureResourceApim.id,
+    AzureResourceKeyVault.id,
+  ]);
+  if (capabilityAnswers.has(featureAnswer)) {
+    inputs[AzureSolutionQuestionNames.Capabilities] = [featureAnswer];
+    return addCapability(ctx, inputs, localSettings);
+  }
+  const settings = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
+  const alreadyHaveFunction = settings?.azureResources.includes(AzureResourceFunction.id);
+  if (resourceAnswers.has(featureAnswer)) {
+    inputs[AzureSolutionQuestionNames.AddResources] = [featureAnswer];
+    if (
+      (featureAnswer === AzureResourceSQL.id || featureAnswer === AzureResourceApim.id) &&
+      !alreadyHaveFunction
+    ) {
+      inputs[AzureSolutionQuestionNames.AddResources].push(AzureResourceFunction.id);
+    }
+    return addResource(ctx, inputs, localSettings, func, envInfo, tokenProvider);
+  }
+  if (featureAnswer === SingleSignOnOptionItem.id) {
+    return addSso(ctx, inputs, localSettings);
+  } else if (featureAnswer === ApiConnectionOptionItem.id) {
+    const apiFunction: Func = {
+      namespace: "fx-solution-azure/fx-resource-api-connector",
+      method: "connectExistingApi",
+      params: {},
+    };
+    return executeUserTask(ctx, inputs, apiFunction, localSettings, envInfo, tokenProvider);
+  } else if (featureAnswer === CicdOptionItem.id) {
+    const cicdFunction: Func = {
+      namespace: "fx-solution-azure/fx-resource-cicd",
+      method: "addCICDWorkflows",
+      params: {},
+    };
+    return executeUserTask(ctx, inputs, cicdFunction, localSettings, envInfo, tokenProvider);
+  }
+  return ok({});
 }
 
 export function extractParamForRegisterTeamsAppAndAad(
@@ -828,90 +918,6 @@ export type ParamForRegisterTeamsAppAndAad = {
   "root-path": string;
 };
 
-// TODO: handle VS scenario
-export function canAddSso(
-  projectSettings: ProjectSettings,
-  telemetryReporter: TelemetryReporter
-): Result<Void, FxError> {
-  // Can not add sso if feature flag is not enabled
-  if (!isAadManifestEnabled()) {
-    const e = new SystemError(
-      SolutionSource,
-      SolutionError.NeedEnableFeatureFlag,
-      getLocalizedString("core.addSso.needEnableFeatureFlag")
-    );
-    return err(
-      sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
-    );
-  }
-
-  const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
-  if (!(solutionSettings.hostType === HostTypeOptionAzure.id)) {
-    const e = new UserError(
-      SolutionSource,
-      SolutionError.AddSsoNotSupported,
-      getLocalizedString("core.addSso.onlySupportAzure")
-    );
-    return err(
-      sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
-    );
-  }
-
-  // Will throw error if bot host type is Azure Function
-  if (solutionSettings.capabilities.includes(BotOptionItem.id)) {
-    const botHostType = projectSettings.pluginSettings?.[ResourcePlugins.Bot]?.[BotHostTypeName];
-    if (botHostType === BotHostTypes.AzureFunctions) {
-      const e = new UserError(
-        SolutionSource,
-        SolutionError.AddSsoNotSupported,
-        getLocalizedString("core.addSso.functionNotSupport")
-      );
-      return err(
-        sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
-      );
-    }
-  }
-
-  // Check whether SSO is enabled
-  const activeResourcePlugins = solutionSettings.activeResourcePlugins;
-  const containTabSsoItem = solutionSettings.capabilities.includes(TabSsoItem.id);
-  const containTab = solutionSettings.capabilities.includes(TabOptionItem.id);
-  const containBotSsoItem = solutionSettings.capabilities.includes(BotSsoItem.id);
-  const containBot = solutionSettings.capabilities.includes(BotOptionItem.id);
-  const containAadPlugin = activeResourcePlugins.includes(PluginNames.AAD);
-  if (
-    ((containTabSsoItem && !containBot) ||
-      (containBot && containBotSsoItem && !containTab) ||
-      (containTab && containTabSsoItem && containBot && containBotSsoItem)) &&
-    containAadPlugin
-  ) {
-    // Throw error if sso is already enabled
-    const e = new UserError(
-      SolutionSource,
-      SolutionError.SsoEnabled,
-      getLocalizedString("core.addSso.ssoEnabled")
-    );
-    return err(
-      sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
-    );
-  } else if (
-    (containBotSsoItem && !containBot) ||
-    (containTabSsoItem || containBotSsoItem) !== containAadPlugin
-  ) {
-    // Throw error if the project is invalid
-    const e = new UserError(
-      SolutionSource,
-      SolutionError.InvalidSsoProject,
-      getLocalizedString("core.addSso.invalidSsoProject")
-    );
-    return err(
-      sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddSso, e, telemetryReporter)
-    );
-  }
-
-  return ok(Void);
-}
-
 export async function addSso(
   ctx: v2.Context,
   inputs: Inputs,
@@ -922,6 +928,7 @@ export async function addSso(
   });
 
   let solutionSettings = getAzureSolutionSettings(ctx);
+  let existingApp = false;
   if (!solutionSettings) {
     // pure existing app
     solutionSettings = {
@@ -933,12 +940,19 @@ export async function addSso(
       activeResourcePlugins: [],
     };
     ctx.projectSetting.solutionSettings = solutionSettings;
+    existingApp = true;
   }
 
   // Check whether can add sso
-  const canProceed = canAddSso(ctx.projectSetting, ctx.telemetryReporter);
+  const canProceed = canAddSso(ctx.projectSetting, true) as Result<Void, FxError>;
   if (canProceed.isErr()) {
-    return err(canProceed.error);
+    return err(
+      sendErrorTelemetryThenReturnError(
+        SolutionTelemetryEvent.AddSso,
+        canProceed.error,
+        ctx.telemetryReporter
+      )
+    );
   }
 
   const needsTab =
@@ -946,12 +960,17 @@ export async function addSso(
     (solutionSettings.capabilities.includes(TabOptionItem.id) &&
       !solutionSettings.capabilities.includes(TabSsoItem.id));
   const needsBot =
-    (solutionSettings.capabilities.includes(BotOptionItem.id) ||
-      solutionSettings.capabilities.includes(MessageExtensionItem.id)) &&
+    solutionSettings.capabilities.includes(BotOptionItem.id) &&
+    !(
+      ctx.projectSetting.pluginSettings?.[ResourcePlugins.Bot]?.[BotHostTypeName] ===
+      BotHostTypes.AzureFunctions
+    ) &&
     !solutionSettings.capabilities.includes(BotSsoItem.id);
 
   // Update project settings
-  solutionSettings.activeResourcePlugins.push(PluginNames.AAD);
+  if (!solutionSettings.activeResourcePlugins.includes(PluginNames.AAD)) {
+    solutionSettings.activeResourcePlugins.push(PluginNames.AAD);
+  }
   if (solutionSettings.capabilities.length == 0) {
     solutionSettings.capabilities.push(TabSsoItem.id);
   }
@@ -961,10 +980,7 @@ export async function addSso(
   ) {
     solutionSettings.capabilities.push(TabSsoItem.id);
   }
-  if (
-    solutionSettings.capabilities.includes(BotOptionItem.id) &&
-    !solutionSettings.capabilities.includes(BotSsoItem.id)
-  ) {
+  if (needsBot) {
     solutionSettings.capabilities.push(BotSsoItem.id);
   }
 
@@ -999,7 +1015,7 @@ export async function addSso(
     inputsNew,
     localSettings,
     [Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin)],
-    [Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin)]
+    existingApp ? [] : [Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin)]
   );
   if (scaffoldRes.isErr()) {
     ctx.projectSetting.solutionSettings = originalSettings;
@@ -1018,7 +1034,49 @@ export async function addSso(
     { name: "WebApplicationInfo" },
   ]);
 
-  return ok(undefined);
+  if (inputs.platform == Platform.VSCode) {
+    ctx.userInteraction
+      .showMessage(
+        "info",
+        getLocalizedString("core.addSso.learnMore", AddSsoParameters.LearnMore),
+        false,
+        AddSsoParameters.LearnMore
+      )
+      .then((result) => {
+        const userSelected = result.isOk() ? result.value : undefined;
+        if (userSelected === AddSsoParameters.LearnMore) {
+          ctx.userInteraction?.openUrl(AddSsoParameters.LearnMoreUrl);
+          ctx.telemetryReporter.sendTelemetryEvent(SolutionTelemetryEvent.AddSsoReadme, {
+            [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+          });
+        }
+      });
+  } else if (inputs.platform == Platform.CLI) {
+    await ctx.userInteraction.showMessage(
+      "info",
+      getLocalizedString("core.addSso.learnMore", AddSsoParameters.LearnMoreUrl),
+      false
+    );
+  }
+
+  ctx.telemetryReporter.sendTelemetryEvent(SolutionTelemetryEvent.AddSso, {
+    [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+    [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
+    [SolutionTelemetryProperty.AddTabSso]: needsTab
+      ? SolutionTelemetrySuccess.Yes
+      : SolutionTelemetrySuccess.No,
+    [SolutionTelemetryProperty.AddBotSso]: needsBot
+      ? SolutionTelemetrySuccess.Yes
+      : SolutionTelemetrySuccess.No,
+  });
+
+  return ok({
+    func: AddSsoParameters.AddSso,
+    capabilities: [
+      ...(needsTab ? [AddSsoParameters.Tab] : []),
+      ...(needsBot ? [AddSsoParameters.Bot] : []),
+    ],
+  });
 }
 
 // TODO: use 'isVsProject' for changes in VS

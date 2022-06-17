@@ -18,6 +18,7 @@ import {
   Inputs,
   TokenProvider,
   SubscriptionInfo,
+  Colors,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs from "fs-extra";
@@ -34,10 +35,9 @@ import {
   TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import {
-  MockedAppStudioTokenProvider,
   MockedAzureAccountProvider,
-  MockedGraphTokenProvider,
-  MockedSharepointProvider,
+  MockedM365Provider,
+  MockedUserInteraction,
   MockedV2Context,
   validManifest,
 } from "./util";
@@ -100,6 +100,7 @@ describe("deploy() for Azure projects", () => {
     const mockedCtx = mockSolutionContext();
     const mockedProvider = new MockedAzureAccountProvider();
     mockedCtx.azureAccountProvider = mockedProvider;
+    mockedCtx.m365TokenProvider = new MockedM365Provider();
     mockedCtx.projectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -138,6 +139,7 @@ describe("deploy() for Azure projects", () => {
       const mockedCtx = mockSolutionContext();
       const mockedProvider = new MockedAzureAccountProvider();
       mockedCtx.azureAccountProvider = mockedProvider;
+      mockedCtx.m365TokenProvider = new MockedM365Provider();
       mockedCtx.projectSettings = {
         appName: "my app",
         projectId: uuid.v4(),
@@ -159,6 +161,7 @@ describe("deploy() for Azure projects", () => {
       const mockedCtx = mockSolutionContext();
       const mockedProvider = new MockedAzureAccountProvider();
       mockedCtx.azureAccountProvider = mockedProvider;
+      mockedCtx.m365TokenProvider = new MockedM365Provider();
       mockedCtx.projectSettings = {
         appName: "my app",
         projectId: uuid.v4(),
@@ -258,11 +261,10 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       },
     };
     const mockedCtx = new MockedV2Context(projectSettings);
+    mockedCtx.userInteraction = new MockedUserInteractionForDeploy();
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
-      graphTokenProvider: new MockedGraphTokenProvider(),
-      sharepointTokenProvider: new MockedSharepointProvider(),
+      m365TokenProvider: new MockedM365Provider(),
     };
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
@@ -291,11 +293,10 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       },
     };
     const mockedCtx = new MockedV2Context(projectSettings);
+    mockedCtx.userInteraction = new MockedUserInteractionForDeploy();
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
-      graphTokenProvider: new MockedGraphTokenProvider(),
-      sharepointTokenProvider: new MockedSharepointProvider(),
+      m365TokenProvider: new MockedM365Provider(),
     };
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
@@ -327,11 +328,10 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       programmingLanguage: "csharp",
     };
     const mockedCtx = new MockedV2Context(projectSettings);
+    mockedCtx.userInteraction = new MockedUserInteractionForDeploy();
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
-      graphTokenProvider: new MockedGraphTokenProvider(),
-      sharepointTokenProvider: new MockedSharepointProvider(),
+      m365TokenProvider: new MockedM365Provider(),
     };
     const mockedInputs: Inputs = {
       platform: Platform.VS,
@@ -362,11 +362,10 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       },
     };
     const mockedCtx = new MockedV2Context(projectSettings);
+    mockedCtx.userInteraction = new MockedUserInteractionForDeploy();
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
-      graphTokenProvider: new MockedGraphTokenProvider(),
-      sharepointTokenProvider: new MockedSharepointProvider(),
+      m365TokenProvider: new MockedM365Provider(),
     };
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
@@ -399,12 +398,11 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       },
     };
     const mockedCtx = new MockedV2Context(projectSettings);
+    mockedCtx.userInteraction = new MockedUserInteractionForDeploy();
 
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
-      graphTokenProvider: new MockedGraphTokenProvider(),
-      sharepointTokenProvider: new MockedSharepointProvider(),
+      m365TokenProvider: new MockedM365Provider(),
     };
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
@@ -439,12 +437,11 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       },
     };
     const mockedCtx = new MockedV2Context(projectSettings);
+    mockedCtx.userInteraction = new MockedUserInteractionForDeploy();
 
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
-      graphTokenProvider: new MockedGraphTokenProvider(),
-      sharepointTokenProvider: new MockedSharepointProvider(),
+      m365TokenProvider: new MockedM365Provider(),
     };
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
@@ -478,6 +475,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       },
     };
     const mockedCtx = new MockedV2Context(projectSettings);
+    mockedCtx.userInteraction = new MockedUserInteractionForDeploy();
 
     class FakeAzureAccountProvider extends MockedAzureAccountProvider {
       async listSubscriptions(): Promise<SubscriptionInfo[]> {
@@ -486,9 +484,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
     }
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new FakeAzureAccountProvider(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
-      graphTokenProvider: new MockedGraphTokenProvider(),
-      sharepointTokenProvider: new MockedSharepointProvider(),
+      m365TokenProvider: new MockedM365Provider(),
     };
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
@@ -515,3 +511,14 @@ describe("API v2 cases: deploy() for Azure projects", () => {
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.SubscriptionNotFound);
   });
 });
+
+class MockedUserInteractionForDeploy extends MockedUserInteraction {
+  async showMessage(
+    level: "info" | "warn" | "error",
+    message: string | { content: string; color: Colors }[],
+    modal: boolean,
+    ...items: string[]
+  ): Promise<Result<string, FxError>> {
+    return ok("Deploy");
+  }
+}

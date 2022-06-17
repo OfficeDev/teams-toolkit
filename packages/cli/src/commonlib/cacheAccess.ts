@@ -145,7 +145,9 @@ export class CryptoCachePlugin {
           }
         }
       } catch (err) {
-        VsCodeLogInstance.error("read token fail: " + err.message);
+        VsCodeLogInstance.warning(
+          "Cannot read token from cache, clean up account cache. " + err.message
+        );
       }
     } else {
       try {
@@ -153,7 +155,9 @@ export class CryptoCachePlugin {
         const text = await this.accountCrypto.encrypt(data);
         await fs.writeFile(fileCachePath, text, UTF8);
       } catch (err) {
-        VsCodeLogInstance.error("write token fail: " + err.message);
+        VsCodeLogInstance.warning(
+          "Cannot write token to cache, clean up account cache. " + err.message
+        );
       }
     }
   }
@@ -167,7 +171,9 @@ export class CryptoCachePlugin {
         const text = await this.accountCrypto.encrypt(data);
         await fs.writeFile(fileCachePath, text, UTF8);
       } catch (err) {
-        VsCodeLogInstance.error("save token fail: " + err.message);
+        VsCodeLogInstance.warning(
+          "Cannot save token to cache, clean up account cache. " + err.message
+        );
       }
     }
   }
@@ -187,7 +193,9 @@ export async function saveAccountId(accountName: string, accountId?: string) {
       await fs.writeFile(accountPath + accountName, "", UTF8);
     }
   } catch (err) {
-    VsCodeLogInstance.error("save home account id fail: " + err.message);
+    VsCodeLogInstance.warning(
+      "Cannot save home account id to cache, clean up account cache. " + err.message
+    );
   }
 }
 
@@ -196,7 +204,9 @@ export async function loadAccountId(accountName: string) {
     try {
       return await fs.readFile(accountPath + accountName, UTF8);
     } catch (err) {
-      VsCodeLogInstance.error("read home account id fail: " + err.message);
+      VsCodeLogInstance.warning(
+        "Cannot read home account id from cache, clean up account cache. " + err.message
+      );
     }
   }
 

@@ -30,10 +30,10 @@ import {
 } from "../error";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 import { newEnvInfo } from "../environment";
-import { validateProjectSettings } from "../../common/projectSettingsHelper";
+import { isVSProject, validateProjectSettings } from "../../common/projectSettingsHelper";
 import { CoreHookContext } from "../types";
 import { createV2Context } from "../../common/tools";
-import { isV3 } from "../globalVars";
+import { globalVars, isV3, isVS } from "../globalVars";
 
 export const ProjectSettingsLoaderMW: Middleware = async (
   ctx: CoreHookContext,
@@ -99,7 +99,7 @@ export async function loadProjectSettings(
     ) {
       projectSettings.solutionSettings.activeResourcePlugins.push(PluginNames.APPST);
     }
-
+    globalVars.isVS = isVSProject(projectSettings);
     return ok(projectSettings);
   } catch (e) {
     return err(ReadFileError(e));

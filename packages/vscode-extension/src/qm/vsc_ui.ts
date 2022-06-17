@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { remove } from "lodash";
 import {
   Disposable,
   InputBox,
@@ -16,6 +17,7 @@ import {
   extensions,
   QuickInputButton,
   ThemeIcon,
+  QuickPickItemKind,
 } from "vscode";
 import {
   UserCancelError,
@@ -45,6 +47,7 @@ import {
   Colors,
   IProgressHandler,
   SystemError,
+  StaticOptions,
 } from "@microsoft/teamsfx-api";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { sleep } from "../utils/commonUtils";
@@ -70,20 +73,44 @@ function getOptionItem(item: FxQuickPickItem): OptionItem {
   };
 }
 
-function getFxQuickPickItem(item: string | OptionItem): FxQuickPickItem {
-  if (typeof item === "string")
-    return {
-      id: item,
-      label: item,
-    };
-  else
-    return {
-      id: item.id,
-      label: item.label,
-      description: item.description,
-      detail: item.detail,
-      data: item.data,
-    };
+function convertToFxQuickPickItems(options: StaticOptions): FxQuickPickItem[] {
+  if (options && options.length > 0 && typeof options[0] === "string") {
+    return (options as string[]).map((option: string) => {
+      return { id: option, label: option };
+    });
+  } else {
+    const result: FxQuickPickItem[] = [];
+    const candidates = [...options];
+    while (candidates.length > 0) {
+      const groupName = (candidates[0] as OptionItem).groupName;
+      const group = remove(
+        candidates as OptionItem[],
+        (option: OptionItem) => option.groupName === groupName
+      );
+      if (groupName) {
+        result.push({
+          id: groupName,
+          label: groupName,
+          kind: QuickPickItemKind.Separator,
+        });
+      }
+      result.push(
+        ...group.map((option) => {
+          return {
+            id: option.id,
+            label: option.label,
+            description: option.description,
+            detail: option.detail,
+            data: option.data,
+            buttons: option.buttons?.map((button) => {
+              return { iconPath: new ThemeIcon(button.iconPath), tooltip: button.tooltip };
+            }),
+          };
+        })
+      );
+    }
+    return result;
+  }
 }
 
 function toIdSet(items: ({ id: string } | string)[]): Set<string> {
@@ -153,18 +180,25 @@ export class VsCodeUI implements UserInteraction {
       return await new Promise<Result<SingleSelectResult, FxError>>(
         async (resolve): Promise<void> => {
           // set items
-          quickPick.items = option.options.map((i: string | OptionItem) => getFxQuickPickItem(i));
-          const optionMap = new Map<string, FxQuickPickItem>();
-          for (const item of quickPick.items) {
-            optionMap.set(item.id, item);
-          }
-          /// set default
+          const options = option.options;
+          quickPick.items = convertToFxQuickPickItems(option.options);
+          // set default
           if (option.default) {
-            const defaultItem = optionMap.get(option.default);
-            if (defaultItem) {
-              const newitems = quickPick.items.filter((i) => i.id !== option.default);
-              newitems.unshift(defaultItem);
-              quickPick.items = newitems;
+            // let defaultOption: string | OptionItem | undefined;
+            if (options && options.length > 0 && typeof options[0] === "string") {
+              const defaultOption = (options as string[]).find((o) => o == option.default);
+              if (defaultOption) {
+                const newItems = (options as string[]).filter((o) => o != option.default);
+                newItems.unshift(defaultOption);
+                quickPick.items = convertToFxQuickPickItems(newItems);
+              }
+            } else {
+              const defaultOption = (options as OptionItem[]).find((o) => o.id == option.default);
+              if (defaultOption) {
+                const newItems = (options as OptionItem[]).filter((o) => o.id != option.default);
+                newItems.unshift(defaultOption);
+                quickPick.items = convertToFxQuickPickItems(newItems);
+              }
             }
           }
 
@@ -203,6 +237,27 @@ export class VsCodeUI implements UserInteraction {
               } else {
                 quickPick.selectedItems = quickPick.activeItems;
                 onDidAccept();
+              }
+            }),
+            quickPick.onDidTriggerItemButton((event) => {
+              const itemOptions: StaticOptions = option.options;
+              if (itemOptions.length > 0 && typeof itemOptions[0] === "string") {
+                return;
+              }
+              const triggerItem: OptionItem | undefined = (itemOptions as OptionItem[]).find(
+                (singleOption: string | OptionItem) => {
+                  if (typeof singleOption !== "string") {
+                    return (singleOption as OptionItem).id === event.item.id;
+                  }
+                }
+              );
+              if (triggerItem) {
+                const triggerButton = triggerItem.buttons?.find((button) => {
+                  return button.iconPath === (event.button.iconPath as ThemeIcon).id;
+                });
+                if (triggerButton) {
+                  commands.executeCommand(triggerButton.command, event.item);
+                }
               }
             })
           );
@@ -247,7 +302,7 @@ export class VsCodeUI implements UserInteraction {
       return await new Promise<Result<MultiSelectResult, FxError>>(
         async (resolve): Promise<void> => {
           // set items
-          quickPick.items = option.options.map((i: string | OptionItem) => getFxQuickPickItem(i));
+          quickPick.items = convertToFxQuickPickItems(option.options);
           const optionMap = new Map<string, FxQuickPickItem>();
           for (const item of quickPick.items) {
             optionMap.set(item.id, item);
@@ -615,9 +670,7 @@ export class VsCodeUI implements UserInteraction {
           let lastReport = 0;
           const showProgress = config.showProgress === true;
           const total = task.total ? task.total : 1;
-          const head = `${localize("teamstoolkit.progressHandler.teamsToolkitComponent")} ${
-            task.name ? task.name : ""
-          }`;
+          const head = task.name ? task.name : "";
           const report = (task: RunnableTask<T>) => {
             const current = task.current ? task.current : 0;
             const body = showProgress

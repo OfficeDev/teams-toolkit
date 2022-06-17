@@ -70,7 +70,7 @@ export class TestCommandHandler implements TeamsFxBotCommandHandler {
   async handleCommandReceived(
     context: TurnContext,
     message: CommandMessage
-  ): Promise<string | Partial<Activity>> {
+  ): Promise<string | Partial<Activity> | void> {
     this.isInvoked = true;
     this.lastReceivedMessage = message;
     return "Sample command response";

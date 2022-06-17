@@ -1,6 +1,6 @@
 ﻿using Microsoft.JSInterop;
 
-namespace {{BlazorAppServer}}.Interop;
+namespace {{ProjectName}}.Interop;
 
 public abstract class InteropModuleBase
 {

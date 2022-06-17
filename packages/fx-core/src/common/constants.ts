@@ -2,7 +2,6 @@ export class ConstantString {
   static readonly UTF8Encoding = "utf-8";
   static readonly DeploymentResourceType = "Microsoft.Resources/deployments";
   static readonly DeploymentNotFound = "DeploymentNotFound";
-  static readonly rootFolder = "TeamsApps";
 }
 
 export class HelpLinks {
@@ -11,6 +10,12 @@ export class HelpLinks {
 
   // TODO: short link to the docs
   static readonly HowToAddCapability = "https://aka.ms/teamsfx-how-to-add-capability";
+}
+
+export class VSCodeExtensionCommand {
+  static readonly showOutputChannel = "command:fx-extension.showOutputChannel";
+  static readonly openFolder = "command:fx-extension.openFolder";
+  static readonly openReadme = "command:fx-extension.openReadMe?%5B%22Notification%22%5D";
 }
 
 export class Bicep {
@@ -63,7 +68,6 @@ export class FeatureFlagName {
   static readonly APIV3 = "TEAMSFX_APIV3";
   // This will default to true and this environment is only for tests. It does not expose to user.
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
-  static readonly rootDirectory = "TEAMSFX_ROOT_DIRECTORY";
   static readonly VSCallingCLI = "VS_CALLING_CLI";
   static readonly ConfigUnify = "TEAMSFX_CONFIG_UNIFY";
   static readonly ExistingTabApp = "TEAMSFX_INIT_APP";
@@ -75,7 +79,9 @@ export class FeatureFlagName {
   static readonly YoCheckerEnable = "TEAMSFX_YO_ENV_CHECKER_ENABLE";
   static readonly GeneratorCheckerEnable = "TEAMSFX_GENERATOR_ENV_CHECKER_ENABLE";
   static readonly ApiConnect = "TEAMSFX_API_CONNECT_ENABLE";
-  static readonly GAPreview = "TEAMSFX_GA_PREVIEW";
+  static readonly DeployManifest = "TEAMSFX_DEPLOY_MANIFEST";
+  static readonly Preview = "TEAMSFX_PREVIEW";
+  static readonly CLIDotNet = "TEAMSFX_CLI_DOTNET";
 }
 
 export class ManifestVariables {

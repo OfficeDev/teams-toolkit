@@ -4,9 +4,6 @@
 
 ## TeamsUserCredential class
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Represent Teams current user's identity, and it is used within Teams client applications.
 
 <b>Signature:</b>
@@ -24,13 +21,13 @@ Can only be used within Teams.
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(authConfig)](./teamsfx.teamsusercredential._constructor_.md) |  | <b><i>(BETA)</i></b> Constructor of TeamsUserCredential. |
+|  [(constructor)(authConfig)](./teamsfx.teamsusercredential._constructor_.md) |  | Constructor of TeamsUserCredential. |
 
 ## Methods
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
-|  [getToken(scopes, options)](./teamsfx.teamsusercredential.gettoken.md) |  | <b><i>(BETA)</i></b> Get access token from credential. |
-|  [getUserInfo()](./teamsfx.teamsusercredential.getuserinfo.md) |  | <b><i>(BETA)</i></b> Get basic user info from SSO token |
-|  [login(scopes)](./teamsfx.teamsusercredential.login.md) |  | <b><i>(BETA)</i></b> Popup login page to get user's access token with specific scopes. |
+|  [getToken(scopes, options)](./teamsfx.teamsusercredential.gettoken.md) |  | Get access token from credential. |
+|  [getUserInfo()](./teamsfx.teamsusercredential.getuserinfo.md) |  | Get basic user info from SSO token |
+|  [login(scopes)](./teamsfx.teamsusercredential.login.md) |  | Popup login page to get user's access token with specific scopes. |
 

@@ -5,7 +5,9 @@ node_modules
 bin
 obj
 appsettings.json
-local.settings.json
+
+# ignore local.settings.json if it contains your own credentials
+# local.settings.json
 
 # misc
 .DS_Store

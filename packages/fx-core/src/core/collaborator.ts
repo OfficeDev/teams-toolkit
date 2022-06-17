@@ -27,7 +27,7 @@ import {
   PermissionsResult,
   ResourcePermission,
 } from "../common/permissionInterface";
-import { getHashedEnv } from "../common/tools";
+import { AppStudioScopes, getHashedEnv } from "../common/tools";
 import { AadAppForTeamsPluginV3 } from "../plugins/resource/aad/v3";
 import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
 import {
@@ -40,12 +40,13 @@ import {
 import { CollaborationUtil } from "../plugins/solution/fx-solution/v2/collaborationUtil";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import * as util from "util";
-import { IUserList } from "../plugins/resource/appstudio/interfaces/IAppDefinition";
+import { AppUser } from "../plugins/resource/appstudio/interfaces/appUser";
 import { CoreSource } from "./error";
 import { TOOLS } from "./globalVars";
 import { getUserEmailQuestion } from "../plugins/solution/fx-solution/question";
 import { hasAAD, hasAzureResource, hasSPFx } from "../common/projectSettingsHelper";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
+import { VSCodeExtensionCommand } from "../common/constants";
 
 export async function listCollaborator(
   ctx: v2.Context,
@@ -54,7 +55,7 @@ export async function listCollaborator(
   tokenProvider: TokenProvider,
   telemetryProps?: Json
 ): Promise<Result<ListCollaboratorResult, FxError>> {
-  const result = await CollaborationUtil.getCurrentUserInfo(tokenProvider.graphTokenProvider);
+  const result = await CollaborationUtil.getCurrentUserInfo(tokenProvider.m365TokenProvider);
   if (result.isErr()) {
     return err(result.error);
   }
@@ -78,7 +79,7 @@ export async function listCollaborator(
     ctx,
     inputs,
     envInfo,
-    tokenProvider.appStudioToken
+    tokenProvider.m365TokenProvider
   );
   if (appStudioRes.isErr()) return err(appStudioRes.error);
   const teamsAppOwners = appStudioRes.value;
@@ -171,7 +172,8 @@ export async function listCollaborator(
         "info",
         getLocalizedString(
           "core.collaboration.ListCollaboratorsSuccess",
-          hasAad ? getLocalizedString("core.collaboration.WithAadApp") : ""
+          hasAad ? getLocalizedString("core.collaboration.WithAadApp") : "",
+          VSCodeExtensionCommand.showOutputChannel
         ),
         false
       );
@@ -194,7 +196,7 @@ export async function listCollaborator(
 
 function getCurrentCollaborationState(
   envInfo: v3.EnvInfoV3,
-  user: IUserList
+  user: AppUser
 ): CollaborationStateResult {
   const provisioned =
     envInfo.state.solution[SOLUTION_PROVISION_SUCCEEDED] === "true" ||
@@ -230,7 +232,7 @@ export async function checkPermission(
   tokenProvider: TokenProvider,
   telemetryProps?: Json
 ): Promise<Result<PermissionsResult, FxError>> {
-  const result = await CollaborationUtil.getCurrentUserInfo(tokenProvider.graphTokenProvider);
+  const result = await CollaborationUtil.getCurrentUserInfo(tokenProvider.m365TokenProvider);
   if (result.isErr()) {
     return err(result.error);
   }
@@ -245,7 +247,7 @@ export async function checkPermission(
       message: stateResult.message,
     });
   }
-  const userInfo = result.value as IUserList;
+  const userInfo = result.value as AppUser;
 
   if (inputs.platform === Platform.CLI) {
     const aadAppTenantId = envInfo.state[BuiltInFeaturePluginNames.appStudio]?.tenantId;
@@ -272,7 +274,7 @@ export async function checkPermission(
     ctx,
     inputs,
     envInfo,
-    tokenProvider.appStudioToken,
+    tokenProvider.m365TokenProvider,
     userInfo
   );
   if (appStudioRes.isErr()) {
@@ -345,7 +347,7 @@ export async function grantPermission(
     1
   );
   try {
-    const result = await CollaborationUtil.getCurrentUserInfo(tokenProvider.graphTokenProvider);
+    const result = await CollaborationUtil.getCurrentUserInfo(tokenProvider.m365TokenProvider);
     if (result.isErr()) {
       return err(result.error);
     }
@@ -373,7 +375,7 @@ export async function grantPermission(
       );
     }
 
-    const userInfo = await CollaborationUtil.getUserInfo(tokenProvider.graphTokenProvider, email);
+    const userInfo = await CollaborationUtil.getUserInfo(tokenProvider.m365TokenProvider, email);
 
     if (!userInfo) {
       return err(
@@ -415,7 +417,7 @@ export async function grantPermission(
       ctx,
       inputs,
       envInfo,
-      tokenProvider.appStudioToken,
+      tokenProvider.m365TokenProvider,
       userInfo
     );
     if (appStudioRes.isErr()) {
@@ -477,7 +479,13 @@ export async function getQuestionsForGrantPermission(
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
   if (isDynamicQuestion) {
-    const jsonObject = await TOOLS.tokenProvider.appStudioToken.getJsonObject();
+    const jsonObjectRes = await TOOLS.tokenProvider.m365TokenProvider.getJsonObject({
+      scopes: AppStudioScopes,
+    });
+    if (jsonObjectRes.isErr()) {
+      return err(jsonObjectRes.error);
+    }
+    const jsonObject = jsonObjectRes.value;
     return ok(new QTreeNode(getUserEmailQuestion((jsonObject as any).upn)));
   }
   return ok(undefined);

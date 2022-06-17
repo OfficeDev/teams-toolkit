@@ -8,7 +8,10 @@ import {
   IComposeExtension,
   IWebApplicationInfo,
 } from "@microsoft/teams-manifest";
-import { EnvInfoV2 } from "../v2/types";
+import { ProjectSettings } from "../types";
+import { TokenProvider } from "../utils/login";
+import { Context, EnvInfoV2 } from "../v2/types";
+import { AppManifestProvider } from "./plugins";
 import { ResourceStates } from "./resourceStates";
 
 export interface EnvInfoV3 extends EnvInfoV2 {

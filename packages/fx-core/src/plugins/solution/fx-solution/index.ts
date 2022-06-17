@@ -2,6 +2,7 @@ export * from "./solution";
 export * from "./constants";
 import "./v2/solution";
 import "./v3/solution";
+export * from "./question";
 // import { ok, FxError, Result, Solution } from "@microsoft/teamsfx-api";
 // import { TeamsAppSolution } from "./solution";
 

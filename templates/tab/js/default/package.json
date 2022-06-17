@@ -4,30 +4,29 @@
     "private": true,
     "dependencies": {
         "@fluentui/react-northstar": "^0.60.1",
-        "@microsoft/mgt-element": "2.4.1-next.teamsfx.3511fba",
-        "@microsoft/mgt-react": "2.4.1-next.teamsfx.3511fba",
-        "@microsoft/mgt-teamsfx-provider": "2.4.1-next.teamsfx.3511fba",
+        "@microsoft/mgt-element": "^2.5.0",
+        "@microsoft/mgt-react": "^2.5.0",
+        "@microsoft/mgt-teamsfx-provider": "^2.5.0",
         "@microsoft/microsoft-graph-client": "^3.0.1",
         "@microsoft/teams-js": "^1.9.0",
-        "@microsoft/teamsfx": "0.6.2-alpha.0",
-        "@microsoft/teamsfx-react": "0.1.0",
+        "@microsoft/teamsfx": "1.0.0",
+        "@microsoft/teamsfx-react": "1.0.0",
         "axios": "^0.21.1",
         "msteams-react-base-component": "^3.1.0",
         "react": "^16.14.0",
         "react-dom": "^16.14.0",
         "react-router-dom": "^5.1.2",
-        "react-scripts": "^4.0.3"
+        "react-scripts": "^5.0.1"
     },
     "devDependencies": {
         "cross-env": "^7.0.3",
-        "env-cmd": "^10.1.0",
-        "react-error-overlay": "6.0.9"
+        "env-cmd": "^10.1.0"
     },
     "scripts": {
         "dev:teamsfx": "env-cmd --silent -f .env.teamsfx.local npm run start",
-        "start": "react-scripts start",
+        "start": "cross-env GENERATE_SOURCEMAP=false react-scripts start",
         "install:teamsfx": "npm install",
-        "build": "react-scripts build",
+        "build": "cross-env GENERATE_SOURCEMAP=false react-scripts build",
         "build:teamsfx": "cross-env-shell \"env-cmd -f .env.teamsfx.${TEAMS_FX_ENV} npm run build\"",
         "build:teamsfx:dev": "cross-env TEAMS_FX_ENV=dev npm run build:teamsfx",
         "eject": "react-scripts eject"

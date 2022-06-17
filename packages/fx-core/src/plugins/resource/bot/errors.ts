@@ -6,6 +6,12 @@ import { CreateAppError, CreateSecretError } from "../aad/errors";
 import { ErrorNames, AzureConstants } from "./constants";
 import { Messages } from "./resources/messages";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
+import { err, PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { FxBotPluginResultFactory as ResultFactory, FxResult } from "./result";
+import { Logger } from "./logger";
+import { telemetryHelper } from "./utils/telemetry-helper";
+import { CommonHostingError } from "../../../common/azure-hosting/hostingError";
+import { ProgressBarFactory } from "./progressBars";
 
 export const ErrorType = {
   USER: "User",
@@ -43,10 +49,6 @@ export function isHttpError(e: InnerError): e is HttpError {
 
 export function isErrorWithMessage(e: InnerError): e is ErrorWithMessage {
   return e instanceof Object && "message" in e;
-}
-
-export function isErrorWithCode(e: InnerError): e is ErrorWithCode {
-  return e instanceof Object && "code" in e && typeof e["code"] === "string";
 }
 
 export function isPluginError(e: unknown): e is PluginError {
@@ -131,6 +133,13 @@ export class SomethingMissingError extends PreconditionError {
 export function checkAndThrowIfMissing<T>(name: string, value: T | null | undefined): T {
   if (!value) {
     throw new SomethingMissingError(name);
+  }
+  return value;
+}
+
+export function checkPrecondition<T>(message: [string, string], value: T | null | undefined): T {
+  if (!value) {
+    throw new PreconditionError(message, []);
   }
   return value;
 }
@@ -236,43 +245,6 @@ export class PackDirExistenceError extends PluginError {
   }
 }
 
-export class ListPublishingCredentialsError extends PluginError {
-  constructor(innerError?: InnerError) {
-    super(
-      ErrorType.USER,
-      ErrorNames.LIST_PUBLISHING_CREDENTIALS_ERROR,
-      Messages.FailToListPublishingCredentials,
-      [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep],
-      innerError
-    );
-  }
-}
-
-export class ZipDeployError extends PluginError {
-  constructor(innerError?: InnerError) {
-    super(
-      ErrorType.USER,
-      ErrorNames.ZIP_DEPLOY_ERROR,
-      Messages.FailToDoZipDeploy,
-      [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep],
-      innerError
-    );
-  }
-}
-
-// TODO: merge and update message
-export class RestartWebAppError extends PluginError {
-  constructor(innerError?: InnerError) {
-    super(
-      ErrorType.USER,
-      ErrorNames.RESTART_WEBAPP_ERROR,
-      Messages.FailToRestartWebApp,
-      [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep],
-      innerError
-    );
-  }
-}
-
 export class MessageEndpointUpdatingError extends PluginError {
   constructor(endpoint: string, innerError?: InnerError) {
     super(
@@ -286,12 +258,16 @@ export class MessageEndpointUpdatingError extends PluginError {
 }
 
 export class CommandExecutionError extends PluginError {
-  constructor(cmd: string, innerError?: InnerError) {
+  constructor(cmd: string, path: string, innerError?: InnerError) {
     super(
       ErrorType.USER,
       ErrorNames.COMMAND_EXECUTION_ERROR,
       Messages.CommandExecutionFailed(cmd),
-      [Messages.CheckCommandOutputAndTryToFixIt, Messages.RetryTheCurrentStep],
+      [
+        Messages.RunFailedCommand(cmd, path),
+        Messages.CheckCommandOutputAndTryToFixIt,
+        Messages.RetryTheCurrentStep,
+      ],
       innerError
     );
   }
@@ -312,5 +288,89 @@ export class RegisterResourceProviderError extends PluginError {
       ],
       innerError
     );
+  }
+}
+
+export function wrapError(
+  e: InnerError,
+  context: PluginContext,
+  sendTelemetry: boolean,
+  name: string
+): FxResult {
+  let errorMsg = isErrorWithMessage(e) ? e.message : "";
+  const innerError = isPluginError(e) ? e.innerError : undefined;
+  if (innerError) {
+    errorMsg += getLocalizedString(
+      "plugins.bot.DetailedError",
+      isErrorWithMessage(innerError) ? innerError.message : ""
+    );
+    if (isHttpError(innerError)) {
+      if (innerError.response?.data?.errorMessage) {
+        errorMsg += getLocalizedString(
+          "plugins.bot.DetailedErrorReason",
+          innerError.response?.data?.errorMessage
+        );
+      } else if (innerError.response?.data?.error?.message) {
+        // For errors return from Graph API
+        errorMsg += getLocalizedString(
+          "plugins.bot.DetailedErrorReason",
+          innerError.response?.data?.error?.message
+        );
+      }
+    }
+  }
+  Logger.error(errorMsg);
+  if (e instanceof UserError || e instanceof SystemError) {
+    const res = err(e);
+    sendTelemetry && telemetryHelper.sendResultEvent(context, name, res);
+    return res;
+  }
+
+  if (e instanceof PluginError || e instanceof CommonHostingError) {
+    const result =
+      e instanceof PluginError && e.errorType === ErrorType.SYSTEM
+        ? ResultFactory.SystemError(e.name, [e.genMessage(), e.genDisplayMessage()], e.innerError)
+        : ResultFactory.UserError(
+            e.name,
+            [e.genMessage(), e.genDisplayMessage()],
+            e.innerError,
+            e instanceof PluginError ? e.helpLink : ""
+          );
+    sendTelemetry && telemetryHelper.sendResultEvent(context, name, result);
+    return result;
+  } else {
+    // Unrecognized Exception.
+    const UnhandledErrorCode = "UnhandledError";
+    sendTelemetry &&
+      telemetryHelper.sendResultEvent(
+        context,
+        name,
+        ResultFactory.SystemError(
+          UnhandledErrorCode,
+          [
+            getDefaultString("plugins.bot.UnhandledError", errorMsg),
+            getLocalizedString("plugins.bot.UnhandledError", errorMsg),
+          ],
+          isPluginError(e) ? e.innerError : undefined
+        )
+      );
+    return ResultFactory.SystemError(UnhandledErrorCode, [errorMsg, errorMsg], innerError);
+  }
+}
+
+export async function runWithExceptionCatching<T>(
+  context: PluginContext,
+  fn: () => Promise<FxResult>,
+  sendTelemetry: boolean,
+  name: string
+): Promise<FxResult> {
+  try {
+    sendTelemetry && telemetryHelper.sendStartEvent(context, name);
+    const res: FxResult = await fn();
+    sendTelemetry && telemetryHelper.sendResultEvent(context, name, res);
+    return res;
+  } catch (e) {
+    await ProgressBarFactory.closeProgressBar(false); // Close all progress bars.
+    return wrapError(e, context, sendTelemetry, name);
   }
 }

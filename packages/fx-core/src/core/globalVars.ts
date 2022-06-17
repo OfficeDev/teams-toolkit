@@ -21,18 +21,11 @@ export function isVsCallingCli(): boolean {
   return featureFlagEnabled(FeatureFlagName.VSCallingCLI);
 }
 
-/**
- * @deprecated Please DO NOT use this feature flag anymore. This will be removed later
- * @returns whether yeoman CLI scaffold is used
- */
-export function yeomanScaffoldEnabled(): boolean {
-  return true;
-}
-
 export let Logger: LogProvider;
 export let currentStage: Stage;
 export let TOOLS: Tools;
 export let Locale: string | undefined;
+export const isVS = false;
 export function setTools(tools: Tools): void {
   TOOLS = tools;
   Logger = tools.logProvider;
@@ -43,3 +36,7 @@ export function setLocale(locale?: string): void {
 export function setCurrentStage(stage: Stage): void {
   currentStage = stage;
 }
+export class GlobalVars {
+  isVS?: boolean = false;
+}
+export const globalVars = new GlobalVars();

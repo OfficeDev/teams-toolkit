@@ -13,8 +13,11 @@ import { FxResult, FxBotPluginResultFactory as ResultFactory } from "../result";
 import { generateBicepFromFile } from "../../../../common/tools";
 import { ArmTemplateResult } from "../../../../common/armInterface";
 import fs from "fs-extra";
-import { PathInfo } from "./constants";
+import { PathInfo, RegularExpr } from "./constants";
 import { TeamsBotImpl } from "../plugin";
+import { FileIOError } from "./errors";
+import { PluginNames } from "../../../solution/fx-solution/constants";
+import { PluginBot } from "../resources/strings";
 
 // Extends TeamsBotImpl to reuse provision method
 export class DotnetBotImpl extends TeamsBotImpl {
@@ -49,6 +52,30 @@ export class DotnetBotImpl extends TeamsBotImpl {
 
     Logger.info(Messages.SuccessfullyGenerateArmTemplatesBot);
     return ResultFactory.Success(result);
+  }
+
+  public async postLocalDebug(context: PluginContext): Promise<FxResult> {
+    await super.postLocalDebug(context);
+    const appSettingsPath = path.join(context.root, PathInfo.appSettingDevelopment);
+    try {
+      let appSettings = await fs.readFile(appSettingsPath, "utf-8");
+      const botId = context.envInfo.state.get(PluginNames.BOT)?.get(PluginBot.BOT_ID);
+      const botPassword = context.envInfo.state.get(PluginNames.BOT)?.get(PluginBot.BOT_PASSWORD);
+      if (!botId && !botPassword) {
+        Logger.warning("Bot id and password are empty");
+        return ResultFactory.Success();
+      }
+      if (botId) {
+        appSettings = appSettings.replace(RegularExpr.botId, botId);
+      }
+      if (botPassword) {
+        appSettings = appSettings.replace(RegularExpr.botPassword, botPassword);
+      }
+      await fs.writeFile(appSettingsPath, appSettings, "utf-8");
+    } catch (error) {
+      throw new FileIOError(appSettingsPath);
+    }
+    return ResultFactory.Success();
   }
 
   // Overwrite below lifecycle for dotnet scenario

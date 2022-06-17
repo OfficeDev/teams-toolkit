@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import Mustache from "mustache";
 import { TEAMS_APP_SHORT_NAME_MAX_LENGTH } from "../constants";
 import {
   TeamsAppManifest,
@@ -8,14 +9,10 @@ import {
   ICommand,
   ICommandList,
 } from "@microsoft/teamsfx-api";
-import {
-  IAppDefinition,
-  IAppDefinitionBot,
-  IMessagingExtension,
-  ITeamCommand,
-  IGroupChatCommand,
-  IPersonalCommand,
-} from "../interfaces/IAppDefinition";
+import { BotCommand } from "../interfaces/botCommand";
+import { AppDefinition } from "../interfaces/appDefinition";
+import { Bot } from "../interfaces/bot";
+import { MessagingExtension } from "../interfaces/messagingExtension";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { AppStudioResultFactory } from "../results";
 
@@ -84,8 +81,8 @@ export function getLocalAppName(appName: string): string {
  * @param appManifest
  * @returns
  */
-export function convertToAppDefinition(appManifest: TeamsAppManifest): IAppDefinition {
-  const appDefinition: IAppDefinition = {
+export function convertToAppDefinition(appManifest: TeamsAppManifest): AppDefinition {
+  const appDefinition: AppDefinition = {
     appName: appManifest.name.short,
     validDomains: appManifest.validDomains,
   };
@@ -112,13 +109,41 @@ export function convertToAppDefinition(appManifest: TeamsAppManifest): IAppDefin
   appDefinition.shortDescription = appManifest.description.short;
   appDefinition.longDescription = appManifest.description.full;
 
-  appDefinition.staticTabs = appManifest.staticTabs;
-  appDefinition.configurableTabs = appManifest.configurableTabs;
+  appDefinition.staticTabs = appManifest.staticTabs?.map((x) => {
+    return {
+      objectId: x.objectId,
+      entityId: x.entityId,
+      name: x.name ?? "",
+      contentUrl: x.contentUrl ?? "",
+      websiteUrl: x.websiteUrl ?? "",
+      scopes: x.scopes,
+      context: x.context ?? [],
+    };
+  });
+  appDefinition.configurableTabs = appManifest.configurableTabs?.map((x) => {
+    return {
+      objectId: x.objectId,
+      configurationUrl: x.configurationUrl,
+      canUpdateConfiguration: x.canUpdateConfiguration ?? false,
+      scopes: x.scopes,
+      context: x.context ?? [],
+      sharePointPreviewImage: x.sharePointPreviewImage ?? "",
+      supportedSharePointHosts: x.supportedSharePointHosts ?? [],
+    };
+  });
 
   appDefinition.bots = convertToAppDefinitionBots(appManifest);
   appDefinition.messagingExtensions = convertToAppDefinitionMessagingExtensions(appManifest);
 
-  appDefinition.connectors = appManifest.connectors;
+  appDefinition.connectors = appManifest.connectors?.map((x) => {
+    return {
+      connectorId: x.connectorId,
+      configurationUrl: x.configurationUrl ?? "",
+      name: "",
+      scopes: x.scopes,
+    };
+  });
+  appDefinition.graphConnector = appManifest.graphConnector;
   appDefinition.devicePermissions = appManifest.devicePermissions;
 
   if (appManifest.webApplicationInfo) {
@@ -126,7 +151,9 @@ export function convertToAppDefinition(appManifest: TeamsAppManifest): IAppDefin
     appDefinition.webApplicationInfoResource = appManifest.webApplicationInfo.resource;
   }
 
-  appDefinition.activities = appManifest.activities;
+  appDefinition.activities = {
+    activityTypes: appManifest.activities?.activityTypes ?? [],
+  };
 
   if (appManifest.icons.color) {
     appDefinition.colorIcon = appManifest.icons.color;
@@ -139,13 +166,13 @@ export function convertToAppDefinition(appManifest: TeamsAppManifest): IAppDefin
   return appDefinition;
 }
 
-export function convertToAppDefinitionBots(appManifest: TeamsAppManifest): IAppDefinitionBot[] {
-  const bots: IAppDefinitionBot[] = [];
+export function convertToAppDefinitionBots(appManifest: TeamsAppManifest): Bot[] {
+  const bots: Bot[] = [];
   if (appManifest.bots) {
     appManifest.bots.forEach((manBot: IBot) => {
-      const teamCommands: ITeamCommand[] = [];
-      const groupCommands: IGroupChatCommand[] = [];
-      const personalCommands: IPersonalCommand[] = [];
+      const teamCommands: BotCommand[] = [];
+      const groupCommands: BotCommand[] = [];
+      const personalCommands: BotCommand[] = [];
 
       manBot?.commandLists?.forEach((list: ICommandList) => {
         list.commands.forEach((command: ICommand) => {
@@ -166,14 +193,17 @@ export function convertToAppDefinitionBots(appManifest: TeamsAppManifest): IAppD
         });
       });
 
-      const bot: IAppDefinitionBot = {
+      const bot: Bot = {
         botId: manBot.botId,
         isNotificationOnly: manBot.isNotificationOnly ?? false,
         supportsFiles: manBot.supportsFiles ?? false,
+        supportsCalling: manBot.supportsCalling ?? false,
+        supportsVideo: manBot.supportsVideo ?? false,
         scopes: manBot.scopes,
         teamCommands: teamCommands,
         groupChatCommands: groupCommands,
         personalCommands: personalCommands,
+        needsChannelSelector: false,
       };
 
       bots.push(bot);
@@ -184,16 +214,45 @@ export function convertToAppDefinitionBots(appManifest: TeamsAppManifest): IAppD
 
 export function convertToAppDefinitionMessagingExtensions(
   appManifest: TeamsAppManifest
-): IMessagingExtension[] {
-  const messagingExtensions: IMessagingExtension[] = [];
+): MessagingExtension[] {
+  const messagingExtensions: MessagingExtension[] = [];
 
   if (appManifest.composeExtensions) {
     appManifest.composeExtensions.forEach((ext: IComposeExtension) => {
-      const me: IMessagingExtension = {
+      const me: MessagingExtension = {
         botId: ext.botId,
         canUpdateConfiguration: true,
-        commands: ext.commands,
-        messageHandlers: ext.messageHandlers ?? [],
+        commands: ext.commands.map((x) => {
+          return {
+            id: x.id,
+            type: x.type ?? "query",
+            title: x.title,
+            description: x.description ?? "",
+            initialRun: x.initialRun ?? false,
+            fetchTask: x.fetchTask ?? false,
+            context: x.context ?? ["compose", "commandBox"],
+            parameters:
+              x.parameters?.map((p) => {
+                return {
+                  name: p.name,
+                  title: p.title,
+                  description: p.description ?? "",
+                  inputType: p.inputType ?? "text",
+                  choices: p.choices ?? [],
+                };
+              }) ?? [],
+            taskInfo: x.taskInfo,
+          };
+        }),
+        messageHandlers:
+          ext.messageHandlers?.map((h) => {
+            return {
+              type: h.type,
+              value: {
+                domains: h.value.domains ?? [],
+              },
+            };
+          }) ?? [],
       };
 
       messagingExtensions.push(me);
@@ -201,4 +260,11 @@ export function convertToAppDefinitionMessagingExtensions(
   }
 
   return messagingExtensions;
+}
+
+export function renderTemplate(manifestString: string, view: any): string {
+  // Unesacped HTML
+  Mustache.escape = (value) => value;
+  manifestString = Mustache.render(manifestString, view);
+  return manifestString;
 }

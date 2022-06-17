@@ -2,7 +2,7 @@
   "compilerOptions": {
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "types": ["reflect-metadata"],
+    "types": ["reflect-metadata", "node"],
     "module": "commonjs",
     "target": "es2017",
     "outDir": "build",

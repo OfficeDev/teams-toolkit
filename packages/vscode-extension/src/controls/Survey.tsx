@@ -5,10 +5,10 @@ import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySurveyDataProperty,
-  TelemetryTiggerFrom,
+  TelemetryTriggerFrom,
 } from "../telemetry/extTelemetryEvents";
 import { Separator, TextField } from "@fluentui/react";
-import TeamsIcon from "../../media/microsoft-teams.svg";
+import TeamsIcon from "../../img/webview/survey/microsoft-teams.svg";
 
 type QuestionChoice = { key: string; val: number };
 
@@ -308,7 +308,7 @@ export default class Survey extends React.Component<any, any> {
         data: {
           eventName: TelemetryEvent.SurveyData,
           properties: {
-            [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview,
+            [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
             [TelemetrySurveyDataProperty.Q1Title]:
               "Overall, how satisfied or dissatisfied are you with the Teams Toolkit extension in Visual Studio Code?",
             [TelemetrySurveyDataProperty.Q1Result]: q1Score,

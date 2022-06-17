@@ -2,31 +2,37 @@
 // Licensed under the MIT license.
 
 import { VS_CODE_UI } from "../extension";
-import graphLoginInstance from "../commonlib/graphLogin";
+import m365LoginInstance from "../commonlib/m365Login";
 import { ExtensionErrors, ExtensionSource } from "../error";
-import { localize } from "../utils/localizeUtils";
+import { getDefaultString, localize } from "../utils/localizeUtils";
 import { delay } from "../utils/commonUtils";
 import { generateAccountHint } from "./teamsfxDebugProvider";
 import * as commonUtils from "./commonUtils";
 
 import axios from "axios";
 import { UserError, SystemError } from "@microsoft/teamsfx-api";
-import { environmentManager, isConfigUnifyEnabled } from "@microsoft/teamsfx-core";
+import { environmentManager, GraphScopes } from "@microsoft/teamsfx-core";
+import { openUrlWithNewProfile } from "./launch";
 
-export async function showInstallAppInTeamsMessage(
-  detected: boolean,
-  appId: string,
-  botId: string | undefined
-): Promise<boolean> {
+export async function showInstallAppInTeamsMessage(env: string, appId: string): Promise<boolean> {
+  const isLocal = env === environmentManager.getLocalEnvName();
+  const botId = await commonUtils.getBotId(env);
+
   const messages = botId
     ? [
-        localize("teamstoolkit.localDebug.installApp.bot.description"),
+        isLocal
+          ? localize("teamstoolkit.localDebug.installApp.bot.description")
+          : localize("teamstoolkit.preview.installApp.bot.description"),
         localize("teamstoolkit.localDebug.installApp.bot.guide1"),
-        localize("teamstoolkit.localDebug.installApp.bot.guide2"),
+        isLocal
+          ? localize("teamstoolkit.localDebug.installApp.bot.guide2")
+          : localize("teamstoolkit.preview.installApp.bot.guide2"),
         localize("teamstoolkit.localDebug.installApp.bot.finish"),
       ]
     : [
-        localize("teamstoolkit.localDebug.installApp.description"),
+        isLocal
+          ? localize("teamstoolkit.localDebug.installApp.description")
+          : localize("teamstoolkit.preview.installApp.description"),
         localize("teamstoolkit.localDebug.installApp.guide"),
         localize("teamstoolkit.localDebug.installApp.finish"),
       ];
@@ -42,44 +48,41 @@ export async function showInstallAppInTeamsMessage(
       return false;
     }
 
-    const debugConfig = isConfigUnifyEnabled()
-      ? await commonUtils.getDebugConfig(false, environmentManager.getLocalEnvName())
-      : await commonUtils.getDebugConfig(true);
-    if (debugConfig?.appId === undefined) {
-      throw new UserError(
-        ExtensionSource,
-        ExtensionErrors.GetTeamsAppInstallationFailed,
-        "Debug config not found"
-      );
-    }
-
     if (result.value === localize("teamstoolkit.localDebug.installApp.installInTeams")) {
       const url = `https://teams.microsoft.com/l/app/${appId}?installAppPackage=true&webjoin=true&${await generateAccountHint()}`;
       await VS_CODE_UI.openUrl(url);
-      return await showInstallAppInTeamsMessage(false, appId, botId);
+      return await showInstallAppInTeamsMessage(env, appId);
     } else if (
       result.value === localize("teamstoolkit.localDebug.installApp.bot.configureOutlook")
     ) {
-      const url = `https://dev.botframework.com/bots/channels?id=${botId}&channelId=outlook`;
-      await VS_CODE_UI.openUrl(url);
-      return await showInstallAppInTeamsMessage(false, appId, botId);
+      let url: string;
+      if (isLocal) {
+        url = `https://dev.botframework.com/bots/channels?id=${botId}&channelId=outlook`;
+        if (!(await openUrlWithNewProfile(url))) {
+          await VS_CODE_UI.openUrl(url);
+        }
+      } else {
+        url = await commonUtils.getBotOutlookChannelLink(env);
+        await VS_CODE_UI.openUrl(url);
+      }
+      return await showInstallAppInTeamsMessage(env, appId);
     } else if (result.value === localize("teamstoolkit.localDebug.installApp.continue")) {
       const internalId = await getTeamsAppInternalId(appId);
-      return internalId === undefined
-        ? await showInstallAppInTeamsMessage(true, appId, botId)
-        : true;
+      return internalId === undefined ? await showInstallAppInTeamsMessage(env, appId) : true;
     }
   }
   return false;
 }
 
 export async function getTeamsAppInternalId(appId: string): Promise<string | undefined> {
-  const loginStatus = await graphLoginInstance.getStatus();
-  if (loginStatus.accountInfo?.oid === undefined || loginStatus.token === undefined) {
+  const loginStatusRes = await m365LoginInstance.getStatus({ scopes: GraphScopes });
+  const loginStatus = loginStatusRes.isOk() ? loginStatusRes.value : undefined;
+  if (loginStatus?.accountInfo?.oid === undefined || loginStatus.token === undefined) {
     throw new UserError(
       ExtensionSource,
       ExtensionErrors.GetTeamsAppInstallationFailed,
-      "M365 account info not found"
+      getDefaultString("teamstoolkit.localDebug.installApp.m365AccountInfoNotFound"),
+      localize("teamstoolkit.localDebug.installApp.m365AccountInfoNotFound")
     );
   }
   const url = `https://graph.microsoft.com/v1.0/users/${loginStatus.accountInfo.oid}/teamwork/installedApps?$expand=teamsApp,teamsAppDefinition&$filter=teamsApp/externalId eq '${appId}'`;

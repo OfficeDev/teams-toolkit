@@ -3,7 +3,7 @@ import { globalStateGet, globalStateUpdate, isValidProject } from "@microsoft/te
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";
-import { ext } from "../extensionVariables";
+import * as globalVariables from "../globalVariables";
 import { getDefaultString, localize } from "./localizeUtils";
 
 const SURVEY_URL = "https://aka.ms/teams-toolkit-survey";
@@ -70,7 +70,7 @@ export class ExtensionSurvey {
             return;
           }
 
-          if (!this.showSurveyTimeout && isValidProject(ext.workspaceUri.fsPath)) {
+          if (!this.showSurveyTimeout && isValidProject(globalVariables.workspaceUri!.fsPath)) {
             this.showSurveyTimeout = setTimeout(() => this.showSurvey(), this.timeToShowSurvey);
           }
         }, 2000);

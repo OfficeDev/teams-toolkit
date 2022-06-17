@@ -1,6 +1,6 @@
 {
     "name": "@microsoft/teams-manifest",
-    "version": "0.0.3",
+    "version": "0.0.5",
     "main": "build/index.js",
     "types": "build/index.d.ts",
     "license": "MIT",
@@ -25,6 +25,7 @@
         "eslint-plugin-import": "^2.25.2",
         "eslint-plugin-no-secrets": "^0.8.9",
         "eslint-plugin-prettier": "^4.0.0",
+        "json-schema-to-typescript": "^10.1.5",
         "lint-staged": "^10.5.4",
         "mocha": "^9.0.2",
         "nyc": "^15.1.0",
@@ -37,12 +38,15 @@
         "typescript": "^4.2.3"
     },
     "scripts": {
+        "prebuild": "npm run generate-manifest",
         "build": "rimraf build && npx tsc -p ./",
+        "postbuild": "eslint \"**/*.ts\" --fix",
         "test": "npm run test:unit",
         "test:unit": "npx nyc mocha --no-timeouts --require ts-node/register test/**/*.test.ts",
         "lint": "eslint \"**/*.ts\"",
         "precommit": "lint-staged",
-        "lint:staged": "lint-staged"
+        "lint:staged": "lint-staged",
+        "generate-manifest": "npx json2ts -i devPreviewSchema.json -o src/devPreviewManifest.ts --ignoreMinAndMaxItems"
     },
     "files": [
         "build/**/*"

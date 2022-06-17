@@ -7,12 +7,6 @@ import { PluginActRoles } from "../enums/pluginActRoles";
 export class CommonStrings {
   public static readonly BOT_WORKING_DIR_NAME = "bot";
 
-  public static readonly AZURE_WEB_APP = getLocalizedString("plugins.bot.AzureWebApp");
-  public static readonly BOT_CHANNEL_REGISTRATION = getLocalizedString(
-    // eslint-disable-next-line no-secrets/no-secrets
-    "plugins.bot.AzureBotServiceChannelRegistration"
-  );
-  public static readonly MS_TEAMS_CHANNEL = getLocalizedString("plugins.bot.TeamsChannel");
   public static readonly AAD_APP = getLocalizedString("plugins.bot.AadApp");
   public static readonly AAD_CLIENT_SECRET = getLocalizedString("plugins.bot.AadClientSecret");
   public static readonly APP_STUDIO_BOT_REGISTRATION = getLocalizedString(
@@ -70,16 +64,15 @@ export class PluginBot {
   public static readonly BOT_ID = "botId";
   public static readonly BOT_PASSWORD = "botPassword";
   public static readonly OBJECT_ID = "objectId";
-  public static readonly LOCAL_BOT_ID = "localBotId";
   public static readonly PROGRAMMING_LANGUAGE = "programmingLanguage";
   public static readonly APP_SERVICE_PLAN = "appServicePlan";
   public static readonly SITE_NAME = "siteName";
   public static readonly SKU_NAME = "skuName";
   public static readonly SITE_ENDPOINT = "siteEndpoint";
   public static readonly VALID_DOMAIN = "validDomain";
-  public static readonly PROVISIONED = "provisioned";
   public static readonly BOT_CHANNEL_REGISTRATION = "botChannelReg";
   public static readonly BOT_WEB_APP_RESOURCE_ID = "botWebAppResourceId";
+  public static readonly RESOURCE_ID = "resourceId";
   public static readonly UNPACK_FLAG = "unPackFlag";
   public static readonly HOST_TYPE = "host-type";
   // Bot capabilities, for example: notification, command-and-response.
@@ -91,7 +84,7 @@ export class ConfigNames {
   public static readonly PROGRAMMING_LANGUAGE = "programming language";
   public static readonly GRAPH_TOKEN = "graph token";
   public static readonly SUBSCRIPTION_ID = "subscription id";
-  public static readonly LOCATION = "location";
+  public static readonly ENV = "env";
   public static readonly BOT_SERVICE_RESOURCE_ID = "bot service resource id";
   public static readonly RESOURCE_GROUP = "resource group";
   public static readonly LOCAL_ENDPOINT = "local endpoint";
@@ -106,18 +99,12 @@ export class ConfigNames {
 
   public static readonly APPSTUDIO_TOKEN = "app studio token";
 
-  public static readonly AZURE_WEB_APP_AUTH_CONFIGS = "azure web app's auth configs";
   public static readonly MESSAGE_ENDPOINT = "message endpoint";
 }
 
 export class Commands {
   public static readonly NPM_INSTALL = "npm install";
   public static readonly NPM_BUILD = "npm run build";
-}
-
-export class ClientNames {
-  public static readonly WEB_SITE_MGMT_CLIENT = "webSiteMgmtClient";
-  public static readonly BOT_SERVICE_CLIENT = "botServiceClient";
 }
 
 export const BotCapabilities = {
@@ -150,3 +137,4 @@ export const NotificationTriggers = {
 } as const;
 
 export type NotificationTrigger = typeof NotificationTriggers[keyof typeof NotificationTriggers];
+export type BotTrigger = NotificationTrigger;

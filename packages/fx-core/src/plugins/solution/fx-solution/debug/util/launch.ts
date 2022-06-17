@@ -3,7 +3,6 @@
 "use strict";
 
 import * as os from "os";
-import { yeomanScaffoldEnabled } from "../../../../../core/globalVars";
 import { LaunchBrowser } from "../constants";
 
 export function generateConfigurations(
@@ -72,51 +71,6 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
     edgeOrder = 1;
     chromeOrder = 2;
   }
-
-  const localWorkbench: Record<string, unknown>[] = [
-    {
-      name: "Local workbench (Edge)",
-      type: LaunchBrowser.edge,
-      request: "launch",
-      url: "https://localhost:5432/workbench",
-      webRoot: "${workspaceRoot}/SPFx",
-      sourceMaps: true,
-      sourceMapPathOverrides: {
-        "webpack:///.././src/*": "${webRoot}/src/*",
-        "webpack:///../../../src/*": "${webRoot}/src/*",
-        "webpack:///../../../../src/*": "${webRoot}/src/*",
-        "webpack:///../../../../../src/*": "${webRoot}/src/*",
-      },
-      runtimeArgs: ["--remote-debugging-port=9222"],
-      preLaunchTask: "gulp serve",
-      postDebugTask: "Terminate All Tasks",
-      presentation: {
-        group: "local",
-        order: edgeOrder,
-      },
-    },
-    {
-      name: "Local workbench (Chrome)",
-      type: LaunchBrowser.chrome,
-      request: "launch",
-      url: "https://localhost:5432/workbench",
-      webRoot: "${workspaceRoot}/SPFx",
-      sourceMaps: true,
-      sourceMapPathOverrides: {
-        "webpack:///.././src/*": "${webRoot}/src/*",
-        "webpack:///../../../src/*": "${webRoot}/src/*",
-        "webpack:///../../../../src/*": "${webRoot}/src/*",
-        "webpack:///../../../../../src/*": "${webRoot}/src/*",
-      },
-      runtimeArgs: ["--remote-debugging-port=9222"],
-      preLaunchTask: "gulp serve",
-      postDebugTask: "Terminate All Tasks",
-      presentation: {
-        group: "local",
-        order: chromeOrder,
-      },
-    },
-  ];
 
   const configurations: Record<string, unknown>[] = [
     {
@@ -198,7 +152,7 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
       },
     },
   ];
-  return yeomanScaffoldEnabled() ? configurations : localWorkbench.concat(configurations);
+  return configurations;
 }
 
 export function generateSpfxCompounds(): Record<string, unknown>[] {

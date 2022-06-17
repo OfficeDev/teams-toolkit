@@ -4,9 +4,6 @@
 
 ## CertificateAuthProvider class
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Provider that handles Certificate authentication
 
 <b>Signature:</b>
@@ -20,11 +17,11 @@ export declare class CertificateAuthProvider implements AuthProvider
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(certOption)](./teamsfx.certificateauthprovider._constructor_.md) |  | <b><i>(BETA)</i></b> Constructs a new instance of the <code>CertificateAuthProvider</code> class |
+|  [(constructor)(certOption)](./teamsfx.certificateauthprovider._constructor_.md) |  | Constructs a new instance of the <code>CertificateAuthProvider</code> class |
 
 ## Methods
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
-|  [AddAuthenticationInfo(config)](./teamsfx.certificateauthprovider.addauthenticationinfo.md) |  | <b><i>(BETA)</i></b> Adds authentication info to http requests. |
+|  [AddAuthenticationInfo(config)](./teamsfx.certificateauthprovider.addauthenticationinfo.md) |  | Adds authentication info to http requests. |
 

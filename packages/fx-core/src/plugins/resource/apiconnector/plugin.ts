@@ -11,6 +11,7 @@ import {
   UserError,
   ok,
   Platform,
+  FxError,
 } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import {
@@ -28,8 +29,8 @@ import {
   AADAuthConfig,
   APIKeyAuthConfig,
 } from "./config";
-import { ApiConnectorResult, ResultFactory, QesutionResult } from "./result";
-import { AuthType, Constants, KeyLocation } from "./constants";
+import { ApiConnectorResult, ResultFactory, QuestionResult, FileChange } from "./result";
+import { AuthType, Constants, KeyLocation, ComponentType } from "./constants";
 import { EnvHandler } from "./envHandler";
 import { ErrorMessage } from "./errors";
 import { ResourcePlugins } from "../../../common/constants";
@@ -58,6 +59,7 @@ import { isAADEnabled } from "../../../common";
 import { getAzureSolutionSettings } from "../../solution/fx-solution/v2/utils";
 import { DepsHandler } from "./depsHandler";
 import { checkEmptySelect } from "./checker";
+import { Telemetry, TelemetryUtils } from "./telemetry";
 export class ApiConnectorImpl {
   public async scaffold(ctx: Context, inputs: Inputs): Promise<ApiConnectorResult> {
     if (!inputs.projectPath) {
@@ -69,21 +71,74 @@ export class ApiConnectorImpl {
     const projectPath = inputs.projectPath;
     const languageType: string = ctx.projectSetting!.programmingLanguage!;
     const config: ApiConnectorConfiguration = this.getUserDataFromInputs(inputs);
+
+    const telemetryProperties = this.getTelemetryProperties(config);
+
+    TelemetryUtils.init(ctx.telemetryReporter);
+    TelemetryUtils.sendEvent(
+      Telemetry.stage.scaffold + Telemetry.startSuffix,
+      undefined,
+      telemetryProperties
+    );
+    // CLI checker
+    const activePlugins = (ctx.projectSetting.solutionSettings as AzureSolutionSettings)
+      ?.activeResourcePlugins;
+    if (
+      !activePlugins.includes(ResourcePlugins.Bot) &&
+      config.ComponentType.includes(ComponentType.BOT)
+    ) {
+      throw ResultFactory.UserError(
+        ErrorMessage.componentNotExistError.name,
+        ErrorMessage.componentNotExistError.message(ComponentType.BOT)
+      );
+    }
+    if (
+      !activePlugins.includes(ResourcePlugins.Function) &&
+      config.ComponentType.includes(ComponentType.API)
+    ) {
+      throw ResultFactory.UserError(
+        ErrorMessage.componentNotExistError.name,
+        ErrorMessage.componentNotExistError.message(ComponentType.API)
+      );
+    }
+
     // backup relative files.
     const backupFolderName = generateTempFolder();
     await Promise.all(
-      config.ComponentPath.map(async (component) => {
+      config.ComponentType.map(async (component) => {
         await this.backupExistingFiles(path.join(projectPath, component), backupFolderName);
       })
     );
 
     try {
+      let filesChanged: FileChange[] = [];
       await Promise.all(
-        config.ComponentPath.map(async (component) => {
-          await this.scaffoldInComponent(projectPath, component, config, languageType);
+        config.ComponentType.map(async (component) => {
+          const changes = await this.scaffoldInComponent(
+            projectPath,
+            component,
+            config,
+            languageType
+          );
+          filesChanged = filesChanged.concat(changes);
         })
       );
-      const msg: string = this.getNotificationMsg(config, languageType);
+      const msg: string = Notification.getNotificationMsg(config, languageType);
+      const logMessage = getLocalizedString(
+        "plugins.apiConnector.Log.CommandSuccess",
+        filesChanged.reduce(
+          (previousValue, currentValue) =>
+            previousValue +
+            `[${currentValue.changeType}] ${path.relative(
+              inputs.projectPath!,
+              currentValue.filePath
+            )}` +
+            "\n",
+          ""
+        )
+      );
+      ctx.logProvider?.info(logMessage); // Print generated/updated files for users
+
       if (inputs.platform != Platform.CLI) {
         ctx.userInteraction
           ?.showMessage("info", msg, false, "OK", Notification.READ_MORE)
@@ -94,11 +149,15 @@ export class ApiConnectorImpl {
             }
           });
       } else {
-        ctx.userInteraction.showMessage("info", msg, false);
+        ctx.userInteraction.showMessage(
+          "info",
+          msg + ` ${Notification.GetLinkNotification()}`,
+          false
+        );
       }
     } catch (err) {
       await Promise.all(
-        config.ComponentPath.map(async (component) => {
+        config.ComponentType.map(async (component) => {
           await fs.copy(
             path.join(projectPath, component, backupFolderName),
             path.join(projectPath, component),
@@ -112,22 +171,35 @@ export class ApiConnectorImpl {
           );
         })
       );
-      if (err instanceof SystemError || err instanceof UserError) {
-        throw err;
-      } else {
-        throw ResultFactory.SystemError(
+      if (!(err instanceof SystemError) && !(err instanceof UserError)) {
+        err = ResultFactory.SystemError(
           ErrorMessage.generateApiConFilesError.name,
           ErrorMessage.generateApiConFilesError.message(err.message)
         );
       }
+      this.sendErrorTelemetry(err as FxError);
+      throw err;
     } finally {
       await Promise.all(
-        config.ComponentPath.map(async (component) => {
+        config.ComponentType.map(async (component) => {
           await removeFileIfExist(path.join(projectPath, component, backupFolderName));
         })
       );
     }
-    return ResultFactory.Success();
+    TelemetryUtils.sendEvent(Telemetry.stage.scaffold, true, telemetryProperties);
+    const result = config.ComponentType.map((item) => {
+      return path.join(projectPath, item, getSampleFileName(config.APIName, languageType));
+    });
+    return { generatedFiles: result };
+  }
+
+  private sendErrorTelemetry(thrownErr: FxError) {
+    const errorCode = thrownErr.source + "." + thrownErr.name;
+    const errorType =
+      thrownErr instanceof SystemError ? Telemetry.systemError : Telemetry.userError;
+    const errorMessage = thrownErr.message;
+    TelemetryUtils.sendErrorEvent(Telemetry.stage.scaffold, errorCode, errorType, errorMessage);
+    return thrownErr;
   }
 
   private async scaffoldInComponent(
@@ -135,10 +207,26 @@ export class ApiConnectorImpl {
     componentItem: string,
     config: ApiConnectorConfiguration,
     languageType: string
-  ) {
-    await this.scaffoldEnvFileToComponent(projectPath, config, componentItem);
-    await this.scaffoldSampleCodeToComponent(projectPath, config, componentItem, languageType);
-    await this.addSDKDependency(projectPath, componentItem);
+  ): Promise<FileChange[]> {
+    const updatedPackageFile = await this.addSDKDependency(projectPath, componentItem);
+    const updatedEnvFile = await this.scaffoldEnvFileToComponent(
+      projectPath,
+      config,
+      componentItem
+    );
+    const generatedSampleFile = await this.scaffoldSampleCodeToComponent(
+      projectPath,
+      config,
+      componentItem,
+      languageType
+    );
+
+    const fileChanges: FileChange[] = [updatedEnvFile, generatedSampleFile];
+    if (updatedPackageFile) {
+      // if we didn't update package.json, the result will be undefined
+      fileChanges.push(updatedPackageFile);
+    }
+    return fileChanges;
   }
 
   private async backupExistingFiles(folderPath: string, backupFolder: string) {
@@ -190,7 +278,7 @@ export class ApiConnectorImpl {
           checkInputEmpty(
             inputs,
             Constants.questionKey.apiAppTenentId,
-            Constants.questionKey.apiAppTenentId
+            Constants.questionKey.apiAppId
           );
           AADConfig.TenantId = inputs[Constants.questionKey.apiAppTenentId];
           AADConfig.ClientId = inputs[Constants.questionKey.apiAppId];
@@ -234,7 +322,7 @@ export class ApiConnectorImpl {
     );
     const authConfig = this.getAuthConfigFromInputs(inputs);
     const config: ApiConnectorConfiguration = {
-      ComponentPath: inputs[Constants.questionKey.componentsSelect],
+      ComponentType: inputs[Constants.questionKey.componentsSelect],
       APIName: inputs[Constants.questionKey.apiName],
       AuthConfig: authConfig,
       EndPoint: inputs[Constants.questionKey.endpoint],
@@ -246,11 +334,10 @@ export class ApiConnectorImpl {
     projectPath: string,
     config: ApiConnectorConfiguration,
     component: string
-  ): Promise<ApiConnectorResult> {
+  ): Promise<FileChange> {
     const envHander = new EnvHandler(projectPath, component);
     envHander.updateEnvs(config);
-    await envHander.saveLocalEnvFile();
-    return ResultFactory.Success();
+    return await envHander.saveLocalEnvFile();
   }
 
   private async scaffoldSampleCodeToComponent(
@@ -258,56 +345,20 @@ export class ApiConnectorImpl {
     config: ApiConnectorConfiguration,
     component: string,
     languageType: string
-  ): Promise<ApiConnectorResult> {
+  ): Promise<FileChange> {
     const sampleHandler = new SampleHandler(projectPath, languageType, component);
-    await sampleHandler.generateSampleCode(config);
-    return ResultFactory.Success();
+    return await sampleHandler.generateSampleCode(config);
   }
 
   private async addSDKDependency(
     projectPath: string,
     component: string
-  ): Promise<ApiConnectorResult> {
+  ): Promise<FileChange | undefined> {
     const depsHandler: DepsHandler = new DepsHandler(projectPath, component);
     return await depsHandler.addPkgDeps();
   }
 
-  private getNotificationMsg(config: ApiConnectorConfiguration, languageType: string): string {
-    const authType: AuthType = config.AuthConfig.AuthType;
-    const apiName: string = config.APIName;
-    let retMsg: string = Notification.GetBasicString(apiName, config.ComponentPath, languageType);
-    switch (authType) {
-      case AuthType.BASIC: {
-        retMsg += Notification.GetBasicAuthString(apiName, config.ComponentPath);
-        break;
-      }
-      case AuthType.APIKEY: {
-        retMsg += Notification.GetApiKeyAuthString(apiName, config.ComponentPath);
-        break;
-      }
-      case AuthType.AAD: {
-        if ((config.AuthConfig as AADAuthConfig).ReuseTeamsApp) {
-          retMsg += Notification.GetReuseAADAuthString(apiName);
-        } else {
-          retMsg += Notification.GetGenAADAuthString(apiName, config.ComponentPath);
-        }
-        break;
-      }
-      case AuthType.CERT: {
-        retMsg += Notification.GetCertAuthString(apiName, config.ComponentPath);
-        break;
-      }
-      case AuthType.CUSTOM: {
-        retMsg = Notification.GetCustomAuthString(apiName, config.ComponentPath, languageType);
-        break;
-      }
-    }
-    retMsg += `${Notification.GetNpmInstallString()}`;
-    retMsg += `${Notification.GetLinkNotification()}`;
-    return retMsg;
-  }
-
-  public async generateQuestion(ctx: Context, inputs: Inputs): Promise<QesutionResult> {
+  public async generateQuestion(ctx: Context, inputs: Inputs): Promise<QuestionResult> {
     const componentOptions = [];
     if (inputs.platform === Platform.CLI_HELP) {
       componentOptions.push(botOption);
@@ -345,7 +396,7 @@ export class ApiConnectorImpl {
       placeholder: getLocalizedString("plugins.apiConnector.whichService.placeholder"), // Use the placeholder to display some description
     });
     const apiNameQuestion = new ApiNameQuestion(ctx);
-    const whichAuthType = this.buildAuthTypeQuestion(ctx);
+    const whichAuthType = this.buildAuthTypeQuestion(ctx, inputs);
     const question = new QTreeNode({
       type: "group",
     });
@@ -357,7 +408,7 @@ export class ApiConnectorImpl {
     return ok(question);
   }
 
-  public buildAuthTypeQuestion(ctx: Context): QTreeNode {
+  public buildAuthTypeQuestion(ctx: Context, inputs: Inputs): QTreeNode {
     const whichAuthType = new QTreeNode({
       name: Constants.questionKey.apiType,
       type: "singleSelect",
@@ -371,7 +422,7 @@ export class ApiConnectorImpl {
       title: getLocalizedString("plugins.apiConnector.whichAuthType.title"),
       placeholder: getLocalizedString("plugins.apiConnector.whichAuthType.placeholder"), // Use the placeholder to display some description
     });
-    whichAuthType.addChild(this.buildAADAuthQuestion(ctx));
+    whichAuthType.addChild(this.buildAADAuthQuestion(ctx, inputs));
     whichAuthType.addChild(this.buildBasicAuthQuestion());
     whichAuthType.addChild(this.buildAPIKeyAuthQuestion());
     return whichAuthType;
@@ -383,10 +434,10 @@ export class ApiConnectorImpl {
     return node;
   }
 
-  public buildAADAuthQuestion(ctx: Context): QTreeNode {
-    let node: QTreeNode;
+  public buildAADAuthQuestion(ctx: Context, inputs: Inputs): QTreeNode {
     const solutionSettings = getAzureSolutionSettings(ctx)!;
-    if (isAADEnabled(solutionSettings)) {
+    let node: QTreeNode;
+    if (isAADEnabled(solutionSettings) || inputs.platform === Platform.CLI_HELP) {
       node = new QTreeNode({
         name: Constants.questionKey.apiAppType,
         type: "singleSelect",
@@ -415,18 +466,32 @@ export class ApiConnectorImpl {
     });
     node.condition = { equals: APIKeyAuthOption.id };
 
-    const headerKeyNameQuestionNode = new QTreeNode(
-      buildAPIKeyNameQuestion(getLocalizedString("plugins.apiConnector.requestHeaderOption.title"))
-    );
-    headerKeyNameQuestionNode.condition = { equals: requestHeaderOption.id };
+    const keyNameQuestionNode = new QTreeNode(buildAPIKeyNameQuestion());
 
-    const queryKeyNameQuestionNode = new QTreeNode(
-      buildAPIKeyNameQuestion(getLocalizedString("plugins.apiConnector.queryParamsOption.title"))
-    );
-    queryKeyNameQuestionNode.condition = { equals: queryParamsOption.id };
-
-    node.addChild(headerKeyNameQuestionNode);
-    node.addChild(queryKeyNameQuestionNode);
+    node.addChild(keyNameQuestionNode);
     return node;
+  }
+
+  public getTelemetryProperties(config: ApiConnectorConfiguration): { [key: string]: string } {
+    const properties = {
+      [Telemetry.properties.authType]: config.AuthConfig.AuthType.toString(),
+      [Telemetry.properties.componentType]: config.ComponentType.join(","),
+    };
+
+    switch (config.AuthConfig.AuthType) {
+      case AuthType.AAD:
+        const aadAuthConfig = config.AuthConfig as AADAuthConfig;
+        properties[Telemetry.properties.reuseTeamsApp] = aadAuthConfig.ReuseTeamsApp
+          ? Telemetry.valueYes
+          : Telemetry.valueNo;
+        break;
+      case AuthType.APIKEY:
+        const authConfig = config.AuthConfig as APIKeyAuthConfig;
+        properties[Telemetry.properties.keyLocation] = authConfig.Location;
+        break;
+      default:
+        break;
+    }
+    return properties;
   }
 }

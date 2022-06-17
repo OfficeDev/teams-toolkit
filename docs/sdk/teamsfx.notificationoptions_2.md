@@ -4,9 +4,6 @@
 
 ## NotificationOptions\_2 interface
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Options to initialize [NotificationBot](./teamsfx.notificationbot.md)<!-- -->.
 
 <b>Signature:</b>
@@ -19,5 +16,5 @@ export interface NotificationOptions
 
 |  Property | Type | Description |
 |  --- | --- | --- |
-|  [storage?](./teamsfx.notificationoptions_2.storage.md) | [NotificationTargetStorage](./teamsfx.notificationtargetstorage.md) | <b><i>(BETA)</i></b> <i>(Optional)</i> An optional storage to persist bot notification connections. |
+|  [storage?](./teamsfx.notificationoptions_2.storage.md) | [NotificationTargetStorage](./teamsfx.notificationtargetstorage.md) | <i>(Optional)</i> An optional storage to persist bot notification connections. |
 

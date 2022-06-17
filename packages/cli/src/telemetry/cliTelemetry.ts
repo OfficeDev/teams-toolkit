@@ -11,7 +11,7 @@ import {
 } from "./cliTelemetryEvents";
 import { FxError, Inputs, UserError } from "@microsoft/teamsfx-api";
 import { getHashedEnv } from "@microsoft/teamsfx-core";
-import { getSettingsVersion, getTeamsAppTelemetryInfoByEnv } from "../utils";
+import { getIsM365, getSettingsVersion, getTeamsAppTelemetryInfoByEnv } from "../utils";
 
 export function makeEnvRelatedProperty(
   projectDir: string,
@@ -34,6 +34,7 @@ export class CliTelemetry {
   private static instance: CliTelemetry;
   private static reporter: CliTelemetryReporter;
   private static rootFolder: string | undefined;
+  private static isFromSample: boolean | undefined = undefined;
 
   public static setReporter(reporter: CliTelemetryReporter): void {
     CliTelemetry.reporter = reporter;
@@ -41,6 +42,10 @@ export class CliTelemetry {
 
   public static getReporter(): CliTelemetryReporter {
     return CliTelemetry.reporter;
+  }
+
+  public static setIsFromSample(isFromSample?: boolean) {
+    CliTelemetry.isFromSample = isFromSample;
   }
 
   public static getInstance(): CliTelemetry {
@@ -69,9 +74,18 @@ export class CliTelemetry {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
 
+    if (CliTelemetry.isFromSample !== undefined) {
+      properties[TelemetryProperty.IsFromSample] = CliTelemetry.isFromSample.toString();
+    }
+
     const settingsVersion = getSettingsVersion(CliTelemetry.rootFolder);
     if (settingsVersion !== undefined) {
       properties[TelemetryProperty.SettingsVersion] = settingsVersion;
+    }
+
+    const isM365 = getIsM365(CliTelemetry.rootFolder);
+    if (isM365 !== undefined) {
+      properties[TelemetryProperty.IsM365] = isM365;
     }
 
     CliTelemetry.reporter
@@ -94,9 +108,18 @@ export class CliTelemetry {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
 
+    if (CliTelemetry.isFromSample !== undefined) {
+      properties[TelemetryProperty.IsFromSample] = CliTelemetry.isFromSample.toString();
+    }
+
     const settingsVersion = getSettingsVersion(CliTelemetry.rootFolder);
     if (settingsVersion !== undefined) {
       properties[TelemetryProperty.SettingsVersion] = settingsVersion;
+    }
+
+    const isM365 = getIsM365(CliTelemetry.rootFolder);
+    if (isM365 !== undefined) {
+      properties[TelemetryProperty.IsM365] = isM365;
     }
 
     properties[TelemetryProperty.Success] = TelemetrySuccess.No;
@@ -127,9 +150,18 @@ export class CliTelemetry {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
 
+    if (CliTelemetry.isFromSample !== undefined) {
+      properties[TelemetryProperty.IsFromSample] = CliTelemetry.isFromSample.toString();
+    }
+
     const settingsVersion = getSettingsVersion(CliTelemetry.rootFolder);
     if (settingsVersion !== undefined) {
       properties[TelemetryProperty.SettingsVersion] = settingsVersion;
+    }
+
+    const isM365 = getIsM365(CliTelemetry.rootFolder);
+    if (isM365 !== undefined) {
+      properties[TelemetryProperty.IsM365] = isM365;
     }
 
     CliTelemetry.reporter

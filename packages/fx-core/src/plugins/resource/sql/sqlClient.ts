@@ -102,7 +102,10 @@ export class SqlClient {
         );
         const e = SqlResultFactory.UserError(
           ErrorMessage.DatabaseUserCreateError.name,
-          [errorMessage[0], errorMessage[1] + `. ${ErrorMessage.DomainError}`],
+          [
+            errorMessage[0] + `. ${ErrorMessage.DomainError}`,
+            errorMessage[1] + `. ${ErrorMessage.DomainError}`,
+          ],
           error,
           undefined,
           link
@@ -121,7 +124,7 @@ export class SqlClient {
           undefined,
           link
         );
-        e.message += ` ${ErrorMessage.LinkHelpMessage(link)}`;
+        e.message += `Reason: ${error.message}. ${ErrorMessage.LinkHelpMessage(link)}`;
         throw e;
       }
     }

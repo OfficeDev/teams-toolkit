@@ -15,10 +15,9 @@ pipeline {
         M365_ACCOUNT_NAME = credentials('M365_ACCOUNT_NAME')
         M365_ACCOUNT_PASSWORD = credentials('M365_ACCOUNT_PASSWORD')
         M365_TENANT_ID = credentials('M365_TENANT_ID')
-        // To enable M365 account login by non-interactive mode. 
-        CI_ENABLED = 'true'
 <%/hosting_type_contains_spfx%>
-
+        // To enable M365 account login by environment variables and non-interactive mode. 
+        CI_ENABLED = 'true'
         // To specify the env name for multi-env feature.
         TEAMSFX_ENV_NAME = '<%env_name%>'
     }

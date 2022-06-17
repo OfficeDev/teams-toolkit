@@ -11,7 +11,6 @@ import {
   ResourcePlugins,
 } from "../../util";
 import { TeamsBot } from "../../../../../src";
-import * as tools from "../../../../../src/common/tools";
 import * as featureFlags from "../../../../../src/common/featureFlags";
 import * as projectSettingsHelper from "../../../../../../fx-core/src/common/projectSettingsHelper";
 import * as testUtils from "./utils";
@@ -36,7 +35,7 @@ describe("Bot Generates Arm Templates", () => {
   });
 
   it("generate bicep arm templates: without key vault plugin", async () => {
-    sinon.stub(tools, "isBotNotificationEnabled").returns(false);
+    sinon.stub(featureFlags, "isBotNotificationEnabled").returns(false);
     const activeResourcePlugins = [
       ResourcePlugins.Aad,
       ResourcePlugins.Bot,
@@ -53,7 +52,7 @@ describe("Bot Generates Arm Templates", () => {
   });
 
   it("generate bicep arm templates: with key vault plugin", async () => {
-    sinon.stub(tools, "isBotNotificationEnabled").returns(false);
+    sinon.stub(featureFlags, "isBotNotificationEnabled").returns(false);
     const activeResourcePlugins = [
       ResourcePlugins.Aad,
       ResourcePlugins.Bot,
@@ -86,7 +85,7 @@ describe("Bot Generates Arm Templates", () => {
   });
 
   it("generate bicep arm tempalte: withoud aad plugin", async () => {
-    sinon.stub(tools, "isBotNotificationEnabled").returns(false);
+    sinon.stub(featureFlags, "isBotNotificationEnabled").returns(false);
     const activeResourcePlugins = [ResourcePlugins.Bot, ResourcePlugins.Identity];
     const settings: AzureSolutionSettings = {
       hostType: HostTypeOptionAzure.id,
@@ -185,7 +184,7 @@ describe("Bot Generates Arm Templates", () => {
   }
 
   it("Update bicep arm templates", async () => {
-    sinon.stub(tools, "isBotNotificationEnabled").returns(false);
+    sinon.stub(featureFlags, "isBotNotificationEnabled").returns(false);
     // Arrange
     const activeResourcePlugins = [
       ResourcePlugins.Aad,
@@ -261,7 +260,7 @@ describe("Bot Generates Arm Templates", () => {
   });
 
   it("Generate Arm Template in .NET scenario", async () => {
-    sinon.stub(tools, "isBotNotificationEnabled").returns(false);
+    sinon.stub(featureFlags, "isBotNotificationEnabled").returns(false);
     sinon.stub(projectSettingsHelper, <any>"isVSProject").returns(true);
     const activeResourcePlugins = [
       ResourcePlugins.Aad,
@@ -327,7 +326,7 @@ describe("Bot Generates Arm Templates", () => {
   });
 
   it("Generate Arm Template in func hosted scenario", async () => {
-    sinon.stub(tools, "isBotNotificationEnabled").returns(true);
+    sinon.stub(featureFlags, "isBotNotificationEnabled").returns(true);
     const activeResourcePlugins = [ResourcePlugins.Bot, ResourcePlugins.Identity];
     const settings: AzureSolutionSettings = {
       hostType: HostTypeOptionAzure.id,

@@ -38,7 +38,6 @@ import {
   provisionLocalResourceAdapter,
   configureLocalResourceAdapter,
 } from "../../utils4v2";
-import { TabLanguage } from "../resources/templateInfo";
 
 @Service(ResourcePluginsV2.FrontendPlugin)
 export class FrontendPluginV2 implements ResourcePlugin {
@@ -48,9 +47,8 @@ export class FrontendPluginV2 implements ResourcePlugin {
   plugin!: FrontendPlugin;
 
   activate(projectSettings: ProjectSettings): boolean {
-    const activateInVS = projectSettings.programmingLanguage === TabLanguage.CSharp;
     const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
-    return activateInVS || this.plugin.activate(solutionSettings);
+    return this.plugin.activate(solutionSettings);
   }
 
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {

@@ -1,12 +1,18 @@
 import { default as axios } from "axios";
 import * as querystring from "querystring";
-import { TeamsActivityHandler, CardFactory, TurnContext, AdaptiveCardInvokeValue, AdaptiveCardInvokeResponse} from "botbuilder";
-import rawWelcomeCard from "./adaptiveCards/welcome.json"
-import rawLearnCard from "./adaptiveCards/learn.json"
+import {
+  TeamsActivityHandler,
+  CardFactory,
+  TurnContext,
+  AdaptiveCardInvokeValue,
+  AdaptiveCardInvokeResponse,
+} from "botbuilder";
+import rawWelcomeCard from "./adaptiveCards/welcome.json";
+import rawLearnCard from "./adaptiveCards/learn.json";
 import { AdaptiveCards } from "@microsoft/adaptivecards-tools";
 
 export interface DataInterface {
-  likeCount: number
+  likeCount: number;
 }
 
 export class TeamsBot extends TeamsActivityHandler {
@@ -22,9 +28,7 @@ export class TeamsBot extends TeamsActivityHandler {
       console.log("Running with Message Activity.");
 
       let txt = context.activity.text;
-      const removedMentionText = TurnContext.removeRecipientMention(
-        context.activity
-      );
+      const removedMentionText = TurnContext.removeRecipientMention(context.activity);
       if (removedMentionText) {
         // Remove the line break
         txt = removedMentionText.toLowerCase().replace(/\n|\r/g, "").trim();
@@ -87,7 +91,7 @@ export class TeamsBot extends TeamsActivityHandler {
     }
   }
 
-  // Messaging extension Code
+  // Message extension Code
   // Action.
   public async handleTeamsMessagingExtensionSubmitAction(
     context: TurnContext,
@@ -196,7 +200,7 @@ async function shareMessageCommand(context: TurnContext, action: any): Promise<a
     userName = action.messagePayload.from.user.displayName;
   }
 
-  // This Messaging Extension example allows the user to check a box to include an image with the
+  // This Message Extension example allows the user to check a box to include an image with the
   // shared message.  This demonstrates sending custom parameters along with the message payload.
   let images = [];
   const includeImage = action.data.includeImage;

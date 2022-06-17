@@ -31,12 +31,12 @@ describe("Add capabilities", function () {
     await cleanUp(appName, projectPath, true, true, false);
   });
 
-  it("tab project can add messaging extension capability and provision", async () => {
+  it("tab project can add message extension capability and provision", async () => {
     // Arrange
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
 
     // Act
-    await CliHelper.addCapabilityToProject(projectPath, Capability.MessagingExtension);
+    await CliHelper.addCapabilityToProject(projectPath, Capability.MessageExtension);
 
     await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
     await setBotSkuNameToB1Bicep(projectPath, env);

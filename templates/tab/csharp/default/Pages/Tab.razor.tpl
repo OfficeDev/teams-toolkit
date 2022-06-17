@@ -1,6 +1,6 @@
 ﻿@page "/"
 @page "/tab"
-@using {{BlazorAppServer}}.Components;
+@using {{ProjectName}}.Components;
 
 <div>
     <Welcome />

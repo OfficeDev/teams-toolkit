@@ -13,10 +13,10 @@ describe("CheckboxPrompt Tests", function () {
   const sandbox = sinon.createSandbox();
   const question: Question = {
     choices: [
-      { name: "a", extra: { detail: "aaa" } },
+      { name: "a", extra: { title: "aa", detail: "aaa" } },
       { type: "separator" },
-      { name: "c", disabled: true },
-      { name: "d", extra: { detail: "ddd" } },
+      { name: "c", disabled: true, extra: { title: "cc" } },
+      { name: "d", extra: { title: "dd", detail: "ddd" } },
     ],
     name: "question",
   };
@@ -50,8 +50,8 @@ describe("CheckboxPrompt Tests", function () {
     const rl = sinon.createStubInstance(Interface);
     const prompt = new CheckboxPrompt(question, rl as any, {});
     prompt.status = "answered";
-    prompt["selection"] = ["selected"];
+    prompt["selection"] = ["d"];
     prompt.render();
-    expect(content).includes(chalk.cyan("selected"));
+    expect(content).includes(chalk.cyan("dd"));
   });
 });

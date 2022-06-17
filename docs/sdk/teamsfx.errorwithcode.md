@@ -4,9 +4,6 @@
 
 ## ErrorWithCode class
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Error class with code and message thrown by the SDK.
 
 <b>Signature:</b>
@@ -20,11 +17,11 @@ export declare class ErrorWithCode extends Error
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(message, code)](./teamsfx.errorwithcode._constructor_.md) |  | <b><i>(BETA)</i></b> Constructor of ErrorWithCode. |
+|  [(constructor)(message, code)](./teamsfx.errorwithcode._constructor_.md) |  | Constructor of ErrorWithCode. |
 
 ## Properties
 
 |  Property | Modifiers | Type | Description |
 |  --- | --- | --- | --- |
-|  [code](./teamsfx.errorwithcode.code.md) |  | string \| undefined | <b><i>(BETA)</i></b> Error code |
+|  [code](./teamsfx.errorwithcode.code.md) |  | string \| undefined | Error code |
 

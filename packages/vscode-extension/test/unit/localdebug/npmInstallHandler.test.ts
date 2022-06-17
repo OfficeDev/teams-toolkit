@@ -11,7 +11,7 @@ import { LocalEnvManager } from "@microsoft/teamsfx-core";
 
 import * as commonUtils from "../../../src/utils/commonUtils";
 import * as extension from "../../../src/extension";
-import { ext } from "../../../src/extensionVariables";
+import * as globalVariables from "../../../src/globalVariables";
 import * as teamsfxTaskHandler from "../../../src/debug/teamsfxTaskHandler";
 import { automaticNpmInstallHandler } from "../../../src/debug/npmInstallHandler";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
@@ -23,7 +23,7 @@ suite("npmInstallHandler", () => {
       name: "test",
       index: 0,
     };
-    ext.workspaceUri = workspaceFolder.uri;
+    sinon.stub(globalVariables, "workspaceUri").value(workspaceFolder.uri);
     let state: any;
     const solutionSettings: AzureSolutionSettings = {
       name: "fx-solution-azure",
@@ -83,8 +83,8 @@ suite("npmInstallHandler", () => {
       sinon.assert.calledOnce(globalStateGetStub);
       sinon.assert.calledOnce(globalStateUpdateStub);
       chai.expect(state).false;
-      chai.expect(showMessageCalledCount).equals(1);
-      sinon.assert.calledOnce(runTaskStub);
+      chai.expect(showMessageCalledCount).equals(0);
+      sinon.assert.notCalled(runTaskStub);
     });
 
     test("Create Tab", async () => {
@@ -94,8 +94,8 @@ suite("npmInstallHandler", () => {
       sinon.assert.calledOnce(globalStateGetStub);
       sinon.assert.calledOnce(globalStateUpdateStub);
       chai.expect(state).false;
-      chai.expect(showMessageCalledCount).equals(1);
-      sinon.assert.calledOnce(runTaskStub);
+      chai.expect(showMessageCalledCount).equals(0);
+      sinon.assert.notCalled(runTaskStub);
     });
 
     test("Create Bot", async () => {
@@ -105,8 +105,8 @@ suite("npmInstallHandler", () => {
       sinon.assert.calledOnce(globalStateGetStub);
       sinon.assert.calledOnce(globalStateUpdateStub);
       chai.expect(state).false;
-      chai.expect(showMessageCalledCount).equals(1);
-      sinon.assert.calledOnce(runTaskStub);
+      chai.expect(showMessageCalledCount).equals(0);
+      sinon.assert.notCalled(runTaskStub);
     });
 
     test("Create Message extension", async () => {
@@ -116,8 +116,8 @@ suite("npmInstallHandler", () => {
       sinon.assert.calledOnce(globalStateGetStub);
       sinon.assert.calledOnce(globalStateUpdateStub);
       chai.expect(state).false;
-      chai.expect(showMessageCalledCount).equals(1);
-      sinon.assert.calledOnce(runTaskStub);
+      chai.expect(showMessageCalledCount).equals(0);
+      sinon.assert.notCalled(runTaskStub);
     });
 
     test("Create Tab + Bot", async () => {
@@ -127,8 +127,8 @@ suite("npmInstallHandler", () => {
       sinon.assert.calledOnce(globalStateGetStub);
       sinon.assert.calledOnce(globalStateUpdateStub);
       chai.expect(state).false;
-      chai.expect(showMessageCalledCount).equals(1);
-      sinon.assert.calledTwice(runTaskStub);
+      chai.expect(showMessageCalledCount).equals(0);
+      sinon.assert.notCalled(runTaskStub);
     });
 
     test("Create Tab + Message extension", async () => {
@@ -138,8 +138,8 @@ suite("npmInstallHandler", () => {
       sinon.assert.calledOnce(globalStateGetStub);
       sinon.assert.calledOnce(globalStateUpdateStub);
       chai.expect(state).false;
-      chai.expect(showMessageCalledCount).equals(1);
-      sinon.assert.calledTwice(runTaskStub);
+      chai.expect(showMessageCalledCount).equals(0);
+      sinon.assert.notCalled(runTaskStub);
     });
 
     test("Create Tab + Bot + Message extension", async () => {
@@ -149,8 +149,8 @@ suite("npmInstallHandler", () => {
       sinon.assert.calledOnce(globalStateGetStub);
       sinon.assert.calledOnce(globalStateUpdateStub);
       chai.expect(state).false;
-      chai.expect(showMessageCalledCount).equals(1);
-      sinon.assert.calledTwice(runTaskStub);
+      chai.expect(showMessageCalledCount).equals(0);
+      sinon.assert.notCalled(runTaskStub);
     });
 
     test("Tab add Function", async () => {
@@ -161,8 +161,8 @@ suite("npmInstallHandler", () => {
       sinon.assert.calledOnce(globalStateGetStub);
       sinon.assert.calledOnce(globalStateUpdateStub);
       chai.expect(state).false;
-      chai.expect(showMessageCalledCount).equals(1);
-      sinon.assert.calledOnce(runTaskStub);
+      chai.expect(showMessageCalledCount).equals(0);
+      sinon.assert.notCalled(runTaskStub);
     });
 
     test("Bot add Function", async () => {
@@ -173,8 +173,8 @@ suite("npmInstallHandler", () => {
       sinon.assert.calledOnce(globalStateGetStub);
       sinon.assert.calledOnce(globalStateUpdateStub);
       chai.expect(state).false;
-      chai.expect(showMessageCalledCount).equals(1);
-      sinon.assert.calledOnce(runTaskStub);
+      chai.expect(showMessageCalledCount).equals(0);
+      sinon.assert.notCalled(runTaskStub);
     });
 
     test("Message extension add Function", async () => {
@@ -185,8 +185,8 @@ suite("npmInstallHandler", () => {
       sinon.assert.calledOnce(globalStateGetStub);
       sinon.assert.calledOnce(globalStateUpdateStub);
       chai.expect(state).false;
-      chai.expect(showMessageCalledCount).equals(1);
-      sinon.assert.calledOnce(runTaskStub);
+      chai.expect(showMessageCalledCount).equals(0);
+      sinon.assert.notCalled(runTaskStub);
     });
 
     test("Tab + Bot add Function", async () => {
@@ -197,8 +197,8 @@ suite("npmInstallHandler", () => {
       sinon.assert.calledOnce(globalStateGetStub);
       sinon.assert.calledOnce(globalStateUpdateStub);
       chai.expect(state).false;
-      chai.expect(showMessageCalledCount).equals(1);
-      sinon.assert.calledOnce(runTaskStub);
+      chai.expect(showMessageCalledCount).equals(0);
+      sinon.assert.notCalled(runTaskStub);
     });
 
     test("Tab + Function add Function", async () => {
@@ -220,8 +220,8 @@ suite("npmInstallHandler", () => {
       sinon.assert.calledOnce(globalStateGetStub);
       sinon.assert.calledOnce(globalStateUpdateStub);
       chai.expect(state).false;
-      chai.expect(showMessageCalledCount).equals(1);
-      sinon.assert.calledOnce(runTaskStub);
+      chai.expect(showMessageCalledCount).equals(0);
+      sinon.assert.notCalled(runTaskStub);
     });
 
     test("Bot add Tab", async () => {
@@ -231,8 +231,8 @@ suite("npmInstallHandler", () => {
       sinon.assert.calledOnce(globalStateGetStub);
       sinon.assert.calledOnce(globalStateUpdateStub);
       chai.expect(state).false;
-      chai.expect(showMessageCalledCount).equals(1);
-      sinon.assert.calledOnce(runTaskStub);
+      chai.expect(showMessageCalledCount).equals(0);
+      sinon.assert.notCalled(runTaskStub);
     });
   });
 });

@@ -205,14 +205,13 @@ Use `axios` library to make HTTP request to Azure Function.
 
 ```ts
 const teamsfx = new TeamsFx();
-const token = teamsfx.getCredential().getToken(""); // Get SSO token for the user
+const credential = teamsfx.getCredential();
+// Create an API client that uses SSO token to authenticate requests
+const apiClient = createApiClient(
+  teamsfx.getConfig("apiEndpoint"),
+  new BearerTokenAuthProvider(async ()=> (await credential.getToken(""))!.token));
 // Call API hosted in Azure Functions on behalf of user
-const apiEndpoint = teamsfx.getConfig("apiEndpoint");
-const response = await axios.default.get(apiEndpoint + "api/httptrigger1", {
-  headers: {
-    authorization: "Bearer " + token,
-  },
-});
+const response = await apiClient.get("/api/" + functionName);
 ```
 
 ### Access SQL database in Azure Function
@@ -285,6 +284,27 @@ dialogs.add(
     },
   ])
 );
+```
+
+### Create API client to call existing API in Bot / Azure Function
+
+```ts
+const teamsfx = new TeamsFx();
+
+// Create an API Key auth provider. Following auth providers are also available:
+// BearerTokenAuthProvider, BasicAuthProvider, CertificateAuthProvider
+const authProvider = new ApiKeyProvider("your_api_key_name", 
+  teamsfx.getConfig("YOUR_API_KEY_VALUE"), // This reads the value of YOUR_API_KEY_VALUE environment variable
+  ApiKeyLocation.Header);
+
+// Create an API client using above auth provider
+// You can also implement AuthProvider interface and use it here
+const apiClient = createApiClient(
+  teamsfx.getConfig("YOUR_API_ENDPOINT"), // This reads YOUR_API_ENDPOINT environment variable
+  authProvider);
+
+// Send a GET request to "relative_api_path"
+const response = await apiClient.get("relative_api_path");
 ```
 
 ## Advanced Customization

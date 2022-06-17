@@ -3,7 +3,7 @@ import {
   Colors,
   err,
   FxError,
-  GraphTokenProvider,
+  M365TokenProvider,
   ok,
   Platform,
   PluginContext,
@@ -21,7 +21,7 @@ import {
   UserError,
 } from "@microsoft/teamsfx-api";
 import { CollaborationState, PermissionsResult, ResourcePermission } from "../../../../common";
-import { IUserList } from "../../../resource/appstudio/interfaces/IAppDefinition";
+import { AppUser } from "../../../resource/appstudio/interfaces/appUser";
 import {
   PluginNames,
   REMOTE_TEAMS_APP_TENANT_ID,
@@ -45,7 +45,7 @@ import { getDefaultString, getLocalizedString } from "../../../../common/localiz
 
 async function executeCheckPermissionV1(
   ctx: SolutionContext,
-  userInfo: IUserList
+  userInfo: AppUser
 ): Promise<[ResourcePermission[], Err<any, FxError>[]]> {
   const plugins = getActivatedResourcePlugins(
     ctx.projectSettings?.solutionSettings as AzureSolutionSettings
@@ -88,7 +88,7 @@ async function executeCheckPermissionV2(
   inputs: v2.InputsWithProjectPath,
   envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
   tokenProvider: TokenProvider,
-  userInfo: IUserList
+  userInfo: AppUser
 ): Promise<[ResourcePermission[], Err<any, FxError>[]]> {
   const plugins: v2.ResourcePlugin[] = [
     Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin),
@@ -120,7 +120,7 @@ async function checkPermissionImpl(
   envName?: string,
   telemetryReporter?: TelemetryReporter,
   ui?: UserInteraction,
-  graphTokenProvider?: GraphTokenProvider,
+  m365TokenProvider?: M365TokenProvider,
   logProvider?: LogProvider,
   platform?: string
 ): Promise<Result<PermissionsResult, FxError>> {
@@ -128,7 +128,7 @@ async function checkPermissionImpl(
     [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
   });
 
-  const result = await CollaborationUtil.getCurrentUserInfo(graphTokenProvider);
+  const result = await CollaborationUtil.getCurrentUserInfo(m365TokenProvider);
   if (result.isErr()) {
     return err(
       sendErrorTelemetryThenReturnError(
@@ -151,7 +151,7 @@ async function checkPermissionImpl(
     });
   }
 
-  const userInfo = result.value as IUserList;
+  const userInfo = result.value as AppUser;
 
   if (platform === Platform.CLI) {
     const aadAppTenantId = envState.get(PluginNames.SOLUTION)?.get(REMOTE_TEAMS_APP_TENANT_ID);
@@ -276,7 +276,7 @@ export async function checkPermission(
     const envName = param.ctx.envInfo.envName;
     const telemetryReporter = param.ctx.telemetryReporter;
     const ui = param.ctx.ui;
-    const graphTokenProvider = param.ctx.graphTokenProvider;
+    const m365TokenProvider = param.ctx.m365TokenProvider;
     const logProvider = param.ctx.logProvider;
     const platform = param.ctx.answers?.platform;
     return checkPermissionImpl(
@@ -285,7 +285,7 @@ export async function checkPermission(
       envName,
       telemetryReporter,
       ui,
-      graphTokenProvider,
+      m365TokenProvider,
       logProvider,
       platform
     );
@@ -307,7 +307,7 @@ export async function checkPermission(
     const envName = param.envInfo.envName;
     const telemetryReporter = param.ctx.telemetryReporter;
     const ui = param.ctx.userInteraction;
-    const graphTokenProvider = param.tokenProvider.graphTokenProvider;
+    const m365TokenProvider = param.tokenProvider.m365TokenProvider;
     const logProvider = param.ctx.logProvider;
     const platform = param.inputs?.platform;
     return checkPermissionImpl(
@@ -316,7 +316,7 @@ export async function checkPermission(
       envName,
       telemetryReporter,
       ui,
-      graphTokenProvider,
+      m365TokenProvider,
       logProvider,
       platform
     );

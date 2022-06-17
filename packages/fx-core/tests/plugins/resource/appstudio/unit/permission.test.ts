@@ -7,6 +7,7 @@ import sinon from "sinon";
 import { AppStudioPlugin } from "../../../../../src/plugins/resource/appstudio";
 import {
   ConfigMap,
+  ok,
   Platform,
   PluginContext,
   ProjectSettings,
@@ -21,26 +22,25 @@ import {
   PluginNames,
 } from "../../../../../src/plugins/solution/fx-solution/constants";
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
-import { getAzureProjectRoot, MockedAppStudioTokenProvider } from "../helper";
+import { getAzureProjectRoot } from "../helper";
 import { newEnvInfo } from "../../../../../src";
-import { IUserList } from "../../../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
+import { AppUser } from "../../../../../src/plugins/resource/appstudio/interfaces/appUser";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import {
   MockedAzureAccountProvider,
-  MockedSharepointProvider,
+  MockedM365Provider,
   MockedV2Context,
 } from "../../../solution/util";
 import {
   BuiltInFeaturePluginNames,
   BuiltInSolutionNames,
 } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
-import { mockTokenProviderGraph } from "../../aad/helper";
 import * as uuid from "uuid";
 import Container from "typedi";
 import { AadAppForTeamsPluginV3 } from "../../../../../src/plugins/resource/aad/v3";
 import { AppStudioPluginV3 } from "../../../../../src/plugins/resource/appstudio/v3";
 
-const userList: IUserList = {
+const userList: AppUser = {
   tenantId: faker.datatype.uuid(),
   aadId: faker.datatype.uuid(),
   displayName: "displayName",
@@ -68,9 +68,7 @@ describe("Remote Collaboration", () => {
   const ctxV2 = new MockedV2Context(projectSettings);
   const tokenProvider: TokenProvider = {
     azureAccountProvider: new MockedAzureAccountProvider(),
-    appStudioToken: new MockedAppStudioTokenProvider(),
-    graphTokenProvider: mockTokenProviderGraph(),
-    sharepointTokenProvider: new MockedSharepointProvider(),
+    m365TokenProvider: new MockedM365Provider(),
   };
   beforeEach(async () => {
     plugin = new AppStudioPlugin();
@@ -89,7 +87,7 @@ describe("Remote Collaboration", () => {
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       answers: { platform: Platform.VSCode },
-      appStudioToken: new MockedAppStudioTokenProvider(),
+      m365TokenProvider: new MockedM365Provider(),
       cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
@@ -104,7 +102,7 @@ describe("Remote Collaboration", () => {
     appStudioConfig.set(Constants.TEAMS_APP_ID, appId);
     ctx.envInfo.state.set(PluginNames.APPST, appStudioConfig);
 
-    sandbox.stub(ctx.appStudioToken!, "getAccessToken").resolves("anything");
+    sandbox.stub(ctx.m365TokenProvider!, "getAccessToken").resolves(ok("anything"));
     sandbox.stub(AppStudioClient, "checkPermission").resolves("Administrator");
 
     const checkPermission = await plugin.checkPermission(ctx, userList);
@@ -126,7 +124,7 @@ describe("Remote Collaboration", () => {
       config: {},
     };
     const plugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-    sandbox.stub(tokenProvider.appStudioToken, "getAccessToken").resolves("anything");
+    sandbox.stub(tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("anything"));
     sandbox.stub(AppStudioClient, "checkPermission").resolves("Administrator");
     const inputs: v2.InputsWithProjectPath = {
       platform: Platform.VSCode,
@@ -136,7 +134,7 @@ describe("Remote Collaboration", () => {
       ctxV2,
       inputs,
       envInfo,
-      tokenProvider.appStudioToken,
+      tokenProvider.m365TokenProvider,
       userList
     );
     chai.assert.isTrue(checkPermission.isOk());
@@ -153,7 +151,7 @@ describe("Remote Collaboration", () => {
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       answers: { platform: Platform.VSCode },
-      appStudioToken: new MockedAppStudioTokenProvider(),
+      m365TokenProvider: new MockedM365Provider(),
       cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
@@ -168,7 +166,7 @@ describe("Remote Collaboration", () => {
     appStudioConfig.set(Constants.TEAMS_APP_ID, appId);
     ctx.envInfo.state.set(PluginNames.APPST, appStudioConfig);
 
-    sandbox.stub(ctx.appStudioToken!, "getAccessToken").resolves("anything");
+    sandbox.stub(ctx.m365TokenProvider!, "getAccessToken").resolves(ok("anything"));
     sandbox.stub(AppStudioClient, "grantPermission").resolves();
 
     const grantPermission = await plugin.grantPermission(ctx, userList);
@@ -190,7 +188,7 @@ describe("Remote Collaboration", () => {
       config: {},
     };
     const plugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-    sandbox.stub(ctx.appStudioToken!, "getAccessToken").resolves("anything");
+    sandbox.stub(ctx.m365TokenProvider!, "getAccessToken").resolves(ok("anything"));
     sandbox.stub(AppStudioClient, "grantPermission").resolves();
     const inputs: v2.InputsWithProjectPath = {
       platform: Platform.VSCode,
@@ -200,7 +198,7 @@ describe("Remote Collaboration", () => {
       ctxV2,
       inputs,
       envInfo,
-      tokenProvider.appStudioToken,
+      tokenProvider.m365TokenProvider,
       userList
     );
     chai.assert.isTrue(grantPermission.isOk());
@@ -217,7 +215,7 @@ describe("Remote Collaboration", () => {
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       answers: { platform: Platform.VSCode },
-      appStudioToken: new MockedAppStudioTokenProvider(),
+      m365TokenProvider: new MockedM365Provider(),
       cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
@@ -232,7 +230,7 @@ describe("Remote Collaboration", () => {
     appStudioConfig.set(Constants.TEAMS_APP_ID, appId);
     ctx.envInfo.state.set(PluginNames.APPST, appStudioConfig);
 
-    sandbox.stub(ctx.appStudioToken!, "getAccessToken").resolves("anything");
+    sandbox.stub(ctx.m365TokenProvider!, "getAccessToken").resolves(ok("anything"));
     sandbox.stub(AppStudioClient, "getUserList").resolves([
       {
         aadId: "aadId",
@@ -262,7 +260,7 @@ describe("Remote Collaboration", () => {
       config: {},
     };
     const plugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-    sandbox.stub(ctx.appStudioToken!, "getAccessToken").resolves("anything");
+    sandbox.stub(ctx.m365TokenProvider!, "getAccessToken").resolves(ok("anything"));
     sandbox.stub(AppStudioClient, "getUserList").resolves([
       {
         aadId: "aadId",
@@ -280,7 +278,7 @@ describe("Remote Collaboration", () => {
       ctxV2,
       inputs,
       envInfo,
-      tokenProvider.appStudioToken
+      tokenProvider.m365TokenProvider
     );
     chai.assert.isTrue(listCollaborator.isOk());
     if (listCollaborator.isOk()) {

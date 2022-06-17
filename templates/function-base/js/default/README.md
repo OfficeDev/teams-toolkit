@@ -2,6 +2,8 @@
 
 Azure Functions are a great way to add server-side behaviors to any Teams application.
 
+> After adding function to your project, SSO will also be enabled. You can follow this [document](https://aka.ms/teamsfx-add-sso) to update your tab or bot code to include SSO.
+
 ## Prerequisites
 
 - [NodeJS](https://nodejs.org/en/)
@@ -45,7 +47,7 @@ By default, Teams Toolkit and TeamsFx CLI will provision an Azure function app w
 - Sign in to [Azure Portal](https://azure.microsoft.com/).
 - Find your application's resource group and Azure Function app resource. The resource group name and the Azure function app name are stored in your project configuration file `.fx/env.*.json`. You can find them by searching the key `resourceGroupName` and `functionAppName` in that file.
 - After enter the home page of the Azure function app, you can find a navigation item called `Configuration` under `settings` group.
-- Click `Configuration`, you would see a list of settings. Then click `WEBSITE_NODE_DEFAULT_VERSION` and update the value to `~10`, `~12` or `~14` according to your requirement.
+- Click `Configuration`, you would see a list of settings. Then click `WEBSITE_NODE_DEFAULT_VERSION` and update the value to `~14` or `~16` according to your requirement.
 - After Click `OK` button, don't forget to click `Save` button on the top of the page.
 
 Then following requests sent to the Azure function app will be handled by new node runtime version.
@@ -57,11 +59,10 @@ Then following requests sent to the Azure function app will be handled by new no
 
 ## Edit the manifest
 
-You can find the Teams app manifest in `templates/appPackage` folder. The folder contains two manifest files:
-* `manifest.local.template.json`: Manifest file for Teams app running locally.
-* `manifest.remote.template.json`: Manifest file for Teams app running remotely (After deployed to Azure).
+You can find the Teams app manifest in `templates/appPackage` folder. The folder contains one manifest file:
+* `manifest.template.json`: Manifest file for Teams app running locally or running remotely (After deployed to Azure).
 
-Both files contain template arguments with `{...}` statements which will be replaced at build time. You may add any extra properties or permissions you require to this file. See the [schema reference](https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema) for more information.
+This file contains template arguments with `{...}` statements which will be replaced at build time. You may add any extra properties or permissions you require to this file. See the [schema reference](https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema) for more information.
 
 ## Deploy to Azure
 

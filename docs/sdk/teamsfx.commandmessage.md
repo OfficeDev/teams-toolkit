@@ -4,7 +4,7 @@
 
 ## CommandMessage interface
 
-Interface for a command messagge that can handled in a command handler.
+Interface for a command message that can handled in a command handler.
 
 <b>Signature:</b>
 

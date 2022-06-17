@@ -4,9 +4,6 @@
 
 ## AuthenticationConfiguration.clientSecret property
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Secret string that the application uses when requesting a token. Only used in confidential client applications. Can be created in the Azure app registration portal. Default value comes from M365\_CLIENT\_SECRET environment variable
 
 <b>Signature:</b>

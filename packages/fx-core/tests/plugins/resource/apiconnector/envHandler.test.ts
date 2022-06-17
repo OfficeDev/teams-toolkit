@@ -18,6 +18,7 @@ import {
   BasicAuthConfig,
 } from "../../../../src/plugins/resource/apiconnector/config";
 import { LocalEnvProvider, LocalEnvs } from "../../../../src/common/local/localEnvProvider";
+import { UserError } from "@microsoft/teamsfx-api";
 
 describe("EnvHandler", () => {
   const fakeProjectPath = path.join(__dirname, "test-api-connector");
@@ -50,7 +51,7 @@ describe("EnvHandler", () => {
     const service: ComponentType = ComponentType.BOT;
     const envHandler = new EnvHandler(fakeProjectPath, service);
     const fakeConfig: ApiConnectorConfiguration = {
-      ComponentPath: ["bot"],
+      ComponentType: ["bot"],
       APIName: "FAKE",
       EndPoint: "fake_endpoint",
       AuthConfig: {
@@ -63,7 +64,6 @@ describe("EnvHandler", () => {
     await envHandler.saveLocalEnvFile();
     const envs = dotenv.parse(await fs.readFile(path.join(botPath, localEnvFileName)));
     chai.assert.strictEqual(envs[Constants.envPrefix + "FAKE_ENDPOINT"], "fake_endpoint");
-    chai.assert.strictEqual(envs[Constants.envPrefix + "FAKE_AUTHENTICATION_TYPE"], AuthType.BASIC);
     chai.assert.strictEqual(envs[Constants.envPrefix + "FAKE_USERNAME"], "fake_api_user_name");
     chai.assert.exists(envs[Constants.envPrefix + "FAKE_PASSWORD"]);
   });
@@ -72,7 +72,7 @@ describe("EnvHandler", () => {
     const service: ComponentType = ComponentType.BOT;
     const envHandler = new EnvHandler(fakeProjectPath, service);
     const fakeConfig: ApiConnectorConfiguration = {
-      ComponentPath: ["bot"],
+      ComponentType: ["bot"],
       APIName: "FAKE",
       EndPoint: "fake_endpoint",
       AuthConfig: {
@@ -83,14 +83,13 @@ describe("EnvHandler", () => {
     envHandler.updateEnvs(fakeConfig);
     expect(await fs.pathExists(path.join(botPath, localEnvFileName))).to.be.false;
     await envHandler.saveLocalEnvFile();
-    let envs = dotenv.parse(await fs.readFile(path.join(botPath, localEnvFileName)));
+    const envs = dotenv.parse(await fs.readFile(path.join(botPath, localEnvFileName)));
     chai.assert.strictEqual(envs[Constants.envPrefix + "FAKE_ENDPOINT"], "fake_endpoint");
-    chai.assert.strictEqual(envs[Constants.envPrefix + "FAKE_AUTHENTICATION_TYPE"], AuthType.BASIC);
     chai.assert.strictEqual(envs[Constants.envPrefix + "FAKE_USERNAME"], "fake_api_user_name");
     chai.assert.exists(envs[Constants.envPrefix + "FAKE_PASSWORD"]);
 
     const fakeConfig2: ApiConnectorConfiguration = {
-      ComponentPath: ["bot"],
+      ComponentType: ["bot"],
       APIName: "FAKE",
       EndPoint: "fake_endpoint2",
       AuthConfig: {
@@ -98,11 +97,16 @@ describe("EnvHandler", () => {
         UserName: "fake_api_user_name2",
       } as BasicAuthConfig,
     };
-    envHandler.updateEnvs(fakeConfig2);
-    await envHandler.saveLocalEnvFile();
-    envs = dotenv.parse(await fs.readFile(path.join(botPath, localEnvFileName)));
-    chai.assert.strictEqual(envs[Constants.envPrefix + "FAKE_ENDPOINT"], "fake_endpoint2");
-    chai.assert.strictEqual(envs[Constants.envPrefix + "FAKE_AUTHENTICATION_TYPE"], AuthType.BASIC);
-    chai.assert.strictEqual(envs[Constants.envPrefix + "FAKE_USERNAME"], "fake_api_user_name2");
+    try {
+      envHandler.updateEnvs(fakeConfig2);
+      await envHandler.saveLocalEnvFile();
+    } catch (err) {
+      expect(err instanceof UserError).to.be.true;
+      chai.assert.strictEqual(err.source, "api-connector");
+      chai.assert.strictEqual(
+        err.displayMessage,
+        "Please provide a different API name to avoid conflicts with existing env variables TEAMSFX_API_FAKE_ENDPOINT in .env.teamsfx.local"
+      );
+    }
   });
 });

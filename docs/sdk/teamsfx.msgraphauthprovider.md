@@ -4,9 +4,6 @@
 
 ## MsGraphAuthProvider class
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Microsoft Graph auth provider for Teams Framework
 
 <b>Signature:</b>
@@ -20,11 +17,11 @@ export declare class MsGraphAuthProvider implements AuthenticationProvider
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(teamsfx, scopes)](./teamsfx.msgraphauthprovider._constructor_.md) |  | <b><i>(BETA)</i></b> Constructor of MsGraphAuthProvider. |
+|  [(constructor)(teamsfx, scopes)](./teamsfx.msgraphauthprovider._constructor_.md) |  | Constructor of MsGraphAuthProvider. |
 
 ## Methods
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
-|  [getAccessToken()](./teamsfx.msgraphauthprovider.getaccesstoken.md) |  | <b><i>(BETA)</i></b> Get access token for Microsoft Graph API requests. |
+|  [getAccessToken()](./teamsfx.msgraphauthprovider.getaccesstoken.md) |  | Get access token for Microsoft Graph API requests. |
 

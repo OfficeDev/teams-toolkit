@@ -1,0 +1,60 @@
+Welcome to the Teams Toolkit! Here are some tips to get started to play with Teams Toolkit.
+
+Prerequisites
+----------
+
+To run / debug a notification bot, you'll need to setup Ngrok(https://ngrok.com/) first. Ngrok is used to forward external messages from Azure Bot Framework to your local machine.
+
+Quick start
+----------
+
+To run and debug Teams project on your local machine:
+
+1. Use a Command Prompt to run this command: ngrok http 5130.
+
+2. In Visual Studio Solution Explorer, right click on your project file and select "Prepare Teams app dependencies". You will be asked to login to your M365 account. This command will prepare local debug dependencies and register a Teams app in the tenant which your account belongs to.
+
+Notes: your M365 account need to have the sideloading permission to ensure Teams app can be uploaded to your tenant, otherwise you will end up with failure to see your Teams app running in Teams client. Learn more about sideloading permission by visiting https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading. 
+
+3. Go to the "Debug" menu > click on "Start Debugging" or directly press F5. Visual Studio will launch the Teams app inside Microsoft Teams client in a browser.
+
+4. Once Microsoft Teams is loaded, select the "Add" button to install your app in Teams.
+
+5. Post HTTP request to http://localhost:5130/api/notification to trigger notification. You can use any API tool: curl (Windows Command Prompt), Postman, etc.
+
+Tips: if you made changes to Teams app manifest file (/templates/appPackage/manifest.template.json), please make sure you run the "Prepare Teams app dependencies" command before you try to locally run the Teams app again.
+
+Deploy your Teams app on Azure
+------------------------------------
+
+To run your Teams app on Azure:
+
+1. Right click on your project and select "Provision in the cloud..." to create resources in Azure for your app. You can select a proper subscription and resource group which you would like to use for your Teams app. Please be noted that this might cause charges to your Azure account.
+
+2. Right click on your project and select "Deploy to the cloud...", this step will deploy your code to the Azure resources created in previous step. It is common to deploy multiple times to the same set of Azure resources, so there is no need to run "Provision in the cloud..." every time before run "Deploy to the cloud...". Both the commands will take several minutes to complete, please wait until it finished.
+
+3. Right click on your project and select "Preview in Teams" to launch your app in a browser. 
+
+4. Once Microsoft Teams is loaded, select the "Add" button to install your app in Teams. You will see your app running remotely from Azure.
+
+Notes: there is an alternative way to find all the commands mentioned above, go to the "Project" menu in Visual Studio, select "Teams Toolkit" and you will find all the commands there.
+
+Tips: if you made changes to Teams app manifest file (/templates/appPackage/manifest.template.json), please make sure you run the "Update manifest in Teams Developer Portal" command before you try to run the Teams app remotely from Azure again.
+
+Report an issue
+---------------
+
+If you encountered any problem while you are building Teams app using Teams Toolkit, you can create an issue in our GitHub repository: https://github.com/OfficeDev/TeamsFx/issues
+
+
+Q&A
+---------------
+
+1. How do I log out or switch my M365 account in Teams Toolkit?
+   Right click on your project, click "Prepare Teams app dependencies". You can switch your M365 account in the pop up window.
+
+2. Why is my bot not working in Teams?
+   Please check if the ngrok is running correctly in your local environment. ngrok will expire every 2 hours and you need to restart it unless you log in with a paid subscription. After the restart, the endpoint will change and you need to run the command "Prepare Teams app dependencies" to update the new endpoint.
+
+3. Why does the command "Prepare Teams app dependencies" shows that ngrok is not running correctly?
+   We only support the ngrok is running with default settings. Please make sure the ngrok web interface is http://127.0.0.1:4040.

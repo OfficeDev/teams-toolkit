@@ -4,14 +4,15 @@
 import axios from "axios";
 import { LogLevel, OptionItem, SingleSelectConfig } from "@microsoft/teamsfx-api";
 
-import graphLoginInstance, { GraphLogin } from "../../commonlib/graphLogin";
+import m365LoginInstance from "../../commonlib/m365Login";
 import { GetTeamsAppInstallationFailed, M365AccountInfoNotFound } from "./errors";
 import CLIUIInstance from "../../userInteraction";
 import { installApp } from "./constants";
 import cliLogger from "../../commonlib/log";
 import * as constants from "./constants";
-import { openHubWebClient } from "./launch";
+import { openHubWebClient, openUrlWithNewProfile } from "./launch";
 import open from "open";
+import { GraphScopes } from "@microsoft/teamsfx-core";
 
 const installOptionItem: OptionItem = {
   id: installApp.installInTeams,
@@ -48,25 +49,29 @@ const installAppSingleSelect: SingleSelectConfig = {
 };
 
 export async function showInstallAppInTeamsMessage(
-  detected: boolean,
-  tenantIdFromConfig: string,
+  isLocal: boolean,
+  tenantId: string,
   appId: string,
-  botId: string | undefined,
+  botOutlookChannelLink: string | undefined,
   browser: constants.Browser,
   browserArguments: string[]
 ): Promise<boolean> {
-  const messages = botId
+  const messages = botOutlookChannelLink
     ? [
         installApp.bot.description,
         installApp.bot.guide1,
-        installApp.bot.guide2,
+        isLocal ? installApp.bot.guide2 : installApp.bot.remoteGuide2,
         installApp.bot.finish,
       ]
     : [installApp.description, installApp.guide, installApp.finish];
   const message = messages.join("\n");
   cliLogger.necessaryLog(LogLevel.Warning, message);
   installAppSingleSelect.options = [installOptionItem];
-  if (botId) {
+  if (botOutlookChannelLink) {
+    if (!isLocal) {
+      configureOutlookOptionItem.description = installApp.bot.remoteConfigureOutlookDescription;
+      configureOutlookOptionItem.detail = installApp.bot.remoteConfigureOutlookDescription;
+    }
     (installAppSingleSelect.options as OptionItem[]).push(configureOutlookOptionItem);
   }
   (installAppSingleSelect.options as OptionItem[]).push(continueOptionItem, cancelOptionItem);
@@ -75,30 +80,30 @@ export async function showInstallAppInTeamsMessage(
     if (result.value.result === cancelOptionItem.id) {
       return false;
     } else if (result.value.result === installOptionItem.id) {
-      await openHubWebClient(
-        true,
-        tenantIdFromConfig,
-        appId,
-        constants.Hub.teams,
-        browser,
-        browserArguments
-      );
+      await openHubWebClient(true, tenantId, appId, constants.Hub.teams, browser, browserArguments);
       return await showInstallAppInTeamsMessage(
-        false,
-        tenantIdFromConfig,
+        isLocal,
+        tenantId,
         appId,
-        botId,
+        botOutlookChannelLink,
         browser,
         browserArguments
       );
     } else if (result.value.result === configureOutlookOptionItem.id) {
-      const url = `https://dev.botframework.com/bots/channels?id=${botId}&channelId=outlook`;
-      await open(url);
+      if (botOutlookChannelLink) {
+        if (isLocal) {
+          if (!(await openUrlWithNewProfile(botOutlookChannelLink))) {
+            await open(botOutlookChannelLink);
+          }
+        } else {
+          await open(botOutlookChannelLink);
+        }
+      }
       return await showInstallAppInTeamsMessage(
-        false,
-        tenantIdFromConfig,
+        isLocal,
+        tenantId,
         appId,
-        botId,
+        botOutlookChannelLink,
         browser,
         browserArguments
       );
@@ -106,10 +111,10 @@ export async function showInstallAppInTeamsMessage(
       const internalId = await getTeamsAppInternalId(appId);
       return internalId === undefined
         ? await showInstallAppInTeamsMessage(
-            true,
-            tenantIdFromConfig,
+            isLocal,
+            tenantId,
             appId,
-            botId,
+            botOutlookChannelLink,
             browser,
             browserArguments
           )
@@ -120,9 +125,13 @@ export async function showInstallAppInTeamsMessage(
 }
 
 export async function getTeamsAppInternalId(appId: string): Promise<string | undefined> {
-  // TODO: handle GraphTokenProviderUserPassword
-  const loginStatus = await (graphLoginInstance as GraphLogin).getStatus();
-  if (loginStatus.accountInfo?.oid === undefined || loginStatus.token === undefined) {
+  const graphLoginStatusRes = await m365LoginInstance.getStatus({ scopes: GraphScopes });
+  const loginStatus = graphLoginStatusRes.isOk() ? graphLoginStatusRes.value : undefined;
+  if (
+    loginStatus === undefined ||
+    loginStatus.accountInfo?.oid === undefined ||
+    loginStatus.token === undefined
+  ) {
     throw M365AccountInfoNotFound();
   }
   const url = `https://graph.microsoft.com/v1.0/users/${loginStatus.accountInfo.oid}/teamwork/installedApps?$expand=teamsApp,teamsAppDefinition&$filter=teamsApp/externalId eq '${appId}'`;

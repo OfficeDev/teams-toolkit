@@ -4,9 +4,6 @@
 
 ## Logger interface
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Interface for customized logger.
 
 <b>Signature:</b>
@@ -19,8 +16,8 @@ export interface Logger
 
 |  Method | Description |
 |  --- | --- |
-|  [error(message)](./teamsfx.logger.error.md) | <b><i>(BETA)</i></b> Writes to error level logging or lower. |
-|  [info(message)](./teamsfx.logger.info.md) | <b><i>(BETA)</i></b> Writes to info level logging or lower. |
-|  [verbose(message)](./teamsfx.logger.verbose.md) | <b><i>(BETA)</i></b> Writes to verbose level logging. |
-|  [warn(message)](./teamsfx.logger.warn.md) | <b><i>(BETA)</i></b> Writes to warning level logging or lower. |
+|  [error(message)](./teamsfx.logger.error.md) | Writes to error level logging or lower. |
+|  [info(message)](./teamsfx.logger.info.md) | Writes to info level logging or lower. |
+|  [verbose(message)](./teamsfx.logger.verbose.md) | Writes to verbose level logging. |
+|  [warn(message)](./teamsfx.logger.warn.md) | Writes to warning level logging or lower. |
 

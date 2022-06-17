@@ -10,13 +10,7 @@ import fs from "fs-extra";
 import { expect } from "chai";
 import { ConstantString } from "../util";
 import { SampleHandler } from "../../../../src/plugins/resource/apiconnector/sampleHandler";
-import {
-  AADAuthConfig,
-  ApiConnectorConfiguration,
-  AuthConfig,
-  BasicAuthConfig,
-} from "../../../../src/plugins/resource/apiconnector/config";
-import { AuthType } from "../../../../src/plugins/resource/apiconnector/constants";
+import { ApiConnectorConfiguration } from "../../../../src/plugins/resource/apiconnector/config";
 import { SampleCodeCases } from "./utils";
 
 describe("Api Connector scaffold sample code", async () => {
@@ -43,7 +37,7 @@ describe("Api Connector scaffold sample code", async () => {
 
     for (const item of SampleCodeCases) {
       const fakeConfig: ApiConnectorConfiguration = {
-        ComponentPath: ["bot"],
+        ComponentType: ["bot"],
         APIName: "fake",
         EndPoint: "fake_endpoint",
         AuthConfig: item.AuthConfig,
@@ -71,7 +65,7 @@ describe("Api Connector scaffold sample code", async () => {
     const sampleHandler: SampleHandler = new SampleHandler(testpath, languageType, componet);
     for (const item of SampleCodeCases) {
       const fakeConfig: ApiConnectorConfiguration = {
-        ComponentPath: ["bot"],
+        ComponentType: ["bot"],
         APIName: "fake",
         EndPoint: "fake_endpoint",
         AuthConfig: item.AuthConfig,

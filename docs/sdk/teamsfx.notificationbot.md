@@ -4,9 +4,6 @@
 
 ## NotificationBot class
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Provide utilities to send notification to varies targets (e.g., member, group, channel).
 
 <b>Signature:</b>
@@ -19,11 +16,11 @@ export declare class NotificationBot
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(adapter, options)](./teamsfx.notificationbot._constructor_.md) |  | <b><i>(BETA)</i></b> constructor of the notification bot. |
+|  [(constructor)(adapter, options)](./teamsfx.notificationbot._constructor_.md) |  | constructor of the notification bot. |
 
 ## Methods
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
-|  [installations()](./teamsfx.notificationbot.installations.md) |  | <b><i>(BETA)</i></b> Get all targets where the bot is installed. |
+|  [installations()](./teamsfx.notificationbot.installations.md) |  | Get all targets where the bot is installed. |
 

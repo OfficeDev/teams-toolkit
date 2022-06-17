@@ -66,12 +66,11 @@ Or, if there's no `.env.teamsfx.local` file in your project (e.g., migrated from
 Since Bot and Messaging Extension requires a public address as the messaging endpoint, ngrok will be used by default to automatically create a tunnel connection forwarding localhost address to public address.
 
 ### Mitigation
-To use your own tunneling service, you should set `botDomain`, and `botEndpoint` configurations in *.fx/configs/localSettings.json* under the project root.
+To use your own tunneling service, you should set `siteEndpoint` configuration in *.fx/configs/config.local.json* under the project root.
 ```json
 {
     "bot": {
-        "botDomain": "02f6-2404-f801-9000-1a-908c-79ca-3a8-ee86.ngrok.io",
-        "botEndpoint": "https://02f6-2404-f801-9000-1a-908c-79ca-3a8-ee86.ngrok.io"
+        "siteEndpoint": "https://02f6-2404-f801-9000-1a-908c-79ca-3a8-ee86.ngrok.io"
     }
 }
 ```

@@ -3,7 +3,7 @@
 
 import { ResourceManagementClient } from "@azure/arm-resources";
 import {
-  AppStudioTokenProvider,
+  M365TokenProvider,
   AzureAccountProvider,
   AzureSolutionSettings,
   EnvConfigFileNameTemplate,
@@ -33,7 +33,7 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "../../../../common/telemetry";
-import { getHashedEnv, getResourceGroupInPortal } from "../../../../common/tools";
+import { AppStudioScopes, getHashedEnv, getResourceGroupInPortal } from "../../../../common/tools";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import arm from "../arm";
 import { ResourceGroupInfo } from "../commonQuestions";
@@ -87,7 +87,7 @@ export async function provisionResources(
   const solutionConfig = envInfo.state.solution as v3.AzureSolutionConfig;
   solutionConfig.provisionSucceeded = false;
   const tenantIdInConfig = teamsAppResource.tenantId;
-  const tenantIdInTokenRes = await getM365TenantId(tokenProvider.appStudioToken);
+  const tenantIdInTokenRes = await getM365TenantId(tokenProvider.m365TokenProvider);
   if (tenantIdInTokenRes.isErr()) {
     return err(tenantIdInTokenRes.error);
   }
@@ -292,8 +292,8 @@ export async function checkAzureSubscription(
 ): Promise<Result<Void, FxError>> {
   const subscriptionIdInConfig =
     envInfo.config.azure?.subscriptionId || (envInfo.state.solution.subscriptionId as string);
+  const subscriptionInAccount = await azureAccountProvider.getSelectedSubscription(true);
   if (!subscriptionIdInConfig) {
-    const subscriptionInAccount = await azureAccountProvider.getSelectedSubscription(true);
     if (subscriptionInAccount) {
       envInfo.state.solution.subscriptionId = subscriptionInAccount.subscriptionId;
       envInfo.state.solution.subscriptionName = subscriptionInAccount.subscriptionName;
@@ -506,6 +506,33 @@ export async function fillInAzureConfigs(
   return ok(Void);
 }
 
+export async function askForDeployConsent(
+  ctx: v2.Context,
+  azureAccountProvider: AzureAccountProvider,
+  envInfo: v3.EnvInfoV3
+): Promise<Result<Void, FxError>> {
+  const azureToken = await azureAccountProvider.getAccountCredentialAsync();
+
+  // Only Azure project requires this confirm dialog
+  const username = (azureToken as any).username || "";
+  const subscriptionId = envInfo.state.solution?.subscriptionId || "";
+  const subscriptionName = envInfo.state.solution?.subscriptionName || "";
+  const msg = getLocalizedString(
+    "core.deploy.confirmEnvNotice",
+    envInfo.envName,
+    username,
+    subscriptionName ? subscriptionName : subscriptionId
+  );
+  const deployOption = "Deploy";
+  const result = await ctx.userInteraction.showMessage("warn", msg, true, deployOption);
+  const choice = result?.isOk() ? result.value : undefined;
+
+  if (choice === deployOption) {
+    return ok(Void);
+  }
+  return err(new UserError(SolutionSource, "UserCancel", "UserCancel"));
+}
+
 export async function askForProvisionConsent(
   ctx: v2.Context,
   azureAccountProvider: AzureAccountProvider,
@@ -536,14 +563,18 @@ export async function askForProvisionConsent(
 }
 
 export async function getM365TenantId(
-  appStudioTokenProvider: AppStudioTokenProvider
+  m365TokenProvider: M365TokenProvider
 ): Promise<Result<string, FxError>> {
   // Just to trigger M365 login before the concurrent execution of localDebug.
   // Because concurrent execution of localDebug may getAccessToken() concurrently, which
   // causes 2 M365 logins before the token caching in common lib takes effect.
-  await appStudioTokenProvider.getAccessToken();
-  const appstudioTokenJson = await appStudioTokenProvider.getJsonObject();
-  if (appstudioTokenJson === undefined) {
+  const appStudioTokenRes = await m365TokenProvider.getAccessToken({ scopes: AppStudioScopes });
+  if (appStudioTokenRes.isErr()) {
+    return err(appStudioTokenRes.error);
+  }
+  const appStudioTokenJsonRes = await m365TokenProvider.getJsonObject({ scopes: AppStudioScopes });
+  const appStudioTokenJson = appStudioTokenJsonRes.isOk() ? appStudioTokenJsonRes.value : undefined;
+  if (appStudioTokenJson === undefined) {
     return err(
       new SystemError(
         SolutionSource,
@@ -553,7 +584,7 @@ export async function getM365TenantId(
       )
     );
   }
-  const tenantIdInToken = (appstudioTokenJson as any).tid;
+  const tenantIdInToken = (appStudioTokenJson as any).tid;
   if (!tenantIdInToken || !(typeof tenantIdInToken === "string")) {
     return err(
       new SystemError(

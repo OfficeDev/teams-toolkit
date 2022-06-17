@@ -31,11 +31,7 @@ import {
   UpdateRedirectUriError,
 } from "../../../../../src/plugins/resource/aad/errors";
 import { ConfigKeys, Constants } from "../../../../../src/plugins/resource/aad/constants";
-import {
-  MockAppStudioTokenProvider,
-  MockGraphTokenProvider,
-  MockTools,
-} from "../../../../core/utils";
+import { MockM365TokenProvider, MockTools } from "../../../../core/utils";
 import { setTools } from "../../../../../src";
 import { AadAppManifestManager } from "../../../../../src/plugins/resource/aad/aadAppManifestManager";
 
@@ -43,8 +39,7 @@ describe("AAD App Client Test", () => {
   let ctx: PluginContext;
   let config: ProvisionConfig;
   const mockTokenProviders: GraphAndAppStudioTokenProvider = {
-    graph: new MockGraphTokenProvider(),
-    appStudio: new MockAppStudioTokenProvider(),
+    m365: new MockM365TokenProvider(),
   };
   beforeEach(async () => {
     setTools(new MockTools());
@@ -518,15 +513,17 @@ describe("AAD App Client Test", () => {
         "getAadApp",
         objectId,
         secret,
-        new MockGraphTokenProvider()
+        oauth2PermissionScopeId,
+        new MockM365TokenProvider()
       );
       chai.assert.equal(getResult.objectId, objectId);
       chai.assert.equal(getResult.clientId, clientId);
     });
 
-    it("throw GetAppConfigError", async () => {
+    it("use existing scope id", async () => {
       const objectId = faker.datatype.uuid();
       const clientId = faker.datatype.uuid();
+      const existingScopeId = faker.datatype.uuid();
       const fileName = "fileName";
       const secret = "secret";
       const displayName = "getAadApp";
@@ -539,20 +536,15 @@ describe("AAD App Client Test", () => {
       });
       sinon.stub(Utils, "getConfigFileName").returns(fileName);
 
-      try {
-        const getResult = await AadAppClient.getAadAppUsingManifest(
-          "getAadApp",
-          objectId,
-          secret,
-          new MockGraphTokenProvider()
-        );
-      } catch (error) {
-        chai.assert.isTrue(error instanceof UserError);
-        chai.assert.equal(
-          error.message,
-          GetAppConfigError.message(ConfigKeys.oauth2PermissionScopeId, fileName)[0]
-        );
-      }
+      const getResult = await AadAppClient.getAadAppUsingManifest(
+        "getAadApp",
+        objectId,
+        secret,
+        existingScopeId,
+        new MockM365TokenProvider()
+      );
+
+      chai.assert.equal(getResult.oauth2PermissionScopeId, existingScopeId);
     });
 
     it("System Error", async () => {
@@ -578,7 +570,8 @@ describe("AAD App Client Test", () => {
           "getAadApp",
           objectId,
           secret,
-          new MockGraphTokenProvider()
+          undefined,
+          new MockM365TokenProvider()
         );
       } catch (error) {
         chai.assert.isTrue(error instanceof SystemError);
@@ -609,7 +602,8 @@ describe("AAD App Client Test", () => {
           "getAadApp",
           objectId,
           secret,
-          new MockGraphTokenProvider()
+          undefined,
+          new MockM365TokenProvider()
         );
       } catch (error) {
         chai.assert.isTrue(error instanceof UserError);
@@ -653,7 +647,7 @@ describe("AAD App Client Test", () => {
         "getAadApp",
         objectId,
         secret,
-        new MockGraphTokenProvider()
+        new MockM365TokenProvider()
       );
       chai.assert.equal(getResult.objectId, objectId);
       chai.assert.equal(getResult.clientId, clientId);
@@ -693,7 +687,7 @@ describe("AAD App Client Test", () => {
         "getAadApp",
         objectId,
         secret,
-        new MockGraphTokenProvider()
+        new MockM365TokenProvider()
       );
       chai.assert.equal(getResult.objectId, objectId);
       chai.assert.equal(getResult.clientId, clientId);
@@ -727,7 +721,7 @@ describe("AAD App Client Test", () => {
           "getAadApp",
           objectId,
           secret,
-          new MockGraphTokenProvider()
+          new MockM365TokenProvider()
         );
       } catch (error) {
         chai.assert.isTrue(error instanceof UserError);
@@ -759,7 +753,7 @@ describe("AAD App Client Test", () => {
           "getAadApp",
           objectId,
           secret,
-          new MockGraphTokenProvider()
+          new MockM365TokenProvider()
         );
       } catch (error) {
         chai.assert.isTrue(error instanceof SystemError);
@@ -788,7 +782,7 @@ describe("AAD App Client Test", () => {
           "getAadApp",
           objectId,
           secret,
-          new MockGraphTokenProvider()
+          new MockM365TokenProvider()
         );
       } catch (error) {
         chai.assert.isTrue(error instanceof UserError);

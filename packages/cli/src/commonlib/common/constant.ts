@@ -51,3 +51,5 @@ export const usageError = "UsageError";
 export const servicePrincipalLoginFormat =
   "teamsfx account login azure --service-principal --username NAME --password SECRET --tenant TENANT";
 export const codeFlowLoginFormat = "teamsfx account login azure";
+
+export const m365CacheName = "appStudio";

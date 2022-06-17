@@ -12,6 +12,7 @@ on:
     branches:
       - main
       - dev
+      - ga
       - hotfix/**/*
     types:
       - assigned
@@ -96,11 +97,10 @@ jobs:
           node-version: 14
 
       - name: Setup project
-        uses: nick-invision/retry@v2
+        uses: nick-fields/retry@v2
         with:
           timeout_minutes: 10
-          max_attempts: 10
-          retry_on: error
+          max_attempts: 5
           command: |
             npm run setup
 
@@ -167,22 +167,25 @@ jobs:
         with:
           node-version: 14
 
+      - name: Setup .net
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: 6.0.x
+
       - name: Download Simple Auth bits
-        uses: nick-invision/retry@v2
+        uses: nick-fields/retry@v2
         with:
           timeout_minutes: 10
-          max_attempts: 10
-          retry_on: error
+          max_attempts: 5
           shell: pwsh
           command: |
             ./.github/scripts/download-simpleauth.sh
 
       - name: Setup project
-        uses: nick-invision/retry@v2
+        uses: nick-fields/retry@v2
         with:
           timeout_minutes: 10
-          max_attempts: 10
-          retry_on: error
+          max_attempts: 5
           command: |
             npm run setup
 

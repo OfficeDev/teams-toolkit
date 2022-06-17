@@ -3,7 +3,7 @@ import {
   SolutionContext,
   v2,
   TokenProvider,
-  GraphTokenProvider,
+  M365TokenProvider,
   Result,
   FxError,
   ok,
@@ -20,9 +20,10 @@ import { isArray } from "lodash";
 import {
   CollaborationState,
   CollaborationStateResult,
+  GraphScopes,
   ResourcePermission,
 } from "../../../../common";
-import { IUserList } from "../../../resource/appstudio/interfaces/IAppDefinition";
+import { AppUser } from "../../../resource/appstudio/interfaces/appUser";
 import {
   GLOBAL_CONFIG,
   PluginNames,
@@ -44,9 +45,9 @@ export type CollabApiParam =
 
 export class CollaborationUtil {
   static async getCurrentUserInfo(
-    graphTokenProvider?: GraphTokenProvider
-  ): Promise<Result<IUserList, FxError>> {
-    const user = await CollaborationUtil.getUserInfo(graphTokenProvider);
+    m365TokenProvider?: M365TokenProvider
+  ): Promise<Result<AppUser, FxError>> {
+    const user = await CollaborationUtil.getUserInfo(m365TokenProvider);
 
     if (!user) {
       return err(
@@ -62,10 +63,11 @@ export class CollaborationUtil {
   }
 
   static async getUserInfo(
-    graphTokenProvider?: GraphTokenProvider,
+    m365TokenProvider?: M365TokenProvider,
     email?: string
-  ): Promise<IUserList | undefined> {
-    const currentUser = await graphTokenProvider?.getJsonObject();
+  ): Promise<AppUser | undefined> {
+    const currentUserRes = await m365TokenProvider?.getJsonObject({ scopes: GraphScopes });
+    const currentUser = currentUserRes?.isOk() ? currentUserRes.value : undefined;
 
     if (!currentUser) {
       return undefined;
@@ -78,7 +80,8 @@ export class CollaborationUtil {
     const isAdministrator = true;
 
     if (email) {
-      const graphToken = await graphTokenProvider?.getAccessToken();
+      const graphTokenRes = await m365TokenProvider?.getAccessToken({ scopes: GraphScopes });
+      const graphToken = graphTokenRes?.isOk() ? graphTokenRes.value : undefined;
       const instance = axios.create({
         baseURL: "https://graph.microsoft.com/v1.0",
       });
@@ -120,7 +123,7 @@ export class CollaborationUtil {
 
   static getCurrentCollaborationState(
     envState: Map<string, any>,
-    user: IUserList
+    user: AppUser
   ): CollaborationStateResult {
     const provisioned = CollaborationUtil.checkWetherProvisionSucceeded(envState);
     if (!provisioned) {

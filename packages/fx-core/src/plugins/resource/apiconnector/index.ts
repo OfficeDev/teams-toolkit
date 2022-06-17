@@ -2,27 +2,23 @@
 // Licensed under the MIT license.
 "use strict";
 import {
-  AzureSolutionSettings,
   Inputs,
   Json,
   ProjectSettings,
-  SystemError,
+  AzureSolutionSettings,
   v2,
-  err,
   Func,
-  ok,
   TokenProvider,
-  QTreeNode,
 } from "@microsoft/teamsfx-api";
 import { Context, ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
 import { Service } from "typedi";
 import { ResourcePluginsV2 } from "../../solution/fx-solution/ResourcePluginContainer";
 import { ApiConnectorImpl } from "./plugin";
-import { Constants } from "./constants";
 import { DeepReadonly } from "@microsoft/teamsfx-api/build/v2";
-import { ApiConnectorResult, ResultFactory } from "./result";
+import { FxResult, ResultFactory, QuestionResult } from "./result";
 import { ErrorMessage } from "./errors";
-
+import { UserTaskFunctionName } from "../../solution/fx-solution/constants";
+import { HostTypeOptionAzure } from "../../solution/fx-solution/question";
 @Service(ResourcePluginsV2.ApiConnectorPlugin)
 export class ApiConnectorPluginV2 implements ResourcePlugin {
   name = "fx-resource-api-connector";
@@ -30,7 +26,8 @@ export class ApiConnectorPluginV2 implements ResourcePlugin {
   apiConnectorImpl: ApiConnectorImpl = new ApiConnectorImpl();
 
   activate(projectSettings: ProjectSettings): boolean {
-    return true;
+    const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
+    return solutionSettings.hostType === HostTypeOptionAzure.id;
   }
 
   public async getQuestionsForUserTask(
@@ -39,7 +36,7 @@ export class ApiConnectorPluginV2 implements ResourcePlugin {
     func: Func,
     envInfo: DeepReadonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider
-  ): Promise<ApiConnectorResult> {
+  ): Promise<QuestionResult> {
     return await this.apiConnectorImpl.generateQuestion(ctx, inputs);
   }
 
@@ -50,14 +47,14 @@ export class ApiConnectorPluginV2 implements ResourcePlugin {
     localSettings: Json,
     envInfo: v2.EnvInfoV2,
     tokenProvider: TokenProvider
-  ): Promise<ApiConnectorResult> {
-    if (func.method != "connectExistingApi") {
+  ): Promise<FxResult> {
+    if (func.method != UserTaskFunctionName.ConnectExistingApi) {
       throw ResultFactory.SystemError(
         ErrorMessage.ApiConnectorRouteError.name,
         ErrorMessage.ApiConnectorRouteError.message(func.method)
       );
     }
-    await this.apiConnectorImpl.scaffold(ctx, inputs);
-    return ResultFactory.Success();
+    const result = await this.apiConnectorImpl.scaffold(ctx, inputs);
+    return ResultFactory.Success({ func: UserTaskFunctionName.ConnectExistingApi, ...result });
   }
 }

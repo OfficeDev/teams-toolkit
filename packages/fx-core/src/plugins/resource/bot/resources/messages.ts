@@ -11,23 +11,13 @@ export class Messages {
     getDefaultString("plugins.bot.InvalidValue", something, value),
     getLocalizedString("plugins.bot.InvalidValue", something, value),
   ];
-  public static readonly InputValidValueForSomething = (something: string): string =>
-    getLocalizedString("plugins.bot.SelectValidValues", something);
   public static readonly SomethingIsMissing = (something: string): [string, string] => [
     getDefaultString("plugins.bot.SomethingIsMissing", something),
     getLocalizedString("plugins.bot.SomethingIsMissing", something),
   ];
-  public static readonly SomethingIsNotFound = (something: string): [string, string] => [
-    getLocalizedString("plugins.bot.SomethingNotFound", something),
-    getLocalizedString("plugins.bot.SomethingNotFound", something),
-  ];
   public static readonly SomethingIsNotExisting = (something: string): [string, string] => [
     getDefaultString("plugins.bot.SomethingNotExisting", something),
     getLocalizedString("plugins.bot.SomethingNotExisting", something),
-  ];
-  public static readonly FailToCreateSomeClient = (clientName: string): [string, string] => [
-    getDefaultString("plugins.bot.FailedToCreate", clientName),
-    getLocalizedString("plugins.bot.FailedToCreate", clientName),
   ];
   public static readonly FailToProvisionSomeResource = (resource: string): [string, string] => [
     getDefaultString("plugins.bot.FailedToProvision", resource),
@@ -37,33 +27,14 @@ export class Messages {
     getDefaultString("plugins.bot.FailedToUpdateConfigs", something),
     getLocalizedString("plugins.bot.FailedToUpdateConfigs", something),
   ];
-  public static readonly FailToListPublishingCredentials: [string, string] = [
-    getDefaultString("plugins.bot.FailedListPublishingCredentials"),
-    getLocalizedString("plugins.bot.FailedListPublishingCredentials"),
-  ];
-  public static readonly FailToDoZipDeploy: [string, string] = [
-    getDefaultString("plugins.bot.FailedDeployZipFile"),
-    getLocalizedString("plugins.bot.FailedDeployZipFile"),
-  ];
-  public static readonly FailToRestartWebApp: [string, string] = [
-    getDefaultString("plugins.bot.FailedRestartWebApp"),
-    getLocalizedString("plugins.bot.FailedRestartWebApp"),
-  ];
   public static readonly FailToUpdateMessageEndpoint = (endpoint: string): [string, string] => [
     getDefaultString("plugins.bot.FailedUpdateMessageEndpoint", endpoint),
     getLocalizedString("plugins.bot.FailedUpdateMessageEndpoint", endpoint),
   ];
-  public static readonly FailToDownloadFrom = (url: string): [string, string] => [
-    getDefaultString("plugins.bot.DownloadFail", url),
-    getLocalizedString("plugins.bot.DownloadFail", url),
-  ];
-  public static readonly ClickHelpButtonForDetails = getLocalizedString("plugins.bot.ClickGetHelp");
   public static readonly CommandExecutionFailed = (command: string): [string, string] => [
     getDefaultString("plugins.bot.FailToRun", command),
     getLocalizedString("plugins.bot.FailToRun", command),
   ];
-  public static readonly DoSthBeforeSth = (sth: string, beforeSth: string): string =>
-    getLocalizedString("plugins.bot.PerformCommand", sth, beforeSth);
   public static readonly FailToCallAppStudioForCheckingAADApp = [
     getDefaultString("plugins.bot.FailToCallAppStudioApi"),
     getLocalizedString("plugins.bot.FailToCallAppStudioApi"),
@@ -126,10 +97,6 @@ export class Messages {
     "plugins.bot.CreateBotAADSuccess"
   );
 
-  public static readonly UpdatingAzureWebAppSettings = getLocalizedString(
-    "plugins.bot.UpdateAzureWebAppSetting"
-  );
-
   public static readonly ProvisioningBotRegistration = getLocalizedString(
     "plugins.bot.ProvisionBotRegistration"
   );
@@ -137,17 +104,9 @@ export class Messages {
     "plugins.bot.ProvisionBotRegistrationSuccess"
   );
 
-  public static readonly TheSubsNotRegisterToUseBotService = [
-    getDefaultString("plugins.bot.SubscriptionNoRegister"),
-    getLocalizedString("plugins.bot.SubscriptionNoRegister"),
-  ];
-
   // Suggestions
   public static readonly RetryTheCurrentStep = getLocalizedString(
     "suggestions.retryTheCurrentStep"
-  );
-  public static readonly RegisterYouSubsToUseBot = getLocalizedString(
-    "plugins.bot.RegisterSubscription"
   );
   public static readonly RecoverConfig = getLocalizedString("plugins.bot.RecoverConfig");
   public static readonly RecreateTheProject: [string, string] = [
@@ -157,6 +116,8 @@ export class Messages {
   public static readonly CheckCommandOutputAndTryToFixIt = getLocalizedString(
     "plugins.bot.CheckCommandOutput"
   );
+  public static readonly RunFailedCommand = (command: string, path: string): string =>
+    getLocalizedString("plugins.bot.RunFailedCommand", command, path);
   public static readonly DeleteExistingBotChannelRegistration = getLocalizedString(
     // eslint-disable-next-line no-secrets/no-secrets
     "plugins.bot.DeleteExistsAzureBotChannelRegistrations"

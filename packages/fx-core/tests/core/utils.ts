@@ -4,7 +4,6 @@
 import { TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import {
-  AppStudioTokenProvider,
   AzureAccountProvider,
   AzureSolutionSettings,
   Colors,
@@ -12,14 +11,15 @@ import {
   CryptoProvider,
   Func,
   FxError,
-  GraphTokenProvider,
   Inputs,
   InputTextConfig,
   InputTextResult,
   IProgressHandler,
   Json,
+  LoginStatus,
   LogLevel,
   LogProvider,
+  M365TokenProvider,
   MultiSelectConfig,
   MultiSelectResult,
   ok,
@@ -34,7 +34,6 @@ import {
   SelectFilesResult,
   SelectFolderConfig,
   SelectFolderResult,
-  SharepointTokenProvider,
   SingleSelectConfig,
   SingleSelectResult,
   Solution,
@@ -44,6 +43,7 @@ import {
   TaskConfig,
   TelemetryReporter,
   TokenProvider,
+  TokenRequest,
   Tools,
   UserInteraction,
   v2,
@@ -162,7 +162,7 @@ export class MockSolutionV2 implements v2.SolutionPlugin {
     ctx: v2.Context,
     inputs: Inputs,
     envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
-    tokenProvider: AppStudioTokenProvider
+    tokenProvider: M365TokenProvider
   ): Promise<Result<Void, FxError>> {
     return ok(Void);
   }
@@ -263,63 +263,35 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
   }
 }
 
-export class MockGraphTokenProvider implements GraphTokenProvider {
-  getAccessToken(): Promise<string | undefined> {
-    const result = new Promise<string>(function (resovle, {}) {
-      resovle("success");
-    });
-    return result;
-  }
-
-  getJsonObject(): Promise<Record<string, unknown> | undefined> {
-    const result = new Promise<Record<string, unknown>>(function (resovle, {}) {
-      resovle({});
-    });
-    return result;
-  }
-
-  signout(): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-
-  setStatusChangeMap(
-    name: string,
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>
-  ): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-
-  removeStatusChangeMap(name: string): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-}
-
-export class MockAppStudioTokenProvider implements AppStudioTokenProvider {
+export class MockM365TokenProvider implements M365TokenProvider {
   /**
-   * Get team access token
-   * @param showDialog Control whether the UI layer displays pop-up windows
+   * Get M365 access token
+   * @param tokenRequest permission scopes or show user interactive UX
    */
-  getAccessToken(showDialog?: boolean): Promise<string | undefined> {
+  getAccessToken(tokenRequest: TokenRequest): Promise<Result<string, FxError>> {
     throw new Error("Method not implemented.");
   }
 
   /**
-   * Get app studio token JSON object
+   * Get M365 token Json object
    * - tid : tenantId
    * - unique_name : user name
    * - ...
-   * @param showDialog Control whether the UI layer displays pop-up windows
+   * @param tokenRequest permission scopes or show user interactive UX
    */
-  getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined> {
+  getJsonObject(tokenRequest: TokenRequest): Promise<Result<Record<string, unknown>, FxError>> {
     throw new Error("Method not implemented.");
   }
 
   /**
-   * App studio sign out
+   * Get user login status
+   * @param tokenRequest permission scopes or show user interactive UX
+   */
+  getStatus(tokenRequest: TokenRequest): Promise<Result<LoginStatus, FxError>> {
+    throw new Error("Method not implemented.");
+  }
+  /**
+   * m365 sign out
    */
   signout(): Promise<boolean> {
     throw new Error("Method not implemented.");
@@ -328,18 +300,20 @@ export class MockAppStudioTokenProvider implements AppStudioTokenProvider {
   /**
    * Add update account info callback
    * @param name callback name
+   * @param tokenRequest permission scopes
    * @param statusChange callback method
    * @param immediateCall whether callback when register, the default value is true
    */
   setStatusChangeMap(
     name: string,
+    tokenRequest: TokenRequest,
     statusChange: (
       status: string,
       token?: string,
       accountInfo?: Record<string, unknown>
     ) => Promise<void>,
     immediateCall?: boolean
-  ): Promise<boolean> {
+  ): Promise<Result<boolean, FxError>> {
     throw new Error("Method not implemented.");
   }
 
@@ -347,63 +321,17 @@ export class MockAppStudioTokenProvider implements AppStudioTokenProvider {
    * Remove update account info callback
    * @param name callback name
    */
-  removeStatusChangeMap(name: string): Promise<boolean> {
+  removeStatusChangeMap(name: string): Promise<Result<boolean, FxError>> {
     throw new Error("Method not implemented.");
   }
 }
 
-export class MockSharepointTokenProvider implements SharepointTokenProvider {
-  /**
-   * Get sharepoint access token
-   * @param showDialog Control whether the UI layer displays pop-up windows
-   */
-  getAccessToken(showDialog?: boolean): Promise<string | undefined> {
-    throw new Error("Method not implemented.");
-  }
-
-  /**
-   * Get sharepoint token JSON object
-   * - tid : tenantId
-   * - unique_name : user name
-   * - ...
-   * @param showDialog Control whether the UI layer displays pop-up windows
-   */
-  getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined> {
-    throw new Error("Method not implemented.");
-  }
-
-  /**
-   * Add update account info callback
-   * @param name callback name
-   * @param statusChange callback method
-   * @param immediateCall whether callback when register, the default value is true
-   */
-  setStatusChangeMap(
-    name: string,
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>,
-    immediateCall?: boolean
-  ): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-
-  /**
-   * Remove update account info callback
-   * @param name callback name
-   */
-  removeStatusChangeMap(name: string): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-}
-
-class MockTelemetryReporter implements TelemetryReporter {
+export class MockTelemetryReporter implements TelemetryReporter {
   sendTelemetryErrorEvent(
     eventName: string,
     properties?: { [key: string]: string },
-    measurements?: { [key: string]: number }
+    measurements?: { [key: string]: number },
+    errorProps?: string[]
   ): void {
     // do nothing
   }
@@ -500,9 +428,7 @@ export class MockTools implements Tools {
   logProvider = new MockLogProvider();
   tokenProvider: TokenProvider = {
     azureAccountProvider: new MockAzureAccountProvider(),
-    graphTokenProvider: new MockGraphTokenProvider(),
-    appStudioToken: new MockAppStudioTokenProvider(),
-    sharepointTokenProvider: new MockSharepointTokenProvider(),
+    m365TokenProvider: new MockM365TokenProvider(),
   };
   telemetryReporter = new MockTelemetryReporter();
   ui = new MockUserInteraction();
@@ -577,6 +503,21 @@ export function MockProjectSettings(appName: string): ProjectSettings {
         PluginNames.SA,
         PluginNames.APPST,
       ],
+    } as AzureSolutionSettings,
+  };
+}
+
+export function MockSPFxProjectSettings(appName: string): ProjectSettings {
+  return {
+    appName: appName,
+    projectId: uuid.v4(),
+    solutionSettings: {
+      name: PluginNames.SOLUTION,
+      version: "1.0.0",
+      hostType: "Azure",
+      capabilities: ["SPFx"],
+      azureResources: [],
+      activeResourcePlugins: [PluginNames.SPFX, PluginNames.LDEBUG, PluginNames.APPST],
     } as AzureSolutionSettings,
   };
 }

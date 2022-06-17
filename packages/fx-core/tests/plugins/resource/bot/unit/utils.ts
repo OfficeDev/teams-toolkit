@@ -6,7 +6,11 @@ import {
   PluginContext,
   LogLevel,
   Platform,
-  GraphTokenProvider,
+  Inputs,
+  AzureSolutionSettings,
+  TelemetryReporter,
+  CryptoProvider,
+  TokenRequest,
 } from "@microsoft/teamsfx-api";
 import { ResourceGroups, ResourceManagementClientContext } from "@azure/arm-resources";
 import { ServiceClientCredentials } from "@azure/ms-rest-js";
@@ -18,6 +22,7 @@ import {
   PluginAAD,
   PluginSolution,
   PluginLocalDebug,
+  PluginBot,
 } from "../../../../../src/plugins/resource/bot/resources/strings";
 import {
   Colors,
@@ -45,6 +50,15 @@ import { newEnvInfo } from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import faker from "faker";
 import sinon from "sinon";
+import { Context } from "@microsoft/teamsfx-api/build/v2";
+import { QuestionNames } from "../../../../../src/plugins/resource/bot/constants";
+import { FunctionsHttpTriggerOptionItem } from "../../../../../src/plugins/resource/bot/question";
+import { PluginActRoles } from "../../../../../src/plugins/resource/bot/enums/pluginActRoles";
+import {
+  AzureSolutionQuestionNames,
+  BotScenario,
+} from "../../../../../src/plugins/solution/fx-solution/question";
+import { ResourcePlugins } from "../../../../../src/common/constants";
 
 export class MockUserInteraction implements UserInteraction {
   selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
@@ -218,22 +232,30 @@ export function newPluginContext(): PluginContext {
       },
     },
     cryptoProvider: new LocalCrypto(""),
-    graphTokenProvider: mockTokenProviderGraph(),
-    appStudioToken: {
-      getAccessToken: (showDialog?: boolean) => {
-        return Promise.resolve(undefined);
+    m365TokenProvider: {
+      getAccessToken: (tokenRequest: TokenRequest) => {
+        return Promise.resolve(ok("fakeToken"));
       },
-      getJsonObject: (showDialog?: boolean) => {
-        return Promise.resolve(undefined);
+      getJsonObject: (tokenRequest: TokenRequest) => {
+        return Promise.resolve(ok({}));
       },
-      signout: () => {
-        return Promise.resolve(true);
-      },
-      setStatusChangeMap: (name: string, anything) => {
-        return Promise.resolve(true);
+      getStatus: (tokenRequest: TokenRequest) => {
+        return Promise.resolve(ok({ status: "SignedIn" }));
       },
       removeStatusChangeMap: (name: string) => {
-        return Promise.resolve(true);
+        return Promise.resolve(ok(true));
+      },
+      setStatusChangeMap: (
+        name: string,
+        tokenRequest: TokenRequest,
+        statusChange: (
+          status: string,
+          token?: string,
+          accountInfo?: Record<string, unknown>
+        ) => Promise<void>,
+        immediateCall?: boolean
+      ) => {
+        return Promise.resolve(ok(true));
       },
     },
     azureAccountProvider: {
@@ -282,15 +304,40 @@ export function newPluginContext(): PluginContext {
   };
 }
 
-export function mockTokenProviderGraph(): GraphTokenProvider {
-  const provider = <GraphTokenProvider>{};
-  const mockTokenObject = {
-    tid: faker.datatype.uuid(),
+export function newPluginContextV2(): Context {
+  return {
+    userInteraction: {} as UserInteraction,
+    logProvider: {} as LogProvider,
+    telemetryReporter: {} as TelemetryReporter,
+    cryptoProvider: {} as CryptoProvider,
+    projectSetting: {
+      appName: "test-app",
+      projectId: "project-id",
+      programmingLanguage: "javascript",
+      solutionSettings: {
+        name: "test-solution",
+        capabilities: [PluginActRoles.Bot],
+        hostType: "azure-functions",
+        azureResources: [],
+        activeResourcePlugins: [ResourcePlugins.Aad, ResourcePlugins.Bot],
+      } as AzureSolutionSettings,
+      pluginSettings: {
+        [ResourcePlugins.Bot]: {
+          [PluginBot.HOST_TYPE]: "azure-functions",
+        },
+      },
+    },
   };
+}
 
-  provider.getAccessToken = sinon.stub().returns("token");
-  provider.getJsonObject = sinon.stub().returns(mockTokenObject);
-  return provider;
+export function newInputV2(): Inputs {
+  return {
+    platform: Platform.VSCode,
+    env: "test",
+    projectPath: "test-app",
+    [QuestionNames.BOT_HOST_TYPE_TRIGGER]: [FunctionsHttpTriggerOptionItem.id],
+    [AzureSolutionQuestionNames.Scenarios]: [BotScenario.NotificationBot],
+  };
 }
 
 export function genTomorrow(): number {

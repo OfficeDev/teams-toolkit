@@ -14,7 +14,6 @@ import {
   UserCancelError,
 } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
-import { yeomanScaffoldEnabled } from "../../../core/globalVars";
 import { HostTypeOptionSPFx } from "../../solution/fx-solution/question";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { SPFxPluginImpl } from "./plugin";
@@ -52,11 +51,6 @@ export class SpfxPlugin implements Plugin {
 
       const spfx_webpart_name = new QTreeNode(webpartNameQuestion);
       spfx_frontend_host.addChild(spfx_webpart_name);
-
-      if (!yeomanScaffoldEnabled()) {
-        const spfx_webpart_desp = new QTreeNode(webpartDescriptionQuestion);
-        spfx_frontend_host.addChild(spfx_webpart_desp);
-      }
     }
 
     return ok(spfx_frontend_host);

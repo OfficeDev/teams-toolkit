@@ -4,9 +4,6 @@
 
 ## AppCredential class
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Represent Microsoft 365 tenant identity, and it is usually used when user is not involved like time-triggered automation job.
 
 <b>Signature:</b>
@@ -32,11 +29,11 @@ const credential = new AppCredential();
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(authConfig)](./teamsfx.appcredential._constructor_.md) |  | <b><i>(BETA)</i></b> Constructor of AppCredential. |
+|  [(constructor)(authConfig)](./teamsfx.appcredential._constructor_.md) |  | Constructor of AppCredential. |
 
 ## Methods
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
-|  [getToken(scopes, options)](./teamsfx.appcredential.gettoken.md) |  | <b><i>(BETA)</i></b> Get access token for credential. |
+|  [getToken(scopes, options)](./teamsfx.appcredential.gettoken.md) |  | Get access token for credential. |
 

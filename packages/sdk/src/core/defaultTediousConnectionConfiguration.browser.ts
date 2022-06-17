@@ -10,7 +10,6 @@ import { formatString } from "../util/utils";
  * Generate connection configuration consumed by tedious.
  * @remarks
  * Only works in in server side.
- * @beta
  */
 export async function getTediousConnectionConfig(
   teamsfx: TeamsFx,

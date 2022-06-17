@@ -60,7 +60,7 @@ export class TeamsBotConfig {
 
     if (capabilities?.includes(PluginActRoles.Bot)) {
       const scenarios = context.answers?.[AzureSolutionQuestionNames.Scenarios];
-      if (isBotNotificationEnabled() && Array.isArray(scenarios)) {
+      if (isBotNotificationEnabled() && Array.isArray(scenarios) && scenarios.length > 0) {
         const scenarioActRoles = scenarios
           .map((item) => QuestionBotScenarioToPluginActRoles.get(item))
           .filter((item): item is PluginActRoles => item !== undefined);

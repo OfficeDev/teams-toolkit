@@ -4,9 +4,6 @@
 
 ## TeamsBotSsoPrompt.beginDialog() method
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Called when a prompt dialog is pushed onto the dialog stack and is being activated.
 
 <b>Signature:</b>

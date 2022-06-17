@@ -19,6 +19,8 @@ import {
   Func,
   Void,
 } from "@microsoft/teamsfx-api";
+import * as path from "path";
+import { pathToFileURL } from "url";
 import { AppStudioPluginImpl } from "./plugin";
 import { Constants } from "./constants";
 import { AppStudioError } from "./errors";
@@ -31,9 +33,11 @@ import { Links } from "../bot/constants";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import "./v2";
 import "./v3";
-import { IUserList } from "./interfaces/IAppDefinition";
+import { AppUser } from "./interfaces/appUser";
 import { getManifestTemplatePath } from "./manifestTemplate";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
+import { isDeployManifestEnabled } from "../../../common";
+import { VSCodeExtensionCommand } from "../../../common/constants";
 
 @Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {
@@ -63,6 +67,21 @@ export class AppStudioPlugin implements Plugin {
         });
         appStudioQuestions.addChild(buildOrPublish);
       }
+    }
+
+    if (
+      isDeployManifestEnabled() &&
+      stage === Stage.deploy &&
+      (ctx.answers?.platform === Platform.CLI_HELP || ctx.answers?.platform === Platform.CLI)
+    ) {
+      const node = new QTreeNode({
+        name: Constants.INCLUDE_APP_MANIFEST,
+        type: "singleSelect",
+        staticOptions: ["yes", "no"],
+        title: getLocalizedString("plugins.appstudio.whetherToDeployManifest"),
+        default: "no",
+      });
+      appStudioQuestions.addChild(node);
     }
 
     return ok(appStudioQuestions);
@@ -212,13 +231,31 @@ export class AppStudioPlugin implements Plugin {
     TelemetryUtils.sendStartEvent(TelemetryEventName.buildTeamsPackage);
     try {
       const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, isLocalDebug);
-      const builtSuccess = [
-        { content: "(√)Done: ", color: Colors.BRIGHT_GREEN },
-        { content: "Teams Package ", color: Colors.BRIGHT_WHITE },
-        { content: appPackagePath, color: Colors.BRIGHT_MAGENTA },
-        { content: " built successfully!", color: Colors.BRIGHT_WHITE },
-      ];
-      ctx.ui?.showMessage("info", builtSuccess, false);
+      if (ctx.answers?.platform === Platform.CLI || ctx.answers?.platform === Platform.VS) {
+        const builtSuccess = [
+          { content: "(√)Done: ", color: Colors.BRIGHT_GREEN },
+          { content: "Teams Package ", color: Colors.BRIGHT_WHITE },
+          { content: appPackagePath, color: Colors.BRIGHT_MAGENTA },
+          { content: " built successfully!", color: Colors.BRIGHT_WHITE },
+        ];
+        if (ctx.answers?.platform === Platform.VS) {
+          ctx.logProvider?.info(builtSuccess);
+        } else {
+          ctx.ui?.showMessage("info", builtSuccess, false);
+        }
+      } else if (ctx.answers?.platform === Platform.VSCode) {
+        const isWindows = process.platform === "win32";
+        let builtSuccess = getLocalizedString(
+          "plugins.appstudio.buildSucceedNotice.fallback",
+          appPackagePath
+        );
+        if (isWindows) {
+          const folderLink = pathToFileURL(path.dirname(appPackagePath));
+          const appPackageLink = `${VSCodeExtensionCommand.openFolder}?%5B%22${folderLink}%22%5D`;
+          builtSuccess = getLocalizedString("plugins.appstudio.buildSucceedNotice", appPackageLink);
+        }
+        ctx.ui?.showMessage("info", builtSuccess, false);
+      }
       TelemetryUtils.sendSuccessEvent(
         TelemetryEventName.buildTeamsPackage,
         this.appStudioPluginImpl.commonProperties
@@ -271,6 +308,40 @@ export class AppStudioPlugin implements Plugin {
     }
   }
 
+  public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
+    if (
+      ctx.answers &&
+      ctx.answers[Constants.INCLUDE_APP_MANIFEST] &&
+      ctx.answers[Constants.INCLUDE_APP_MANIFEST] == "no"
+    ) {
+      await ctx.logProvider?.debug("Skip Teams app manifest deployment");
+      return ok(Void);
+    }
+
+    TelemetryUtils.init(ctx);
+    TelemetryUtils.sendStartEvent(TelemetryEventName.deploy);
+
+    const res = await this.appStudioPluginImpl.updateManifest(ctx, false);
+    if (res.isErr()) {
+      TelemetryUtils.sendErrorEvent(
+        TelemetryEventName.deploy,
+        res.error,
+        this.appStudioPluginImpl.commonProperties
+      );
+      if (res.error.name === AppStudioError.UpdateManifestCancelError.name) {
+        return ok(Void);
+      } else {
+        return err(res.error);
+      }
+    } else {
+      TelemetryUtils.sendSuccessEvent(
+        TelemetryEventName.deploy,
+        this.appStudioPluginImpl.commonProperties
+      );
+      return ok(Void);
+    }
+  }
+
   /**
    * Publish the app to Teams App Catalog
    * @param {PluginContext} ctx
@@ -313,28 +384,26 @@ export class AppStudioPlugin implements Plugin {
     try {
       const result = await this.appStudioPluginImpl.publish(ctx);
       ctx.logProvider?.info(`Publish success!`);
-      const msg = getLocalizedString(
-        "plugins.appstudio.publishSucceedNotice",
-        result.name,
-        Constants.TEAMS_ADMIN_PORTAL
-      );
       if (ctx.answers?.platform === Platform.CLI) {
-        ctx.ui?.showMessage(
-          "info",
-          msg.replace("[", "").replace("]", "") +
-            ` Learn more from ${Constants.TEAMS_MANAGE_APP_DOC}.`,
-          false
+        const msg = getLocalizedString(
+          "plugins.appstudio.publishSucceedNotice.cli",
+          result.name,
+          Constants.TEAMS_ADMIN_PORTAL,
+          Constants.TEAMS_MANAGE_APP_DOC
         );
+        ctx.ui?.showMessage("info", msg, false);
       } else {
-        ctx.ui
-          ?.showMessage("info", msg, false, Constants.LEARN_MORE, Constants.ADMIN_PORTAL)
-          .then((value) => {
-            if (value.isOk() && value.value === Constants.LEARN_MORE) {
-              ctx.ui?.openUrl(Constants.TEAMS_MANAGE_APP_DOC);
-            } else if (value.isOk() && value.value === Constants.ADMIN_PORTAL) {
-              ctx.ui?.openUrl(Constants.TEAMS_ADMIN_PORTAL);
-            }
-          });
+        const msg = getLocalizedString(
+          "plugins.appstudio.publishSucceedNotice",
+          result.name,
+          Constants.TEAMS_MANAGE_APP_DOC
+        );
+        const adminPortal = getLocalizedString("plugins.appstudio.adminPortal");
+        ctx.ui?.showMessage("info", msg, false, adminPortal).then((value) => {
+          if (value.isOk() && value.value === adminPortal) {
+            ctx.ui?.openUrl(Constants.TEAMS_ADMIN_PORTAL);
+          }
+        });
       }
       const properties: { [key: string]: string } = this.appStudioPluginImpl.commonProperties;
       properties[TelemetryPropertyKey.updateExistingApp] = String(result.update);
@@ -406,7 +475,7 @@ export class AppStudioPlugin implements Plugin {
     try {
       const checkPermissionResult = await this.appStudioPluginImpl.checkPermission(
         ctx,
-        userInfo as IUserList
+        userInfo as AppUser
       );
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.checkPermission);
       return ok(checkPermissionResult);
@@ -436,7 +505,7 @@ export class AppStudioPlugin implements Plugin {
     try {
       const grantPermissionResult = await this.appStudioPluginImpl.grantPermission(
         ctx,
-        userInfo as IUserList
+        userInfo as AppUser
       );
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.grantPermission);
       return ok(grantPermissionResult);

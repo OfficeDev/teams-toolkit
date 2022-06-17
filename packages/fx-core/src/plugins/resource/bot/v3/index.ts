@@ -22,10 +22,12 @@ import * as path from "path";
 import { Service } from "typedi";
 import { Bicep, ConstantString } from "../../../../common/constants";
 import {
+  AppStudioScopes,
   generateBicepFromFile,
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,
+  GraphScopes,
 } from "../../../../common/tools";
 import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
 import { getTemplatesFolder } from "../../../../folder";
@@ -60,7 +62,6 @@ import { AppStudio } from "../appStudio/appStudio";
 import { DeployMgr } from "../deployMgr";
 import * as utils from "../utils/common";
 import * as appService from "@azure/arm-appservice";
-import { AzureOperations } from "../azureOps";
 import { getZipDeployEndpoint } from "../utils/zipDeploy";
 import {
   ScaffoldAction,
@@ -77,6 +78,8 @@ import {
   UnzipError,
 } from "./error";
 import { ensureSolutionSettings } from "../../../solution/fx-solution/utils/solutionSettingsHelper";
+import { AzureOperations } from "../../../../common/azure-hosting/azureOps";
+import { AzureUploadConfig } from "../../../../common/azure-hosting/interfaces";
 
 @Service(BuiltInFeaturePluginNames.bot)
 export class NodeJSBotPluginV3 implements v3.PluginV3 {
@@ -290,7 +293,10 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
     envInfo: v3.EnvInfoV3,
     tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
-    const token = await tokenProvider.graphTokenProvider.getAccessToken();
+    const graphTokenRes = await tokenProvider.m365TokenProvider.getAccessToken({
+      scopes: GraphScopes,
+    });
+    const token = graphTokenRes.isOk() ? graphTokenRes.value : undefined;
     CheckThrowSomethingMissing(ConfigNames.GRAPH_TOKEN, token);
     CheckThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, ctx.projectSetting.appName);
     let botConfig = envInfo.state[this.name];
@@ -330,7 +336,10 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
         callingEndpoint: "",
       };
       ctx.logProvider.info(Messages.ProvisioningBotRegistration);
-      const appStudioToken = await tokenProvider.appStudioToken.getAccessToken();
+      const appStudioTokenRes = await tokenProvider.m365TokenProvider.getAccessToken({
+        scopes: AppStudioScopes,
+      });
+      const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
       CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
       await AppStudio.createBotRegistration(appStudioToken!, botReg);
       ctx.logProvider.info(Messages.SuccessfullyProvisionedBotRegistration);
@@ -394,7 +403,10 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
     botId: string,
     endpoint: string
   ) {
-    const appStudioToken = await tokenProvider.appStudioToken.getAccessToken();
+    const appStudioTokenRes = await tokenProvider.m365TokenProvider.getAccessToken({
+      scopes: AppStudioScopes,
+    });
+    const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
     CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
     CheckThrowSomethingMissing(ConfigNames.LOCAL_BOT_ID, botId);
 
@@ -499,18 +511,14 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
       await this.getAzureAccountCredential(tokenProvider.azureAccountProvider),
       subscriptionId!
     );
-    const listResponse = await AzureOperations.ListPublishingCredentials(
+    const listResponse = await AzureOperations.listPublishingCredentials(
       webSiteMgmtClient,
       resourceGroup!,
       siteName!
     );
 
-    const publishingUserName = listResponse.publishingUserName
-      ? listResponse.publishingUserName
-      : "";
-    const publishingPassword = listResponse.publishingPassword
-      ? listResponse.publishingPassword
-      : "";
+    const publishingUserName = listResponse.publishingUserName ?? "";
+    const publishingPassword = listResponse.publishingPassword ?? "";
     const encryptedCreds: string = utils.toBase64(`${publishingUserName}:${publishingPassword}`);
 
     const config = {
@@ -519,11 +527,12 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
       },
       maxContentLength: Infinity,
       maxBodyLength: Infinity,
-    };
+    } as AzureUploadConfig;
 
     const zipDeployEndpoint: string = getZipDeployEndpoint(botConfig.siteName);
     await handler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_DEPLOY);
-    await AzureOperations.ZipDeployPackage(zipDeployEndpoint, zipBuffer, config);
+    const statusUrl = await AzureOperations.zipDeployPackage(zipDeployEndpoint, zipBuffer, config);
+    await AzureOperations.checkDeployStatus(statusUrl, config);
 
     await deployMgr.updateLastDeployTime(deployTimeCandidate);
 

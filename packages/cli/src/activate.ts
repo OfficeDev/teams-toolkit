@@ -8,9 +8,7 @@ import { Result, FxError, ok, Tools, err } from "@microsoft/teamsfx-api";
 import { FxCore } from "@microsoft/teamsfx-core";
 
 import AzureAccountManager from "./commonlib/azureLogin";
-import AppStudioTokenProvider from "./commonlib/appStudioLogin";
-import GraphTokenProvider from "./commonlib/graphLogin";
-import SharepointTokenProvider from "./commonlib/sharepointLogin";
+import M365TokenProvider from "./commonlib/m365Login";
 import CLILogProvider from "./commonlib/log";
 import { CliTelemetry } from "./telemetry/cliTelemetry";
 import CLIUIInstance from "./userInteraction";
@@ -29,9 +27,7 @@ export default async function activate(rootPath?: string): Promise<Result<FxCore
     logProvider: CLILogProvider,
     tokenProvider: {
       azureAccountProvider: AzureAccountManager,
-      graphTokenProvider: GraphTokenProvider,
-      appStudioToken: AppStudioTokenProvider,
-      sharepointTokenProvider: SharepointTokenProvider,
+      m365TokenProvider: M365TokenProvider,
     },
     telemetryReporter: CliTelemetry.getReporter(),
     ui: CLIUIInstance,

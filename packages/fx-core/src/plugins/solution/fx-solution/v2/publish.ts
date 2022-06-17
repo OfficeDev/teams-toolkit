@@ -1,8 +1,8 @@
 import {
-  AppStudioTokenProvider,
   err,
   FxError,
   Inputs,
+  M365TokenProvider,
   ok,
   Result,
   UserError,
@@ -13,7 +13,7 @@ import { isUndefined } from "lodash";
 import { Container } from "typedi";
 import { PluginDisplayName } from "../../../../common/constants";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
-import { isPureExistingApp } from "../../../../common/projectSettingsHelper";
+import { isExistingTabApp } from "../../../../common/projectSettingsHelper";
 import {
   GLOBAL_CONFIG,
   SolutionError,
@@ -28,7 +28,7 @@ export async function publishApplication(
   ctx: v2.Context,
   inputs: Inputs,
   envInfo: v2.EnvInfoV2,
-  tokenProvider: AppStudioTokenProvider
+  tokenProvider: M365TokenProvider
 ): Promise<Result<Void, FxError>> {
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
   const provisioned = envInfo.state[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED];
@@ -44,7 +44,7 @@ export async function publishApplication(
     );
   }
 
-  const pureExistingApp = isPureExistingApp(ctx.projectSetting);
+  const pureExistingApp = isExistingTabApp(ctx.projectSetting);
   // for minimized teamsfx project, there is only one plugin (app studio)
   const plugins = pureExistingApp
     ? [Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin)]

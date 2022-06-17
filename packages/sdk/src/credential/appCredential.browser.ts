@@ -11,8 +11,6 @@ import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
  *
  * @remarks
  * Only works in in server side.
- *
- * @beta
  */
 export class AppCredential implements TokenCredential {
   /**
@@ -20,7 +18,6 @@ export class AppCredential implements TokenCredential {
    *
    * @remarks
    * Only works in in server side.
-   * @beta
    */
   constructor(authConfig: AuthenticationConfiguration) {
     throw new ErrorWithCode(
@@ -34,7 +31,6 @@ export class AppCredential implements TokenCredential {
    *
    * @remarks
    * Only works in in server side.
-   * @beta
    */
   async getToken(
     scopes: string | string[],

@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Text.Json.Serialization;
 
-namespace {{BlazorAppServer}}.Interop.TeamsSDK;
+namespace {{ProjectName}}.Interop.TeamsSDK;
 
 public class TeamsContext
 {

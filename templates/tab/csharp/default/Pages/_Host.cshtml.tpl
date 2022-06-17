@@ -1,5 +1,5 @@
 @page "/"
-@namespace {{BlazorAppServer}}.Pages
+@namespace {{ProjectName}}.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
     Layout = null;
@@ -10,11 +10,11 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{BlazorAppServer}}</title>
+    <title>{{ProjectName}}</title>
     <base href="~/" />
     <link href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-core/11.0.0/css/fabric.min.css" rel="stylesheet"/>
     <link href="css/site.css" rel="stylesheet" />
-    <link href="{{BlazorAppServer}}.styles.css" rel="stylesheet" />
+    <link href="{{ProjectName}}.styles.css" rel="stylesheet" />
 </head>
 <body>
     <component type="typeof(App)" render-mode="ServerPrerendered" />

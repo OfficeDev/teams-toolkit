@@ -3,23 +3,25 @@ import { Icon, Stack, Image, FontIcon } from "@fluentui/react";
 import { VSCodeTag } from "@vscode/webview-ui-toolkit/react";
 import "./SampleGallery.scss";
 import { Commands } from "./Commands";
-import FAQPlus from "../../media/faq-plus.gif";
-import InMeetingApp from "../../media/in-meeting-app.png";
-import ShareNow from "../../media/share-now.gif";
-import ToDoList from "../../media/to-do-list.gif";
-import ToDoListSharepoint from "../../media/to-do-list-sharepoint.gif";
-import ToDoListM365 from "../../media/to-do-list-M365.gif";
-import NpmSearchConnectorM365 from "../../media/npm-search-connector-M365.gif";
-import HelloWorldTab from "../../media/helloWorld-tab.gif";
-import HelloWorldTabWithBackend from "../../media/helloWorld-tab-with-backend.gif";
-import HelloWorldBot from "../../media/helloWorld-bot.gif";
+import FAQPlus from "../../img/webview/sample/faq-plus.gif";
+import InMeetingApp from "../../img/webview/sample/in-meeting-app.png";
+import ShareNow from "../../img/webview/sample/share-now.gif";
+import ToDoList from "../../img/webview/sample/to-do-list.gif";
+import ToDoListSharepoint from "../../img/webview/sample/to-do-list-sharepoint.gif";
+import ToDoListM365 from "../../img/webview/sample/to-do-list-M365.gif";
+import NpmSearchConnectorM365 from "../../img/webview/sample/npm-search-connector-M365.gif";
+import HelloWorldTab from "../../img/webview/sample/helloWorld-tab.gif";
+import HelloWorldTabWithBackend from "../../img/webview/sample/helloWorld-tab-with-backend.gif";
+import HelloWorldBot from "../../img/webview/sample/helloWorld-bot.gif";
 import { Watch, Setting } from "./resources";
-import GraphToolkitContactExporter from "../../media/graph-toolkit-contact-exporter.gif";
-import BOTSSO from "../../media/bot-sso.gif";
+import GraphToolkitContactExporter from "../../img/webview/sample/graph-toolkit-contact-exporter.gif";
+import BOTSSO from "../../img/webview/sample/bot-sso.gif";
 import { EventMessages } from "./messages";
 import SampleDetailPage from "./sampleDetailPage";
-import NoneSSOTab from "../../media/hello-world-tab-without-sso.gif";
-import SendProactiveMsg from "../../media/send-proactive-messages.gif";
+import NoneSSOTab from "../../img/webview/sample/hello-world-tab-without-sso.gif";
+import GraphConnector from "../../img/webview/sample/graph-connector-app.gif";
+import IncomingWebhook from "../../img/webview/sample/incoming-webhook.gif";
+import AdaptiveCardNotification from "../../img/webview/sample/adaptive-card-notification.gif";
 
 const imageMapping: { [p: string]: any } = {
   "todo-list-with-Azure-backend": ToDoList,
@@ -35,7 +37,9 @@ const imageMapping: { [p: string]: any } = {
   "hello-world-bot": HelloWorldBot,
   "bot-sso": BOTSSO,
   "hello-world-tab-without-sso": NoneSSOTab,
-  "bot-proactive-messaging-teamsfx": SendProactiveMsg,
+  "graph-connector-app": GraphConnector,
+  "adaptive-card-notification": AdaptiveCardNotification,
+  "incoming-webhook-notification": IncomingWebhook,
 };
 
 export default class SampleGallery extends React.Component<any, any> {

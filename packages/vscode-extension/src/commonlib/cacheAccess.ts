@@ -161,7 +161,7 @@ export class CryptoCachePlugin {
           }
         }
       } catch (err) {
-        VsCodeLogInstance.error(localize("teamstoolkit.cacheAccess.readTokenFail") + err.message);
+        VsCodeLogInstance.warning(localize("teamstoolkit.cacheAccess.readTokenFail") + err.message);
       }
     } else {
       try {
@@ -169,7 +169,9 @@ export class CryptoCachePlugin {
         const text = await this.accountCrypto.encrypt(data);
         await fs.writeFile(fileCachePath, text, UTF8);
       } catch (err) {
-        VsCodeLogInstance.error(localize("teamstoolkit.cacheAccess.writeTokenFail") + err.message);
+        VsCodeLogInstance.warning(
+          localize("teamstoolkit.cacheAccess.writeTokenFail") + err.message
+        );
       }
     }
   }
@@ -183,7 +185,7 @@ export class CryptoCachePlugin {
         const text = await this.accountCrypto.encrypt(data);
         await fs.writeFile(fileCachePath, text, UTF8);
       } catch (err) {
-        VsCodeLogInstance.error(localize("teamstoolkit.cacheAccess.saveTokenFail") + err.message);
+        VsCodeLogInstance.warning(localize("teamstoolkit.cacheAccess.saveTokenFail") + err.message);
       }
     }
   }
@@ -203,7 +205,7 @@ export async function saveAccountId(accountName: string, accountId?: string) {
       await fs.writeFile(accountPath + accountName, "", UTF8);
     }
   } catch (err) {
-    VsCodeLogInstance.error(
+    VsCodeLogInstance.warning(
       localize("teamstoolkit.cacheAccess.saveHomeAccountIdFail") + err.message
     );
   }
@@ -214,7 +216,7 @@ export async function loadAccountId(accountName: string) {
     try {
       return await fs.readFile(accountPath + accountName, UTF8);
     } catch (err) {
-      VsCodeLogInstance.error(
+      VsCodeLogInstance.warning(
         localize("teamstoolkit.cacheAccess.readHomeAccountIdFail") + err.message
       );
     }

@@ -9,7 +9,7 @@ import {
   ok,
   v3,
   EnvConfig,
-  GraphTokenProvider,
+  M365TokenProvider,
   LogProvider,
   PluginContext,
   v2,
@@ -39,7 +39,7 @@ import { TelemetryUtils } from "./telemetry";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { ResultFactory } from "../results";
 import { getPermissionRequest } from "../permissions";
-import { isAadManifestEnabled } from "../../../../common";
+import { GraphScopes, isAadManifestEnabled } from "../../../../common";
 
 export class Utils {
   public static addLogAndTelemetryWithLocalDebug(
@@ -83,8 +83,9 @@ export class Utils {
     return ConfigFilePath.Input(envName);
   }
 
-  public static async getCurrentTenantId(graphTokenProvider?: GraphTokenProvider): Promise<string> {
-    const tokenObject = await graphTokenProvider?.getJsonObject();
+  public static async getCurrentTenantId(m365TokenProvider?: M365TokenProvider): Promise<string> {
+    const tokenObjectRes = await m365TokenProvider?.getJsonObject({ scopes: GraphScopes });
+    const tokenObject = tokenObjectRes?.isOk() ? tokenObjectRes.value : undefined;
     const tenantId: string = (tokenObject as any)?.tid;
     return tenantId;
   }
@@ -141,19 +142,21 @@ export class Utils {
       ? ConfigUtils.getAadConfig(ctx, ConfigKeys.clientSecret, true)
       : ctx.envInfo.config.auth?.clientSecret;
 
-    if (objectId && clientId && oauth2PermissionScopeId && clientSecret) {
+    if (objectId && clientId && clientSecret) {
       if (!isLocalDebug) {
         ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.objectId, objectId as string);
         ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.clientId, clientId as string);
         ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.clientSecret, clientSecret as string);
-        ConfigUtils.checkAndSaveConfig(
-          ctx,
-          ConfigKeys.oauth2PermissionScopeId,
-          oauth2PermissionScopeId as string
-        );
+        if (oauth2PermissionScopeId) {
+          ConfigUtils.checkAndSaveConfig(
+            ctx,
+            ConfigKeys.oauth2PermissionScopeId,
+            oauth2PermissionScopeId as string
+          );
+        }
       }
       return true;
-    } else if (objectId || clientId || oauth2PermissionScopeId || clientSecret) {
+    } else if (objectId || clientId || clientSecret) {
       throw ResultFactory.UserError(
         GetSkipAppConfigError.name,
         GetSkipAppConfigError.message(Utils.getInputFileName(ctx.envInfo.envName))
@@ -253,9 +256,11 @@ export class ProvisionConfig {
   public oauth2PermissionScopeId?: string;
   private isLocalDebug: boolean;
 
-  constructor(isLocalDebug = false) {
+  constructor(isLocalDebug = false, generateScopeId = true) {
     this.isLocalDebug = isLocalDebug;
-    this.oauth2PermissionScopeId = uuidv4();
+    if (generateScopeId) {
+      this.oauth2PermissionScopeId = uuidv4();
+    }
   }
   public async restoreConfigFromLocalSettings(
     ctx: v2.Context,
@@ -458,7 +463,7 @@ export class SetApplicationInContextConfig {
         .get(Plugins.teamsBot)
         ?.get(ConfigKeysOfOtherPlugin.teamsBotEndpoint);
       if (botEndpoint) {
-        this.botEndpoint = format(frontendDomain as string, Formats.Domain);
+        this.botEndpoint = format(botEndpoint as string, Formats.Endpoint);
       }
     }
 
@@ -537,7 +542,13 @@ export class SetApplicationInContextConfig {
     if (isAadManifestEnabled()) {
       ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.botId, botId);
       ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.botEndpoint, botEndpoint);
-      ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.frontendEndpoint, `https://${frontendDomain}`);
+      if (frontendDomain) {
+        ConfigUtils.checkAndSaveConfig(
+          ctx,
+          ConfigKeys.frontendEndpoint,
+          `https://${frontendDomain}`
+        );
+      }
     }
   }
 }

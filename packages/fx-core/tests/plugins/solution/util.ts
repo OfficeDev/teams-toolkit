@@ -33,17 +33,17 @@ import {
   TaskConfig,
   AzureAccountProvider,
   SubscriptionInfo,
-  AppStudioTokenProvider,
   PermissionRequestProvider,
-  GraphTokenProvider,
-  SharepointTokenProvider,
+  M365TokenProvider,
+  TokenRequest,
+  LoginStatus,
 } from "@microsoft/teamsfx-api";
 import { MockPermissionRequestProvider } from "../../core/utils";
 
 export const validManifest = {
   $schema:
-    "https://developer.microsoft.com/en-us/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
-  manifestVersion: "1.11",
+    "https://developer.microsoft.com/en-us/json-schemas/teams/v1.13/MicrosoftTeams.schema.json",
+  manifestVersion: "1.13",
   version: "1.0.0",
   id: "{appid}",
   packageName: "com.microsoft.teams.extension",
@@ -254,117 +254,41 @@ class MockedTokenCredentials extends TokenCredentialsBase {
   }
 }
 
-export class MockedAppStudioTokenProvider implements AppStudioTokenProvider {
-  async getAccessToken(showDialog?: boolean): Promise<string> {
-    return "someFakeToken";
+export class MockedM365Provider implements M365TokenProvider {
+  async getAccessToken(tokenRequest: TokenRequest): Promise<Result<string, FxError>> {
+    return ok("fakeToken");
   }
-  async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
-    return {
-      tid: "222",
-    };
-  }
-  signout(): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-  setStatusChangeCallback(
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>
-  ): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-  setStatusChangeMap(
-    name: string,
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>,
-    immediateCall?: boolean
-  ): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-  removeStatusChangeMap(name: string): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-}
-
-export class MockedGraphTokenProvider implements GraphTokenProvider {
-  async getAccessToken(showDialog?: boolean): Promise<string> {
-    return "some token";
-  }
-  async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
-    return {};
-  }
-  async signout(): Promise<boolean> {
-    return true;
-  }
-  async setStatusChangeMap(
-    name: string,
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>,
-    immediateCall?: boolean
-  ): Promise<boolean> {
-    return true;
-  }
-  async removeStatusChangeMap(name: string): Promise<boolean> {
-    return true;
-  }
-}
-
-export class MockedAppStudioProvider implements AppStudioTokenProvider {
-  async getAccessToken(showDialog?: boolean): Promise<string> {
-    return "fakeToken";
-  }
-  async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
-    return {
+  async getJsonObject(
+    tokenRequest: TokenRequest
+  ): Promise<Result<Record<string, unknown>, FxError>> {
+    return ok({
       upn: "fakeUserPrincipalName@fake.com",
-    };
+      tid: "tenantId",
+    });
   }
   async signout(): Promise<boolean> {
     return true;
   }
+  async getStatus(tokenRequest: TokenRequest): Promise<Result<LoginStatus, FxError>> {
+    return ok({
+      status: "SignedIn",
+      token: "fakeToken",
+    });
+  }
   async setStatusChangeMap(
     name: string,
+    tokenRequest: TokenRequest,
     statusChange: (
       status: string,
       token?: string,
       accountInfo?: Record<string, unknown>
     ) => Promise<void>,
     immediateCall?: boolean
-  ): Promise<boolean> {
-    return true;
+  ): Promise<Result<boolean, FxError>> {
+    return ok(true);
   }
-  async removeStatusChangeMap(name: string): Promise<boolean> {
-    return true;
-  }
-}
-
-export class MockedSharepointProvider implements SharepointTokenProvider {
-  async getAccessToken(showDialog?: boolean): Promise<string> {
-    return "fakeToken";
-  }
-  async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
-    return {};
-  }
-  async setStatusChangeMap(
-    name: string,
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>,
-    immediateCall?: boolean
-  ): Promise<boolean> {
-    return true;
-  }
-  async removeStatusChangeMap(name: string): Promise<boolean> {
-    return true;
+  async removeStatusChangeMap(name: string): Promise<Result<boolean, FxError>> {
+    return ok(true);
   }
 }
 

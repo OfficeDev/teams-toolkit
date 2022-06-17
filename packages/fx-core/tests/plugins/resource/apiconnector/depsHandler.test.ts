@@ -30,7 +30,7 @@ describe("DepsHandler in Api Connector", () => {
   it("success to add sdk deps when no sdk", async () => {
     sandbox
       .stub(DepsHandler.prototype, "getDepsConfig")
-      .resolves({ "@microsoft/teamsfx": "1.0.0", "@microsoft/teams-js": "^1.9.0" });
+      .resolves({ "@microsoft/teamsfx": "1.0.0" });
     await fs.copyFile(path.join(__dirname, "sampleFiles", pkgFile), path.join(botPath, pkgFile));
     let pkg = await fs.readJson(path.join(botPath, pkgFile));
     expect(pkg.dependencies[sdkName]).to.be.undefined;
@@ -43,7 +43,7 @@ describe("DepsHandler in Api Connector", () => {
   it("succes to skip sdk deps when exist", async () => {
     sandbox
       .stub(DepsHandler.prototype, "getDepsConfig")
-      .resolves({ "@microsoft/teamsfx": "1.0.0", "@microsoft/teams-js": "^1.9.0" });
+      .resolves({ "@microsoft/teamsfx": "1.0.0" });
     const pkgContent = await fs.readJson(path.join(__dirname, "sampleFiles", pkgFile));
     pkgContent.dependencies[sdkName] = "^2.0.0";
     await fs.writeFile(path.join(botPath, pkgFile), JSON.stringify(pkgContent, null, 4));
@@ -56,7 +56,7 @@ describe("DepsHandler in Api Connector", () => {
   it("success to skip sdk when local sdk version intersect with config", async () => {
     sandbox
       .stub(DepsHandler.prototype, "getDepsConfig")
-      .resolves({ "@microsoft/teamsfx": "^0.6.3", "@microsoft/teams-js": "^1.9.0" });
+      .resolves({ "@microsoft/teamsfx": "^0.6.3" });
     const pkgContent = await fs.readJson(path.join(__dirname, "sampleFiles", pkgFile));
     pkgContent.dependencies[sdkName] = "^0.6.5";
     await fs.writeFile(path.join(botPath, pkgFile), JSON.stringify(pkgContent, null, 4));
@@ -69,7 +69,7 @@ describe("DepsHandler in Api Connector", () => {
   it("fail to update sdk when local version lower than config", async () => {
     sandbox
       .stub(DepsHandler.prototype, "getDepsConfig")
-      .resolves({ "@microsoft/teamsfx": "0.2.0", "@microsoft/teams-js": "^1.9.0" });
+      .resolves({ "@microsoft/teamsfx": "0.2.0" });
     const pkgContent = await fs.readJson(path.join(__dirname, "sampleFiles", pkgFile));
     pkgContent.dependencies[sdkName] = "^0.1.0";
     await fs.writeFile(path.join(botPath, pkgFile), JSON.stringify(pkgContent, null, 4));
@@ -78,7 +78,11 @@ describe("DepsHandler in Api Connector", () => {
       await depsHandler.addPkgDeps();
     } catch (err) {
       expect(err instanceof UserError).to.be.true;
-      chai.assert.strictEqual(err.source, "SDKVersionImcompatibleError");
+      chai.assert.strictEqual(err.source, "api-connector");
+      chai.assert.strictEqual(
+        err.displayMessage,
+        "In bot project, @microsoft/teamsfx version ^0.1.0 is not compatible. Please upgrade your package version to 0.2.0"
+      );
     }
   });
 });

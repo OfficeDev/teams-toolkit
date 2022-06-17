@@ -42,7 +42,6 @@ import { IBotRegistration } from "./appStudio/interfaces/IBotRegistration";
 import { Logger } from "./logger";
 import { DeployMgr } from "./deployMgr";
 import { BotAuthCredential } from "./botAuthCredential";
-import { AzureOperations } from "./azureOps";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import path from "path";
 import { getTemplatesFolder } from "../../../folder";
@@ -52,16 +51,18 @@ import {
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,
+  isBotNotificationEnabled,
+  generateBicepFromFile,
+  isConfigUnifyEnabled,
+  AppStudioScopes,
+  GraphScopes,
 } from "../../../common";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
-import {
-  generateBicepFromFile,
-  isBotNotificationEnabled,
-  isConfigUnifyEnabled,
-} from "../../../common/tools";
 import { PluginImpl } from "./interface";
 import { BOT_ID } from "../appstudio/constants";
+import { AzureOperations } from "../../../common/azure-hosting/azureOps";
+import { AzureUploadConfig } from "../../../common/azure-hosting/interfaces";
 
 export class TeamsBotImpl implements PluginImpl {
   // Made config public, because expect the upper layer to fill inputs.
@@ -320,18 +321,14 @@ export class TeamsBotImpl implements PluginImpl {
       await this.getAzureAccountCredential(),
       this.config.provision.subscriptionId!
     );
-    const listResponse = await AzureOperations.ListPublishingCredentials(
+    const listResponse = await AzureOperations.listPublishingCredentials(
       webSiteMgmtClient,
       this.config.provision.resourceGroup!,
       this.config.provision.siteName!
     );
 
-    const publishingUserName = listResponse.publishingUserName
-      ? listResponse.publishingUserName
-      : "";
-    const publishingPassword = listResponse.publishingPassword
-      ? listResponse.publishingPassword
-      : "";
+    const publishingUserName = listResponse.publishingUserName ?? "";
+    const publishingPassword = listResponse.publishingPassword ?? "";
     const encryptedCreds: string = utils.toBase64(`${publishingUserName}:${publishingPassword}`);
 
     const config = {
@@ -340,11 +337,12 @@ export class TeamsBotImpl implements PluginImpl {
       },
       maxContentLength: Infinity,
       maxBodyLength: Infinity,
-    };
+    } as AzureUploadConfig;
 
     const zipDeployEndpoint: string = getZipDeployEndpoint(this.config.provision.siteName!);
     await handler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_DEPLOY);
-    await AzureOperations.ZipDeployPackage(zipDeployEndpoint, zipBuffer, config);
+    const statusUrl = await AzureOperations.zipDeployPackage(zipDeployEndpoint, zipBuffer, config);
+    await AzureOperations.checkDeployStatus(statusUrl, config);
 
     await deployMgr.updateLastDeployTime(deployTimeCandidate);
 
@@ -401,9 +399,12 @@ export class TeamsBotImpl implements PluginImpl {
   }
 
   private async updateMessageEndpointOnAppStudio(endpoint: string) {
+    const appStudioTokenRes = await this.ctx?.m365TokenProvider?.getAccessToken({
+      scopes: AppStudioScopes,
+    });
     const appStudioToken = checkAndThrowIfMissing(
       ConfigNames.APPSTUDIO_TOKEN,
-      await this.ctx?.appStudioToken?.getAccessToken()
+      appStudioTokenRes?.isOk() ? appStudioTokenRes.value : undefined
     );
     checkAndThrowIfMissing(
       ConfigNames.LOCAL_BOT_ID,
@@ -426,9 +427,14 @@ export class TeamsBotImpl implements PluginImpl {
     await AppStudio.updateMessageEndpoint(appStudioToken, botReg.botId!, botReg);
   }
   private async createNewBotRegistrationOnAppStudio() {
+    const graphTokenRes = await this.ctx?.m365TokenProvider?.getAccessToken({
+      scopes: GraphScopes,
+    });
+    Logger.info(Messages.ProvisioningBotRegistration);
+
     const token = checkAndThrowIfMissing(
       ConfigNames.GRAPH_TOKEN,
-      await this.ctx?.graphTokenProvider?.getAccessToken()
+      graphTokenRes?.isOk() ? graphTokenRes.value : undefined
     );
     const name = checkAndThrowIfMissing(
       CommonStrings.SHORT_APP_NAME,
@@ -467,14 +473,12 @@ export class TeamsBotImpl implements PluginImpl {
         .get(PluginBot.OBJECT_ID);
       Logger.debug(Messages.SuccessfullyGetExistingBotAadAppCredential);
     } else {
-      Logger.info(Messages.ProvisioningBotRegistration);
       botAuthCreds = await AADRegistration.registerAADAppAndGetSecretByGraph(
         token,
         aadDisplayName,
         this.config.localDebug.localObjectId,
         this.config.localDebug.localBotId
       );
-      Logger.info(Messages.SuccessfullyProvisionedBotRegistration);
     }
 
     // 2. Register bot by app studio.
@@ -488,13 +492,16 @@ export class TeamsBotImpl implements PluginImpl {
     };
 
     Logger.info(Messages.ProvisioningBotRegistration);
+    const appStudioTokenRes = await this.ctx?.m365TokenProvider?.getAccessToken({
+      scopes: AppStudioScopes,
+    });
+
     const appStudioToken = checkAndThrowIfMissing(
       ConfigNames.APPSTUDIO_TOKEN,
-      await this.ctx?.appStudioToken?.getAccessToken()
+      appStudioTokenRes?.isOk() ? appStudioTokenRes.value : undefined
     );
 
     await AppStudio.createBotRegistration(appStudioToken, botReg);
-    Logger.info(Messages.SuccessfullyProvisionedBotRegistration);
 
     if (isConfigUnifyEnabled()) {
       if (!this.config.scaffold.botId) {
@@ -519,12 +526,17 @@ export class TeamsBotImpl implements PluginImpl {
         this.config.localDebug.localObjectId = botAuthCreds.objectId;
       }
     }
+
+    Logger.info(Messages.SuccessfullyProvisionedBotRegistration);
   }
 
   private async registerBotApp() {
+    const graphTokenRes = await this.ctx?.m365TokenProvider?.getAccessToken({
+      scopes: GraphScopes,
+    });
     const token = checkAndThrowIfMissing(
       ConfigNames.GRAPH_TOKEN,
-      await this.ctx?.graphTokenProvider?.getAccessToken()
+      graphTokenRes?.isOk() ? graphTokenRes.value : undefined
     );
     const name = checkAndThrowIfMissing(
       CommonStrings.SHORT_APP_NAME,

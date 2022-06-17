@@ -35,9 +35,8 @@ const GlobalOptions = new Set([
   CliConfigOptions.EnvCheckerValidateNode as string,
   CliConfigOptions.EnvCheckerValidateNgrok as string,
   CliConfigOptions.TrustDevCert as string,
-  CliConfigOptions.RunFrom as string,
   CliConfigOptions.Interactive as string,
-  CliConfigOptions.AutomaticNpmInstall as string,
+  // CliConfigOptions.AutomaticNpmInstall as string,
 ]);
 
 export class ConfigGet extends YargsCommand {

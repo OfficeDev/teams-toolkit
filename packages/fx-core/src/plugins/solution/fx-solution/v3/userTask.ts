@@ -23,7 +23,6 @@ import {
 import { Container } from "typedi";
 import * as util from "util";
 import { getLocalizedString } from "../../../../common/localizeUtils";
-import { isVSProject } from "../../../../common/projectSettingsHelper";
 import { OperationNotPermittedError } from "../../../../core";
 import { SolutionTelemetryProperty } from "../constants";
 import {
@@ -129,24 +128,19 @@ export async function addCapability(
   if (telemetryProps) {
     telemetryProps[SolutionTelemetryProperty.Capabilities] = capabilitiesAnswer.join(";");
   }
-  const vsProject = isVSProject(ctx.projectSetting);
   const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
   const features: string[] = [];
   if (!solutionSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.aad)) {
     features.push(BuiltInFeaturePluginNames.aad);
   }
-  if (vsProject) {
-    features.push(BuiltInFeaturePluginNames.dotnet);
-  } else {
-    if (capabilitiesAnswer.includes(TabOptionItem.id)) {
-      features.push(BuiltInFeaturePluginNames.frontend);
-    }
-    if (
-      capabilitiesAnswer.includes(BotOptionItem.id) ||
-      capabilitiesAnswer.includes(MessageExtensionItem.id)
-    ) {
-      features.push(BuiltInFeaturePluginNames.bot);
-    }
+  if (capabilitiesAnswer.includes(TabOptionItem.id)) {
+    features.push(BuiltInFeaturePluginNames.frontend);
+  }
+  if (
+    capabilitiesAnswer.includes(BotOptionItem.id) ||
+    capabilitiesAnswer.includes(MessageExtensionItem.id)
+  ) {
+    features.push(BuiltInFeaturePluginNames.bot);
   }
   if (features.length > 0) {
     const addFeatureInputs: v3.SolutionAddFeatureInputs = {

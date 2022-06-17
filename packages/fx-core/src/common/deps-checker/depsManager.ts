@@ -106,7 +106,7 @@ export class DepsManager {
     );
     let error = undefined;
 
-    if (shouldInstall && !(await checker.isInstalled())) {
+    if (shouldInstall) {
       const result = await checker.resolve();
       error = result.isErr() ? result.error : undefined;
     }

@@ -57,13 +57,19 @@ export interface IConfigurableTab {
    * The set of contextItem scopes that a tab belong to
    */
   context?: (
+    | "personalTab"
     | "channelTab"
     | "privateChatTab"
     | "meetingChatTab"
     | "meetingDetailsTab"
     | "meetingSidePanel"
     | "meetingStage"
+    | "callingSidePanel"
   )[];
+  /**
+   * The set of meetingSurfaceItem scopes that a tab belong to
+   */
+  meetingSurfaces?: ("sidePanel" | "stage")[];
   /**
    * A relative file path to a tab preview image for use in SharePoint. Size 1024x768.
    */
@@ -322,18 +328,32 @@ export interface ILocalizationInfo {
   }[];
 }
 
+export interface IAppPermission {
+  name: string;
+  type: "Application" | "Delegated";
+}
+
+export interface ITogetherModeScene {
+  id: string;
+  name: string;
+  file: string;
+  preview: string;
+  maxAudience: number;
+  seatsReservedForOrganizersOrPresenters: number;
+}
+
 export type AppManifest = Record<string, any>;
 
 /**
- * manifest definition according to : https://developer.microsoft.com/en-us/json-schemas/teams/v1.8/MicrosoftTeams.schema.json
+ * manifest definition according to : https://developer.microsoft.com/en-us/json-schemas/teams/v1.13/MicrosoftTeams.schema.json
  */
 export class TeamsAppManifest implements AppManifest {
   $schema?: string =
-    "https://developer.microsoft.com/en-us/json-schemas/teams/v1.8/MicrosoftTeams.schema.json";
+    "https://developer.microsoft.com/en-us/json-schemas/teams/v1.13/MicrosoftTeams.schema.json";
   /**
    * The version of the schema this manifest is using.
    */
-  manifestVersion = "1.8";
+  manifestVersion = "1.13";
   /**
    * The version of the app. Changes to your manifest should cause a version change. This version string must follow the semver standard (http://semver.org).
    */
@@ -389,6 +409,21 @@ export class TeamsAppManifest implements AppManifest {
    */
   connectors?: IConnector[];
   /**
+   * Subscription offer associated with this app.
+   */
+  subscriptionOffer?: {
+    /**
+     * A unique identifier for the Commercial Marketplace Software as a Service Offer.
+     */
+    offerId: string;
+  };
+  /**
+   * Specify the app's Graph connector configuration. If this is present then webApplicationInfo.id must also be specified.
+   */
+  graphConnector?: {
+    notificationUrl: string;
+  };
+  /**
    * The set of compose extensions for this app. Currently only one compose extension per app is supported.
    */
   composeExtensions?: IComposeExtension[];
@@ -422,5 +457,65 @@ export class TeamsAppManifest implements AppManifest {
      * Specify the types of activites that your app can post to a users activity feed
      */
     activityTypes?: IActivityType[];
+  };
+  /**
+   * A list of tenant configured properties for an app
+   */
+  configurableProperties?: (
+    | "name"
+    | "shortDescription"
+    | "longDescription"
+    | "smallImageUrl"
+    | "largeImageUrl"
+    | "accentColor"
+    | "developerUrl"
+    | "privacyUrl"
+    | "termsOfUseUrl"
+  )[];
+  /**
+   * A value indicating whether an app is blocked by default until admin allows it
+   */
+  defaultBlockUntilAdminAction?: boolean;
+  /**
+   * The install scope defined for this app by default. This will be the option displayed on the button when a user tries to add the app
+   */
+  defaultInstallScope?: "personal" | "team" | "groupchat" | "meetings";
+  /**
+   * When a group install scope is selected, this will define the default capability when the user installs the app
+   */
+  defaultGroupCapability?: {
+    team: "tab" | "bot" | "connector";
+    groupchat: "tab" | "bot" | "connector";
+    meetings: "tab" | "bot" | "connector";
+  };
+  /**
+   * Specify meeting extension definition
+   */
+  meetingExtensionDefinition?: {
+    /**
+     * Meeting supported scenes.
+     */
+    scenes?: ITogetherModeScene[];
+    /**
+     * Meeting supported A/V filters.
+     */
+    filters?: {
+      id: string;
+      name: string;
+      thumbnail: string;
+    }[];
+    videoAppContentUrl?: string;
+  };
+  /**
+   * The url to the page that provides additional app information for the admins
+   */
+  publisherDocsUrl?: string;
+  /**
+   * Specify and consolidates authorization related information for the App.
+   */
+  authorization?: {
+    permissions?: {
+      resourceSpecific?: IAppPermission[];
+    };
   };
 }

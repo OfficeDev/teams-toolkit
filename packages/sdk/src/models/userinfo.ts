@@ -3,8 +3,6 @@
 
 /**
  * UserInfo with user displayName, objectId and preferredUserName.
- *
- * @beta
  */
 export interface UserInfo {
   /**

@@ -4,9 +4,6 @@
 
 ## TeamsBotSsoPromptTokenResponse interface
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Token response provided by Teams Bot SSO prompt
 
 <b>Signature:</b>
@@ -20,6 +17,6 @@ export interface TeamsBotSsoPromptTokenResponse extends TokenResponse
 
 |  Property | Type | Description |
 |  --- | --- | --- |
-|  [ssoToken](./teamsfx.teamsbotssoprompttokenresponse.ssotoken.md) | string | <b><i>(BETA)</i></b> SSO token for user |
-|  [ssoTokenExpiration](./teamsfx.teamsbotssoprompttokenresponse.ssotokenexpiration.md) | string | <b><i>(BETA)</i></b> Expire time of SSO token |
+|  [ssoToken](./teamsfx.teamsbotssoprompttokenresponse.ssotoken.md) | string | SSO token for user |
+|  [ssoTokenExpiration](./teamsfx.teamsbotssoprompttokenresponse.ssotokenexpiration.md) | string | Expire time of SSO token |
 

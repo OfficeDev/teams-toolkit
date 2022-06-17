@@ -27,26 +27,31 @@ import {
   COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV,
   COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV_M365,
   CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV,
-  DEVELOPER_PREVIEW_SCHEMA,
-  M365_DEVELOPER_PREVIEW_MANIFEST_VERSION,
+  M365_SCHEMA,
+  M365_MANIFEST_VERSION,
   MANIFEST_TEMPLATE,
   MANIFEST_TEMPLATE_CONSOLIDATE,
   STATIC_TABS_TPL_FOR_MULTI_ENV,
 } from "../../../../../src/plugins/resource/appstudio/constants";
-import { newEnvInfo } from "../../../../../src";
+import { isVSProject, newEnvInfo } from "../../../../../src";
 import * as commonTools from "../../../../../src/common/tools";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import { getAzureProjectRoot } from "../helper";
 import * as path from "path";
 import { getManifestTemplatePath } from "../../../../../src/plugins/resource/appstudio/manifestTemplate";
 import { createManifest } from "../../../../../src/plugins/resource/appstudio/plugin";
+import { getProjectTemplatesFolderPath } from "../../../../../src/common/utils";
 
 function getRemoteManifestPath(projectRoot: string): string {
   return `${projectRoot}/templates/${AppPackageFolderName}/${MANIFEST_TEMPLATE}`;
 }
 
-function getManifestConsolidatePath(projectRoot: string): string {
-  return `${projectRoot}/templates/${AppPackageFolderName}/${MANIFEST_TEMPLATE_CONSOLIDATE}`;
+async function getManifestConsolidatePath(projectRoot: string): Promise<string> {
+  return path.resolve(
+    await getProjectTemplatesFolderPath(projectRoot),
+    AppPackageFolderName,
+    MANIFEST_TEMPLATE_CONSOLIDATE
+  );
 }
 
 describe("Scaffold", () => {
@@ -68,15 +73,15 @@ describe("Scaffold", () => {
     };
 
     sandbox.stub(fs, "writeFile").callsFake((file: number | PathLike, data: any) => {
-      fileContent.set(path.normalize(file.toString()), data);
+      fileContent.set(path.resolve(file.toString()), data);
     });
 
     sandbox.stub(fs, "writeJSON").callsFake((file: string, obj: any) => {
-      fileContent.set(path.normalize(file), JSON.stringify(obj));
+      fileContent.set(path.resolve(file), JSON.stringify(obj));
     });
     // Uses stub<any, any> to circumvent type check. Beacuse sinon fails to mock my target overload of readJson.
     sandbox.stub<any, any>(fs, "copy").callsFake((originPath: string, filePath: string) => {
-      fileContent.set(path.normalize(filePath), JSON.stringify(filePath));
+      fileContent.set(path.resolve(filePath), JSON.stringify(filePath));
     });
   });
 
@@ -99,10 +104,9 @@ describe("Scaffold", () => {
 
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
-
-    const manifest: TeamsAppManifest = JSON.parse(
-      fileContent.get(path.normalize(getManifestConsolidatePath(ctx.root)))
-    );
+    const manifestPath = await getManifestConsolidatePath(ctx.root);
+    const manifestContent = fileContent.get(manifestPath);
+    const manifest: TeamsAppManifest = JSON.parse(manifestContent);
     chai.expect(manifest.staticTabs).to.deep.equal(STATIC_TABS_TPL_FOR_MULTI_ENV);
     chai.expect(manifest.configurableTabs).to.deep.equal(CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV);
     chai
@@ -128,16 +132,20 @@ describe("Scaffold", () => {
     //   1. normalize all paths in `fileContent.set`
     //   2. normalize all paths before checking path existence in `fileContent`
     // Maybe we can refactor this later.
-    chai.expect(
-      fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
-      )
-    ).to.be.true;
-    chai.expect(
-      fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
-      )
-    ).to.be.true;
+    const colorPngPath = path.join(
+      await getProjectTemplatesFolderPath(ctx.root),
+      AppPackageFolderName,
+      "resources",
+      "color.png"
+    );
+    const outlinePngPath = path.join(
+      await getProjectTemplatesFolderPath(ctx.root),
+      AppPackageFolderName,
+      "resources",
+      "outline.png"
+    );
+    chai.expect(fileContent.has(colorPngPath)).to.be.true;
+    chai.expect(fileContent.has(outlinePngPath)).to.be.true;
   });
 
   it("should generate manifest for m365 launch page", async () => {
@@ -158,10 +166,10 @@ describe("Scaffold", () => {
     chai.expect(result.isOk()).equals(true);
 
     const manifest: TeamsAppManifest = JSON.parse(
-      fileContent.get(path.normalize(getManifestConsolidatePath(ctx.root)))
+      fileContent.get(await getManifestConsolidatePath(ctx.root))
     );
-    chai.expect(manifest.$schema).to.deep.equal(DEVELOPER_PREVIEW_SCHEMA);
-    chai.expect(manifest.manifestVersion).to.deep.equal(M365_DEVELOPER_PREVIEW_MANIFEST_VERSION);
+    chai.expect(manifest.$schema).to.deep.equal(M365_SCHEMA);
+    chai.expect(manifest.manifestVersion).to.deep.equal(M365_MANIFEST_VERSION);
     chai.expect(manifest.staticTabs).to.deep.equal(STATIC_TABS_TPL_FOR_MULTI_ENV);
     chai.expect(manifest.configurableTabs).to.deep.equal([]);
     chai
@@ -189,12 +197,22 @@ describe("Scaffold", () => {
     // Maybe we can refactor this later.
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
+        path.join(
+          await getProjectTemplatesFolderPath(ctx.root),
+          AppPackageFolderName,
+          "resources",
+          "color.png"
+        )
       )
     ).to.be.true;
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
+        path.join(
+          await getProjectTemplatesFolderPath(ctx.root),
+          AppPackageFolderName,
+          "resources",
+          "outline.png"
+        )
       )
     ).to.be.true;
   });
@@ -214,7 +232,7 @@ describe("Scaffold", () => {
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
     const manifest: TeamsAppManifest = JSON.parse(
-      fileContent.get(path.normalize(getManifestConsolidatePath(ctx.root)))
+      fileContent.get(await getManifestConsolidatePath(ctx.root))
     );
     chai
       .expect(manifest.staticTabs, "staticTabs should be empty, because only bot is chosen")
@@ -235,12 +253,22 @@ describe("Scaffold", () => {
 
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
+        path.join(
+          await getProjectTemplatesFolderPath(ctx.root),
+          AppPackageFolderName,
+          "resources",
+          "color.png"
+        )
       )
     ).to.be.true;
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
+        path.join(
+          await getProjectTemplatesFolderPath(ctx.root),
+          AppPackageFolderName,
+          "resources",
+          "outline.png"
+        )
       )
     ).to.be.true;
   });
@@ -260,7 +288,7 @@ describe("Scaffold", () => {
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
     const manifest: TeamsAppManifest = JSON.parse(
-      fileContent.get(path.normalize(getManifestConsolidatePath(ctx.root)))
+      fileContent.get(await getManifestConsolidatePath(ctx.root))
     );
     chai
       .expect(manifest.staticTabs, "staticTabs should be empty, because only msgext is chosen")
@@ -278,12 +306,22 @@ describe("Scaffold", () => {
 
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
+        path.join(
+          await getProjectTemplatesFolderPath(ctx.root),
+          AppPackageFolderName,
+          "resources",
+          "color.png"
+        )
       )
     ).to.be.true;
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
+        path.join(
+          await getProjectTemplatesFolderPath(ctx.root),
+          AppPackageFolderName,
+          "resources",
+          "outline.png"
+        )
       )
     ).to.be.true;
   });
@@ -311,7 +349,7 @@ describe("Scaffold", () => {
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
     const manifest: TeamsAppManifest = JSON.parse(
-      fileContent.get(path.normalize(getManifestConsolidatePath(ctx.root)))
+      fileContent.get(await getManifestConsolidatePath(ctx.root))
     );
     chai
       .expect(manifest.staticTabs, "staticTabs should be empty, because only bot is chosen")
@@ -328,12 +366,22 @@ describe("Scaffold", () => {
 
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
+        path.join(
+          await getProjectTemplatesFolderPath(ctx.root),
+          AppPackageFolderName,
+          "resources",
+          "color.png"
+        )
       )
     ).to.be.true;
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
+        path.join(
+          await getProjectTemplatesFolderPath(ctx.root),
+          AppPackageFolderName,
+          "resources",
+          "outline.png"
+        )
       )
     ).to.be.true;
   });
@@ -360,9 +408,8 @@ describe("Scaffold", () => {
 
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
-    const manifest: TeamsAppManifest = JSON.parse(
-      fileContent.get(path.normalize(getManifestConsolidatePath(ctx.root)))
-    );
+    const manifestPath = await getManifestConsolidatePath(ctx.root);
+    const manifest: TeamsAppManifest = JSON.parse(fileContent.get(manifestPath));
     chai
       .expect(manifest.staticTabs, "staticTabs should be empty, because only bot is chosen")
       .to.deep.equal([]);
@@ -378,12 +425,22 @@ describe("Scaffold", () => {
 
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
+        path.join(
+          await getProjectTemplatesFolderPath(ctx.root),
+          AppPackageFolderName,
+          "resources",
+          "color.png"
+        )
       )
     ).to.be.true;
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
+        path.join(
+          await getProjectTemplatesFolderPath(ctx.root),
+          AppPackageFolderName,
+          "resources",
+          "outline.png"
+        )
       )
     ).to.be.true;
   });
@@ -404,10 +461,10 @@ describe("Scaffold", () => {
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
     const manifest: TeamsAppManifest = JSON.parse(
-      fileContent.get(path.normalize(getManifestConsolidatePath(ctx.root)))
+      fileContent.get(await getManifestConsolidatePath(ctx.root))
     );
-    chai.expect(manifest.$schema).to.deep.equal(DEVELOPER_PREVIEW_SCHEMA);
-    chai.expect(manifest.manifestVersion).to.deep.equal(M365_DEVELOPER_PREVIEW_MANIFEST_VERSION);
+    chai.expect(manifest.$schema).to.deep.equal(M365_SCHEMA);
+    chai.expect(manifest.manifestVersion).to.deep.equal(M365_MANIFEST_VERSION);
     chai
       .expect(manifest.staticTabs, "staticTabs should be empty, because only msgext is chosen")
       .to.deep.equal([]);
@@ -426,12 +483,22 @@ describe("Scaffold", () => {
 
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
+        path.join(
+          await getProjectTemplatesFolderPath(ctx.root),
+          AppPackageFolderName,
+          "resources",
+          "color.png"
+        )
       )
     ).to.be.true;
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
+        path.join(
+          await getProjectTemplatesFolderPath(ctx.root),
+          AppPackageFolderName,
+          "resources",
+          "outline.png"
+        )
       )
     ).to.be.true;
   });
@@ -452,7 +519,7 @@ describe("Scaffold", () => {
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
     const manifest: TeamsAppManifest = JSON.parse(
-      fileContent.get(path.normalize(getManifestConsolidatePath(ctx.root)))
+      fileContent.get(await getManifestConsolidatePath(ctx.root))
     );
     chai.expect(manifest.staticTabs).to.deep.equal(STATIC_TABS_TPL_FOR_MULTI_ENV);
     chai.expect(manifest.configurableTabs).to.deep.equal(CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV);
@@ -461,12 +528,22 @@ describe("Scaffold", () => {
 
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
+        path.join(
+          await getProjectTemplatesFolderPath(ctx.root),
+          AppPackageFolderName,
+          "resources",
+          "color.png"
+        )
       )
     ).to.be.true;
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
+        path.join(
+          await getProjectTemplatesFolderPath(ctx.root),
+          AppPackageFolderName,
+          "resources",
+          "outline.png"
+        )
       )
     ).to.be.true;
   });
@@ -487,17 +564,27 @@ describe("Scaffold", () => {
 
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
-    const manifest = fileContent.get(path.normalize(getManifestConsolidatePath(ctx.root)));
+    const manifest = fileContent.get(await getManifestConsolidatePath(ctx.root));
     chai.expect(manifest).to.be.not.undefined;
 
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
+        path.join(
+          await getProjectTemplatesFolderPath(ctx.root),
+          AppPackageFolderName,
+          "resources",
+          "color.png"
+        )
       )
     ).to.be.true;
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
+        path.join(
+          await getProjectTemplatesFolderPath(ctx.root),
+          AppPackageFolderName,
+          "resources",
+          "outline.png"
+        )
       )
     ).to.be.true;
   });
@@ -518,7 +605,7 @@ describe("Scaffold", () => {
 
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
-    const manifest = fileContent.get(path.normalize(getManifestConsolidatePath(ctx.root)));
+    const manifest = fileContent.get(await getManifestConsolidatePath(ctx.root));
     chai.expect(manifest).to.be.not.undefined;
 
     chai.expect(manifest.webApplicationInfo).to.be.undefined;
@@ -543,8 +630,10 @@ describe("Scaffold", () => {
     chai.expect(result.isOk()).equals(true);
     const manifest: TeamsAppManifest = JSON.parse(
       fileContent.get(
-        path.normalize(
-          `${ctx.root}/templates/${AppPackageFolderName}/${MANIFEST_TEMPLATE_CONSOLIDATE}`
+        path.join(
+          await getProjectTemplatesFolderPath(ctx.root),
+          AppPackageFolderName,
+          MANIFEST_TEMPLATE_CONSOLIDATE
         )
       )
     );
@@ -567,12 +656,22 @@ describe("Scaffold", () => {
 
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
+        path.join(
+          await getProjectTemplatesFolderPath(ctx.root),
+          AppPackageFolderName,
+          "resources",
+          "color.png"
+        )
       )
     ).to.be.true;
     chai.expect(
       fileContent.has(
-        path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
+        path.join(
+          await getProjectTemplatesFolderPath(ctx.root),
+          AppPackageFolderName,
+          "resources",
+          "outline.png"
+        )
       )
     ).to.be.true;
   });

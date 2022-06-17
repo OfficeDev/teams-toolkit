@@ -46,6 +46,11 @@ import {
   getAppDirectory,
   isYoCheckerEnabled,
   isGeneratorCheckerEnabled,
+  GraphReadUserScopes,
+  getSPFxTenant,
+  SPFxScopes,
+  GraphScopes,
+  getSPFxToken,
 } from "../../../common/tools";
 import { getTemplatesFolder } from "../../../folder";
 import {
@@ -58,7 +63,6 @@ import { SPOClient } from "./spoClient";
 import { isConfigUnifyEnabled } from "../../../common";
 import { DefaultManifestProvider } from "../../solution/fx-solution/v3/addFeature";
 import { convert2Context } from "../utils4v2";
-import { yeomanScaffoldEnabled } from "../../../core/globalVars";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { YoChecker } from "./depsChecker/yoChecker";
 import { GeneratorChecker } from "./depsChecker/generatorChecker";
@@ -73,264 +77,115 @@ export class SPFxPluginImpl {
       const componentNameCamelCase = lodash.camelCase(componentName);
       const templateFolder = path.join(getTemplatesFolder(), "plugins", "resource", "spfx");
       const outputFolderPath = `${ctx.root}/SPFx`;
-      let componentId: string;
       const replaceMap: Map<string, string> = new Map();
-      if (yeomanScaffoldEnabled()) {
-        await progressHandler?.next(ScaffoldProgressMessage.DependencyCheck);
 
-        const yoChecker = new YoChecker(ctx.logProvider!);
-        const spGeneratorChecker = new GeneratorChecker(ctx.logProvider!);
+      await progressHandler?.next(ScaffoldProgressMessage.DependencyCheck);
 
-        const yoInstalled = await yoChecker.isInstalled();
-        const generatorInstalled = await spGeneratorChecker.isInstalled();
+      const yoChecker = new YoChecker(ctx.logProvider!);
+      const spGeneratorChecker = new GeneratorChecker(ctx.logProvider!);
 
-        if (!yoInstalled || !generatorInstalled) {
-          await progressHandler?.next(ScaffoldProgressMessage.DependencyInstall);
+      const yoInstalled = await yoChecker.isInstalled();
+      const generatorInstalled = await spGeneratorChecker.isInstalled();
 
-          if (isYoCheckerEnabled()) {
-            const yoRes = await yoChecker.ensureDependency(ctx);
-            if (yoRes.isErr()) {
-              throw DependencyInstallError("yo");
-            }
-          }
+      if (!yoInstalled || !generatorInstalled) {
+        await progressHandler?.next(ScaffoldProgressMessage.DependencyInstall);
 
-          if (isGeneratorCheckerEnabled()) {
-            const spGeneratorRes = await spGeneratorChecker.ensureDependency(ctx);
-            if (spGeneratorRes.isErr()) {
-              throw DependencyInstallError("sharepoint generator");
-            }
+        if (isYoCheckerEnabled()) {
+          const yoRes = await yoChecker.ensureDependency(ctx);
+          if (yoRes.isErr()) {
+            throw DependencyInstallError("yo");
           }
         }
 
-        await progressHandler?.next(ScaffoldProgressMessage.ScaffoldProject);
-        const framework = ctx.answers![SPFXQuestionNames.framework_type] as string;
-        const solutionName = ctx.projectSettings?.appName as string;
-        if (ctx.answers?.platform === Platform.VSCode) {
-          (ctx.logProvider as any).outputChannel.show();
-        }
-
-        const yoEnv: NodeJS.ProcessEnv = process.env;
-        yoEnv.PATH = isYoCheckerEnabled()
-          ? `${await yoChecker.getBinFolder()}${path.delimiter}${process.env.PATH ?? ""}`
-          : process.env.PATH;
-        await cpUtils.executeCommand(
-          ctx.root,
-          ctx.logProvider,
-          {
-            timeout: 2 * 60 * 1000,
-            env: yoEnv,
-          },
-          "yo",
-          "@microsoft/sharepoint",
-          "--skip-install",
-          "true",
-          "--component-type",
-          "webpart",
-          "--component-name",
-          webpartName,
-          "--framework",
-          framework,
-          "--solution-name",
-          solutionName,
-          "--environment",
-          "spo",
-          "--skip-feature-deployment",
-          "true",
-          "--is-domain-isolated",
-          "false"
-        );
-
-        const currentPath = path.join(ctx.root, solutionName);
-        const newPath = path.join(ctx.root, "SPFx");
-        await fs.rename(currentPath, newPath);
-
-        await progressHandler?.next(ScaffoldProgressMessage.UpdateManifest);
-        const manifestPath = `${newPath}/src/webparts/${componentNameCamelCase}/${componentName}WebPart.manifest.json`;
-        const manifest = await fs.readFile(manifestPath, "utf8");
-        let manifestString = manifest.toString();
-        manifestString = manifestString.replace(
-          `"supportedHosts": ["SharePointWebPart"]`,
-          `"supportedHosts": ["SharePointWebPart", "TeamsPersonalApp", "TeamsTab"]`
-        );
-        await fs.writeFile(manifestPath, manifestString);
-
-        const matchHashComment = new RegExp(/(\/\/ .*)/, "gi");
-        const manifestJson = JSON.parse(manifestString.replace(matchHashComment, "").trim());
-        componentId = manifestJson.id;
-        replaceMap.set(PlaceHolders.componentId, componentId);
-        replaceMap.set(PlaceHolders.componentNameUnescaped, webpartName);
-
-        // remove dataVersion() function, related issue: https://github.com/SharePoint/sp-dev-docs/issues/6469
-        const webpartFile = `${newPath}/src/webparts/${componentNameCamelCase}/${componentName}WebPart.ts`;
-        const codeFile = await fs.readFile(webpartFile, "utf8");
-        let codeString = codeFile.toString();
-        codeString = codeString.replace(
-          `  protected get dataVersion(): Version {\r\n    return Version.parse('1.0');\r\n  }\r\n\r\n`,
-          ``
-        );
-        codeString = codeString.replace(
-          `import { Version } from '@microsoft/sp-core-library';\r\n`,
-          ``
-        );
-        await fs.writeFile(webpartFile, codeString);
-
-        // remove .vscode
-        const debugPath = `${newPath}/.vscode`;
-        await fs.remove(debugPath);
-
-        // update readme
-        await fs.copyFile(
-          path.resolve(templateFolder, "./solution/README.md"),
-          `${outputFolderPath}/README.md`
-        );
-      } else {
-        componentId = uuid.v4();
-        const componentClassName = `${componentName}WebPart`;
-        const componentStrings = componentClassName + "Strings";
-        const libraryName = lodash.kebabCase(ctx.projectSettings?.appName);
-        let componentAlias = componentClassName;
-        if (componentClassName.length > Constants.MAX_ALIAS_LENGTH) {
-          componentAlias = componentClassName.substring(0, Constants.MAX_ALIAS_LENGTH);
-        }
-        let componentClassNameKebabCase = lodash.kebabCase(componentClassName);
-        if (componentClassNameKebabCase.length > Constants.MAX_BUNDLE_NAME_LENGTH) {
-          componentClassNameKebabCase = componentClassNameKebabCase.substring(
-            0,
-            Constants.MAX_BUNDLE_NAME_LENGTH
-          );
-          const lastCharacterIndex = componentClassNameKebabCase.length - 1;
-          if (componentClassNameKebabCase[lastCharacterIndex] === "-") {
-            componentClassNameKebabCase = componentClassNameKebabCase.substring(
-              0,
-              lastCharacterIndex
-            );
+        if (isGeneratorCheckerEnabled()) {
+          const spGeneratorRes = await spGeneratorChecker.ensureDependency(ctx);
+          if (spGeneratorRes.isErr()) {
+            throw DependencyInstallError("sharepoint generator");
           }
         }
-
-        await fs.mkdir(outputFolderPath);
-
-        // teams folder
-        const teamsDir = `${outputFolderPath}/teams`;
-
-        await fs.mkdir(teamsDir);
-        await fs.copyFile(
-          path.resolve(templateFolder, "./webpart/base/images/color.png"),
-          `${teamsDir}/${componentId}_color.png`
-        );
-        await fs.copyFile(
-          path.resolve(templateFolder, "./webpart/base/images/outline.png"),
-          `${teamsDir}/${componentId}_outline.png`
-        );
-
-        // src folder
-        const srcDir = `${outputFolderPath}/src`;
-        await fs.mkdir(srcDir);
-        await fs.copyFile(
-          path.resolve(templateFolder, "./solution/src/index.ts"),
-          `${srcDir}/index.ts`
-        );
-
-        switch (ctx.answers![SPFXQuestionNames.framework_type] as string) {
-          case Constants.FRAMEWORK_NONE:
-            fs.mkdirSync(`${srcDir}/webparts/${componentNameCamelCase}`, {
-              recursive: true,
-            });
-            await fs.copyFile(
-              path.resolve(templateFolder, "./webpart/none/{componentClassName}.module.scss"),
-              `${srcDir}/webparts/${componentNameCamelCase}/${componentClassName}.module.scss`
-            );
-            await fs.copyFile(
-              path.resolve(templateFolder, "./webpart/none/{componentClassName}.ts"),
-              `${srcDir}/webparts/${componentNameCamelCase}/${componentClassName}.ts`
-            );
-            await fs.copyFile(
-              path.resolve(templateFolder, "./webpart/none/package.json"),
-              `${outputFolderPath}/package.json`
-            );
-            break;
-          case Constants.FRAMEWORK_REACT:
-            const componentDir = `${srcDir}/webparts/${componentNameCamelCase}/components`;
-            fs.mkdirSync(componentDir, { recursive: true });
-            await fs.copyFile(
-              path.resolve(templateFolder, "./webpart/react/{componentClassName}.ts"),
-              `${srcDir}/webparts/${componentNameCamelCase}/${componentClassName}.ts`
-            );
-            await fs.copyFile(
-              path.resolve(
-                templateFolder,
-                "./webpart/react/components/{componentName}.module.scss"
-              ),
-              `${componentDir}/${componentName}.module.scss`
-            );
-            await fs.copyFile(
-              path.resolve(templateFolder, "./webpart/react/components/{componentName}.tsx"),
-              `${componentDir}/${componentName}.tsx`
-            );
-            await fs.copyFile(
-              path.resolve(templateFolder, "./webpart/react/components/I{componentName}Props.ts"),
-              `${componentDir}/I${componentName}Props.ts`
-            );
-            await fs.copyFile(
-              path.resolve(templateFolder, "./webpart/react/package.json"),
-              `${outputFolderPath}/package.json`
-            );
-            break;
-        }
-
-        await fs.copy(
-          path.resolve(templateFolder, "./webpart/base/loc"),
-          `${srcDir}/webparts/${componentNameCamelCase}/loc`
-        );
-        await fs.copy(
-          path.resolve(templateFolder, "./webpart/base/{componentClassName}.manifest.json"),
-          `${srcDir}/webparts/${componentNameCamelCase}/${componentClassName}.manifest.json`
-        );
-
-        // config folder
-        await fs.copy(
-          path.resolve(templateFolder, "./solution/config"),
-          `${outputFolderPath}/config`
-        );
-
-        // Other files
-        await fs.copyFile(
-          path.resolve(templateFolder, "./solution/README.md"),
-          `${outputFolderPath}/README.md`
-        );
-        await fs.copyFile(
-          path.resolve(templateFolder, "./solution/_gitignore"),
-          `${outputFolderPath}/.gitignore`
-        );
-        await fs.copyFile(
-          path.resolve(templateFolder, "./solution/gulpfile.js"),
-          `${outputFolderPath}/gulpfile.js`
-        );
-        await fs.copyFile(
-          path.resolve(templateFolder, "./solution/tsconfig.json"),
-          `${outputFolderPath}/tsconfig.json`
-        );
-        await fs.copyFile(
-          path.resolve(templateFolder, "./solution/tslint.json"),
-          `${outputFolderPath}/tslint.json`
-        );
-
-        // Configure placeholders
-        replaceMap.set(PlaceHolders.componentName, componentName);
-        replaceMap.set(PlaceHolders.componentNameCamelCase, componentNameCamelCase);
-        replaceMap.set(PlaceHolders.componentClassName, componentClassName);
-        replaceMap.set(PlaceHolders.componentStrings, componentStrings);
-        replaceMap.set(PlaceHolders.libraryName, libraryName);
-        replaceMap.set(PlaceHolders.componentId, componentId);
-        replaceMap.set(PlaceHolders.componentAlias, componentAlias);
-        replaceMap.set(
-          PlaceHolders.componentDescription,
-          ctx.answers![SPFXQuestionNames.webpart_desp] as string
-        );
-        replaceMap.set(PlaceHolders.componentNameUnescaped, webpartName);
-        replaceMap.set(PlaceHolders.componentClassNameKebabCase, componentClassNameKebabCase);
-
-        await Utils.configure(outputFolderPath, replaceMap);
       }
+
+      await progressHandler?.next(ScaffoldProgressMessage.ScaffoldProject);
+      const framework = ctx.answers![SPFXQuestionNames.framework_type] as string;
+      const solutionName = ctx.projectSettings?.appName as string;
+      if (ctx.answers?.platform === Platform.VSCode) {
+        (ctx.logProvider as any).outputChannel.show();
+      }
+
+      const yoEnv: NodeJS.ProcessEnv = process.env;
+      yoEnv.PATH = isYoCheckerEnabled()
+        ? `${await yoChecker.getBinFolder()}${path.delimiter}${process.env.PATH ?? ""}`
+        : process.env.PATH;
+      await cpUtils.executeCommand(
+        ctx.root,
+        ctx.logProvider,
+        {
+          timeout: 2 * 60 * 1000,
+          env: yoEnv,
+        },
+        "yo",
+        "@microsoft/sharepoint",
+        "--skip-install",
+        "true",
+        "--component-type",
+        "webpart",
+        "--component-name",
+        webpartName,
+        "--framework",
+        framework,
+        "--solution-name",
+        solutionName,
+        "--environment",
+        "spo",
+        "--skip-feature-deployment",
+        "true",
+        "--is-domain-isolated",
+        "false"
+      );
+
+      const currentPath = path.join(ctx.root, solutionName);
+      const newPath = path.join(ctx.root, "SPFx");
+      await fs.rename(currentPath, newPath);
+
+      await progressHandler?.next(ScaffoldProgressMessage.UpdateManifest);
+      const manifestPath = `${newPath}/src/webparts/${componentNameCamelCase}/${componentName}WebPart.manifest.json`;
+      const manifest = await fs.readFile(manifestPath, "utf8");
+      let manifestString = manifest.toString();
+      manifestString = manifestString.replace(
+        `"supportedHosts": ["SharePointWebPart"]`,
+        `"supportedHosts": ["SharePointWebPart", "TeamsPersonalApp", "TeamsTab"]`
+      );
+      await fs.writeFile(manifestPath, manifestString);
+
+      const matchHashComment = new RegExp(/(\/\/ .*)/, "gi");
+      const manifestJson = JSON.parse(manifestString.replace(matchHashComment, "").trim());
+      const componentId = manifestJson.id;
+      replaceMap.set(PlaceHolders.componentId, componentId);
+      replaceMap.set(PlaceHolders.componentNameUnescaped, webpartName);
+
+      // remove dataVersion() function, related issue: https://github.com/SharePoint/sp-dev-docs/issues/6469
+      const webpartFile = `${newPath}/src/webparts/${componentNameCamelCase}/${componentName}WebPart.ts`;
+      const codeFile = await fs.readFile(webpartFile, "utf8");
+      let codeString = codeFile.toString();
+      codeString = codeString.replace(
+        `  protected get dataVersion(): Version {\r\n    return Version.parse('1.0');\r\n  }\r\n\r\n`,
+        ``
+      );
+      codeString = codeString.replace(
+        `import { Version } from '@microsoft/sp-core-library';\r\n`,
+        ``
+      );
+      await fs.writeFile(webpartFile, codeString);
+
+      // remove .vscode
+      const debugPath = `${newPath}/.vscode`;
+      await fs.remove(debugPath);
+
+      // update readme
+      await fs.copyFile(
+        path.resolve(templateFolder, "./solution/README.md"),
+        `${outputFolderPath}/README.md`
+      );
 
       const appDirectory = await getAppDirectory(ctx.root);
       if (isConfigUnifyEnabled()) {
@@ -483,7 +338,7 @@ export class SPFxPluginImpl {
       }
       SPOClient.setBaseUrl(tenant.value);
 
-      const spoToken = await ctx.sharepointTokenProvider?.getAccessToken();
+      const spoToken = await getSPFxToken(ctx.m365TokenProvider!);
       if (!spoToken) {
         return err(GetSPOTokenFailedError());
       }
@@ -584,12 +439,14 @@ export class SPFxPluginImpl {
   }
 
   private async getTenant(ctx: PluginContext): Promise<Result<string, FxError>> {
-    const graphToken = await ctx.graphTokenProvider?.getAccessToken();
+    const graphTokenRes = await ctx.m365TokenProvider?.getAccessToken({ scopes: GraphScopes });
+    const graphToken = graphTokenRes?.isOk() ? graphTokenRes.value : undefined;
     if (!graphToken) {
       return err(GetGraphTokenFailedError());
     }
 
-    const tokenJson = await ctx.graphTokenProvider?.getJsonObject();
+    const graphTokenJsonRes = await ctx.m365TokenProvider?.getJsonObject({ scopes: GraphScopes });
+    const tokenJson = graphTokenJsonRes?.isOk() ? graphTokenJsonRes.value : undefined;
     const username = (tokenJson as any).unique_name;
 
     const instance = axios.create({

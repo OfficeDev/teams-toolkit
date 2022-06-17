@@ -4,9 +4,6 @@
 
 ## Channel class
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team channel.
 
 <b>Signature:</b>
@@ -24,20 +21,20 @@ It's recommended to get channels from .
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(parent, info)](./teamsfx.channel._constructor_.md) |  | <b><i>(BETA)</i></b> Constuctor. |
+|  [(constructor)(parent, info)](./teamsfx.channel._constructor_.md) |  | Constructor. |
 
 ## Properties
 
 |  Property | Modifiers | Type | Description |
 |  --- | --- | --- | --- |
-|  [info](./teamsfx.channel.info.md) |  | ChannelInfo | <b><i>(BETA)</i></b> Detailed channel information. |
-|  [parent](./teamsfx.channel.parent.md) |  | [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) | <b><i>(BETA)</i></b> The parent [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) where this channel is created from. |
-|  [type](./teamsfx.channel.type.md) |  | [NotificationTargetType](./teamsfx.notificationtargettype.md) | <b><i>(BETA)</i></b> Notification target type. For channel it's always "Channel". |
+|  [info](./teamsfx.channel.info.md) |  | ChannelInfo | Detailed channel information. |
+|  [parent](./teamsfx.channel.parent.md) |  | [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) | The parent [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) where this channel is created from. |
+|  [type](./teamsfx.channel.type.md) |  | [NotificationTargetType](./teamsfx.notificationtargettype.md) | Notification target type. For channel it's always "Channel". |
 
 ## Methods
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
-|  [sendAdaptiveCard(card)](./teamsfx.channel.sendadaptivecard.md) |  | <b><i>(BETA)</i></b> Send an adaptive card message. |
-|  [sendMessage(text)](./teamsfx.channel.sendmessage.md) |  | <b><i>(BETA)</i></b> Send a plain text message. |
+|  [sendAdaptiveCard(card)](./teamsfx.channel.sendadaptivecard.md) |  | Send an adaptive card message. |
+|  [sendMessage(text)](./teamsfx.channel.sendmessage.md) |  | Send a plain text message. |
 

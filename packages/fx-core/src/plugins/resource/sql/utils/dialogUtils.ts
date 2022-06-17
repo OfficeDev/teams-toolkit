@@ -13,7 +13,6 @@ export class DialogUtils {
 }
 
 export class ProgressTitle {
-  static readonly Provision = "Provisioning SQL";
   static readonly PostProvision = "Configuring SQL";
 }
 

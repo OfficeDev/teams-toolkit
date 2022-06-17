@@ -5,7 +5,6 @@ import {
   PluginContext,
   ok,
   ReadonlyPluginConfig,
-  SolutionSettings,
   Result,
   FxError,
 } from "@microsoft/teamsfx-api";
@@ -41,9 +40,8 @@ import {
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,
-  isConfigUnifyEnabled,
 } from "../../../../common/tools";
-import { generateTemplateInfos } from "./resources/templateInfo";
+import { TemplateInfo } from "./resources/templateInfo";
 import { Bicep } from "../../../../common/constants";
 import { getActivatedV2ResourcePlugins } from "../../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/adaptor";
@@ -52,12 +50,6 @@ import { PluginImpl } from "../interface";
 import { ProgressHelper } from "../utils/progress-helper";
 import { WebappDeployProgress as DeployProgress } from "./resources/steps";
 import { BotOptionItem, TabOptionItem } from "../../../solution/fx-solution/question";
-import {
-  LocalSettingsAuthKeys,
-  LocalSettingsBotKeys,
-  LocalSettingsFrontendKeys,
-  LocalSettingsTeamsAppKeys,
-} from "../../../../common/localSettingsConstants";
 import { PluginNames } from "../../../solution/fx-solution/constants";
 
 type Site = WebSiteManagementModels.Site;
@@ -119,14 +111,8 @@ export class DotnetPluginImpl implements PluginImpl {
     if (!ctx.projectSettings) {
       throw new NoProjectSettingError();
     }
-
-    const selectedCapabilities = (ctx.projectSettings?.solutionSettings as SolutionSettings)
-      .capabilities;
-    const templateInfos = generateTemplateInfos(selectedCapabilities, ctx);
-    for (const templateInfo of templateInfos) {
-      await scaffoldFromZipPackage(ctx.root, templateInfo);
-    }
-
+    const projectName = ctx.projectSettings!.appName;
+    await scaffoldFromZipPackage(ctx.root, new TemplateInfo({ ProjectName: projectName }));
     ctx.projectSettings.pluginSettings = {
       ...ctx.projectSettings?.pluginSettings,
       projectFilePath: path.join(ctx.root, PathInfo.projectFilename(ctx.projectSettings.appName)),
@@ -215,11 +201,7 @@ export class DotnetPluginImpl implements PluginImpl {
   }
 
   public async localDebug(ctx: PluginContext): Promise<TeamsFxResult> {
-    if (isConfigUnifyEnabled()) {
-      ctx.envInfo.state.get(PluginInfo.pluginName)?.set(ConfigInfo.indexPath, PathInfo.indexPath);
-    } else {
-      ctx.localSettings?.frontend?.set(LocalSettingsFrontendKeys.TabIndexPath, PathInfo.indexPath);
-    }
+    ctx.envInfo.state.get(PluginInfo.pluginName)?.set(ConfigInfo.indexPath, PathInfo.indexPath);
     return ok(undefined);
   }
 
@@ -238,46 +220,20 @@ export class DotnetPluginImpl implements PluginImpl {
       async () => await fs.readFile(appSettingsPath, "utf-8")
     );
 
-    let clientId = Placeholders.clientId;
-    let clientSecret = Placeholders.clientSecret;
-    let tenantId = "";
-    let oauthAuthority = Placeholders.oauthAuthority;
-    let botId = Placeholders.botId;
-    let botPassword = Placeholders.botPassword;
-
-    if (isConfigUnifyEnabled()) {
-      clientId =
-        ctx.envInfo.state.get(PluginNames.AAD)?.get(DependentPluginInfo.aadClientId) ??
-        Placeholders.clientId;
-      clientSecret =
-        ctx.envInfo.state.get(PluginNames.AAD)?.get(DependentPluginInfo.aadClientSecret) ??
-        Placeholders.clientSecret;
-      tenantId = ctx.envInfo.state.get(PluginNames.APPST)?.get(DependentPluginInfo.appTenantId);
-      oauthAuthority = tenantId ? PathInfo.oauthHost(tenantId) : Placeholders.oauthAuthority;
-      botId =
-        ctx.envInfo.state.get(PluginNames.BOT)?.get(DependentPluginInfo.botId) ??
-        Placeholders.botId;
-      botPassword =
-        ctx.envInfo.state.get(PluginNames.BOT)?.get(DependentPluginInfo.botPassword) ??
-        Placeholders.botPassword;
-    } else {
-      clientId =
-        ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId) ?? Placeholders.clientId;
-      clientSecret =
-        ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientSecret) ??
-        Placeholders.clientSecret;
-      tenantId = ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TenantId) as string;
-      oauthAuthority = tenantId ? PathInfo.oauthHost(tenantId) : Placeholders.oauthAuthority;
-      botId = ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId) ?? Placeholders.botId;
-      botPassword =
-        ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotPassword) ?? Placeholders.botPassword;
-    }
+    const clientId =
+      ctx.envInfo.state.get(PluginNames.AAD)?.get(DependentPluginInfo.aadClientId) ??
+      Placeholders.clientId;
+    const clientSecret =
+      ctx.envInfo.state.get(PluginNames.AAD)?.get(DependentPluginInfo.aadClientSecret) ??
+      Placeholders.clientSecret;
+    const tenantId = ctx.envInfo.state
+      .get(PluginNames.SOLUTION)
+      ?.get(DependentPluginInfo.appTenantId);
+    const oauthAuthority = tenantId ? PathInfo.oauthHost(tenantId) : Placeholders.oauthAuthority;
 
     appSettings = appSettings.replace(RegularExpr.clientId, clientId);
     appSettings = appSettings.replace(RegularExpr.clientSecret, clientSecret);
     appSettings = appSettings.replace(RegularExpr.oauthAuthority, oauthAuthority);
-    appSettings = appSettings.replace(RegularExpr.botId, botId);
-    appSettings = appSettings.replace(RegularExpr.botPassword, botPassword);
     await runWithErrorCatchAndThrow(
       new FileIOError(appSettingsPath),
       async () => await fs.writeFile(appSettingsPath, appSettings, "utf-8")

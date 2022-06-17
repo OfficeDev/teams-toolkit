@@ -5,7 +5,7 @@
  * @author Zhiyu You <zhiyou@microsoft.com>
  */
 
-import { isGAPreviewEnabled } from "@microsoft/teamsfx-core";
+import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core";
 import { expect } from "chai";
 
 import { execAsync } from "../commonUtils";
@@ -20,7 +20,7 @@ describe("teamsfx command help", function () {
   });
 
   it(`teamsfx add azure-apim -h`, async function () {
-    const command = isGAPreviewEnabled()
+    const command = isPreviewFeaturesEnabled()
       ? `teamsfx add azure-apim -h`
       : `teamsfx resource add azure-apim -h`;
     const result = await execAsync(command, {

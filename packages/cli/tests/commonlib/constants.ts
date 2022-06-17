@@ -1,8 +1,11 @@
 export class TestFilePath {
   static readonly armTemplateBaseFolder = "./templates/azure";
   static readonly configFolder = "./.fx/configs";
+  static readonly manifestFolder = "./templates/appPackage";
 
   static readonly projectSettingsFileName = "projectSettings.json";
+  static readonly aadManifestTemplateFileName = "aad.template.json";
+  static readonly permissionJsonFileName = "permissions.json";
 
   static readonly mainFileName = "main.bicep";
   static readonly provisionFileName = "provision.bicep";
@@ -30,14 +33,16 @@ export const fileEncoding = "UTF8";
 
 export enum Capability {
   Tab = "tab",
+  SSOTab = "sso-tab",
   Bot = "bot",
-  MessagingExtension = "messaging-extension",
+  MessageExtension = "message-extension",
   M365SsoLaunchPage = "sso-launch-page",
   M365SearchApp = "search-app",
   ExistingTab = "existing-tab",
   TabSso = "TabSSO",
   BotSso = "BotSSO",
   TabNonSso = "tab-non-sso",
+  Notification = "notification",
 }
 
 export enum Resource {
@@ -53,7 +58,14 @@ export enum ResourceToDeploy {
   Bot = "bot",
   Function = "function",
   Apim = "apim",
+  AadManifest = "aad-manifest",
 }
+
+export enum Runtime {
+  Dotnet = "dotnet",
+  Node = "node",
+}
+
 export class StateConfigKey {
   // solution
   static readonly subscriptionId = "subscriptionId";
@@ -82,6 +94,7 @@ export class StateConfigKey {
   static readonly botId = "botId";
   static readonly botPassword = "botPassword";
   static readonly botWebAppResourceId = "botWebAppResourceId";
+  static readonly botResourceId = "resourceId";
   // sql
   static readonly skipAddingUser = "skipAddingUser";
   static readonly sqlEndpoint: string = "sqlEndpoint";

@@ -1,0 +1,19 @@
+const teamsfxSdk = require("@microsoft/teamsfx");
+
+// Load application configuration
+const teamsFx = new teamsfxSdk.TeamsFx();
+// Initialize a new axios instance to call {{config.APIName}}
+const authProvider = new teamsfxSdk.ApiKeyProvider(
+  "{{config.AuthConfig.Name}}",
+  teamsFx.getConfig("TEAMSFX_API_{{capitalName}}_API_KEY"),
+{{#if (equals config.AuthConfig.Location "request header")}}
+  teamsfxSdk.ApiKeyLocation.Header
+{{else}}
+  teamsfxSdk.ApiKeyLocation.QueryParams
+{{/if}}
+);
+const {{config.APIName}}Client = teamsfxSdk.createApiClient(
+  teamsFx.getConfig("TEAMSFX_API_{{capitalName}}_ENDPOINT"),
+  authProvider
+);
+module.exports.{{config.APIName}}Client = {{config.APIName}}Client;

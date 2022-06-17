@@ -4,9 +4,6 @@
 
 ## TeamsBotInstallation class
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a bot installation. Teams Bot could be installed into - Personal chat - Group chat - Team (by default the `General` channel)
 
 <b>Signature:</b>
@@ -24,22 +21,22 @@ It's recommended to get bot installations from .
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(adapter, conversationReference)](./teamsfx.teamsbotinstallation._constructor_.md) |  | <b><i>(BETA)</i></b> Constructor |
+|  [(constructor)(adapter, conversationReference)](./teamsfx.teamsbotinstallation._constructor_.md) |  | Constructor |
 
 ## Properties
 
 |  Property | Modifiers | Type | Description |
 |  --- | --- | --- | --- |
-|  [adapter](./teamsfx.teamsbotinstallation.adapter.md) |  | BotFrameworkAdapter | <b><i>(BETA)</i></b> The bound <code>BotFrameworkAdapter</code>. |
-|  [conversationReference](./teamsfx.teamsbotinstallation.conversationreference.md) |  | Partial&lt;ConversationReference&gt; | <b><i>(BETA)</i></b> The bound <code>ConversationReference</code>. |
-|  [type?](./teamsfx.teamsbotinstallation.type.md) |  | [NotificationTargetType](./teamsfx.notificationtargettype.md) | <b><i>(BETA)</i></b> <i>(Optional)</i> Notification target type. |
+|  [adapter](./teamsfx.teamsbotinstallation.adapter.md) |  | BotFrameworkAdapter | The bound <code>BotFrameworkAdapter</code>. |
+|  [conversationReference](./teamsfx.teamsbotinstallation.conversationreference.md) |  | Partial&lt;ConversationReference&gt; | The bound <code>ConversationReference</code>. |
+|  [type?](./teamsfx.teamsbotinstallation.type.md) |  | [NotificationTargetType](./teamsfx.notificationtargettype.md) | <i>(Optional)</i> Notification target type. |
 
 ## Methods
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
-|  [channels()](./teamsfx.teamsbotinstallation.channels.md) |  | <b><i>(BETA)</i></b> Get channels from this bot installation. |
-|  [members()](./teamsfx.teamsbotinstallation.members.md) |  | <b><i>(BETA)</i></b> Get members from this bot installation. |
-|  [sendAdaptiveCard(card)](./teamsfx.teamsbotinstallation.sendadaptivecard.md) |  | <b><i>(BETA)</i></b> Send an adaptive card message. |
-|  [sendMessage(text)](./teamsfx.teamsbotinstallation.sendmessage.md) |  | <b><i>(BETA)</i></b> Send a plain text message. |
+|  [channels()](./teamsfx.teamsbotinstallation.channels.md) |  | Get channels from this bot installation. |
+|  [members()](./teamsfx.teamsbotinstallation.members.md) |  | Get members from this bot installation. |
+|  [sendAdaptiveCard(card)](./teamsfx.teamsbotinstallation.sendadaptivecard.md) |  | Send an adaptive card message. |
+|  [sendMessage(text)](./teamsfx.teamsbotinstallation.sendmessage.md) |  | Send a plain text message. |
 

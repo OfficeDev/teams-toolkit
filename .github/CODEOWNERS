@@ -14,7 +14,7 @@
 /packages/vscode-extension/src/debug @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
 /packages/vscode-extension/test/integration/envChecker @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
 /packages/vscode-extension/test/unit/localdebug @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
-/packages/vscode-extension/src/resources/Strings.json @timngmsft @1openwindow @HuihuiWu-Microsoft
+/packages/vscode-extension/package.nls.json @timngmsft @HuihuiWu-Microsoft @tecton
 /packages/vscode-extension/src/migration @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
 /packages/vscode-extension/test/unit/migration @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
 
@@ -88,6 +88,10 @@
 /templates/bot @IvanJobs @eriolchan @Siglud @Yukun-dong
 /templates/bot-msgext @IvanJobs @eriolchan @Siglud @Yukun-dong
 /templates/msgext @IvanJobs @eriolchan @Siglud @Yukun-dong
+/templates/tab/js/m365 @kuojianlu @swatDong @kimizhu
+/templates/tab/ts/m365 @kuojianlu @swatDong @kimizhu
+/templates/bot/js/m365 @kuojianlu @swatDong @kimizhu
+/templates/bot/ts/m365 @kuojianlu @swatDong @kimizhu
 /packages/fx-core/src/common/template-utils @hund030 @IvanJobs @eriolchan
 /packages/fx-core/tests/common/templateFetch.test.ts @hund030 @IvanJobs @eriolchan
 
@@ -117,7 +121,18 @@
 /packages/function-extension @adashen @blackchoey @dilin-MS
 
 /packages/dotnet-sdk @tecton  @JerryYangKai
+/packages/dotnet-sdk/src/TeamsFx/Conversation @swatDong @dooriya @kimizhu
+/packages/dotnet-sdk/src/TeamsFx.Test/Conversation @swatDong @dooriya @kimizhu
 
 /.github/workflows/cd.yml @adashen @LongOddCode @IvanJobs @qinezh @wenytang-ms
 
 /packages/server @chagong @Alive-Fish @jayzhang
+
+/Localize @HuihuiWu-Microsoft @tecton
+
+/packages/fx-core/src/component @jayzhang @xzf0587 @hund030 @LongOddCode
+/packages/fx-core/test/component @jayzhang @xzf0587 @hund030 @LongOddCode
+/packages/fx-core/templates/bicep @jayzhang @xzf0587 @hund030 @LongOddCode
+
+/packages/fx-core/src/plugins/resource/apiconnector @xzf0587 @wenytang-ms @blackchoey
+/packages/fx-core/tests/plugins/resource/apiconnector @xzf0587 @wenytang-ms @blackchoey

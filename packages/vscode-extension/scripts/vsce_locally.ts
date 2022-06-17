@@ -136,7 +136,16 @@ async function packLocally() {
   output([`[ DONE ] verdaccio is running at http://localhost:${port}...\n`]);
 
   try {
-    const apiVersion = await publishLocally("api", {}, { prepublishOnly: "npm run build" });
+    const manifestVersion = await publishLocally(
+      "manifest",
+      {},
+      { prepublishOnly: "npm run build" }
+    );
+    const apiVersion = await publishLocally(
+      "api",
+      { "@microsoft/teams-manifest": manifestVersion },
+      { prepublishOnly: "npm run build" }
+    );
     const coreVersion = await publishLocally(
       "fx-core",
       { "@microsoft/teamsfx-api": apiVersion },

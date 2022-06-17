@@ -101,6 +101,15 @@ export class KeyVaultValidator {
   ) {
     console.log("Validating key vault secrets.");
 
+    const activeResourcePlugins = await getActivePluginsFromProjectSetting(this.projectPath);
+    chai.assert.isArray(activeResourcePlugins);
+    if (
+      !activeResourcePlugins.includes(PluginId.Aad) &&
+      !activeResourcePlugins.includes(PluginId.Bot)
+    ) {
+      return;
+    }
+
     // Add "get secret" permission for test account
     await this.updateKeyVaultGetSecretPermission(
       this.subscriptionId,
@@ -115,27 +124,27 @@ export class KeyVaultValidator {
     const identityTokenCredential = await tokenProvider.getIdentityCredentialAsync();
     const tokenToGetSecret = (await identityTokenCredential?.getToken(keyvaultScope))?.token;
 
-    const m365ClientSecretName =
-      (await getProvisionParameterValueByKey(
+    if (activeResourcePlugins.includes(PluginId.Aad)) {
+      const m365ClientSecretName =
+        (await getProvisionParameterValueByKey(
+          this.projectPath,
+          this.env,
+          provisionParametersKey.m365ClientSecretName
+        )) ?? "m365ClientSecret";
+      const keyVaultSecretResponse = await this.getKeyVaultSecrets(
+        this.keyVault.vaultUri,
+        m365ClientSecretName,
+        tokenToGetSecret as string
+      );
+      chai.assert.exists(keyVaultSecretResponse);
+      const expectedM365ClientSecret = await CliHelper.getUserSettings(
+        `${PluginId.Aad}.${StateConfigKey.clientSecret}`,
         this.projectPath,
-        this.env,
-        provisionParametersKey.m365ClientSecretName
-      )) ?? "m365ClientSecret";
-    const keyVaultSecretResponse = await this.getKeyVaultSecrets(
-      this.keyVault.vaultUri,
-      m365ClientSecretName,
-      tokenToGetSecret as string
-    );
-    chai.assert.exists(keyVaultSecretResponse);
-    const expectedM365ClientSecret = await CliHelper.getUserSettings(
-      `${PluginId.Aad}.${StateConfigKey.clientSecret}`,
-      this.projectPath,
-      this.env
-    );
-    chai.assert.equal(keyVaultSecretResponse, expectedM365ClientSecret);
+        this.env
+      );
+      chai.assert.equal(keyVaultSecretResponse, expectedM365ClientSecret);
+    }
 
-    const activeResourcePlugins = await getActivePluginsFromProjectSetting(this.projectPath);
-    chai.assert.isArray(activeResourcePlugins);
     if (activeResourcePlugins.includes(PluginId.Bot)) {
       const botClientSecretName =
         (await getProvisionParameterValueByKey(

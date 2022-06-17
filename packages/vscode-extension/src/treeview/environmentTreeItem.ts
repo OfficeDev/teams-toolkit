@@ -6,20 +6,20 @@ import * as vscode from "vscode";
 
 import { LocalEnvironmentName, SubscriptionInfo } from "@microsoft/teamsfx-api";
 
-import { AppStudioLogin } from "../commonlib/appStudioLogin";
+import { M365Login } from "../commonlib/m365Login";
 import AzureAccountManager from "../commonlib/azureLogin";
 import { signedIn } from "../commonlib/common/constant";
-import { ext } from "../extensionVariables";
+import * as globalVariables from "../globalVariables";
 import {
   getM365TenantFromEnv,
   getProvisionSucceedFromEnv,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
   isExistingTabApp,
-  isSPFxProject,
 } from "../utils/commonUtils";
 import { localize } from "../utils/localizeUtils";
 import { DynamicNode } from "./dynamicNode";
+import { AppStudioScopes } from "@microsoft/teamsfx-core";
 
 enum EnvInfo {
   Local = "local",
@@ -95,8 +95,9 @@ export class EnvironmentNode extends DynamicNode {
     const warnings: string[] = [];
 
     // Check M365 account status
-    const loginStatus = await AppStudioLogin.getInstance().getStatus();
-    if (loginStatus.status == signedIn) {
+    const loginStatusRes = await M365Login.getInstance().getStatus({ scopes: AppStudioScopes });
+    const loginStatus = loginStatusRes.isOk() ? loginStatusRes.value : undefined;
+    if (loginStatus && loginStatus.status == signedIn) {
       // Signed account doesn't match
       const m365TenantId = await getM365TenantFromEnv(env);
       if (m365TenantId && (loginStatus.accountInfo as any).tid !== m365TenantId) {
@@ -110,11 +111,10 @@ export class EnvironmentNode extends DynamicNode {
     }
 
     // Check Azure account status
-    const isSpfxProject = ext.workspaceUri ? isSPFxProject(ext.workspaceUri.fsPath) : false;
-    const isExistingTab = ext.workspaceUri
-      ? await isExistingTabApp(ext.workspaceUri.fsPath)
+    const isExistingTab = globalVariables.workspaceUri
+      ? await isExistingTabApp(globalVariables.workspaceUri.fsPath)
       : false;
-    if (isSpfxProject || isExistingTab) {
+    if (globalVariables.isSPFxProject || isExistingTab) {
       return {
         isM365AccountLogin,
         warnings,
@@ -156,7 +156,11 @@ export class EnvironmentNode extends DynamicNode {
   // Get the environment info for the given environment name.
   private async getCurrentEnvInfo(envName: string): Promise<EnvInfo> {
     if (envName === LocalEnvironmentName) {
-      return (ext.workspaceUri ? await isExistingTabApp(ext.workspaceUri.fsPath) : false)
+      return (
+        globalVariables.workspaceUri
+          ? await isExistingTabApp(globalVariables.workspaceUri.fsPath)
+          : false
+      )
         ? EnvInfo.LocalForExistingApp
         : EnvInfo.Local;
     } else {

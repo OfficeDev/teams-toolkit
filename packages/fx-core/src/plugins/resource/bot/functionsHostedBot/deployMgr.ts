@@ -6,8 +6,11 @@ import AdmZip from "adm-zip";
 import ignore, { Ignore } from "ignore";
 import { forEachFileAndDir } from "../utils/dir-walk";
 import { DeployConfigs, FolderNames } from "../constants";
-import { CommonConstants, FuncHostedBotDeployConfigs } from "./constants";
 import { Logger } from "../logger";
+import {
+  AzureOperationCommonConstants,
+  DeployConfigsConstants,
+} from "../../../../common/azure-hosting/hostingConstant";
 
 export class FuncHostedDeployMgr {
   private readonly workingDir: string;
@@ -21,11 +24,11 @@ export class FuncHostedDeployMgr {
     this.deploymentDir = path.join(workingDir, DeployConfigs.DEPLOYMENT_FOLDER);
     this.deploymentInfoFile = path.join(
       this.deploymentDir,
-      FuncHostedBotDeployConfigs.DEPLOYMENT_INFO_FILE
+      DeployConfigsConstants.DEPLOYMENT_INFO_FILE
     );
     this.deploymentZipCacheFile = path.join(
       this.deploymentDir,
-      FuncHostedBotDeployConfigs.DEPLOYMENT_ZIP_CACHE_FILE
+      DeployConfigsConstants.DEPLOYMENT_ZIP_CACHE_FILE
     );
     this.envName = envName;
   }
@@ -45,11 +48,9 @@ export class FuncHostedDeployMgr {
       const lastDeployTime = await this.getLastDeployTime();
       // Always ignore node_modules folder and bin folder and the file ignored both by git and func.
       const defaultIgnore = await FuncHostedDeployMgr.prepareIgnore([FolderNames.NODE_MODULES]);
-      const funcIgnoreRules = await this.getIgnoreRules(
-        FuncHostedBotDeployConfigs.FUNC_IGNORE_FILE
-      );
+      const funcIgnoreRules = await this.getIgnoreRules(DeployConfigsConstants.FUNC_IGNORE_FILE);
       const funcIgnore = await FuncHostedDeployMgr.prepareIgnore(funcIgnoreRules);
-      const gitIgnoreRules = await this.getIgnoreRules(FuncHostedBotDeployConfigs.GIT_IGNORE_FILE);
+      const gitIgnoreRules = await this.getIgnoreRules(DeployConfigsConstants.GIT_IGNORE_FILE);
       const gitIgnore = await FuncHostedDeployMgr.prepareIgnore(gitIgnoreRules);
 
       let changed = false;
@@ -121,7 +122,8 @@ export class FuncHostedDeployMgr {
   public async zipAFolder(rules: string[]): Promise<Buffer> {
     // The granularity of time store in zip is 2-seconds.
     // To compare it with mtime in fs.Stats, we need to normalize them into same granularity.
-    const normalizeTime = (t: number) => Math.floor(t / CommonConstants.zipTimeMSGranularity);
+    const normalizeTime = (t: number) =>
+      Math.floor(t / AzureOperationCommonConstants.zipTimeMSGranularity);
 
     const zip = (await this.loadLastDeploymentZipCache()) || new AdmZip();
     const ig = await FuncHostedDeployMgr.prepareIgnore(rules);
@@ -155,7 +157,7 @@ export class FuncHostedDeployMgr {
           // so we arbitrarily add a limitation to update this kind of files.
           // If mtime is valid and the two mtime is same in two-seconds, we think the two are same file.
           if (
-            mtime >= CommonConstants.latestTrustMtime &&
+            mtime >= AzureOperationCommonConstants.latestTrustMtime &&
             normalizeTime(mtime.getTime()) === normalizeTime(stats.mtime.getTime())
           ) {
             return;

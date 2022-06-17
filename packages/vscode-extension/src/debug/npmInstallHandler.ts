@@ -11,7 +11,7 @@ import {
 import * as vscode from "vscode";
 import { ConfigurationKey } from "../constants";
 import { VS_CODE_UI } from "../extension";
-import { ext } from "../extensionVariables";
+import * as globalVariables from "../globalVariables";
 import { getConfiguration } from "../utils/commonUtils";
 import { runTask } from "./teamsfxTaskHandler";
 import { createTask } from "./teamsfxTaskProvider";
@@ -35,8 +35,9 @@ export async function automaticNpmInstallHandler(
     const state = await globalStateGet("automaticNpmInstall", false);
     if (state) {
       globalStateUpdate("automaticNpmInstall", false);
-      const configuration = getConfiguration(ConfigurationKey.AutomaticNpmInstall);
-      if (configuration && ext.workspaceUri !== undefined) {
+      // const configuration = getConfiguration(ConfigurationKey.AutomaticNpmInstall);
+      const configuration = false;
+      if (configuration && globalVariables.workspaceUri !== undefined) {
         const localEnvManager = new LocalEnvManager(
           VsCodeLogInstance,
           ExtTelemetry.reporter,

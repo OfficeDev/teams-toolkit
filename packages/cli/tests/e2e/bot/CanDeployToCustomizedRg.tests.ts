@@ -7,7 +7,7 @@
 
 import path from "path";
 
-import { AadValidator, BotValidator } from "../../commonlib";
+import { BotValidator } from "../../commonlib";
 import {
   getSubscriptionId,
   getTestFolder,
@@ -18,7 +18,6 @@ import {
   deleteResourceGroupByName,
   setBotSkuNameToB1Bicep,
 } from "../commonUtils";
-import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, ResourceToDeploy } from "../../commonlib/constants";
@@ -32,7 +31,7 @@ describe("Deploy to customized resource group", function () {
   const env = environmentManager.getDefaultEnvName();
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, true, false);
+    await cleanUp(appName, projectPath, false, true, false);
   });
 
   it(`bot project can deploy bot resource to customized resource group and successfully provision / deploy`, async function () {
@@ -47,8 +46,8 @@ describe("Deploy to customized resource group", function () {
     await customizeBicepFilesToCustomizedRg(
       customizedRgName,
       projectPath,
-      `name: 'botProvision'`,
-      `name: 'addTeamsFxBotConfiguration'`
+      [`name: 'botProvision'`, `name: 'webAppProvision'`],
+      [`name: 'addTeamsFxBotConfiguration'`]
     );
 
     // Provision
@@ -63,13 +62,9 @@ describe("Deploy to customized resource group", function () {
     {
       const context = await readContextMultiEnv(projectPath, env);
 
-      // Validate Aad App
-      const aad = AadValidator.init(context, false, AppStudioLogin);
-      await AadValidator.validate(aad);
-
       // Validate Bot
       const bot = new BotValidator(context, projectPath, env);
-      await bot.validateProvision();
+      await bot.validateProvision(false);
       await bot.validateDeploy();
     }
 

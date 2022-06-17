@@ -4,22 +4,19 @@
 
 ## MessageBuilder.attachAdaptiveCardWithoutData() method
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Build a bot message activity attached with an adaptive card.
 
 <b>Signature:</b>
 
 ```typescript
-static attachAdaptiveCardWithoutData(card: any): Partial<Activity>;
+static attachAdaptiveCardWithoutData(card: unknown): Partial<Activity>;
 ```
 
 ## Parameters
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  card | any | The adaptive card content. |
+|  card | unknown | The adaptive card content. |
 
 <b>Returns:</b>
 

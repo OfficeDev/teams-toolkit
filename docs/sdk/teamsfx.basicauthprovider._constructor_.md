@@ -4,9 +4,6 @@
 
 ## BasicAuthProvider.(constructor)
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Constructs a new instance of the `BasicAuthProvider` class
 
 <b>Signature:</b>
@@ -25,4 +22,6 @@ constructor(userName: string, password: string);
 ## Exceptions
 
 [InvalidParameter](./teamsfx.errorcode.md) - when username or password is empty.
+
+[RuntimeNotSupported](./teamsfx.errorcode.md) when runtime is browser.
 

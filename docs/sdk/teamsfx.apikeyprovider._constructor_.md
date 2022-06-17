@@ -4,9 +4,6 @@
 
 ## ApiKeyProvider.(constructor)
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Constructs a new instance of the `ApiKeyProvider` class
 
 <b>Signature:</b>
@@ -26,4 +23,6 @@ constructor(keyName: string, keyValue: string, keyLocation: ApiKeyLocation);
 ## Exceptions
 
 [InvalidParameter](./teamsfx.errorcode.md) - when key name or key value is empty.
+
+[RuntimeNotSupported](./teamsfx.errorcode.md) when runtime is browser.
 

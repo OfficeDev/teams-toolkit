@@ -6,6 +6,7 @@ import axios, { AxiosResponse, CancelToken } from "axios";
 import path from "path";
 import fs from "fs-extra";
 import Mustache from "mustache";
+import { EOL } from "os";
 
 import config from "../templates-config.json";
 import { selectTag, templateURL } from "./templates";
@@ -120,7 +121,8 @@ export async function unzip(
   zip: AdmZip,
   dstPath: string,
   nameReplaceFn?: (filePath: string, data: Buffer) => string,
-  dataReplaceFn?: (filePath: string, data: Buffer) => Buffer | string
+  dataReplaceFn?: (filePath: string, data: Buffer) => Buffer | string,
+  filesInAppendMode = [".gitignore"]
 ): Promise<void> {
   const entries: AdmZip.IZipEntry[] = zip.getEntries().filter((entry) => !entry.isDirectory);
 
@@ -136,7 +138,12 @@ export async function unzip(
     const filePath: string = path.join(dstPath, entryName);
     const dirPath: string = path.dirname(filePath);
     await fs.ensureDir(dirPath);
-    await fs.writeFile(filePath, entryData);
+    if (filesInAppendMode.includes(entryName) && (await fs.pathExists(filePath))) {
+      await fs.appendFile(filePath, EOL);
+      await fs.appendFile(filePath, entryData);
+    } else {
+      await fs.writeFile(filePath, entryData);
+    }
   }
 }
 

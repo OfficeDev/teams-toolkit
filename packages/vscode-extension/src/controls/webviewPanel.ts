@@ -3,6 +3,7 @@
 
 import { Inputs, Stage } from "@microsoft/teamsfx-api";
 import {
+  AppStudioScopes,
   Correlator,
   globalStateGet,
   globalStateUpdate,
@@ -16,12 +17,10 @@ import { glob } from "glob";
 import * as path from "path";
 import * as uuid from "uuid";
 import * as vscode from "vscode";
-import AppStudioTokenInstance from "../commonlib/appStudioLogin";
+import M365TokenInstance from "../commonlib/m365Login";
 import AzureAccountManager from "../commonlib/azureLogin";
-import GraphTokenInstance from "../commonlib/graphLogin";
-import SharepointTokenInstance from "../commonlib/sharepointLogin";
 import { GlobalKey } from "../constants";
-import { ext } from "../extensionVariables";
+import * as globalVariables from "../globalVariables";
 import { downloadSample, getSystemInputs } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
@@ -29,7 +28,7 @@ import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
-  TelemetryTiggerFrom,
+  TelemetryTriggerFrom,
 } from "../telemetry/extTelemetryEvents";
 import { isMacOS } from "../utils/commonUtils";
 import { localize } from "../utils/localizeUtils";
@@ -42,7 +41,7 @@ export class WebviewPanel {
   public static currentPanels: WebviewPanel[] = [];
 
   private panel: vscode.WebviewPanel;
-  private panelType: PanelType = PanelType.QuickStart;
+  private panelType: PanelType = PanelType.SampleGallery;
   private disposables: vscode.Disposable[] = [];
 
   public static createOrShow(panelType: PanelType, isToSide?: boolean) {
@@ -79,7 +78,9 @@ export class WebviewPanel {
         // Enable javascript in the webview
         enableScripts: true,
         retainContextWhenHidden: true,
-        localResourceRoots: [vscode.Uri.file(path.join(ext.context.extensionPath, "out"))],
+        localResourceRoots: [
+          vscode.Uri.file(path.join(globalVariables.context.extensionPath, "out")),
+        ],
       }
     );
 
@@ -105,16 +106,16 @@ export class WebviewPanel {
           case Commands.SigninM365:
             Correlator.run(async () => {
               ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginClick, {
-                [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview,
+                [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
                 [TelemetryProperty.AccountType]: AccountType.M365,
               });
-              await AppStudioTokenInstance.getJsonObject(false);
+              await M365TokenInstance.getJsonObject({ scopes: AppStudioScopes });
             });
             break;
           case Commands.SigninAzure:
             Correlator.run(async () => {
               ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginClick, {
-                [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview,
+                [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
                 [TelemetryProperty.AccountType]: AccountType.Azure,
               });
               await AzureAccountManager.getAccountCredentialAsync(false);
@@ -123,7 +124,7 @@ export class WebviewPanel {
           case Commands.CreateNewProject:
             await vscode.commands.executeCommand(
               "fx-extension.create",
-              TelemetryTiggerFrom.Webview
+              TelemetryTriggerFrom.Webview
             );
             break;
           case Commands.SwitchPanel:
@@ -148,7 +149,7 @@ export class WebviewPanel {
         }
       },
       undefined,
-      ext.context.subscriptions
+      globalVariables.context.subscriptions
     );
 
     // Set the webview's initial html content
@@ -157,7 +158,7 @@ export class WebviewPanel {
 
   private async downloadSampleApp(msg: any) {
     const props: any = {
-      [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview,
+      [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
       [TelemetryProperty.SampleAppName]: msg.data.appFolder,
     };
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSampleStart, props);
@@ -209,8 +210,6 @@ export class WebviewPanel {
 
   private getWebpageTitle(panelType: PanelType) {
     switch (panelType) {
-      case PanelType.QuickStart:
-        return localize("teamstoolkit.webview.quickStartPageTitle");
       case PanelType.SampleGallery:
         return localize("teamstoolkit.webview.samplePageTitle");
       case PanelType.Survey:
@@ -239,9 +238,11 @@ export class WebviewPanel {
       return Promise.resolve();
     };
 
-    AppStudioTokenInstance.setStatusChangeMap("quick-start-webview", m365WebviewCallback);
-    SharepointTokenInstance.setStatusChangeMap("quick-start-webview", m365WebviewCallback);
-    GraphTokenInstance.setStatusChangeMap("quick-start-webview", m365WebviewCallback);
+    M365TokenInstance.setStatusChangeMap(
+      "quick-start-webview",
+      { scopes: AppStudioScopes },
+      m365WebviewCallback
+    );
 
     AzureAccountManager.setStatusChangeMap(
       "quick-start-webview",
@@ -327,11 +328,13 @@ export class WebviewPanel {
   }
 
   private getHtmlForWebview(panelType: PanelType) {
-    const scriptBasePathOnDisk = vscode.Uri.file(path.join(ext.context.extensionPath, "out/"));
+    const scriptBasePathOnDisk = vscode.Uri.file(
+      path.join(globalVariables.context.extensionPath, "out/")
+    );
     const scriptBaseUri = scriptBasePathOnDisk.with({ scheme: "vscode-resource" });
 
     const scriptPathOnDisk = vscode.Uri.file(
-      path.join(ext.context.extensionPath, "out/src", "client.js")
+      path.join(globalVariables.context.extensionPath, "out/src", "client.js")
     );
     const scriptUri = scriptPathOnDisk.with({ scheme: "vscode-resource" });
 
@@ -391,8 +394,6 @@ export class WebviewPanel {
 
   public dispose() {
     WebviewPanel.currentPanels.splice(WebviewPanel.currentPanels.indexOf(this), 1);
-
-    AppStudioTokenInstance.removeStatusChangeMap("quick-start-webview");
 
     AzureAccountManager.removeStatusChangeMap("quick-start-webview");
 

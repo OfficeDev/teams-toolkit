@@ -19,7 +19,7 @@ import * as path from "path";
 import sinon from "sinon";
 import { Container } from "typedi";
 import { FeatureFlagName } from "../../src/common/constants";
-import { isFeatureFlagEnabled, getRootDirectory } from "../../src/common/tools";
+import { isFeatureFlagEnabled } from "../../src/common/featureFlags";
 import * as tools from "../../src/common/tools";
 import {
   ContextUpgradeError,
@@ -52,7 +52,8 @@ describe("Other test case", () => {
     sandbox.restore();
   });
   it("question: app name question validation", async () => {
-    const inputs: Inputs = { platform: Platform.VSCode };
+    const folder = os.tmpdir();
+    const inputs: Inputs = { platform: Platform.VSCode, folder: folder };
     let appName = "1234";
     const appNameQuestion = createAppNameQuestion();
     let validRes = await (appNameQuestion.validation as FuncValidation<string>).validFunc(
@@ -63,8 +64,6 @@ describe("Other test case", () => {
     assert.isTrue(validRes === getLocalizedString("core.QuestionAppName.validation.pattern"));
 
     appName = randomAppName();
-    const folder = os.tmpdir();
-    sandbox.stub(tools, "getRootDirectory").returns(folder);
     const projectPath = path.resolve(folder, appName);
 
     sandbox.stub<any, any>(fs, "pathExists").withArgs(projectPath).resolves(true);
@@ -200,35 +199,6 @@ describe("Other test case", () => {
     assert.isTrue(res3.isErr());
   });
 
-  it("getRootDirectory", () => {
-    let restore = mockedEnv({
-      [FeatureFlagName.rootDirectory]: undefined,
-    });
-
-    assert.equal(getRootDirectory(), path.join(os.homedir(), "TeamsApps"));
-    restore();
-
-    restore = mockedEnv({
-      [FeatureFlagName.rootDirectory]: "",
-    });
-
-    assert.equal(getRootDirectory(), path.join(os.homedir(), "TeamsApps"));
-    restore();
-
-    restore = mockedEnv({
-      [FeatureFlagName.rootDirectory]: os.tmpdir(),
-    });
-
-    assert.equal(getRootDirectory(), os.tmpdir());
-    restore();
-
-    restore = mockedEnv({
-      [FeatureFlagName.rootDirectory]: "${homeDir}/TeamsApps",
-    });
-
-    assert.equal(getRootDirectory(), path.join(os.homedir(), "TeamsApps"));
-    restore();
-  });
   it("executeCommand", async () => {
     {
       try {

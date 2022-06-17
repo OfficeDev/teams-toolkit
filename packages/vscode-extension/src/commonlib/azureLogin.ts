@@ -42,13 +42,14 @@ import {
   TelemetryErrorType,
 } from "../telemetry/extTelemetryEvents";
 import { VS_CODE_UI } from "../extension";
-import TreeViewManagerInstance from "../treeview/treeViewManager";
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as commonUtils from "../debug/commonUtils";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { getSubscriptionInfoFromEnv } from "../utils/commonUtils";
 import { getDefaultString, localize } from "../utils/localizeUtils";
+import * as globalVariables from "../globalVariables";
+import accountTreeViewProviderInstance from "../treeview/account/accountTreeViewProvider";
 
 export class AzureAccountManager extends login implements AzureAccountProvider {
   private static instance: AzureAccountManager;
@@ -78,6 +79,18 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
 
     return AzureAccountManager.instance;
+  }
+
+  /**
+   * Update TeamsFx project subscription information.
+   */
+  public async updateSubscriptionInfo(): Promise<void> {
+    if (AzureAccountManager.currentStatus === "LoggedIn") {
+      const subscriptioninfo = await this.readSubscription();
+      if (subscriptioninfo) {
+        this.setSubscription(subscriptioninfo.subscriptionId);
+      }
+    }
   }
 
   /**
@@ -347,23 +360,13 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
           AzureAccountManager.tenantId = item.session.tenantId;
           AzureAccountManager.subscriptionId = subscriptionId;
           AzureAccountManager.subscriptionName = item.subscription.displayName;
-          await this.saveSubscription({
+          const subscriptionInfo = {
             subscriptionId: item.subscription.subscriptionId!,
             subscriptionName: item.subscription.displayName!,
             tenantId: item.session.tenantId,
-          });
-          TreeViewManagerInstance.getTreeView("teamsfx-accounts")?.refresh([
-            {
-              commandId: "fx-extension.selectSubscription",
-              label: item.subscription.displayName!,
-              callback: () => {
-                return Promise.resolve(ok(null));
-              },
-              parent: "fx-extension.signinAzure",
-              contextValue: "selectSubscription",
-              icon: "subscriptionSelected",
-            },
-          ]);
+          };
+          await this.saveSubscription(subscriptionInfo);
+          await accountTreeViewProviderInstance.azureAccountNode.setSubscription(subscriptionInfo);
           return;
         }
       }
@@ -409,12 +412,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     const azureAccount: AzureAccount =
       vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
     AzureAccountManager.currentStatus = azureAccount.status;
-    if (AzureAccountManager.currentStatus === "LoggedIn") {
-      const subscriptioninfo = await this.readSubscription();
-      if (subscriptioninfo) {
-        this.setSubscription(subscriptioninfo.subscriptionId);
-      }
-    }
+    await this.updateSubscriptionInfo();
     azureAccount.onStatusChanged(async (event) => {
       if (this.isLegacyVersion()) {
         if (AzureAccountManager.currentStatus === "Initializing") {
@@ -585,16 +583,12 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   async getSubscriptionInfoPath(): Promise<string | undefined> {
-    if (vscode.workspace.workspaceFolders) {
-      const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
-      const workspacePath: string = workspaceFolder.uri.fsPath;
-      if (!(await commonUtils.isFxProject(workspacePath))) {
+    if (globalVariables.workspaceUri) {
+      const workspacePath: string = globalVariables.workspaceUri.fsPath;
+      if (!globalVariables.isTeamsFxProject) {
         return undefined;
       }
-      const configRoot = await commonUtils.getProjectRoot(
-        workspaceFolder.uri.fsPath,
-        `.${ConfigFolderName}`
-      );
+      const configRoot = await commonUtils.getProjectRoot(workspacePath, `.${ConfigFolderName}`);
       const subscriptionFile = path.join(configRoot!, subscriptionInfoFile);
       return subscriptionFile;
     } else {

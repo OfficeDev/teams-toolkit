@@ -34,14 +34,12 @@ class CommandController {
     this.exclusiveCommands = new Set([
       "fx-extension.create",
       "fx-extension.init",
-      "fx-extension.addCapability",
-      "fx-extension.update",
+      "fx-extension.addFeature",
       "fx-extension.openManifest",
       "fx-extension.provision",
       "fx-extension.build",
       "fx-extension.deploy",
       "fx-extension.publish",
-      "fx-extension.addCICDWorkflows",
     ]);
   }
 
@@ -90,14 +88,14 @@ class CommandController {
     this.mutex.runExclusive(async () => await this.runBlockingCommand(commandName, args));
   }
 
-  private runNonBlockingCommand(commandName: string, ...args: unknown[]) {
+  private runNonBlockingCommand(commandName: string, args: unknown[]) {
     const command = this.commandMap.get(commandName);
     if (command) {
       command.callback(args);
     }
   }
 
-  private async runBlockingCommand(commandName: string, ...args: unknown[]) {
+  private async runBlockingCommand(commandName: string, args: unknown[]) {
     this.runningCommand = commandName;
     const command = this.commandMap.get(commandName);
     const blockedCommands = [...this.exclusiveCommands.values()].filter((x) => x !== commandName);

@@ -26,8 +26,6 @@ import { createConfidentialClientApplication } from "../util/utils.node";
  *
  * @remarks
  * Can only be used in server side.
- *
- * @beta
  */
 export class OnBehalfOfUserCredential implements TokenCredential {
   private msalClient: ConfidentialClientApplication;
@@ -45,8 +43,6 @@ export class OnBehalfOfUserCredential implements TokenCredential {
    * @throws {@link ErrorCode|InvalidConfiguration} when client id, client secret, certificate content, authority host or tenant id is not found in config.
    * @throws {@link ErrorCode|InternalError} when SSO token is not valid.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
-   *
-   * @beta
    */
   constructor(ssoToken: string, config: AuthenticationConfiguration) {
     internalLogger.info("Get on behalf of user credential");
@@ -119,8 +115,6 @@ export class OnBehalfOfUserCredential implements TokenCredential {
    * @remarks
    * If scopes is empty string or array, it returns SSO token.
    * If scopes is non-empty, it returns access token for target scope.
-   *
-   * @beta
    */
   async getToken(
     scopes: string | string[],
@@ -182,8 +176,6 @@ export class OnBehalfOfUserCredential implements TokenCredential {
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    *
    * @returns Basic user info with user displayName, objectId and preferredUserName.
-   *
-   * @beta
    */
   public getUserInfo(): UserInfo {
     internalLogger.info("Get basic user info from SSO token");

@@ -1,4 +1,4 @@
-# SPFx(SharePoint Framework) APP
+# SPFx (SharePoint Framework) App
 
 ## Summary
 
@@ -39,7 +39,7 @@ Version|Date|Comments
 
 ## Minimal Path to Awesome
 
-1. <b>Install the latest version of [Node.js LTS 14.x]</b>(https://nodejs.org/en/download/releases/)(Note: SPFx v1.12.1 support Node.js v10/12/14)
+1. Install the latest version of [Node.js LTS 14.x](https://nodejs.org/en/download/releases/) (Note: SPFx v1.14.0 support Node.js v12/14).
 2. You can either download [Visual Studio Code](https://code.visualstudio.com) and install [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) or download TeamsFx CLI.
 3. Open the project with VSCode, click `Provision in the cloud` in DEPLOYMENT panel of Teams Toolkit extension.
 
@@ -49,7 +49,7 @@ Version|Date|Comments
     It will provision an app in Teams App Studio. You may need to login with your M365 tenant admin account.
 
 4. Build and Deploy your SharePoint Package.
-    - Click `Deploy to the cloud` in DEPLOYMENT panel of Teams Toolkit extension, or run `Teams: Deploy to the cloud` from command palette. This will generate a SharePoint package(*.sppkg) under sharepoint/solution folder.
+    - Click `Deploy to the cloud` in DEPLOYMENT panel of Teams Toolkit extension, or run `Teams: Deploy to the cloud` from command palette. This will generate a SharePoint package (*.sppkg) under sharepoint/solution folder.
   
     Or you can use TeamsFx CLI with running this cmd under your project path:
         `teamsfx deploy`

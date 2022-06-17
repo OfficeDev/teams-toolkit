@@ -78,6 +78,13 @@ export class YoChecker implements DependencyChecker {
     if (!(await this.hasNPM())) {
       this._logger.error("Failed to find npm!");
       throw NpmNotFoundError();
+    } else {
+      const npmVersion = await this.getNPMMajorVersion();
+      if (this.isWindows() && npmVersion && parseInt(npmVersion) > 6) {
+        this._logger.warning(
+          `Supported npm version is v6.x while you have v${npmVersion}.x installed. Check aka.ms/teamsfx-spfx-help for help if you met any issues.`
+        );
+      }
     }
 
     this._logger.info("Start installing...");

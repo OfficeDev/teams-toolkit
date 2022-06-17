@@ -4,9 +4,6 @@
 
 ## IdentityType enum
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Identity type to use in authentication.
 
 <b>Signature:</b>
@@ -19,6 +16,6 @@ export declare enum IdentityType
 
 |  Member | Value | Description |
 |  --- | --- | --- |
-|  App | <code>&quot;Application&quot;</code> | <b><i>(BETA)</i></b> Represents the application itself. |
-|  User | <code>&quot;User&quot;</code> | <b><i>(BETA)</i></b> Represents the current user of Teams. |
+|  App | <code>&quot;Application&quot;</code> | Represents the application itself. |
+|  User | <code>&quot;User&quot;</code> | Represents the current user of Teams. |
 

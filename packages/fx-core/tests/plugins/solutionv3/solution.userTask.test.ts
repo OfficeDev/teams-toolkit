@@ -10,16 +10,10 @@ import {
   BuiltInSolutionNames,
 } from "../../../src/plugins/solution/fx-solution/v3/constants";
 import { getQuestionsForUserTask } from "../../../src/plugins/solution/fx-solution/v3/userTask";
-import {
-  MockedAppStudioTokenProvider,
-  MockedAzureAccountProvider,
-  MockedGraphTokenProvider,
-  MockedSharepointProvider,
-  MockedV2Context,
-} from "../solution/util";
+import { MockedM365Provider, MockedAzureAccountProvider, MockedV2Context } from "../solution/util";
 import * as path from "path";
 import * as os from "os";
-import { deleteFolder, randomAppName } from "../../core/utils";
+import { deleteFolder, MockM365TokenProvider, randomAppName } from "../../core/utils";
 import { Container } from "typedi";
 import { TeamsFxAzureSolution } from "../../../src/plugins/solution/fx-solution/v3/solution";
 import {
@@ -73,9 +67,7 @@ describe("SolutionV3 - executeUserTask", () => {
     };
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
-      graphTokenProvider: new MockedGraphTokenProvider(),
-      sharepointTokenProvider: new MockedSharepointProvider(),
+      m365TokenProvider: new MockedM365Provider(),
     };
     const res = await getQuestionsForUserTask(
       ctx,

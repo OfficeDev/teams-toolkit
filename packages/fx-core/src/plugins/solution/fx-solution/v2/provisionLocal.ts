@@ -1,8 +1,8 @@
 import { FxError, Inputs, Json, SystemError, TokenProvider, v2 } from "@microsoft/teamsfx-api";
 import { isUndefined } from "lodash";
 import { Container } from "typedi";
-import { isPureExistingApp } from "../../../../common/projectSettingsHelper";
-import { isConfigUnifyEnabled } from "../../../../common/tools";
+import { isExistingTabApp } from "../../../../common/projectSettingsHelper";
+import { AppStudioScopes, isConfigUnifyEnabled } from "../../../../common/tools";
 import { environmentManager } from "../../../../core/environment";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
 import { PluginNames, SolutionError } from "../constants";
@@ -52,8 +52,12 @@ export async function provisionLocalResource(
   // Just to trigger M365 login before the concurrent execution of localDebug.
   // Because concurrent execution of localDebug may getAccessToken() concurrently, which
   // causes 2 M365 logins before the token caching in common lib takes effect.
-  await tokenProvider.appStudioToken.getAccessToken();
-
+  const appStudioTokenRes = await tokenProvider.m365TokenProvider.getAccessToken({
+    scopes: AppStudioScopes,
+  });
+  if (appStudioTokenRes.isErr()) {
+    return new v2.FxFailure(appStudioTokenRes.error);
+  }
   // Pop-up window to confirm if local debug in another tenant
   let localDebugTenantId = "";
   if (isConfigUnifyEnabled()) {
@@ -65,16 +69,22 @@ export async function provisionLocalResource(
 
   const m365TenantMatches = await checkWhetherLocalDebugM365TenantMatches(
     localDebugTenantId,
-    tokenProvider.appStudioToken
+    tokenProvider.m365TokenProvider,
+    inputs.projectPath
   );
   if (m365TenantMatches.isErr()) {
     return new v2.FxFailure(m365TenantMatches.error);
   }
-  const pureExistingApp = isPureExistingApp(ctx.projectSetting);
-  // for minimized teamsfx project, there is only one plugin (app studio)
-  const plugins = pureExistingApp
-    ? [Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin)]
-    : getSelectedPlugins(ctx.projectSetting);
+
+  const plugins = getSelectedPlugins(ctx.projectSetting);
+  if (isExistingTabApp(ctx.projectSetting)) {
+    // for existing tab app, enable app studio plugin when solution settings is empty.
+    const appStudioPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
+    if (!plugins.find((p) => p.name === appStudioPlugin.name)) {
+      plugins.push(appStudioPlugin);
+    }
+  }
+
   const provisionLocalResourceThunks = plugins
     .filter((plugin) => !isUndefined(plugin.provisionLocalResource))
     .map((plugin) => {
@@ -129,9 +139,14 @@ export async function provisionLocalResource(
     }
   }
 
+  const appStudioTokenJsonRes = await tokenProvider.m365TokenProvider.getJsonObject({
+    scopes: AppStudioScopes,
+  });
+  const appStudioTokenJson = appStudioTokenJsonRes.isOk() ? appStudioTokenJsonRes.value : undefined;
+
   const parseTenantIdresult = loadTeamsAppTenantIdForLocal(
     localSettings as v2.LocalSettings,
-    await tokenProvider.appStudioToken.getJsonObject(),
+    appStudioTokenJson,
     envInfo
   );
   if (parseTenantIdresult.isErr()) {

@@ -1,22 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import "mocha";
-import * as chai from "chai";
-import * as fs from "fs-extra";
-import * as path from "path";
-import * as sinon from "sinon";
 
-import {
-  AzureClientFactory,
-  AzureLib,
-} from "../../../../../src/plugins/resource/function/utils/azure-client";
-import {
-  DependentPluginInfo,
-  FunctionPluginInfo,
-  FunctionPluginPathInfo,
-} from "../../../../../src/plugins/resource/function/constants";
-import { NodeVersion } from "../../../../../src/plugins/resource/function/enums";
-import { FunctionPlugin } from "../../../../../src/plugins/resource/function";
+import { DependentPluginInfo } from "../../../../../src/plugins/resource/function/constants";
 import { Platform } from "@microsoft/teamsfx-api";
 import { newEnvInfo } from "../../../../../src";
 
@@ -77,7 +63,7 @@ const context: any = {
       short: "ut",
     },
   },
-  config: new Map<string, string>([["nodeVersion", NodeVersion.Version14]]),
+  config: new Map<string, string>(),
   projectSettings: {
     appName: "ut",
     programmingLanguage: "javascript",

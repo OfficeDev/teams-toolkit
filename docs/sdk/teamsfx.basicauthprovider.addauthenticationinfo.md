@@ -4,9 +4,6 @@
 
 ## BasicAuthProvider.AddAuthenticationInfo() method
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Adds authentication info to http requests
 
 <b>Signature:</b>
@@ -30,4 +27,6 @@ Updated axios request config.
 ## Exceptions
 
 [AuthorizationInfoAlreadyExists](./teamsfx.errorcode.md) - when Authorization header or auth property already exists in request configuration.
+
+[RuntimeNotSupported](./teamsfx.errorcode.md) when runtime is browser.
 

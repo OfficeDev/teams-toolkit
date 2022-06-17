@@ -12,7 +12,6 @@ import { TeamsFxConfiguration } from "../models/teamsfxConfiguration";
 
 /**
  * A class providing credential and configuration.
- * @beta
  */
 export class TeamsFx implements TeamsFxConfiguration {
   private configuration: Map<string, string | undefined>;

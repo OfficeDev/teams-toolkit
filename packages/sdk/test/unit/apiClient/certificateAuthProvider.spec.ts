@@ -102,7 +102,7 @@ describe("createPfxCertOption Tests - Node", () => {
     assert.equal(pfxWithNecessaryParameters.pfx, "test pfx");
     assert.equal(pfxWithNecessaryParameters.passphrase, undefined);
 
-    const pfxWithAllParameters = createPfxCertOption("test pfx", "test passphrase");
+    const pfxWithAllParameters = createPfxCertOption("test pfx", { passphrase: "test passphrase" });
     assert.equal(Object.keys(pfxWithAllParameters).length, 2);
     assert.equal(pfxWithAllParameters.pfx, "test pfx");
     assert.equal(pfxWithAllParameters.passphrase, "test passphrase");
@@ -125,12 +125,10 @@ describe("createPemCertOption Tests - Node", () => {
     assert.equal(pemWithNecessaryParameters.passphrase, undefined);
     assert.equal(pemWithNecessaryParameters.ca, undefined);
 
-    const pemWithAllParameters = createPemCertOption(
-      "test cert",
-      "test key",
-      "test passphrase",
-      "test ca"
-    );
+    const pemWithAllParameters = createPemCertOption("test cert", "test key", {
+      passphrase: "test passphrase",
+      ca: "test ca",
+    });
     assert.equal(Object.keys(pemWithAllParameters).length, 4);
     assert.equal(pemWithAllParameters.cert, "test cert");
     assert.equal(pemWithAllParameters.key, "test key");

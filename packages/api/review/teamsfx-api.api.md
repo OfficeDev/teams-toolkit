@@ -35,6 +35,9 @@ interface AADApp extends AzureResource {
     tenantId: string;
 }
 
+// @public
+export type Action = GroupAction | CallAction | FunctionAction | ShellAction;
+
 // @public (undocumented)
 export const AdaptiveCardsFolderName = "adaptiveCards";
 
@@ -76,15 +79,6 @@ interface AppManifestProvider {
 
 // @public (undocumented)
 export const AppPackageFolderName = "appPackage";
-
-// @public
-export interface AppStudioTokenProvider {
-    getAccessToken(showDialog?: boolean): Promise<string | undefined>;
-    getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined>;
-    removeStatusChangeMap(name: string): Promise<boolean>;
-    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediateCall?: boolean): Promise<boolean>;
-    signout(): Promise<boolean>;
-}
 
 // @public (undocumented)
 export function assembleError(e: any, source?: string): FxError;
@@ -149,7 +143,7 @@ interface AzureIdentity extends AzureResource {
 }
 
 // @public (undocumented)
-type AzureResource = CloudResource;
+type AzureResource = CloudResource_2;
 
 // @public (undocumented)
 interface AzureResourcePlugin {
@@ -230,6 +224,32 @@ export interface BaseQuestion {
     value?: unknown;
 }
 
+// @public
+export abstract class BasicLogin {
+    // (undocumented)
+    abstract getStatus(tokenRequest: TokenRequest): Promise<Result<LoginStatus, FxError>>;
+    // (undocumented)
+    notifyStatus(tokenRequest: TokenRequest): Promise<void>;
+    // (undocumented)
+    removeStatusChangeMap(name: string): Promise<Result<boolean, FxError>>;
+    // (undocumented)
+    setStatusChangeMap(name: string, tokenRequest: TokenRequest, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediateCall?: boolean): Promise<Result<boolean, FxError>>;
+    // (undocumented)
+    statusChangeMap: Map<any, any>;
+}
+
+// @public (undocumented)
+export interface Bicep {
+    // (undocumented)
+    Configuration?: ConfigurationBicep;
+    // (undocumented)
+    Parameters?: Record<string, string>;
+    // (undocumented)
+    Provision?: ProvisionBicep;
+    // (undocumented)
+    type: "bicep";
+}
+
 // @public (undocumented)
 type BicepTemplate = {
     kind: "bicep";
@@ -261,11 +281,59 @@ interface BicepTemplate_2 extends Record<any, unknown> {
 // @public (undocumented)
 export const BuildFolderName = "build";
 
+// @public
+export interface CallAction {
+    // (undocumented)
+    inputs?: Json;
+    // (undocumented)
+    name?: string;
+    // (undocumented)
+    required: boolean;
+    // (undocumented)
+    targetAction: string;
+    // (undocumented)
+    type: "call";
+}
+
+// @public (undocumented)
+export interface CallServiceEffect {
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    remarks?: string;
+    // (undocumented)
+    response?: string;
+    // (undocumented)
+    type: "service";
+}
+
 // @public (undocumented)
 export const CLIPlatforms: Platform[];
 
 // @public (undocumented)
-interface CloudResource extends Json {
+export interface CloudResource {
+    // (undocumented)
+    configure?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Action | undefined, FxError>>;
+    // (undocumented)
+    deploy?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Action | undefined, FxError>>;
+    // (undocumented)
+    readonly description?: string;
+    // (undocumented)
+    readonly finalOutputKeys: string[];
+    // (undocumented)
+    generateBicep?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Action | undefined, FxError>>;
+    // (undocumented)
+    readonly name: string;
+    // (undocumented)
+    readonly outputs: ResourceOutputs;
+    // (undocumented)
+    provision?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Action | undefined, FxError>>;
+    // (undocumented)
+    readonly secretKeys?: string[];
+}
+
+// @public (undocumented)
+interface CloudResource_2 extends Json {
     endpoint?: string | string[];
     resourceId?: string;
     resourceName?: string;
@@ -281,6 +349,28 @@ export enum Colors {
     BRIGHT_WHITE = 0,
     BRIGHT_YELLOW = 4,
     WHITE = 1
+}
+
+// @public (undocumented)
+export interface Component extends Json {
+    // (undocumented)
+    build?: boolean;
+    // (undocumented)
+    code?: string;
+    // (undocumented)
+    connections?: string[];
+    // (undocumented)
+    deployType?: "folder" | "zip";
+    // (undocumented)
+    folder?: string;
+    // (undocumented)
+    hosting?: string;
+    // (undocumented)
+    language?: string;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    provision?: boolean;
 }
 
 // @public (undocumented)
@@ -317,6 +407,16 @@ export class ConfigMap extends Map<string, ConfigValue> {
 }
 
 // @public (undocumented)
+export interface ConfigurationBicep {
+    // (undocumented)
+    Modules?: {
+        [moduleFileName: string]: string;
+    };
+    // (undocumented)
+    Orchestration?: string;
+}
+
+// @public (undocumented)
 export type ConfigValue = any;
 
 // @public (undocumented)
@@ -324,27 +424,23 @@ export interface Context {
     // (undocumented)
     answers?: Inputs;
     // (undocumented)
-    appStudioToken?: AppStudioTokenProvider;
-    // (undocumented)
     azureAccountProvider?: AzureAccountProvider;
     // (undocumented)
     cryptoProvider: CryptoProvider;
     // (undocumented)
     expServiceProvider?: ExpServiceProvider;
     // (undocumented)
-    graphTokenProvider?: GraphTokenProvider;
-    // (undocumented)
     localSettings?: LocalSettings;
     // (undocumented)
     logProvider?: LogProvider;
+    // (undocumented)
+    m365TokenProvider?: M365TokenProvider;
     // (undocumented)
     permissionRequestProvider?: PermissionRequestProvider;
     // (undocumented)
     projectSettings?: ProjectSettings;
     // (undocumented)
     root: string;
-    // (undocumented)
-    sharepointTokenProvider?: SharepointTokenProvider;
     // (undocumented)
     telemetryReporter?: TelemetryReporter;
     // (undocumented)
@@ -369,6 +465,18 @@ interface Context_2 {
     telemetryReporter: TelemetryReporter;
     // (undocumented)
     userInteraction: UserInteraction;
+}
+
+// @public (undocumented)
+export interface ContextV3 extends Context_2 {
+    // (undocumented)
+    envInfo?: EnvInfoV3;
+    // (undocumented)
+    manifestProvider: AppManifestProvider;
+    // (undocumented)
+    projectSetting: ProjectSettingsV3;
+    // (undocumented)
+    tokenProvider?: TokenProvider;
 }
 
 // @public (undocumented)
@@ -446,6 +554,9 @@ export type DynamicOptions = LocalFunc<StaticOptions>;
 
 // @public (undocumented)
 export const DynamicPlatforms: Platform[];
+
+// @public (undocumented)
+export type Effect = string | FileEffect | CallServiceEffect | Bicep | ShellAction;
 
 // @public (undocumented)
 export class EmptyOptionError extends SystemError {
@@ -563,6 +674,21 @@ export interface ExpServiceProvider {
 }
 
 // @public (undocumented)
+export interface FileEffect {
+    // (undocumented)
+    filePath: string | string[];
+    // (undocumented)
+    operate: FileOperation;
+    // (undocumented)
+    remarks?: string;
+    // (undocumented)
+    type: "file";
+}
+
+// @public
+export type FileOperation = "create" | "replace" | "append" | "delete" | "skipCreate" | "skipReplace";
+
+// @public (undocumented)
 export interface FolderQuestion extends UserInputQuestion {
     default?: string | LocalFunc<string | undefined>;
     // (undocumented)
@@ -592,6 +718,20 @@ export interface FuncQuestion extends BaseQuestion {
     func: LocalFunc<any>;
     // (undocumented)
     type: "func";
+}
+
+// @public
+export interface FunctionAction {
+    execute: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Effect[], FxError>>;
+    // (undocumented)
+    inputs?: Json;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    plan?(context: ContextV3, inputs: InputsWithProjectPath): MaybePromise<Result<Effect[], FxError>>;
+    question?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+    // (undocumented)
+    type: "function";
 }
 
 // @public (undocumented)
@@ -658,18 +798,23 @@ export function getSingleOption(q: SingleSelectQuestion | MultiSelectQuestion, o
 export function getValidationFunction<T extends string | string[] | undefined>(validation: ValidationSchema, inputs: Inputs): (input: T) => string | undefined | Promise<string | undefined>;
 
 // @public
-export interface GraphTokenProvider {
-    getAccessToken(showDialog?: boolean): Promise<string | undefined>;
-    getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined>;
-    removeStatusChangeMap(name: string): Promise<boolean>;
-    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediateCall?: boolean): Promise<boolean>;
-    signout(): Promise<boolean>;
-}
-
-// @public
 export interface Group {
     // (undocumented)
     name?: string;
+    // (undocumented)
+    type: "group";
+}
+
+// @public
+export interface GroupAction {
+    // (undocumented)
+    actions: Action[];
+    // (undocumented)
+    inputs?: Json;
+    mode?: "sequential" | "parallel";
+    // (undocumented)
+    name?: string;
+    question?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     type: "group";
 }
@@ -749,7 +894,7 @@ export interface Inputs extends Json {
 }
 
 // @public (undocumented)
-type InputsWithProjectPath = Inputs & {
+export type InputsWithProjectPath = Inputs & {
     projectPath: string;
 };
 
@@ -805,7 +950,7 @@ interface ISolution {
     // (undocumented)
     getQuestionsForProvision?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
-    getQuestionsForPublish?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AppStudioTokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForPublish?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: M365TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     getQuestionsForUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
@@ -815,7 +960,7 @@ interface ISolution {
     // (undocumented)
     provisionResources?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
-    publishApplication: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
+    publishApplication: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: M365TokenProvider) => Promise<Result<Void, FxError>>;
 }
 
 // @public (undocumented)
@@ -874,6 +1019,13 @@ interface LocalSettings_2 extends Json {
 }
 
 // @public (undocumented)
+export type LoginStatus = {
+    status: string;
+    token?: string;
+    accountInfo?: Record<string, unknown>;
+};
+
+// @public (undocumented)
 export enum LogLevel {
     Debug = 1,
     Error = 4,
@@ -898,6 +1050,15 @@ export interface LogProvider {
     warning(message: string): Promise<boolean>;
 }
 
+// @public
+export interface M365TokenProvider {
+    getAccessToken(tokenRequest: TokenRequest): Promise<Result<string, FxError>>;
+    getJsonObject(tokenRequest: TokenRequest): Promise<Result<Record<string, unknown>, FxError>>;
+    getStatus(tokenRequest: TokenRequest): Promise<Result<LoginStatus, FxError>>;
+    removeStatusChangeMap(name: string): Promise<Result<boolean, FxError>>;
+    setStatusChangeMap(name: string, tokenRequest: TokenRequest, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediateCall?: boolean): Promise<Result<boolean, FxError>>;
+}
+
 // @public (undocumented)
 type ManifestCapability = {
     name: "staticTab";
@@ -920,6 +1081,9 @@ type ManifestCapability = {
     snippet?: IWebApplicationInfo;
     existingApp?: boolean;
 };
+
+// @public (undocumented)
+export type MaybePromise<T> = T | Promise<T>;
 
 // @public (undocumented)
 export function mergeConfigMap(lhs?: ConfigMap, rhs?: ConfigMap): ConfigMap | undefined;
@@ -982,10 +1146,16 @@ export type OnSelectionChangeFunc = (currentSelectedIds: Set<string>, previousSe
 
 // @public
 export interface OptionItem {
+    buttons?: {
+        iconPath: string;
+        tooltip: string;
+        command: string;
+    }[];
     cliName?: string;
     data?: unknown;
     description?: string;
     detail?: string;
+    groupName?: string;
     id: string;
     label: string;
 }
@@ -1136,6 +1306,12 @@ export interface ProjectSettings {
 // @public (undocumented)
 export const ProjectSettingsFileName = "projectSettings.json";
 
+// @public (undocumented)
+export interface ProjectSettingsV3 extends ProjectSettings {
+    // (undocumented)
+    components: Component[];
+}
+
 // @public
 export interface ProjectStates {
     // (undocumented)
@@ -1144,6 +1320,24 @@ export interface ProjectStates {
     };
     // (undocumented)
     solution: Record<string, ConfigValue>;
+}
+
+// @public (undocumented)
+export interface ProvisionBicep {
+    // (undocumented)
+    Modules?: {
+        [moduleFileName: string]: string;
+    };
+    // (undocumented)
+    Orchestration?: string;
+}
+
+// @public (undocumented)
+export interface ProvisionContextV3 extends ContextV3 {
+    // (undocumented)
+    envInfo: EnvInfoV3;
+    // (undocumented)
+    tokenProvider: TokenProvider;
 }
 
 // @public (undocumented)
@@ -1195,6 +1389,20 @@ export type ResourceConfig = ResourceTemplate;
 // @public (undocumented)
 export type ResourceConfigs = ResourceTemplates;
 
+// @public (undocumented)
+export interface ResourceOutput {
+    // (undocumented)
+    bicepVariable?: string;
+    // (undocumented)
+    key: string;
+}
+
+// @public (undocumented)
+export interface ResourceOutputs {
+    // (undocumented)
+    [k: string]: ResourceOutput;
+}
+
 // @public
 interface ResourcePlugin {
     activate(projectSettings: ProjectSettings): boolean;
@@ -1222,7 +1430,7 @@ interface ResourcePlugin {
     name: string;
     provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider, envInfo?: EnvInfoV2) => Promise<Result<Void, FxError>>;
     provisionResource?: (ctx: Context_2, inputs: ProvisionInputs, envInfo: EnvInfoV2, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    publishApplication?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
+    publishApplication?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: M365TokenProvider) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
     updateResourceTemplate?: (ctx: Context_2, inputs: Inputs & {
@@ -1238,7 +1446,7 @@ type ResourceProvisionOutput = {
 
 // @public
 interface ResourceStates {
-    [key: string]: CloudResource;
+    [key: string]: CloudResource_2;
     solution: Json;
 }
 
@@ -1283,11 +1491,23 @@ export type SelectFolderConfig = UIConfig<string>;
 export type SelectFolderResult = InputResult<string>;
 
 // @public
-export interface SharepointTokenProvider {
-    getAccessToken(showDialog?: boolean): Promise<string | undefined>;
-    getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined>;
-    removeStatusChangeMap(name: string): Promise<boolean>;
-    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediateCall?: boolean): Promise<boolean>;
+export interface ShellAction {
+    // (undocumented)
+    async?: boolean;
+    // (undocumented)
+    captureStderr?: boolean;
+    // (undocumented)
+    captureStdout?: boolean;
+    // (undocumented)
+    command: string;
+    // (undocumented)
+    cwd?: string;
+    // (undocumented)
+    description: string;
+    // (undocumented)
+    name?: string;
+    // (undocumented)
+    type: "shell";
 }
 
 // @public (undocumented)
@@ -1411,7 +1631,7 @@ interface SolutionPlugin {
     name: string;
     provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider, envInfo?: EnvInfoV2) => Promise<FxResult<Json, FxError>>;
     provisionResources: (ctx: Context_2, inputs: Inputs, envInfo: EnvInfoV2, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    publishApplication: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
+    publishApplication: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: M365TokenProvider) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
 }
 
@@ -1423,6 +1643,18 @@ export interface SolutionSettings extends Json {
     // (undocumented)
     name: string;
     version?: string;
+}
+
+// @public (undocumented)
+export interface SourceCodeProvider {
+    // (undocumented)
+    build?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Action | undefined, FxError>>;
+    // (undocumented)
+    readonly description?: string;
+    // (undocumented)
+    generate: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Action | undefined, FxError>>;
+    // (undocumented)
+    readonly name: string;
 }
 
 // @public (undocumented)
@@ -1513,6 +1745,7 @@ export interface StringValidation extends StaticValidation {
     includes?: string;
     maxLength?: number;
     minLength?: number;
+    notEquals?: string;
     pattern?: string;
     startsWith?: string;
 }
@@ -1622,9 +1855,13 @@ export interface TextInputQuestion extends UserInputQuestion {
 // @public (undocumented)
 export type TokenProvider = {
     azureAccountProvider: AzureAccountProvider;
-    graphTokenProvider: GraphTokenProvider;
-    appStudioToken: AppStudioTokenProvider;
-    sharepointTokenProvider: SharepointTokenProvider;
+    m365TokenProvider: M365TokenProvider;
+};
+
+// @public (undocumented)
+export type TokenRequest = {
+    scopes: Array<string>;
+    showDialog?: boolean;
 };
 
 // @public (undocumented)
@@ -1648,7 +1885,7 @@ export interface Tools {
 }
 
 // @public (undocumented)
-export function traverse(root: QTreeNode, inputs: Inputs, ui: UserInteraction, telemetryReporter?: TelemetryReporter): Promise<Result<Void, FxError>>;
+export function traverse(root: QTreeNode, inputs: Inputs, ui: UserInteraction, telemetryReporter?: TelemetryReporter, visitor?: (question: Question, ui: UserInteraction, inputs: Inputs, step?: number | undefined, totalSteps?: number | undefined) => Promise<Result<InputResult<any>, FxError>>): Promise<Result<Void, FxError>>;
 
 // @public (undocumented)
 export enum TreeCategory {
@@ -1819,7 +2056,7 @@ declare namespace v3 {
     export {
         EnvInfoV3,
         ManifestCapability,
-        CloudResource,
+        CloudResource_2 as CloudResource,
         ResourceStates,
         AzureResource,
         AzureSolutionConfig,

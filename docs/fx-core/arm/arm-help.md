@@ -2,7 +2,7 @@
 
 ### Error Message
 
-resource deployments `modules` for your project failed. 
+Resource deployments `modules` for your project failed. 
 
 ### Find the detailed error
 1. Select the `Teams toolkit` channel of the output .
@@ -11,26 +11,23 @@ resource deployments `modules` for your project failed.
 
 
 # General Errors
-list common errors as follows. You can find the common deployment error from search engines as well.
+List common errors as follows. You can find the common deployment error from search engines as well.
 ## The maximum number of Free App Service Plan allowed in a Subscription is xx.
 
 ### Mitigation #1
 1. Delete other Free App Service Plan
-1. Run `TeamsFx - Provision in the cloud` command again
+1. Run `Teams: Provision in the cloud` command again
 
 ### Mitigation #2
 1. Locate the segment wrapped the error in output.
 1. Open `.fx\configs\azure.parameters.{envName}.json` file
-1. If the error wrapped by `simpleAuthProvision` segment, add property `simpleAuthSku` to `provisionParameters` and set the value to "B1" or other valid values.
-
-    ![image](../../images/fx-core/arm/simple-auth-sku-config.png)
-1. If the error wrapped by `botProvision` segment, add property `botWebAppSku` to `provisionParameters` and set the value to "B1" or other valid values.
+1. If the error wrapped by `botProvision` segment, add property `botWebAppSku` to `provisionParameters` if not exist, and set the value to "B1" or other valid values.
 
     ![image](../../images/fx-core/arm/bot-sku-config.png)
-1. If the error wrapped by `frontendHostingProvision` segment, add property `frontendHostingSku` to `provisionParameters` and set the value to "B1" or other valid values.
+1. If the error wrapped by `webappProvision` segment, add property `webappServerfarmsSku` to `provisionParameters` if not exist, and set the value to "B1" or other valid values.
     
     ![image](../../images/fx-core/arm/frontend-hosting-sku-config.png)
-1. Run `TeamsFx - Provision in the cloud` command again
+1. Run `Teams: Provision in the cloud` command again
 
 ## Resource Name Already Exists
 ### Error Message
@@ -46,7 +43,7 @@ This error indicates the name for one or multiple Azure resources that going to 
 ### Mitigation
 
 1. Delete other SQL server
-1. Run `TeamsFx - Provision in the cloud` command again
+1. Run `Teams: Provision in the cloud` command again
 
 ## The subscription registration is in 'Unregistered' state. The subscription must be registered to use namespace 'xxx'.
 

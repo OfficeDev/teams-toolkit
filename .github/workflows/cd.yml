@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       preid:
-        description: "preid name(alpha, rc, stable)"
+        description: "preid name(alpha, beta, rc, stable)"
         required: true
         default: "rc"
       skip-version-rc:
@@ -15,6 +15,10 @@ on:
         description: "skip sync up target pkg version. input templates to skip sync up version with sdk; fx-core to skip sync up with simpleauth"
         required: false
         default: ""
+      pkgs:
+        type: string
+        required: false
+        description: "Please enter the package names you want to publish, such as cli, vscode, sdk, server and template. Please separate multiple entries with spaces"
   schedule:
     - cron: "0 8 * * *"
 
@@ -24,27 +28,33 @@ jobs:
 
     steps:
       - name: Validate CD branch
-        if: ${{ github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/heads/hotfix/') && github.ref != 'refs/heads/dev' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/heads/hotfix/') && github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/ga' }}
         run: |
-          echo It's not allowed to run CD on other branch except main and dev.
+          echo It's not allowed to run CD on other branch except main, dev and ga.
           exit 1
 
       - name: Validate inputs for main or hotfix
         if: ${{ github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/hotfix/')) && github.event.inputs.preid != 'rc' && github.event.inputs.preid != 'stable' }}
         run: |
-          echo It's not allowed to release alpha on main branch.
+          echo It's only allowed to release RC and stable on main branch.
           exit 1
 
       - name: Valiadte inputs for dev
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/dev' && github.event.inputs.preid != 'alpha' }}
         run: |
-          echo It's not allowed to release RC or stable on dev branch.
+          echo It's only allowed to alpha on dev branch.
+          exit 1
+      
+      - name: Validate inputs for ga
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/ga' && github.event.inputs.preid != 'beta' }}
+        run: |
+          echo It's only allowed to release beta on ga branch.
           exit 1
 
       - name: Validate schedule
-        if: ${{ github.event_name == 'schedule' && github.ref != 'refs/heads/dev' }}
+        if: ${{ github.event_name == 'schedule' && github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/ga' }}
         run: |
-          echo It's not allowed to run schedule release except dev branch.
+          echo It's not allowed to run schedule release except dev or ga branch.
           exit 1
 
       - name: Checkout branch
@@ -73,6 +83,11 @@ jobs:
         run: |
           echo "${{ secrets.NPMRC }}" > ~/.npmrc
 
+      - name: manage pkgs to release
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.pkgs }}
+        run:
+          bash .github/scripts/lerna.sh ${{github.event.inputs.pkgs}}
+
       - name: Setup project
         run: |
           npm run setup
@@ -83,9 +98,14 @@ jobs:
           git config --global user.email 'yiz@microsoft.com'
 
       - name: release alpha npm packages to npmjs.org
-        if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/dev' && github.event.inputs.preid == 'alpha')}}
+        if: ${{ github.ref == 'refs/heads/dev' }}
         run: |
           npx lerna version prerelease --preid=alpha.$(git rev-parse --short HEAD) --exact --no-push --allow-branch dev --yes
+      
+      - name: release beta npm packages to npmjs.org
+        if: ${{ github.ref == 'refs/heads/ga' }}
+        run: |
+          npx lerna version prerelease --preid=beta.$(git rev-parse --short HEAD) --exact --no-push --allow-branch ga --yes
 
       - name: version rc npm packages to npmjs.org
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' && github.ref == 'refs/heads/main' && github.event.inputs.skip-version-rc == 'no'}}
@@ -128,16 +148,24 @@ jobs:
         run: |
           .github/scripts/template-zip-autogen.sh ${{ runner.temp }}/teamsfx_templates
 
-      - name: update tag
+      - name: update tempaltes alpha tag
         uses: richardsimko/update-tag@v1
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'alpha') }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.ref == 'refs/heads/dev' }}
         with:
           tag_name: "templates-0.0.0-alpha"
         env:
           GITHUB_TOKEN: ${{ secrets.CD_PAT }}
 
+      - name: update tempaltes beta tag
+        uses: richardsimko/update-tag@v1
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.ref == 'refs/heads/ga' }}
+        with:
+          tag_name: "templates-0.0.0-beta"
+        env:
+          GITHUB_TOKEN: ${{ secrets.CD_PAT }}
+
       - name: release templates' alpha version to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'alpha') }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.ref == 'refs/heads/dev' }}
         uses: ncipollo/release-action@v1.7.3
         with:
           token: ${{ secrets.CD_PAT }}
@@ -145,8 +173,18 @@ jobs:
           tag: "templates-0.0.0-alpha"
           artifacts: ${{ runner.temp }}/teamsfx_templates/*.zip
           allowUpdates: true
+      
+      - name: release templates' beta version to github
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.ref == 'refs/heads/ga' }}
+        uses: ncipollo/release-action@v1.7.3
+        with:
+          token: ${{ secrets.CD_PAT }}
+          prerelease: true
+          tag: "templates-0.0.0-beta"
+          artifacts: ${{ runner.temp }}/teamsfx_templates/*.zip
+          allowUpdates: true
 
-      - name: update tag
+      - name: update template rc tag
         uses: richardsimko/update-tag@v1
         if: ${{ (contains(steps.version-change.outputs.CHANGED, 'templates@') || contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx')) && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
         with:
@@ -199,9 +237,14 @@ jobs:
             bash ./.github/scripts/download-simpleauth.sh
 
       - name: publish alpha release to npm org
-        if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/dev' && github.event.inputs.preid == 'alpha')}}
+        if: ${{ github.ref == 'refs/heads/dev' }}
         run: |
           npx lerna publish from-package --dist-tag=alpha --yes --allow-branch dev
+
+      - name: publish beta release to npm org
+        if: ${{ github.ref == 'refs/heads/ga' }}
+        run: |
+          npx lerna publish from-package --dist-tag=beta --yes --allow-branch ga
 
       - name: update cli ai key
         if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid == 'stable'||github.event.inputs.preid == 'rc') }}
@@ -247,8 +290,8 @@ jobs:
             cd ./packages/server
             npm run package
 
-      - name: release daily server bits to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx-server') && github.ref == 'refs/heads/dev'  }}
+      - name: release alpha, beta server bits to github
+        if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx-server') && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/ga')  }}
         uses: ncipollo/release-action@v1.7.3
         with:
           token: ${{ secrets.CD_PAT }}
@@ -286,8 +329,8 @@ jobs:
             npm install --only=production
             npx vsce package
 
-      - name: release daily VSCode extension to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.ref == 'refs/heads/dev'  }}
+      - name: release alpha and beta VSCode extension to github
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/ga') }}
         uses: ncipollo/release-action@v1.7.3
         with:
           token: ${{ secrets.CD_PAT }}
@@ -311,3 +354,16 @@ jobs:
           token: ${{ secrets.CD_PAT }}
           tag: ${{ steps.version-change.outputs.EXTENSION_VERSION }}
           artifacts: ./packages/**/*.vsix
+
+      - name: save release info
+        if: ${{ steps.version-change.outputs.CHANGED }}
+        run: |
+          rm -f release.txt
+          echo ${{steps.version-change.outputs.CHANGED}} > release.txt
+      
+      - name: update release info to artifact
+        if: ${{ steps.version-change.outputs.CHANGED }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: release
+          path: release.txt

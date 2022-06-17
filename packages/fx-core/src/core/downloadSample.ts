@@ -17,7 +17,6 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../common/telemetry";
-import { getRootDirectory } from "../common/tools";
 import { FetchSampleError, InvalidInputError } from "./error";
 import { loadProjectSettings } from "./middleware/projectSettingsLoader";
 import { CoreQuestionNames, QuestionRootFolder } from "./question";
@@ -106,11 +105,7 @@ export async function downloadSample(
     module: "fx-core",
   };
   try {
-    let folder = inputs[QuestionRootFolder.name] as string;
-    if (inputs.platform === Platform.VSCode) {
-      folder = getRootDirectory();
-      await fs.ensureDir(folder);
-    }
+    const folder = inputs[QuestionRootFolder.name] as string;
     const sampleId = inputs[CoreQuestionNames.Samples] as string;
     if (!(sampleId && folder)) {
       throw InvalidInputError(`invalid answer for '${CoreQuestionNames.Samples}'`, inputs);
@@ -146,7 +141,7 @@ export async function downloadSample(
       ...inputs,
       projectPath: sampleAppPath,
     };
-    const projectSettingsRes = await loadProjectSettings(loadInputs);
+    const projectSettingsRes = await loadProjectSettings(loadInputs, true);
     if (projectSettingsRes.isOk()) {
       const projectSettings = projectSettingsRes.value;
       projectSettings.projectId = inputs.projectId ? inputs.projectId : uuid.v4();

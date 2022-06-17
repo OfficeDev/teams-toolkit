@@ -2,19 +2,26 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+
 import * as vscode from "vscode";
-import { VSCodeTelemetryReporter } from "../commonlib/telemetry";
-import {
-  TelemetryProperty,
-  TelemetryComponentType,
-  TelemetrySuccess,
-  TelemetryEvent,
-  TelemetryErrorType,
-} from "./extTelemetryEvents";
-import * as extensionPackage from "../../package.json";
 import { FxError, Stage, UserError } from "@microsoft/teamsfx-api";
-import { getIsExistingUser, isSPFxProject } from "../utils/commonUtils";
-import { ext } from "../extensionVariables";
+import { Correlator, globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
+
+import * as extensionPackage from "../../package.json";
+import { VSCodeTelemetryReporter } from "../commonlib/telemetry";
+import * as globalVariables from "../globalVariables";
+import { getProjectId } from "../utils/commonUtils";
+import {
+  TelemetryComponentType,
+  TelemetryErrorType,
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "./extTelemetryEvents";
+
+const TelemetryCacheKey = "TelemetryEvents";
+// export for UT
+export let lastCorrelationId: string | undefined = undefined;
 
 export namespace ExtTelemetry {
   export let reporter: VSCodeTelemetryReporter;
@@ -22,6 +29,7 @@ export namespace ExtTelemetry {
   /* eslint-disable prefer-const */
   export let isFromSample: boolean | undefined = undefined;
   export let settingsVersion: string | undefined = undefined;
+  export let isM365: boolean | undefined = undefined;
 
   export function setHasSentTelemetry(eventName: string) {
     if (eventName === "query-expfeature") return;
@@ -51,8 +59,6 @@ export namespace ExtTelemetry {
         return TelemetryEvent.CreateProject;
       case Stage.init:
         return TelemetryEvent.InitProject;
-      case Stage.update:
-        return TelemetryEvent.AddResource;
       case Stage.provision:
         return TelemetryEvent.Provision;
       case Stage.deploy:
@@ -74,6 +80,7 @@ export namespace ExtTelemetry {
     measurements?: { [p: string]: number }
   ): void {
     setHasSentTelemetry(eventName);
+    lastCorrelationId = Correlator.getId();
     if (!properties) {
       properties = {};
     }
@@ -82,16 +89,17 @@ export namespace ExtTelemetry {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
 
-    const isExistingUser = getIsExistingUser();
-    properties[TelemetryProperty.IsExistingUser] = isExistingUser ? isExistingUser : "";
+    properties[TelemetryProperty.IsExistingUser] = globalVariables.isExistingUser;
 
-    if (ext.workspaceUri) {
-      const isSPFx = isSPFxProject(ext.workspaceUri.fsPath);
-      properties[TelemetryProperty.IsSpfx] = isSPFx.toString();
+    if (globalVariables.workspaceUri) {
+      properties[TelemetryProperty.IsSpfx] = globalVariables.isSPFxProject.toString();
     }
 
     if (isFromSample != undefined) {
       properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
+    }
+    if (isM365 !== undefined) {
+      properties![TelemetryProperty.IsM365] = isM365.toString();
     }
     if (settingsVersion !== undefined) {
       properties![TelemetryProperty.SettingsVersion] = settingsVersion.toString();
@@ -115,8 +123,7 @@ export namespace ExtTelemetry {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
 
-    const isExistingUser = getIsExistingUser();
-    properties[TelemetryProperty.IsExistingUser] = isExistingUser ? isExistingUser : "";
+    properties[TelemetryProperty.IsExistingUser] = globalVariables.isExistingUser;
 
     properties[TelemetryProperty.Success] = TelemetrySuccess.No;
     if (error instanceof UserError) {
@@ -130,13 +137,15 @@ export namespace ExtTelemetry {
       error.stack ? "\nstack:\n" + error.stack : ""
     }`;
 
-    if (ext.workspaceUri) {
-      const isSPFx = isSPFxProject(ext.workspaceUri.fsPath);
-      properties[TelemetryProperty.IsSpfx] = isSPFx.toString();
+    if (globalVariables.workspaceUri) {
+      properties[TelemetryProperty.IsSpfx] = globalVariables.isSPFxProject.toString();
     }
 
     if (isFromSample != undefined) {
       properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
+    }
+    if (isM365 !== undefined) {
+      properties![TelemetryProperty.IsM365] = isM365.toString();
     }
     if (settingsVersion !== undefined) {
       properties![TelemetryProperty.SettingsVersion] = settingsVersion.toString();
@@ -158,22 +167,51 @@ export namespace ExtTelemetry {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
 
-    const isExistingUser = getIsExistingUser();
-    properties[TelemetryProperty.IsExistingUser] = isExistingUser ? isExistingUser : "";
+    properties[TelemetryProperty.IsExistingUser] = globalVariables.isExistingUser;
 
-    if (ext.workspaceUri) {
-      const isSPFx = isSPFxProject(ext.workspaceUri.fsPath);
-      properties[TelemetryProperty.IsSpfx] = isSPFx.toString();
+    if (globalVariables.workspaceUri) {
+      properties[TelemetryProperty.IsSpfx] = globalVariables.isSPFxProject.toString();
     }
 
     if (isFromSample != undefined) {
       properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
+    }
+    if (isM365 !== undefined) {
+      properties![TelemetryProperty.IsM365] = isM365.toString();
     }
     if (settingsVersion !== undefined) {
       properties![TelemetryProperty.SettingsVersion] = settingsVersion.toString();
     }
 
     reporter.sendTelemetryException(error, properties, measurements);
+  }
+
+  export async function cacheTelemetryEventAsync(
+    eventName: string,
+    properties?: { [p: string]: string }
+  ) {
+    const telemetryEvents = {
+      eventName: eventName,
+      properties: {
+        [TelemetryProperty.CorrelationId]: lastCorrelationId,
+        [TelemetryProperty.ProjectId]: getProjectId(),
+        [TelemetryProperty.Timestamp]: new Date().toISOString(),
+        ...properties,
+      },
+    };
+    const newValue = JSON.stringify(telemetryEvents);
+    await globalStateUpdate(TelemetryCacheKey, newValue);
+  }
+
+  export async function sendCachedTelemetryEventsAsync() {
+    const existingValue = await globalStateGet(TelemetryCacheKey);
+    if (existingValue) {
+      try {
+        const telemetryEvent = JSON.parse(existingValue);
+        reporter.sendTelemetryEvent(telemetryEvent.eventName, telemetryEvent.properties);
+      } catch (e) {}
+      await globalStateUpdate(TelemetryCacheKey, undefined);
+    }
   }
 
   export async function dispose() {

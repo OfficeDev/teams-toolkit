@@ -2,12 +2,14 @@
 // Licensed under the MIT license.
 
 import {
-  AppStudioTokenProvider,
   Colors,
+  err,
   FxError,
   InputTextConfig,
   InputTextResult,
   IProgressHandler,
+  LoginStatus,
+  M365TokenProvider,
   MultiSelectConfig,
   MultiSelectResult,
   ok,
@@ -22,6 +24,8 @@ import {
   SingleSelectConfig,
   SingleSelectResult,
   TaskConfig,
+  TokenRequest,
+  UserError,
   UserInteraction,
 } from "@microsoft/teamsfx-api";
 
@@ -87,39 +91,71 @@ export class MockUserInteraction implements UserInteraction {
   }
 }
 
-export class MockedAppStudioTokenProvider implements AppStudioTokenProvider {
-  async getAccessToken(showDialog?: boolean): Promise<string> {
-    return "someFakeToken";
+export class MockedM365TokenProvider implements M365TokenProvider {
+  async getAccessToken(tokenRequest: TokenRequest): Promise<Result<string, FxError>> {
+    return ok("someFakeToken");
   }
-  async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
-    return {
+  async getJsonObject(
+    tokenRequest: TokenRequest
+  ): Promise<Result<Record<string, unknown>, FxError>> {
+    return ok({
       tid: "222",
-    };
+    });
+  }
+  async getStatus(tokenRequest: TokenRequest): Promise<Result<LoginStatus, FxError>> {
+    return ok({
+      status: "SignedIn",
+      token: "fakeToken",
+    });
   }
   signout(): Promise<boolean> {
     throw new Error("Method not implemented.");
   }
-  setStatusChangeCallback(
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>
-  ): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
   setStatusChangeMap(
     name: string,
+    tokenRequest: TokenRequest,
     statusChange: (
       status: string,
       token?: string,
       accountInfo?: Record<string, unknown>
     ) => Promise<void>,
     immediateCall?: boolean
-  ): Promise<boolean> {
+  ): Promise<Result<boolean, FxError>> {
     throw new Error("Method not implemented.");
   }
-  removeStatusChangeMap(name: string): Promise<boolean> {
+  removeStatusChangeMap(name: string): Promise<Result<boolean, FxError>> {
+    throw new Error("Method not implemented.");
+  }
+}
+
+export class MockedM365TokenProviderFail implements M365TokenProvider {
+  async getAccessToken(tokenRequest: TokenRequest): Promise<Result<string, FxError>> {
+    return err(new UserError("source", "NoAppStudioToken", "message"));
+  }
+  async getJsonObject(
+    tokenRequest: TokenRequest
+  ): Promise<Result<Record<string, unknown>, FxError>> {
+    return err(new UserError("source", "NoAppStudioToken", "message"));
+  }
+  async getStatus(tokenRequest: TokenRequest): Promise<Result<LoginStatus, FxError>> {
+    return err(new UserError("source", "NoAppStudioToken", "message"));
+  }
+  signout(): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  setStatusChangeMap(
+    name: string,
+    tokenRequest: TokenRequest,
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>,
+    immediateCall?: boolean
+  ): Promise<Result<boolean, FxError>> {
+    throw new Error("Method not implemented.");
+  }
+  removeStatusChangeMap(name: string): Promise<Result<boolean, FxError>> {
     throw new Error("Method not implemented.");
   }
 }

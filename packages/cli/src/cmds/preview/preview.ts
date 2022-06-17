@@ -4,6 +4,7 @@
 "use strict";
 
 import * as path from "path";
+import * as os from "os";
 import * as fs from "fs-extra";
 import { Argv } from "yargs";
 import {
@@ -41,8 +42,11 @@ import {
   DepsManager,
   getSideloadingStatus,
   NodeNotSupportedError,
-  isPureExistingApp,
+  DepsCheckerError,
+  isExistingTabApp as isExistingTabAppCore,
   isM365AppEnabled,
+  validationSettingsHelpLink,
+  AppStudioScopes,
 } from "@microsoft/teamsfx-core";
 
 import { YargsCommand } from "../../yargsCommand";
@@ -54,7 +58,7 @@ import cliLogger from "../../commonlib/log";
 import * as errors from "./errors";
 import activate from "../../activate";
 import { Task, TaskResult } from "./task";
-import AppStudioTokenInstance from "../../commonlib/appStudioLogin";
+import M365TokenInstance from "../../commonlib/m365Login";
 import cliTelemetry, { CliTelemetry } from "../../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
@@ -157,6 +161,7 @@ export default class Preview extends YargsCommand {
     yargs.option("env", {
       description: "Select an existing env for the project",
       string: true,
+      default: environmentManager.getDefaultEnvName(),
     });
 
     return yargs.version(false);
@@ -188,6 +193,8 @@ export default class Preview extends YargsCommand {
       this.telemetryProperties[TelemetryProperty.PreviewAppId] = utils.getLocalTeamsAppId(
         workspaceFolder
       ) as string;
+      this.telemetryProperties[TelemetryProperty.PreviewProjectComponents] =
+        (await this.getProjectComponents(workspaceFolder)) ?? "";
 
       cliTelemetry
         .withRootFolder(workspaceFolder)
@@ -209,7 +216,7 @@ export default class Preview extends YargsCommand {
 
       let result: Result<null, FxError>;
       if (previewType === "local") {
-        if (await this.isExistingApp(workspaceFolder)) {
+        if (await this.isExistingTabApp(workspaceFolder)) {
           result = await this.localPreviewMinimalApp(workspaceFolder, browser, browserArguments);
         } else {
           result = await this.localPreview(workspaceFolder, hub, browser, browserArguments);
@@ -341,9 +348,11 @@ export default class Preview extends YargsCommand {
       }
 
       // check cert
-      const certRes = await this.resolveLocalCertificate(localEnvManager);
-      if (certRes.isErr()) {
-        return err(certRes.error);
+      if (includeFrontend) {
+        const certRes = await this.resolveLocalCertificate(localEnvManager);
+        if (certRes.isErr()) {
+          return err(certRes.error);
+        }
       }
 
       // check deps
@@ -468,11 +477,20 @@ export default class Preview extends YargsCommand {
 
     // launch Outlook or Office
     if (CLIUIInstance.interactive) {
+      const botOutlookChannelLink = localBotId
+        ? await commonUtils.getBotOutlookChannelLink(
+            workspaceFolder,
+            environmentManager.getLocalEnvName(),
+            undefined,
+            localBotId
+          )
+        : undefined;
+
       const shouldContinue = await showInstallAppInTeamsMessage(
-        false,
+        true,
         tenantId,
         localTeamsAppId,
-        localBotId,
+        botOutlookChannelLink,
         browser,
         browserArguments
       );
@@ -488,6 +506,7 @@ export default class Preview extends YargsCommand {
             browserArguments,
             this.telemetryProperties
           );
+          cliLogger.necessaryLog(LogLevel.Warning, constants.m365TenantHintMessage);
           cliLogger.necessaryLog(LogLevel.Warning, constants.waitCtrlPlusC);
         }
       } else {
@@ -509,6 +528,7 @@ export default class Preview extends YargsCommand {
           LogLevel.Warning,
           util.format(constants.installApp.nonInteractive.manifestChanges, "--local")
         );
+        cliLogger.necessaryLog(LogLevel.Warning, constants.m365TenantHintMessage);
         cliLogger.necessaryLog(LogLevel.Warning, constants.waitCtrlPlusC);
       } else {
         cliLogger.necessaryLog(
@@ -684,7 +704,7 @@ export default class Preview extends YargsCommand {
     );
   }
 
-  private async isExistingApp(workspacePath: string): Promise<boolean> {
+  private async isExistingTabApp(workspacePath: string): Promise<boolean> {
     const projectSettingsPath = path.resolve(
       workspacePath,
       `.${ConfigFolderName}`,
@@ -694,7 +714,7 @@ export default class Preview extends YargsCommand {
 
     if (await fs.pathExists(projectSettingsPath)) {
       const projectSettings = await fs.readJson(projectSettingsPath);
-      return isPureExistingApp(projectSettings);
+      return isExistingTabAppCore(projectSettings);
     } else {
       return false;
     }
@@ -702,7 +722,7 @@ export default class Preview extends YargsCommand {
 
   private async remotePreview(
     workspaceFolder: string,
-    env: string | undefined,
+    env: string,
     hub: constants.Hub,
     browser: constants.Browser,
     browserArguments: string[] = []
@@ -734,6 +754,9 @@ export default class Preview extends YargsCommand {
       (config?.settings?.solutionSettings as AzureSolutionSettings)?.activeResourcePlugins ?? [];
     const includeFrontend = activeResourcePlugins.some(
       (pluginName) => pluginName === constants.frontendHostingPluginName
+    );
+    const includeBot = activeResourcePlugins.some(
+      (pluginName) => pluginName === constants.botPluginName
     );
     if (hub === constants.Hub.office && !includeFrontend) {
       throw errors.OnlyLaunchPageSupportedInOffice();
@@ -776,11 +799,14 @@ export default class Preview extends YargsCommand {
 
     // launch Outlook or Office
     if (CLIUIInstance.interactive) {
+      const botOutlookChannelLink = includeBot
+        ? await commonUtils.getBotOutlookChannelLink(workspaceFolder, env, config, undefined)
+        : undefined;
       const shouldContinue = await showInstallAppInTeamsMessage(
         false,
         tenantId,
         remoteTeamsAppId,
-        undefined,
+        botOutlookChannelLink,
         browser,
         browserArguments
       );
@@ -1086,7 +1112,9 @@ export default class Preview extends YargsCommand {
     let funcEnv = undefined;
     if (func.details.binFolders !== undefined) {
       funcEnv = {
-        PATH: `${process.env.PATH}${path.delimiter}${func.details.binFolders.join(path.delimiter)}`,
+        PATH: `${path.delimiter}${func.details.binFolders.join(path.delimiter)}${path.delimiter}${
+          process.env.PATH
+        }${path.delimiter}`,
       };
     }
     const backendStartTask = includeBackend
@@ -1225,9 +1253,13 @@ export default class Preview extends YargsCommand {
       shouldContinue = shouldContinue && result;
       await bar.next(summaryMsg);
       await bar.end(result);
-      if (!result && depStatus.error && depStatus.error.helpLink) {
+
+      if (depStatus.error instanceof DepsCheckerError) {
+        cliLogger.necessaryLog(LogLevel.Warning, depStatus.error.message);
+      }
+      if (depStatus.error && depStatus.error.helpLink) {
         cliLogger.necessaryLog(
-          LogLevel.Info,
+          LogLevel.Warning,
           doctorResult.HelpLink.split("@Link").join(depStatus.error.helpLink)
         );
       }
@@ -1246,6 +1278,10 @@ export default class Preview extends YargsCommand {
     depsManager: DepsManager
   ): Promise<Result<null, FxError>> {
     const node = hasBackend || hasFuncHostedBot ? DepsType.FunctionNode : DepsType.AzureNode;
+    if (!(await CliDepsChecker.isEnabled(node))) {
+      return ok(null);
+    }
+
     const nodeBar = CLIUIInstance.createProgressBar(DepsDisplayName[node], 1);
     await nodeBar.start(ProgressMessage[node]);
 
@@ -1253,6 +1289,7 @@ export default class Preview extends YargsCommand {
     let result = true;
     let summaryMsg = doctorResult.NodeSuccess;
     let helpLink = undefined;
+    let isNode12Installed = false;
 
     try {
       nodeStatus = (
@@ -1269,6 +1306,7 @@ export default class Preview extends YargsCommand {
           helpLink = nodeStatus.error.helpLink;
         }
         if (nodeStatus.error instanceof NodeNotSupportedError) {
+          const node12Version = "v12";
           const supportedVersions = nodeStatus?.details.supportedVersions
             .map((v) => "v" + v)
             .join(" ,");
@@ -1276,6 +1314,17 @@ export default class Preview extends YargsCommand {
             .join(nodeStatus?.details.installVersion)
             .split("@SupportedVersions")
             .join(supportedVersions);
+
+          if (nodeStatus.details.installVersion?.includes(node12Version)) {
+            isNode12Installed = true;
+            const bypass =
+              hasBackend || hasFuncHostedBot
+                ? doctorResult.BypassNode12AndFunction
+                : doctorResult.BypassNode12;
+            summaryMsg = `${summaryMsg}${os.EOL}${bypass
+              .split("@Link")
+              .join(validationSettingsHelpLink)}`;
+          }
         }
       }
     } catch (err) {
@@ -1287,6 +1336,9 @@ export default class Preview extends YargsCommand {
     await nodeBar.end(result);
     if (!result) {
       cliLogger.necessaryLog(LogLevel.Info, doctorResult.InstallNode);
+      if (isNode12Installed) {
+        cliLogger.necessaryLog(LogLevel.Info, doctorResult.Node12MatchFunction);
+      }
       return err(errors.PrerequisitesValidationError("Node.js checker failed.", helpLink));
     }
 
@@ -1302,10 +1354,15 @@ export default class Preview extends YargsCommand {
     await accountBar.next(ProgressMessage[Checker.M365Account]);
     let loginHint = undefined;
     try {
-      const loginStatus = await AppStudioTokenInstance.getStatus();
-      let token = loginStatus.token;
-      if (loginStatus.status === signedOut) {
-        token = await AppStudioTokenInstance.getAccessToken(true);
+      let loginStatusRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+      let token = loginStatusRes.isOk() ? loginStatusRes.value.token : undefined;
+      if (loginStatusRes.isOk() && loginStatusRes.value.status === signedOut) {
+        const tokenRes = await M365TokenInstance.getAccessToken({
+          scopes: AppStudioScopes,
+          showDialog: true,
+        });
+        token = tokenRes.isOk() ? tokenRes.value : undefined;
+        loginStatusRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
       }
 
       if (token === undefined) {
@@ -1320,7 +1377,7 @@ export default class Preview extends YargsCommand {
         }
       }
 
-      const tokenObject = loginStatus.accountInfo;
+      const tokenObject = loginStatusRes.isOk() ? loginStatusRes.value.accountInfo : undefined;
       if (tokenObject && tokenObject.upn) {
         loginHint = tokenObject.upn;
       }
@@ -1460,6 +1517,37 @@ export default class Preview extends YargsCommand {
       return fxError;
     } else {
       return new UnknownError(source, JSON.stringify(e));
+    }
+  }
+
+  private async getProjectComponents(workspaceFolder: string): Promise<string | undefined> {
+    try {
+      const localEnvManager = new LocalEnvManager();
+      const projectSettings = await localEnvManager.getProjectSettings(workspaceFolder);
+
+      const result: { [key: string]: any } = { components: [] };
+      if (ProjectSettingsHelper.isSpfx(projectSettings)) {
+        result.components.push("spfx");
+      }
+      if (ProjectSettingsHelper.includeFrontend(projectSettings)) {
+        result.components.push("frontend");
+      }
+      if (ProjectSettingsHelper.includeBot(projectSettings)) {
+        result.components.push(`bot`);
+        result.botHostType = ProjectSettingsHelper.includeFuncHostedBot(projectSettings)
+          ? "azure-functions"
+          : "app-service";
+        result.botCapabilities = ProjectSettingsHelper.getBotCapabilities(projectSettings);
+      }
+      if (ProjectSettingsHelper.includeBackend(projectSettings)) {
+        result.components.push("backend");
+      }
+      if (ProjectSettingsHelper.includeAAD(projectSettings)) {
+        result.components.push("aad");
+      }
+      return JSON.stringify(result);
+    } catch (error: any) {
+      return undefined;
     }
   }
 }

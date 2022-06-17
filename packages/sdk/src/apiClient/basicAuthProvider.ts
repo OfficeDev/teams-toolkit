@@ -8,8 +8,6 @@ import { formatString } from "../util/utils";
 
 /**
  * Provider that handles Basic authentication
- *
- * @beta
  */
 export class BasicAuthProvider implements AuthProvider {
   private userName: string;
@@ -21,8 +19,7 @@ export class BasicAuthProvider implements AuthProvider {
    * @param { string } password - Password used in basic auth
    *
    * @throws {@link ErrorCode|InvalidParameter} - when username or password is empty.
-   *
-   * @beta
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    */
   constructor(userName: string, password: string) {
     if (!userName) {
@@ -50,8 +47,7 @@ export class BasicAuthProvider implements AuthProvider {
    * @returns Updated axios request config.
    *
    * @throws {@link ErrorCode|AuthorizationInfoAlreadyExists} - when Authorization header or auth property already exists in request configuration.
-   *
-   * @beta
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    */
   public async AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig> {
     if (config.headers && config.headers["Authorization"]) {

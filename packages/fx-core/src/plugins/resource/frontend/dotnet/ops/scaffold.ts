@@ -6,7 +6,7 @@ import {
   UnknownScaffoldError,
   UnzipTemplateError,
 } from "../../resources/errors";
-import { Constants, DotnetPathInfo as PathInfo } from "../constants";
+import { Constants } from "../constants";
 import { Logger } from "../../utils/logger";
 import { Messages } from "../resources/messages";
 import { TelemetryHelper } from "../../utils/telemetry-helper";
@@ -28,7 +28,7 @@ export async function scaffoldFromZipPackage(
     lang: templateInfo.language,
     scenario: templateInfo.scenario,
     dst: componentPath,
-    fileNameReplaceFn: genTemplateNameRenderReplaceFn(templateInfo.variables.BlazorAppServer),
+    fileNameReplaceFn: genTemplateNameRenderReplaceFn(templateInfo.variables.ProjectName),
     fileDataReplaceFn: genTemplateRenderReplaceFn(templateInfo.variables),
     onActionEnd: async (action: ScaffoldAction, context: ScaffoldContext) => {
       if (action.name === ScaffoldActionName.FetchTemplatesUrlWithTag) {
@@ -55,7 +55,7 @@ export async function scaffoldFromZipPackage(
 }
 
 export function renderTemplateName(name: string, data: Buffer, appName: string): string {
-  return name.replace(/BlazorAppServer/, appName).replace(/\.tpl/, "");
+  return name.replace(/ProjectName/, appName).replace(/\.tpl/, "");
 }
 
 export function genTemplateNameRenderReplaceFn(appName: string) {

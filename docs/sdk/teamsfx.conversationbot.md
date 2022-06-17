@@ -4,9 +4,6 @@
 
 ## ConversationBot class
 
-> This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Provide utilities for bot conversation, including: - handle command and response. - send notification to varies targets (e.g., member, group, channel).
 
 <b>Signature:</b>
@@ -66,19 +63,19 @@ for (const target of await conversationBot.notification.installations()) {
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(options)](./teamsfx.conversationbot._constructor_.md) |  | <b><i>(BETA)</i></b> Creates new instance of the <code>ConversationBot</code>. |
+|  [(constructor)(options)](./teamsfx.conversationbot._constructor_.md) |  | Creates new instance of the <code>ConversationBot</code>. |
 
 ## Properties
 
 |  Property | Modifiers | Type | Description |
 |  --- | --- | --- | --- |
-|  [adapter](./teamsfx.conversationbot.adapter.md) |  | BotFrameworkAdapter | <b><i>(BETA)</i></b> The bot adapter. |
-|  [command?](./teamsfx.conversationbot.command.md) |  | [CommandBot](./teamsfx.commandbot.md) | <b><i>(BETA)</i></b> <i>(Optional)</i> The entrypoint of command and response. |
-|  [notification?](./teamsfx.conversationbot.notification.md) |  | [NotificationBot](./teamsfx.notificationbot.md) | <b><i>(BETA)</i></b> <i>(Optional)</i> The entrypoint of notification. |
+|  [adapter](./teamsfx.conversationbot.adapter.md) |  | BotFrameworkAdapter | The bot adapter. |
+|  [command?](./teamsfx.conversationbot.command.md) |  | [CommandBot](./teamsfx.commandbot.md) | <i>(Optional)</i> The entrypoint of command and response. |
+|  [notification?](./teamsfx.conversationbot.notification.md) |  | [NotificationBot](./teamsfx.notificationbot.md) | <i>(Optional)</i> The entrypoint of notification. |
 
 ## Methods
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
-|  [requestHandler(req, res, logic)](./teamsfx.conversationbot.requesthandler.md) |  | <b><i>(BETA)</i></b> The request handler to integrate with web request. |
+|  [requestHandler(req, res, logic)](./teamsfx.conversationbot.requesthandler.md) |  | The request handler to integrate with web request. |
 

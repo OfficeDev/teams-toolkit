@@ -9,6 +9,7 @@ import { GLOBAL_CONFIG, newEnvInfo, SOLUTION_PROVISION_SUCCEEDED } from "../../.
 import { ConfigMap, PluginContext } from "@microsoft/teamsfx-api";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import { AppStudioPluginImpl } from "../../../../../src/plugins/resource/appstudio/plugin";
+import { mockTokenProviderM365 } from "../../aad/helper";
 
 describe("Update manifest preview file", () => {
   let plugin: AppStudioPluginImpl;
@@ -26,6 +27,7 @@ describe("Update manifest preview file", () => {
       envInfo: newEnvInfo(),
       config: new ConfigMap(),
       cryptoProvider: new LocalCrypto(""),
+      m365TokenProvider: mockTokenProviderM365(),
     };
     ctx.projectSettings = {
       appName: "my app",

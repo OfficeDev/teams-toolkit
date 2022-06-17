@@ -1,6 +1,5 @@
 {
     "dependencies": {
-        "@microsoft/teamsfx": "0.6.2-alpha.0",
-        "@microsoft/teams-js": "^1.9.0"
+        "@microsoft/teamsfx": "^1.0.0"
     }
 }

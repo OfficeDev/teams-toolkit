@@ -1,4 +1,4 @@
-﻿namespace {{BlazorAppServer}}.Interop.TeamsSDK;
+﻿namespace {{ProjectName}}.Interop.TeamsSDK;
 
 public class TeamsInstanceSettings
 {

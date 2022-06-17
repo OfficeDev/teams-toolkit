@@ -325,18 +325,11 @@ export function UpgradeCanceledError(): UserError {
 
 export function ConsolidateCanceledError(): UserError {
   return new UserError(
+    CoreSource,
     // @see tools.isUserCancelError()
     "UserCancel",
-    getLocalizedString("error.ConsolidateCanceledError"),
-    CoreSource
-  );
-}
-
-export function AadManifestMigrationCanceledError(): UserError {
-  return new UserError(
-    "UserCancel",
-    getLocalizedString("error.AadManifestMigrationCanceledError"),
-    CoreSource
+    getDefaultString("error.ConsolidateCanceledError"),
+    getLocalizedString("error.ConsolidateCanceledError")
   );
 }
 

@@ -26,6 +26,7 @@ import {
   v2,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
+import fs from "fs-extra";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { cipher } from "node-forge";
@@ -42,6 +43,7 @@ import {
   validateProjectSettings,
 } from "../../src";
 import { ConstantString } from "../../src/common/constants";
+import * as featureFlags from "../../src/common/featureFlags";
 import { loadProjectSettings } from "../../src/core/middleware/projectSettingsLoader";
 import {
   CoreQuestionNames,
@@ -73,6 +75,7 @@ describe("Core basic APIs", () => {
     mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "false" });
     Container.set(SolutionPluginsV2.AzureTeamsSolutionV2, mockSolutionV2);
     Container.set(SolutionPlugins.AzureTeamsSolution, mockSolutionV1);
+    sandbox.stub<any, any>(featureFlags, "isPreviewFeaturesEnabled").returns(true);
   });
   afterEach(async () => {
     sandbox.restore();
@@ -107,11 +110,12 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
         [CoreQuestionNames.Capabilities]: ["Tab"],
+        [CoreQuestionNames.Folder]: os.tmpdir(),
         solution: mockSolutionV2.name,
         stage: Stage.create,
       };
       const res = await core.createProject(inputs);
-      projectPath = path.join(os.homedir(), ConstantString.rootFolder, appName);
+      projectPath = path.join(inputs.folder, appName);
       assert.isTrue(res.isOk() && res.value === projectPath);
       const projectSettingsResult = await loadProjectSettings(inputs, true);
       assert.isTrue(projectSettingsResult.isOk());
@@ -123,28 +127,32 @@ describe("Core basic APIs", () => {
       }
     });
 
-    it("VSCode with customized default root directory", async () => {
+    it("VSCode without customized default root directory - new UI", async () => {
       appName = randomAppName();
-      const newParam = { TEAMSFX_APIV3: "false", TEAMSFX_ROOT_DIRECTORY: os.tmpdir() };
-      mockedEnvRestore = mockedEnv(newParam);
       const core = new FxCore(tools);
       const inputs: Inputs = {
         platform: Platform.VSCode,
         [CoreQuestionNames.AppName]: appName,
         [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-        [CoreQuestionNames.Capabilities]: ["Tab"],
+        [CoreQuestionNames.Capabilities]: "Tab",
+        [CoreQuestionNames.Folder]: os.tmpdir(),
         solution: mockSolutionV2.name,
         stage: Stage.create,
       };
       const res = await core.createProject(inputs);
-      projectPath = path.resolve(
-        newParam.TEAMSFX_ROOT_DIRECTORY.replace("${homeDir}", os.homedir()),
-        appName
-      );
+      projectPath = path.join(inputs.folder, appName);
       assert.isTrue(res.isOk() && res.value === projectPath);
-      mockedEnvRestore();
+      const projectSettingsResult = await loadProjectSettings(inputs, true);
+      assert.isTrue(projectSettingsResult.isOk());
+      if (projectSettingsResult.isOk()) {
+        const projectSettings = projectSettingsResult.value;
+        const validSettingsResult = validateProjectSettings(projectSettings);
+        assert.isTrue(validSettingsResult === undefined);
+        assert.isTrue(projectSettings.version === "2.1.0");
+      }
     });
+
     it("create from new (VSC, SPFx) and telemetry is sent", async () => {
       let sendCreate = false;
       sandbox
@@ -164,7 +172,7 @@ describe("Core basic APIs", () => {
       const spfx = Container.get(ResourcePlugins.SpfxPlugin) as Plugin;
       sandbox.stub<any, any>(appstudio, "scaffold").resolves(ok(undefined));
       sandbox.stub<any, any>(spfx, "postScaffold").resolves(ok(undefined));
-      const newParam = { TEAMSFX_APIV3: "false", TEAMSFX_ROOT_DIRECTORY: os.tmpdir() };
+      const newParam = { TEAMSFX_APIV3: "false" };
       mockedEnvRestore = mockedEnv(newParam);
       appName = randomAppName();
       const projectSettings: ProjectSettings = {
@@ -175,10 +183,7 @@ describe("Core basic APIs", () => {
           version: "3.0.0",
         },
       };
-      projectPath = path.resolve(
-        newParam.TEAMSFX_ROOT_DIRECTORY.replace("${homeDir}", os.homedir()),
-        appName
-      );
+      projectPath = path.resolve(os.tmpdir(), appName);
       const inputs: Inputs = {
         platform: Platform.VSCode,
         [CoreQuestionNames.AppName]: appName,
@@ -202,7 +207,7 @@ describe("Core basic APIs", () => {
 
   it("createProject, provision, deploy, localDebug, publish, executeUserTask, getProjectConfig, getQuestionsForUserTask, encrypt, decrypt", async () => {
     appName = randomAppName();
-    const newParam = { TEAMSFX_APIV3: "false", TEAMSFX_ROOT_DIRECTORY: os.tmpdir() };
+    const newParam = { TEAMSFX_APIV3: "false" };
     mockedEnvRestore = mockedEnv(newParam);
     const core = new FxCore(tools);
     const inputs: Inputs = {
@@ -211,16 +216,18 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       [CoreQuestionNames.ProgrammingLanguage]: "javascript",
       [CoreQuestionNames.Capabilities]: ["Tab"],
+      [CoreQuestionNames.Folder]: os.tmpdir(),
       solution: mockSolutionV2.name,
       stage: Stage.create,
     };
     const createRes = await core.createProject(inputs);
-    projectPath = path.resolve(
-      newParam.TEAMSFX_ROOT_DIRECTORY.replace("${homeDir}", os.homedir()),
-      appName
-    );
+    projectPath = path.resolve(inputs.folder, appName);
     assert.isTrue(createRes.isOk() && createRes.value === projectPath);
 
+    await fs.writeFile(
+      path.resolve(projectPath, "templates", "appPackage", "manifest.template.json"),
+      "{}"
+    );
     let res = await core.provisionResources(inputs);
     assert.isTrue(res.isOk());
 
@@ -350,7 +357,7 @@ describe("Core basic APIs", () => {
         [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
         stage: Stage.getQuestions,
       };
-      expectedInputs[CoreQuestionNames.Capabilities] = [TabOptionItem.id];
+      expectedInputs[CoreQuestionNames.Capabilities] = TabOptionItem.id;
       expectedInputs[CoreQuestionNames.ProgrammingLanguage] = "javascript";
       sandbox
         .stub<any, any>(tools.ui, "inputText")
@@ -390,18 +397,10 @@ describe("Core basic APIs", () => {
                 type: "success",
                 result: expectedInputs[CoreQuestionNames.ProgrammingLanguage] as string,
               });
-            }
-            throw err(InvalidInputError("invalid question"));
-          }
-        );
-      sandbox
-        .stub<any, any>(tools.ui, "selectOptions")
-        .callsFake(
-          async (config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> => {
-            if (config.name == "capabilities") {
+            } else if (config.name == "capabilities") {
               return ok({
                 type: "success",
-                result: expectedInputs[CoreQuestionNames.Capabilities],
+                result: expectedInputs[CoreQuestionNames.Capabilities] as string,
               });
             }
             throw err(InvalidInputError("invalid question"));
@@ -431,13 +430,17 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-      [CoreQuestionNames.Capabilities]: ["Tab"],
+      [CoreQuestionNames.Capabilities]: "Tab",
       solution: mockSolutionV2.name,
       stage: Stage.create,
     };
     const createRes = await core.createProject(inputs);
     assert.isTrue(createRes.isOk());
     projectPath = path.resolve(os.tmpdir(), appName);
+    await fs.writeFile(
+      path.resolve(projectPath, "templates", "appPackage", "manifest.template.json"),
+      "{}"
+    );
 
     const newEnvName = "newEnv";
     const envListResult = await environmentManager.listRemoteEnvConfigs(projectPath);
@@ -466,7 +469,7 @@ describe("Core basic APIs", () => {
   it("ProgrammingLanguageQuestion", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: [TabSPFxItem.id],
+      [CoreQuestionNames.Capabilities]: TabSPFxItem.id,
     };
     if (
       ProgrammingLanguageQuestion.dynamicOptions &&
@@ -481,38 +484,15 @@ describe("Core basic APIs", () => {
 
     languageAssert({
       platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: [TabOptionItem.id],
+      [CoreQuestionNames.Capabilities]: TabOptionItem.id,
     });
     languageAssert({
       platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: [BotOptionItem.id],
+      [CoreQuestionNames.Capabilities]: BotOptionItem.id,
     });
     languageAssert({
       platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: [MessageExtensionItem.id],
-    });
-    languageAssert({
-      platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: [TabOptionItem.id, BotOptionItem.id],
-    });
-
-    languageAssert({
-      platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: [TabOptionItem.id, MessageExtensionItem.id],
-    });
-
-    languageAssert({
-      platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: [BotOptionItem.id, MessageExtensionItem.id],
-    });
-
-    languageAssert({
-      platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: [
-        TabOptionItem.id,
-        BotOptionItem.id,
-        MessageExtensionItem.id,
-      ],
+      [CoreQuestionNames.Capabilities]: MessageExtensionItem.id,
     });
 
     function languageAssert(inputs: Inputs) {

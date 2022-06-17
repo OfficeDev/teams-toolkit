@@ -198,6 +198,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
             var application = new Application
             {
                 DisplayName = name,
+                SignInAudience = "AzureADMyOrg"
             };
 
             var _app = await graphClient.Applications

@@ -4,14 +4,23 @@
 "use strict";
 
 import * as path from "path";
-import { Colors, FxError, IProgressHandler, LogLevel } from "@microsoft/teamsfx-api";
+import * as fs from "fs-extra";
+import {
+  Colors,
+  ConfigFolderName,
+  FxError,
+  InputConfigsFolderName,
+  IProgressHandler,
+  LogLevel,
+  ProjectConfig,
+} from "@microsoft/teamsfx-api";
 
 import * as constants from "./constants";
 import { TaskResult } from "./task";
 import cliLogger from "../../commonlib/log";
 import { TaskFailed } from "./errors";
 import cliTelemetry, { CliTelemetry } from "../../telemetry/cliTelemetry";
-import AppStudioTokenInstance from "../../commonlib/appStudioLogin";
+import M365TokenInstance from "../../commonlib/m365Login";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -19,7 +28,13 @@ import {
 } from "../../telemetry/cliTelemetryEvents";
 import { ServiceLogWriter } from "./serviceLogWriter";
 import open from "open";
-import { isConfigUnifyEnabled, LocalEnvManager } from "@microsoft/teamsfx-core";
+import {
+  AppStudioScopes,
+  environmentManager,
+  getResourceGroupInPortal,
+  isConfigUnifyEnabled,
+  LocalEnvManager,
+} from "@microsoft/teamsfx-core";
 import { getColorizedString } from "../../utils";
 import { isWindows } from "./depsChecker/cliUtils";
 import { CliConfigAutomaticNpmInstall, CliConfigOptions, UserSettings } from "../../userSetttings";
@@ -36,8 +51,6 @@ export async function openBrowser(
           name: open.apps.chrome,
           arguments: browserArguments,
         },
-        wait: true,
-        allowNonzeroExitCode: true,
       });
       break;
     case constants.Browser.edge:
@@ -46,14 +59,10 @@ export async function openBrowser(
           name: open.apps.edge,
           arguments: browserArguments,
         },
-        wait: true,
-        allowNonzeroExitCode: true,
       });
       break;
     case constants.Browser.default:
-      await open(url, {
-        wait: true,
-      });
+      await open(url);
       break;
   }
 }
@@ -306,7 +315,8 @@ export async function generateAccountHint(
   let tenantId = undefined,
     loginHint = undefined;
   try {
-    const tokenObject = (await AppStudioTokenInstance.getStatus())?.accountInfo;
+    const tokenObjectRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+    const tokenObject = tokenObjectRes.isOk() ? tokenObjectRes.value.accountInfo : undefined;
     if (tokenObject) {
       // user signed in
       tenantId = tokenObject.tid;
@@ -323,5 +333,54 @@ export async function generateAccountHint(
     return tenantId && loginHint ? `appTenantId=${tenantId}&login_hint=${loginHint}` : "";
   } else {
     return loginHint ? `login_hint=${loginHint}` : "";
+  }
+}
+
+async function getResourceBaseName(
+  workspaceFolder: string,
+  env: string
+): Promise<string | undefined> {
+  try {
+    const azureParametersFilePath = path.join(
+      workspaceFolder,
+      `.${ConfigFolderName}`,
+      InputConfigsFolderName,
+      `azure.parameters.${env}.json`
+    );
+    const azureParametersJson = JSON.parse(fs.readFileSync(azureParametersFilePath, "utf-8"));
+    let result: string = azureParametersJson.parameters.provisionParameters.value.resourceBaseName;
+    const placeholder = "{{state.solution.resourceNameSuffix}}";
+    if (result.includes(placeholder)) {
+      const envStateFilesPath = environmentManager.getEnvStateFilesPath(env, workspaceFolder);
+      const envJson = JSON.parse(fs.readFileSync(envStateFilesPath.envState, "utf8"));
+      result = result.replace(
+        placeholder,
+        envJson[constants.solutionPluginName].resourceNameSuffix
+      );
+    }
+    return result;
+  } catch {
+    return undefined;
+  }
+}
+
+export async function getBotOutlookChannelLink(
+  workspaceFolder: string,
+  env: string,
+  projectConfig: ProjectConfig | undefined,
+  botId: string | undefined
+): Promise<string> {
+  if (env === environmentManager.getLocalEnvName()) {
+    return `https://dev.botframework.com/bots/channels?id=${botId}&channelId=outlook`;
+  } else {
+    const solutionConfig = projectConfig?.config?.get(constants.solutionPluginName);
+    const subscriptionId = solutionConfig?.get("subscriptionId");
+    const tenantId = solutionConfig?.get("tenantId");
+    const resourceGroupName = solutionConfig?.get("resourceGroupName");
+
+    const resourceGroupLink = getResourceGroupInPortal(subscriptionId, tenantId, resourceGroupName);
+    const resourceBaseName = await getResourceBaseName(workspaceFolder, env);
+
+    return `${resourceGroupLink}/providers/Microsoft.BotService/botServices/${resourceBaseName}/channelsReact`;
   }
 }

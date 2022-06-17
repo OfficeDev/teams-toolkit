@@ -20,9 +20,10 @@ import {
   traverse,
   v2,
   v3,
+  Void,
 } from "@microsoft/teamsfx-api";
 import { Container } from "typedi";
-import { createV2Context, deepCopy } from "../../common/tools";
+import { createV2Context, deepCopy, isExistingTabAppEnabled } from "../../common/tools";
 import { newProjectSettings } from "../../common/projectSettingsHelper";
 import { SPFxPluginV3 } from "../../plugins/resource/spfx/v3";
 import { ExistingTabOptionItem, TabSPFxItem } from "../../plugins/solution/fx-solution/question";
@@ -35,17 +36,24 @@ import { CoreSource, FunctionRouterError } from "../error";
 import { TOOLS } from "../globalVars";
 import {
   createAppNameQuestion,
+  createCapabilityForDotNet,
   createCapabilityQuestion,
+  createCapabilityQuestionPreview,
   ExistingTabEndpointQuestion,
   getCreateNewOrFromSampleQuestion,
+  getRuntimeQuestion,
   ProgrammingLanguageQuestion,
+  ProgrammingLanguageQuestionForDotNet,
   QuestionRootFolder,
+  RuntimeOptionDotNet,
+  RuntimeOptionNodeJs,
   SampleSelect,
   ScratchOptionNo,
   ScratchOptionYes,
 } from "../question";
 import { getAllSolutionPluginsV2 } from "../SolutionPluginContainer";
 import { CoreHookContext } from "../types";
+import { isPreviewFeaturesEnabled, isCLIDotNetEnabled } from "../../common";
 
 /**
  * This middleware will help to collect input from question flow
@@ -59,7 +67,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
   if (method === "createProjectV2") {
     getQuestionRes = await core._getQuestionsForCreateProjectV2(inputs);
   } else if (method === "createProjectV3") {
-    getQuestionRes = await core._getQuestionsForCreateProjectV3(inputs);
+    getQuestionRes = await core._getQuestionsForCreateProjectV2(inputs);
   } else if (method === "init" || method === "_init") {
     getQuestionRes = await core._getQuestionsForInit(inputs);
   } else if (
@@ -294,7 +302,7 @@ export async function getQuestionsForPublish(
       context,
       inputs,
       envInfo,
-      TOOLS.tokenProvider.appStudioToken
+      TOOLS.tokenProvider.m365TokenProvider
     );
     return res;
   }
@@ -375,22 +383,10 @@ export async function getQuestionsForCreateProjectV3(
   return ok(node.trim());
 }
 
-//////V2 questions
-export async function getQuestionsForCreateProjectV2(
-  inputs: Inputs
-): Promise<Result<QTreeNode | undefined, FxError>> {
-  const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
-
-  // create new
-  const createNew = new QTreeNode({ type: "group" });
-  node.addChild(createNew);
-  createNew.condition = { equals: ScratchOptionYes.id };
-
-  // capabilities
-  const capQuestion = createCapabilityQuestion();
-  const capNode = new QTreeNode(capQuestion);
-  createNew.addChild(capNode);
-
+async function setSolutionScaffoldingQuestionNodeAsChild(
+  inputs: Inputs,
+  parent: QTreeNode
+): Promise<Result<Void, FxError>> {
   const globalSolutions: v2.SolutionPlugin[] = await getAllSolutionPluginsV2();
   const context = createV2Context(newProjectSettings());
   for (const solutionPlugin of globalSolutions) {
@@ -409,41 +405,126 @@ export async function getQuestionsForCreateProjectV2(
         : [res.value as QTreeNode];
       for (const node of solutionNode) {
         if (node.data) {
-          capNode.addChild(node);
+          parent.addChild(node);
         }
       }
     }
   }
+  return ok(Void);
+}
+
+async function getQuestionsForCreateProjectWithoutDotNet(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
+
+  // create new
+  const createNew = new QTreeNode({ type: "group" });
+  node.addChild(createNew);
+  createNew.condition = { equals: ScratchOptionYes.id };
+
+  // capabilities
+  let capNode: QTreeNode;
+  if (isPreviewFeaturesEnabled()) {
+    const capQuestion = createCapabilityQuestionPreview();
+    capNode = new QTreeNode(capQuestion);
+  } else {
+    const capQuestion = createCapabilityQuestion();
+    capNode = new QTreeNode(capQuestion);
+  }
+  createNew.addChild(capNode);
+
+  const solutionNodeResult = await setSolutionScaffoldingQuestionNodeAsChild(inputs, capNode);
+  if (solutionNodeResult.isErr()) {
+    return err(solutionNodeResult.error);
+  }
 
   // Language
   const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
-  programmingLanguage.condition = {
-    minItems: 1,
-    excludes: ExistingTabOptionItem.id,
-  };
+  if (isPreviewFeaturesEnabled()) {
+    programmingLanguage.condition = {
+      notEquals: ExistingTabOptionItem.id,
+    };
+  } else {
+    programmingLanguage.condition = {
+      minItems: 1,
+      excludes: ExistingTabOptionItem.id,
+    };
+  }
   capNode.addChild(programmingLanguage);
 
   // existing tab endpoint
-  const existingTabEndpoint = new QTreeNode(ExistingTabEndpointQuestion);
-  existingTabEndpoint.condition = {
-    contains: ExistingTabOptionItem.id,
-  };
-  capNode.addChild(existingTabEndpoint);
-
-  // only CLI need folder input
-  if (CLIPlatforms.includes(inputs.platform)) {
-    createNew.addChild(new QTreeNode(QuestionRootFolder));
+  if (isExistingTabAppEnabled()) {
+    const existingTabEndpoint = new QTreeNode(ExistingTabEndpointQuestion);
+    existingTabEndpoint.condition = {
+      equals: ExistingTabOptionItem.id,
+    };
+    capNode.addChild(existingTabEndpoint);
   }
+
+  createNew.addChild(new QTreeNode(QuestionRootFolder));
   createNew.addChild(new QTreeNode(createAppNameQuestion()));
 
   // create from sample
   const sampleNode = new QTreeNode(SampleSelect);
   node.addChild(sampleNode);
   sampleNode.condition = { equals: ScratchOptionNo.id };
-  if (inputs.platform !== Platform.VSCode) {
-    sampleNode.addChild(new QTreeNode(QuestionRootFolder));
-  }
+  sampleNode.addChild(new QTreeNode(QuestionRootFolder));
+
   return ok(node.trim());
+}
+
+async function getQuestionsForCreateProjectWithDotNet(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const runtimeNode = new QTreeNode(getRuntimeQuestion());
+  const maybeNode = await getQuestionsForCreateProjectWithoutDotNet(inputs);
+  if (maybeNode.isErr()) {
+    return err(maybeNode.error);
+  }
+  const node = maybeNode.value;
+
+  if (node) {
+    node.condition = {
+      equals: RuntimeOptionNodeJs.id,
+    };
+    runtimeNode.addChild(node);
+  }
+
+  const dotnetNode = new QTreeNode({ type: "group" });
+  dotnetNode.condition = {
+    equals: RuntimeOptionDotNet.id,
+  };
+  runtimeNode.addChild(dotnetNode);
+
+  const dotnetCapNode = new QTreeNode(createCapabilityForDotNet());
+  dotnetNode.addChild(dotnetCapNode);
+
+  const solutionNodeResult = await setSolutionScaffoldingQuestionNodeAsChild(inputs, dotnetCapNode);
+  if (solutionNodeResult.isErr()) {
+    return err(solutionNodeResult.error);
+  }
+
+  dotnetCapNode.addChild(new QTreeNode(ProgrammingLanguageQuestionForDotNet));
+
+  // only CLI need folder input
+  if (CLIPlatforms.includes(inputs.platform)) {
+    runtimeNode.addChild(new QTreeNode(QuestionRootFolder));
+  }
+  runtimeNode.addChild(new QTreeNode(createAppNameQuestion()));
+
+  return ok(runtimeNode.trim());
+}
+
+//////V2 questions
+export async function getQuestionsForCreateProjectV2(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (isCLIDotNetEnabled() && CLIPlatforms.includes(inputs.platform)) {
+    return getQuestionsForCreateProjectWithDotNet(inputs);
+  } else {
+    return getQuestionsForCreateProjectWithoutDotNet(inputs);
+  }
 }
 
 export async function getQuestionsForUserTaskV2(

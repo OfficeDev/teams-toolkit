@@ -18,13 +18,8 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import { environmentManager } from "./environment";
 import { sampleProvider } from "../common/samples";
-import {
-  getRootDirectory,
-  isAadManifestEnabled,
-  isExistingTabAppEnabled,
-  isM365AppEnabled,
-} from "../common/tools";
-import { isBotNotificationEnabled } from "../common/featureFlags";
+import { isAadManifestEnabled, isExistingTabAppEnabled, isM365AppEnabled } from "../common/tools";
+import { isBotNotificationEnabled, isPreviewFeaturesEnabled } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import {
   BotOptionItem,
@@ -37,6 +32,10 @@ import {
   CommandAndResponseOptionItem,
   TabNonSsoItem,
   ExistingTabOptionItem,
+  TabNewUIOptionItem,
+  TabSPFxNewUIItem,
+  MessageExtensionNewUIItem,
+  BotNewUIOptionItem,
 } from "../plugins/solution/fx-solution/question";
 
 export enum CoreQuestionNames {
@@ -46,8 +45,10 @@ export enum CoreQuestionNames {
   ProjectPath = "projectPath",
   ProgrammingLanguage = "programming-language",
   Capabilities = "capabilities",
+  Features = "features",
   Solution = "solution",
   CreateFromScratch = "scratch",
+  Runtime = "runtime",
   Samples = "samples",
   Stage = "stage",
   SubStage = "substage",
@@ -79,12 +80,12 @@ export function createAppNameQuestion(validateProjectPathExistence = true): Text
           if (validateResult.errors[0].name === "pattern") {
             return getLocalizedString("core.QuestionAppName.validation.pattern");
           }
+          if (validateResult.errors[0].name === "maxLength") {
+            return getLocalizedString("core.QuestionAppName.validation.maxlength");
+          }
         }
         if (validateProjectPathExistence && previousInputs && previousInputs.folder) {
-          let folder = previousInputs.folder as string;
-          if (previousInputs.platform === Platform.VSCode) {
-            folder = getRootDirectory();
-          }
+          const folder = previousInputs.folder as string;
           if (folder) {
             const projectPath = path.resolve(folder, appName);
             const exists = await fs.pathExists(projectPath);
@@ -124,6 +125,14 @@ export const QuestionRootFolder: FolderQuestion = {
   title: "Workspace folder",
 };
 
+export const ProgrammingLanguageQuestionForDotNet: SingleSelectQuestion = {
+  name: CoreQuestionNames.ProgrammingLanguage,
+  title: "Programming Language",
+  type: "singleSelect",
+  staticOptions: [{ id: "csharp", label: "C#" }],
+  skipSingleOption: true,
+};
+
 export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
   name: CoreQuestionNames.ProgrammingLanguage,
   title: "Programming Language",
@@ -146,15 +155,37 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
   },
   skipSingleOption: true,
   default: (inputs: Inputs) => {
-    const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
-    if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem.id))
-      return "typescript";
+    if (isPreviewFeaturesEnabled()) {
+      const capability = inputs[CoreQuestionNames.Capabilities] as string;
+      if (capability && capability === TabSPFxItem.id) {
+        return "typescript";
+      }
+      const feature = inputs[CoreQuestionNames.Features] as string;
+      if (feature && feature === TabSPFxItem.id) {
+        return "typescript";
+      }
+    } else {
+      const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
+      if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem.id))
+        return "typescript";
+    }
     return "javascript";
   },
   placeholder: (inputs: Inputs): string => {
-    const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
-    if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem.id))
-      return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder.spfx");
+    if (isPreviewFeaturesEnabled()) {
+      const capability = inputs[CoreQuestionNames.Capabilities] as string;
+      if (capability && capability === TabSPFxItem.id) {
+        return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder.spfx");
+      }
+      const feature = inputs[CoreQuestionNames.Features] as string;
+      if (feature && feature === TabSPFxItem.id) {
+        return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder.spfx");
+      }
+    } else {
+      const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
+      if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem.id))
+        return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder.spfx");
+    }
     return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder");
   },
 };
@@ -227,7 +258,7 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
       ...[CommandAndResponseOptionItem, NotificationOptionItem],
       ...(isExistingTabAppEnabled() ? [ExistingTabOptionItem] : []),
       ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
-      ...[TabOptionItem, TabSPFxItem, MessageExtensionItem],
+      ...[TabNewUIOptionItem, TabSPFxNewUIItem, MessageExtensionNewUIItem],
       ...(isM365AppEnabled() ? [M365SsoLaunchPageOptionItem, M365SearchAppOptionItem] : []),
     ];
   } else {
@@ -251,6 +282,49 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
       validFunc: validateCapabilities,
     },
     onDidChangeSelection: onChangeSelectionForCapabilities,
+  };
+}
+
+export function createCapabilityForDotNet(): SingleSelectQuestion {
+  const staticOptions: StaticOptions = [
+    NotificationOptionItem,
+    CommandAndResponseOptionItem,
+    TabOptionItem,
+    MessageExtensionItem,
+  ];
+  return {
+    name: CoreQuestionNames.Capabilities,
+    title: getLocalizedString("core.createCapabilityQuestion.title"),
+    type: "singleSelect",
+    staticOptions: staticOptions,
+    placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
+  };
+}
+
+export function createCapabilityQuestionPreview(): SingleSelectQuestion {
+  // new capabilities question order
+  const staticOptions: StaticOptions = [
+    NotificationOptionItem,
+    CommandAndResponseOptionItem,
+    TabNewUIOptionItem,
+    TabSPFxNewUIItem,
+    TabNonSsoItem,
+    BotNewUIOptionItem,
+    MessageExtensionNewUIItem,
+    M365SsoLaunchPageOptionItem,
+    M365SearchAppOptionItem,
+  ];
+
+  if (isExistingTabAppEnabled()) {
+    staticOptions.splice(2, 0, ExistingTabOptionItem);
+  }
+
+  return {
+    name: CoreQuestionNames.Capabilities,
+    title: getLocalizedString("core.createCapabilityQuestion.titleNew"),
+    type: "singleSelect",
+    staticOptions: staticOptions,
+    placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
   };
 }
 
@@ -460,6 +534,18 @@ export const ScratchOptionNoVSC: OptionItem = {
   detail: getLocalizedString("core.ScratchOptionNoVSC.detail"),
 };
 
+export const RuntimeOptionNodeJs: OptionItem = {
+  id: "node",
+  label: "Node.js",
+  detail: getLocalizedString("core.RuntimeOptionNodeJS.detail"),
+};
+
+export const RuntimeOptionDotNet: OptionItem = {
+  id: "dotnet",
+  label: ".NET Core",
+  detail: getLocalizedString("core.RuntimeOptionDotNet.detail"),
+};
+
 export const ScratchOptionYes: OptionItem = {
   id: "yes",
   label: getLocalizedString("core.ScratchOptionYes.label"),
@@ -471,6 +557,18 @@ export const ScratchOptionNo: OptionItem = {
   label: getLocalizedString("core.ScratchOptionNo.label"),
   detail: getLocalizedString("core.ScratchOptionNo.detail"),
 };
+
+// This question should only exist on CLI
+export function getRuntimeQuestion(): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: CoreQuestionNames.Runtime,
+    title: getLocalizedString("core.getRuntimeQuestion.title"),
+    staticOptions: [RuntimeOptionNodeJs, RuntimeOptionDotNet],
+    default: RuntimeOptionNodeJs.id,
+    placeholder: getLocalizedString("core.getRuntimeQuestion.placeholder"),
+  };
+}
 
 export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSelectQuestion {
   const staticOptions: OptionItem[] = [];

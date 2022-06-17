@@ -24,8 +24,6 @@ const defaultSQLScope = "https://database.windows.net/";
  * @throws {@link ErrorCode|InvalidConfiguration} when SQL config resource configuration is invalid.
  * @throws {@link ErrorCode|InternalError} when get user MSI token failed or MSI token is invalid.
  * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
- *
- * @beta
  */
 export async function getTediousConnectionConfig(
   teamsfx: TeamsFx,

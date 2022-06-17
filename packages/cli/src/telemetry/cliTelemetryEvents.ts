@@ -114,12 +114,15 @@ export enum TelemetryProperty {
   PreviewOSArch = "preview-os-arch",
   PreviewOSRelease = "preview-os-release",
   PreviewPrerequisitesCheckTime = "preview-prerequisites-check-time",
+  PreviewProjectComponents = "preview-project-components",
   ListAllCollaborators = "list-all-collaborators",
   FeatureFlags = "feature-flags",
   Env = "env",
   SettingsVersion = "settings-version",
   NewProjectId = "new-project-id",
   IsM365 = "is-m365",
+  IsCreatingM365 = "is-creating-m365",
+  IsFromSample = "is-from-sample",
 }
 
 export enum TelemetrySuccess {

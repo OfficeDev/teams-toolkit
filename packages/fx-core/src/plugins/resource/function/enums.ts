@@ -6,12 +6,6 @@ export enum FunctionLanguage {
   // CSharp = "csharp"
 }
 
-export enum NodeVersion {
-  Version10 = "10",
-  Version12 = "12",
-  Version14 = "14",
-}
-
 export enum FunctionConfigKey {
   resourceGroupName = "resourceGroupName",
   subscriptionId = "subscriptionId",
@@ -88,4 +82,5 @@ export enum FunctionEvent {
 
 export enum CustomizedTask {
   addResource = "addResource",
+  addFeature = "addFeature",
 }

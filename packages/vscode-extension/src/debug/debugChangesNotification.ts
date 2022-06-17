@@ -4,7 +4,7 @@
 import { LocalEnvManager } from "@microsoft/teamsfx-core";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import VsCodeLogInstance from "../commonlib/log";
-import { ext } from "../extensionVariables";
+import * as globalVariables from "../globalVariables";
 import { vscodeHelper } from "./depsChecker/vscodeHelper";
 import { VS_CODE_UI } from "../extension";
 import {
@@ -19,10 +19,10 @@ import { localize } from "../utils/localizeUtils";
 // TODO: remove the notification
 export async function showDebugChangesNotification(): Promise<void> {
   const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
-  if (!ext.workspaceUri?.fsPath) {
+  if (!globalVariables.workspaceUri?.fsPath) {
     return;
   }
-  const localSettings = await localEnvManager.getLocalSettings(ext.workspaceUri.fsPath);
+  const localSettings = await localEnvManager.getLocalSettings(globalVariables.workspaceUri.fsPath);
   if (localSettings?.frontend?.trustDevCert === false && vscodeHelper.isTrustDevCertEnabled()) {
     showNotification(trustDevCertRetiredNotification, trustDevCertHelpLink);
   }

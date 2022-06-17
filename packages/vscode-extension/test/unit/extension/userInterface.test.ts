@@ -4,7 +4,6 @@
 
 import { ExtensionContext } from "vscode";
 
-import { ext } from "../../../src/extensionVariables";
 import { TestUserInput } from "./mocks/testUserInput";
 import { sleep } from "../../../src/utils/commonUtils";
 import { VsCodeUI } from "../../../src/qm/vsc_ui";
@@ -12,7 +11,6 @@ import { VsCodeUI } from "../../../src/qm/vsc_ui";
 suite("UI Unit Tests", async () => {
   suiteSetup(() => {
     // Mock user input.
-    ext.ui = new TestUserInput();
   });
 
   suite("Manually", () => {

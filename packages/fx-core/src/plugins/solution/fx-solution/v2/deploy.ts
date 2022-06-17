@@ -11,12 +11,13 @@ import {
   SystemError,
   UserError,
   Platform,
+  v3,
 } from "@microsoft/teamsfx-api";
 import { isUndefined } from "lodash";
-import Container from "typedi";
+import { AppStudioScopes } from "../../../../common";
 import { PluginDisplayName } from "../../../../common/constants";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
-import { isVSProject } from "../../../../common/projectSettingsHelper";
+import { getAzurePlugins, isVSProject } from "../../../../common/projectSettingsHelper";
 import { Constants } from "../../../resource/aad/constants";
 import { checkM365Tenant, checkSubscription } from "../commonQuestions";
 import {
@@ -28,13 +29,16 @@ import {
   SolutionTelemetryEvent,
   SolutionTelemetryProperty,
   SolutionTelemetryComponentName,
+  ViewAadAppHelpLink,
 } from "../constants";
 import { AzureSolutionQuestionNames } from "../question";
 import { sendErrorTelemetryThenReturnError } from "../utils/util";
+import { askForDeployConsent } from "../v3/provision";
 import { executeConcurrently, NamedThunk } from "./executor";
 import {
   extractSolutionInputs,
   getAzureSolutionSettings,
+  getBotTroubleShootMessage,
   getSelectedPlugins,
   isAzureProject,
 } from "./utils";
@@ -49,9 +53,15 @@ export async function deploy(
     [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
     [SolutionTelemetryProperty.IncludeAadManifest]: inputs[Constants.INCLUDE_AAD_MANIFEST] ?? "no",
   });
+
+  const isDeployAADManifestFromVSCode =
+    inputs[Constants.INCLUDE_AAD_MANIFEST] === "yes" && inputs.platform === Platform.VSCode;
   const provisionOutputs: Json = envInfo.state;
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
-  const provisioned = provisionOutputs[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] as boolean;
+  const botTroubleShootMsg = getBotTroubleShootMessage(getAzureSolutionSettings(ctx));
+  const provisioned =
+    (provisionOutputs[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] as boolean) ||
+    isDeployAADManifestFromVSCode;
 
   if (inAzureProject && !provisioned) {
     return err(
@@ -69,7 +79,12 @@ export async function deploy(
   }
 
   if (!inAzureProject) {
-    const appStudioTokenJson = await tokenProvider.appStudioToken.getJsonObject();
+    const appStudioTokenJsonRes = await tokenProvider.m365TokenProvider.getJsonObject({
+      scopes: AppStudioScopes,
+    });
+    const appStudioTokenJson = appStudioTokenJsonRes.isOk()
+      ? appStudioTokenJsonRes.value
+      : undefined;
 
     if (appStudioTokenJson) {
       const checkM365 = await checkM365Tenant({ version: 2, data: envInfo }, appStudioTokenJson);
@@ -90,7 +105,7 @@ export async function deploy(
         )
       );
     }
-  } else {
+  } else if (envInfo.envName !== "local" && !isDeployAADManifestFromVSCode) {
     const checkAzure = await checkSubscription(
       { version: 2, data: envInfo },
       tokenProvider.azureAccountProvider
@@ -105,7 +120,7 @@ export async function deploy(
   let optionsToDeploy: string[] = [];
   if (!isVsProject) {
     optionsToDeploy = inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] as string[];
-    if (inputs[Constants.INCLUDE_AAD_MANIFEST] === "yes" && inputs.platform === Platform.VSCode) {
+    if (isDeployAADManifestFromVSCode) {
       optionsToDeploy = [PluginNames.AAD];
     }
 
@@ -154,6 +169,20 @@ export async function deploy(
       };
     });
 
+  const azurePlugins = getAzurePlugins(true);
+  const hasAzureResource = thunks.some((thunk) => azurePlugins.includes(thunk.pluginName));
+
+  if (isAzureProject(getAzureSolutionSettings(ctx)) && hasAzureResource) {
+    const consent = await askForDeployConsent(
+      ctx,
+      tokenProvider.azureAccountProvider,
+      envInfo as v3.EnvInfoV3
+    );
+    if (consent.isErr()) {
+      return err(consent.error);
+    }
+  }
+
   if (thunks.length === 0) {
     return err(
       sendErrorTelemetryThenReturnError(
@@ -180,13 +209,51 @@ export async function deploy(
 
   if (result.kind === "success") {
     if (inAzureProject) {
-      const msg = getLocalizedString("core.deploy.successNotice", ctx.projectSetting.appName);
+      let msg =
+        getLocalizedString("core.deploy.successNotice", ctx.projectSetting.appName) +
+        botTroubleShootMsg.textForLogging;
+
+      if (isDeployAADManifestFromVSCode) {
+        msg = getLocalizedString("core.deploy.aadManifestSuccessNotice");
+      }
       ctx.logProvider.info(msg);
-      ctx.userInteraction.showMessage("info", msg, false);
+      if (botTroubleShootMsg.textForLogging && !isDeployAADManifestFromVSCode) {
+        // Show a `Learn more` action button for bot trouble shooting.
+        ctx.userInteraction
+          .showMessage(
+            "info",
+            `${getLocalizedString("core.deploy.successNotice", ctx.projectSetting.appName)} ${
+              botTroubleShootMsg.textForMsgBox
+            }`,
+            false,
+            botTroubleShootMsg.textForActionButton
+          )
+          .then((result) => {
+            const userSelected = result.isOk() ? result.value : undefined;
+            if (userSelected === botTroubleShootMsg.textForActionButton) {
+              ctx.userInteraction.openUrl(botTroubleShootMsg.troubleShootLink);
+            }
+          });
+      } else {
+        if (isDeployAADManifestFromVSCode) {
+          ctx.userInteraction
+            .showMessage("info", msg, false, getLocalizedString("core.deploy.aadManifestLearnMore"))
+            .then((result) => {
+              const userSelected = result.isOk() ? result.value : undefined;
+              if (userSelected === getLocalizedString("core.deploy.aadManifestLearnMore")) {
+                ctx.userInteraction?.openUrl(ViewAadAppHelpLink);
+              }
+            });
+        } else {
+          ctx.userInteraction.showMessage("info", msg, false);
+        }
+      }
     }
     return ok(Void);
   } else {
-    const msg = getLocalizedString("core.deploy.failNotice", ctx.projectSetting.appName);
+    const msg =
+      getLocalizedString("core.deploy.failNotice", ctx.projectSetting.appName) +
+      botTroubleShootMsg.textForLogging;
     ctx.logProvider.info(msg);
     return err(
       sendErrorTelemetryThenReturnError(

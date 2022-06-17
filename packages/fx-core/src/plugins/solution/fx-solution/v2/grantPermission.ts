@@ -3,7 +3,7 @@ import {
   Colors,
   err,
   FxError,
-  GraphTokenProvider,
+  M365TokenProvider,
   ok,
   Platform,
   PluginContext,
@@ -21,7 +21,7 @@ import {
   SystemError,
 } from "@microsoft/teamsfx-api";
 import { CollaborationState, PermissionsResult, ResourcePermission } from "../../../../common";
-import { IUserList } from "../../../resource/appstudio/interfaces/IAppDefinition";
+import { AppUser } from "../../../resource/appstudio/interfaces/appUser";
 import {
   AzureRoleAssignmentsHelpLink,
   PluginNames,
@@ -51,7 +51,7 @@ async function grantPermissionImpl(
   envName?: string,
   telemetryReporter?: TelemetryReporter,
   ui?: UserInteraction,
-  graphTokenProvider?: GraphTokenProvider,
+  m365TokenProvider?: M365TokenProvider,
   logProvider?: LogProvider,
   platform?: string,
   email?: string
@@ -65,7 +65,7 @@ async function grantPermissionImpl(
     1
   );
   try {
-    const result = await CollaborationUtil.getCurrentUserInfo(graphTokenProvider);
+    const result = await CollaborationUtil.getCurrentUserInfo(m365TokenProvider);
     if (result.isErr()) {
       return err(
         sendErrorTelemetryThenReturnError(
@@ -105,7 +105,7 @@ async function grantPermissionImpl(
       );
     }
 
-    const userInfo = await CollaborationUtil.getUserInfo(graphTokenProvider, email);
+    const userInfo = await CollaborationUtil.getUserInfo(m365TokenProvider, email);
 
     if (!userInfo) {
       return err(
@@ -251,7 +251,7 @@ export async function grantPermission(
     const envName = param.ctx.envInfo.envName;
     const telemetryReporter = param.ctx.telemetryReporter;
     const ui = param.ctx.ui;
-    const graphTokenProvider = param.ctx.graphTokenProvider;
+    const m365TokenProvider = param.ctx.m365TokenProvider;
     const logProvider = param.ctx.logProvider;
     const platform = param.ctx.answers?.platform;
     const email = param.ctx.answers?.email;
@@ -261,7 +261,7 @@ export async function grantPermission(
       envName,
       telemetryReporter,
       ui,
-      graphTokenProvider,
+      m365TokenProvider,
       logProvider,
       platform,
       email
@@ -284,7 +284,7 @@ export async function grantPermission(
     const envName = param.envInfo.envName;
     const telemetryReporter = param.ctx.telemetryReporter;
     const ui = param.ctx.userInteraction;
-    const graphTokenProvider = param.tokenProvider.graphTokenProvider;
+    const m365TokenProvider = param.tokenProvider.m365TokenProvider;
     const logProvider = param.ctx.logProvider;
     const platform = param.inputs?.platform;
     const email = param.inputs?.email;
@@ -294,7 +294,7 @@ export async function grantPermission(
       envName,
       telemetryReporter,
       ui,
-      graphTokenProvider,
+      m365TokenProvider,
       logProvider,
       platform,
       email
@@ -305,7 +305,7 @@ export async function grantPermission(
 // Execute plugins' grantPermission() using legacy API
 async function executeGrantPermissionsV1(
   ctx: SolutionContext,
-  userInfo: IUserList
+  userInfo: AppUser
 ): Promise<[ResourcePermission[], Err<any, FxError>[]]> {
   const plugins = getActivatedResourcePlugins(
     ctx.projectSettings?.solutionSettings as AzureSolutionSettings
@@ -349,7 +349,7 @@ async function executeGrantPermissionsV2(
   inputs: v2.InputsWithProjectPath,
   envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
   tokenProvider: TokenProvider,
-  userInfo: IUserList
+  userInfo: AppUser
 ): Promise<[ResourcePermission[], Err<any, FxError>[]]> {
   const plugins: v2.ResourcePlugin[] = [
     Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin),

@@ -9,7 +9,9 @@ Helper to create SecureContextOptions from PFX format cert
 <b>Signature:</b>
 
 ```typescript
-export declare function createPfxCertOption(pfx: string | Buffer, passphrase?: string): SecureContextOptions;
+export declare function createPfxCertOption(pfx: string | Buffer, options?: {
+    passphrase?: string;
+}): SecureContextOptions;
 ```
 
 ## Parameters
@@ -17,7 +19,7 @@ export declare function createPfxCertOption(pfx: string | Buffer, passphrase?: s
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  pfx | string \| Buffer | The content of .pfx file |
-|  passphrase | string | Optional. The passphrase of .pfx file |
+|  options | { passphrase?: string; } | Optional settings when create the cert options. |
 
 <b>Returns:</b>
 

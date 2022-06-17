@@ -10,6 +10,8 @@ import {
   StatesFolderName,
   Result,
   ok,
+  TemplateFolderName,
+  AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 import { exec } from "child_process";
 import fs from "fs-extra";
@@ -36,7 +38,7 @@ import {
   ProjectSettingKey,
 } from "../commonlib/constants";
 import { environmentManager } from "@microsoft/teamsfx-core";
-import appStudioLogin from "../../src/commonlib/appStudioLogin";
+import m365Login from "../../src/commonlib/m365Login";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 import { getWebappServicePlan } from "../commonlib/utilities";
 
@@ -207,6 +209,17 @@ export async function setFrontendDomainToConfig(projectPath: string, envName: st
   config["auth"] = {};
   config["auth"]["frontendDomain"] = "xxx.com";
   return fs.writeJSON(configFilePath, config, { spaces: 4 });
+}
+
+export async function setAadManifestIdentifierUris(projectPath: string, identifierUri: string) {
+  const aadManifestPath = path.join(
+    projectPath,
+    `${TemplateFolderName}/${AppPackageFolderName}/aad.template.json`
+  );
+
+  const aadTemplate = await fs.readJSON(aadManifestPath);
+  aadTemplate.identifierUris = [identifierUri];
+  await fs.writeJSON(aadManifestPath, aadTemplate, { spaces: 4 });
 }
 
 export async function cleanupSharePointPackage(appId: string) {
@@ -462,42 +475,47 @@ export async function loadContext(projectPath: string, env: string): Promise<Res
 export async function customizeBicepFilesToCustomizedRg(
   customizedRgName: string,
   projectPath: string,
-  provisionInsertionSearchString: string,
-  configInsertionSearchString?: string
+  provisionInsertionSearchStrings: string[] | string,
+  configInsertionSearchStrings?: string[] | string
 ): Promise<void> {
   const provisionFilePath = path.join(
     projectPath,
     TestFilePath.armTemplateBaseFolder,
     TestFilePath.provisionFileName
   );
-  let content = await fs.readFile(provisionFilePath, fileEncoding);
-  let insertionIndex = content.indexOf(provisionInsertionSearchString);
-
   const paramToAdd = `param customizedRg string = '${customizedRgName}'\r\n`;
   const scopeToAdd = `scope: resourceGroup(customizedRg)\r\n`;
-  content =
-    paramToAdd +
-    content.substring(0, insertionIndex) +
-    scopeToAdd +
-    content.substring(insertionIndex);
+
+  let content = await fs.readFile(provisionFilePath, fileEncoding);
+  content = paramToAdd + content;
+
+  const searchStrings: string[] = [];
+  searchStrings.concat(provisionInsertionSearchStrings).forEach((searchString) => {
+    const insertionIndex = content.indexOf(searchString);
+    content = content.substring(0, insertionIndex) + scopeToAdd + content.substring(insertionIndex);
+  });
+
   await fs.writeFile(provisionFilePath, content);
   console.log(
     `[Successfully] customize ${provisionFilePath} content to deploy cloud resources to ${customizedRgName}.`
   );
 
-  if (configInsertionSearchString) {
+  if (configInsertionSearchStrings) {
     const configFilePath = path.join(
       projectPath,
       TestFilePath.armTemplateBaseFolder,
       TestFilePath.configFileName
     );
-    content = await fs.readFile(configFilePath, fileEncoding);
-    insertionIndex = content.indexOf(configInsertionSearchString);
-    content =
-      paramToAdd +
-      content.substring(0, insertionIndex) +
-      scopeToAdd +
-      content.substring(insertionIndex);
+    let content = await fs.readFile(configFilePath, fileEncoding);
+    content = paramToAdd + content;
+
+    const searchStrings: string[] = [];
+    searchStrings.concat(configInsertionSearchStrings).forEach((searchString) => {
+      const insertionIndex = content.indexOf(searchString);
+      content =
+        content.substring(0, insertionIndex) + scopeToAdd + content.substring(insertionIndex);
+    });
+
     await fs.writeFile(configFilePath, content);
     console.log(
       `[Successfully] customize ${configFilePath} content to deploy cloud resources to ${customizedRgName}.`
@@ -508,7 +526,7 @@ export async function customizeBicepFilesToCustomizedRg(
 export async function validateTabAndBotProjectProvision(projectPath: string, env: string) {
   const context = await readContextMultiEnv(projectPath, env);
   // Validate Aad App
-  const aad = AadValidator.init(context, false, appStudioLogin);
+  const aad = AadValidator.init(context, false, m365Login);
   await AadValidator.validate(aad);
 
   // Validate Tab Frontend

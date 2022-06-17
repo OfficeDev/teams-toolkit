@@ -1,9 +1,5 @@
 import * as React from "react";
 import "./tree.scss";
-import publish_dark from "../../../media/dark/publish.svg";
-import publish_light from "../../../media/light/publish.svg";
-import developerPortal_dark from "../../../media/dark/developerPortal.svg";
-import developerPortal_light from "../../../media/light/developerPortal.svg";
 import { getCurrentTheme, Theme } from "./theme";
 import { TreeItem } from "./treeItem";
 import { localize } from "../../utils/localizeUtils";
@@ -75,23 +71,15 @@ export class DeploymentView extends React.Component<any, any> {
         <TreeItem
           label="Publish to Teams"
           tooltip={localize("teamstoolkit.commandsTreeViewProvider.publishDescription")}
-          icon={this.state.colorTheme === Theme.Dark ? publish_dark : publish_light}
+          icon="codicon codicon-export"
           customized={true}
           disable={this.state.locked}
           command="fx-extension.publish"
         ></TreeItem>
         <TreeItem
-          label="Add CI/CD Workflows"
-          tooltip={localize("teamstoolkit.commandsTreeViewProvider.addCICDWorkflowsDescription")}
-          icon="codicon codicon-sync"
-          customized={false}
-          disable={false}
-          command="fx-extension.addCICDWorkflows"
-        ></TreeItem>
-        <TreeItem
           label="Developer Portal for Teams"
           tooltip={localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalDescription")}
-          icon={this.state.colorTheme === Theme.Dark ? developerPortal_dark : developerPortal_light}
+          icon="codicon teamsfx-developer-portal"
           customized={true}
           disable={false}
           command="fx-extension.openAppManagement"

@@ -1,6 +1,6 @@
 const axios = require("axios");
 const querystring = require("querystring");
-const { TeamsActivityHandler, CardFactory, TurnContext} = require("botbuilder");
+const { TeamsActivityHandler, CardFactory, TurnContext } = require("botbuilder");
 const rawWelcomeCard = require("./adaptiveCards/welcome.json");
 const rawLearnCard = require("./adaptiveCards/learn.json");
 const cardTools = require("@microsoft/adaptivecards-tools");
@@ -15,9 +15,7 @@ class TeamsBot extends TeamsActivityHandler {
     this.onMessage(async (context, next) => {
       console.log("Running with Message Activity.");
       let txt = context.activity.text;
-      const removedMentionText = TurnContext.removeRecipientMention(
-        context.activity
-      );
+      const removedMentionText = TurnContext.removeRecipientMention(context.activity);
       if (removedMentionText) {
         // Remove the line break
         txt = removedMentionText.toLowerCase().replace(/\n|\r/g, "").trim();
@@ -78,7 +76,7 @@ class TeamsBot extends TeamsActivityHandler {
     }
   }
 
-  // Messaging extension Code
+  // Message extension Code
   // Action.
   handleTeamsMessagingExtensionSubmitAction(context, action) {
     switch (action.commandId) {
@@ -181,7 +179,7 @@ function shareMessageCommand(context, action) {
     userName = action.messagePayload.from.user.displayName;
   }
 
-  // This Messaging Extension example allows the user to check a box to include an image with the
+  // This Message Extension example allows the user to check a box to include an image with the
   // shared message.  This demonstrates sending custom parameters along with the message payload.
   let images = [];
   const includeImage = action.data.includeImage;

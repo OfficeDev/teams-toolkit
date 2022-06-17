@@ -1,22 +1,23 @@
 import { useContext } from "react";
 import { Button, Loader } from "@fluentui/react-northstar";
 import { useData } from "@microsoft/teamsfx-react";
-import { BearerTokenAuthProvider, createApiClient, TeamsFx } from "@microsoft/teamsfx";
+import * as axios from "axios";
 import { TeamsFxContext } from "../Context";
 
 const functionName = process.env.REACT_APP_FUNC_NAME || "myFunc";
-let teamsfx: TeamsFx | undefined;
 
-async function callFunction() {
+async function callFunction(teamsfx) {
   if (!teamsfx) {
-    return;
+    throw new Error("TeamsFx SDK is not initialized.");
   }
   try {
-    const credential = teamsfx.getCredential();
-    const apiClient = createApiClient(
-      teamsfx.getConfig("apiEndpoint"),
-      new BearerTokenAuthProvider(async ()=> (await credential.getToken("")).token));
-    const response = await apiClient.get("/api/" + functionName);
+    const accessToken = await teamsfx.getCredential().getToken("");
+    const endpoint = teamsfx.getConfig("apiEndpoint");
+    const response = await axios.default.get(endpoint + "/api/" + functionName, {
+      headers: {
+        authorization: "Bearer " + accessToken.token,
+      },
+    });
     return response.data;
   } catch (err) {
     let funcErrorMsg = "";
@@ -46,8 +47,8 @@ export function AzureFunctions(props) {
     docsUrl: "https://aka.ms/teamsfx-azure-functions",
     ...props,
   };
-  teamsfx = useContext(TeamsFxContext).teamsfx;
-  const { loading, data, error, reload } = useData(callFunction, {
+  const teamsfx = useContext(TeamsFxContext).teamsfx;
+  const { loading, data, error, reload } = useData(() => callFunction(teamsfx), {
     autoLoad: false,
   });
   return (

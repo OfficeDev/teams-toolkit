@@ -47,12 +47,9 @@ describe("CertificateAuthProvider Tests - Node", () => {
 
   it("can support PEM certs", async function () {
     const certProvider = new CertificateAuthProvider(
-      createPemCertOption(
-        testCerts.clientCert,
-        testCerts.clientKey,
-        undefined,
-        testCerts.serverCert
-      )
+      createPemCertOption(testCerts.clientCert, testCerts.clientKey, {
+        ca: testCerts.serverCert,
+      })
     );
     const client = createApiClient(apiBaseUrl, certProvider);
 
@@ -63,12 +60,10 @@ describe("CertificateAuthProvider Tests - Node", () => {
 
   it("can support encrypted PEM key", async function () {
     const certProvider = new CertificateAuthProvider(
-      createPemCertOption(
-        testCerts.clientCert,
-        testCerts.clientKeyEncrypted,
-        testCerts.passphrase,
-        testCerts.serverCert
-      )
+      createPemCertOption(testCerts.clientCert, testCerts.clientKeyEncrypted, {
+        passphrase: testCerts.passphrase,
+        ca: testCerts.serverCert,
+      })
     );
     const client = createApiClient(apiBaseUrl, certProvider);
 
@@ -88,7 +83,7 @@ describe("CertificateAuthProvider Tests - Node", () => {
 
   it("can support encrypted pfx certs", async function () {
     const certProvider = new CertificateAuthProvider(
-      createPfxCertOption(testCerts.clientPfxEncrypted, testCerts.passphrase)
+      createPfxCertOption(testCerts.clientPfxEncrypted, { passphrase: testCerts.passphrase })
     );
     const client = createApiClient(apiBaseUrl, certProvider);
 

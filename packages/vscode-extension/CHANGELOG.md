@@ -1,5 +1,40 @@
 # Changelog
 
+## 4.0.1 - Jun 16, 2022
+
+Incremental version for Teams Toolkit with multiple bugs fix and enhancements.
+
+## 4.0.0 - May 24, 2022
+
+Major version for Teams Toolkit with new features to support more Teams app scenario like notification bot and command bot. What's more, this version adds support to extend Teams app across M365 platform like Office.com and Outlook.
+
+New Features:
+
+- User can create more business-oriented Teams app template using Teams Toolkit. For example, user can now create not only bot app but also notification bot or command bot. User can see more options are there to choose when create a new Teams app.
+- User can create Teams app that can launch and preview in other M365 platform like Office.com and Outlook. The options are offered when user create a new Teams app.
+- User can incrementally add features to their Teams app using `Add features` in Teams Toolkit during the development process. For example, adding additional Teams extending capability, adding Azure resources like SQL Database or Azure Function etc., adding Single Sign on or API connections and so on.
+- User can preview the Teams manifest file and only deploy the manifest file without deploy the whole project.
+- User can customized Azure AD manifest file.
+- Add tutorials in the Teams Toolkit, user can find them by typing the command `Teams: View Guided Tutorials` in the command palette (Ctrl+Shift+P).
+- A new sample which use Graph Connector get on board to the Sample Gallery. Click `View Samples` in Teams Toolkit to browse Sample Gallery.
+
+Enhancement:
+
+- UI improvement of `Create a new Teams app` and `Start from a sample`.
+- UI improvement of the Teams Toolkit menus in the sidebar.
+- Optimize and simplify the Sample apps. Improve the experience of Sample apps.
+- Improved the experience of TeamsFx CLI tool. 
+
+## 3.8.0 - Apr 22, 2022
+
+Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
+
+Enhancement:
+- Optimize the configuration schema and manifest template of project created by Teams Toolkit.
+- Support to use CodeLens to preview variables value in manifest template file.
+- Optimize the In-meeting Sample App in sample gallery, shorten the time to run the sample.
+- Improved  "Start from a sample" UI, show more information of each sample.
+
 ## 3.7.0 - Apr 06, 2022
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
 

@@ -21,8 +21,6 @@ import { ConversationReferenceStore } from "./storage";
  * @param target - the notification target.
  * @param text - the plain text message.
  * @returns A `Promise` representing the asynchronous operation.
- *
- * @beta
  */
 export function sendMessage(target: NotificationTarget, text: string): Promise<void> {
   throw new ErrorWithCode(
@@ -40,8 +38,6 @@ export function sendMessage(target: NotificationTarget, text: string): Promise<v
  * @param target - the notification target.
  * @param card - the adaptive card raw JSON.
  * @returns A `Promise` representing the asynchronous operation.
- *
- * @beta
  */
 export function sendAdaptiveCard(target: NotificationTarget, card: unknown): Promise<void> {
   throw new ErrorWithCode(
@@ -57,8 +53,6 @@ export function sendAdaptiveCard(target: NotificationTarget, card: unknown): Pro
  * Only work on server side.
  *
  * It's recommended to get channels from {@link TeamsBotInstallation.channels()}.
- *
- * @beta
  */
 export class Channel implements NotificationTarget {
   /**
@@ -66,8 +60,6 @@ export class Channel implements NotificationTarget {
    *
    * @remarks
    * Only work on server side.
-   *
-   * @beta
    */
   public readonly parent: TeamsBotInstallation;
 
@@ -76,8 +68,6 @@ export class Channel implements NotificationTarget {
    *
    * @remarks
    * Only work on server side.
-   *
-   * @beta
    */
   public readonly info: ChannelInfo;
 
@@ -86,13 +76,11 @@ export class Channel implements NotificationTarget {
    *
    * @remarks
    * Only work on server side.
-   *
-   * @beta
    */
   public readonly type: NotificationTargetType = "Channel";
 
   /**
-   * Constuctor.
+   * Constructor.
    *
    * @remarks
    * Only work on server side.
@@ -101,8 +89,6 @@ export class Channel implements NotificationTarget {
    *
    * @param parent - The parent {@link TeamsBotInstallation} where this channel is created from.
    * @param info - Detailed channel information.
-   *
-   * @beta
    */
   constructor(parent: TeamsBotInstallation, info: ChannelInfo) {
     throw new ErrorWithCode(
@@ -119,8 +105,6 @@ export class Channel implements NotificationTarget {
    *
    * @param text - the plain text message.
    * @returns A `Promise` representing the asynchronous operation.
-   *
-   * @beta
    */
   public sendMessage(text: string): Promise<void> {
     throw new ErrorWithCode(
@@ -137,8 +121,6 @@ export class Channel implements NotificationTarget {
    *
    * @param card - the adaptive card raw JSON.
    * @returns A `Promise` representing the asynchronous operation.
-   *
-   * @beta
    */
   public async sendAdaptiveCard(card: unknown): Promise<void> {
     throw new ErrorWithCode(
@@ -155,8 +137,6 @@ export class Channel implements NotificationTarget {
  * Only work on server side.
  *
  * It's recommended to get members from {@link TeamsBotInstallation.members()}.
- *
- * @beta
  */
 export class Member implements NotificationTarget {
   /**
@@ -164,8 +144,6 @@ export class Member implements NotificationTarget {
    *
    * @remarks
    * Only work on server side.
-   *
-   * @beta
    */
   public readonly parent: TeamsBotInstallation;
 
@@ -174,8 +152,6 @@ export class Member implements NotificationTarget {
    *
    * @remarks
    * Only work on server side.
-   *
-   * @beta
    */
   public readonly account: TeamsChannelAccount;
 
@@ -184,13 +160,11 @@ export class Member implements NotificationTarget {
    *
    * @remarks
    * Only work on server side.
-   *
-   * @beta
    */
   public readonly type: NotificationTargetType = "Person";
 
   /**
-   * Constuctor.
+   * Constructor.
    *
    * @remarks
    * Only work on server side.
@@ -199,8 +173,6 @@ export class Member implements NotificationTarget {
    *
    * @param parent - The parent {@link TeamsBotInstallation} where this member is created from.
    * @param account - Detailed member account information.
-   *
-   * @beta
    */
   constructor(parent: TeamsBotInstallation, account: TeamsChannelAccount) {
     throw new ErrorWithCode(
@@ -217,8 +189,6 @@ export class Member implements NotificationTarget {
    *
    * @param text - the plain text message.
    * @returns A `Promise` representing the asynchronous operation.
-   *
-   * @beta
    */
   public sendMessage(text: string): Promise<void> {
     throw new ErrorWithCode(
@@ -235,8 +205,6 @@ export class Member implements NotificationTarget {
    *
    * @param card - the adaptive card raw JSON.
    * @returns A `Promise` representing the asynchronous operation.
-   *
-   * @beta
    */
   public async sendAdaptiveCard(card: unknown): Promise<void> {
     throw new ErrorWithCode(
@@ -256,8 +224,6 @@ export class Member implements NotificationTarget {
  * Only work on server side.
  *
  * It's recommended to get bot installations from {@link ConversationBot.installations()}.
- *
- * @beta
  */
 export class TeamsBotInstallation implements NotificationTarget {
   /**
@@ -265,8 +231,6 @@ export class TeamsBotInstallation implements NotificationTarget {
    *
    * @remarks
    * Only work on server side.
-   *
-   * @beta
    */
   public readonly adapter: BotFrameworkAdapter;
 
@@ -275,8 +239,6 @@ export class TeamsBotInstallation implements NotificationTarget {
    *
    * @remarks
    * Only work on server side.
-   *
-   * @beta
    */
   public readonly conversationReference: Partial<ConversationReference>;
 
@@ -288,8 +250,6 @@ export class TeamsBotInstallation implements NotificationTarget {
    * - "Channel" means bot is installed into a team and notification will be sent to its "General" channel.
    * - "Group" means bot is installed into a group chat.
    * - "Person" means bot is installed into a personal scope and notification will be sent to personal chat.
-   *
-   * @beta
    */
   public readonly type?: NotificationTargetType;
 
@@ -303,8 +263,6 @@ export class TeamsBotInstallation implements NotificationTarget {
    *
    * @param adapter - the bound `BotFrameworkAdapter`.
    * @param conversationReference - the bound `ConversationReference`.
-   *
-   * @beta
    */
   constructor(adapter: BotFrameworkAdapter, conversationReference: Partial<ConversationReference>) {
     throw new ErrorWithCode(
@@ -321,8 +279,6 @@ export class TeamsBotInstallation implements NotificationTarget {
    *
    * @param text - the plain text message.
    * @returns A `Promise` representing the asynchronous operation.
-   *
-   * @beta
    */
   public sendMessage(text: string): Promise<void> {
     throw new ErrorWithCode(
@@ -339,8 +295,6 @@ export class TeamsBotInstallation implements NotificationTarget {
    *
    * @param card - the adaptive card raw JSON.
    * @returns A `Promise` representing the asynchronous operation.
-   *
-   * @beta
    */
   public sendAdaptiveCard(card: unknown): Promise<void> {
     throw new ErrorWithCode(
@@ -356,8 +310,6 @@ export class TeamsBotInstallation implements NotificationTarget {
    * Only work on server side.
    *
    * @returns an array of channels if bot is installed into a team, otherwise returns an empty array.
-   *
-   * @beta
    */
   public async channels(): Promise<Channel[]> {
     throw new ErrorWithCode(
@@ -373,8 +325,6 @@ export class TeamsBotInstallation implements NotificationTarget {
    * Only work on server side.
    *
    * @returns an array of members from where the bot is installed.
-   *
-   * @beta
    */
   public async members(): Promise<Member[]> {
     throw new ErrorWithCode(
@@ -408,8 +358,6 @@ export class TeamsBotInstallation implements NotificationTarget {
  *   }
  * }
  * ```
- *
- * @beta
  */
 export class NotificationBot {
   private readonly conversationReferenceStore: ConversationReferenceStore;
@@ -425,8 +373,6 @@ export class NotificationBot {
    *
    * @param adapter - the bound `BotFrameworkAdapter`
    * @param options - initialize options
-   *
-   * @beta
    */
   public constructor(adapter: BotFrameworkAdapter, options?: NotificationOptions) {
     throw new ErrorWithCode(
@@ -444,8 +390,6 @@ export class NotificationBot {
    * The result is retrieving from the persisted storage.
    *
    * @returns - an array of {@link TeamsBotInstallation}.
-   *
-   * @beta
    */
   public static async installations(): Promise<TeamsBotInstallation[]> {
     throw new ErrorWithCode(

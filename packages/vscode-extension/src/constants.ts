@@ -1,13 +1,9 @@
 export const CONFIGURATION_PREFIX = "fx-extension";
 export enum ConfigurationKey {
   BicepEnvCheckerEnable = "prerequisiteCheck.bicep",
-  RootDirectory = "defaultProjectRootDirectory",
   AutomaticNpmInstall = "automaticNpmInstall",
-  EnableExistingApp = "enableExistingApp",
-  BotNotificationCommandAndResponseEnabled = "enableNotification / CommandAndResponseBot",
-  YoEnvCheckerEnable = "spfxPrerequisiteCheck.yo",
-  generatorEnvCheckerEnable = "spfxPrerequisiteCheck.sharepointYeomanGenerator",
-  enableM365App = "enableM365App",
+  YoEnvCheckerEnable = "SPFxPrerequisiteCheck.yo",
+  generatorEnvCheckerEnable = "SPFxPrerequisiteCheck.sharepointYeomanGenerator",
 }
 
 export const AzurePortalUrl = "https://portal.azure.com";
@@ -30,6 +26,10 @@ export enum GlobalKey {
   OpenSampleReadMe = "fx-extension.openSampleReadMe",
   ShowLocalDebugMessage = "ShowLocalDebugMessage",
   ShowLocalPreviewMessage = "ShowLocalPreviewMessage",
+}
+
+export enum AadManifestDeployConstants {
+  INCLUDE_AAD_MANIFEST = "include-aad-manifest",
 }
 
 export const manifestConfigDataRegex = /{{config.manifest[\.a-zA-Z]+}}/g;

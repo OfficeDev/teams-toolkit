@@ -80,7 +80,7 @@ export class ResourceGroupApiError extends UserError {
       });
       super(SolutionSource, errorName, `${baseErrorMessage}, error: '${rawErrorString}'`);
     } else if (error instanceof Error) {
-      super({ name: errorName, error: error });
+      super({ name: errorName, error: error, source: SolutionSource });
     } else {
       super(SolutionSource, errorName, `${baseErrorMessage}, error: '${JSON.stringify(error)}'`);
     }

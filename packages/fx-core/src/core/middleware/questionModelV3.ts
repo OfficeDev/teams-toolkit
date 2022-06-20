@@ -16,21 +16,35 @@ import {
   Result,
   SingleSelectQuestion,
   Stage,
+  TeamsAppManifest,
   traverse,
   UserError,
   v2,
 } from "@microsoft/teamsfx-api";
 import { EnvInfoV3 } from "@microsoft/teamsfx-api/build/v3";
+import Container from "typedi";
+import { getAppDirectory } from "../../common";
 import { HelpLinks } from "../../common/constants";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 import { hasAzureResourceV3 } from "../../common/projectSettingsHelperV3";
+import {
+  MANIFEST_TEMPLATE_CONSOLIDATE,
+  STATIC_TABS_MAX_ITEMS,
+} from "../../plugins/resource/appstudio/constants";
+import { AppStudioPluginV3 } from "../../plugins/resource/appstudio/v3";
 import { createHostTypeTriggerQuestion } from "../../plugins/resource/bot/question";
 import {
   AzureResourceSQLNewUI,
+  BotNewUIOptionItem,
   BotOptionItem,
+  CommandAndResponseOptionItem,
+  MessageExtensionNewUIItem,
   NotificationOptionItem,
+  TabNewUIOptionItem,
+  TabNonSsoItem,
 } from "../../plugins/solution/fx-solution/question";
 import { checkWetherProvisionSucceeded } from "../../plugins/solution/fx-solution/v2/utils";
+import { BuiltInFeaturePluginNames } from "../../plugins/solution/fx-solution/v3/constants";
 import { NoCapabilityFoundError } from "../error";
 import { TOOLS } from "../globalVars";
 import {
@@ -45,6 +59,8 @@ import {
 } from "../question";
 import { CoreHookContext } from "../types";
 import { getQuestionsForTargetEnv } from "./envInfoLoader";
+import * as path from "path";
+import fs from "fs-extra";
 
 /**
  * This middleware will help to collect input from question flow
@@ -59,7 +75,7 @@ export const QuestionModelMW_V3: Middleware = async (ctx: CoreHookContext, next:
   } else if (method === "executeUserTaskV3") {
     const func = ctx.arguments[0] as Func;
     if (func.method === "addFeature") {
-      getQuestionRes = await getQuestionsForAddFeature(inputs);
+      getQuestionRes = await getQuestionsForAddFeature(ctx.contextV2!, inputs);
     }
   } else if (method === "provisionResourcesV3") {
     getQuestionRes = await getQuestionsForTargetEnv(inputs);
@@ -128,6 +144,7 @@ async function createProjectQuestionV3(
 
 // for demo only
 async function getQuestionsForAddFeature(
+  ctx: v2.Context,
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const question: SingleSelectQuestion = {
@@ -136,6 +153,25 @@ async function getQuestionsForAddFeature(
     type: "singleSelect",
     staticOptions: [AzureResourceSQLNewUI, BotOptionItem],
   };
+  const options: OptionItem[] = [];
+  const appDir = await getAppDirectory(inputs.projectPath!);
+  const manifestPath = path.resolve(appDir, MANIFEST_TEMPLATE_CONSOLIDATE);
+  const manifest = (await fs.readJson(manifestPath)) as TeamsAppManifest;
+  const canAddTab = manifest.staticTabs!.length < STATIC_TABS_MAX_ITEMS;
+  const canAddBot = manifest.bots!.length < 1;
+  const canAddME = manifest.composeExtensions!.length < 1;
+  if (canAddTab) {
+    options.push(TabNewUIOptionItem, TabNonSsoItem);
+    //TODO to determine relationships between Tab, TabSso, TabNonSso
+  }
+  if (canAddBot) {
+    options.push(BotNewUIOptionItem);
+    options.push(NotificationOptionItem);
+    options.push(CommandAndResponseOptionItem);
+  }
+  if (canAddME) {
+    options.push(MessageExtensionNewUIItem);
+  }
   return ok(new QTreeNode(question));
 }
 

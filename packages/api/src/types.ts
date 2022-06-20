@@ -272,8 +272,18 @@ export interface Component extends Json {
   deployType?: "folder" | "zip";
   language?: string;
   folder?: string;
+  /**
+   * means component provide build/deploy API
+   */
   build?: boolean;
+  /**
+   * means component provide provision/configure API
+   */
   provision?: boolean;
+  /**
+   * means component generate bicep files
+   */
+  bicep?: boolean;
   connections?: string[];
 }
 export interface ProjectSettingsV3 extends ProjectSettings {

@@ -17,16 +17,26 @@ import {
   SingleSelectQuestion,
   Stage,
   TeamsAppManifest,
+  TelemetryReporter,
   traverse,
   UserError,
   v2,
+  Void,
 } from "@microsoft/teamsfx-api";
 import { EnvInfoV3 } from "@microsoft/teamsfx-api/build/v3";
 import Container from "typedi";
-import { getAppDirectory } from "../../common";
+import { getAppDirectory, isExistingTabApp, isVSProject } from "../../common";
 import { HelpLinks } from "../../common/constants";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
-import { hasAzureResourceV3 } from "../../common/projectSettingsHelperV3";
+import {
+  hasAAD,
+  hasAPIM,
+  hasAzureResourceV3,
+  hasBot,
+  hasFunction,
+  hasKeyVault,
+  hasTab,
+} from "../../common/projectSettingsHelperV3";
 import {
   MANIFEST_TEMPLATE_CONSOLIDATE,
   STATIC_TABS_MAX_ITEMS,
@@ -34,12 +44,17 @@ import {
 import { AppStudioPluginV3 } from "../../plugins/resource/appstudio/v3";
 import { createHostTypeTriggerQuestion } from "../../plugins/resource/bot/question";
 import {
+  ApiConnectionOptionItem,
+  AzureResourceApimNewUI,
+  AzureResourceKeyVaultNewUI,
   AzureResourceSQLNewUI,
   BotNewUIOptionItem,
   BotOptionItem,
   CommandAndResponseOptionItem,
+  MessageExtensionItem,
   MessageExtensionNewUIItem,
   NotificationOptionItem,
+  SingleSignOnOptionItem,
   TabNewUIOptionItem,
   TabNonSsoItem,
 } from "../../plugins/solution/fx-solution/question";
@@ -61,6 +76,8 @@ import { CoreHookContext } from "../types";
 import { getQuestionsForTargetEnv } from "./envInfoLoader";
 import * as path from "path";
 import fs from "fs-extra";
+import { sendErrorTelemetryThenReturnError } from "../../plugins/solution/fx-solution/utils/util";
+import { SolutionTelemetryEvent } from "../../plugins/solution/fx-solution/constants";
 
 /**
  * This middleware will help to collect input from question flow
@@ -151,28 +168,74 @@ async function getQuestionsForAddFeature(
     name: "feature",
     title: getLocalizedString("core.addFeatureQuestion.title"),
     type: "singleSelect",
-    staticOptions: [AzureResourceSQLNewUI, BotOptionItem],
+    staticOptions: [],
   };
   const options: OptionItem[] = [];
+  // check capability options
   const appDir = await getAppDirectory(inputs.projectPath!);
   const manifestPath = path.resolve(appDir, MANIFEST_TEMPLATE_CONSOLIDATE);
   const manifest = (await fs.readJson(manifestPath)) as TeamsAppManifest;
   const canAddTab = manifest.staticTabs!.length < STATIC_TABS_MAX_ITEMS;
   const canAddBot = manifest.bots!.length < 1;
   const canAddME = manifest.composeExtensions!.length < 1;
+  const projectSettingsV3 = ctx.projectSetting as ProjectSettingsV3;
+  if (canAddBot) {
+    options.push(NotificationOptionItem);
+    options.push(CommandAndResponseOptionItem);
+  }
   if (canAddTab) {
-    options.push(TabNewUIOptionItem, TabNonSsoItem);
-    //TODO to determine relationships between Tab, TabSso, TabNonSso
+    if (hasTab(projectSettingsV3)) {
+      options.push(TabNewUIOptionItem, TabNonSsoItem);
+    } else {
+      //if aad is added, display name is SsoTab, otherwise the display name is NonSsoTab
+      if (hasAAD(projectSettingsV3)) {
+        options.push(TabNewUIOptionItem);
+      } else {
+        options.push(TabNonSsoItem);
+      }
+    }
   }
   if (canAddBot) {
     options.push(BotNewUIOptionItem);
-    options.push(NotificationOptionItem);
-    options.push(CommandAndResponseOptionItem);
   }
   if (canAddME) {
     options.push(MessageExtensionNewUIItem);
   }
-  return ok(new QTreeNode(question));
+  // check cloud resource options
+  if (!hasAPIM(projectSettingsV3)) {
+    options.push(AzureResourceApimNewUI);
+  }
+  options.push(AzureResourceSQLNewUI);
+  if (!hasKeyVault(projectSettingsV3)) {
+    options.push(AzureResourceKeyVaultNewUI);
+  }
+  if (!hasAAD(projectSettingsV3)) {
+    options.push(SingleSignOnOptionItem);
+  }
+  if (hasBot(projectSettingsV3) || hasFunction(projectSettingsV3)) {
+    options.push(ApiConnectionOptionItem);
+  }
+  // TODO CICD add pre-condition??  ask Ivan
+
+  question.staticOptions = options;
+  const addFeatureNode = new QTreeNode(question);
+  if (!ctx.projectSetting.programmingLanguage) {
+    // Language
+    const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
+    programmingLanguage.condition = {
+      enum: [
+        NotificationOptionItem.id,
+        CommandAndResponseOptionItem.id,
+        TabNewUIOptionItem.id,
+        TabNonSsoItem.id,
+        BotNewUIOptionItem.id,
+        MessageExtensionItem.id,
+        SingleSignOnOptionItem.id, // TODO why SSO trigger programmingLanguage? ask Bowen
+      ],
+    };
+    addFeatureNode.addChild(programmingLanguage);
+  }
+  return ok(addFeatureNode);
 }
 
 async function getQuestionsForDeploy(

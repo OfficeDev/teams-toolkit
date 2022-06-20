@@ -353,7 +353,7 @@ export enum Colors {
 
 // @public (undocumented)
 export interface Component extends Json {
-    // (undocumented)
+    bicep?: boolean;
     build?: boolean;
     // (undocumented)
     code?: string;
@@ -369,7 +369,6 @@ export interface Component extends Json {
     language?: string;
     // (undocumented)
     name: string;
-    // (undocumented)
     provision?: boolean;
 }
 

@@ -60,3 +60,9 @@ export function hasSPFxTab(projectSetting: ProjectSettingsV3): boolean {
   const tab = getComponent(projectSetting, ComponentNames.TeamsTab);
   return tab?.hosting === ComponentNames.SPFx;
 }
+export function hasAPIM(projectSettings: ProjectSettingsV3): boolean {
+  return getComponent(projectSettings, ComponentNames.APIM) !== undefined;
+}
+export function hasKeyVault(projectSettings: ProjectSettingsV3): boolean {
+  return getComponent(projectSettings, ComponentNames.KeyVault) !== undefined;
+}

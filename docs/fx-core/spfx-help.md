@@ -11,17 +11,12 @@ The following table lists SharePoint Framework and compatible versions of common
 | 1.14 | LTS v12, LTS v14 | v5, v6 | v3.9 | v16.13.1 |
 
 ### Error message
-SPFx scaffolding could fail due to unsuccessful execution of above command.
+By default,  locally installed `yo` is engaged to execute the following command with related _args_: `yo @microsoft/sharepoint`. 
+SPFx scaffolding could fail due to unsuccessful execution of above command:
 
 #### _"Failed to run command: " yo @microsoft/sharepoint ..." , 'yo' is not recognized as an internal or external command"_
 
-
 ### Remediation
-By default,  locally installed `yo` is engaged to execute the following command with related _args_:
-
-```sh
-yo @microsoft/sharepoint
-```
 
 If your OS system is Windows,
 
@@ -43,7 +38,7 @@ If your OS system is MacOS or Linux,
 For SPFx app, Teams Toolkit uses Yeoman Generator for scaffolding. This requires both [Yeoman CLI](https://github.com/yeoman/yo) and the correct SPFx generator version to be installed.
 
 ### Error message
-SPFx scaffolding could fail due to unsuccessful execution of above command.
+SPFx scaffolding could fail due to unsuccessful installation of above prerequisites:
 
 #### _"We've encountered some issues when trying to install prerequisites under HOME/.fx folder"_
 

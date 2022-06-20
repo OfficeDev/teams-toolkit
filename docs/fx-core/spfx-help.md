@@ -38,7 +38,7 @@ If your OS system is MacOS or Linux,
 1. Check executable files for `yo` exist after package installation at the correct path under _HOME/\.fx/bin/spfx/node_modules/\.bin_
 
 
-## 2. Failure to install prerequisites
+## 2. Failure to install prerequisites<a name="prerequisites"></a>
 
 For SPFx app, Teams Toolkit uses Yeoman Generator for scaffolding. This requires both [Yeoman CLI](https://github.com/yeoman/yo) and the correct SPFx generator version to be installed.
 

@@ -46,17 +46,12 @@ export default class ServerM365TokenProvider implements M365TokenProvider {
   }
 
   async getStatus(tokenRequest: TokenRequest): Promise<Result<LoginStatus, FxError>> {
-    const promise = this.connection.sendRequest(RequestTypes.m365.getAccessToken, tokenRequest);
+    const promise = this.connection.sendRequest(RequestTypes.m365.getStatus, tokenRequest);
     const result = await getResponseWithErrorHandling(promise);
     if (result.isErr()) {
       return err(result.error);
     }
-    const jsonPromise = this.connection.sendRequest(RequestTypes.m365.getJsonObject, tokenRequest);
-    const jsonResult = await getResponseWithErrorHandling(jsonPromise);
-    if (jsonResult.isErr()) {
-      return err(jsonResult.error);
-    }
-    return ok({ status: signedIn, token: result.value, accountInfo: JSON.parse(jsonResult.value) });
+    return ok(result.value);
   }
 
   async signout(): Promise<boolean> {

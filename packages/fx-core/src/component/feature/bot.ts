@@ -69,6 +69,7 @@ export class TeamsBot {
         scenarios.push(TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME);
       } else {
         inputs.hosting = "azure-function";
+        scenarios.push(TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME);
         if (triggers.includes(FunctionsHttpTriggerOptionItem.id)) {
           scenarios.push(
             TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_HTTP_SCENARIO_NAME
@@ -181,6 +182,12 @@ export class TeamsBot {
         inputs: {
           capability: { name: "Bot" },
         },
+      },
+      {
+        name: "call:debug.generateLocalDebugSettings",
+        type: "call",
+        required: true,
+        targetAction: "debug.generateLocalDebugSettings",
       },
       WriteProjectSettingsAction,
     ];

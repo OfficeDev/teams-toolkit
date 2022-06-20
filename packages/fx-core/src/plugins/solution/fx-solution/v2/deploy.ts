@@ -14,11 +14,10 @@ import {
   v3,
 } from "@microsoft/teamsfx-api";
 import { isUndefined } from "lodash";
-import Container from "typedi";
 import { AppStudioScopes } from "../../../../common";
 import { PluginDisplayName } from "../../../../common/constants";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
-import { hasAzureResource, isVSProject } from "../../../../common/projectSettingsHelper";
+import { getAzurePlugins, isVSProject } from "../../../../common/projectSettingsHelper";
 import { Constants } from "../../../resource/aad/constants";
 import { checkM365Tenant, checkSubscription } from "../commonQuestions";
 import {
@@ -62,7 +61,7 @@ export async function deploy(
   const botTroubleShootMsg = getBotTroubleShootMessage(getAzureSolutionSettings(ctx));
   const provisioned =
     (provisionOutputs[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] as boolean) ||
-    inputs[Constants.DEPLOY_AAD] === "yes";
+    isDeployAADManifestFromVSCode;
 
   if (inAzureProject && !provisioned) {
     return err(
@@ -106,7 +105,7 @@ export async function deploy(
         )
       );
     }
-  } else if (envInfo.envName !== "local") {
+  } else if (envInfo.envName !== "local" && !isDeployAADManifestFromVSCode) {
     const checkAzure = await checkSubscription(
       { version: 2, data: envInfo },
       tokenProvider.azureAccountProvider
@@ -145,21 +144,6 @@ export async function deploy(
     }
   }
 
-  if (
-    isAzureProject(getAzureSolutionSettings(ctx)) &&
-    hasAzureResource(ctx.projectSetting, true) &&
-    inputs[Constants.INCLUDE_AAD_MANIFEST] !== "yes"
-  ) {
-    const consent = await askForDeployConsent(
-      ctx,
-      tokenProvider.azureAccountProvider,
-      envInfo as v3.EnvInfoV3
-    );
-    if (consent.isErr()) {
-      return err(consent.error);
-    }
-  }
-
   const plugins = getSelectedPlugins(ctx.projectSetting);
   const thunks: NamedThunk<Json>[] = plugins
     .filter(
@@ -184,6 +168,20 @@ export async function deploy(
           ),
       };
     });
+
+  const azurePlugins = getAzurePlugins(true);
+  const hasAzureResource = thunks.some((thunk) => azurePlugins.includes(thunk.pluginName));
+
+  if (isAzureProject(getAzureSolutionSettings(ctx)) && hasAzureResource) {
+    const consent = await askForDeployConsent(
+      ctx,
+      tokenProvider.azureAccountProvider,
+      envInfo as v3.EnvInfoV3
+    );
+    if (consent.isErr()) {
+      return err(consent.error);
+    }
+  }
 
   if (thunks.length === 0) {
     return err(

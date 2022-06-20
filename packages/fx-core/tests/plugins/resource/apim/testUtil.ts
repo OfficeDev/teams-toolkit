@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 import {
   FxError,
-  GraphTokenProvider,
   LoginStatus,
   M365TokenProvider,
   ok,

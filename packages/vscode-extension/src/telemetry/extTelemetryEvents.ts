@@ -222,6 +222,7 @@ export enum TelemetryProperty {
   DebugServiceName = "debug-service-name",
   DebugServiceExitCode = "debug-service-exit-code",
   DebugPrereqsDepsType = "debug-prereqs-deps-type",
+  DebugFailedServices = "debug-failed-services",
   Internal = "internal",
   InternalAlias = "internal-alias",
   OSArch = "os-arch",

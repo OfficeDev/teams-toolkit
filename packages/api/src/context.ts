@@ -5,12 +5,9 @@
 import { Inputs, LocalSettings, PluginConfig, ProjectSettings } from "./types";
 
 import {
-  GraphTokenProvider,
   LogProvider,
   TelemetryReporter,
   AzureAccountProvider,
-  AppStudioTokenProvider,
-  SharepointTokenProvider,
   TreeProvider,
   PermissionRequestProvider,
   M365TokenProvider,
@@ -32,12 +29,6 @@ export interface Context {
   telemetryReporter?: TelemetryReporter;
 
   azureAccountProvider?: AzureAccountProvider;
-
-  graphTokenProvider?: GraphTokenProvider;
-
-  appStudioToken?: AppStudioTokenProvider;
-
-  sharepointTokenProvider?: SharepointTokenProvider;
 
   m365TokenProvider?: M365TokenProvider;
 

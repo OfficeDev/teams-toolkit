@@ -28,11 +28,13 @@ import {
 import { ProjectSettingsHelper } from "../common/local/projectSettingsHelper";
 import {
   hasAAD,
+  hasAzureTab,
   hasBot,
   hasFunction,
   hasFunctionBot,
   hasSimpleAuth,
   hasTab,
+  hasSPFxTab,
 } from "../common/projectSettingsHelperV3";
 import { getAllowedAppIds } from "../common/tools";
 import {
@@ -40,6 +42,7 @@ import {
   InvalidLocalBotEndpointFormat,
   LocalBotEndpointNotConfigured,
   NgrokTunnelNotConnected,
+  ScaffoldLocalDebugSettingsError,
   SetupLocalDebugSettingsError,
 } from "../plugins/solution/fx-solution/debug/error";
 import {
@@ -53,20 +56,24 @@ import {
   TelemetryUtils,
 } from "../plugins/solution/fx-solution/debug/util/telemetry";
 import { ComponentNames } from "./constants";
-
+import * as Launch from "../plugins/solution/fx-solution/debug/util/launch";
+import * as LaunchNext from "../plugins/solution/fx-solution/debug/util/launchNext";
+import * as Tasks from "../plugins/solution/fx-solution/debug/util/tasks";
+import * as TasksNext from "../plugins/solution/fx-solution/debug/util/tasksNext";
+import * as Settings from "../plugins/solution/fx-solution/debug/util/settings";
+import fs from "fs-extra";
+import { updateJson, useNewTasks } from "../plugins/solution/fx-solution/debug/scaffolding";
+import { createFilesEffects } from "./utils";
 @Service("debug")
 export class DebugComponent {
   readonly name = "debug";
-  setup(
+  setupLocalEnvInfo(
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const action: Action = {
-      name: "debug.setup",
+      name: "debug.setupLocalEnvInfo",
       type: "function",
-      plan: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok([]);
-      },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const ctx = context as ProvisionContextV3;
         const localEnvSetupResult = await setupLocalEnvironment(ctx, inputs, ctx.envInfo);
@@ -78,13 +85,13 @@ export class DebugComponent {
     };
     return ok(action);
   }
-  config(
+  configLocalEnvInfo(
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const action: Action = {
       type: "function",
-      name: "debug.config",
+      name: "debug.configLocalEnvInfo",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         return ok([]);
       },
@@ -99,6 +106,34 @@ export class DebugComponent {
     };
     return ok(action);
   }
+  generateLocalDebugSettings(
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const action: Action = {
+      type: "function",
+      name: "debug.generateLocalDebugSettings",
+      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
+        const files = [
+          `${inputs.projectPath}/.vscode/launch.json`,
+          `${inputs.projectPath}/.vscode/tasks.json`,
+        ];
+        return ok(createFilesEffects(files, "replace"));
+      },
+      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+        const res = await generateLocalDebugSettings(context, inputs);
+        if (res.isErr()) {
+          return err(res.error);
+        }
+        const files = [
+          `${inputs.projectPath}/.vscode/launch.json`,
+          `${inputs.projectPath}/.vscode/tasks.json`,
+        ];
+        return ok(createFilesEffects(files, "replace"));
+      },
+    };
+    return ok(action);
+  }
 }
 
 export async function setupLocalEnvironment(
@@ -107,7 +142,7 @@ export async function setupLocalEnvironment(
   envInfo: v3.EnvInfoV3
 ): Promise<Result<undefined, FxError>> {
   const vscEnv = inputs.vscodeEnv;
-  const includeTab = hasTab(ctx.projectSetting);
+  const includeTab = hasAzureTab(ctx.projectSetting);
   const includeBackend = hasFunction(ctx.projectSetting);
   const includeBot = hasBot(ctx.projectSetting);
   const includeAAD = hasAAD(ctx.projectSetting);
@@ -200,8 +235,8 @@ export async function setupLocalEnvironment(
             return err(error);
           }
 
-          envInfo.state[ComponentNames.TeamsBot].siteEndpoint = localBotEndpoint;
-          envInfo.state[ComponentNames.TeamsBot].validDomain = localBotEndpoint.slice(8);
+          envInfo.state[ComponentNames.TeamsBot].endpoint = localBotEndpoint;
+          envInfo.state[ComponentNames.TeamsBot].domain = localBotEndpoint.slice(8);
         } else {
           const ngrokHttpUrl = await getNgrokHttpUrl(3978);
           if (!ngrokHttpUrl) {
@@ -209,8 +244,8 @@ export async function setupLocalEnvironment(
             TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);
             return err(error);
           } else {
-            envInfo.state[ComponentNames.TeamsBot].siteEndpoint = ngrokHttpUrl;
-            envInfo.state[ComponentNames.TeamsBot].validDomain = ngrokHttpUrl.slice(8);
+            envInfo.state[ComponentNames.TeamsBot].endpoint = ngrokHttpUrl;
+            envInfo.state[ComponentNames.TeamsBot].domain = ngrokHttpUrl.slice(8);
           }
         }
       }
@@ -229,8 +264,8 @@ export async function setupLocalEnvironment(
           TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);
           return err(error);
         } else {
-          envInfo.state[ComponentNames.TeamsBot].siteEndpoint = ngrokHttpUrl;
-          envInfo.state[ComponentNames.TeamsBot].validDomain = ngrokHttpUrl.slice(8);
+          envInfo.state[ComponentNames.TeamsBot].endpoint = ngrokHttpUrl;
+          envInfo.state[ComponentNames.TeamsBot].domain = ngrokHttpUrl.slice(8);
         }
       }
     }
@@ -248,7 +283,7 @@ export async function configLocalEnvironment(
   inputs: InputsWithProjectPath,
   envInfo: v3.EnvInfoV3
 ): Promise<Result<undefined, FxError>> {
-  const includeTab = hasTab(ctx.projectSetting);
+  const includeTab = hasAzureTab(ctx.projectSetting);
   const includeBackend = hasFunction(ctx.projectSetting);
   const includeBot = hasBot(ctx.projectSetting);
   const includeAAD = hasAAD(ctx.projectSetting);
@@ -391,5 +426,138 @@ export async function configLocalEnvironment(
     return err(systemError);
   }
   TelemetryUtils.sendSuccessEvent(TelemetryEventName.configLocalDebugSettings, telemetryProperties);
+  return ok(undefined);
+}
+
+export async function generateLocalDebugSettings(
+  context: ContextV3,
+  inputs: InputsWithProjectPath
+): Promise<Result<undefined, FxError>> {
+  const isSpfx = hasSPFxTab(context.projectSetting);
+  const includeFrontend = hasTab(context.projectSetting);
+  const includeBackend = hasFunction(context.projectSetting);
+  const includeBot = hasBot(context.projectSetting);
+  const includeAAD = hasAAD(context.projectSetting);
+  const includeSimpleAuth = hasSimpleAuth(context.projectSetting);
+  const includeFuncHostedBot = hasFunctionBot(context.projectSetting);
+  const botCapabilities = ProjectSettingsHelper.getBotCapabilities(context.projectSetting);
+  const programmingLanguage = context.projectSetting.programmingLanguage ?? "";
+  const isM365 = context.projectSetting.isM365;
+  const telemetryProperties = {
+    platform: inputs.platform as string,
+    spfx: isSpfx ? "true" : "false",
+    frontend: includeFrontend ? "true" : "false",
+    function: includeBackend ? "true" : "false",
+    bot: includeBot ? "true" : "false",
+    auth: includeAAD && includeSimpleAuth ? "true" : "false",
+    "bot-host-type": includeFuncHostedBot ? BotHostTypes.AzureFunctions : BotHostTypes.AppService,
+    "bot-capabilities": JSON.stringify(botCapabilities),
+    "programming-language": programmingLanguage,
+  };
+  TelemetryUtils.init(context.telemetryReporter);
+  TelemetryUtils.sendStartEvent(TelemetryEventName.scaffoldLocalDebugSettings, telemetryProperties);
+  try {
+    // scaffold for both vscode and cli
+    if (inputs.platform === Platform.VSCode || inputs.platform === Platform.CLI) {
+      if (isSpfx) {
+        // Only generate launch.json and tasks.json for SPFX
+        const launchConfigurations = Launch.generateSpfxConfigurations();
+        const launchCompounds = Launch.generateSpfxCompounds();
+        const tasks = Tasks.generateSpfxTasks();
+        const tasksInputs = Tasks.generateInputs();
+
+        //TODO: save files via context api
+        await fs.ensureDir(`${inputs.projectPath}/.vscode/`);
+        await updateJson(
+          `${inputs.projectPath}/.vscode/launch.json`,
+          {
+            version: "0.2.0",
+            configurations: launchConfigurations,
+            compounds: launchCompounds,
+          },
+          LaunchNext.mergeLaunches
+        );
+
+        await updateJson(
+          `${inputs.projectPath}/.vscode/tasks.json`,
+          {
+            version: "2.0.0",
+            tasks: tasks,
+            inputs: tasksInputs,
+          },
+          TasksNext.mergeTasks
+        );
+      } else {
+        const launchConfigurations = isM365
+          ? LaunchNext.generateM365Configurations(includeFrontend, includeBackend, includeBot)
+          : (await useNewTasks(inputs.projectPath))
+          ? LaunchNext.generateConfigurations(includeFrontend, includeBackend, includeBot)
+          : Launch.generateConfigurations(includeFrontend, includeBackend, includeBot);
+        const launchCompounds = isM365
+          ? LaunchNext.generateM365Compounds(includeFrontend, includeBackend, includeBot)
+          : (await useNewTasks(inputs.projectPath))
+          ? LaunchNext.generateCompounds(includeFrontend, includeBackend, includeBot)
+          : Launch.generateCompounds(includeFrontend, includeBackend, includeBot);
+
+        const tasks = isM365
+          ? TasksNext.generateM365Tasks(
+              includeFrontend,
+              includeBackend,
+              includeBot,
+              programmingLanguage
+            )
+          : (await useNewTasks(inputs.projectPath))
+          ? TasksNext.generateTasks(
+              includeFrontend,
+              includeBackend,
+              includeBot,
+              includeFuncHostedBot,
+              programmingLanguage
+            )
+          : Tasks.generateTasks(
+              includeFrontend,
+              includeBackend,
+              includeBot,
+              includeSimpleAuth,
+              programmingLanguage
+            );
+
+        //TODO: save files via context api
+        await fs.ensureDir(`${inputs.projectPath}/.vscode/`);
+        await updateJson(
+          `${inputs.projectPath}/.vscode/launch.json`,
+          {
+            version: "0.2.0",
+            configurations: launchConfigurations,
+            compounds: launchCompounds,
+          },
+          LaunchNext.mergeLaunches
+        );
+
+        await updateJson(
+          `${inputs.projectPath}/.vscode/tasks.json`,
+          {
+            version: "2.0.0",
+            tasks: tasks,
+          },
+          TasksNext.mergeTasks
+        );
+      }
+
+      await updateJson(
+        `${inputs.projectPath}/.vscode/settings.json`,
+        Settings.generateSettings(includeBackend || includeFuncHostedBot, isSpfx),
+        Settings.mergeSettings
+      );
+    }
+  } catch (error: any) {
+    const systemError = ScaffoldLocalDebugSettingsError(error);
+    TelemetryUtils.sendErrorEvent(TelemetryEventName.scaffoldLocalDebugSettings, systemError);
+    return err(systemError);
+  }
+  TelemetryUtils.sendSuccessEvent(
+    TelemetryEventName.scaffoldLocalDebugSettings,
+    telemetryProperties
+  );
   return ok(undefined);
 }

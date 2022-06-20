@@ -67,9 +67,6 @@ describe("SolutionV3 - executeUserTask", () => {
     };
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: undefined,
-      graphTokenProvider: undefined,
-      sharepointTokenProvider: undefined,
       m365TokenProvider: new MockedM365Provider(),
     };
     const res = await getQuestionsForUserTask(

@@ -8,7 +8,7 @@ import "mocha";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { newEnvInfoV3, setTools } from "../../src";
+import { setTools } from "../../src/core/globalVars";
 import * as templateAction from "../../src/common/template-utils/templatesActions";
 import "../../src/component/core";
 import "../../src/component/feature/bot";
@@ -23,6 +23,8 @@ import * as clientFactory from "../../src/plugins/resource/bot/clientFactory";
 import { AADRegistration } from "../../src/plugins/resource/bot/aadRegistration";
 import { TestHelper } from "../plugins/resource/frontend/helper";
 import arm from "../../src/plugins/solution/fx-solution/arm";
+import { FrontendDeployment } from "../../src/plugins/resource/frontend/ops/deploy";
+import { newEnvInfoV3 } from "../../src/core/environment";
 describe("Workflow test for v3", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -89,12 +91,8 @@ describe("Workflow test for v3", () => {
       .resolves(TestHelper.fakeCredential);
     sandbox.stub(provisionV3, "fillInAzureConfigs").resolves(ok(Void));
     sandbox.stub(provisionV3, "askForProvisionConsent").resolves(ok(Void));
-    sandbox
-      .stub(AppStudioClient, "createApp")
-      .onFirstCall()
-      .resolves({ teamsAppId: "mockTeamsAppId" })
-      .onSecondCall()
-      .throws({ name: 409 });
+    sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
+    sandbox.stub(AppStudioClient, "createApp").resolves({ teamsAppId: "mockTeamsAppId" });
     sandbox.stub(AppStudioClient, "updateApp").resolves({ teamsAppId: "mockTeamsAppId" });
     sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
     sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
@@ -151,5 +149,43 @@ describe("Workflow test for v3", () => {
       console.log(provisionRes.error);
     }
     assert.isTrue(provisionRes.isOk());
+  });
+
+  it("azure-storage.deploy", async () => {
+    sandbox.stub(FrontendDeployment, "doFrontendDeploymentV3").resolves();
+    sandbox
+      .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
+      .resolves(TestHelper.fakeCredential);
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+      folder: "tabs",
+    };
+    context.envInfo = newEnvInfoV3();
+    context.tokenProvider = tools.tokenProvider;
+    context.envInfo.state = {
+      solution: {
+        provisionSucceeded: true,
+        needCreateResourceGroup: false,
+        resourceGroupName: "mockRG",
+        location: "eastasia",
+        resourceNameSuffix: "3bf854123",
+        teamsAppTenantId: "mockTid",
+        subscriptionId: "mockSid",
+        subscriptionName: "mockSname",
+        tenantId: "mockAzureTid",
+      },
+      "azure-storage": {
+        location: "centreus",
+        resourceId:
+          "/subscriptions/mockSid/resourceGroups/jay-texas/providers/Microsoft.Storage/storageAccounts/testaccount",
+        endpoint: "https://testaccount.azurewebsites.net",
+      },
+    };
+    const res = await runAction("azure-storage.deploy", context, inputs);
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    assert.isTrue(res.isOk());
   });
 });

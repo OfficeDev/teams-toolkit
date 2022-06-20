@@ -155,8 +155,12 @@ describe("userInteraction", () => {
       });
     });
 
-    it("createProgressBar", () => {
+    it("createProgressBar", async () => {
       expect(ui.createProgressBar("test title", 5)).to.not.throw;
+      const a = ui.createProgressBar("test title", 5);
+      await a.start();
+      await a.next();
+      await a.end(true);
     });
 
     it("runWithProgress", () => {

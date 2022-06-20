@@ -18,14 +18,15 @@ export let isTeamsFxProject = false;
 export let isSPFxProject = false;
 export let isExistingUser = "no";
 
+if (vscode.workspace && vscode.workspace.workspaceFolders) {
+  if (vscode.workspace.workspaceFolders.length > 0) {
+    workspaceUri = vscode.workspace.workspaceFolders[0].uri;
+  }
+}
+
 export function initializeGlobalVariables(ctx: vscode.ExtensionContext): void {
   context = ctx;
   isExistingUser = context.globalState.get<string>(UserState.IsExisting) || "no";
-  if (vscode.workspace && vscode.workspace.workspaceFolders) {
-    if (vscode.workspace.workspaceFolders.length > 0) {
-      workspaceUri = vscode.workspace.workspaceFolders[0].uri;
-    }
-  }
   isTeamsFxProject = fs.existsSync(path.join(workspaceUri?.fsPath ?? "./", `.${ConfigFolderName}`));
   isSPFxProject = fs.existsSync(path.join(workspaceUri?.fsPath ?? "./", "SPFx"));
 }

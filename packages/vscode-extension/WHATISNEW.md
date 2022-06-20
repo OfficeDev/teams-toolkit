@@ -1,3 +1,4 @@
+- [4.0.1 - Jun 16 2022](#401---jun-16-2022)
 - [4.0.0 - May 24 2022](#400---may-24-2022)
 - [3.8.0 - Apr 22 2022](#380---apr-22-2022)
 - [3.7.0 - Apr 06 2022](#370---apr-06-2022)
@@ -15,6 +16,10 @@
 - [2.7.0 - Sep 17 2021](#270---sep-17-2021)
 
 # Changelog
+
+## 4.0.1 - Jun 16, 2022
+
+Incremental version for Teams Toolkit with multiple bugs fix and enhancements.
 
 ## 4.0.0 - May 24, 2022
 

@@ -97,10 +97,7 @@ const apiConnectionPluginV2 = Container.get<v2.ResourcePlugin>(
   ResourcePluginsV2.ApiConnectorPlugin
 );
 const mockedProvider: TokenProvider = {
-  appStudioToken: undefined,
   azureAccountProvider: new MockedAzureAccountProvider(),
-  graphTokenProvider: undefined,
-  sharepointTokenProvider: undefined,
   m365TokenProvider: new MockedM365Provider(),
 };
 function mockSolutionContextWithPlatform(platform?: Platform): SolutionContext {

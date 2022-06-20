@@ -20,7 +20,7 @@ import {
 import { expect } from "../../utils";
 import { UserSettings } from "../../../../src/userSetttings";
 import { cliSource } from "../../../../src/constants";
-import AppStudioTokenInstance from "../../../../src/commonlib/appStudioLogin";
+import M365TokenInstance from "../../../../src/commonlib/m365Login";
 import { signedIn, signedOut } from "../../../../src/commonlib/common/constant";
 import fs from "fs-extra";
 import * as chai from "chai";
@@ -103,11 +103,13 @@ describe("commonUtils", () => {
 
   describe("generateAccountHint", () => {
     it("not signed", async () => {
-      sandbox.stub(AppStudioTokenInstance, "getStatus").returns(
-        Promise.resolve({
-          status: signedOut,
-          accountInfo: undefined,
-        })
+      sandbox.stub(M365TokenInstance, "getStatus").returns(
+        Promise.resolve(
+          ok({
+            status: signedOut,
+            accountInfo: undefined,
+          })
+        )
       );
       const tenantIdFromConfig = "tenantIdFromConfig";
       expect(await generateAccountHint(tenantIdFromConfig, true)).to.deep.equals(
@@ -121,14 +123,16 @@ describe("commonUtils", () => {
     it("signed", async () => {
       const tenantId = "tenantId";
       const upn = "upn";
-      sandbox.stub(AppStudioTokenInstance, "getStatus").returns(
-        Promise.resolve({
-          status: signedIn,
-          accountInfo: {
-            tid: tenantId,
-            upn,
-          },
-        })
+      sandbox.stub(M365TokenInstance, "getStatus").returns(
+        Promise.resolve(
+          ok({
+            status: signedIn,
+            accountInfo: {
+              tid: tenantId,
+              upn,
+            },
+          })
+        )
       );
       const tenantIdFromConfig = "tenantIdFromConfig";
       expect(await generateAccountHint(tenantIdFromConfig, true)).to.deep.equals(

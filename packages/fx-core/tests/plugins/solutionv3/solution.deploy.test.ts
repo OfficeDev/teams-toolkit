@@ -33,9 +33,6 @@ describe("SolutionV3 - deploy", () => {
     };
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: undefined,
-      graphTokenProvider: undefined,
-      sharepointTokenProvider: undefined,
       m365TokenProvider: new MockedM365Provider(),
     };
     const envInfov3: v3.EnvInfoV3 = {
@@ -67,9 +64,6 @@ describe("SolutionV3 - deploy", () => {
     };
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: undefined,
-      graphTokenProvider: undefined,
-      sharepointTokenProvider: undefined,
       m365TokenProvider: new MockedM365Provider(),
     };
     const envInfoV3: v2.DeepReadonly<v3.EnvInfoV3> = {

@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.0.1 - Jun 16, 2022
+
+Incremental version for Teams Toolkit with multiple bugs fix and enhancements.
+
 ## 4.0.0 - May 24, 2022
 
 Major version for Teams Toolkit with new features to support more Teams app scenario like notification bot and command bot. What's more, this version adds support to extend Teams app across M365 platform like Office.com and Outlook.

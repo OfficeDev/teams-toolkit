@@ -96,6 +96,14 @@ export function hasSPFx(projectSetting: ProjectSettings): boolean {
 export function hasAzureResource(projectSetting: ProjectSettings, excludeAad = false): boolean {
   const solutionSettings = projectSetting.solutionSettings as AzureSolutionSettings | undefined;
   if (!solutionSettings) return false;
+  const azurePlugins = getAzurePlugins(excludeAad);
+  for (const pluginName of solutionSettings.activeResourcePlugins) {
+    if (azurePlugins.includes(pluginName)) return true;
+  }
+  return false;
+}
+
+export function getAzurePlugins(excludeAad = false): string[] {
   const azurePlugins = [
     BuiltInFeaturePluginNames.apim,
     BuiltInFeaturePluginNames.bot,
@@ -109,10 +117,7 @@ export function hasAzureResource(projectSetting: ProjectSettings, excludeAad = f
   if (!excludeAad) {
     azurePlugins.push(BuiltInFeaturePluginNames.aad);
   }
-  for (const pluginName of solutionSettings.activeResourcePlugins) {
-    if (azurePlugins.includes(pluginName)) return true;
-  }
-  return false;
+  return azurePlugins;
 }
 
 export function isExistingTabApp(projectSettings: ProjectSettings): boolean {

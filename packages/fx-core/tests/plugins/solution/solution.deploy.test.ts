@@ -264,9 +264,6 @@ describe("API v2 cases: deploy() for Azure projects", () => {
     mockedCtx.userInteraction = new MockedUserInteractionForDeploy();
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: undefined,
-      graphTokenProvider: undefined,
-      sharepointTokenProvider: undefined,
       m365TokenProvider: new MockedM365Provider(),
     };
     const mockedInputs: Inputs = {
@@ -299,9 +296,6 @@ describe("API v2 cases: deploy() for Azure projects", () => {
     mockedCtx.userInteraction = new MockedUserInteractionForDeploy();
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: undefined,
-      graphTokenProvider: undefined,
-      sharepointTokenProvider: undefined,
       m365TokenProvider: new MockedM365Provider(),
     };
     const mockedInputs: Inputs = {
@@ -337,9 +331,6 @@ describe("API v2 cases: deploy() for Azure projects", () => {
     mockedCtx.userInteraction = new MockedUserInteractionForDeploy();
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: undefined,
-      graphTokenProvider: undefined,
-      sharepointTokenProvider: undefined,
       m365TokenProvider: new MockedM365Provider(),
     };
     const mockedInputs: Inputs = {
@@ -374,9 +365,6 @@ describe("API v2 cases: deploy() for Azure projects", () => {
     mockedCtx.userInteraction = new MockedUserInteractionForDeploy();
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: undefined,
-      graphTokenProvider: undefined,
-      sharepointTokenProvider: undefined,
       m365TokenProvider: new MockedM365Provider(),
     };
     const mockedInputs: Inputs = {
@@ -414,9 +402,6 @@ describe("API v2 cases: deploy() for Azure projects", () => {
 
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: undefined,
-      graphTokenProvider: undefined,
-      sharepointTokenProvider: undefined,
       m365TokenProvider: new MockedM365Provider(),
     };
     const mockedInputs: Inputs = {
@@ -456,9 +441,6 @@ describe("API v2 cases: deploy() for Azure projects", () => {
 
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: undefined,
-      graphTokenProvider: undefined,
-      sharepointTokenProvider: undefined,
       m365TokenProvider: new MockedM365Provider(),
     };
     const mockedInputs: Inputs = {
@@ -502,9 +484,6 @@ describe("API v2 cases: deploy() for Azure projects", () => {
     }
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new FakeAzureAccountProvider(),
-      appStudioToken: undefined,
-      graphTokenProvider: undefined,
-      sharepointTokenProvider: undefined,
       m365TokenProvider: new MockedM365Provider(),
     };
     const mockedInputs: Inputs = {

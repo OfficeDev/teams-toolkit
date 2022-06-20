@@ -131,7 +131,7 @@ export async function getDebugConfig(
         const envInfo = config.envInfos["local"];
         if (!envInfo)
           throw new UserError("extension", "EnvConfigNotExist", "Local Env config not exist");
-        const appId = envInfo.state["fx-resource-appstudio"].teamsAppId as string;
+        const appId = envInfo.state["app-manifest"].teamsAppId as string;
         return { appId: appId, env: "local" };
       } else {
         if (env === undefined) {
@@ -154,7 +154,7 @@ export async function getDebugConfig(
         const envInfo = config.envInfos[env];
         if (!envInfo)
           throw new UserError("extension", "EnvConfigNotExist", `Env '${env} ' config not exist`);
-        const appId = envInfo.state["fx-resource-appstudio"].teamsAppId as string;
+        const appId = envInfo.state["app-manifest"].teamsAppId as string;
         return { appId: appId, env: env };
       }
     } else {
@@ -374,14 +374,15 @@ export interface LocalDebugSession {
   id: string;
   startTime?: number;
   properties: { [key: string]: string };
+  failedServices: { name: string; exitCode: number | undefined }[];
 }
 
 export const DebugNoSessionId = "no-session-id";
 // Helper functions for local debug correlation-id, only used for telemetry
 // Use a 2-element tuple to handle concurrent F5
 const localDebugCorrelationIds: [LocalDebugSession, LocalDebugSession] = [
-  { id: DebugNoSessionId, properties: {} },
-  { id: DebugNoSessionId, properties: {} },
+  { id: DebugNoSessionId, properties: {}, failedServices: [] },
+  { id: DebugNoSessionId, properties: {}, failedServices: [] },
 ];
 let current = 0;
 export function startLocalDebugSession(): string {
@@ -390,12 +391,13 @@ export function startLocalDebugSession(): string {
     id: uuid.v4(),
     startTime: performance.now(),
     properties: {},
+    failedServices: [],
   };
   return getLocalDebugSessionId();
 }
 
 export function endLocalDebugSession() {
-  localDebugCorrelationIds[current] = { id: DebugNoSessionId, properties: {} };
+  localDebugCorrelationIds[current] = { id: DebugNoSessionId, properties: {}, failedServices: [] };
   current = (current + 1) % 2;
 }
 

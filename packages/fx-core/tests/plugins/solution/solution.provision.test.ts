@@ -257,7 +257,6 @@ function mockSolutionContext(): SolutionContext {
     ui: new MockUserInteraction(),
     answers: { platform: Platform.VSCode },
     projectSettings: undefined,
-    appStudioToken: undefined,
     azureAccountProvider: new MockedAzureTokenProvider(),
     m365TokenProvider: new MockedM365Provider(),
     cryptoProvider: new LocalCrypto(""),
@@ -1054,9 +1053,6 @@ describe("API v2 implementation", () => {
       };
       const mockedTokenProvider: TokenProvider = {
         azureAccountProvider: new MockedAzureTokenProvider(),
-        appStudioToken: undefined,
-        graphTokenProvider: undefined,
-        sharepointTokenProvider: undefined,
         m365TokenProvider: new MockedM365Provider(),
       };
       const mockedEnvInfo: v2.EnvInfoV2 = {
@@ -1129,9 +1125,6 @@ describe("API v2 implementation", () => {
       };
       const mockedTokenProvider: TokenProvider = {
         azureAccountProvider: new MockedAzureTokenProvider(),
-        appStudioToken: undefined,
-        graphTokenProvider: undefined,
-        sharepointTokenProvider: undefined,
         m365TokenProvider: new MockedM365Provider(),
       };
       const mockedEnvInfo: v2.EnvInfoV2 = {
@@ -1173,9 +1166,6 @@ describe("API v2 implementation", () => {
       };
       const mockedTokenProvider: TokenProvider = {
         azureAccountProvider: new MockedAzureTokenProvider(),
-        appStudioToken: undefined,
-        graphTokenProvider: undefined,
-        sharepointTokenProvider: undefined,
         m365TokenProvider: new MockedM365Provider(),
       };
       const mockedEnvInfo: v2.EnvInfoV2 = {

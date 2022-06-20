@@ -13,6 +13,8 @@ export enum ExtensionErrors {
   UnknownSubscription = "UnknownSubscription",
   PortAlreadyInUse = "PortAlreadyInUse",
   PrerequisitesValidationError = "PrerequisitesValidationError",
+  PrerequisitesNoM365AccountError = "PrerequisitesNoM365AccountError",
+  PrerequisitesSideloadingDisabledError = "PrerequisitesSideloadingDisabledError",
   DebugServiceFailedBeforeStartError = "DebugServiceFailedBeforeStartError",
   DebugNpmInstallError = "DebugNpmInstallError",
   OpenExternalFailed = "OpenExternalFailed",

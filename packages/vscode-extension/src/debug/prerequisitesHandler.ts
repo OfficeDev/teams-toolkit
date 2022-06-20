@@ -397,54 +397,77 @@ async function _checkAndInstall(ctx: TelemetryContext): Promise<Result<void, FxE
   return ok(undefined);
 }
 
+async function ensureM365Account(
+  showLoginPage: boolean
+): Promise<Result<{ token: string; loginHint?: string }, FxError>> {
+  let loginStatusRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+  if (loginStatusRes.isErr()) {
+    return err(loginStatusRes.error);
+  }
+  let token = loginStatusRes.value.token;
+  let upn = loginStatusRes.value.accountInfo?.upn;
+  if (loginStatusRes.value.status === signedOut && showLoginPage) {
+    const tokenRes = await tools.tokenProvider.m365TokenProvider.getAccessToken({
+      scopes: AppStudioScopes,
+      showDialog: true,
+    });
+    if (tokenRes.isErr()) {
+      return err(tokenRes.error);
+    }
+    loginStatusRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+    if (loginStatusRes.isErr()) {
+      return err(loginStatusRes.error);
+    }
+    token = loginStatusRes.value.token;
+    upn = loginStatusRes.value.accountInfo?.upn;
+  }
+  if (token === undefined) {
+    // corner case but need to handle
+    return err(
+      new SystemError(
+        ExtensionSource,
+        ExtensionErrors.PrerequisitesNoM365AccountError,
+        "No M365 account login"
+      )
+    );
+  }
+
+  const isSideloadingEnabled = await getSideloadingStatus(token);
+  if (isSideloadingEnabled === false) {
+    // sideloading disabled
+    return err(
+      new UserError(
+        ExtensionSource,
+        ExtensionErrors.PrerequisitesSideloadingDisabledError,
+        getDefaultString("teamstoolkit.accountTree.sideloadingWarningTooltip"),
+        localize("teamstoolkit.accountTree.sideloadingWarningTooltip")
+      )
+    );
+  }
+
+  const loginHint = typeof upn === "string" ? upn : undefined;
+  return ok({ token, loginHint });
+}
+
 function checkM365Account(prefix: string, showLoginPage: boolean): Promise<CheckResult> {
   return runWithCheckResultTelemetry(
     TelemetryEvent.DebugPrereqsCheckM365Account,
     async (): Promise<CheckResult> => {
       let result = ResultStatus.success;
       let error = undefined;
-      const failureMsg = Checker.M365Account;
       let loginHint = undefined;
+      const failureMsg = Checker.M365Account;
       try {
         VsCodeLogInstance.outputChannel.appendLine(
           `${prefix} ${ProgressMessage[Checker.M365Account]} ...`
         );
 
-        let loginStatusRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
-        let token = loginStatusRes.isOk() ? loginStatusRes.value.token : undefined;
-        if (loginStatusRes.isOk() && loginStatusRes.value.status === signedOut && showLoginPage) {
-          const tokenRes = await tools.tokenProvider.m365TokenProvider.getAccessToken({
-            scopes: AppStudioScopes,
-            showDialog: true,
-          });
-          token = tokenRes.isOk() ? tokenRes.value : undefined;
-          loginStatusRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
-        }
-
-        if (token === undefined) {
-          // corner case but need to handle
+        const accountResult = await ensureM365Account(showLoginPage);
+        if (accountResult.isErr()) {
           result = ResultStatus.failed;
-          error = new SystemError(
-            ExtensionSource,
-            ExtensionErrors.PrerequisitesValidationError,
-            "No M365 account login"
-          );
+          error = accountResult.error;
         } else {
-          const isSideloadingEnabled = await getSideloadingStatus(token);
-          if (isSideloadingEnabled === false) {
-            // sideloading disabled
-            result = ResultStatus.failed;
-            error = new UserError(
-              ExtensionSource,
-              ExtensionErrors.PrerequisitesValidationError,
-              getDefaultString("teamstoolkit.accountTree.sideloadingWarningTooltip"),
-              localize("teamstoolkit.accountTree.sideloadingWarningTooltip")
-            );
-          }
-        }
-        const tokenObject = loginStatusRes.isOk() ? loginStatusRes.value.accountInfo : undefined;
-        if (tokenObject && tokenObject.upn) {
-          loginHint = tokenObject.upn;
+          loginHint = accountResult.value.loginHint;
         }
       } catch (err: unknown) {
         result = ResultStatus.failed;

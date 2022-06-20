@@ -3,19 +3,22 @@
 import "mocha";
 import * as chai from "chai";
 
-import { convertToEnumValues } from "../../../../../src/plugins/resource/bot/utils/common";
-import { HostType } from "../../../../../src/plugins/resource/bot/v2/enum";
+import { convertToConstValues } from "../../../../../src/plugins/resource/bot/utils/common";
+import { BotCapabilities } from "../../../../../src/plugins/resource/bot/resources/strings";
 
-describe("#convertToEnumValues", () => {
-  describe("Host Type", () => {
+describe("#convertToConstValues", () => {
+  describe("bot capabilities", () => {
     it("undefined", () => {
-      chai.assert.equal(convertToEnumValues(undefined, HostType), undefined);
+      chai.assert.equal(convertToConstValues(undefined, BotCapabilities), undefined);
     });
     it("error type", () => {
-      chai.assert.equal(convertToEnumValues("error-type", HostType), undefined);
+      chai.assert.equal(convertToConstValues("error-type", BotCapabilities), undefined);
     });
-    it("azure-functions", () => {
-      chai.assert.equal(convertToEnumValues("azure-functions", HostType), HostType.Functions);
+    it("notification", () => {
+      chai.assert.equal(
+        convertToConstValues("notification", BotCapabilities),
+        BotCapabilities.NOTIFICATION
+      );
     });
   });
 });

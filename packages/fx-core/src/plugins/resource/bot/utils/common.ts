@@ -240,13 +240,6 @@ export function convertToConstValues<V extends string, T extends { [key in strin
   return Object.values(targetValues).find((itemValue) => value === itemValue);
 }
 
-export function convertToEnumValues<T extends string>(
-  value: unknown,
-  targetEnum: { [key: string]: T }
-): T | undefined {
-  return Object.values(targetEnum).find((itemValue: string) => value === itemValue);
-}
-
 export function isHttpCodeOkOrCreated(code: number): boolean {
   return [200, 201].includes(code);
 }

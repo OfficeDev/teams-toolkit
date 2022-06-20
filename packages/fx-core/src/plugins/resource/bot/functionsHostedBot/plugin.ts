@@ -6,7 +6,7 @@ import { Messages } from "../resources/messages";
 import { FxResult, FxBotPluginResultFactory as ResultFactory } from "../result";
 import { BotBicep, PathInfo, ProgressBarConstants, TemplateProjectsConstants } from "../constants";
 
-import { HostTypes, PluginBot } from "../resources/strings";
+import { PluginBot } from "../resources/strings";
 import { PreconditionError, SomethingMissingError } from "../errors";
 import { ProgressBarFactory } from "../progressBars";
 import { Logger } from "../logger";
@@ -33,13 +33,14 @@ import {
   AzureOperationCommonConstants,
   DeployConfigsConstants,
 } from "../../../../common/azure-hosting/hostingConstant";
+import { HostType } from "../v2/enum";
 
 export class FunctionsHostedBotImpl extends TeamsBotImpl {
   public async scaffold(context: PluginContext): Promise<FxResult> {
     this.ctx = context;
 
     await this.config.restoreConfigFromContext(context, true);
-    this.config.scaffold.hostType = HostTypes.AZURE_FUNCTIONS;
+    this.config.scaffold.hostType = HostType.Functions;
 
     Logger.info(Messages.ScaffoldingBot);
 

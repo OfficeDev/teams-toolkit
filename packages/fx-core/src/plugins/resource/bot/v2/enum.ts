@@ -15,3 +15,8 @@ export enum Runtime {
 export enum BicepModules {
   Functions = "botFunction",
 }
+
+export enum HostType {
+  AppService = "app-service",
+  Functions = "azure-functions",
+}

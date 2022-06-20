@@ -6,8 +6,6 @@ import {
   BotCapabilities,
   BotCapability,
   CommonStrings,
-  HostType,
-  HostTypes,
   NotificationTrigger,
   PluginBot,
   QuestionBotScenarioToBotCapability,
@@ -17,6 +15,7 @@ import path from "path";
 import { QuestionNames } from "../constants";
 import { FunctionsOptionItems } from "../question";
 import { AzureSolutionQuestionNames } from "../../../solution/fx-solution/question";
+import { HostType } from "../v2/enum";
 
 export class ScaffoldConfig {
   public botId?: string;
@@ -101,17 +100,17 @@ export class ScaffoldConfig {
     const hostTypeTriggers = answers[QuestionNames.BOT_HOST_TYPE_TRIGGER];
     if (Array.isArray(hostTypeTriggers)) {
       return FunctionsOptionItems.some((item) => hostTypeTriggers.includes(item.id))
-        ? HostTypes.AZURE_FUNCTIONS
-        : HostTypes.APP_SERVICE;
+        ? HostType.Functions
+        : HostType.AppService;
     }
-    return HostTypes.APP_SERVICE;
+    return HostType.AppService;
   }
 
   private static getHostTypeFromProjectSettings(context: PluginContext): HostType | undefined {
     const rawHostType = context.projectSettings?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[
       PluginBot.HOST_TYPE
     ] as string;
-    return utils.convertToConstValues(rawHostType, HostTypes);
+    return Object.values(HostType).find((itemValue: string) => rawHostType === itemValue);
   }
 
   private static getBotCapabilities(context: PluginContext, isScaffold: boolean): BotCapability[] {

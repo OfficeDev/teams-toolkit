@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as appService from "@azure/arm-appservice";
 import {
   Action,
   ContextV3,
@@ -14,22 +13,10 @@ import {
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
-import "reflect-metadata";
 import { Service } from "typedi";
-import { AzureOperations } from "../../common/azure-hosting/azureOps";
-import { AzureUploadConfig } from "../../common/azure-hosting/interfaces";
 import { azureWebSiteDeploy } from "../../common/azure-hosting/utils";
-import {
-  getResourceGroupNameFromResourceId,
-  getSiteNameFromResourceId,
-  getSubscriptionIdFromResourceId,
-} from "../../common/tools";
-import { DeployConfigs, FolderNames } from "../../plugins/resource/bot/constants";
-import { DeployMgr } from "../../plugins/resource/bot/deployMgr";
 import { Messages } from "../../plugins/resource/bot/resources/messages";
-import { ConfigNames } from "../../plugins/resource/bot/resources/strings";
 import * as utils from "../../plugins/resource/bot/utils/common";
-import { getZipDeployEndpoint } from "../../plugins/resource/bot/utils/zipDeploy";
 import {
   CheckThrowSomethingMissing,
   PackDirectoryExistenceError,

@@ -16,7 +16,7 @@ import {
 import fs from "fs-extra";
 import * as path from "path";
 import "reflect-metadata";
-import { compileHandlebarsTemplateString } from "../../common";
+import { compileHandlebarsTemplateString } from "../../common/tools";
 import { getTemplatesFolder } from "../../folder";
 
 export abstract class AzureResource implements CloudResource {

@@ -78,7 +78,13 @@ export class telemetryHelper {
     measurements: { [key: string]: number } = {}
   ): void {
     result.match(
-      () => this.sendSuccessEvent(ctx, eventName, properties, measurements),
+      () =>
+        this.sendSuccessEvent(
+          ctx,
+          eventName,
+          { ...properties, ...result._unsafeUnwrap()?.properties },
+          measurements
+        ),
       (e: SystemError | UserError) =>
         this.sendErrorEvent(ctx, eventName, e, properties, measurements)
     );

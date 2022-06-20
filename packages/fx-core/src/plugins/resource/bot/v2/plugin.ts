@@ -46,7 +46,7 @@ import { getLanguage, getProjectFileName, getRuntime, moduleMap } from "./mappin
 export class TeamsBotV2Impl {
   readonly name: string = PluginBot.PLUGIN_NAME;
 
-  async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
+  async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<any, FxError>> {
     Logger.info(Messages.ScaffoldingBot);
 
     const handler = await ProgressBarFactory.newProgressBar(
@@ -71,7 +71,9 @@ export class TeamsBotV2Impl {
 
     await ProgressBarFactory.closeProgressBar(true, ProgressBarConstants.SCAFFOLD_TITLE);
     Logger.info(Messages.SuccessfullyScaffoldedBot);
-    return ok(Void);
+    return ok({
+      properties: { scenarios: templateInfos.map((info) => info.scenario).concat(",") },
+    });
   }
 
   async generateResourceTemplate(
@@ -92,7 +94,7 @@ export class TeamsBotV2Impl {
     const result = mergeTemplates(templates);
 
     Logger.info(Messages.SuccessfullyGenerateArmTemplatesBot);
-    return ok({ kind: "bicep", template: result });
+    return ok({ kind: "bicep", template: result, properties: { serviceTypes: serviceTypes } });
   }
 
   async updateResourceTemplate(
@@ -113,7 +115,7 @@ export class TeamsBotV2Impl {
     const result = mergeTemplates(templates);
 
     Logger.info(Messages.SuccessfullyUpdateArmTemplatesBot);
-    return ok({ kind: "bicep", template: result });
+    return ok({ kind: "bicep", template: result, properties: { serviceTypes: serviceTypes } });
   }
 
   static getBicepContext(ctx: v2.Context, inputs: Inputs): BicepContext {
@@ -181,7 +183,7 @@ export class TeamsBotV2Impl {
     await TeamsBotV2Impl.initDeployConfig(ctx, configFile, envName);
     if (!(await TeamsBotV2Impl.needDeploy(workingPath, configFile, envName))) {
       Logger.warning(Messages.SkipDeployNoUpdates);
-      return ok(Void);
+      return this.deployResult(language, hostType, true);
     }
     const progressBarHandler = await ProgressBarFactory.newProgressBar(
       ProgressBarConstants.DEPLOY_TITLE,
@@ -219,7 +221,15 @@ export class TeamsBotV2Impl {
     // close bar
     await ProgressBarFactory.closeProgressBar(true, ProgressBarConstants.DEPLOY_TITLE);
     Logger.info(Messages.SuccessfullyDeployedBot);
-    return ok(Void);
+    return this.deployResult(language, hostType, false);
+  }
+
+  private deployResult(
+    language: string,
+    hostType: string,
+    skipDeploy: boolean
+  ): Result<any, FxError> {
+    return ok({ properties: { language: language, hostType: hostType, skipDeploy: skipDeploy } });
   }
 
   async provisionLocalResource(

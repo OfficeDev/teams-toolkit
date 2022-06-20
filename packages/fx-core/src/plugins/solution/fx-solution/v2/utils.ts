@@ -53,7 +53,6 @@ import { getActivatedV2ResourcePlugins, getAllV2ResourcePlugins } from "../Resou
 import { getPluginContext } from "../utils/util";
 import { PluginsWithContext } from "../types";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
-import { Scenario } from "../../../resource/frontend/resources/templateInfo";
 
 export function getSelectedPlugins(projectSettings: ProjectSettings): v2.ResourcePlugin[] {
   return getActivatedV2ResourcePlugins(projectSettings);

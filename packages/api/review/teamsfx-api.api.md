@@ -80,15 +80,6 @@ interface AppManifestProvider {
 // @public (undocumented)
 export const AppPackageFolderName = "appPackage";
 
-// @public @deprecated
-export interface AppStudioTokenProvider {
-    getAccessToken(showDialog?: boolean): Promise<string | undefined>;
-    getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined>;
-    removeStatusChangeMap(name: string): Promise<boolean>;
-    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediateCall?: boolean): Promise<boolean>;
-    signout(): Promise<boolean>;
-}
-
 // @public (undocumented)
 export function assembleError(e: any, source?: string): FxError;
 
@@ -433,15 +424,11 @@ export interface Context {
     // (undocumented)
     answers?: Inputs;
     // (undocumented)
-    appStudioToken?: AppStudioTokenProvider;
-    // (undocumented)
     azureAccountProvider?: AzureAccountProvider;
     // (undocumented)
     cryptoProvider: CryptoProvider;
     // (undocumented)
     expServiceProvider?: ExpServiceProvider;
-    // (undocumented)
-    graphTokenProvider?: GraphTokenProvider;
     // (undocumented)
     localSettings?: LocalSettings;
     // (undocumented)
@@ -454,8 +441,6 @@ export interface Context {
     projectSettings?: ProjectSettings;
     // (undocumented)
     root: string;
-    // (undocumented)
-    sharepointTokenProvider?: SharepointTokenProvider;
     // (undocumented)
     telemetryReporter?: TelemetryReporter;
     // (undocumented)
@@ -811,15 +796,6 @@ export function getSingleOption(q: SingleSelectQuestion | MultiSelectQuestion, o
 
 // @public
 export function getValidationFunction<T extends string | string[] | undefined>(validation: ValidationSchema, inputs: Inputs): (input: T) => string | undefined | Promise<string | undefined>;
-
-// @public @deprecated
-export interface GraphTokenProvider {
-    getAccessToken(showDialog?: boolean): Promise<string | undefined>;
-    getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined>;
-    removeStatusChangeMap(name: string): Promise<boolean>;
-    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediateCall?: boolean): Promise<boolean>;
-    signout(): Promise<boolean>;
-}
 
 // @public
 export interface Group {
@@ -1514,14 +1490,6 @@ export type SelectFolderConfig = UIConfig<string>;
 // @public (undocumented)
 export type SelectFolderResult = InputResult<string>;
 
-// @public @deprecated
-export interface SharepointTokenProvider {
-    getAccessToken(showDialog?: boolean): Promise<string | undefined>;
-    getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined>;
-    removeStatusChangeMap(name: string): Promise<boolean>;
-    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediateCall?: boolean): Promise<boolean>;
-}
-
 // @public
 export interface ShellAction {
     // (undocumented)
@@ -1887,9 +1855,6 @@ export interface TextInputQuestion extends UserInputQuestion {
 // @public (undocumented)
 export type TokenProvider = {
     azureAccountProvider: AzureAccountProvider;
-    graphTokenProvider?: GraphTokenProvider;
-    appStudioToken?: AppStudioTokenProvider;
-    sharepointTokenProvider?: SharepointTokenProvider;
     m365TokenProvider: M365TokenProvider;
 };
 

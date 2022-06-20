@@ -62,6 +62,19 @@ export class LocalTelemetryReporter {
     return await this.runWithTelemetryGeneric(eventName, action, () => undefined);
   }
 
+  public async runWithTelemetryExceptionProperties<T>(
+    eventName: string,
+    initialProperties: { [key: string]: string },
+    action: (ctx: TelemetryContext) => Promise<T>
+  ): Promise<T> {
+    return await this.runWithTelemetryGeneric(
+      eventName,
+      action,
+      () => undefined,
+      initialProperties
+    );
+  }
+
   /**
    * Ensure "{eventName}-start" and "{eventName}" telemetry events with the following properties/measurements to be sent on start/end/exception.
    *

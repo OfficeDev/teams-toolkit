@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import {
-  AppStudioTokenProvider,
   Colors,
   err,
   FxError,

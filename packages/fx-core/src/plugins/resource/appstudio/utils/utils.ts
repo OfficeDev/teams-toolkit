@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import Mustache from "mustache";
 import { TEAMS_APP_SHORT_NAME_MAX_LENGTH } from "../constants";
 import {
   TeamsAppManifest,
@@ -240,12 +241,7 @@ export function convertToAppDefinitionMessagingExtensions(
                   choices: p.choices ?? [],
                 };
               }) ?? [],
-            taskInfo: {
-              title: x.taskInfo?.title ?? "",
-              width: x.taskInfo?.width ?? "",
-              height: x.taskInfo?.height ?? "",
-              url: x.taskInfo?.url ?? "",
-            },
+            taskInfo: x.taskInfo,
           };
         }),
         messageHandlers:
@@ -264,4 +260,11 @@ export function convertToAppDefinitionMessagingExtensions(
   }
 
   return messagingExtensions;
+}
+
+export function renderTemplate(manifestString: string, view: any): string {
+  // Unesacped HTML
+  Mustache.escape = (value) => value;
+  manifestString = Mustache.render(manifestString, view);
+  return manifestString;
 }

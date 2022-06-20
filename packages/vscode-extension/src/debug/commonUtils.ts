@@ -24,6 +24,7 @@ import {
   getResourceGroupInPortal,
 } from "@microsoft/teamsfx-core";
 import { allRunningDebugSessions } from "./teamsfxTaskHandler";
+import { performance } from "perf_hooks";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -130,7 +131,7 @@ export async function getDebugConfig(
         const envInfo = config.envInfos["local"];
         if (!envInfo)
           throw new UserError("extension", "EnvConfigNotExist", "Local Env config not exist");
-        const appId = envInfo.state["fx-resource-appstudio"].teamsAppId as string;
+        const appId = envInfo.state["app-manifest"].teamsAppId as string;
         return { appId: appId, env: "local" };
       } else {
         if (env === undefined) {
@@ -153,7 +154,7 @@ export async function getDebugConfig(
         const envInfo = config.envInfos[env];
         if (!envInfo)
           throw new UserError("extension", "EnvConfigNotExist", `Env '${env} ' config not exist`);
-        const appId = envInfo.state["fx-resource-appstudio"].teamsAppId as string;
+        const appId = envInfo.state["app-manifest"].teamsAppId as string;
         return { appId: appId, env: env };
       }
     } else {
@@ -369,29 +370,49 @@ export async function loadPackageJson(path: string): Promise<any> {
   }
 }
 
+export interface LocalDebugSession {
+  id: string;
+  startTime?: number;
+  properties: { [key: string]: string };
+  failedServices: { name: string; exitCode: number | undefined }[];
+}
+
+export const DebugNoSessionId = "no-session-id";
 // Helper functions for local debug correlation-id, only used for telemetry
 // Use a 2-element tuple to handle concurrent F5
-const localDebugCorrelationIds: [string, string] = ["no-session-id", "no-session-id"];
+const localDebugCorrelationIds: [LocalDebugSession, LocalDebugSession] = [
+  { id: DebugNoSessionId, properties: {}, failedServices: [] },
+  { id: DebugNoSessionId, properties: {}, failedServices: [] },
+];
 let current = 0;
 export function startLocalDebugSession(): string {
   current = (current + 1) % 2;
-  localDebugCorrelationIds[current] = uuid.v4();
+  localDebugCorrelationIds[current] = {
+    id: uuid.v4(),
+    startTime: performance.now(),
+    properties: {},
+    failedServices: [],
+  };
   return getLocalDebugSessionId();
 }
 
 export function endLocalDebugSession() {
-  localDebugCorrelationIds[current] = "no-session-id";
+  localDebugCorrelationIds[current] = { id: DebugNoSessionId, properties: {}, failedServices: [] };
   current = (current + 1) % 2;
 }
 
-export function getLocalDebugSessionId(): string {
+export function getLocalDebugSession(): LocalDebugSession {
   return localDebugCorrelationIds[current];
+}
+
+export function getLocalDebugSessionId(): string {
+  return localDebugCorrelationIds[current].id;
 }
 
 export function checkAndSkipDebugging(): boolean {
   // skip debugging if there is already a debug session
   if (allRunningDebugSessions.size > 0) {
-    VsCodeLogInstance.warning("SKip debugging because there is already a debug session.");
+    VsCodeLogInstance.warning("Skip debugging because there is already a debug session.");
     endLocalDebugSession();
     return true;
   }

@@ -28,7 +28,6 @@ import {
   MockedTelemetryReporter,
 } from "../../../solution/util";
 import { MockedM365TokenProvider, MockUserInteraction } from "../helper";
-import { MockM365TokenProvider } from "../../../../core/utils";
 
 describe("Provision Teams app with Azure", () => {
   const sandbox = sinon.createSandbox();
@@ -60,9 +59,6 @@ describe("Provision Teams app with Azure", () => {
 
     mockedTokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: undefined,
-      graphTokenProvider: undefined,
-      sharepointTokenProvider: undefined,
       m365TokenProvider: new MockedM365TokenProvider(),
     };
 
@@ -104,7 +100,8 @@ describe("Provision Teams app with Azure", () => {
   it("Update Teams app with user provided zip", async () => {
     const error = new Error();
     (error.name as any) = 409;
-    sandbox.stub(AppStudioClient, "createApp").rejects(error);
+    sandbox.stub(AppStudioClient, "getApp").resolves(appDef);
+    sandbox.stub(AppStudioClient, "createApp").resolves(appDef);
     sandbox.stub(AppStudioClient, "updateApp").resolves(appDef);
     const teamsAppId = await plugin.registerTeamsApp(
       context,

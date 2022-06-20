@@ -326,11 +326,12 @@ export class MockM365TokenProvider implements M365TokenProvider {
   }
 }
 
-class MockTelemetryReporter implements TelemetryReporter {
+export class MockTelemetryReporter implements TelemetryReporter {
   sendTelemetryErrorEvent(
     eventName: string,
     properties?: { [key: string]: string },
-    measurements?: { [key: string]: number }
+    measurements?: { [key: string]: number },
+    errorProps?: string[]
   ): void {
     // do nothing
   }
@@ -427,9 +428,6 @@ export class MockTools implements Tools {
   logProvider = new MockLogProvider();
   tokenProvider: TokenProvider = {
     azureAccountProvider: new MockAzureAccountProvider(),
-    graphTokenProvider: undefined,
-    appStudioToken: undefined,
-    sharepointTokenProvider: undefined,
     m365TokenProvider: new MockM365TokenProvider(),
   };
   telemetryReporter = new MockTelemetryReporter();

@@ -6,19 +6,18 @@ import {
   ok,
   Result,
   Action,
-  CloudResource,
   ContextV3,
   MaybePromise,
-  Bicep,
   InputsWithProjectPath,
   Effect,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-
+import { AzureResource } from "./azureResource";
 @Service("azure-function")
-export class AzureFunctionResource implements CloudResource {
+export class AzureFunctionResource extends AzureResource {
   readonly name = "azure-function";
+  readonly bicepModuleName = "azureFunction";
   outputs = {
     resourceId: {
       key: "resourceId",
@@ -26,42 +25,10 @@ export class AzureFunctionResource implements CloudResource {
     },
     endpoint: {
       key: "endpoint",
-      bicepVariable: "provisionOutputs.azureFunctionOutput.value.sqlEndpoint",
+      bicepVariable: "provisionOutputs.azureFunctionOutput.value.endpoint",
     },
   };
   finalOutputKeys = ["resourceId", "endpoint"];
-  generateBicep(
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const action: Action = {
-      name: "azure-sql.generateBicep",
-      type: "function",
-      plan: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok([
-          {
-            type: "bicep",
-            Modules: { azureFunction: "1" },
-            Orchestration: "1",
-          },
-        ]);
-      },
-      execute: async (
-        context: ContextV3,
-        inputs: InputsWithProjectPath
-      ): Promise<Result<Effect[], FxError>> => {
-        const bicep: Bicep = {
-          type: "bicep",
-          Provision: {
-            Modules: { azureFunction: "" },
-            Orchestration: "",
-          },
-        };
-        return ok([bicep]);
-      },
-    };
-    return ok(action);
-  }
   configure(
     context: ContextV3,
     inputs: InputsWithProjectPath
@@ -82,6 +49,7 @@ export class AzureFunctionResource implements CloudResource {
         context: ContextV3,
         inputs: InputsWithProjectPath
       ): Promise<Result<Effect[], FxError>> => {
+        // Configure APIM
         return ok([
           {
             type: "service",

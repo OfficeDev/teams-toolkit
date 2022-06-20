@@ -11,7 +11,6 @@ import fs from "fs-extra";
 import path from "path";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { getSubscriptionId, getTestFolder, getUniqueAppName, cleanUp } from "../commonUtils";
-import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
 import mockedEnv, { RestoreFn } from "mocked-env";

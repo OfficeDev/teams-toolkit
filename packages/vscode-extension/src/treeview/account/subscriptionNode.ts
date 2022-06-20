@@ -50,10 +50,12 @@ export class SubscriptionNode extends DynamicNode {
   }
 
   public setEmptySubscription() {
+    this.subscription = undefined;
     const validProject = isValidProject(workspaceUri?.fsPath);
     this.contextValue = validProject ? "emptySubscription" : "invalidFxProject";
     this.label = localize("teamstoolkit.accountTree.noSubscriptions");
     this.tooltip = localize("teamstoolkit.accountTree.noSubscriptionsTooltip");
     this.iconPath = warningIcon;
+    this.eventEmitter.fire(this);
   }
 }

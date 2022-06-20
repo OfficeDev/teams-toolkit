@@ -69,9 +69,9 @@ export const TEAMS_APP_MANIFEST_TEMPLATE_V3 = `{
   "packageName": "com.microsoft.teams.extension",
   "developer": {
       "name": "Teams App, Inc.",
-      "websiteUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}",
-      "privacyUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/privacy",
-      "termsOfUseUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/termsofuse"
+      "websiteUrl": "{{state.fx-resource-frontend-hosting.endpoint}}",
+      "privacyUrl": "{{state.fx-resource-frontend-hosting.endpoint}}{{state.fx-resource-frontend-hosting.indexPath}}/privacy",
+      "termsOfUseUrl": "{{state.fx-resource-frontend-hosting.endpoint}}{{state.fx-resource-frontend-hosting.indexPath}}/termsofuse"
   },
   "icons": {
       "color": "resources/color.png",
@@ -105,9 +105,9 @@ export const TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV = `{
   "packageName": "com.microsoft.teams.extension",
   "developer": {
       "name": "Teams App, Inc.",
-      "websiteUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}",
-      "privacyUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/privacy",
-      "termsOfUseUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/termsofuse"
+      "websiteUrl": "{{state.fx-resource-frontend-hosting.endpoint}}",
+      "privacyUrl": "{{state.fx-resource-frontend-hosting.endpoint}}{{state.fx-resource-frontend-hosting.indexPath}}/privacy",
+      "termsOfUseUrl": "{{state.fx-resource-frontend-hosting.endpoint}}{{state.fx-resource-frontend-hosting.indexPath}}/termsofuse"
   },
   "icons": {
       "color": "resources/color.png",
@@ -133,7 +133,7 @@ export const TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV = `{
   "validDomains": [],
   "webApplicationInfo": {
       "id": "{{state.fx-resource-aad-app-for-teams.clientId}}",
-      "resource": "{{{state.fx-resource-aad-app-for-teams.applicationIdUris}}}"
+      "resource": "{{state.fx-resource-aad-app-for-teams.applicationIdUris}}"
   }
 }`;
 
@@ -145,9 +145,9 @@ export const TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3 = `{
   "packageName": "com.microsoft.teams.extension",
   "developer": {
       "name": "Teams App, Inc.",
-      "websiteUrl": "{{{localSettings.frontend.tabEndpoint}}}",
-      "privacyUrl": "{{{localSettings.frontend.tabEndpoint}}}{{{localSettings.frontend.tabIndexPath}}}/privacy",
-      "termsOfUseUrl": "{{{localSettings.frontend.tabEndpoint}}}{{{localSettings.frontend.tabIndexPath}}}/termsofuse"
+      "websiteUrl": "{{localSettings.frontend.tabEndpoint}}",
+      "privacyUrl": "{{localSettings.frontend.tabEndpoint}}{{localSettings.frontend.tabIndexPath}}/privacy",
+      "termsOfUseUrl": "{{localSettings.frontend.tabEndpoint}}{{localSettings.frontend.tabIndexPath}}/termsofuse"
   },
   "icons": {
       "color": "resources/color.png",
@@ -181,9 +181,9 @@ export const TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG = `{
   "packageName": "com.microsoft.teams.extension",
   "developer": {
       "name": "Teams App, Inc.",
-      "websiteUrl": "{{{localSettings.frontend.tabEndpoint}}}",
-      "privacyUrl": "{{{localSettings.frontend.tabEndpoint}}}{{{localSettings.frontend.tabIndexPath}}}/privacy",
-      "termsOfUseUrl": "{{{localSettings.frontend.tabEndpoint}}}{{{localSettings.frontend.tabIndexPath}}}/termsofuse"
+      "websiteUrl": "{{localSettings.frontend.tabEndpoint}}",
+      "privacyUrl": "{{localSettings.frontend.tabEndpoint}}{{localSettings.frontend.tabIndexPath}}/privacy",
+      "termsOfUseUrl": "{{localSettings.frontend.tabEndpoint}}{{localSettings.frontend.tabIndexPath}}/termsofuse"
   },
   "icons": {
       "color": "resources/color.png",
@@ -209,7 +209,7 @@ export const TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG = `{
   "validDomains": [],
   "webApplicationInfo": {
       "id": "{{localSettings.auth.clientId}}",
-      "resource": "{{{localSettings.auth.applicationIdUris}}}"
+      "resource": "{{localSettings.auth.applicationIdUris}}"
   }
 }`;
 
@@ -218,9 +218,9 @@ export const STATIC_TABS_TPL_FOR_MULTI_ENV: IStaticTab[] = [
     entityId: "index",
     name: "Personal Tab",
     contentUrl:
-      "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/tab",
+      "{{state.fx-resource-frontend-hosting.endpoint}}{{state.fx-resource-frontend-hosting.indexPath}}/tab",
     websiteUrl:
-      "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/tab",
+      "{{state.fx-resource-frontend-hosting.endpoint}}{{state.fx-resource-frontend-hosting.indexPath}}/tab",
     scopes: ["personal"],
   },
 ];
@@ -229,8 +229,8 @@ export const STATIC_TABS_TPL_EXISTING_APP: IStaticTab[] = [
   {
     entityId: "index",
     name: "Personal Tab",
-    contentUrl: "{{{config.manifest.tabContentUrl}}}",
-    websiteUrl: "{{{config.manifest.tabWebsiteUrl}}}",
+    contentUrl: "{{config.manifest.tabContentUrl}}",
+    websiteUrl: "{{config.manifest.tabWebsiteUrl}}",
     scopes: ["personal"],
   },
 ];
@@ -238,7 +238,7 @@ export const STATIC_TABS_TPL_EXISTING_APP: IStaticTab[] = [
 export const CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV: IConfigurableTab[] = [
   {
     configurationUrl:
-      "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/config",
+      "{{state.fx-resource-frontend-hosting.endpoint}}{{state.fx-resource-frontend-hosting.indexPath}}/config",
     canUpdateConfiguration: true,
     scopes: ["team", "groupchat"],
   },
@@ -246,7 +246,7 @@ export const CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV: IConfigurableTab[] = [
 
 export const CONFIGURABLE_TABS_TPL_EXISTING_APP: IConfigurableTab[] = [
   {
-    configurationUrl: "{{{config.manifest.tabConfigurationUrl}}}",
+    configurationUrl: "{{config.manifest.tabConfigurationUrl}}",
     canUpdateConfiguration: true,
     scopes: ["team", "groupchat"],
   },
@@ -435,10 +435,8 @@ export const STATIC_TABS_TPL_LOCAL_DEBUG: IStaticTab[] = [
   {
     entityId: "index",
     name: "Personal Tab",
-    contentUrl:
-      "{{{localSettings.frontend.tabEndpoint}}}{{{localSettings.frontend.tabIndexPath}}}/tab",
-    websiteUrl:
-      "{{{localSettings.frontend.tabEndpoint}}}{{{localSettings.frontend.tabIndexPath}}}/tab",
+    contentUrl: "{{localSettings.frontend.tabEndpoint}}{{localSettings.frontend.tabIndexPath}}/tab",
+    websiteUrl: "{{localSettings.frontend.tabEndpoint}}{{localSettings.frontend.tabIndexPath}}/tab",
     scopes: ["personal"],
   },
 ];
@@ -446,7 +444,7 @@ export const STATIC_TABS_TPL_LOCAL_DEBUG: IStaticTab[] = [
 export const CONFIGURABLE_TABS_TPL_LOCAL_DEBUG: IConfigurableTab[] = [
   {
     configurationUrl:
-      "{{{localSettings.frontend.tabEndpoint}}}{{{localSettings.frontend.tabIndexPath}}}/config",
+      "{{localSettings.frontend.tabEndpoint}}{{localSettings.frontend.tabIndexPath}}/config",
     canUpdateConfiguration: true,
     scopes: ["team", "groupchat"],
   },
@@ -550,12 +548,12 @@ export const BOTS_TPL_LOCAL_DEBUG: IBot[] = [
 
 export const WEB_APPLICATION_INFO_LOCAL_DEBUG = {
   id: "{{localSettings.auth.clientId}}",
-  resource: "{{{localSettings.auth.applicationIdUris}}}",
+  resource: "{{localSettings.auth.applicationIdUris}}",
 };
 
 export const WEB_APPLICATION_INFO_MULTI_ENV = {
   id: "{{state.fx-resource-aad-app-for-teams.clientId}}",
-  resource: "{{{state.fx-resource-aad-app-for-teams.applicationIdUris}}}",
+  resource: "{{state.fx-resource-aad-app-for-teams.applicationIdUris}}",
 };
 
 // Default values for the developer fields in manifest.

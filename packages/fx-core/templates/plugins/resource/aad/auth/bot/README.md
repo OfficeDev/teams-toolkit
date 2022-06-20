@@ -71,6 +71,12 @@ Please replace the following code:
     server.post("/api/messages", async (req, res) => {
         await commandBot.requestHandler(req, res, async (context)=> {
             await handler.run(context);
+        })
+        .catch((err) => {
+            // Error message including "412" means it is waiting for user's consent, which is a normal process of SSO, sholdn't throw this error.
+            if (!err.message.includes("412")) {
+                throw err;
+            }
         });
     });
     ```

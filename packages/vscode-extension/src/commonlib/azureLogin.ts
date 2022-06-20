@@ -82,6 +82,18 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   /**
+   * Update TeamsFx project subscription information.
+   */
+  public async updateSubscriptionInfo(): Promise<void> {
+    if (AzureAccountManager.currentStatus === "LoggedIn") {
+      const subscriptioninfo = await this.readSubscription();
+      if (subscriptioninfo) {
+        this.setSubscription(subscriptioninfo.subscriptionId);
+      }
+    }
+  }
+
+  /**
    * Async get ms-rest-* [credential](https://github.com/Azure/ms-rest-nodeauth/blob/master/lib/credentials/tokenCredentialsBase.ts)
    */
   async getAccountCredentialAsync(showDialog = true): Promise<TokenCredentialsBase | undefined> {
@@ -400,12 +412,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     const azureAccount: AzureAccount =
       vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
     AzureAccountManager.currentStatus = azureAccount.status;
-    if (AzureAccountManager.currentStatus === "LoggedIn") {
-      const subscriptioninfo = await this.readSubscription();
-      if (subscriptioninfo) {
-        this.setSubscription(subscriptioninfo.subscriptionId);
-      }
-    }
+    await this.updateSubscriptionInfo();
     azureAccount.onStatusChanged(async (event) => {
       if (this.isLegacyVersion()) {
         if (AzureAccountManager.currentStatus === "Initializing") {

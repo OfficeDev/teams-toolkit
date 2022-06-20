@@ -75,10 +75,7 @@ const frontendPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.Fron
 const botPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.BotPlugin);
 const cicdPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.CICDPlugin);
 const mockedProvider: TokenProvider = {
-  appStudioToken: undefined,
   azureAccountProvider: new MockedAzureAccountProvider(),
-  graphTokenProvider: undefined,
-  sharepointTokenProvider: undefined,
   m365TokenProvider: new MockedM365Provider(),
 };
 const envInfo: EnvInfoV2 = {

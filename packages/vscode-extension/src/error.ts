@@ -13,6 +13,8 @@ export enum ExtensionErrors {
   UnknownSubscription = "UnknownSubscription",
   PortAlreadyInUse = "PortAlreadyInUse",
   PrerequisitesValidationError = "PrerequisitesValidationError",
+  DebugServiceFailedBeforeStartError = "DebugServiceFailedBeforeStartError",
+  DebugNpmInstallError = "DebugNpmInstallError",
   OpenExternalFailed = "OpenExternalFailed",
   FolderAlreadyExist = "FolderAlreadyExist",
   InvalidProject = "InvalidProject",

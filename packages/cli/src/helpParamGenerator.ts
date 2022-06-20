@@ -23,9 +23,6 @@ import {
 
 import { FxCore, isCLIDotNetEnabled, isM365AppEnabled } from "@microsoft/teamsfx-core";
 import AzureAccountManager from "./commonlib/azureLogin";
-import AppStudioTokenProvider from "./commonlib/appStudioLogin";
-import GraphTokenProvider from "./commonlib/graphLogin";
-import SharepointTokenProvider from "./commonlib/sharepointLogin";
 import M365TokenProvider from "./commonlib/m365Login";
 import CLILogProvider from "./commonlib/log";
 import CLIUIInstance from "./userInteraction";
@@ -69,9 +66,6 @@ export class HelpParamGenerator {
       logProvider: CLILogProvider,
       tokenProvider: {
         azureAccountProvider: AzureAccountManager,
-        graphTokenProvider: GraphTokenProvider,
-        appStudioToken: AppStudioTokenProvider,
-        sharepointTokenProvider: SharepointTokenProvider,
         m365TokenProvider: M365TokenProvider,
       },
       telemetryReporter: undefined,
@@ -179,6 +173,11 @@ export class HelpParamGenerator {
     return ok(true);
   }
 
+  private splitFirst(s: string, sep: string): [string, string] {
+    const [first, ...rest] = s.split(sep);
+    return [first, rest.join(sep)];
+  }
+
   public getYargsParamForHelp(stage: string, inputs?: Inputs): { [_: string]: Options } {
     if (!this.initialized) {
       throw NoInitializedHelpGenerator();
@@ -190,7 +189,7 @@ export class HelpParamGenerator {
       resourceName = stage.split("-")[1];
       stage = "addResource";
     } else if (stage.startsWith("addCapability")) {
-      capabilityId = stage.split("-")[1];
+      capabilityId = this.splitFirst(stage, "-")[1];
       stage = "addCapability";
     } else if (stage.startsWith("connectExistingApi")) {
       authType = stage.split("-")[1];

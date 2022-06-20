@@ -233,7 +233,7 @@ async function scaffoldLocalSettingsJson(
   return localSettings;
 }
 
-async function useNewTasks(projectPath?: string): Promise<boolean> {
+export async function useNewTasks(projectPath?: string): Promise<boolean> {
   // for new project or project with "validate-local-prerequisites", use new tasks content
   const tasksJsonPath = `${projectPath}/.vscode/tasks.json`;
   if (await fs.pathExists(tasksJsonPath)) {
@@ -248,7 +248,7 @@ async function useNewTasks(projectPath?: string): Promise<boolean> {
   return true;
 }
 
-async function updateJson(
+export async function updateJson(
   path: string,
   newData: Record<string, unknown>,
   mergeFunc: (

@@ -1,14 +1,15 @@
 import { nanoid } from "nanoid";
+import { env } from "process";
 
 /**
  * TODO: make it safe
  */
 export function traceId(): string {
-  if (process.env.METAOS_TRACE_ID) {
-    return process.env.METAOS_TRACE_ID;
+  if (env.METAOS_TRACE_ID) {
+    return env.METAOS_TRACE_ID;
   } else {
     const traceId = nanoid();
-    process.env.METAOS_TRACE_ID = traceId;
+    env.METAOS_TRACE_ID = traceId;
     return traceId;
   }
 }

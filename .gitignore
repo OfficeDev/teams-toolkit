@@ -386,3 +386,6 @@ mochawesome-report
 # verdaccio
 **/verdaccio/storage/
 
+# metrics
+.metrics
+

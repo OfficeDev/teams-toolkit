@@ -4,6 +4,7 @@
 import { performance } from "perf_hooks";
 import { timerData, tracePoint } from "../rawData";
 import { traceId } from "../tracing";
+import { appendOutput } from "../writter";
 
 export const timer = () => {
   /* eslint-disable  @typescript-eslint/no-explicit-any */
@@ -43,7 +44,7 @@ export const timer = () => {
         duraion: end - start,
       };
       data.timer = timerData;
-      console.log(data);
+      await appendOutput(data);
       return result;
     };
   };

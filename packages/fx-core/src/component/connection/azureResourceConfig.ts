@@ -13,14 +13,12 @@ import {
   Result,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
-import { Container, Service } from "typedi";
+import { Container } from "typedi";
 import * as path from "path";
 import fs from "fs-extra";
 import { getTemplatesFolder } from "../../folder";
 import { getComponent } from "../workflow";
 import { compileHandlebarsTemplateString } from "../../common/tools";
-import { AzureWebAppResource } from "../resource/azureWebApp";
-import { AzureStorageResource } from "../resource/azureStorage";
 
 export abstract class AzureResourceConfig {
   abstract readonly name: string;

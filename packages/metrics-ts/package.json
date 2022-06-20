@@ -53,5 +53,8 @@
     "*.{js,jsx,css,ts,tsx}": [
       "npx eslint --cache --fix --quiet"
     ]
+  },
+  "dependencies": {
+    "nanoid": "^4.0.0"
   }
 }

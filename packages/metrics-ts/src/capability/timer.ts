@@ -2,21 +2,32 @@
  * Timer - measures call-rate of a function and the distribution of the duration of all calls
  */
 import { performance } from "perf_hooks";
+import { timerData, tracePoint } from "../rawData";
+import { traceId } from "../tracing";
+
 export const timer = () => {
   /* eslint-disable  @typescript-eslint/no-explicit-any */
+  /* eslint-disable  @typescript-eslint/explicit-module-boundary-types */
   return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
     descriptor.value = async function (...args: any[]) {
       /**
+       * get essential properties
+       */
+      const data: tracePoint = {
+        traceId: traceId(),
+        dir: __dirname,
+        file: __filename,
+        class: this.constructor.name,
+        method: originalMethod.name,
+        args: args,
+        timestamp: Date.now(),
+      };
+
+      /**
        * time to start
        */
       const start = performance.now();
-
-      /**
-       * get essential properties
-       */
-      const className = this.constructor.name;
-      const methodName = originalMethod.name;
 
       /**
        * invoke origin method
@@ -28,8 +39,11 @@ export const timer = () => {
        */
       const end = performance.now();
 
-      const duraion = (end - start).toLocaleString();
-      console.log(`class is ${className}, method is ${methodName}, duration is ${duraion}`);
+      const timerData: timerData = {
+        duraion: end - start,
+      };
+      data.timer = timerData;
+      console.log(data);
       return result;
     };
   };

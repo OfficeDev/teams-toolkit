@@ -4,16 +4,16 @@ import typescript from "typescript";
  * unused right now.
  */
 export enum Reporter {
-  JSON,
+  Json = "json",
 }
 
 export enum Capability {
-  Timer,
+  Timer = "timer",
 }
 
 export interface PluginConfig {
-  capabilities: Capability[];
-  reporters: Reporter[];
+  capabilities?: Capability[];
+  reporters?: Reporter[];
 }
 
 export default function (program: typescript.Program, config?: PluginConfig) {
@@ -21,6 +21,18 @@ export default function (program: typescript.Program, config?: PluginConfig) {
     ctx: typescript.TransformationContext
   ) => {
     return (sourceFile: typescript.SourceFile) => {
+      let capabilities = [Capability.Timer];
+      if (config && config.capabilities) {
+        capabilities = config.capabilities;
+      }
+
+      let reporters = [Reporter.Json];
+      if (config && config.reporters) {
+        reporters = config.reporters;
+      }
+
+      const myLib = "@microsoft/metrics-ts";
+      const myNamespace = "metrics_9527";
       /**
        * find source file node and add "import" statements
        * TODO: check imports,
@@ -30,15 +42,14 @@ export default function (program: typescript.Program, config?: PluginConfig) {
        */
       function sourfileVisitor(node: typescript.Node): typescript.Node {
         if (typescript.isSourceFile(node)) {
-          const myLib = "@microsoft/metrics-ts";
           return ctx.factory.updateSourceFile(node as typescript.SourceFile, [
             ctx.factory.createImportDeclaration(
-              undefined,
-              undefined,
+              undefined /** decorators */,
+              undefined /** modifiers */,
               ctx.factory.createImportClause(
                 false,
-                undefined,
-                ctx.factory.createNamespaceImport(ctx.factory.createIdentifier("metrics_9527"))
+                undefined /** name */,
+                ctx.factory.createNamespaceImport(ctx.factory.createIdentifier(myNamespace))
               ),
               ctx.factory.createStringLiteral(myLib)
             ),
@@ -56,22 +67,27 @@ export default function (program: typescript.Program, config?: PluginConfig) {
           /**
            * create metric decorator for function declaration
            */
-          const decorator = ctx.factory.createDecorator(
-            ctx.factory.createCallExpression(
-              ctx.factory.createIdentifier("metrics_9527.timer"),
-              undefined,
-              []
-            )
-          );
+          const metricsDecorators = [];
+          for (const cap of capabilities) {
+            metricsDecorators.push(
+              ctx.factory.createDecorator(
+                ctx.factory.createCallExpression(
+                  ctx.factory.createIdentifier(`${myNamespace}.${cap}`),
+                  undefined,
+                  []
+                )
+              )
+            );
+          }
 
           /**
            * aggragate existing decorators with new decorators
            */
           let decorators: typescript.Decorator[];
           if (node.decorators) {
-            decorators = [...node.decorators, decorator];
+            decorators = [...node.decorators, ...metricsDecorators];
           } else {
-            decorators = [decorator];
+            decorators = metricsDecorators;
           }
 
           /**
@@ -99,7 +115,7 @@ export default function (program: typescript.Program, config?: PluginConfig) {
   };
 
   /**
-   * there're before & after hook.
+   * there're before & after hooks.
    */
   return { before: transformerFactory };
 }

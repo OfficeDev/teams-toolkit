@@ -1,9 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Inputs } from "@microsoft/teamsfx-api";
+import { AzureSolutionSettings, Inputs } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
-import { AzureSolutionQuestionNames, BotScenario } from "../../../solution/fx-solution/question";
+import {
+  AzureSolutionQuestionNames,
+  BotOptionItem,
+  BotScenario,
+  M365SearchAppOptionItem,
+  MessageExtensionItem,
+} from "../../../solution/fx-solution/question";
 import { QuestionNames, TemplateProjectsConstants, TemplateProjectsScenarios } from "../constants";
 import { AppServiceOptionItem, FunctionsOptionItems } from "../question";
 import { CodeTemplateInfo } from "./interface/codeTemplateInfo";
@@ -27,33 +33,43 @@ export function getTemplateInfos(ctx: Context, inputs: Inputs): CodeTemplateInfo
 }
 
 export function decideTemplateScenarios(ctx: Context, inputs: Inputs): Set<string> {
-  const isM365 = ctx.projectSetting?.isM365;
-  const templateScenarios: Set<string> = new Set<string>();
-  if (isM365) {
-    templateScenarios.add(TemplateProjectsScenarios.M365_SCENARIO_NAME);
-    return templateScenarios;
-  }
+  const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
+  const capabilities = solutionSettings.capabilities;
   const botScenarios = inputs?.[AzureSolutionQuestionNames.Scenarios];
+  const templateScenarios: Set<string> = new Set<string>();
+
   if (!botScenarios || (Array.isArray(botScenarios) && botScenarios.length === 0)) {
     templateScenarios.add(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
     return templateScenarios;
   }
-  botScenarios.forEach((scenario: string) => {
-    switch (scenario) {
-      case BotScenario.CommandAndResponseBot:
-        templateScenarios.add(TemplateProjectsScenarios.COMMAND_AND_RESPONSE_SCENARIO_NAME);
-        break;
-      case BotScenario.NotificationBot:
-        //! Will not scaffold any trigger when notificationTriggerType is undefined,
-        const notificationTriggerType = (inputs[
-          QuestionNames.BOT_HOST_TYPE_TRIGGER
-        ] as string[]) ?? [AppServiceOptionItem.id];
-        notificationTriggerType.forEach((triggerType) => {
-          getTriggerScenarios(triggerType).forEach((item) => templateScenarios.add(item));
-        });
-        break;
-    }
-  });
+
+  if (capabilities.includes(BotOptionItem.id)) {
+    botScenarios.forEach((scenario: string) => {
+      switch (scenario) {
+        case BotScenario.CommandAndResponseBot:
+          templateScenarios.add(TemplateProjectsScenarios.COMMAND_AND_RESPONSE_SCENARIO_NAME);
+          break;
+        case BotScenario.NotificationBot:
+          //! Will not scaffold any trigger when notificationTriggerType is undefined,
+          const notificationTriggerType = (inputs[
+            QuestionNames.BOT_HOST_TYPE_TRIGGER
+          ] as string[]) ?? [AppServiceOptionItem.id];
+          notificationTriggerType.forEach((triggerType) => {
+            getTriggerScenarios(triggerType).forEach((item) => templateScenarios.add(item));
+          });
+          break;
+      }
+    });
+  }
+  if (capabilities.includes(MessageExtensionItem.id)) {
+    botScenarios.forEach((scenario: string) => {
+      switch (scenario) {
+        case M365SearchAppOptionItem.id:
+          templateScenarios.add(TemplateProjectsScenarios.M365_SCENARIO_NAME);
+          break;
+      }
+    });
+  }
   return templateScenarios;
 }
 

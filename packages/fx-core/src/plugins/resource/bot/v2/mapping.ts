@@ -55,7 +55,10 @@ const PlatformRuntimeMap: Map<Platform, Runtime> = new Map<Platform, Runtime>([
   [Platform.CLI_HELP, Runtime.Node],
 ]);
 
-const invalidInputMsg = "Invalid bot input";
+function getKeyNotFoundInMapErrorMsg(key: any, map: Map<any, any>) {
+  const mapName = Object.keys({ map })[0];
+  return `The key ${key} is not found in map ${mapName}.`;
+}
 
 const projectFileMap = new Map<Runtime, (appName: string) => string>([
   [Runtime.Node, (_: string) => "package.json"],
@@ -71,7 +74,7 @@ export function getPlatformRuntime(platform: Platform): Runtime {
   if (runtime) {
     return runtime;
   }
-  throw new Error(invalidInputMsg);
+  throw new Error(getKeyNotFoundInMapErrorMsg(platform, PlatformRuntimeMap));
 }
 
 export function getRuntime(lang: ProgrammingLanguage): Runtime {
@@ -79,7 +82,7 @@ export function getRuntime(lang: ProgrammingLanguage): Runtime {
   if (runtime) {
     return runtime;
   }
-  throw new Error(invalidInputMsg);
+  throw new Error(getKeyNotFoundInMapErrorMsg(lang, runtimeMap));
 }
 
 export function getServiceType(hostType?: string): ServiceType {
@@ -87,7 +90,7 @@ export function getServiceType(hostType?: string): ServiceType {
   if (serviceType) {
     return serviceType;
   }
-  throw new Error(invalidInputMsg);
+  throw new Error(getKeyNotFoundInMapErrorMsg(hostType, serviceMap));
 }
 
 export function getLanguage(lang?: string): ProgrammingLanguage {
@@ -95,7 +98,7 @@ export function getLanguage(lang?: string): ProgrammingLanguage {
   if (language) {
     return language;
   }
-  throw new Error(invalidInputMsg);
+  throw new Error(getKeyNotFoundInMapErrorMsg(lang, langMap));
 }
 
 export function getTriggerScenarios(trigger: string): string[] {
@@ -103,7 +106,7 @@ export function getTriggerScenarios(trigger: string): string[] {
   if (scenarios) {
     return scenarios;
   }
-  throw new Error(invalidInputMsg);
+  throw new Error(getKeyNotFoundInMapErrorMsg(trigger, triggerScenariosMap));
 }
 
 export function getProjectFileName(runtime: Runtime, appName: string): string {
@@ -111,5 +114,5 @@ export function getProjectFileName(runtime: Runtime, appName: string): string {
   if (projectFileName) {
     return projectFileName(appName);
   }
-  throw new Error(invalidInputMsg);
+  throw new Error(getKeyNotFoundInMapErrorMsg(runtime, projectFileMap));
 }

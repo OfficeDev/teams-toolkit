@@ -29,6 +29,9 @@ import { convertToAppDefinition } from "../../../plugins/resource/appstudio/util
 import { ComponentNames } from "../../constants";
 import { readAppManifest } from "./utils";
 
+/**
+ * not support the scenario: user provide app package
+ */
 export async function createOrUpdateTeamsApp(
   ctx: v2.Context,
   inputs: InputsWithProjectPath,
@@ -50,29 +53,14 @@ export async function createOrUpdateTeamsApp(
       create = false;
     } catch (error) {}
   }
-  let archivedFile;
-  // User provided zip file
-  if (inputs.appPackagePath) {
-    if (await fs.pathExists(inputs.appPackagePath)) {
-      archivedFile = await fs.readFile(inputs.appPackagePath);
-    } else {
-      return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.FileNotFoundError.name,
-          AppStudioError.FileNotFoundError.message(inputs.appPackagePath)
-        )
-      );
-    }
-  } else {
-    const buildPackage = await buildTeamsAppPackage(inputs.projectPath, envInfo!);
-    if (buildPackage.isErr()) {
-      return err(buildPackage.error);
-    }
-    archivedFile = await fs.readFile(buildPackage.value);
-  }
   if (create) {
     // create teams app
     try {
+      const buildPackage = await buildTeamsAppPackage(inputs.projectPath, envInfo!, true);
+      if (buildPackage.isErr()) {
+        return err(buildPackage.error);
+      }
+      const archivedFile = await fs.readFile(buildPackage.value);
       const appDefinition = await AppStudioClient.createApp(
         archivedFile,
         appStudioTokenRes.value,
@@ -95,8 +83,12 @@ export async function createOrUpdateTeamsApp(
     }
   } else {
     //update teams app
+    const buildPackage = await buildTeamsAppPackage(inputs.projectPath, envInfo!);
+    if (buildPackage.isErr()) {
+      return err(buildPackage.error);
+    }
+    const archivedFile = await fs.readFile(buildPackage.value);
     const zipEntries = new AdmZip(archivedFile).getEntries();
-
     const manifestFile = zipEntries.find((x) => x.entryName === Constants.MANIFEST_FILE);
     if (!manifestFile) {
       return err(
@@ -228,7 +220,8 @@ export async function publishTeamsApp(
  */
 export async function buildTeamsAppPackage(
   projectPath: string,
-  envInfo: v3.EnvInfoV3
+  envInfo: v3.EnvInfoV3,
+  withEmptyCapabilities = false
 ): Promise<Result<string, FxError>> {
   const buildFolderPath = `${projectPath}/${BuildFolderName}/${AppPackageFolderName}`;
   await fs.ensureDir(buildFolderPath);
@@ -239,6 +232,12 @@ export async function buildTeamsAppPackage(
   const manifest: TeamsAppManifest = appDefinitionRes.value[1];
   if (!isUUID(manifest.id)) {
     manifest.id = v4();
+  }
+  if (withEmptyCapabilities) {
+    manifest.bots = [];
+    manifest.composeExtensions = [];
+    manifest.configurableTabs = [];
+    manifest.staticTabs = [];
   }
   const appDirectory = path.join(projectPath, "templates", "appPackage");
   const colorFile = `${appDirectory}/${manifest.icons.color}`;

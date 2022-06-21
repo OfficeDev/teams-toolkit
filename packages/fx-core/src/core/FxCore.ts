@@ -245,7 +245,7 @@ export class FxCore implements v3.ICore {
       }
 
       const projectSettings: ProjectSettings = {
-        appName: appName,
+        appName,
         projectId: inputs.projectId ? inputs.projectId : uuid.v4(),
         version: getProjectSettingsVersion(),
         isFromSample: false,

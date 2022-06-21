@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace {{ProjectName}}.Interop.TeamsSDK;
+namespace {{SafeProjectName}}.Interop.TeamsSDK;
 
 internal class EnumDescriptionConverter<T> : JsonConverter<T> where T : struct, Enum
 {

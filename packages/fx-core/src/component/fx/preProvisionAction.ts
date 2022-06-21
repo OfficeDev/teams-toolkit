@@ -24,7 +24,7 @@ import {
 import { ComponentNames } from "../constants";
 
 export class FxPreProvisionAction implements FunctionAction {
-  name = "fx.postProvision";
+  name = "fx.preProvision";
   type: "function" = "function";
   async execute(
     context: ContextV3,

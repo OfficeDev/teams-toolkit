@@ -74,19 +74,6 @@ export class YoChecker implements DependencyChecker {
   }
 
   public async install(): Promise<void> {
-    this._logger.info("Checking npm...");
-    if (!(await this.hasNPM())) {
-      this._logger.error("Failed to find npm!");
-      throw NpmNotFoundError();
-    } else {
-      const npmVersion = await this.getNPMMajorVersion();
-      if (this.isWindows() && npmVersion && parseInt(npmVersion) > 6) {
-        this._logger.warning(
-          `Supported npm version is v6.x while you have v${npmVersion}.x installed. Check aka.ms/teamsfx-spfx-help for help if you met any issues.`
-        );
-      }
-    }
-
     this._logger.info("Start installing...");
     await this.cleanup();
     await this.installYo();
@@ -101,12 +88,7 @@ export class YoChecker implements DependencyChecker {
 
   public async getBinFolder(): Promise<string> {
     if (this.isWindows()) {
-      const npmVersion = await this.getNPMMajorVersion();
-      if (npmVersion && parseInt(npmVersion) > 6) {
-        return path.join(this.getDefaultInstallPath(), "node_modules", ".bin");
-      } else {
-        return this.getDefaultInstallPath();
-      }
+      return this.getDefaultInstallPath();
     } else {
       return path.join(this.getDefaultInstallPath(), "node_modules", ".bin");
     }
@@ -140,37 +122,6 @@ export class YoChecker implements DependencyChecker {
       return packageJson.version ?? undefined;
     }
     return undefined;
-  }
-
-  private async hasNPM(): Promise<boolean> {
-    try {
-      await cpUtils.executeCommand(undefined, this._logger, { shell: true }, "npm", "--version");
-      return true;
-    } catch (error) {
-      return false;
-    }
-  }
-
-  private async getNPMMajorVersion(): Promise<string | undefined> {
-    try {
-      const output = await cpUtils.executeCommand(
-        undefined,
-        this._logger,
-        { shell: true },
-        "npm",
-        "--version"
-      );
-
-      const regex = /(?<majorVersion>\d+)(\.\d+\.\d+)/;
-      const match = regex.exec(output.toString());
-      if (match && match.groups) {
-        return match.groups.majorVersion;
-      } else {
-        return undefined;
-      }
-    } catch (error) {
-      return undefined;
-    }
   }
 
   private async cleanup(): Promise<void> {

@@ -29,6 +29,7 @@ import {
   getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,
 } from "../../../../common/tools";
+import { convertToAlphanumericOnly } from "../../../../common/utils";
 import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
 import { getTemplatesFolder } from "../../../../folder";
 import { AzureResourceFunction } from "../../../solution/fx-solution/question";
@@ -232,7 +233,7 @@ export class FunctionPluginV3 implements v3.PluginV3 {
       DefaultValues.functionTriggerType,
       functionName,
       {
-        appName: ctx.projectSetting.appName,
+        appName: convertToAlphanumericOnly(ctx.projectSetting.appName),
         functionName: functionName,
       }
     );

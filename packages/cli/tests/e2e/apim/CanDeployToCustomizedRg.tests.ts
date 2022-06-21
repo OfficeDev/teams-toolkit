@@ -19,6 +19,7 @@ import {
   createResourceGroup,
   deleteResourceGroupByName,
   getConfigFileName,
+  convertToAlphanumericOnly,
 } from "../commonUtils";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
@@ -33,6 +34,7 @@ describe("Deploy to customized resource group", function () {
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
   const env = environmentManager.getDefaultEnvName();
+  const apiPrefix = convertToAlphanumericOnly(appName);
 
   after(async () => {
     await cleanUp(appName, projectPath, true, false, false);
@@ -69,14 +71,14 @@ describe("Deploy to customized resource group", function () {
     await CliHelper.deployProject(
       ResourceToDeploy.Apim,
       projectPath,
-      ` --open-api-document openapi/openapi.json --api-prefix ${appName} --api-version v1`,
+      ` --open-api-document openapi/openapi.json --api-prefix ${apiPrefix} --api-version v1`,
       process.env,
       3,
       `teamsfx deploy apim --open-api-document openapi/openapi.json --api-version v1`
     );
 
     const deployContext = await fs.readJSON(getConfigFileName(appName));
-    await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1");
+    await ApimValidator.validateDeploy(deployContext, projectPath, apiPrefix, "v1");
 
     await deleteResourceGroupByName(customizedRgName);
   });

@@ -58,6 +58,7 @@ import { BOT_ID } from "../appstudio/constants";
 import { AzureOperations } from "../../../common/azure-hosting/azureOps";
 import { AzureUploadConfig } from "../../../common/azure-hosting/interfaces";
 import { HostType } from "./v2/enum";
+import { convertToAlphanumericOnly } from "../../../common/utils";
 
 export class TeamsBotImpl implements PluginImpl {
   // Made config public, because expect the upper layer to fill inputs.
@@ -412,7 +413,11 @@ export class TeamsBotImpl implements PluginImpl {
       botId: isConfigUnifyEnabled()
         ? this.ctx?.envInfo.state.get(ResourcePlugins.Bot).get(BOT_ID)
         : this.config.localDebug.localBotId,
-      name: this.ctx!.projectSettings?.appName + PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
+      name:
+        (!this.ctx!.projectSettings?.appName
+          ? ""
+          : convertToAlphanumericOnly(this.ctx!.projectSettings?.appName)) +
+        PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
       description: "",
       iconUrl: "",
       messagingEndpoint: endpoint,
@@ -479,7 +484,11 @@ export class TeamsBotImpl implements PluginImpl {
     // 2. Register bot by app studio.
     const botReg: IBotRegistration = {
       botId: botAuthCreds.clientId,
-      name: this.ctx!.projectSettings?.appName + PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
+      name:
+        (!this.ctx?.projectSettings?.appName
+          ? ""
+          : convertToAlphanumericOnly(this.ctx.projectSettings?.appName)) +
+        PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
       description: "",
       iconUrl: "",
       messagingEndpoint: "",

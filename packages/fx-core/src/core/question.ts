@@ -59,9 +59,11 @@ export enum CoreQuestionNames {
   NewResourceGroupLocation = "newResourceGroupLocation",
   NewTargetEnvName = "newTargetEnvName",
   ExistingTabEndpoint = "existing-tab-endpoint",
+  SafeProjectName = "safeProjectName",
 }
 
-export const ProjectNamePattern = "^[a-zA-Z][\\da-zA-Z]+$";
+export const ProjectNamePattern =
+  '^(?=(.*[\\da-zA-Z]){2})[a-zA-Z][^"<>:\\?/*|\u0000-\u001F]*[^"\\s.<>:\\?/*|\u0000-\u001F]$';
 
 export function createAppNameQuestion(validateProjectPathExistence = true): TextInputQuestion {
   const question: TextInputQuestion = {

@@ -18,6 +18,8 @@ export const ComponentNames = {
   BotCode: "bot-code",
   Function: "azure-function",
   SimpleAuth: "simple-auth",
+  CICD: "cicd",
+  ApiConnector: "api-connector",
 };
 
 export const ActionNames = {

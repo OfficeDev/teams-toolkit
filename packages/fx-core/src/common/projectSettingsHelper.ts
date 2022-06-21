@@ -5,6 +5,7 @@ import {
   ConfigFolderName,
   ProjectSettings,
   ProjectSettingsFileName,
+  ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
@@ -18,6 +19,8 @@ import {
 } from "../plugins/solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import * as uuid from "uuid";
+import { isV3 } from "../core";
+import { isMiniApp } from "./projectSettingsHelperV3";
 
 export function validateProjectSettings(projectSettings: ProjectSettings): string | undefined {
   if (!projectSettings) return "empty projectSettings";
@@ -121,6 +124,9 @@ export function getAzurePlugins(excludeAad = false): string[] {
 }
 
 export function isExistingTabApp(projectSettings: ProjectSettings): boolean {
+  if (isV3()) {
+    return isMiniApp(projectSettings as ProjectSettingsV3);
+  }
   const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
   if (!solutionSettings) {
     return true;

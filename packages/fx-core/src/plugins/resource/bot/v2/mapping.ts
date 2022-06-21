@@ -57,7 +57,7 @@ const PlatformRuntimeMap: Map<Platform, Runtime> = new Map<Platform, Runtime>([
 
 function getKeyNotFoundInMapErrorMsg(key: any, map: Map<any, any>) {
   const mapName = Object.keys({ map })[0];
-  return `The key ${key} is not found in map ${mapName}`;
+  return `The key ${key} is not found in map ${mapName}.`;
 }
 
 const projectFileMap = new Map<Runtime, (appName: string) => string>([

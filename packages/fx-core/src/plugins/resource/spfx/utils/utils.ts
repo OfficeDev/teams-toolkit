@@ -6,6 +6,7 @@ import { glob } from "glob";
 import { exec, execSync } from "child_process";
 import { LogProvider } from "@microsoft/teamsfx-api";
 import axios, { AxiosInstance } from "axios";
+import { cpUtils, DebugLogger } from "../../../../common";
 
 export class Utils {
   static async configure(configurePath: string, map: Map<string, string>): Promise<void> {
@@ -86,6 +87,55 @@ export class Utils {
         return undefined;
       }
     } catch (e) {
+      return undefined;
+    }
+  }
+
+  static async hasNPM(logger: DebugLogger | undefined): Promise<boolean> {
+    const version = await this.getNPMMajorVersion(logger);
+    return version !== undefined;
+  }
+
+  static async getNPMMajorVersion(logger: DebugLogger | undefined): Promise<string | undefined> {
+    try {
+      const output = await cpUtils.executeCommand(
+        undefined,
+        logger,
+        { shell: true },
+        "npm",
+        "--version"
+      );
+
+      const regex = /(?<majorVersion>\d+)(\.\d+\.\d+)/;
+      const match = regex.exec(output.toString());
+      if (match && match.groups) {
+        return match.groups.majorVersion;
+      } else {
+        return undefined;
+      }
+    } catch (error) {
+      return undefined;
+    }
+  }
+
+  static async getNodeVersion(): Promise<string | undefined> {
+    try {
+      const output = await cpUtils.executeCommand(
+        undefined,
+        undefined,
+        undefined,
+        "node",
+        "--version"
+      );
+
+      const regex = /v(?<major_version>\d+)\.(?<minor_version>\d+)\.(?<patch_version>\d+)/gm;
+      const match = regex.exec(output);
+      if (match && match.groups) {
+        return match.groups.major_version;
+      } else {
+        return undefined;
+      }
+    } catch (error) {
       return undefined;
     }
   }

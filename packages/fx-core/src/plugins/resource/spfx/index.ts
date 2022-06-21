@@ -22,6 +22,7 @@ import { ProgressHelper } from "./utils/progress-helper";
 import {
   frameworkQuestion,
   SPFXQuestionNames,
+  versionCheckQuestion,
   webpartDescriptionQuestion,
   webpartNameQuestion,
 } from "./utils/questions";
@@ -46,11 +47,14 @@ export class SpfxPlugin implements Plugin {
     });
 
     if (stage === Stage.create) {
+      const spfx_version_check = new QTreeNode(versionCheckQuestion);
+      spfx_frontend_host.addChild(spfx_version_check);
+
       const spfx_framework_type = new QTreeNode(frameworkQuestion);
-      spfx_frontend_host.addChild(spfx_framework_type);
+      spfx_version_check.addChild(spfx_framework_type);
 
       const spfx_webpart_name = new QTreeNode(webpartNameQuestion);
-      spfx_frontend_host.addChild(spfx_webpart_name);
+      spfx_version_check.addChild(spfx_webpart_name);
     }
 
     return ok(spfx_frontend_host);

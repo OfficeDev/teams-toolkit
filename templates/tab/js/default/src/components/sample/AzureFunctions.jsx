@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { Button, Loader } from "@fluentui/react-northstar";
 import { useData } from "@microsoft/teamsfx-react";
-import * as axios from "axios";
+import { BearerTokenAuthProvider, createApiClient } from "@microsoft/teamsfx"
 import { TeamsFxContext } from "../Context";
 
 const functionName = process.env.REACT_APP_FUNC_NAME || "myFunc";
@@ -11,13 +11,13 @@ async function callFunction(teamsfx) {
     throw new Error("TeamsFx SDK is not initialized.");
   }
   try {
-    const accessToken = await teamsfx.getCredential().getToken("");
-    const endpoint = teamsfx.getConfig("apiEndpoint");
-    const response = await axios.default.get(endpoint + "/api/" + functionName, {
-      headers: {
-        authorization: "Bearer " + accessToken.token,
-      },
-    });
+    const credential = teamsfx.getCredential();
+    const apiBaseUrl = teamsfx.getConfig("apiEndpoint") + "/api/";
+    // createApiClient(...) creates an Axios instance which uses BearerTokenAuthProvider to inject token to request header
+    const apiClient = createApiClient(
+      apiBaseUrl,
+      new BearerTokenAuthProvider(async () => (await credential.getToken("")).token));
+    const response = await apiClient.get(functionName);
     return response.data;
   } catch (err) {
     let funcErrorMsg = "";

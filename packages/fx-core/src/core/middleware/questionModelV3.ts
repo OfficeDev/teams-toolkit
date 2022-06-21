@@ -230,7 +230,7 @@ async function getQuestionsForAddFeature(
         TabNonSsoItem.id,
         BotNewUIOptionItem.id,
         MessageExtensionItem.id,
-        SingleSignOnOptionItem.id, // TODO why SSO trigger programmingLanguage? ask Bowen
+        SingleSignOnOptionItem.id, // adding sso means adding sample codes
       ],
     };
     addFeatureNode.addChild(programmingLanguage);

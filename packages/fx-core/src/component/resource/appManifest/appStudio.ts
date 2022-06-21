@@ -240,6 +240,8 @@ export async function buildTeamsAppPackage(
   if (!isUUID(manifest.id)) {
     manifest.id = v4();
   }
+  manifest.bots = [];
+  manifest.composeExtensions = [];
   const appDirectory = path.join(projectPath, "templates", "appPackage");
   const colorFile = `${appDirectory}/${manifest.icons.color}`;
   if (!(await fs.pathExists(colorFile))) {

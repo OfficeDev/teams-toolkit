@@ -763,7 +763,6 @@
   "plugins.bot.SelectValidValues": "Please select valid values for %s",
   "plugins.bot.SomethingIsMissing": "%s is missing.",
   "plugins.bot.SomethingNotFound": "%s is not found.",
-  "plugins.bot.KeyNotFoundInMap": "The key %s is not found in map.",
   "plugins.bot.SomethingNotExisting": "%s is not existing.",
   "plugins.bot.FailedToCreate": "Failed to create %s",
   "plugins.bot.FailedToProvision": "Failed to provision %s.",

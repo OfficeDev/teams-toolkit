@@ -130,14 +130,6 @@ export class SomethingMissingError extends PreconditionError {
   }
 }
 
-export class KeyNotFoundInMapError extends PluginError {
-  constructor(key: any) {
-    super(ErrorType.SYSTEM, ErrorNames.PRECONDITION_ERROR, Messages.KeyNotFoundInMap(key), [
-      Messages.CheckCommandOutputAndTryToFixIt,
-    ]);
-  }
-}
-
 export function checkAndThrowIfMissing<T>(name: string, value: T | null | undefined): T {
   if (!value) {
     throw new SomethingMissingError(name);

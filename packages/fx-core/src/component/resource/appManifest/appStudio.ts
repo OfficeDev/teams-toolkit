@@ -11,7 +11,6 @@ import {
   Result,
   TeamsAppManifest,
   TokenProvider,
-  UserError,
   v2,
   v3,
 } from "@microsoft/teamsfx-api";
@@ -25,7 +24,6 @@ import {
   compileHandlebarsTemplateString,
   getAppDirectory,
 } from "../../../common/tools";
-import { InvalidInputError } from "../../../core";
 import { AppStudioClient } from "../../../plugins/resource/appstudio/appStudio";
 import { Constants } from "../../../plugins/resource/appstudio/constants";
 import { AppStudioError } from "../../../plugins/resource/appstudio/errors";

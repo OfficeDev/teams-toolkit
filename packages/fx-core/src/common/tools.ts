@@ -23,6 +23,7 @@ import {
   Inputs,
   Platform,
   M365TokenProvider,
+  ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
 import axios from "axios";
 import { exec, ExecOptions } from "child_process";
@@ -61,7 +62,7 @@ import {
   TabOptionItem,
   MessageExtensionItem,
 } from "../plugins/solution/fx-solution/question";
-import { TOOLS } from "../core/globalVars";
+import { isV3, TOOLS } from "../core/globalVars";
 import { LocalCrypto } from "../core/crypto";
 import { getDefaultString, getLocalizedString } from "./localizeUtils";
 import { isFeatureFlagEnabled } from "./featureFlags";
@@ -73,6 +74,7 @@ import { environmentManager } from "../core/environment";
 import { NoProjectOpenedError } from "../plugins/resource/cicd/errors";
 import { getProjectTemplatesFolderPath } from "./utils";
 import * as path from "path";
+import { isMiniApp } from "./projectSettingsHelperV3";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -574,10 +576,13 @@ export function canAddApiConnection(solutionSettings?: AzureSolutionSettings): b
 // 2. Not minimal app
 export async function canAddCICDWorkflows(inputs: Inputs, ctx: v2.Context): Promise<boolean> {
   // Not include `Add CICD Workflows` in minimal app case.
-  if (isExistingTabApp(ctx.projectSetting)) {
-    return false;
+  if (isV3()) {
+    if (isMiniApp(ctx.projectSetting as ProjectSettingsV3)) return false;
+  } else {
+    if (isExistingTabApp(ctx.projectSetting)) {
+      return false;
+    }
   }
-
   if (!inputs.projectPath) {
     throw new NoProjectOpenedError();
   }

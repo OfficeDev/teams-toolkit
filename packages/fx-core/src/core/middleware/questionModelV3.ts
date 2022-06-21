@@ -25,7 +25,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { EnvInfoV3 } from "@microsoft/teamsfx-api/build/v3";
 import Container from "typedi";
-import { getAppDirectory, isExistingTabApp, isVSProject } from "../../common";
+import { canAddCICDWorkflows, getAppDirectory, isExistingTabApp, isVSProject } from "../../common";
 import { HelpLinks } from "../../common/constants";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 import {
@@ -50,6 +50,7 @@ import {
   AzureResourceSQLNewUI,
   BotNewUIOptionItem,
   BotOptionItem,
+  CicdOptionItem,
   CommandAndResponseOptionItem,
   MessageExtensionItem,
   MessageExtensionNewUIItem,
@@ -215,8 +216,10 @@ async function getQuestionsForAddFeature(
   if (hasBot(projectSettingsV3) || hasFunction(projectSettingsV3)) {
     options.push(ApiConnectionOptionItem);
   }
-  // TODO CICD add pre-condition??  ask Ivan
-
+  const isCicdAddable = await canAddCICDWorkflows(inputs, ctx);
+  if (isCicdAddable) {
+    options.push(CicdOptionItem);
+  }
   question.staticOptions = options;
   const addFeatureNode = new QTreeNode(question);
   if (!ctx.projectSetting.programmingLanguage) {

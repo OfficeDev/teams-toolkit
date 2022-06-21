@@ -348,6 +348,7 @@ export async function buildTeamsAppPackage(
     manifest.composeExtensions = [];
     manifest.configurableTabs = [];
     manifest.staticTabs = [];
+    manifest.webApplicationInfo = undefined;
   }
   const appDirectory = await getAppDirectory(projectPath);
   const colorFile = path.join(appDirectory, manifest.icons.color);

@@ -57,7 +57,7 @@ import { ProgressHelper } from "./utils/progressHelper";
 import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
 import { NamedArmResourcePluginAdaptor } from "./v2/adaptor";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
-import { getProjectTemplatesFolderPath } from "../../../common/utils";
+import { convertToAlphanumericOnly, getProjectTemplatesFolderPath } from "../../../common/utils";
 
 const bicepOrchestrationFileName = "main.bicep";
 const bicepOrchestrationProvisionMainFileName = "mainProvision.bicep";
@@ -868,7 +868,10 @@ async function doGenerateArmTemplate(
   ctx: SolutionContext,
   selectedPlugins: NamedArmResourcePlugin[]
 ): Promise<Result<any, FxError>> {
-  const baseName = generateResourceBaseName(ctx.projectSettings!.appName, ctx.envInfo!.envName);
+  const baseName = generateResourceBaseName(
+    convertToAlphanumericOnly(ctx.projectSettings!.appName),
+    ctx.envInfo!.envName
+  );
   const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
     (p) => new NamedArmResourcePluginAdaptor(p)
   ); // This function ensures return result won't be empty
@@ -951,7 +954,10 @@ async function doGenerateBicep(
   addedPlugins: string[],
   existingPlugins: string[]
 ): Promise<Result<any, FxError>> {
-  const baseName = generateResourceBaseName(ctx.projectSetting.appName, "");
+  const baseName = generateResourceBaseName(
+    convertToAlphanumericOnly(ctx.projectSetting.appName),
+    ""
+  );
   const allPlugins = addedPlugins.concat(existingPlugins);
   const bicepOrchestrationTemplate = new BicepOrchestrationContent(allPlugins, baseName);
   const moduleProvisionFiles = new Map<string, string>();

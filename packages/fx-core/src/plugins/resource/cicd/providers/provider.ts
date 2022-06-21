@@ -11,6 +11,7 @@ import Mustache from "mustache";
 import { getTemplatesFolder } from "../../../../folder";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import { generateBuildScript } from "../utils/buildScripts";
+import { convertToAlphanumericOnly } from "../../../../common/utils";
 
 export class CICDProvider {
   public scaffoldTo = "";
@@ -82,7 +83,7 @@ export class CICDProvider {
       hosting_type_contains_azure: hostType === "Azure",
       cloud_resources_contains_sql:
         context.projectSetting.solutionSettings?.["azureResources"].includes("sql") ?? false,
-      api_prefix: context.projectSetting.appName,
+      api_prefix: convertToAlphanumericOnly(context.projectSetting.appName),
       cloud_resources_contains_apim:
         context.projectSetting.solutionSettings?.["azureResources"].includes("apim") ?? false,
     };

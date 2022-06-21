@@ -40,6 +40,7 @@ import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/cons
 import { ResultFactory } from "../results";
 import { getPermissionRequest } from "../permissions";
 import { GraphScopes, isAadManifestEnabled } from "../../../../common";
+import { convertToAlphanumericOnly } from "../../../../common/utils";
 
 export class Utils {
   public static addLogAndTelemetryWithLocalDebug(
@@ -267,15 +268,7 @@ export class ProvisionConfig {
     inputs: v2.InputsWithProjectPath,
     localSettings: v2.LocalSettings
   ): Promise<Result<any, FxError>> {
-    const displayName: string = ctx.projectSetting.appName;
-    if (displayName) {
-      this.displayName = displayName.substr(0, Constants.aadAppMaxLength) as string;
-    } else {
-      throw ResultFactory.SystemError(
-        GetConfigError.name,
-        GetConfigError.message(Errors.GetDisplayNameError[0])
-      );
-    }
+    this.setDisplayName(ctx.projectSetting.appName);
     const permissionRes = await getPermissionRequest(inputs.projectPath);
     if (permissionRes.isErr()) {
       return err(permissionRes.error);
@@ -296,15 +289,7 @@ export class ProvisionConfig {
     inputs: v2.InputsWithProjectPath,
     envInfo: v3.EnvInfoV3
   ): Promise<Result<any, FxError>> {
-    const displayName: string = ctx.projectSetting.appName;
-    if (displayName) {
-      this.displayName = displayName.substr(0, Constants.aadAppMaxLength) as string;
-    } else {
-      throw ResultFactory.SystemError(
-        GetConfigError.name,
-        GetConfigError.message(Errors.GetDisplayNameError[0])
-      );
-    }
+    this.setDisplayName(ctx.projectSetting.appName);
     const permissionRes = await getPermissionRequest(inputs.projectPath);
     if (permissionRes.isErr()) {
       return err(permissionRes.error);
@@ -322,15 +307,7 @@ export class ProvisionConfig {
     return ok(undefined);
   }
   public async restoreConfigFromContext(ctx: PluginContext): Promise<void> {
-    const displayName: string = ctx.projectSettings!.appName;
-    if (displayName) {
-      this.displayName = displayName.substr(0, Constants.aadAppMaxLength) as string;
-    } else {
-      throw ResultFactory.SystemError(
-        GetConfigError.name,
-        GetConfigError.message(Errors.GetDisplayNameError[0])
-      );
-    }
+    this.setDisplayName(ctx.projectSettings!.appName);
 
     if (!isAadManifestEnabled()) {
       this.permissionRequest = await ConfigUtils.getPermissionRequest(ctx);
@@ -416,6 +393,18 @@ export class ProvisionConfig {
   }
   private static getOauthAuthority(tenantId: string): string {
     return `${Constants.oauthAuthorityPrefix}/${tenantId}`;
+  }
+
+  private setDisplayName(appName: string): void {
+    const displayName: string = convertToAlphanumericOnly(appName);
+    if (displayName) {
+      this.displayName = displayName.substr(0, Constants.aadAppMaxLength) as string;
+    } else {
+      throw ResultFactory.SystemError(
+        GetConfigError.name,
+        GetConfigError.message(Errors.GetDisplayNameError[0])
+      );
+    }
   }
 }
 

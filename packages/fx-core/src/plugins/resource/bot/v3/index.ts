@@ -80,6 +80,7 @@ import {
 import { ensureSolutionSettings } from "../../../solution/fx-solution/utils/solutionSettingsHelper";
 import { AzureOperations } from "../../../../common/azure-hosting/azureOps";
 import { AzureUploadConfig } from "../../../../common/azure-hosting/interfaces";
+import { convertToAlphanumericOnly } from "../../../../common/utils";
 
 @Service(BuiltInFeaturePluginNames.bot)
 export class NodeJSBotPluginV3 implements v3.PluginV3 {
@@ -329,7 +330,9 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
       // 2. Register bot by app studio.
       const botReg: IBotRegistration = {
         botId: botConfig.botId,
-        name: ctx.projectSetting.appName + PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
+        name:
+          convertToAlphanumericOnly(ctx.projectSetting.appName) +
+          PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
         description: "",
         iconUrl: "",
         messagingEndpoint: "",
@@ -433,7 +436,7 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
       const botConfig = envInfo.state[this.name] as v3.AzureBot;
       CheckThrowSomethingMissing(ConfigNames.LOCAL_ENDPOINT, botConfig.siteEndpoint);
       await this.updateMessageEndpointOnAppStudio(
-        ctx.projectSetting.appName,
+        convertToAlphanumericOnly(ctx.projectSetting.appName),
         tokenProvider,
         botConfig.botId,
         `${botConfig.siteEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`

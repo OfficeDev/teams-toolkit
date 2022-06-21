@@ -1,4 +1,4 @@
-namespace {{ProjectName}}
+namespace {{SafeProjectName}}
 {
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;

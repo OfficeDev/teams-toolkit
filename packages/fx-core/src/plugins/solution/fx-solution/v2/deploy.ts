@@ -208,9 +208,10 @@ export async function deploy(
   const result = await executeConcurrently(thunks, ctx.logProvider);
 
   if (result.kind === "success") {
+    const appName = ctx.projectSetting.appName;
     if (inAzureProject) {
       let msg =
-        getLocalizedString("core.deploy.successNotice", ctx.projectSetting.appName) +
+        getLocalizedString("core.deploy.successNotice", appName) +
         botTroubleShootMsg.textForLogging;
 
       if (isDeployAADManifestFromVSCode) {
@@ -222,7 +223,7 @@ export async function deploy(
         ctx.userInteraction
           .showMessage(
             "info",
-            `${getLocalizedString("core.deploy.successNotice", ctx.projectSetting.appName)} ${
+            `${getLocalizedString("core.deploy.successNotice", appName)} ${
               botTroubleShootMsg.textForMsgBox
             }`,
             false,

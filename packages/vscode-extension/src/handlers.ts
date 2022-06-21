@@ -813,11 +813,16 @@ export async function showOutputChannel(args?: any[]): Promise<Result<any, FxErr
 }
 
 export async function openFolderHandler(args?: any[]): Promise<Result<any, FxError>> {
+  const scheme = "file://";
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenFolder, {
     [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Notification,
   });
   if (args && args.length > 0 && args[0]) {
-    const uri = Uri.parse(args[0]);
+    let path = args[0] as string;
+    if (path.startsWith(scheme)) {
+      path = path.substring(scheme.length);
+    }
+    const uri = Uri.file(path);
     openFolderInExplorer(uri.fsPath);
   }
   return ok(null);

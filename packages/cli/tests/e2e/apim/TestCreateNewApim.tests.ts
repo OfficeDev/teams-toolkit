@@ -16,6 +16,7 @@ import {
   cleanUp,
   loadContext,
   setSimpleAuthSkuNameToB1Bicep,
+  convertToAlphanumericOnly,
 } from "../commonUtils";
 import AzureLogin from "../../../src/commonlib/azureLogin";
 import M365Login from "../../../src/commonlib/m365Login";
@@ -33,6 +34,8 @@ describe("Create a new API Management Service", function () {
   const subscriptionId = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
   const env = environmentManager.getDefaultEnvName();
+  const apiPrefix = convertToAlphanumericOnly(appName);
+
   it(
     `Import API into a new API Management Service`,
     { testPlanCaseId: 10107958 },
@@ -61,14 +64,14 @@ describe("Create a new API Management Service", function () {
       await CliHelper.deployProject(
         ResourceToDeploy.Apim,
         projectPath,
-        ` --open-api-document openapi/openapi.json --api-prefix ${appName} --api-version v1`,
+        ` --open-api-document openapi/openapi.json --api-prefix ${apiPrefix} --api-version v1`,
         testProcessEnv,
         3,
         `teamsfx deploy apim --open-api-document openapi/openapi.json --api-version v1`
       );
 
       const deployContext = await fs.readJSON(getConfigFileName(appName));
-      await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1");
+      await ApimValidator.validateDeploy(deployContext, projectPath, apiPrefix, "v1");
     }
   );
 

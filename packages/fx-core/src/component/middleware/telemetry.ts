@@ -36,6 +36,9 @@ export class ActionTelemetryImplement implements ActionTelemetryReporter {
   properties = {} as { [key: string]: string };
   measurements = {} as { [key: string]: number };
   errorProps = [TelemetryConstants.properties.errorMessage];
+  addProperty = (key: string, value: string) => {
+    this.properties[key] = value;
+  };
 
   sendStartEvent = (ctx: ActionContext) => {
     this.sendTelemetryEvent(this.stage + TelemetryConstants.eventPrefix);

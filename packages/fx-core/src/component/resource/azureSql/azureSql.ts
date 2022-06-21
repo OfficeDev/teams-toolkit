@@ -16,7 +16,7 @@ import { Service } from "typedi";
 import { AzureSqlOutputs, ComponentNames } from "../../constants";
 import { ConfigureActionImplement } from "./actions/configure";
 import { GetActionGenerateBicep } from "./actions/generateBicep";
-import { GetActionProvision } from "./actions/provision";
+import { ProvisionActionImplement } from "./actions/provision";
 @Service("azure-sql")
 export class AzureSqlResource implements CloudResource {
   readonly name = ComponentNames.AzureSQL;
@@ -32,7 +32,7 @@ export class AzureSqlResource implements CloudResource {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    return ok(GetActionProvision());
+    return ok(ProvisionActionImplement.get());
   }
   configure(
     context: ContextV3,

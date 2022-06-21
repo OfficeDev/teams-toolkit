@@ -69,27 +69,15 @@ export const ActionGenerateBicep = {
 
 export class Telemetry {
   static readonly componentName = "fx-resource-azure-sql";
-  static readonly startSuffix = "-start";
-  static readonly valueYes = "yes";
-  static readonly valueNo = "no";
-  static readonly userError = "user";
-  static readonly systemError = "system";
 
   static readonly stage = {
     preProvision: "pre-provision",
     postProvision: "post-provision",
     getQuestion: "get-question",
     generateArmTemplates: "generate-arm-templates",
-    updateArmTemplates: "update-arm-templates",
   };
 
   static readonly properties = {
-    component: "component",
-    success: "success",
-    errorCode: "error-code",
-    errorType: "error-type",
-    errorMessage: "error-message",
-    appid: "appid",
     skipAddingUser: "skip-adding-user",
     dbCount: "db-count",
     dbOnly: "db-only",
@@ -113,3 +101,11 @@ export class AzureSqlBicepFile {
     "newDatabase.orchestration.template.bicep";
   static readonly newDatabaseProvisionTemplateFileName = "newDatabaseProvision.template.bicep";
 }
+
+export const Message = {
+  skipAddAadAdmin: `skip adding existing aad admin`,
+  addFirewall: `add firewall`,
+  addSqlAadAdmin: `add SQL aad admin`,
+
+  addDatabaseUser: (name: string) => `add database user ${name}`,
+};

@@ -19,6 +19,10 @@ export class Messages {
     getDefaultString("plugins.bot.SomethingNotExisting", something),
     getLocalizedString("plugins.bot.SomethingNotExisting", something),
   ];
+  public static readonly KeyNotFoundInMap = (key: any): [string, string] => [
+    getDefaultString("plugins.bot.KeyNotFoundInMap", key),
+    getLocalizedString("plugins.bot.KeyNotFoundInMap", key),
+  ];
   public static readonly FailToProvisionSomeResource = (resource: string): [string, string] => [
     getDefaultString("plugins.bot.FailedToProvision", resource),
     getLocalizedString("plugins.bot.FailedToProvision", resource),

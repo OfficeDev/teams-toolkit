@@ -4,8 +4,6 @@
 import {
   Action,
   AzureAccountProvider,
-  Bicep,
-  CloudResource,
   ContextV3,
   err,
   FxError,
@@ -30,9 +28,11 @@ import {
 import { UnauthenticatedError } from "../../plugins/resource/frontend/v3/error";
 import { AzureStorageClient } from "../../plugins/resource/frontend/clients";
 import { FrontendDeployment } from "../../plugins/resource/frontend/ops/deploy";
+import { AzureResource } from "./azureResource";
 @Service("azure-storage")
-export class AzureStorageResource implements CloudResource {
+export class AzureStorageResource extends AzureResource {
   readonly name = "azure-storage";
+  readonly bicepModuleName = "azureStorage";
   readonly outputs = {
     endpoint: {
       key: "endpoint",
@@ -42,40 +42,16 @@ export class AzureStorageResource implements CloudResource {
       key: "resourceId",
       bicepVariable: "provisionOutputs.azureStorageOutput.value.resourceId",
     },
-    location: {
+    domain: {
       key: "location",
-      bicepVariable: "provisionOutputs.azureStorageOutput.value.location",
+      bicepVariable: "provisionOutputs.azureStorageOutput.value.domain",
+    },
+    location: {
+      key: "indexPath",
+      bicepVariable: "provisionOutputs.azureStorageOutput.value.indexPath",
     },
   };
   readonly finalOutputKeys = ["endpoint"];
-  generateBicep(
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const action: Action = {
-      name: "azure-sql.generateBicep",
-      type: "function",
-      plan: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const bicep: Bicep = {
-          type: "bicep",
-          Provision: {
-            Modules: { azureStorage: "1" },
-          },
-        };
-        return ok([bicep]);
-      },
-      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const bicep: Bicep = {
-          type: "bicep",
-          Provision: {
-            Modules: { azureStorage: "1" },
-          },
-        };
-        return ok([bicep]);
-      },
-    };
-    return ok(action);
-  }
   configure(
     context: ContextV3,
     inputs: InputsWithProjectPath

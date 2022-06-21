@@ -154,6 +154,13 @@ export class AppManifest implements CloudResource {
               }
               staticTabIndex++;
             }
+            if (!appManifest.configurableTabs || appManifest.configurableTabs.length === 0) {
+              if (capability.existingApp) {
+                appManifest.configurableTabs = CONFIGURABLE_TABS_TPL_EXISTING_APP;
+              } else {
+                appManifest.configurableTabs = CONFIGURABLE_TABS_TPL_V3;
+              }
+            }
             break;
           case "configurableTab":
             appManifest.configurableTabs = appManifest.configurableTabs || [];

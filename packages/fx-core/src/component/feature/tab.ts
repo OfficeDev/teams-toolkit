@@ -14,7 +14,9 @@ import {
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
+import { isVSProject } from "../../common";
 import { CoreQuestionNames } from "../../core/question";
+import { ComponentType } from "../../plugins/resource/apiconnector/constants";
 import { ComponentNames } from "../constants";
 @Service("teams-tab")
 export class TeamsfxCore {
@@ -23,7 +25,10 @@ export class TeamsfxCore {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    inputs.hosting = inputs.hosting || ComponentNames.AzureStorage;
+    inputs.hosting =
+      inputs.hosting || isVSProject(context.projectSetting)
+        ? ComponentNames.AzureWebApp
+        : ComponentNames.AzureStorage;
     const actions: Action[] = [
       {
         name: "fx.configTab",

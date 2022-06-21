@@ -1,5 +1,5 @@
-using {{ProjectName}};
-using {{ProjectName}}.Bot;
+using {{SafeProjectName}};
+using {{SafeProjectName}}.Bot;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 

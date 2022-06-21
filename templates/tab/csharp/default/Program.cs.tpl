@@ -1,4 +1,4 @@
-using {{ProjectName}}.Interop.TeamsSDK;
+using {{SafeProjectName}}.Interop.TeamsSDK;
 
 var builder = WebApplication.CreateBuilder(args);
 

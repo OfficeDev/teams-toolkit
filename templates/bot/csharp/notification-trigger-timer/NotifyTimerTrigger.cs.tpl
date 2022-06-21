@@ -1,6 +1,6 @@
-namespace {{ProjectName}}
+namespace {{SafeProjectName}}
 {
-    using {{ProjectName}}.Models;
+    using {{SafeProjectName}}.Models;
     using AdaptiveCards.Templating;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -12,7 +12,6 @@ namespace {{ProjectName}}
 
     public sealed class NotifyTimerTrigger
     {
-        private readonly string _adaptiveCardFilePath = Path.Combine(".", "Resources", "NotificationDefault.json");
         private readonly ConversationBot _conversation;
         private readonly ILogger<NotifyTimerTrigger> _log;
 
@@ -23,12 +22,13 @@ namespace {{ProjectName}}
         }
 
         [FunctionName("NotifyTimerTrigger")]
-        public async Task Run([TimerTrigger("*/30 * * * * *")]TimerInfo myTimer, CancellationToken cancellationToken)
+        public async Task Run([TimerTrigger("*/30 * * * * *")]TimerInfo myTimer, ExecutionContext context, CancellationToken cancellationToken)
         {
             _log.LogInformation($"NotifyTimerTrigger is triggered at {DateTime.Now}.");
 
             // Read adaptive card template
-            var cardTemplate = await File.ReadAllTextAsync(_adaptiveCardFilePath, cancellationToken);
+            var adaptiveCardFilePath = Path.Combine(context.FunctionAppDirectory, "Resources", "NotificationDefault.json");
+            var cardTemplate = await File.ReadAllTextAsync(adaptiveCardFilePath, cancellationToken);
 
             var installations = await _conversation.Notification.GetInstallationsAsync(cancellationToken);
             foreach (var installation in installations)

@@ -1,5 +1,5 @@
 @page
-@model {{ProjectName}}.Pages.ErrorModel
+@model {{SafeProjectName}}.Pages.ErrorModel
 
 <!DOCTYPE html>
 <html>

@@ -191,8 +191,78 @@ describe("App name question", async () => {
     chai.assert.equal(result, getLocalizedString("core.QuestionAppName.validation.maxlength"));
   });
 
-  it("app name with wrong pattern", async () => {
+  it("app name with only letters", async () => {
+    const input = "app";
+    const result = await validFunc(input);
+
+    chai.assert.isUndefined(result);
+  });
+
+  it("app name starting with digit", async () => {
     const input = "123app";
+    const result = await validFunc(input);
+
+    chai.assert.equal(result, getLocalizedString("core.QuestionAppName.validation.pattern"));
+  });
+
+  it("app name count of alphanumerics less than 2", async () => {
+    const input = "a..(";
+    const result = await validFunc(input);
+
+    chai.assert.equal(result, getLocalizedString("core.QuestionAppName.validation.pattern"));
+  });
+
+  it("app name containing dot", async () => {
+    const input = "app.123";
+    const result = await validFunc(input);
+
+    chai.assert.isUndefined(result);
+  });
+
+  it("app name containing hyphen", async () => {
+    const input = "app-123";
+    const result = await validFunc(input);
+
+    chai.assert.isUndefined(result);
+  });
+
+  it("app name containing multiple special characters", async () => {
+    const input = "a..(1";
+    const result = await validFunc(input);
+
+    chai.assert.isUndefined(result);
+  });
+
+  it("app name containing space", async () => {
+    const input = "app 123";
+    const result = await validFunc(input);
+
+    chai.assert.isUndefined(result);
+  });
+
+  it("app name containing dot at the end - wrong pattern", async () => {
+    const input = "app.app.";
+    const result = await validFunc(input);
+
+    chai.assert.equal(result, getLocalizedString("core.QuestionAppName.validation.pattern"));
+  });
+
+  it("app name containing space at the end - wrong pattern", async () => {
+    const input = "app123 ";
+    const result = await validFunc(input);
+
+    chai.assert.equal(result, getLocalizedString("core.QuestionAppName.validation.pattern"));
+  });
+
+  it("app name containing invalid control code", async () => {
+    const input = "a\u0001a";
+    const result = await validFunc(input);
+
+    chai.assert.equal(result, getLocalizedString("core.QuestionAppName.validation.pattern"));
+  });
+
+  it("app name containing invalid character", async () => {
+    const input = "app<>123";
     const result = await validFunc(input);
 
     chai.assert.equal(result, getLocalizedString("core.QuestionAppName.validation.pattern"));

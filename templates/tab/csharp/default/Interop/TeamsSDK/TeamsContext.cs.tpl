@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Text.Json.Serialization;
 
-namespace {{ProjectName}}.Interop.TeamsSDK;
+namespace {{SafeProjectName}}.Interop.TeamsSDK;
 
 public class TeamsContext
 {

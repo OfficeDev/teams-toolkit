@@ -5,7 +5,7 @@ using Microsoft.Bot.Schema.Teams;
 
 using Newtonsoft.Json.Linq;
 
-namespace {{ProjectName}}.Bot;
+namespace {{SafeProjectName}}.Bot;
 
 public class TeamsMessageExtension : TeamsActivityHandler
 {

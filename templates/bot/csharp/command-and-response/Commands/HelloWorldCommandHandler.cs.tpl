@@ -1,6 +1,6 @@
-﻿namespace {{ProjectName}}.Commands
+﻿namespace {{SafeProjectName}}.Commands
 {
-    using {{ProjectName}}.Models;
+    using {{SafeProjectName}}.Models;
     using AdaptiveCards.Templating;
     using Microsoft.Bot.Builder;
     using Microsoft.Bot.Schema;

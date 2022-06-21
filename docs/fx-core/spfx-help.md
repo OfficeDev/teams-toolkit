@@ -11,27 +11,17 @@ The following table lists SharePoint Framework and compatible versions of common
 | 1.14 | LTS v12, LTS v14 | v5, v6 | v3.9 | v16.13.1 |
 
 ### Error message
-By default,  locally installed `yo` is engaged to execute the following command with related _args_: `yo @microsoft/sharepoint`. 
-SPFx scaffolding could fail due to unsuccessful execution of above command:
-
-#### _"Failed to run command: " yo @microsoft/sharepoint ..." , 'yo' is not recognized as an internal or external command"_
+Teams Toolkit automatically checks Node.js and NPM versions for the latest SharePoint Framework it supports (SPFx v1.14.0 as of writing). You will encounter this error when scaffolding if Teams Toolkit detects unsupported Node.js or NPM versions:
+![image](../images/fx-core/spfx/spfx-compat-check.png)
 
 ### Remediation
 
-If your OS system is Windows,
-
-1. Check your npm and Node.js version. [Supported Node.js versions for SPFx v1.14.0](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/set-up-your-development-environment#install-nodejs) are:
+Check your npm and Node.js version. [Supported Node.js versions for SPFx v1.14.0](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/set-up-your-development-environment#install-nodejs) are:
 
 - Node.js v12.13.0+ (_Erbium_)
 - Node.js v14.15.0+ (_Fermium_)
-Corresponding npm version is v6.x. Please make sure you have the right version installed for both npm and Node.js.
 
-2. Check executable files for `yo` exist after package installation at the correct path under _HOME\\.fx\bin\spfx_
-
-If your OS system is MacOS or Linux,
-
-1. Check executable files for `yo` exist after package installation at the correct path under _HOME/\.fx/bin/spfx/node_modules/\.bin_
-
+**Corresponding npm version is v6.x**. Please make sure you have the right version installed for both npm and Node.js.
 
 ## 2. Failure to install prerequisites<a name="prerequisites"></a>
 

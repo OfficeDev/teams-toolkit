@@ -666,6 +666,14 @@ export interface ErrorOptionBase {
     userData?: any;
 }
 
+// @public
+export interface ExecuteFuncConfig extends UIConfig<string> {
+    // (undocumented)
+    func: LocalFunc<any>;
+    // (undocumented)
+    inputs: Inputs;
+}
+
 // @public (undocumented)
 export interface ExpServiceProvider {
     // (undocumented)
@@ -2008,6 +2016,7 @@ export interface UserInputQuestion extends BaseQuestion {
 // @public
 export interface UserInteraction {
     createProgressBar: (title: string, totalSteps: number) => IProgressHandler;
+    executeFunction?(config: ExecuteFuncConfig): any | Promise<any>;
     inputText: (config: InputTextConfig) => Promise<Result<InputTextResult, FxError>>;
     openUrl(link: string): Promise<Result<boolean, FxError>>;
     reload?(): Promise<Result<boolean, FxError>>;

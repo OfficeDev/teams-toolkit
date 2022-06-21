@@ -87,7 +87,17 @@ const questionVisitor = async function (
   }
   if (question.type === "func") {
     try {
-      const res = await question.func(inputs);
+      let res: any;
+      if (ui.executeFunction) {
+        res = await ui.executeFunction({
+          name: question.name,
+          title: question.title ?? "Executing operation...",
+          func: question.func,
+          inputs: inputs,
+        });
+      } else {
+        res = await question.func(inputs);
+      }
       if (typeof res === "object" && "isOk" in res) {
         const fxresult = res as Result<any, FxError>;
         if (fxresult.isOk()) {

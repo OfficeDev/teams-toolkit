@@ -37,6 +37,7 @@ import {
   SingleSelectConfig,
   MultiSelectConfig,
   InputTextConfig,
+  ExecuteFuncConfig,
   RunnableTask,
   UIConfig,
   err,
@@ -743,5 +744,18 @@ export class VsCodeUI implements UserInteraction {
         else resolve(err(UserCancelError));
       });
     });
+  }
+
+  async executeFunction(config: ExecuteFuncConfig) {
+    const quickPick = window.createQuickPick<FxQuickPickItem>();
+    quickPick.title = config.title;
+    quickPick.busy = true;
+    quickPick.show();
+    try {
+      return await config.func(config.inputs);
+    } finally {
+      quickPick.hide();
+      quickPick.dispose();
+    }
   }
 }

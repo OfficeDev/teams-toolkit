@@ -12,7 +12,6 @@ namespace {{SafeProjectName}}
 
     public sealed class NotifyHttpTrigger
     {
-        private readonly string _adaptiveCardFilePath = Path.Combine(".", "Resources", "NotificationDefault.json");
         private readonly ConversationBot _conversation;
         private readonly ILogger<NotifyHttpTrigger> _log;
 
@@ -23,12 +22,13 @@ namespace {{SafeProjectName}}
         }
 
         [FunctionName("NotifyHttpTrigger")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "api/notification")] HttpRequest req)
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "api/notification")] HttpRequest req, ExecutionContext context)
         {
             _log.LogInformation("NotifyHttpTrigger is triggered.");
 
             // Read adaptive card template
-            var cardTemplate = await System.IO.File.ReadAllTextAsync(_adaptiveCardFilePath, req.HttpContext.RequestAborted);
+            var adaptiveCardFilePath = Path.Combine(context.FunctionAppDirectory, "Resources", "NotificationDefault.json");
+            var cardTemplate = await System.IO.File.ReadAllTextAsync(adaptiveCardFilePath, req.HttpContext.RequestAborted);
 
             var installations = await _conversation.Notification.GetInstallationsAsync(req.HttpContext.RequestAborted);
             foreach (var installation in installations)

@@ -3,7 +3,7 @@
 
 import { Retry } from "../constants";
 export class RetryHandler {
-  public static async Retry<T>(fn: () => Promise<T>, ignoreError = false): Promise<T | undefined> {
+  public static async Retry<T>(fn: () => Promise<T> | T, ignoreError = false): Promise<T | undefined> {
     let retries = Retry.RETRY_TIMES;
     while (retries > 0) {
       retries = retries - 1;

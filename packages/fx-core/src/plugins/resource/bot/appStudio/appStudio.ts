@@ -162,9 +162,9 @@ export class AppStudio {
     try {
       if (registration.botId) {
         const getBotRegistrationResponse: AxiosResponse<any> | undefined = await RetryHandler.Retry(
-          () => {
+          async () => {
             try {
-              return axiosInstance.get(
+              return await axiosInstance.get(
                 `${AppStudio.baseUrl}/api/botframework/${registration.botId}`
               );
             } catch (e) {
@@ -177,7 +177,7 @@ export class AppStudio {
           },
           true
         );
-        if (getBotRegistrationResponse?.status !== 404) {
+        if (getBotRegistrationResponse?.status === 201) {
           Logger.info(Messages.BotResourceExist("Appstudio"));
           return;
         }

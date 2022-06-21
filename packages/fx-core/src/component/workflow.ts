@@ -451,6 +451,7 @@ export async function executeFunctionAction(
         if (bicep) {
           const bicepPlans = persistBicepPlans(inputs.projectPath, bicep);
           bicepPlans.forEach((p) => effects.push(p));
+          // TODO: handle the returned error of bicep generation
           await persistBicep(
             inputs.projectPath,
             convertToAlphanumericOnly(context.projectSetting.appName),

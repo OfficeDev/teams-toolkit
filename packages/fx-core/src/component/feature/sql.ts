@@ -47,6 +47,10 @@ export class Sql {
             return ok([]);
           }
           const remarks: string[] = ["add component 'azure-sql' in projectSettings"];
+          const identityComponent = getComponent(context.projectSetting, "identity");
+          if (!identityComponent) {
+            remarks.push("add component 'identity' in projectSettings");
+          }
           const webAppComponent = getComponent(context.projectSetting, "azure-web-app");
           if (webAppComponent) {
             remarks.push("connect 'azure-sql' to component 'azure-web-app' in projectSettings");
@@ -73,6 +77,14 @@ export class Sql {
             name: "azure-sql",
             provision: true,
           });
+          const identityComponent = getComponent(context.projectSetting, "identity");
+          if (!identityComponent) {
+            projectSettings.components.push({
+              name: "identity",
+              provision: true,
+            });
+            remarks.push("add component 'identity' in projectSettings");
+          }
           const webAppComponent = getComponent(context.projectSetting, "azure-web-app");
           if (webAppComponent) {
             if (!webAppComponent.connections) webAppComponent.connections = [];
@@ -109,13 +121,16 @@ export class Sql {
           provisionType: provisionType,
         },
       },
-      {
+    ];
+    const identityComponent = getComponent(context.projectSetting, "identity");
+    if (!identityComponent) {
+      actions.push({
         name: "call:identity.generateBicep",
         type: "call",
         required: true,
         targetAction: "identity.generateBicep",
-      },
-    ];
+      });
+    }
     const webAppComponent = getComponent(context.projectSetting, "azure-web-app");
     if (webAppComponent) {
       actions.push({

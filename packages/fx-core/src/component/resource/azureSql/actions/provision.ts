@@ -48,9 +48,9 @@ export class ProvisionActionImplement {
     inputs: InputsWithProjectPath
   ): Promise<Result<Effect[], FxError>> {
     const ctx = context as ProvisionContextV3;
-    const state = ctx.envInfo.state[ComponentNames.AzureSQL];
+    const state = (ctx.envInfo.state[ComponentNames.AzureSQL] ??= {});
     let shouldAsk;
-    if (state && state.sqlResourceId) {
+    if (state.sqlResourceId) {
       const sqlMgrConfig = LoadManagementConfig(state);
       const sqlMgrClient = await ManagementClient.create(
         ctx.tokenProvider.azureAccountProvider,

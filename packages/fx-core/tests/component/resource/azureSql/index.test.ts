@@ -100,7 +100,6 @@ describe("Azure-SQL Component", () => {
   });
 
   it("provision happy path", async function () {
-    context.envInfo!.state[ComponentNames.AzureSQL] = {};
     sandbox.stub(Servers.prototype, "checkNameAvailability").resolves({ available: true });
     sandbox
       .stub(MockUserInteraction.prototype, "inputText")

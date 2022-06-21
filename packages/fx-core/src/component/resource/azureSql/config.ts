@@ -47,7 +47,7 @@ function loadDatabases(state: v3.CloudResource): string[] {
 
 function loadSubscriptionId(state: v3.CloudResource): string {
   let subscriptionId = "";
-  const sqlResourceId = state.resourceId;
+  const sqlResourceId = state["sqlResourceId"];
   if (sqlResourceId) {
     try {
       subscriptionId = getSubscriptionIdFromResourceId(sqlResourceId);
@@ -64,7 +64,7 @@ function loadSubscriptionId(state: v3.CloudResource): string {
 
 function loadResourceGroup(state: v3.CloudResource): string {
   let resourceGroup = "";
-  const sqlResourceId = state.resourceId;
+  const sqlResourceId = state["sqlResourceId"];
   if (sqlResourceId) {
     try {
       resourceGroup = getResourceGroupNameFromResourceId(sqlResourceId);

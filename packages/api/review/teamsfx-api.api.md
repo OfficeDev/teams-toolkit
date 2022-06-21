@@ -2017,7 +2017,7 @@ export interface UserInputQuestion extends BaseQuestion {
 // @public
 export interface UserInteraction {
     createProgressBar: (title: string, totalSteps: number) => IProgressHandler;
-    executeFunction?(config: ExecuteFuncConfig): any;
+    executeFunction?(config: ExecuteFuncConfig): any | Promise<any>;
     inputText: (config: InputTextConfig) => Promise<Result<InputTextResult, FxError>>;
     openUrl(link: string): Promise<Result<boolean, FxError>>;
     reload?(): Promise<Result<boolean, FxError>>;

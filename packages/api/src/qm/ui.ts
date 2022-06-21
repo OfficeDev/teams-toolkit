@@ -337,7 +337,7 @@ export interface UserInteraction {
    * Execute a function. User interface can decide what the UX is.
    * @param config execute function configurations
    */
-  executeFunction?(config: ExecuteFuncConfig): any;
+  executeFunction?(config: ExecuteFuncConfig): any | Promise<any>;
 }
 
 export interface IProgressHandler {

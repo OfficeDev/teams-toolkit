@@ -271,7 +271,7 @@ export function renderTemplate(manifestString: string, view: any): string {
 
 export class RetryHandler {
   public static async Retry<T>(fn: () => Promise<T>): Promise<T | undefined> {
-    let retries = 10;
+    let retries = 6;
     let response;
     while (retries > 0) {
       retries = retries - 1;

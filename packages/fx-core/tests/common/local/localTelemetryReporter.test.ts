@@ -40,7 +40,14 @@ describe("localTelemetryReporter", () => {
       measurements?: { [key: string]: number },
       errorProps?: string[]
     ): void => {
-      mockedEvents.push({ type: "error", error, eventName, properties, measurements, errorProps });
+      mockedEvents.push({
+        type: "error",
+        error,
+        eventName,
+        properties,
+        measurements,
+        errorProps,
+      });
     },
 
     sendTelemetryEvent: (
@@ -339,7 +346,6 @@ describe("localTelemetryReporter", () => {
         async (ctx: TelemetryContext) => {
           ctx.properties["ctxProperty"] = "ctxProperty";
           ctx.measurements["ctxMeasurement"] = 42;
-          ctx.errorProps = ["myErrorMessage"];
           return "test result";
         },
         () => undefined,
@@ -361,7 +367,6 @@ describe("localTelemetryReporter", () => {
         initialProperty: "initialProperty",
         ctxProperty: "ctxProperty",
       });
-      chai.assert.deepEqual(mockedEvents[1].errorProps, ["myErrorMessage"]);
       chai.assert.isTrue(Object.keys(mockedEvents[1].measurements || {}).includes("duration"));
       chai.assert.equal(mockedEvents[1].measurements?.["ctxMeasurement"], 42);
     });
@@ -375,6 +380,7 @@ describe("localTelemetryReporter", () => {
           async (ctx: TelemetryContext) => {
             ctx.properties["ctxProperty"] = "ctxProperty";
             ctx.measurements["ctxMeasurement"] = 42;
+            ctx.errorProps = ["myErrorMessage"];
             throw error;
           },
           () => undefined,
@@ -396,6 +402,7 @@ describe("localTelemetryReporter", () => {
         ctxProperty: "ctxProperty",
         [LocalTelemetryReporter.PropertyDebugLastEventName]: testStartEventName,
       });
+      chai.assert.deepEqual(mockedEvents[1].errorProps, ["myErrorMessage"]);
       chai.assert.isTrue(Object.keys(mockedEvents[1].measurements || {}).includes("duration"));
       chai.assert.equal(mockedEvents[1].measurements?.["ctxMeasurement"], 42);
     });

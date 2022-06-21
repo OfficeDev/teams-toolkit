@@ -354,6 +354,8 @@ export enum Colors {
 // @public (undocumented)
 export interface Component extends Json {
     // (undocumented)
+    artifactFolder?: string;
+    // (undocumented)
     build?: boolean;
     // (undocumented)
     code?: string;

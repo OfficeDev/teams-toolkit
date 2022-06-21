@@ -18,6 +18,7 @@ import { Service } from "typedi";
 import { azureWebSiteDeploy } from "../../common/azure-hosting/utils";
 import { Messages } from "../../plugins/resource/bot/resources/messages";
 import * as utils from "../../plugins/resource/bot/utils/common";
+import { getLanguage, getRuntime } from "../../plugins/resource/bot/v2/mapping";
 import {
   CheckThrowSomethingMissing,
   PackDirectoryExistenceError,
@@ -39,6 +40,18 @@ export class AzureFunctionResource extends AzureResource {
     },
   };
   finalOutputKeys = ["resourceId", "endpoint"];
+  generateBicep(
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    this.getTemplateContext = (context, inputs) => {
+      const configs: string[] = [];
+      configs.push(getRuntime(getLanguage(context.projectSetting.programmingLanguage)));
+      this.templateContext.configs = configs;
+      return this.templateContext;
+    };
+    return super.generateBicep(context, inputs);
+  }
   configure(
     context: ContextV3,
     inputs: InputsWithProjectPath
@@ -85,7 +98,7 @@ export class AzureFunctionResource extends AzureResource {
             name: "azure",
             remarks: `deploy azure function in folder: ${path.join(
               inputs.projectPath,
-              inputs.folder
+              inputs.artifactFolder
             )}`,
           },
         ]);
@@ -94,11 +107,11 @@ export class AzureFunctionResource extends AzureResource {
         const ctx = context as ProvisionContextV3;
         ctx.logProvider.info(Messages.DeployingBot);
         // Preconditions checking.
-        const workingDir = path.join(inputs.projectPath, inputs.folder);
-        if (!workingDir) {
+        const publishDir = path.resolve(inputs.projectPath, inputs.artifactFolder);
+        if (!publishDir) {
           throw new PreconditionError(Messages.WorkingDirIsMissing, []);
         }
-        const packDirExisted = await fs.pathExists(workingDir);
+        const packDirExisted = await fs.pathExists(publishDir);
         if (!packDirExisted) {
           throw new PackDirectoryExistenceError();
         }
@@ -111,14 +124,14 @@ export class AzureFunctionResource extends AzureResource {
         );
         const resourceId = states[this.outputs.resourceId.key];
 
-        const zipBuffer = await utils.zipFolderAsync(workingDir, "");
+        const zipBuffer = await utils.zipFolderAsync(publishDir, "");
 
         await azureWebSiteDeploy(resourceId, ctx.tokenProvider, zipBuffer);
         return ok([
           {
             type: "service",
             name: "azure",
-            remarks: `deploy azure function in folder: ${workingDir}`,
+            remarks: `deploy azure function in folder: ${publishDir}`,
           },
         ]);
       },

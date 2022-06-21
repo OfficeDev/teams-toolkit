@@ -3,24 +3,16 @@
 
 import {
   Action,
-  Bicep,
   CloudResource,
   ContextV3,
   FxError,
   InputsWithProjectPath,
   MaybePromise,
-  ok,
   Result,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
-import * as path from "path";
-import fs from "fs-extra";
-import { getTemplatesFolder } from "../../folder";
 import { getComponent } from "../workflow";
-import { compileHandlebarsTemplateString } from "../../common/tools";
-import { AzureWebAppResource } from "../resource/azureWebApp";
-import { AzureStorageResource } from "../resource/azureStorage";
 import { AzureResourceConfig } from "./azureResourceConfig";
 
 @Service("azure-function-config")

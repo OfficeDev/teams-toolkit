@@ -60,7 +60,7 @@ export class AzureWebAppResource extends AzureResource {
             name: "azure",
             remarks: `deploy azure web app in folder: ${path.join(
               inputs.projectPath,
-              inputs.folder
+              inputs.artifactFolder
             )}`,
           },
         ]);
@@ -69,11 +69,11 @@ export class AzureWebAppResource extends AzureResource {
         const ctx = context as ProvisionContextV3;
         ctx.logProvider.info(Messages.DeployingBot);
         // Preconditions checking.
-        const workingDir = path.join(inputs.projectPath, inputs.folder);
-        if (!workingDir) {
+        const publishDir = path.join(inputs.projectPath, inputs.artifactFolder);
+        if (!publishDir) {
           throw new PreconditionError(Messages.WorkingDirIsMissing, []);
         }
-        const packDirExisted = await fs.pathExists(workingDir);
+        const packDirExisted = await fs.pathExists(publishDir);
         if (!packDirExisted) {
           throw new PackDirectoryExistenceError();
         }
@@ -89,14 +89,14 @@ export class AzureWebAppResource extends AzureResource {
         );
         const resourceId = webAppState[this.outputs.resourceId.key];
 
-        const zipBuffer = await utils.zipFolderAsync(workingDir, "");
+        const zipBuffer = await utils.zipFolderAsync(publishDir, "");
 
         await azureWebSiteDeploy(resourceId, ctx.tokenProvider, zipBuffer);
         return ok([
           {
             type: "service",
             name: "azure",
-            remarks: `deploy azure web app in folder: ${workingDir}`,
+            remarks: `deploy azure web app in folder: ${publishDir}`,
           },
         ]);
       },

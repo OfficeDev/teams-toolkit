@@ -76,6 +76,7 @@ import {
   TabSPFxItem,
   TabSsoItem,
   BotFeatureIds,
+  TabFeatureIds,
 } from "../plugins/solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { CallbackRegistry } from "./callback";
@@ -841,19 +842,12 @@ export class FxCore implements v3.ICore {
   }
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectMigratorMW,
-    ProjectConsolidateMW,
-    AadManifestMigrationMW,
-    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
-    LocalSettingsLoaderMW,
-    SolutionLoaderMW_V3,
     QuestionModelMW_V3,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW(),
+    EnvInfoWriterMW_V3(),
   ])
   async executeUserTaskV3(
     func: Func,
@@ -861,16 +855,20 @@ export class FxCore implements v3.ICore {
     ctx?: CoreHookContext
   ): Promise<Result<unknown, FxError>> {
     if (func.method === "addFeature") {
-      const feature = inputs.feature;
+      const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+      const feature = inputs.feature as string;
+      let res;
       if (feature === "sql") {
-        const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-        await runAction("sql.add", context, inputs as InputsWithProjectPath);
-        ctx!.projectSettings = context.projectSetting;
-      } else if (feature === BotOptionItem.id) {
-        const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-        await runAction("teams-bot.add", context, inputs as InputsWithProjectPath);
-        ctx!.projectSettings = context.projectSetting;
+        res = await runAction("sql.add", context, inputs as InputsWithProjectPath);
+      } else if (BotFeatureIds.includes(feature)) {
+        res = await runAction("teams-bot.add", context, inputs as InputsWithProjectPath);
+      } else if (TabFeatureIds.includes(feature)) {
+        res = await runAction("teams-tab.add", context, inputs as InputsWithProjectPath);
+      } else {
+        return err(new TaskNotSupportError(feature));
       }
+      if (res.isErr()) return err(res.error);
+      ctx!.projectSettings = context.projectSetting;
     }
     return ok(undefined);
   }

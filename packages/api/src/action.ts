@@ -37,6 +37,7 @@ export interface Action {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+
   exception?: (
     context: ContextV3,
     inputs: InputsWithProjectPath
@@ -58,7 +59,7 @@ export interface GroupAction extends Action {
 /**
  * shell action: execute a shell script
  */
-export interface ShellAction {
+export interface ShellAction extends Action {
   type: "shell";
   description: string;
   command: string;
@@ -71,7 +72,7 @@ export interface ShellAction {
 /**
  * call action: call an existing action (defined locally or in other package)
  */
-export interface CallAction {
+export interface CallAction extends Action {
   type: "call";
   required: boolean; // required=true, throw error of target action does not exist; required=false, ignore this step if target action does not exist.
   targetAction: string;
@@ -80,7 +81,7 @@ export interface CallAction {
 /**
  * function action: run a javascript function call that can do any kinds of work
  */
-export interface FunctionAction {
+export interface FunctionAction extends Action {
   name: string;
   type: "function";
   /**

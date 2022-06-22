@@ -209,10 +209,10 @@ function addCheckResultsForTelemetry(
   errorProps: string[]
 ): void {
   const [resultRaw, resultSafe] = convertCheckResultsForTelemetry(checkResults);
-  properties[TelemetryProperty.DebugCheckResults] = resultSafe;
-  properties[TelemetryProperty.DebugCheckResultsRaw] = resultRaw;
+  properties[TelemetryProperty.DebugCheckResultsSafe] = resultSafe;
+  properties[TelemetryProperty.DebugCheckResults] = resultRaw;
   // only the raw event contains error message
-  errorProps.push(TelemetryProperty.DebugCheckResultsRaw);
+  errorProps.push(TelemetryProperty.DebugCheckResults);
 }
 
 async function checkPort(

@@ -214,7 +214,7 @@ export enum TelemetryProperty {
   DebugAppId = "debug-appid",
   DebugProjectComponents = "debug-project-components",
   DebugCheckResults = "debug-check-results",
-  DebugErrorCodes = "error-codes",
+  DebugErrorCodes = "debug-error-codes",
   DebugNpmInstallName = "debug-npm-install-name",
   DebugNpmInstallExitCode = "debug-npm-install-exit-code",
   DebugNpmInstallErrorMessage = "debug-npm-install-error-message",

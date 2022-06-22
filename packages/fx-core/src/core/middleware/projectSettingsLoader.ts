@@ -25,7 +25,6 @@ import {
 import { isVSProject, validateProjectSettings } from "../../common/projectSettingsHelper";
 import {
   Component,
-  ProjectMigratorStatus,
   sendTelemetryEvent,
   TelemetryEvent,
   TelemetryProperty,
@@ -40,7 +39,7 @@ import {
   PathNotExistError,
   ReadFileError,
 } from "../error";
-import { globalVars, isV3, isVS } from "../globalVars";
+import { globalVars, isV3 } from "../globalVars";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 import { CoreHookContext } from "../types";
 

@@ -1,6 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import "reflect-metadata";
+
+import fs from "fs-extra";
+import { Service } from "typedi";
+import * as uuid from "uuid";
+
 import {
   Action,
   CallAction,
@@ -12,12 +18,15 @@ import {
   ProjectSettingsV3,
   Result,
 } from "@microsoft/teamsfx-api";
-import fs from "fs-extra";
-import "reflect-metadata";
-import { Service } from "typedi";
-import { getProjectSettingsPath } from "../core/middleware/projectSettingsLoader";
-import * as uuid from "uuid";
+
+import {
+  Component,
+  sendTelemetryEvent,
+  TelemetryEvent,
+  TelemetryProperty,
+} from "../common/telemetry";
 import { LocalCrypto } from "../core/crypto";
+import { getProjectSettingsPath } from "../core/middleware/projectSettingsLoader";
 import { createFileEffect } from "./utils";
 
 @Service("project-settings")
@@ -38,6 +47,9 @@ export class ProjectSettingsManager {
         const projectSettings = (await fs.readJson(filePath)) as ProjectSettingsV3;
         if (!projectSettings.projectId) {
           projectSettings.projectId = uuid.v4();
+          sendTelemetryEvent(Component.core, TelemetryEvent.FillProjectId, {
+            [TelemetryProperty.ProjectId]: projectSettings.projectId,
+          });
         }
         context.projectSetting = projectSettings;
         context.cryptoProvider = new LocalCrypto(projectSettings.projectId);

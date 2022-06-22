@@ -80,6 +80,7 @@ export enum TelemetryEvent {
   ProjectConsolidateCheckManifestError = "project-consolidate-check-manifest-error",
   DetectPortStart = "detect-port-start",
   DetectPort = "detect-port",
+  FillProjectId = "fill-project-id",
 }
 
 export enum TelemetrySuccess {

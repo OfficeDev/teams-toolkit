@@ -164,8 +164,7 @@ async function runWithCheckResultsTelemetry(
       } else {
         // multiple errors in one event
         ctx.properties[TelemetryProperty.DebugErrorCodes] = JSON.stringify(errorCodes);
-        ctx.properties[TelemetryProperty.DebugCheckResults] = JSON.stringify(results);
-        ctx.errorProps.push(TelemetryProperty.DebugCheckResults);
+        addCheckResultsForTelemetry(results, ctx.properties, ctx.errorProps);
         return new UserError({
           source: ExtensionSource,
           name: errorName,
@@ -173,6 +172,47 @@ async function runWithCheckResultsTelemetry(
       }
     }
   );
+}
+
+// Mainly addresses two issues:
+// 1. Some error messages contain special characters which will cause the whole debug-check-results to be redacted.
+// 2. CheckResult[] is hard to parse in kusto query (an array of objects).
+//
+// `debug-check-results` contains only known content and we know it will not be redacted.
+// `debug-check-results-raw` might contain arbitrary string and be redacted.
+function convertCheckResultsForTelemetry(checkResults: CheckResult[]): [string, string] {
+  const resultRaw: { [checker: string]: unknown } = {};
+  const resultSafe: { [checker: string]: { [key: string]: string | undefined } } = {};
+  for (const checkResult of checkResults) {
+    resultRaw[checkResult.checker] = checkResult;
+    resultSafe[checkResult.checker] = {
+      result: checkResult.result,
+      source: checkResult.error?.source,
+      errorCode: checkResult.error?.name,
+      errorType:
+        checkResult.error === undefined
+          ? undefined
+          : checkResult.error instanceof UserError
+          ? "user"
+          : checkResult.error instanceof SystemError
+          ? "system"
+          : "unknown",
+    };
+  }
+
+  return [JSON.stringify(resultRaw), JSON.stringify(resultSafe)];
+}
+
+function addCheckResultsForTelemetry(
+  checkResults: CheckResult[],
+  properties: { [key: string]: string },
+  errorProps: string[]
+): void {
+  const [resultRaw, resultSafe] = convertCheckResultsForTelemetry(checkResults);
+  properties[TelemetryProperty.DebugCheckResultsSafe] = resultSafe;
+  properties[TelemetryProperty.DebugCheckResults] = resultRaw;
+  // only the raw event contains error message
+  errorProps.push(TelemetryProperty.DebugCheckResults);
 }
 
 async function checkPort(
@@ -430,8 +470,10 @@ async function _checkAndInstall(ctx: TelemetryContext): Promise<Result<void, FxE
     const fxError = assembleError(error);
     showError(fxError);
     await progressHelper?.stop(false);
-    ctx.properties[TelemetryProperty.DebugCheckResults] = JSON.stringify(checkResults);
-    ctx.errorProps.push(TelemetryProperty.DebugCheckResults);
+    // also add checkResult to the debug-all event
+    const session = commonUtils.getLocalDebugSession();
+    addCheckResultsForTelemetry(checkResults, session.properties, session.errorProps);
+    addCheckResultsForTelemetry(checkResults, ctx.properties, ctx.errorProps);
     return err(fxError);
   }
   return ok(undefined);

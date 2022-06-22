@@ -177,7 +177,7 @@ export class AppStudio {
           },
           true
         );
-        if (getBotRegistrationResponse?.status === 201) {
+        if (getBotRegistrationResponse?.status === 200) {
           Logger.info(Messages.BotResourceExist("Appstudio"));
           return;
         }

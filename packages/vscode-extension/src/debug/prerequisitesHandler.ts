@@ -190,7 +190,9 @@ function convertCheckResultsForTelemetry(checkResults: CheckResult[]): [string, 
       source: checkResult.error?.source,
       errorCode: checkResult.error?.name,
       errorType:
-        checkResult.error instanceof UserError
+        checkResult.error === undefined
+          ? undefined
+          : checkResult.error instanceof UserError
           ? "user"
           : checkResult.error instanceof SystemError
           ? "system"

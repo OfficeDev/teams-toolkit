@@ -35,8 +35,28 @@ interface AADApp extends AzureResource {
     tenantId: string;
 }
 
+// @public (undocumented)
+export type Action = GroupAction | ShellAction | CallAction | FunctionAction;
+
 // @public
-export type Action = GroupAction | CallAction | FunctionAction | ShellAction;
+export interface ActionBase {
+    // (undocumented)
+    exception?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+    // (undocumented)
+    inputs?: Json;
+    // (undocumented)
+    name?: string;
+    // (undocumented)
+    plan?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Effect[], FxError>>;
+    // (undocumented)
+    post?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+    // (undocumented)
+    pre?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+    // (undocumented)
+    question?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+    // (undocumented)
+    type: "group" | "shell" | "call" | "function";
+}
 
 // @public (undocumented)
 export const AdaptiveCardsFolderName = "adaptiveCards";
@@ -282,11 +302,7 @@ interface BicepTemplate_2 extends Record<any, unknown> {
 export const BuildFolderName = "build";
 
 // @public
-export interface CallAction {
-    // (undocumented)
-    inputs?: Json;
-    // (undocumented)
-    name?: string;
+export interface CallAction extends ActionBase {
     // (undocumented)
     required: boolean;
     // (undocumented)
@@ -729,15 +745,8 @@ export interface FuncQuestion extends BaseQuestion {
 }
 
 // @public
-export interface FunctionAction {
+export interface FunctionAction extends ActionBase {
     execute: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Effect[], FxError>>;
-    // (undocumented)
-    inputs?: Json;
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    plan?(context: ContextV3, inputs: InputsWithProjectPath): MaybePromise<Result<Effect[], FxError>>;
-    question?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     type: "function";
 }
@@ -814,15 +823,10 @@ export interface Group {
 }
 
 // @public
-export interface GroupAction {
+export interface GroupAction extends ActionBase {
     // (undocumented)
     actions: Action[];
-    // (undocumented)
-    inputs?: Json;
     mode?: "sequential" | "parallel";
-    // (undocumented)
-    name?: string;
-    question?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     type: "group";
 }
@@ -1499,7 +1503,7 @@ export type SelectFolderConfig = UIConfig<string>;
 export type SelectFolderResult = InputResult<string>;
 
 // @public
-export interface ShellAction {
+export interface ShellAction extends ActionBase {
     // (undocumented)
     async?: boolean;
     // (undocumented)
@@ -1512,8 +1516,6 @@ export interface ShellAction {
     cwd?: string;
     // (undocumented)
     description: string;
-    // (undocumented)
-    name?: string;
     // (undocumented)
     type: "shell";
 }

@@ -39,7 +39,12 @@ import { Logger } from "../logger";
 import { ProgressBarFactory } from "../progressBars";
 import ignore, { Ignore } from "ignore";
 import { DeployConfigsConstants } from "../../../../common/azure-hosting/hostingConstant";
-import { getTemplateInfos, resolveHostType, resolveServiceType } from "./common";
+import {
+  getTemplateInfos,
+  resolveBotCapabilities,
+  resolveHostType,
+  resolveServiceType,
+} from "./common";
 import { ProgrammingLanguage } from "./enum";
 import { getLanguage, getProjectFileName, getRuntime, moduleMap } from "./mapping";
 
@@ -59,7 +64,9 @@ export class TeamsBotV2Impl {
     const projectPath = checkPrecondition(Messages.WorkingDirIsMissing, inputs.projectPath);
     const workingPath = TeamsBotV2Impl.getWorkingPath(projectPath, lang);
     const hostType = resolveHostType(inputs);
+    const botCapabilities = resolveBotCapabilities(inputs);
     utils.checkAndSavePluginSettingV2(ctx, PluginBot.HOST_TYPE, hostType);
+    utils.checkAndSavePluginSettingV2(ctx, PluginBot.BOT_CAPABILITIES, botCapabilities);
     const templateInfos = getTemplateInfos(ctx, inputs);
 
     await handler?.next(ProgressBarConstants.SCAFFOLD_STEP_FETCH_ZIP);

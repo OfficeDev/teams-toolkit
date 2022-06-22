@@ -36,7 +36,24 @@ interface AADApp extends AzureResource {
 }
 
 // @public
-export type Action = GroupAction | CallAction | FunctionAction | ShellAction;
+export interface Action {
+    // (undocumented)
+    exception?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+    // (undocumented)
+    inputs?: Json;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    plan?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Effect[], FxError>>;
+    // (undocumented)
+    post?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+    // (undocumented)
+    pre?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+    // (undocumented)
+    question?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+    // (undocumented)
+    type: "group" | "shell" | "call" | "function";
+}
 
 // @public (undocumented)
 export const AdaptiveCardsFolderName = "adaptiveCards";
@@ -283,10 +300,6 @@ export const BuildFolderName = "build";
 
 // @public
 export interface CallAction {
-    // (undocumented)
-    inputs?: Json;
-    // (undocumented)
-    name?: string;
     // (undocumented)
     required: boolean;
     // (undocumented)
@@ -732,12 +745,7 @@ export interface FuncQuestion extends BaseQuestion {
 export interface FunctionAction {
     execute: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Effect[], FxError>>;
     // (undocumented)
-    inputs?: Json;
-    // (undocumented)
     name: string;
-    // (undocumented)
-    plan?(context: ContextV3, inputs: InputsWithProjectPath): MaybePromise<Result<Effect[], FxError>>;
-    question?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     type: "function";
 }
@@ -814,15 +822,10 @@ export interface Group {
 }
 
 // @public
-export interface GroupAction {
+export interface GroupAction extends Action {
     // (undocumented)
     actions: Action[];
-    // (undocumented)
-    inputs?: Json;
     mode?: "sequential" | "parallel";
-    // (undocumented)
-    name?: string;
-    question?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     type: "group";
 }
@@ -1512,8 +1515,6 @@ export interface ShellAction {
     cwd?: string;
     // (undocumented)
     description: string;
-    // (undocumented)
-    name?: string;
     // (undocumented)
     type: "shell";
 }

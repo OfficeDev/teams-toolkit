@@ -17,33 +17,48 @@ import { InputsWithProjectPath } from "./v2/types";
  * 3. function - run a javascript function
  * 4. group - a group of actions that can be executed in parallel or in sequence
  */
-export type Action = GroupAction | CallAction | FunctionAction | ShellAction;
-/**
- * group action: group action make it possible to leverage multiple sub-actions to accomplishment more complex task
- */
-export interface GroupAction {
-  name?: string;
-  type: "group";
-  /**
-   * execution mode, in sequence or in parallel, if undefined, default is sequential
-   */
-  mode?: "sequential" | "parallel";
-  actions: Action[];
+export interface Action {
+  name: string;
+  type: "group" | "shell" | "call" | "function";
   inputs?: Json;
-  /**
-   * question is to define inputs of the task
-   */
+  plan?: (
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ) => MaybePromise<Result<Effect[], FxError>>;
   question?: (
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+  pre?: (
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+  post?: (
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+  exception?: (
     context: ContextV3,
     inputs: InputsWithProjectPath
   ) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
 }
 
 /**
+ * group action: group action make it possible to leverage multiple sub-actions to accomplishment more complex task
+ */
+export interface GroupAction extends Action {
+  type: "group";
+  /**
+   * execution mode, in sequence or in parallel, if undefined, default is sequential
+   */
+  mode?: "sequential" | "parallel";
+  actions: Action[];
+}
+
+/**
  * shell action: execute a shell script
  */
 export interface ShellAction {
-  name?: string;
   type: "shell";
   description: string;
   command: string;
@@ -57,11 +72,9 @@ export interface ShellAction {
  * call action: call an existing action (defined locally or in other package)
  */
 export interface CallAction {
-  name?: string;
   type: "call";
   required: boolean; // required=true, throw error of target action does not exist; required=false, ignore this step if target action does not exist.
   targetAction: string;
-  inputs?: Json;
 }
 
 /**
@@ -70,15 +83,6 @@ export interface CallAction {
 export interface FunctionAction {
   name: string;
   type: "function";
-  inputs?: Json;
-  plan?(context: ContextV3, inputs: InputsWithProjectPath): MaybePromise<Result<Effect[], FxError>>;
-  /**
-   * question is to define inputs of the task
-   */
-  question?: (
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
   /**
    * function body is a function that takes some context and inputs as parameter
    */

@@ -43,6 +43,7 @@ export interface LocalCertificate {
   certPath: string;
   keyPath: string;
   isTrusted?: boolean;
+  alreadyTrusted?: boolean;
   error?: FxError;
 }
 
@@ -98,7 +99,9 @@ export class LocalCertificateManager {
         if (certThumbprint && (await this.verifyCertificateInStore(certThumbprint))) {
           // already trusted
           localCert.isTrusted = true;
+          localCert.alreadyTrusted = true;
         } else {
+          localCert.alreadyTrusted = false;
           await this.trustCertificate(
             localCert,
             certThumbprint,

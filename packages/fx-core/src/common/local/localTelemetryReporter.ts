@@ -9,6 +9,7 @@ export interface TelemetryContext {
   properties: Record<string, string>;
   // duration is in seconds
   measurements: Record<string | "duration", number>;
+  errorProps: string[];
 }
 
 export interface ToolTelemetryReporter {
@@ -112,7 +113,11 @@ export class LocalTelemetryReporter {
 
     this.sendTelemetryEvent(eventName + LocalTelemetryReporter.StartEventSuffix, initialProperties);
 
-    const ctx: TelemetryContext = { properties: initialProperties || {}, measurements: {} };
+    const ctx: TelemetryContext = {
+      properties: initialProperties || {},
+      measurements: {},
+      errorProps: [],
+    };
     // 3 cases in one result: Result<[actual result, FxError], exception>
     let result: Result<[T, FxError | undefined], unknown>;
     try {
@@ -131,18 +136,25 @@ export class LocalTelemetryReporter {
       },
       ctx.measurements
     );
+    const errorProps = [...ctx.errorProps];
 
     if (result.isErr()) {
       // exception
       const error = assembleError(result.error, LocalTelemetryReporter.ComponentName);
       properties[TelemetryProperty.Success] = TelemetrySuccess.No;
-      this.sendTelemetryErrorEvent(eventName, error, properties, measurements);
+      this.sendTelemetryErrorEvent(eventName, error, properties, measurements, errorProps);
       // Propagate exception because wrapper function should not change original behavior.
       throw result.error;
     } else if (result.value[1] !== undefined) {
       // FxError
       properties[TelemetryProperty.Success] = TelemetrySuccess.No;
-      this.sendTelemetryErrorEvent(eventName, result.value[1], properties, measurements);
+      this.sendTelemetryErrorEvent(
+        eventName,
+        result.value[1],
+        properties,
+        measurements,
+        errorProps
+      );
       return result.value[0];
     } else {
       // success

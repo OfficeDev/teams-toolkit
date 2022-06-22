@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { Context } from "@microsoft/teamsfx-api/build/v2";
-import { Inputs, v2, Platform } from "@microsoft/teamsfx-api";
+import { Inputs, Platform } from "@microsoft/teamsfx-api";
 import { FxCICDPluginResultFactory as ResultFactory, FxResult } from "./result";
 import { CICDProviderFactory } from "./providers/factory";
 import { ProviderKind } from "./providers/enums";

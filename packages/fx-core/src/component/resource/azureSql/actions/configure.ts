@@ -14,31 +14,38 @@ import {
   Result,
   FxError,
   Effect,
+  QTreeNode,
 } from "@microsoft/teamsfx-api";
-import { ComponentNames, ActionNames, ActionTypeFunction } from "../../../constants";
+import Container from "typedi";
+import {
+  ComponentNames,
+  ActionNames,
+  ActionTypeFunction,
+  TelemetryConstants,
+} from "../../../constants";
 import { ActionLogger, LoggerMW } from "../../../middleware/logger";
 import { ProgressBarMW } from "../../../middleware/progressbar";
 import { ActionErrorHandler, RunWithCatchErrorMW } from "../../../middleware/runWithCatchError";
 import { ActionTelemetryImplement, TelemetryMW } from "../../../middleware/telemetry";
+import { ActionContext } from "../../../middleware/types";
 import { ManagementClient } from "../clients/management";
 import { SqlClient } from "../clients/sql";
-import { LoadManagementConfig, LoadSqlConfig } from "../config";
-import { Constants, HelpLinks } from "../constants";
+import { loadDatabases, LoadManagementConfig, LoadSqlConfig } from "../config";
+import { Constants, HelpLinks, Telemetry, Message } from "../constants";
 import { ErrorMessage } from "../errors";
+import { adminNameQuestion, adminPasswordQuestion, confirmPasswordQuestion } from "../questions";
 import { SqlResultFactory } from "../results";
 import { parseToken, TokenInfo, UserType } from "../utils/common";
-import { Message } from "../utils/message";
-
 export class ConfigureActionImplement {
   static readonly source = "SQL";
   static readonly stage = "post-provision";
-  static readonly componentName = "fx-resource-azure-sql";
-  static readonly progressTitle: string = "Configuring SQL";
+  static readonly telemetryComponentName = "fx-resource-azure-sql";
+  static readonly progressTitle = "Configuring SQL";
   static readonly progressMessage = {
     addAadmin: "Configure aad admin for SQL",
     addUser: "Configure database user",
   };
-  static readonly loggerPrefix = "[SQL Plugin]";
+  static readonly loggerPrefix = "[SQL Component]";
   static readonly logFormatter = (message: string) =>
     `${ConfigureActionImplement.loggerPrefix} ${message}`;
 
@@ -47,7 +54,7 @@ export class ConfigureActionImplement {
       ActionTelemetryImplement.bind(
         null,
         ConfigureActionImplement.stage,
-        ConfigureActionImplement.componentName
+        ConfigureActionImplement.telemetryComponentName
       )
     ),
     RunWithCatchErrorMW(ConfigureActionImplement.source, ActionErrorHandler),
@@ -56,12 +63,13 @@ export class ConfigureActionImplement {
       Object.keys(ConfigureActionImplement.progressMessage).length
     ),
     LoggerMW(ActionLogger.bind(null, ConfigureActionImplement.logFormatter)),
-  ]) // the @hooks decorator
+  ])
   static async execute(
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<Effect[], FxError>> {
     const ctx = context as ProvisionContextV3;
+    const actionContext = context as ActionContext;
     const solutionConfig = ctx.envInfo.state.solution as v3.AzureSolutionConfig;
     const state = ctx.envInfo.state[ComponentNames.AzureSQL];
     const sqlMgrConfig = LoadManagementConfig(state);
@@ -69,9 +77,12 @@ export class ConfigureActionImplement {
       ctx.tokenProvider.azureAccountProvider,
       sqlMgrConfig
     );
+
+    actionContext.logger?.info(Message.addFirewall);
     await sqlMgrClient.addLocalFirewallRule();
 
     const adminInfo = await UtilFunctions.parseLoginToken(ctx.tokenProvider.azureAccountProvider);
+    actionContext.progressBar?.next(ConfigureActionImplement.progressMessage.addAadmin);
     const existAdmin = await UtilFunctions.CheckAndSetAadAdmin(
       sqlMgrClient,
       adminInfo.name,
@@ -79,20 +90,34 @@ export class ConfigureActionImplement {
       solutionConfig.tenantId
     );
     if (existAdmin) {
-      ctx.logProvider?.info(Message.skipAddAadAdmin);
+      actionContext.logger?.info(Message.skipAddAadAdmin);
     } else {
-      ctx.logProvider?.info(Message.addSqlAadAdmin);
+      actionContext.logger?.info(Message.addSqlAadAdmin);
     }
 
+    // update outputKeys
+    const databases = loadDatabases(state);
+    const resource = Container.get(ComponentNames.AzureSQL) as any;
+    resource.finalOutputKeys.push(...Object.keys(databases));
+
     const identity = UtilFunctions.getIdentity(ctx);
+    const sqlConfig = LoadSqlConfig(state, identity);
     const skipAddingUser = await UtilFunctions.getSkipAddingUser(
       solutionConfig,
       ctx.tokenProvider.azureAccountProvider
     );
+    actionContext.telemetry?.addProperty(
+      Telemetry.properties.skipAddingUser,
+      skipAddingUser ? TelemetryConstants.values.yes : TelemetryConstants.values.no
+    );
+    actionContext.telemetry?.addProperty(
+      Telemetry.properties.dbCount,
+      sqlConfig.databases.length.toString()
+    );
 
     if (!skipAddingUser) {
-      const sqlConfig = LoadSqlConfig(state, identity);
       if (adminInfo.userType === UserType.User) {
+        actionContext.progressBar?.next(ConfigureActionImplement.progressMessage.addUser);
         const sqlClient = await SqlClient.create(ctx.tokenProvider.azureAccountProvider, sqlConfig);
         ctx.logProvider?.info(Message.addDatabaseUser(identity));
         await UtilFunctions.addDatabaseUser(ctx.logProvider, sqlClient, sqlMgrClient);
@@ -101,13 +126,13 @@ export class ConfigureActionImplement {
           identity,
           sqlConfig.databases.join(",")
         );
-        ctx.logProvider?.warning(
-          `[${Constants.pluginName}] ${message}. You can follow ${HelpLinks.default} to add database user ${identity}`
+        actionContext.logger?.warning(
+          `${message}. You can follow ${HelpLinks.default} to add database user ${identity}`
         );
       }
     } else {
-      ctx.logProvider?.warning(
-        `[${Constants.pluginName}] Skip adding database user. You can follow ${HelpLinks.default} to add database user ${identity}`
+      actionContext.logger?.warning(
+        `Skip adding database user. You can follow ${HelpLinks.default} to add database user ${identity}`
       );
     }
     await sqlMgrClient.deleteLocalFirewallRule();
@@ -126,7 +151,7 @@ export class ConfigureActionImplement {
   }
 }
 
-class UtilFunctions {
+export class UtilFunctions {
   static async CheckAndSetAadAdmin(
     client: ManagementClient,
     aadAdmin: string,
@@ -215,5 +240,15 @@ class UtilFunctions {
         }
       }
     }
+  }
+
+  static buildQuestionNode() {
+    const sqlNode = new QTreeNode({
+      type: "group",
+    });
+    sqlNode.addChild(new QTreeNode(adminNameQuestion));
+    sqlNode.addChild(new QTreeNode(adminPasswordQuestion));
+    sqlNode.addChild(new QTreeNode(confirmPasswordQuestion));
+    return sqlNode;
   }
 }

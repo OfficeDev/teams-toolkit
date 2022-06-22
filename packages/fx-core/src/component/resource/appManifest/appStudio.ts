@@ -73,12 +73,7 @@ export async function createOrUpdateTeamsApp(
         appStudioTokenRes.value,
         ctx.logProvider
       );
-      ctx.userInteraction?.showMessage(
-        "info",
-        `Teams app created: ${appDefinition.teamsAppId}`,
-        false
-      );
-      ctx.userInteraction?.showMessage("info", `Teams app created: ${appDefinition.appId}`, false);
+      ctx.logProvider.info(`teams app created: ${appDefinition.teamsAppId!}`);
       return ok(appDefinition.teamsAppId!);
     } catch (e: any) {
       return err(
@@ -126,8 +121,7 @@ export async function createOrUpdateTeamsApp(
         colorIconContent,
         outlineIconContent
       );
-
-      ctx.userInteraction?.showMessage("info", `Teams app updated: ${appDefinition.appId}`, false);
+      ctx.logProvider.info(`teams app updated: ${app.teamsAppId!}`);
       return ok(app.teamsAppId!);
     } catch (e: any) {
       return err(
@@ -192,12 +186,6 @@ export async function createOrUpdateTeamsAppByZip(
         appStudioTokenRes.value,
         ctx.logProvider
       );
-      ctx.userInteraction?.showMessage(
-        "info",
-        `Teams app created: ${appDefinition.teamsAppId}`,
-        false
-      );
-      ctx.userInteraction?.showMessage("info", `Teams app created: ${appDefinition.appId}`, false);
       return ok(appDefinition.teamsAppId!);
     } catch (e: any) {
       return err(
@@ -227,8 +215,6 @@ export async function createOrUpdateTeamsAppByZip(
         colorIconContent,
         outlineIconContent
       );
-
-      ctx.userInteraction?.showMessage("info", `Teams app updated: ${appDefinition.appId}`, false);
       return ok(app.teamsAppId!);
     } catch (e: any) {
       return err(

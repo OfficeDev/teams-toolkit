@@ -258,7 +258,6 @@ export class AppManifest implements CloudResource {
         const res = await createOrUpdateTeamsApp(ctx, inputs, ctx.envInfo, ctx.tokenProvider);
         if (res.isErr()) return err(res.error);
         ctx.envInfo.state[ComponentNames.AppManifest].teamsAppId = res.value;
-        ctx.logProvider.info(`teams app created/updated: ${res.value}`);
         return ok([
           {
             type: "service",
@@ -274,7 +273,32 @@ export class AppManifest implements CloudResource {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    return this.provision(context, inputs);
+    const action: Action = {
+      name: "app-manifest.configure",
+      type: "function",
+      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
+        return ok([
+          {
+            type: "service",
+            name: "teams.microsoft.com",
+            remarks: "update teams app",
+          },
+        ]);
+      },
+      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+        const ctx = context as ProvisionContextV3;
+        const res = await createOrUpdateTeamsApp(ctx, inputs, ctx.envInfo, ctx.tokenProvider);
+        if (res.isErr()) return err(res.error);
+        return ok([
+          {
+            type: "service",
+            name: "teams.microsoft.com",
+            remarks: "update teams app",
+          },
+        ]);
+      },
+    };
+    return ok(action);
   }
   publish(
     context: ProvisionContextV3,

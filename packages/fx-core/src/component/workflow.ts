@@ -451,6 +451,7 @@ export async function executeFunctionAction(
         if (bicep) {
           const bicepPlans = persistBicepPlans(inputs.projectPath, bicep);
           bicepPlans.forEach((p) => effects.push(p));
+          // TODO: handle the returned error of bicep generation
           await persistBicep(
             inputs.projectPath,
             convertToAlphanumericOnly(context.projectSetting.appName),
@@ -489,18 +490,18 @@ export async function runAction(
     if (questionRes.isErr()) return err(questionRes.error);
     const planEffects: Effect[] = [];
     await planAction(action, context, cloneDeep(inputs), planEffects);
-    const confirm = await showPlanAndConfirm(
-      `action: ${actionName} will do the following changes:`,
-      planEffects,
-      context,
-      inputs
-    );
-    if (confirm) {
-      const execEffects: Effect[] = [];
-      const execRes = await executeAction(action, context, inputs, execEffects);
-      if (execRes.isErr()) return execRes;
-      await showSummary(`${actionName} summary:`, execEffects, context, inputs);
-    }
+    // const confirm = await showPlanAndConfirm(
+    //   `action: ${actionName} will do the following changes:`,
+    //   planEffects,
+    //   context,
+    //   inputs
+    // );
+    // if (confirm) {
+    const execEffects: Effect[] = [];
+    const execRes = await executeAction(action, context, inputs, execEffects);
+    if (execRes.isErr()) return execRes;
+    await showSummary(`${actionName} summary:`, execEffects, context, inputs);
+    // }
   }
   context.logProvider.info(
     `------------------------run action: ${actionName} finish!------------------------`

@@ -30,10 +30,8 @@ export function GetActionGenerateBicep(): FunctionAction {
           Modules: { azureSql: BicepConstants.writeFile },
           Orchestration: BicepConstants.writeFile,
         },
+        Parameters: {},
       };
-      if (inputs.provisionType === "database") {
-        bicep.Parameters = {};
-      }
       return ok([bicep]);
     },
     execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {

@@ -16,7 +16,6 @@ import "reflect-metadata";
 import { Service } from "typedi";
 import { isVSProject } from "../../common";
 import { CoreQuestionNames } from "../../core/question";
-import { ComponentType } from "../../plugins/resource/apiconnector/constants";
 import { ComponentNames } from "../constants";
 @Service("teams-tab")
 export class TeamsfxCore {

@@ -17,8 +17,8 @@ import { InputsWithProjectPath } from "./v2/types";
  * 3. function - run a javascript function
  * 4. group - a group of actions that can be executed in parallel or in sequence
  */
-export interface Action {
-  name: string;
+export interface ActionBase {
+  name?: string;
   type: "group" | "shell" | "call" | "function";
   inputs?: Json;
   plan?: (
@@ -44,10 +44,12 @@ export interface Action {
   ) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
 }
 
+export type Action = GroupAction | ShellAction | CallAction | FunctionAction;
+
 /**
  * group action: group action make it possible to leverage multiple sub-actions to accomplishment more complex task
  */
-export interface GroupAction extends Action {
+export interface GroupAction extends ActionBase {
   type: "group";
   /**
    * execution mode, in sequence or in parallel, if undefined, default is sequential
@@ -59,7 +61,7 @@ export interface GroupAction extends Action {
 /**
  * shell action: execute a shell script
  */
-export interface ShellAction extends Action {
+export interface ShellAction extends ActionBase {
   type: "shell";
   description: string;
   command: string;
@@ -72,7 +74,7 @@ export interface ShellAction extends Action {
 /**
  * call action: call an existing action (defined locally or in other package)
  */
-export interface CallAction extends Action {
+export interface CallAction extends ActionBase {
   type: "call";
   required: boolean; // required=true, throw error of target action does not exist; required=false, ignore this step if target action does not exist.
   targetAction: string;
@@ -81,8 +83,7 @@ export interface CallAction extends Action {
 /**
  * function action: run a javascript function call that can do any kinds of work
  */
-export interface FunctionAction extends Action {
-  name: string;
+export interface FunctionAction extends ActionBase {
   type: "function";
   /**
    * function body is a function that takes some context and inputs as parameter

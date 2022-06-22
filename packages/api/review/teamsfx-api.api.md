@@ -35,14 +35,17 @@ interface AADApp extends AzureResource {
     tenantId: string;
 }
 
+// @public (undocumented)
+export type Action = GroupAction | ShellAction | CallAction | FunctionAction;
+
 // @public
-export interface Action {
+export interface ActionBase {
     // (undocumented)
     exception?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     inputs?: Json;
     // (undocumented)
-    name: string;
+    name?: string;
     // (undocumented)
     plan?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Effect[], FxError>>;
     // (undocumented)
@@ -299,7 +302,7 @@ interface BicepTemplate_2 extends Record<any, unknown> {
 export const BuildFolderName = "build";
 
 // @public
-export interface CallAction {
+export interface CallAction extends ActionBase {
     // (undocumented)
     required: boolean;
     // (undocumented)
@@ -742,10 +745,8 @@ export interface FuncQuestion extends BaseQuestion {
 }
 
 // @public
-export interface FunctionAction {
+export interface FunctionAction extends ActionBase {
     execute: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Effect[], FxError>>;
-    // (undocumented)
-    name: string;
     // (undocumented)
     type: "function";
 }
@@ -822,7 +823,7 @@ export interface Group {
 }
 
 // @public
-export interface GroupAction extends Action {
+export interface GroupAction extends ActionBase {
     // (undocumented)
     actions: Action[];
     mode?: "sequential" | "parallel";
@@ -1502,7 +1503,7 @@ export type SelectFolderConfig = UIConfig<string>;
 export type SelectFolderResult = InputResult<string>;
 
 // @public
-export interface ShellAction {
+export interface ShellAction extends ActionBase {
     // (undocumented)
     async?: boolean;
     // (undocumented)

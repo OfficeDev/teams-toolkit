@@ -180,7 +180,7 @@ export class TeamsBot {
         required: true,
         targetAction: "app-manifest.addCapability",
         inputs: {
-          capability: { name: "Bot" },
+          capabilities: [{ name: "Bot" }],
         },
       },
       {

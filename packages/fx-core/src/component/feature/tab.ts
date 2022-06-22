@@ -70,7 +70,7 @@ export class TeamsfxCore {
         required: true,
         targetAction: "app-manifest.addCapability",
         inputs: {
-          capability: { name: "staticTab" },
+          capabilities: [{ name: "staticTab" }, { name: "configurableTab" }],
         },
       },
     ];

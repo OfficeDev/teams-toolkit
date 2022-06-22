@@ -433,3 +433,5 @@ export const BotFeatureIds = [
   CommandAndResponseOptionItem.id,
   MessageExtensionItem.id,
 ];
+
+export const TabFeatureIds = [TabOptionItem.id, TabNonSsoItem.id];

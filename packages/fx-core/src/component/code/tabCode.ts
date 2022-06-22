@@ -67,9 +67,9 @@ export class TabCodeProvider implements SourceCodeProvider {
           context.projectSetting.programmingLanguage ||
           "javascript";
         const folder = inputs.folder || language === "csharp" ? "" : FrontendPathInfo.WorkingDir;
-        const teamsBot = getComponent(projectSettings, ComponentNames.TeamsBot);
-        if (!teamsBot) return ok([]);
-        merge(teamsBot, { build: true, folder: folder });
+        const teamsTab = getComponent(projectSettings, ComponentNames.TeamsTab);
+        if (!teamsTab) return ok([]);
+        merge(teamsTab, { build: true, folder: folder });
         const langKey = convertToLangKey(language);
         const workingDir = path.join(inputs.projectPath, folder);
         const hasFunction = false; //TODO

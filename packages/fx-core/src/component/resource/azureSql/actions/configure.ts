@@ -16,6 +16,7 @@ import {
   Effect,
   QTreeNode,
 } from "@microsoft/teamsfx-api";
+import Container from "typedi";
 import {
   ComponentNames,
   ActionNames,
@@ -29,7 +30,7 @@ import { ActionTelemetryImplement, TelemetryMW } from "../../../middleware/telem
 import { ActionContext } from "../../../middleware/types";
 import { ManagementClient } from "../clients/management";
 import { SqlClient } from "../clients/sql";
-import { LoadManagementConfig, LoadSqlConfig } from "../config";
+import { loadDatabases, LoadManagementConfig, LoadSqlConfig } from "../config";
 import { Constants, HelpLinks, Telemetry, Message } from "../constants";
 import { ErrorMessage } from "../errors";
 import { adminNameQuestion, adminPasswordQuestion, confirmPasswordQuestion } from "../questions";
@@ -93,6 +94,11 @@ export class ConfigureActionImplement {
     } else {
       actionContext.logger?.info(Message.addSqlAadAdmin);
     }
+
+    // update outputKeys
+    const databases = loadDatabases(state);
+    const resource = Container.get(ComponentNames.AzureSQL) as any;
+    resource.finalOutputKeys.push(...Object.keys(databases));
 
     const identity = UtilFunctions.getIdentity(ctx);
     const sqlConfig = LoadSqlConfig(state, identity);

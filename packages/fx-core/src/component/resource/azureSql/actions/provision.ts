@@ -18,7 +18,7 @@ import { LoggerMW, ActionLogger } from "../../../middleware/logger";
 import { RunWithCatchErrorMW, ActionErrorHandler } from "../../../middleware/runWithCatchError";
 import { TelemetryMW, ActionTelemetryImplement } from "../../../middleware/telemetry";
 import { ManagementClient } from "../clients/management";
-import { LoadManagementConfig } from "../config";
+import { LoadManagementConfig, removeDatabases } from "../config";
 import { Constants } from "../constants";
 import { ErrorMessage } from "../errors";
 import { SqlResultFactory } from "../results";
@@ -49,6 +49,7 @@ export class ProvisionActionImplement {
   ): Promise<Result<Effect[], FxError>> {
     const ctx = context as ProvisionContextV3;
     const state = (ctx.envInfo.state[ComponentNames.AzureSQL] ??= {});
+    removeDatabases(state);
     let shouldAsk;
     if (state.sqlResourceId) {
       const sqlMgrConfig = LoadManagementConfig(state);

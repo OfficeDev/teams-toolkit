@@ -7,7 +7,7 @@ module userAssignedIdentityProvision './provision/identity.bicep' = {
 }
 
 output identityOutput object = {
-  teamsFxPluginId: 'fx-resource-identity'
+  teamsFxPluginId: 'identity'
   identityName: userAssignedIdentityProvision.outputs.identityName
   identityResourceId: userAssignedIdentityProvision.outputs.identityResourceId
   identityClientId: userAssignedIdentityProvision.outputs.identityClientId

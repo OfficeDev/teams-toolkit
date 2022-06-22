@@ -19,7 +19,7 @@ import {
 } from "../plugins/solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import * as uuid from "uuid";
-import { isV3 } from "../core";
+import { isV3 } from "../core/globalVars";
 import { isMiniApp } from "./projectSettingsHelperV3";
 
 export function validateProjectSettings(projectSettings: ProjectSettings): string | undefined {

@@ -1,56 +1,36 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
+  ContextV3,
   err,
-  UserError,
-  SystemError,
-  v2,
-  TokenProvider,
+  Func,
   Inputs,
   Json,
-  Func,
   ok,
-  QTreeNode,
-  ProjectSettings,
-  SingleSelectQuestion,
   Platform,
-  Stage,
-  StaticOptions,
-  MultiSelectQuestion,
-  OptionItem,
-  ContextV3,
+  ProjectSettings,
+  SystemError,
+  TokenProvider,
+  UserError,
+  v2,
 } from "@microsoft/teamsfx-api";
 
-import { FxResult, FxCICDPluginResultFactory as ResultFactory } from "./result";
-import { CICDImpl } from "./plugin";
-import { ErrorType, InternalError, NoProjectOpenedError, PluginError } from "./errors";
-import { Alias, LifecycleFuncNames, PluginCICD } from "./constants";
-import { Service } from "typedi";
-import { ResourcePluginsV2 } from "../../solution/fx-solution/ResourcePluginContainer";
 import {
-  ResourcePlugin,
   Context,
   DeepReadonly,
   InputsWithProjectPath,
+  ResourcePlugin,
 } from "@microsoft/teamsfx-api/build/v2";
-import {
-  githubOption,
-  azdoOption,
-  jenkinsOption,
-  ciOption,
-  cdOption,
-  provisionOption,
-  publishOption,
-  questionNames,
-} from "./questions";
-import { Logger } from "./logger";
-import { environmentManager } from "../../../core/environment";
-import { telemetryHelper } from "./utils/telemetry-helper";
-import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
-import { isExistingTabApp } from "../../../common";
-import { NoCapabilityFoundError } from "../../../core/error";
-import { ExistingTemplatesStat } from "./utils/existingTemplatesStat";
+import { Service } from "typedi";
 import { addCicdQuestion } from "../../../component/feature/cicd";
+import { ResourcePluginsV2 } from "../../solution/fx-solution/ResourcePluginContainer";
+import { Alias, LifecycleFuncNames, PluginCICD } from "./constants";
+import { ErrorType, PluginError } from "./errors";
+import { Logger } from "./logger";
+import { CICDImpl } from "./plugin";
+import { questionNames } from "./questions";
+import { FxCICDPluginResultFactory as ResultFactory, FxResult } from "./result";
+import { telemetryHelper } from "./utils/telemetry-helper";
 
 @Service(ResourcePluginsV2.CICDPlugin)
 export class CICDPluginV2 implements ResourcePlugin {

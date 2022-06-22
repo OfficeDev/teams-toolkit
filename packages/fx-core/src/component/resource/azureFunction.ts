@@ -11,6 +11,7 @@ import {
   InputsWithProjectPath,
   Effect,
   ProvisionContextV3,
+  Component,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
@@ -96,10 +97,7 @@ export class AzureFunctionResource extends AzureResource {
           {
             type: "service",
             name: "azure",
-            remarks: `deploy azure function in folder: ${path.join(
-              inputs.projectPath,
-              inputs.artifactFolder
-            )}`,
+            remarks: `deploy azure function in folder: ${inputs.projectPath}`,
           },
         ]);
       },
@@ -107,10 +105,11 @@ export class AzureFunctionResource extends AzureResource {
         const ctx = context as ProvisionContextV3;
         ctx.logProvider.info(Messages.DeployingBot);
         // Preconditions checking.
-        const publishDir = path.resolve(inputs.projectPath, inputs.artifactFolder);
-        if (!publishDir) {
+        const codeComponent = inputs.code as Component;
+        if (!inputs.projectPath || !codeComponent?.artifactFolder) {
           throw new PreconditionError(Messages.WorkingDirIsMissing, []);
         }
+        const publishDir = path.join(inputs.projectPath, codeComponent.artifactFolder);
         const packDirExisted = await fs.pathExists(publishDir);
         if (!packDirExisted) {
           throw new PackDirectoryExistenceError();

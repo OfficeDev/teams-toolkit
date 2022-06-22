@@ -3,6 +3,7 @@
 
 import {
   Action,
+  Component,
   ContextV3,
   FxError,
   InputsWithProjectPath,
@@ -58,10 +59,7 @@ export class AzureWebAppResource extends AzureResource {
           {
             type: "service",
             name: "azure",
-            remarks: `deploy azure web app in folder: ${path.join(
-              inputs.projectPath,
-              inputs.artifactFolder
-            )}`,
+            remarks: `deploy azure web app in folder: ${inputs.projectPath}`,
           },
         ]);
       },
@@ -69,10 +67,11 @@ export class AzureWebAppResource extends AzureResource {
         const ctx = context as ProvisionContextV3;
         ctx.logProvider.info(Messages.DeployingBot);
         // Preconditions checking.
-        const publishDir = path.join(inputs.projectPath, inputs.artifactFolder);
-        if (!publishDir) {
+        const codeComponent = inputs.code as Component;
+        if (!inputs.projectPath || !codeComponent?.artifactFolder) {
           throw new PreconditionError(Messages.WorkingDirIsMissing, []);
         }
+        const publishDir = path.join(inputs.projectPath, codeComponent.artifactFolder);
         const packDirExisted = await fs.pathExists(publishDir);
         if (!packDirExisted) {
           throw new PackDirectoryExistenceError();

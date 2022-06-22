@@ -138,7 +138,7 @@ export class BotCodeProvider implements SourceCodeProvider {
           try {
             await utils.execute("npm install", packDir);
             await utils.execute("npm run build", packDir);
-            merge(teamsBot, { build: true, artifactFolder: "." });
+            merge(teamsBot, { build: true, artifactFolder: teamsBot.folder });
           } catch (e) {
             throw new CommandExecutionError(
               `${Commands.NPM_INSTALL}, ${Commands.NPM_BUILD}`,
@@ -150,7 +150,7 @@ export class BotCodeProvider implements SourceCodeProvider {
           try {
             // fail to npm install @microsoft/teamsfx on azure web app, so pack it locally.
             await utils.execute("npm install", packDir);
-            merge(teamsBot, { build: true, artifactFolder: "." });
+            merge(teamsBot, { build: true, artifactFolder: teamsBot.folder });
           } catch (e) {
             throw new CommandExecutionError(`${Commands.NPM_INSTALL}`, packDir, e);
           }

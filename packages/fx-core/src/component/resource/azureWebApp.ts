@@ -18,6 +18,7 @@ import { Service } from "typedi";
 import { azureWebSiteDeploy } from "../../common/azure-hosting/utils";
 import { Messages } from "../../plugins/resource/bot/resources/messages";
 import * as utils from "../../plugins/resource/bot/utils/common";
+import { getLanguage, getRuntime } from "../../plugins/resource/bot/v2/mapping";
 import {
   CheckThrowSomethingMissing,
   PackDirectoryExistenceError,
@@ -47,6 +48,18 @@ export class AzureWebAppResource extends AzureResource {
     },
   };
   readonly finalOutputKeys = ["resourceId", "endpoint"];
+  generateBicep(
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    this.getTemplateContext = (context, inputs) => {
+      const configs: string[] = [];
+      configs.push(getRuntime(getLanguage(context.projectSetting.programmingLanguage)));
+      this.templateContext.configs = configs;
+      return this.templateContext;
+    };
+    return super.generateBicep(context, inputs);
+  }
   deploy(
     context: ContextV3,
     inputs: InputsWithProjectPath

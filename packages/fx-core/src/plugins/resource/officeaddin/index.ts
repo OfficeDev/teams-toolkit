@@ -16,9 +16,23 @@ import { Service } from "typedi";
 import { isOfficeAddinEnabled } from "../../../common";
 import { ResourcePluginsV2 } from "../../solution/fx-solution/ResourcePluginContainer";
 import { UndefinedProjectPathError } from "./errors";
-import { writeJSON, mkdir } from "fs-extra";
-import { resolve } from "path";
-import { ExampleMultiSelectQuestion, ExampleSingleSelectQuestion } from "./questions";
+import { mkdir } from "fs-extra";
+import { join, resolve } from "path";
+import {
+  AddinTemplateSelectQuestion,
+  AddinNameQuestion,
+  AddinLanguageQuestion,
+  OfficeHostQuestion,
+} from "./questions";
+import { helperMethods } from "./helperMethods";
+import { OfficeAddinManifest } from "office-addin-manifest";
+import projectsJsonData from "./config/projectsJsonData";
+import * as childProcess from "child_process";
+import { promisify } from "util";
+import { CopyFileError } from "../../../core/error";
+import _ from "lodash";
+
+const childProcessExec = promisify(childProcess.exec);
 
 @Service(ResourcePluginsV2.OfficeAddinPlugin)
 export class OfficeAddinPlugin implements v2.ResourcePlugin {
@@ -34,21 +48,46 @@ export class OfficeAddinPlugin implements v2.ResourcePlugin {
     if (!projectRoot) {
       return err(UndefinedProjectPathError());
     }
-    const folderName = "office-addin";
 
     // You can access the answers(id of options selected) to the questions defined in getQuestionsForScaffolding();
-    const singleSelectAnswer = inputs[ExampleSingleSelectQuestion.name] as string;
-    const multiSelectAnswer = inputs[ExampleMultiSelectQuestion.name] as string[];
+    const template = inputs[AddinTemplateSelectQuestion.name] as string;
+    const name = inputs[AddinNameQuestion.name];
+    const addinRoot = resolve(projectRoot, name);
+    const language = inputs[AddinLanguageQuestion.name];
+    const host = inputs[OfficeHostQuestion.name];
+    const workingDir = process.cwd();
 
-    // TODO: add logic for generating office addin templates
-    // we just persist answers here for example.
-    await mkdir(resolve(projectRoot, folderName));
-    await writeJSON(resolve(projectRoot, folderName, "inputs.json"), {
-      singleSelect: singleSelectAnswer,
-      multiSelect: multiSelectAnswer,
-    });
+    await mkdir(addinRoot);
+    process.chdir(addinRoot);
+    try {
+      const jsonData = new projectsJsonData();
+      const projectRepoBranchInfo = jsonData.getProjectRepoAndBranch(template, language, false);
 
-    return ok(Void);
+      // Copy project template files from project repository
+      if (projectRepoBranchInfo.repo) {
+        await helperMethods.downloadProjectTemplateZipFile(
+          addinRoot,
+          projectRepoBranchInfo.repo,
+          projectRepoBranchInfo.branch
+        );
+
+        // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
+        const cmdLine = `npm run convert-to-single-host --if-present -- ${_.toLower(host)}`;
+        await childProcessExec(cmdLine);
+
+        // modify manifest guid and DisplayName
+        await OfficeAddinManifest.modifyManifestFile(
+          `${join(addinRoot, jsonData.getManifestPath(template) as string)}`,
+          "random",
+          `${name}`
+        );
+      }
+      process.chdir(workingDir);
+      return ok(Void);
+    } catch (e) {
+      process.chdir(workingDir);
+      return err(CopyFileError(e as Error));
+    }
   }
 
   async getQuestionsForScaffolding(
@@ -56,9 +95,13 @@ export class OfficeAddinPlugin implements v2.ResourcePlugin {
     inputs: Inputs
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     const root = new QTreeNode({ type: "group" });
+    const templateNode = new QTreeNode(AddinTemplateSelectQuestion);
 
-    root.addChild(new QTreeNode(ExampleSingleSelectQuestion));
-    root.addChild(new QTreeNode(ExampleMultiSelectQuestion));
+    root.addChild(templateNode);
+    root.addChild(new QTreeNode(AddinNameQuestion));
+
+    templateNode.addChild(new QTreeNode(AddinLanguageQuestion));
+    templateNode.addChild(new QTreeNode(OfficeHostQuestion));
 
     return ok(root);
   }

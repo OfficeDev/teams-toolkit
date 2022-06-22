@@ -120,7 +120,8 @@ export async function _scaffoldLocalDebugSettings(
               includeFrontend,
               includeBackend,
               includeBot,
-              includeOfficeAddin
+              includeOfficeAddin,
+              inputs
             )
           : Launch.generateConfigurations(includeFrontend, includeBackend, includeBot);
         const launchCompounds = isM365
@@ -130,7 +131,8 @@ export async function _scaffoldLocalDebugSettings(
               includeFrontend,
               includeBackend,
               includeBot,
-              includeOfficeAddin
+              includeOfficeAddin,
+              inputs
             )
           : Launch.generateCompounds(includeFrontend, includeBackend, includeBot);
 
@@ -148,7 +150,8 @@ export async function _scaffoldLocalDebugSettings(
               includeBot,
               includeFuncHostedBot,
               programmingLanguage,
-              includeOfficeAddin
+              includeOfficeAddin,
+              inputs
             )
           : Tasks.generateTasks(
               includeFrontend,

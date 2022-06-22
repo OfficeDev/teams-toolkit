@@ -1,58 +1,76 @@
-import { MultiSelectQuestion, OptionItem, SingleSelectQuestion } from "@microsoft/teamsfx-api";
+import {
+  Inputs,
+  OptionItem,
+  SingleSelectQuestion,
+  TextInputQuestion,
+} from "@microsoft/teamsfx-api";
+import projectsJsonData from "./config/projectsJsonData";
+
+const jsonData = new projectsJsonData();
 
 export enum QuestionName {
-  ExampleSingleSelectQuestion = "example-single-select",
-  ExampleMultiSelectQuestion = "example-multi-select",
+  AddinLanguageQuestion = "addin-language",
+  AddinNameQuestion = "addin-name",
+  AddinTemplateSelectQuestion = "addin-template-select",
+  OfficeHostQuestion = "addin-host",
 }
 
-export const SingleSelectOptionOne: OptionItem = {
-  id: "option1",
-  label: "Option 1 label",
-  detail: "Option 1 detail",
-  groupName: "group1",
-};
-
-export const SingleSelectOptionTwo: OptionItem = {
-  id: "option2",
-  label: "Option 2 label",
-  detail: "Option 2 detail",
-  groupName: "group1",
-};
-
-export const SingleSelectOptionThree: OptionItem = {
-  id: "option3",
-  label: "Option 3 label",
-  detail: "Option 3 detail",
-  groupName: "group2",
-};
-
 // TODO: localize the strings
-export const ExampleSingleSelectQuestion: SingleSelectQuestion = {
+export const AddinTemplateSelectQuestion: SingleSelectQuestion = {
   type: "singleSelect",
-  name: QuestionName.ExampleSingleSelectQuestion,
-  title: "This is a single select question",
-  staticOptions: [SingleSelectOptionOne, SingleSelectOptionTwo, SingleSelectOptionThree],
-  default: SingleSelectOptionOne.id,
+  name: QuestionName.AddinTemplateSelectQuestion,
+  title: "Add-in template type",
+  staticOptions: jsonData
+    .getProjectTemplateNames()
+    .map((template) => ({ label: jsonData.getProjectDisplayName(template), id: template })),
+  default: "teams-manifest",
   placeholder: "This is placeholder",
 };
 
-export const MultiSelectOptionOne: OptionItem = {
-  id: "multi-option1",
-  label: "Option 1 label",
-  detail: "Option 1 detail",
+export const AddinNameQuestion: TextInputQuestion = {
+  type: "text",
+  name: QuestionName.AddinNameQuestion,
+  title: "Add-in name",
+  default: "office-addin",
 };
 
-export const MultiSelectOptionTwo: OptionItem = {
-  id: "multi-option2",
-  label: "Option 2 label",
-  detail: "Option 2 detail",
-};
-
-export const ExampleMultiSelectQuestion: MultiSelectQuestion = {
-  name: QuestionName.ExampleMultiSelectQuestion,
-  title: "This is a multi-select question",
-  type: "multiSelect",
-  staticOptions: [MultiSelectOptionOne, MultiSelectOptionTwo],
-  default: undefined,
+export const AddinLanguageQuestion: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: QuestionName.AddinLanguageQuestion,
+  title: "Add-in Language",
+  staticOptions: [],
+  dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
+    const template = inputs[AddinTemplateSelectQuestion.name];
+    const options = jsonData.getSupportedScriptTypes(template);
+    return options.map((language) => ({ label: language, id: language }));
+  },
+  default: async (inputs: Inputs): Promise<string> => {
+    const template = inputs[AddinTemplateSelectQuestion.name];
+    const options = jsonData.getSupportedScriptTypes(template);
+    return options[0];
+  },
   placeholder: "This is placeholder",
+  skipSingleOption: true,
+};
+
+export const OfficeHostQuestion: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: QuestionName.OfficeHostQuestion,
+  title: "Add-in Host",
+  staticOptions: [],
+  dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
+    const template = inputs[AddinTemplateSelectQuestion.name];
+    const options = jsonData.getHostTemplateNames(template);
+    return options.map((host) => ({
+      label: jsonData.getHostDisplayName(host) as string,
+      id: host,
+    }));
+  },
+  default: async (inputs: Inputs): Promise<string> => {
+    const template = inputs[AddinTemplateSelectQuestion.name];
+    const options = jsonData.getHostTemplateNames(template);
+    return options[0];
+  },
+  placeholder: "This is placeholder",
+  skipSingleOption: true,
 };

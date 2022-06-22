@@ -5,12 +5,14 @@
 import * as os from "os";
 import { isOfficeAddinEnabled } from "../../../../../common";
 import { HubName, LaunchBrowser, LaunchUrl } from "../constants";
+import { Inputs } from "@microsoft/teamsfx-api";
 
 export function generateConfigurations(
   includeFrontend: boolean,
   includeBackend: boolean,
   includeBot: boolean,
-  includeOfficeAddin: boolean
+  includeOfficeAddin: boolean,
+  inputs: Inputs
 ): Record<string, unknown>[] {
   let edgeOrder = 2,
     chromeOrder = 1;
@@ -46,16 +48,10 @@ export function generateConfigurations(
 
   if (isOfficeAddinEnabled() && includeOfficeAddin) {
     // add an entry to the launchConfigurations
-    launchConfigurations.push({
-      name: "Office Add-in sample",
-      type: "pwa-msedge",
-      url: "https://www.bing.com",
-      presentation: {
-        hidden: false,
-        group: "office-addin",
-        order: 1,
-      },
-    });
+    const addinName = inputs["addin-name"];
+    const hostName = inputs["addin-host"];
+    launchConfigurations.push(debugOfficeHostEdge(addinName, hostName));
+    launchConfigurations.push(debugOfficeHostEdge(addinName, hostName, true));
   }
 
   return launchConfigurations;
@@ -65,7 +61,8 @@ export function generateCompounds(
   includeFrontend: boolean,
   includeBackend: boolean,
   includeBot: boolean,
-  includeOfficeAddin: boolean
+  includeOfficeAddin: boolean,
+  inputs: Inputs
 ): Record<string, unknown>[] {
   const launchCompounds: Record<string, unknown>[] = [];
   let edgeOrder = 2,
@@ -79,7 +76,10 @@ export function generateCompounds(
   launchCompounds.push(debug(includeFrontend, includeBackend, includeBot, "Chrome", chromeOrder));
 
   if (isOfficeAddinEnabled() && includeOfficeAddin) {
-    // add an entry to the launchCompounds
+    const addinName = inputs["addin-name"];
+    const hostName = inputs["addin-host"];
+    launchCompounds.push(debugAddin(addinName, hostName, false, 3));
+    launchCompounds.push(debugAddin(addinName, hostName, true, 4));
   }
 
   return launchCompounds;
@@ -436,6 +436,27 @@ function debug(
   };
 }
 
+function debugAddin(
+  addinName: string,
+  hostName: string,
+  isLegacy: boolean,
+  order: number
+): Record<string, unknown> {
+  const configurations: string[] = [
+    `${hostName} Desktop (Edge ${isLegacy ? "Legacy" : "Chromium"})`,
+  ];
+  return {
+    name: `Debug ${addinName} (Edge ${isLegacy ? "Legacy" : "Chromium"})`,
+    configurations,
+    preLaunchTask: `Pre Debug Check & Start Office`,
+    presentation: {
+      group: "all",
+      order: order,
+    },
+    stopAll: true,
+  };
+}
+
 function debugM365(
   includeFrontend: boolean,
   includeBackend: boolean,
@@ -490,4 +511,29 @@ function getBotLaunchUrl(isLocal: boolean, hubName: string): string {
     return isLocal ? LaunchUrl.outlookLocalBot : LaunchUrl.outlookRemoteBot;
   }
   return "";
+}
+
+function debugOfficeHostEdge(
+  addinName: string,
+  hostName: string,
+  isLegacy = false
+): Record<string, unknown> {
+  return {
+    name: `${hostName} Desktop (Edge ${isLegacy ? "Legacy" : "Chromium"})`,
+    type: isLegacy ? "office-addin" : "pwa-msedge",
+    request: "attach",
+    url: isLegacy
+      ? "https://localhost:3000/taskpane.html?_host_Info=Outlook$Win32$16.01$en-US$$$$0" // eslint-disable-line no-secrets/no-secrets
+      : undefined,
+    useWebView: isLegacy ? undefined : true,
+    port: isLegacy ? 9222 : 9229,
+    timeout: 600000,
+    webRoot: "${workspaceRoot}/" + `${addinName}`,
+    // preLaunchTask: `Debug: ${hostName} Desktop`,
+    // postDebugTask: "Stop Office Debug",
+    presentation: {
+      group: "all",
+      hidden: true,
+    },
+  };
 }

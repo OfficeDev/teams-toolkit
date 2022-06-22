@@ -2,9 +2,11 @@
 // Licensed under the MIT license.
 "use strict";
 
+import { RecoverableDatabase } from "@azure/arm-sql/esm/models/mappers";
 import { ProductName } from "@microsoft/teamsfx-api";
 import { isOfficeAddinEnabled } from "../../../../../common";
 import { ProgrammingLanguage } from "../../../../../common/local/constants";
+import { Inputs } from "@microsoft/teamsfx-api";
 
 // TODO: add spfx tasks with "validate-local-prerequisites"
 export function generateTasks(
@@ -13,7 +15,8 @@ export function generateTasks(
   includeBot: boolean,
   includeFuncHostedBot: boolean,
   programmingLanguage: string,
-  includeOfficeAddin: boolean
+  includeOfficeAddin: boolean,
+  inputs: Inputs
 ): Record<string, unknown>[] {
   /**
    * Referenced by launch.json
@@ -67,6 +70,14 @@ export function generateTasks(
 
   if (isOfficeAddinEnabled() && includeOfficeAddin) {
     // adds entries into tasks
+    const addinName = inputs["addin-name"];
+    const hostName = inputs["addin-host"];
+    // tasks.push(debugOfficeHost(hostName));
+    // tasks.push(stopOfficeDebugger());
+    tasks.push(preDebugCheckAndStartOffice(hostName));
+    tasks.push(installAddinDependencies(addinName));
+    tasks.push(debugAddin(addinName, hostName));
+    tasks.push(stopAddinDebugger(addinName));
   }
 
   return tasks;
@@ -429,5 +440,90 @@ function installAppInTeams(): Record<string, unknown> {
     presentation: {
       reveal: "never",
     },
+  };
+}
+
+function preDebugCheckAndStartOffice(hostName: string): Record<string, unknown> {
+  return {
+    label: "Pre Debug Check & Start Office",
+    dependsOn: ["Install Add-in Dependencies", `Debug: ${hostName} Desktop`],
+    dependsOrder: "sequence",
+  };
+}
+
+function installAddinDependencies(addinName: string): Record<string, unknown> {
+  return {
+    label: "Install Add-in Dependencies",
+    type: "shell",
+    command: "npm install",
+    presentation: {
+      clear: true,
+      panel: "dedicated",
+    },
+    options: {
+      cwd: "${workspaceFolder}/" + `${addinName}`,
+    },
+    problemMatcher: [],
+  };
+}
+
+function debugAddin(addinName: string, hostName: string): Record<string, unknown> {
+  return {
+    label: `Debug: ${hostName} Desktop`,
+    type: "shell",
+    command: `npm run start:desktop -- --app ${hostName.toLowerCase()}`,
+    presentation: {
+      clear: true,
+      panel: "dedicated",
+    },
+    options: {
+      cwd: "${workspaceFolder}/" + `${addinName}`,
+    },
+    problemMatcher: [],
+  };
+}
+
+function stopAddinDebugger(addinName: string): Record<string, unknown> {
+  return {
+    label: "Stop Add-in dev server",
+    type: "shell",
+    command: "npm stop",
+    presentation: {
+      clear: true,
+      panel: "shared",
+      showReuseMessage: false,
+    },
+    options: {
+      cwd: "${workspaceFolder}/" + `${addinName}`,
+    },
+    problemMatcher: [],
+  };
+}
+
+// Run from add-in folder specifically
+function stopOfficeDebugger(): Record<string, unknown> {
+  return {
+    label: "Stop Office Debug",
+    type: "npm",
+    script: "stop",
+    presentation: {
+      clear: true,
+      panel: "shared",
+      showReuseMessage: false,
+    },
+    problemMatcher: [],
+  };
+}
+
+function debugOfficeHost(hostName: string): Record<string, unknown> {
+  return {
+    label: `Debug: ${hostName} Desktop`,
+    type: "npm",
+    script: `start:desktop -- --app ${hostName.toLowerCase()}`,
+    presentation: {
+      clear: true,
+      panel: "dedicated",
+    },
+    problemMatcher: [],
   };
 }

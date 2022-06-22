@@ -177,7 +177,6 @@ export async function persistParams(
   appName: string,
   params: Record<string, string>
 ): Promise<Result<any, FxError>> {
-  params.resourceBaseName = generateResourceBaseName(appName, "");
   const envListResult = await environmentManager.listRemoteEnvConfigs(projectPath);
   if (envListResult.isErr()) {
     return err(envListResult.error);
@@ -191,6 +190,9 @@ export async function persistParams(
     if (await fs.pathExists(parameterEnvFilePath)) {
       const json = await fs.readJson(parameterEnvFilePath);
       const parameterObj = json.parameters.provisionParameters.value;
+      if (!parameterObj.resourceBaseName) {
+        params.resourceBaseName = generateResourceBaseName(appName, "");
+      }
       const duplicateParam = Object.keys(parameterObj).filter((val) =>
         Object.keys(params).includes(val)
       );
@@ -260,7 +262,7 @@ export function persistBicepPlans(projectPath: string, bicep: Bicep): string[] {
     plans = plans.concat(res);
   }
   if (bicep.Parameters) {
-    const res = persistProvisionBicepPlans(projectPath, bicep.Parameters);
+    const res = persistParamsBicepPlans(projectPath, bicep.Parameters);
     plans = plans.concat(res);
   }
   return plans.filter(Boolean);

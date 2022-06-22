@@ -3,13 +3,17 @@ import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { createContextV3 } from "../../../../src/component/utils";
 import { SqlClient } from "../../../../src/component/resource/azureSql/clients/sql";
-import { MockTools, randomAppName } from "../../../core/utils";
+import { MockTools, MockUserInteraction, randomAppName } from "../../../core/utils";
 import { setTools } from "../../../../src/core/globalVars";
 import sinon from "sinon";
-import { ErrorMessage } from "../../../../src/component/resource/azureSql/errors";
 import { AzureSqlResource } from "../../../../src/component/resource/azureSql";
-import { getLocalizedString } from "../../../../src/common/localizeUtils";
-import { ContextV3, FunctionAction, InputsWithProjectPath, Platform } from "@microsoft/teamsfx-api";
+import {
+  ContextV3,
+  FunctionAction,
+  InputsWithProjectPath,
+  ok,
+  Platform,
+} from "@microsoft/teamsfx-api";
 import { ComponentNames } from "../../../../src/component/constants";
 import { Constants } from "../../../../src/component/resource/azureSql/constants";
 import { newEnvInfoV3 } from "../../../../src";
@@ -19,7 +23,7 @@ import faker from "faker";
 import { TokenCredential } from "@azure/core-http";
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import { FirewallRules, ServerAzureADAdministrators } from "@azure/arm-sql";
+import { Servers, FirewallRules, ServerAzureADAdministrators } from "@azure/arm-sql";
 import axios from "axios";
 import { TokenResponse } from "adal-node/lib/adal";
 import { TokenInfo, UserType } from "../../../../src/component/resource/azureSql/utils/common";
@@ -96,15 +100,20 @@ describe("Azure-SQL Component", () => {
   });
 
   it("provision happy path", async function () {
+    sandbox.stub(Servers.prototype, "checkNameAvailability").resolves({ available: true });
+    sandbox
+      .stub(MockUserInteraction.prototype, "inputText")
+      .resolves(ok({ type: "success", result: "" }));
     const provisionAction = await component.provision(context, inputs);
     chai.assert.isTrue(provisionAction.isOk());
     const action = provisionAction._unsafeUnwrap() as FunctionAction;
     const result = await action.execute(context, inputs);
+    console.log(result);
     chai.assert.isTrue(result.isOk());
   });
 
   it("generateBicep happy path", async function () {
-    const generateBicepAction = await component.provision(context, inputs);
+    const generateBicepAction = await component.generateBicep(context, inputs);
     chai.assert.isTrue(generateBicepAction.isOk());
     const action = generateBicepAction._unsafeUnwrap() as FunctionAction;
     const result = await action.execute(context, inputs);

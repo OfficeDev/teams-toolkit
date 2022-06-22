@@ -16,20 +16,13 @@ export class CICDImpl {
   public async addCICDWorkflows(
     context: Context,
     inputs: Inputs,
-    envInfo: v2.EnvInfoV2
+    envName: string
   ): Promise<FxResult> {
     // 1. Key inputs (envName, provider, template) x (hostingType, ).
     if (!inputs.projectPath) {
       throw new NoProjectOpenedError();
     }
     const projectPath = inputs.projectPath;
-    // By default(VSC), get env name from plugin's own `target-env` question.
-    let envName = inputs[questionNames.Environment];
-    // TODO: add support for VS/.Net Projects.
-    if (inputs.platform === Platform.CLI) {
-      // In CLI, get env name from the default `env` question.
-      envName = envInfo.envName;
-    }
     const providerName = inputs[questionNames.Provider];
     const templateNames = inputs[questionNames.Template] as string[];
     if (!envName || !providerName || templateNames.length === 0) {

@@ -69,7 +69,13 @@ export class CICDPluginV2 implements ResourcePlugin {
     envInfo: v2.EnvInfoV2
   ): Promise<FxResult> {
     Logger.setLogger(context.logProvider);
-    return await this.cicdImpl.addCICDWorkflows(context, inputs, envInfo);
+    let envName = inputs[questionNames.Environment];
+    // TODO: add support for VS/.Net Projects.
+    if (inputs.platform === Platform.CLI) {
+      // In CLI, get env name from the default `env` question.
+      envName = envInfo.envName;
+    }
+    return await this.cicdImpl.addCICDWorkflows(context, inputs, envName);
   }
 
   public async getQuestionsForUserTask(

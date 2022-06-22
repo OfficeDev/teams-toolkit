@@ -7,8 +7,10 @@ import {
   Effect,
   err,
   FunctionAction,
-  FxError, Inputs,
-  InputsWithProjectPath, MaybePromise,
+  FxError,
+  Inputs,
+  InputsWithProjectPath,
+  MaybePromise,
   MultiSelectQuestion,
   ok,
   OptionItem,
@@ -16,7 +18,7 @@ import {
   QTreeNode,
   Result,
   SingleSelectQuestion,
-  Stage
+  Stage,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
@@ -34,7 +36,7 @@ import {
   jenkinsOption,
   provisionOption,
   publishOption,
-  questionNames
+  questionNames,
 } from "../../plugins/resource/cicd/questions";
 import { ExistingTemplatesStat } from "../../plugins/resource/cicd/utils/existingTemplatesStat";
 import "../connection/azureWebAppConfig";
@@ -42,12 +44,11 @@ import "../resource/azureSql";
 @Service("cicd")
 export class CICD {
   name = "cicd";
-
   add(
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    return ok(undefined);
+    return ok(new AddCICDAction());
   }
 }
 
@@ -60,12 +61,16 @@ export class AddCICDAction implements FunctionAction {
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     return await addCicdQuestion(context, inputs);
   }
+  plan(context: ContextV3, inputs: InputsWithProjectPath): Result<Effect[], FxError> {
+    return ok(["add cicd workflow files"]);
+  }
   async execute(
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<Effect[], FxError>> {
     const cicdImpl: CICDImpl = new CICDImpl();
-    const res = await cicdImpl.addCICDWorkflows(context, inputs, context.envInfo!);
+    const envName = inputs[questionNames.Environment] as string;
+    const res = await cicdImpl.addCICDWorkflows(context, inputs, envName);
     if (res.isErr()) return err(res.error);
     return ok([]);
   }
@@ -101,54 +106,52 @@ export async function addCicdQuestion(
   };
 
   // TODO: add support for VS/.Net Projects.
-  if (inputs.platform === Platform.VSCode) {
-    if (!inputs.projectPath) {
-      throw new NoProjectOpenedError();
-    }
-
-    const envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath);
-    if (envProfilesResult.isErr()) {
-      throw new InternalError(
-        [
-          getDefaultString("error.cicd.FailedToListMultiEnv", envProfilesResult.error.message),
-          getLocalizedString("error.cicd.FailedToListMultiEnv", envProfilesResult.error.message),
-        ],
-        envProfilesResult.error
-      );
-    }
-
-    const existingInstance = ExistingTemplatesStat.getInstance(
-      inputs.projectPath!,
-      envProfilesResult.value
-    );
-    // Mute this scan before there's initial scan on upper layers.
-    // await existingInstance.scan();
-
-    const whichEnvironment: SingleSelectQuestion = {
-      type: "singleSelect",
-      name: questionNames.Environment,
-      title: getLocalizedString("plugins.cicd.whichEnvironment.title"),
-      staticOptions: [],
-      dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
-        // Remove the env items in which all combinations of templates are scaffolded/existing.
-        return existingInstance.availableEnvOptions();
-      },
-      skipSingleOption: true,
-    };
-
-    whichProvider.dynamicOptions = async (inputs: Inputs): Promise<OptionItem[]> => {
-      const envName = inputs[questionNames.Environment];
-      return existingInstance.availableProviderOptions(envName);
-    };
-
-    whichTemplate.dynamicOptions = async (inputs: Inputs): Promise<OptionItem[]> => {
-      const envName = inputs[questionNames.Environment];
-      const provider = inputs[questionNames.Provider];
-      return existingInstance.availableTemplateOptions(envName, provider);
-    };
-
-    cicdWorkflowQuestions.addChild(new QTreeNode(whichEnvironment));
+  if (!inputs.projectPath) {
+    throw new NoProjectOpenedError();
   }
+
+  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath);
+  if (envProfilesResult.isErr()) {
+    throw new InternalError(
+      [
+        getDefaultString("error.cicd.FailedToListMultiEnv", envProfilesResult.error.message),
+        getLocalizedString("error.cicd.FailedToListMultiEnv", envProfilesResult.error.message),
+      ],
+      envProfilesResult.error
+    );
+  }
+
+  const existingInstance = ExistingTemplatesStat.getInstance(
+    inputs.projectPath!,
+    envProfilesResult.value
+  );
+  // Mute this scan before there's initial scan on upper layers.
+  // await existingInstance.scan();
+
+  const whichEnvironment: SingleSelectQuestion = {
+    type: "singleSelect",
+    name: questionNames.Environment,
+    title: getLocalizedString("plugins.cicd.whichEnvironment.title"),
+    staticOptions: [],
+    dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
+      // Remove the env items in which all combinations of templates are scaffolded/existing.
+      return existingInstance.availableEnvOptions();
+    },
+    skipSingleOption: true,
+  };
+
+  whichProvider.dynamicOptions = async (inputs: Inputs): Promise<OptionItem[]> => {
+    const envName = inputs[questionNames.Environment];
+    return existingInstance.availableProviderOptions(envName);
+  };
+
+  whichTemplate.dynamicOptions = async (inputs: Inputs): Promise<OptionItem[]> => {
+    const envName = inputs[questionNames.Environment];
+    const provider = inputs[questionNames.Provider];
+    return existingInstance.availableTemplateOptions(envName, provider);
+  };
+
+  cicdWorkflowQuestions.addChild(new QTreeNode(whichEnvironment));
 
   cicdWorkflowQuestions.addChild(new QTreeNode(whichProvider));
   cicdWorkflowQuestions.addChild(new QTreeNode(whichTemplate));

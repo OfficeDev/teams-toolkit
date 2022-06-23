@@ -734,8 +734,11 @@ export class FxCore implements v3.ICore {
 
   async executeUserTask(func: Func, inputs: Inputs): Promise<Result<unknown, FxError>> {
     if (isV3()) {
-      if (func.method === "addFeature")
-        return await this.addFeature(inputs as v2.InputsWithProjectPath);
+      if (func.method === "addFeature") {
+        const res = await this.addFeature(inputs as v2.InputsWithProjectPath);
+        if (res.isErr()) return err(res.error);
+        return ok(undefined);
+      }
       return err(new NotImplementedError(func.method));
     } else return this.executeUserTaskV2(func, inputs);
   }
@@ -752,7 +755,7 @@ export class FxCore implements v3.ICore {
   async addFeature(
     inputs: v2.InputsWithProjectPath,
     ctx?: CoreHookContext
-  ): Promise<Result<unknown, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
     const feature = inputs.feature as string;
     let res;

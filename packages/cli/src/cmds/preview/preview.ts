@@ -47,6 +47,7 @@ import {
   isM365AppEnabled,
   validationSettingsHelpLink,
   AppStudioScopes,
+  TelemetryContext,
 } from "@microsoft/teamsfx-core";
 
 import { YargsCommand } from "../../yargsCommand";
@@ -61,6 +62,7 @@ import { Task, TaskResult } from "./task";
 import M365TokenInstance from "../../commonlib/m365Login";
 import cliTelemetry, { CliTelemetry } from "../../telemetry/cliTelemetry";
 import {
+  TelemetryPreviewDevCertStatus,
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
@@ -74,11 +76,11 @@ import { CliDepsChecker } from "./depsChecker/cliChecker";
 import { isNgrokCheckerEnabled, isTrustDevCertEnabled } from "./depsChecker/cliUtils";
 import { signedOut } from "../../commonlib/common/constant";
 import { cliSource } from "../../constants";
-import { performance } from "perf_hooks";
 import { showInstallAppInTeamsMessage, getTeamsAppInternalId } from "./teamsAppInstallation";
 import { NotM365Project } from "./errors";
 import * as util from "util";
 import { openHubWebClient } from "./launch";
+import { localTelemetryReporter } from "./localTelemetryReporter";
 
 enum Checker {
   M365Account = "M365 Account",
@@ -170,50 +172,72 @@ export default class Preview extends YargsCommand {
   public async runCommand(args: {
     [argName: string]: boolean | string | string[] | undefined;
   }): Promise<Result<null, FxError>> {
-    try {
-      if (args.local && args.remote) {
-        throw errors.ExclusiveLocalRemoteOptions();
-      }
-      const previewType = args.remote ? "remote" : "local";
-      this.telemetryProperties[TelemetryProperty.PreviewType] = previewType;
+    if (args.local && args.remote) {
+      return err(errors.ExclusiveLocalRemoteOptions());
+    }
+    const previewType = args.remote ? "remote" : "local";
 
-      let hub = args["m365-host"] as constants.Hub;
-      // TODO: remove this when TEAMSFX_M365_APP retires
-      if (hub === undefined) {
-        hub = constants.Hub.teams;
-      }
-      this.telemetryProperties[TelemetryProperty.PreviewHub] = hub;
+    let hub = args["m365-host"] as constants.Hub;
+    // TODO: remove this when TEAMSFX_M365_APP retires
+    if (hub === undefined) {
+      hub = constants.Hub.teams;
+    }
 
-      const browser = args.browser as constants.Browser;
-      this.telemetryProperties[TelemetryProperty.PreviewBrowser] = browser;
+    const browser = args.browser as constants.Browser;
 
-      const browserArguments = args["browser-arg"] as string[];
+    const browserArguments = args["browser-arg"] as string[];
 
-      const workspaceFolder = path.resolve(args.folder as string);
-      this.telemetryProperties[TelemetryProperty.PreviewAppId] = utils.getLocalTeamsAppId(
-        workspaceFolder
-      ) as string;
-      this.telemetryProperties[TelemetryProperty.PreviewProjectComponents] =
-        (await this.getProjectComponents(workspaceFolder)) ?? "";
-
-      cliTelemetry
-        .withRootFolder(workspaceFolder)
-        .sendTelemetryEvent(TelemetryEvent.PreviewStart, this.telemetryProperties);
-
-      // parse sharepoint site url to get workbench url
-      if (args["sharepoint-site"]) {
-        try {
-          let spSite = args["sharepoint-site"] as string;
-          if (!spSite.startsWith("https")) {
-            spSite = `https://${spSite}`;
-          }
-          const spWorkbenchHttpsUrl = new URL("_layouts/workbench.aspx", spSite);
-          this.sharepointSiteUrl = spWorkbenchHttpsUrl.toString();
-        } catch (error: any) {
-          throw errors.InvalidSharePointSiteURL(error);
+    // parse sharepoint site url to get workbench url
+    if (args["sharepoint-site"]) {
+      try {
+        let spSite = args["sharepoint-site"] as string;
+        if (!spSite.startsWith("https")) {
+          spSite = `https://${spSite}`;
         }
+        const spWorkbenchHttpsUrl = new URL("_layouts/workbench.aspx", spSite);
+        this.sharepointSiteUrl = spWorkbenchHttpsUrl.toString();
+      } catch (error: any) {
+        return err(errors.InvalidSharePointSiteURL(error));
       }
+    }
 
+    const env = args.env as string;
+
+    const workspaceFolder = path.resolve(args.folder as string);
+    cliTelemetry.withRootFolder(workspaceFolder);
+    this.telemetryProperties[TelemetryProperty.PreviewType] = previewType;
+    this.telemetryProperties[TelemetryProperty.PreviewHub] = hub;
+    this.telemetryProperties[TelemetryProperty.PreviewBrowser] = browser;
+    this.telemetryProperties[TelemetryProperty.PreviewAppId] = utils.getLocalTeamsAppId(
+      workspaceFolder
+    ) as string;
+    this.telemetryProperties[TelemetryProperty.PreviewProjectComponents] =
+      (await this.getProjectComponents(workspaceFolder)) ?? "";
+
+    return await localTelemetryReporter.runWithTelemetryGeneric(
+      TelemetryEvent.Preview,
+      async () => this.doPreview(workspaceFolder, previewType, browser, browserArguments, hub, env),
+      (result: Result<null, FxError>, ctx: TelemetryContext) => {
+        // whether on success or failure, send this.telemetryProperties and this.telemetryMeasurements
+        Object.assign(ctx.properties, this.telemetryProperties);
+        Object.assign(ctx.measurements, this.telemetryMeasurements);
+        ctx.properties[TelemetryProperty.PreviewLastEventName] =
+          localTelemetryReporter.getLastEventName();
+        return result.isErr() ? result.error : undefined;
+      },
+      this.telemetryProperties
+    );
+  }
+
+  private async doPreview(
+    workspaceFolder: string,
+    previewType: string,
+    browser: constants.Browser,
+    browserArguments: string[],
+    hub: constants.Hub,
+    env: string
+  ): Promise<Result<null, FxError>> {
+    try {
       let result: Result<null, FxError>;
       if (previewType === "local") {
         if (await this.isExistingTabApp(workspaceFolder)) {
@@ -222,29 +246,15 @@ export default class Preview extends YargsCommand {
           result = await this.localPreview(workspaceFolder, hub, browser, browserArguments);
         }
       } else {
-        result = await this.remotePreview(
-          workspaceFolder,
-          args.env as string,
-          hub,
-          browser,
-          browserArguments
-        );
+        result = await this.remotePreview(workspaceFolder, env, hub, browser, browserArguments);
       }
 
       if (result.isErr()) {
         throw result.error;
       }
-      cliTelemetry.sendTelemetryEvent(
-        TelemetryEvent.Preview,
-        {
-          ...this.telemetryProperties,
-          [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-        },
-        this.telemetryMeasurements
-      );
+
       return ok(null);
     } catch (error: any) {
-      cliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Preview, error, this.telemetryProperties);
       await this.terminateTasks();
       return err(error);
     }
@@ -332,49 +342,51 @@ export default class Preview extends YargsCommand {
       );
     }
 
-    const start = performance.now();
     const depsManager = new DepsManager(cliEnvCheckerLogger, cliEnvCheckerTelemetry);
-    try {
-      // check node
-      const nodeRes = await this.checkNode(includeBackend, includeFuncHostedBot, depsManager);
-      if (nodeRes.isErr()) {
-        return err(nodeRes.error);
-      }
-
-      // check account
-      const accountRes = await this.checkM365Account();
-      if (accountRes.isErr()) {
-        return err(accountRes.error);
-      }
-
-      // check cert
-      if (includeFrontend) {
-        const certRes = await this.resolveLocalCertificate(localEnvManager);
-        if (certRes.isErr()) {
-          return err(certRes.error);
+    const prereqsResult = await localTelemetryReporter.runWithTelemetry(
+      TelemetryEvent.PreviewPrerequisites,
+      async () => {
+        // check node
+        const nodeRes = await this.checkNode(includeBackend, includeFuncHostedBot, depsManager);
+        if (nodeRes.isErr()) {
+          return err(nodeRes.error);
         }
-      }
 
-      // check deps
-      const envCheckerResult = await this.handleDependences(
-        projectSettings,
-        localEnvManager,
-        depsManager
-      );
-      if (envCheckerResult.isErr()) {
-        return err(envCheckerResult.error);
-      }
+        // check account
+        const accountRes = await this.checkM365Account();
+        if (accountRes.isErr()) {
+          return err(accountRes.error);
+        }
 
-      /* === check ports === */
-      const portsRes = await this.checkPorts(workspaceFolder);
-      if (portsRes.isErr()) {
-        return portsRes;
+        // check cert
+        if (includeFrontend) {
+          const certRes = await this.resolveLocalCertificate(localEnvManager);
+          if (certRes.isErr()) {
+            return err(certRes.error);
+          }
+        }
+
+        // check deps
+        const envCheckerResult = await this.handleDependences(
+          projectSettings,
+          localEnvManager,
+          depsManager
+        );
+        if (envCheckerResult.isErr()) {
+          return err(envCheckerResult.error);
+        }
+
+        /* === check ports === */
+        const portsRes = await this.checkPorts(workspaceFolder);
+        if (portsRes.isErr()) {
+          return portsRes;
+        }
+
+        return ok(undefined);
       }
-    } finally {
-      // use seconds
-      this.telemetryMeasurements[TelemetryProperty.PreviewPrerequisitesCheckTime] = Number(
-        ((performance.now() - start) / 1000).toFixed(2)
-      );
+    );
+    if (prereqsResult.isErr()) {
+      return err(prereqsResult.error);
     }
 
     // clear background tasks
@@ -541,17 +553,23 @@ export default class Preview extends YargsCommand {
     return ok(null);
   }
 
-  private async checkPorts(workspaceFolder: string): Promise<Result<null, FxError>> {
-    const portsBar = CLIUIInstance.createProgressBar(Checker.Ports, 1);
-    await portsBar.start(ProgressMessage[Checker.Ports]);
-    await portsBar.next(ProgressMessage[Checker.Ports]);
-    const portsInUse = await commonUtils.getPortsInUse(workspaceFolder);
-    if (portsInUse.length > 0) {
-      await portsBar.end(false);
-      return err(errors.PortsAlreadyInUse(portsInUse));
-    }
-    await portsBar.end(true);
-    return ok(null);
+  private checkPorts(workspaceFolder: string): Promise<Result<null, FxError>> {
+    return localTelemetryReporter.runWithTelemetry(
+      TelemetryEvent.PreviewPrereqsCheckPorts,
+      async (ctx: TelemetryContext) => {
+        const portsBar = CLIUIInstance.createProgressBar(Checker.Ports, 1);
+        await portsBar.start(ProgressMessage[Checker.Ports]);
+        await portsBar.next(ProgressMessage[Checker.Ports]);
+        const portsInUse = await commonUtils.getPortsInUse(workspaceFolder);
+        if (portsInUse.length > 0) {
+          ctx.properties[TelemetryProperty.PreviewPortsInUse] = JSON.stringify(portsInUse);
+          await portsBar.end(false);
+          return err(errors.PortsAlreadyInUse(portsInUse));
+        }
+        await portsBar.end(true);
+        return ok(null);
+      }
+    );
   }
 
   private async spfxPreviewSetup(workspaceFolder: string): Promise<Result<null, FxError>> {
@@ -887,7 +905,52 @@ export default class Preview extends YargsCommand {
     return ok(null);
   }
 
-  private async prepareDevEnv(
+  separateErrorProperties(
+    result: Result<unknown, FxError>
+  ): [{ [key: string]: unknown }, { [key: string]: unknown }] {
+    const error = result?.isErr() ? result.error : undefined;
+    return [
+      {
+        success: error === undefined ? TelemetrySuccess.Yes : TelemetrySuccess.No,
+        errorCode: error?.name,
+        errorType:
+          error === undefined
+            ? undefined
+            : error instanceof UserError
+            ? "user"
+            : error instanceof SystemError
+            ? "system"
+            : "unknown",
+      },
+      {
+        errorMessage: error?.message,
+        errorStack: error?.stack,
+      },
+    ];
+  }
+  private prepareDevEnv(
+    core: FxCore,
+    inputs: Inputs,
+    workspaceFolder: string,
+    includeFrontend: boolean,
+    includeBackend: boolean,
+    includeBot: boolean,
+    depsManager: DepsManager
+  ): Promise<Result<null, FxError>> {
+    return localTelemetryReporter.runWithTelemetry(TelemetryEvent.PreviewPrepareDevEnv, () =>
+      this._prepareDevEnv(
+        core,
+        inputs,
+        workspaceFolder,
+        includeFrontend,
+        includeBackend,
+        includeBot,
+        depsManager
+      )
+    );
+  }
+
+  private async _prepareDevEnv(
     core: FxCore,
     inputs: Inputs,
     workspaceFolder: string,
@@ -1071,7 +1134,31 @@ export default class Preview extends YargsCommand {
     return botTaskPromises;
   }
 
-  private async startServices(
+  private startServices(
+    workspaceFolder: string,
+    programmingLanguage: string,
+    includeFrontend: boolean,
+    includeBackend: boolean,
+    includeBot: boolean,
+    includeFuncHostedBot: boolean,
+    depsManager: DepsManager,
+    includeSimpleAuth?: boolean
+  ): Promise<Result<null, FxError>> {
+    return localTelemetryReporter.runWithTelemetry(TelemetryEvent.PreviewStartServices, () =>
+      this._startServices(
+        workspaceFolder,
+        programmingLanguage,
+        includeFrontend,
+        includeBackend,
+        includeBot,
+        includeFuncHostedBot,
+        depsManager,
+        includeSimpleAuth
+      )
+    );
+  }
+
+  private async _startServices(
     workspaceFolder: string,
     programmingLanguage: string,
     includeFrontend: boolean,
@@ -1221,58 +1308,95 @@ export default class Preview extends YargsCommand {
     localEnvManager: LocalEnvManager,
     depsManager: DepsManager
   ): Promise<Result<null, FxError>> {
-    let shouldContinue = true;
-    const availableDeps = localEnvManager.getActiveDependencies(projectSettings);
-    const enabledDeps = await CliDepsChecker.getEnabledDeps(
-      availableDeps.filter((dep) => !CliDepsChecker.getNodeDeps().includes(dep))
-    );
-
-    for (const dep of enabledDeps) {
-      const bar = CLIUIInstance.createProgressBar(DepsDisplayName[dep], 1);
-      await bar.start(ProgressMessage[dep]);
-      await bar.next(ProgressMessage[dep]);
-      const depStatus = (
-        await depsManager.ensureDependencies([dep], {
-          fastFail: false,
-          doctor: true,
-        })
-      )[0];
-
-      let result;
-      let summaryMsg;
-
-      if (depStatus.isInstalled) {
-        result = true;
-        summaryMsg = depStatus.details.binFolders
-          ? `${depStatus.name} (installed at ${depStatus.details.binFolders?.[0]})`
-          : DepsDisplayName[dep];
-      } else {
-        result = false;
-        summaryMsg = depStatus.error ? depStatus.error.message : DepsDisplayName[dep];
-      }
-      shouldContinue = shouldContinue && result;
-      await bar.next(summaryMsg);
-      await bar.end(result);
-
-      if (depStatus.error instanceof DepsCheckerError) {
-        cliLogger.necessaryLog(LogLevel.Warning, depStatus.error.message);
-      }
-      if (depStatus.error && depStatus.error.helpLink) {
-        cliLogger.necessaryLog(
-          LogLevel.Warning,
-          doctorResult.HelpLink.split("@Link").join(depStatus.error.helpLink)
+    return localTelemetryReporter.runWithTelemetry(
+      TelemetryEvent.PreviewPrereqsCheckDependencies,
+      async (ctx: TelemetryContext): Promise<Result<null, FxError>> => {
+        let shouldContinue = true;
+        const availableDeps = localEnvManager.getActiveDependencies(projectSettings);
+        const enabledDeps = await CliDepsChecker.getEnabledDeps(
+          availableDeps.filter((dep) => !CliDepsChecker.getNodeDeps().includes(dep))
         );
+
+        const telemetryCheckResults: { [key: string]: unknown } = {};
+
+        for (const dep of enabledDeps) {
+          const bar = CLIUIInstance.createProgressBar(DepsDisplayName[dep], 1);
+          await bar.start(ProgressMessage[dep]);
+          await bar.next(ProgressMessage[dep]);
+          const depStatus = (
+            await depsManager.ensureDependencies([dep], {
+              fastFail: false,
+              doctor: true,
+            })
+          )[0];
+
+          let result;
+          let summaryMsg;
+
+          if (depStatus.isInstalled) {
+            result = true;
+            summaryMsg = depStatus.details.binFolders
+              ? `${depStatus.name} (installed at ${depStatus.details.binFolders?.[0]})`
+              : DepsDisplayName[dep];
+          } else {
+            result = false;
+            summaryMsg = depStatus.error ? depStatus.error.message : DepsDisplayName[dep];
+          }
+          shouldContinue = shouldContinue && result;
+          await bar.next(summaryMsg);
+          await bar.end(result);
+
+          let errorCode = undefined;
+          let errorType = undefined;
+          if (depStatus.error instanceof DepsCheckerError) {
+            cliLogger.necessaryLog(LogLevel.Warning, depStatus.error.message);
+            errorCode = depStatus.error?.name;
+            // Since DepsCheckerError is not FxError, assume user error for now.
+            errorType = "user";
+          }
+          if (depStatus.error && depStatus.error.helpLink) {
+            cliLogger.necessaryLog(
+              LogLevel.Warning,
+              doctorResult.HelpLink.split("@Link").join(depStatus.error.helpLink)
+            );
+          }
+
+          telemetryCheckResults[depStatus.name] = {
+            result: result,
+            name: depStatus.name,
+            type: depStatus.type,
+            isInstalled: depStatus.isInstalled,
+
+            source: cliSource,
+            errorCode: errorCode,
+            errorType: errorType,
+          };
+        }
+        this.telemetryProperties[TelemetryProperty.PreviewCheckResults] =
+          JSON.stringify(telemetryCheckResults);
+        ctx.properties[TelemetryProperty.PreviewCheckResults] =
+          JSON.stringify(telemetryCheckResults);
+
+        if (!shouldContinue) {
+          return err(errors.DependencyCheckerFailed());
+        }
+
+        return ok(null);
       }
-    }
-
-    if (!shouldContinue) {
-      return err(errors.DependencyCheckerFailed());
-    }
-
-    return ok(null);
+    );
   }
 
-  private async checkNode(
+  private checkNode(
+    hasBackend: boolean,
+    hasFuncHostedBot: boolean,
+    depsManager: DepsManager
+  ): Promise<Result<null, FxError>> {
+    return localTelemetryReporter.runWithTelemetry(TelemetryEvent.PreviewPrereqsCheckNode, () =>
+      this._checkNode(hasBackend, hasFuncHostedBot, depsManager)
+    );
+  }
+
+  private async _checkNode(
     hasBackend: boolean,
     hasFuncHostedBot: boolean,
     depsManager: DepsManager
@@ -1339,13 +1463,20 @@ export default class Preview extends YargsCommand {
       if (isNode12Installed) {
         cliLogger.necessaryLog(LogLevel.Info, doctorResult.Node12MatchFunction);
       }
-      return err(errors.PrerequisitesValidationError("Node.js checker failed.", helpLink));
+      return err(errors.PrerequisitesValidationNodejsError("Node.js checker failed.", helpLink));
     }
 
     return ok(null);
   }
 
-  private async checkM365Account(): Promise<Result<null, FxError>> {
+  private checkM365Account(): Promise<Result<null, FxError>> {
+    return localTelemetryReporter.runWithTelemetry(
+      TelemetryEvent.PreviewPrereqsCheckM365Account,
+      this._checkM365Account
+    );
+  }
+
+  private async _checkM365Account(): Promise<Result<null, FxError>> {
     let result = true;
     let summaryMsg = `${Checker.M365Account}`;
     let error = undefined;
@@ -1393,7 +1524,7 @@ export default class Preview extends YargsCommand {
     await accountBar.end(result);
 
     if (!result) {
-      return error ? err(error) : err(errors.PrerequisitesValidationError(summaryMsg));
+      return error ? err(error) : err(errors.PrerequisitesValidationM365AccountError(summaryMsg));
     }
     return ok(null);
   }
@@ -1401,32 +1532,45 @@ export default class Preview extends YargsCommand {
   private async resolveLocalCertificate(
     localEnvManager: LocalEnvManager
   ): Promise<Result<null, FxError>> {
-    let result = true;
-    let summaryMsg;
-    let error = undefined;
-    const certBar = CLIUIInstance.createProgressBar(Checker.LocalCertificate, 1);
-    await certBar.start(ProgressMessage[Checker.LocalCertificate]);
-    await certBar.next(ProgressMessage[Checker.LocalCertificate]);
-    try {
-      const trustDevCert = await isTrustDevCertEnabled();
-      const localCertResult = await localEnvManager.resolveLocalCertificate(trustDevCert);
-      if (localCertResult.isTrusted === false) {
-        result = false;
-        error = localCertResult.error;
-      } else if (typeof localCertResult.isTrusted === "undefined") {
-        summaryMsg = doctorResult.SkipTrustingCert;
-      }
-    } catch (err: any) {
-      result = false;
-      error = assembleError(err);
-    }
+    return localTelemetryReporter.runWithTelemetry(
+      TelemetryEvent.PreviewPrereqsCheckCert,
+      async (ctx: TelemetryContext) => {
+        let result = true;
+        let summaryMsg;
+        let error = undefined;
+        const certBar = CLIUIInstance.createProgressBar(Checker.LocalCertificate, 1);
+        await certBar.start(ProgressMessage[Checker.LocalCertificate]);
+        await certBar.next(ProgressMessage[Checker.LocalCertificate]);
+        try {
+          const trustDevCert = await isTrustDevCertEnabled();
+          const localCertResult = await localEnvManager.resolveLocalCertificate(trustDevCert);
+          // trust cert telemetry properties
+          ctx.properties[TelemetryProperty.PreviewDevCertStatus] = !trustDevCert
+            ? TelemetryPreviewDevCertStatus.Disabled
+            : localCertResult.alreadyTrusted
+            ? TelemetryPreviewDevCertStatus.AlreadyTrusted
+            : localCertResult.isTrusted
+            ? TelemetryPreviewDevCertStatus.Trusted
+            : TelemetryPreviewDevCertStatus.NotTrusted;
+          if (localCertResult.isTrusted === false) {
+            result = false;
+            error = localCertResult.error;
+          } else if (typeof localCertResult.isTrusted === "undefined") {
+            summaryMsg = doctorResult.SkipTrustingCert;
+          }
+        } catch (err: any) {
+          result = false;
+          error = assembleError(err);
+        }
 
-    await certBar.next(summaryMsg);
-    await certBar.end(result);
-    if (!result && error) {
-      return err(error);
-    }
-    return ok(null);
+        await certBar.next(summaryMsg);
+        await certBar.end(result);
+        if (!result && error) {
+          return err(error);
+        }
+        return ok(null);
+      }
+    );
   }
 
   private prepareTask(

@@ -24,7 +24,9 @@ import {
 import { assert } from "chai";
 import "mocha";
 import sinon from "sinon";
-import { createV2Context, InvalidInputError, setTools, TOOLS } from "../../../src";
+import { createV2Context } from "../../../src/common/tools";
+import { InvalidInputError } from "../../../src/core/error";
+import { setTools, TOOLS } from "../../../src/core/globalVars";
 import {
   newSolutionContext,
   QuestionModelMW,

@@ -7,7 +7,8 @@ import { TeamsAppSolution } from " ../../../src/plugins/solution";
 import { ok, SolutionContext, Platform, v2, Inputs } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs from "fs-extra";
-import { environmentManager, setTools } from "../../../src";
+import { setTools } from "../../../src/core/globalVars";
+import { environmentManager } from "../../../src/core/environment";
 import {
   BotOptionItem,
   HostTypeOptionAzure,

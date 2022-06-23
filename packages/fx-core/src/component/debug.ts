@@ -36,7 +36,6 @@ import {
   hasTab,
   hasSPFxTab,
 } from "../common/projectSettingsHelperV3";
-import { getAllowedAppIds } from "../common/tools";
 import {
   ConfigLocalDebugSettingsError,
   InvalidLocalBotEndpointFormat,
@@ -64,6 +63,7 @@ import * as Settings from "../plugins/solution/fx-solution/debug/util/settings";
 import fs from "fs-extra";
 import { updateJson, useNewTasks } from "../plugins/solution/fx-solution/debug/scaffolding";
 import { createFilesEffects } from "./utils";
+import { getAllowedAppIds } from "../common/constants";
 @Service("debug")
 export class DebugComponent {
   readonly name = "debug";

@@ -25,7 +25,7 @@ import {
 } from "../../util";
 import { LocalSettingsSimpleAuthKeys } from "../../../../../src/common/localSettingsConstants";
 import { LocalStateSimpleAuthKeys } from "../../../../../src/common/localStateConstants";
-import { getAllowedAppIds } from "../../../../../src/common/tools";
+import { getAllowedAppIds } from "../../../../../src/common/constants";
 import {
   AzureResourceKeyVault,
   HostTypeOptionAzure,

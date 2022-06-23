@@ -10,16 +10,14 @@ import {
   v2,
 } from "@microsoft/teamsfx-api";
 import * as os from "os";
-import { ResourcePlugins } from "../constants";
+import { getAllowedAppIds, ResourcePlugins } from "../constants";
 import {
   LocalStateAuthKeys,
   LocalStateBackendKeys,
   LocalStateBotKeys,
   LocalStateFrontendKeys,
   LocalStateSimpleAuthKeys,
-  LocalStateTeamsAppKeys,
 } from "../localStateConstants";
-import { getAllowedAppIds } from "../tools";
 import {
   LocalEnvAuthKeys,
   LocalEnvBackendKeys,

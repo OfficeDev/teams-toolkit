@@ -21,7 +21,8 @@ import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import { Container } from "typedi";
-import { environmentManager, FxCore, setTools } from "../../src";
+import { setTools } from "../../src/core/globalVars";
+import { FxCore } from "../../src/core/FxCore";
 import {
   CoreQuestionNames,
   SampleSelect,
@@ -42,6 +43,7 @@ import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import fs from "fs-extra";
 import { AppStudioPluginV3 } from "../../src/plugins/resource/appstudio/v3";
 import { SPFXQuestionNames } from "../../src/plugins/resource/spfx/utils/questions";
+import { environmentManager } from "../../src/core/environment";
 describe("Core basic APIs for v3", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();

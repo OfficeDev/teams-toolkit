@@ -29,11 +29,11 @@ import { ProvisionConfig, Utils } from "./utils/configs";
 import { DialogUtils } from "./utils/dialog";
 import { TelemetryUtils } from "./utils/telemetry";
 import { TokenAudience, TokenProvider } from "./utils/tokenProvider";
-import { getAllowedAppIds } from "../../../common/tools";
 import { TOOLS } from "../../../core/globalVars";
 import { AADManifest } from "./interfaces/AADManifest";
 import { AadAppManifestManager } from "./aadAppManifestManager";
 import { v4 as uuidv4 } from "uuid";
+import { getAllowedAppIds } from "../../../common/constants";
 
 function delay(ms: number) {
   // tslint:disable-next-line no-string-based-set-timeout

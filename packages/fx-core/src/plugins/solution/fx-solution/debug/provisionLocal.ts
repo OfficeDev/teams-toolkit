@@ -32,9 +32,8 @@ import {
   LocalEnvProvider,
 } from "../../../../common/local/localEnvProvider";
 import { prepareLocalAuthService } from "./util/localService";
-import { getAllowedAppIds } from "../../../../common/tools";
 import { LocalCertificateManager } from "../../../../common/local/localCertificateManager";
-import { ResourcePlugins } from "../../../../common/constants";
+import { getAllowedAppIds, ResourcePlugins } from "../../../../common/constants";
 import { BotHostTypes } from "../../../../common/local/constants";
 
 export async function setupLocalDebugSettings(

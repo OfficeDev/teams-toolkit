@@ -10,6 +10,7 @@ import {
   ProjectSettings,
 } from "@microsoft/teamsfx-api";
 import * as os from "os";
+import { getAllowedAppIds } from "../constants";
 import {
   LocalSettingsAuthKeys,
   LocalSettingsBackendKeys,
@@ -18,7 +19,6 @@ import {
   LocalSettingsSimpleAuthKeys,
   LocalSettingsTeamsAppKeys,
 } from "../localSettingsConstants";
-import { getAllowedAppIds } from "../tools";
 import {
   LocalEnvAuthKeys,
   LocalEnvBackendKeys,

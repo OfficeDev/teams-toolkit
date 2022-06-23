@@ -32,7 +32,7 @@ import {
 } from "../../../../../src/plugins/resource/aad/errors";
 import { ConfigKeys, Constants } from "../../../../../src/plugins/resource/aad/constants";
 import { MockM365TokenProvider, MockTools } from "../../../../core/utils";
-import { setTools } from "../../../../../src";
+import { setTools } from "../../../../../src/core/globalVars";
 import { AadAppManifestManager } from "../../../../../src/plugins/resource/aad/aadAppManifestManager";
 
 describe("AAD App Client Test", () => {

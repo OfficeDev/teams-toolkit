@@ -27,7 +27,7 @@ import sinon from "sinon";
 import { Container } from "typedi";
 import * as uuid from "uuid";
 import "../../../../../src/index";
-import { setTools } from "../../../../../src/index";
+import { setTools } from "../../../../../src/core/globalVars";
 import { TabLanguage } from "../../../../../src/plugins/resource/frontend/resources/templateInfo";
 import { SpfxPluginV2 } from "../../../../../src/plugins/resource/spfx/v2/index";
 import {

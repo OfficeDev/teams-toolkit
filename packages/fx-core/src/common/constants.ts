@@ -1,3 +1,5 @@
+import { getLocalizedString } from "./localizeUtils";
+
 export class ConstantString {
   static readonly UTF8Encoding = "utf-8";
   static readonly DeploymentResourceType = "Microsoft.Resources/deployments";
@@ -92,4 +94,30 @@ export class ManifestVariables {
   static readonly TabWebsiteUrl = "tabWebsiteUrl";
   static readonly TabConfigurationUrl = "tabConfigurationUrl";
   static readonly BotId = "botId";
+}
+
+export function getAllowedAppIds(): string[] {
+  return [
+    TeamsClientId.MobileDesktop,
+    TeamsClientId.Web,
+    OfficeClientId.Desktop,
+    OfficeClientId.Web1,
+    OfficeClientId.Web2,
+    OutlookClientId.Desktop,
+    OutlookClientId.Web1,
+    OutlookClientId.Web2,
+  ];
+}
+
+export function getAllowedAppMaps(): Record<string, string> {
+  return {
+    [TeamsClientId.MobileDesktop]: getLocalizedString("core.common.TeamsMobileDesktopClientName"),
+    [TeamsClientId.Web]: getLocalizedString("core.common.TeamsWebClientName"),
+    [OfficeClientId.Desktop]: getLocalizedString("core.common.OfficeDesktopClientName"),
+    [OfficeClientId.Web1]: getLocalizedString("core.common.OfficeWebClientName1"),
+    [OfficeClientId.Web2]: getLocalizedString("core.common.OfficeWebClientName2"),
+    [OutlookClientId.Desktop]: getLocalizedString("core.common.OutlookDesktopClientName"),
+    [OutlookClientId.Web1]: getLocalizedString("core.common.OutlookWebClientName1"),
+    [OutlookClientId.Web2]: getLocalizedString("core.common.OutlookWebClientName2"),
+  };
 }

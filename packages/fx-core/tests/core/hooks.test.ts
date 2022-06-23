@@ -29,7 +29,7 @@ import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import { Container } from "typedi";
-import { setTools } from "../../src";
+import { setTools } from "../../src/core/globalVars";
 import * as commonTools from "../../src/common/tools";
 import { environmentManager } from "../../src/core/environment";
 import { EnvInfoLoaderMW } from "../../src/core/middleware/envInfoLoader";

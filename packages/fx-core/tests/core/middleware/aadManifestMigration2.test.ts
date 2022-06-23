@@ -2,18 +2,16 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { FxError, Inputs, ok, Platform, ProjectSettings, Result } from "@microsoft/teamsfx-api";
+import { FxError, Inputs, ok, Platform, Result } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import "mocha";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { setTools } from "../../../src";
+import { setTools } from "../../../src/core/globalVars";
 import { AadManifestMigrationMW } from "../../../src/core/middleware/aadManifestMigration";
-import { MockProjectSettings, MockTools, MockUserInteraction, randomAppName } from "../utils";
-import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
+import { MockTools, randomAppName } from "../utils";
 import * as tool from "../../../src/common/tools";
-import { PluginNames } from "../../../src/plugins/solution/fx-solution/constants";
 import { permissionsToRequiredResourceAccess } from "../../../src/core/middleware/MigrationUtils";
 import * as chai from "chai";
 

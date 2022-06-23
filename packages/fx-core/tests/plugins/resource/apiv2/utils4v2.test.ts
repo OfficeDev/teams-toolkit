@@ -19,7 +19,8 @@ import {
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
-import { newEnvInfo, setTools } from "../../../../src";
+import { setTools } from "../../../../src/core/globalVars";
+import { newEnvInfo } from "../../../../src/core/environment";
 import { TabLanguage } from "../../../../src/plugins/resource/frontend/resources/templateInfo";
 import { LocalCrypto } from "../../../../src/core/crypto";
 import {

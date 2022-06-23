@@ -73,6 +73,7 @@ import { environmentManager } from "../core/environment";
 import { NoProjectOpenedError } from "../plugins/resource/cicd/errors";
 import { getProjectTemplatesFolderPath } from "./utils";
 import * as path from "path";
+import { getAppStudioEndpoint } from "../plugins/resource/appstudio/appStudio";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -656,17 +657,6 @@ export async function getAppDirectory(projectRoot: string): Promise<string> {
   }
 }
 
-/**
- * Get app studio endpoint for prod/int environment, mainly for ux e2e test
- */
-export function getAppStudioEndpoint(): string {
-  if (process.env.APP_STUDIO_ENV && process.env.APP_STUDIO_ENV === "int") {
-    return "https://dev-int.teams.microsoft.com";
-  } else {
-    return "https://dev.teams.microsoft.com";
-  }
-}
-
 export function getStorageAccountNameFromResourceId(resourceId: string): string {
   const result = parseFromResourceId(
     /providers\/Microsoft.Storage\/storageAccounts\/([^\/]*)/i,
@@ -816,19 +806,6 @@ function _redactObject(
  **/
 export function redactObject(obj: unknown, jsonSchema: unknown, maxRecursionDepth = 8): unknown {
   return _redactObject(obj, jsonSchema, maxRecursionDepth, 0);
-}
-
-export function getAllowedAppIds(): string[] {
-  return [
-    TeamsClientId.MobileDesktop,
-    TeamsClientId.Web,
-    OfficeClientId.Desktop,
-    OfficeClientId.Web1,
-    OfficeClientId.Web2,
-    OutlookClientId.Desktop,
-    OutlookClientId.Web1,
-    OutlookClientId.Web2,
-  ];
 }
 
 export function getAllowedAppMaps(): Record<string, string> {

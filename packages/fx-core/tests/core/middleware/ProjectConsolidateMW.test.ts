@@ -2,26 +2,14 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import {
-  ConfigFolderName,
-  FxError,
-  InputConfigsFolderName,
-  Inputs,
-  ok,
-  Platform,
-  ProjectSettings,
-  ProjectSettingsFileName,
-  Result,
-} from "@microsoft/teamsfx-api";
-import { assert } from "chai";
+import { FxError, Inputs, ok, Platform, ProjectSettings, Result } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import "mocha";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { setTools } from "../../../src";
+import { setTools } from "../../../src/core/globalVars";
 import { ProjectConsolidateMW } from "../../../src/core/middleware/consolidateLocalRemote";
-import { CoreHookContext } from "../../../src/core/types";
 import {
   MockProjectSettings,
   MockSPFxProjectSettings,

@@ -2,8 +2,7 @@
 // Licensed under the MIT license.
 
 import { Kind, SkuName, SkuTier } from "@azure/arm-storage/esm/models";
-import { getAllowedAppIds } from "../../../common/tools";
-
+import { getAllowedAppIds } from "../../../common/constants";
 import { FunctionConfigKey, FunctionLanguage } from "./enums";
 
 export class CommonConstants {

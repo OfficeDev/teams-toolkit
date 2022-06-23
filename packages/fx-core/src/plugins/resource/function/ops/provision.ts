@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { NameValuePair, Site } from "@azure/arm-appservice/esm/models/mappers";
-import { WebSiteManagementClient, WebSiteManagementModels } from "@azure/arm-appservice";
+import { WebSiteManagementModels } from "@azure/arm-appservice";
 
 import {
   AzureInfo,
@@ -10,10 +10,7 @@ import {
   FunctionAppSettingKeys,
   RegularExpr,
 } from "../constants";
-import { AzureLib } from "../utils/azure-client";
-import { FunctionLanguage } from "../enums";
-import { LanguageStrategyFactory } from "../language-strategy";
-import { getAllowedAppIds } from "../../../../common/tools";
+import { getAllowedAppIds } from "../../../../common/constants";
 
 type Site = WebSiteManagementModels.Site;
 type NameValuePair = WebSiteManagementModels.NameValuePair;

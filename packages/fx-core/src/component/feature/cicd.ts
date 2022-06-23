@@ -22,9 +22,8 @@ import {
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { isExistingTabApp } from "../../common";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
-import { NoCapabilityFoundError } from "../../core";
+import { NoCapabilityFoundError } from "../../core/error";
 import { environmentManager } from "../../core/environment";
 import { InternalError, NoProjectOpenedError } from "../../plugins/resource/cicd/errors";
 import { CICDImpl } from "../../plugins/resource/cicd/plugin";
@@ -41,6 +40,7 @@ import {
 import { ExistingTemplatesStat } from "../../plugins/resource/cicd/utils/existingTemplatesStat";
 import "../connection/azureWebAppConfig";
 import "../resource/azureSql";
+import { isMiniApp } from "../../common/projectSettingsHelperV3";
 @Service("cicd")
 export class CICD {
   name = "cicd";
@@ -81,7 +81,7 @@ export async function addCicdQuestion(
   inputs: InputsWithProjectPath
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   // add CI CD workflows for minimal app is not supported.
-  if (inputs.platform !== Platform.CLI_HELP && isExistingTabApp(ctx.projectSetting)) {
+  if (inputs.platform !== Platform.CLI_HELP && isMiniApp(ctx.projectSetting)) {
     throw new NoCapabilityFoundError(Stage.addCiCdFlow);
   }
 

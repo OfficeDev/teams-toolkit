@@ -19,10 +19,11 @@ import * as os from "os";
 import * as path from "path";
 import fs from "fs-extra";
 import "mocha";
-import { NoProjectOpenedError, PathNotExistError, setTools } from "../../../src";
 import { ContextInjectorMW, ProjectSettingsLoaderMW } from "../../../src/core/middleware";
 import { MockProjectSettings, MockTools, randomAppName } from "../utils";
 import { CoreHookContext } from "../../../src/core/types";
+import { NoProjectOpenedError, PathNotExistError } from "../../../src/core/error";
+import { setTools } from "../../../src/core/globalVars";
 
 describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 1", () => {
   class MyClass {

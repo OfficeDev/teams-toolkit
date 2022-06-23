@@ -19,7 +19,6 @@ import {
   Result,
   SingleSelectQuestion,
   Stage,
-  v2,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
@@ -33,17 +32,12 @@ import {
   ciOption,
   githubOption,
   jenkinsOption,
-  providerIdToLabel,
   provisionOption,
   publishOption,
   questionNames,
-  templateIdToLabel,
 } from "../../plugins/resource/cicd/questions";
 import { ExistingTemplatesStat } from "../../plugins/resource/cicd/utils/existingTemplatesStat";
 import { isMiniApp } from "../../common/projectSettingsHelperV3";
-import { VSCodeExtensionCommand } from "../../common/constants";
-import { ProviderKind } from "../../plugins/resource/cicd/providers/enums";
-import { CICDProviderFactory } from "../../plugins/resource/cicd/providers/factory";
 import { CICDImpl } from "../../plugins/resource/cicd/plugin";
 @Service("cicd")
 export class CICD {
@@ -111,8 +105,7 @@ export async function addCicdQuestion(
   };
 
   // TODO: add support for VS/.Net Projects.
-  // for CLI, there is a question named "env"
-  if (inputs.platform !== Platform.CLI) {
+  if (inputs.platform === Platform.VSCode) {
     if (!inputs.projectPath) {
       throw new NoProjectOpenedError();
     }

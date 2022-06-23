@@ -9,7 +9,7 @@ To run and debug Teams project on your local machine:
 
 Notes: your M365 account need to have the sideloading permission to ensure Teams app can be uploaded to your tenant, otherwise you will end up with failure to see your Teams app running in Teams client. Learn more about sideloading permission by visiting https://aka.ms/teamsfx-sideloading-option
 
-2. Go to the "Debug" menu > click on "Start Debugging" or directly press F5. Visual Studio will launch the Teams app inside Microsoft Teams client in a browser. Learn more by visiting https://aka.ms/teamsfx-vs-debug
+2. Go to the "Debug" menu > click on "Start Debugging" or directly press F5. Visual Studio will launch the Teams app inside Microsoft Teams client in a browser. Learn more by visiting https://aka.ms/teamsfx-vs-debug.
 
 Tips: you can use hotreload function of VS during debug. Learn more by visiting https://aka.ms/teamsfx-vs-hotreload.
 
@@ -33,9 +33,9 @@ Deploy your Teams app on Azure
 
 To run your Teams app on Azure:
 
-1. Right click on your project and select "Teams Toolkit" -> "Provision in the cloud..." to create resources in Azure for your app. You can select a proper subscription and resource group which you would like to use for your Teams app. Please be noted that this might cause charges to your Azure account. Learn more by visiting https://aka.ms/teamsfx-vs-provision
+1. Right click on your project and select "Teams Toolkit" -> "Provision in the cloud..." to create resources in Azure for your app. You can select a proper subscription and resource group which you would like to use for your Teams app. Please be noted that this might cause charges to your Azure account. Learn more by visiting https://aka.ms/teamsfx-vs-provision.
 
-2. Right click on your project and select "Teams Toolkit" -> "Deploy to the cloud...", this step will deploy your code to the Azure resources created in previous step. It is common to deploy multiple times to the same set of Azure resources, so there is no need to run "Provision in the cloud..." every time before run "Deploy to the cloud...". Both the commands will take several minutes to complete, please wait until it finished. Learn more by visiting https://aka.ms/teamsfx-vs-deploy
+2. Right click on your project and select "Teams Toolkit" -> "Deploy to the cloud...", this step will deploy your code to the Azure resources created in previous step. It is common to deploy multiple times to the same set of Azure resources, so there is no need to run "Provision in the cloud..." every time before run "Deploy to the cloud...". Both the commands will take several minutes to complete, please wait until it finished. Learn more by visiting https://aka.ms/teamsfx-vs-deploy.
 
 3. Right click on your project and select "Teams Toolkit" -> "Preview in Teams" to launch your app in a browser. 
 

@@ -56,6 +56,8 @@ export enum TelemetryEvent {
   PreviewGulpCertStart = "preview-gulp-cert-start",
   PreviewServiceStart = "preview-service-start",
   PreviewService = "preview-service",
+  PreviewSideloading = "preview-sideloading",
+  PreviewSideloadingStart = "preview-sideloading-start",
   PreviewSPFxOpenBrowserStart = "preview-spfx-open-browser-start",
   PreviewSPFxOpenBrowser = "preview-spfx-open-browser",
   PreviewPrerequisites = "preview-prerequisites",
@@ -66,7 +68,6 @@ export enum TelemetryEvent {
   PreviewPrereqsCheckPorts = "preview-prereqs-check-ports",
   PreviewPrepareDevEnv = "preview-prepare-dev-env",
   PreviewStartServices = "preview-start-services",
-  PreviewSideloading = "preview-sideloading",
 
   AutomaticNpmInstallStart = "automatic-npm-install-start",
   AutomaticNpmInstall = "automatic-npm-install",

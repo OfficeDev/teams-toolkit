@@ -11,7 +11,7 @@ import * as constants from "./constants";
 import cliLogger from "../../commonlib/log";
 import * as commonUtils from "./commonUtils";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
-import { Colors, LogLevel, ok, err } from "@microsoft/teamsfx-api";
+import { Colors, LogLevel, ok, err, FxError, Result } from "@microsoft/teamsfx-api";
 import { getColorizedString, sleep } from "../../utils";
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import { TempFolderManager } from "./tempFolderManager";
@@ -26,56 +26,83 @@ export async function openHubWebClient(
   browserArguments: string[] = [],
   telemetryProperties?: { [key: string]: string } | undefined
 ): Promise<void> {
-  await localTelemetryReporter.runWithTelemetryProperties(
-    TelemetryEvent.PreviewSideloading,
-    telemetryProperties || {},
-    async () => {
-      let sideloadingUrl = "";
-      if (hub === constants.Hub.teams) {
-        sideloadingUrl = constants.LaunchUrl.teams;
-      } else if (hub === constants.Hub.outlook) {
-        sideloadingUrl = includeFrontend
-          ? constants.LaunchUrl.outlookTab
-          : constants.LaunchUrl.outlookBot;
-      } else if (hub === constants.Hub.office) {
-        sideloadingUrl = constants.LaunchUrl.officeTab;
-      }
-      sideloadingUrl = sideloadingUrl.replace(constants.teamsAppIdPlaceholder, appId);
-      sideloadingUrl = sideloadingUrl.replace(constants.teamsAppInternalIdPlaceholder, appId);
-      const accountHint = await commonUtils.generateAccountHint(
-        tenantIdFromConfig,
-        hub === constants.Hub.teams
-      );
-      sideloadingUrl = sideloadingUrl.replace(constants.accountHintPlaceholder, accountHint);
+  if (telemetryProperties !== undefined) {
+    await localTelemetryReporter.runWithTelemetryProperties(
+      TelemetryEvent.PreviewSideloading,
+      telemetryProperties,
+      () =>
+        _openHubWebClient(
+          includeFrontend,
+          tenantIdFromConfig,
+          appId,
+          hub,
+          browser,
+          browserArguments
+        )
+    );
+  } else {
+    await _openHubWebClient(
+      includeFrontend,
+      tenantIdFromConfig,
+      appId,
+      hub,
+      browser,
+      browserArguments
+    );
+  }
+}
 
-      const message = [
-        {
-          content: `preview url: `,
-          color: Colors.WHITE,
-        },
-        {
-          content: sideloadingUrl,
-          color: Colors.BRIGHT_CYAN,
-        },
-      ];
-      cliLogger.necessaryLog(LogLevel.Info, getColorizedString(message));
-
-      const previewBar = CLIUIInstance.createProgressBar(constants.previewTitle, 1);
-      await previewBar.start(constants.previewStartMessage);
-      await previewBar.next(constants.previewStartMessage);
-      try {
-        await commonUtils.openBrowser(browser, sideloadingUrl, browserArguments);
-      } catch {
-        const error = OpeningBrowserFailed(browser);
-        cliLogger.necessaryLog(LogLevel.Warning, constants.openBrowserHintMessage);
-        await previewBar.end(false);
-        return err(error);
-      }
-      await previewBar.end(true);
-
-      return ok(undefined);
-    }
+async function _openHubWebClient(
+  includeFrontend: boolean,
+  tenantIdFromConfig: string,
+  appId: string,
+  hub: string,
+  browser: constants.Browser,
+  browserArguments: string[] = []
+): Promise<Result<undefined, FxError>> {
+  let sideloadingUrl = "";
+  if (hub === constants.Hub.teams) {
+    sideloadingUrl = constants.LaunchUrl.teams;
+  } else if (hub === constants.Hub.outlook) {
+    sideloadingUrl = includeFrontend
+      ? constants.LaunchUrl.outlookTab
+      : constants.LaunchUrl.outlookBot;
+  } else if (hub === constants.Hub.office) {
+    sideloadingUrl = constants.LaunchUrl.officeTab;
+  }
+  sideloadingUrl = sideloadingUrl.replace(constants.teamsAppIdPlaceholder, appId);
+  sideloadingUrl = sideloadingUrl.replace(constants.teamsAppInternalIdPlaceholder, appId);
+  const accountHint = await commonUtils.generateAccountHint(
+    tenantIdFromConfig,
+    hub === constants.Hub.teams
   );
+  sideloadingUrl = sideloadingUrl.replace(constants.accountHintPlaceholder, accountHint);
+
+  const message = [
+    {
+      content: `preview url: `,
+      color: Colors.WHITE,
+    },
+    {
+      content: sideloadingUrl,
+      color: Colors.BRIGHT_CYAN,
+    },
+  ];
+  cliLogger.necessaryLog(LogLevel.Info, getColorizedString(message));
+
+  const previewBar = CLIUIInstance.createProgressBar(constants.previewTitle, 1);
+  await previewBar.start(constants.previewStartMessage);
+  await previewBar.next(constants.previewStartMessage);
+  try {
+    await commonUtils.openBrowser(browser, sideloadingUrl, browserArguments);
+  } catch {
+    const error = OpeningBrowserFailed(browser);
+    cliLogger.necessaryLog(LogLevel.Warning, constants.openBrowserHintMessage);
+    await previewBar.end(false);
+    return err(error);
+  }
+  await previewBar.end(true);
+  return ok(undefined);
 }
 
 export async function openUrlWithNewProfile(url: string): Promise<boolean> {

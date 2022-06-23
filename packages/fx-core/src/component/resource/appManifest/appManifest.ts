@@ -132,106 +132,10 @@ export class AppManifest implements CloudResource {
         return ok([effect]);
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const appManifestRes = await readAppManifest(inputs.projectPath);
-        if (appManifestRes.isErr()) return err(appManifestRes.error);
-        const appManifest = appManifestRes.value;
-        // const capability = inputs.capability as v3.ManifestCapability;
         const capabilities = inputs.capabilities as v3.ManifestCapability[];
-        for (const capability of capabilities) {
-          let staticTabIndex = appManifest.staticTabs?.length ?? 0;
-          switch (capability.name) {
-            case "staticTab":
-              appManifest.staticTabs = appManifest.staticTabs || [];
-              if (capability.snippet) {
-                appManifest.staticTabs.push(capability.snippet);
-              } else {
-                if (capability.existingApp) {
-                  const template = cloneDeep(STATIC_TABS_TPL_EXISTING_APP[0]);
-                  template.entityId = "index" + staticTabIndex;
-                  appManifest.staticTabs.push(template);
-                } else {
-                  const template = cloneDeep(STATIC_TABS_TPL_V3[0]);
-                  template.entityId = "index" + staticTabIndex;
-                  appManifest.staticTabs.push(template);
-                }
-                staticTabIndex++;
-              }
-              break;
-            case "configurableTab":
-              appManifest.configurableTabs = appManifest.configurableTabs || [];
-              if (capability.snippet) {
-                appManifest.configurableTabs.push(capability.snippet);
-              } else {
-                if (capability.existingApp) {
-                  appManifest.configurableTabs = appManifest.configurableTabs.concat(
-                    CONFIGURABLE_TABS_TPL_EXISTING_APP
-                  );
-                } else {
-                  appManifest.configurableTabs =
-                    appManifest.configurableTabs.concat(CONFIGURABLE_TABS_TPL_V3);
-                }
-              }
-              break;
-            case "Bot":
-              appManifest.bots = appManifest.bots || [];
-              if (capability.snippet) {
-                appManifest.bots.push(capability.snippet);
-              } else {
-                if (capability.existingApp) {
-                  appManifest.bots = appManifest.bots.concat(BOTS_TPL_EXISTING_APP);
-                } else {
-                  if (appManifest.bots === undefined) {
-                    appManifest.bots = [];
-                  }
-
-                  if (isBotNotificationEnabled()) {
-                    const scenariosRaw = inputs[AzureSolutionQuestionNames.Scenarios];
-                    const scenarios = Array.isArray(scenariosRaw) ? scenariosRaw : [];
-
-                    if (scenarios.includes(BotScenario.CommandAndResponseBot)) {
-                      // command and response bot
-                      appManifest.bots = appManifest.bots.concat(
-                        BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3
-                      );
-                    } else if (scenarios.includes(BotScenario.NotificationBot)) {
-                      // notification
-                      appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_NOTIFICATION_V3);
-                    } else {
-                      // legacy bot
-                      appManifest.bots = appManifest.bots.concat(BOTS_TPL_V3);
-                    }
-                  } else {
-                    appManifest.bots = appManifest.bots.concat(BOTS_TPL_V3);
-                  }
-                }
-              }
-              break;
-            case "MessageExtension":
-              appManifest.composeExtensions = appManifest.composeExtensions || [];
-              if (capability.snippet) {
-                appManifest.composeExtensions.push(capability.snippet);
-              } else {
-                if (capability.existingApp) {
-                  appManifest.composeExtensions = appManifest.composeExtensions.concat(
-                    COMPOSE_EXTENSIONS_TPL_EXISTING_APP
-                  );
-                } else {
-                  appManifest.composeExtensions =
-                    appManifest.composeExtensions.concat(COMPOSE_EXTENSIONS_TPL_V3);
-                }
-              }
-              break;
-            case "WebApplicationInfo":
-              if (capability.snippet) {
-                appManifest.webApplicationInfo = capability.snippet;
-              } else {
-                appManifest.webApplicationInfo = WEB_APPLICATION_INFO_V3;
-              }
-              break;
-          }
-        }
+        const res = await addCapabilities(inputs, capabilities);
+        if (res.isErr()) return err(res.error);
         effect.remarks = `capabilities: ${capabilities.map((c) => c.name).join(",")}`;
-        await writeAppManifest(appManifest, inputs.projectPath);
         return ok([effect]);
       },
     };
@@ -336,4 +240,106 @@ export class AppManifest implements CloudResource {
     };
     return ok(action);
   }
+}
+
+export async function addCapabilities(
+  inputs: InputsWithProjectPath,
+  capabilities: v3.ManifestCapability[]
+): Promise<Result<undefined, FxError>> {
+  const appManifestRes = await readAppManifest(inputs.projectPath);
+  if (appManifestRes.isErr()) return err(appManifestRes.error);
+  const appManifest = appManifestRes.value;
+  for (const capability of capabilities) {
+    let staticTabIndex = appManifest.staticTabs?.length ?? 0;
+    switch (capability.name) {
+      case "staticTab":
+        appManifest.staticTabs = appManifest.staticTabs || [];
+        if (capability.snippet) {
+          appManifest.staticTabs.push(capability.snippet);
+        } else {
+          if (capability.existingApp) {
+            const template = cloneDeep(STATIC_TABS_TPL_EXISTING_APP[0]);
+            template.entityId = "index" + staticTabIndex;
+            appManifest.staticTabs.push(template);
+          } else {
+            const template = cloneDeep(STATIC_TABS_TPL_V3[0]);
+            template.entityId = "index" + staticTabIndex;
+            appManifest.staticTabs.push(template);
+          }
+          staticTabIndex++;
+        }
+        break;
+      case "configurableTab":
+        appManifest.configurableTabs = appManifest.configurableTabs || [];
+        if (capability.snippet) {
+          appManifest.configurableTabs.push(capability.snippet);
+        } else {
+          if (capability.existingApp) {
+            appManifest.configurableTabs = appManifest.configurableTabs.concat(
+              CONFIGURABLE_TABS_TPL_EXISTING_APP
+            );
+          } else {
+            appManifest.configurableTabs =
+              appManifest.configurableTabs.concat(CONFIGURABLE_TABS_TPL_V3);
+          }
+        }
+        break;
+      case "Bot":
+        appManifest.bots = appManifest.bots || [];
+        if (capability.snippet) {
+          appManifest.bots.push(capability.snippet);
+        } else {
+          if (capability.existingApp) {
+            appManifest.bots = appManifest.bots.concat(BOTS_TPL_EXISTING_APP);
+          } else {
+            if (appManifest.bots === undefined) {
+              appManifest.bots = [];
+            }
+
+            if (isBotNotificationEnabled()) {
+              const scenariosRaw = inputs[AzureSolutionQuestionNames.Scenarios];
+              const scenarios = Array.isArray(scenariosRaw) ? scenariosRaw : [];
+
+              if (scenarios.includes(BotScenario.CommandAndResponseBot)) {
+                // command and response bot
+                appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3);
+              } else if (scenarios.includes(BotScenario.NotificationBot)) {
+                // notification
+                appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_NOTIFICATION_V3);
+              } else {
+                // legacy bot
+                appManifest.bots = appManifest.bots.concat(BOTS_TPL_V3);
+              }
+            } else {
+              appManifest.bots = appManifest.bots.concat(BOTS_TPL_V3);
+            }
+          }
+        }
+        break;
+      case "MessageExtension":
+        appManifest.composeExtensions = appManifest.composeExtensions || [];
+        if (capability.snippet) {
+          appManifest.composeExtensions.push(capability.snippet);
+        } else {
+          if (capability.existingApp) {
+            appManifest.composeExtensions = appManifest.composeExtensions.concat(
+              COMPOSE_EXTENSIONS_TPL_EXISTING_APP
+            );
+          } else {
+            appManifest.composeExtensions =
+              appManifest.composeExtensions.concat(COMPOSE_EXTENSIONS_TPL_V3);
+          }
+        }
+        break;
+      case "WebApplicationInfo":
+        if (capability.snippet) {
+          appManifest.webApplicationInfo = capability.snippet;
+        } else {
+          appManifest.webApplicationInfo = WEB_APPLICATION_INFO_V3;
+        }
+        break;
+    }
+  }
+  await writeAppManifest(appManifest, inputs.projectPath);
+  return ok(undefined);
 }

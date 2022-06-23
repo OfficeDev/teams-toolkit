@@ -22,6 +22,7 @@ import { getComponent } from "../workflow";
 import "../connection/azureWebAppConfig";
 import "../resource/azureSql";
 import { ComponentNames } from "../constants";
+import { ApiConnectorImpl } from "../../plugins/resource/apiconnector/plugin";
 @Service("api-connector")
 export class ApiConnector {
   name = "api-connector";
@@ -36,10 +37,15 @@ export class ApiConnector {
 export class AddApiConnectorAction implements FunctionAction {
   name = "api-connector.add";
   type: "function" = "function";
-  question(context: ContextV3, inputs: InputsWithProjectPath) {
-    return ok(undefined);
+  apiConnectorImpl: ApiConnectorImpl = new ApiConnectorImpl();
+  async question(context: ContextV3, inputs: InputsWithProjectPath) {
+    return await this.apiConnectorImpl.generateQuestion(context, inputs);
   }
-  execute(context: ContextV3, inputs: InputsWithProjectPath) {
-    return ok([]);
+  async execute(
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ): Promise<Result<Effect[], FxError>> {
+    await this.apiConnectorImpl.scaffold(context, inputs);
+    return ok([] as Effect[]);
   }
 }

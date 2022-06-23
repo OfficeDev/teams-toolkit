@@ -19,6 +19,7 @@ import {
   Result,
   SingleSelectQuestion,
   Stage,
+  v2,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
@@ -26,21 +27,24 @@ import { getDefaultString, getLocalizedString } from "../../common/localizeUtils
 import { NoCapabilityFoundError } from "../../core/error";
 import { environmentManager } from "../../core/environment";
 import { InternalError, NoProjectOpenedError } from "../../plugins/resource/cicd/errors";
-import { CICDImpl } from "../../plugins/resource/cicd/plugin";
 import {
   azdoOption,
   cdOption,
   ciOption,
   githubOption,
   jenkinsOption,
+  providerIdToLabel,
   provisionOption,
   publishOption,
   questionNames,
+  templateIdToLabel,
 } from "../../plugins/resource/cicd/questions";
 import { ExistingTemplatesStat } from "../../plugins/resource/cicd/utils/existingTemplatesStat";
-import "../connection/azureWebAppConfig";
-import "../resource/azureSql";
 import { isMiniApp } from "../../common/projectSettingsHelperV3";
+import { VSCodeExtensionCommand } from "../../common/constants";
+import { ProviderKind } from "../../plugins/resource/cicd/providers/enums";
+import { CICDProviderFactory } from "../../plugins/resource/cicd/providers/factory";
+import { CICDImpl } from "../../plugins/resource/cicd/plugin";
 @Service("cicd")
 export class CICD {
   name = "cicd";
@@ -48,7 +52,8 @@ export class CICD {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    return ok(new AddCICDAction());
+    // return ok(new AddCICDAction());
+    return ok(undefined);
   }
 }
 

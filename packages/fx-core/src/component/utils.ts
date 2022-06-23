@@ -9,7 +9,6 @@ import {
   ContextV3,
   err,
   FileEffect,
-  FileOperation,
   FxError,
   ok,
   ProjectSettingsV3,
@@ -28,8 +27,7 @@ import { TOOLS } from "../core/globalVars";
 import { SolutionError } from "../plugins/solution/fx-solution/constants";
 import * as uuid from "uuid";
 import { getProjectSettingsVersion } from "../common/projectSettingsHelper";
-import { DefaultManifestProvider } from "../plugins/solution/fx-solution/v3/addFeature";
-import { generateResourceBaseName } from "../plugins/solution/fx-solution/arm";
+import { DefaultManifestProvider } from "./resource/appManifest/manifestProvider";
 
 export async function persistProvisionBicep(
   projectPath: string,
@@ -416,4 +414,16 @@ export function createContextV3(projectSettings?: ProjectSettingsV3): ContextV3 
 export function normalizeName(appName: string): string {
   const normalizedAppName = appName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
   return normalizedAppName;
+}
+
+export function generateResourceBaseName(appName: string, envName: string): string {
+  const maxAppNameLength = 10;
+  const maxEnvNameLength = 4;
+  const normalizedAppName = appName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+  const normalizedEnvName = envName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+  return (
+    normalizedAppName.substr(0, maxAppNameLength) +
+    normalizedEnvName.substr(0, maxEnvNameLength) +
+    uuid.v4().substr(0, 6)
+  );
 }

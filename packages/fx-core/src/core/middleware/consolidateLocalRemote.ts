@@ -12,7 +12,7 @@ import {
   StatesFolderName,
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
-import { isSPFxProject, isConfigUnifyEnabled } from "../../common/tools";
+import { isSPFxProject } from "../../common/tools";
 import { environmentManager } from "../environment";
 import { CoreSource, ConsolidateCanceledError } from "../error";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
@@ -144,9 +144,6 @@ async function upgrade(ctx: CoreHookContext, next: NextFunction, showModal: bool
 
 // check if manifest.template.json exist
 export async function needConsolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
-  if (!isConfigUnifyEnabled()) {
-    return false;
-  }
   const lastArg = ctx.arguments[ctx.arguments.length - 1];
   const inputs: Inputs = lastArg === ctx ? ctx.arguments[ctx.arguments.length - 2] : lastArg;
   if (!inputs.projectPath) {

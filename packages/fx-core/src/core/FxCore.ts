@@ -56,7 +56,6 @@ import { TelemetryReporterInstance } from "../common/telemetry";
 import {
   createV2Context,
   isAadManifestEnabled,
-  isConfigUnifyEnabled,
   mapToJson,
   undefinedName,
 } from "../common/tools";
@@ -112,8 +111,6 @@ import { EnvInfoLoaderMW_V3, loadEnvInfoV3 } from "./middleware/envInfoLoaderV3"
 import { EnvInfoWriterMW } from "./middleware/envInfoWriter";
 import { EnvInfoWriterMW_V3 } from "./middleware/envInfoWriterV3";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
-import { LocalSettingsLoaderMW } from "./middleware/localSettingsLoader";
-import { LocalSettingsWriterMW } from "./middleware/localSettingsWriter";
 import { ProjectMigratorMW } from "./middleware/projectMigrator";
 import {
   getProjectSettingsPath,
@@ -275,15 +272,13 @@ export class FxCore implements v3.ICore {
         return err(createEnvResult.error);
       }
 
-      if (isConfigUnifyEnabled()) {
-        const createLocalEnvResult = await this.createEnvWithName(
-          environmentManager.getLocalEnvName(),
-          projectSettings,
-          inputs
-        );
-        if (createLocalEnvResult.isErr()) {
-          return err(createLocalEnvResult.error);
-        }
+      const createLocalEnvResult = await this.createEnvWithName(
+        environmentManager.getLocalEnvName(),
+        projectSettings,
+        inputs
+      );
+      if (createLocalEnvResult.isErr()) {
+        return err(createLocalEnvResult.error);
       }
 
       const solution = await getSolutionPluginV2ByName(inputs[CoreQuestionNames.Solution]);
@@ -589,13 +584,11 @@ export class FxCore implements v3.ICore {
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
-    LocalSettingsLoaderMW,
     SolutionLoaderMW,
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
     EnvInfoWriterMW(true),
-    LocalSettingsWriterMW,
   ])
   async localDebugV2(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.debug);
@@ -612,7 +605,7 @@ export class FxCore implements v3.ICore {
     }
     if (!ctx.localSettings) ctx.localSettings = {};
     if (ctx.solutionV2.provisionLocalResource) {
-      if (isConfigUnifyEnabled() && ctx.envInfoV2?.config) {
+      if (ctx.envInfoV2?.config) {
         ctx.envInfoV2.config.isLocalDebug = true;
       }
       const res = await ctx.solutionV2.provisionLocalResource(
@@ -743,7 +736,6 @@ export class FxCore implements v3.ICore {
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
-    LocalSettingsLoaderMW,
     SolutionLoaderMW,
     QuestionModelMW,
     ContextInjectorMW,
@@ -760,7 +752,6 @@ export class FxCore implements v3.ICore {
     const namespace = func.namespace;
     const array = namespace ? namespace.split("/") : [];
     if (
-      isConfigUnifyEnabled() &&
       inputs.env === environmentManager.getLocalEnvName() &&
       ctx?.envInfoV2
     ) {
@@ -942,7 +933,6 @@ export class FxCore implements v3.ICore {
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
-    LocalSettingsLoaderMW,
     ContextInjectorMW,
   ])
   async getProjectConfig(
@@ -1630,10 +1620,8 @@ export async function ensureBasicFolderStructure(
         "subscriptionInfo.json",
         BuildFolderName,
       ];
-      if (isConfigUnifyEnabled()) {
-        gitIgnoreContent.push(`.${ConfigFolderName}/${InputConfigsFolderName}/config.local.json`);
-        gitIgnoreContent.push(`.${ConfigFolderName}/${StatesFolderName}/state.local.json`);
-      }
+      gitIgnoreContent.push(`.${ConfigFolderName}/${InputConfigsFolderName}/config.local.json`);
+      gitIgnoreContent.push(`.${ConfigFolderName}/${StatesFolderName}/state.local.json`);
       if (inputs.platform === Platform.VS) {
         gitIgnoreContent.push("appsettings.Development.json");
       }

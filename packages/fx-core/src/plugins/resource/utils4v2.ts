@@ -24,7 +24,7 @@ import {
 import _ from "lodash";
 import { LocalSettingsProvider } from "../../common/localSettingsProvider";
 import { ArmTemplateResult } from "../../common/armInterface";
-import { isConfigUnifyEnabled, objectToMap } from "../../common/tools";
+import { objectToMap } from "../../common/tools";
 import { InvalidStateError, NoProjectOpenedError, PluginHasNoTaskImpl } from "../../core/error";
 import { GLOBAL_CONFIG } from "../solution/fx-solution/constants";
 import { EnvInfoV2, InputsWithProjectPath } from "@microsoft/teamsfx-api/build/v2";
@@ -384,7 +384,7 @@ export async function provisionLocalResourceAdapter(
 ): Promise<Result<Void, FxError>> {
   if (!plugin.localDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "localDebug"));
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
-  if (isConfigUnifyEnabled() && envInfo) {
+  if (envInfo) {
     pluginContext.envInfo.state = objectToMap(envInfo!.state);
     pluginContext.envInfo.config = envInfo.config as EnvConfig;
   }
@@ -399,7 +399,7 @@ export async function provisionLocalResourceAdapter(
   if (res.isErr()) {
     return err(res.error);
   }
-  if (isConfigUnifyEnabled() && envInfo) {
+  if (envInfo) {
     envInfo!.state[plugin.name] = pluginContext.envInfo.state.get(plugin.name).toJSON();
   }
   return ok(Void);
@@ -415,7 +415,7 @@ export async function configureLocalResourceAdapter(
 ): Promise<Result<Void, FxError>> {
   if (!plugin.postLocalDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "postLocalDebug"));
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
-  if (isConfigUnifyEnabled() && envInfo) {
+  if (envInfo) {
     pluginContext.envInfo.state = objectToMap(envInfo!.state);
     pluginContext.envInfo.config = envInfo!.config as EnvConfig;
   }
@@ -433,7 +433,7 @@ export async function configureLocalResourceAdapter(
   if (res.isErr()) {
     return err(res.error);
   }
-  if (isConfigUnifyEnabled() && envInfo) {
+  if (envInfo) {
     envInfo!.state[plugin.name] = pluginContext.envInfo.state.get(plugin.name).toJSON();
   }
   return ok(Void);

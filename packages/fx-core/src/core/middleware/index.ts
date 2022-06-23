@@ -3,8 +3,6 @@ export * from "./contextInjector";
 export * from "./envInfoLoader";
 export * from "./envInfoWriter";
 export * from "./errorHandler";
-export * from "./localSettingsLoader";
-export * from "./localSettingsWriter";
 export * from "./projectMigrator";
 export * from "./projectSettingsLoader";
 export * from "./projectSettingsWriter";

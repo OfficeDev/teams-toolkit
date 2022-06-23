@@ -15,7 +15,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   getAppDirectory,
-  isConfigUnifyEnabled,
   deepCopy,
   isBotNotificationEnabled,
 } from "../../../common";
@@ -57,11 +56,7 @@ export async function getManifestTemplatePath(
   isLocalDebug = false
 ): Promise<string> {
   const appDir = await getAppDirectory(projectRoot);
-  if (isConfigUnifyEnabled()) {
-    return `${appDir}/${MANIFEST_TEMPLATE_CONSOLIDATE}`;
-  } else {
-    return isLocalDebug ? `${appDir}/${MANIFEST_LOCAL}` : `${appDir}/${MANIFEST_TEMPLATE}`;
-  }
+  return `${appDir}/${MANIFEST_TEMPLATE_CONSOLIDATE}`;
 }
 
 export async function init(
@@ -72,33 +67,17 @@ export async function init(
   const newAppPackageFolder = `${projectRoot}/templates/${AppPackageFolderName}`;
   await fs.ensureDir(newAppPackageFolder);
 
-  if (isConfigUnifyEnabled()) {
-    const manifestString = TEAMS_APP_MANIFEST_TEMPLATE_V3;
-    const manifest = JSON.parse(manifestString);
-    if (existingApp) {
-      manifest.developer = {
-        name: "Teams App, Inc.",
-        websiteUrl: DEFAULT_DEVELOPER_WEBSITE_URL,
-        privacyUrl: DEFAULT_DEVELOPER_PRIVACY_URL,
-        termsOfUseUrl: DEFAULT_DEVELOPER_TERM_OF_USE_URL,
-      };
-    }
-    await saveManifest(projectRoot, manifest);
-  } else {
-    let localManifestString = TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3;
-    const suffix = "-local-debug";
-    let localAppName = appName;
-    if (suffix.length + appName.length <= TEAMS_APP_SHORT_NAME_MAX_LENGTH) {
-      localAppName = localAppName + suffix;
-    }
-    localManifestString = replaceConfigValue(localManifestString, "appName", localAppName);
-    const localManifest = JSON.parse(localManifestString);
-    await saveManifest(projectRoot, localManifest, true);
-
-    const remoteManifestString = TEAMS_APP_MANIFEST_TEMPLATE_V3;
-    const remoteManifest = JSON.parse(remoteManifestString);
-    await saveManifest(projectRoot, remoteManifest, false);
+  const manifestString = TEAMS_APP_MANIFEST_TEMPLATE_V3;
+  const manifest = JSON.parse(manifestString);
+  if (existingApp) {
+    manifest.developer = {
+      name: "Teams App, Inc.",
+      websiteUrl: DEFAULT_DEVELOPER_WEBSITE_URL,
+      privacyUrl: DEFAULT_DEVELOPER_PRIVACY_URL,
+      termsOfUseUrl: DEFAULT_DEVELOPER_TERM_OF_USE_URL,
+    };
   }
+  await saveManifest(projectRoot, manifest);
 
   return ok(undefined);
 }
@@ -158,8 +137,6 @@ export async function saveManifest(
  * @returns
  */
 export async function getCapabilities(projectRoot: string): Promise<Result<string[], FxError>> {
-  if (!isConfigUnifyEnabled()) return ok([]);
-
   const manifestRes = await loadManifest(projectRoot);
   if (manifestRes.isErr()) {
     return err(manifestRes.error);
@@ -356,82 +333,6 @@ export async function addCapabilities(
     return err(res.error);
   }
 
-  if (!isConfigUnifyEnabled()) {
-    const localManifestRes = await loadManifest(projectRoot, true);
-    if (localManifestRes.isErr()) {
-      return err(localManifestRes.error);
-    }
-    const localManifest = localManifestRes.value;
-
-    let staticTabIndex = localManifest.staticTabs?.length ?? 0;
-    capabilities.map((capability) => {
-      switch (capability.name) {
-        case "staticTab":
-          if (!localManifest.staticTabs) {
-            Object.assign(localManifest, { staticTabs: [] });
-          }
-          if (capability.existingApp) {
-            const template = deepCopy(STATIC_TABS_TPL_EXISTING_APP[0]);
-            template.entityId = "index" + staticTabIndex;
-            localManifest.staticTabs!.push(template);
-          } else {
-            const template = deepCopy(STATIC_TABS_TPL_LOCAL_DEBUG[0]);
-            template.entityId = "index" + staticTabIndex;
-            localManifest.staticTabs!.push(template);
-          }
-          staticTabIndex++;
-          break;
-        case "configurableTab":
-          if (!localManifest.configurableTabs) {
-            Object.assign(localManifest, { configurableTabs: [] });
-          }
-          if (capability.existingApp) {
-            localManifest.configurableTabs = localManifest.configurableTabs!.concat(
-              CONFIGURABLE_TABS_TPL_EXISTING_APP
-            );
-          } else {
-            localManifest.configurableTabs = localManifest.configurableTabs!.concat(
-              CONFIGURABLE_TABS_TPL_LOCAL_DEBUG
-            );
-          }
-          break;
-        case "Bot":
-          if (!localManifest.bots) {
-            Object.assign(localManifest, { bots: [] });
-          }
-          if (capability.existingApp) {
-            localManifest.bots = localManifest.bots!.concat(BOTS_TPL_EXISTING_APP);
-          } else {
-            localManifest.bots = localManifest.bots!.concat(BOTS_TPL_LOCAL_DEBUG);
-          }
-          break;
-        case "MessageExtension":
-          if (!localManifest.composeExtensions) {
-            Object.assign(localManifest, { composeExtensions: [] });
-          }
-          if (capability.existingApp) {
-            localManifest.composeExtensions = localManifest.composeExtensions!.concat(
-              COMPOSE_EXTENSIONS_TPL_EXISTING_APP
-            );
-          } else {
-            localManifest.composeExtensions = localManifest.composeExtensions!.concat(
-              COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG
-            );
-          }
-          break;
-        case "WebApplicationInfo":
-          if (!localManifest.webApplicationInfo) {
-            Object.assign(localManifest, { webApplicationInfo: [] });
-          }
-          localManifest.webApplicationInfo = WEB_APPLICATION_INFO_LOCAL_DEBUG;
-          break;
-      }
-    });
-    const res = await saveManifest(projectRoot, localManifest, true);
-    if (res.isErr()) {
-      return err(res.error);
-    }
-  }
   return ok(undefined);
 }
 

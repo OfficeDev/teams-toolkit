@@ -32,7 +32,6 @@ import {
   AppStudioScopes,
   environmentManager,
   getResourceGroupInPortal,
-  isConfigUnifyEnabled,
   LocalEnvManager,
 } from "@microsoft/teamsfx-core";
 import { getColorizedString } from "../../utils";
@@ -197,19 +196,15 @@ export async function getLocalEnv(
   const localSettings = await localEnvManager.getLocalSettings(workspaceFolder, {
     projectId: projectSettings.projectId,
   });
-  if (isConfigUnifyEnabled()) {
-    const localEnvInfo = await localEnvManager.getLocalEnvInfo(workspaceFolder, {
-      projectId: projectSettings.projectId,
-    });
-    return await localEnvManager.getLocalDebugEnvs(
-      workspaceFolder,
-      projectSettings,
-      localSettings,
-      localEnvInfo
-    );
-  } else {
-    return await localEnvManager.getLocalDebugEnvs(workspaceFolder, projectSettings, localSettings);
-  }
+  const localEnvInfo = await localEnvManager.getLocalEnvInfo(workspaceFolder, {
+    projectId: projectSettings.projectId,
+  });
+  return await localEnvManager.getLocalDebugEnvs(
+    workspaceFolder,
+    projectSettings,
+    localSettings,
+    localEnvInfo
+  );
 }
 
 function getLocalEnvWithPrefix(

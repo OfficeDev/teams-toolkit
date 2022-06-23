@@ -5,7 +5,6 @@ import {
   AppStudioScopes,
   Correlator,
   environmentManager,
-  isConfigUnifyEnabled,
 } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 
@@ -95,7 +94,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
           }
 
           let debugConfig = undefined;
-          if (isLocalSideloading && isConfigUnifyEnabled()) {
+          if (isLocalSideloading ) {
             debugConfig = await commonUtils.getDebugConfig(
               false,
               environmentManager.getLocalEnvName()

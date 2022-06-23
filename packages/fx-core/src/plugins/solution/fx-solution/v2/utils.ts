@@ -21,7 +21,6 @@ import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConst
 import {
   AppStudioScopes,
   isAadManifestEnabled,
-  isConfigUnifyEnabled,
 } from "../../../../common/tools";
 import {
   GLOBAL_CONFIG,
@@ -258,11 +257,7 @@ export function loadTeamsAppTenantIdForLocal(
 ): Result<Void, FxError> {
   return parseTeamsAppTenantId(appStudioToken as Record<string, unknown> | undefined).andThen(
     (teamsAppTenantId) => {
-      if (isConfigUnifyEnabled()) {
-        envInfo!.state.solution.teamsAppTenantId = teamsAppTenantId;
-      } else {
-        localSettings.teamsApp[LocalSettingsTeamsAppKeys.TenantId] = teamsAppTenantId;
-      }
+      envInfo!.state.solution.teamsAppTenantId = teamsAppTenantId;
       return ok(Void);
     }
   );

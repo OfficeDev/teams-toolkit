@@ -11,7 +11,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as chai from "chai";
-import { isConfigUnifyEnabled } from "@microsoft/teamsfx-core";
 
 const m365ManifestSchema =
   "https://developer.microsoft.com/en-us/json-schemas/teams/v1.13/MicrosoftTeams.schema.json";
@@ -32,28 +31,9 @@ export class M365Validator {
   }
 
   public static async validateManifest(projectPath: string) {
-    if (isConfigUnifyEnabled()) {
-      await M365Validator.validateManifestFile(
-        path.join(projectPath, TemplateFolderName, AppPackageFolderName, "manifest.template.json")
-      );
-    } else {
-      await M365Validator.validateManifestFile(
-        path.join(
-          projectPath,
-          TemplateFolderName,
-          AppPackageFolderName,
-          "manifest.local.template.json"
-        )
-      );
-      await M365Validator.validateManifestFile(
-        path.join(
-          projectPath,
-          TemplateFolderName,
-          AppPackageFolderName,
-          "manifest.remote.template.json"
-        )
-      );
-    }
+    await M365Validator.validateManifestFile(
+      path.join(projectPath, TemplateFolderName, AppPackageFolderName, "manifest.template.json")
+    );
   }
 
   private static async validateManifestFile(manifestPath: string) {

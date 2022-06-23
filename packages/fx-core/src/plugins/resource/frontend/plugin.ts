@@ -42,7 +42,6 @@ import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/Resour
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
 import {
   generateBicepFromFile,
-  isConfigUnifyEnabled,
   IsSimpleAuthEnabled,
 } from "../../../common/tools";
 import { LocalSettingsFrontendKeys } from "../../../common/localSettingsConstants";
@@ -165,16 +164,9 @@ export class FrontendPluginImpl implements PluginImpl {
   }
 
   public async localDebug(ctx: PluginContext): Promise<TeamsFxResult> {
-    if (isConfigUnifyEnabled()) {
-      ctx.envInfo.state
-        .get(PluginInfo.PluginName)
-        ?.set(FRONTEND_INDEX_PATH, Constants.FrontendIndexPath);
-    } else {
-      ctx.localSettings?.frontend?.set(
-        LocalSettingsFrontendKeys.TabIndexPath,
-        Constants.FrontendIndexPath
-      );
-    }
+    ctx.envInfo.state
+      .get(PluginInfo.PluginName)
+      ?.set(FRONTEND_INDEX_PATH, Constants.FrontendIndexPath);
     return ok(undefined);
   }
 

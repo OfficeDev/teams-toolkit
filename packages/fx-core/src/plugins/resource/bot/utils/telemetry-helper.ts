@@ -21,7 +21,6 @@ export class telemetryHelper {
     const capabilities =
       ctx.projectSettings?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[PluginBot.BOT_CAPABILITIES];
     properties[TelemetryKeys.BotCapabilities] = capabilities ? JSON.stringify(capabilities) : "";
-    properties[TelemetryKeys.Language] = ctx.projectSettings?.programmingLanguage ?? "";
   }
 
   static sendStartEvent(

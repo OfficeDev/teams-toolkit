@@ -18,15 +18,12 @@ import {
   LocalSettingsTeamsAppKeys,
 } from "../../src/common/localSettingsConstants";
 import { assert } from "console";
-import { isMultiEnvEnabled } from "../../src/common/tools";
 
 describe("LocalSettings provider APIs", () => {
   const workspaceFolder = path.resolve(__dirname, "./data/");
   const testFilePath = path.resolve(
     __dirname,
-    `./data/.${ConfigFolderName}/${
-      isMultiEnvEnabled() ? InputConfigsFolderName : ""
-    }/localSettings.json`
+    `./data/.${ConfigFolderName}/${InputConfigsFolderName}/localSettings.json`
   );
 
   let hasFrontend: boolean;

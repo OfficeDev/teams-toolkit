@@ -7,21 +7,15 @@ import {
   Effect,
   FunctionAction,
   FxError,
-  GroupAction,
   InputsWithProjectPath,
-  Json,
   MaybePromise,
   ok,
-  QTreeNode,
   Result,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { getProjectSettingsPath } from "../../core/middleware/projectSettingsLoader";
-import { getComponent } from "../workflow";
 import "../connection/azureWebAppConfig";
 import "../resource/azureSql";
-import { ComponentNames } from "../constants";
 import { ApiConnectorImpl } from "../../plugins/resource/apiconnector/plugin";
 @Service("api-connector")
 export class ApiConnector {

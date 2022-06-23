@@ -905,29 +905,6 @@ export default class Preview extends YargsCommand {
     return ok(null);
   }
 
-  separateErrorProperties(
-    result: Result<unknown, FxError>
-  ): [{ [key: string]: unknown }, { [key: string]: unknown }] {
-    const error = result?.isErr() ? result.error : undefined;
-    return [
-      {
-        success: error === undefined ? TelemetrySuccess.Yes : TelemetrySuccess.No,
-        errorCode: error?.name,
-        errorType:
-          error === undefined
-            ? undefined
-            : error instanceof UserError
-            ? "user"
-            : error instanceof SystemError
-            ? "system"
-            : "unknown",
-      },
-      {
-        errorMessage: error?.message,
-        errorStack: error?.stack,
-      },
-    ];
-  }
   private prepareDevEnv(
     core: FxCore,
     inputs: Inputs,

@@ -26,7 +26,7 @@ export interface TaskResult {
 }
 
 export class Task {
-  public readonly taskTitle: string;
+  private taskTitle: string;
   private background: boolean;
   private command: string;
   private args?: string[];

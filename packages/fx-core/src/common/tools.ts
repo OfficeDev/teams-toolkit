@@ -384,13 +384,6 @@ export function getResourceGroupInPortal(
   }
 }
 
-/**
- * @deprecated Please DO NOT use this method any more, it will be removed in near future.
- */
-export function isMultiEnvEnabled(): boolean {
-  return true;
-}
-
 // TODO: move other feature flags to featureFlags.ts to prevent import loop
 export function isBicepEnvCheckerEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.BicepEnvCheckerEnable, true);

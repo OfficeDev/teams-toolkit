@@ -82,9 +82,7 @@ export function resolveServiceType(ctx: Context): ServiceType {
 export function resolveBotCapabilities(inputs: Inputs): BotCapability[] {
   const botScenarios = inputs?.[AzureSolutionQuestionNames.Scenarios];
   if (Array.isArray(botScenarios)) {
-    return botScenarios
-      .map((scenario) => QuestionBotScenarioToBotCapability.get(scenario))
-      .filter((item): item is BotCapability => item !== undefined);
+    return botScenarios.map((scenario) => QuestionBotScenarioToBotCapability.get(scenario)!);
   } else {
     return [];
   }

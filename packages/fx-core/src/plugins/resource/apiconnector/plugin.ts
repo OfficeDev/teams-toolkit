@@ -60,6 +60,7 @@ import { getAzureSolutionSettings } from "../../solution/fx-solution/v2/utils";
 import { DepsHandler } from "./depsHandler";
 import { checkEmptySelect } from "./checker";
 import { Telemetry, TelemetryUtils } from "./telemetry";
+import { isV3 } from "../../../core";
 export class ApiConnectorImpl {
   public async scaffold(ctx: Context, inputs: Inputs): Promise<ApiConnectorResult> {
     if (!inputs.projectPath) {
@@ -364,19 +365,22 @@ export class ApiConnectorImpl {
       componentOptions.push(botOption);
       componentOptions.push(functionOption);
     } else {
-      const activePlugins = (ctx.projectSetting.solutionSettings as AzureSolutionSettings)
-        ?.activeResourcePlugins;
-      if (!activePlugins) {
-        throw ResultFactory.UserError(
-          ErrorMessage.NoActivePluginsExistError.name,
-          ErrorMessage.NoActivePluginsExistError.message()
-        );
-      }
-      if (activePlugins.includes(ResourcePlugins.Bot)) {
-        componentOptions.push(botOption);
-      }
-      if (activePlugins.includes(ResourcePlugins.Function)) {
-        componentOptions.push(functionOption);
+      if (!isV3()) {
+        const activePlugins = (ctx.projectSetting.solutionSettings as AzureSolutionSettings)
+          ?.activeResourcePlugins;
+        if (!activePlugins) {
+          throw ResultFactory.UserError(
+            ErrorMessage.NoActivePluginsExistError.name,
+            ErrorMessage.NoActivePluginsExistError.message()
+          );
+        }
+        if (activePlugins.includes(ResourcePlugins.Bot)) {
+          componentOptions.push(botOption);
+        }
+        if (activePlugins.includes(ResourcePlugins.Function)) {
+          componentOptions.push(functionOption);
+        }
+      } else {
       }
       if (componentOptions.length === 0) {
         throw ResultFactory.UserError(

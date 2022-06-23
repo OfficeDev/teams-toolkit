@@ -1,3 +1,6 @@
+# 1.0.0
+- Version bump
+
 # 0.5.0
 - Add conversation SDK for command / notification bot
 

@@ -76,7 +76,6 @@ export function generateSpfxTasks(): Record<string, unknown>[] {
       options: {
         cwd: "${workspaceFolder}/SPFx",
       },
-      dependsOn: "dependency check",
     },
     {
       label: "gulp trust-dev-cert",
@@ -123,7 +122,7 @@ export function generateSpfxTasks(): Record<string, unknown>[] {
     },
     {
       label: "prepare dev env",
-      dependsOn: ["prepare local environment", "gulp serve"],
+      dependsOn: ["dependency check", "prepare local environment", "gulp serve"],
       dependsOrder: "sequence",
     },
     {

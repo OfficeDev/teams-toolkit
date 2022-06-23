@@ -3,6 +3,7 @@
 
 import {
   Action,
+  Component,
   ContextV3,
   FxError,
   InputsWithProjectPath,
@@ -17,6 +18,7 @@ import { Service } from "typedi";
 import { azureWebSiteDeploy } from "../../common/azure-hosting/utils";
 import { Messages } from "../../plugins/resource/bot/resources/messages";
 import * as utils from "../../plugins/resource/bot/utils/common";
+import { getLanguage, getRuntime } from "../../plugins/resource/bot/v2/mapping";
 import {
   CheckThrowSomethingMissing,
   PackDirectoryExistenceError,
@@ -46,6 +48,18 @@ export class AzureWebAppResource extends AzureResource {
     },
   };
   readonly finalOutputKeys = ["resourceId", "endpoint"];
+  generateBicep(
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    this.getTemplateContext = (context, inputs) => {
+      const configs: string[] = [];
+      configs.push(getRuntime(getLanguage(context.projectSetting.programmingLanguage)));
+      this.templateContext.configs = configs;
+      return this.templateContext;
+    };
+    return super.generateBicep(context, inputs);
+  }
   deploy(
     context: ContextV3,
     inputs: InputsWithProjectPath
@@ -58,10 +72,7 @@ export class AzureWebAppResource extends AzureResource {
           {
             type: "service",
             name: "azure",
-            remarks: `deploy azure web app in folder: ${path.join(
-              inputs.projectPath,
-              inputs.folder
-            )}`,
+            remarks: `deploy azure web app in folder: ${inputs.projectPath}`,
           },
         ]);
       },
@@ -69,11 +80,12 @@ export class AzureWebAppResource extends AzureResource {
         const ctx = context as ProvisionContextV3;
         ctx.logProvider.info(Messages.DeployingBot);
         // Preconditions checking.
-        const workingDir = path.join(inputs.projectPath, inputs.folder);
-        if (!workingDir) {
+        const codeComponent = inputs.code as Component;
+        if (!inputs.projectPath || !codeComponent?.artifactFolder) {
           throw new PreconditionError(Messages.WorkingDirIsMissing, []);
         }
-        const packDirExisted = await fs.pathExists(workingDir);
+        const publishDir = path.join(inputs.projectPath, codeComponent.artifactFolder);
+        const packDirExisted = await fs.pathExists(publishDir);
         if (!packDirExisted) {
           throw new PackDirectoryExistenceError();
         }
@@ -89,14 +101,14 @@ export class AzureWebAppResource extends AzureResource {
         );
         const resourceId = webAppState[this.outputs.resourceId.key];
 
-        const zipBuffer = await utils.zipFolderAsync(workingDir, "");
+        const zipBuffer = await utils.zipFolderAsync(publishDir, "");
 
         await azureWebSiteDeploy(resourceId, ctx.tokenProvider, zipBuffer);
         return ok([
           {
             type: "service",
             name: "azure",
-            remarks: `deploy azure web app in folder: ${workingDir}`,
+            remarks: `deploy azure web app in folder: ${publishDir}`,
           },
         ]);
       },

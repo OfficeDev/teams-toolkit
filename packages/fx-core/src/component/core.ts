@@ -313,7 +313,7 @@ export class TeamsfxCore {
           targetAction: `${componentConfig.hosting}.deploy`,
           required: false,
           inputs: {
-            folder: componentConfig.folder,
+            code: componentConfig,
           },
         });
       }

@@ -50,8 +50,8 @@ export function generateConfigurations(
     // add an entry to the launchConfigurations
     const addinName = inputs["addin-name"];
     const hostName = inputs["addin-host"];
-    launchConfigurations.push(debugOfficeHostEdge(addinName, hostName));
-    launchConfigurations.push(debugOfficeHostEdge(addinName, hostName, true));
+    launchConfigurations.push(debugOfficeHostEdge(addinName, hostName, false, 3));
+    launchConfigurations.push(debugOfficeHostEdge(addinName, hostName, true, 4));
   }
 
   return launchConfigurations;
@@ -60,9 +60,7 @@ export function generateConfigurations(
 export function generateCompounds(
   includeFrontend: boolean,
   includeBackend: boolean,
-  includeBot: boolean,
-  includeOfficeAddin: boolean,
-  inputs: Inputs
+  includeBot: boolean
 ): Record<string, unknown>[] {
   const launchCompounds: Record<string, unknown>[] = [];
   let edgeOrder = 2,
@@ -74,13 +72,6 @@ export function generateCompounds(
 
   launchCompounds.push(debug(includeFrontend, includeBackend, includeBot, "Edge", edgeOrder));
   launchCompounds.push(debug(includeFrontend, includeBackend, includeBot, "Chrome", chromeOrder));
-
-  if (isOfficeAddinEnabled() && includeOfficeAddin) {
-    const addinName = inputs["addin-name"];
-    const hostName = inputs["addin-host"];
-    launchCompounds.push(debugAddin(addinName, hostName, false, 3));
-    launchCompounds.push(debugAddin(addinName, hostName, true, 4));
-  }
 
   return launchCompounds;
 }
@@ -436,27 +427,6 @@ function debug(
   };
 }
 
-function debugAddin(
-  addinName: string,
-  hostName: string,
-  isLegacy: boolean,
-  order: number
-): Record<string, unknown> {
-  const configurations: string[] = [
-    `${hostName} Desktop (Edge ${isLegacy ? "Legacy" : "Chromium"})`,
-  ];
-  return {
-    name: `Debug ${addinName} (Edge ${isLegacy ? "Legacy" : "Chromium"})`,
-    configurations,
-    preLaunchTask: `Pre Debug Check & Start Office`,
-    presentation: {
-      group: "all",
-      order: order,
-    },
-    stopAll: true,
-  };
-}
-
 function debugM365(
   includeFrontend: boolean,
   includeBackend: boolean,
@@ -516,10 +486,11 @@ function getBotLaunchUrl(isLocal: boolean, hubName: string): string {
 function debugOfficeHostEdge(
   addinName: string,
   hostName: string,
-  isLegacy = false
+  isLegacy = false,
+  order: number
 ): Record<string, unknown> {
   return {
-    name: `${hostName} Desktop (Edge ${isLegacy ? "Legacy" : "Chromium"})`,
+    name: `Debug ${addinName} in ${hostName} Desktop (Edge ${isLegacy ? "Legacy" : "Chromium"})`,
     type: isLegacy ? "office-addin" : "pwa-msedge",
     request: "attach",
     url: isLegacy
@@ -529,11 +500,11 @@ function debugOfficeHostEdge(
     port: isLegacy ? 9222 : 9229,
     timeout: 600000,
     webRoot: "${workspaceRoot}/" + `${addinName}`,
-    // preLaunchTask: `Debug: ${hostName} Desktop`,
-    // postDebugTask: "Stop Office Debug",
+    preLaunchTask: `Pre Debug Check & Start ${hostName}`,
+    postDebugTask: `Stop Add-in dev server`,
     presentation: {
       group: "all",
-      hidden: true,
+      order: order,
     },
   };
 }

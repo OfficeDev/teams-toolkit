@@ -127,13 +127,7 @@ export async function _scaffoldLocalDebugSettings(
         const launchCompounds = isM365
           ? LaunchNext.generateM365Compounds(includeFrontend, includeBackend, includeBot)
           : (await useNewTasks(inputs.projectPath))
-          ? LaunchNext.generateCompounds(
-              includeFrontend,
-              includeBackend,
-              includeBot,
-              includeOfficeAddin,
-              inputs
-            )
+          ? LaunchNext.generateCompounds(includeFrontend, includeBackend, includeBot)
           : Launch.generateCompounds(includeFrontend, includeBackend, includeBot);
 
         const tasks = isM365

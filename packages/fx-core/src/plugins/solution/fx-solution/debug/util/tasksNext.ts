@@ -6,7 +6,7 @@ import { RecoverableDatabase } from "@azure/arm-sql/esm/models/mappers";
 import { ProductName } from "@microsoft/teamsfx-api";
 import { isOfficeAddinEnabled } from "../../../../../common";
 import { ProgrammingLanguage } from "../../../../../common/local/constants";
-import { Inputs } from "@microsoft/teamsfx-api";
+//import { Inputs } from "@microsoft/teamsfx-api";
 
 // TODO: add spfx tasks with "validate-local-prerequisites"
 export function generateTasks(
@@ -72,8 +72,6 @@ export function generateTasks(
     // adds entries into tasks
     const addinName = inputs["addin-name"];
     const hostName = inputs["addin-host"];
-    // tasks.push(debugOfficeHost(hostName));
-    // tasks.push(stopOfficeDebugger());
     tasks.push(preDebugCheckAndStartOffice(hostName));
     tasks.push(installAddinDependencies(addinName));
     tasks.push(debugAddin(addinName, hostName));
@@ -445,7 +443,7 @@ function installAppInTeams(): Record<string, unknown> {
 
 function preDebugCheckAndStartOffice(hostName: string): Record<string, unknown> {
   return {
-    label: "Pre Debug Check & Start Office",
+    label: `Pre Debug Check & Start ${hostName}`,
     dependsOn: ["Install Add-in Dependencies", `Debug: ${hostName} Desktop`],
     dependsOrder: "sequence",
   };
@@ -495,34 +493,6 @@ function stopAddinDebugger(addinName: string): Record<string, unknown> {
     },
     options: {
       cwd: "${workspaceFolder}/" + `${addinName}`,
-    },
-    problemMatcher: [],
-  };
-}
-
-// Run from add-in folder specifically
-function stopOfficeDebugger(): Record<string, unknown> {
-  return {
-    label: "Stop Office Debug",
-    type: "npm",
-    script: "stop",
-    presentation: {
-      clear: true,
-      panel: "shared",
-      showReuseMessage: false,
-    },
-    problemMatcher: [],
-  };
-}
-
-function debugOfficeHost(hostName: string): Record<string, unknown> {
-  return {
-    label: `Debug: ${hostName} Desktop`,
-    type: "npm",
-    script: `start:desktop -- --app ${hostName.toLowerCase()}`,
-    presentation: {
-      clear: true,
-      panel: "dedicated",
     },
     problemMatcher: [],
   };

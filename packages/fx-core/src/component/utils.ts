@@ -28,6 +28,7 @@ import { SolutionError } from "../plugins/solution/fx-solution/constants";
 import * as uuid from "uuid";
 import { getProjectSettingsVersion } from "../common/projectSettingsHelper";
 import { DefaultManifestProvider } from "./resource/appManifest/manifestProvider";
+import { getProjectTemplatesFolderPath } from "../common/utils";
 
 export async function persistProvisionBicep(
   projectPath: string,
@@ -53,12 +54,13 @@ export async function persistProvisionBicep(
   return ok(undefined);
 }
 
-export function persistProvisionBicepPlans(
+export async function persistProvisionBicepPlans(
   projectPath: string,
   provisionBicep: ProvisionBicep
-): string[] {
+): Promise<string[]> {
   const plans: string[] = [];
-  const templateFolder = path.join(projectPath, "templates", "azure");
+  const templateRoot = await getProjectTemplatesFolderPath(projectPath);
+  const templateFolder = path.join(templateRoot, "azure");
   if (provisionBicep.Modules) {
     for (const module of Object.keys(provisionBicep.Modules)) {
       const value = provisionBicep.Modules[module];
@@ -83,11 +85,12 @@ export function persistProvisionBicepPlans(
   return plans;
 }
 
-export function persistConfigBicep(
+export async function persistConfigBicep(
   projectPath: string,
   configBicep: ConfigurationBicep
-): Result<any, FxError> {
-  const templateFolder = path.join(projectPath, "templates", "azure");
+): Promise<Result<any, FxError>> {
+  const templateRoot = await getProjectTemplatesFolderPath(projectPath);
+  const templateFolder = path.join(templateRoot, "azure");
   if (configBicep.Modules) {
     for (const module of Object.keys(configBicep.Modules)) {
       const value = configBicep.Modules[module];
@@ -107,12 +110,13 @@ export function persistConfigBicep(
   return ok(undefined);
 }
 
-export function persistConfigBicepPlans(
+export async function persistConfigBicepPlans(
   projectPath: string,
   provisionBicep: ProvisionBicep
-): string[] {
+): Promise<string[]> {
   const plans: string[] = [];
-  const templateFolder = path.join(projectPath, "templates", "azure");
+  const templateRoot = await getProjectTemplatesFolderPath(projectPath);
+  const templateFolder = path.join(templateRoot, "azure");
   if (provisionBicep.Modules) {
     for (const module of Object.keys(provisionBicep.Modules)) {
       const value = provisionBicep.Modules[module];
@@ -249,14 +253,14 @@ export async function persistBicep(
   return ok(undefined);
 }
 
-export function persistBicepPlans(projectPath: string, bicep: Bicep): string[] {
+export async function persistBicepPlans(projectPath: string, bicep: Bicep): Promise<string[]> {
   let plans: string[] = [];
   if (bicep.Provision) {
-    const res = persistProvisionBicepPlans(projectPath, bicep.Provision);
+    const res = await persistProvisionBicepPlans(projectPath, bicep.Provision);
     plans = plans.concat(res);
   }
   if (bicep.Configuration) {
-    const res = persistConfigBicepPlans(projectPath, bicep.Configuration);
+    const res = await persistConfigBicepPlans(projectPath, bicep.Configuration);
     plans = plans.concat(res);
   }
   if (bicep.Parameters) {

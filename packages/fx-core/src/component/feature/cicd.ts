@@ -39,8 +39,8 @@ import {
 import { ExistingTemplatesStat } from "../../plugins/resource/cicd/utils/existingTemplatesStat";
 import { isMiniApp } from "../../common/projectSettingsHelperV3";
 import { CICDImpl } from "../../plugins/resource/cicd/plugin";
-import { isExistingTabApp } from "../../common";
 import { isV3 } from "../../core/globalVars";
+import { isExistingTabApp } from "../../common/projectSettingsHelper";
 @Service("cicd")
 export class CICD {
   name = "cicd";
@@ -48,8 +48,7 @@ export class CICD {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    // return ok(new AddCICDAction());
-    return ok(undefined);
+    return ok(new AddCICDAction());
   }
 }
 

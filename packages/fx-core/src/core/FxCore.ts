@@ -77,6 +77,8 @@ import {
   TabSsoItem,
   BotFeatureIds,
   TabFeatureIds,
+  CicdOptionItem,
+  ApiConnectionOptionItem,
 } from "../plugins/solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { CallbackRegistry } from "./callback";
@@ -765,6 +767,10 @@ export class FxCore implements v3.ICore {
       res = await runAction("teams-bot.add", context, inputs as InputsWithProjectPath);
     } else if (TabFeatureIds.includes(feature)) {
       res = await runAction("teams-tab.add", context, inputs as InputsWithProjectPath);
+    } else if (feature === CicdOptionItem.id) {
+      res = await runAction("cicd.add", context, inputs as InputsWithProjectPath);
+    } else if (feature === ApiConnectionOptionItem.id) {
+      res = await runAction("api-connector.add", context, inputs as InputsWithProjectPath);
     } else {
       return err(new NotImplementedError(feature));
     }

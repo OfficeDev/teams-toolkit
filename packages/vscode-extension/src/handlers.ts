@@ -2139,22 +2139,6 @@ export function registerAccountMenuCommands(context: ExtensionContext) {
       }
     })
   );
-
-  context.subscriptions.push(
-    commands.registerCommand("fx-extension.signInGuideline", async (node: TreeViewCommand) => {
-      // TODO: update the link when documentation is ready
-      switch (node.contextValue) {
-        case "signinM365": {
-          await env.openExternal(Uri.parse("https://www.office.com/"));
-          break;
-        }
-        case "signinAzure": {
-          await env.openExternal(Uri.parse("https://portal.azure.com/"));
-          break;
-        }
-      }
-    })
-  );
 }
 
 export function cmdHdlDisposeTreeView() {
@@ -3041,6 +3025,58 @@ export function openTutorialHandler(args?: any[]): Promise<Result<unknown, FxErr
     [TelemetryProperty.TutorialName]: tutorial.id,
   });
   return VS_CODE_UI.openUrl(tutorial.data as string);
+}
+
+export async function openDocumentLinkHandler(args?: any[]): Promise<Result<boolean, FxError>> {
+  if (!args || args.length < 1) {
+    // should never happen
+    return Promise.resolve(ok(false));
+  }
+  const node = args[0] as TreeViewCommand;
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
+    [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.TreeView,
+    [TelemetryProperty.DocumentationName]: node.contextValue!,
+  });
+  switch (node.contextValue) {
+    case "signinM365": {
+      return VS_CODE_UI.openUrl("https://www.office.com/");
+    }
+    case "signinAzure": {
+      return VS_CODE_UI.openUrl("https://portal.azure.com/");
+    }
+    case "fx-extension.create":
+    case "fx-extension.openSamples": {
+      return VS_CODE_UI.openUrl(
+        "https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/create-new-project"
+      );
+    }
+    case "fx-extension.openManifest": {
+      return VS_CODE_UI.openUrl(
+        "https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/teamsfx-preview-and-customize-app-manifest"
+      );
+    }
+    case "fx-extension.provision": {
+      return VS_CODE_UI.openUrl(
+        "https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/provision"
+      );
+    }
+    case "fx-extension.build": {
+      return VS_CODE_UI.openUrl(
+        "https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/deploy-and-publish/appsource/prepare/teams-store-validation-guidelines"
+      );
+    }
+    case "fx-extension.deploy": {
+      return VS_CODE_UI.openUrl(
+        "https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/deploy"
+      );
+    }
+    case "fx-extension.publish": {
+      return VS_CODE_UI.openUrl(
+        "https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/publish"
+      );
+    }
+  }
+  return Promise.resolve(ok(false));
 }
 
 export async function signinM365Callback(args?: any[]): Promise<Result<null, FxError>> {

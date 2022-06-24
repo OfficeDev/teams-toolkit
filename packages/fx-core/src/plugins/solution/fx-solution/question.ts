@@ -26,6 +26,14 @@ export const TabNewUIOptionItem: OptionItem = {
   cliName: "tab",
   detail: getLocalizedString("core.TabOption.detailNew"),
   groupName: getLocalizedString("core.options.separator.scenario"),
+  data: "https://docs.microsoft.com/en-us/microsoftteams/platform/tabs/how-to/authentication/tab-sso-overview",
+  buttons: [
+    {
+      iconPath: "tasklist",
+      tooltip: getLocalizedString("core.option.tutorial"),
+      command: "fx-extension.openTutorial",
+    },
+  ],
 };
 
 export const BotOptionItem: OptionItem = {
@@ -282,6 +290,14 @@ export const CicdOptionItem: OptionItem = {
   label: `$(sync) ${getLocalizedString("core.cicdWorkflowOption.label")}`,
   detail: getLocalizedString("core.cicdWorkflowOption.detail"),
   groupName: getLocalizedString("core.options.separator.additional"),
+  data: "https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/use-cicd-template",
+  buttons: [
+    {
+      iconPath: "tasklist",
+      tooltip: getLocalizedString("core.option.tutorial"),
+      command: "fx-extension.openTutorial",
+    },
+  ],
 };
 
 export enum BotScenario {

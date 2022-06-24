@@ -245,12 +245,12 @@
           "group": "inline"
         },
         {
-          "command": "fx-extension.signInGuideline",
+          "command": "fx-extension.openDocumentLink",
           "when": "view == teamsfx-accounts && viewItem == signinM365",
           "group": "inline"
         },
         {
-          "command": "fx-extension.signInGuideline",
+          "command": "fx-extension.openDocumentLink",
           "when": "view == teamsfx-accounts && viewItem == signinAzure",
           "group": "inline"
         },
@@ -291,6 +291,41 @@
           "command": "fx-extension.grantPermission",
           "when": "view == teamsfx-environment && viewItem =~ /environment/",
           "group": "inline@3"
+        },
+        {
+          "command": "fx-extension.openDocumentLink",
+          "when": "view == teamsfx-development && viewItem == fx-extension.create",
+          "group": "inline"
+        },
+        {
+          "command": "fx-extension.openDocumentLink",
+          "when": "view == teamsfx-development && viewItem == fx-extension.openSamples",
+          "group": "inline"
+        },
+        {
+          "command": "fx-extension.openDocumentLink",
+          "when": "view == teamsfx-development && viewItem == fx-extension.openManifest",
+          "group": "inline"
+        },
+        {
+          "command": "fx-extension.openDocumentLink",
+          "when": "view == teamsfx-deployment && viewItem == fx-extension.provision",
+          "group": "inline"
+        },
+        {
+          "command": "fx-extension.openDocumentLink",
+          "when": "view == teamsfx-deployment && viewItem == fx-extension.build",
+          "group": "inline"
+        },
+        {
+          "command": "fx-extension.openDocumentLink",
+          "when": "view == teamsfx-deployment && viewItem == fx-extension.deploy",
+          "group": "inline"
+        },
+        {
+          "command": "fx-extension.openDocumentLink",
+          "when": "view == teamsfx-deployment && viewItem == fx-extension.publish",
+          "group": "inline"
         }
       ],
       "editor/title/run": [
@@ -367,6 +402,10 @@
           "when": "false"
         },
         {
+          "command": "fx-extension.openDocumentLink",
+          "when": "false"
+        },
+        {
           "command": "fx-extension.openEnvLink",
           "when": "false"
         },
@@ -412,10 +451,6 @@
         },
         {
           "command": "fx-extension.selectAndDebug",
-          "when": "false"
-        },
-        {
-          "command": "fx-extension.signInGuideline",
           "when": "false"
         },
         {
@@ -640,6 +675,11 @@
         "icon": "$(info)"
       },
       {
+        "command": "fx-extension.openDocumentLink",
+        "title": "%teamstoolkit.commands.openDocumentLink.title%",
+        "icon": "$(info)"
+      },
+      {
         "command": "fx-extension.openEnvLink",
         "title": "%teamstoolkit.commands.environmentsLink.title%",
         "icon": "$(info)"
@@ -692,11 +732,6 @@
         "command": "fx-extension.refreshSideloading",
         "title": "%teamstoolkit.commands.refresh.title%",
         "icon": "$(refresh)"
-      },
-      {
-        "command": "fx-extension.signInGuideline",
-        "title": "%teamstoolkit.commands.signInGuideline.title%",
-        "icon": "$(info)"
       },
       {
         "command": "fx-extension.signOut",

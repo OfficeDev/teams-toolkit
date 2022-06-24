@@ -174,7 +174,7 @@ export class TeamsBot implements Plugin {
     const result = await runWithExceptionCatching(
       context,
       () => this.getImpl(context).localDebug(context),
-      false,
+      true,
       LifecycleFuncNames.LOCAL_DEBUG
     );
 
@@ -192,7 +192,7 @@ export class TeamsBot implements Plugin {
     return await runWithExceptionCatching(
       context,
       () => this.getImpl(context).postLocalDebug(context),
-      false,
+      true,
       LifecycleFuncNames.POST_LOCAL_DEBUG
     );
   }

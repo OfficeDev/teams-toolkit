@@ -847,6 +847,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.aadManifestMigration.ParsePermissionsFailedWarning" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cannot parse permissions.json file when migration, and please follow this link to update permissions in aad.template.json file if necessary: https://aka.ms/teamsfx-aad-manifest#customize-requiredresourceaccess]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[마이그레이션 시 permission.json 파일을 구문 분석할 수 없으며 필요한 경우 다음 링크를 따라 aad.template.json 파일의 권한을 업데이트하세요. https://aka.ms/teamsfx-aad-manifest#customize-requiredresourceaccess]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.aadManifestMigration.SuccessMessage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Congratulations! AAD manifest has been added, and please start to use this file to customize your AAD App registration. We have added aad.template.json, updated your projectSettings.json and backed up projectSettings.json to .backup folder. For more information about AAD manifest, please refer %s]]></Val>
@@ -5755,6 +5764,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";plugins.appstudio.buildSucceedNotice.fallback" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams package is successfully built at %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams 패키지가 %s에 빌드되었습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";plugins.appstudio.dataRequired" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Data required: %s]]></Val>
@@ -6716,6 +6734,42 @@
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";plugins.bot.triggers.http-restify.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[HTTP Trigger]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[HTTP 트리거]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.bot.triggers.http-webapi.cliName" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[http-webapi]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[http-webapi]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.bot.triggers.http-webapi.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Web API Server]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Web API 서버]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.bot.triggers.http-webapi.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[A running Web API server hosted on Azure App Service can listen to HTTP requests.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure App Service에서 호스팅된 실행 중인 Web API 서버는 HTTP 요청을 수신 대기할 수 있습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.bot.triggers.http-webapi.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[HTTP Trigger]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">

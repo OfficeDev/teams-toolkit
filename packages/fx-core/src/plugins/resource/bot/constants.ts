@@ -205,7 +205,6 @@ export class TelemetryKeys {
   public static readonly AppId = "appid";
   public static readonly HostType = "bot-host-type";
   public static readonly BotCapabilities = "bot-capabilities";
-  public static readonly Language = "bot-language";
 }
 
 export class TelemetryValues {

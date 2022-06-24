@@ -265,7 +265,7 @@ export async function showPlanAndConfirm(
     } else if (effect.type === "service") {
       plans.push(serviceEffectPlanString(effect));
     } else if (effect.type === "bicep") {
-      plans = plans.concat(persistBicepPlans(inputs.projectPath, effect));
+      plans = plans.concat(await persistBicepPlans(inputs.projectPath, effect));
     } else if (effect.type === "shell") {
       plans.push(`shell command: ${effect.description}`);
     }
@@ -300,7 +300,7 @@ export async function showSummary(
     } else if (effect.type === "service") {
       plans.push(serviceEffectPlanString(effect));
     } else if (effect.type === "bicep") {
-      plans = plans.concat(persistBicepPlans(inputs.projectPath, effect));
+      plans = plans.concat(await persistBicepPlans(inputs.projectPath, effect));
     } else if (effect.type === "shell") {
       plans.push(`shell command: ${effect.description}`);
     }
@@ -449,7 +449,7 @@ export async function executeFunctionAction(
       if (typeof effect !== "string" && effect.type === "bicep") {
         const bicep = effect as Bicep;
         if (bicep) {
-          const bicepPlans = persistBicepPlans(inputs.projectPath, bicep);
+          const bicepPlans = await persistBicepPlans(inputs.projectPath, bicep);
           bicepPlans.forEach((p) => effects.push(p));
           // TODO: handle the returned error of bicep generation
           await persistBicep(

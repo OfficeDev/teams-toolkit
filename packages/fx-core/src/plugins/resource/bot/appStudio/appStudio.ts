@@ -2,7 +2,7 @@ import { IAADApplication, IAADPassword } from "./interfaces/IAADApplication";
 import { IBotRegistration } from "./interfaces/IBotRegistration";
 import { IAADDefinition } from "./interfaces/IAADDefinition";
 
-import { AxiosInstance, default as axios } from "axios";
+import { AxiosInstance, AxiosResponse, default as axios } from "axios";
 import {
   AADAppCheckingError,
   ConfigUpdatingError,
@@ -161,11 +161,23 @@ export class AppStudio {
     let response = undefined;
     try {
       if (registration.botId) {
-        const getBotRegistrationResponse = await RetryHandler.Retry(
-          () => axiosInstance.get(`${AppStudio.baseUrl}/api/botframework/${registration.botId}`),
+        const getBotRegistrationResponse: AxiosResponse<any> | undefined = await RetryHandler.Retry(
+          async () => {
+            try {
+              return await axiosInstance.get(
+                `${AppStudio.baseUrl}/api/botframework/${registration.botId}`
+              );
+            } catch (e) {
+              if (e.response?.status === 404) {
+                return e.response;
+              } else {
+                throw e;
+              }
+            }
+          },
           true
         );
-        if (getBotRegistrationResponse && getBotRegistrationResponse.data) {
+        if (getBotRegistrationResponse?.status === 200) {
           Logger.info(Messages.BotResourceExist("Appstudio"));
           return;
         }

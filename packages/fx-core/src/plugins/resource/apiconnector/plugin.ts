@@ -12,6 +12,7 @@ import {
   ok,
   Platform,
   FxError,
+  ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import {
@@ -60,6 +61,8 @@ import { getAzureSolutionSettings } from "../../solution/fx-solution/v2/utils";
 import { DepsHandler } from "./depsHandler";
 import { checkEmptySelect } from "./checker";
 import { Telemetry, TelemetryUtils } from "./telemetry";
+import { isV3 } from "../../../core";
+import { hasAAD, hasBot, hasFunction } from "../../../common/projectSettingsHelperV3";
 export class ApiConnectorImpl {
   public async scaffold(ctx: Context, inputs: Inputs): Promise<ApiConnectorResult> {
     if (!inputs.projectPath) {
@@ -81,21 +84,23 @@ export class ApiConnectorImpl {
       telemetryProperties
     );
     // CLI checker
-    const activePlugins = (ctx.projectSetting.solutionSettings as AzureSolutionSettings)
-      ?.activeResourcePlugins;
-    if (
-      !activePlugins.includes(ResourcePlugins.Bot) &&
-      config.ComponentType.includes(ComponentType.BOT)
-    ) {
+    const bot = isV3()
+      ? hasBot(ctx.projectSetting as ProjectSettingsV3)
+      : (
+          ctx.projectSetting.solutionSettings as AzureSolutionSettings
+        )?.activeResourcePlugins?.includes(ResourcePlugins.Bot);
+    const hasFunc = isV3()
+      ? hasFunction(ctx.projectSetting as ProjectSettingsV3)
+      : (
+          ctx.projectSetting.solutionSettings as AzureSolutionSettings
+        )?.activeResourcePlugins?.includes(ResourcePlugins.Function);
+    if (!bot && config.ComponentType.includes(ComponentType.BOT)) {
       throw ResultFactory.UserError(
         ErrorMessage.componentNotExistError.name,
         ErrorMessage.componentNotExistError.message(ComponentType.BOT)
       );
     }
-    if (
-      !activePlugins.includes(ResourcePlugins.Function) &&
-      config.ComponentType.includes(ComponentType.API)
-    ) {
+    if (!hasFunc && config.ComponentType.includes(ComponentType.API)) {
       throw ResultFactory.UserError(
         ErrorMessage.componentNotExistError.name,
         ErrorMessage.componentNotExistError.message(ComponentType.API)
@@ -364,19 +369,28 @@ export class ApiConnectorImpl {
       componentOptions.push(botOption);
       componentOptions.push(functionOption);
     } else {
-      const activePlugins = (ctx.projectSetting.solutionSettings as AzureSolutionSettings)
-        ?.activeResourcePlugins;
-      if (!activePlugins) {
-        throw ResultFactory.UserError(
-          ErrorMessage.NoActivePluginsExistError.name,
-          ErrorMessage.NoActivePluginsExistError.message()
-        );
-      }
-      if (activePlugins.includes(ResourcePlugins.Bot)) {
-        componentOptions.push(botOption);
-      }
-      if (activePlugins.includes(ResourcePlugins.Function)) {
-        componentOptions.push(functionOption);
+      if (!isV3()) {
+        const activePlugins = (ctx.projectSetting.solutionSettings as AzureSolutionSettings)
+          ?.activeResourcePlugins;
+        if (!activePlugins) {
+          throw ResultFactory.UserError(
+            ErrorMessage.NoActivePluginsExistError.name,
+            ErrorMessage.NoActivePluginsExistError.message()
+          );
+        }
+        if (activePlugins.includes(ResourcePlugins.Bot)) {
+          componentOptions.push(botOption);
+        }
+        if (activePlugins.includes(ResourcePlugins.Function)) {
+          componentOptions.push(functionOption);
+        }
+      } else {
+        if (hasBot(ctx.projectSetting as ProjectSettingsV3)) {
+          componentOptions.push(botOption);
+        }
+        if (hasFunction(ctx.projectSetting as ProjectSettingsV3)) {
+          componentOptions.push(functionOption);
+        }
       }
       if (componentOptions.length === 0) {
         throw ResultFactory.UserError(
@@ -435,9 +449,15 @@ export class ApiConnectorImpl {
   }
 
   public buildAADAuthQuestion(ctx: Context, inputs: Inputs): QTreeNode {
-    const solutionSettings = getAzureSolutionSettings(ctx)!;
+    let aad;
+    if (isV3()) {
+      aad = hasAAD(ctx.projectSetting as ProjectSettingsV3);
+    } else {
+      const solutionSettings = getAzureSolutionSettings(ctx)!;
+      aad = isAADEnabled(solutionSettings);
+    }
     let node: QTreeNode;
-    if (isAADEnabled(solutionSettings) || inputs.platform === Platform.CLI_HELP) {
+    if (aad || inputs.platform === Platform.CLI_HELP) {
       node = new QTreeNode({
         name: Constants.questionKey.apiAppType,
         type: "singleSelect",

@@ -3046,34 +3046,22 @@ export async function openDocumentLinkHandler(args?: any[]): Promise<Result<bool
     }
     case "fx-extension.create":
     case "fx-extension.openSamples": {
-      return VS_CODE_UI.openUrl(
-        "https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/create-new-project"
-      );
+      return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-create-project");
     }
     case "fx-extension.openManifest": {
-      return VS_CODE_UI.openUrl(
-        "https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/teamsfx-preview-and-customize-app-manifest"
-      );
+      return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-edit-manifest");
     }
     case "fx-extension.provision": {
-      return VS_CODE_UI.openUrl(
-        "https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/provision"
-      );
+      return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-provision-cloud-resource");
     }
     case "fx-extension.build": {
-      return VS_CODE_UI.openUrl(
-        "https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/deploy-and-publish/appsource/prepare/teams-store-validation-guidelines"
-      );
+      return VS_CODE_UI.openUrl("https://aka.ms/teams-store-validation");
     }
     case "fx-extension.deploy": {
-      return VS_CODE_UI.openUrl(
-        "https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/deploy"
-      );
+      return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-deploy");
     }
     case "fx-extension.publish": {
-      return VS_CODE_UI.openUrl(
-        "https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/publish"
-      );
+      return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-publish");
     }
   }
   return Promise.resolve(ok(false));

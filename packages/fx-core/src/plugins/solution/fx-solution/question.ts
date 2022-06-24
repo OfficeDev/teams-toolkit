@@ -26,7 +26,7 @@ export const TabNewUIOptionItem: OptionItem = {
   cliName: "tab",
   detail: getLocalizedString("core.TabOption.detailNew"),
   groupName: getLocalizedString("core.options.separator.scenario"),
-  data: "https://docs.microsoft.com/en-us/microsoftteams/platform/tabs/how-to/authentication/tab-sso-overview",
+  data: "https://aka.ms/teamsfx-tab-with-sso",
   buttons: [
     {
       iconPath: "tasklist",
@@ -290,7 +290,7 @@ export const CicdOptionItem: OptionItem = {
   label: `$(sync) ${getLocalizedString("core.cicdWorkflowOption.label")}`,
   detail: getLocalizedString("core.cicdWorkflowOption.detail"),
   groupName: getLocalizedString("core.options.separator.additional"),
-  data: "https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/use-cicd-template",
+  data: "https://aka.ms/teamsfx-add-cicd",
   buttons: [
     {
       iconPath: "tasklist",

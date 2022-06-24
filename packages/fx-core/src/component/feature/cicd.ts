@@ -39,6 +39,8 @@ import {
 import { ExistingTemplatesStat } from "../../plugins/resource/cicd/utils/existingTemplatesStat";
 import { isMiniApp } from "../../common/projectSettingsHelperV3";
 import { CICDImpl } from "../../plugins/resource/cicd/plugin";
+import { isExistingTabApp } from "../../common";
+import { isV3 } from "../../core/globalVars";
 @Service("cicd")
 export class CICD {
   name = "cicd";
@@ -80,7 +82,10 @@ export async function addCicdQuestion(
   inputs: InputsWithProjectPath
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   // add CI CD workflows for minimal app is not supported.
-  if (inputs.platform !== Platform.CLI_HELP && isMiniApp(ctx.projectSetting)) {
+  const isExistingApp = isV3()
+    ? isExistingTabApp(ctx.projectSetting)
+    : isMiniApp(ctx.projectSetting);
+  if (inputs.platform !== Platform.CLI_HELP && isExistingApp) {
     throw new NoCapabilityFoundError(Stage.addCiCdFlow);
   }
 

@@ -114,10 +114,25 @@ export function DependencyCheckerFailed(): SystemError {
   );
 }
 
-export function PrerequisitesValidationError(error: string | Error, helpLink?: string): UserError {
+export function PrerequisitesValidationNodejsError(
+  error: string | Error,
+  helpLink?: string
+): UserError {
   return new UserError({
     source: constants.cliSource,
-    name: "PrerequisitesValidationError",
+    name: "PrerequisitesValidationNodejsError",
+    helpLink,
+    message: error instanceof Error ? error.message : (error as string),
+  });
+}
+
+export function PrerequisitesValidationM365AccountError(
+  error: string | Error,
+  helpLink?: string
+): UserError {
+  return new UserError({
+    source: constants.cliSource,
+    name: "PrerequisitesValidationM365AccountError",
     helpLink,
     message: error instanceof Error ? error.message : (error as string),
   });

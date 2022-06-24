@@ -82,7 +82,7 @@ export async function addCicdQuestion(
   inputs: InputsWithProjectPath
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   // add CI CD workflows for minimal app is not supported.
-  const isExistingApp = isV3()
+  const isExistingApp = !isV3()
     ? isExistingTabApp(ctx.projectSetting)
     : isMiniApp(ctx.projectSetting);
   if (inputs.platform !== Platform.CLI_HELP && isExistingApp) {

@@ -569,7 +569,7 @@ export function canAddApiConnection(solutionSettings?: AzureSolutionSettings): b
 // 2. Not minimal app
 export async function canAddCICDWorkflows(inputs: Inputs, ctx: v2.Context): Promise<boolean> {
   // Not include `Add CICD Workflows` in minimal app case.
-  const isExistingApp = isV3()
+  const isExistingApp = !isV3()
     ? isExistingTabApp(ctx.projectSetting)
     : isMiniApp(ctx.projectSetting as ProjectSettingsV3);
   if (isExistingApp) {

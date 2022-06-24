@@ -47,10 +47,10 @@ describe("Bot Plugin v2", () => {
       inputs[AzureSolutionQuestionNames.Capabilities] = [NotificationOptionItem.id];
       inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [AppServiceOptionItem.id];
       fillInSolutionSettings(context.projectSetting, inputs);
-      const templateScenario = decideTemplateScenarios(context, inputs);
-      chai.assert.equal(templateScenario.size, 1);
+      const templateScenarios = decideTemplateScenarios(context, inputs);
+      chai.assert.equal(templateScenarios.size, 1);
       chai.assert.isTrue(
-        templateScenario.has(TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME)
+        templateScenarios.has(TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME)
       );
     });
 
@@ -58,10 +58,10 @@ describe("Bot Plugin v2", () => {
       inputs[AzureSolutionQuestionNames.Capabilities] = [NotificationOptionItem.id];
       inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [AppServiceOptionItemForVS.id];
       fillInSolutionSettings(context.projectSetting, inputs);
-      const templateScenario = decideTemplateScenarios(context, inputs);
-      chai.assert.equal(templateScenario.size, 1);
+      const templateScenarios = decideTemplateScenarios(context, inputs);
+      chai.assert.equal(templateScenarios.size, 1);
       chai.assert.isTrue(
-        templateScenario.has(TemplateProjectsScenarios.NOTIFICATION_WEBAPI_SCENARIO_NAME)
+        templateScenarios.has(TemplateProjectsScenarios.NOTIFICATION_WEBAPI_SCENARIO_NAME)
       );
     });
 
@@ -69,15 +69,15 @@ describe("Bot Plugin v2", () => {
       inputs[AzureSolutionQuestionNames.Capabilities] = [NotificationOptionItem.id];
       inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [FunctionsHttpTriggerOptionItem.id];
       fillInSolutionSettings(context.projectSetting, inputs);
-      const templateScenario = decideTemplateScenarios(context, inputs);
-      chai.assert.equal(templateScenario.size, 2);
+      const templateScenarios = decideTemplateScenarios(context, inputs);
+      chai.assert.equal(templateScenarios.size, 2);
       chai.assert.isTrue(
-        templateScenario.has(
+        templateScenarios.has(
           TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_HTTP_SCENARIO_NAME
         )
       );
       chai.assert.isTrue(
-        templateScenario.has(TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME)
+        templateScenarios.has(TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME)
       );
     });
 
@@ -85,15 +85,15 @@ describe("Bot Plugin v2", () => {
       inputs[AzureSolutionQuestionNames.Capabilities] = [NotificationOptionItem.id];
       inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [FunctionsTimerTriggerOptionItem.id];
       fillInSolutionSettings(context.projectSetting, inputs);
-      const templateScenario = decideTemplateScenarios(context, inputs);
-      chai.assert.equal(templateScenario.size, 2);
+      const templateScenarios = decideTemplateScenarios(context, inputs);
+      chai.assert.equal(templateScenarios.size, 2);
       chai.assert.isTrue(
-        templateScenario.has(
+        templateScenarios.has(
           TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_TIMER_SCENARIO_NAME
         )
       );
       chai.assert.isTrue(
-        templateScenario.has(TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME)
+        templateScenarios.has(TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME)
       );
     });
 
@@ -104,47 +104,47 @@ describe("Bot Plugin v2", () => {
         FunctionsTimerTriggerOptionItem.id,
       ];
       fillInSolutionSettings(context.projectSetting, inputs);
-      const templateScenario = decideTemplateScenarios(context, inputs);
-      chai.assert.equal(templateScenario.size, 3);
+      const templateScenarios = decideTemplateScenarios(context, inputs);
+      chai.assert.equal(templateScenarios.size, 3);
       chai.assert.isTrue(
-        templateScenario.has(
+        templateScenarios.has(
           TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_HTTP_SCENARIO_NAME
         )
       );
       chai.assert.isTrue(
-        templateScenario.has(
+        templateScenarios.has(
           TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_TIMER_SCENARIO_NAME
         )
       );
       chai.assert.isTrue(
-        templateScenario.has(TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME)
+        templateScenarios.has(TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME)
       );
     });
 
     it("scenario for command and response bot", async () => {
       inputs[AzureSolutionQuestionNames.Capabilities] = [CommandAndResponseOptionItem.id];
       fillInSolutionSettings(context.projectSetting, inputs);
-      const templateScenario = decideTemplateScenarios(context, inputs);
-      chai.assert.equal(templateScenario.size, 1);
+      const templateScenarios = decideTemplateScenarios(context, inputs);
+      chai.assert.equal(templateScenarios.size, 1);
       chai.assert.isTrue(
-        templateScenario.has(TemplateProjectsScenarios.COMMAND_AND_RESPONSE_SCENARIO_NAME)
+        templateScenarios.has(TemplateProjectsScenarios.COMMAND_AND_RESPONSE_SCENARIO_NAME)
       );
     });
 
     it("scenario for default bot", async () => {
       inputs[AzureSolutionQuestionNames.Capabilities] = [BotOptionItem.id];
       fillInSolutionSettings(context.projectSetting, inputs);
-      const templateScenario = decideTemplateScenarios(context, inputs);
-      chai.assert.equal(templateScenario.size, 1);
-      chai.assert.isTrue(templateScenario.has(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME));
+      const templateScenarios = decideTemplateScenarios(context, inputs);
+      chai.assert.equal(templateScenarios.size, 1);
+      chai.assert.isTrue(templateScenarios.has(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME));
     });
 
     it("scenario for message extension", async () => {
       inputs[AzureSolutionQuestionNames.Capabilities] = [MessageExtensionNewUIItem.id];
       fillInSolutionSettings(context.projectSetting, inputs);
-      const templateScenario = decideTemplateScenarios(context, inputs);
-      chai.assert.equal(templateScenario.size, 1);
-      chai.assert.isTrue(templateScenario.has(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME));
+      const templateScenarios = decideTemplateScenarios(context, inputs);
+      chai.assert.equal(templateScenarios.size, 1);
+      chai.assert.isTrue(templateScenarios.has(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME));
     });
 
     it("scenario for M365 search based message extension", async () => {
@@ -152,9 +152,9 @@ describe("Bot Plugin v2", () => {
       context.projectSetting.isM365 = true;
       inputs.isM365 = true;
       fillInSolutionSettings(context.projectSetting, inputs);
-      const templateScenario = decideTemplateScenarios(context, inputs);
-      chai.assert.equal(templateScenario.size, 1);
-      chai.assert.isTrue(templateScenario.has(TemplateProjectsScenarios.M365_SCENARIO_NAME));
+      const templateScenarios = decideTemplateScenarios(context, inputs);
+      chai.assert.equal(templateScenarios.size, 1);
+      chai.assert.isTrue(templateScenarios.has(TemplateProjectsScenarios.M365_SCENARIO_NAME));
     });
   });
 });

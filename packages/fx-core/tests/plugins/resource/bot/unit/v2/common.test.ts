@@ -12,7 +12,6 @@ import {
   AzureSolutionQuestionNames,
   BotOptionItem,
   CommandAndResponseOptionItem,
-  getTemplatesFolder,
   M365SearchAppOptionItem,
   MessageExtensionNewUIItem,
   NotificationOptionItem,

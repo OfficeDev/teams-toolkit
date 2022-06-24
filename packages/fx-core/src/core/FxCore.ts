@@ -766,7 +766,7 @@ export class FxCore implements v3.ICore {
     } else if (TabFeatureIds.includes(feature)) {
       res = await runAction("teams-tab.add", context, inputs as InputsWithProjectPath);
     } else {
-      return err(new TaskNotSupportError(feature));
+      return err(new NotImplementedError(feature));
     }
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;

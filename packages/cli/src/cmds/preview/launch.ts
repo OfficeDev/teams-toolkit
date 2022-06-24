@@ -8,18 +8,14 @@ import * as path from "path";
 import { OpeningBrowserFailed } from "./errors";
 import CLIUIInstance from "../../userInteraction";
 import * as constants from "./constants";
-import cliTelemetry from "../../telemetry/cliTelemetry";
 import cliLogger from "../../commonlib/log";
 import * as commonUtils from "./commonUtils";
-import {
-  TelemetryEvent,
-  TelemetryProperty,
-  TelemetrySuccess,
-} from "../../telemetry/cliTelemetryEvents";
-import { Colors, LogLevel } from "@microsoft/teamsfx-api";
+import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
+import { Colors, LogLevel, ok, err, FxError, Result } from "@microsoft/teamsfx-api";
 import { getColorizedString, sleep } from "../../utils";
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import { TempFolderManager } from "./tempFolderManager";
+import { localTelemetryReporter } from "./localTelemetryReporter";
 
 export async function openHubWebClient(
   includeFrontend: boolean,
@@ -30,9 +26,40 @@ export async function openHubWebClient(
   browserArguments: string[] = [],
   telemetryProperties?: { [key: string]: string } | undefined
 ): Promise<void> {
-  if (telemetryProperties) {
-    cliTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewSideloadingStart, telemetryProperties);
+  if (telemetryProperties !== undefined) {
+    await localTelemetryReporter.runWithTelemetryProperties(
+      TelemetryEvent.PreviewSideloading,
+      telemetryProperties,
+      () =>
+        _openHubWebClient(
+          includeFrontend,
+          tenantIdFromConfig,
+          appId,
+          hub,
+          browser,
+          browserArguments
+        )
+    );
+  } else {
+    await _openHubWebClient(
+      includeFrontend,
+      tenantIdFromConfig,
+      appId,
+      hub,
+      browser,
+      browserArguments
+    );
   }
+}
+
+async function _openHubWebClient(
+  includeFrontend: boolean,
+  tenantIdFromConfig: string,
+  appId: string,
+  hub: string,
+  browser: constants.Browser,
+  browserArguments: string[] = []
+): Promise<Result<undefined, FxError>> {
   let sideloadingUrl = "";
   if (hub === constants.Hub.teams) {
     sideloadingUrl = constants.LaunchUrl.teams;
@@ -70,25 +97,12 @@ export async function openHubWebClient(
     await commonUtils.openBrowser(browser, sideloadingUrl, browserArguments);
   } catch {
     const error = OpeningBrowserFailed(browser);
-    if (telemetryProperties) {
-      cliTelemetry.sendTelemetryErrorEvent(
-        TelemetryEvent.PreviewSideloading,
-        error,
-        telemetryProperties
-      );
-    }
     cliLogger.necessaryLog(LogLevel.Warning, constants.openBrowserHintMessage);
     await previewBar.end(false);
-    return;
+    return err(error);
   }
   await previewBar.end(true);
-
-  if (telemetryProperties) {
-    cliTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewSideloading, {
-      ...telemetryProperties,
-      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-    });
-  }
+  return ok(undefined);
 }
 
 export async function openUrlWithNewProfile(url: string): Promise<boolean> {

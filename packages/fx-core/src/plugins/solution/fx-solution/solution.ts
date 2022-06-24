@@ -39,11 +39,11 @@ import { PluginDisplayName, HelpLinks } from "../../../common/constants";
 import { LocalSettingsTeamsAppKeys } from "../../../common/localSettingsConstants";
 import { ListCollaboratorResult, PermissionsResult } from "../../../common/permissionInterface";
 import {
+  AppStudioScopes,
   deepCopy,
   getHashedEnv,
   getResourceGroupInPortal,
   isCheckAccountError,
-  isMultiEnvEnabled,
   isUserCancelError,
   redactObject,
 } from "../../../common/tools";
@@ -412,7 +412,12 @@ export class TeamsAppSolution implements Solution {
       // Just to trigger M365 login before the concurrent execution of provision.
       // Because concurrent exectution of provision may getAccessToken() concurrently, which
       // causes 2 M365 logins before the token caching in common lib takes effect.
-      await ctx.appStudioToken?.getAccessToken();
+      const appStudioTokenRes = await ctx.m365TokenProvider!.getAccessToken({
+        scopes: AppStudioScopes,
+      });
+      if (appStudioTokenRes?.isErr()) {
+        return err(appStudioTokenRes.error);
+      }
 
       this.runningState = SolutionRunningState.ProvisionInProgress;
 
@@ -454,8 +459,13 @@ export class TeamsAppSolution implements Solution {
         }
         ctx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
-        if (!this.isAzureProject(ctx) && isMultiEnvEnabled()) {
-          const appStudioTokenJson = await ctx.appStudioToken?.getJsonObject();
+        if (!this.isAzureProject(ctx)) {
+          const appStudioTokenJsonRes = await ctx.m365TokenProvider?.getJsonObject({
+            scopes: AppStudioScopes,
+          });
+          const appStudioTokenJson = appStudioTokenJsonRes?.isOk()
+            ? appStudioTokenJsonRes.value
+            : undefined;
           ctx.envInfo.state
             .get(GLOBAL_CONFIG)
             ?.set(REMOTE_TEAMS_APP_TENANT_ID, (appStudioTokenJson as any).tid);
@@ -497,12 +507,18 @@ export class TeamsAppSolution implements Solution {
     if (this.isAzureProject(ctx)) {
       //1. ask common questions for azure resources.
       const appName = ctx.projectSettings!.appName;
+      const appStudioTokenJsonRes = await ctx.m365TokenProvider?.getJsonObject({
+        scopes: AppStudioScopes,
+      });
+      const appStudioTokenJson = appStudioTokenJsonRes?.isOk()
+        ? appStudioTokenJsonRes.value
+        : undefined;
       const res = await fillInCommonQuestions(
         ctx,
         appName,
         ctx.envInfo.state,
         ctx.azureAccountProvider,
-        await ctx.appStudioToken?.getJsonObject()
+        appStudioTokenJson
       );
       if (res.isErr()) {
         return res;
@@ -557,21 +573,6 @@ export class TeamsAppSolution implements Solution {
         return ok(undefined);
       },
       async (provisionResults?: Result<any, FxError>[]) => {
-        if (!isMultiEnvEnabled()) {
-          if (provisionWithCtx.length === provisionResults?.length) {
-            provisionWithCtx.map(function (plugin, index) {
-              if (plugin[2] === PluginNames.APPST) {
-                const teamsAppResult = provisionResults[index];
-                if (teamsAppResult.isOk()) {
-                  ctx.envInfo.state
-                    .get(GLOBAL_CONFIG)
-                    ?.set(REMOTE_TEAMS_APP_ID, teamsAppResult.value);
-                }
-              }
-            });
-          }
-        }
-
         if (provisionResults) {
           for (const result of provisionResults) {
             if (result.isErr()) {
@@ -632,11 +633,16 @@ export class TeamsAppSolution implements Solution {
         // Just to trigger M365 login before the concurrent execution of deploy.
         // Because concurrent exectution of deploy may getAccessToken() concurrently, which
         // causes 2 M365 logins before the token caching in common lib takes effect.
-        const appStudioTokenJson = await ctx.appStudioToken?.getJsonObject();
+        const appStudioTokenJsonRes = await ctx.m365TokenProvider!.getJsonObject({
+          scopes: AppStudioScopes,
+        });
+        if (appStudioTokenJsonRes.isErr()) {
+          return err(appStudioTokenJsonRes.error);
+        }
 
         const checkM365 = await checkM365Tenant(
           { version: 1, data: ctx.envInfo },
-          appStudioTokenJson as object
+          appStudioTokenJsonRes.value as object
         );
         if (checkM365.isErr()) {
           return checkM365;
@@ -743,7 +749,12 @@ export class TeamsAppSolution implements Solution {
     }
 
     try {
-      const appStudioTokenJson = await ctx.appStudioToken?.getJsonObject();
+      const appStudioTokenJsonRes = await ctx.m365TokenProvider?.getJsonObject({
+        scopes: AppStudioScopes,
+      });
+      const appStudioTokenJson = appStudioTokenJsonRes?.isOk()
+        ? appStudioTokenJsonRes.value
+        : undefined;
 
       const checkM365 = await checkM365Tenant(
         { version: 1, data: ctx.envInfo },
@@ -1012,7 +1023,12 @@ export class TeamsAppSolution implements Solution {
       }
     } else if (stage === Stage.grantPermission) {
       if (isDynamicQuestion) {
-        const appStudioTokenJson = await ctx.appStudioToken?.getJsonObject();
+        const appStudioTokenJsonRes = await ctx.m365TokenProvider?.getJsonObject({
+          scopes: AppStudioScopes,
+        });
+        const appStudioTokenJson = appStudioTokenJsonRes?.isOk()
+          ? appStudioTokenJsonRes.value
+          : undefined;
         node.addChild(new QTreeNode(getUserEmailQuestion((appStudioTokenJson as any)?.upn)));
       }
     }
@@ -1061,15 +1077,20 @@ export class TeamsAppSolution implements Solution {
       // Just to trigger M365 login before the concurrent execution of localDebug.
       // Because concurrent exectution of localDebug may getAccessToken() concurrently, which
       // causes 2 M365 logins before the token caching in common lib takes effect.
-      await ctx.appStudioToken?.getAccessToken();
+      const appStudioTokenRes = await ctx.m365TokenProvider!.getAccessToken({
+        scopes: AppStudioScopes,
+      });
+      if (appStudioTokenRes?.isErr()) {
+        return err(appStudioTokenRes.error);
+      }
 
       // Pop-up window to confirm if local debug in another tenant
-      const localDebugTenantId = isMultiEnvEnabled()
-        ? ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TenantId)
-        : ctx.envInfo.state.get(PluginNames.AAD)?.get(LOCAL_TENANT_ID);
+      const localDebugTenantId = ctx.localSettings?.teamsApp?.get(
+        LocalSettingsTeamsAppKeys.TenantId
+      );
       const m365TenantMatches = await checkWhetherLocalDebugM365TenantMatches(
         localDebugTenantId,
-        ctx.appStudioToken,
+        ctx.m365TokenProvider,
         ctx.root
       );
       if (m365TenantMatches.isErr()) {
@@ -1121,11 +1142,13 @@ export class TeamsAppSolution implements Solution {
 
       // check point 6
       // set local debug Teams app tenant id in context.
-      const result = this.loadTeamsAppTenantId(
-        ctx,
-        true,
-        await ctx.appStudioToken?.getJsonObject()
-      );
+      const appStudioTokenJsonRes = await ctx.m365TokenProvider?.getJsonObject({
+        scopes: AppStudioScopes,
+      });
+      const appStudioTokenJson = appStudioTokenJsonRes?.isOk()
+        ? appStudioTokenJsonRes.value
+        : undefined;
+      const result = this.loadTeamsAppTenantId(ctx, true, appStudioTokenJson);
       if (result.isErr()) {
         return result;
       }
@@ -1145,16 +1168,9 @@ export class TeamsAppSolution implements Solution {
       if (postLocalDebugWithCtx.length === combinedPostLocalDebugResults.value.length) {
         postLocalDebugWithCtx.map(function (plugin, index) {
           if (plugin[2] === PluginNames.APPST) {
-            if (isMultiEnvEnabled()) {
-              ctx.localSettings?.teamsApp?.set(
-                LocalSettingsTeamsAppKeys.TeamsAppId,
-                combinedPostLocalDebugResults.value[index]
-              );
-            } else {
-              ctx.envInfo.state
-                .get(GLOBAL_CONFIG)
-                ?.set(LOCAL_DEBUG_TEAMS_APP_ID, combinedPostLocalDebugResults.value[index]);
-            }
+            ctx.envInfo.state
+              .get(GLOBAL_CONFIG)
+              ?.set(LOCAL_DEBUG_TEAMS_APP_ID, combinedPostLocalDebugResults.value[index]);
           }
         });
       }
@@ -1196,7 +1212,7 @@ export class TeamsAppSolution implements Solution {
   ): Result<SolutionContext, FxError> {
     return parseTeamsAppTenantId(appStudioToken as Record<string, unknown> | undefined).andThen(
       (teamsAppTenantId) => {
-        if (isLocalDebug && isMultiEnvEnabled()) {
+        if (isLocalDebug) {
           ctx.localSettings?.teamsApp?.set(LocalSettingsTeamsAppKeys.TenantId, teamsAppTenantId);
         } else {
           ctx.envInfo.state.get(GLOBAL_CONFIG)?.set("teamsAppTenantId", teamsAppTenantId);
@@ -1928,7 +1944,13 @@ export class TeamsAppSolution implements Solution {
     const teamsAppId = maybeTeamsAppId.value;
 
     const appSettingsJSONTpl = (await fs.readFile(appSettingsJSONPath)).toString();
-    const maybeTenantId = parseTeamsAppTenantId(await ctx.appStudioToken?.getJsonObject());
+    const appStudioTokenJsonRes = await ctx.m365TokenProvider?.getJsonObject({
+      scopes: AppStudioScopes,
+    });
+    const appStudioTokenJson = appStudioTokenJsonRes?.isOk()
+      ? appStudioTokenJsonRes.value
+      : undefined;
+    const maybeTenantId = parseTeamsAppTenantId(appStudioTokenJson);
     if (maybeTenantId.isErr()) {
       return err(maybeTenantId.error);
     }
@@ -1977,22 +1999,12 @@ export async function askForProvisionConsent(ctx: SolutionContext): Promise<Resu
   const subscriptionId = ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_ID) as string;
   const subscriptionName = ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_NAME) as string;
   const msg = getLocalizedString(
-    "core.provision.confirmNotice",
+    "core.provision.confirmEnvNotice",
+    ctx.envInfo.envName,
     username,
     subscriptionName ? subscriptionName : subscriptionId
   );
-  let confirmRes = undefined;
-  if (isMultiEnvEnabled()) {
-    const msgNew = getLocalizedString(
-      "core.provision.confirmEnvNotice",
-      ctx.envInfo.envName,
-      username,
-      subscriptionName ? subscriptionName : subscriptionId
-    );
-    confirmRes = await ctx.ui?.showMessage("warn", msgNew, true, "Provision");
-  } else {
-    confirmRes = await ctx.ui?.showMessage("warn", msg, true, "Provision", "Pricing calculator");
-  }
+  const confirmRes = await ctx.ui?.showMessage("warn", msg, true, "Provision");
 
   const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
 

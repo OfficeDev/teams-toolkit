@@ -5,22 +5,27 @@ import { Inputs } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import { AzureSolutionQuestionNames, BotScenario } from "../../../solution/fx-solution/question";
 import { QuestionNames, TemplateProjectsConstants, TemplateProjectsScenarios } from "../constants";
-import { AppServiceOptionItem, HostTypeTriggerOptions } from "../question";
+import { AppServiceOptionItem, FunctionsOptionItems } from "../question";
 import { CodeTemplateInfo } from "./interface/codeTemplateInfo";
 import { getLanguage, getServiceType, getTriggerScenarios } from "./mapping";
 import { ServiceType } from "../../../../common/azure-hosting/interfaces";
-import { PluginBot, HostType, HostTypes } from "../resources/strings";
+import { CoreQuestionNames } from "../../../../core/question";
+import { HostType } from "./enum";
+import { BotCapability, PluginBot, QuestionBotScenarioToBotCapability } from "../resources/strings";
+import { convertToAlphanumericOnly } from "../../../../common/utils";
 
 export function getTemplateInfos(ctx: Context, inputs: Inputs): CodeTemplateInfo[] {
   const lang = getLanguage(ctx.projectSetting.programmingLanguage);
   const scenarios = Array.from(decideTemplateScenarios(ctx, inputs));
   const projectName = ctx.projectSetting.appName;
+  const safeProjectName =
+    inputs[CoreQuestionNames.SafeProjectName] ?? convertToAlphanumericOnly(projectName);
   return scenarios.map((scenario) => {
     return {
       group: TemplateProjectsConstants.GROUP_NAME_BOT,
       language: lang,
       scenario: scenario,
-      variables: { ProjectName: projectName },
+      variables: { ProjectName: projectName, SafeProjectName: safeProjectName },
     };
   });
 }
@@ -47,8 +52,7 @@ export function decideTemplateScenarios(ctx: Context, inputs: Inputs): Set<strin
         const notificationTriggerType = (inputs[
           QuestionNames.BOT_HOST_TYPE_TRIGGER
         ] as string[]) ?? [AppServiceOptionItem.id];
-        // notificationTriggerType may be string in VS scenario
-        ([] as string[]).concat(notificationTriggerType).forEach((triggerType) => {
+        notificationTriggerType.forEach((triggerType) => {
           getTriggerScenarios(triggerType).forEach((item) => templateScenarios.add(item));
         });
         break;
@@ -59,20 +63,27 @@ export function decideTemplateScenarios(ctx: Context, inputs: Inputs): Set<strin
 
 export function resolveHostType(inputs: Inputs): HostType {
   const notificationTriggerType = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER];
-  let hostType;
   if (Array.isArray(notificationTriggerType)) {
-    const hostTypes = notificationTriggerType.map(
-      (item) => HostTypeTriggerOptions.find((option) => option.id === item)?.hostType
-    );
-    hostType = hostTypes ? hostTypes[0] : undefined;
+    return FunctionsOptionItems.some((item) => notificationTriggerType.includes(item.id))
+      ? HostType.Functions
+      : HostType.AppService;
   }
-  return hostType ? hostType : HostTypes.APP_SERVICE;
+  return HostType.AppService;
 }
 
 export function resolveServiceType(ctx: Context): ServiceType {
   const rawHostType =
     (ctx.projectSetting?.pluginSettings?.[PluginBot.PLUGIN_NAME]?.[
       PluginBot.HOST_TYPE
-    ] as string) ?? HostTypes.APP_SERVICE;
+    ] as string) ?? HostType.AppService;
   return getServiceType(rawHostType);
+}
+
+export function resolveBotCapabilities(inputs: Inputs): BotCapability[] {
+  const botScenarios = inputs?.[AzureSolutionQuestionNames.Scenarios];
+  if (Array.isArray(botScenarios)) {
+    return botScenarios.map((scenario) => QuestionBotScenarioToBotCapability.get(scenario)!);
+  } else {
+    return [];
+  }
 }

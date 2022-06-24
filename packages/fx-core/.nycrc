@@ -26,5 +26,5 @@
   ],
   "reporter": ["text", "html", "json-summary", "cobertura"],
   "check-coverage": true,
-  "lines": 72.9
+  "lines": 72.8
 }

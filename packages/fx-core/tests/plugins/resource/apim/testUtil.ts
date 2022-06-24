@@ -1,6 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { GraphTokenProvider } from "@microsoft/teamsfx-api";
+import {
+  FxError,
+  LoginStatus,
+  M365TokenProvider,
+  ok,
+  Result,
+  TokenRequest,
+} from "@microsoft/teamsfx-api";
 import { BuildError, NotImplemented } from "../../../../src/plugins/resource/apim/error";
 import { ConfidentialClientApplication } from "@azure/msal-node";
 import { AssertNotEmpty } from "../../../../src/plugins/resource/apim/error";
@@ -8,7 +15,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-export class MockGraphTokenProvider implements GraphTokenProvider {
+export class MockM365TokenProvider implements M365TokenProvider {
   private readonly clientId: string;
   private readonly tenantId: string;
   private readonly clientSecret: string;
@@ -18,8 +25,11 @@ export class MockGraphTokenProvider implements GraphTokenProvider {
     this.clientId = clientId;
     this.clientSecret = clientSecret;
   }
+  getStatus(tokenRequest: TokenRequest): Promise<Result<LoginStatus, FxError>> {
+    throw new Error("Method not implemented.");
+  }
 
-  async getAccessToken(): Promise<string> {
+  async getAccessToken(tokenRequest: TokenRequest): Promise<Result<string, FxError>> {
     const config = {
       auth: {
         clientId: this.clientId,
@@ -34,23 +44,25 @@ export class MockGraphTokenProvider implements GraphTokenProvider {
 
     const cca = new ConfidentialClientApplication(config);
     const credential = await cca.acquireTokenByClientCredential(clientCredentialRequest);
-    return AssertNotEmpty("accessToken", credential?.accessToken);
+    return ok(AssertNotEmpty("accessToken", credential?.accessToken));
   }
 
   setStatusChangeMap(
     name: string,
+    tokenRequest: TokenRequest,
     statusChange: (
       status: string,
       token?: string,
       accountInfo?: Record<string, unknown>
-    ) => Promise<void>
-  ): Promise<boolean> {
+    ) => Promise<void>,
+    immediateCall?: boolean
+  ): Promise<Result<boolean, FxError>> {
     throw BuildError(NotImplemented);
   }
-  removeStatusChangeMap(name: string): Promise<boolean> {
+  removeStatusChangeMap(name: string): Promise<Result<boolean, FxError>> {
     throw BuildError(NotImplemented);
   }
-  getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
+  getJsonObject(tokenRequest: TokenRequest): Promise<Result<Record<string, unknown>, FxError>> {
     throw BuildError(NotImplemented);
   }
   signout(): Promise<boolean> {

@@ -62,12 +62,7 @@ import {
   getQuestionsForUserTask,
 } from "../../../src/plugins/solution/fx-solution/v2/getQuestions";
 import { BuiltInFeaturePluginNames } from "../../../src/plugins/solution/fx-solution/v3/constants";
-import {
-  MockGraphTokenProvider,
-  MockM365TokenProvider,
-  MockSharepointTokenProvider,
-} from "../../core/utils";
-import { MockedAppStudioProvider, MockedAzureAccountProvider, MockedV2Context } from "./util";
+import { MockedM365Provider, MockedAzureAccountProvider, MockedV2Context } from "./util";
 import { BotCapabilities, PluginBot } from "../../../src/plugins/resource/bot/resources/strings";
 import { BotHostTypes } from "../../../src";
 
@@ -80,11 +75,8 @@ const frontendPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.Fron
 const botPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.BotPlugin);
 const cicdPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.CICDPlugin);
 const mockedProvider: TokenProvider = {
-  appStudioToken: new MockedAppStudioProvider(),
   azureAccountProvider: new MockedAzureAccountProvider(),
-  graphTokenProvider: new MockGraphTokenProvider(),
-  sharepointTokenProvider: new MockSharepointTokenProvider(),
-  m365TokenProvider: new MockM365TokenProvider(),
+  m365TokenProvider: new MockedM365Provider(),
 };
 const envInfo: EnvInfoV2 = {
   envName: "default",

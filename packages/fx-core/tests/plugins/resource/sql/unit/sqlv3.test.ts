@@ -13,13 +13,11 @@ import {
 } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
 import { Container } from "typedi";
 import {
-  MockedAppStudioTokenProvider,
+  MockedM365Provider,
   MockedAzureAccountProvider,
-  MockedGraphTokenProvider,
-  MockedSharepointProvider,
   MockedV2Context,
 } from "../../../solution/util";
-import { MockM365TokenProvider, randomAppName } from "../../../../core/utils";
+import { randomAppName } from "../../../../core/utils";
 import sinon from "sinon";
 import { SqlMgrClient } from "../../../../../src/plugins/resource/sql/managementClient";
 import "../../../../../src/plugins/resource/sql/v3";
@@ -50,10 +48,7 @@ describe("SQL V3 API", () => {
     };
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
-      graphTokenProvider: new MockedGraphTokenProvider(),
-      sharepointTokenProvider: new MockedSharepointProvider(),
-      m365TokenProvider: new MockM365TokenProvider(),
+      m365TokenProvider: new MockedM365Provider(),
     };
     const envInfoV3: v2.DeepReadonly<v3.EnvInfoV3> = {
       envName: "dev",
@@ -90,10 +85,7 @@ describe("SQL V3 API", () => {
     };
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
-      graphTokenProvider: new MockedGraphTokenProvider(),
-      sharepointTokenProvider: new MockedSharepointProvider(),
-      m365TokenProvider: new MockM365TokenProvider(),
+      m365TokenProvider: new MockedM365Provider(),
     };
     const envInfoV3: v2.DeepReadonly<v3.EnvInfoV3> = {
       envName: "dev",

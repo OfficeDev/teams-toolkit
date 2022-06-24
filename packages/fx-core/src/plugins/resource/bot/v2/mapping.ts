@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { Platform } from "@microsoft/teamsfx-api";
 import { ServiceType } from "../../../../common/azure-hosting/interfaces";
 import { TemplateProjectsScenarios } from "../constants";
 import {
@@ -9,8 +10,7 @@ import {
   AppServiceOptionItem,
   AppServiceOptionItemForVS,
 } from "../question";
-import { HostTypes } from "../resources/strings";
-import { BicepModules, ProgrammingLanguage, Runtime } from "./enum";
+import { BicepModules, HostType, ProgrammingLanguage, Runtime } from "./enum";
 
 const runtimeMap: Map<ProgrammingLanguage, Runtime> = new Map<ProgrammingLanguage, Runtime>([
   [ProgrammingLanguage.Js, Runtime.Node],
@@ -19,8 +19,8 @@ const runtimeMap: Map<ProgrammingLanguage, Runtime> = new Map<ProgrammingLanguag
 ]);
 
 const serviceMap: Map<string, ServiceType> = new Map<string, ServiceType>([
-  [HostTypes.APP_SERVICE, ServiceType.AppService],
-  [HostTypes.AZURE_FUNCTIONS, ServiceType.Functions],
+  [HostType.AppService, ServiceType.AppService],
+  [HostType.Functions, ServiceType.Functions],
 ]);
 
 const langMap: Map<string, ProgrammingLanguage> = new Map<string, ProgrammingLanguage>([
@@ -48,7 +48,17 @@ const triggerScenariosMap: Map<string, string[]> = new Map<string, string[]>([
   [AppServiceOptionItemForVS.id, [TemplateProjectsScenarios.NOTIFICATION_WEBAPI_SCENARIO_NAME]],
 ]);
 
-const invalidInputMsg = "Invalid bot input";
+const PlatformRuntimeMap: Map<Platform, Runtime> = new Map<Platform, Runtime>([
+  [Platform.VS, Runtime.Dotnet],
+  [Platform.VSCode, Runtime.Node],
+  [Platform.CLI, Runtime.Node],
+  [Platform.CLI_HELP, Runtime.Node],
+]);
+
+function getKeyNotFoundInMapErrorMsg(key: any, map: Map<any, any>) {
+  const mapName = Object.keys({ map })[0];
+  return `The key ${key} is not found in map ${mapName}.`;
+}
 
 const projectFileMap = new Map<Runtime, (appName: string) => string>([
   [Runtime.Node, (_: string) => "package.json"],
@@ -59,12 +69,20 @@ export const moduleMap: { [key: string]: string } = {
   [ServiceType.Functions]: BicepModules.Functions,
 };
 
+export function getPlatformRuntime(platform: Platform): Runtime {
+  const runtime = PlatformRuntimeMap.get(platform);
+  if (runtime) {
+    return runtime;
+  }
+  throw new Error(getKeyNotFoundInMapErrorMsg(platform, PlatformRuntimeMap));
+}
+
 export function getRuntime(lang: ProgrammingLanguage): Runtime {
   const runtime = runtimeMap.get(lang);
   if (runtime) {
     return runtime;
   }
-  throw new Error(invalidInputMsg);
+  throw new Error(getKeyNotFoundInMapErrorMsg(lang, runtimeMap));
 }
 
 export function getServiceType(hostType?: string): ServiceType {
@@ -72,7 +90,7 @@ export function getServiceType(hostType?: string): ServiceType {
   if (serviceType) {
     return serviceType;
   }
-  throw new Error(invalidInputMsg);
+  throw new Error(getKeyNotFoundInMapErrorMsg(hostType, serviceMap));
 }
 
 export function getLanguage(lang?: string): ProgrammingLanguage {
@@ -80,7 +98,7 @@ export function getLanguage(lang?: string): ProgrammingLanguage {
   if (language) {
     return language;
   }
-  throw new Error(invalidInputMsg);
+  throw new Error(getKeyNotFoundInMapErrorMsg(lang, langMap));
 }
 
 export function getTriggerScenarios(trigger: string): string[] {
@@ -88,7 +106,7 @@ export function getTriggerScenarios(trigger: string): string[] {
   if (scenarios) {
     return scenarios;
   }
-  throw new Error(invalidInputMsg);
+  throw new Error(getKeyNotFoundInMapErrorMsg(trigger, triggerScenariosMap));
 }
 
 export function getProjectFileName(runtime: Runtime, appName: string): string {
@@ -96,5 +114,5 @@ export function getProjectFileName(runtime: Runtime, appName: string): string {
   if (projectFileName) {
     return projectFileName(appName);
   }
-  throw new Error(invalidInputMsg);
+  throw new Error(getKeyNotFoundInMapErrorMsg(runtime, projectFileMap));
 }

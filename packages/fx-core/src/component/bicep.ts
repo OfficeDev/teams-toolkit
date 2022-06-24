@@ -117,14 +117,6 @@ export class BicepProvider {
           ctx.tokenProvider.azureAccountProvider
         );
         if (res.isErr()) return err(res.error);
-        // ctx.envInfo.state["azure-web-app"] = ctx.envInfo.state["azure-web-app"] || {};
-        // ctx.envInfo.state["azure-sql"] = ctx.envInfo.state["azure-sql"] || {};
-        // ctx.envInfo.state["azure-web-app"].endpoint = "MockAzureWebAppEndpoint";
-        // ctx.envInfo.state["azure-web-app"].resourceId = "MockAzureWebAppResourceId";
-        // ctx.envInfo.state["azure-web-app"].domain = "MockAzureWebAppDomain";
-        // ctx.envInfo.state["azure-sql"].sqlResourceId = "MockSqlResourceId";
-        // ctx.envInfo.state["azure-sql"].sqlEndpoint = "MockSqlEndpoint";
-        // ctx.envInfo.state["azure-sql"].sqlDatabaseName = "MockSqlDatabaseName";
         return ok([
           {
             type: "service",

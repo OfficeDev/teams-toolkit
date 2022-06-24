@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as fs from "fs-extra";
+import * as path from "path";
+import * as uuid from "uuid";
+
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import {
   ConfigFolderName,
@@ -17,23 +21,27 @@ import {
   StaticPlatforms,
   Tools,
 } from "@microsoft/teamsfx-api";
-import * as fs from "fs-extra";
-import * as path from "path";
-import * as uuid from "uuid";
+
+import { isVSProject, validateProjectSettings } from "../../common/projectSettingsHelper";
+import {
+  Component,
+  sendTelemetryEvent,
+  TelemetryEvent,
+  TelemetryProperty,
+} from "../../common/telemetry";
+import { createV2Context } from "../../common/tools";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { LocalCrypto } from "../crypto";
+import { newEnvInfo } from "../environment";
 import {
   InvalidProjectSettingsFileError,
   NoProjectOpenedError,
   PathNotExistError,
   ReadFileError,
 } from "../error";
+import { globalVars, isV3 } from "../globalVars";
 import { PermissionRequestFileProvider } from "../permissionRequest";
-import { newEnvInfo } from "../environment";
-import { isVSProject, validateProjectSettings } from "../../common/projectSettingsHelper";
 import { CoreHookContext } from "../types";
-import { createV2Context } from "../../common/tools";
-import { globalVars, isV3, isVS } from "../globalVars";
 
 export const ProjectSettingsLoaderMW: Middleware = async (
   ctx: CoreHookContext,
@@ -90,6 +98,9 @@ export async function loadProjectSettings(
     const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
     if (!projectSettings.projectId) {
       projectSettings.projectId = uuid.v4();
+      sendTelemetryEvent(Component.core, TelemetryEvent.FillProjectId, {
+        [TelemetryProperty.ProjectId]: projectSettings.projectId,
+      });
     }
     if (
       !isV3() &&

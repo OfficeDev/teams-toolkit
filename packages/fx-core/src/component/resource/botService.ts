@@ -21,7 +21,7 @@ import fs from "fs-extra";
 import * as path from "path";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
-import { compileHandlebarsTemplateString } from "../../common/tools";
+import { AppStudioScopes, compileHandlebarsTemplateString, GraphScopes } from "../../common/tools";
 import { getTemplatesFolder } from "../../folder";
 import {
   CommonStrings,
@@ -29,7 +29,6 @@ import {
   PluginLocalDebug,
 } from "../../plugins/resource/bot/resources/strings";
 import { CheckThrowSomethingMissing, PreconditionError } from "../../plugins/resource/bot/v3/error";
-import { AzureWebAppResource } from "./azureWebApp";
 import * as uuid from "uuid";
 import { ResourceNameFactory } from "../../plugins/resource/bot/utils/resourceNameFactory";
 import { AzureConstants, MaxLengths } from "../../plugins/resource/bot/constants";
@@ -38,14 +37,11 @@ import { Messages } from "../../plugins/resource/bot/resources/messages";
 import { IBotRegistration } from "../../plugins/resource/bot/appStudio/interfaces/IBotRegistration";
 import { AppStudio } from "../../plugins/resource/bot/appStudio/appStudio";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import {
-  createResourceProviderClient,
-  ensureResourceProvider,
-} from "../../plugins/resource/bot/clientFactory";
 import { ComponentNames } from "../constants";
 import { normalizeName } from "../utils";
 import { getComponent } from "../workflow";
 import * as clientFactory from "../../plugins/resource/bot/clientFactory";
+import { AzureResource } from "./azureResource";
 @Service("bot-service")
 export class BotService implements CloudResource {
   outputs = {
@@ -85,10 +81,10 @@ export class BotService implements CloudResource {
         );
         let module = await fs.readFile(mPath, "utf-8");
         const templateContext: any = {};
-        if (inputs.hosting === "azure-web-app") {
-          const resource = Container.get("azure-web-app") as AzureWebAppResource;
+        try {
+          const resource = Container.get(inputs.hosting) as AzureResource;
           templateContext.endpointVarName = resource.outputs.endpoint.bicepVariable;
-        }
+        } catch {}
         module = compileHandlebarsTemplateString(module, templateContext);
         const orch = await fs.readFile(oPath, "utf-8");
         const bicep: Bicep = {
@@ -209,6 +205,8 @@ export class BotService implements CloudResource {
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         // create bot aad app by API call
         const ctx = context as ProvisionContextV3;
+        const teamsBot = getComponent(ctx.projectSetting, ComponentNames.TeamsBot);
+        if (!teamsBot) return ok([]);
         const plans: Effect[] = [];
         if (ctx.envInfo.envName === "local") {
           plans.push({
@@ -216,18 +214,21 @@ export class BotService implements CloudResource {
             name: "graph.microsoft.com",
             remarks: "update message endpoint in AppStudio",
           });
-          const botConfig = ctx.envInfo.state[ComponentNames.BotService];
-          const appStudioToken = await ctx.tokenProvider.appStudioToken.getAccessToken();
-          CheckThrowSomethingMissing(ConfigNames.LOCAL_ENDPOINT, botConfig.siteEndpoint);
+          const botServiceState = ctx.envInfo.state[ComponentNames.BotService];
+          const teamsBotState = ctx.envInfo.state[ComponentNames.TeamsBot];
+          const appStudioTokenRes = await ctx.tokenProvider.m365TokenProvider.getAccessToken({
+            scopes: AppStudioScopes,
+          });
+          const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
+          CheckThrowSomethingMissing(ConfigNames.LOCAL_ENDPOINT, teamsBotState.endpoint);
           CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
-          CheckThrowSomethingMissing(ConfigNames.LOCAL_BOT_ID, botConfig.botId);
-          const teamsBot = getComponent(ctx.projectSetting, ComponentNames.TeamsBot);
+          CheckThrowSomethingMissing(ConfigNames.LOCAL_BOT_ID, botServiceState.botId);
           const botReg: IBotRegistration = {
-            botId: botConfig.botId,
+            botId: botServiceState.botId,
             name: normalizeName(ctx.projectSetting.appName) + PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
             description: "",
             iconUrl: "",
-            messagingEndpoint: `${teamsBot!.endpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`,
+            messagingEndpoint: `${teamsBotState.endpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`,
             callingEndpoint: "",
           };
           await AppStudio.updateMessageEndpoint(appStudioToken!, botReg.botId!, botReg);
@@ -240,8 +241,11 @@ export class BotService implements CloudResource {
 }
 
 export async function createBotAAD(ctx: ProvisionContextV3): Promise<Result<any, FxError>> {
-  const token = await ctx.tokenProvider.graphTokenProvider.getAccessToken();
-  CheckThrowSomethingMissing(ConfigNames.GRAPH_TOKEN, token);
+  const graphTokenRes = await ctx.tokenProvider.m365TokenProvider.getAccessToken({
+    scopes: GraphScopes,
+  });
+  const graphToken = graphTokenRes.isOk() ? graphTokenRes.value : undefined;
+  CheckThrowSomethingMissing(ConfigNames.GRAPH_TOKEN, graphToken);
   CheckThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, ctx.projectSetting.appName);
   ctx.envInfo.state[ComponentNames.BotService] = ctx.envInfo.state[ComponentNames.BotService] || {};
   const botConfig = ctx.envInfo.state[ComponentNames.BotService];
@@ -257,7 +261,7 @@ export async function createBotAAD(ctx: ProvisionContextV3): Promise<Result<any,
       MaxLengths.AAD_DISPLAY_NAME
     );
     const botAuthCredentials = await AADRegistration.registerAADAppAndGetSecretByGraph(
-      token!,
+      graphToken!,
       aadDisplayName,
       botConfig.objectId,
       botConfig.botId
@@ -284,7 +288,10 @@ export async function createBotRegInAppStudio(
     callingEndpoint: "",
   };
   ctx.logProvider.info(Messages.ProvisioningBotRegistration);
-  const appStudioToken = await ctx.tokenProvider.appStudioToken.getAccessToken();
+  const appStudioTokenRes = await ctx.tokenProvider.m365TokenProvider.getAccessToken({
+    scopes: AppStudioScopes,
+  });
+  const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
   CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
   await AppStudio.createBotRegistration(appStudioToken!, botReg);
   ctx.logProvider.info(Messages.SuccessfullyProvisionedBotRegistration);

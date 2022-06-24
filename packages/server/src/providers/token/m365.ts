@@ -4,16 +4,19 @@
 import { MessageConnection } from "vscode-jsonrpc";
 
 import {
+  err,
   FxError,
   LoginStatus,
   M365TokenProvider,
   NotImplementedError,
+  ok,
   Result,
   TokenRequest,
 } from "@microsoft/teamsfx-api";
 
 import { RequestTypes } from "../../apis";
 import { getResponseWithErrorHandling } from "../../utils";
+import { signedIn } from "../../constant";
 
 export default class ServerM365TokenProvider implements M365TokenProvider {
   private readonly connection: MessageConnection;
@@ -26,9 +29,9 @@ export default class ServerM365TokenProvider implements M365TokenProvider {
     const promise = this.connection.sendRequest(RequestTypes.m365.getAccessToken, tokenRequest);
     const result = await getResponseWithErrorHandling(promise);
     if (result.isErr()) {
-      throw result.error;
+      return err(result.error);
     }
-    return result;
+    return ok(result.value);
   }
 
   async getJsonObject(
@@ -37,18 +40,18 @@ export default class ServerM365TokenProvider implements M365TokenProvider {
     const promise = this.connection.sendRequest(RequestTypes.m365.getJsonObject, tokenRequest);
     const result = await getResponseWithErrorHandling(promise);
     if (result.isErr()) {
-      throw result.error;
+      return err(result.error);
     }
-    return result;
+    return ok(JSON.parse(result.value));
   }
 
   async getStatus(tokenRequest: TokenRequest): Promise<Result<LoginStatus, FxError>> {
     const promise = this.connection.sendRequest(RequestTypes.m365.getStatus, tokenRequest);
     const result = await getResponseWithErrorHandling(promise);
     if (result.isErr()) {
-      throw result.error;
+      return err(result.error);
     }
-    return result;
+    return ok(result.value);
   }
 
   async signout(): Promise<boolean> {

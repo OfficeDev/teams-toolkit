@@ -38,7 +38,7 @@ import {
   ProjectSettingKey,
 } from "../commonlib/constants";
 import { environmentManager } from "@microsoft/teamsfx-core";
-import appStudioLogin from "../../src/commonlib/appStudioLogin";
+import m365Login from "../../src/commonlib/m365Login";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 import { getWebappServicePlan } from "../commonlib/utilities";
 
@@ -92,6 +92,10 @@ export function getAppNamePrefix() {
 
 export function getUniqueAppName() {
   return getAppNamePrefix() + Date.now().toString() + uuidv4().slice(0, 2);
+}
+
+export function convertToAlphanumericOnly(appName: string): string {
+  return appName.replace(/[^\da-zA-Z]/g, "");
 }
 
 export function getSubscriptionId() {
@@ -526,7 +530,7 @@ export async function customizeBicepFilesToCustomizedRg(
 export async function validateTabAndBotProjectProvision(projectPath: string, env: string) {
   const context = await readContextMultiEnv(projectPath, env);
   // Validate Aad App
-  const aad = AadValidator.init(context, false, appStudioLogin);
+  const aad = AadValidator.init(context, false, m365Login);
   await AadValidator.validate(aad);
 
   // Validate Tab Frontend

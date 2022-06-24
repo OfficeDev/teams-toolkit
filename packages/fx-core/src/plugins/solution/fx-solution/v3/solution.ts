@@ -3,12 +3,12 @@
 
 import { hooks } from "@feathersjs/hooks";
 import {
-  AppStudioTokenProvider,
   err,
   Func,
   FxError,
   Inputs,
   Json,
+  M365TokenProvider,
   NotImplementedError,
   Result,
   TokenProvider,
@@ -69,7 +69,7 @@ export class TeamsFxAzureSolution implements v3.ISolution {
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-    tokenProvider: AppStudioTokenProvider,
+    tokenProvider: M365TokenProvider,
     telemetryProps?: Json
   ): Promise<Result<Void, FxError>> {
     return publishApplication(ctx, inputs, envInfo, tokenProvider, telemetryProps);

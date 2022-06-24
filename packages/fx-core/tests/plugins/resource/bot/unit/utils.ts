@@ -6,11 +6,11 @@ import {
   PluginContext,
   LogLevel,
   Platform,
-  GraphTokenProvider,
   Inputs,
   AzureSolutionSettings,
   TelemetryReporter,
   CryptoProvider,
+  TokenRequest,
 } from "@microsoft/teamsfx-api";
 import { ResourceGroups, ResourceManagementClientContext } from "@azure/arm-resources";
 import { ServiceClientCredentials } from "@azure/ms-rest-js";
@@ -232,22 +232,30 @@ export function newPluginContext(): PluginContext {
       },
     },
     cryptoProvider: new LocalCrypto(""),
-    graphTokenProvider: mockTokenProviderGraph(),
-    appStudioToken: {
-      getAccessToken: (showDialog?: boolean) => {
-        return Promise.resolve(undefined);
+    m365TokenProvider: {
+      getAccessToken: (tokenRequest: TokenRequest) => {
+        return Promise.resolve(ok("fakeToken"));
       },
-      getJsonObject: (showDialog?: boolean) => {
-        return Promise.resolve(undefined);
+      getJsonObject: (tokenRequest: TokenRequest) => {
+        return Promise.resolve(ok({}));
       },
-      signout: () => {
-        return Promise.resolve(true);
-      },
-      setStatusChangeMap: (name: string, anything) => {
-        return Promise.resolve(true);
+      getStatus: (tokenRequest: TokenRequest) => {
+        return Promise.resolve(ok({ status: "SignedIn" }));
       },
       removeStatusChangeMap: (name: string) => {
-        return Promise.resolve(true);
+        return Promise.resolve(ok(true));
+      },
+      setStatusChangeMap: (
+        name: string,
+        tokenRequest: TokenRequest,
+        statusChange: (
+          status: string,
+          token?: string,
+          accountInfo?: Record<string, unknown>
+        ) => Promise<void>,
+        immediateCall?: boolean
+      ) => {
+        return Promise.resolve(ok(true));
       },
     },
     azureAccountProvider: {
@@ -330,17 +338,6 @@ export function newInputV2(): Inputs {
     [QuestionNames.BOT_HOST_TYPE_TRIGGER]: [FunctionsHttpTriggerOptionItem.id],
     [AzureSolutionQuestionNames.Scenarios]: [BotScenario.NotificationBot],
   };
-}
-
-export function mockTokenProviderGraph(): GraphTokenProvider {
-  const provider = <GraphTokenProvider>{};
-  const mockTokenObject = {
-    tid: faker.datatype.uuid(),
-  };
-
-  provider.getAccessToken = sinon.stub().returns("token");
-  provider.getJsonObject = sinon.stub().returns(mockTokenObject);
-  return provider;
 }
 
 export function genTomorrow(): number {

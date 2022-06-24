@@ -18,7 +18,7 @@ import {
   setSimpleAuthSkuNameToB1Bicep,
   readContextMultiEnv,
 } from "../commonUtils";
-import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
+import M365Login from "../../../src/commonlib/m365Login";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource, ResourceToDeploy } from "../../commonlib/constants";
 import { describe } from "mocha";
@@ -73,7 +73,7 @@ describe("Test Add Function", function () {
 
     // Validate provision
     // Validate Aad App
-    const aad = AadValidator.init(context, false, AppStudioLogin);
+    const aad = AadValidator.init(context, false, M365Login);
     await AadValidator.validate(aad);
 
     // Validate Function App

@@ -5,7 +5,7 @@ var resourceBaseName = provisionParameters.resourceBaseName
 var serverfarmsName = contains(provisionParameters, 'webAppServerfarmsName') ? provisionParameters['webAppServerfarmsName'] : '${resourceBaseName}webApp' // Try to read name for App Service Plan from parameters
 var webAppSKU = contains(provisionParameters, 'webAppSKU') ? provisionParameters['webAppSKU'] : 'F1' // Try to read SKU for Azure Web App from parameters
 var webAppName = contains(provisionParameters, 'webAppSitesName') ? provisionParameters['webAppSitesName'] : '${resourceBaseName}webApp' // Try to read name for Azure Web App from parameters
- 
+
 // Compute resources for your Web App
 resource serverfarm 'Microsoft.Web/serverfarms@2021-02-01' = {
   kind: 'app'
@@ -25,14 +25,21 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
     serverFarmId: serverfarm.id
     siteConfig: {
       appSettings: [
-        {
-          name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
-          value: 'true' // Execute build steps on your site during deployment
-        }
+        {{#if (contains "node" configs)}}
         {
           name: 'WEBSITE_NODE_DEFAULT_VERSION'
           value: '~14' // Set NodeJS version to 14.x for your site
         }
+        {
+          name: 'SCM_SCRIPT_GENERATOR_ARGS'
+          value: '--node' // Register as node server
+        }
+        {{else}}
+        {
+          name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
+          value: 'true' // Execute build steps on your site during deployment
+        }
+        {{/if}}
         {
           name: 'RUNNING_ON_AZURE'
           value: '1'

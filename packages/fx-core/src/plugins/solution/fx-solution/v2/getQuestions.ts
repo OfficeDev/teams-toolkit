@@ -72,6 +72,7 @@ import {
   canAddCICDWorkflows,
   isAadManifestEnabled,
   isDeployManifestEnabled,
+  AppStudioScopes,
 } from "../../../../common/tools";
 import {
   isBotNotificationEnabled,
@@ -529,7 +530,10 @@ export async function getQuestions(
     }
   } else if (stage === Stage.grantPermission) {
     if (isDynamicQuestion) {
-      const jsonObject = await tokenProvider.appStudioToken.getJsonObject();
+      const jsonObjectRes = await tokenProvider.m365TokenProvider.getJsonObject({
+        scopes: AppStudioScopes,
+      });
+      const jsonObject = jsonObjectRes.isOk() ? jsonObjectRes.value : undefined;
       node.addChild(new QTreeNode(getUserEmailQuestion((jsonObject as any).upn)));
     }
   }

@@ -9,9 +9,14 @@ export enum ProgrammingLanguage {
 
 export enum Runtime {
   Node = "node",
-  Dotnet = "csharp",
+  Dotnet = "dotnet",
 }
 
 export enum BicepModules {
   Functions = "botFunction",
+}
+
+export enum HostType {
+  AppService = "app-service",
+  Functions = "azure-functions",
 }

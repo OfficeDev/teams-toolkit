@@ -22,6 +22,7 @@ import {
   Void,
   Inputs,
   Platform,
+  M365TokenProvider,
 } from "@microsoft/teamsfx-api";
 import axios from "axios";
 import { exec, ExecOptions } from "child_process";
@@ -381,13 +382,6 @@ export function getResourceGroupInPortal(
   } else {
     return undefined;
   }
-}
-
-/**
- * @deprecated Please DO NOT use this method any more, it will be removed in near future.
- */
-export function isMultiEnvEnabled(): boolean {
-  return true;
 }
 
 // TODO: move other feature flags to featureFlags.ts to prevent import loop
@@ -931,4 +925,21 @@ export async function getSPFxTenant(graphToken: string): Promise<string> {
     return response.data.webUrl;
   }
   return "";
+}
+
+export async function getSPFxToken(
+  m365TokenProvider: M365TokenProvider
+): Promise<string | undefined> {
+  const graphTokenRes = await m365TokenProvider.getAccessToken({
+    scopes: GraphReadUserScopes,
+  });
+  let spoToken = undefined;
+  if (graphTokenRes && graphTokenRes.isOk()) {
+    const tenant = await getSPFxTenant(graphTokenRes.value);
+    const spfxTokenRes = await m365TokenProvider.getAccessToken({
+      scopes: SPFxScopes(tenant),
+    });
+    spoToken = spfxTokenRes.isOk() ? spfxTokenRes.value : undefined;
+  }
+  return spoToken;
 }

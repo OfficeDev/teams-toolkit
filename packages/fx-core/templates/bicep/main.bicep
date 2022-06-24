@@ -9,7 +9,7 @@ module provision './provision.bicep' = {
 }
 output provisionOutput object = provision
 module config './config.bicep' = {
-  name: 'config'
+  name: 'configureResources'
   params: {
     provisionParameters: provisionParameters
     provisionOutputs: provision

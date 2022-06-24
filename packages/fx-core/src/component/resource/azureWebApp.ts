@@ -2,24 +2,33 @@
 // Licensed under the MIT license.
 
 import {
-  FxError,
-  ok,
-  Result,
   Action,
-  Bicep,
-  CloudResource,
+  Component,
   ContextV3,
-  MaybePromise,
+  FxError,
   InputsWithProjectPath,
+  MaybePromise,
+  ok,
+  ProvisionContextV3,
+  Result,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
-import "reflect-metadata";
 import { Service } from "typedi";
-import { getTemplatesFolder } from "../../folder";
+import { azureWebSiteDeploy } from "../../common/azure-hosting/utils";
+import { Messages } from "../../plugins/resource/bot/resources/messages";
+import * as utils from "../../plugins/resource/bot/utils/common";
+import { getLanguage, getRuntime } from "../../plugins/resource/bot/v2/mapping";
+import {
+  CheckThrowSomethingMissing,
+  PackDirectoryExistenceError,
+  PreconditionError,
+} from "../../plugins/resource/bot/v3/error";
+import { AzureResource } from "./azureResource";
 @Service("azure-web-app")
-export class AzureWebAppResource implements CloudResource {
+export class AzureWebAppResource extends AzureResource {
   readonly name = "azure-web-app";
+  readonly bicepModuleName = "azureWebApp";
   readonly outputs = {
     resourceId: {
       key: "resourceId",
@@ -33,53 +42,23 @@ export class AzureWebAppResource implements CloudResource {
       key: "endpoint",
       bicepVariable: "provisionOutputs.azureWebAppOutput.value.endpoint",
     },
+    appName: {
+      key: "appName",
+      bicepVariable: "provisionOutputs.azureWebAppOutput.value.appName",
+    },
   };
   readonly finalOutputKeys = ["resourceId", "endpoint"];
   generateBicep(
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const action: Action = {
-      name: "azure-web-app.generateBicep",
-      type: "function",
-      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const bicep: Bicep = {
-          type: "bicep",
-          Provision: {
-            Modules: { azureWebApp: "1" },
-            Orchestration: "1",
-          },
-          Parameters: {},
-        };
-        return ok([bicep]);
-      },
-      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const pmPath = path.join(
-          getTemplatesFolder(),
-          "bicep",
-          "azureWebApp.provision.module.bicep"
-        );
-        const poPath = path.join(
-          getTemplatesFolder(),
-          "bicep",
-          "azureWebApp.provision.orchestration.bicep"
-        );
-        const provisionModule = await fs.readFile(pmPath, "utf-8");
-        const ProvisionOrch = await fs.readFile(poPath, "utf-8");
-        const bicep: Bicep = {
-          type: "bicep",
-          Provision: {
-            Modules: { azureWebApp: provisionModule },
-            Orchestration: ProvisionOrch,
-          },
-          Parameters: await fs.readJson(
-            path.join(getTemplatesFolder(), "bicep", "azureWebApp.parameters.json")
-          ),
-        };
-        return ok([bicep]);
-      },
+    this.getTemplateContext = (context, inputs) => {
+      const configs: string[] = [];
+      configs.push(getRuntime(getLanguage(context.projectSetting.programmingLanguage)));
+      this.templateContext.configs = configs;
+      return this.templateContext;
     };
-    return ok(action);
+    return super.generateBicep(context, inputs);
   }
   deploy(
     context: ContextV3,
@@ -93,22 +72,43 @@ export class AzureWebAppResource implements CloudResource {
           {
             type: "service",
             name: "azure",
-            remarks: `deploy azure web app in folder: ${path.join(
-              inputs.projectPath,
-              inputs["azure-web-app"].folder
-            )}`,
+            remarks: `deploy azure web app in folder: ${inputs.projectPath}`,
           },
         ]);
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+        const ctx = context as ProvisionContextV3;
+        ctx.logProvider.info(Messages.DeployingBot);
+        // Preconditions checking.
+        const codeComponent = inputs.code as Component;
+        if (!inputs.projectPath || !codeComponent?.artifactFolder) {
+          throw new PreconditionError(Messages.WorkingDirIsMissing, []);
+        }
+        const publishDir = path.join(inputs.projectPath, codeComponent.artifactFolder);
+        const packDirExisted = await fs.pathExists(publishDir);
+        if (!packDirExisted) {
+          throw new PackDirectoryExistenceError();
+        }
+
+        const webAppState = ctx.envInfo.state[this.name];
+        CheckThrowSomethingMissing(
+          this.outputs.endpoint.key,
+          webAppState[this.outputs.endpoint.key]
+        );
+        CheckThrowSomethingMissing(
+          this.outputs.resourceId.key,
+          webAppState[this.outputs.resourceId.key]
+        );
+        const resourceId = webAppState[this.outputs.resourceId.key];
+
+        const zipBuffer = await utils.zipFolderAsync(publishDir, "");
+
+        await azureWebSiteDeploy(resourceId, ctx.tokenProvider, zipBuffer);
         return ok([
           {
             type: "service",
             name: "azure",
-            remarks: `deploy azure web app in folder: ${path.join(
-              inputs.projectPath,
-              inputs["azure-web-app"].folder
-            )}`,
+            remarks: `deploy azure web app in folder: ${publishDir}`,
           },
         ]);
       },

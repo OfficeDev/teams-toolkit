@@ -5,6 +5,7 @@
  * @author Xiaofu Huang <xiaofhua@microsoft.com>
  */
 
+import { Runtime } from "../../commonlib/constants";
 import { happyPathTest } from "./CommandBotHappyPathCommon";
 
-happyPathTest("nodejs");
+happyPathTest(Runtime.Node);

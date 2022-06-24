@@ -109,6 +109,28 @@ export function NpmNotFoundError(): SystemError {
   );
 }
 
+export function NpmVersionNotSupportedError(version: string): SystemError {
+  return new SystemError(
+    Constants.PLUGIN_NAME,
+    "NpmVersionNotSupported",
+    getDefaultString("plugins.spfx.error.npmVersionNotSupported", version, Constants.SPFX_VERSION),
+    getLocalizedString("plugins.spfx.error.npmVersionNotSupported", version, Constants.SPFX_VERSION)
+  );
+}
+
+export function NodeVersionNotSupportedError(version: string): SystemError {
+  return new SystemError(
+    Constants.PLUGIN_NAME,
+    "NodeVersionNotSupported",
+    getDefaultString("plugins.spfx.error.nodeVersionNotSupported", version, Constants.SPFX_VERSION),
+    getLocalizedString(
+      "plugins.spfx.error.nodeVersionNotSupported",
+      version,
+      Constants.SPFX_VERSION
+    )
+  );
+}
+
 export function NpmInstallError(error: Error): SystemError {
   return new SystemError(
     Constants.PLUGIN_NAME,

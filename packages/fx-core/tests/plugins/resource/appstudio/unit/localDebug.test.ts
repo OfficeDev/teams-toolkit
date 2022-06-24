@@ -21,7 +21,6 @@ import {
   TEAMS_APP_ID,
 } from "./../../../../../src/plugins/solution/fx-solution/constants";
 import {
-  AppStudioTokenProvider,
   ConfigMap,
   PluginContext,
   TeamsAppManifest,
@@ -39,45 +38,8 @@ import {
   LocalSettingsFrontendKeys,
   LocalSettingsTeamsAppKeys,
 } from "../../../../../src/common/localSettingsConstants";
-import { getAzureProjectRoot } from "../helper";
+import { getAzureProjectRoot, MockedM365TokenProvider } from "../helper";
 import { ResourcePlugins } from "../../../../../src/common/constants";
-
-class MockedAppStudioTokenProvider implements AppStudioTokenProvider {
-  async getAccessToken(showDialog?: boolean): Promise<string> {
-    return "someFakeToken";
-  }
-  async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
-    return {
-      tid: "222",
-    };
-  }
-  signout(): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-  setStatusChangeCallback(
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>
-  ): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-  setStatusChangeMap(
-    name: string,
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>,
-    immediateCall?: boolean
-  ): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-  removeStatusChangeMap(name: string): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-}
 
 describe("Post Local Debug", () => {
   let plugin: AppStudioPlugin;
@@ -142,8 +104,6 @@ describe("Post Local Debug", () => {
     configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
     configOfOtherPlugins.set(PluginNames.APPST, APPSTUDIO_ConfigMap);
     configOfOtherPlugins.set(PluginNames.FE, FE_ConfigMap);
-
-    sandbox.stub(AppStudioClient, "validateManifest").resolves([]);
   });
 
   afterEach(() => {
@@ -155,7 +115,7 @@ describe("Post Local Debug", () => {
       root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
+      m365TokenProvider: new MockedM365TokenProvider(),
       cryptoProvider: new LocalCrypto(""),
       localSettings,
     };
@@ -188,7 +148,7 @@ describe("Post Local Debug", () => {
       root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
+      m365TokenProvider: new MockedM365TokenProvider(),
       cryptoProvider: new LocalCrypto(""),
       localSettings,
     };
@@ -244,7 +204,7 @@ describe("Post Local Debug", () => {
       root: "./tests/plugins/resource/appstudio/spfx-resources/",
       envInfo: newEnvInfo(),
       config: new ConfigMap(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
+      m365TokenProvider: new MockedM365TokenProvider(),
       cryptoProvider: new LocalCrypto(""),
       localSettings,
     };

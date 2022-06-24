@@ -3,10 +3,9 @@
 
 "use strict";
 
-import axios, { AxiosRequestConfig } from "axios";
 import dotenv from "dotenv";
-import qs from "querystring";
 
+import * as msal from "@azure/msal-node";
 import {
   M365TokenProvider,
   LogLevel,
@@ -29,6 +28,13 @@ dotenv.config();
 const user = cfg.M365_ACCOUNT_NAME;
 const password = cfg.M365_ACCOUNT_PASSWORD;
 
+const msalConfig = {
+  auth: {
+    clientId: cfg.client_id,
+    authority: `https://login.microsoftonline.com/${cfg.M365_TENANT_ID || "organizations"}`,
+  },
+};
+
 export class M365ProviderUserPassword implements M365TokenProvider {
   private static instance: M365ProviderUserPassword;
 
@@ -45,28 +51,17 @@ export class M365ProviderUserPassword implements M365TokenProvider {
    * Get team access token
    */
   async getAccessToken(tokenRequest: TokenRequest): Promise<Result<string, FxError>> {
-    const data = qs.stringify({
-      client_id: cfg.client_id,
-      scope: tokenRequest.scopes,
-      username: user,
-      password: password,
-      grant_type: "password",
-    });
+    const pca = new msal.PublicClientApplication(msalConfig);
 
-    const config: AxiosRequestConfig = {
-      method: "post",
-      url: `https://login.microsoftonline.com/${
-        cfg.M365_TENANT_ID || "organizations"
-      }/oauth2/v2.0/token`,
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      data: data,
+    const usernamePasswordRequest = {
+      scopes: tokenRequest.scopes,
+      username: user!,
+      password: password!,
     };
-
-    await axios(config)
-      .then((r: any) => {
-        M365ProviderUserPassword.accessToken = r.data.access_token;
+    await pca
+      .acquireTokenByUsernamePassword(usernamePasswordRequest)
+      .then((response) => {
+        M365ProviderUserPassword.accessToken = response!.accessToken;
       })
       .catch((e: any) => {
         CLILogProvider.necessaryLog(LogLevel.Error, JSON.stringify(e, undefined, 4));
@@ -121,6 +116,10 @@ export class M365ProviderUserPassword implements M365TokenProvider {
     throw new Error("Method not implemented.");
   }
   removeStatusChangeMap(name: string): Promise<Result<boolean, FxError>> {
+    throw new Error("Method not implemented.");
+  }
+
+  async signout(): Promise<boolean> {
     throw new Error("Method not implemented.");
   }
 }

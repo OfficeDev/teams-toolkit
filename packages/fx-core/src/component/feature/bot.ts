@@ -3,6 +3,7 @@
 
 import {
   Action,
+  CallAction,
   ContextV3,
   FxError,
   GroupAction,
@@ -14,15 +15,20 @@ import {
 import "reflect-metadata";
 import { Service } from "typedi";
 import { getProjectSettingsPath } from "../../core/middleware/projectSettingsLoader";
-import { CommandAndResponseOptionItem, NotificationOptionItem } from "../../plugins";
+import {
+  CommandAndResponseOptionItem,
+  NotificationOptionItem,
+} from "../../plugins/solution/fx-solution/question";
 import { QuestionNames, TemplateProjectsScenarios } from "../../plugins/resource/bot/constants";
 import {
   AppServiceOptionItem,
+  AppServiceOptionItemForVS,
   FunctionsHttpTriggerOptionItem,
   FunctionsTimerTriggerOptionItem,
 } from "../../plugins/resource/bot/question";
 import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "../projectSettingsManager";
 import { getComponent } from "../workflow";
+import { CoreQuestionNames } from "../../core/question";
 import "../code/botCode";
 import "../resource/appManifest/appManifest";
 import "../resource/botService";
@@ -65,8 +71,11 @@ export class TeamsBot {
     if (feature === NotificationOptionItem.id) {
       if (triggers.includes(AppServiceOptionItem.id)) {
         scenarios.push(TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME);
+      } else if (triggers.includes(AppServiceOptionItemForVS.id)) {
+        scenarios.push(TemplateProjectsScenarios.NOTIFICATION_WEBAPI_SCENARIO_NAME);
       } else {
         inputs.hosting = "azure-function";
+        scenarios.push(TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME);
         if (triggers.includes(FunctionsHttpTriggerOptionItem.id)) {
           scenarios.push(
             TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_HTTP_SCENARIO_NAME
@@ -128,6 +137,7 @@ export class TeamsBot {
               `connect 'azure-sql' to hosting component '${inputs.hosting}' in projectSettings`
             );
           }
+          projectSettings.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
           return ok([
             {
               type: "file",
@@ -176,8 +186,14 @@ export class TeamsBot {
         required: true,
         targetAction: "app-manifest.addCapability",
         inputs: {
-          capability: { name: "Bot" },
+          capabilities: [{ name: "Bot" }],
         },
+      },
+      {
+        name: "call:debug.generateLocalDebugSettings",
+        type: "call",
+        required: true,
+        targetAction: "debug.generateLocalDebugSettings",
       },
       WriteProjectSettingsAction,
     ];
@@ -188,5 +204,17 @@ export class TeamsBot {
       actions: actions,
     };
     return ok(group);
+  }
+  build(
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const action: CallAction = {
+      name: "teams-bot.build",
+      type: "call",
+      targetAction: "bot-code.build",
+      required: true,
+    };
+    return ok(action);
   }
 }

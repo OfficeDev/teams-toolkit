@@ -20,7 +20,7 @@ import { TaskResult } from "./task";
 import cliLogger from "../../commonlib/log";
 import { TaskFailed } from "./errors";
 import cliTelemetry, { CliTelemetry } from "../../telemetry/cliTelemetry";
-import AppStudioTokenInstance from "../../commonlib/appStudioLogin";
+import M365TokenInstance from "../../commonlib/m365Login";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -29,6 +29,7 @@ import {
 import { ServiceLogWriter } from "./serviceLogWriter";
 import open from "open";
 import {
+  AppStudioScopes,
   environmentManager,
   getResourceGroupInPortal,
   isConfigUnifyEnabled,
@@ -314,7 +315,8 @@ export async function generateAccountHint(
   let tenantId = undefined,
     loginHint = undefined;
   try {
-    const tokenObject = (await AppStudioTokenInstance.getStatus())?.accountInfo;
+    const tokenObjectRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+    const tokenObject = tokenObjectRes.isOk() ? tokenObjectRes.value.accountInfo : undefined;
     if (tokenObject) {
       // user signed in
       tenantId = tokenObject.tid;

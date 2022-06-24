@@ -3,8 +3,7 @@
 import * as utils from "./utils/common";
 import { ProgrammingLanguage } from "./enums/programmingLanguage";
 import { TemplateProjectsScenarios, TriggerTemplateScenarioMappings } from "./constants";
-import { Commands, HostTypes } from "./resources/strings";
-
+import { Commands } from "./resources/strings";
 import * as appService from "@azure/arm-appservice";
 import { NameValuePair } from "@azure/arm-appservice/esm/models";
 import { CommandExecutionError, TemplateZipFallbackError, UnzipError } from "./errors";
@@ -20,6 +19,7 @@ import {
 import { TeamsBotConfig } from "./configs/teamsBotConfig";
 import { PluginActRoles } from "./enums/pluginActRoles";
 import * as path from "path";
+import { HostType } from "./v2/enum";
 
 export class LanguageStrategy {
   public static async scaffoldProject(
@@ -156,7 +156,7 @@ export class LanguageStrategy {
     config: TeamsBotConfig
   ): TemplateProjectsScenarios {
     if (config.actRoles.includes(PluginActRoles.Notification)) {
-      if (config.scaffold.hostType === HostTypes.APP_SERVICE) {
+      if (config.scaffold.hostType === HostType.AppService) {
         return TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME;
       } else {
         return TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME;

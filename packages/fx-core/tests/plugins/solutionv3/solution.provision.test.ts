@@ -11,6 +11,7 @@ import {
   Result,
   SubscriptionInfo,
   TokenProvider,
+  TokenRequest,
   v2,
   v3,
 } from "@microsoft/teamsfx-api";
@@ -24,17 +25,11 @@ import {
   getQuestionsForProvision,
   provisionResources,
 } from "../../../src/plugins/solution/fx-solution/v3/provision";
-import {
-  MockedAppStudioTokenProvider,
-  MockedAzureAccountProvider,
-  MockedGraphTokenProvider,
-  MockedSharepointProvider,
-  MockedV2Context,
-} from "../solution/util";
+import { MockedM365Provider, MockedAzureAccountProvider, MockedV2Context } from "../solution/util";
 import { MockFeaturePluginNames } from "./mockPlugins";
 import * as path from "path";
 import * as os from "os";
-import { MockM365TokenProvider, randomAppName } from "../../core/utils";
+import { randomAppName } from "../../core/utils";
 import { resourceGroupHelper } from "../../../src/plugins/solution/fx-solution/utils/ResourceGroupHelper";
 import { ResourceManagementClient } from "@azure/arm-resources";
 import * as appStudio from "../../../src/component/resource/appManifest/appStudio";
@@ -98,10 +93,7 @@ describe("SolutionV3 - provision", () => {
     };
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
-      graphTokenProvider: new MockedGraphTokenProvider(),
-      sharepointTokenProvider: new MockedSharepointProvider(),
-      m365TokenProvider: new MockM365TokenProvider(),
+      m365TokenProvider: new MockedM365Provider(),
     };
     const mockSub: SubscriptionInfo = {
       subscriptionId: "mockSubId",
@@ -114,10 +106,12 @@ describe("SolutionV3 - provision", () => {
         return [mockSub];
       });
     sandbox
-      .stub<any, any>(mockedTokenProvider.appStudioToken, "getJsonObject")
-      .callsFake(async (showDialog?: boolean): Promise<Record<string, unknown> | undefined> => {
-        return { tid: "mock-tenant-id" };
-      });
+      .stub<any, any>(mockedTokenProvider.m365TokenProvider, "getJsonObject")
+      .callsFake(
+        async (tokenRequest: TokenRequest): Promise<Result<Record<string, unknown>, FxError>> => {
+          return ok({ tid: "mock-tenant-id" });
+        }
+      );
     sandbox
       .stub<any, any>(ctx.userInteraction, "showMessage")
       .callsFake(
@@ -164,10 +158,7 @@ describe("SolutionV3 - provision", () => {
     };
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
-      graphTokenProvider: new MockedGraphTokenProvider(),
-      sharepointTokenProvider: new MockedSharepointProvider(),
-      m365TokenProvider: new MockM365TokenProvider(),
+      m365TokenProvider: new MockedM365Provider(),
     };
     const envInfoV3: v2.DeepReadonly<v3.EnvInfoV3> = {
       envName: "dev",

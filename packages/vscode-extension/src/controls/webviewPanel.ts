@@ -3,6 +3,7 @@
 
 import { Inputs, Stage } from "@microsoft/teamsfx-api";
 import {
+  AppStudioScopes,
   Correlator,
   globalStateGet,
   globalStateUpdate,
@@ -16,10 +17,8 @@ import { glob } from "glob";
 import * as path from "path";
 import * as uuid from "uuid";
 import * as vscode from "vscode";
-import AppStudioTokenInstance from "../commonlib/appStudioLogin";
+import M365TokenInstance from "../commonlib/m365Login";
 import AzureAccountManager from "../commonlib/azureLogin";
-import GraphTokenInstance from "../commonlib/graphLogin";
-import SharepointTokenInstance from "../commonlib/sharepointLogin";
 import { GlobalKey } from "../constants";
 import * as globalVariables from "../globalVariables";
 import { downloadSample, getSystemInputs } from "../handlers";
@@ -110,7 +109,7 @@ export class WebviewPanel {
                 [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
                 [TelemetryProperty.AccountType]: AccountType.M365,
               });
-              await AppStudioTokenInstance.getJsonObject(false);
+              await M365TokenInstance.getJsonObject({ scopes: AppStudioScopes });
             });
             break;
           case Commands.SigninAzure:
@@ -239,9 +238,11 @@ export class WebviewPanel {
       return Promise.resolve();
     };
 
-    AppStudioTokenInstance.setStatusChangeMap("quick-start-webview", m365WebviewCallback);
-    SharepointTokenInstance.setStatusChangeMap("quick-start-webview", m365WebviewCallback);
-    GraphTokenInstance.setStatusChangeMap("quick-start-webview", m365WebviewCallback);
+    M365TokenInstance.setStatusChangeMap(
+      "quick-start-webview",
+      { scopes: AppStudioScopes },
+      m365WebviewCallback
+    );
 
     AzureAccountManager.setStatusChangeMap(
       "quick-start-webview",
@@ -393,8 +394,6 @@ export class WebviewPanel {
 
   public dispose() {
     WebviewPanel.currentPanels.splice(WebviewPanel.currentPanels.indexOf(this), 1);
-
-    AppStudioTokenInstance.removeStatusChangeMap("quick-start-webview");
 
     AzureAccountManager.removeStatusChangeMap("quick-start-webview");
 

@@ -10,15 +10,17 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "hotReloadProfile": "aspnetcore"
-    },
-    "{{ProjectName}}": {
-      "commandName": "Project",
-      "dotnetRunMessages": "true",
-      "applicationUrl": "https://localhost:7130;http://localhost:5130",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "hotReloadProfile": "aspnetcore"
     }
+    //// Uncomment following profile to debug project only (without launching Teams)
+    //,
+    //"{{ProjectName}}": {
+    //  "commandName": "Project",
+    //  "dotnetRunMessages": "true",
+    //  "applicationUrl": "https://localhost:7130;http://localhost:5130",
+    //  "environmentVariables": {
+    //    "ASPNETCORE_ENVIRONMENT": "Development"
+    //  },
+    //  "hotReloadProfile": "aspnetcore"
+    //}
   }
 }

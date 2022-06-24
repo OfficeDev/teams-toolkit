@@ -4,20 +4,20 @@ import "mocha";
 import * as chai from "chai";
 
 import { convertToConstValues } from "../../../../../src/plugins/resource/bot/utils/common";
-import { HostTypes } from "../../../../../src/plugins/resource/bot/resources/strings";
+import { BotCapabilities } from "../../../../../src/plugins/resource/bot/resources/strings";
 
 describe("#convertToConstValues", () => {
-  describe("Host Type", () => {
+  describe("bot capabilities", () => {
     it("undefined", () => {
-      chai.assert.equal(convertToConstValues(undefined, HostTypes), undefined);
+      chai.assert.equal(convertToConstValues(undefined, BotCapabilities), undefined);
     });
     it("error type", () => {
-      chai.assert.equal(convertToConstValues("error-type", HostTypes), undefined);
+      chai.assert.equal(convertToConstValues("error-type", BotCapabilities), undefined);
     });
-    it("azure-functions", () => {
+    it("notification", () => {
       chai.assert.equal(
-        convertToConstValues("azure-functions", HostTypes),
-        HostTypes.AZURE_FUNCTIONS
+        convertToConstValues("notification", BotCapabilities),
+        BotCapabilities.NOTIFICATION
       );
     });
   });

@@ -13,13 +13,11 @@ import {
 } from "../../../../src/plugins/solution/fx-solution/v3/constants";
 import { Container } from "typedi";
 import {
-  MockedAppStudioTokenProvider,
   MockedAzureAccountProvider,
-  MockedGraphTokenProvider,
-  MockedSharepointProvider,
+  MockedM365Provider,
   MockedV2Context,
 } from "../../solution/util";
-import { MockM365TokenProvider, randomAppName } from "../../../core/utils";
+import { randomAppName } from "../../../core/utils";
 describe("APIM V3 API", () => {
   it("getQuestionsForDeploy", async () => {
     const projectSettings: ProjectSettings = {
@@ -41,10 +39,7 @@ describe("APIM V3 API", () => {
     };
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
-      graphTokenProvider: new MockedGraphTokenProvider(),
-      sharepointTokenProvider: new MockedSharepointProvider(),
-      m365TokenProvider: new MockM365TokenProvider(),
+      m365TokenProvider: new MockedM365Provider(),
     };
     const envInfoV3: v2.DeepReadonly<v3.EnvInfoV3> = {
       envName: "dev",

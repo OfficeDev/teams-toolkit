@@ -26,8 +26,7 @@ import {
 import * as sinon from "sinon";
 import { GLOBAL_CONFIG, SolutionError } from "../../../src/plugins/solution/fx-solution/constants";
 import {
-  MockedAppStudioProvider,
-  MockedSharepointProvider,
+  MockedM365Provider,
   MockedV2Context,
   mockPublishThatAlwaysSucceed,
   mockV2PublishThatAlwaysSucceed,
@@ -67,7 +66,7 @@ import "../../../src/plugins/resource/bot/v2";
 import { newEnvInfo } from "../../../src";
 import fs from "fs-extra";
 import { ProgrammingLanguage } from "../../../src/plugins/resource/bot/enums/programmingLanguage";
-import { MockGraphTokenProvider, MockM365TokenProvider, randomAppName } from "../../core/utils";
+import { randomAppName } from "../../core/utils";
 import { createEnv } from "../../../src/plugins/solution/fx-solution/v2/createEnv";
 import { ScaffoldingContextAdapter } from "../../../src/plugins/solution/fx-solution/v2/adaptor";
 import { LocalCrypto } from "../../../src/core/crypto";
@@ -98,11 +97,8 @@ const apiConnectionPluginV2 = Container.get<v2.ResourcePlugin>(
   ResourcePluginsV2.ApiConnectorPlugin
 );
 const mockedProvider: TokenProvider = {
-  appStudioToken: new MockedAppStudioProvider(),
   azureAccountProvider: new MockedAzureAccountProvider(),
-  graphTokenProvider: new MockGraphTokenProvider(),
-  sharepointTokenProvider: new MockedSharepointProvider(),
-  m365TokenProvider: new MockM365TokenProvider(),
+  m365TokenProvider: new MockedM365Provider(),
 };
 function mockSolutionContextWithPlatform(platform?: Platform): SolutionContext {
   const config: SolutionConfig = new Map();

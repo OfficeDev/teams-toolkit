@@ -36,8 +36,9 @@ export enum CliConfigEnvChecker {
 }
 
 export enum CliConfigRunFrom {
-  GitHubAction = "GitHubAction",
-  AzDoTask = "AzDoTask",
+  GitHub = "GitHub",
+  AzDo = "AzDo",
+  Jenkins = "Jenkins",
   Other = "Other",
 }
 
@@ -107,20 +108,6 @@ export class UserSettings {
     }
 
     return ok(true);
-  }
-
-  public static getRunFromSetting(): Result<CliConfigRunFrom, FxError> {
-    const result = this.getConfigSync();
-    if (result.isErr()) {
-      return err(result.error);
-    }
-
-    const config = result.value[CliConfigOptions.RunFrom];
-    if (!config || !Object.values(CliConfigRunFrom).includes(config)) {
-      return ok(CliConfigRunFrom.Other);
-    }
-
-    return ok(config);
   }
 
   public static getInteractiveSetting(): Result<boolean, FxError> {

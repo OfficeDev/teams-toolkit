@@ -163,35 +163,11 @@ export const RequestTypes = {
       `${Namespaces.Azure}/getSelectedSubscriptionRequest`
     ),
   },
-  [Namespaces.Graph]: {
-    getAccessToken: new RequestType0<Result<string, FxError>, Error>(
-      `${Namespaces.Graph}/getAccessTokenRequest`
-    ),
-    getJsonObject: new RequestType0<Result<string, FxError>, Error>(
-      `${Namespaces.Graph}/getJsonObjectRequest`
-    ),
-  },
-  [Namespaces.AppStudio]: {
-    getAccessToken: new RequestType0<Result<string, FxError>, Error>(
-      `${Namespaces.AppStudio}/getAccessTokenRequest`
-    ),
-    getJsonObject: new RequestType0<Result<string, FxError>, Error>(
-      `${Namespaces.AppStudio}/getJsonObjectRequest`
-    ),
-  },
-  [Namespaces.SharePoint]: {
-    getAccessToken: new RequestType0<Result<string, FxError>, Error>(
-      `${Namespaces.SharePoint}/getAccessTokenRequest`
-    ),
-    getJsonObject: new RequestType0<Result<string, FxError>, Error>(
-      `${Namespaces.SharePoint}/getJsonObjectRequest`
-    ),
-  },
   [Namespaces.M365]: {
     getAccessToken: new RequestType1<TokenRequest, Result<string, FxError>, Error>(
       `${Namespaces.M365}/getAccessTokenRequest`
     ),
-    getJsonObject: new RequestType1<TokenRequest, Result<Record<string, unknown>, FxError>, Error>(
+    getJsonObject: new RequestType1<TokenRequest, Result<string, FxError>, Error>(
       `${Namespaces.M365}/getJsonObjectRequest`
     ),
     getStatus: new RequestType1<TokenRequest, Result<LoginStatus, FxError>, Error>(

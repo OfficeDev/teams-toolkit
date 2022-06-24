@@ -6,19 +6,30 @@ import {
   ok,
   Result,
   Action,
-  CloudResource,
   ContextV3,
   MaybePromise,
-  Bicep,
   InputsWithProjectPath,
   Effect,
+  ProvisionContextV3,
+  Component,
 } from "@microsoft/teamsfx-api";
-import "reflect-metadata";
+import fs from "fs-extra";
+import * as path from "path";
 import { Service } from "typedi";
-
+import { azureWebSiteDeploy } from "../../common/azure-hosting/utils";
+import { Messages } from "../../plugins/resource/bot/resources/messages";
+import * as utils from "../../plugins/resource/bot/utils/common";
+import { getLanguage, getRuntime } from "../../plugins/resource/bot/v2/mapping";
+import {
+  CheckThrowSomethingMissing,
+  PackDirectoryExistenceError,
+  PreconditionError,
+} from "../../plugins/resource/bot/v3/error";
+import { AzureResource } from "./azureResource";
 @Service("azure-function")
-export class AzureFunctionResource implements CloudResource {
+export class AzureFunctionResource extends AzureResource {
   readonly name = "azure-function";
+  readonly bicepModuleName = "azureFunction";
   outputs = {
     resourceId: {
       key: "resourceId",
@@ -26,7 +37,7 @@ export class AzureFunctionResource implements CloudResource {
     },
     endpoint: {
       key: "endpoint",
-      bicepVariable: "provisionOutputs.azureFunctionOutput.value.sqlEndpoint",
+      bicepVariable: "provisionOutputs.azureFunctionOutput.value.endpoint",
     },
   };
   finalOutputKeys = ["resourceId", "endpoint"];
@@ -34,33 +45,13 @@ export class AzureFunctionResource implements CloudResource {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const action: Action = {
-      name: "azure-sql.generateBicep",
-      type: "function",
-      plan: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok([
-          {
-            type: "bicep",
-            Modules: { azureFunction: "1" },
-            Orchestration: "1",
-          },
-        ]);
-      },
-      execute: async (
-        context: ContextV3,
-        inputs: InputsWithProjectPath
-      ): Promise<Result<Effect[], FxError>> => {
-        const bicep: Bicep = {
-          type: "bicep",
-          Provision: {
-            Modules: { azureFunction: "" },
-            Orchestration: "",
-          },
-        };
-        return ok([bicep]);
-      },
+    this.getTemplateContext = (context, inputs) => {
+      const configs: string[] = [];
+      configs.push(getRuntime(getLanguage(context.projectSetting.programmingLanguage)));
+      this.templateContext.configs = configs;
+      return this.templateContext;
     };
-    return ok(action);
+    return super.generateBicep(context, inputs);
   }
   configure(
     context: ContextV3,
@@ -82,11 +73,64 @@ export class AzureFunctionResource implements CloudResource {
         context: ContextV3,
         inputs: InputsWithProjectPath
       ): Promise<Result<Effect[], FxError>> => {
+        // Configure APIM
         return ok([
           {
             type: "service",
             name: "azure",
             remarks: "config azure function",
+          },
+        ]);
+      },
+    };
+    return ok(action);
+  }
+  deploy(
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const action: Action = {
+      name: "azure-function.deploy",
+      type: "function",
+      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
+        return ok([
+          {
+            type: "service",
+            name: "azure",
+            remarks: `deploy azure function in folder: ${inputs.projectPath}`,
+          },
+        ]);
+      },
+      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+        const ctx = context as ProvisionContextV3;
+        ctx.logProvider.info(Messages.DeployingBot);
+        // Preconditions checking.
+        const codeComponent = inputs.code as Component;
+        if (!inputs.projectPath || !codeComponent?.artifactFolder) {
+          throw new PreconditionError(Messages.WorkingDirIsMissing, []);
+        }
+        const publishDir = path.join(inputs.projectPath, codeComponent.artifactFolder);
+        const packDirExisted = await fs.pathExists(publishDir);
+        if (!packDirExisted) {
+          throw new PackDirectoryExistenceError();
+        }
+
+        const states = ctx.envInfo.state[this.name];
+        CheckThrowSomethingMissing(this.outputs.endpoint.key, states[this.outputs.endpoint.key]);
+        CheckThrowSomethingMissing(
+          this.outputs.resourceId.key,
+          states[this.outputs.resourceId.key]
+        );
+        const resourceId = states[this.outputs.resourceId.key];
+
+        const zipBuffer = await utils.zipFolderAsync(publishDir, "");
+
+        await azureWebSiteDeploy(resourceId, ctx.tokenProvider, zipBuffer);
+        return ok([
+          {
+            type: "service",
+            name: "azure",
+            remarks: `deploy azure function in folder: ${publishDir}`,
           },
         ]);
       },

@@ -35,10 +35,8 @@ import {
   TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import {
-  MockedAppStudioTokenProvider,
   MockedAzureAccountProvider,
-  MockedGraphTokenProvider,
-  MockedSharepointProvider,
+  MockedM365Provider,
   MockedUserInteraction,
   MockedV2Context,
   validManifest,
@@ -53,7 +51,6 @@ import { LocalCrypto } from "../../../src/core/crypto";
 import { aadPlugin, fehostPlugin, spfxPlugin } from "../../constants";
 import { SolutionRunningState } from "../../../src/plugins/solution/fx-solution/types";
 import { SpfxPluginV2 } from "../../../src/plugins/resource/spfx/v2";
-import { MockM365TokenProvider } from "../../core/utils";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -103,6 +100,7 @@ describe("deploy() for Azure projects", () => {
     const mockedCtx = mockSolutionContext();
     const mockedProvider = new MockedAzureAccountProvider();
     mockedCtx.azureAccountProvider = mockedProvider;
+    mockedCtx.m365TokenProvider = new MockedM365Provider();
     mockedCtx.projectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -141,6 +139,7 @@ describe("deploy() for Azure projects", () => {
       const mockedCtx = mockSolutionContext();
       const mockedProvider = new MockedAzureAccountProvider();
       mockedCtx.azureAccountProvider = mockedProvider;
+      mockedCtx.m365TokenProvider = new MockedM365Provider();
       mockedCtx.projectSettings = {
         appName: "my app",
         projectId: uuid.v4(),
@@ -162,6 +161,7 @@ describe("deploy() for Azure projects", () => {
       const mockedCtx = mockSolutionContext();
       const mockedProvider = new MockedAzureAccountProvider();
       mockedCtx.azureAccountProvider = mockedProvider;
+      mockedCtx.m365TokenProvider = new MockedM365Provider();
       mockedCtx.projectSettings = {
         appName: "my app",
         projectId: uuid.v4(),
@@ -264,10 +264,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
     mockedCtx.userInteraction = new MockedUserInteractionForDeploy();
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
-      graphTokenProvider: new MockedGraphTokenProvider(),
-      sharepointTokenProvider: new MockedSharepointProvider(),
-      m365TokenProvider: new MockM365TokenProvider(),
+      m365TokenProvider: new MockedM365Provider(),
     };
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
@@ -299,10 +296,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
     mockedCtx.userInteraction = new MockedUserInteractionForDeploy();
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
-      graphTokenProvider: new MockedGraphTokenProvider(),
-      sharepointTokenProvider: new MockedSharepointProvider(),
-      m365TokenProvider: new MockM365TokenProvider(),
+      m365TokenProvider: new MockedM365Provider(),
     };
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
@@ -337,10 +331,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
     mockedCtx.userInteraction = new MockedUserInteractionForDeploy();
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
-      graphTokenProvider: new MockedGraphTokenProvider(),
-      sharepointTokenProvider: new MockedSharepointProvider(),
-      m365TokenProvider: new MockM365TokenProvider(),
+      m365TokenProvider: new MockedM365Provider(),
     };
     const mockedInputs: Inputs = {
       platform: Platform.VS,
@@ -374,10 +365,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
     mockedCtx.userInteraction = new MockedUserInteractionForDeploy();
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
-      graphTokenProvider: new MockedGraphTokenProvider(),
-      sharepointTokenProvider: new MockedSharepointProvider(),
-      m365TokenProvider: new MockM365TokenProvider(),
+      m365TokenProvider: new MockedM365Provider(),
     };
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
@@ -414,10 +402,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
 
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
-      graphTokenProvider: new MockedGraphTokenProvider(),
-      sharepointTokenProvider: new MockedSharepointProvider(),
-      m365TokenProvider: new MockM365TokenProvider(),
+      m365TokenProvider: new MockedM365Provider(),
     };
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
@@ -456,10 +441,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
 
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
-      graphTokenProvider: new MockedGraphTokenProvider(),
-      sharepointTokenProvider: new MockedSharepointProvider(),
-      m365TokenProvider: new MockM365TokenProvider(),
+      m365TokenProvider: new MockedM365Provider(),
     };
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
@@ -502,10 +484,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
     }
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new FakeAzureAccountProvider(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
-      graphTokenProvider: new MockedGraphTokenProvider(),
-      sharepointTokenProvider: new MockedSharepointProvider(),
-      m365TokenProvider: new MockM365TokenProvider(),
+      m365TokenProvider: new MockedM365Provider(),
     };
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,

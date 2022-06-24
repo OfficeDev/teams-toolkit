@@ -7,17 +7,11 @@ import "mocha";
 import * as uuid from "uuid";
 import { BuiltInSolutionNames } from "../../../src/plugins/solution/fx-solution/v3/constants";
 import { deploy, getQuestionsForDeploy } from "../../../src/plugins/solution/fx-solution/v3/deploy";
-import {
-  MockedAppStudioTokenProvider,
-  MockedAzureAccountProvider,
-  MockedGraphTokenProvider,
-  MockedSharepointProvider,
-  MockedV2Context,
-} from "../solution/util";
+import { MockedM365Provider, MockedAzureAccountProvider, MockedV2Context } from "../solution/util";
 import { MockFeaturePluginNames } from "./mockPlugins";
 import * as os from "os";
 import * as path from "path";
-import { MockM365TokenProvider, randomAppName } from "../../core/utils";
+import { randomAppName } from "../../core/utils";
 describe("SolutionV3 - deploy", () => {
   it("deploy", async () => {
     const projectSettings: ProjectSettings = {
@@ -39,10 +33,7 @@ describe("SolutionV3 - deploy", () => {
     };
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
-      graphTokenProvider: new MockedGraphTokenProvider(),
-      sharepointTokenProvider: new MockedSharepointProvider(),
-      m365TokenProvider: new MockM365TokenProvider(),
+      m365TokenProvider: new MockedM365Provider(),
     };
     const envInfov3: v3.EnvInfoV3 = {
       envName: "dev",
@@ -73,10 +64,7 @@ describe("SolutionV3 - deploy", () => {
     };
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
-      graphTokenProvider: new MockedGraphTokenProvider(),
-      sharepointTokenProvider: new MockedSharepointProvider(),
-      m365TokenProvider: new MockM365TokenProvider(),
+      m365TokenProvider: new MockedM365Provider(),
     };
     const envInfoV3: v2.DeepReadonly<v3.EnvInfoV3> = {
       envName: "dev",

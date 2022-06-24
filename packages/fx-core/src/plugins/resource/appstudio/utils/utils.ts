@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import Mustache from "mustache";
 import { TEAMS_APP_SHORT_NAME_MAX_LENGTH } from "../constants";
 import {
   TeamsAppManifest,
@@ -259,4 +260,32 @@ export function convertToAppDefinitionMessagingExtensions(
   }
 
   return messagingExtensions;
+}
+
+export function renderTemplate(manifestString: string, view: any): string {
+  // Unesacped HTML
+  Mustache.escape = (value) => value;
+  manifestString = Mustache.render(manifestString, view);
+  return manifestString;
+}
+
+export class RetryHandler {
+  public static async Retry<T>(fn: () => Promise<T>): Promise<T | undefined> {
+    let retries = 6;
+    let response;
+    while (retries > 0) {
+      retries = retries - 1;
+      try {
+        response = await fn();
+        return response;
+      } catch (e: any) {
+        // Directly throw 404 error, keep trying for other status code e.g. 503 400
+        if (retries <= 0 || e.response?.status == 404) {
+          throw e;
+        } else {
+          await new Promise((resolve) => setTimeout(resolve, 5000));
+        }
+      }
+    }
+  }
 }

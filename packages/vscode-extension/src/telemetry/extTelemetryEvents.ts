@@ -110,6 +110,18 @@ export enum TelemetryEvent {
   DebugNpmInstall = "debug-npm-install",
   DebugServiceStart = "debug-service-start",
   DebugService = "debug-service",
+  DebugPrereqsCheckM365Account = "debug-prereqs-check-m365-account",
+  DebugPrereqsCheckNode = "debug-prereqs-check-node",
+  DebugPrereqsCheckPorts = "debug-prereqs-check-ports",
+  DebugPrereqsCheckCert = "debug-prereqs-check-cert",
+  DebugPrereqsCheckDependencies = "debug-prereqs-check-dependencies",
+  DebugPrereqsEnsureDependencies = "debug-prereqs-ensure-dependencies",
+  DebugPrereqsInstallPackages = "debug-prereqs-install-packages",
+  DebugPreCheckCoreLocalDebug = "debug-precheck-core-local-debug",
+  DebugTaskProvider = "debug-task-provider",
+  DebugProviderResolveDebugConfiguration = "debug-provider-resolve-debug-configuration",
+  DebugAllStart = "debug-all-start",
+  DebugAll = "debug-all",
 
   AutomaticNpmInstallStart = "automatic-npm-install-start",
   AutomaticNpmInstall = "automatic-npm-install",
@@ -193,6 +205,7 @@ export enum TelemetryProperty {
   ErrorType = "error-type",
   ErrorCode = "error-code",
   ErrorMessage = "error-message",
+  Errors = "errors",
   DebugSessionId = "session-id",
   DebugType = "type",
   DebugRequest = "request",
@@ -200,7 +213,10 @@ export enum TelemetryProperty {
   DebugRemote = "remote",
   DebugAppId = "debug-appid",
   DebugProjectComponents = "debug-project-components",
+  DebugDevCertStatus = "debug-dev-cert-status",
   DebugCheckResults = "debug-check-results",
+  DebugCheckResultsSafe = "debug-check-results-safe",
+  DebugErrorCodes = "debug-error-codes",
   DebugNpmInstallName = "debug-npm-install-name",
   DebugNpmInstallExitCode = "debug-npm-install-exit-code",
   DebugNpmInstallErrorMessage = "debug-npm-install-error-message",
@@ -208,6 +224,8 @@ export enum TelemetryProperty {
   DebugNpmInstallNpmVersion = "debug-npm-install-npm-version",
   DebugServiceName = "debug-service-name",
   DebugServiceExitCode = "debug-service-exit-code",
+  DebugPrereqsDepsType = "debug-prereqs-deps-type",
+  DebugFailedServices = "debug-failed-services",
   Internal = "internal",
   InternalAlias = "internal-alias",
   OSArch = "os-arch",
@@ -293,6 +311,13 @@ export enum TelemetrySurveyDataProperty {
   Q4Result = "q4-result",
   Q5Title = "q5-title",
   Q5Result = "q5-result",
+}
+
+export enum TelemetryDebugDevCertStatus {
+  Disabled = "disabled",
+  AlreadyTrusted = "already-trusted",
+  Trusted = "trusted",
+  NotTrusted = "not-trusted",
 }
 
 export const TelemetryComponentType = "extension";

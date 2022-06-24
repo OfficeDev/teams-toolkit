@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { VS_CODE_UI } from "../extension";
-import graphLoginInstance from "../commonlib/graphLogin";
+import m365LoginInstance from "../commonlib/m365Login";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 import { delay } from "../utils/commonUtils";
@@ -11,7 +11,7 @@ import * as commonUtils from "./commonUtils";
 
 import axios from "axios";
 import { UserError, SystemError } from "@microsoft/teamsfx-api";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentManager, GraphScopes } from "@microsoft/teamsfx-core";
 import { openUrlWithNewProfile } from "./launch";
 
 export async function showInstallAppInTeamsMessage(env: string, appId: string): Promise<boolean> {
@@ -75,8 +75,9 @@ export async function showInstallAppInTeamsMessage(env: string, appId: string): 
 }
 
 export async function getTeamsAppInternalId(appId: string): Promise<string | undefined> {
-  const loginStatus = await graphLoginInstance.getStatus();
-  if (loginStatus.accountInfo?.oid === undefined || loginStatus.token === undefined) {
+  const loginStatusRes = await m365LoginInstance.getStatus({ scopes: GraphScopes });
+  const loginStatus = loginStatusRes.isOk() ? loginStatusRes.value : undefined;
+  if (loginStatus?.accountInfo?.oid === undefined || loginStatus.token === undefined) {
     throw new UserError(
       ExtensionSource,
       ExtensionErrors.GetTeamsAppInstallationFailed,

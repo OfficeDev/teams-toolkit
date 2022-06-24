@@ -18,9 +18,8 @@ describe("azure hosting", () => {
       moduleAlias: "bot",
       pluginId: ResourcePlugins.Bot,
     };
-    const pluginId = ResourcePlugins.Bot;
 
-    it("generate bicep", async () => {
+    it("generate bicep nodejs", async () => {
       const functionHosting = AzureHostingFactory.createHosting(ServiceType.Functions);
       const template = await functionHosting.generateBicep(bicepContext);
 
@@ -53,6 +52,17 @@ describe("azure hosting", () => {
         "utf-8"
       );
       chai.assert.equal(template.Configuration.Orchestration, expectedConfigOrchestration);
+    });
+
+    it("generate bicep dotnet", async () => {
+      bicepContext.configs = ["dotnet"];
+      const functionHosting = AzureHostingFactory.createHosting(ServiceType.Functions);
+      const template = await functionHosting.generateBicep(bicepContext);
+
+      chai.assert.exists(template.Configuration);
+      chai.assert.deepEqual(template.Reference, functionHosting.reference);
+      chai.assert.notExists(template.Parameters);
+      chai.assert.include(template.Provision.Modules?.["botFunction"], "dotnet");
     });
   });
 });

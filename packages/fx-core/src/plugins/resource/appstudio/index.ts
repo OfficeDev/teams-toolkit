@@ -238,14 +238,22 @@ export class AppStudioPlugin implements Plugin {
           { content: appPackagePath, color: Colors.BRIGHT_MAGENTA },
           { content: " built successfully!", color: Colors.BRIGHT_WHITE },
         ];
-        ctx.ui?.showMessage("info", builtSuccess, false);
-      } else {
-        const folderLink = pathToFileURL(path.dirname(appPackagePath));
-        const appPackageLink = `${VSCodeExtensionCommand.openFolder}?%5B%22${folderLink}%22%5D`;
-        const builtSuccess = getLocalizedString(
-          "plugins.appstudio.buildSucceedNotice",
-          appPackageLink
+        if (ctx.answers?.platform === Platform.VS) {
+          ctx.logProvider?.info(builtSuccess);
+        } else {
+          ctx.ui?.showMessage("info", builtSuccess, false);
+        }
+      } else if (ctx.answers?.platform === Platform.VSCode) {
+        const isWindows = process.platform === "win32";
+        let builtSuccess = getLocalizedString(
+          "plugins.appstudio.buildSucceedNotice.fallback",
+          appPackagePath
         );
+        if (isWindows) {
+          const folderLink = pathToFileURL(path.dirname(appPackagePath));
+          const appPackageLink = `${VSCodeExtensionCommand.openFolder}?%5B%22${folderLink}%22%5D`;
+          builtSuccess = getLocalizedString("plugins.appstudio.buildSucceedNotice", appPackageLink);
+        }
         ctx.ui?.showMessage("info", builtSuccess, false);
       }
       TelemetryUtils.sendSuccessEvent(

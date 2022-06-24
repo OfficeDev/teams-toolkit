@@ -14,6 +14,7 @@ import {
   v3,
 } from "@microsoft/teamsfx-api";
 import { isUndefined } from "lodash";
+import { AppStudioScopes } from "../../../../common";
 import { PluginDisplayName } from "../../../../common/constants";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { getAzurePlugins, isVSProject } from "../../../../common/projectSettingsHelper";
@@ -78,7 +79,12 @@ export async function deploy(
   }
 
   if (!inAzureProject) {
-    const appStudioTokenJson = await tokenProvider.appStudioToken.getJsonObject();
+    const appStudioTokenJsonRes = await tokenProvider.m365TokenProvider.getJsonObject({
+      scopes: AppStudioScopes,
+    });
+    const appStudioTokenJson = appStudioTokenJsonRes.isOk()
+      ? appStudioTokenJsonRes.value
+      : undefined;
 
     if (appStudioTokenJson) {
       const checkM365 = await checkM365Tenant({ version: 2, data: envInfo }, appStudioTokenJson);
@@ -202,9 +208,10 @@ export async function deploy(
   const result = await executeConcurrently(thunks, ctx.logProvider);
 
   if (result.kind === "success") {
+    const appName = ctx.projectSetting.appName;
     if (inAzureProject) {
       let msg =
-        getLocalizedString("core.deploy.successNotice", ctx.projectSetting.appName) +
+        getLocalizedString("core.deploy.successNotice", appName) +
         botTroubleShootMsg.textForLogging;
 
       if (isDeployAADManifestFromVSCode) {
@@ -216,7 +223,7 @@ export async function deploy(
         ctx.userInteraction
           .showMessage(
             "info",
-            `${getLocalizedString("core.deploy.successNotice", ctx.projectSetting.appName)} ${
+            `${getLocalizedString("core.deploy.successNotice", appName)} ${
               botTroubleShootMsg.textForMsgBox
             }`,
             false,

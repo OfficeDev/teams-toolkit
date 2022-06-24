@@ -7,7 +7,8 @@ import { TelemetryReporter } from "@microsoft/teamsfx-api";
 import { Correlator } from "@microsoft/teamsfx-core";
 import { TelemetryProperty } from "../telemetry/cliTelemetryEvents";
 import { getAllFeatureFlags, getProjectId } from "../utils";
-import { CliConfigOptions, CliConfigRunFrom, UserSettings } from "../userSetttings";
+import { CliConfigOptions } from "../userSetttings";
+import { tryDetectCICDPlatform } from "./common/cicdPlatformDetector";
 
 /**
  *  CLI telemetry reporter used by fx-core.
@@ -48,9 +49,7 @@ export class CliTelemetryReporter implements TelemetryReporter {
     properties[TelemetryProperty.ProjectId] = projectId ? projectId : "";
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
-    const result = UserSettings.getRunFromSetting();
-    const runFrom = result.isOk() ? result.value : CliConfigRunFrom.Other;
-    properties[CliConfigOptions.RunFrom] = runFrom;
+    properties[CliConfigOptions.RunFrom] = tryDetectCICDPlatform();
 
     const featureFlags = getAllFeatureFlags();
     properties[TelemetryProperty.FeatureFlags] = featureFlags ? featureFlags.join(";") : "";
@@ -71,9 +70,7 @@ export class CliTelemetryReporter implements TelemetryReporter {
     properties[TelemetryProperty.ProjectId] = projectId ? projectId : "";
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
-    const result = UserSettings.getRunFromSetting();
-    const runFrom = result.isOk() ? result.value : CliConfigRunFrom.Other;
-    properties[CliConfigOptions.RunFrom] = runFrom;
+    properties[CliConfigOptions.RunFrom] = tryDetectCICDPlatform();
 
     const featureFlags = getAllFeatureFlags();
     properties[TelemetryProperty.FeatureFlags] = featureFlags ? featureFlags.join(";") : "";
@@ -94,9 +91,7 @@ export class CliTelemetryReporter implements TelemetryReporter {
     properties[TelemetryProperty.ProjectId] = projectId ? projectId : "";
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
-    const result = UserSettings.getRunFromSetting();
-    const runFrom = result.isOk() ? result.value : CliConfigRunFrom.Other;
-    properties[CliConfigOptions.RunFrom] = runFrom;
+    properties[CliConfigOptions.RunFrom] = tryDetectCICDPlatform();
 
     const featureFlags = getAllFeatureFlags();
     properties[TelemetryProperty.FeatureFlags] = featureFlags ? featureFlags.join(";") : "";

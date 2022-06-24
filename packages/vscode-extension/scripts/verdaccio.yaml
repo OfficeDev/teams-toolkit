@@ -53,6 +53,11 @@ uplinks:
     url: https://registry.npmjs.org/
 
 packages:
+  "@microsoft/teams-manifest":
+    access: $all
+    publish: $all
+    unpublish: $all
+
   "@microsoft/teamsfx-api":
     access: $all
     publish: $all

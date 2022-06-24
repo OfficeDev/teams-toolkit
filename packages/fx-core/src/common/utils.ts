@@ -9,9 +9,17 @@ export async function getProjectTemplatesFolderPath(projectPath: string): Promis
     const bicepFolder = path.join(projectPath, "templates", "azure");
     const appFolder = path.join(projectPath, "templates", "appPackage");
     if ((await fs.pathExists(bicepFolder)) || (await fs.pathExists(appFolder))) {
-      await fs.rename(path.join(projectPath, "templates"), path.join(projectPath, "Templates"));
+      try {
+        await fs.rename(path.join(projectPath, "templates"), path.join(projectPath, "Templates"));
+      } catch (e) {
+        return path.resolve(projectPath, "templates");
+      }
     }
     return path.resolve(projectPath, "Templates");
   }
   return path.resolve(projectPath, "templates");
+}
+
+export function convertToAlphanumericOnly(appName: string): string {
+  return appName.replace(/[^\da-zA-Z]/g, "");
 }

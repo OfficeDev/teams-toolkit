@@ -1,5 +1,6 @@
-﻿namespace {{ProjectName}}.Controllers
+﻿namespace {{SafeProjectName}}.Controllers
 {
+    using {{SafeProjectName}}.Models;
     using AdaptiveCards.Templating;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.TeamsFx.Conversation;
@@ -29,7 +30,7 @@
                 // Build and send adaptive card
                 var cardContent = new AdaptiveCardTemplate(cardTemplate).Expand
                 (
-                    new CardModel
+                    new NotificationDefaultModel
                     {
                         Title = "New Event Occurred!",
                         AppName = "Contoso App Notification",

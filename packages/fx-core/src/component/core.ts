@@ -5,8 +5,8 @@ import {
   Action,
   ConfigFolderName,
   ContextV3,
-  err,
   FxError,
+  GroupAction,
   InputsWithProjectPath,
   MaybePromise,
   ok,
@@ -15,7 +15,6 @@ import {
   QTreeNode,
   Result,
   TextInputQuestion,
-  UserError,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import path from "path";
@@ -47,16 +46,11 @@ import "./connection/azureFunctionConfig";
 
 import { WriteProjectSettingsAction } from "./projectSettingsManager";
 import { ComponentNames } from "./constants";
-import {
-  askForProvisionConsent,
-  fillInAzureConfigs,
-  getM365TenantId,
-} from "../plugins/solution/fx-solution/v3/provision";
 import { getLocalizedString } from "../common/localizeUtils";
-import { hasAzureResourceV3 } from "../common/projectSettingsHelperV3";
-import { resourceGroupHelper } from "../plugins/solution/fx-solution/utils/ResourceGroupHelper";
 import { getResourceGroupInPortal } from "../common/tools";
 import { getComponent } from "./workflow";
+import { FxPreDeployAction } from "./fx/preDeployAction";
+import { FxPreProvisionAction } from "./fx/preProvisionAction";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -126,83 +120,6 @@ export class TeamsfxCore {
     };
     return ok(action);
   }
-  preProvision(
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const action: Action = {
-      type: "function",
-      name: "fx.preProvision",
-      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok(["pre step before provision (tenant, subscription, resource group)"]);
-      },
-      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const ctx = context as ProvisionContextV3;
-        const envInfo = ctx.envInfo;
-        // 1. check M365 tenant
-        envInfo.state[ComponentNames.AppManifest] = envInfo.state[ComponentNames.AppManifest] || {};
-        envInfo.state.solution = envInfo.state.solution || {};
-        const appManifest = envInfo.state[ComponentNames.AppManifest];
-        const solutionConfig = envInfo.state.solution;
-        solutionConfig.provisionSucceeded = false;
-        const tenantIdInConfig = appManifest.tenantId;
-        const tenantIdInTokenRes = await getM365TenantId(ctx.tokenProvider.appStudioToken);
-        if (tenantIdInTokenRes.isErr()) {
-          return err(tenantIdInTokenRes.error);
-        }
-        const tenantIdInToken = tenantIdInTokenRes.value;
-        if (tenantIdInConfig && tenantIdInToken && tenantIdInToken !== tenantIdInConfig) {
-          return err(
-            new UserError(
-              "Solution",
-              "TeamsAppTenantIdNotRight",
-              getLocalizedString("error.M365AccountNotMatch", envInfo.envName)
-            )
-          );
-        }
-        if (!tenantIdInConfig) {
-          appManifest.tenantId = tenantIdInToken;
-          solutionConfig.teamsAppTenantId = tenantIdInToken;
-        }
-        // 3. check Azure configs
-        if (hasAzureResourceV3(ctx.projectSetting) && envInfo.envName !== "local") {
-          // ask common question and fill in solution config
-          const solutionConfigRes = await fillInAzureConfigs(
-            ctx,
-            inputs,
-            envInfo,
-            ctx.tokenProvider
-          );
-          if (solutionConfigRes.isErr()) {
-            return err(solutionConfigRes.error);
-          }
-          // ask for provision consent
-          const consentResult = await askForProvisionConsent(
-            ctx,
-            ctx.tokenProvider.azureAccountProvider,
-            envInfo
-          );
-          if (consentResult.isErr()) {
-            return err(consentResult.error);
-          }
-          // create resource group if needed
-          if (solutionConfig.needCreateResourceGroup) {
-            const createRgRes = await resourceGroupHelper.createNewResourceGroup(
-              solutionConfig.resourceGroupName,
-              ctx.tokenProvider.azureAccountProvider,
-              solutionConfig.subscriptionId,
-              solutionConfig.location
-            );
-            if (createRgRes.isErr()) {
-              return err(createRgRes.error);
-            }
-          }
-        }
-        return ok(["pre step before provision (tenant, subscription, resource group)"]);
-      },
-    };
-    return ok(action);
-  }
   async provision(
     context: ContextV3,
     inputs: InputsWithProjectPath
@@ -229,22 +146,17 @@ export class TeamsfxCore {
     });
     const setupLocalEnvironmentStep: Action = {
       type: "call",
-      name: "call debug-manager.setupLocalEnvironment",
-      targetAction: "debug-manager.setupLocalEnvironment",
+      name: "call debug.setupLocalEnvInfo",
+      targetAction: "debug.setupLocalEnvInfo",
       required: false,
     };
     const configLocalEnvironmentStep: Action = {
       type: "call",
-      name: "call debug-manager.configLocalEnvironmentStep",
-      targetAction: "debug-manager.configLocalEnvironmentStep",
+      name: "call debug.configLocalEnvInfo",
+      targetAction: "debug.configLocalEnvInfo",
       required: false,
     };
-    const preProvisionStep: Action = {
-      type: "call",
-      name: "call fx.preProvision",
-      targetAction: "fx.preProvision",
-      required: true,
-    };
+    const preProvisionStep: Action = new FxPreProvisionAction();
     const createTeamsAppStep: Action = {
       type: "call",
       name: "call app-manifest.provision",
@@ -313,14 +225,16 @@ export class TeamsfxCore {
       execute: (context: ContextV3, inputs: InputsWithProjectPath) => {
         const ctx = context as ProvisionContextV3;
         const teamsBot = getComponent(ctx.projectSetting, ComponentNames.TeamsBot);
-        if (teamsBot) {
-          const teamsBotConfig: any = {
-            endpoint: ctx.envInfo.state[teamsBot.hosting!].endpoint!,
-            domain: ctx.envInfo.state[teamsBot.hosting!].domain,
-          };
-          ctx.envInfo.state[ComponentNames.TeamsBot] = teamsBotConfig;
-        }
         const teamsTab = getComponent(ctx.projectSetting, ComponentNames.TeamsTab);
+        if (teamsBot) {
+          if (ctx.envInfo.envName !== "local") {
+            const teamsBotConfig: any = {
+              endpoint: ctx.envInfo.state[teamsBot.hosting!].endpoint!,
+              domain: ctx.envInfo.state[teamsBot.hosting!].domain,
+            };
+            ctx.envInfo.state[ComponentNames.TeamsBot] = teamsBotConfig;
+          }
+        }
         if (teamsTab) {
           const teamsTabConfig: any = {
             endpoint: ctx.envInfo.state[teamsTab.hosting!].endpoint!,
@@ -354,58 +268,61 @@ export class TeamsfxCore {
     return ok(result);
   }
 
-  // build(context: ContextV3, inputs: InputsWithProjectPath): Result<Action | undefined, FxError> {
-  //   const projectSettings = context.projectSetting as ProjectSettingsV3;
-  //   const actions: Action[] = projectSettings.components
-  //     .filter((resource) => resource.build)
-  //     .map((resource) => {
-  //       return {
-  //         name: `call:${resource.name}.build`,
-  //         type: "call",
-  //         targetAction: `${resource.name}.build`,
-  //         required: false,
-  //       };
-  //     });
-  //   const group: Action = {
-  //     type: "group",
-  //     mode: "parallel",
-  //     actions: actions,
-  //   };
-  //   return ok(group);
-  // }
+  build(context: ContextV3, inputs: InputsWithProjectPath): Result<Action | undefined, FxError> {
+    const projectSettings = context.projectSetting as ProjectSettingsV3;
+    const actions: Action[] = projectSettings.components
+      .filter((resource) => resource.build)
+      .map((resource) => {
+        const component = resource.code || resource.name;
+        return {
+          name: `call:${component}.build`,
+          type: "call",
+          targetAction: `${component}.build`,
+          required: true,
+        };
+      });
+    const group: Action = {
+      type: "group",
+      name: "fx.build",
+      mode: "parallel",
+      actions: actions,
+    };
+    return ok(group);
+  }
 
-  // deploy(
-  //   context: ContextV3,
-  //   inputs: InputsWithProjectPath
-  // ): MaybePromise<Result<Action | undefined, FxError>> {
-  //   const projectSettings = context.projectSetting as ProjectSettingsV3;
-  //   const actions: Action[] = [
-  //     {
-  //       name: "call:fx.build",
-  //       type: "call",
-  //       targetAction: "fx.build",
-  //       required: false,
-  //     },
-  //   ];
-  //   projectSettings.components
-  //     .filter((resource) => resource.build && resource.hosting)
-  //     .forEach((resource) => {
-  //       actions.push({
-  //         type: "call",
-  //         targetAction: `${resource.hosting}.deploy`,
-  //         required: false,
-  //         inputs: {
-  //           [resource.hosting!]: {
-  //             folder: resource.folder,
-  //           },
-  //         },
-  //       });
-  //     });
-  //   const action: GroupAction = {
-  //     type: "group",
-  //     name: "fx.deploy",
-  //     actions: actions,
-  //   };
-  //   return ok(action);
-  // }
+  deploy(
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const projectSettings = context.projectSetting as ProjectSettingsV3;
+    const actions: Action[] = [
+      new FxPreDeployAction(),
+      {
+        name: "call:fx.build",
+        type: "call",
+        targetAction: "fx.build",
+        required: true,
+      },
+    ];
+    const components = inputs["deploy-plugin"] as string[];
+    components.forEach((componentName) => {
+      const componentConfig = getComponent(projectSettings, componentName);
+      if (componentConfig) {
+        actions.push({
+          type: "call",
+          targetAction: `${componentConfig.hosting}.deploy`,
+          required: false,
+          inputs: {
+            code: componentConfig,
+          },
+        });
+      }
+    });
+    const action: GroupAction = {
+      type: "group",
+      name: "fx.deploy",
+      actions: actions,
+    };
+    return ok(action);
+  }
 }

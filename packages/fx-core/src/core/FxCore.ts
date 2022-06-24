@@ -76,6 +76,7 @@ import {
   TabSPFxItem,
   TabSsoItem,
   BotFeatureIds,
+  TabFeatureIds,
 } from "../plugins/solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { CallbackRegistry } from "./callback";
@@ -245,7 +246,7 @@ export class FxCore implements v3.ICore {
       }
 
       const projectSettings: ProjectSettings = {
-        appName: appName,
+        appName,
         projectId: inputs.projectId ? inputs.projectId : uuid.v4(),
         version: getProjectSettingsVersion(),
         isFromSample: false,
@@ -469,7 +470,8 @@ export class FxCore implements v3.ICore {
     context.envInfo = ctx!.envInfoV3!;
     context.projectSetting = ctx!.projectSettings! as ProjectSettingsV3;
     context.tokenProvider = TOOLS.tokenProvider;
-    await runAction("fx.provision", context, inputs as InputsWithProjectPath);
+    const res = await runAction("fx.provision", context, inputs as InputsWithProjectPath);
+    if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
     return ok(Void);
   }
@@ -554,15 +556,9 @@ export class FxCore implements v3.ICore {
 
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectMigratorMW,
-    ProjectConsolidateMW,
-    AadManifestMigrationMW,
-    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
-    SolutionLoaderMW_V3,
-    QuestionModelMW,
+    QuestionModelMW_V3,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
     EnvInfoWriterMW_V3(),
@@ -570,15 +566,13 @@ export class FxCore implements v3.ICore {
   async deployArtifactsV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.deploy);
     inputs.stage = Stage.deploy;
-    if (ctx && ctx.solutionV3 && ctx.contextV2 && ctx.envInfoV3 && ctx.solutionV3.deploy) {
-      const res = await ctx.solutionV3.deploy(
-        ctx.contextV2,
-        inputs as v2.InputsWithProjectPath,
-        ctx.envInfoV3,
-        TOOLS.tokenProvider
-      );
-      return res;
-    }
+    const context = createContextV3();
+    context.envInfo = ctx!.envInfoV3!;
+    context.projectSetting = ctx!.projectSettings! as ProjectSettingsV3;
+    context.tokenProvider = TOOLS.tokenProvider;
+    const res = await runAction("fx.deploy", context, inputs as InputsWithProjectPath);
+    if (res.isErr()) return err(res.error);
+    ctx!.projectSettings = context.projectSetting;
     return ok(Void);
   }
   async localDebug(inputs: Inputs): Promise<Result<Void, FxError>> {
@@ -641,7 +635,27 @@ export class FxCore implements v3.ICore {
       return ok(Void);
     }
   }
-
+  @hooks([
+    ErrorHandlerMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW_V3(false),
+    QuestionModelMW_V3,
+    ContextInjectorMW,
+    ProjectSettingsWriterMW,
+    EnvInfoWriterMW_V3(),
+  ])
+  async localDebugV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    setCurrentStage(Stage.debug);
+    inputs.stage = Stage.debug;
+    const context = createContextV3();
+    context.envInfo = ctx!.envInfoV3!;
+    context.projectSetting = ctx!.projectSettings! as ProjectSettingsV3;
+    context.tokenProvider = TOOLS.tokenProvider;
+    const res = await runAction("fx.provision", context, inputs as InputsWithProjectPath);
+    if (res.isErr()) return err(res.error);
+    ctx!.projectSettings = context.projectSetting;
+    return ok(Void);
+  }
   _setEnvInfoV2(ctx?: CoreHookContext) {
     if (ctx && ctx.solutionContext) {
       //workaround, compatible to api v2
@@ -689,23 +703,17 @@ export class FxCore implements v3.ICore {
       ctx.contextV2,
       inputs,
       ctx.envInfoV2,
-      this.tools.tokenProvider.appStudioToken
+      this.tools.tokenProvider.m365TokenProvider
     );
   }
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectMigratorMW,
-    ProjectConsolidateMW,
-    AadManifestMigrationMW,
-    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(false),
-    SolutionLoaderMW,
-    QuestionModelMW,
+    EnvInfoLoaderMW_V3(false),
+    QuestionModelMW_V3,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW(),
+    EnvInfoWriterMW_V3(),
   ])
   async publishApplicationV3(
     inputs: Inputs,
@@ -713,21 +721,13 @@ export class FxCore implements v3.ICore {
   ): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.publish);
     inputs.stage = Stage.publish;
-    if (
-      ctx &&
-      ctx.solutionV3 &&
-      ctx.contextV2 &&
-      ctx.envInfoV3 &&
-      ctx.solutionV3.publishApplication
-    ) {
-      const res = await ctx.solutionV3.publishApplication(
-        ctx.contextV2,
-        inputs as v2.InputsWithProjectPath,
-        ctx.envInfoV3,
-        TOOLS.tokenProvider.appStudioToken
-      );
-      return res;
-    }
+    const context = createContextV3();
+    context.envInfo = ctx!.envInfoV3!;
+    context.projectSetting = ctx!.projectSettings! as ProjectSettingsV3;
+    context.tokenProvider = TOOLS.tokenProvider;
+    const res = await runAction("app-manifest.publish", context, inputs as InputsWithProjectPath);
+    if (res.isErr()) return err(res.error);
+    ctx!.projectSettings = context.projectSetting;
     return ok(Void);
   }
   async executeUserTask(func: Func, inputs: Inputs): Promise<Result<unknown, FxError>> {
@@ -842,19 +842,12 @@ export class FxCore implements v3.ICore {
   }
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectMigratorMW,
-    ProjectConsolidateMW,
-    AadManifestMigrationMW,
-    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
-    LocalSettingsLoaderMW,
-    SolutionLoaderMW_V3,
     QuestionModelMW_V3,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW(),
+    EnvInfoWriterMW_V3(),
   ])
   async executeUserTaskV3(
     func: Func,
@@ -862,16 +855,20 @@ export class FxCore implements v3.ICore {
     ctx?: CoreHookContext
   ): Promise<Result<unknown, FxError>> {
     if (func.method === "addFeature") {
-      const feature = inputs.feature;
+      const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+      const feature = inputs.feature as string;
+      let res;
       if (feature === "sql") {
-        const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-        await runAction("sql.add", context, inputs as InputsWithProjectPath);
-        ctx!.projectSettings = context.projectSetting;
-      } else if (feature === BotOptionItem.id) {
-        const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-        await runAction("teams-bot.add", context, inputs as InputsWithProjectPath);
-        ctx!.projectSettings = context.projectSetting;
+        res = await runAction("sql.add", context, inputs as InputsWithProjectPath);
+      } else if (BotFeatureIds.includes(feature)) {
+        res = await runAction("teams-bot.add", context, inputs as InputsWithProjectPath);
+      } else if (TabFeatureIds.includes(feature)) {
+        res = await runAction("teams-tab.add", context, inputs as InputsWithProjectPath);
+      } else {
+        return err(new TaskNotSupportError(feature));
       }
+      if (res.isErr()) return err(res.error);
+      ctx!.projectSettings = context.projectSetting;
     }
     return ok(undefined);
   }

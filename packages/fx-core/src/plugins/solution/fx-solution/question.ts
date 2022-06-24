@@ -45,6 +45,7 @@ export const BotNewUIOptionItem: OptionItem = {
 };
 
 export const NotificationOptionItem: OptionItem = {
+  // For default option, id and cliName must be the same
   id: "Notification",
   label: `$(hubot) ${getLocalizedString("core.NotificationOption.label")}`,
   description: getLocalizedString("core.Option.recommend"),
@@ -62,7 +63,7 @@ export const NotificationOptionItem: OptionItem = {
 };
 
 export const CommandAndResponseOptionItem: OptionItem = {
-  // For default option, id and cliName must be the same
+  // id must match cli `yargsHelp`
   id: "command-bot",
   label: `$(hubot) ${getLocalizedString("core.CommandAndResponseOption.label")}`,
   description: getLocalizedString("core.Option.recommend"),
@@ -432,3 +433,5 @@ export const BotFeatureIds = [
   CommandAndResponseOptionItem.id,
   MessageExtensionItem.id,
 ];
+
+export const TabFeatureIds = [TabOptionItem.id, TabNonSsoItem.id];

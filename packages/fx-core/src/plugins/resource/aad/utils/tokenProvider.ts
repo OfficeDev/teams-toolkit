@@ -1,9 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AppStudioTokenProvider, GraphTokenProvider, PluginContext } from "@microsoft/teamsfx-api";
+import { M365TokenProvider } from "@microsoft/teamsfx-api";
 import { ResultFactory } from "../results";
 import { GetTokenError, TenantNotExistError } from "../errors";
+import { AppStudioScopes, GraphScopes } from "../../../../common";
 
 export enum TokenAudience {
   Graph = "graph",
@@ -11,8 +12,7 @@ export enum TokenAudience {
 }
 
 export interface GraphAndAppStudioTokenProvider {
-  graph?: GraphTokenProvider;
-  appStudio?: AppStudioTokenProvider;
+  m365?: M365TokenProvider;
 }
 interface TokenInstance {
   getToken(tokenProvider: GraphAndAppStudioTokenProvider): Promise<string | undefined>;
@@ -23,14 +23,16 @@ class GraphInstance implements TokenInstance {
   public async getToken(
     tokenProvider: GraphAndAppStudioTokenProvider
   ): Promise<string | undefined> {
-    const token = await tokenProvider.graph?.getAccessToken();
+    const tokenRes = await tokenProvider.m365?.getAccessToken({ scopes: GraphScopes });
+    const token = tokenRes?.isOk() ? tokenRes.value : undefined;
     return token;
   }
 
   public async getTenant(
     tokenProvider: GraphAndAppStudioTokenProvider
   ): Promise<string | undefined> {
-    const tokenObject = await tokenProvider.graph?.getJsonObject();
+    const tokenObjectRes = await tokenProvider.m365?.getJsonObject({ scopes: GraphScopes });
+    const tokenObject = tokenObjectRes?.isOk() ? tokenObjectRes.value : undefined;
     if (!tokenObject) {
       return undefined;
     }
@@ -44,14 +46,16 @@ class AppStudioInstance implements TokenInstance {
   public async getToken(
     tokenProvider: GraphAndAppStudioTokenProvider
   ): Promise<string | undefined> {
-    const token = await tokenProvider.appStudio?.getAccessToken();
+    const tokenRes = await tokenProvider.m365?.getAccessToken({ scopes: AppStudioScopes });
+    const token = tokenRes?.isOk() ? tokenRes.value : undefined;
     return token;
   }
 
   public async getTenant(
     tokenProvider: GraphAndAppStudioTokenProvider
   ): Promise<string | undefined> {
-    const tokenObject = await tokenProvider.appStudio?.getJsonObject();
+    const tokenObjectRes = await tokenProvider.m365?.getJsonObject({ scopes: AppStudioScopes });
+    const tokenObject = tokenObjectRes?.isOk() ? tokenObjectRes.value : undefined;
     if (!tokenObject) {
       return undefined;
     }

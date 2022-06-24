@@ -97,7 +97,7 @@ export class AadAppForTeamsImpl {
       ? Messages.EndLocalDebug.telemetry
       : Messages.EndProvision.telemetry;
 
-    await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
+    await TokenProvider.init({ m365: ctx.m365TokenProvider });
 
     // Move objectId etc. from input to output.
     const skip = Utils.skipAADProvision(
@@ -123,7 +123,7 @@ export class AadAppForTeamsImpl {
           telemetryMessage,
           config.objectId,
           config.password,
-          ctx.graphTokenProvider,
+          ctx.m365TokenProvider,
           isLocalDebug
             ? isConfigUnifyEnabled()
               ? ctx.envInfo.envName
@@ -182,7 +182,7 @@ export class AadAppForTeamsImpl {
       ? Messages.EndLocalDebug.telemetry
       : Messages.EndProvision.telemetry;
 
-    await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
+    await TokenProvider.init({ m365: ctx.m365TokenProvider });
 
     // Move objectId etc. from input to output.
     const skip = Utils.skipAADProvision(ctx, false);
@@ -204,7 +204,7 @@ export class AadAppForTeamsImpl {
           manifest.id,
           config.password,
           await this.getScopeIdForTeams(manifest),
-          ctx.graphTokenProvider,
+          ctx.m365TokenProvider,
           ctx.envInfo.envName
         );
         ctx.logProvider?.info(Messages.getLog(Messages.GetAadAppSuccess));
@@ -324,7 +324,7 @@ export class AadAppForTeamsImpl {
     );
     DialogUtils.init(ctx.ui, ProgressTitle.PostProvision, ProgressTitle.PostProvisionSteps);
 
-    await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
+    await TokenProvider.init({ m365: ctx.m365TokenProvider });
     const config: PostProvisionConfig = new PostProvisionConfig(
       isLocalDebug ? (isConfigUnifyEnabled() ? false : true) : false
     );
@@ -385,7 +385,7 @@ export class AadAppForTeamsImpl {
       ProgressTitle.PostProvisionUsingManifestSteps
     );
 
-    await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
+    await TokenProvider.init({ m365: ctx.m365TokenProvider });
 
     await DialogUtils.progress?.start(ProgressDetail.Starting);
 
@@ -429,7 +429,7 @@ export class AadAppForTeamsImpl {
       return ResultFactory.Success();
     }
 
-    await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
+    await TokenProvider.init({ m365: ctx.m365TokenProvider });
 
     const permissions = AadAppForTeamsImpl.parsePermission(
       configs[0].permissionRequest as string,
@@ -490,10 +490,7 @@ export class AadAppForTeamsImpl {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartCheckPermission);
 
-    await TokenProvider.init(
-      { graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken },
-      TokenAudience.Graph
-    );
+    await TokenProvider.init({ m365: ctx.m365TokenProvider }, TokenAudience.Graph);
     const config = new CheckGrantPermissionConfig();
     await config.restoreConfigFromContext(ctx);
 
@@ -520,10 +517,7 @@ export class AadAppForTeamsImpl {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartListCollaborator);
 
-    await TokenProvider.init(
-      { graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken },
-      TokenAudience.Graph
-    );
+    await TokenProvider.init({ m365: ctx.m365TokenProvider }, TokenAudience.Graph);
 
     const objectId = ConfigUtils.getAadConfig(ctx, ConfigKeys.objectId, false);
     if (!objectId) {
@@ -548,10 +542,7 @@ export class AadAppForTeamsImpl {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGrantPermission);
 
-    await TokenProvider.init(
-      { graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken },
-      TokenAudience.Graph
-    );
+    await TokenProvider.init({ m365: ctx.m365TokenProvider }, TokenAudience.Graph);
     const config = new CheckGrantPermissionConfig(true);
     await config.restoreConfigFromContext(ctx);
 
@@ -814,7 +805,7 @@ export class AadAppForTeamsImpl {
 
       try {
         DialogUtils.init(ctx.ui, ProgressTitle.Deploy, ProgressTitle.DeploySteps);
-        await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
+        await TokenProvider.init({ m365: ctx.m365TokenProvider });
 
         await DialogUtils.progress?.start(ProgressDetail.Starting);
 

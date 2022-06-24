@@ -17,6 +17,8 @@ import { getProjectSettingsPath } from "../../core/middleware/projectSettingsLoa
 import { getComponent } from "../workflow";
 import "../connection/azureWebAppConfig";
 import "../resource/azureSql";
+import "../resource/identity";
+
 @Service("sql")
 export class Sql {
   name = "sql";
@@ -24,8 +26,9 @@ export class Sql {
   /**
    * 1. config sql
    * 2. add sql provision bicep
-   * 3. re-generate resources that connect to sql
-   * 4. persist bicep
+   * 3. add identity provision bicep
+   * 4. re-generate resources that connect to sql
+   * 5. persist bicep
    */
   add(
     context: ContextV3,
@@ -44,6 +47,10 @@ export class Sql {
             return ok([]);
           }
           const remarks: string[] = ["add component 'azure-sql' in projectSettings"];
+          const identityComponent = getComponent(context.projectSetting, "identity");
+          if (!identityComponent) {
+            remarks.push("add component 'identity' in projectSettings");
+          }
           const webAppComponent = getComponent(context.projectSetting, "azure-web-app");
           if (webAppComponent) {
             remarks.push("connect 'azure-sql' to component 'azure-web-app' in projectSettings");
@@ -70,6 +77,14 @@ export class Sql {
             name: "azure-sql",
             provision: true,
           });
+          const identityComponent = getComponent(context.projectSetting, "identity");
+          if (!identityComponent) {
+            projectSettings.components.push({
+              name: "identity",
+              provision: true,
+            });
+            remarks.push("add component 'identity' in projectSettings");
+          }
           const webAppComponent = getComponent(context.projectSetting, "azure-web-app");
           if (webAppComponent) {
             if (!webAppComponent.connections) webAppComponent.connections = [];
@@ -107,6 +122,15 @@ export class Sql {
         },
       },
     ];
+    const identityComponent = getComponent(context.projectSetting, "identity");
+    if (!identityComponent) {
+      actions.push({
+        name: "call:identity.generateBicep",
+        type: "call",
+        required: true,
+        targetAction: "identity.generateBicep",
+      });
+    }
     const webAppComponent = getComponent(context.projectSetting, "azure-web-app");
     if (webAppComponent) {
       actions.push({

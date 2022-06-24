@@ -23,15 +23,11 @@ import { AppDefinition } from "./../../../../../src/plugins/resource/appstudio/i
 import { newEnvInfoV3 } from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import {
-  MockedAppStudioTokenProvider,
   MockedAzureAccountProvider,
-  MockedGraphTokenProvider,
-  MockedSharepointProvider,
   MockedLogProvider,
   MockedTelemetryReporter,
 } from "../../../solution/util";
-import { MockUserInteraction } from "../helper";
-import { MockM365TokenProvider } from "../../../../core/utils";
+import { MockedM365TokenProvider, MockUserInteraction } from "../helper";
 
 describe("Provision Teams app with Azure", () => {
   const sandbox = sinon.createSandbox();
@@ -63,10 +59,7 @@ describe("Provision Teams app with Azure", () => {
 
     mockedTokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
-      appStudioToken: new MockedAppStudioTokenProvider(),
-      graphTokenProvider: new MockedGraphTokenProvider(),
-      sharepointTokenProvider: new MockedSharepointProvider(),
-      m365TokenProvider: new MockM365TokenProvider(),
+      m365TokenProvider: new MockedM365TokenProvider(),
     };
 
     context = {
@@ -107,7 +100,8 @@ describe("Provision Teams app with Azure", () => {
   it("Update Teams app with user provided zip", async () => {
     const error = new Error();
     (error.name as any) = 409;
-    sandbox.stub(AppStudioClient, "createApp").rejects(error);
+    sandbox.stub(AppStudioClient, "getApp").resolves(appDef);
+    sandbox.stub(AppStudioClient, "createApp").resolves(appDef);
     sandbox.stub(AppStudioClient, "updateApp").resolves(appDef);
     const teamsAppId = await plugin.registerTeamsApp(
       context,

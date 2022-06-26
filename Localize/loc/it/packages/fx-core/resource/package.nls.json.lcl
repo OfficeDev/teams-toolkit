@@ -495,10 +495,13 @@
       </Item>
       <Item ItemId=";core.QuestionAppName.validation.pattern" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Application name must start with a letter and can only contain letters and digits.]]></Val>
+          <Val><![CDATA[Application name must start with letters and contain at least two letters or digits. It can not contain some special characters.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Il nome deve iniziare con una lettera e può contenere solo lettere e numeri.]]></Val>
+            <Val><![CDATA[Il nome dell'applicazione deve iniziare con lettere e contenere almeno due lettere o cifre. Non può contenere alcuni caratteri speciali.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Application name must start with a letter and can only contain letters and digits.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3213,10 +3216,13 @@
       </Item>
       <Item ItemId=";error.aad.AadManifestNotProvisioned" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to generate AAD manifest because the resources have not been provisioned yet. You need to run provision or local debug first.]]></Val>
+          <Val><![CDATA[Failed to generate AAD manifest because the resources have not been provisioned yet. You need to run provision or local debug first. Click Get Help to learn more about why you need to provision or local debug.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Non è stato possibile generare il manifesto AAD perché non è stato ancora effettuato il provisioning delle risorse. È necessario eseguire prima il provisioning o il debug locale.]]></Val>
+            <Val><![CDATA[Non è stato possibile generare il manifesto AAD perché non è ancora stato fornito il provisioning delle risorse. È necessario eseguire prima il provisioning o il debug locale. Fare clic su Richiesta supporto per altre informazioni sui motivi per cui è necessario eseguire il provisioning o il debug locale.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to generate AAD manifest because the resources have not been provisioned yet. You need to run provision or local debug first.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -7816,6 +7822,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";plugins.spfx.error.nodeVersionNotSupported" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Node.js version v%s is not supported for SPFx v%s. Check aka.ms/teamsfx-spfx-help for more details.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[La versione v%s di Node.js non è supportata per SPFx v%s. Per altri dettagli, vedere aka.ms/teamsfx-spfx-help.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";plugins.spfx.error.npmInstallFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to run 'npm install' due to %s]]></Val>
@@ -7827,9 +7842,21 @@
       </Item>
       <Item ItemId=";plugins.spfx.error.npmNotFound" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Npm not found on your machine!]]></Val>
+          <Val><![CDATA[NPM not found on your machine. Check aka.ms/teamsfx-spfx-help to install the supported version.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Npm non trovato nel computer.]]></Val>
+            <Val><![CDATA[NPM non trovato nel computer. Controllare aka.ms/teamsfx-spfx-help per installare la versione supportata.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Npm not found on your machine!]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.error.npmVersionNotSupported" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NPM version v%s is not supported for SPFx v%s. Check aka.ms/teamsfx-spfx-help for more details.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[La versione v%s di NPM non è supportata per SPFx v%s. Per altri dettagli, vedere aka.ms/teamsfx-spfx-help.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -7839,6 +7866,24 @@
           <Val><![CDATA[You don't have permission to upload and deploy package to App Catalog %s, please use site admin account.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Non si è autorizzati a caricare e distribuire il pacchetto nel Catalogo app %s. Usare l'account amministratore del sito.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.questions.framework.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Framework]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Framework]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.questions.versionCheck.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Checking Node.js and NPM versions...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Controllo delle versioni di Node.js e NPM in corso...]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

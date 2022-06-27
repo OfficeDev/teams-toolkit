@@ -2116,22 +2116,6 @@ export function registerAccountMenuCommands(context: ExtensionContext) {
       }
     })
   );
-
-  context.subscriptions.push(
-    commands.registerCommand("fx-extension.signInGuideline", async (node: TreeViewCommand) => {
-      // TODO: update the link when documentation is ready
-      switch (node.contextValue) {
-        case "signinM365": {
-          await env.openExternal(Uri.parse("https://www.office.com/"));
-          break;
-        }
-        case "signinAzure": {
-          await env.openExternal(Uri.parse("https://portal.azure.com/"));
-          break;
-        }
-      }
-    })
-  );
 }
 
 export function cmdHdlDisposeTreeView() {
@@ -2979,6 +2963,46 @@ export function openTutorialHandler(args?: any[]): Promise<Result<unknown, FxErr
     [TelemetryProperty.TutorialName]: tutorial.id,
   });
   return VS_CODE_UI.openUrl(tutorial.data as string);
+}
+
+export async function openDocumentLinkHandler(args?: any[]): Promise<Result<boolean, FxError>> {
+  if (!args || args.length < 1) {
+    // should never happen
+    return Promise.resolve(ok(false));
+  }
+  const node = args[0] as TreeViewCommand;
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
+    [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.TreeView,
+    [TelemetryProperty.DocumentationName]: node.contextValue!,
+  });
+  switch (node.contextValue) {
+    case "signinM365": {
+      return VS_CODE_UI.openUrl("https://www.office.com/");
+    }
+    case "signinAzure": {
+      return VS_CODE_UI.openUrl("https://portal.azure.com/");
+    }
+    case "fx-extension.create":
+    case "fx-extension.openSamples": {
+      return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-create-project");
+    }
+    case "fx-extension.openManifest": {
+      return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-edit-manifest");
+    }
+    case "fx-extension.provision": {
+      return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-provision-cloud-resource");
+    }
+    case "fx-extension.build": {
+      return VS_CODE_UI.openUrl("https://aka.ms/teams-store-validation");
+    }
+    case "fx-extension.deploy": {
+      return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-deploy");
+    }
+    case "fx-extension.publish": {
+      return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-publish");
+    }
+  }
+  return Promise.resolve(ok(false));
 }
 
 export async function signinM365Callback(args?: any[]): Promise<Result<null, FxError>> {

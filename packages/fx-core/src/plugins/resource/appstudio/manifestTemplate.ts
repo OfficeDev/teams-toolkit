@@ -38,9 +38,7 @@ import {
   MANIFEST_TEMPLATE_CONSOLIDATE,
   WEB_APPLICATION_INFO_MULTI_ENV,
   WEB_APPLICATION_INFO_LOCAL_DEBUG,
-  DEFAULT_DEVELOPER_WEBSITE_URL,
-  DEFAULT_DEVELOPER_PRIVACY_URL,
-  DEFAULT_DEVELOPER_TERM_OF_USE_URL,
+  DEFAULT_DEVELOPER,
   BOTS_TPL_FOR_COMMAND_AND_RESPONSE,
   BOTS_TPL_FOR_NOTIFICATION,
 } from "./constants";
@@ -63,16 +61,10 @@ export async function init(
 ): Promise<Result<any, FxError>> {
   const newAppPackageFolder = `${projectRoot}/templates/${AppPackageFolderName}`;
   await fs.ensureDir(newAppPackageFolder);
-
   const manifestString = TEAMS_APP_MANIFEST_TEMPLATE_V3;
   const manifest = JSON.parse(manifestString);
   if (existingApp) {
-    manifest.developer = {
-      name: "Teams App, Inc.",
-      websiteUrl: DEFAULT_DEVELOPER_WEBSITE_URL,
-      privacyUrl: DEFAULT_DEVELOPER_PRIVACY_URL,
-      termsOfUseUrl: DEFAULT_DEVELOPER_TERM_OF_USE_URL,
-    };
+    manifest.developer = DEFAULT_DEVELOPER;
   }
   await saveManifest(projectRoot, manifest);
 

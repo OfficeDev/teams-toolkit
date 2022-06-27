@@ -24,7 +24,6 @@ import {
   getResourceGroupInPortal,
 } from "@microsoft/teamsfx-core";
 import { allRunningDebugSessions } from "./teamsfxTaskHandler";
-import { performance } from "perf_hooks";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -370,41 +369,43 @@ export async function loadPackageJson(path: string): Promise<any> {
   }
 }
 
-export interface LocalDebugSession {
-  id: string;
-  startTime?: number;
-  properties: { [key: string]: string };
-  errorProps: string[];
-  failedServices: { name: string; exitCode: number | undefined }[];
+export class LocalDebugSession {
+  static createSession() {
+    const session = new LocalDebugSession(uuid.v4());
+    return session;
+  }
+  static createInvalidSession() {
+    return new LocalDebugSession();
+  }
+
+  readonly id: string;
+  // Save the time when the event it sent for calculating time gaps.
+  readonly eventTimes: { [eventName: string]: number | undefined } = {};
+  readonly properties: { [key: string]: string } = {};
+  readonly errorProps: string[] = [];
+  readonly failedServices: { name: string; exitCode: number | undefined }[] = [];
+
+  private constructor(id: string = DebugNoSessionId) {
+    this.id = id;
+  }
 }
 
 export const DebugNoSessionId = "no-session-id";
 // Helper functions for local debug correlation-id, only used for telemetry
 // Use a 2-element tuple to handle concurrent F5
 const localDebugCorrelationIds: [LocalDebugSession, LocalDebugSession] = [
-  { id: DebugNoSessionId, properties: {}, errorProps: [], failedServices: [] },
-  { id: DebugNoSessionId, properties: {}, errorProps: [], failedServices: [] },
+  LocalDebugSession.createInvalidSession(),
+  LocalDebugSession.createInvalidSession(),
 ];
 let current = 0;
 export function startLocalDebugSession(): string {
   current = (current + 1) % 2;
-  localDebugCorrelationIds[current] = {
-    id: uuid.v4(),
-    startTime: performance.now(),
-    properties: {},
-    errorProps: [],
-    failedServices: [],
-  };
+  localDebugCorrelationIds[current] = LocalDebugSession.createSession();
   return getLocalDebugSessionId();
 }
 
 export function endLocalDebugSession() {
-  localDebugCorrelationIds[current] = {
-    id: DebugNoSessionId,
-    properties: {},
-    errorProps: [],
-    failedServices: [],
-  };
+  localDebugCorrelationIds[current] = LocalDebugSession.createInvalidSession();
   current = (current + 1) % 2;
 }
 

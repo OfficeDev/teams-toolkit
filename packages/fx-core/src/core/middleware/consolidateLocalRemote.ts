@@ -29,23 +29,15 @@ import {
   TelemetryProperty,
 } from "../../common/telemetry";
 import { CoreHookContext } from "../types";
-import { globalVars, TOOLS } from "../globalVars";
+import { TOOLS } from "../globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { getManifestTemplatePath } from "../../plugins/resource/appstudio/manifestTemplate";
-import { getResourceFolder, getTemplatesFolder } from "../../folder";
+import { getResourceFolder } from "../../folder";
 import { loadProjectSettings } from "./projectSettingsLoader";
 import { addPathToGitignore, needMigrateToArmAndMultiEnv } from "./projectMigrator";
 import * as util from "util";
 import { ManifestTemplate } from "../../plugins/resource/spfx/utils/constants";
-import {
-  generateAadManifest,
-  needMigrateToAadManifest,
-  Permission,
-  permissionsToRequiredResourceAccess,
-} from "./MigrationUtils";
-import { Constants } from "../../plugins/resource/aad/constants";
-import { AADManifest } from "../../plugins/resource/aad/interfaces/AADManifest";
-import { generateAadManifestTemplate } from "../generateAadManifestTemplate";
+import { generateAadManifest, needMigrateToAadManifest } from "./MigrationUtils";
 
 const upgradeButton = "Upgrade";
 const LearnMore = "Learn More";

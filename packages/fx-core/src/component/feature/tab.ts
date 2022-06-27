@@ -17,6 +17,7 @@ import { Service } from "typedi";
 import { isVSProject } from "../../common";
 import { CoreQuestionNames } from "../../core/question";
 import { ComponentNames } from "../constants";
+import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "../projectSettingsManager";
 @Service("teams-tab")
 export class TeamsfxCore {
   name = "teams-tab";
@@ -29,6 +30,7 @@ export class TeamsfxCore {
         ? ComponentNames.AzureWebApp
         : ComponentNames.AzureStorage;
     const actions: Action[] = [
+      LoadProjectSettingsAction,
       {
         name: "fx.configTab",
         type: "function",
@@ -58,6 +60,11 @@ export class TeamsfxCore {
         targetAction: "tab-code.generate",
       },
       {
+        type: "call",
+        targetAction: "bicep.init",
+        required: true,
+      },
+      {
         name: `call:${inputs.hosting}.generateBicep`,
         type: "call",
         required: true,
@@ -72,11 +79,18 @@ export class TeamsfxCore {
           capabilities: [{ name: "staticTab" }, { name: "configurableTab" }],
         },
       },
+      {
+        name: "call:debug.generateLocalDebugSettings",
+        type: "call",
+        required: true,
+        targetAction: "debug.generateLocalDebugSettings",
+      },
+      WriteProjectSettingsAction,
     ];
     const group: GroupAction = {
       type: "group",
       name: "teams-tab.add",
-      mode: "parallel",
+      mode: "sequential",
       actions: actions,
     };
     return ok(group);

@@ -125,7 +125,6 @@ export enum TelemetryProperty {
   PreviewCheckResults = "preview-check-results",
   PreviewPortsInUse = "preview-ports-in-use",
   PreviewDevCertStatus = "preview-dev-cert-status",
-  PreviewLastEventName = "preview-last-event-name",
   ListAllCollaborators = "list-all-collaborators",
   FeatureFlags = "feature-flags",
   Env = "env",

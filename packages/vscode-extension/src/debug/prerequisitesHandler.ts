@@ -221,30 +221,37 @@ async function checkPort(
   projectSettings: ProjectSettings,
   displayMessage: string
 ): Promise<CheckResult> {
-  return await runWithCheckResultTelemetry(TelemetryEvent.DebugPrereqsCheckPorts, async () => {
-    VsCodeLogInstance.outputChannel.appendLine(displayMessage);
-    const portsInUse = await localEnvManager.getPortsInUse(workspacePath, projectSettings);
-    if (portsInUse.length > 0) {
-      let message: string;
-      if (portsInUse.length > 1) {
-        message = util.format(
-          localize("teamstoolkit.localDebug.portsAlreadyInUse"),
-          portsInUse.join(", ")
-        );
-      } else {
-        message = util.format(localize("teamstoolkit.localDebug.portAlreadyInUse"), portsInUse[0]);
+  return await runWithCheckResultTelemetry(
+    TelemetryEvent.DebugPrereqsCheckPorts,
+    async (ctx: TelemetryContext) => {
+      VsCodeLogInstance.outputChannel.appendLine(displayMessage);
+      const portsInUse = await localEnvManager.getPortsInUse(workspacePath, projectSettings);
+      if (portsInUse.length > 0) {
+        ctx.properties[TelemetryProperty.DebugPortsInUse] = JSON.stringify(portsInUse);
+        let message: string;
+        if (portsInUse.length > 1) {
+          message = util.format(
+            localize("teamstoolkit.localDebug.portsAlreadyInUse"),
+            portsInUse.join(", ")
+          );
+        } else {
+          message = util.format(
+            localize("teamstoolkit.localDebug.portAlreadyInUse"),
+            portsInUse[0]
+          );
+        }
+        return {
+          checker: Checker.Ports,
+          result: ResultStatus.failed,
+          error: new UserError(ExtensionSource, ExtensionErrors.PortAlreadyInUse, message),
+        };
       }
       return {
         checker: Checker.Ports,
-        result: ResultStatus.failed,
-        error: new UserError(ExtensionSource, ExtensionErrors.PortAlreadyInUse, message),
+        result: ResultStatus.success,
       };
     }
-    return {
-      checker: Checker.Ports,
-      result: ResultStatus.success,
-    };
-  });
+  );
 }
 
 export async function checkPrerequisitesForGetStarted(): Promise<Result<any, FxError>> {
@@ -289,7 +296,8 @@ export async function checkAndInstall(): Promise<Result<void, FxError>> {
   const projectComponents = await commonUtils.getProjectComponents();
   return await localTelemetryReporter.runWithTelemetryProperties(
     TelemetryEvent.DebugPrerequisites,
-    { [TelemetryProperty.DebugProjectComponents]: JSON.stringify(projectComponents) },
+    // projectComponents is already serialized JSON string
+    { [TelemetryProperty.DebugProjectComponents]: `${projectComponents}` },
     _checkAndInstall
   );
 }

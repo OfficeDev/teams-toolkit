@@ -1227,7 +1227,8 @@ export async function validateLocalPrerequisitesHandler(): Promise<string | unde
   await sendDebugAllStartEvent();
   const result = await localPrerequisites.checkAndInstall();
   if (result.isErr()) {
-    await sendDebugAllEvent(result.error);
+    // Only local debug use validate-local-prerequisites command
+    await sendDebugAllEvent(false, result.error);
     commonUtils.endLocalDebugSession();
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
@@ -1337,7 +1338,9 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
   const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
   const result = await localTelemetryReporter.runWithTelemetryProperties(
     TelemetryEvent.DebugPreCheck,
-    { [TelemetryProperty.DebugAppId]: localAppId },
+    {
+      [TelemetryProperty.DebugAppId]: localAppId,
+    },
     async (): Promise<Result<void, FxError>> => {
       const result = await localTelemetryReporter.runWithTelemetry(
         TelemetryEvent.DebugPreCheckCoreLocalDebug,
@@ -1381,7 +1384,8 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
   if (result.isErr()) {
     terminateAllRunningTeamsfxTasks();
     await debug.stopDebugging();
-    await sendDebugAllEvent(result.error);
+    // only local debug uses pre-debug-check command
+    await sendDebugAllEvent(false, result.error);
     commonUtils.endLocalDebugSession();
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";

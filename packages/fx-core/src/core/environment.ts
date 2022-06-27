@@ -473,6 +473,7 @@ class EnvironmentManager {
 export function separateSecretDataV3(envState: any): Record<string, string> {
   const res: Record<string, string> = {};
   for (const resourceName of Object.keys(envState)) {
+    if (resourceName === "solution") continue;
     const component = Container.get<CloudResource>(resourceName);
     const state = envState[resourceName] as Json;
     if (component.secretKeys && state.secretKeys.length > 0) {

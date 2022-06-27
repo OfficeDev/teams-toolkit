@@ -6,7 +6,7 @@ import { RecoverableDatabase } from "@azure/arm-sql/esm/models/mappers";
 import { ProductName } from "@microsoft/teamsfx-api";
 import { isOfficeAddinEnabled } from "../../../../../common";
 import { ProgrammingLanguage } from "../../../../../common/local/constants";
-//import { Inputs } from "@microsoft/teamsfx-api";
+import type { Inputs } from "@microsoft/teamsfx-api";
 
 // TODO: add spfx tasks with "validate-local-prerequisites"
 export function generateTasks(

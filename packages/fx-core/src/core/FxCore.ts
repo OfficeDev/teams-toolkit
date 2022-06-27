@@ -392,6 +392,10 @@ export class FxCore implements v3.ICore {
         inputs.feature = feature;
         await runAction("teams-bot.add", context, inputs as InputsWithProjectPath);
       }
+      if (TabFeatureIds.includes(feature)) {
+        inputs.feature = feature;
+        await runAction("teams-tab.add", context, inputs as InputsWithProjectPath);
+      }
     }
     if (inputs.platform === Platform.VSCode) {
       await globalStateUpdate(automaticNpmInstall, true);

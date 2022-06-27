@@ -38,7 +38,7 @@ import {
 } from "../common/tools";
 import { GLOBAL_CONFIG } from "../plugins/solution/fx-solution/constants";
 import { Component, sendTelemetryErrorEvent, TelemetryEvent } from "../common/telemetry";
-import Ajv, { AnySchemaObject } from "ajv";
+import Ajv from "ajv";
 import * as draft6MetaSchema from "ajv/dist/refs/json-schema-draft-06.json";
 import * as envConfigSchema from "@microsoft/teamsfx-api/build/schemas/envConfig.json";
 import { ConstantString, ManifestVariables } from "../common/constants";
@@ -50,7 +50,7 @@ import {
 } from "./error";
 import { loadProjectSettings } from "./middleware/projectSettingsLoader";
 import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
-import Container from "typedi";
+import { Container } from "typedi";
 import { pick } from "lodash";
 
 export interface EnvStateFiles {

@@ -5,8 +5,8 @@ import { happyPathTest } from "./BotHappyPathCommon";
 import { Runtime } from "../../commonlib/constants";
 import { it } from "../../commonlib/it";
 
-describe("Provision for Dotnet", () => {
+describe("Provision for Node", () => {
   it("Provision Resource: func hosted notification", async function () {
-    await happyPathTest(Runtime.Dotnet, "notification", ["http-functions"]);
+    await happyPathTest(Runtime.Node, "message-extension");
   });
 });

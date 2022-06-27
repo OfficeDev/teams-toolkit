@@ -5,7 +5,7 @@
 
 /**
  * @author Siglud
- */
+ **/
 
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -21,9 +21,13 @@ import {
 } from "../commonUtils";
 import { environmentManager } from "@microsoft/teamsfx-core";
 
-import { Runtime } from "../../commonlib/constants";
+import { Runtime, CliCapabilities, CliTriggerType } from "../../commonlib/constants";
 
-export async function happyPathTest(runtime: Runtime) {
+export async function happyPathTest(
+  runtime: Runtime,
+  capabilities: CliCapabilities,
+  trigger?: CliTriggerType[]
+): Promise<void> {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const subscription = getSubscriptionId();
@@ -31,16 +35,15 @@ export async function happyPathTest(runtime: Runtime) {
   const envName = environmentManager.getDefaultEnvName();
 
   const env = Object.assign({}, process.env);
-  env["TEAMSFX_CONFIG_UNIFY"] = "true";
-  env["BOT_NOTIFICATION_ENABLED"] = "true";
   env["TEAMSFX_TEMPLATE_PRERELEASE"] = "beta";
   if (runtime === Runtime.Dotnet) {
     env["TEAMSFX_CLI_DOTNET"] = "true";
   }
 
-  const cmdBase = `teamsfx new --interactive false --app-name ${appName} --capabilities notification --bot-host-type-trigger http-functions`;
+  const triggerStr = trigger === undefined ? "" : `--bot-host-type-trigger ${trigger.join(" ")} `;
+  const cmdBase = `teamsfx new --interactive false --app-name ${appName} --capabilities ${capabilities} ${triggerStr}`;
   const cmd =
-    runtime == Runtime.Dotnet
+    runtime === Runtime.Dotnet
       ? `${cmdBase} --runtime dotnet`
       : `${cmdBase} --programming-language typescript`;
   await execAsync(cmd, {
@@ -79,7 +82,7 @@ export async function happyPathTest(runtime: Runtime) {
   }
 
   // deploy
-  await execAsyncWithRetry(`teamsfx deploy bot`, {
+  await execAsyncWithRetry(`teamsfx deploy ${capabilities}`, {
     cwd: projectPath,
     env: env,
     timeout: 0,

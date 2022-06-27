@@ -12,7 +12,7 @@ import {
   StatesFolderName,
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
-import { isSPFxProject, isConfigUnifyEnabled } from "../../common/tools";
+import { isSPFxProject, isConfigUnifyEnabled, getAppDirectory } from "../../common/tools";
 import { environmentManager } from "../environment";
 import { CoreSource, ConsolidateCanceledError } from "../error";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
@@ -157,10 +157,8 @@ export async function needConsolidateLocalRemote(ctx: CoreHookContext): Promise<
     return false;
   }
 
-  const templates = globalVars.isVS ? "Templates" : "templates";
-  const consolidateManifestExist = await fs.pathExists(
-    path.join(inputs.projectPath as string, templates, "appPackage", "manifest.template.json")
-  );
+  const appDir = await getAppDirectory(inputs.projectPath as string);
+  const consolidateManifestExist = await fs.pathExists(path.join(appDir, "manifest.template.json"));
   if (!consolidateManifestExist) {
     return true;
   }

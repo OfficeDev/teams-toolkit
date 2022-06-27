@@ -213,7 +213,10 @@ export enum TelemetryProperty {
   DebugRemote = "remote",
   DebugAppId = "debug-appid",
   DebugProjectComponents = "debug-project-components",
+  DebugDevCertStatus = "debug-dev-cert-status",
   DebugCheckResults = "debug-check-results",
+  DebugCheckResultsSafe = "debug-check-results-safe",
+  DebugErrorCodes = "debug-error-codes",
   DebugNpmInstallName = "debug-npm-install-name",
   DebugNpmInstallExitCode = "debug-npm-install-exit-code",
   DebugNpmInstallErrorMessage = "debug-npm-install-error-message",
@@ -308,6 +311,13 @@ export enum TelemetrySurveyDataProperty {
   Q4Result = "q4-result",
   Q5Title = "q5-title",
   Q5Result = "q5-result",
+}
+
+export enum TelemetryDebugDevCertStatus {
+  Disabled = "disabled",
+  AlreadyTrusted = "already-trusted",
+  Trusted = "trusted",
+  NotTrusted = "not-trusted",
 }
 
 export const TelemetryComponentType = "extension";

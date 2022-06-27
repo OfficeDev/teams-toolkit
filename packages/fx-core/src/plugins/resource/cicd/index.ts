@@ -18,6 +18,7 @@ import {
   StaticOptions,
   MultiSelectQuestion,
   OptionItem,
+  ContextV3,
 } from "@microsoft/teamsfx-api";
 
 import { FxResult, FxCICDPluginResultFactory as ResultFactory } from "./result";
@@ -26,7 +27,12 @@ import { ErrorType, InternalError, NoProjectOpenedError, PluginError } from "./e
 import { Alias, LifecycleFuncNames, PluginCICD } from "./constants";
 import { Service } from "typedi";
 import { ResourcePluginsV2 } from "../../solution/fx-solution/ResourcePluginContainer";
-import { ResourcePlugin, Context, DeepReadonly } from "@microsoft/teamsfx-api/build/v2";
+import {
+  ResourcePlugin,
+  Context,
+  DeepReadonly,
+  InputsWithProjectPath,
+} from "@microsoft/teamsfx-api/build/v2";
 import {
   githubOption,
   azdoOption,
@@ -44,6 +50,7 @@ import { getDefaultString, getLocalizedString } from "../../../common/localizeUt
 import { isExistingTabApp } from "../../../common";
 import { NoCapabilityFoundError } from "../../../core/error";
 import { ExistingTemplatesStat } from "./utils/existingTemplatesStat";
+import { addCicdQuestion } from "../../../component/feature/cicd";
 
 @Service(ResourcePluginsV2.CICDPlugin)
 export class CICDPluginV2 implements ResourcePlugin {
@@ -62,7 +69,13 @@ export class CICDPluginV2 implements ResourcePlugin {
     envInfo: v2.EnvInfoV2
   ): Promise<FxResult> {
     Logger.setLogger(context.logProvider);
-    return await this.cicdImpl.addCICDWorkflows(context, inputs, envInfo);
+    let envName = inputs[questionNames.Environment];
+    // TODO: add support for VS/.Net Projects.
+    if (inputs.platform === Platform.CLI) {
+      // In CLI, get env name from the default `env` question.
+      envName = envInfo.envName;
+    }
+    return await this.cicdImpl.addCICDWorkflows(context, inputs, envName);
   }
 
   public async getQuestionsForUserTask(
@@ -72,85 +85,7 @@ export class CICDPluginV2 implements ResourcePlugin {
     envInfo: DeepReadonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider
   ): Promise<FxResult> {
-    // add CI CD workflows for minimal app is not supported.
-    if (inputs.platform !== Platform.CLI_HELP && isExistingTabApp(ctx.projectSetting)) {
-      throw new NoCapabilityFoundError(Stage.addCiCdFlow);
-    }
-
-    const cicdWorkflowQuestions = new QTreeNode({
-      type: "group",
-    });
-
-    const whichProvider: SingleSelectQuestion = {
-      name: questionNames.Provider,
-      type: "singleSelect",
-      staticOptions: [githubOption, azdoOption, jenkinsOption],
-      title: getLocalizedString("plugins.cicd.whichProvider.title"),
-      default: githubOption.id,
-    };
-
-    const whichTemplate: MultiSelectQuestion = {
-      name: questionNames.Template,
-      type: "multiSelect",
-      staticOptions: [ciOption, cdOption, provisionOption, publishOption],
-      title: getLocalizedString("plugins.cicd.whichTemplate.title"),
-      default: [ciOption.id],
-    };
-
-    // TODO: add support for VS/.Net Projects.
-    if (inputs.platform === Platform.VSCode) {
-      if (!inputs.projectPath) {
-        throw new NoProjectOpenedError();
-      }
-
-      const envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath);
-      if (envProfilesResult.isErr()) {
-        throw new InternalError(
-          [
-            getDefaultString("error.cicd.FailedToListMultiEnv", envProfilesResult.error.message),
-            getLocalizedString("error.cicd.FailedToListMultiEnv", envProfilesResult.error.message),
-          ],
-          envProfilesResult.error
-        );
-      }
-
-      const existingInstance = ExistingTemplatesStat.getInstance(
-        inputs.projectPath!,
-        envProfilesResult.value
-      );
-      // Mute this scan before there's initial scan on upper layers.
-      // await existingInstance.scan();
-
-      const whichEnvironment: SingleSelectQuestion = {
-        type: "singleSelect",
-        name: questionNames.Environment,
-        title: getLocalizedString("plugins.cicd.whichEnvironment.title"),
-        staticOptions: [],
-        dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
-          // Remove the env items in which all combinations of templates are scaffolded/existing.
-          return existingInstance.availableEnvOptions();
-        },
-        skipSingleOption: true,
-      };
-
-      whichProvider.dynamicOptions = async (inputs: Inputs): Promise<OptionItem[]> => {
-        const envName = inputs[questionNames.Environment];
-        return existingInstance.availableProviderOptions(envName);
-      };
-
-      whichTemplate.dynamicOptions = async (inputs: Inputs): Promise<OptionItem[]> => {
-        const envName = inputs[questionNames.Environment];
-        const provider = inputs[questionNames.Provider];
-        return existingInstance.availableTemplateOptions(envName, provider);
-      };
-
-      cicdWorkflowQuestions.addChild(new QTreeNode(whichEnvironment));
-    }
-
-    cicdWorkflowQuestions.addChild(new QTreeNode(whichProvider));
-    cicdWorkflowQuestions.addChild(new QTreeNode(whichTemplate));
-
-    return ok(cicdWorkflowQuestions);
+    return await addCicdQuestion(ctx as ContextV3, inputs as InputsWithProjectPath);
   }
 
   public async executeUserTask(

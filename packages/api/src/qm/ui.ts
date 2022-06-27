@@ -2,9 +2,10 @@
 // Licensed under the MIT license.
 
 import { err, ok, Result } from "neverthrow";
+import { LocalFunc } from ".";
 import { FxError, UserCancelError } from "../error";
 import { OnSelectionChangeFunc, StaticOptions } from "../qm/question";
-import { OptionItem } from "../types";
+import { Inputs, OptionItem } from "../types";
 import { Colors } from "./../utils/log";
 
 /**
@@ -121,6 +122,14 @@ export type SelectFilesConfig = UIConfig<string[]>;
  * folder selector config
  */
 export type SelectFolderConfig = UIConfig<string>;
+
+/**
+ * func execution config
+ */
+export interface ExecuteFuncConfig extends UIConfig<string> {
+  func: LocalFunc<any>;
+  inputs: Inputs;
+}
 
 /**
  * a wrapper of user input result
@@ -323,6 +332,12 @@ export interface UserInteraction {
    * @returns A promise indicating if reload is successful.
    */
   reload?(): Promise<Result<boolean, FxError>>;
+
+  /**
+   * Execute a function. User interface can decide what the UX is.
+   * @param config execute function configurations
+   */
+  executeFunction?(config: ExecuteFuncConfig): any | Promise<any>;
 }
 
 export interface IProgressHandler {

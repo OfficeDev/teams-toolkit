@@ -15,6 +15,7 @@ export enum ExtensionErrors {
   PrerequisitesValidationError = "PrerequisitesValidationError",
   PrerequisitesNoM365AccountError = "PrerequisitesNoM365AccountError",
   PrerequisitesSideloadingDisabledError = "PrerequisitesSideloadingDisabledError",
+  PrerequisitesInstallPackagesError = "PrerequisitesPackageInstallError",
   DebugServiceFailedBeforeStartError = "DebugServiceFailedBeforeStartError",
   DebugNpmInstallError = "DebugNpmInstallError",
   OpenExternalFailed = "OpenExternalFailed",

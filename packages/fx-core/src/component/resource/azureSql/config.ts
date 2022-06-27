@@ -30,24 +30,31 @@ export function LoadSqlConfig(state: v3.CloudResource, identity: string): SqlCon
   return {
     sqlEndpoint: sqlEndpoint,
     identity: identity,
-    databases: databases,
+    databases: Object.values(databases),
   };
 }
 
-function loadDatabases(state: v3.CloudResource): string[] {
-  const databases: string[] = [];
+export function loadDatabases(state: v3.CloudResource): Record<string, string> {
+  const databases: Record<string, string> = {};
   for (const key of Object.keys(state)) {
     if (key.startsWith(Constants.databaseName)) {
-      const value = state[key];
-      databases.push(value);
+      databases[key] = state[key];
     }
   }
   return databases;
 }
 
+export function removeDatabases(state: v3.CloudResource): void {
+  for (const key of Object.keys(state)) {
+    if (key.startsWith(Constants.databaseName) && key !== Constants.databaseName) {
+      delete state[key];
+    }
+  }
+}
+
 function loadSubscriptionId(state: v3.CloudResource): string {
   let subscriptionId = "";
-  const sqlResourceId = state.resourceId;
+  const sqlResourceId = state["sqlResourceId"];
   if (sqlResourceId) {
     try {
       subscriptionId = getSubscriptionIdFromResourceId(sqlResourceId);
@@ -64,7 +71,7 @@ function loadSubscriptionId(state: v3.CloudResource): string {
 
 function loadResourceGroup(state: v3.CloudResource): string {
   let resourceGroup = "";
-  const sqlResourceId = state.resourceId;
+  const sqlResourceId = state["sqlResourceId"];
   if (sqlResourceId) {
     try {
       resourceGroup = getResourceGroupNameFromResourceId(sqlResourceId);

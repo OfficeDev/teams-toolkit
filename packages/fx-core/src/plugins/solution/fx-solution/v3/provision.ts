@@ -34,6 +34,7 @@ import {
   TelemetryProperty,
 } from "../../../../common/telemetry";
 import { AppStudioScopes, getHashedEnv, getResourceGroupInPortal } from "../../../../common/tools";
+import { convertToAlphanumericOnly } from "../../../../common/utils";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import arm from "../arm";
 import { ResourceGroupInfo } from "../commonQuestions";
@@ -390,7 +391,7 @@ export async function fillInAzureConfigs(
   const resourceGroupNameFromEnvConfig = envInfo.config.azure?.resourceGroupName;
   const resourceGroupNameFromState = envInfo.state.solution.resourceGroupName;
   const resourceGroupLocationFromState = envInfo.state.solution.location;
-  const appName = ctx.projectSetting.appName;
+  const appName = convertToAlphanumericOnly(ctx.projectSetting.appName);
   const defaultResourceGroupName = `${snakeCase(appName)}${"-" + envInfo.envName}-rg`;
   let resourceGroupInfo: ResourceGroupInfo;
   const telemetryProperties: { [key: string]: string } = {};

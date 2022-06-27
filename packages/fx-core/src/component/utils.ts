@@ -9,7 +9,6 @@ import {
   ContextV3,
   err,
   FileEffect,
-  FileOperation,
   FxError,
   ok,
   ProjectSettingsV3,
@@ -28,8 +27,8 @@ import { TOOLS } from "../core/globalVars";
 import { SolutionError } from "../plugins/solution/fx-solution/constants";
 import * as uuid from "uuid";
 import { getProjectSettingsVersion } from "../common/projectSettingsHelper";
-import { DefaultManifestProvider } from "../plugins/solution/fx-solution/v3/addFeature";
-import { generateResourceBaseName } from "../plugins/solution/fx-solution/arm";
+import { DefaultManifestProvider } from "./resource/appManifest/manifestProvider";
+import { getProjectTemplatesFolderPath } from "../common/utils";
 
 export async function persistProvisionBicep(
   projectPath: string,
@@ -55,12 +54,13 @@ export async function persistProvisionBicep(
   return ok(undefined);
 }
 
-export function persistProvisionBicepPlans(
+export async function persistProvisionBicepPlans(
   projectPath: string,
   provisionBicep: ProvisionBicep
-): string[] {
+): Promise<string[]> {
   const plans: string[] = [];
-  const templateFolder = path.join(projectPath, "templates", "azure");
+  const templateRoot = await getProjectTemplatesFolderPath(projectPath);
+  const templateFolder = path.join(templateRoot, "azure");
   if (provisionBicep.Modules) {
     for (const module of Object.keys(provisionBicep.Modules)) {
       const value = provisionBicep.Modules[module];
@@ -85,11 +85,12 @@ export function persistProvisionBicepPlans(
   return plans;
 }
 
-export function persistConfigBicep(
+export async function persistConfigBicep(
   projectPath: string,
   configBicep: ConfigurationBicep
-): Result<any, FxError> {
-  const templateFolder = path.join(projectPath, "templates", "azure");
+): Promise<Result<any, FxError>> {
+  const templateRoot = await getProjectTemplatesFolderPath(projectPath);
+  const templateFolder = path.join(templateRoot, "azure");
   if (configBicep.Modules) {
     for (const module of Object.keys(configBicep.Modules)) {
       const value = configBicep.Modules[module];
@@ -109,12 +110,13 @@ export function persistConfigBicep(
   return ok(undefined);
 }
 
-export function persistConfigBicepPlans(
+export async function persistConfigBicepPlans(
   projectPath: string,
   provisionBicep: ProvisionBicep
-): string[] {
+): Promise<string[]> {
   const plans: string[] = [];
-  const templateFolder = path.join(projectPath, "templates", "azure");
+  const templateRoot = await getProjectTemplatesFolderPath(projectPath);
+  const templateFolder = path.join(templateRoot, "azure");
   if (provisionBicep.Modules) {
     for (const module of Object.keys(provisionBicep.Modules)) {
       const value = provisionBicep.Modules[module];
@@ -177,7 +179,6 @@ export async function persistParams(
   appName: string,
   params: Record<string, string>
 ): Promise<Result<any, FxError>> {
-  params.resourceBaseName = generateResourceBaseName(appName, "");
   const envListResult = await environmentManager.listRemoteEnvConfigs(projectPath);
   if (envListResult.isErr()) {
     return err(envListResult.error);
@@ -191,6 +192,9 @@ export async function persistParams(
     if (await fs.pathExists(parameterEnvFilePath)) {
       const json = await fs.readJson(parameterEnvFilePath);
       const parameterObj = json.parameters.provisionParameters.value;
+      if (!parameterObj.resourceBaseName) {
+        params.resourceBaseName = generateResourceBaseName(appName, "");
+      }
       const duplicateParam = Object.keys(parameterObj).filter((val) =>
         Object.keys(params).includes(val)
       );
@@ -249,18 +253,18 @@ export async function persistBicep(
   return ok(undefined);
 }
 
-export function persistBicepPlans(projectPath: string, bicep: Bicep): string[] {
+export async function persistBicepPlans(projectPath: string, bicep: Bicep): Promise<string[]> {
   let plans: string[] = [];
   if (bicep.Provision) {
-    const res = persistProvisionBicepPlans(projectPath, bicep.Provision);
+    const res = await persistProvisionBicepPlans(projectPath, bicep.Provision);
     plans = plans.concat(res);
   }
   if (bicep.Configuration) {
-    const res = persistConfigBicepPlans(projectPath, bicep.Configuration);
+    const res = await persistConfigBicepPlans(projectPath, bicep.Configuration);
     plans = plans.concat(res);
   }
   if (bicep.Parameters) {
-    const res = persistProvisionBicepPlans(projectPath, bicep.Parameters);
+    const res = persistParamsBicepPlans(projectPath, bicep.Parameters);
     plans = plans.concat(res);
   }
   return plans.filter(Boolean);
@@ -414,4 +418,16 @@ export function createContextV3(projectSettings?: ProjectSettingsV3): ContextV3 
 export function normalizeName(appName: string): string {
   const normalizedAppName = appName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
   return normalizedAppName;
+}
+
+export function generateResourceBaseName(appName: string, envName: string): string {
+  const maxAppNameLength = 10;
+  const maxEnvNameLength = 4;
+  const normalizedAppName = appName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+  const normalizedEnvName = envName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+  return (
+    normalizedAppName.substr(0, maxAppNameLength) +
+    normalizedEnvName.substr(0, maxEnvNameLength) +
+    uuid.v4().substr(0, 6)
+  );
 }

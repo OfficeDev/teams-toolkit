@@ -77,12 +77,6 @@ export class GeneratorChecker implements DependencyChecker {
   }
 
   public async install(): Promise<void> {
-    this._logger.info("Checking npm...");
-    if (!(await this.hasNPM())) {
-      this._logger.error(`Failed to find npm!`);
-      throw NpmNotFoundError();
-    }
-
     this._logger.info("Start installing...");
     await this.cleanup();
     await this.installGenerator();
@@ -137,15 +131,6 @@ export class GeneratorChecker implements DependencyChecker {
       return packageJson.version ?? undefined;
     }
     return undefined;
-  }
-
-  private async hasNPM(): Promise<boolean> {
-    try {
-      await cpUtils.executeCommand(undefined, this._logger, { shell: true }, "npm", "--version");
-      return true;
-    } catch (error) {
-      return false;
-    }
   }
 
   private async cleanup(): Promise<void> {

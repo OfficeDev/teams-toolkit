@@ -94,6 +94,10 @@ export function getUniqueAppName() {
   return getAppNamePrefix() + Date.now().toString() + uuidv4().slice(0, 2);
 }
 
+export function convertToAlphanumericOnly(appName: string): string {
+  return appName.replace(/[^\da-zA-Z]/g, "");
+}
+
 export function getSubscriptionId() {
   return cfg.AZURE_SUBSCRIPTION_ID || "";
 }

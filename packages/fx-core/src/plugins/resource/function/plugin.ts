@@ -295,7 +295,7 @@ export class FunctionPluginImpl {
       DefaultValues.functionTriggerType,
       functionName,
       {
-        appName: ctx.projectSettings!.appName,
+        appName: ctx.projectSettings!.appName, // not used. ignore
         functionName: functionName,
       }
     );

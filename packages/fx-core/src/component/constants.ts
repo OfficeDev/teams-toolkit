@@ -71,3 +71,18 @@ export const AzureSqlOutputs = {
     bicepVariable: "provisionOutputs.azureSqlOutput.value.sqlDatabaseName",
   },
 };
+
+export const IdentityOutputs = {
+  identityResourceId: {
+    key: "resourceId",
+    bicepVariable: "provisionOutputs.identityOutput.value.identityResourceId",
+  },
+  identityName: {
+    key: "identityName",
+    bicepVariable: "provisionOutputs.identityOutput.value.identityName",
+  },
+  identityClientId: {
+    key: "identityClientId",
+    bicepVariable: "provisionOutputs.identityOutput.value.identityClientId",
+  },
+};

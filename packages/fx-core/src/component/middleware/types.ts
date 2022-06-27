@@ -22,6 +22,7 @@ export interface ActionTelemetryReporter extends TelemetryReporter {
   componentName: string;
   properties: { [key: string]: string };
   measurements: { [key: string]: number };
+  addProperty: (key: string, value: string) => void;
   sendStartEvent?: ActionHandler;
   sendEndEvent?: ActionHandler;
   sendEndEventWithError?: (context: ActionContext, error: FxError) => void;

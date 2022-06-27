@@ -114,9 +114,9 @@ export abstract class YargsCommand {
       if (result.isOk()) {
         const inputs = getSystemInputs(args.folder as string);
         inputs.ignoreEnvInfo = true;
-        const configResult = await result.value.getProjectConfig(inputs);
+        const configResult = await result.value.getProjectConfigV3(inputs);
         if (configResult.isOk()) {
-          CliTelemetry.setIsFromSample(configResult.value?.settings?.isFromSample);
+          CliTelemetry.setIsFromSample(configResult.value?.projectSettings?.isFromSample);
         }
       }
     }

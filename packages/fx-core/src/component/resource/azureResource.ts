@@ -16,7 +16,7 @@ import {
 import fs from "fs-extra";
 import * as path from "path";
 import "reflect-metadata";
-import { compileHandlebarsTemplateString } from "../../common";
+import { compileHandlebarsTemplateString } from "../../common/tools";
 import { getTemplatesFolder } from "../../folder";
 
 export abstract class AzureResource implements CloudResource {
@@ -24,7 +24,8 @@ export abstract class AzureResource implements CloudResource {
   abstract readonly bicepModuleName: string;
   abstract readonly outputs: ResourceOutputs;
   abstract readonly finalOutputKeys: string[];
-  readonly templateContext?: Record<string, string>;
+  templateContext: Record<string, any> = {};
+  getTemplateContext?: (context: ContextV3, inputs: InputsWithProjectPath) => Record<string, any>;
 
   generateBicep(
     context: ContextV3,
@@ -56,9 +57,12 @@ export abstract class AzureResource implements CloudResource {
           `${this.bicepModuleName}.provision.orchestration.bicep`
         );
         let module = await fs.readFile(pmPath, "utf-8");
-        if (this.templateContext) {
-          module = compileHandlebarsTemplateString(module, this.templateContext);
+        if (this.getTemplateContext) {
+          try {
+            this.templateContext = this.getTemplateContext(context, inputs);
+          } catch {}
         }
+        module = compileHandlebarsTemplateString(module, this.templateContext);
         const orchestration = await fs.readFile(poPath, "utf-8");
         const parametersPath = path.join(
           getTemplatesFolder(),

@@ -10,6 +10,7 @@ import {
   ProjectSettings,
   Result,
   SystemError,
+  UnknownError,
   UserError,
   UserErrorOptions,
 } from "@microsoft/teamsfx-api";
@@ -45,7 +46,11 @@ import { VS_CODE_UI } from "../extension";
 import * as globalVariables from "../globalVariables";
 import { showError, tools } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
-import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
+import {
+  TelemetryDebugDevCertStatus,
+  TelemetryEvent,
+  TelemetryProperty,
+} from "../telemetry/extTelemetryEvents";
 import { VSCodeDepsChecker } from "./depsChecker/vscodeChecker";
 import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
 import { vscodeLogger } from "./depsChecker/vscodeLogger";
@@ -137,6 +142,77 @@ async function runWithCheckResultTelemetry(
       return result.result === ResultStatus.success ? undefined : result.error;
     }
   );
+}
+
+async function runWithCheckResultsTelemetry(
+  eventName: string,
+  errorName: string, // unified error name of multiple errors in CheckResult[]
+  action: (ctx: TelemetryContext) => Promise<CheckResult[]>
+): Promise<CheckResult[]> {
+  return await localTelemetryReporter.runWithTelemetryGeneric(
+    eventName,
+    action,
+    (results: CheckResult[], ctx: TelemetryContext) => {
+      const errorCodes: { [checker: string]: string } = {};
+      for (const result of results) {
+        if (result.result === ResultStatus.failed) {
+          errorCodes[result.checker] = result.error?.name || UnknownError.name;
+        }
+      }
+      if (Object.keys(errorCodes).length == 0) {
+        return undefined;
+      } else {
+        // multiple errors in one event
+        ctx.properties[TelemetryProperty.DebugErrorCodes] = JSON.stringify(errorCodes);
+        addCheckResultsForTelemetry(results, ctx.properties, ctx.errorProps);
+        return new UserError({
+          source: ExtensionSource,
+          name: errorName,
+        });
+      }
+    }
+  );
+}
+
+// Mainly addresses two issues:
+// 1. Some error messages contain special characters which will cause the whole debug-check-results to be redacted.
+// 2. CheckResult[] is hard to parse in kusto query (an array of objects).
+//
+// `debug-check-results` contains only known content and we know it will not be redacted.
+// `debug-check-results-raw` might contain arbitrary string and be redacted.
+function convertCheckResultsForTelemetry(checkResults: CheckResult[]): [string, string] {
+  const resultRaw: { [checker: string]: unknown } = {};
+  const resultSafe: { [checker: string]: { [key: string]: string | undefined } } = {};
+  for (const checkResult of checkResults) {
+    resultRaw[checkResult.checker] = checkResult;
+    resultSafe[checkResult.checker] = {
+      result: checkResult.result,
+      source: checkResult.error?.source,
+      errorCode: checkResult.error?.name,
+      errorType:
+        checkResult.error === undefined
+          ? undefined
+          : checkResult.error instanceof UserError
+          ? "user"
+          : checkResult.error instanceof SystemError
+          ? "system"
+          : "unknown",
+    };
+  }
+
+  return [JSON.stringify(resultRaw), JSON.stringify(resultSafe)];
+}
+
+function addCheckResultsForTelemetry(
+  checkResults: CheckResult[],
+  properties: { [key: string]: string },
+  errorProps: string[]
+): void {
+  const [resultRaw, resultSafe] = convertCheckResultsForTelemetry(checkResults);
+  properties[TelemetryProperty.DebugCheckResultsSafe] = resultSafe;
+  properties[TelemetryProperty.DebugCheckResults] = resultRaw;
+  // only the raw event contains error message
+  errorProps.push(TelemetryProperty.DebugCheckResults);
 }
 
 async function checkPort(
@@ -306,8 +382,9 @@ async function _checkAndInstall(ctx: TelemetryContext): Promise<Result<void, FxE
     await checkFailure(checkResults, progressHelper);
 
     // concurrent backend extension & npm installs
-    await localTelemetryReporter.runWithTelemetryException(
+    await runWithCheckResultsTelemetry(
       TelemetryEvent.DebugPrereqsInstallPackages,
+      ExtensionErrors.PrerequisitesInstallPackagesError,
       async () => {
         const checkPromises = [];
 
@@ -371,9 +448,11 @@ async function _checkAndInstall(ctx: TelemetryContext): Promise<Result<void, FxE
             checkResults.push(r);
           }
         }
-        await checkFailure(checkResults, progressHelper);
+        return checkResults;
       }
     );
+
+    await checkFailure(checkResults, progressHelper);
 
     // check port
     const portResult = await checkPort(
@@ -391,7 +470,10 @@ async function _checkAndInstall(ctx: TelemetryContext): Promise<Result<void, FxE
     const fxError = assembleError(error);
     showError(fxError);
     await progressHelper?.stop(false);
-    ctx.properties[TelemetryProperty.DebugCheckResults] = JSON.stringify(checkResults);
+    // also add checkResult to the debug-all event
+    const session = commonUtils.getLocalDebugSession();
+    addCheckResultsForTelemetry(checkResults, session.properties, session.errorProps);
+    addCheckResultsForTelemetry(checkResults, ctx.properties, ctx.errorProps);
     return err(fxError);
   }
   return ok(undefined);
@@ -552,7 +634,20 @@ async function checkDependencies(
           });
         },
         (result: DependencyStatus[]) => {
+          // This error object is only for telemetry.
+          // Input is one dependency, so result is at most one.
           const error = result.length > 0 && result[0].error;
+          if (error instanceof DepsCheckerError) {
+            // TODO: Currently there is no user/system error info from DepsCheckerError.
+            // So assuming UserError for now.
+            return new UserError({
+              source: ExtensionSource,
+              // There is no error code from DepsCheckerError. So use class name for now.
+              name: error.constructor.name,
+              message: error.message,
+              error: error,
+            });
+          }
           return error !== undefined ? assembleError(error) : undefined;
         }
       );
@@ -612,40 +707,52 @@ async function resolveLocalCertificate(
   localEnvManager: LocalEnvManager,
   prefix: string
 ): Promise<CheckResult> {
-  return await runWithCheckResultTelemetry(TelemetryEvent.DebugPrereqsCheckCert, async () => {
-    let result = ResultStatus.success;
-    let error = undefined;
-    try {
-      VsCodeLogInstance.outputChannel.appendLine(
-        `${prefix} ${ProgressMessage[Checker.LocalCertificate]} ...`
-      );
-      const trustDevCert = vscodeHelper.isTrustDevCertEnabled();
-      const localCertResult = await localEnvManager.resolveLocalCertificate(trustDevCert);
+  return await runWithCheckResultTelemetry(
+    TelemetryEvent.DebugPrereqsCheckCert,
+    async (ctx: TelemetryContext) => {
+      let result = ResultStatus.success;
+      let error = undefined;
+      try {
+        VsCodeLogInstance.outputChannel.appendLine(
+          `${prefix} ${ProgressMessage[Checker.LocalCertificate]} ...`
+        );
+        const trustDevCert = vscodeHelper.isTrustDevCertEnabled();
+        const localCertResult = await localEnvManager.resolveLocalCertificate(trustDevCert);
 
-      if (typeof localCertResult.isTrusted === "undefined") {
-        result = ResultStatus.warn;
-        error = new UserError({
-          source: ExtensionSource,
-          name: "SkipTrustDevCertError",
-          helpLink: trustDevCertHelpLink,
-          message: "Skip trusting development certificate for localhost.",
-        });
-      } else if (localCertResult.isTrusted === false) {
+        // trust cert telemetry properties
+        ctx.properties[TelemetryProperty.DebugDevCertStatus] = !trustDevCert
+          ? TelemetryDebugDevCertStatus.Disabled
+          : localCertResult.alreadyTrusted
+          ? TelemetryDebugDevCertStatus.AlreadyTrusted
+          : localCertResult.isTrusted
+          ? TelemetryDebugDevCertStatus.Trusted
+          : TelemetryDebugDevCertStatus.NotTrusted;
+
+        if (typeof localCertResult.isTrusted === "undefined") {
+          result = ResultStatus.warn;
+          error = new UserError({
+            source: ExtensionSource,
+            name: "SkipTrustDevCertError",
+            helpLink: trustDevCertHelpLink,
+            message: "Skip trusting development certificate for localhost.",
+          });
+        } else if (localCertResult.isTrusted === false) {
+          result = ResultStatus.failed;
+          error = localCertResult.error;
+        }
+      } catch (err: unknown) {
         result = ResultStatus.failed;
-        error = localCertResult.error;
+        error = assembleError(err);
       }
-    } catch (err: unknown) {
-      result = ResultStatus.failed;
-      error = assembleError(err);
+      return {
+        checker: Checker.LocalCertificate,
+        result: result,
+        successMsg: doctorConstant.CertSuccess,
+        failureMsg: doctorConstant.Cert,
+        error: error,
+      };
     }
-    return {
-      checker: Checker.LocalCertificate,
-      result: result,
-      successMsg: doctorConstant.CertSuccess,
-      failureMsg: doctorConstant.Cert,
-      error: error,
-    };
-  });
+  );
 }
 
 function handleDepsCheckerError(

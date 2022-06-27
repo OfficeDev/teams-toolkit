@@ -272,6 +272,7 @@ export interface Component extends Json {
   deployType?: "folder" | "zip";
   language?: string;
   folder?: string;
+  artifactFolder?: string;
   build?: boolean;
   provision?: boolean;
   connections?: string[];

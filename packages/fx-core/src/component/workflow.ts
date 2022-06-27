@@ -36,6 +36,7 @@ import {
   serviceEffectPlanString,
 } from "./utils";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
+import { convertToAlphanumericOnly } from "../common/utils";
 
 export async function getAction(
   name: string,
@@ -264,7 +265,7 @@ export async function showPlanAndConfirm(
     } else if (effect.type === "service") {
       plans.push(serviceEffectPlanString(effect));
     } else if (effect.type === "bicep") {
-      plans = plans.concat(persistBicepPlans(inputs.projectPath, effect));
+      plans = plans.concat(await persistBicepPlans(inputs.projectPath, effect));
     } else if (effect.type === "shell") {
       plans.push(`shell command: ${effect.description}`);
     }
@@ -299,7 +300,7 @@ export async function showSummary(
     } else if (effect.type === "service") {
       plans.push(serviceEffectPlanString(effect));
     } else if (effect.type === "bicep") {
-      plans = plans.concat(persistBicepPlans(inputs.projectPath, effect));
+      plans = plans.concat(await persistBicepPlans(inputs.projectPath, effect));
     } else if (effect.type === "shell") {
       plans.push(`shell command: ${effect.description}`);
     }
@@ -448,9 +449,14 @@ export async function executeFunctionAction(
       if (typeof effect !== "string" && effect.type === "bicep") {
         const bicep = effect as Bicep;
         if (bicep) {
-          const bicepPlans = persistBicepPlans(inputs.projectPath, bicep);
+          const bicepPlans = await persistBicepPlans(inputs.projectPath, bicep);
           bicepPlans.forEach((p) => effects.push(p));
-          await persistBicep(inputs.projectPath, context.projectSetting.appName, bicep);
+          // TODO: handle the returned error of bicep generation
+          await persistBicep(
+            inputs.projectPath,
+            convertToAlphanumericOnly(context.projectSetting.appName),
+            bicep
+          );
         }
       } else {
         effects.push(effect);
@@ -484,18 +490,18 @@ export async function runAction(
     if (questionRes.isErr()) return err(questionRes.error);
     const planEffects: Effect[] = [];
     await planAction(action, context, cloneDeep(inputs), planEffects);
-    const confirm = await showPlanAndConfirm(
-      `action: ${actionName} will do the following changes:`,
-      planEffects,
-      context,
-      inputs
-    );
-    if (confirm) {
-      const execEffects: Effect[] = [];
-      const execRes = await executeAction(action, context, inputs, execEffects);
-      if (execRes.isErr()) return execRes;
-      await showSummary(`${actionName} summary:`, execEffects, context, inputs);
-    }
+    // const confirm = await showPlanAndConfirm(
+    //   `action: ${actionName} will do the following changes:`,
+    //   planEffects,
+    //   context,
+    //   inputs
+    // );
+    // if (confirm) {
+    const execEffects: Effect[] = [];
+    const execRes = await executeAction(action, context, inputs, execEffects);
+    if (execRes.isErr()) return execRes;
+    await showSummary(`${actionName} summary:`, execEffects, context, inputs);
+    // }
   }
   context.logProvider.info(
     `------------------------run action: ${actionName} finish!------------------------`

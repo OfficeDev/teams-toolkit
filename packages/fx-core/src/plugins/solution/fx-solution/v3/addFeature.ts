@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import {
+  AzureSolutionSettings,
   err,
   FxError,
   Json,
@@ -12,7 +13,6 @@ import {
   v2,
   v3,
   Void,
-  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import { Container } from "typedi";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";

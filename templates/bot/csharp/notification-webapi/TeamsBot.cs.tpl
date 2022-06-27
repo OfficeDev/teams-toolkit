@@ -1,4 +1,4 @@
-namespace {{ProjectName}}
+namespace {{SafeProjectName}}
 {
     using Microsoft.Bot.Builder;
 

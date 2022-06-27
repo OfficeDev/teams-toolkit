@@ -10,6 +10,7 @@ import { IPublishingAppDenition } from "./interfaces/IPublishingAppDefinition";
 import { AppStudioResultFactory } from "./results";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { Constants, ErrorMessages } from "./constants";
+import { RetryHandler } from "./utils/utils";
 
 export function getAppStudioEndpoint(): string {
   if (process.env.APP_STUDIO_ENV && process.env.APP_STUDIO_ENV === "int") {
@@ -61,9 +62,13 @@ export namespace AppStudioClient {
   ): Promise<AppDefinition> {
     try {
       const requester = createRequesterWithToken(appStudioToken);
-      const response = await requester.post(`/api/appdefinitions/v2/import`, file, {
-        headers: { "Content-Type": "application/zip" },
-      });
+
+      const response = await RetryHandler.Retry(() =>
+        requester.post(`/api/appdefinitions/v2/import`, file, {
+          headers: { "Content-Type": "application/zip" },
+        })
+      );
+
       if (response && response.data) {
         const app = <AppDefinition>response.data;
         await logProvider?.debug(`recieved data from app studio ${JSON.stringify(app)}`);
@@ -137,7 +142,10 @@ export namespace AppStudioClient {
   ): Promise<AppDefinition> {
     const requester = createRequesterWithToken(appStudioToken);
     try {
-      const response = await requester.get(`/api/appdefinitions/${teamsAppId}`);
+      const response = await RetryHandler.Retry(() =>
+        requester.get(`/api/appdefinitions/${teamsAppId}`)
+      );
+
       if (response && response.data) {
         const app = <AppDefinition>response.data;
         if (app && app.teamsAppId && app.teamsAppId === teamsAppId) {
@@ -245,12 +253,15 @@ export namespace AppStudioClient {
   ): Promise<string> {
     try {
       const requester = createRequesterWithToken(appStudioToken);
-      const response = await requester.post("/api/publishing", file, {
-        headers: { "Content-Type": "application/zip" },
-      });
 
-      const requestPath = `${response.request?.method} ${response.request?.path}`;
+      const response = await RetryHandler.Retry(() =>
+        requester.post("/api/publishing", file, {
+          headers: { "Content-Type": "application/zip" },
+        })
+      );
+
       if (response && response.data) {
+        const requestPath = `${response.request?.method} ${response.request?.path}`;
         if (response.data.error) {
           // To avoid App Studio BadGateway error
           // The app is actually published to app catalog.
@@ -271,7 +282,7 @@ export namespace AppStudioClient {
       } else {
         throw AppStudioResultFactory.SystemError(
           AppStudioError.TeamsAppPublishFailedError.name,
-          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, requestPath)
+          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, "POST /api/publishing")
         );
       }
     } catch (e: any) {

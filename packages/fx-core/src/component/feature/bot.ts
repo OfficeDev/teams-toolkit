@@ -15,10 +15,14 @@ import {
 import "reflect-metadata";
 import { Service } from "typedi";
 import { getProjectSettingsPath } from "../../core/middleware/projectSettingsLoader";
-import { CommandAndResponseOptionItem, NotificationOptionItem } from "../../plugins";
+import {
+  CommandAndResponseOptionItem,
+  NotificationOptionItem,
+} from "../../plugins/solution/fx-solution/question";
 import { QuestionNames, TemplateProjectsScenarios } from "../../plugins/resource/bot/constants";
 import {
   AppServiceOptionItem,
+  AppServiceOptionItemForVS,
   FunctionsHttpTriggerOptionItem,
   FunctionsTimerTriggerOptionItem,
 } from "../../plugins/resource/bot/question";
@@ -67,6 +71,8 @@ export class TeamsBot {
     if (feature === NotificationOptionItem.id) {
       if (triggers.includes(AppServiceOptionItem.id)) {
         scenarios.push(TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME);
+      } else if (triggers.includes(AppServiceOptionItemForVS.id)) {
+        scenarios.push(TemplateProjectsScenarios.NOTIFICATION_WEBAPI_SCENARIO_NAME);
       } else {
         inputs.hosting = "azure-function";
         scenarios.push(TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME);
@@ -180,7 +186,7 @@ export class TeamsBot {
         required: true,
         targetAction: "app-manifest.addCapability",
         inputs: {
-          capability: { name: "Bot" },
+          capabilities: [{ name: "Bot" }],
         },
       },
       {

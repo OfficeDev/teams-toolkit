@@ -1,4 +1,4 @@
-﻿namespace {{ProjectName}}.Controllers
+﻿namespace {{SafeProjectName}}.Controllers
 {
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Bot.Builder;

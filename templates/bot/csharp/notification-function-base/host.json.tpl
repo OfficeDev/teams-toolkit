@@ -8,7 +8,7 @@
       }
     },
     "logLevel": {
-      "{{ProjectName}}": "Information"
+      "{{SafeProjectName}}": "Information"
     }
   },
   "extensions": {

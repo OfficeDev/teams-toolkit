@@ -15,6 +15,7 @@ import {
   getConfigFileName,
   cleanUp,
   setSimpleAuthSkuNameToB1Bicep,
+  convertToAlphanumericOnly,
 } from "../commonUtils";
 import AzureLogin from "../../../src/commonlib/azureLogin";
 import M365Login from "../../../src/commonlib/m365Login";
@@ -32,6 +33,7 @@ describe("Import API into API Management", function () {
   const appName = getUniqueAppName();
   const subscriptionId = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
+  const apiPrefix = convertToAlphanumericOnly(appName);
   before(async () => {
     // new a project
     await CliHelper.createProjectWithCapability(
@@ -49,7 +51,7 @@ describe("Import API into API Management", function () {
     await CliHelper.deployProject(
       ResourceToDeploy.Apim,
       projectPath,
-      ` --open-api-document openapi/openapi.json --api-prefix ${appName} --api-version v1`,
+      ` --open-api-document openapi/openapi.json --api-prefix ${apiPrefix} --api-version v1`,
       testProcessEnv,
       3,
       `teamsfx deploy apim --open-api-document openapi/openapi.json --api-version v1`
@@ -69,7 +71,7 @@ describe("Import API into API Management", function () {
       );
 
       const deployContext = await fs.readJSON(getConfigFileName(appName));
-      await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v2");
+      await ApimValidator.validateDeploy(deployContext, projectPath, apiPrefix, "v2");
     }
   );
 
@@ -86,7 +88,7 @@ describe("Import API into API Management", function () {
       );
 
       const deployContext = await fs.readJSON(getConfigFileName(appName));
-      await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1");
+      await ApimValidator.validateDeploy(deployContext, projectPath, apiPrefix, "v1");
     }
   );
 

@@ -20,7 +20,7 @@
     <PackageReference Include="Microsoft.Graph" Version="4.10.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Microsoft.Fast.Components.FluentUI" Version="1.0.0" />
-    <PackageReference Include="Microsoft.TeamsFx" Version="0.4.1-rc" />
+    <PackageReference Include="Microsoft.TeamsFx" Version="1.0.0" />
   </ItemGroup>
 
 </Project>

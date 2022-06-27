@@ -15,19 +15,23 @@ import { AppServiceOptionItem, FunctionsOptionItems } from "../question";
 import { CodeTemplateInfo } from "./interface/codeTemplateInfo";
 import { getLanguage, getServiceType, getTriggerScenarios } from "./mapping";
 import { ServiceType } from "../../../../common/azure-hosting/interfaces";
+import { CoreQuestionNames } from "../../../../core/question";
 import { HostType } from "./enum";
-import { PluginBot } from "../resources/strings";
+import { BotCapability, PluginBot, QuestionBotScenarioToBotCapability } from "../resources/strings";
+import { convertToAlphanumericOnly } from "../../../../common/utils";
 
 export function getTemplateInfos(ctx: Context, inputs: Inputs): CodeTemplateInfo[] {
   const lang = getLanguage(ctx.projectSetting.programmingLanguage);
   const scenarios = Array.from(decideTemplateScenarios(ctx, inputs));
   const projectName = ctx.projectSetting.appName;
+  const safeProjectName =
+    inputs[CoreQuestionNames.SafeProjectName] ?? convertToAlphanumericOnly(projectName);
   return scenarios.map((scenario) => {
     return {
       group: TemplateProjectsConstants.GROUP_NAME_BOT,
       language: lang,
       scenario: scenario,
-      variables: { ProjectName: projectName },
+      variables: { ProjectName: projectName, SafeProjectName: safeProjectName },
     };
   });
 }
@@ -89,4 +93,13 @@ export function resolveServiceType(ctx: Context): ServiceType {
       PluginBot.HOST_TYPE
     ] as string) ?? HostType.AppService;
   return getServiceType(rawHostType);
+}
+
+export function resolveBotCapabilities(inputs: Inputs): BotCapability[] {
+  const botScenarios = inputs?.[AzureSolutionQuestionNames.Scenarios];
+  if (Array.isArray(botScenarios)) {
+    return botScenarios.map((scenario) => QuestionBotScenarioToBotCapability.get(scenario)!);
+  } else {
+    return [];
+  }
 }

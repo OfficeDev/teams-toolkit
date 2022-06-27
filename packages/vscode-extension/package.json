@@ -246,12 +246,7 @@
         },
         {
           "command": "fx-extension.openDocumentLink",
-          "when": "view == teamsfx-accounts && viewItem == signinM365",
-          "group": "inline"
-        },
-        {
-          "command": "fx-extension.openDocumentLink",
-          "when": "view == teamsfx-accounts && viewItem == signinAzure",
+          "when": "view == teamsfx-accounts && viewItem =~ /^signinM365$|^signinAzure$/",
           "group": "inline"
         },
         {
@@ -294,37 +289,12 @@
         },
         {
           "command": "fx-extension.openDocumentLink",
-          "when": "view == teamsfx-development && viewItem == fx-extension.create",
+          "when": "view == teamsfx-development && viewItem =~ /^fx-extension.(create|openSamples|openManifest)$/",
           "group": "inline"
         },
         {
           "command": "fx-extension.openDocumentLink",
-          "when": "view == teamsfx-development && viewItem == fx-extension.openSamples",
-          "group": "inline"
-        },
-        {
-          "command": "fx-extension.openDocumentLink",
-          "when": "view == teamsfx-development && viewItem == fx-extension.openManifest",
-          "group": "inline"
-        },
-        {
-          "command": "fx-extension.openDocumentLink",
-          "when": "view == teamsfx-deployment && viewItem == fx-extension.provision",
-          "group": "inline"
-        },
-        {
-          "command": "fx-extension.openDocumentLink",
-          "when": "view == teamsfx-deployment && viewItem == fx-extension.build",
-          "group": "inline"
-        },
-        {
-          "command": "fx-extension.openDocumentLink",
-          "when": "view == teamsfx-deployment && viewItem == fx-extension.deploy",
-          "group": "inline"
-        },
-        {
-          "command": "fx-extension.openDocumentLink",
-          "when": "view == teamsfx-deployment && viewItem == fx-extension.publish",
+          "when": "view == teamsfx-deployment && viewItem =~ /^fx-extension.(provision|build|deploy|publish)$/",
           "group": "inline"
         }
       ],

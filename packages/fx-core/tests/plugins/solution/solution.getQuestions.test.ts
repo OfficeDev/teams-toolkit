@@ -625,4 +625,178 @@ describe("getQuestionsForScaffolding()", async () => {
       }
     }
   });
+  it("getQuestionsForUserTask - addFeature: cannot add message extension for notification bot", async () => {
+    sandbox.stub(featureFlags, "isPreviewFeaturesEnabled").returns(true);
+    sandbox.stub(featureFlags, "isBotNotificationEnabled").returns(true);
+    sandbox.stub<any, any>(tool, "canAddCICDWorkflows").resolves(true);
+    const projectSettingsWithNotification = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "test",
+        version: "1.0",
+        activeResourcePlugins: [
+          "fx-resource-frontend-hosting",
+          "fx-resource-aad-app-for-teams",
+          BuiltInFeaturePluginNames.bot,
+        ],
+        capabilities: [BotOptionItem.id],
+        azureResources: [],
+      },
+      pluginSettings: {
+        [BuiltInFeaturePluginNames.bot]: {
+          [PluginBot.BOT_CAPABILITIES]: [BotCapabilities.NOTIFICATION],
+          [PluginBot.HOST_TYPE]: BotHostTypes.AppService,
+        },
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettingsWithNotification);
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+      stage: Stage.addFeature,
+      projectPath: "test path",
+    };
+    const func: Func = {
+      method: "addFeature",
+      namespace: "fx-solution-azure",
+    };
+    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    sandbox
+      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
+      .callsFake(
+        async (
+          ctx: v2.Context,
+          inputs: v2.InputsWithProjectPath,
+          capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
+        ) => {
+          if (capability === "Bot") {
+            return ok(true);
+          } else {
+            return ok(false);
+          }
+        }
+      );
+    (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType =
+      HostTypeOptionAzure.id;
+    const res = await getQuestionsForUserTask(
+      mockedCtx,
+      mockedInputs,
+      func,
+      envInfo,
+      mockedProvider
+    );
+    assert.isTrue(res.isOk() && res.value && res.value.data !== undefined);
+    if (res.isOk()) {
+      const node = res.value;
+      assert.isTrue(
+        node && node.data && node.data.type === "singleSelect",
+        "result should be singleSelect"
+      );
+      if (node && node.data && node.data.type === "singleSelect") {
+        const options = (node.data as SingleSelectQuestion).staticOptions as OptionItem[];
+        assert.deepEqual(
+          options,
+          [
+            TabNewUIOptionItem,
+            TabNonSsoItem,
+            AzureResourceFunctionNewUI,
+            AzureResourceApimNewUI,
+            AzureResourceSQLNewUI,
+            AzureResourceKeyVaultNewUI,
+            ApiConnectionOptionItem,
+            CicdOptionItem,
+          ],
+          "option item should match"
+        );
+      }
+    }
+  });
+  it("getQuestionsForUserTask - addFeature: cannot add message extension for command bot", async () => {
+    sandbox.stub(featureFlags, "isPreviewFeaturesEnabled").returns(true);
+    sandbox.stub(featureFlags, "isBotNotificationEnabled").returns(true);
+    sandbox.stub<any, any>(tool, "canAddCICDWorkflows").resolves(true);
+    const projectSettingsWithNotification = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "test",
+        version: "1.0",
+        activeResourcePlugins: [
+          "fx-resource-frontend-hosting",
+          "fx-resource-aad-app-for-teams",
+          BuiltInFeaturePluginNames.bot,
+        ],
+        capabilities: [BotOptionItem.id],
+        azureResources: [],
+      },
+      pluginSettings: {
+        [BuiltInFeaturePluginNames.bot]: {
+          [PluginBot.BOT_CAPABILITIES]: [BotCapabilities.COMMAND_AND_RESPONSE],
+          [PluginBot.HOST_TYPE]: BotHostTypes.AppService,
+        },
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettingsWithNotification);
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+      stage: Stage.addFeature,
+      projectPath: "test path",
+    };
+    const func: Func = {
+      method: "addFeature",
+      namespace: "fx-solution-azure",
+    };
+    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    sandbox
+      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
+      .callsFake(
+        async (
+          ctx: v2.Context,
+          inputs: v2.InputsWithProjectPath,
+          capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
+        ) => {
+          if (capability === "Bot") {
+            return ok(true);
+          } else {
+            return ok(false);
+          }
+        }
+      );
+    (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType =
+      HostTypeOptionAzure.id;
+    const res = await getQuestionsForUserTask(
+      mockedCtx,
+      mockedInputs,
+      func,
+      envInfo,
+      mockedProvider
+    );
+    assert.isTrue(res.isOk() && res.value && res.value.data !== undefined);
+    if (res.isOk()) {
+      const node = res.value;
+      assert.isTrue(
+        node && node.data && node.data.type === "singleSelect",
+        "result should be singleSelect"
+      );
+      if (node && node.data && node.data.type === "singleSelect") {
+        const options = (node.data as SingleSelectQuestion).staticOptions as OptionItem[];
+        assert.deepEqual(
+          options,
+          [
+            TabNewUIOptionItem,
+            TabNonSsoItem,
+            AzureResourceFunctionNewUI,
+            AzureResourceApimNewUI,
+            AzureResourceSQLNewUI,
+            AzureResourceKeyVaultNewUI,
+            ApiConnectionOptionItem,
+            CicdOptionItem,
+          ],
+          "option item should match"
+        );
+      }
+    }
+  });
 });

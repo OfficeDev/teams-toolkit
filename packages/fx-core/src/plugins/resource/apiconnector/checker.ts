@@ -5,6 +5,7 @@ import * as fs from "fs-extra";
 import path from "path";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { getSampleFileName } from "./utils";
+import { URL } from "url";
 
 const guidRegex = /^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$/;
 

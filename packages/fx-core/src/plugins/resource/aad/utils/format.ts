@@ -5,6 +5,7 @@ import { validate as uuidValidate } from "uuid";
 import { UserError } from "@microsoft/teamsfx-api";
 import { Plugins } from "../constants";
 import { ConfigErrorMessages } from "../errors";
+import { URL } from "url";
 
 export enum Formats {
   Endpoint = " endpoint",

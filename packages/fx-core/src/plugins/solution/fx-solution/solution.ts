@@ -142,6 +142,7 @@ import { AadAppForTeamsPlugin } from "../../resource/aad";
 import { LoadedPlugin, PluginsWithContext, SolutionRunningState } from "./types";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { createCapabilityQuestion } from "../../../core/question";
+import { URL } from "url";
 
 @Service(SolutionPlugins.AzureTeamsSolution)
 export class TeamsAppSolution implements Solution {

@@ -5,6 +5,7 @@ import { AxiosRequestConfig } from "axios";
 import { AuthProvider } from "./authProvider";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { formatString } from "../util/utils";
+import { URL } from "url";
 
 /**
  * Provider that handles API Key authentication

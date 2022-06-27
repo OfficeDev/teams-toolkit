@@ -36,6 +36,7 @@ import { getAllowedAppIds } from "../../../../common/tools";
 import { LocalCertificateManager } from "../../../../common/local/localCertificateManager";
 import { ResourcePlugins } from "../../../../common/constants";
 import { BotHostTypes } from "../../../../common/local/constants";
+import { URL } from "url";
 
 export async function setupLocalDebugSettings(
   ctx: v2.Context,

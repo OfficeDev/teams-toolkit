@@ -1,11 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  AppStudioScopes,
-  Correlator,
-  environmentManager,
-} from "@microsoft/teamsfx-core";
+import { AppStudioScopes, Correlator, environmentManager } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 
 import M365TokenInstance from "../commonlib/m365Login";
@@ -16,6 +12,7 @@ import { terminateAllRunningTeamsfxTasks } from "./teamsfxTaskHandler";
 import { Host, Hub } from "./constants";
 import { localTelemetryReporter, sendDebugAllEvent } from "./localTelemetryReporter";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
+import { URL } from "url";
 
 export interface TeamsfxDebugConfiguration extends vscode.DebugConfiguration {
   teamsfxIsRemote?: boolean;
@@ -96,7 +93,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
           }
 
           let debugConfig = undefined;
-          if (isLocalSideloading ) {
+          if (isLocalSideloading) {
             debugConfig = await commonUtils.getDebugConfig(
               false,
               environmentManager.getLocalEnvName()

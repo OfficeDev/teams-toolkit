@@ -20,6 +20,8 @@ import {
   LocalSettingsFrontendKeys,
 } from "../../../../common/localSettingsConstants";
 import { getAllowedAppIds } from "../../../../common/tools";
+import { URL } from "url";
+
 export class Utils {
   public static generateResourceName(appName: string, resourceNameSuffix: string): string {
     const paddingLength =

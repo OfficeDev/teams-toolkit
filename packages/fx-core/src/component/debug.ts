@@ -64,6 +64,8 @@ import * as Settings from "../plugins/solution/fx-solution/debug/util/settings";
 import fs from "fs-extra";
 import { updateJson, useNewTasks } from "../plugins/solution/fx-solution/debug/scaffolding";
 import { createFilesEffects } from "./utils";
+import { URL } from "url";
+
 @Service("debug")
 export class DebugComponent {
   readonly name = "debug";

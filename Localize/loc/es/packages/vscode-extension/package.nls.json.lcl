@@ -462,10 +462,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.accounts.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams: Accounts]]></Val>
+          <Val><![CDATA[Accounts]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams: cuentas]]></Val>
+            <Val><![CDATA[Cuentas]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Teams: Accounts]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -487,56 +490,23 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.commands.addCICDWorkflows.title" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Teams: Add CI/CD Workflows]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams: Agregar flujos de trabajo de CI/CD]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commands.addCapability.title" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Teams: Add capabilities]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams: agregar funcionalidades]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commands.addCloudResource.title" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Teams: Add cloud resources]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams: agregar recursos en la nube]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";teamstoolkit.commands.addFeature.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams: Add features]]></Val>
+          <Val><![CDATA[Add features]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams: agregar características]]></Val>
+            <Val><![CDATA[Agregar características]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Teams: Add features]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.commands.addSso.title" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";teamstoolkit.commands.azureAccountSettings.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams: Add SSO]]></Val>
+          <Val><![CDATA[Azure portal]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams: Agregar SSO]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commands.connectExistingApi.title" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Teams: Add connection to an API]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams: agregar conexión a una API]]></Val>
+            <Val><![CDATA[Azure Portal]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -579,19 +549,25 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.createEnvironment.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams: Create new environment]]></Val>
+          <Val><![CDATA[Create new environment]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams: Crear nuevo entorno]]></Val>
+            <Val><![CDATA[Crear nuevo entorno]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Teams: Create new environment]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commands.createProject.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams: Create a new Teams app]]></Val>
+          <Val><![CDATA[Create a new Teams app]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams: crear una nueva aplicación de Teams]]></Val>
+            <Val><![CDATA[Crear una nueva aplicación de Teams]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Teams: Create a new Teams app]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -606,19 +582,25 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.deploy.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams: Deploy to the cloud]]></Val>
+          <Val><![CDATA[Deploy to the cloud]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams: implementar en la nube]]></Val>
+            <Val><![CDATA[Implementar en la nube]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Teams: Deploy to the cloud]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commands.deployAadAppManifest.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams: Deploy Azure Active Directory app manifest]]></Val>
+          <Val><![CDATA[Deploy Azure Active Directory app manifest]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams: implementar el manifiesto de la aplicación Azure Active Directory]]></Val>
+            <Val><![CDATA[Implementar el manifiesto de la aplicación Azure Active Directory]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Teams: Deploy Azure Active Directory app manifest]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -651,10 +633,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.devPortal.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams: Developer Portal for Teams]]></Val>
+          <Val><![CDATA[Developer Portal for Teams]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams: Portal para desarrolladores para Teams]]></Val>
+            <Val><![CDATA[Portal para desarrolladores para Teams]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Teams: Developer Portal for Teams]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -669,19 +654,25 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.document.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams: Documentation]]></Val>
+          <Val><![CDATA[Documentation]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams: Documentación]]></Val>
+            <Val><![CDATA[Documentación]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Teams: Documentation]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commands.editManifest.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams: Edit manifest file]]></Val>
+          <Val><![CDATA[Edit manifest file]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams: Editar archivo de manifiesto]]></Val>
+            <Val><![CDATA[Editar archivo de manifiesto]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Teams: Edit manifest file]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -705,10 +696,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.getstarted.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams: Get Started]]></Val>
+          <Val><![CDATA[Get Started]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams: Introducción]]></Val>
+            <Val><![CDATA[Introducción]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Teams: Get Started]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -730,26 +724,35 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.commands.m365AccountSettings.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[M365 portal]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Portal de M365]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.commands.migrateApp.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams: Upgrade Teams JS SDK and code references]]></Val>
+          <Val><![CDATA[Upgrade Teams JS SDK and code references]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams: Actualizar Teams SDK de JS y referencias de código]]></Val>
+            <Val><![CDATA[Actualizar Teams SDK de JS y referencias de código]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Teams: Upgrade Teams JS SDK references to support Outlook and Office apps]]></Val>
+            <Val><![CDATA[Teams: Upgrade Teams JS SDK and code references]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commands.migrateManifest.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams: Upgrade Teams manifest]]></Val>
+          <Val><![CDATA[Upgrade Teams manifest]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams: actualizar manifiesto de Teams]]></Val>
+            <Val><![CDATA[Actualizar manifiesto de Teams]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Teams: Upgrade Teams manifest to support Outlook and Office apps]]></Val>
+            <Val><![CDATA[Teams: Upgrade Teams manifest]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -801,19 +804,25 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.provision.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams: Provision in the cloud]]></Val>
+          <Val><![CDATA[Provision in the cloud]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams: Aprovisionar en la nube]]></Val>
+            <Val><![CDATA[Aprovisionar en la nube]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Teams: Provision in the cloud]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commands.publish.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams: Publish to Teams]]></Val>
+          <Val><![CDATA[Publish to Teams]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams: Publicar en Teams]]></Val>
+            <Val><![CDATA[Publicar en Teams]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Teams: Publish to Teams]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -828,19 +837,25 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.reportIssue.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams: Report issues on GitHub]]></Val>
+          <Val><![CDATA[Report issues on GitHub]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams: notificar problemas en GitHub]]></Val>
+            <Val><![CDATA[Notificar problemas en GitHub]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Teams: Report issues on GitHub]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commands.selectTutorials.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams: View Guided Tutorials]]></Val>
+          <Val><![CDATA[View Guided Tutorials]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams: ver tutoriales guiados]]></Val>
+            <Val><![CDATA[Ver tutoriales guiados]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Teams: View Guided Tutorials]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -871,60 +886,63 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.commands.survey.title" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Teams: Survey]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams: Encuesta]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";teamstoolkit.commands.updateManifest.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams: Deploy Teams app manifest]]></Val>
+          <Val><![CDATA[Deploy Teams app manifest]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams: implementar el manifiesto de la aplicación Teams]]></Val>
+            <Val><![CDATA[Implementar el manifiesto de la aplicación Teams]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Teams: Update manifest to Teams platform]]></Val>
+            <Val><![CDATA[Teams: Deploy Teams app manifest]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commands.upgradeProject.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams: Upgrade project]]></Val>
+          <Val><![CDATA[Upgrade project]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams: actualizar proyecto]]></Val>
+            <Val><![CDATA[Actualizar proyecto]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Teams: Upgrade project]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commands.validateManifest.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams: Validate manifest file]]></Val>
+          <Val><![CDATA[Validate manifest file]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams: Validar archivo de manifiesto]]></Val>
+            <Val><![CDATA[Validar archivo de manifiesto]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Teams: Validate manifest file]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commands.viewSamples.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams: View samples]]></Val>
+          <Val><![CDATA[View samples]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams: Ver ejemplos]]></Val>
+            <Val><![CDATA[Ver muestras]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Teams: View samples]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commands.zipPackage.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams: Zip Teams metadata package]]></Val>
+          <Val><![CDATA[Zip Teams metadata package]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams: comprimir el paquete de metadatos de Teams]]></Val>
+            <Val><![CDATA[Paquete de metadatos zip de Teams]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Teams: Zip Teams metadata package]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2164,6 +2182,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.handlers.localDebugDescription.fallback" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[[%s]5D; is successfully created at %s. You can continue to debug your app.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[[%s]5D; se creó correctamente en %s. Puede seguir depurando la aplicación.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.handlers.localDebugTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Local debug]]></Val>
@@ -2178,6 +2205,15 @@
           <Val><![CDATA[[%s]5D; is successfully created at [local address]5D;(%s). You can continue to preview your app.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[[%s]5D; se creó correctamente en [local address]5D;(%s). Puede continuar con la vista previa de la aplicación.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.localPreviewDescription.fallback" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[[%s]5D; is successfully created at %s. You can continue to preview your app.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[[%s]5D; se creó correctamente en %s. Puede continuar con la vista previa de la aplicación.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

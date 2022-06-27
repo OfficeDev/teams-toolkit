@@ -66,7 +66,9 @@ export function hasAPIM(projectSettings: ProjectSettingsV3): boolean {
 export function hasKeyVault(projectSettings: ProjectSettingsV3): boolean {
   return getComponent(projectSettings, ComponentNames.KeyVault) !== undefined;
 }
-
+export function hasSQL(projectSettings: ProjectSettingsV3): boolean {
+  return getComponent(projectSettings, ComponentNames.AzureSQL) !== undefined;
+}
 export function isMiniApp(projectSettings: ProjectSettingsV3): boolean {
   if (!projectSettings.components || projectSettings.components.length === 0) return true;
   // Scenario: SSO is added to existing tab app

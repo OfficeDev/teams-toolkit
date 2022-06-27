@@ -13,11 +13,7 @@ import {
   IStaticTab,
   Inputs,
 } from "@microsoft/teamsfx-api";
-import {
-  getAppDirectory,
-  deepCopy,
-  isBotNotificationEnabled,
-} from "../../../common";
+import { getAppDirectory, deepCopy } from "../../../common";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
 import {
@@ -50,6 +46,7 @@ import {
 } from "./constants";
 import { replaceConfigValue } from "./utils/utils";
 import { AzureSolutionQuestionNames, BotScenario } from "../../solution/fx-solution/question";
+import { isBotNotificationEnabled } from "../../../common/featureFlags";
 
 export async function getManifestTemplatePath(
   projectRoot: string,

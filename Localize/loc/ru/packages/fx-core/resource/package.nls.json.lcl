@@ -495,10 +495,13 @@
       </Item>
       <Item ItemId=";core.QuestionAppName.validation.pattern" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Application name must start with a letter and can only contain letters and digits.]]></Val>
+          <Val><![CDATA[Application name must start with letters and contain at least two letters or digits. It can not contain some special characters.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Имя приложения должно начинаться с буквы и может содержать только буквы и цифры.]]></Val>
+            <Val><![CDATA[Имя приложения должно начинаться с букв и содержать не менее двух букв или цифр. Оно не может содержать некоторые специальные символы.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Application name must start with a letter and can only contain letters and digits.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -843,6 +846,15 @@
           <Val><![CDATA[Whether to deploy aad manifest]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Следует ли развертывать манифест AAD]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.aadManifestMigration.ParsePermissionsFailedWarning" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cannot parse permissions.json file when migration, and please follow this link to update permissions in aad.template.json file if necessary: https://aka.ms/teamsfx-aad-manifest#customize-requiredresourceaccess]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Не удается проанализировать файл permissions.json при миграции. При необходимости перейдите по этой ссылке, чтобы обновить разрешения в файле aad.template.json: https://aka.ms/teamsfx-aad-manifest#customize-requiredresourceaccess]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3204,10 +3216,13 @@
       </Item>
       <Item ItemId=";error.aad.AadManifestNotProvisioned" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to generate AAD manifest because the resources have not been provisioned yet. You need to run provision or local debug first.]]></Val>
+          <Val><![CDATA[Failed to generate AAD manifest because the resources have not been provisioned yet. You need to run provision or local debug first. Click Get Help to learn more about why you need to provision or local debug.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Не удалось создать манифест AAD, так как ресурсы еще не подготовлены. Сначала необходимо выполнить подготовку или локальную отладку.]]></Val>
+            <Val><![CDATA[Не удалось создать манифест AAD, так как ресурсы еще не подготовлены. Сначала вам нужно запустить подготовку или локальную отладку. Щелкните техническую поддержку, чтобы узнать, для чего вам нужна подготовка или локальная отладка.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to generate AAD manifest because the resources have not been provisioned yet. You need to run provision or local debug first.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -5755,6 +5770,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";plugins.appstudio.buildSucceedNotice.fallback" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams package is successfully built at %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Пакет Teams собран по адресу %s.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";plugins.appstudio.dataRequired" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Data required: %s]]></Val>
@@ -6716,6 +6740,42 @@
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";plugins.bot.triggers.http-restify.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[HTTP Trigger]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Триггер HTTP]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.bot.triggers.http-webapi.cliName" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[http-webapi]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[http-webapi]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.bot.triggers.http-webapi.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Web API Server]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Сервер веб-API]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.bot.triggers.http-webapi.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[A running Web API server hosted on Azure App Service can listen to HTTP requests.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Запущенный сервер веб-API, размещенный в Службе приложений Azure, может прослушивать HTTP-запросы.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.bot.triggers.http-webapi.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[HTTP Trigger]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -7762,6 +7822,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";plugins.spfx.error.nodeVersionNotSupported" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Node.js version v%s is not supported for SPFx v%s. Check aka.ms/teamsfx-spfx-help for more details.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Версия Node.js v%s не поддерживается для SPFx v%s. Проверьте aka.ms/teamsfx-spfx-help для получения более подробных сведений.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";plugins.spfx.error.npmInstallFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to run 'npm install' due to %s]]></Val>
@@ -7773,9 +7842,21 @@
       </Item>
       <Item ItemId=";plugins.spfx.error.npmNotFound" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Npm not found on your machine!]]></Val>
+          <Val><![CDATA[NPM not found on your machine. Check aka.ms/teamsfx-spfx-help to install the supported version.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[npm не найден на вашем компьютере!]]></Val>
+            <Val><![CDATA[NPM не найден на вашем компьютере. Проверьте aka.ms/teamsfx-spfx-help, чтобы установить поддерживаемую версию.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Npm not found on your machine!]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.error.npmVersionNotSupported" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NPM version v%s is not supported for SPFx v%s. Check aka.ms/teamsfx-spfx-help for more details.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Версия NPM v%s не поддерживается для SPFx v%s. Проверьте aka.ms/teamsfx-spfx-help для получения более подробных сведений.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -7785,6 +7866,24 @@
           <Val><![CDATA[You don't have permission to upload and deploy package to App Catalog %s, please use site admin account.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[У вас нет разрешения на отправку и развертывание пакета в каталоге приложений %s. Используйте учетную запись администратора сайта.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.questions.framework.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Framework]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Платформа .NET Framework]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.questions.versionCheck.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Checking Node.js and NPM versions...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Проверка версий Node.js и NPM...]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

@@ -45,6 +45,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
     debugConfiguration: TeamsfxDebugConfiguration,
     token?: vscode.CancellationToken
   ): Promise<vscode.DebugConfiguration | undefined> {
+    let telemetryIsRemote: boolean | undefined = undefined;
     try {
       if (!folder) {
         return debugConfiguration;
@@ -74,8 +75,9 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
         url.includes(localTeamsAppInternalIdPlaceholder) ||
         host === Host.outlook ||
         host === Host.office;
-      const isLocalSideloading: boolean =
+      const isLocalSideloading =
         isLocalSideloadingConfiguration || isLocalM365SideloadingConfiguration;
+      telemetryIsRemote = !isLocalSideloading;
 
       if (
         !isLocalSideloadingConfiguration &&
@@ -145,7 +147,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
       showError(error);
       terminateAllRunningTeamsfxTasks();
       await vscode.debug.stopDebugging();
-      await sendDebugAllEvent(error);
+      await sendDebugAllEvent(telemetryIsRemote, error);
       commonUtils.endLocalDebugSession();
     }
     return debugConfiguration;

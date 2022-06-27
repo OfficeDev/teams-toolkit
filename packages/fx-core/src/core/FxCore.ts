@@ -53,12 +53,7 @@ import {
   newProjectSettings,
 } from "../common/projectSettingsHelper";
 import { TelemetryReporterInstance } from "../common/telemetry";
-import {
-  createV2Context,
-  isAadManifestEnabled,
-  mapToJson,
-  undefinedName,
-} from "../common/tools";
+import { createV2Context, isAadManifestEnabled, mapToJson, undefinedName } from "../common/tools";
 import { getTemplatesFolder } from "../folder";
 import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
 import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
@@ -76,6 +71,8 @@ import {
   TabSsoItem,
   BotFeatureIds,
   TabFeatureIds,
+  CicdOptionItem,
+  ApiConnectionOptionItem,
 } from "../plugins/solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { CallbackRegistry } from "./callback";
@@ -90,6 +87,7 @@ import {
   InvalidInputError,
   LoadSolutionError,
   NonExistEnvNameError,
+  NotImplementedError,
   ObjectIsUndefinedError,
   OperationNotPermittedError,
   ProjectFolderExistError,
@@ -723,10 +721,52 @@ export class FxCore implements v3.ICore {
     ctx!.projectSettings = context.projectSetting;
     return ok(Void);
   }
+
   async executeUserTask(func: Func, inputs: Inputs): Promise<Result<unknown, FxError>> {
-    if (isV3()) return this.executeUserTaskV3(func, inputs);
-    else return this.executeUserTaskV2(func, inputs);
+    if (isV3()) {
+      if (func.method === "addFeature") {
+        const res = await this.addFeature(inputs as v2.InputsWithProjectPath);
+        if (res.isErr()) return err(res.error);
+        return ok(undefined);
+      }
+      return err(new NotImplementedError(func.method));
+    } else return this.executeUserTaskV2(func, inputs);
   }
+
+  @hooks([
+    ErrorHandlerMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW_V3(false),
+    QuestionModelMW_V3,
+    ContextInjectorMW,
+    ProjectSettingsWriterMW,
+    EnvInfoWriterMW_V3(),
+  ])
+  async addFeature(
+    inputs: v2.InputsWithProjectPath,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+    const feature = inputs.feature as string;
+    let res;
+    if (feature === "sql") {
+      res = await runAction("sql.add", context, inputs as InputsWithProjectPath);
+    } else if (BotFeatureIds.includes(feature)) {
+      res = await runAction("teams-bot.add", context, inputs as InputsWithProjectPath);
+    } else if (TabFeatureIds.includes(feature)) {
+      res = await runAction("teams-tab.add", context, inputs as InputsWithProjectPath);
+    } else if (feature === CicdOptionItem.id) {
+      res = await runAction("cicd.add", context, inputs as InputsWithProjectPath);
+    } else if (feature === ApiConnectionOptionItem.id) {
+      res = await runAction("api-connector.add", context, inputs as InputsWithProjectPath);
+    } else {
+      return err(new NotImplementedError(feature));
+    }
+    if (res.isErr()) return err(res.error);
+    ctx!.projectSettings = context.projectSetting;
+    return ok(Void);
+  }
+
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -751,10 +791,7 @@ export class FxCore implements v3.ICore {
     inputs.stage = Stage.userTask;
     const namespace = func.namespace;
     const array = namespace ? namespace.split("/") : [];
-    if (
-      inputs.env === environmentManager.getLocalEnvName() &&
-      ctx?.envInfoV2
-    ) {
+    if (inputs.env === environmentManager.getLocalEnvName() && ctx?.envInfoV2) {
       ctx.envInfoV2.config.isLocalDebug = true;
     }
     if ("" !== namespace && array.length > 0) {
@@ -1534,18 +1571,6 @@ export class FxCore implements v3.ICore {
     }
 
     return result;
-  }
-
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW])
-  async addFeature(inputs: v2.InputsWithProjectPath): Promise<Result<Void, FxError>> {
-    const context = createContextV3();
-    const feature = inputs.features;
-    if (feature === BotOptionItem.id) {
-      inputs.hosting = "azure-web-app";
-      inputs.scenario = TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME;
-    }
-    await runAction("fx.addBot", context, inputs);
-    return ok(Void);
   }
 
   //V1,V2 questions

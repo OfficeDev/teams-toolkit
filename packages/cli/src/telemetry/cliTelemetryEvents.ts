@@ -49,7 +49,6 @@ export enum TelemetryEvent {
   PublishStart = "publish-start",
   Publish = "publish",
 
-  PreviewStart = "preview-start",
   Preview = "preview",
   PreviewNpmInstallStart = "preview-npm-install-start",
   PreviewNpmInstall = "preview-npm-install",
@@ -57,10 +56,18 @@ export enum TelemetryEvent {
   PreviewGulpCertStart = "preview-gulp-cert-start",
   PreviewServiceStart = "preview-service-start",
   PreviewService = "preview-service",
-  PreviewSideloadingStart = "preview-sideloading-start",
   PreviewSideloading = "preview-sideloading",
+  PreviewSideloadingStart = "preview-sideloading-start",
   PreviewSPFxOpenBrowserStart = "preview-spfx-open-browser-start",
   PreviewSPFxOpenBrowser = "preview-spfx-open-browser",
+  PreviewPrerequisites = "preview-prerequisites",
+  PreviewPrereqsCheckNode = "preview-prereqs-check-node",
+  PreviewPrereqsCheckM365Account = "preview-prereqs-check-m365-account",
+  PreviewPrereqsCheckCert = "preview-prereqs-check-cert",
+  PreviewPrereqsCheckDependencies = "preview-prereqs-check-dependencies",
+  PreviewPrereqsCheckPorts = "preview-prereqs-check-ports",
+  PreviewPrepareDevEnv = "preview-prepare-dev-env",
+  PreviewStartServices = "preview-start-services",
 
   AutomaticNpmInstallStart = "automatic-npm-install-start",
   AutomaticNpmInstall = "automatic-npm-install",
@@ -92,6 +99,7 @@ export enum TelemetryProperty {
   UserId = "hashed-userid",
   AccountType = "account-type",
   Success = "success",
+  Duration = "duration",
   ErrorType = "error-type",
   ErrorCode = "error-code",
   ErrorMessage = "error-message",
@@ -113,8 +121,10 @@ export enum TelemetryProperty {
   PreviewServiceName = "preview-service-name",
   PreviewOSArch = "preview-os-arch",
   PreviewOSRelease = "preview-os-release",
-  PreviewPrerequisitesCheckTime = "preview-prerequisites-check-time",
   PreviewProjectComponents = "preview-project-components",
+  PreviewCheckResults = "preview-check-results",
+  PreviewPortsInUse = "preview-ports-in-use",
+  PreviewDevCertStatus = "preview-dev-cert-status",
   ListAllCollaborators = "list-all-collaborators",
   FeatureFlags = "feature-flags",
   Env = "env",
@@ -138,6 +148,13 @@ export enum TelemetryErrorType {
 export enum TelemetryAccountType {
   Azure = "azure",
   M365 = "m365",
+}
+
+export enum TelemetryPreviewDevCertStatus {
+  Disabled = "disabled",
+  AlreadyTrusted = "already-trusted",
+  Trusted = "trusted",
+  NotTrusted = "not-trusted",
 }
 
 export const TelemetryComponentType = "cli";

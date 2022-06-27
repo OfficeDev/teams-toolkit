@@ -495,10 +495,13 @@
       </Item>
       <Item ItemId=";core.QuestionAppName.validation.pattern" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Application name must start with a letter and can only contain letters and digits.]]></Val>
+          <Val><![CDATA[Application name must start with letters and contain at least two letters or digits. It can not contain some special characters.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[應用程式名稱必須以字母開頭，而且只能包含字母和數字。]]></Val>
+            <Val><![CDATA[應用程式名稱必須以字母開頭，且至少包含兩個字母或數字。不能包含某些特殊字元。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Application name must start with a letter and can only contain letters and digits.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -843,6 +846,15 @@
           <Val><![CDATA[Whether to deploy aad manifest]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[是否要部署 AAD 資訊清單]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.aadManifestMigration.ParsePermissionsFailedWarning" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cannot parse permissions.json file when migration, and please follow this link to update permissions in aad.template.json file if necessary: https://aka.ms/teamsfx-aad-manifest#customize-requiredresourceaccess]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[移轉時無法剖析 permissions.json 檔案，如有必要，請遵循此連結來更新 aad.template.json 檔案中的權限: https://aka.ms/teamsfx-aad-manifest#customize-requiredresourceaccess]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3204,10 +3216,13 @@
       </Item>
       <Item ItemId=";error.aad.AadManifestNotProvisioned" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to generate AAD manifest because the resources have not been provisioned yet. You need to run provision or local debug first.]]></Val>
+          <Val><![CDATA[Failed to generate AAD manifest because the resources have not been provisioned yet. You need to run provision or local debug first. Click Get Help to learn more about why you need to provision or local debug.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[無法產生 AAD 資訊清單，因為尚未佈建資源。您必須先執行佈建或本機偵錯。]]></Val>
+            <Val><![CDATA[因為尚未佈建資源，所以無法產生 AAD 資訊清單。您必須先執行佈建或本機偵錯。按一下 [取得說明]5D; 以深入了解為什麼您必須佈建或本機偵錯。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to generate AAD manifest because the resources have not been provisioned yet. You need to run provision or local debug first.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -5755,6 +5770,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";plugins.appstudio.buildSucceedNotice.fallback" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams package is successfully built at %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[已成功在 %s 建立 Teams 封裝。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";plugins.appstudio.dataRequired" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Data required: %s]]></Val>
@@ -6716,6 +6740,42 @@
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";plugins.bot.triggers.http-restify.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[HTTP Trigger]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[HTTP 觸發程序]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.bot.triggers.http-webapi.cliName" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[http-webapi]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[http-webapi]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.bot.triggers.http-webapi.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Web API Server]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Web API 伺服器]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.bot.triggers.http-webapi.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[A running Web API server hosted on Azure App Service can listen to HTTP requests.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[裝載於 Azure App Service 上的執行中 Web API 伺服器可以接聽 HTTP 要求。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.bot.triggers.http-webapi.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[HTTP Trigger]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -7762,6 +7822,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";plugins.spfx.error.nodeVersionNotSupported" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Node.js version v%s is not supported for SPFx v%s. Check aka.ms/teamsfx-spfx-help for more details.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SPFx v%s 不支援 Node.js 版本 v%s。如需詳細資料，請查看 aka.ms/teamsfx-spfx-help。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";plugins.spfx.error.npmInstallFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to run 'npm install' due to %s]]></Val>
@@ -7773,9 +7842,21 @@
       </Item>
       <Item ItemId=";plugins.spfx.error.npmNotFound" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Npm not found on your machine!]]></Val>
+          <Val><![CDATA[NPM not found on your machine. Check aka.ms/teamsfx-spfx-help to install the supported version.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[在您的電腦上找不到 Npm!]]></Val>
+            <Val><![CDATA[在您的電腦上找不到 NPM。請查看 aka.ms/teamsfx-spfx-help 以安裝支援的版本。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Npm not found on your machine!]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.error.npmVersionNotSupported" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NPM version v%s is not supported for SPFx v%s. Check aka.ms/teamsfx-spfx-help for more details.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SPFx v%s 不支援 NPM 版本 v%s。如需詳細資料，請查看 aka.ms/teamsfx-spfx-help。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -7785,6 +7866,24 @@
           <Val><![CDATA[You don't have permission to upload and deploy package to App Catalog %s, please use site admin account.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[您沒有將套件上傳並部署到應用程式目錄 %s 的權限，請使用網站系統管理員帳戶。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.questions.framework.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Framework]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[架構]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.questions.versionCheck.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Checking Node.js and NPM versions...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在檢查 Node.js 與 NPM 版本...]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

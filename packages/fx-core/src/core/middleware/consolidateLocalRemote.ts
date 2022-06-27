@@ -29,7 +29,7 @@ import {
   TelemetryProperty,
 } from "../../common/telemetry";
 import { CoreHookContext } from "../types";
-import { TOOLS } from "../globalVars";
+import { globalVars, TOOLS } from "../globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { getManifestTemplatePath } from "../../plugins/resource/appstudio/manifestTemplate";
 import { getResourceFolder, getTemplatesFolder } from "../../folder";
@@ -157,8 +157,9 @@ export async function needConsolidateLocalRemote(ctx: CoreHookContext): Promise<
     return false;
   }
 
+  const templates = globalVars.isVS ? "Templates" : "templates";
   const consolidateManifestExist = await fs.pathExists(
-    path.join(inputs.projectPath as string, "templates", "appPackage", "manifest.template.json")
+    path.join(inputs.projectPath as string, templates, "appPackage", "manifest.template.json")
   );
   if (!consolidateManifestExist) {
     return true;

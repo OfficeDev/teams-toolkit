@@ -10,6 +10,7 @@ import {
   RequiredResourceAccess,
 } from "../plugins/resource/aad/interfaces/AADManifest";
 import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
+import { getAppDirectory } from "../common";
 
 interface Permission {
   resource: string;
@@ -24,7 +25,7 @@ export async function generateAadManifestTemplate(
   updateCapabilities = false
 ): Promise<void> {
   const templatesFolder = getTemplatesFolder();
-  const appDir = `${projectFolder}/${Constants.appPackageFolder}`;
+  const appDir = await getAppDirectory(projectFolder);
   const aadManifestTemplate = `${templatesFolder}/${Constants.aadManifestTemplateFolder}/${Constants.aadManifestTemplateName}`;
   await fs.ensureDir(appDir);
 

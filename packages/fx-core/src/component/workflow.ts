@@ -502,6 +502,14 @@ export async function runAction(
     if (execRes.isErr()) return execRes;
     await showSummary(`${actionName} summary:`, execEffects, context, inputs);
     // }
+  } else {
+    return err(
+      new SystemError({
+        source: "fx",
+        name: "ActionNotFoundError",
+        message: "action not found:" + actionName,
+      })
+    );
   }
   context.logProvider.info(
     `------------------------run action: ${actionName} finish!------------------------`

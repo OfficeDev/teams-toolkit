@@ -42,7 +42,6 @@ import { AppStudioResultFactory } from "./results";
 import {
   Constants,
   TEAMS_APP_SHORT_NAME_MAX_LENGTH,
-  DEFAULT_DEVELOPER_WEBSITE_URL,
   FRONTEND_ENDPOINT,
   FRONTEND_DOMAIN,
   BOT_ID,
@@ -73,6 +72,7 @@ import {
   BOTS_TPL_FOR_COMMAND_AND_RESPONSE,
   BOTS_TPL_FOR_NOTIFICATION,
   COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV_M365,
+  DEFAULT_DEVELOPER,
 } from "./constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
@@ -632,7 +632,6 @@ export class AppStudioPluginImpl {
       const hasAad = isAADEnabled(solutionSettings);
       const isM365 = ctx.projectSettings?.isM365;
       manifest = await createManifest(
-        ctx.projectSettings!.appName,
         hasFrontend,
         hasBot,
         hasNotificationBot,
@@ -1730,7 +1729,7 @@ export class AppStudioPluginImpl {
     }
 
     if (!endpoint && !hasFrontend) {
-      endpoint = DEFAULT_DEVELOPER_WEBSITE_URL;
+      endpoint = DEFAULT_DEVELOPER.websiteUrl;
       indexPath = "";
     }
 
@@ -1956,7 +1955,6 @@ export async function createLocalManifest(
 }
 
 export async function createManifest(
-  appName: string,
   hasFrontend: boolean,
   hasBot: boolean,
   hasNotificationBot: boolean,
@@ -1980,6 +1978,8 @@ export async function createManifest(
       if (!isM365) {
         manifest.configurableTabs = CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV;
       }
+    } else {
+      manifest.developer = DEFAULT_DEVELOPER;
     }
     if (hasBot) {
       if (hasCommandAndResponseBot) {

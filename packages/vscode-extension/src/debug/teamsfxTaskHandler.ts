@@ -428,6 +428,7 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
           terminateAllRunningTeamsfxTasks();
           await vscode.debug.stopDebugging();
           sendDebugAllEvent(
+            debugConfig.teamsfxIsRemote,
             new UserError({
               source: ExtensionSource,
               name: ExtensionErrors.DebugServiceFailedBeforeStartError,
@@ -442,7 +443,7 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
           return;
         }
 
-        await sendDebugAllEvent();
+        await sendDebugAllEvent(debugConfig.teamsfxIsRemote);
       }
     }
   }

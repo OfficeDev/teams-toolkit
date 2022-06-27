@@ -39,6 +39,7 @@ export class TreeViewCommand extends vscode.TreeItem {
         command: commandId,
         arguments: [TelemetryTriggerFrom.TreeView, this],
       };
+      this.contextValue = commandId;
     }
   }
 

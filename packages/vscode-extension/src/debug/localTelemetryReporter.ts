@@ -42,6 +42,7 @@ export async function sendDebugAllStartEvent(): Promise<void> {
 }
 
 export async function sendDebugAllEvent(
+  isRemote?: boolean,
   error?: FxError,
   additionalProperties?: { [key: string]: string }
 ): Promise<void> {
@@ -55,6 +56,7 @@ export async function sendDebugAllEvent(
 
   const properties = {
     [TelemetryProperty.CorrelationId]: session.id,
+    [TelemetryProperty.DebugRemote]: `${isRemote}`, // undefined, true or false
     [TelemetryProperty.Success]: error === undefined ? TelemetrySuccess.Yes : TelemetrySuccess.No,
     ...session.properties,
     ...additionalProperties,

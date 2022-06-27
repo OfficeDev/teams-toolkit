@@ -1227,7 +1227,8 @@ export async function validateLocalPrerequisitesHandler(): Promise<string | unde
   await sendDebugAllStartEvent();
   const result = await localPrerequisites.checkAndInstall();
   if (result.isErr()) {
-    await sendDebugAllEvent(result.error);
+    // Only local debug use validate-local-prerequisites command
+    await sendDebugAllEvent(false, result.error);
     commonUtils.endLocalDebugSession();
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
@@ -1337,7 +1338,9 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
   const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
   const result = await localTelemetryReporter.runWithTelemetryProperties(
     TelemetryEvent.DebugPreCheck,
-    { [TelemetryProperty.DebugAppId]: localAppId },
+    {
+      [TelemetryProperty.DebugAppId]: localAppId,
+    },
     async (): Promise<Result<void, FxError>> => {
       const result = await localTelemetryReporter.runWithTelemetry(
         TelemetryEvent.DebugPreCheckCoreLocalDebug,
@@ -1381,7 +1384,8 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
   if (result.isErr()) {
     terminateAllRunningTeamsfxTasks();
     await debug.stopDebugging();
-    await sendDebugAllEvent(result.error);
+    // only local debug uses pre-debug-check command
+    await sendDebugAllEvent(false, result.error);
     commonUtils.endLocalDebugSession();
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
@@ -2136,22 +2140,6 @@ export function registerAccountMenuCommands(context: ExtensionContext) {
         }
       } catch (e) {
         showError(e);
-      }
-    })
-  );
-
-  context.subscriptions.push(
-    commands.registerCommand("fx-extension.signInGuideline", async (node: TreeViewCommand) => {
-      // TODO: update the link when documentation is ready
-      switch (node.contextValue) {
-        case "signinM365": {
-          await env.openExternal(Uri.parse("https://www.office.com/"));
-          break;
-        }
-        case "signinAzure": {
-          await env.openExternal(Uri.parse("https://portal.azure.com/"));
-          break;
-        }
       }
     })
   );
@@ -3041,6 +3029,46 @@ export function openTutorialHandler(args?: any[]): Promise<Result<unknown, FxErr
     [TelemetryProperty.TutorialName]: tutorial.id,
   });
   return VS_CODE_UI.openUrl(tutorial.data as string);
+}
+
+export async function openDocumentLinkHandler(args?: any[]): Promise<Result<boolean, FxError>> {
+  if (!args || args.length < 1) {
+    // should never happen
+    return Promise.resolve(ok(false));
+  }
+  const node = args[0] as TreeViewCommand;
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
+    [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.TreeView,
+    [TelemetryProperty.DocumentationName]: node.contextValue!,
+  });
+  switch (node.contextValue) {
+    case "signinM365": {
+      return VS_CODE_UI.openUrl("https://www.office.com/");
+    }
+    case "signinAzure": {
+      return VS_CODE_UI.openUrl("https://portal.azure.com/");
+    }
+    case "fx-extension.create":
+    case "fx-extension.openSamples": {
+      return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-create-project");
+    }
+    case "fx-extension.openManifest": {
+      return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-edit-manifest");
+    }
+    case "fx-extension.provision": {
+      return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-provision-cloud-resource");
+    }
+    case "fx-extension.build": {
+      return VS_CODE_UI.openUrl("https://aka.ms/teams-store-validation");
+    }
+    case "fx-extension.deploy": {
+      return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-deploy");
+    }
+    case "fx-extension.publish": {
+      return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-publish");
+    }
+  }
+  return Promise.resolve(ok(false));
 }
 
 export async function signinM365Callback(args?: any[]): Promise<Result<null, FxError>> {

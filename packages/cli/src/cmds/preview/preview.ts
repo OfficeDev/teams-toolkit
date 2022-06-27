@@ -290,7 +290,6 @@ export default class Preview extends YargsCommand {
       throw NotM365Project();
     }
 
-    const localSettings = undefined;
     let configResult = undefined;
     const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
     const includeBackend = ProjectSettingsHelper.includeBackend(projectSettings);

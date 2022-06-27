@@ -547,6 +547,12 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openHelpFeedbackLinkCmd);
 
+  const openDocumentLinkCmd = vscode.commands.registerCommand(
+    "fx-extension.openDocumentLink",
+    (...args) => Correlator.run(handlers.openDocumentLinkHandler, args)
+  );
+  context.subscriptions.push(openDocumentLinkCmd);
+
   const aadManifestTemplateCodeLensCmd = vscode.commands.registerCommand(
     "fx-extension.openPreviewAadFile",
     (...args) => Correlator.run(handlers.openPreviewAadFile, args)

@@ -28,12 +28,10 @@ import {
   COMPOSE_EXTENSIONS_TPL_EXISTING_APP,
   CONFIGURABLE_TABS_TPL_EXISTING_APP,
   DEFAULT_COLOR_PNG_FILENAME,
-  DEFAULT_DEVELOPER_PRIVACY_URL,
-  DEFAULT_DEVELOPER_TERM_OF_USE_URL,
-  DEFAULT_DEVELOPER_WEBSITE_URL,
   DEFAULT_OUTLINE_PNG_FILENAME,
   OUTLINE_TEMPLATE,
   STATIC_TABS_TPL_EXISTING_APP,
+  DEFAULT_DEVELOPER,
 } from "../../../plugins/resource/appstudio/constants";
 import {
   AzureSolutionQuestionNames,
@@ -90,12 +88,7 @@ export class AppManifest implements CloudResource {
         const manifestString = TEAMS_APP_MANIFEST_TEMPLATE;
         const manifest = JSON.parse(manifestString);
         if (existingApp || !hasTab(context.projectSetting)) {
-          manifest.developer = {
-            name: "Teams App, Inc.",
-            websiteUrl: DEFAULT_DEVELOPER_WEBSITE_URL,
-            privacyUrl: DEFAULT_DEVELOPER_PRIVACY_URL,
-            termsOfUseUrl: DEFAULT_DEVELOPER_TERM_OF_USE_URL,
-          };
+          manifest.developer = DEFAULT_DEVELOPER;
         }
         const templateFolder = path.join(inputs.projectPath, "templates");
         await fs.ensureDir(templateFolder);

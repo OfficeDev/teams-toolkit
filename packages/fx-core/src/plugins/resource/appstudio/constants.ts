@@ -557,9 +557,12 @@ export const WEB_APPLICATION_INFO_MULTI_ENV = {
 };
 
 // Default values for the developer fields in manifest.
-export const DEFAULT_DEVELOPER_WEBSITE_URL = "https://www.example.com";
-export const DEFAULT_DEVELOPER_TERM_OF_USE_URL = "https://www.example.com/termofuse";
-export const DEFAULT_DEVELOPER_PRIVACY_URL = "https://www.example.com/privacy";
+export const DEFAULT_DEVELOPER = {
+  name: "Teams App, Inc.",
+  websiteUrl: "https://www.example.com",
+  privacyUrl: "https://www.example.com/termofuse",
+  termsOfUseUrl: "https://www.example.com/privacy",
+};
 
 export const TEAMS_APP_SHORT_NAME_MAX_LENGTH = 30;
 export const STATIC_TABS_MAX_ITEMS = 16;

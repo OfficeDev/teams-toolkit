@@ -58,7 +58,7 @@ export async function run(): Promise<void> {
 
   const files: string[] = await new Promise((resolve, reject) => {
     glob(
-      "**/extTelemetry.test.js",
+      "**/**.test.js",
       { cwd: testsRoot, ignore: "migration/migrate.test.js" },
       (err, result) => {
         err ? reject(err) : resolve(result);

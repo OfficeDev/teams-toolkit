@@ -22,7 +22,6 @@ import {
   QuestionBotScenarioToBotCapability,
 } from "../resources/strings";
 import { convertToAlphanumericOnly } from "../../../../common/utils";
-import { includes } from "lodash";
 
 export function getTemplateInfos(ctx: Context, inputs: Inputs): CodeTemplateInfo[] {
   const lang = getLanguage(ctx.projectSetting.programmingLanguage);

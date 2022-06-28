@@ -11,7 +11,6 @@ import { AppStudioResultFactory } from "./results";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { Constants, ErrorMessages } from "./constants";
 import { RetryHandler } from "./utils/utils";
-import { logPolicy } from "@azure/core-http";
 
 export function getAppStudioEndpoint(): string {
   if (process.env.APP_STUDIO_ENV && process.env.APP_STUDIO_ENV === "int") {

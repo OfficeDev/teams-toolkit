@@ -22,6 +22,7 @@ import {
   getSampleFileName,
   checkInputEmpty,
   Notification,
+  sendErrorTelemetry,
 } from "./utils";
 import {
   ApiConnectorConfiguration,
@@ -61,6 +62,7 @@ import { DepsHandler } from "./depsHandler";
 import { Telemetry, TelemetryUtils } from "./telemetry";
 import { isV3 } from "../../../core";
 import { hasAAD, hasBot, hasFunction } from "../../../common/projectSettingsHelperV3";
+
 export class ApiConnectorImpl {
   public async scaffold(ctx: Context, inputs: Inputs): Promise<ApiConnectorResult> {
     if (!inputs.projectPath) {
@@ -180,7 +182,7 @@ export class ApiConnectorImpl {
           ErrorMessage.generateApiConFilesError.message(err.message)
         );
       }
-      this.sendErrorTelemetry(err as FxError);
+      sendErrorTelemetry(err as FxError, Telemetry.stage.scaffold);
       throw err;
     } finally {
       await Promise.all(
@@ -194,15 +196,6 @@ export class ApiConnectorImpl {
       return path.join(projectPath, item, getSampleFileName(config.APIName, languageType));
     });
     return { generatedFiles: result };
-  }
-
-  private sendErrorTelemetry(thrownErr: FxError) {
-    const errorCode = thrownErr.source + "." + thrownErr.name;
-    const errorType =
-      thrownErr instanceof SystemError ? Telemetry.systemError : Telemetry.userError;
-    const errorMessage = thrownErr.message;
-    TelemetryUtils.sendErrorEvent(Telemetry.stage.scaffold, errorCode, errorType, errorMessage);
-    return thrownErr;
   }
 
   private async scaffoldInComponent(

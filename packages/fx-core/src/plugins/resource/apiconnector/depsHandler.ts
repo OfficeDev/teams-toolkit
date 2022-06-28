@@ -24,7 +24,7 @@ export class DepsHandler {
     return await this.updateLocalPkgDepsVersion(depsConfig);
   }
 
-  private static async getDepsConfig(): Promise<Json> {
+  public static async getDepsConfig(): Promise<Json> {
     const configPath = path.join(getTemplatesFolder(), "plugins", "resource", "apiconnector");
     const sdkConfigPath = path.join(configPath, Constants.pkgJsonFile);
     const sdkContent: Json = await fs.readJson(sdkConfigPath);

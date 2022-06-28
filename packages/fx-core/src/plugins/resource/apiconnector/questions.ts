@@ -12,6 +12,7 @@ import {
   TextInputQuestion,
   MultiSelectQuestion,
   Platform,
+  FxError,
   AzureSolutionSettings,
   ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
@@ -28,11 +29,13 @@ import {
 } from "./checker";
 import { isV3 } from "../../../core";
 import { DepsHandler } from "./depsHandler";
-import { Notification } from "./utils";
+import { Notification, sendErrorTelemetry } from "./utils";
 import { ResultFactory } from "./result";
 import { ErrorMessage } from "./errors";
 import { ResourcePlugins } from "../../../common/constants";
 import { hasAAD, hasBot, hasFunction } from "../../../common/projectSettingsHelperV3";
+import { TelemetryUtils, Telemetry } from "./telemetry";
+
 export interface IQuestionService {
   // Control whether the question is displayed to the user.
   condition?(parentAnswerPath: string): { target?: string } & ValidationSchema;
@@ -62,6 +65,7 @@ export class ComponentsQuestion extends BaseQuestionService implements IQuestion
   ) {
     super(telemetryReporter, logger);
     this.ctx = ctx;
+    TelemetryUtils.init(ctx.telemetryReporter);
     this.projectPath = inputs.projectPath as string;
     this.components = [];
     if (inputs.platform === Platform.CLI_HELP) {
@@ -122,12 +126,29 @@ export class ComponentsQuestion extends BaseQuestionService implements IQuestion
               Notification.READ_MORE
             );
             currentSelectedIds.delete(item);
+            // this only send on vscode extension
+            sendErrorTelemetry(err as FxError, Telemetry.stage.questionModel);
           }
         }
         return currentSelectedIds;
       },
       validation: {
-        validFunc: checkEmptySelect,
+        validFunc: async (
+          inputs: string[],
+          previousInputs?: Inputs
+        ): Promise<string | undefined> => {
+          const projectPath = previousInputs?.projectPath;
+          for (const item of inputs) {
+            try {
+              await DepsHandler.checkDepsVerSupport(projectPath as string, item);
+            } catch (err) {
+              // this only send on cli
+              sendErrorTelemetry(err as FxError, Telemetry.stage.questionModel);
+              return err.message;
+            }
+          }
+          return checkEmptySelect(inputs);
+        },
       },
       placeholder: getLocalizedString("plugins.apiConnector.whichService.placeholder"), // Use the placeholder to display some description
     };

@@ -262,11 +262,9 @@ describe("tools", () => {
         },
       };
 
-      sandbox.stub<any, any>(fs, "pathExistsSync").callsFake((file: string) => {
-        return true;
+      sandbox.stub<any, any>(fs, "readJsonSync").callsFake((file: string) => {
+        return projectSettings;
       });
-
-      sandbox.stub<any, any>(fs, "readJsonSync").resolves(projectSettings);
 
       const result = getProjectSettingsForCommonTelemetry("root-path");
       chai.assert.equal(result.projectId, projectSettings.projectId);
@@ -301,7 +299,9 @@ describe("tools", () => {
         programmingLanguage: "typescript",
       };
 
-      sandbox.stub<any, any>(fs, "readJsonSync").resolves(projectSettings);
+      sandbox.stub<any, any>(fs, "readJsonSync").callsFake((file: string) => {
+        return projectSettings;
+      });
 
       const result = getProjectSettingsForCommonTelemetry("root-path");
       chai.assert.equal(result.projectId, projectSettings.projectId);

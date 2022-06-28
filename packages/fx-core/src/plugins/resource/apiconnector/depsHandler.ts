@@ -20,15 +20,40 @@ export class DepsHandler {
   }
 
   public async addPkgDeps(): Promise<FileChange | undefined> {
-    const depsConfig: Json = await this.getDepsConfig();
+    const depsConfig: Json = await DepsHandler.getDepsConfig();
     return await this.updateLocalPkgDepsVersion(depsConfig);
   }
 
-  public async getDepsConfig(): Promise<Json> {
+  private static async getDepsConfig(): Promise<Json> {
     const configPath = path.join(getTemplatesFolder(), "plugins", "resource", "apiconnector");
     const sdkConfigPath = path.join(configPath, Constants.pkgJsonFile);
     const sdkContent: Json = await fs.readJson(sdkConfigPath);
     return sdkContent.dependencies;
+  }
+
+  public static async checkDepsVerSupport(
+    projectPath: string,
+    component: string
+  ): Promise<boolean> {
+    const localPkgPath = path.join(projectPath, component, Constants.pkgJsonFile);
+    if (!(await fs.pathExists(localPkgPath))) {
+      return false;
+    }
+    const pkgContent = await fs.readJson(localPkgPath);
+    const depsConfig: Json = await DepsHandler.getDepsConfig();
+    for (const pkgItem in depsConfig) {
+      if (
+        !DepsHandler.sdkVersionCheck(
+          pkgContent.dependencies,
+          pkgItem,
+          depsConfig[pkgItem],
+          component
+        )
+      ) {
+        return false;
+      }
+    }
+    return true;
   }
 
   public async updateLocalPkgDepsVersion(pkgConfig: Json): Promise<FileChange | undefined> {
@@ -42,7 +67,14 @@ export class DepsHandler {
     const pkgContent = await fs.readJson(localPkgPath);
     let needUpdate = false;
     for (const pkgItem in pkgConfig) {
-      if (this.sdkVersionCheck(pkgContent.dependencies, pkgItem, pkgConfig[pkgItem])) {
+      if (
+        DepsHandler.sdkVersionCheck(
+          pkgContent.dependencies,
+          pkgItem,
+          pkgConfig[pkgItem],
+          this.componentType
+        )
+      ) {
         pkgContent.dependencies[pkgItem] = pkgConfig[pkgItem];
         needUpdate = true;
       }
@@ -62,9 +94,14 @@ export class DepsHandler {
     return undefined;
   }
 
-  private sdkVersionCheck(deps: Json, sdkName: string, sdkVersion: string): boolean {
+  private static sdkVersionCheck(
+    deps: Json,
+    sdkName: string,
+    sdkVersion: string,
+    componentType: string
+  ): boolean {
     // sdk alpha version
-    if (this.caretPrereleases(deps[sdkName], sdkVersion)) {
+    if (DepsHandler.caretPrereleases(deps[sdkName], sdkVersion)) {
       return false;
     }
     // sdk not in dependencies.
@@ -81,16 +118,12 @@ export class DepsHandler {
     } else {
       throw ResultFactory.UserError(
         ErrorMessage.sdkVersionImcompatibleError.name,
-        ErrorMessage.sdkVersionImcompatibleError.message(
-          this.componentType,
-          deps[sdkName],
-          sdkVersion
-        )
+        ErrorMessage.sdkVersionImcompatibleError.message(componentType, deps[sdkName], sdkVersion)
       );
     }
   }
 
-  private caretPrereleases(ver1: string, ver2: string): boolean {
+  private static caretPrereleases(ver1: string, ver2: string): boolean {
     if (!semver.prerelease(ver1) || !semver.prerelease(ver2)) {
       return false;
     }

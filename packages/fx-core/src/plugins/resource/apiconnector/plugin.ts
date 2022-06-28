@@ -39,6 +39,7 @@ import {
   ApiNameQuestion,
   basicAuthUsernameQuestion,
   botOption,
+  ComponentsQuestion,
   functionOption,
   apiEndpointQuestion,
   BasicAuthOption,
@@ -365,6 +366,7 @@ export class ApiConnectorImpl {
 
   public async generateQuestion(ctx: Context, inputs: Inputs): Promise<QuestionResult> {
     const componentOptions = [];
+    const projectPath = inputs.projectPath;
     if (inputs.platform === Platform.CLI_HELP) {
       componentOptions.push(botOption);
       componentOptions.push(functionOption);
@@ -399,23 +401,14 @@ export class ApiConnectorImpl {
         );
       }
     }
-    const whichComponent = new QTreeNode({
-      name: Constants.questionKey.componentsSelect,
-      type: "multiSelect",
-      staticOptions: componentOptions,
-      title: getLocalizedString("plugins.apiConnector.whichService.title"),
-      validation: {
-        validFunc: checkEmptySelect,
-      },
-      placeholder: getLocalizedString("plugins.apiConnector.whichService.placeholder"), // Use the placeholder to display some description
-    });
+    const whichComponent = new ComponentsQuestion(ctx, componentOptions, projectPath as string);
     const apiNameQuestion = new ApiNameQuestion(ctx);
     const whichAuthType = this.buildAuthTypeQuestion(ctx, inputs);
     const question = new QTreeNode({
       type: "group",
     });
     question.addChild(new QTreeNode(apiEndpointQuestion));
-    question.addChild(whichComponent);
+    question.addChild(new QTreeNode(whichComponent.getQuestion()));
     question.addChild(new QTreeNode(apiNameQuestion.getQuestion()));
     question.addChild(whichAuthType);
 

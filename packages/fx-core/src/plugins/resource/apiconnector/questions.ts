@@ -10,6 +10,7 @@ import {
   Question,
   ValidationSchema,
   TextInputQuestion,
+  MultiSelectQuestion,
 } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import { AuthType, Constants } from "./constants";
@@ -20,8 +21,10 @@ import {
   checkEmptyValue,
   checkHttp,
   checkIsGuid,
+  checkEmptySelect,
 } from "./checker";
-
+import { DepsHandler } from "./depsHandler";
+import { Notification } from "./utils";
 export interface IQuestionService {
   // Control whether the question is displayed to the user.
   condition?(parentAnswerPath: string): { target?: string } & ValidationSchema;
@@ -36,6 +39,57 @@ export class BaseQuestionService {
   constructor(telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
     this.telemetryReporter = telemetryReporter;
     this.logger = logger;
+  }
+}
+
+export class ComponentsQuestion extends BaseQuestionService implements IQuestionService {
+  protected readonly ctx: Context;
+  protected readonly components: OptionItem[];
+  protected readonly projectPath: string;
+  constructor(
+    ctx: Context,
+    componentOptions: OptionItem[],
+    projectPath: string,
+    telemetryReporter?: TelemetryReporter,
+    logger?: LogProvider
+  ) {
+    super(telemetryReporter, logger);
+    this.ctx = ctx;
+    this.components = componentOptions;
+    this.projectPath = projectPath;
+  }
+  public getQuestion(): MultiSelectQuestion {
+    return {
+      type: "multiSelect",
+      name: Constants.questionKey.componentsSelect,
+      title: getLocalizedString("plugins.apiConnector.whichService.title"),
+      staticOptions: this.components,
+      onDidChangeSelection: async (currentSelectedIds: Set<string>): Promise<Set<string>> => {
+        if (!this.ctx || !this.projectPath) {
+          return currentSelectedIds;
+        }
+        for (const item of currentSelectedIds) {
+          try {
+            await DepsHandler.checkDepsVerSupport(this.projectPath, item);
+          } catch (err) {
+            const errMsg = err.message;
+            this.ctx.userInteraction?.showMessage(
+              "warn",
+              errMsg,
+              false,
+              "OK",
+              Notification.READ_MORE
+            );
+            currentSelectedIds.delete(item);
+          }
+        }
+        return currentSelectedIds;
+      },
+      validation: {
+        validFunc: checkEmptySelect,
+      },
+      placeholder: getLocalizedString("plugins.apiConnector.whichService.placeholder"), // Use the placeholder to display some description
+    };
   }
 }
 export class ApiNameQuestion extends BaseQuestionService implements IQuestionService {

@@ -16,8 +16,7 @@ const reporterSpy = spy.interface({
   sendTelemetryErrorEvent(
     eventName: string,
     properties?: { [p: string]: string },
-    measurements?: { [p: string]: number },
-    errorProps?: string[]
+    measurements?: { [p: string]: number }
   ): void {},
   sendTelemetryEvent(
     eventName: string,
@@ -96,8 +95,7 @@ suite("telemetry", () => {
         "correlation-id": "",
         "feature-flags": featureFlags,
       },
-      { numericMeasure: 123 },
-      ["stackProp"]
+      { numericMeasure: 123 }
     );
   });
 

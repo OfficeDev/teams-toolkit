@@ -82,7 +82,7 @@ export async function happyPathTest(
   }
 
   // deploy
-  await execAsyncWithRetry(`teamsfx deploy ${capabilities}`, {
+  await execAsyncWithRetry(`teamsfx deploy`, {
     cwd: projectPath,
     env: env,
     timeout: 0,

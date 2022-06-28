@@ -24,7 +24,7 @@ Tips: you can use hotreload function of VS during debug. Learn more by visiting 
 
 5. Post HTTP request to http://localhost:5130/api/notification to trigger notification. You can use any API tool: curl (Windows Command Prompt), Postman, etc.
 
-Tips: if you made changes to Teams app manifest file (/templates/appPackage/manifest.template.json), please right click on your project and select "Teams Toolkit" -> "Prepare Teams app dependencies" command before you try to locally run the Teams app again.
+Tips: if you made changes to Teams app manifest file (Templates/appPackage/manifest.template.json), please right click on your project and select "Teams Toolkit" -> "Prepare Teams app dependencies" command before you try to locally run the Teams app again.
 
 Deploy your Teams app on Azure
 ------------------------------------
@@ -41,7 +41,7 @@ To run your Teams app on Azure:
 
 Notes: there is an alternative way to find all the commands mentioned above, go to the "Project" menu in Visual Studio, select "Teams Toolkit" and you will find all the commands there.
 
-Tips: if you made changes to Teams app manifest file (/templates/appPackage/manifest.template.json), please right click on your project and select "Teams Toolkit" -> "Update manifest in Teams Developer Portal" command before you try to run the Teams app remotely from Azure again.
+Tips: if you made changes to Teams app manifest file (Templates/appPackage/manifest.template.json), please right click on your project and select "Teams Toolkit" -> "Update manifest in Teams Developer Portal" command before you try to run the Teams app remotely from Azure again.
 
 Report an issue
 ---------------

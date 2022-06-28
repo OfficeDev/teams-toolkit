@@ -42,7 +42,6 @@ import { AppStudioResultFactory } from "./results";
 import {
   Constants,
   TEAMS_APP_SHORT_NAME_MAX_LENGTH,
-  DEFAULT_DEVELOPER_WEBSITE_URL,
   FRONTEND_ENDPOINT,
   FRONTEND_DOMAIN,
   BOT_ID,
@@ -73,18 +72,14 @@ import {
   BOTS_TPL_FOR_COMMAND_AND_RESPONSE,
   BOTS_TPL_FOR_NOTIFICATION,
   COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV_M365,
+  DEFAULT_DEVELOPER,
 } from "./constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../../folder";
 import path from "path";
 import * as util from "util";
-import {
-  AppStudioScopes,
-  getAppDirectory,
-  isAADEnabled,
-  isSPFxProject,
-} from "../../../common";
+import { AppStudioScopes, getAppDirectory, isAADEnabled, isSPFxProject } from "../../../common";
 import {
   LocalSettingsAuthKeys,
   LocalSettingsBotKeys,
@@ -621,7 +616,6 @@ export class AppStudioPluginImpl {
       const hasAad = isAADEnabled(solutionSettings);
       const isM365 = ctx.projectSettings?.isM365;
       manifest = await createManifest(
-        ctx.projectSettings!.appName,
         hasFrontend,
         hasBot,
         hasNotificationBot,
@@ -935,9 +929,7 @@ export class AppStudioPluginImpl {
     if (teamsAppId.isErr()) {
       return teamsAppId;
     }
-    ctx.envInfo.state
-      .get(ResourcePlugins.AppStudio)
-      .set(Constants.TEAMS_APP_ID, teamsAppId.value);
+    ctx.envInfo.state.get(ResourcePlugins.AppStudio).set(Constants.TEAMS_APP_ID, teamsAppId.value);
     return ok(teamsAppId.value);
   }
 
@@ -1189,35 +1181,35 @@ export class AppStudioPluginImpl {
   }
 
   private getTabEndpoint(ctx: PluginContext, isLocalDebug: boolean): string {
-    const tabEndpoint = (ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_ENDPOINT) as string);
+    const tabEndpoint = ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_ENDPOINT) as string;
 
     return tabEndpoint;
   }
 
   private getTabDomain(ctx: PluginContext, isLocalDebug: boolean): string {
-    const tabDomain = (ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_DOMAIN) as string);
+    const tabDomain = ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_DOMAIN) as string;
     return tabDomain;
   }
 
   private getTabIndexPath(ctx: PluginContext, isLocalDebug: boolean): string {
-    const tabIndexPath = (ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_INDEX_PATH) as string);
+    const tabIndexPath = ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_INDEX_PATH) as string;
     return tabIndexPath;
   }
 
   private getAadClientId(ctx: PluginContext, isLocalDebug: boolean): string {
-    const clientId = (ctx.envInfo.state.get(PluginNames.AAD)?.get(REMOTE_AAD_ID) as string);
+    const clientId = ctx.envInfo.state.get(PluginNames.AAD)?.get(REMOTE_AAD_ID) as string;
 
     return clientId;
   }
 
   private getBotId(ctx: PluginContext, isLocalDebug: boolean): string {
-    const botId = (ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_ID) as string);
+    const botId = ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_ID) as string;
 
     return botId;
   }
 
   private getBotDomain(ctx: PluginContext, isLocalDebug: boolean): string {
-    const botDomain = (ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_DOMAIN) as string);
+    const botDomain = ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_DOMAIN) as string;
 
     return botDomain;
   }
@@ -1241,7 +1233,7 @@ export class AppStudioPluginImpl {
       teamsAppId = manifestResult.value.id;
     }
     if (!isUUID(teamsAppId)) {
-      teamsAppId = (ctx.envInfo.state.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_ID) as string);
+      teamsAppId = ctx.envInfo.state.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_ID) as string;
     }
     return teamsAppId;
   }
@@ -1660,7 +1652,7 @@ export class AppStudioPluginImpl {
       capabilities.value.includes("staticTab") || capabilities.value.includes("configurableTab");
 
     if (!endpoint && !hasFrontend) {
-      endpoint = DEFAULT_DEVELOPER_WEBSITE_URL;
+      endpoint = DEFAULT_DEVELOPER.websiteUrl;
       indexPath = "";
     }
 
@@ -1694,26 +1686,18 @@ export class AppStudioPluginImpl {
           tabIndexPath: indexPath ?? "{{{localSettings.frontend.tabIndexPath}}}",
         },
         auth: {
-          clientId:
-            aadId
-              ? aadId
-              : ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId),
-          applicationIdUris:
-            webApplicationInfoResource
-              ? webApplicationInfoResource
-              : ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ApplicationIdUris),
+          clientId: aadId ? aadId : ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId),
+          applicationIdUris: webApplicationInfoResource
+            ? webApplicationInfoResource
+            : ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ApplicationIdUris),
         },
         teamsApp: {
-          teamsAppId:
-            teamsAppId
-              ? teamsAppId
-              : ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId),
+          teamsAppId: teamsAppId
+            ? teamsAppId
+            : ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId),
         },
         bot: {
-          botId:
-            botId
-              ? botId
-              : ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId),
+          botId: botId ? botId : ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId),
         },
       },
     };
@@ -1873,7 +1857,6 @@ export async function createLocalManifest(
 }
 
 export async function createManifest(
-  appName: string,
   hasFrontend: boolean,
   hasBot: boolean,
   hasNotificationBot: boolean,
@@ -1897,6 +1880,8 @@ export async function createManifest(
       if (!isM365) {
         manifest.configurableTabs = CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV;
       }
+    } else {
+      manifest.developer = DEFAULT_DEVELOPER;
     }
     if (hasBot) {
       if (hasCommandAndResponseBot) {

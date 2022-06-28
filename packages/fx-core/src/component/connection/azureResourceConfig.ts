@@ -19,6 +19,7 @@ import fs from "fs-extra";
 import { getTemplatesFolder } from "../../folder";
 import { getComponent } from "../workflow";
 import { compileHandlebarsTemplateString } from "../../common/tools";
+import { getProjectTemplatesFolderPath } from "../../common/utils";
 
 export abstract class AzureResourceConfig {
   abstract readonly name: string;
@@ -44,6 +45,7 @@ export abstract class AzureResourceConfig {
         return ok([bicep]);
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+        const update = inputs.update as boolean;
         const requisiteComponent = getComponent(context.projectSetting, this.requisite);
         if (!requisiteComponent) return ok([]);
         this.templateContext.connections = requisiteComponent.connections || [];
@@ -67,17 +69,25 @@ export abstract class AzureResourceConfig {
         );
         let module = await fs.readFile(modulePath, "utf-8");
         module = compileHandlebarsTemplateString(module, this.templateContext);
+        const templatesFolder = await getProjectTemplatesFolderPath(inputs.projectPath);
+        const moduleFilePath = path.join(
+          templatesFolder,
+          "teamsFx",
+          `${this.bicepModuleName}Config.bicep`
+        );
+        const moduleFilePathExists = await fs.pathExists(moduleFilePath);
         const orchPath = path.join(
           getTemplatesFolder(),
           "bicep",
           `${this.bicepModuleName}.config.orchestration.bicep`
         );
-        const orch = await fs.readFile(orchPath, "utf-8");
+        // orchestration part will be added only for first time
+        const orch = moduleFilePathExists ? undefined : await fs.readFile(orchPath, "utf-8");
         const bicep: Bicep = {
           type: "bicep",
           Configuration: {
             Modules: { [`${this.bicepModuleName}Config`]: module },
-            Orchestration: orch,
+            Orchestration: update ? undefined : orch,
           },
         };
         return ok([bicep]);

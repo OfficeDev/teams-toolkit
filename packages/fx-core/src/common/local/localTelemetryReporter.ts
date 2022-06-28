@@ -38,9 +38,14 @@ export class LocalTelemetryReporter {
   private static readonly StartEventSuffix = "-start";
   private readonly reporter: ToolTelemetryReporter;
   private lastEventName: string | undefined;
+  private saveEventTime?: (eventName: string, time: number) => void;
 
-  constructor(reporter: ToolTelemetryReporter) {
+  constructor(
+    reporter: ToolTelemetryReporter,
+    saveEventTime?: (eventName: string, time: number) => void
+  ) {
     this.reporter = reporter;
+    this.saveEventTime = saveEventTime;
   }
 
   /**
@@ -176,6 +181,7 @@ export class LocalTelemetryReporter {
     measurements?: { [key: string]: number }
   ): void {
     this.lastEventName = eventName;
+    this.saveEventTime?.(eventName, performance.now());
     this.reporter.sendTelemetryEvent(eventName, properties, measurements);
   }
 
@@ -193,6 +199,7 @@ export class LocalTelemetryReporter {
       properties[LocalTelemetryReporter.PropertyDebugLastEventName] = this.getLastEventName();
     }
     this.lastEventName = eventName;
+    this.saveEventTime?.(eventName, performance.now());
     this.reporter.sendTelemetryErrorEvent(eventName, error, properties, measurements, errorProps);
   }
 }

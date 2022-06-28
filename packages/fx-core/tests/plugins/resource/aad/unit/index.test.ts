@@ -323,6 +323,7 @@ describe("AadAppForTeamsPlugin: CI", () => {
     sinon.stub(fs, "ensureDir").resolves();
     const config = new Map();
     const context = await TestHelper.pluginContext(config, true, false, false);
+    context.root = "./";
 
     sinon.stub(fs, "pathExists").resolves(true);
 
@@ -358,6 +359,7 @@ describe("AadAppForTeamsPlugin: CI", () => {
     sinon.stub(fs, "ensureDir").resolves();
     const config = new Map();
     const context = await TestHelper.pluginContext(config, true, false, false);
+    context.root = "./";
     (context.projectSettings!.solutionSettings as any).capabilities.push("Bot");
     sinon.stub(fs, "pathExists").resolves(true);
 
@@ -389,7 +391,6 @@ describe("AadAppForTeamsPlugin: CI", () => {
       );
     });
     const result = await plugin.scaffold(context);
-
     chai.assert.equal(result.isOk(), true);
   });
 

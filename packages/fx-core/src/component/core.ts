@@ -37,6 +37,8 @@ import "./resource/spfx";
 import "./feature/bot";
 import "./feature/sql";
 import "./feature/tab";
+import "./feature/cicd";
+import "./feature/apiConnector";
 import "./code/botCode";
 import "./code/tabCode";
 import "./code/apiCode";

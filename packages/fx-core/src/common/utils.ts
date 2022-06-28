@@ -12,7 +12,7 @@ export async function getProjectTemplatesFolderPath(projectPath: string): Promis
       try {
         await fs.rename(path.join(projectPath, "templates"), path.join(projectPath, "Templates"));
       } catch (e) {
-        return path.resolve(projectPath, "templates");
+        return path.resolve(projectPath, "Templates");
       }
     }
     return path.resolve(projectPath, "Templates");

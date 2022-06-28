@@ -13,11 +13,7 @@ import {
   IStaticTab,
   Inputs,
 } from "@microsoft/teamsfx-api";
-import {
-  getAppDirectory,
-  deepCopy,
-  isBotNotificationEnabled,
-} from "../../../common";
+import { getAppDirectory, deepCopy } from "../../../common/tools";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
 import {
@@ -42,14 +38,13 @@ import {
   MANIFEST_TEMPLATE_CONSOLIDATE,
   WEB_APPLICATION_INFO_MULTI_ENV,
   WEB_APPLICATION_INFO_LOCAL_DEBUG,
-  DEFAULT_DEVELOPER_WEBSITE_URL,
-  DEFAULT_DEVELOPER_PRIVACY_URL,
-  DEFAULT_DEVELOPER_TERM_OF_USE_URL,
+  DEFAULT_DEVELOPER,
   BOTS_TPL_FOR_COMMAND_AND_RESPONSE,
   BOTS_TPL_FOR_NOTIFICATION,
 } from "./constants";
 import { replaceConfigValue } from "./utils/utils";
 import { AzureSolutionQuestionNames, BotScenario } from "../../solution/fx-solution/question";
+import { isBotNotificationEnabled } from "../../../common/featureFlags";
 
 export async function getManifestTemplatePath(
   projectRoot: string,
@@ -70,12 +65,7 @@ export async function init(
   const manifestString = TEAMS_APP_MANIFEST_TEMPLATE_V3;
   const manifest = JSON.parse(manifestString);
   if (existingApp) {
-    manifest.developer = {
-      name: "Teams App, Inc.",
-      websiteUrl: DEFAULT_DEVELOPER_WEBSITE_URL,
-      privacyUrl: DEFAULT_DEVELOPER_PRIVACY_URL,
-      termsOfUseUrl: DEFAULT_DEVELOPER_TERM_OF_USE_URL,
-    };
+    manifest.developer = DEFAULT_DEVELOPER;
   }
   await saveManifest(projectRoot, manifest);
 

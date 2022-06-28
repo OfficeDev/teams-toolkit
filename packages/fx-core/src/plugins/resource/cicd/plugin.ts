@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Context } from "@microsoft/teamsfx-api/build/v2";
-import { Inputs, v2, Platform } from "@microsoft/teamsfx-api";
+import { Inputs, Platform, v2 } from "@microsoft/teamsfx-api";
 import { FxCICDPluginResultFactory as ResultFactory, FxResult } from "./result";
 import { CICDProviderFactory } from "./providers/factory";
 import { ProviderKind } from "./providers/enums";
@@ -14,22 +13,15 @@ import { VSCodeExtensionCommand } from "../../../common/constants";
 export class CICDImpl {
   public commonProperties: { [key: string]: string } = {};
   public async addCICDWorkflows(
-    context: Context,
+    context: v2.Context,
     inputs: Inputs,
-    envInfo: v2.EnvInfoV2
+    envName: string
   ): Promise<FxResult> {
     // 1. Key inputs (envName, provider, template) x (hostingType, ).
     if (!inputs.projectPath) {
       throw new NoProjectOpenedError();
     }
     const projectPath = inputs.projectPath;
-    // By default(VSC), get env name from plugin's own `target-env` question.
-    let envName = inputs[questionNames.Environment];
-    // TODO: add support for VS/.Net Projects.
-    if (inputs.platform === Platform.CLI) {
-      // In CLI, get env name from the default `env` question.
-      envName = envInfo.envName;
-    }
     const providerName = inputs[questionNames.Provider];
     const templateNames = inputs[questionNames.Template] as string[];
     if (!envName || !providerName || templateNames.length === 0) {

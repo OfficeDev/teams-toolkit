@@ -31,6 +31,7 @@ describe("localTelemetryReporter", () => {
     measurements?: { [key: string]: number };
     errorProps?: string[];
   }[] = [];
+  let eventTime: { [key: string]: number } = {};
 
   const mockToolReporter = {
     sendTelemetryErrorEvent: (
@@ -59,8 +60,11 @@ describe("localTelemetryReporter", () => {
     },
   };
   beforeEach(() => {
-    reporter = new LocalTelemetryReporter(mockToolReporter);
+    reporter = new LocalTelemetryReporter(mockToolReporter, (eventName: string, time: number) => {
+      eventTime[eventName] = time;
+    });
     mockedEvents = [];
+    eventTime = {};
   });
 
   describe("runWithTelemetry", () => {
@@ -240,6 +244,36 @@ describe("localTelemetryReporter", () => {
       await resultPromise;
 
       chai.assert.equal(mockedEvents[1].measurements?.["duration"], actualDuration / 1000);
+    });
+
+    it("event time", async () => {
+      const event1 = "event1";
+      const event1Start = "event1-start";
+      const event2 = "event2";
+      const event2Start = "event2-start";
+
+      // Act
+      const clock = sinon.useFakeTimers();
+      const promise1 = reporter.runWithTelemetry(event1, async () => {
+        return ok(undefined);
+      });
+
+      clock.tick(1);
+      await promise1;
+
+      clock.tick(2);
+      const promise2 = reporter.runWithTelemetry(event2, async () => {
+        return ok(undefined);
+      });
+
+      clock.tick(3);
+      await promise2;
+
+      // Assert
+      const t0 = eventTime[event1Start];
+      chai.assert.equal(eventTime[event1] - t0, 1);
+      chai.assert.equal(eventTime[event2Start] - t0, 3);
+      chai.assert.equal(eventTime[event2] - t0, 6);
     });
   });
 

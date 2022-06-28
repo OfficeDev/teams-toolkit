@@ -194,15 +194,13 @@ describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
       solution: {},
       r1: {
         field1: "123456",
-        secretFields: ["field1"],
       },
       r2: {
         field2: "789012",
-        secretFields: ["field2"],
       },
     };
-    Container.set("r1", { secretKeys: ["field1"] });
-    Container.set("r2", { secretKeys: ["field2"] });
+    Container.set("r1", { secretKeys: ["field1"], finalOutputKeys: ["field1"] });
+    Container.set("r2", { secretKeys: ["field2"], finalOutputKeys: ["field2"] });
     const secret = separateSecretDataV3(data);
     assert.deepEqual(secret, {
       "r1.field1": "123456",

@@ -53,7 +53,7 @@ export async function happyPathTest(
     timeout: 0,
   });
   console.log(`[Successfully] scaffold to ${projectPath}`);
-  const files = await execAsync("ls -al");
+  const files = await execAsync(`ls -al ${projectPath}`);
   console.log(`Project file list: ${files.stdout}`);
 
   // set subscription

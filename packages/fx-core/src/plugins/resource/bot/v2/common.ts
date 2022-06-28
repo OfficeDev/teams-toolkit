@@ -1,14 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureSolutionSettings, Inputs } from "@microsoft/teamsfx-api";
+import { Inputs } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import {
   AzureSolutionQuestionNames,
-  BotOptionItem,
   BotScenario,
   M365SearchAppOptionItem,
-  MessageExtensionItem,
 } from "../../../solution/fx-solution/question";
 import { QuestionNames, TemplateProjectsConstants, TemplateProjectsScenarios } from "../constants";
 import { AppServiceOptionItem, FunctionsOptionItems } from "../question";

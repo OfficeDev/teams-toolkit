@@ -1146,7 +1146,7 @@
     "@microsoft/teamsfx-api": "^0.20.1",
     "@microsoft/teamsfx-core": "^1.11.0",
     "@npmcli/package-json": "^1.0.1",
-    "@vscode/extension-telemetry": "^0.4.8",
+    "@vscode/extension-telemetry": "^0.6.2",
     "@vscode/webview-ui-toolkit": "^0.9.3",
     "ajv": "^8.5.0",
     "async-mutex": "^0.3.1",

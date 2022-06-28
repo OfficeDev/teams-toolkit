@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as vscode from "vscode";
+// eslint-disable-next-line import/default
 import Reporter from "@vscode/extension-telemetry";
 import { TelemetryReporter, ConfigFolderName } from "@microsoft/teamsfx-api";
 import {
@@ -106,7 +107,7 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
     if (this.testFeatureFlag) {
       this.logTelemetryErrorEvent(eventName, properties, measurements, errorProps);
     } else {
-      this.reporter.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
+      this.reporter.sendTelemetryErrorEvent(eventName, properties, measurements);
     }
   }
 

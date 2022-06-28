@@ -1786,13 +1786,11 @@ export async function openManifestHandler(args?: any[]): Promise<Result<null, Fx
     return err(invalidProjectError);
   }
 
-  const env = "remote";
-
   const func: Func = {
     namespace: "fx-solution-azure/fx-resource-appstudio",
     method: "getManifestTemplatePath",
     params: {
-      type: env === "local" ? "localDebug" : "remote",
+      type: "remote",
     },
   };
   const res = await runUserTask(func, TelemetryEvent.OpenManifestEditor, true);

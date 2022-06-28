@@ -106,7 +106,7 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
     if (this.testFeatureFlag) {
       this.logTelemetryErrorEvent(eventName, properties, measurements, errorProps);
     } else {
-      this.reporter.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
+      this.reporter.sendTelemetryErrorEvent(eventName, properties, measurements);
     }
   }
 

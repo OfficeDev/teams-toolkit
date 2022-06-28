@@ -11,16 +11,16 @@ public class TeamsMessageExtension : TeamsActivityHandler
 {
     // Message Extension Code
     // Action.
-    protected override async Task<MessagingExtensionActionResponse> OnTeamsMessagingExtensionSubmitActionAsync(ITurnContext<IInvokeActivity> turnContext, MessagingExtensionAction action, CancellationToken cancellationToken)
+    protected override Task<MessagingExtensionActionResponse> OnTeamsMessagingExtensionSubmitActionAsync(ITurnContext<IInvokeActivity> turnContext, MessagingExtensionAction action, CancellationToken cancellationToken)
     {
         switch (action.CommandId)
         {
             case "createCard":
-                return CreateCardCommand(turnContext, action);
+                return Task.FromResult(CreateCardCommand(turnContext, action));
             case "shareMessage":
-                return ShareMessageCommand(turnContext, action);
+                return Task.FromResult(ShareMessageCommand(turnContext, action));
         }
-        return new MessagingExtensionActionResponse();
+        return Task.FromResult(new MessagingExtensionActionResponse());
     }
 
     private MessagingExtensionActionResponse CreateCardCommand(ITurnContext<IInvokeActivity> turnContext, MessagingExtensionAction action)

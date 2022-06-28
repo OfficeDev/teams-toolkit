@@ -133,6 +133,10 @@ export enum TelemetryProperty {
   IsM365 = "is-m365",
   IsCreatingM365 = "is-creating-m365",
   IsFromSample = "is-from-sample",
+  ProjectSettingsVersion = "plugin-settings-version",
+  SolutionSettings = "solution-settings",
+  ProgrammingLanguage = "programming-language",
+  PluginSettings = "plugin-settings",
 }
 
 export enum TelemetrySuccess {

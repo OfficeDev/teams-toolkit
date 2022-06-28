@@ -15,6 +15,8 @@ import { Correlator } from "@microsoft/teamsfx-core";
 import { configure, getLogger, Logger } from "log4js";
 import * as os from "os";
 import * as path from "path";
+import * as globalVariables from "../globalVariables";
+import { getProjectSettingsForCommonTelemetry } from "@microsoft/teamsfx-core";
 
 const TelemetryTestLoggerFile = "telemetryTest.log";
 
@@ -91,13 +93,7 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
       properties = { ...this.sharedProperties, ...properties };
     }
 
-    if (
-      properties[TelemetryProperty.ProjectId] === "unknown" ||
-      properties[TelemetryProperty.ProjectId] === undefined
-    ) {
-      const projectId = getProjectId();
-      properties[TelemetryProperty.ProjectId] = projectId ? projectId : "unknown";
-    }
+    this.addCommonProperties(properties);
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
     const featureFlags = getAllFeatureFlags();
@@ -121,13 +117,7 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
       properties = { ...this.sharedProperties, ...properties };
     }
 
-    if (
-      properties[TelemetryProperty.ProjectId] === "unknown" ||
-      properties[TelemetryProperty.ProjectId] === undefined
-    ) {
-      const projectId = getProjectId();
-      properties[TelemetryProperty.ProjectId] = projectId ? projectId : "unknown";
-    }
+    this.addCommonProperties(properties);
     if (properties[TelemetryProperty.CorrelationId] == undefined) {
       // deactivate event will set correlation id and should not be overwritten
       properties[TelemetryProperty.CorrelationId] = Correlator.getId();
@@ -154,13 +144,7 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
       properties = { ...this.sharedProperties, ...properties };
     }
 
-    if (
-      properties[TelemetryProperty.ProjectId] === "unknown" ||
-      properties[TelemetryProperty.ProjectId] === undefined
-    ) {
-      const projectId = getProjectId();
-      properties[TelemetryProperty.ProjectId] = projectId ? projectId : "unknown";
-    }
+    this.addCommonProperties(properties);
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
     const featureFlags = getAllFeatureFlags();
@@ -175,5 +159,39 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
 
   async dispose() {
     await this.reporter.dispose();
+  }
+
+  addCommonProperties(properties: { [p: string]: string }) {
+    const rootPath = globalVariables.workspaceUri?.fsPath;
+    const projectSettings = getProjectSettingsForCommonTelemetry(rootPath);
+
+    if (
+      properties[TelemetryProperty.ProjectId] === "unknown" ||
+      properties[TelemetryProperty.ProjectId] === undefined
+    ) {
+      properties[TelemetryProperty.ProjectId] = projectSettings?.projectId
+        ? projectSettings?.projectId
+        : "unknown";
+    }
+
+    if (!properties[TelemetryProperty.IsFromSample]) {
+      properties[TelemetryProperty.IsFromSample] = projectSettings?.isFromSample;
+    }
+
+    if (!properties[TelemetryProperty.ProjectSettingsVersion]) {
+      properties[TelemetryProperty.ProjectSettingsVersion] = projectSettings?.version;
+    }
+
+    if (!properties[TelemetryProperty.SolutionSettings]) {
+      properties[TelemetryProperty.SolutionSettings] = projectSettings?.solutionSettings;
+    }
+
+    if (!properties[TelemetryProperty.ProgrammingLanguage]) {
+      properties[TelemetryProperty.ProgrammingLanguage] = projectSettings?.programmingLanguage;
+    }
+
+    if (!properties[TelemetryProperty.PluginSettings]) {
+      properties[TelemetryProperty.PluginSettings] = projectSettings?.pluginSettings;
+    }
   }
 }

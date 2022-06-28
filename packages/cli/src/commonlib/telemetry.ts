@@ -4,7 +4,7 @@
 
 import Reporter from "../telemetry/telemetryReporter";
 import { TelemetryReporter } from "@microsoft/teamsfx-api";
-import { Correlator } from "@microsoft/teamsfx-core";
+import { Correlator, getProjectSettingsForCommonTelemetry } from "@microsoft/teamsfx-core";
 import { TelemetryProperty } from "../telemetry/cliTelemetryEvents";
 import { getAllFeatureFlags, getProjectId } from "../utils";
 import { CliConfigOptions } from "../userSetttings";
@@ -45,8 +45,7 @@ export class CliTelemetryReporter implements TelemetryReporter {
       properties = {};
     }
 
-    const projectId = getProjectId(this.rootFolder);
-    properties[TelemetryProperty.ProjectId] = projectId ? projectId : "";
+    this.addCommonProperties(this.rootFolder, properties);
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
     properties[CliConfigOptions.RunFrom] = tryDetectCICDPlatform();
@@ -66,8 +65,7 @@ export class CliTelemetryReporter implements TelemetryReporter {
       properties = {};
     }
 
-    const projectId = getProjectId(this.rootFolder);
-    properties[TelemetryProperty.ProjectId] = projectId ? projectId : "";
+    this.addCommonProperties(this.rootFolder, properties);
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
     properties[CliConfigOptions.RunFrom] = tryDetectCICDPlatform();
@@ -87,8 +85,7 @@ export class CliTelemetryReporter implements TelemetryReporter {
       properties = {};
     }
 
-    const projectId = getProjectId(this.rootFolder);
-    properties[TelemetryProperty.ProjectId] = projectId ? projectId : "";
+    this.addCommonProperties(this.rootFolder, properties);
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
     properties[CliConfigOptions.RunFrom] = tryDetectCICDPlatform();
@@ -101,5 +98,38 @@ export class CliTelemetryReporter implements TelemetryReporter {
 
   async flush(): Promise<void> {
     await this.reporter.flush();
+  }
+
+  addCommonProperties(rootPath: string | undefined, properties: { [p: string]: string }) {
+    const projectSettings = getProjectSettingsForCommonTelemetry(rootPath);
+
+    if (
+      properties[TelemetryProperty.ProjectId] === "unknown" ||
+      properties[TelemetryProperty.ProjectId] === undefined
+    ) {
+      properties[TelemetryProperty.ProjectId] = projectSettings?.projectId
+        ? projectSettings?.projectId
+        : "unknown";
+    }
+
+    if (!properties[TelemetryProperty.IsFromSample]) {
+      properties[TelemetryProperty.IsFromSample] = projectSettings?.isFromSample;
+    }
+
+    if (!properties[TelemetryProperty.ProjectSettingsVersion]) {
+      properties[TelemetryProperty.ProjectSettingsVersion] = projectSettings?.version;
+    }
+
+    if (!properties[TelemetryProperty.SolutionSettings]) {
+      properties[TelemetryProperty.SolutionSettings] = projectSettings?.solutionSettings;
+    }
+
+    if (!properties[TelemetryProperty.ProgrammingLanguage]) {
+      properties[TelemetryProperty.ProgrammingLanguage] = projectSettings?.programmingLanguage;
+    }
+
+    if (!properties[TelemetryProperty.PluginSettings]) {
+      properties[TelemetryProperty.PluginSettings] = projectSettings?.pluginSettings;
+    }
   }
 }

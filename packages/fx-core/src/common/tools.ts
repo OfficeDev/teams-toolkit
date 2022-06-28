@@ -24,6 +24,8 @@ import {
   Platform,
   M365TokenProvider,
   ProjectSettingsV3,
+  InputConfigsFolderName,
+  ProjectSettingsFileName,
 } from "@microsoft/teamsfx-api";
 import axios from "axios";
 import { exec, ExecOptions } from "child_process";
@@ -947,4 +949,40 @@ export async function getSPFxToken(
     spoToken = spfxTokenRes.isOk() ? spfxTokenRes.value : undefined;
   }
   return spoToken;
+}
+
+// Get some fields from project settings and will be used in telemetry
+export function getProjectSettingsForCommonTelemetry(rootPath: string | undefined): any {
+  if (!rootPath) {
+    return undefined;
+  }
+
+  try {
+    const projectSettingsPath = path.join(
+      rootPath,
+      `.${ConfigFolderName}`,
+      InputConfigsFolderName,
+      ProjectSettingsFileName
+    );
+
+    if (!projectSettingsPath || !fs.pathExistsSync(projectSettingsPath)) {
+      return undefined;
+    }
+
+    const projectSettings = fs.readJsonSync(projectSettingsPath);
+    return {
+      projectId: projectSettings.projectId ?? undefined,
+      version: projectSettings.version ?? undefined,
+      isFromSample: projectSettings.isFromSample ?? undefined,
+      solutionSettings: projectSettings.solutionSettings
+        ? JSON.stringify(projectSettings.solutionSettings)
+        : undefined,
+      programmingLanguage: projectSettings.programmingLanguage ?? undefined,
+      pluginSettings: projectSettings.pluginSettings
+        ? JSON.stringify(projectSettings.pluginSettings)
+        : undefined,
+    };
+  } catch (error) {
+    return undefined;
+  }
 }

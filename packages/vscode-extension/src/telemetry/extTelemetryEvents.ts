@@ -255,6 +255,10 @@ export enum TelemetryProperty {
   DocumentationName = "documentation-name",
   // Used with Deactivate
   Timestamp = "timestamp",
+  ProjectSettingsVersion = "plugin-settings-version",
+  SolutionSettings = "solution-settings",
+  ProgrammingLanguage = "programming-language",
+  PluginSettings = "plugin-settings",
 }
 
 export enum TelemetrySuccess {

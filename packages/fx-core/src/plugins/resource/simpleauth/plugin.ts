@@ -40,8 +40,7 @@ export class SimpleAuthPluginImpl {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartPostLocalDebug);
 
-    let configs: any;
-    configs = Utils.getWebAppConfig(ctx, false);
+    const configs = Utils.getWebAppConfig(ctx, false);
 
     const configArray = [];
     for (const [key, value] of Object.entries(configs)) {

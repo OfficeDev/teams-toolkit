@@ -11,6 +11,9 @@ import {
   ValidationSchema,
   TextInputQuestion,
   MultiSelectQuestion,
+  Platform,
+  AzureSolutionSettings,
+  ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import { AuthType, Constants } from "./constants";
@@ -23,8 +26,13 @@ import {
   checkIsGuid,
   checkEmptySelect,
 } from "./checker";
+import { isV3 } from "../../../core";
 import { DepsHandler } from "./depsHandler";
 import { Notification } from "./utils";
+import { ResultFactory } from "./result";
+import { ErrorMessage } from "./errors";
+import { ResourcePlugins } from "../../../common/constants";
+import { hasAAD, hasBot, hasFunction } from "../../../common/projectSettingsHelperV3";
 export interface IQuestionService {
   // Control whether the question is displayed to the user.
   condition?(parentAnswerPath: string): { target?: string } & ValidationSchema;
@@ -48,15 +56,48 @@ export class ComponentsQuestion extends BaseQuestionService implements IQuestion
   protected readonly projectPath: string;
   constructor(
     ctx: Context,
-    componentOptions: OptionItem[],
-    projectPath: string,
+    inputs: Inputs,
     telemetryReporter?: TelemetryReporter,
     logger?: LogProvider
   ) {
     super(telemetryReporter, logger);
     this.ctx = ctx;
-    this.components = componentOptions;
-    this.projectPath = projectPath;
+    this.projectPath = inputs.projectPath as string;
+    this.components = [];
+    if (inputs.platform === Platform.CLI_HELP) {
+      this.components.push(botOption);
+      this.components.push(functionOption);
+    } else {
+      if (!isV3()) {
+        const activePlugins = (ctx.projectSetting.solutionSettings as AzureSolutionSettings)
+          ?.activeResourcePlugins;
+        if (!activePlugins) {
+          throw ResultFactory.UserError(
+            ErrorMessage.NoActivePluginsExistError.name,
+            ErrorMessage.NoActivePluginsExistError.message()
+          );
+        }
+        if (activePlugins.includes(ResourcePlugins.Bot)) {
+          this.components.push(botOption);
+        }
+        if (activePlugins.includes(ResourcePlugins.Function)) {
+          this.components.push(functionOption);
+        }
+      } else {
+        if (hasBot(ctx.projectSetting as ProjectSettingsV3)) {
+          this.components.push(botOption);
+        }
+        if (hasFunction(ctx.projectSetting as ProjectSettingsV3)) {
+          this.components.push(functionOption);
+        }
+      }
+      if (this.components.length === 0) {
+        throw ResultFactory.UserError(
+          ErrorMessage.NoValidCompoentExistError.name,
+          ErrorMessage.NoValidCompoentExistError.message()
+        );
+      }
+    }
   }
   public getQuestion(): MultiSelectQuestion {
     return {

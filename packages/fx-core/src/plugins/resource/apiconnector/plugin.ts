@@ -38,9 +38,7 @@ import { ResourcePlugins } from "../../../common/constants";
 import {
   ApiNameQuestion,
   basicAuthUsernameQuestion,
-  botOption,
   ComponentsQuestion,
-  functionOption,
   apiEndpointQuestion,
   BasicAuthOption,
   CertAuthOption,
@@ -60,7 +58,6 @@ import { SampleHandler } from "./sampleHandler";
 import { isAADEnabled } from "../../../common";
 import { getAzureSolutionSettings } from "../../solution/fx-solution/v2/utils";
 import { DepsHandler } from "./depsHandler";
-import { checkEmptySelect } from "./checker";
 import { Telemetry, TelemetryUtils } from "./telemetry";
 import { isV3 } from "../../../core";
 import { hasAAD, hasBot, hasFunction } from "../../../common/projectSettingsHelperV3";
@@ -365,43 +362,7 @@ export class ApiConnectorImpl {
   }
 
   public async generateQuestion(ctx: Context, inputs: Inputs): Promise<QuestionResult> {
-    const componentOptions = [];
-    const projectPath = inputs.projectPath;
-    if (inputs.platform === Platform.CLI_HELP) {
-      componentOptions.push(botOption);
-      componentOptions.push(functionOption);
-    } else {
-      if (!isV3()) {
-        const activePlugins = (ctx.projectSetting.solutionSettings as AzureSolutionSettings)
-          ?.activeResourcePlugins;
-        if (!activePlugins) {
-          throw ResultFactory.UserError(
-            ErrorMessage.NoActivePluginsExistError.name,
-            ErrorMessage.NoActivePluginsExistError.message()
-          );
-        }
-        if (activePlugins.includes(ResourcePlugins.Bot)) {
-          componentOptions.push(botOption);
-        }
-        if (activePlugins.includes(ResourcePlugins.Function)) {
-          componentOptions.push(functionOption);
-        }
-      } else {
-        if (hasBot(ctx.projectSetting as ProjectSettingsV3)) {
-          componentOptions.push(botOption);
-        }
-        if (hasFunction(ctx.projectSetting as ProjectSettingsV3)) {
-          componentOptions.push(functionOption);
-        }
-      }
-      if (componentOptions.length === 0) {
-        throw ResultFactory.UserError(
-          ErrorMessage.NoValidCompoentExistError.name,
-          ErrorMessage.NoValidCompoentExistError.message()
-        );
-      }
-    }
-    const whichComponent = new ComponentsQuestion(ctx, componentOptions, projectPath as string);
+    const whichComponent = new ComponentsQuestion(ctx, inputs);
     const apiNameQuestion = new ApiNameQuestion(ctx);
     const whichAuthType = this.buildAuthTypeQuestion(ctx, inputs);
     const question = new QTreeNode({

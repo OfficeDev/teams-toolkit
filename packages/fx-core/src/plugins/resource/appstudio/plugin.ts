@@ -1686,18 +1686,30 @@ export class AppStudioPluginImpl {
           tabIndexPath: indexPath ?? "{{{localSettings.frontend.tabIndexPath}}}",
         },
         auth: {
-          clientId: aadId ? aadId : ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId),
+          clientId: aadId
+            ? aadId
+            : ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId)
+            ? ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId)
+            : "{{localSettings.auth.clientId}}",
           applicationIdUris: webApplicationInfoResource
             ? webApplicationInfoResource
-            : ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ApplicationIdUris),
+            : ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ApplicationIdUris)
+            ? ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ApplicationIdUris)
+            : "{{{localSettings.auth.applicationIdUris}}}",
         },
         teamsApp: {
           teamsAppId: teamsAppId
             ? teamsAppId
-            : ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId),
+            : ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId)
+            ? ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId)
+            : "{{localSettings.teamsApp.teamsAppId}}",
         },
         bot: {
-          botId: botId ? botId : ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId),
+          botId: botId
+            ? botId
+            : ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId)
+            ? ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId)
+            : "{{localSettings.bot.botId}}",
         },
       },
     };

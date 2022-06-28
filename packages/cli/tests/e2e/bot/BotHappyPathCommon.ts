@@ -46,15 +46,13 @@ export async function happyPathTest(
     runtime === Runtime.Dotnet
       ? `${cmdBase} --runtime dotnet`
       : `${cmdBase} --programming-language typescript`;
-  console.log(`ready run CMD ${cmd}`);
+  console.log(`ready to run CMD: ${cmd}`);
   await execAsync(cmd, {
     cwd: testFolder,
     env: env,
     timeout: 0,
   });
   console.log(`[Successfully] scaffold to ${projectPath}`);
-  const files = await execAsync(`ls -al ${projectPath}`);
-  console.log(`Project file list: ${files.stdout}`);
 
   // set subscription
   await execAsync(`teamsfx account set --subscription ${subscription}`, {

@@ -8,7 +8,7 @@ import { ErrorMessage } from "./errors";
 import { ResultFactory } from "./result";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import path from "path";
-import { ApiConnectorConfiguration, AADAuthConfig } from "./config";
+import { ApiConnectorConfiguration } from "./config";
 import { Telemetry, TelemetryUtils } from "./telemetry";
 
 export function generateTempFolder(): string {

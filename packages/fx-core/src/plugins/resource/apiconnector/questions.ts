@@ -33,7 +33,7 @@ import { Notification, sendErrorTelemetry } from "./utils";
 import { ResultFactory } from "./result";
 import { ErrorMessage } from "./errors";
 import { ResourcePlugins } from "../../../common/constants";
-import { hasAAD, hasBot, hasFunction } from "../../../common/projectSettingsHelperV3";
+import { hasBot, hasFunction } from "../../../common/projectSettingsHelperV3";
 import { TelemetryUtils, Telemetry } from "./telemetry";
 
 export interface IQuestionService {

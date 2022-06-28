@@ -22,6 +22,7 @@ import "mocha";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
+import Container from "typedi";
 import {
   environmentManager,
   newEnvInfo,
@@ -200,6 +201,8 @@ describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
         secretFields: ["field2"],
       },
     };
+    Container.set("r1", { secretKeys: ["field1"] });
+    Container.set("r2", { secretKeys: ["field2"] });
     const secret = separateSecretDataV3(data);
     assert.deepEqual(secret, {
       "r1.field1": "123456",
@@ -209,11 +212,9 @@ describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
       solution: {},
       r1: {
         field1: "{{r1.field1}}",
-        secretFields: ["field1"],
       },
       r2: {
         field2: "{{r2.field2}}",
-        secretFields: ["field2"],
       },
     });
   });

@@ -98,6 +98,14 @@ export const APIMOutputs = {
   },
   authServerResourceId: {
     key: "authServerResourceId",
-    bicepVariable: "configOutput.authServerResourceId.value.authServerResourceId",
+  },
+  apimClientAADObjectId: {
+    key: "apimClientAADObjectId",
+  },
+  apimClientAADClientId: {
+    key: "apimClientAADClientId",
+  },
+  apimClientAADClientSecret: {
+    key: "apimClientAADClientSecret",
   },
 };

@@ -11,4 +11,5 @@ export class APIMResource extends AzureResource {
   readonly bicepModuleName = ComponentNames.APIM;
   outputs = APIMOutputs;
   finalOutputKeys = ["serviceResourceId", "productResourceId", "authServerResourceId"];
+  secretKeys = ["apimClientAADClientSecret"];
 }

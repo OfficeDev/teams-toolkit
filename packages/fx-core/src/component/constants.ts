@@ -86,3 +86,18 @@ export const IdentityOutputs = {
     bicepVariable: "provisionOutputs.identityOutput.value.identityClientId",
   },
 };
+
+export const APIMOutputs = {
+  serviceResourceId: {
+    key: "serviceResourceId",
+    bicepVariable: "provisionOutputs.apimOutput.value.serviceResourceId",
+  },
+  productResourceId: {
+    key: "productResourceId",
+    bicepVariable: "provisionOutputs.apimOutput.value.productResourceId",
+  },
+  authServerResourceId: {
+    key: "authServerResourceId",
+    bicepVariable: "configOutput.authServerResourceId.value.authServerResourceId",
+  },
+};

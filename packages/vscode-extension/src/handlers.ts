@@ -1224,7 +1224,10 @@ export async function validateLocalPrerequisitesHandler(): Promise<string | unde
 export async function installAppInTeams(): Promise<string | undefined> {
   let shouldContinue = false;
   try {
-    const debugConfig = await commonUtils.getDebugConfig(false, environmentManager.getLocalEnvName());
+    const debugConfig = await commonUtils.getDebugConfig(
+      false,
+      environmentManager.getLocalEnvName()
+    );
     if (debugConfig?.appId === undefined) {
       throw new UserError(
         ExtensionErrors.GetTeamsAppInstallationFailed,
@@ -1783,7 +1786,7 @@ export async function openManifestHandler(args?: any[]): Promise<Result<null, Fx
     return err(invalidProjectError);
   }
 
-  let env = "remote";
+  const env = "remote";
 
   const func: Func = {
     namespace: "fx-solution-azure/fx-resource-appstudio",
@@ -2466,8 +2469,7 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
     return err(invalidProjectError);
   }
 
-  let env: Result<string | undefined, FxError>;
-  env = await askTargetEnvironment();
+  const env: Result<string | undefined, FxError> = await askTargetEnvironment();
   if (env.isErr()) {
     ExtTelemetry.sendTelemetryErrorEvent(telemetryName, env.error);
     return err(env.error);
@@ -2580,8 +2582,7 @@ export async function updatePreviewManifest(args: any[]): Promise<any> {
     },
   };
 
-  let result;
-  result = await runUserTask(func, TelemetryEvent.UpdatePreviewManifest, false, env);
+  const result = await runUserTask(func, TelemetryEvent.UpdatePreviewManifest, false, env);
 
   if (!args || args.length === 0) {
     const workspacePath = globalVariables.workspaceUri?.fsPath;
@@ -2610,8 +2611,7 @@ export async function editManifestTemplate(args: any[]) {
     const segments = args[0].fsPath.split(".");
     const env = segments[segments.length - 2] === "local" ? "local" : "remote";
     const workspacePath = globalVariables.workspaceUri?.fsPath;
-    let manifestPath: string;
-    manifestPath = `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`;
+    const manifestPath = `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`;
     workspace.openTextDocument(manifestPath).then((document) => {
       window.showTextDocument(document);
     });

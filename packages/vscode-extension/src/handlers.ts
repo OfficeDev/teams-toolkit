@@ -459,11 +459,10 @@ export async function updateAutoOpenGlobalKey(
 ): Promise<void> {
   if (isTriggerFromWalkThrough(args)) {
     await globalStateUpdate(GlobalKey.OpenWalkThrough, true);
-    await globalStateUpdate(GlobalKey.OpenReadMe, "");
   } else {
     await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
-    await globalStateUpdate(GlobalKey.OpenReadMe, projectUri.fsPath);
   }
+  await globalStateUpdate(GlobalKey.OpenReadMe, projectUri.fsPath);
 
   if (showLocalDebugMessage) {
     await globalStateUpdate(GlobalKey.ShowLocalDebugMessage, true);

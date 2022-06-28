@@ -221,8 +221,6 @@ export default class Preview extends YargsCommand {
         // whether on success or failure, send this.telemetryProperties and this.telemetryMeasurements
         Object.assign(ctx.properties, this.telemetryProperties);
         Object.assign(ctx.measurements, this.telemetryMeasurements);
-        ctx.properties[TelemetryProperty.PreviewLastEventName] =
-          localTelemetryReporter.getLastEventName();
         return result.isErr() ? result.error : undefined;
       },
       this.telemetryProperties

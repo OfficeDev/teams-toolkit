@@ -12,7 +12,7 @@ import {
   StatesFolderName,
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
-import { isSPFxProject, isConfigUnifyEnabled } from "../../common/tools";
+import { isSPFxProject, isConfigUnifyEnabled, getAppDirectory } from "../../common/tools";
 import { environmentManager } from "../environment";
 import { CoreSource, ConsolidateCanceledError } from "../error";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
@@ -32,20 +32,12 @@ import { CoreHookContext } from "../types";
 import { TOOLS } from "../globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { getManifestTemplatePath } from "../../plugins/resource/appstudio/manifestTemplate";
-import { getResourceFolder, getTemplatesFolder } from "../../folder";
+import { getResourceFolder } from "../../folder";
 import { loadProjectSettings } from "./projectSettingsLoader";
 import { addPathToGitignore, needMigrateToArmAndMultiEnv } from "./projectMigrator";
 import * as util from "util";
 import { ManifestTemplate } from "../../plugins/resource/spfx/utils/constants";
-import {
-  generateAadManifest,
-  needMigrateToAadManifest,
-  Permission,
-  permissionsToRequiredResourceAccess,
-} from "./MigrationUtils";
-import { Constants } from "../../plugins/resource/aad/constants";
-import { AADManifest } from "../../plugins/resource/aad/interfaces/AADManifest";
-import { generateAadManifestTemplate } from "../generateAadManifestTemplate";
+import { generateAadManifest, needMigrateToAadManifest } from "./MigrationUtils";
 
 const upgradeButton = "Upgrade";
 const LearnMore = "Learn More";
@@ -157,9 +149,8 @@ export async function needConsolidateLocalRemote(ctx: CoreHookContext): Promise<
     return false;
   }
 
-  const consolidateManifestExist = await fs.pathExists(
-    path.join(inputs.projectPath as string, "templates", "appPackage", "manifest.template.json")
-  );
+  const appDir = await getAppDirectory(inputs.projectPath as string);
+  const consolidateManifestExist = await fs.pathExists(path.join(appDir, "manifest.template.json"));
   if (!consolidateManifestExist) {
     return true;
   }

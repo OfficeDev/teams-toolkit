@@ -177,7 +177,7 @@ export function persistParamsBicepPlans(
 export async function persistParams(
   projectPath: string,
   appName: string,
-  params: Record<string, string>
+  params?: Record<string, string>
 ): Promise<Result<any, FxError>> {
   const envListResult = await environmentManager.listRemoteEnvConfigs(projectPath);
   if (envListResult.isErr()) {
@@ -188,38 +188,45 @@ export async function persistParams(
   for (const env of envListResult.value) {
     const parameterFileName = `azure.parameters.${env}.json`;
     const parameterEnvFilePath = path.join(parameterEnvFolderPath, parameterFileName);
-    let parameterFileContent = "";
+    let parameterFileContent = undefined;
     if (await fs.pathExists(parameterEnvFilePath)) {
-      const json = await fs.readJson(parameterEnvFilePath);
-      const parameterObj = json.parameters.provisionParameters.value;
-      if (!parameterObj.resourceBaseName) {
+      if (params) {
+        const json = await fs.readJson(parameterEnvFilePath);
+        const existingParams = json.parameters.provisionParameters.value;
+        const dupParamKeys = Object.keys(params).filter((val) =>
+          Object.keys(existingParams).includes(val)
+        );
+        if (dupParamKeys && dupParamKeys.length != 0) {
+          return err(
+            new UserError({
+              name: SolutionError.FailedToUpdateArmParameters,
+              source: "bicep",
+              helpLink: HelpLinks.ArmHelpLink,
+              message: getDefaultString(
+                "core.generateArmTemplates.DuplicateParameter",
+                parameterEnvFilePath,
+                dupParamKeys
+              ),
+              displayMessage: getLocalizedString(
+                "core.generateArmTemplates.DuplicateParameter",
+                parameterEnvFilePath,
+                dupParamKeys
+              ),
+            })
+          );
+        }
+        Object.assign(existingParams, params);
+        if (!existingParams.resourceBaseName) {
+          params.resourceBaseName = generateResourceBaseName(appName, "");
+        }
+        json.parameters.provisionParameters.value = existingParams;
+        parameterFileContent = JSON.stringify(json, undefined, 2);
+      }
+    } else {
+      params = params || {};
+      if (!params.resourceBaseName) {
         params.resourceBaseName = generateResourceBaseName(appName, "");
       }
-      const duplicateParam = Object.keys(parameterObj).filter((val) =>
-        Object.keys(params).includes(val)
-      );
-      if (duplicateParam && duplicateParam.length != 0) {
-        return err(
-          new UserError({
-            name: SolutionError.FailedToUpdateArmParameters,
-            source: "bicep",
-            helpLink: HelpLinks.ArmHelpLink,
-            message: getDefaultString(
-              "core.generateArmTemplates.DuplicateParameter",
-              parameterEnvFilePath,
-              duplicateParam
-            ),
-            displayMessage: getLocalizedString(
-              "core.generateArmTemplates.DuplicateParameter",
-              parameterEnvFilePath,
-              duplicateParam
-            ),
-          })
-        );
-      }
-      json.parameters.provisionParameters.value = Object.assign(parameterObj, params);
-      parameterFileContent = JSON.stringify(json, undefined, 2);
-    } else {
       const parameterObject = {
         $schema:
           "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
@@ -228,7 +235,10 @@ export async function persistParams(
       };
       parameterFileContent = JSON.stringify(parameterObject, undefined, 2);
     }
-    await fs.writeFile(parameterEnvFilePath, parameterFileContent.replace(/\r?\n/g, os.EOL));
+    if (parameterFileContent) {
+      parameterFileContent = parameterFileContent.replace(/\r?\n/g, os.EOL);
+      await fs.writeFile(parameterEnvFilePath, parameterFileContent);
+    }
   }
   return ok(undefined);
 }
@@ -246,10 +256,10 @@ export async function persistBicep(
     const res = await persistConfigBicep(projectPath, bicep.Configuration);
     if (res.isErr()) return err(res.error);
   }
-  if (bicep.Parameters) {
-    const res = await persistParams(projectPath, appName, bicep.Parameters);
-    if (res.isErr()) return err(res.error);
-  }
+  // if (bicep.Parameters) {
+  const res = await persistParams(projectPath, appName, bicep.Parameters);
+  if (res.isErr()) return err(res.error);
+  // }
   return ok(undefined);
 }
 

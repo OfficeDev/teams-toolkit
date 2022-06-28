@@ -22,6 +22,7 @@ import {
   Inputs,
   Platform,
   Void,
+  CloudResource,
 } from "@microsoft/teamsfx-api";
 import path, { basename } from "path";
 import fs from "fs-extra";
@@ -49,6 +50,8 @@ import {
 } from "./error";
 import { loadProjectSettings } from "./middleware/projectSettingsLoader";
 import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
+import { Container } from "typedi";
+import { pick } from "lodash";
 
 export interface EnvStateFiles {
   envState: string;
@@ -177,9 +180,7 @@ class EnvironmentManager {
     const envFiles = this.getEnvStateFilesPath(envName, projectPath);
 
     const data: Json = envData instanceof Map ? mapToJson(envData) : envData;
-    const secrets = isV3
-      ? separateSecretDataV3(data as v3.ResourceStates)
-      : separateSecretData(data);
+    const secrets = isV3 ? separateSecretDataV3(data) : separateSecretData(data);
     this.encrypt(secrets, cryptoProvider);
 
     try {
@@ -469,17 +470,20 @@ class EnvironmentManager {
   }
 }
 
-export function separateSecretDataV3(envState: v3.ResourceStates): Record<string, string> {
+export function separateSecretDataV3(envState: any): Record<string, string> {
   const res: Record<string, string> = {};
-  for (const key of Object.keys(envState)) {
-    const config = envState[key] as v3.CloudResource;
-    if (config.secretFields && config.secretFields.length > 0) {
-      config.secretFields.forEach((f: string) => {
-        const keyName = `${key}.${f}`;
-        res[keyName] = config[f];
-        config[f] = `{{${keyName}}}`;
+  for (const resourceName of Object.keys(envState)) {
+    if (resourceName === "solution") continue;
+    const component = Container.get<CloudResource>(resourceName);
+    const state = envState[resourceName] as Json;
+    if (component.secretKeys && component.secretKeys.length > 0) {
+      component.secretKeys.forEach((secretKey: string) => {
+        const keyName = `${resourceName}.${secretKey}`;
+        res[keyName] = state[secretKey];
+        state[secretKey] = `{{${keyName}}}`;
       });
     }
+    envState[resourceName] = pick(state, component.finalOutputKeys);
   }
   return res;
 }

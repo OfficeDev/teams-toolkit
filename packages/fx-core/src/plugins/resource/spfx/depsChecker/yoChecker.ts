@@ -6,6 +6,7 @@ import * as path from "path";
 import * as os from "os";
 import {
   ConfigFolderName,
+  ContextV3,
   err,
   FxError,
   LogProvider,
@@ -37,7 +38,7 @@ export class YoChecker implements DependencyChecker {
     return { supportedVersion: supportedVersion, displayName: displayName };
   }
 
-  public async ensureDependency(ctx: PluginContext): Promise<Result<boolean, FxError>> {
+  public async ensureDependency(ctx: PluginContext | ContextV3): Promise<Result<boolean, FxError>> {
     telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureYoStart);
     try {
       if (!(await this.isInstalled())) {

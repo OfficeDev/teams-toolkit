@@ -19,7 +19,7 @@ import { CoreQuestionNames } from "../../core/question";
 import { ComponentNames } from "../constants";
 import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "../projectSettingsManager";
 @Service("teams-tab")
-export class TeamsfxCore {
+export class TeamsTab {
   name = "teams-tab";
   add(
     context: ContextV3,

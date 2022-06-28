@@ -3,7 +3,11 @@
 
 import { Inputs } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
-import { AzureSolutionQuestionNames, BotScenario } from "../../../solution/fx-solution/question";
+import {
+  AzureSolutionQuestionNames,
+  BotScenario,
+  MessageExtensionNewUIItem,
+} from "../../../solution/fx-solution/question";
 import { QuestionNames, TemplateProjectsConstants, TemplateProjectsScenarios } from "../constants";
 import { AppServiceOptionItem, FunctionsOptionItems } from "../question";
 import { CodeTemplateInfo } from "./interface/codeTemplateInfo";
@@ -11,8 +15,14 @@ import { getLanguage, getServiceType, getTriggerScenarios } from "./mapping";
 import { ServiceType } from "../../../../common/azure-hosting/interfaces";
 import { CoreQuestionNames } from "../../../../core/question";
 import { HostType } from "./enum";
-import { BotCapability, PluginBot, QuestionBotScenarioToBotCapability } from "../resources/strings";
+import {
+  BotCapabilities,
+  BotCapability,
+  PluginBot,
+  QuestionBotScenarioToBotCapability,
+} from "../resources/strings";
 import { convertToAlphanumericOnly } from "../../../../common/utils";
+import { includes } from "lodash";
 
 export function getTemplateInfos(ctx: Context, inputs: Inputs): CodeTemplateInfo[] {
   const lang = getLanguage(ctx.projectSetting.programmingLanguage);
@@ -80,6 +90,10 @@ export function resolveServiceType(ctx: Context): ServiceType {
 }
 
 export function resolveBotCapabilities(inputs: Inputs): BotCapability[] {
+  const capabilities = inputs?.[AzureSolutionQuestionNames.Capabilities] as string[];
+  if (capabilities.includes(MessageExtensionNewUIItem.id)) {
+    return [BotCapabilities.MESSAGE_EXTENSION];
+  }
   const botScenarios = inputs?.[AzureSolutionQuestionNames.Scenarios];
   if (Array.isArray(botScenarios)) {
     return botScenarios.map((scenario) => QuestionBotScenarioToBotCapability.get(scenario)!);

@@ -476,7 +476,7 @@ export function separateSecretDataV3(envState: any): Record<string, string> {
     if (resourceName === "solution") continue;
     const component = Container.get<CloudResource>(resourceName);
     const state = envState[resourceName] as Json;
-    if (component.secretKeys && state.secretKeys.length > 0) {
+    if (component.secretKeys && component.secretKeys.length > 0) {
       component.secretKeys.forEach((secretKey: string) => {
         const keyName = `${resourceName}.${secretKey}`;
         res[keyName] = state[secretKey];

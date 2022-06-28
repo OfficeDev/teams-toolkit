@@ -7,6 +7,7 @@ import { performance } from "perf_hooks";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   TelemetryEvent,
+  TelemetryMeasurements,
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/extTelemetryEvents";
@@ -100,8 +101,8 @@ export async function sendDebugAllEvent(
 
   const measurements = {
     [LocalTelemetryReporter.PropertyDuration]: duration,
-    [TelemetryProperty.DebugPrecheckGapDuration]: precheckGap,
-    [TelemetryProperty.DebugServicesGapDuration]: servicesGap,
+    [TelemetryMeasurements.DebugPrecheckGapDuration]: precheckGap,
+    [TelemetryMeasurements.DebugServicesGapDuration]: servicesGap,
   };
 
   if (error === undefined) {

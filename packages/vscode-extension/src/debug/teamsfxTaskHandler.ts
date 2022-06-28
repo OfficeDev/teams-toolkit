@@ -12,7 +12,11 @@ import {
   getNpmInstallLogInfo,
 } from "./commonUtils";
 import * as globalVariables from "../globalVariables";
-import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
+import {
+  TelemetryEvent,
+  TelemetryMeasurements,
+  TelemetryProperty,
+} from "../telemetry/extTelemetryEvents";
 import { Correlator, getHashedEnv, isValidProject } from "@microsoft/teamsfx-core";
 import * as path from "path";
 import {
@@ -32,10 +36,23 @@ import { localize } from "../utils/localizeUtils";
 import { VS_CODE_UI } from "../extension";
 import { localTelemetryReporter, sendDebugAllEvent } from "./localTelemetryReporter";
 import { ExtensionErrors, ExtensionSource } from "../error";
+import { performance } from "perf_hooks";
+
+class NpmInstallTaskInfo {
+  private startTime: number;
+
+  constructor() {
+    this.startTime = performance.now();
+  }
+
+  public getDurationSecondsUntilNow() {
+    return (performance.now() - this.startTime) / 1000;
+  }
+}
 
 export const allRunningTeamsfxTasks: Map<string, number> = new Map<string, number>();
 export const allRunningDebugSessions: Set<string> = new Set<string>();
-const activeNpmInstallTasks = new Set<string>();
+const activeNpmInstallTasks = new Map<string, NpmInstallTaskInfo>();
 
 /**
  * This EventEmitter is used to track all running tasks called by `runTask`.
@@ -241,7 +258,7 @@ async function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent)
         survey.activate();
       }
 
-      activeNpmInstallTasks.add(task.name);
+      activeNpmInstallTasks.set(task.name, new NpmInstallTaskInfo());
     }
   }
 }
@@ -273,10 +290,11 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
     });
   } else if (isNpmInstallTask(task)) {
     try {
+      const taskInfo = activeNpmInstallTasks.get(task.name);
       activeNpmInstallTasks.delete(task.name);
       if (activeTerminal?.name === task.name && event.exitCode === 0) {
         // when the task in active terminal is ended successfully.
-        for (const hiddenTaskName of activeNpmInstallTasks) {
+        for (const hiddenTaskName of activeNpmInstallTasks.keys()) {
           // display the first hidden terminal.
           if (displayTerminal(hiddenTaskName)) {
             return;
@@ -318,16 +336,26 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
         properties[TelemetryProperty.DebugNpmInstallErrorMessage] =
           npmInstallLogInfo?.errorMessage?.join("\n") + ""; // "undefined" or string value
       }
+
+      const measurements: { [key: string]: number } = {};
+      if (taskInfo !== undefined) {
+        measurements[TelemetryMeasurements.Duration] = taskInfo.getDurationSecondsUntilNow();
+      }
+
       if (event.exitCode !== 0 || properties[TelemetryProperty.DebugNpmInstallErrorMessage]) {
         localTelemetryReporter.sendTelemetryErrorEvent(
           TelemetryEvent.DebugNpmInstall,
           new UserError({ name: ExtensionErrors.DebugNpmInstallError, source: ExtensionSource }),
           properties,
-          {},
+          measurements,
           [TelemetryProperty.DebugNpmInstallErrorMessage]
         );
       } else {
-        localTelemetryReporter.sendTelemetryEvent(TelemetryEvent.DebugNpmInstall, properties);
+        localTelemetryReporter.sendTelemetryEvent(
+          TelemetryEvent.DebugNpmInstall,
+          properties,
+          measurements
+        );
       }
 
       if (cwd !== undefined && event.exitCode !== undefined && event.exitCode !== 0) {

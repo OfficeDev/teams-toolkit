@@ -37,8 +37,6 @@ export function getTemplateInfos(ctx: Context, inputs: Inputs): CodeTemplateInfo
 }
 
 export function decideTemplateScenarios(ctx: Context, inputs: Inputs): Set<string> {
-  const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
-  const capabilities = solutionSettings.capabilities;
   const botScenarios = inputs?.[AzureSolutionQuestionNames.Scenarios];
   const templateScenarios: Set<string> = new Set<string>();
 
@@ -47,33 +45,25 @@ export function decideTemplateScenarios(ctx: Context, inputs: Inputs): Set<strin
     return templateScenarios;
   }
 
-  if (capabilities.includes(BotOptionItem.id)) {
-    botScenarios.forEach((scenario: string) => {
-      switch (scenario) {
-        case BotScenario.CommandAndResponseBot:
-          templateScenarios.add(TemplateProjectsScenarios.COMMAND_AND_RESPONSE_SCENARIO_NAME);
-          break;
-        case BotScenario.NotificationBot:
-          //! Will not scaffold any trigger when notificationTriggerType is undefined,
-          const notificationTriggerType = (inputs[
-            QuestionNames.BOT_HOST_TYPE_TRIGGER
-          ] as string[]) ?? [AppServiceOptionItem.id];
-          notificationTriggerType.forEach((triggerType) => {
-            getTriggerScenarios(triggerType).forEach((item) => templateScenarios.add(item));
-          });
-          break;
-      }
-    });
-  }
-  if (capabilities.includes(MessageExtensionItem.id)) {
-    botScenarios.forEach((scenario: string) => {
-      switch (scenario) {
-        case M365SearchAppOptionItem.id:
-          templateScenarios.add(TemplateProjectsScenarios.M365_SCENARIO_NAME);
-          break;
-      }
-    });
-  }
+  botScenarios.forEach((scenario: string) => {
+    switch (scenario) {
+      case BotScenario.CommandAndResponseBot:
+        templateScenarios.add(TemplateProjectsScenarios.COMMAND_AND_RESPONSE_SCENARIO_NAME);
+        break;
+      case BotScenario.NotificationBot:
+        //! Will not scaffold any trigger when notificationTriggerType is undefined,
+        const notificationTriggerType = (inputs[
+          QuestionNames.BOT_HOST_TYPE_TRIGGER
+        ] as string[]) ?? [AppServiceOptionItem.id];
+        notificationTriggerType.forEach((triggerType) => {
+          getTriggerScenarios(triggerType).forEach((item) => templateScenarios.add(item));
+        });
+        break;
+      case M365SearchAppOptionItem.id:
+        templateScenarios.add(TemplateProjectsScenarios.M365_SCENARIO_NAME);
+        break;
+    }
+  });
   return templateScenarios;
 }
 

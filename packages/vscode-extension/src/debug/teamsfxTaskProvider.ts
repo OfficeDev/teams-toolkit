@@ -17,11 +17,7 @@ import {
   err,
   assembleError,
 } from "@microsoft/teamsfx-api";
-import {
-  Correlator,
-  FolderName,
-  LocalEnvManager,
-} from "@microsoft/teamsfx-core";
+import { Correlator, FolderName, LocalEnvManager } from "@microsoft/teamsfx-core";
 import { VSCodeDepsChecker } from "./depsChecker/vscodeChecker";
 import { vscodeLogger } from "./depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";

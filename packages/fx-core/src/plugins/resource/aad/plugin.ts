@@ -100,15 +100,10 @@ export class AadAppForTeamsImpl {
     await TokenProvider.init({ m365: ctx.m365TokenProvider });
 
     // Move objectId etc. from input to output.
-    const skip = Utils.skipAADProvision(
-      ctx,
-      false
-    );
+    const skip = Utils.skipAADProvision(ctx, false);
     DialogUtils.init(ctx.ui, ProgressTitle.Provision, ProgressTitle.ProvisionSteps);
 
-    let config: ProvisionConfig = new ProvisionConfig(
-      false
-    );
+    let config: ProvisionConfig = new ProvisionConfig(false);
     await config.restoreConfigFromContext(ctx);
     const permissions = AadAppForTeamsImpl.parsePermission(
       config.permissionRequest as string,
@@ -314,16 +309,11 @@ export class AadAppForTeamsImpl {
       isLocalDebug
     );
 
-    const skip = Utils.skipAADProvision(
-      ctx,
-      false
-    );
+    const skip = Utils.skipAADProvision(ctx, false);
     DialogUtils.init(ctx.ui, ProgressTitle.PostProvision, ProgressTitle.PostProvisionSteps);
 
     await TokenProvider.init({ m365: ctx.m365TokenProvider });
-    const config: PostProvisionConfig = new PostProvisionConfig(
-      false
-    );
+    const config: PostProvisionConfig = new PostProvisionConfig(false);
     config.restoreConfigFromContext(ctx);
 
     await DialogUtils.progress?.start(ProgressDetail.Starting);

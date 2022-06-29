@@ -1,11 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  AppStudioScopes,
-  Correlator,
-  environmentManager,
-} from "@microsoft/teamsfx-core";
+import { AppStudioScopes, Correlator, environmentManager } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 
 import M365TokenInstance from "../commonlib/m365Login";
@@ -96,7 +92,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
           }
 
           let debugConfig = undefined;
-          if (isLocalSideloading ) {
+          if (isLocalSideloading) {
             debugConfig = await commonUtils.getDebugConfig(
               false,
               environmentManager.getLocalEnvName()

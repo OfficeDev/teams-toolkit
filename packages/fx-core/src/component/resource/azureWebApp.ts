@@ -34,8 +34,8 @@ export class AzureWebAppResource extends AzureResource {
       key: "resourceId",
       bicepVariable: "provisionOutputs.azureWebAppOutput.value.resourceId",
     },
-    domain: {
-      key: "domain",
+    validDomain: {
+      key: "validDomain",
       bicepVariable: "provisionOutputs.azureWebAppOutput.value.domain",
     },
     endpoint: {
@@ -45,6 +45,18 @@ export class AzureWebAppResource extends AzureResource {
     appName: {
       key: "appName",
       bicepVariable: "provisionOutputs.azureWebAppOutput.value.appName",
+    },
+    skuName: {
+      key: "skuName",
+      bicepVariable: "provisionOutputs.azureWebAppOutput.value.sku",
+    },
+    siteName: {
+      key: "siteName",
+      bicepVariable: "provisionOutputs.azureWebAppOutput.value.appName",
+    },
+    appServicePlanName: {
+      key: "appServicePlanName",
+      bicepVariable: "provisionOutputs.azureWebAppOutput.value.appServicePlanName",
     },
   };
   readonly finalOutputKeys = ["resourceId", "endpoint"];

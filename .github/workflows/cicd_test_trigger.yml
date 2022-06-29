@@ -56,25 +56,26 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            let strArray = String(require('fs').readFileSync('./release.txt')).trim().split(' ');
-            let server = strArray.filter(item => item.includes('@microsoft/teamsfx-server'))[0]
-            console.log("========================= result: ", server.split("@")[2])
-            return server.split("@")[2]
-
+            let rawData = require('fs').readFileSync('./versions.json', {encoding:'utf8', flag:'r'});
+            let pkgs = JSON.parse(rawData);
+            let server = pkgs.find(item => item.name === "@microsoft/teamsfx-server")
+            console.log("==================", server.version)
+            return server.version
+      - run: npm install semver
       - name: Get teamsfx-server preid
         id: preid
         uses: actions/github-script@v6
         with:
           script: |
-            let strArray = String(require('fs').readFileSync('./release.txt')).trim().split(' ');
-            let server = strArray.filter(item => item.includes('@microsoft/teamsfx-server'))[0]
-            let version = server.split("@")[2].split('-')[1]
-            if(version) {
-              console.log("============================= result: ", version.split('.')[0]);
-              return version.split('.')[0];
-            }
-            else {
-              console.log("============================= result: stable");
+            let rawData = require('fs').readFileSync('./versions.json', {encoding:'utf8', flag:'r'});
+            let pkgs = JSON.parse(rawData);
+            let server = pkgs.find(item => item.name === "@microsoft/teamsfx-server")
+            let semver = require('semver')
+            if(semver.prerelease(server.version)) {
+              console.log("===========", semver.prerelease(server.version)[0])
+              return semver.prerelease(server.version)[0]
+            } else {
+              console.log("=========== stable")
               return "stable"
             }
 

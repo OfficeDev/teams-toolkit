@@ -22,6 +22,7 @@ import {
   getSampleFileName,
   checkInputEmpty,
   Notification,
+  sendErrorTelemetry,
 } from "./utils";
 import {
   ApiConnectorConfiguration,
@@ -38,8 +39,7 @@ import { ResourcePlugins } from "../../../common/constants";
 import {
   ApiNameQuestion,
   basicAuthUsernameQuestion,
-  botOption,
-  functionOption,
+  ComponentsQuestion,
   apiEndpointQuestion,
   BasicAuthOption,
   CertAuthOption,
@@ -59,10 +59,10 @@ import { SampleHandler } from "./sampleHandler";
 import { isAADEnabled } from "../../../common";
 import { getAzureSolutionSettings } from "../../solution/fx-solution/v2/utils";
 import { DepsHandler } from "./depsHandler";
-import { checkEmptySelect } from "./checker";
 import { Telemetry, TelemetryUtils } from "./telemetry";
 import { isV3 } from "../../../core";
 import { hasAAD, hasBot, hasFunction } from "../../../common/projectSettingsHelperV3";
+
 export class ApiConnectorImpl {
   public async scaffold(ctx: Context, inputs: Inputs): Promise<ApiConnectorResult> {
     if (!inputs.projectPath) {
@@ -182,7 +182,7 @@ export class ApiConnectorImpl {
           ErrorMessage.generateApiConFilesError.message(err.message)
         );
       }
-      this.sendErrorTelemetry(err as FxError);
+      sendErrorTelemetry(err as FxError, Telemetry.stage.scaffold);
       throw err;
     } finally {
       await Promise.all(
@@ -196,15 +196,6 @@ export class ApiConnectorImpl {
       return path.join(projectPath, item, getSampleFileName(config.APIName, languageType));
     });
     return { generatedFiles: result };
-  }
-
-  private sendErrorTelemetry(thrownErr: FxError) {
-    const errorCode = thrownErr.source + "." + thrownErr.name;
-    const errorType =
-      thrownErr instanceof SystemError ? Telemetry.systemError : Telemetry.userError;
-    const errorMessage = thrownErr.message;
-    TelemetryUtils.sendErrorEvent(Telemetry.stage.scaffold, errorCode, errorType, errorMessage);
-    return thrownErr;
   }
 
   private async scaffoldInComponent(
@@ -364,58 +355,14 @@ export class ApiConnectorImpl {
   }
 
   public async generateQuestion(ctx: Context, inputs: Inputs): Promise<QuestionResult> {
-    const componentOptions = [];
-    if (inputs.platform === Platform.CLI_HELP) {
-      componentOptions.push(botOption);
-      componentOptions.push(functionOption);
-    } else {
-      if (!isV3()) {
-        const activePlugins = (ctx.projectSetting.solutionSettings as AzureSolutionSettings)
-          ?.activeResourcePlugins;
-        if (!activePlugins) {
-          throw ResultFactory.UserError(
-            ErrorMessage.NoActivePluginsExistError.name,
-            ErrorMessage.NoActivePluginsExistError.message()
-          );
-        }
-        if (activePlugins.includes(ResourcePlugins.Bot)) {
-          componentOptions.push(botOption);
-        }
-        if (activePlugins.includes(ResourcePlugins.Function)) {
-          componentOptions.push(functionOption);
-        }
-      } else {
-        if (hasBot(ctx.projectSetting as ProjectSettingsV3)) {
-          componentOptions.push(botOption);
-        }
-        if (hasFunction(ctx.projectSetting as ProjectSettingsV3)) {
-          componentOptions.push(functionOption);
-        }
-      }
-      if (componentOptions.length === 0) {
-        throw ResultFactory.UserError(
-          ErrorMessage.NoValidCompoentExistError.name,
-          ErrorMessage.NoValidCompoentExistError.message()
-        );
-      }
-    }
-    const whichComponent = new QTreeNode({
-      name: Constants.questionKey.componentsSelect,
-      type: "multiSelect",
-      staticOptions: componentOptions,
-      title: getLocalizedString("plugins.apiConnector.whichService.title"),
-      validation: {
-        validFunc: checkEmptySelect,
-      },
-      placeholder: getLocalizedString("plugins.apiConnector.whichService.placeholder"), // Use the placeholder to display some description
-    });
+    const whichComponent = new ComponentsQuestion(ctx, inputs);
     const apiNameQuestion = new ApiNameQuestion(ctx);
     const whichAuthType = this.buildAuthTypeQuestion(ctx, inputs);
     const question = new QTreeNode({
       type: "group",
     });
     question.addChild(new QTreeNode(apiEndpointQuestion));
-    question.addChild(whichComponent);
+    question.addChild(new QTreeNode(whichComponent.getQuestion()));
     question.addChild(new QTreeNode(apiNameQuestion.getQuestion()));
     question.addChild(whichAuthType);
 

@@ -60,34 +60,19 @@ export class FrontendValidator {
 
   private static storageResourceIdKeyName = "storageResourceId";
 
-  public static init(ctx: any, insiderPreview = false): IFrontendObject {
+  public static init(ctx: any): IFrontendObject {
     console.log("Start to init validator for Frontend.");
 
-    let frontendObject: IFrontendObject;
-    if (insiderPreview) {
-      const resourceId = ctx[DependentPluginInfo.frontendPluginName][this.storageResourceIdKeyName];
-      chai.assert.exists(resourceId);
+    const resourceId = ctx[DependentPluginInfo.frontendPluginName][this.storageResourceIdKeyName];
+    chai.assert.exists(resourceId);
 
-      this.subscriptionId = getSubscriptionIdFromResourceId(resourceId);
-      this.resourceGroupName = getResourceGroupNameFromResourceId(resourceId);
+    this.subscriptionId = getSubscriptionIdFromResourceId(resourceId);
+    this.resourceGroupName = getResourceGroupNameFromResourceId(resourceId);
 
-      frontendObject = {
-        storageName: this.getStorageAccountName(resourceId),
-        containerName: "$web",
-      };
-    } else {
-      frontendObject = ctx[DependentPluginInfo.frontendPluginName] as IFrontendObject;
-      chai.assert.exists(frontendObject);
-      frontendObject.containerName = "$web";
-
-      this.subscriptionId =
-        ctx[DependentPluginInfo.solutionPluginName][DependentPluginInfo.subscriptionId];
-      chai.assert.exists(this.subscriptionId);
-
-      this.resourceGroupName =
-        ctx[DependentPluginInfo.solutionPluginName][DependentPluginInfo.resourceGroupName];
-      chai.assert.exists(this.resourceGroupName);
-    }
+    const frontendObject = {
+      storageName: this.getStorageAccountName(resourceId),
+      containerName: "$web",
+    };
 
     console.log("Successfully init validator for Frontend.");
     return frontendObject;
@@ -234,4 +219,11 @@ export class FrontendValidator {
       return undefined;
     }
   }
+}
+
+export class FrontendWebAppConfig {
+  public static readonly clientId = "TeamsFx__Authentication__ClientId";
+  public static readonly clientSecret = "TeamsFx__Authentication__ClientSecret";
+  public static readonly authEndpoint = "TeamsFx__Authentication__InitiateLoginEndpoint";
+  public static readonly authority = "TeamsFx__Authentication__OAuthAuthority";
 }

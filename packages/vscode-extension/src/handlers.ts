@@ -263,10 +263,15 @@ export function activate(): Result<Void, FxError> {
   return result;
 }
 
-export async function getIsFromSample() {
+export async function getIsFromSample(projectPath?: string) {
   if (core) {
     const input = getSystemInputs();
     input.ignoreEnvInfo = true;
+
+    if (projectPath) {
+      input.projectPath = projectPath;
+    }
+
     await core.getProjectConfig(input);
 
     return core.isFromSample;
@@ -457,12 +462,13 @@ export async function updateAutoOpenGlobalKey(
   projectUri: Uri,
   args?: any[]
 ): Promise<void> {
-  if (isTriggerFromWalkThrough(args)) {
+  if (isTriggerFromWalkThrough(args) && !(await getIsFromSample(projectUri.fsPath))) {
     await globalStateUpdate(GlobalKey.OpenWalkThrough, true);
+    await globalStateUpdate(GlobalKey.OpenReadMe, "");
   } else {
     await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
+    await globalStateUpdate(GlobalKey.OpenReadMe, projectUri.fsPath);
   }
-  await globalStateUpdate(GlobalKey.OpenReadMe, projectUri.fsPath);
 
   if (showLocalDebugMessage) {
     await globalStateUpdate(GlobalKey.ShowLocalDebugMessage, true);

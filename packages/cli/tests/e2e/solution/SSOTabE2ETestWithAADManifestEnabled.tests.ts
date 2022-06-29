@@ -79,7 +79,7 @@ describe("SSO Tab with aad manifest enabled", () => {
     await AadValidator.validate(aad);
 
     // Validate Tab Frontend
-    const frontend = FrontendValidator.init(context, true);
+    const frontend = FrontendValidator.init(context);
     await FrontendValidator.validateProvision(frontend);
 
     const firstIdentifierUri = "api://first.com/291fc1b5-1146-4d33-b7b8-ec4c441b6b33";

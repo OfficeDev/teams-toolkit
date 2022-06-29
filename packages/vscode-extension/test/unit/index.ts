@@ -81,9 +81,11 @@ export async function run(): Promise<void> {
       throw new Error(`${failures} tests failed.`);
     }
     if (process.exitCode !== 0) {
-      console.log(
-        `Code coverage check failed: current code coverage is lower than ${coveragePercentage}`
-      );
+      process.on("exit", () => {
+        console.error(
+          `Code coverage check failed: current code coverage is lower than ${coveragePercentage}`
+        );
+      });
       process.exit(1);
     }
   } catch (err) {

@@ -135,12 +135,21 @@ async function runWithCheckResultTelemetry(
   eventName: string,
   action: (ctx: TelemetryContext) => Promise<CheckResult>
 ): Promise<CheckResult> {
+  return runWithCheckResultTelemetryProperties(eventName, {}, action);
+}
+
+async function runWithCheckResultTelemetryProperties(
+  eventName: string,
+  initialProperties: { [key: string]: string },
+  action: (ctx: TelemetryContext) => Promise<CheckResult>
+): Promise<CheckResult> {
   return await localTelemetryReporter.runWithTelemetryGeneric(
     eventName,
     action,
     (result: CheckResult) => {
       return result.result === ResultStatus.success ? undefined : result.error;
-    }
+    },
+    initialProperties
   );
 }
 
@@ -819,85 +828,94 @@ function handleNodeNotSupportedError(
   }
 }
 
-async function checkNpmInstall(
+function checkNpmInstall(
   component: string,
   folder: string,
   appName: string,
   displayMessage: string
 ): Promise<CheckResult> {
-  VsCodeLogInstance.outputChannel.appendLine(displayMessage);
+  const taskName = `${component} npm install`;
+  return runWithCheckResultTelemetryProperties(
+    TelemetryEvent.DebugPrereqsCheckNpmInstall,
+    { [TelemetryProperty.DebugNpmInstallName]: taskName },
+    async (ctx: TelemetryContext) => {
+      VsCodeLogInstance.outputChannel.appendLine(displayMessage);
 
-  let installed = false;
-  try {
-    installed = await checkNpmDependencies(folder);
-  } catch (error: any) {
-    // treat check error as uninstalled
-    await VsCodeLogInstance.warning(`Error when checking npm dependencies: ${error}`);
-  }
+      let installed = false;
+      try {
+        installed = await checkNpmDependencies(folder);
+      } catch (error: unknown) {
+        // treat check error as uninstalled
+        await VsCodeLogInstance.warning(`Error when checking npm dependencies: ${error}`);
+      }
+      ctx.properties[TelemetryProperty.DebugNpmInstallAlreadyInstalled] = installed.toString();
 
-  let result = ResultStatus.success;
-  let error = undefined;
-  try {
-    if (!installed) {
-      let exitCode: number | undefined;
+      let result = ResultStatus.success;
+      let error = undefined;
+      try {
+        if (!installed) {
+          let exitCode: number | undefined;
 
-      const checkNpmInstallRunning = () => {
-        for (const [key, value] of trackedTasks) {
-          if (value === `${component} npm install`) {
-            return true;
+          const checkNpmInstallRunning = () => {
+            for (const [key, value] of trackedTasks) {
+              if (value === taskName) {
+                return true;
+              }
+            }
+            return false;
+          };
+          if (checkNpmInstallRunning()) {
+            exitCode = await new Promise((resolve: (value: number | undefined) => void) => {
+              const endListener = taskEndEventEmitter.event((result) => {
+                if (result.name === taskName) {
+                  endListener.dispose();
+                  resolve(result.exitCode);
+                }
+              });
+              if (!checkNpmInstallRunning()) {
+                endListener.dispose();
+                resolve(undefined);
+              }
+            });
+          } else {
+            exitCode = await runTask(
+              new vscode.Task(
+                {
+                  type: "shell",
+                  command: taskName,
+                },
+                vscode.workspace.workspaceFolders![0],
+                taskName,
+                ProductName,
+                new vscode.ShellExecution(npmInstallCommand, { cwd: folder })
+              )
+            );
+          }
+          ctx.properties[TelemetryProperty.DebugNpmInstallExitCode] = `${exitCode}`;
+
+          // check npm dependencies again if exit code not zero
+          if (exitCode !== 0 && !(await checkNpmDependencies(folder))) {
+            result = ResultStatus.failed;
+            error = new UserError(
+              ExtensionSource,
+              "NpmInstallFailure",
+              `Failed to npm install for ${component}`
+            );
           }
         }
-        return false;
+      } catch (err: any) {
+        // treat unexpected error as installed
+        error = err;
+      }
+      return {
+        checker: component,
+        result: result,
+        successMsg: doctorConstant.NpmInstallSuccess.split("@app").join(appName),
+        failureMsg: doctorConstant.NpmInstallFailure.split("@app").join(appName),
+        error: error,
       };
-      if (checkNpmInstallRunning()) {
-        exitCode = await new Promise((resolve: (value: number | undefined) => void) => {
-          const endListener = taskEndEventEmitter.event((result) => {
-            if (result.name === `${component} npm install`) {
-              endListener.dispose();
-              resolve(result.exitCode);
-            }
-          });
-          if (!checkNpmInstallRunning()) {
-            endListener.dispose();
-            resolve(undefined);
-          }
-        });
-      } else {
-        exitCode = await runTask(
-          new vscode.Task(
-            {
-              type: "shell",
-              command: `${component} npm install`,
-            },
-            vscode.workspace.workspaceFolders![0],
-            `${component} npm install`,
-            ProductName,
-            new vscode.ShellExecution(npmInstallCommand, { cwd: folder })
-          )
-        );
-      }
-
-      // check npm dependencies again if exit code not zero
-      if (exitCode !== 0 && !(await checkNpmDependencies(folder))) {
-        result = ResultStatus.failed;
-        error = new UserError(
-          ExtensionSource,
-          "NpmInstallFailure",
-          `Failed to npm install for ${component}`
-        );
-      }
     }
-  } catch (err: any) {
-    // treat unexpected error as installed
-    error = err;
-  }
-  return {
-    checker: component,
-    result: result,
-    successMsg: doctorConstant.NpmInstallSuccess.split("@app").join(appName),
-    failureMsg: doctorConstant.NpmInstallFailure.split("@app").join(appName),
-    error: error,
-  };
+  );
 }
 
 async function handleCheckResults(

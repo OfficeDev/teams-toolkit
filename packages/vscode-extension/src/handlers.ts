@@ -1216,7 +1216,7 @@ export async function validateLocalPrerequisitesHandler(): Promise<string | unde
   const result = await localPrerequisites.checkAndInstall();
   if (result.isErr()) {
     // Only local debug use validate-local-prerequisites command
-    await sendDebugAllEvent(false, result.error);
+    await sendDebugAllEvent(result.error);
     commonUtils.endLocalDebugSession();
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
@@ -1374,7 +1374,7 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
     terminateAllRunningTeamsfxTasks();
     await debug.stopDebugging();
     // only local debug uses pre-debug-check command
-    await sendDebugAllEvent(false, result.error);
+    await sendDebugAllEvent(result.error);
     commonUtils.endLocalDebugSession();
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";

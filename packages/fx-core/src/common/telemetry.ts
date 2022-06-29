@@ -28,6 +28,7 @@ export enum TelemetryProperty {
   ActivePlugins = "active-plugins",
   IsSideloadingAllowed = "is-sideloading-allowed",
   NeedMigrateAadManifest = "need-migrate-aad-manifest",
+  CheckSideloadingHttpStatus = "check-sideloading-http-status",
 }
 
 export enum TelemetryEvent {

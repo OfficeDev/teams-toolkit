@@ -499,53 +499,81 @@ async function _checkAndInstall(ctx: TelemetryContext): Promise<Result<void, FxE
 async function ensureM365Account(
   showLoginPage: boolean
 ): Promise<Result<{ token: string; loginHint?: string }, FxError>> {
-  let loginStatusRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
-  if (loginStatusRes.isErr()) {
-    return err(loginStatusRes.error);
-  }
-  let token = loginStatusRes.value.token;
-  let upn = loginStatusRes.value.accountInfo?.upn;
-  if (loginStatusRes.value.status === signedOut && showLoginPage) {
-    const tokenRes = await tools.tokenProvider.m365TokenProvider.getAccessToken({
-      scopes: AppStudioScopes,
-      showDialog: true,
-    });
-    if (tokenRes.isErr()) {
-      return err(tokenRes.error);
+  // Check M365 account token
+  const m365Result = await localTelemetryReporter.runWithTelemetry(
+    TelemetryEvent.DebugPrereqsCheckM365AccountSignIn,
+    async (
+      ctx: TelemetryContext
+    ): Promise<Result<{ token: string; loginHint?: string }, FxError>> => {
+      let loginStatusRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+      if (loginStatusRes.isErr()) {
+        ctx.properties[TelemetryProperty.DebugM365AccountStatus] = "error";
+        return err(loginStatusRes.error);
+      }
+      ctx.properties[TelemetryProperty.DebugM365AccountStatus] = loginStatusRes.value.status;
+
+      let token = loginStatusRes.value.token;
+      let upn = loginStatusRes.value.accountInfo?.upn;
+      if (loginStatusRes.value.status === signedOut && showLoginPage) {
+        const tokenRes = await tools.tokenProvider.m365TokenProvider.getAccessToken({
+          scopes: AppStudioScopes,
+          showDialog: true,
+        });
+        if (tokenRes.isErr()) {
+          return err(tokenRes.error);
+        }
+        loginStatusRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+        if (loginStatusRes.isErr()) {
+          return err(loginStatusRes.error);
+        }
+        token = loginStatusRes.value.token;
+        upn = loginStatusRes.value.accountInfo?.upn;
+      }
+      if (token === undefined) {
+        // corner case but need to handle
+        return err(
+          new SystemError(
+            ExtensionSource,
+            ExtensionErrors.PrerequisitesNoM365AccountError,
+            "No M365 account login"
+          )
+        );
+      }
+      const loginHint = typeof upn === "string" ? upn : undefined;
+      return ok({ token, loginHint });
     }
-    loginStatusRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
-    if (loginStatusRes.isErr()) {
-      return err(loginStatusRes.error);
-    }
-    token = loginStatusRes.value.token;
-    upn = loginStatusRes.value.accountInfo?.upn;
-  }
-  if (token === undefined) {
-    // corner case but need to handle
-    return err(
-      new SystemError(
-        ExtensionSource,
-        ExtensionErrors.PrerequisitesNoM365AccountError,
-        "No M365 account login"
-      )
-    );
+  );
+  if (m365Result.isErr()) {
+    return err(m365Result.error);
   }
 
-  const isSideloadingEnabled = await getSideloadingStatus(token);
-  if (isSideloadingEnabled === false) {
-    // sideloading disabled
-    return err(
-      new UserError(
-        ExtensionSource,
-        ExtensionErrors.PrerequisitesSideloadingDisabledError,
-        getDefaultString("teamstoolkit.accountTree.sideloadingWarningTooltip"),
-        localize("teamstoolkit.accountTree.sideloadingWarningTooltip")
-      )
-    );
+  // Check sideloading permission
+  const sideloadingResult = await localTelemetryReporter.runWithTelemetry(
+    TelemetryEvent.DebugPrereqsCheckM365Sideloading,
+    async (ctx: TelemetryContext) => {
+      const isSideloadingEnabled = await getSideloadingStatus(m365Result.value.token);
+      // true, false or undefined for error
+      ctx.properties[TelemetryProperty.DebugIsSideloadingAllowed] = `${isSideloadingEnabled}`;
+      if (isSideloadingEnabled === false) {
+        // sideloading disabled
+        return err(
+          new UserError(
+            ExtensionSource,
+            ExtensionErrors.PrerequisitesSideloadingDisabledError,
+            getDefaultString("teamstoolkit.accountTree.sideloadingWarningTooltip"),
+            localize("teamstoolkit.accountTree.sideloadingWarningTooltip")
+          )
+        );
+      }
+
+      return ok(undefined);
+    }
+  );
+  if (sideloadingResult.isErr()) {
+    return err(sideloadingResult.error);
   }
 
-  const loginHint = typeof upn === "string" ? upn : undefined;
-  return ok({ token, loginHint });
+  return m365Result;
 }
 
 function checkM365Account(prefix: string, showLoginPage: boolean): Promise<CheckResult> {

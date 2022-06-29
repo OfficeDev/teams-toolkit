@@ -501,7 +501,7 @@ async function ensureM365Account(
 ): Promise<Result<{ token: string; loginHint?: string }, FxError>> {
   // Check M365 account token
   const m365Result = await localTelemetryReporter.runWithTelemetry(
-    TelemetryEvent.DebugPrereqsCheckM365Token,
+    TelemetryEvent.DebugPrereqsCheckM365AccountSignIn,
     async (
       ctx: TelemetryContext
     ): Promise<Result<{ token: string; loginHint?: string }, FxError>> => {
@@ -549,7 +549,7 @@ async function ensureM365Account(
 
   // Check sideloading permission
   const sideloadingResult = await localTelemetryReporter.runWithTelemetry(
-    TelemetryEvent.DebugPrereqsCheckM365CheckSideloading,
+    TelemetryEvent.DebugPrereqsCheckM365Sideloading,
     async (ctx: TelemetryContext) => {
       const isSideloadingEnabled = await getSideloadingStatus(m365Result.value.token);
       // true, false or undefined for error

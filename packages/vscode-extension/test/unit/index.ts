@@ -71,16 +71,20 @@ export async function run(): Promise<void> {
   try {
     const failures = await new Promise<number>((resolve) => mocha.run(resolve));
 
+    const coveragePercentage = 29.87;
     await nyc.writeCoverageFile();
     // Capture text-summary reporter's output and log it in console
     await captureStdout(nyc.report.bind(nyc));
-    await nyc.checkCoverage({ lines: 29.87 });
+    await nyc.checkCoverage({ lines: coveragePercentage });
 
     if (failures > 0) {
       throw new Error(`${failures} tests failed.`);
     }
     if (process.exitCode !== 0) {
-      throw new Error(`Code coverage check failed.`);
+      console.error(
+        `Code coverage check failed: current code coverage is lower than ${coveragePercentage}`
+      );
+      process.exit(1);
     }
   } catch (err) {
     console.log(err);

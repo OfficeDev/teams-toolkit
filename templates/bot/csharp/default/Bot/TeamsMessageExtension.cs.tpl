@@ -59,7 +59,7 @@ public class TeamsMessageExtension : TeamsActivityHandler
         // The user has chosen to share a message by choosing the 'Share Message' context menu command.
         var heroCard = new HeroCard
         {
-            Title = $"{action.MessagePayload.From?.User?.DisplayName} orignally sent this message:",
+            Title = $"{action.MessagePayload.From?.User?.DisplayName} originally sent this message:",
             Text = action.MessagePayload.Body.Content,
         };
 

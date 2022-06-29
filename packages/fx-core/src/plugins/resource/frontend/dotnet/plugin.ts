@@ -123,7 +123,7 @@ export class DotnetPluginImpl implements PluginImpl {
     );
     ctx.projectSettings.pluginSettings = {
       ...ctx.projectSettings?.pluginSettings,
-      projectFilePath: path.join(ctx.root, PathInfo.projectFilename(projectName)),
+      projectFilePath: path.resolve(ctx.root, PathInfo.projectFilename(projectName)),
     };
 
     Logger.info(Messages.EndScaffold);

@@ -10,6 +10,11 @@ import {
   Question,
   ValidationSchema,
   TextInputQuestion,
+  MultiSelectQuestion,
+  Platform,
+  FxError,
+  AzureSolutionSettings,
+  ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import { AuthType, Constants } from "./constants";
@@ -20,7 +25,16 @@ import {
   checkEmptyValue,
   checkHttp,
   checkIsGuid,
+  checkEmptySelect,
 } from "./checker";
+import { isV3 } from "../../../core";
+import { DepsHandler } from "./depsHandler";
+import { Notification, sendErrorTelemetry } from "./utils";
+import { ResultFactory } from "./result";
+import { ErrorMessage } from "./errors";
+import { ResourcePlugins } from "../../../common/constants";
+import { hasBot, hasFunction } from "../../../common/projectSettingsHelperV3";
+import { TelemetryUtils, Telemetry } from "./telemetry";
 
 export interface IQuestionService {
   // Control whether the question is displayed to the user.
@@ -36,6 +50,108 @@ export class BaseQuestionService {
   constructor(telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
     this.telemetryReporter = telemetryReporter;
     this.logger = logger;
+  }
+}
+
+export class ComponentsQuestion extends BaseQuestionService implements IQuestionService {
+  protected readonly ctx: Context;
+  protected readonly components: OptionItem[];
+  protected readonly projectPath: string;
+  constructor(
+    ctx: Context,
+    inputs: Inputs,
+    telemetryReporter?: TelemetryReporter,
+    logger?: LogProvider
+  ) {
+    super(telemetryReporter, logger);
+    this.ctx = ctx;
+    TelemetryUtils.init(ctx.telemetryReporter);
+    this.projectPath = inputs.projectPath as string;
+    this.components = [];
+    if (inputs.platform === Platform.CLI_HELP) {
+      this.components.push(botOption);
+      this.components.push(functionOption);
+    } else {
+      if (!isV3()) {
+        const activePlugins = (ctx.projectSetting.solutionSettings as AzureSolutionSettings)
+          ?.activeResourcePlugins;
+        if (!activePlugins) {
+          throw ResultFactory.UserError(
+            ErrorMessage.NoActivePluginsExistError.name,
+            ErrorMessage.NoActivePluginsExistError.message()
+          );
+        }
+        if (activePlugins.includes(ResourcePlugins.Bot)) {
+          this.components.push(botOption);
+        }
+        if (activePlugins.includes(ResourcePlugins.Function)) {
+          this.components.push(functionOption);
+        }
+      } else {
+        if (hasBot(ctx.projectSetting as ProjectSettingsV3)) {
+          this.components.push(botOption);
+        }
+        if (hasFunction(ctx.projectSetting as ProjectSettingsV3)) {
+          this.components.push(functionOption);
+        }
+      }
+      if (this.components.length === 0) {
+        throw ResultFactory.UserError(
+          ErrorMessage.NoValidCompoentExistError.name,
+          ErrorMessage.NoValidCompoentExistError.message()
+        );
+      }
+    }
+  }
+  public getQuestion(): MultiSelectQuestion {
+    return {
+      type: "multiSelect",
+      name: Constants.questionKey.componentsSelect,
+      title: getLocalizedString("plugins.apiConnector.whichService.title"),
+      staticOptions: this.components,
+      onDidChangeSelection: async (currentSelectedIds: Set<string>): Promise<Set<string>> => {
+        if (!this.ctx || !this.projectPath) {
+          return currentSelectedIds;
+        }
+        for (const item of currentSelectedIds) {
+          try {
+            await DepsHandler.checkDepsVerSupport(this.projectPath, item);
+          } catch (err) {
+            const errMsg = err.message;
+            this.ctx.userInteraction?.showMessage(
+              "warn",
+              errMsg,
+              false,
+              "OK",
+              Notification.READ_MORE
+            );
+            currentSelectedIds.delete(item);
+            // this only send on vscode extension
+            sendErrorTelemetry(err as FxError, Telemetry.stage.questionModel);
+          }
+        }
+        return currentSelectedIds;
+      },
+      validation: {
+        validFunc: async (
+          inputs: string[],
+          previousInputs?: Inputs
+        ): Promise<string | undefined> => {
+          const projectPath = previousInputs?.projectPath;
+          for (const item of inputs) {
+            try {
+              await DepsHandler.checkDepsVerSupport(projectPath as string, item);
+            } catch (err) {
+              // this only send on cli
+              sendErrorTelemetry(err as FxError, Telemetry.stage.questionModel);
+              return err.message;
+            }
+          }
+          return checkEmptySelect(inputs);
+        },
+      },
+      placeholder: getLocalizedString("plugins.apiConnector.whichService.placeholder"), // Use the placeholder to display some description
+    };
   }
 }
 export class ApiNameQuestion extends BaseQuestionService implements IQuestionService {

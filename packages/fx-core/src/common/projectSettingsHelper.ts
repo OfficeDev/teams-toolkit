@@ -15,9 +15,11 @@ import {
   BotSsoItem,
   TabOptionItem,
   TabSPFxItem,
+  OfficeAddinItem,
 } from "../plugins/solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import * as uuid from "uuid";
+import { isOfficeAddinEnabled } from "./featureFlags";
 
 export function validateProjectSettings(projectSettings: ProjectSettings): string | undefined {
   if (!projectSettings) return "empty projectSettings";
@@ -34,6 +36,7 @@ export function validateProjectSettings(projectSettings: ProjectSettings): strin
     TabSPFxItem.id,
     TabSsoItem.id,
     BotSsoItem.id,
+    ...(isOfficeAddinEnabled() ? [OfficeAddinItem.id] : []),
   ]);
   if (validateRes) {
     return `solutionSettings.capabilities validation failed: ${validateRes}`;

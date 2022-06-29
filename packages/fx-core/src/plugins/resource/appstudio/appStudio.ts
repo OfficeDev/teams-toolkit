@@ -76,7 +76,7 @@ export namespace AppStudioClient {
       const requester = createRequesterWithToken(appStudioToken);
 
       const response = await RetryHandler.Retry(() =>
-        requester.post(`/api/appdefinitions2/v2/import`, file, {
+        requester.post(`/api/appdefinitions/v2/import`, file, {
           headers: { "Content-Type": "application/zip" },
         })
       );

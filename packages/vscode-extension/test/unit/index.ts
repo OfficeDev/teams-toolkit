@@ -81,7 +81,7 @@ export async function run(): Promise<void> {
       throw new Error(`${failures} tests failed.`);
     }
     if (process.exitCode !== 0) {
-      console.error(
+      console.log(
         `Code coverage check failed: current code coverage is lower than ${coveragePercentage}`
       );
       process.exit(1);

@@ -612,9 +612,6 @@ describe("Scaffold", () => {
   });
 
   it("scaffold bot - consolidate", async () => {
-    // consolidate one template
-    sandbox.stub(commonTools, "isConfigUnifyEnabled").returns(true);
-
     fileContent.clear();
     ctx.projectSettings = {
       appName: "my app",

@@ -15,7 +15,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import { TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 import {
-  isConfigUnifyEnabled,
   getPermissionMap,
   getAllowedAppMaps,
   environmentManager,
@@ -31,7 +30,7 @@ async function resolveStateAndConfigCodeLens(
   mutex: Mutex,
   from: string
 ) {
-  if (isConfigUnifyEnabled() && lens instanceof PlaceholderCodeLens) {
+  if (lens instanceof PlaceholderCodeLens) {
     const key = lens.placeholder.replace(/{/g, "").replace(/}/g, "");
     if (!projectConfigs) {
       const release = await mutex.acquire();
@@ -234,31 +233,13 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
       codeLenses.push(new vscode.CodeLens(range, schemaCommand));
     }
 
-    if (isConfigUnifyEnabled()) {
-      if (document.fileName.endsWith("manifest.template.json")) {
-        // code lens will be resolved later
-        const configCodelenses = this.calculateCodeLens(document, manifestConfigDataRegex);
-        codeLenses.push(...configCodelenses);
+    if (document.fileName.endsWith("manifest.template.json")) {
+      // code lens will be resolved later
+      const configCodelenses = this.calculateCodeLens(document, manifestConfigDataRegex);
+      codeLenses.push(...configCodelenses);
 
-        const stateCodelenses = this.calculateCodeLens(document, manifestStateDataRegex);
-        codeLenses.push(...stateCodelenses);
-      }
-    } else {
-      if (document.fileName.endsWith("manifest.remote.template.json")) {
-        const configCodelenses = this.calculateCodeLens(document, manifestConfigDataRegex, {
-          title: "✏️Edit the config file",
-          command: "fx-extension.openConfigState",
-          arguments: [{ type: "config", from: "manifest" }],
-        });
-        codeLenses.push(...configCodelenses);
-
-        const stateCodelenses = this.calculateCodeLens(document, manifestStateDataRegex, {
-          title: "👀View the state file",
-          command: "fx-extension.openConfigState",
-          arguments: [{ type: "state", from: "manifest" }],
-        });
-        codeLenses.push(...stateCodelenses);
-      }
+      const stateCodelenses = this.calculateCodeLens(document, manifestStateDataRegex);
+      codeLenses.push(...stateCodelenses);
     }
 
     return codeLenses;

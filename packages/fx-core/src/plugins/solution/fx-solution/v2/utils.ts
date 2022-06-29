@@ -18,11 +18,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
-import {
-  AppStudioScopes,
-  isAadManifestEnabled,
-  isConfigUnifyEnabled,
-} from "../../../../common/tools";
+import { AppStudioScopes, isAadManifestEnabled } from "../../../../common/tools";
 import {
   GLOBAL_CONFIG,
   SolutionError,
@@ -258,11 +254,7 @@ export function loadTeamsAppTenantIdForLocal(
 ): Result<Void, FxError> {
   return parseTeamsAppTenantId(appStudioToken as Record<string, unknown> | undefined).andThen(
     (teamsAppTenantId) => {
-      if (isConfigUnifyEnabled()) {
-        envInfo!.state.solution.teamsAppTenantId = teamsAppTenantId;
-      } else {
-        localSettings.teamsApp[LocalSettingsTeamsAppKeys.TenantId] = teamsAppTenantId;
-      }
+      envInfo!.state.solution.teamsAppTenantId = teamsAppTenantId;
       return ok(Void);
     }
   );

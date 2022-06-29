@@ -22,7 +22,7 @@ import * as localStateHelper from "./localStateHelper";
 import { LocalSettingsProvider } from "../localSettingsProvider";
 import { getNpmInstallLogInfo, NpmInstallLogInfo } from "./npmLogHelper";
 import { getPortsInUse } from "./portChecker";
-import { isConfigUnifyEnabled, waitSeconds } from "../tools";
+import { waitSeconds } from "../tools";
 import { LocalCrypto } from "../../core/crypto";
 import { CoreSource, ReadFileError } from "../../core/error";
 import { DepsType } from "../deps-checker/depsChecker";
@@ -85,16 +85,12 @@ export class LocalEnvManager {
     localSettings: Json | undefined,
     envInfo?: v2.EnvInfoV2
   ): Promise<Record<string, string>> {
-    if (isConfigUnifyEnabled()) {
-      return await localStateHelper.convertToLocalEnvs(
-        projectPath,
-        projectSettings,
-        envInfo,
-        this.logger
-      );
-    } else {
-      return await convertToLocalEnvs(projectPath, projectSettings, localSettings, this.logger);
-    }
+    return await localStateHelper.convertToLocalEnvs(
+      projectPath,
+      projectSettings,
+      envInfo,
+      this.logger
+    );
   }
 
   public async getNpmInstallLogInfo(): Promise<NpmInstallLogInfo | undefined> {

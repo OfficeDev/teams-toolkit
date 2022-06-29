@@ -53,18 +53,10 @@ export namespace AppStudioClient {
     const requestPath = e.request?.path ? `${e.request.method} ${e.request.path}` : "";
     const extraData = e.response?.data ? `data: ${JSON.stringify(e.response.data)}` : "";
 
-    const message = getLocalizedString(
-      "error.appstudio.apiFailed",
-      e.name,
-      e.message,
-      requestPath,
-      correlationId,
-      extraData
+    const error = AppStudioResultFactory.SystemError(
+      AppStudioError.DeveloperPortalAPIFailedError.name,
+      AppStudioError.DeveloperPortalAPIFailedError.message(e, requestPath, correlationId, extraData)
     );
-    const error = new Error(message);
-    if (e.response?.status) {
-      error.name = e.response?.status;
-    }
     return error;
   }
 
@@ -84,7 +76,7 @@ export namespace AppStudioClient {
       const requester = createRequesterWithToken(appStudioToken);
 
       const response = await RetryHandler.Retry(() =>
-        requester.post(`/api/appdefinitions/v2/import`, file, {
+        requester.post(`/api/appdefinitions2/v2/import`, file, {
           headers: { "Content-Type": "application/zip" },
         })
       );

@@ -226,6 +226,8 @@ export enum TelemetryProperty {
   DebugPrereqsDepsType = "debug-prereqs-deps-type",
   DebugFailedServices = "debug-failed-services",
   DebugPortsInUse = "debug-ports-in-use",
+  DebugPrecheckGapDuration = "debug-precheck-gap-duration",
+  DebugServicesGapDuration = "debug-services-gap-duration",
   Internal = "internal",
   InternalAlias = "internal-alias",
   OSArch = "os-arch",

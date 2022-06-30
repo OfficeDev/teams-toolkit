@@ -58,7 +58,7 @@ export async function run(): Promise<void> {
 
   const files: string[] = await new Promise((resolve, reject) => {
     glob(
-      "**/**.test.js",
+      "**/extTelemetry.test.js",
       { cwd: testsRoot, ignore: "migration/migrate.test.js" },
       (err, result) => {
         err ? reject(err) : resolve(result);
@@ -73,9 +73,9 @@ export async function run(): Promise<void> {
 
     const coveragePercentage = 95;
     await nyc.writeCoverageFile();
+    await nyc.checkCoverage({ lines: coveragePercentage });
     // Capture text-summary reporter's output and log it in console
     await captureStdout(nyc.report.bind(nyc));
-    await nyc.checkCoverage({ lines: coveragePercentage });
 
     if (failures > 0) {
       throw new Error(`${failures} tests failed.`);

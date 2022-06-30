@@ -148,11 +148,20 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
       - name: check feature history
         id: description
+        shell: '/bin/bash {0}'
         run: | 
           head=$(git describe --first-parent --abbrev=0)
+          echo $head
           history_cli=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/cli | grep "^feat")
+          echo $history_cli
           history_toolkit=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/vscode-extension | grep "^feat")
-          echo -e '\nCLI feat commits: \n' "$history_cli" '\n\nExtension-toolkit feat commits:\n' "$history_toolkit" > history.txt
+          echo $history_toolkit
+          echo -e '\nCLI feat commits:\n' "$history_cli" '\n\nExtension-toolkit feat commits:\n' "$history_toolkit" > history.txt
+          breaking_change_cli=$(git log $head...HEAD -- packages/cli | grep "BREAKING CHANGE")
+          echo $breaking_change_cli
+          breaking_change_toolkit=$(git log $head...HEAD -- packages/vscode-extension| grep "BREAKING CHANGE")
+          echo $breaking_change_toolkit
+          echo -e '\nCLI BREAKING CHANGE:\n' "$breaking_change_cli" '\n\nExtension-toolkit BREAKING CHANGE:\n' "$breaking_change_toolkit" > history2.txt
       - name: Setup node
         uses: actions/setup-node@v2.1.2
         with:
@@ -166,7 +175,8 @@ jobs:
         with:
           files: |
             output1=info.txt
-            output2=history.txt
+            output2=history2.txt
+            outpot3=history.txt
       - uses: riskledger/update-pr-description@v2
         with:
           body: ${{join(steps.test.outputs.*, '')}}

@@ -3,7 +3,9 @@
 
 import {
   Action,
+  CallAction,
   ContextV3,
+  Effect,
   FxError,
   GroupAction,
   InputsWithProjectPath,
@@ -94,5 +96,29 @@ export class TeamsfxCore {
       actions: actions,
     };
     return ok(group);
+  }
+  configure(
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const action: CallAction = {
+      name: "teams-tab.configure",
+      type: "call",
+      targetAction: "tab-code.configure",
+      required: true,
+    };
+    return ok(action);
+  }
+  build(
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const action: CallAction = {
+      name: "teams-tab.build",
+      type: "call",
+      targetAction: "tab-code.build",
+      required: true,
+    };
+    return ok(action);
   }
 }

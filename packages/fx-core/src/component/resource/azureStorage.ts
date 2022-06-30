@@ -43,15 +43,15 @@ export class AzureStorageResource extends AzureResource {
       bicepVariable: "provisionOutputs.azureStorageOutput.value.resourceId",
     },
     domain: {
-      key: "location",
+      key: "domain",
       bicepVariable: "provisionOutputs.azureStorageOutput.value.domain",
     },
-    location: {
+    indexPath: {
       key: "indexPath",
       bicepVariable: "provisionOutputs.azureStorageOutput.value.indexPath",
     },
   };
-  readonly finalOutputKeys = ["endpoint"];
+  readonly finalOutputKeys = ["domain", "endpoint", "resourceId", "indexPath"];
   configure(
     context: ContextV3,
     inputs: InputsWithProjectPath
@@ -69,6 +69,16 @@ export class AzureStorageResource extends AzureResource {
         ]);
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+        const ctx = context as ProvisionContextV3;
+        const frontendConfigRes = await buildFrontendConfig(
+          ctx.envInfo,
+          ctx.tokenProvider.azureAccountProvider
+        );
+        if (frontendConfigRes.isErr()) {
+          return err(frontendConfigRes.error);
+        }
+        const client = new AzureStorageClient(frontendConfigRes.value);
+        await client.enableStaticWebsite();
         return ok([
           {
             type: "service",
@@ -88,7 +98,7 @@ export class AzureStorageResource extends AzureResource {
       name: "azure-storage.deploy",
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const deployDir = path.join(inputs.projectPath, inputs.folder);
+        const deployDir = path.join(inputs.projectPath, inputs.code.folder);
         return ok([
           {
             type: "service",
@@ -99,7 +109,7 @@ export class AzureStorageResource extends AzureResource {
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const ctx = context as ProvisionContextV3;
-        const deployDir = path.join(inputs.projectPath, inputs.folder);
+        const deployDir = path.resolve(inputs.projectPath, inputs.code.folder);
         const frontendConfigRes = await buildFrontendConfig(
           ctx.envInfo,
           ctx.tokenProvider.azureAccountProvider

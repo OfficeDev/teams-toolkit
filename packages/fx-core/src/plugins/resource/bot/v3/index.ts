@@ -82,7 +82,6 @@ import { ensureSolutionSettings } from "../../../solution/fx-solution/utils/solu
 import { AzureOperations } from "../../../../common/azure-hosting/azureOps";
 import { AzureUploadConfig } from "../../../../common/azure-hosting/interfaces";
 import { convertToAlphanumericOnly } from "../../../../common/utils";
-import { Telemetry } from "../../aad/constants";
 
 @Service(BuiltInFeaturePluginNames.bot)
 export class NodeJSBotPluginV3 implements v3.PluginV3 {

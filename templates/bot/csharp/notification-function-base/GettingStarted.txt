@@ -9,15 +9,15 @@ Quick Start
 to install the app to
 5. Press F5, or select the Debug > Start Debugging menu in Visual Studio
 6. In the launched browser, select the Add button to load the app in Teams
-7. Open Powershell and post an HTTP request to trigger the notification:
+7. [If you selected http trigger] Open Powershell and post an HTTP request to trigger the notification(replace <endpoint> with real endpoint, for example localhost:5130):
 
-   Invoke-WebRequest -Uri "http://localhost:5130/api/notification" -Method Post
-
+   Invoke-WebRequest -Uri "http://<endpoint>/api/notification" -Method Post
+   
 Learn more
 -------------------------
 New to Teams app development or Teams Toolkit? Learn more about 
 Teams app manifests, deploying to the cloud, and more in the documentation 
-at https://aka.ms/teams-toolkit-vs-docs
+at https://aka.ms/teams-toolkit-vs-docs, https://aka.ms/teams-toolkit-advanced-tutorials
 
 Report an issue
 -------------------------

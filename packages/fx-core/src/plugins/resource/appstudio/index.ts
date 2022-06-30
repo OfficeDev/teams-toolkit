@@ -354,7 +354,7 @@ export class AppStudioPlugin implements Plugin {
       const answer = ctx.answers![Constants.BUILD_OR_PUBLISH_QUESTION] as string;
       if (answer === manuallySubmitOption.id) {
         const properties: { [key: string]: string } = {};
-        properties[TelemetryPropertyKey.TriggerFrom] = TelemetryEventName.publish;
+        properties[TelemetryPropertyKey.manual] = String(true);
         try {
           const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, false);
           const msg = getLocalizedString(
@@ -367,10 +367,10 @@ export class AppStudioPlugin implements Plugin {
               ctx.ui?.openUrl(Constants.PUBLISH_GUIDE);
             }
           });
-          TelemetryUtils.sendSuccessEvent(TelemetryEventName.buildTeamsPackage, properties);
+          TelemetryUtils.sendSuccessEvent(TelemetryEventName.publish, properties);
           return ok(appPackagePath);
         } catch (error) {
-          TelemetryUtils.sendErrorEvent(TelemetryEventName.buildTeamsPackage, error, properties);
+          TelemetryUtils.sendErrorEvent(TelemetryEventName.publish, error, properties);
           return err(
             AppStudioResultFactory.UserError(
               AppStudioError.TeamsPackageBuildError.name,

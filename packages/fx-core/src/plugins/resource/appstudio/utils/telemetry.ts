@@ -18,7 +18,7 @@ export enum TelemetryPropertyKey {
   tenantId = "tenant-id",
   publishedAppId = "published-app-id",
   customizedKeys = "customized-manifest-keys",
-  TriggerFrom = "trigger-from",
+  manual = "manual",
 }
 
 enum TelemetryPropertyValue {

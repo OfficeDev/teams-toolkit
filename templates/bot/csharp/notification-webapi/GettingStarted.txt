@@ -19,7 +19,7 @@ New to Teams app development or Teams Toolkit? Learn more about
 Teams app manifests, deploying to the cloud, and more in the documentation 
 at https://aka.ms/teams-toolkit-vs-docs, https://aka.ms/teams-toolkit-advanced-tutorials
 
-Learn more advanced topic like how to customize your command bot code in 
+Learn more advanced topic like how to customize your notification bot code in 
 tutorials at https://aka.ms/notification-bot-tutorial
 
 Report an issue

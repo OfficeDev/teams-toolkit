@@ -365,7 +365,6 @@ jobs:
           artifactErrorsFailBuild: true
 
       - name: save release info
-        if: ${{ steps.version-change.outputs.CHANGED }}
         run: |
           rm -f changed.txt
           rm -f versions.json
@@ -373,7 +372,6 @@ jobs:
           npx lerna ls -all --json > versions.json
       
       - name: upload release info to artifact
-        if: ${{ steps.version-change.outputs.CHANGED }}
         uses: actions/upload-artifact@v3
         with:
           name: release

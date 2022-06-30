@@ -3,7 +3,11 @@
 
 import { Inputs } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
-import { AzureSolutionQuestionNames, BotScenario } from "../../../solution/fx-solution/question";
+import {
+  AzureSolutionQuestionNames,
+  BotScenario,
+  M365SearchAppOptionItem,
+} from "../../../solution/fx-solution/question";
 import { QuestionNames, TemplateProjectsConstants, TemplateProjectsScenarios } from "../constants";
 import { AppServiceOptionItem, FunctionsOptionItems } from "../question";
 import { CodeTemplateInfo } from "./interface/codeTemplateInfo";
@@ -31,17 +35,14 @@ export function getTemplateInfos(ctx: Context, inputs: Inputs): CodeTemplateInfo
 }
 
 export function decideTemplateScenarios(ctx: Context, inputs: Inputs): Set<string> {
-  const isM365 = ctx.projectSetting?.isM365;
-  const templateScenarios: Set<string> = new Set<string>();
-  if (isM365) {
-    templateScenarios.add(TemplateProjectsScenarios.M365_SCENARIO_NAME);
-    return templateScenarios;
-  }
   const botScenarios = inputs?.[AzureSolutionQuestionNames.Scenarios];
+  const templateScenarios: Set<string> = new Set<string>();
+
   if (!botScenarios || (Array.isArray(botScenarios) && botScenarios.length === 0)) {
     templateScenarios.add(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
     return templateScenarios;
   }
+
   botScenarios.forEach((scenario: string) => {
     switch (scenario) {
       case BotScenario.CommandAndResponseBot:
@@ -55,6 +56,9 @@ export function decideTemplateScenarios(ctx: Context, inputs: Inputs): Set<strin
         notificationTriggerType.forEach((triggerType) => {
           getTriggerScenarios(triggerType).forEach((item) => templateScenarios.add(item));
         });
+        break;
+      case M365SearchAppOptionItem.id:
+        templateScenarios.add(TemplateProjectsScenarios.M365_SCENARIO_NAME);
         break;
     }
   });

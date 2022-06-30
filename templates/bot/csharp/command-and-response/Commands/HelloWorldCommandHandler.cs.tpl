@@ -18,7 +18,8 @@
 
         public IEnumerable<ITriggerPattern> TriggerPatterns => new List<ITriggerPattern>
         {
-            new StringTrigger("helloworld")
+            // Used to trigger the command handler if the command text contains 'helloWorld'
+            new RegExpTrigger("helloWorld")
         };
 
         public HelloWorldCommandHandler(ILogger<HelloWorldCommandHandler> logger)

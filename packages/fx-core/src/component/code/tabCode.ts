@@ -28,7 +28,11 @@ import {
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { CoreQuestionNames } from "../../core/question";
 import { TemplateZipFallbackError } from "../../plugins/resource/bot/v3/error";
-import { Constants, FrontendPathInfo } from "../../plugins/resource/frontend/constants";
+import {
+  Constants,
+  FrontendPathInfo,
+  DependentPluginInfo,
+} from "../../plugins/resource/frontend/constants";
 import { FrontendDeployment } from "../../plugins/resource/frontend/ops/deploy";
 import {
   UnknownScaffoldError,
@@ -39,7 +43,6 @@ import { Scenario, TemplateInfo } from "../../plugins/resource/frontend/resource
 import { ComponentNames } from "../constants";
 import { getComponent } from "../workflow";
 import { convertToLangKey } from "./botCode";
-import { DependentPluginInfo } from "../../plugins/resource/frontend/constants";
 import { envFilePath, EnvKeys, saveEnvFile } from "../../plugins/resource/frontend/env";
 /**
  * tab scaffold

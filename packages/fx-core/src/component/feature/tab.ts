@@ -5,7 +5,6 @@ import {
   Action,
   CallAction,
   ContextV3,
-  Effect,
   FxError,
   GroupAction,
   InputsWithProjectPath,
@@ -16,7 +15,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { isVSProject } from "../../common";
+import { isVSProject } from "../../common/projectSettingsHelper";
 import { CoreQuestionNames } from "../../core/question";
 import { ComponentNames } from "../constants";
 import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "../projectSettingsManager";

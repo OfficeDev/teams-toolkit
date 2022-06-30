@@ -148,10 +148,14 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
       - name: check feature history
         id: description
+        shell: '/bin/bash {0}'
         run: | 
           head=$(git describe --first-parent --abbrev=0)
+          echo ======= $head
           history_cli=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/cli | grep "^feat")
+          echo ========== $history_cli
           history_toolkit=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/vscode-extension | grep "^feat")
+          echo ============= $history_toolkit
           echo -e '\nCLI feat commits: \n' "$history_cli" '\n\nExtension-toolkit feat commits:\n' "$history_toolkit" > history.txt
       - name: Setup node
         uses: actions/setup-node@v2.1.2

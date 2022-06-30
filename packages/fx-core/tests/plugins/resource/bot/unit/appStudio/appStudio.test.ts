@@ -198,7 +198,7 @@ describe("Test AppStudio APIs", () => {
 
       // Act
       try {
-        await AppStudio.updateMessageEndpoint(accessToken, "anything", botReg);
+        await AppStudio.updateMessageEndpoint(accessToken, "anything", botReg, undefined);
       } catch {
         chai.assert.fail(Messages.ShouldNotReachHere);
       }
@@ -220,7 +220,7 @@ describe("Test AppStudio APIs", () => {
 
       // Act
       try {
-        await AppStudio.updateMessageEndpoint(accessToken, "anything", botReg);
+        await AppStudio.updateMessageEndpoint(accessToken, "anything", botReg, undefined);
       } catch (e) {
         chai.assert.isTrue(e instanceof PluginError);
         return;
@@ -246,7 +246,7 @@ describe("Test AppStudio APIs", () => {
 
       // Act
       try {
-        await AppStudio.updateMessageEndpoint(accessToken, "anything", botReg);
+        await AppStudio.updateMessageEndpoint(accessToken, "anything", botReg, undefined);
       } catch (e) {
         chai.assert.isTrue(e instanceof PluginError);
         return;

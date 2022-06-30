@@ -5,7 +5,6 @@ import {
   Action,
   CallAction,
   ContextV3,
-  Effect,
   FxError,
   GroupAction,
   InputsWithProjectPath,

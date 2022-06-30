@@ -3,7 +3,7 @@
 "use strict";
 
 import { Middleware, NextFunction } from "@feathersjs/hooks";
-import { Inputs, StaticPlatforms } from "@microsoft/teamsfx-api";
+import { Inputs, ProjectSettingsV3, StaticPlatforms } from "@microsoft/teamsfx-api";
 import { environmentManager } from "../environment";
 import { TOOLS } from "../globalVars";
 import { CoreHookContext } from "../types";
@@ -57,7 +57,8 @@ async function writeEnvInfo(ctx: CoreHookContext, skip: boolean) {
       inputs.projectPath,
       ctx.contextV2.cryptoProvider,
       envInfoV3.envName,
-      true
+      true,
+      ctx.contextV2.projectSetting as ProjectSettingsV3
     );
     if (envStatePath.isOk()) {
       TOOLS?.logProvider.debug(`[core] persist env state: ${envStatePath.value}`);

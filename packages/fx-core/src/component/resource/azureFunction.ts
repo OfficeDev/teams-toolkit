@@ -31,16 +31,16 @@ export class AzureFunctionResource extends AzureResource {
   readonly name = "azure-function";
   readonly bicepModuleName = "azureFunction";
   outputs = {
-    resourceId: {
-      key: "resourceId",
+    functionAppResourceId: {
+      key: "functionAppResourceId",
       bicepVariable: "provisionOutputs.azureFunctionOutput.value.resourceId",
     },
-    endpoint: {
-      key: "endpoint",
+    functionEndpoint: {
+      key: "functionEndpoint",
       bicepVariable: "provisionOutputs.azureFunctionOutput.value.endpoint",
     },
   };
-  finalOutputKeys = ["resourceId", "endpoint"];
+  finalOutputKeys = ["functionAppResourceId", "functionEndpoint"];
   generateBicep(
     context: ContextV3,
     inputs: InputsWithProjectPath

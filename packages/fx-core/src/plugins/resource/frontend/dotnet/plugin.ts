@@ -215,18 +215,40 @@ export class DotnetPluginImpl implements PluginImpl {
 
   public async postLocalDebug(ctx: PluginContext): Promise<TeamsFxResult> {
     const appSettingsPath = path.join(ctx.root, PathInfo.appSettingDevelopment);
+    let appSettings: string;
     if (
       !(await runWithErrorCatchAndThrow(
         new FileIOError(appSettingsPath),
         async () => await fs.pathExists(appSettingsPath)
       ))
     ) {
-      return ok(undefined);
+      // if appsetting file not exist, generate a new one
+      // TODO(qidon): load content from resource file or template
+      appSettings =
+        '\
+{\r\n\
+  "Logging": {\r\n\
+    "LogLevel": {\r\n\
+      "Default": "Information",\r\n\
+      "Microsoft": "Warning",\r\n\
+      "Microsoft.Hosting.Lifetime": "Information"\r\n\
+    }\r\n\
+  },\r\n\
+  "AllowedHosts": "*",\r\n\
+  "TeamsFx": {\r\n\
+    "Authentication": {\r\n\
+      "ClientId": "$clientId$",\r\n\
+      "ClientSecret": "$client-secret$",\r\n\
+      "OAuthAuthority": "$oauthAuthority$"\r\n\
+    }\r\n\
+  }\r\n\
+}\r\n';
+    } else {
+      appSettings = await runWithErrorCatchAndThrow(
+        new FileIOError(appSettingsPath),
+        async () => await fs.readFile(appSettingsPath, "utf-8")
+      );
     }
-    let appSettings = await runWithErrorCatchAndThrow(
-      new FileIOError(appSettingsPath),
-      async () => await fs.readFile(appSettingsPath, "utf-8")
-    );
 
     const clientId =
       ctx.envInfo.state.get(PluginNames.AAD)?.get(DependentPluginInfo.aadClientId) ??

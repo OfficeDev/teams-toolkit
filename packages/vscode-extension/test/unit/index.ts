@@ -58,7 +58,7 @@ export async function run(): Promise<void> {
 
   const files: string[] = await new Promise((resolve, reject) => {
     glob(
-      "**/extTelemetry.test.js",
+      "**/**.test.js",
       { cwd: testsRoot, ignore: "migration/migrate.test.js" },
       (err, result) => {
         err ? reject(err) : resolve(result);
@@ -71,7 +71,7 @@ export async function run(): Promise<void> {
   try {
     const failures = await new Promise<number>((resolve) => mocha.run(resolve));
 
-    const coveragePercentage = 95;
+    const coveragePercentage = 30;
     await nyc.writeCoverageFile();
     await nyc.checkCoverage({ lines: coveragePercentage });
     // Capture text-summary reporter's output and log it in console

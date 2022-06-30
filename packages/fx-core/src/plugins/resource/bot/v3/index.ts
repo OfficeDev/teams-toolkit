@@ -13,6 +13,7 @@ import {
   ok,
   QTreeNode,
   Result,
+  TelemetryReporter,
   TokenProvider,
   v2,
   v3,
@@ -81,6 +82,7 @@ import { ensureSolutionSettings } from "../../../solution/fx-solution/utils/solu
 import { AzureOperations } from "../../../../common/azure-hosting/azureOps";
 import { AzureUploadConfig } from "../../../../common/azure-hosting/interfaces";
 import { convertToAlphanumericOnly } from "../../../../common/utils";
+import { Telemetry } from "../../aad/constants";
 
 @Service(BuiltInFeaturePluginNames.bot)
 export class NodeJSBotPluginV3 implements v3.PluginV3 {
@@ -344,7 +346,7 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
       });
       const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
       CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
-      await AppStudio.createBotRegistration(appStudioToken!, botReg);
+      await AppStudio.createBotRegistration(appStudioToken!, botReg, ctx.telemetryReporter);
       ctx.logProvider.info(Messages.SuccessfullyProvisionedBotRegistration);
     }
     return ok(Void);
@@ -404,7 +406,8 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
     appName: string,
     tokenProvider: TokenProvider,
     botId: string,
-    endpoint: string
+    endpoint: string,
+    telemetryReporter: TelemetryReporter
   ) {
     const appStudioTokenRes = await tokenProvider.m365TokenProvider.getAccessToken({
       scopes: AppStudioScopes,
@@ -422,7 +425,12 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
       callingEndpoint: "",
     };
 
-    await AppStudio.updateMessageEndpoint(appStudioToken!, botReg.botId!, botReg);
+    await AppStudio.updateMessageEndpoint(
+      appStudioToken!,
+      botReg.botId!,
+      botReg,
+      telemetryReporter
+    );
   }
 
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.bot } })])
@@ -439,7 +447,8 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
         convertToAlphanumericOnly(ctx.projectSetting.appName),
         tokenProvider,
         botConfig.botId,
-        `${botConfig.siteEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`
+        `${botConfig.siteEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`,
+        ctx.telemetryReporter
       );
     }
     return ok(Void);

@@ -146,7 +146,7 @@ describe("Test AppStudio APIs", () => {
 
       // Act
       try {
-        await AppStudio.createBotRegistration(accessToken, botReg);
+        await AppStudio.createBotRegistration(accessToken, botReg, undefined);
       } catch {
         chai.assert.fail(Messages.ShouldNotReachHere);
       }
@@ -168,7 +168,7 @@ describe("Test AppStudio APIs", () => {
 
       // Act
       try {
-        await AppStudio.createBotRegistration(accessToken, botReg);
+        await AppStudio.createBotRegistration(accessToken, botReg, undefined);
       } catch (e) {
         chai.assert.isTrue(e instanceof PluginError);
         return;

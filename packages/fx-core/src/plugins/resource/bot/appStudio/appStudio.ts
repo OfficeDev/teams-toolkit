@@ -14,6 +14,9 @@ import { CommonStrings, ConfigNames } from "../resources/strings";
 import { RetryHandler } from "../utils/retryHandler";
 import { Messages } from "../resources/messages";
 import { Logger } from "../logger";
+import { telemetryHelper } from "../utils/telemetry-helper";
+import { TelemetryReporter } from "@microsoft/teamsfx-api";
+import { TelemetryEventNames } from "../constants";
 /**
  * Get app studio endpoint for prod/int environment, mainly for ux e2e test
  */
@@ -24,6 +27,12 @@ export function getAppStudioEndpoint(): string {
     return "https://dev.teams.microsoft.com";
   }
 }
+
+function sendAppStudioApiTelemetry(telemetryReporter: TelemetryReporter | undefined, e: any) {
+  telemetryHelper.sendAxiosApiError(telemetryReporter, TelemetryEventNames.AppStudioApi, e);
+  throw e;
+}
+
 export class AppStudio {
   private static baseUrl = getAppStudioEndpoint();
 
@@ -154,7 +163,8 @@ export class AppStudio {
 
   public static async createBotRegistration(
     accessToken: string,
-    registration: IBotRegistration
+    registration: IBotRegistration,
+    telemetryReporter: TelemetryReporter | undefined
   ): Promise<void> {
     const axiosInstance = AppStudio.newAxiosInstance(accessToken);
 
@@ -176,7 +186,7 @@ export class AppStudio {
             }
           },
           true
-        );
+        ).catch((e) => sendAppStudioApiTelemetry(telemetryReporter, e));
         if (getBotRegistrationResponse?.status === 200) {
           Logger.info(Messages.BotResourceExist("Appstudio"));
           return;
@@ -185,7 +195,7 @@ export class AppStudio {
 
       response = await RetryHandler.Retry(() =>
         axiosInstance.post(`${AppStudio.baseUrl}/api/botframework`, registration)
-      );
+      ).catch((e) => sendAppStudioApiTelemetry(telemetryReporter, e));
     } catch (e) {
       throw new ProvisionError(CommonStrings.APP_STUDIO_BOT_REGISTRATION, e);
     }
@@ -200,7 +210,8 @@ export class AppStudio {
   public static async updateMessageEndpoint(
     accessToken: string,
     botId: string,
-    registration: IBotRegistration
+    registration: IBotRegistration,
+    telemetryReporter: TelemetryReporter | undefined
   ): Promise<void> {
     const axiosInstance = AppStudio.newAxiosInstance(accessToken);
 
@@ -208,7 +219,7 @@ export class AppStudio {
     try {
       response = await RetryHandler.Retry(() =>
         axiosInstance.post(`${AppStudio.baseUrl}/api/botframework/${botId}`, registration)
-      );
+      ).catch((e) => sendAppStudioApiTelemetry(telemetryReporter, e));
     } catch (e) {
       throw new MessageEndpointUpdatingError(registration.messagingEndpoint, e);
     }

@@ -412,7 +412,12 @@ export class TeamsBotImpl implements PluginImpl {
       callingEndpoint: "",
     };
 
-    await AppStudio.updateMessageEndpoint(appStudioToken, botReg.botId!, botReg);
+    await AppStudio.updateMessageEndpoint(
+      appStudioToken,
+      botReg.botId!,
+      botReg,
+      this.ctx?.telemetryReporter
+    );
   }
   private async createNewBotRegistrationOnAppStudio() {
     const graphTokenRes = await this.ctx?.m365TokenProvider?.getAccessToken({
@@ -490,7 +495,7 @@ export class TeamsBotImpl implements PluginImpl {
       appStudioTokenRes?.isOk() ? appStudioTokenRes.value : undefined
     );
 
-    await AppStudio.createBotRegistration(appStudioToken, botReg);
+    await AppStudio.createBotRegistration(appStudioToken, botReg, this.ctx?.telemetryReporter);
 
     if (!this.config.scaffold.botId) {
       this.config.scaffold.botId = botAuthCreds.clientId;

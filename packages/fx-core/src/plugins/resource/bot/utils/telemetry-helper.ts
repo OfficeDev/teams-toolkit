@@ -2,8 +2,8 @@
 // Licensed under the MIT license.
 
 import { FxResult } from "../result";
-import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
-import { TelemetryKeys, TelemetryValues } from "../constants";
+import { PluginContext, SystemError, TelemetryReporter, UserError } from "@microsoft/teamsfx-api";
+import { ErrorNames, TelemetryKeys, TelemetryValues } from "../constants";
 import { PluginBot, PluginSolution } from "../resources/strings";
 
 export class telemetryHelper {
@@ -82,5 +82,23 @@ export class telemetryHelper {
       (e: SystemError | UserError) =>
         this.sendErrorEvent(ctx, eventName, e, properties, measurements)
     );
+  }
+
+  static sendAxiosApiError(
+    telemetryReporter: TelemetryReporter | undefined,
+    eventName: string,
+    error: any
+  ): void {
+    const properties: { [key: string]: string } = {};
+    properties[TelemetryKeys.StatusCode] = `${error?.response?.status}`;
+    properties[TelemetryKeys.Url] = error?.toJSON?.()?.config?.url;
+    properties[TelemetryKeys.Method] = error?.toJSON?.()?.config?.method;
+    properties[TelemetryKeys.Success] = TelemetryValues.Fail;
+    properties[TelemetryKeys.ErrorMessage] = error.message;
+    properties[TelemetryKeys.ErrorCode] = ErrorNames.API_ERROR;
+    properties[TelemetryKeys.ErrorType] = TelemetryValues.UserError;
+    telemetryReporter?.sendTelemetryErrorEvent(eventName, properties, undefined, [
+      TelemetryKeys.ErrorMessage,
+    ]);
   }
 }

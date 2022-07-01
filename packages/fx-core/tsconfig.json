@@ -22,6 +22,6 @@
     "declaration": true,
     "plugins": [{ "transform": "../failpoint-ts/transformer/transformer.ts" }]
   },
-  "include": ["src"],
+  "include": ["src", "src\\plugins\\resource\\officeaddin\\config\\projectProperties.json"],
   "exclude": ["node_modules", "**/tests/*"]
 }

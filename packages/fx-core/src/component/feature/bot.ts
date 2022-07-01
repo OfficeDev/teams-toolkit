@@ -32,7 +32,7 @@ import { CoreQuestionNames } from "../../core/question";
 import "../code/botCode";
 import "../resource/appManifest/appManifest";
 import "../resource/botService";
-import "../resource/azureWebApp";
+import "../resource/azureAppService/azureWebApp";
 import "../connection/azureWebAppConfig";
 @Service("teams-bot")
 export class TeamsBot {

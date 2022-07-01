@@ -14,17 +14,9 @@ export class AzureWebAppResource extends AzureAppService {
       key: "resourceId",
       bicepVariable: "provisionOutputs.azureWebAppOutput.value.resourceId",
     },
-    domain: {
-      key: "domain",
-      bicepVariable: "provisionOutputs.azureWebAppOutput.value.domain",
-    },
     endpoint: {
       key: "endpoint",
-      bicepVariable: "provisionOutputs.azureWebAppOutput.value.endpoint",
-    },
-    appName: {
-      key: "appName",
-      bicepVariable: "provisionOutputs.azureWebAppOutput.value.appName",
+      bicepVariable: "azureWebAppProvision.outputs.endpoint",
     },
   };
   readonly finalOutputKeys = ["resourceId", "endpoint"];

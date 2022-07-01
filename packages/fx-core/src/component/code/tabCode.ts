@@ -44,6 +44,9 @@ import { ComponentNames } from "../constants";
 import { getComponent } from "../workflow";
 import { convertToLangKey } from "./botCode";
 import { envFilePath, EnvKeys, saveEnvFile } from "../../plugins/resource/frontend/env";
+import { isVSProject } from "../../common/projectSettingsHelper";
+import { DotnetCommands } from "../../plugins/resource/frontend/dotnet/constants";
+import { Utils } from "../../plugins/resource/frontend/utils";
 /**
  * tab scaffold
  */
@@ -77,7 +80,7 @@ export class TabCodeProvider implements SourceCodeProvider {
         const folder = inputs.folder || language === "csharp" ? "" : FrontendPathInfo.WorkingDir;
         const teamsTab = getComponent(projectSettings, ComponentNames.TeamsTab);
         if (!teamsTab) return ok([]);
-        merge(teamsTab, { build: true, provision: true, folder: folder });
+        merge(teamsTab, { build: true, provision: language != "csharp", folder: folder });
         const langKey = convertToLangKey(language);
         const workingDir = path.join(inputs.projectPath, folder);
         const hasFunction = false; //TODO
@@ -184,8 +187,25 @@ export class TabCodeProvider implements SourceCodeProvider {
         const ctx = context as ProvisionContextV3;
         const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
         if (!teamsTab) return ok([]);
-        const tabDir = path.join(inputs.projectPath, teamsTab.folder!);
+        if (teamsTab.folder == undefined) throw new Error("path not found");
+        const tabDir = path.join(inputs.projectPath, teamsTab.folder);
+        if (isVSProject(context.projectSetting)) {
+          const command = DotnetCommands.buildRelease("win-x86");
+          await Utils.execute(command, tabDir);
+          const artifactFolder = path.join(
+            teamsTab.folder,
+            "bin",
+            "Release",
+            "net6.0",
+            "win-x86",
+            "publish"
+          );
+          merge(teamsTab, { build: true, artifactFolder: artifactFolder });
+          return ok([`build project: ${tabDir}`]);
+        }
         await FrontendDeployment.doFrontendBuildV3(tabDir, ctx.envInfo.envName);
+        const artifactFolder = path.join(teamsTab.folder, "build");
+        merge(teamsTab, { build: true, artifactFolder: artifactFolder });
         return ok([`build project: ${tabDir}`]);
       },
     };

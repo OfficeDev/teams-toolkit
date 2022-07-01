@@ -67,7 +67,7 @@ export abstract class AzureAppService extends AzureResource {
         if (!inputs.projectPath || !codeComponent?.artifactFolder) {
           throw new PreconditionError(this.alias, Messages.WorkingDirIsMissing, []);
         }
-        const publishDir = path.join(inputs.projectPath, codeComponent.artifactFolder);
+        const publishDir = path.resolve(inputs.projectPath, codeComponent.artifactFolder);
         const packDirExisted = await fs.pathExists(publishDir);
         if (!packDirExisted) {
           throw new PackDirectoryExistenceError(this.alias);

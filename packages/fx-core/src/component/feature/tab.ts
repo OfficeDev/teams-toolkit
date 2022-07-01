@@ -27,9 +27,10 @@ export class TeamsfxCore {
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     inputs.hosting =
-      inputs.hosting || isVSProject(context.projectSetting)
+      inputs.hosting ||
+      (inputs?.["programming-language"] === "csharp"
         ? ComponentNames.AzureWebApp
-        : ComponentNames.AzureStorage;
+        : ComponentNames.AzureStorage);
     const actions: Action[] = [
       LoadProjectSettingsAction,
       {
@@ -84,6 +85,7 @@ export class TeamsfxCore {
           capabilities: [{ name: "staticTab" }, { name: "configurableTab" }],
         },
       },
+      // TODO: connect AAD for blazor web app
       {
         name: "call:debug.generateLocalDebugSettings",
         type: "call",

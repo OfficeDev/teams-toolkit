@@ -16,7 +16,7 @@ resource serverfarm 'Microsoft.Web/serverfarms@2021-02-01' = {
   }
 }
 
-// Web App that hosts your bot
+// Web App that hosts your app
 resource webApp 'Microsoft.Web/sites@2021-02-01' = {
   kind: 'app'
   location: resourceGroup().location

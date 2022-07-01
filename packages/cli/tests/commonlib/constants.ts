@@ -31,6 +31,9 @@ export class PluginId {
 
 export const fileEncoding = "UTF8";
 
+export type CliCapabilities = "notification" | "command-bot" | "tab" | "message-extension";
+export type CliTriggerType = "http-restify" | "http-functions" | "timer-functions";
+
 export enum Capability {
   Tab = "tab",
   SSOTab = "sso-tab",

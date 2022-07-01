@@ -367,12 +367,16 @@ jobs:
       - name: save release info
         if: ${{ steps.version-change.outputs.CHANGED }}
         run: |
-          rm -f release.txt
-          echo ${{steps.version-change.outputs.CHANGED}} > release.txt
+          rm -f changed.txt
+          rm -f versions.json
+          echo ${{steps.version-change.outputs.CHANGED}} > changed.txt
+          npx lerna ls -all --json > versions.json
       
-      - name: update release info to artifact
+      - name: upload release info to artifact
         if: ${{ steps.version-change.outputs.CHANGED }}
         uses: actions/upload-artifact@v3
         with:
           name: release
-          path: release.txt
+          path: |
+            changed.txt
+            versions.json

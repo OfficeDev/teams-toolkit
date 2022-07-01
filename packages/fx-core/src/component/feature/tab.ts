@@ -3,6 +3,7 @@
 
 import {
   Action,
+  CallAction,
   ContextV3,
   FxError,
   GroupAction,
@@ -14,7 +15,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { isVSProject } from "../../common";
+import { isVSProject } from "../../common/projectSettingsHelper";
 import { CoreQuestionNames } from "../../core/question";
 import { ComponentNames } from "../constants";
 import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "../projectSettingsManager";
@@ -94,5 +95,29 @@ export class TeamsfxCore {
       actions: actions,
     };
     return ok(group);
+  }
+  configure(
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const action: CallAction = {
+      name: "teams-tab.configure",
+      type: "call",
+      targetAction: "tab-code.configure",
+      required: true,
+    };
+    return ok(action);
+  }
+  build(
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const action: CallAction = {
+      name: "teams-tab.build",
+      type: "call",
+      targetAction: "tab-code.build",
+      required: true,
+    };
+    return ok(action);
   }
 }

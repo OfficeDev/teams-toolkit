@@ -869,7 +869,8 @@ export async function getSideloadingStatus(token: string): Promise<boolean | und
             "M365Account",
             "UnknownValue",
             `AppStudio response code: ${response.status}, body: ${response.data}`
-          )
+          ),
+          { [TelemetryProperty.CheckSideloadingHttpStatus]: `${response.status}` }
         );
       }
 

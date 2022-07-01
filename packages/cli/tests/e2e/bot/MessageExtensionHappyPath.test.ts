@@ -5,8 +5,8 @@ import { happyPathTest } from "./BotHappyPathCommon";
 import { Runtime } from "../../commonlib/constants";
 import { it } from "../../commonlib/it";
 
-describe("Provision for Node", () => {
-  it("Provision Resource: func hosted notification", async function () {
-    await happyPathTest(Runtime.Node, "notification", ["http-functions"]);
+describe("Provision message extension Node", () => {
+  it("Provision Resource: message extension node", async function () {
+    await happyPathTest(Runtime.Node, "message-extension");
   });
 });

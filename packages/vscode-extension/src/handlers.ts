@@ -80,7 +80,6 @@ import {
   UserTaskFunctionName,
 } from "@microsoft/teamsfx-core";
 
-import M365CodeSpaceTokenInstance from "./commonlib/m365CodeSpaceLogin";
 import M365TokenInstance from "./commonlib/m365Login";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { signedIn, signedOut } from "./commonlib/common/constant";
@@ -175,11 +174,7 @@ export function activate(): Result<Void, FxError> {
     );
   }
   try {
-    let m365Login: M365TokenProvider = M365TokenInstance;
-    const vscodeEnv = detectVsCodeEnv();
-    if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
-      m365Login = M365CodeSpaceTokenInstance;
-    }
+    const m365Login: M365TokenProvider = M365TokenInstance;
     const m365NotificationCallback = (
       status: string,
       token: string | undefined,
@@ -1216,7 +1211,7 @@ export async function validateLocalPrerequisitesHandler(): Promise<string | unde
   const result = await localPrerequisites.checkAndInstall();
   if (result.isErr()) {
     // Only local debug use validate-local-prerequisites command
-    await sendDebugAllEvent(false, result.error);
+    await sendDebugAllEvent(result.error);
     commonUtils.endLocalDebugSession();
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
@@ -1374,7 +1369,7 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
     terminateAllRunningTeamsfxTasks();
     await debug.stopDebugging();
     // only local debug uses pre-debug-check command
-    await sendDebugAllEvent(false, result.error);
+    await sendDebugAllEvent(result.error);
     commonUtils.endLocalDebugSession();
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
@@ -2657,11 +2652,7 @@ export async function signOutM365(isFromTreeView: boolean) {
   });
   const vscodeEnv = detectVsCodeEnv();
   let result = false;
-  if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
-    result = await M365CodeSpaceTokenInstance.signout();
-  } else {
-    result = await M365TokenInstance.signout();
-  }
+  result = await M365TokenInstance.signout();
   if (result) {
     accountTreeViewProviderInstance.m365AccountNode.setSignedOut();
     envTreeProviderInstance.refreshRemoteEnvWarning();

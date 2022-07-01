@@ -185,6 +185,9 @@ export class TemplateZipFallbackError extends PluginError {
 }
 
 export class ProvisionError extends PluginError {
+  statusCode?: string;
+  method?: string;
+  url?: string;
   constructor(resource: string, innerError?: InnerError) {
     super(
       ErrorType.USER,
@@ -246,6 +249,9 @@ export class PackDirExistenceError extends PluginError {
 }
 
 export class MessageEndpointUpdatingError extends PluginError {
+  statusCode?: string;
+  method?: string;
+  url?: string;
   constructor(endpoint: string, innerError?: InnerError) {
     super(
       ErrorType.USER,

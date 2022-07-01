@@ -231,12 +231,7 @@ export class BotService implements CloudResource {
             messagingEndpoint: `${teamsBotState.endpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`,
             callingEndpoint: "",
           };
-          await AppStudio.updateMessageEndpoint(
-            appStudioToken!,
-            botReg.botId!,
-            botReg,
-            ctx.telemetryReporter
-          );
+          await AppStudio.updateMessageEndpoint(appStudioToken!, botReg.botId!, botReg);
         }
         return ok(plans);
       },
@@ -298,7 +293,7 @@ export async function createBotRegInAppStudio(
   });
   const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
   CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
-  await AppStudio.createBotRegistration(appStudioToken!, botReg, ctx.telemetryReporter);
+  await AppStudio.createBotRegistration(appStudioToken!, botReg);
   ctx.logProvider.info(Messages.SuccessfullyProvisionedBotRegistration);
   return ok(undefined);
 }

@@ -14,9 +14,6 @@ import { CommonStrings, ConfigNames } from "../resources/strings";
 import { RetryHandler } from "../utils/retryHandler";
 import { Messages } from "../resources/messages";
 import { Logger } from "../logger";
-import { telemetryHelper } from "../utils/telemetry-helper";
-import { TelemetryReporter } from "@microsoft/teamsfx-api";
-import { TelemetryEventNames } from "../constants";
 /**
  * Get app studio endpoint for prod/int environment, mainly for ux e2e test
  */
@@ -28,9 +25,13 @@ export function getAppStudioEndpoint(): string {
   }
 }
 
-function sendAppStudioApiTelemetry(telemetryReporter: TelemetryReporter | undefined, e: any) {
-  telemetryHelper.sendAxiosApiError(telemetryReporter, TelemetryEventNames.AppStudioApi, e);
-  throw e;
+function extendAxiosErrorProperties<
+  T extends { statusCode?: string; url?: string; method?: string }
+>(error: T, apiError: any): T {
+  error.statusCode = `${apiError?.response?.status}`;
+  error.url = apiError?.toJSON?.()?.config?.url;
+  error.method = apiError?.toJSON?.()?.config?.method;
+  return error;
 }
 
 export class AppStudio {
@@ -163,8 +164,7 @@ export class AppStudio {
 
   public static async createBotRegistration(
     accessToken: string,
-    registration: IBotRegistration,
-    telemetryReporter: TelemetryReporter | undefined
+    registration: IBotRegistration
   ): Promise<void> {
     const axiosInstance = AppStudio.newAxiosInstance(accessToken);
 
@@ -186,7 +186,7 @@ export class AppStudio {
             }
           },
           true
-        ).catch((e) => sendAppStudioApiTelemetry(telemetryReporter, e));
+        );
         if (getBotRegistrationResponse?.status === 200) {
           Logger.info(Messages.BotResourceExist("Appstudio"));
           return;
@@ -195,9 +195,12 @@ export class AppStudio {
 
       response = await RetryHandler.Retry(() =>
         axiosInstance.post(`${AppStudio.baseUrl}/api/botframework`, registration)
-      ).catch((e) => sendAppStudioApiTelemetry(telemetryReporter, e));
+      );
     } catch (e) {
-      throw new ProvisionError(CommonStrings.APP_STUDIO_BOT_REGISTRATION, e);
+      throw extendAxiosErrorProperties(
+        new ProvisionError(CommonStrings.APP_STUDIO_BOT_REGISTRATION, e),
+        e
+      );
     }
 
     if (!response || !response.data) {
@@ -210,8 +213,7 @@ export class AppStudio {
   public static async updateMessageEndpoint(
     accessToken: string,
     botId: string,
-    registration: IBotRegistration,
-    telemetryReporter: TelemetryReporter | undefined
+    registration: IBotRegistration
   ): Promise<void> {
     const axiosInstance = AppStudio.newAxiosInstance(accessToken);
 
@@ -219,9 +221,12 @@ export class AppStudio {
     try {
       response = await RetryHandler.Retry(() =>
         axiosInstance.post(`${AppStudio.baseUrl}/api/botframework/${botId}`, registration)
-      ).catch((e) => sendAppStudioApiTelemetry(telemetryReporter, e));
+      );
     } catch (e) {
-      throw new MessageEndpointUpdatingError(registration.messagingEndpoint, e);
+      throw extendAxiosErrorProperties(
+        new MessageEndpointUpdatingError(registration.messagingEndpoint, e),
+        e
+      );
     }
 
     if (!response || !response.data) {

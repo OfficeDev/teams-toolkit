@@ -125,7 +125,6 @@ export class ErrorNames {
   public static readonly MSG_ENDPOINT_UPDATING_ERROR = "MessageEndpointUpdatingError";
   public static readonly COMMAND_EXECUTION_ERROR = "CommandExecutionError";
   public static readonly CALL_APPSTUDIO_API_ERROR = "CallAppStudioAPIError";
-  public static readonly API_ERROR = "ApiError";
 
   // User Exceptions
   public static readonly PACK_DIR_EXISTENCE_ERROR = "PackDirectoryExistenceError";
@@ -216,10 +215,6 @@ export class TelemetryValues {
   public static readonly Fail = "no";
   public static readonly UserError = "user";
   public static readonly SystemError = "system";
-}
-
-export class TelemetryEventNames {
-  public static readonly AppStudioApi = "app-studio-api";
 }
 
 export class AzureConstants {

@@ -13,7 +13,6 @@ import {
   ok,
   QTreeNode,
   Result,
-  TelemetryReporter,
   TokenProvider,
   v2,
   v3,
@@ -345,7 +344,7 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
       });
       const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
       CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
-      await AppStudio.createBotRegistration(appStudioToken!, botReg, ctx.telemetryReporter);
+      await AppStudio.createBotRegistration(appStudioToken!, botReg);
       ctx.logProvider.info(Messages.SuccessfullyProvisionedBotRegistration);
     }
     return ok(Void);
@@ -405,8 +404,7 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
     appName: string,
     tokenProvider: TokenProvider,
     botId: string,
-    endpoint: string,
-    telemetryReporter: TelemetryReporter
+    endpoint: string
   ) {
     const appStudioTokenRes = await tokenProvider.m365TokenProvider.getAccessToken({
       scopes: AppStudioScopes,
@@ -424,12 +422,7 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
       callingEndpoint: "",
     };
 
-    await AppStudio.updateMessageEndpoint(
-      appStudioToken!,
-      botReg.botId!,
-      botReg,
-      telemetryReporter
-    );
+    await AppStudio.updateMessageEndpoint(appStudioToken!, botReg.botId!, botReg);
   }
 
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.bot } })])
@@ -446,8 +439,7 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
         convertToAlphanumericOnly(ctx.projectSetting.appName),
         tokenProvider,
         botConfig.botId,
-        `${botConfig.siteEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`,
-        ctx.telemetryReporter
+        `${botConfig.siteEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`
       );
     }
     return ok(Void);

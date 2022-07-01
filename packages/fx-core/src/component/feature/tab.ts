@@ -70,6 +70,10 @@ export class TeamsfxCore {
         type: "call",
         required: true,
         targetAction: `${inputs.hosting}.generateBicep`,
+        inputs: {
+          componentId: this.name,
+          componentName: "Tab",
+        },
       },
       {
         name: "call:app-manifest.addCapability",

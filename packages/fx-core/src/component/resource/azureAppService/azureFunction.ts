@@ -22,11 +22,11 @@ export class AzureFunctionResource extends AzureAppService {
   outputs = {
     resourceId: {
       key: "resourceId",
-      bicepVariable: "provisionOutputs.azureFunctionOutput.value.resourceId",
+      bicepVariable: "provisionOutputs.azureFunction{{componentName}}Output.value.resourceId",
     },
     endpoint: {
       key: "endpoint",
-      bicepVariable: "azureFunctionProvision.outputs.endpoint",
+      bicepVariable: "azureFunction{{componentName}}Provision.outputs.endpoint",
     },
   };
   finalOutputKeys = ["resourceId", "endpoint"];

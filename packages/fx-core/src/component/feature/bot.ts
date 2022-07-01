@@ -167,18 +167,30 @@ export class TeamsBot {
         type: "call",
         required: true,
         targetAction: `${inputs.hosting}.generateBicep`,
+        inputs: {
+          componentId: this.name,
+          componentName: "Bot",
+        },
       },
       {
         name: "call:bot-service.generateBicep",
         type: "call",
         required: true,
         targetAction: "bot-service.generateBicep",
+        inputs: {
+          componentId: this.name,
+          componentName: "Bot",
+        },
       },
       {
         name: `call:${inputs.hosting}-config.generateBicep`,
         type: "call",
         required: true,
         targetAction: `${inputs.hosting}-config.generateBicep`,
+        inputs: {
+          componentId: this.name,
+          componentName: "Bot",
+        },
       },
       {
         name: "call:app-manifest.addCapability",

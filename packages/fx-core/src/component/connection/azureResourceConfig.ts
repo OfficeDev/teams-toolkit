@@ -56,12 +56,13 @@ export abstract class AzureResourceConfig {
             if (refResource.outputs) {
               for (const key of Object.keys(refResource.outputs)) {
                 const entry = refResource.outputs[key];
-                const value = entry.bicepVariable;
+                const value = compileHandlebarsTemplateString(entry.bicepVariable ?? "", inputs);
                 this.templateContext[ref].outputs[key] = value;
               }
             }
           } catch (e) {}
         }
+        this.templateContext.componentName = inputs.componentName;
         const modulePath = path.join(
           getTemplatesFolder(),
           "bicep",
@@ -82,11 +83,17 @@ export abstract class AzureResourceConfig {
           `${this.bicepModuleName}.config.orchestration.bicep`
         );
         // orchestration part will be added only for first time
-        const orch = moduleFilePathExists ? undefined : await fs.readFile(orchPath, "utf-8");
+        const orch = moduleFilePathExists
+          ? undefined
+          : compileHandlebarsTemplateString(
+              await fs.readFile(orchPath, "utf-8"),
+              this.templateContext
+            );
+        const moduleName = this.bicepModuleName + inputs.componentName ?? "";
         const bicep: Bicep = {
           type: "bicep",
           Configuration: {
-            Modules: { [`${this.bicepModuleName}Config`]: module },
+            Modules: { [`${moduleName}Config`]: module },
             Orchestration: update ? undefined : orch,
           },
         };

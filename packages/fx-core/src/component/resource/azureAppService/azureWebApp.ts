@@ -12,11 +12,11 @@ export class AzureWebAppResource extends AzureAppService {
   readonly outputs = {
     resourceId: {
       key: "resourceId",
-      bicepVariable: "provisionOutputs.azureWebAppOutput.value.resourceId",
+      bicepVariable: "provisionOutputs.azureWebApp{{componentName}}Output.value.resourceId",
     },
     endpoint: {
       key: "endpoint",
-      bicepVariable: "azureWebAppProvision.outputs.endpoint",
+      bicepVariable: "azureWebApp{{componentName}}Provision.outputs.endpoint",
     },
   };
   readonly finalOutputKeys = ["resourceId", "endpoint"];

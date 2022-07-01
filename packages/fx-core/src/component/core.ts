@@ -226,26 +226,11 @@ export class TeamsfxCore {
       },
       execute: (context: ContextV3, inputs: InputsWithProjectPath) => {
         const ctx = context as ProvisionContextV3;
-        const teamsBot = getComponent(ctx.projectSetting, ComponentNames.TeamsBot);
         const teamsTab = getComponent(ctx.projectSetting, ComponentNames.TeamsTab);
-        if (teamsBot) {
-          if (ctx.envInfo.envName !== "local") {
-            const teamsBotConfig: any = {
-              endpoint: ctx.envInfo.state[teamsBot.hosting!].endpoint!,
-              domain: ctx.envInfo.state[teamsBot.hosting!].domain,
-            };
-            ctx.envInfo.state[ComponentNames.TeamsBot] = teamsBotConfig;
-          }
-        }
         if (teamsTab) {
-          const teamsTabConfig: any = {
-            endpoint: ctx.envInfo.state[teamsTab.hosting!].endpoint!,
-            domain: ctx.envInfo.state[teamsTab.hosting!].domain,
-          };
-          ctx.envInfo.state[ComponentNames.TeamsBot] = teamsTabConfig;
           const aad = getComponent(ctx.projectSetting, ComponentNames.AadApp);
           if (aad) {
-            const tabEndpoint = ctx.envInfo.state[teamsTab.hosting!].endpoint;
+            const tabEndpoint = ctx.envInfo.state[ComponentNames.TeamsTab].endpoint;
             inputs.m365ApplicationIdUri = `api://${tabEndpoint}`;
           }
         }

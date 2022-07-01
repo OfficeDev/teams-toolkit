@@ -62,8 +62,13 @@ export class BotService extends AzureResource {
   ): MaybePromise<Result<Action | undefined, FxError>> {
     try {
       const resource = Container.get(inputs.hosting) as AzureResource;
-      this.templateContext.endpointVarName = resource.outputs.endpoint.bicepVariable;
+      this.templateContext.endpointVarName = compileHandlebarsTemplateString(
+        resource.outputs.endpoint.bicepVariable ?? "",
+        inputs
+      );
     } catch {}
+    // Bot service's component must be Bot, omit it.
+    inputs.componentName = "";
     return super.generateBicep(context, inputs);
   }
   provision(

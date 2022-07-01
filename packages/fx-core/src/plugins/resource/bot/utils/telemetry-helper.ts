@@ -23,15 +23,22 @@ export class telemetryHelper {
     properties[TelemetryKeys.BotCapabilities] = capabilities ? JSON.stringify(capabilities) : "";
   }
 
-  static fillAxiosErrorProperty(error: any, properties: { [key: string]: string }): void {
-    if (error.statusCode) {
-      properties[TelemetryKeys.StatusCode] = error.statusCode;
+  static fillAxiosErrorProperty(
+    innerError: any | undefined,
+    properties: { [key: string]: string }
+  ): void {
+    const statusCode = `${innerError?.response?.status}`;
+    const url = innerError?.toJSON?.()?.config?.url;
+    const method = innerError?.toJSON?.()?.config?.method;
+
+    if (statusCode) {
+      properties[TelemetryKeys.StatusCode] = statusCode;
     }
-    if (error.method) {
-      properties[TelemetryKeys.Method] = error.method;
+    if (method) {
+      properties[TelemetryKeys.Method] = method;
     }
-    if (error.url) {
-      properties[TelemetryKeys.Url] = error.url;
+    if (url) {
+      properties[TelemetryKeys.Url] = url;
     }
   }
 
@@ -70,7 +77,7 @@ export class telemetryHelper {
     properties[TelemetryKeys.ErrorMessage] = e.message;
     properties[TelemetryKeys.ErrorCode] = e.name;
     this.fillCommonProperty(ctx, properties);
-    this.fillAxiosErrorProperty(e, properties);
+    this.fillAxiosErrorProperty(e.innerError, properties);
     if (e instanceof SystemError) {
       properties[TelemetryKeys.ErrorType] = TelemetryValues.SystemError;
     } else if (e instanceof UserError) {

@@ -24,16 +24,6 @@ export function getAppStudioEndpoint(): string {
     return "https://dev.teams.microsoft.com";
   }
 }
-
-function extendAxiosErrorProperties<
-  T extends { statusCode?: string; url?: string; method?: string }
->(error: T, apiError: any): T {
-  error.statusCode = `${apiError?.response?.status}`;
-  error.url = apiError?.toJSON?.()?.config?.url;
-  error.method = apiError?.toJSON?.()?.config?.method;
-  return error;
-}
-
 export class AppStudio {
   private static baseUrl = getAppStudioEndpoint();
 
@@ -197,10 +187,7 @@ export class AppStudio {
         axiosInstance.post(`${AppStudio.baseUrl}/api/botframework`, registration)
       );
     } catch (e) {
-      throw extendAxiosErrorProperties(
-        new ProvisionError(CommonStrings.APP_STUDIO_BOT_REGISTRATION, e),
-        e
-      );
+      throw new ProvisionError(CommonStrings.APP_STUDIO_BOT_REGISTRATION, e);
     }
 
     if (!response || !response.data) {
@@ -223,10 +210,7 @@ export class AppStudio {
         axiosInstance.post(`${AppStudio.baseUrl}/api/botframework/${botId}`, registration)
       );
     } catch (e) {
-      throw extendAxiosErrorProperties(
-        new MessageEndpointUpdatingError(registration.messagingEndpoint, e),
-        e
-      );
+      throw new MessageEndpointUpdatingError(registration.messagingEndpoint, e);
     }
 
     if (!response || !response.data) {

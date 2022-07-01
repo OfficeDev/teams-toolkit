@@ -143,7 +143,10 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
       showError(error);
       terminateAllRunningTeamsfxTasks();
       await vscode.debug.stopDebugging();
-      await sendDebugAllEvent(telemetryIsRemote, error);
+      // not for undefined
+      if (telemetryIsRemote === false) {
+        await sendDebugAllEvent(error);
+      }
       commonUtils.endLocalDebugSession();
     }
     return debugConfiguration;

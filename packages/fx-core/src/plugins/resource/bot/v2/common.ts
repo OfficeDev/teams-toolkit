@@ -7,6 +7,7 @@ import {
   AzureSolutionQuestionNames,
   BotScenario,
   M365SearchAppOptionItem,
+  MessageExtensionNewUIItem,
 } from "../../../solution/fx-solution/question";
 import { QuestionNames, TemplateProjectsConstants, TemplateProjectsScenarios } from "../constants";
 import { AppServiceOptionItem, FunctionsOptionItems } from "../question";
@@ -15,7 +16,12 @@ import { getLanguage, getServiceType, getTriggerScenarios } from "./mapping";
 import { ServiceType } from "../../../../common/azure-hosting/interfaces";
 import { CoreQuestionNames } from "../../../../core/question";
 import { HostType } from "./enum";
-import { BotCapability, PluginBot, QuestionBotScenarioToBotCapability } from "../resources/strings";
+import {
+  BotCapabilities,
+  BotCapability,
+  PluginBot,
+  QuestionBotScenarioToBotCapability,
+} from "../resources/strings";
 import { convertToAlphanumericOnly } from "../../../../common/utils";
 
 export function getTemplateInfos(ctx: Context, inputs: Inputs): CodeTemplateInfo[] {
@@ -84,6 +90,10 @@ export function resolveServiceType(ctx: Context): ServiceType {
 }
 
 export function resolveBotCapabilities(inputs: Inputs): BotCapability[] {
+  const capabilities = inputs?.[AzureSolutionQuestionNames.Capabilities];
+  if (Array.isArray(capabilities) && capabilities.includes(MessageExtensionNewUIItem.id)) {
+    return [BotCapabilities.MESSAGE_EXTENSION];
+  }
   const botScenarios = inputs?.[AzureSolutionQuestionNames.Scenarios];
   if (Array.isArray(botScenarios)) {
     return botScenarios.map((scenario) => QuestionBotScenarioToBotCapability.get(scenario)!);

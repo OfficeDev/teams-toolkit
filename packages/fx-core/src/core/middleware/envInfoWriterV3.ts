@@ -3,7 +3,7 @@
 "use strict";
 
 import { Middleware, NextFunction } from "@feathersjs/hooks";
-import { Inputs, ProjectSettingsV3, StaticPlatforms } from "@microsoft/teamsfx-api";
+import { Inputs, StaticPlatforms } from "@microsoft/teamsfx-api";
 import { environmentManager } from "../environment";
 import { TOOLS } from "../globalVars";
 import { CoreHookContext } from "../types";

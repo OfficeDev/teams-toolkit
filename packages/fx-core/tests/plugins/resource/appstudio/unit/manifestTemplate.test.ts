@@ -20,16 +20,17 @@ import {
 import { MockedLogProvider, MockedTelemetryReporter } from "../../../solution/util";
 import { BuiltInFeaturePluginNames } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
 import { AppStudioError } from "../../../../../src/plugins/resource/appstudio/errors";
-import {
-  STATIC_TABS_TPL_FOR_MULTI_ENV,
-  STATIC_TABS_TPL_LOCAL_DEBUG,
-} from "../../../../../src/plugins/resource/appstudio/constants";
+import { STATIC_TABS_TPL_FOR_MULTI_ENV } from "../../../../../src/plugins/resource/appstudio/constants";
 import {
   AzureSolutionQuestionNames,
   BotScenario,
 } from "../../../../../src/plugins/solution/fx-solution/question";
 import { QuestionNames } from "../../../../../src/plugins/resource/bot/constants";
 import { AppServiceOptionItem } from "../../../../../src/plugins/resource/bot/question";
+import {
+  loadManifest,
+  saveManifest,
+} from "../../../../../src/plugins/resource/appstudio/manifestTemplate";
 
 describe("Load and Save manifest template", () => {
   const sandbox = sinon.createSandbox();
@@ -39,20 +40,6 @@ describe("Load and Save manifest template", () => {
 
   beforeEach(async () => {
     plugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-    ctx = {
-      cryptoProvider: new LocalCrypto(""),
-      userInteraction: new MockUserInteraction(),
-      logProvider: new MockedLogProvider(),
-      telemetryReporter: new MockedTelemetryReporter(),
-      projectSetting: {
-        appName: "test",
-        projectId: "",
-        solutionSettings: {
-          name: "",
-          activeResourcePlugins: [plugin.name],
-        },
-      },
-    };
     inputs = {
       platform: Platform.VSCode,
       projectPath: getAzureProjectRoot(),
@@ -64,12 +51,11 @@ describe("Load and Save manifest template", () => {
   });
 
   it("Load and Save manifest template file", async () => {
-    const loadedManifestTemplate = await plugin.loadManifest(ctx, inputs);
+    const loadedManifestTemplate = await loadManifest(inputs.projectPath);
     chai.assert.isTrue(loadedManifestTemplate.isOk());
     if (loadedManifestTemplate.isOk()) {
-      const saveManifestResult = await plugin.saveManifest(
-        ctx,
-        inputs,
+      const saveManifestResult = await saveManifest(
+        inputs.projectPath,
         loadedManifestTemplate.value
       );
       chai.assert.isTrue(saveManifestResult.isOk());
@@ -155,15 +141,14 @@ describe("Add capability", () => {
 
     // The index should not be modified after add capability
     chai.assert.equal(STATIC_TABS_TPL_FOR_MULTI_ENV[0].entityId, "index");
-    chai.assert.equal(STATIC_TABS_TPL_LOCAL_DEBUG[0].entityId, "index");
 
-    const loadedManifestTemplate = await plugin.loadManifest(ctx, inputsWithStaticTabs);
+    const loadedManifestTemplate = await loadManifest(inputsWithStaticTabs.projectPath);
     chai.assert.isTrue(loadedManifestTemplate.isOk());
 
     if (loadedManifestTemplate.isOk()) {
-      chai.assert.equal(loadedManifestTemplate.value.remote.staticTabs!.length, 2);
+      chai.assert.equal(loadedManifestTemplate.value.staticTabs!.length, 2);
 
-      chai.assert.equal(loadedManifestTemplate.value.remote.staticTabs![1].entityId, "index1");
+      chai.assert.equal(loadedManifestTemplate.value.staticTabs![1].entityId, "index1");
     }
   });
 
@@ -191,12 +176,12 @@ describe("Add capability", () => {
     const addCapabilityResult = await plugin.addCapabilities(ctx, inputs, capabilities);
     chai.assert.isTrue(addCapabilityResult.isOk());
 
-    const loadedManifestTemplate = await plugin.loadManifest(ctx, inputs);
+    const loadedManifestTemplate = await loadManifest(inputs.projectPath);
     chai.assert.isTrue(loadedManifestTemplate.isOk());
 
     if (loadedManifestTemplate.isOk()) {
-      chai.assert.equal(loadedManifestTemplate.value.remote.bots?.length, 2);
-      chai.assert.isUndefined(loadedManifestTemplate.value.remote.bots?.[1].commandLists);
+      chai.assert.equal(loadedManifestTemplate.value.bots?.length, 2);
+      chai.assert.isUndefined(loadedManifestTemplate.value.bots?.[1].commandLists);
     }
   });
 
@@ -223,13 +208,13 @@ describe("Add capability", () => {
     const addCapabilityResult = await plugin.addCapabilities(ctx, inputs, capabilities);
     chai.assert.isTrue(addCapabilityResult.isOk());
 
-    const loadedManifestTemplate = await plugin.loadManifest(ctx, inputs);
+    const loadedManifestTemplate = await loadManifest(inputs.projectPath);
     chai.assert.isTrue(loadedManifestTemplate.isOk());
 
     if (loadedManifestTemplate.isOk()) {
-      chai.assert.equal(loadedManifestTemplate.value.remote.bots?.length, 2);
+      chai.assert.equal(loadedManifestTemplate.value.bots?.length, 2);
       chai.assert.equal(
-        loadedManifestTemplate.value.remote.bots?.[1].commandLists?.[0].commands?.[0].title,
+        loadedManifestTemplate.value.bots?.[1].commandLists?.[0].commands?.[0].title,
         "helloWorld"
       );
     }

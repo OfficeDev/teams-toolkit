@@ -57,8 +57,7 @@ async function writeEnvInfo(ctx: CoreHookContext, skip: boolean) {
       inputs.projectPath,
       ctx.contextV2.cryptoProvider,
       envInfoV3.envName,
-      true,
-      ctx.contextV2.projectSetting as ProjectSettingsV3
+      true
     );
     if (envStatePath.isOk()) {
       TOOLS?.logProvider.debug(`[core] persist env state: ${envStatePath.value}`);

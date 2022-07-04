@@ -167,8 +167,7 @@ class EnvironmentManager {
     projectPath: string,
     cryptoProvider: CryptoProvider,
     envName?: string,
-    isV3?: boolean,
-    settings?: ProjectSettingsV3
+    isV3?: boolean
   ): Promise<Result<string, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
       return err(new PathNotExistError(projectPath));

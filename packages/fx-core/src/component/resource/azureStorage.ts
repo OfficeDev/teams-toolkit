@@ -36,19 +36,19 @@ export class AzureStorageResource extends AzureResource {
   readonly outputs = {
     endpoint: {
       key: "endpoint",
-      bicepVariable: "provisionOutputs.azureStorageOutput.value.endpoint",
+      bicepVariable: "provisionOutputs.azureStorage{{componentName}}Output.value.endpoint",
     },
     resourceId: {
       key: "resourceId",
-      bicepVariable: "provisionOutputs.azureStorageOutput.value.resourceId",
+      bicepVariable: "provisionOutputs.azureStorage{{componentName}}Output.value.resourceId",
     },
     domain: {
       key: "domain",
-      bicepVariable: "provisionOutputs.azureStorageOutput.value.domain",
+      bicepVariable: "provisionOutputs.azureStorage{{componentName}}Output.value.domain",
     },
     indexPath: {
       key: "indexPath",
-      bicepVariable: "provisionOutputs.azureStorageOutput.value.indexPath",
+      bicepVariable: "provisionOutputs.azureStorage{{componentName}}Output.value.indexPath",
     },
   };
   readonly finalOutputKeys = ["domain", "endpoint", "resourceId", "indexPath"];

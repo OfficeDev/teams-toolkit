@@ -10,44 +10,28 @@ import {
   MaybePromise,
   ok,
   ProvisionContextV3,
+  ResourceOutputs,
   Result,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
-import { Service } from "typedi";
-import { azureWebSiteDeploy } from "../../common/azure-hosting/utils";
-import { Messages } from "../../plugins/resource/bot/resources/messages";
-import * as utils from "../../plugins/resource/bot/utils/common";
-import { getLanguage, getRuntime } from "../../plugins/resource/bot/v2/mapping";
+import { azureWebSiteDeploy } from "../../../common/azure-hosting/utils";
+import * as utils from "../../../plugins/resource/bot/utils/common";
+import { getLanguage, getRuntime } from "../../../plugins/resource/bot/v2/mapping";
 import {
   CheckThrowSomethingMissing,
   PackDirectoryExistenceError,
   PreconditionError,
-} from "../../plugins/resource/bot/v3/error";
-import { AzureResource } from "./azureResource";
-@Service("azure-web-app")
-export class AzureWebAppResource extends AzureResource {
-  readonly name = "azure-web-app";
-  readonly bicepModuleName = "azureWebApp";
-  readonly outputs = {
-    resourceId: {
-      key: "resourceId",
-      bicepVariable: "provisionOutputs.azureWebAppOutput.value.resourceId",
-    },
-    domain: {
-      key: "domain",
-      bicepVariable: "provisionOutputs.azureWebAppOutput.value.domain",
-    },
-    endpoint: {
-      key: "endpoint",
-      bicepVariable: "provisionOutputs.azureWebAppOutput.value.endpoint",
-    },
-    appName: {
-      key: "appName",
-      bicepVariable: "provisionOutputs.azureWebAppOutput.value.appName",
-    },
-  };
-  readonly finalOutputKeys = ["resourceId", "endpoint"];
+} from "./errors";
+import { AzureResource } from "./../azureResource";
+import { Messages } from "./messages";
+export abstract class AzureAppService extends AzureResource {
+  abstract readonly name: string;
+  abstract readonly alias: string;
+  abstract readonly displayName: string;
+  abstract readonly bicepModuleName: string;
+  abstract readonly outputs: ResourceOutputs;
+  abstract readonly finalOutputKeys: string[];
   generateBicep(
     context: ContextV3,
     inputs: InputsWithProjectPath
@@ -65,41 +49,36 @@ export class AzureWebAppResource extends AzureResource {
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const action: Action = {
-      name: "azure-web-app.deploy",
+      name: `${this.name}.deploy`,
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         return ok([
           {
             type: "service",
             name: "azure",
-            remarks: `deploy azure web app in folder: ${inputs.projectPath}`,
+            remarks: `deploy ${this.displayName} in folder: ${inputs.projectPath}`,
           },
         ]);
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const ctx = context as ProvisionContextV3;
-        ctx.logProvider.info(Messages.DeployingBot);
         // Preconditions checking.
         const codeComponent = inputs.code as Component;
         if (!inputs.projectPath || !codeComponent?.artifactFolder) {
-          throw new PreconditionError(Messages.WorkingDirIsMissing, []);
+          throw new PreconditionError(this.alias, Messages.WorkingDirIsMissing, []);
         }
         const publishDir = path.join(inputs.projectPath, codeComponent.artifactFolder);
         const packDirExisted = await fs.pathExists(publishDir);
         if (!packDirExisted) {
-          throw new PackDirectoryExistenceError();
+          throw new PackDirectoryExistenceError(this.alias);
         }
 
-        const webAppState = ctx.envInfo.state[this.name];
-        CheckThrowSomethingMissing(
-          this.outputs.endpoint.key,
-          webAppState[this.outputs.endpoint.key]
-        );
-        CheckThrowSomethingMissing(
+        const state = ctx.envInfo.state[this.name];
+        const resourceId = CheckThrowSomethingMissing(
+          this.alias,
           this.outputs.resourceId.key,
-          webAppState[this.outputs.resourceId.key]
+          state[this.outputs.resourceId.key]
         );
-        const resourceId = webAppState[this.outputs.resourceId.key];
 
         const zipBuffer = await utils.zipFolderAsync(publishDir, "");
 
@@ -108,7 +87,7 @@ export class AzureWebAppResource extends AzureResource {
           {
             type: "service",
             name: "azure",
-            remarks: `deploy azure web app in folder: ${publishDir}`,
+            remarks: `deploy ${this.displayName} in folder: ${publishDir}`,
           },
         ]);
       },

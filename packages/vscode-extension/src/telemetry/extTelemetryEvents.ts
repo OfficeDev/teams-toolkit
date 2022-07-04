@@ -232,6 +232,8 @@ export enum TelemetryProperty {
   DebugPortsInUse = "debug-ports-in-use",
   DebugM365AccountStatus = "debug-m365-account-status",
   DebugIsSideloadingAllowed = "debug-is-sideloading-allowed",
+  DebugConcurrentCorrelationId = "debug-concurrent-correlation-id",
+  DebugConcurrentLastEventName = "debug-concurrent-last-event-name",
   Internal = "internal",
   InternalAlias = "internal-alias",
   OSArch = "os-arch",

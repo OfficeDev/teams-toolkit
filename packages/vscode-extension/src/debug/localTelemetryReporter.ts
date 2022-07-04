@@ -42,10 +42,13 @@ export const localTelemetryReporter = new LocalTelemetryReporter(
   saveEventTime
 );
 
-export async function sendDebugAllStartEvent(): Promise<void> {
+export async function sendDebugAllStartEvent(additionalProperties: {
+  [key: string]: string;
+}): Promise<void> {
   const session = getLocalDebugSession();
   const components = await getProjectComponents();
   session.properties[TelemetryProperty.DebugProjectComponents] = components + "";
+  Object.assign(session.properties, additionalProperties);
 
   const properties = Object.assign(
     { [TelemetryProperty.CorrelationId]: session.id },

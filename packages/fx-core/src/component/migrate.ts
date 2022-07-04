@@ -99,7 +99,7 @@ export function convertEnvStateV3ToV2(envStateV3: Json): EnvStateV2 {
   const envStateV2: Json = {};
   const component2plugin = new Map<string, string>();
   EnvStateMigrationComponentNames.forEach((e) => {
-    component2plugin.set(e[0], e[1]);
+    component2plugin.set(e[1], e[0]);
   });
   for (const componentName of Object.keys(envStateV3)) {
     const pluginName = component2plugin.get(componentName);
@@ -117,7 +117,7 @@ export function convertEnvStateV2ToV3(envStateV2: Json): Json {
   const envStateV3: Json = {};
   const plugin2component = new Map<string, string>();
   EnvStateMigrationComponentNames.forEach((e) => {
-    plugin2component.set(e[1], e[0]);
+    plugin2component.set(e[0], e[1]);
   });
   for (const pluginName of Object.keys(envStateV2)) {
     const componentName = plugin2component.get(pluginName);

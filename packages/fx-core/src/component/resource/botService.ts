@@ -43,7 +43,7 @@ import { getComponent } from "../workflow";
 import * as clientFactory from "../../plugins/resource/bot/clientFactory";
 import { AzureResource } from "./azureResource";
 @Service("bot-service")
-export class BotService implements CloudResource {
+export class BotService extends AzureResource {
   outputs = {
     botId: {
       key: "botId",
@@ -55,46 +55,21 @@ export class BotService implements CloudResource {
   finalOutputKeys = ["botId", "botPassword"];
   secretFields = ["botPassword"];
   readonly name = "bot-service";
+  readonly bicepModuleName = "botService";
   generateBicep(
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const action: Action = {
-      name: "bot-service.generateBicep",
-      type: "function",
-      plan: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const bicep: Bicep = {
-          type: "bicep",
-          Configuration: {
-            Modules: { botService: "1" },
-            Orchestration: "1",
-          },
-        };
-        return ok([bicep]);
-      },
-      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const mPath = path.join(getTemplatesFolder(), "bicep", "botService.config.module.bicep");
-        const oPath = path.join(
-          getTemplatesFolder(),
-          "bicep",
-          "botService.config.orchestration.bicep"
-        );
-        let module = await fs.readFile(mPath, "utf-8");
-        const templateContext: any = {};
-        try {
-          const resource = Container.get(inputs.hosting) as AzureResource;
-          templateContext.endpointVarName = resource.outputs.endpoint.bicepVariable;
-        } catch {}
-        module = compileHandlebarsTemplateString(module, templateContext);
-        const orch = await fs.readFile(oPath, "utf-8");
-        const bicep: Bicep = {
-          type: "bicep",
-          Configuration: { Modules: { botService: module }, Orchestration: orch },
-        };
-        return ok([bicep]);
-      },
-    };
-    return ok(action);
+    try {
+      const resource = Container.get(inputs.hosting) as AzureResource;
+      this.templateContext.endpointVarName = compileHandlebarsTemplateString(
+        resource.outputs.endpoint.bicepVariable ?? "",
+        inputs
+      );
+    } catch {}
+    // Bot service's component must be Bot, omit it.
+    inputs.componentName = "";
+    return super.generateBicep(context, inputs);
   }
   provision(
     context: ContextV3,

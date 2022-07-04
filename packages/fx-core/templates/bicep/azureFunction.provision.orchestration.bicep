@@ -12,6 +12,6 @@ output azureFunction{{componentName}}Output object = {
   appName: azureFunction{{componentName}}Provision.outputs.appName
   domain: azureFunction{{componentName}}Provision.outputs.domain
   appServicePlanName: azureFunction{{componentName}}Provision.outputs.appServicePlanName
-  resourceId: azureFunction{{componentName}}Provision.outputs.resourceId
-  endpoint: azureFunction{{componentName}}Provision.outputs.endpoint
+  functionAppResourceId: azureFunction{{componentName}}Provision.outputs.resourceId
+  functionEndpoint: azureFunction{{componentName}}Provision.outputs.endpoint
 }

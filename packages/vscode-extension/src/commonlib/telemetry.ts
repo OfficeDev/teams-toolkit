@@ -12,10 +12,11 @@ import {
   FeatureFlags,
 } from "../utils/commonUtils";
 import { TelemetryProperty } from "../telemetry/extTelemetryEvents";
-import { Correlator } from "@microsoft/teamsfx-core";
+import { Correlator, getFixedCommonProjectSettings } from "@microsoft/teamsfx-core";
 import { configure, getLogger, Logger } from "log4js";
 import * as os from "os";
 import * as path from "path";
+import * as globalVariables from "../globalVariables";
 
 const TelemetryTestLoggerFile = "telemetryTest.log";
 
@@ -93,11 +94,30 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
     }
 
     if (
-      properties[TelemetryProperty.ProjectId] === "unknown" ||
-      properties[TelemetryProperty.ProjectId] === undefined
+      !properties[TelemetryProperty.ProjectId] ||
+      !properties[TelemetryProperty.ProgrammingLanguage] ||
+      !properties[TelemetryProperty.IsFromSample]
     ) {
-      const projectId = getProjectId();
-      properties[TelemetryProperty.ProjectId] = projectId ? projectId : "unknown";
+      const fixedProjectSettings = getFixedCommonProjectSettings(
+        globalVariables.workspaceUri?.fsPath
+      );
+
+      if (fixedProjectSettings?.projectId) {
+        properties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
+        this.sharedProperties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
+      }
+
+      if (fixedProjectSettings?.programmingLanguage) {
+        properties[TelemetryProperty.ProgrammingLanguage] =
+          fixedProjectSettings?.programmingLanguage;
+        this.sharedProperties[TelemetryProperty.ProgrammingLanguage] =
+          fixedProjectSettings?.programmingLanguage;
+      }
+
+      if (fixedProjectSettings?.isFromSample) {
+        properties[TelemetryProperty.IsFromSample] = fixedProjectSettings?.isFromSample;
+        this.sharedProperties[TelemetryProperty.IsFromSample] = fixedProjectSettings?.isFromSample;
+      }
     }
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
@@ -123,11 +143,30 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
     }
 
     if (
-      properties[TelemetryProperty.ProjectId] === "unknown" ||
-      properties[TelemetryProperty.ProjectId] === undefined
+      !properties[TelemetryProperty.ProjectId] ||
+      !properties[TelemetryProperty.ProgrammingLanguage] ||
+      !properties[TelemetryProperty.IsFromSample]
     ) {
-      const projectId = getProjectId();
-      properties[TelemetryProperty.ProjectId] = projectId ? projectId : "unknown";
+      const fixedProjectSettings = getFixedCommonProjectSettings(
+        globalVariables.workspaceUri?.fsPath
+      );
+
+      if (fixedProjectSettings?.projectId) {
+        properties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
+        this.sharedProperties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
+      }
+
+      if (fixedProjectSettings?.programmingLanguage) {
+        properties[TelemetryProperty.ProgrammingLanguage] =
+          fixedProjectSettings?.programmingLanguage;
+        this.sharedProperties[TelemetryProperty.ProgrammingLanguage] =
+          fixedProjectSettings?.programmingLanguage;
+      }
+
+      if (fixedProjectSettings?.isFromSample) {
+        properties[TelemetryProperty.IsFromSample] = fixedProjectSettings?.isFromSample;
+        this.sharedProperties[TelemetryProperty.IsFromSample] = fixedProjectSettings?.isFromSample;
+      }
     }
     if (properties[TelemetryProperty.CorrelationId] == undefined) {
       // deactivate event will set correlation id and should not be overwritten
@@ -156,11 +195,30 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
     }
 
     if (
-      properties[TelemetryProperty.ProjectId] === "unknown" ||
-      properties[TelemetryProperty.ProjectId] === undefined
+      !properties[TelemetryProperty.ProjectId] ||
+      !properties[TelemetryProperty.ProgrammingLanguage] ||
+      !properties[TelemetryProperty.IsFromSample]
     ) {
-      const projectId = getProjectId();
-      properties[TelemetryProperty.ProjectId] = projectId ? projectId : "unknown";
+      const fixedProjectSettings = getFixedCommonProjectSettings(
+        globalVariables.workspaceUri?.fsPath
+      );
+
+      if (fixedProjectSettings?.projectId) {
+        properties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
+        this.sharedProperties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
+      }
+
+      if (fixedProjectSettings?.programmingLanguage) {
+        properties[TelemetryProperty.ProgrammingLanguage] =
+          fixedProjectSettings?.programmingLanguage;
+        this.sharedProperties[TelemetryProperty.ProgrammingLanguage] =
+          fixedProjectSettings?.programmingLanguage;
+      }
+
+      if (fixedProjectSettings?.isFromSample) {
+        properties[TelemetryProperty.IsFromSample] = fixedProjectSettings?.isFromSample;
+        this.sharedProperties[TelemetryProperty.IsFromSample] = fixedProjectSettings?.isFromSample;
+      }
     }
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 

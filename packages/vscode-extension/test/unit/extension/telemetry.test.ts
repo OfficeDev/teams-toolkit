@@ -53,6 +53,9 @@ suite("telemetry", () => {
   suiteSetup(() => {
     tester = new VSCodeTelemetryReporter("test", "1.0.0-rc.1", "test");
     (tester as VSCodeTelemetryReporter).addSharedProperty("project-id", "");
+    (tester as VSCodeTelemetryReporter).addSharedProperty("programming-language", "");
+    (tester as VSCodeTelemetryReporter).addSharedProperty("host-type", "");
+    (tester as VSCodeTelemetryReporter).addSharedProperty("is-from-sample", "");
     chai.util.addProperty(tester, "reporter", () => reporterSpy);
   });
 
@@ -70,6 +73,9 @@ suite("telemetry", () => {
         "project-id": "",
         "correlation-id": "",
         "feature-flags": featureFlags,
+        "programming-language": "",
+        "host-type": "",
+        "is-from-sample": "",
       },
       { numericMeasure: 123 }
     );
@@ -94,6 +100,9 @@ suite("telemetry", () => {
         "project-id": "",
         "correlation-id": "",
         "feature-flags": featureFlags,
+        "programming-language": "",
+        "host-type": "",
+        "is-from-sample": "",
       },
       { numericMeasure: 123 }
     );
@@ -110,6 +119,9 @@ suite("telemetry", () => {
         "project-id": "",
         "correlation-id": "",
         "feature-flags": featureFlags,
+        "programming-language": "",
+        "host-type": "",
+        "is-from-sample": "",
       },
       { numericMeasure: 123 }
     );

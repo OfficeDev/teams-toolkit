@@ -4,7 +4,7 @@
 
 import Reporter from "../telemetry/telemetryReporter";
 import { TelemetryReporter } from "@microsoft/teamsfx-api";
-import { Correlator } from "@microsoft/teamsfx-core";
+import { Correlator, getFixedCommonProjectSettings } from "@microsoft/teamsfx-core";
 import { TelemetryProperty } from "../telemetry/cliTelemetryEvents";
 import { getAllFeatureFlags, getProjectId } from "../utils";
 import { CliConfigOptions } from "../userSetttings";
@@ -22,6 +22,7 @@ import { tryDetectCICDPlatform } from "./common/cicdPlatformDetector";
 export class CliTelemetryReporter implements TelemetryReporter {
   private readonly reporter: Reporter;
   private rootFolder: string | undefined;
+  private sharedProperties: { [key: string]: string } = {};
 
   constructor(key: string, cliName: string, cliVersion: string, appRoot?: string) {
     this.reporter = new Reporter(cliName, cliVersion, key, appRoot);
@@ -31,8 +32,25 @@ export class CliTelemetryReporter implements TelemetryReporter {
     if (rootPath) {
       this.rootFolder = rootPath;
       this.reporter.setAppRoot(rootPath);
+
+      // add shared properties
+      const fixedProjectSettings = getFixedCommonProjectSettings(rootPath);
+      this.addSharedProperty(TelemetryProperty.ProjectId, fixedProjectSettings?.projectId ?? "");
+      this.addSharedProperty(
+        TelemetryProperty.IsFromSample,
+        fixedProjectSettings?.isFromSample ?? ""
+      );
+      this.addSharedProperty(
+        TelemetryProperty.ProgrammingLanguage,
+        fixedProjectSettings?.programmingLanguage ?? ""
+      );
+      this.addSharedProperty(TelemetryProperty.HostType, fixedProjectSettings?.hostType ?? "");
     }
     return this;
+  }
+
+  addSharedProperty(name: string, value: string): void {
+    this.sharedProperties[name] = value;
   }
 
   sendTelemetryErrorEvent(
@@ -42,11 +60,35 @@ export class CliTelemetryReporter implements TelemetryReporter {
     errorProps?: string[]
   ): void {
     if (!properties) {
-      properties = {};
+      properties = { ...this.sharedProperties };
+    } else {
+      properties = { ...this.sharedProperties, ...properties };
     }
 
-    const projectId = getProjectId(this.rootFolder);
-    properties[TelemetryProperty.ProjectId] = projectId ? projectId : "";
+    if (
+      !properties[TelemetryProperty.ProjectId] ||
+      !properties[TelemetryProperty.ProgrammingLanguage] ||
+      !properties[TelemetryProperty.IsFromSample]
+    ) {
+      const fixedProjectSettings = getFixedCommonProjectSettings(this.rootFolder);
+
+      if (fixedProjectSettings?.projectId) {
+        properties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
+        this.sharedProperties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
+      }
+
+      if (fixedProjectSettings?.programmingLanguage) {
+        properties[TelemetryProperty.ProgrammingLanguage] =
+          fixedProjectSettings?.programmingLanguage;
+        this.sharedProperties[TelemetryProperty.ProgrammingLanguage] =
+          fixedProjectSettings?.programmingLanguage;
+      }
+
+      if (fixedProjectSettings?.isFromSample) {
+        properties[TelemetryProperty.IsFromSample] = fixedProjectSettings?.isFromSample;
+        this.sharedProperties[TelemetryProperty.IsFromSample] = fixedProjectSettings?.isFromSample;
+      }
+    }
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
     properties[CliConfigOptions.RunFrom] = tryDetectCICDPlatform();
@@ -63,11 +105,35 @@ export class CliTelemetryReporter implements TelemetryReporter {
     measurements?: { [p: string]: number }
   ): void {
     if (!properties) {
-      properties = {};
+      properties = { ...this.sharedProperties };
+    } else {
+      properties = { ...this.sharedProperties, ...properties };
     }
 
-    const projectId = getProjectId(this.rootFolder);
-    properties[TelemetryProperty.ProjectId] = projectId ? projectId : "";
+    if (
+      !properties[TelemetryProperty.ProjectId] ||
+      !properties[TelemetryProperty.ProgrammingLanguage] ||
+      !properties[TelemetryProperty.IsFromSample]
+    ) {
+      const fixedProjectSettings = getFixedCommonProjectSettings(this.rootFolder);
+
+      if (fixedProjectSettings?.projectId) {
+        properties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
+        this.sharedProperties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
+      }
+
+      if (fixedProjectSettings?.programmingLanguage) {
+        properties[TelemetryProperty.ProgrammingLanguage] =
+          fixedProjectSettings?.programmingLanguage;
+        this.sharedProperties[TelemetryProperty.ProgrammingLanguage] =
+          fixedProjectSettings?.programmingLanguage;
+      }
+
+      if (fixedProjectSettings?.isFromSample) {
+        properties[TelemetryProperty.IsFromSample] = fixedProjectSettings?.isFromSample;
+        this.sharedProperties[TelemetryProperty.IsFromSample] = fixedProjectSettings?.isFromSample;
+      }
+    }
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
     properties[CliConfigOptions.RunFrom] = tryDetectCICDPlatform();
@@ -84,11 +150,35 @@ export class CliTelemetryReporter implements TelemetryReporter {
     measurements?: { [p: string]: number }
   ): void {
     if (!properties) {
-      properties = {};
+      properties = { ...this.sharedProperties };
+    } else {
+      properties = { ...this.sharedProperties, ...properties };
     }
 
-    const projectId = getProjectId(this.rootFolder);
-    properties[TelemetryProperty.ProjectId] = projectId ? projectId : "";
+    if (
+      !properties[TelemetryProperty.ProjectId] ||
+      !properties[TelemetryProperty.ProgrammingLanguage] ||
+      !properties[TelemetryProperty.IsFromSample]
+    ) {
+      const fixedProjectSettings = getFixedCommonProjectSettings(this.rootFolder);
+
+      if (fixedProjectSettings?.projectId) {
+        properties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
+        this.sharedProperties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
+      }
+
+      if (fixedProjectSettings?.programmingLanguage) {
+        properties[TelemetryProperty.ProgrammingLanguage] =
+          fixedProjectSettings?.programmingLanguage;
+        this.sharedProperties[TelemetryProperty.ProgrammingLanguage] =
+          fixedProjectSettings?.programmingLanguage;
+      }
+
+      if (fixedProjectSettings?.isFromSample) {
+        properties[TelemetryProperty.IsFromSample] = fixedProjectSettings?.isFromSample;
+        this.sharedProperties[TelemetryProperty.IsFromSample] = fixedProjectSettings?.isFromSample;
+      }
+    }
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
     properties[CliConfigOptions.RunFrom] = tryDetectCICDPlatform();

@@ -261,6 +261,8 @@ export enum TelemetryProperty {
   DocumentationName = "documentation-name",
   // Used with Deactivate
   Timestamp = "timestamp",
+  ProgrammingLanguage = "programming-language",
+  HostType = "host-type",
 }
 
 export enum TelemetryMeasurements {

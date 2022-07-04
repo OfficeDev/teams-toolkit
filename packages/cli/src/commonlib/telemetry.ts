@@ -65,30 +65,7 @@ export class CliTelemetryReporter implements TelemetryReporter {
       properties = { ...this.sharedProperties, ...properties };
     }
 
-    if (
-      !properties[TelemetryProperty.ProjectId] ||
-      !properties[TelemetryProperty.ProgrammingLanguage] ||
-      !properties[TelemetryProperty.IsFromSample]
-    ) {
-      const fixedProjectSettings = getFixedCommonProjectSettings(this.rootFolder);
-
-      if (fixedProjectSettings?.projectId) {
-        properties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
-        this.sharedProperties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
-      }
-
-      if (fixedProjectSettings?.programmingLanguage) {
-        properties[TelemetryProperty.ProgrammingLanguage] =
-          fixedProjectSettings?.programmingLanguage;
-        this.sharedProperties[TelemetryProperty.ProgrammingLanguage] =
-          fixedProjectSettings?.programmingLanguage;
-      }
-
-      if (fixedProjectSettings?.isFromSample) {
-        properties[TelemetryProperty.IsFromSample] = fixedProjectSettings?.isFromSample;
-        this.sharedProperties[TelemetryProperty.IsFromSample] = fixedProjectSettings?.isFromSample;
-      }
-    }
+    this.checkAndOverwriteSharedProperty(properties);
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
     properties[CliConfigOptions.RunFrom] = tryDetectCICDPlatform();
@@ -110,30 +87,7 @@ export class CliTelemetryReporter implements TelemetryReporter {
       properties = { ...this.sharedProperties, ...properties };
     }
 
-    if (
-      !properties[TelemetryProperty.ProjectId] ||
-      !properties[TelemetryProperty.ProgrammingLanguage] ||
-      !properties[TelemetryProperty.IsFromSample]
-    ) {
-      const fixedProjectSettings = getFixedCommonProjectSettings(this.rootFolder);
-
-      if (fixedProjectSettings?.projectId) {
-        properties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
-        this.sharedProperties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
-      }
-
-      if (fixedProjectSettings?.programmingLanguage) {
-        properties[TelemetryProperty.ProgrammingLanguage] =
-          fixedProjectSettings?.programmingLanguage;
-        this.sharedProperties[TelemetryProperty.ProgrammingLanguage] =
-          fixedProjectSettings?.programmingLanguage;
-      }
-
-      if (fixedProjectSettings?.isFromSample) {
-        properties[TelemetryProperty.IsFromSample] = fixedProjectSettings?.isFromSample;
-        this.sharedProperties[TelemetryProperty.IsFromSample] = fixedProjectSettings?.isFromSample;
-      }
-    }
+    this.checkAndOverwriteSharedProperty(properties);
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
     properties[CliConfigOptions.RunFrom] = tryDetectCICDPlatform();
@@ -155,6 +109,22 @@ export class CliTelemetryReporter implements TelemetryReporter {
       properties = { ...this.sharedProperties, ...properties };
     }
 
+    this.checkAndOverwriteSharedProperty(properties);
+    properties[TelemetryProperty.CorrelationId] = Correlator.getId();
+
+    properties[CliConfigOptions.RunFrom] = tryDetectCICDPlatform();
+
+    const featureFlags = getAllFeatureFlags();
+    properties[TelemetryProperty.FeatureFlags] = featureFlags ? featureFlags.join(";") : "";
+
+    this.reporter.sendTelemetryException(error, properties, measurements);
+  }
+
+  async flush(): Promise<void> {
+    await this.reporter.flush();
+  }
+
+  private checkAndOverwriteSharedProperty(properties: { [p: string]: string }) {
     if (
       !properties[TelemetryProperty.ProjectId] ||
       !properties[TelemetryProperty.ProgrammingLanguage] ||
@@ -179,17 +149,5 @@ export class CliTelemetryReporter implements TelemetryReporter {
         this.sharedProperties[TelemetryProperty.IsFromSample] = fixedProjectSettings?.isFromSample;
       }
     }
-    properties[TelemetryProperty.CorrelationId] = Correlator.getId();
-
-    properties[CliConfigOptions.RunFrom] = tryDetectCICDPlatform();
-
-    const featureFlags = getAllFeatureFlags();
-    properties[TelemetryProperty.FeatureFlags] = featureFlags ? featureFlags.join(";") : "";
-
-    this.reporter.sendTelemetryException(error, properties, measurements);
-  }
-
-  async flush(): Promise<void> {
-    await this.reporter.flush();
   }
 }

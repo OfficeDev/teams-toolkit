@@ -93,32 +93,7 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
       properties = { ...this.sharedProperties, ...properties };
     }
 
-    if (
-      !properties[TelemetryProperty.ProjectId] ||
-      !properties[TelemetryProperty.ProgrammingLanguage] ||
-      !properties[TelemetryProperty.IsFromSample]
-    ) {
-      const fixedProjectSettings = getFixedCommonProjectSettings(
-        globalVariables.workspaceUri?.fsPath
-      );
-
-      if (fixedProjectSettings?.projectId) {
-        properties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
-        this.sharedProperties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
-      }
-
-      if (fixedProjectSettings?.programmingLanguage) {
-        properties[TelemetryProperty.ProgrammingLanguage] =
-          fixedProjectSettings?.programmingLanguage;
-        this.sharedProperties[TelemetryProperty.ProgrammingLanguage] =
-          fixedProjectSettings?.programmingLanguage;
-      }
-
-      if (fixedProjectSettings?.isFromSample) {
-        properties[TelemetryProperty.IsFromSample] = fixedProjectSettings?.isFromSample;
-        this.sharedProperties[TelemetryProperty.IsFromSample] = fixedProjectSettings?.isFromSample;
-      }
-    }
+    this.checkAndOverwriteSharedProperty(properties);
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
     const featureFlags = getAllFeatureFlags();
@@ -142,32 +117,7 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
       properties = { ...this.sharedProperties, ...properties };
     }
 
-    if (
-      !properties[TelemetryProperty.ProjectId] ||
-      !properties[TelemetryProperty.ProgrammingLanguage] ||
-      !properties[TelemetryProperty.IsFromSample]
-    ) {
-      const fixedProjectSettings = getFixedCommonProjectSettings(
-        globalVariables.workspaceUri?.fsPath
-      );
-
-      if (fixedProjectSettings?.projectId) {
-        properties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
-        this.sharedProperties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;
-      }
-
-      if (fixedProjectSettings?.programmingLanguage) {
-        properties[TelemetryProperty.ProgrammingLanguage] =
-          fixedProjectSettings?.programmingLanguage;
-        this.sharedProperties[TelemetryProperty.ProgrammingLanguage] =
-          fixedProjectSettings?.programmingLanguage;
-      }
-
-      if (fixedProjectSettings?.isFromSample) {
-        properties[TelemetryProperty.IsFromSample] = fixedProjectSettings?.isFromSample;
-        this.sharedProperties[TelemetryProperty.IsFromSample] = fixedProjectSettings?.isFromSample;
-      }
-    }
+    this.checkAndOverwriteSharedProperty(properties);
     if (properties[TelemetryProperty.CorrelationId] == undefined) {
       // deactivate event will set correlation id and should not be overwritten
       properties[TelemetryProperty.CorrelationId] = Correlator.getId();
@@ -194,6 +144,24 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
       properties = { ...this.sharedProperties, ...properties };
     }
 
+    this.checkAndOverwriteSharedProperty(properties);
+    properties[TelemetryProperty.CorrelationId] = Correlator.getId();
+
+    const featureFlags = getAllFeatureFlags();
+    properties[TelemetryProperty.FeatureFlags] = featureFlags ? featureFlags.join(";") : "";
+
+    if (this.testFeatureFlag) {
+      this.logTelemetryException(error, properties, measurements);
+    } else {
+      this.reporter.sendTelemetryException(error, properties, measurements);
+    }
+  }
+
+  async dispose() {
+    await this.reporter.dispose();
+  }
+
+  private checkAndOverwriteSharedProperty(properties: { [p: string]: string }) {
     if (
       !properties[TelemetryProperty.ProjectId] ||
       !properties[TelemetryProperty.ProgrammingLanguage] ||
@@ -220,19 +188,5 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
         this.sharedProperties[TelemetryProperty.IsFromSample] = fixedProjectSettings?.isFromSample;
       }
     }
-    properties[TelemetryProperty.CorrelationId] = Correlator.getId();
-
-    const featureFlags = getAllFeatureFlags();
-    properties[TelemetryProperty.FeatureFlags] = featureFlags ? featureFlags.join(";") : "";
-
-    if (this.testFeatureFlag) {
-      this.logTelemetryException(error, properties, measurements);
-    } else {
-      this.reporter.sendTelemetryException(error, properties, measurements);
-    }
-  }
-
-  async dispose() {
-    await this.reporter.dispose();
   }
 }

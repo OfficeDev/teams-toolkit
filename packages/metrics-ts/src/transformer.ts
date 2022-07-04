@@ -17,18 +17,11 @@ export interface PluginConfig {
 }
 
 export default function (program: typescript.Program, config?: PluginConfig) {
-  const transformerFactory: typescript.TransformerFactory<typescript.SourceFile> = (
-    ctx: typescript.TransformationContext
-  ) => {
+  return (ctx: typescript.TransformationContext) => {
     return (sourceFile: typescript.SourceFile) => {
       let capabilities = [Capability.Timer];
       if (config && config.capabilities) {
         capabilities = config.capabilities;
-      }
-
-      let reporters = [Reporter.Json];
-      if (config && config.reporters) {
-        reporters = config.reporters;
       }
 
       const myLib = "@microsoft/metrics-ts";
@@ -113,9 +106,4 @@ export default function (program: typescript.Program, config?: PluginConfig) {
       return typescript.visitNode(sourceFile, methodVisitor);
     };
   };
-
-  /**
-   * there're before & after hooks.
-   */
-  return { before: transformerFactory };
 }

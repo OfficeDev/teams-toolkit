@@ -10,7 +10,7 @@
 let metricsImportCount = 0;
 
 module.exports = {
-  metrics: {
+  "add-metrics": {
     meta: {
       fixable: "code",
       docs: {

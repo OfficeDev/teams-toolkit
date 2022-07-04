@@ -1,7 +1,7 @@
+using Microsoft.Bot.Builder;
+
 namespace {{SafeProjectName}}
 {
-    using Microsoft.Bot.Builder;
-
     /// <summary>
     /// An empty bot handler.
     /// You can add your customization code here to extend your bot logic if needed.

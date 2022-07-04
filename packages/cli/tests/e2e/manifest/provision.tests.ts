@@ -37,7 +37,9 @@ describe("teamsfx provision manifest command", function () {
         `teamsfx provision manifest --file-path ${testAppPkgPath}`
       );
       const createAppMatchResult = createAppResult.stdout.match(createAppReg);
-      console.log(`create app stdout: ${createAppResult.stdout}`);
+      console.log(
+        `create app stdout, stdout: ${createAppResult.stdout}, stderr: ${createAppResult.stderr}`
+      );
 
       chai.assert.isTrue(
         createAppMatchResult !== undefined &&

@@ -116,12 +116,15 @@ export class AzureFunctionResource extends AzureResource {
         }
 
         const states = ctx.envInfo.state[this.name];
-        CheckThrowSomethingMissing(this.outputs.endpoint.key, states[this.outputs.endpoint.key]);
         CheckThrowSomethingMissing(
-          this.outputs.resourceId.key,
-          states[this.outputs.resourceId.key]
+          this.outputs.functionEndpoint.key,
+          states[this.outputs.functionEndpoint.key]
         );
-        const resourceId = states[this.outputs.resourceId.key];
+        CheckThrowSomethingMissing(
+          this.outputs.functionAppResourceId.key,
+          states[this.outputs.functionAppResourceId.key]
+        );
+        const resourceId = states[this.outputs.functionAppResourceId.key];
 
         const zipBuffer = await utils.zipFolderAsync(publishDir, "");
 

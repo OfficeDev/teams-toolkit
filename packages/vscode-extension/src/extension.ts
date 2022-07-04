@@ -261,7 +261,8 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   // localdebug session starts from prerequisites checker
   const validatePrerequisitesCmd = vscode.commands.registerCommand(
     "fx-extension.validate-local-prerequisites",
-    () => Correlator.runWithId(startLocalDebugSession(), handlers.validateLocalPrerequisitesHandler)
+    // Do not run with Correlator because it is handled inside `validateLocalPrerequisitesHandler()`.
+    handlers.validateLocalPrerequisitesHandler
   );
   context.subscriptions.push(validatePrerequisitesCmd);
 

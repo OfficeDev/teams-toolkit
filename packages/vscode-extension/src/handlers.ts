@@ -473,7 +473,9 @@ export async function updateAutoOpenGlobalKey(
   }
 }
 
-export async function getNewProjectPathHandler(args?: any[]): Promise<Result<any, FxError>> {
+export async function createProjectFromWalkthroughHandler(
+  args?: any[]
+): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.create);
   return result;

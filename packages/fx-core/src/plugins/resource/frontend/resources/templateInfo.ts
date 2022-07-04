@@ -7,7 +7,7 @@ import { DependentPluginInfo, FrontendPathInfo } from "../constants";
 import { InvalidTabLanguageError } from "./errors";
 import { getTemplatesFolder } from "../../../../folder";
 import { templatesVersion } from "../../../../common/template-utils/templates";
-import { isAadManifestEnabled } from "../../../../common";
+import { isAadManifestEnabled } from "../../../../common/tools";
 import { TabSsoItem } from "../../../solution/fx-solution/question";
 
 export type TemplateVariable = { [key: string]: string };

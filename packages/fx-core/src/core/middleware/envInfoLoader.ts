@@ -42,7 +42,6 @@ import { shouldIgnored } from "./projectSettingsLoader";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 import { legacyConfig2EnvState } from "../../plugins/resource/utils4v2";
 import { CoreHookContext } from "../types";
-import { isConfigUnifyEnabled } from "../..";
 import { getLocalAppName } from "../../plugins/resource/appstudio/utils/utils";
 
 const newTargetEnvNameOption = "+ new environment";
@@ -56,10 +55,8 @@ export type CreateEnvCopyInput = {
 
 export function EnvInfoLoaderMW(skip: boolean): Middleware {
   return async (ctx: CoreHookContext, next: NextFunction) => {
-    // if the feature flag TEAMSFX_CONFIG_UNIFY is enabled,
-    // don't skip the middleware for local debug.
     if (ctx.method === "localDebug" || ctx.method === "localDebugV2") {
-      skip = !isConfigUnifyEnabled();
+      skip = false;
     }
 
     if (shouldIgnored(ctx)) {

@@ -391,10 +391,6 @@ export function isBicepEnvCheckerEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.BicepEnvCheckerEnable, true);
 }
 
-export function isConfigUnifyEnabled(): boolean {
-  return true;
-}
-
 export function isExistingTabAppEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.ExistingTabApp, false);
 }
@@ -873,7 +869,8 @@ export async function getSideloadingStatus(token: string): Promise<boolean | und
             "M365Account",
             "UnknownValue",
             `AppStudio response code: ${response.status}, body: ${response.data}`
-          )
+          ),
+          { [TelemetryProperty.CheckSideloadingHttpStatus]: `${response.status}` }
         );
       }
 

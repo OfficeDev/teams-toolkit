@@ -27,7 +27,6 @@ import * as TasksNext from "./util/tasksNext";
 import * as Settings from "./util/settings";
 import { TelemetryEventName, TelemetryUtils } from "./util/telemetry";
 import { ScaffoldLocalDebugSettingsError } from "./error";
-import { isConfigUnifyEnabled } from "../../../../common/tools";
 import { BotHostTypes } from "../../../../common";
 
 export async function scaffoldLocalDebugSettings(
@@ -166,13 +165,6 @@ export async function _scaffoldLocalDebugSettings(
           },
           TasksNext.mergeTasks
         );
-
-        // generate localSettings.json
-        if (!isConfigUnifyEnabled()) {
-          localSettings = generateLocalSettingsFile
-            ? await scaffoldLocalSettingsJson(projectSetting, inputs, cryptoProvider, localSettings)
-            : undefined;
-        }
       }
 
       await updateJson(

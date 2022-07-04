@@ -79,13 +79,7 @@ import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../../folder";
 import path from "path";
 import * as util from "util";
-import {
-  AppStudioScopes,
-  getAppDirectory,
-  isAADEnabled,
-  isConfigUnifyEnabled,
-  isSPFxProject,
-} from "../../../common";
+import { AppStudioScopes, getAppDirectory, isAADEnabled, isSPFxProject } from "../../../common";
 import {
   LocalSettingsAuthKeys,
   LocalSettingsBotKeys,
@@ -608,16 +602,6 @@ export class AppStudioPluginImpl {
       );
       const manifestString = (await fs.readFile(manifestFile)).toString();
       manifest = JSON.parse(manifestString);
-      if (!isConfigUnifyEnabled()) {
-        const localManifest = await createLocalManifest(
-          ctx.projectSettings!.appName,
-          false,
-          false,
-          false,
-          true
-        );
-        await fs.writeFile(`${appDir}/${MANIFEST_LOCAL}`, JSON.stringify(localManifest, null, 4));
-      }
     } else {
       const solutionSettings: AzureSolutionSettings = ctx.projectSettings
         ?.solutionSettings as AzureSolutionSettings;
@@ -641,21 +625,6 @@ export class AppStudioPluginImpl {
         hasAad,
         isM365
       );
-      if (!isConfigUnifyEnabled()) {
-        const localDebugManifest = await createLocalManifest(
-          ctx.projectSettings!.appName,
-          hasFrontend,
-          hasBot,
-          hasMessageExtension,
-          false,
-          hasAad,
-          isM365
-        );
-        await fs.writeFile(
-          `${appDir}/${MANIFEST_LOCAL}`,
-          JSON.stringify(localDebugManifest, null, 4)
-        );
-      }
     }
     await fs.ensureDir(appDir);
     const manifestTemplatePath = await getManifestTemplatePath(ctx.root);
@@ -960,13 +929,7 @@ export class AppStudioPluginImpl {
     if (teamsAppId.isErr()) {
       return teamsAppId;
     }
-    if (isConfigUnifyEnabled()) {
-      ctx.envInfo.state
-        .get(ResourcePlugins.AppStudio)
-        .set(Constants.TEAMS_APP_ID, teamsAppId.value);
-    } else {
-      ctx.localSettings?.teamsApp?.set(Constants.TEAMS_APP_ID, teamsAppId.value);
-    }
+    ctx.envInfo.state.get(ResourcePlugins.AppStudio).set(Constants.TEAMS_APP_ID, teamsAppId.value);
     return ok(teamsAppId.value);
   }
 
@@ -1218,53 +1181,35 @@ export class AppStudioPluginImpl {
   }
 
   private getTabEndpoint(ctx: PluginContext, isLocalDebug: boolean): string {
-    const tabEndpoint =
-      isLocalDebug && !isConfigUnifyEnabled()
-        ? (ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabEndpoint) as string)
-        : (ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_ENDPOINT) as string);
+    const tabEndpoint = ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_ENDPOINT) as string;
 
     return tabEndpoint;
   }
 
   private getTabDomain(ctx: PluginContext, isLocalDebug: boolean): string {
-    const tabDomain =
-      isLocalDebug && !isConfigUnifyEnabled()
-        ? (ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabDomain) as string)
-        : (ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_DOMAIN) as string);
+    const tabDomain = ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_DOMAIN) as string;
     return tabDomain;
   }
 
   private getTabIndexPath(ctx: PluginContext, isLocalDebug: boolean): string {
-    const tabIndexPath =
-      isLocalDebug && !isConfigUnifyEnabled()
-        ? (ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabIndexPath) as string)
-        : (ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_INDEX_PATH) as string);
+    const tabIndexPath = ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_INDEX_PATH) as string;
     return tabIndexPath;
   }
 
   private getAadClientId(ctx: PluginContext, isLocalDebug: boolean): string {
-    const clientId =
-      isLocalDebug && !isConfigUnifyEnabled()
-        ? (ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId) as string)
-        : (ctx.envInfo.state.get(PluginNames.AAD)?.get(REMOTE_AAD_ID) as string);
+    const clientId = ctx.envInfo.state.get(PluginNames.AAD)?.get(REMOTE_AAD_ID) as string;
 
     return clientId;
   }
 
   private getBotId(ctx: PluginContext, isLocalDebug: boolean): string {
-    const botId =
-      isLocalDebug && !isConfigUnifyEnabled()
-        ? (ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId) as string)
-        : (ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_ID) as string);
+    const botId = ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_ID) as string;
 
     return botId;
   }
 
   private getBotDomain(ctx: PluginContext, isLocalDebug: boolean): string {
-    const botDomain =
-      isLocalDebug && !isConfigUnifyEnabled()
-        ? (ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotDomain) as string)
-        : (ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_DOMAIN) as string);
+    const botDomain = ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_DOMAIN) as string;
 
     return botDomain;
   }
@@ -1288,10 +1233,7 @@ export class AppStudioPluginImpl {
       teamsAppId = manifestResult.value.id;
     }
     if (!isUUID(teamsAppId)) {
-      teamsAppId =
-        isLocalDebug && !isConfigUnifyEnabled()
-          ? ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId)
-          : (ctx.envInfo.state.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_ID) as string);
+      teamsAppId = ctx.envInfo.state.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_ID) as string;
     }
     return teamsAppId;
   }
@@ -1588,7 +1530,7 @@ export class AppStudioPluginImpl {
         outlineIconContent
       );
 
-      if (app.updatedAt && (!isLocalDebug || isConfigUnifyEnabled())) {
+      if (app.updatedAt) {
         const time = new Date(app.updatedAt).getTime();
         ctx.envInfo.state.get(PluginNames.APPST)?.set(Constants.TEAMS_APP_UPDATED_AT, time);
       }
@@ -1660,7 +1602,7 @@ export class AppStudioPluginImpl {
       botId,
       webApplicationInfoResource,
       teamsAppId,
-    } = await this.getConfigForCreatingManifest(ctx, isLocalDebug && !isConfigUnifyEnabled());
+    } = await this.getConfigForCreatingManifest(ctx, false);
     const isProvisionSucceeded = !!(ctx.envInfo.state
       .get("solution")
       ?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean);
@@ -1675,29 +1617,16 @@ export class AppStudioPluginImpl {
 
     if (botId) {
       if (!botDomain) {
-        if (isLocalDebug && !isConfigUnifyEnabled()) {
-          return err(
-            AppStudioResultFactory.SystemError(
-              AppStudioError.GetLocalDebugConfigFailedError.name,
-              AppStudioError.GetLocalDebugConfigFailedError.message(
-                new Error(
-                  getLocalizedString("plugins.appstudio.dataRequired", LOCAL_DEBUG_BOT_DOMAIN)
-                )
-              )
-            )
-          );
-        } else {
-          return err(
-            AppStudioResultFactory.UserError(
-              AppStudioError.GetRemoteConfigFailedError.name,
-              AppStudioError.GetRemoteConfigFailedError.message(
-                getLocalizedString("plugins.appstudio.dataRequired", BOT_DOMAIN),
-                isProvisionSucceeded
-              ),
-              HelpLinks.WhyNeedProvision
-            )
-          );
-        }
+        return err(
+          AppStudioResultFactory.UserError(
+            AppStudioError.GetRemoteConfigFailedError.name,
+            AppStudioError.GetRemoteConfigFailedError.message(
+              getLocalizedString("plugins.appstudio.dataRequired", BOT_DOMAIN),
+              isProvisionSucceeded
+            ),
+            HelpLinks.WhyNeedProvision
+          )
+        );
       } else {
         validDomains.push(botDomain);
       }
@@ -1715,18 +1644,12 @@ export class AppStudioPluginImpl {
     let indexPath = tabIndexPath;
 
     let hasFrontend = false;
-    if (isConfigUnifyEnabled()) {
-      const capabilities = await getCapabilities(ctx.root);
-      if (capabilities.isErr()) {
-        return err(capabilities.error);
-      }
-      hasFrontend =
-        capabilities.value.includes("staticTab") || capabilities.value.includes("configurableTab");
-    } else {
-      const solutionSettings: AzureSolutionSettings = ctx.projectSettings
-        ?.solutionSettings as AzureSolutionSettings;
-      hasFrontend = solutionSettings.capabilities.includes(TabOptionItem.id);
+    const capabilities = await getCapabilities(ctx.root);
+    if (capabilities.isErr()) {
+      return err(capabilities.error);
     }
+    hasFrontend =
+      capabilities.value.includes("staticTab") || capabilities.value.includes("configurableTab");
 
     if (!endpoint && !hasFrontend) {
       endpoint = DEFAULT_DEVELOPER.websiteUrl;
@@ -1763,34 +1686,30 @@ export class AppStudioPluginImpl {
           tabIndexPath: indexPath ?? "{{{localSettings.frontend.tabIndexPath}}}",
         },
         auth: {
-          clientId:
-            isConfigUnifyEnabled() && aadId
-              ? aadId
-              : ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId)
-              ? ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId)
-              : "{{localSettings.auth.clientId}}",
-          applicationIdUris:
-            isConfigUnifyEnabled() && webApplicationInfoResource
-              ? webApplicationInfoResource
-              : ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ApplicationIdUris)
-              ? ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ApplicationIdUris)
-              : "{{{localSettings.auth.applicationIdUris}}}",
+          clientId: aadId
+            ? aadId
+            : ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId)
+            ? ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId)
+            : "{{localSettings.auth.clientId}}",
+          applicationIdUris: webApplicationInfoResource
+            ? webApplicationInfoResource
+            : ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ApplicationIdUris)
+            ? ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ApplicationIdUris)
+            : "{{{localSettings.auth.applicationIdUris}}}",
         },
         teamsApp: {
-          teamsAppId:
-            isConfigUnifyEnabled() && teamsAppId
-              ? teamsAppId
-              : ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId)
-              ? ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId)
-              : "{{localSettings.teamsApp.teamsAppId}}",
+          teamsAppId: teamsAppId
+            ? teamsAppId
+            : ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId)
+            ? ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId)
+            : "{{localSettings.teamsApp.teamsAppId}}",
         },
         bot: {
-          botId:
-            isConfigUnifyEnabled() && botId
-              ? botId
-              : ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId)
-              ? ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId)
-              : "{{localSettings.bot.botId}}",
+          botId: botId
+            ? botId
+            : ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId)
+            ? ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId)
+            : "{{localSettings.bot.botId}}",
         },
       },
     };
@@ -1799,16 +1718,11 @@ export class AppStudioPluginImpl {
       ...new Set(
         Mustache.parse(manifestString)
           .filter((x) => {
-            if (isConfigUnifyEnabled()) {
-              // TODO: update local check
-              return (
-                x[0] != "text" &&
-                (ctx.envInfo.envName !== environmentManager.getLocalEnvName() ||
-                  x[1] != "state.fx-resource-appstudio.teamsAppId")
-              );
-            } else {
-              return x[0] != "text" && x[1] != "localSettings.teamsApp.teamsAppId";
-            }
+            return (
+              x[0] != "text" &&
+              (ctx.envInfo.envName !== environmentManager.getLocalEnvName() ||
+                x[1] != "state.fx-resource-appstudio.teamsAppId")
+            );
           })
           .map((x) => x[1])
       ),

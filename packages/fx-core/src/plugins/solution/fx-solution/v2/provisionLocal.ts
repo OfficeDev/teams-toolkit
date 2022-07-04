@@ -2,7 +2,7 @@ import { FxError, Inputs, Json, SystemError, TokenProvider, v2 } from "@microsof
 import { isUndefined } from "lodash";
 import { Container } from "typedi";
 import { isExistingTabApp } from "../../../../common/projectSettingsHelper";
-import { AppStudioScopes, isConfigUnifyEnabled } from "../../../../common/tools";
+import { AppStudioScopes } from "../../../../common/tools";
 import { environmentManager } from "../../../../core/environment";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
 import { PluginNames, SolutionError } from "../constants";
@@ -60,12 +60,7 @@ export async function provisionLocalResource(
   }
   // Pop-up window to confirm if local debug in another tenant
   let localDebugTenantId = "";
-  if (isConfigUnifyEnabled()) {
-    localDebugTenantId = envInfo?.state.solution.teamsAppTenantId;
-  } else {
-    if (!localSettings.teamsApp) localSettings.teamsApp = {};
-    localDebugTenantId = localSettings.teamsApp?.tenantId;
-  }
+  localDebugTenantId = envInfo?.state.solution.teamsAppTenantId;
 
   const m365TenantMatches = await checkWhetherLocalDebugM365TenantMatches(
     localDebugTenantId,
@@ -102,18 +97,10 @@ export async function provisionLocalResource(
     return provisionResult;
   }
 
-  if (isConfigUnifyEnabled()) {
-    const localEnvSetupResult = await setupLocalEnvironment(ctx, inputs, envInfo!);
+  const localEnvSetupResult = await setupLocalEnvironment(ctx, inputs, envInfo!);
 
-    if (localEnvSetupResult.isErr()) {
-      return new v2.FxPartialSuccess(envInfo!, localEnvSetupResult.error);
-    }
-  } else {
-    const debugProvisionResult = await setupLocalDebugSettings(ctx, inputs, localSettings);
-
-    if (debugProvisionResult.isErr()) {
-      return new v2.FxPartialSuccess(localSettings, debugProvisionResult.error);
-    }
+  if (localEnvSetupResult.isErr()) {
+    return new v2.FxPartialSuccess(envInfo!, localEnvSetupResult.error);
   }
 
   const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
@@ -125,12 +112,10 @@ export async function provisionLocalResource(
         {
           namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
           method: "setApplicationInContext",
-          params: { isLocal: isConfigUnifyEnabled() ? false : true },
+          params: { isLocal: false },
         },
         localSettings,
-        isConfigUnifyEnabled()
-          ? envInfo!
-          : { envName: environmentManager.getDefaultEnvName(), config: {}, state: {} },
+        envInfo!,
         tokenProvider
       );
       if (result.isErr()) {
@@ -177,18 +162,10 @@ export async function provisionLocalResource(
     return new v2.FxFailure(configureResourceResult.error);
   }
 
-  if (isConfigUnifyEnabled()) {
-    const localConfigResult = await configLocalEnvironment(ctx, inputs, envInfo!);
+  const localConfigResult = await configLocalEnvironment(ctx, inputs, envInfo!);
 
-    if (localConfigResult.isErr()) {
-      return new v2.FxPartialSuccess(envInfo!, localConfigResult.error);
-    }
-  } else {
-    const debugConfigResult = await configLocalDebugSettings(ctx, inputs, localSettings);
-
-    if (debugConfigResult.isErr()) {
-      return new v2.FxPartialSuccess(localSettings, debugConfigResult.error);
-    }
+  if (localConfigResult.isErr()) {
+    return new v2.FxPartialSuccess(envInfo!, localConfigResult.error);
   }
 
   return new v2.FxSuccess(localSettings);

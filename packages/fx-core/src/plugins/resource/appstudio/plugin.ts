@@ -30,7 +30,6 @@ import {
 } from "../../solution/fx-solution/question";
 import {
   REMOTE_AAD_ID,
-  LOCAL_DEBUG_BOT_DOMAIN,
   BOT_DOMAIN,
   WEB_APPLICATION_INFO_SOURCE,
   PluginNames,
@@ -80,12 +79,6 @@ import { getTemplatesFolder } from "../../../folder";
 import path from "path";
 import * as util from "util";
 import { AppStudioScopes, getAppDirectory, isAADEnabled, isSPFxProject } from "../../../common";
-import {
-  LocalSettingsAuthKeys,
-  LocalSettingsBotKeys,
-  LocalSettingsFrontendKeys,
-  LocalSettingsTeamsAppKeys,
-} from "../../../common/localSettingsConstants";
 import { v4 } from "uuid";
 import isUUID from "validator/lib/isUUID";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
@@ -104,6 +97,7 @@ import { environmentManager } from "../../../core/environment";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { getProjectTemplatesFolderPath } from "../../../common/utils";
 import { renderTemplate } from "./utils/utils";
+import { ConfigKeys as BotConfigKeys } from "../../resource/bot/constants";
 
 export class AppStudioPluginImpl {
   public commonProperties: { [key: string]: string } = {};
@@ -202,11 +196,6 @@ export class AppStudioPluginImpl {
 
     const view = {
       config: ctx.envInfo.config,
-      localSettings: {
-        teamsApp: {
-          teamsAppId: localTeamsAppID,
-        },
-      },
     };
     const manifestString = renderTemplate(JSON.stringify(manifest), view);
     manifest = JSON.parse(manifestString);
@@ -1156,17 +1145,19 @@ export class AppStudioPluginImpl {
     webApplicationInfoResource?: string;
     teamsAppId: string;
   }> {
-    const tabEndpoint = this.getTabEndpoint(ctx, localDebug);
-    const tabDomain = this.getTabDomain(ctx, localDebug);
-    const tabIndexPath = this.getTabIndexPath(ctx, localDebug);
-    const aadId = this.getAadClientId(ctx, localDebug);
-    const botId = this.getBotId(ctx, localDebug);
-    const botDomain = this.getBotDomain(ctx, localDebug);
+    const tabEndpoint = ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_ENDPOINT) as string;
+    const tabDomain = ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_DOMAIN) as string;
+    const tabIndexPath = ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_INDEX_PATH) as string;
+    const aadId = ctx.envInfo.state.get(PluginNames.AAD)?.get(REMOTE_AAD_ID) as string;
+    const botId = ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_ID) as string;
+    const botDomain = ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_DOMAIN) as string;
     const teamsAppId = await this.getTeamsAppId(ctx, localDebug);
 
     // This config value is set by aadPlugin.setApplicationInContext. so aadPlugin.setApplicationInContext needs to run first.
 
-    const webApplicationInfoResource = this.getApplicationIdUris(ctx, localDebug);
+    const webApplicationInfoResource = ctx.envInfo.state
+      .get(PluginNames.AAD)
+      ?.get(WEB_APPLICATION_INFO_SOURCE) as string;
 
     return {
       tabEndpoint,
@@ -1178,48 +1169,6 @@ export class AppStudioPluginImpl {
       webApplicationInfoResource,
       teamsAppId,
     };
-  }
-
-  private getTabEndpoint(ctx: PluginContext, isLocalDebug: boolean): string {
-    const tabEndpoint = ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_ENDPOINT) as string;
-
-    return tabEndpoint;
-  }
-
-  private getTabDomain(ctx: PluginContext, isLocalDebug: boolean): string {
-    const tabDomain = ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_DOMAIN) as string;
-    return tabDomain;
-  }
-
-  private getTabIndexPath(ctx: PluginContext, isLocalDebug: boolean): string {
-    const tabIndexPath = ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_INDEX_PATH) as string;
-    return tabIndexPath;
-  }
-
-  private getAadClientId(ctx: PluginContext, isLocalDebug: boolean): string {
-    const clientId = ctx.envInfo.state.get(PluginNames.AAD)?.get(REMOTE_AAD_ID) as string;
-
-    return clientId;
-  }
-
-  private getBotId(ctx: PluginContext, isLocalDebug: boolean): string {
-    const botId = ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_ID) as string;
-
-    return botId;
-  }
-
-  private getBotDomain(ctx: PluginContext, isLocalDebug: boolean): string {
-    const botDomain = ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_DOMAIN) as string;
-
-    return botDomain;
-  }
-
-  private getApplicationIdUris(ctx: PluginContext, isLocalDebug: boolean): string {
-    const applicationIdUris = isLocalDebug
-      ? (ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ApplicationIdUris) as string)
-      : (ctx.envInfo.state.get(PluginNames.AAD)?.get(WEB_APPLICATION_INFO_SOURCE) as string);
-
-    return applicationIdUris;
   }
 
   // TODO: remove isLocalDebug later after merging local and remote configs
@@ -1664,52 +1613,26 @@ export class AppStudioPluginImpl {
       config: ctx.envInfo.config,
       state: {
         "fx-resource-frontend-hosting": {
-          endpoint: endpoint ?? "{{{state.fx-resource-frontend-hosting.endpoint}}}",
-          indexPath: indexPath ?? "{{{state.fx-resource-frontend-hosting.indexPath}}}",
+          endpoint: endpoint ?? "{{state.fx-resource-frontend-hosting.endpoint}}",
+          indexPath: indexPath ?? "{{state.fx-resource-frontend-hosting.indexPath}}",
         },
         "fx-resource-aad-app-for-teams": {
           clientId: aadId ?? "{{state.fx-resource-aad-app-for-teams.clientId}}",
           applicationIdUris:
             webApplicationInfoResource ??
-            "{{{state.fx-resource-aad-app-for-teams.applicationIdUris}}}",
+            "{{state.fx-resource-aad-app-for-teams.applicationIdUris}}",
         },
         "fx-resource-appstudio": {
           teamsAppId: teamsAppId ?? "{{state.fx-resource-appstudio.teamsAppId}}",
         },
         "fx-resource-bot": {
           botId: botId ?? "{{state.fx-resource-bot.botId}}",
-        },
-      },
-      localSettings: {
-        frontend: {
-          tabEndpoint: endpoint ? endpoint : "{{{localSettings.frontend.tabEndpoint}}}",
-          tabIndexPath: indexPath ?? "{{{localSettings.frontend.tabIndexPath}}}",
-        },
-        auth: {
-          clientId: aadId
-            ? aadId
-            : ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId)
-            ? ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId)
-            : "{{localSettings.auth.clientId}}",
-          applicationIdUris: webApplicationInfoResource
-            ? webApplicationInfoResource
-            : ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ApplicationIdUris)
-            ? ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ApplicationIdUris)
-            : "{{{localSettings.auth.applicationIdUris}}}",
-        },
-        teamsApp: {
-          teamsAppId: teamsAppId
-            ? teamsAppId
-            : ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId)
-            ? ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId)
-            : "{{localSettings.teamsApp.teamsAppId}}",
-        },
-        bot: {
-          botId: botId
-            ? botId
-            : ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId)
-            ? ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId)
-            : "{{localSettings.bot.botId}}",
+          siteEndpoint:
+            (ctx.envInfo.state.get(PluginNames.BOT)?.get(BotConfigKeys.SITE_ENDPOINT) as string) ??
+            "{{state.fx-resource-bot.siteEndpoint}}",
+          siteName:
+            (ctx.envInfo.state.get(PluginNames.BOT)?.get(BotConfigKeys.SITE_NAME) as string) ??
+            "{{state.fx-resource-bot.siteName}}",
         },
       },
     };
@@ -1806,11 +1729,6 @@ export class AppStudioPluginImpl {
       state: {
         "fx-resource-appstudio": {
           teamsAppId: await this.getTeamsAppId(ctx, isLocalDebug),
-        },
-      },
-      localSettings: {
-        teamsApp: {
-          teamsAppId: ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId),
         },
       },
     };

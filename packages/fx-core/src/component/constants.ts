@@ -20,6 +20,13 @@ export const ComponentNames = {
   SimpleAuth: "simple-auth",
 };
 
+export const ComponentStateKeys = {
+  [ComponentNames.AzureSQL]: "azure-sql",
+  [ComponentNames.Identity]: "identity",
+  [ComponentNames.AadApp]: "aad",
+  [ComponentNames.KeyVault]: "key-vault",
+};
+
 export const ActionNames = {
   provision: "provision",
   configure: "configure",

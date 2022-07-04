@@ -14,7 +14,7 @@ import {
   ok,
   Platform,
 } from "@microsoft/teamsfx-api";
-import { ComponentNames } from "../../../../src/component/constants";
+import { ComponentNames, ComponentStateKeys } from "../../../../src/component/constants";
 import { Constants } from "../../../../src/component/resource/azureSql/constants";
 import { newEnvInfoV3 } from "../../../../src";
 import path from "path";
@@ -83,13 +83,13 @@ describe("Azure-SQL Component", () => {
   });
 
   it("configure happy path", async function () {
-    context.envInfo!.state[ComponentNames.AzureSQL] = {
+    context.envInfo!.state[ComponentStateKeys[ComponentNames.AzureSQL]] = {
       sqlResourceId:
         "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mock-rg/providers/Microsoft.Sql/servers/mock",
       sqlEndpoint: "mock.database.windows.net",
       databaseName: "mock",
     };
-    context.envInfo!.state[ComponentNames.Identity] = {
+    context.envInfo!.state[ComponentStateKeys[ComponentNames.Identity]] = {
       [Constants.identityName]: "mock-identity",
     };
     const configureAction = await component.configure(context, inputs);

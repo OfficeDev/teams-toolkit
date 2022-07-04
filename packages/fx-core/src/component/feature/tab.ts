@@ -15,7 +15,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { isVSProject } from "../../common/projectSettingsHelper";
 import { CoreQuestionNames } from "../../core/question";
 import { ComponentNames } from "../constants";
 import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "../projectSettingsManager";
@@ -49,6 +48,7 @@ export class TeamsfxCore {
           // add hosting component
           projectSettings.components.push({
             name: inputs.hosting,
+            connections: ["teams-tab"],
             provision: true,
           });
           projectSettings.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];

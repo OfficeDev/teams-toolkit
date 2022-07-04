@@ -34,16 +34,16 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
           name: 'SCM_SCRIPT_GENERATOR_ARGS'
           value: '--node' // Register as node server
         }
-        {{else}}
-        {
-          name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
-          value: 'true' // Execute build steps on your site during deployment
-        }
-        {{/if}}
         {
           name: 'RUNNING_ON_AZURE'
           value: '1'
         }
+        {{else}}
+        {
+          name: 'WEBSITE_RUN_FROM_PACKAGE'
+          value: '1'
+        }
+        {{/if}}
       ]
     }
   }

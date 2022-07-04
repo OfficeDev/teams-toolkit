@@ -7,7 +7,7 @@ module azureSqlProvision './provision/azureSql.bicep' = {
 }
 
 output azureSqlOutput object = {
-  teamsFxPluginId: 'fx-resource-azure-sql'
+  teamsFxPluginId: 'azure-sql'
   sqlResourceId: azureSqlProvision.outputs.resourceId
   sqlEndpoint: azureSqlProvision.outputs.sqlEndpoint
   sqlDatabaseName: azureSqlProvision.outputs.sqlDatabaseName

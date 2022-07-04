@@ -21,10 +21,10 @@ export const ComponentNames = {
 };
 
 export const ComponentStateKeys = {
-  [ComponentNames.AzureSQL]: "fx-resource-azure-sql",
-  [ComponentNames.Identity]: "fx-resource-identity",
-  [ComponentNames.AadApp]: "fx-resource-aad-app-for-teams",
-  [ComponentNames.KeyVault]: "fx-resource-key-vault",
+  [ComponentNames.AzureSQL]: "azure-sql",
+  [ComponentNames.Identity]: "identity",
+  [ComponentNames.AadApp]: "aad",
+  [ComponentNames.KeyVault]: "key-vault",
 };
 
 export const ActionNames = {

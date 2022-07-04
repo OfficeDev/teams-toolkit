@@ -73,6 +73,7 @@ export abstract class AzureResourceConfig {
         const templatesFolder = await getProjectTemplatesFolderPath(inputs.projectPath);
         const moduleFilePath = path.join(
           templatesFolder,
+          "azure",
           "teamsFx",
           `${this.bicepModuleName}Config.bicep`
         );

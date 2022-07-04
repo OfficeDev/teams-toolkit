@@ -40,7 +40,6 @@ import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
 import {
   Constants,
-  TEAMS_APP_SHORT_NAME_MAX_LENGTH,
   FRONTEND_ENDPOINT,
   FRONTEND_DOMAIN,
   BOT_ID,
@@ -51,11 +50,6 @@ import {
   CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV,
   BOTS_TPL_FOR_MULTI_ENV,
   COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV,
-  MANIFEST_LOCAL,
-  STATIC_TABS_TPL_LOCAL_DEBUG,
-  CONFIGURABLE_TABS_TPL_LOCAL_DEBUG,
-  BOTS_TPL_LOCAL_DEBUG,
-  COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG,
   COLOR_TEMPLATE,
   OUTLINE_TEMPLATE,
   DEFAULT_COLOR_PNG_FILENAME,
@@ -63,7 +57,6 @@ import {
   MANIFEST_RESOURCES,
   FRONTEND_INDEX_PATH,
   TEAMS_APP_MANIFEST_TEMPLATE_V3,
-  WEB_APPLICATION_INFO_LOCAL_DEBUG,
   WEB_APPLICATION_INFO_MULTI_ENV,
   TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3,
   M365_SCHEMA,
@@ -85,7 +78,6 @@ import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInt
 import Mustache from "mustache";
 import {
   getCustomizedKeys,
-  replaceConfigValue,
   convertToAppDefinitionBots,
   convertToAppDefinitionMessagingExtensions,
 } from "./utils/utils";
@@ -126,7 +118,7 @@ export class AppStudioPluginImpl {
         return err(appDefinitionAndManifest.error);
       }
 
-      const localTeamsAppID = await this.getTeamsAppId(ctx, true);
+      const localTeamsAppID = await this.getTeamsAppId(ctx);
 
       let createIfNotExist = false;
       if (!localTeamsAppID) {
@@ -184,7 +176,7 @@ export class AppStudioPluginImpl {
       return err(appStudioTokenRes.error);
     }
     const appStudioToken = appStudioTokenRes.value;
-    const localTeamsAppID = await this.getTeamsAppId(ctx, true);
+    const localTeamsAppID = await this.getTeamsAppId(ctx);
     let create = !localTeamsAppID;
     if (localTeamsAppID) {
       try {
@@ -227,7 +219,7 @@ export class AppStudioPluginImpl {
     await provisionProgress?.next(
       getLocalizedString("plugins.appstudio.provisionProgress", ctx.projectSettings!.appName)
     );
-    let remoteTeamsAppId = await this.getTeamsAppId(ctx, false);
+    let remoteTeamsAppId = await this.getTeamsAppId(ctx);
 
     let create = false;
     if (!remoteTeamsAppId) {
@@ -272,9 +264,9 @@ export class AppStudioPluginImpl {
       getLocalizedString("plugins.appstudio.postProvisionProgress", ctx.projectSettings!.appName)
     );
     await postProvisionProgress?.next();
-    const remoteTeamsAppId = await this.getTeamsAppId(ctx, false);
+    const remoteTeamsAppId = await this.getTeamsAppId(ctx);
     let manifestString: string;
-    const manifestResult = await loadManifest(ctx.root, false);
+    const manifestResult = await loadManifest(ctx.root);
     if (manifestResult.isErr()) {
       await postProvisionProgress?.end(false);
       return err(manifestResult.error);
@@ -284,7 +276,7 @@ export class AppStudioPluginImpl {
 
     let appDefinition: AppDefinition;
     if (isSPFxProject(ctx.projectSettings)) {
-      manifestString = await this.getSPFxManifest(ctx, false);
+      manifestString = await this.getSPFxManifest(ctx);
       const appDefinitionRes = await this.convertToAppDefinition(
         ctx,
         JSON.parse(manifestString),
@@ -340,7 +332,7 @@ export class AppStudioPluginImpl {
   ): Promise<Result<string[], FxError>> {
     let manifestString: string | undefined = undefined;
     if (isSPFxProject(ctx.projectSettings)) {
-      manifestString = await this.getSPFxManifest(ctx, isLocalDebug);
+      manifestString = await this.getSPFxManifest(ctx);
       const manifest = JSON.parse(manifestString);
       if (!isUUID(manifest.id)) {
         manifest.id = v4();
@@ -404,10 +396,10 @@ export class AppStudioPluginImpl {
     ctx: PluginContext,
     isLocalDebug: boolean
   ): Promise<Result<string, FxError>> {
-    const teamsAppId = await this.getTeamsAppId(ctx, isLocalDebug);
+    const teamsAppId = await this.getTeamsAppId(ctx);
     let manifest: any;
     let manifestString: string;
-    const manifestResult = await loadManifest(ctx.root, isLocalDebug);
+    const manifestResult = await loadManifest(ctx.root);
     if (manifestResult.isErr()) {
       return err(manifestResult.error);
     } else {
@@ -416,7 +408,7 @@ export class AppStudioPluginImpl {
 
     let appDefinition: AppDefinition;
     if (isSPFxProject(ctx.projectSettings)) {
-      manifestString = await this.getSPFxManifest(ctx, isLocalDebug);
+      manifestString = await this.getSPFxManifest(ctx);
       manifest = JSON.parse(manifestString);
       const appDefinitionRes = await this.convertToAppDefinition(ctx, manifest, false);
       if (appDefinitionRes.isErr()) {
@@ -668,7 +660,7 @@ export class AppStudioPluginImpl {
     }
 
     if (isSPFxProject(ctx.projectSettings)) {
-      manifestString = await this.getSPFxManifest(ctx, isLocalDebug);
+      manifestString = await this.getSPFxManifest(ctx);
       const manifest = JSON.parse(manifestString);
       if (!isUUID(manifest.id)) {
         manifest.id = v4();
@@ -843,7 +835,7 @@ export class AppStudioPluginImpl {
 
     const appDirectory = await getAppDirectory(ctx.root);
     if (isSPFxProject(ctx.projectSettings)) {
-      const manifestString = await this.getSPFxManifest(ctx, false);
+      const manifestString = await this.getSPFxManifest(ctx);
       manifest = JSON.parse(manifestString);
     } else {
       const fillinRes = await this.getAppDefinitionAndManifest(ctx, false);
@@ -906,7 +898,7 @@ export class AppStudioPluginImpl {
 
   public async postLocalDebug(ctx: PluginContext): Promise<Result<string, FxError>> {
     let teamsAppId;
-    const manifest = await loadManifest(ctx.root, true);
+    const manifest = await loadManifest(ctx.root);
     if (manifest.isErr()) {
       return err(manifest.error);
     }
@@ -934,7 +926,7 @@ export class AppStudioPluginImpl {
     }
     const appStudioToken = appStudioTokenRes.value;
 
-    const teamsAppId = await this.getTeamsAppId(ctx, false);
+    const teamsAppId = await this.getTeamsAppId(ctx);
     if (!teamsAppId) {
       throw new Error(ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, PluginNames.APPST));
     }
@@ -965,7 +957,7 @@ export class AppStudioPluginImpl {
       throw appStudioTokenRes.error;
     }
     const appStudioToken = appStudioTokenRes.value;
-    const teamsAppId = await this.getTeamsAppId(ctx, false);
+    const teamsAppId = await this.getTeamsAppId(ctx);
     if (!teamsAppId) {
       throw new Error(ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, PluginNames.APPST));
     }
@@ -1011,7 +1003,7 @@ export class AppStudioPluginImpl {
     }
     const appStudioToken = appStudioTokenRes.value;
 
-    const teamsAppId = await this.getTeamsAppId(ctx, false);
+    const teamsAppId = await this.getTeamsAppId(ctx);
     if (!teamsAppId) {
       const msgs = AppStudioError.GrantPermissionFailedError.message(
         ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, PluginNames.APPST)
@@ -1060,7 +1052,7 @@ export class AppStudioPluginImpl {
       }
 
       // Update App in App Studio
-      const remoteTeamsAppId = await this.getTeamsAppId(ctx, false);
+      const remoteTeamsAppId = await this.getTeamsAppId(ctx);
       await publishProgress?.next(
         getLocalizedString("plugins.appstudio.publishProgressUpdate", remoteTeamsAppId)
       );
@@ -1151,7 +1143,7 @@ export class AppStudioPluginImpl {
     const aadId = ctx.envInfo.state.get(PluginNames.AAD)?.get(REMOTE_AAD_ID) as string;
     const botId = ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_ID) as string;
     const botDomain = ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_DOMAIN) as string;
-    const teamsAppId = await this.getTeamsAppId(ctx, localDebug);
+    const teamsAppId = await this.getTeamsAppId(ctx);
 
     // This config value is set by aadPlugin.setApplicationInContext. so aadPlugin.setApplicationInContext needs to run first.
 
@@ -1172,12 +1164,12 @@ export class AppStudioPluginImpl {
   }
 
   // TODO: remove isLocalDebug later after merging local and remote configs
-  private async getTeamsAppId(ctx: PluginContext, isLocalDebug: boolean): Promise<string> {
+  private async getTeamsAppId(ctx: PluginContext): Promise<string> {
     let teamsAppId = "";
 
     // User may manually update id in manifest template file, rather than configuration file
     // The id in manifest template file should override configurations
-    const manifestResult = await loadManifest(ctx.root, isLocalDebug);
+    const manifestResult = await loadManifest(ctx.root);
     if (manifestResult.isOk()) {
       teamsAppId = manifestResult.value.id;
     }
@@ -1355,7 +1347,7 @@ export class AppStudioPluginImpl {
         AppStudioError.NotADirectoryError.message(appDirectory)
       );
     }
-    const manifestResult = await loadManifest(ctx.root, isLocalDebug);
+    const manifestResult = await loadManifest(ctx.root);
     if (manifestResult.isErr()) {
       return err(manifestResult.error);
     }
@@ -1581,7 +1573,7 @@ export class AppStudioPluginImpl {
       }
     }
 
-    const manifestResult = await loadManifest(ctx.root, isLocalDebug);
+    const manifestResult = await loadManifest(ctx.root);
     if (manifestResult.isErr()) {
       return err(manifestResult.error);
     }
@@ -1718,8 +1710,8 @@ export class AppStudioPluginImpl {
     return ok([appDefinition, updatedManifest]);
   }
 
-  private async getSPFxManifest(ctx: PluginContext, isLocalDebug: boolean): Promise<string> {
-    const manifestResult = await loadManifest(ctx.root, isLocalDebug);
+  private async getSPFxManifest(ctx: PluginContext): Promise<string> {
+    const manifestResult = await loadManifest(ctx.root);
     if (manifestResult.isErr()) {
       throw manifestResult.error;
     }
@@ -1728,61 +1720,12 @@ export class AppStudioPluginImpl {
       config: ctx.envInfo.config,
       state: {
         "fx-resource-appstudio": {
-          teamsAppId: await this.getTeamsAppId(ctx, isLocalDebug),
+          teamsAppId: await this.getTeamsAppId(ctx),
         },
       },
     };
     manifestString = renderTemplate(manifestString, view);
     return manifestString;
-  }
-}
-
-export async function createLocalManifest(
-  appName: string,
-  hasFrontend: boolean,
-  hasBot: boolean,
-  hasMessageExtension: boolean,
-  isSPFx: boolean,
-  hasAad = true,
-  isM365 = false
-): Promise<TeamsAppManifest> {
-  let name = appName;
-  const suffix = "-local-debug";
-  if (suffix.length + appName.length <= TEAMS_APP_SHORT_NAME_MAX_LENGTH) {
-    name = name + suffix;
-  }
-  if (isSPFx) {
-    const templateManifestFolder = path.join(getTemplatesFolder(), "plugins", "resource", "spfx");
-    const localManifestFile = path.resolve(templateManifestFolder, `./solution/${MANIFEST_LOCAL}`);
-    let manifestString = (await fs.readFile(localManifestFile)).toString();
-    manifestString = replaceConfigValue(manifestString, "appName", name);
-    const manifest: TeamsAppManifest = JSON.parse(manifestString);
-    return manifest;
-  } else {
-    let manifestString = TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3;
-
-    manifestString = replaceConfigValue(manifestString, "appName", name);
-    const manifest: TeamsAppManifest = JSON.parse(manifestString);
-    if (hasAad) {
-      manifest.webApplicationInfo = WEB_APPLICATION_INFO_LOCAL_DEBUG;
-    }
-    if (hasFrontend) {
-      manifest.staticTabs = STATIC_TABS_TPL_LOCAL_DEBUG;
-      if (!isM365) {
-        manifest.configurableTabs = CONFIGURABLE_TABS_TPL_LOCAL_DEBUG;
-      }
-    }
-    if (hasBot) {
-      manifest.bots = BOTS_TPL_LOCAL_DEBUG;
-    }
-    if (hasMessageExtension) {
-      manifest.composeExtensions = COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG;
-    }
-    if (isM365) {
-      manifest.$schema = M365_SCHEMA;
-      manifest.manifestVersion = M365_MANIFEST_VERSION;
-    }
-    return manifest;
   }
 }
 

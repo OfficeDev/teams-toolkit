@@ -53,11 +53,13 @@ export abstract class AzureAppService extends AzureResource {
       name: `${this.name}.deploy`,
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
+        const parent = getHostingParentComponent(context.projectSetting, this.name);
+        const deployDir = path.resolve(inputs.projectPath, parent?.folder ?? "");
         return ok([
           {
             type: "service",
             name: "azure",
-            remarks: `deploy ${this.displayName} in folder: ${inputs.projectPath}`,
+            remarks: `deploy ${this.displayName} in folder: ${deployDir}`,
           },
         ]);
       },

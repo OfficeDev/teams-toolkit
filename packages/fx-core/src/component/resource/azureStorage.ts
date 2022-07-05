@@ -103,7 +103,8 @@ export class AzureStorageResource extends AzureResource {
       name: "azure-storage.deploy",
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const deployDir = path.join(inputs.projectPath, inputs.code.folder);
+        const parent = getHostingParentComponent(context.projectSetting, this.name);
+        const deployDir = path.resolve(inputs.projectPath, parent?.folder ?? "");
         return ok([
           {
             type: "service",

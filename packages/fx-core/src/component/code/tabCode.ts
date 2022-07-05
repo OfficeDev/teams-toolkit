@@ -47,6 +47,7 @@ import { envFilePath, EnvKeys, saveEnvFile } from "../../plugins/resource/fronte
 import { isVSProject } from "../../common/projectSettingsHelper";
 import { DotnetCommands } from "../../plugins/resource/frontend/dotnet/constants";
 import { Utils } from "../../plugins/resource/frontend/utils";
+import { CommandExecutionError } from "../../plugins/resource/bot/errors";
 /**
  * tab scaffold
  */
@@ -188,25 +189,15 @@ export class TabCodeProvider implements SourceCodeProvider {
         const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
         if (!teamsTab) return ok([]);
         if (teamsTab.folder == undefined) throw new Error("path not found");
-        const tabDir = path.join(inputs.projectPath, teamsTab.folder);
-        if (isVSProject(context.projectSetting)) {
-          const command = DotnetCommands.buildRelease("win-x86");
-          await Utils.execute(command, tabDir);
-          const artifactFolder = path.join(
-            teamsTab.folder,
-            "bin",
-            "Release",
-            "net6.0",
-            "win-x86",
-            "publish"
-          );
-          merge(teamsTab, { build: true, artifactFolder: artifactFolder });
-          return ok([`build project: ${tabDir}`]);
-        }
-        await FrontendDeployment.doFrontendBuildV3(tabDir, ctx.envInfo.envName);
-        const artifactFolder = path.join(teamsTab.folder, "build");
-        merge(teamsTab, { build: true, artifactFolder: artifactFolder });
-        return ok([`build project: ${tabDir}`]);
+        const tabPath = path.resolve(inputs.projectPath, teamsTab.folder);
+        const artifactFolder = isVSProject(context.projectSetting)
+          ? await this.doBlazorBuild(tabPath)
+          : await this.doReactBuild(tabPath, ctx.envInfo.envName);
+        merge(teamsTab, {
+          build: true,
+          artifactFolder: path.join(teamsTab.folder, artifactFolder),
+        });
+        return ok([`build project: ${tabPath}`]);
       },
     };
     return ok(action);
@@ -223,5 +214,18 @@ export class TabCodeProvider implements SourceCodeProvider {
     // TODO: add environemnt variables for aad, simple auth and function api
     addToEnvs(EnvKeys.StartLoginPage, DependentPluginInfo.StartLoginPageURL);
     return envs;
+  }
+  private async doBlazorBuild(tabPath: string): Promise<string> {
+    const command = DotnetCommands.buildRelease("win-x86");
+    try {
+      await Utils.execute(command, tabPath);
+    } catch (e) {
+      throw new CommandExecutionError(command, tabPath, e);
+    }
+    return path.join("bin", "Release", "net6.0", "win-x86", "publish");
+  }
+  private async doReactBuild(tabPath: string, envName: string): Promise<string> {
+    await FrontendDeployment.doFrontendBuildV3(tabPath, envName);
+    return "build";
   }
 }

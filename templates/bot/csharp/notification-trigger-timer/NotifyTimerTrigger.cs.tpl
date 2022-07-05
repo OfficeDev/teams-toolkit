@@ -1,15 +1,17 @@
+using {{SafeProjectName}}.Models;
+using AdaptiveCards.Templating;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Microsoft.TeamsFx.Conversation;
+using Newtonsoft.Json;
+
+using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
+
 namespace {{SafeProjectName}}
 {
-    using {{SafeProjectName}}.Models;
-    using AdaptiveCards.Templating;
-    using Microsoft.Azure.WebJobs;
-    using Microsoft.Azure.WebJobs.Extensions.Http;
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.AspNetCore.Mvc;
-    using Newtonsoft.Json;
-    using Microsoft.Extensions.Logging;
-    using Microsoft.TeamsFx.Conversation;
-
     public sealed class NotifyTimerTrigger
     {
         private readonly ConversationBot _conversation;

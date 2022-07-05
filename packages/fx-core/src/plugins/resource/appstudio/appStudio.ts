@@ -56,11 +56,17 @@ export namespace AppStudioClient {
 
     const error = AppStudioResultFactory.SystemError(
       AppStudioError.DeveloperPortalAPIFailedError.name,
-      AppStudioError.DeveloperPortalAPIFailedError.message(e, requestPath, correlationId, extraData)
+      AppStudioError.DeveloperPortalAPIFailedError.message(
+        e,
+        correlationId,
+        requestPath,
+        apiName,
+        extraData
+      )
     );
 
     TelemetryUtils.sendErrorEvent(TelemetryEventName.appStudioApi, error, {
-      method: e?.toJSON?.()?.config?.method,
+      method: e.request?.method,
       "status-code": e?.response?.status,
       url: `<${apiName}-url>`,
     });

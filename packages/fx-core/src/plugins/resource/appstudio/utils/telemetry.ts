@@ -19,6 +19,9 @@ export enum TelemetryPropertyKey {
   publishedAppId = "published-app-id",
   customizedKeys = "customized-manifest-keys",
   manual = "manual",
+  statusCode = "status-code",
+  url = "url",
+  method = "method",
 }
 
 enum TelemetryPropertyValue {
@@ -46,6 +49,7 @@ export enum TelemetryEventName {
   addCapability = "add-capability",
   loadManifest = "load-manifest",
   saveManifest = "save-manifest",
+  appStudioApi = "app-studio-api",
 }
 
 export class TelemetryUtils {
@@ -121,10 +125,10 @@ export class TelemetryUtils {
     measurements?: { [key: string]: number }
   ) {
     let properties;
-    if (!properties) {
+    if (!_properties) {
       properties = {};
     } else {
-      properties = deepCopy(_properties!);
+      properties = deepCopy(_properties);
     }
     properties[TelemetryPropertyKey.component] = Constants.PLUGIN_NAME;
     if (error instanceof SystemError) {

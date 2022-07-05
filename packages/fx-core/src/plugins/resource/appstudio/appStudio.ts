@@ -11,6 +11,7 @@ import { AppStudioResultFactory } from "./results";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { Constants, ErrorMessages } from "./constants";
 import { RetryHandler } from "./utils/utils";
+import { TelemetryEventName, TelemetryUtils } from "./utils/telemetry";
 
 export function getAppStudioEndpoint(): string {
   if (process.env.APP_STUDIO_ENV && process.env.APP_STUDIO_ENV === "int") {
@@ -48,7 +49,7 @@ export namespace AppStudioClient {
     return instance;
   }
 
-  function wrapException(e: any): Error {
+  function wrapException(e: any, apiName: string): Error {
     const correlationId = e.response?.headers[Constants.CORRELATION_ID];
     const requestPath = e.request?.path ? `${e.request.method} ${e.request.path}` : "";
     const extraData = e.response?.data ? `data: ${JSON.stringify(e.response.data)}` : "";
@@ -57,6 +58,12 @@ export namespace AppStudioClient {
       AppStudioError.DeveloperPortalAPIFailedError.name,
       AppStudioError.DeveloperPortalAPIFailedError.message(e, requestPath, correlationId, extraData)
     );
+
+    TelemetryUtils.sendErrorEvent(TelemetryEventName.appStudioApi, error, {
+      method: e?.toJSON?.()?.config?.method,
+      "status-code": e?.response?.status,
+      url: `<${apiName}-url>`,
+    });
     return error;
   }
 
@@ -89,7 +96,7 @@ export namespace AppStudioClient {
         throw new Error(`Cannot create teams app`);
       }
     } catch (e: any) {
-      const error = wrapException(e);
+      const error = wrapException(e, "create-app");
       throw error;
     }
   }
@@ -123,7 +130,7 @@ export namespace AppStudioClient {
       await logProvider?.info(`successfully uploaded two icons`);
       return { colorIconUrl: results[0].data, outlineIconUrl: results[1].data };
     } catch (e: any) {
-      const error = wrapException(e);
+      const error = wrapException(e, "update-icon");
       throw error;
     }
   }
@@ -150,7 +157,7 @@ export namespace AppStudioClient {
         }
       }
     } catch (e) {
-      const error = wrapException(e);
+      const error = wrapException(e, "get-app");
       throw error;
     }
     throw new Error(`Cannot get the app definition with app ID ${teamsAppId}`);
@@ -210,7 +217,7 @@ export namespace AppStudioClient {
         );
       }
     } catch (e: any) {
-      const error = wrapException(e);
+      const error = wrapException(e, "update-app");
       throw error;
     }
   }

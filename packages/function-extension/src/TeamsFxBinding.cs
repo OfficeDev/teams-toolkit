@@ -72,7 +72,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx
                     _logger.LogDebug(responseBody);
                     throw new Exception(responseBody);
                 }
-                var claim = new JwtBuilder().Decode<Dictionary<string, object>>(accessToken);
+                var token = accessToken.Split(" ").Last();
+                var claim = JwtBuilder.Create().DoNotVerifySignature().Decode<Dictionary<string, Object>>(token);
 
                 // Only allow access token whose client id is in the list of `ALLOWED_APP_IDS` or equals to `CLIENT_ID` setting.
                 try

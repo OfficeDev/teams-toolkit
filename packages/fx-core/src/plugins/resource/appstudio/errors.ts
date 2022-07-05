@@ -27,13 +27,14 @@ export class AppStudioError {
       e: any,
       correlationId: string,
       requestPath: string,
+      apiName: string,
       extraData: string
     ): [string, string] => [
       getDefaultString(
-        "error.appstudio.apiFailed",
+        "error.appstudio.apiFailed.telemetry",
         e.name,
         e.message,
-        requestPath,
+        apiName,
         correlationId,
         extraData
       ),

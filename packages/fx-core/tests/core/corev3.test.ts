@@ -1,19 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  FxError,
-  Inputs,
-  ok,
-  OptionItem,
-  Platform,
-  Result,
-  Stage,
-  TeamsAppManifest,
-  v2,
-  v3,
-  Void,
-} from "@microsoft/teamsfx-api";
+import { Inputs, ok, Platform, Stage, v3 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
@@ -24,7 +12,6 @@ import { Container } from "typedi";
 import { environmentManager, FxCore, setTools } from "../../src";
 import {
   CoreQuestionNames,
-  SampleSelect,
   ScratchOptionNoVSC,
   ScratchOptionYesVSC,
 } from "../../src/core/question";
@@ -33,14 +20,10 @@ import {
   TabOptionItem,
   TabSPFxItem,
 } from "../../src/plugins/solution/fx-solution/question";
-import {
-  BuiltInFeaturePluginNames,
-  BuiltInSolutionNames,
-} from "../../src/plugins/solution/fx-solution/v3/constants";
+import { BuiltInSolutionNames } from "../../src/plugins/solution/fx-solution/v3/constants";
 import { deleteFolder, mockSolutionV3getQuestionsAPI, MockTools, randomAppName } from "./utils";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import fs from "fs-extra";
-import { AppStudioPluginV3 } from "../../src/plugins/resource/appstudio/v3";
 import { SPFXQuestionNames } from "../../src/plugins/resource/spfx/utils/questions";
 describe("Core basic APIs for v3", () => {
   const sandbox = sinon.createSandbox();
@@ -69,11 +52,6 @@ describe("Core basic APIs for v3", () => {
           request: {},
         };
       });
-    const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-    sandbox
-      .stub<any, any>(appStudio, "loadManifest")
-      .resolves(ok({ local: new TeamsAppManifest(), remote: new TeamsAppManifest() }));
-    sandbox.stub<any, any>(appStudio, "saveManifest").resolves(ok(Void));
     sandbox.stub<any, any>(solutionAzure, "addFeature").resolves(ok([]));
     sandbox.stub<any, any>(solutionSPFx, "addFeature").resolves(ok([]));
     sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev"]));

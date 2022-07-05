@@ -25,7 +25,6 @@ import {
   init,
   addCapabilities,
   loadManifest,
-  saveManifest,
   capabilityExceedLimit,
   updateCapability,
   deleteCapability,
@@ -181,63 +180,6 @@ export class AppStudioPluginV3 {
   }
 
   /**
-   * Should conside both local and remote
-   * @returns
-   */
-  async loadManifest(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath
-  ): Promise<Result<{ local: TeamsAppManifest; remote: TeamsAppManifest }, FxError>> {
-    TelemetryUtils.init(ctx);
-    TelemetryUtils.sendStartEvent(TelemetryEventName.loadManifest);
-    const pluginContext: PluginContext = convert2PluginContext(this.name, ctx, inputs);
-    const localManifest = await loadManifest(pluginContext.root, true);
-    if (localManifest.isErr()) {
-      TelemetryUtils.sendErrorEvent(TelemetryEventName.loadManifest, localManifest.error);
-      return err(localManifest.error);
-    }
-
-    const remoteManifest = await loadManifest(pluginContext.root, false);
-    if (remoteManifest.isErr()) {
-      TelemetryUtils.sendErrorEvent(TelemetryEventName.loadManifest, remoteManifest.error);
-      return err(remoteManifest.error);
-    }
-
-    TelemetryUtils.sendSuccessEvent(TelemetryEventName.loadManifest);
-    return ok({ local: localManifest.value, remote: remoteManifest.value });
-  }
-
-  /**
-   * Save manifest template file
-   * @param ctx ctx.manifest
-   * @param inputs
-   * @returns
-   */
-  async saveManifest(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    manifest: { local: TeamsAppManifest; remote: TeamsAppManifest }
-  ): Promise<Result<any, FxError>> {
-    TelemetryUtils.init(ctx);
-    TelemetryUtils.sendStartEvent(TelemetryEventName.saveManifest);
-    const pluginContext: PluginContext = convert2PluginContext(this.name, ctx, inputs);
-    let res = await saveManifest(pluginContext.root, manifest.local, true);
-    if (res.isErr()) {
-      TelemetryUtils.sendErrorEvent(TelemetryEventName.saveManifest, res.error);
-      return err(res.error);
-    }
-
-    res = await saveManifest(pluginContext.root, manifest.remote, false);
-    if (res.isErr()) {
-      TelemetryUtils.sendErrorEvent(TelemetryEventName.saveManifest, res.error);
-      return err(res.error);
-    }
-
-    TelemetryUtils.sendSuccessEvent(TelemetryEventName.saveManifest);
-    return ok(undefined);
-  }
-
-  /**
    * Load manifest template, and check if it exceeds the limit.
    * The limit of staticTab if 16, others are 1
    * Should check both local & remote manifest template file
@@ -319,9 +261,10 @@ export class AppStudioPluginV3 {
     let teamsAppId = "";
     // User may manually update id in manifest template file, rather than configuration file
     // The id in manifest template file should override configurations
-    const manifestResult = await this.loadManifest(ctx, inputs);
+    const pluginContext: PluginContext = convert2PluginContext(this.name, ctx, inputs);
+    const manifestResult = await loadManifest(pluginContext.root);
     if (manifestResult.isOk()) {
-      teamsAppId = manifestResult.value.remote.id;
+      teamsAppId = manifestResult.value.id;
     }
     if (!isUUID(teamsAppId)) {
       teamsAppId = (envInfo.state[this.name] as v3.TeamsAppResource).teamsAppId;

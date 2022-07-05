@@ -58,7 +58,6 @@ import {
   FRONTEND_INDEX_PATH,
   TEAMS_APP_MANIFEST_TEMPLATE_V3,
   WEB_APPLICATION_INFO_MULTI_ENV,
-  TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3,
   M365_SCHEMA,
   M365_MANIFEST_VERSION,
   BOTS_TPL_FOR_COMMAND_AND_RESPONSE,
@@ -89,7 +88,7 @@ import { environmentManager } from "../../../core/environment";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { getProjectTemplatesFolderPath } from "../../../common/utils";
 import { renderTemplate } from "./utils/utils";
-import { ConfigKeys as BotConfigKeys } from "../../resource/bot/constants";
+import { PluginBot } from "../../resource/bot/resources/strings";
 
 export class AppStudioPluginImpl {
   public commonProperties: { [key: string]: string } = {};
@@ -1138,15 +1137,18 @@ export class AppStudioPluginImpl {
     teamsAppId: string;
   }> {
     const tabEndpoint = ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_ENDPOINT) as string;
-    const tabDomain = ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_DOMAIN) as string;
     const tabIndexPath = ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_INDEX_PATH) as string;
     const aadId = ctx.envInfo.state.get(PluginNames.AAD)?.get(REMOTE_AAD_ID) as string;
     const botId = ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_ID) as string;
     const botDomain = ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_DOMAIN) as string;
     const teamsAppId = await this.getTeamsAppId(ctx);
 
+    // Corner case for local debug tab domain
+    let tabDomain = ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_DOMAIN) as string;
+    if (tabEndpoint && localDebug) {
+      tabDomain = tabEndpoint.slice(8);
+    }
     // This config value is set by aadPlugin.setApplicationInContext. so aadPlugin.setApplicationInContext needs to run first.
-
     const webApplicationInfoResource = ctx.envInfo.state
       .get(PluginNames.AAD)
       ?.get(WEB_APPLICATION_INFO_SOURCE) as string;
@@ -1543,35 +1545,10 @@ export class AppStudioPluginImpl {
       botId,
       webApplicationInfoResource,
       teamsAppId,
-    } = await this.getConfigForCreatingManifest(ctx, false);
+    } = await this.getConfigForCreatingManifest(ctx, isLocalDebug);
     const isProvisionSucceeded = !!(ctx.envInfo.state
       .get("solution")
       ?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean);
-
-    const validDomains: string[] = [];
-    if (tabDomain) {
-      validDomains.push(tabDomain);
-    }
-    if (tabEndpoint && isLocalDebug) {
-      validDomains.push(tabEndpoint.slice(8));
-    }
-
-    if (botId) {
-      if (!botDomain) {
-        return err(
-          AppStudioResultFactory.UserError(
-            AppStudioError.GetRemoteConfigFailedError.name,
-            AppStudioError.GetRemoteConfigFailedError.message(
-              getLocalizedString("plugins.appstudio.dataRequired", BOT_DOMAIN),
-              isProvisionSucceeded
-            ),
-            HelpLinks.WhyNeedProvision
-          )
-        );
-      } else {
-        validDomains.push(botDomain);
-      }
-    }
 
     const manifestResult = await loadManifest(ctx.root);
     if (manifestResult.isErr()) {
@@ -1607,6 +1584,7 @@ export class AppStudioPluginImpl {
         "fx-resource-frontend-hosting": {
           endpoint: endpoint ?? "{{state.fx-resource-frontend-hosting.endpoint}}",
           indexPath: indexPath ?? "{{state.fx-resource-frontend-hosting.indexPath}}",
+          domain: tabDomain ?? "{{state.fx-resource-frontend-hosting.domain}}",
         },
         "fx-resource-aad-app-for-teams": {
           clientId: aadId ?? "{{state.fx-resource-aad-app-for-teams.clientId}}",
@@ -1620,11 +1598,14 @@ export class AppStudioPluginImpl {
         "fx-resource-bot": {
           botId: botId ?? "{{state.fx-resource-bot.botId}}",
           siteEndpoint:
-            (ctx.envInfo.state.get(PluginNames.BOT)?.get(BotConfigKeys.SITE_ENDPOINT) as string) ??
+            (ctx.envInfo.state.get(PluginNames.BOT)?.get(PluginBot.SITE_ENDPOINT) as string) ??
             "{{state.fx-resource-bot.siteEndpoint}}",
           siteName:
-            (ctx.envInfo.state.get(PluginNames.BOT)?.get(BotConfigKeys.SITE_NAME) as string) ??
+            (ctx.envInfo.state.get(PluginNames.BOT)?.get(PluginBot.SITE_NAME) as string) ??
             "{{state.fx-resource-bot.siteName}}",
+          validDomain:
+            (ctx.envInfo.state.get(PluginNames.BOT)?.get(PluginBot.VALID_DOMAIN) as string) ??
+            "{{state.fx-resource-bot.validDomain}}",
         },
       },
     };
@@ -1697,8 +1678,33 @@ export class AppStudioPluginImpl {
       }
     }
 
-    for (const domain of validDomains) {
-      updatedManifest.validDomains?.push(domain);
+    // This should be removed in future, the valid domains will be rendered by states
+    if (updatedManifest.validDomains?.length == 0) {
+      const validDomains: string[] = [];
+      if (tabDomain) {
+        validDomains.push(tabDomain);
+      }
+
+      if (botId) {
+        if (!botDomain) {
+          return err(
+            AppStudioResultFactory.UserError(
+              AppStudioError.GetRemoteConfigFailedError.name,
+              AppStudioError.GetRemoteConfigFailedError.message(
+                getLocalizedString("plugins.appstudio.dataRequired", BOT_DOMAIN),
+                isProvisionSucceeded
+              ),
+              HelpLinks.WhyNeedProvision
+            )
+          );
+        } else {
+          validDomains.push(botDomain);
+        }
+      }
+
+      for (const domain of validDomains) {
+        updatedManifest.validDomains?.push(domain);
+      }
     }
 
     const appDefinitionRes = await this.convertToAppDefinition(ctx, updatedManifest, false);
@@ -1755,6 +1761,7 @@ export async function createManifest(
       }
     } else {
       manifest.developer = DEFAULT_DEVELOPER;
+      manifest.validDomains = [];
     }
     if (hasBot) {
       if (hasCommandAndResponseBot) {
@@ -1764,6 +1771,7 @@ export async function createManifest(
       } else {
         manifest.bots = BOTS_TPL_FOR_MULTI_ENV;
       }
+      manifest.validDomains?.push("state.fx-resource-bot.validDomain");
     }
     if (hasMessageExtension) {
       manifest.composeExtensions = isM365

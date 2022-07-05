@@ -256,6 +256,8 @@ export async function addCapabilities(
             } else {
               manifest.bots = manifest.bots.concat(BOTS_TPL_FOR_MULTI_ENV);
             }
+
+            manifest.validDomains?.push("{{state.fx-resource-bot.validDomain}}");
           }
         }
         break;

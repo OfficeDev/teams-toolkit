@@ -94,7 +94,9 @@ export const TEAMS_APP_MANIFEST_TEMPLATE_V3 = `{
       "identity",
       "messageTeamMembers"
   ],
-  "validDomains": []
+  "validDomains": [
+    "{{state.fx-resource-frontend-hosting.domain}}"
+  ]
 }`;
 
 export const TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV = `{
@@ -130,47 +132,13 @@ export const TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV = `{
       "identity",
       "messageTeamMembers"
   ],
-  "validDomains": [],
+  "validDomains": [
+    "{{state.fx-resource-frontend-hosting.domain}}"
+  ],
   "webApplicationInfo": {
       "id": "{{state.fx-resource-aad-app-for-teams.clientId}}",
       "resource": "{{state.fx-resource-aad-app-for-teams.applicationIdUris}}"
   }
-}`;
-
-export const TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3 = `{
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.13/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.13",
-  "version": "1.0.0",
-  "id": "{{localSettings.teamsApp.teamsAppId}}",
-  "packageName": "com.microsoft.teams.extension",
-  "developer": {
-      "name": "Teams App, Inc.",
-      "websiteUrl": "{{localSettings.frontend.tabEndpoint}}",
-      "privacyUrl": "{{localSettings.frontend.tabEndpoint}}{{localSettings.frontend.tabIndexPath}}/privacy",
-      "termsOfUseUrl": "{{localSettings.frontend.tabEndpoint}}{{localSettings.frontend.tabIndexPath}}/termsofuse"
-  },
-  "icons": {
-      "color": "resources/color.png",
-      "outline": "resources/outline.png"
-  },
-  "name": {
-      "short": "{appName}",
-      "full": "{appName}"
-  },
-  "description": {
-      "short": "Short description of {appName}",
-      "full": "Full description of {appName}"
-  },
-  "accentColor": "#FFFFFF",
-  "bots": [],
-  "composeExtensions": [],
-  "configurableTabs": [],
-  "staticTabs": [],
-  "permissions": [
-      "identity",
-      "messageTeamMembers"
-  ],
-  "validDomains": []
 }`;
 
 export const STATIC_TABS_TPL_FOR_MULTI_ENV: IStaticTab[] = [

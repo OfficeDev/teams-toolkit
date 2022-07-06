@@ -1123,10 +1123,7 @@ export class AppStudioPluginImpl {
     }
   }
 
-  private async getConfigForCreatingManifest(
-    ctx: PluginContext,
-    localDebug: boolean
-  ): Promise<{
+  private async getConfigForCreatingManifest(ctx: PluginContext): Promise<{
     tabEndpoint?: string;
     tabDomain?: string;
     tabIndexPath?: string;
@@ -1137,17 +1134,13 @@ export class AppStudioPluginImpl {
     teamsAppId: string;
   }> {
     const tabEndpoint = ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_ENDPOINT) as string;
+    const tabDomain = ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_DOMAIN) as string;
     const tabIndexPath = ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_INDEX_PATH) as string;
     const aadId = ctx.envInfo.state.get(PluginNames.AAD)?.get(REMOTE_AAD_ID) as string;
     const botId = ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_ID) as string;
     const botDomain = ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_DOMAIN) as string;
     const teamsAppId = await this.getTeamsAppId(ctx);
 
-    // Corner case for local debug tab domain
-    let tabDomain = ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_DOMAIN) as string;
-    if (tabEndpoint && localDebug) {
-      tabDomain = tabEndpoint.slice(8);
-    }
     // This config value is set by aadPlugin.setApplicationInContext. so aadPlugin.setApplicationInContext needs to run first.
     const webApplicationInfoResource = ctx.envInfo.state
       .get(PluginNames.AAD)
@@ -1545,7 +1538,7 @@ export class AppStudioPluginImpl {
       botId,
       webApplicationInfoResource,
       teamsAppId,
-    } = await this.getConfigForCreatingManifest(ctx, isLocalDebug);
+    } = await this.getConfigForCreatingManifest(ctx);
     const isProvisionSucceeded = !!(ctx.envInfo.state
       .get("solution")
       ?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean);
@@ -1679,10 +1672,13 @@ export class AppStudioPluginImpl {
     }
 
     // This should be removed in future, the valid domains will be rendered by states
-    if (updatedManifest.validDomains?.length == 0) {
+    if (updatedManifest.validDomains?.length == 0 || isLocalDebug) {
       const validDomains: string[] = [];
       if (tabDomain) {
         validDomains.push(tabDomain);
+      }
+      if (tabEndpoint && isLocalDebug) {
+        validDomains.push(tabEndpoint.slice(8));
       }
 
       if (botId) {
@@ -1703,7 +1699,9 @@ export class AppStudioPluginImpl {
       }
 
       for (const domain of validDomains) {
-        updatedManifest.validDomains?.push(domain);
+        if (updatedManifest.validDomains?.indexOf(domain) == -1) {
+          updatedManifest.validDomains?.push(domain);
+        }
       }
     }
 

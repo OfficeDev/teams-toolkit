@@ -204,7 +204,7 @@ export async function addCapabilities(
             template.entityId = "index" + staticTabIndex;
             manifest.staticTabs!.push(template);
             if (
-              manifest.validDomains?.indexOf("{{state.fx-resource-frontend-hosting.domain}}") !== -1
+              manifest.validDomains?.indexOf("{{state.fx-resource-frontend-hosting.domain}}") == -1
             ) {
               manifest.validDomains?.push("{{state.fx-resource-frontend-hosting.domain}}");
             }
@@ -228,7 +228,7 @@ export async function addCapabilities(
               CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV
             );
             if (
-              manifest.validDomains?.indexOf("{{state.fx-resource-frontend-hosting.domain}}") !== -1
+              manifest.validDomains?.indexOf("{{state.fx-resource-frontend-hosting.domain}}") == -1
             ) {
               manifest.validDomains?.push("{{state.fx-resource-frontend-hosting.domain}}");
             }

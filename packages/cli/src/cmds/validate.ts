@@ -16,7 +16,7 @@ import {
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
 import HelpParamGenerator from "../helpParamGenerator";
-import { environmentManager, isConfigUnifyEnabled } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core";
 
 export class ManifestValidate extends YargsCommand {
   public readonly commandHead = `validate`;
@@ -63,12 +63,8 @@ export class ManifestValidate extends YargsCommand {
       if (args.env === environmentManager.getLocalEnvName()) {
         func.params.type = "localDebug";
         inputs = getSystemInputs(rootFolder);
-        if (isConfigUnifyEnabled()) {
-          inputs.ignoreEnvInfo = false;
-          inputs.env = args.env;
-        } else {
-          inputs.ignoreEnvInfo = true;
-        }
+        inputs.ignoreEnvInfo = false;
+        inputs.env = args.env;
       } else {
         func.params.type = "remote";
         inputs = getSystemInputs(rootFolder, args.env as any);

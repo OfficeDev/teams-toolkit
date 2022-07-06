@@ -11,6 +11,7 @@ import { AppStudioResultFactory } from "./results";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { Constants, ErrorMessages } from "./constants";
 import { RetryHandler } from "./utils/utils";
+import { TelemetryEventName, TelemetryUtils } from "./utils/telemetry";
 
 export function getAppStudioEndpoint(): string {
   if (process.env.APP_STUDIO_ENV && process.env.APP_STUDIO_ENV === "int") {
@@ -48,6 +49,30 @@ export namespace AppStudioClient {
     return instance;
   }
 
+  function wrapException(e: any, apiName: string): Error {
+    const correlationId = e.response?.headers[Constants.CORRELATION_ID];
+    const requestPath = e.request?.path ? `${e.request.method} ${e.request.path}` : "";
+    const extraData = e.response?.data ? `data: ${JSON.stringify(e.response.data)}` : "";
+
+    const error = AppStudioResultFactory.SystemError(
+      AppStudioError.DeveloperPortalAPIFailedError.name,
+      AppStudioError.DeveloperPortalAPIFailedError.message(
+        e,
+        correlationId,
+        requestPath,
+        apiName,
+        extraData
+      )
+    );
+
+    TelemetryUtils.sendErrorEvent(TelemetryEventName.appStudioApi, error, {
+      method: e.request?.method,
+      "status-code": e?.response?.status,
+      url: `<${apiName}-url>`,
+    });
+    return error;
+  }
+
   /**
    * Creates an app registration in app studio with the given archived file and returns the app definition.
    * @param {Buffer}  file - Zip file with manifest.json and two icons
@@ -77,17 +102,7 @@ export namespace AppStudioClient {
         throw new Error(`Cannot create teams app`);
       }
     } catch (e: any) {
-      const correlationId = e.response?.headers[Constants.CORRELATION_ID];
-      const message =
-        (e.response?.data ? `data: ${JSON.stringify(e.response.data)}` : "") +
-        (correlationId ? `X-Correlation-ID: ${correlationId}` : "") +
-        (e.request?.path ? `Request path: ${e.request.method} ${e.request.path}` : "");
-      const error = new Error(
-        getLocalizedString("error.appstudio.teamsAppCreateFailed", e.name, e.message, message)
-      );
-      if (e.response?.status) {
-        error.name = e.response?.status;
-      }
+      const error = wrapException(e, "create-app");
       throw error;
     }
   }
@@ -121,16 +136,7 @@ export namespace AppStudioClient {
       await logProvider?.info(`successfully uploaded two icons`);
       return { colorIconUrl: results[0].data, outlineIconUrl: results[1].data };
     } catch (e: any) {
-      const correlationId = e.response?.headers[Constants.CORRELATION_ID];
-      const message =
-        `Failed to upload icon for app ${teamsAppId}, due to ${e.name}: ${e.message}` +
-        (correlationId ? `X-Correlation-ID: ${correlationId}` : "") +
-        (e.request?.path ? `Request path: ${e.request.method} ${e.request.path}` : "");
-      await logProvider?.warning(message);
-      const error = new Error(message);
-      if (e.response?.status) {
-        error.name = e.response?.status;
-      }
+      const error = wrapException(e, "update-icon");
       throw error;
     }
   }
@@ -157,17 +163,8 @@ export namespace AppStudioClient {
         }
       }
     } catch (e) {
-      const correlationId = e.response?.headers[Constants.CORRELATION_ID];
-      const message =
-        `Cannot get the app definition with app ID ${teamsAppId}, due to ${e.name}: ${e.message}` +
-        (correlationId ? `X-Correlation-ID: ${correlationId}` : "") +
-        (e.request?.path ? `Request path: ${e.request.method} ${e.request.path}` : "");
-      await logProvider?.warning(message);
-      const err = new Error(message);
-      if (e.response?.status) {
-        err.name = e.response?.status;
-      }
-      throw err;
+      const error = wrapException(e, "get-app");
+      throw error;
     }
     throw new Error(`Cannot get the app definition with app ID ${teamsAppId}`);
   }
@@ -226,15 +223,7 @@ export namespace AppStudioClient {
         );
       }
     } catch (e: any) {
-      const correlationId = e.response?.headers[Constants.CORRELATION_ID];
-      const message =
-        `Cannot create teams app due to ${e.name}: ${e.message}` +
-        (correlationId ? `X-Correlation-ID: ${correlationId}` : "") +
-        (e.request?.path ? `Request path: ${e.request.method} ${e.request.path}` : "");
-      const error = new Error(message);
-      if (e.response?.status) {
-        error.name = e.response?.status;
-      }
+      const error = wrapException(e, "update-app");
       throw error;
     }
   }

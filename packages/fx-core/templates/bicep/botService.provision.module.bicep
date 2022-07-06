@@ -1,6 +1,6 @@
 @secure()
 param provisionParameters object
-param provisionOutputs object
+param botEndpoint string
 var resourceBaseName = provisionParameters.resourceBaseName
 var botAadAppClientId = provisionParameters['botAadAppClientId'] // Read AAD app client id for Azure Bot Service from parameters
 var botServiceName = contains(provisionParameters, 'botServiceName') ? provisionParameters['botServiceName'] : '${resourceBaseName}' // Try to read name for Azure Bot Service from parameters
@@ -14,7 +14,7 @@ resource azureBot 'Microsoft.BotService/botServices@2021-03-01' = {
   name: botServiceName
   properties: {
     displayName: botDisplayName
-    endpoint: uri({{endpointVarName}} , '/api/messages')
+    endpoint: uri(botEndpoint, '/api/messages')
     msaAppId: botAadAppClientId
   }
   sku: {

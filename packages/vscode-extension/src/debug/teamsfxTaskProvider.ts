@@ -17,12 +17,7 @@ import {
   err,
   assembleError,
 } from "@microsoft/teamsfx-api";
-import {
-  Correlator,
-  FolderName,
-  isConfigUnifyEnabled,
-  LocalEnvManager,
-} from "@microsoft/teamsfx-core";
+import { Correlator, FolderName, LocalEnvManager } from "@microsoft/teamsfx-core";
 import { VSCodeDepsChecker } from "./depsChecker/vscodeChecker";
 import { vscodeLogger } from "./depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
@@ -89,11 +84,9 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
         localSettings = await localEnvManager.getLocalSettings(workspacePath, {
           projectId: projectSettings.projectId,
         });
-        if (isConfigUnifyEnabled()) {
-          localEnvInfo = await localEnvManager.getLocalEnvInfo(workspacePath, {
-            projectId: projectSettings.projectId,
-          });
-        }
+        localEnvInfo = await localEnvManager.getLocalEnvInfo(workspacePath, {
+          projectId: projectSettings.projectId,
+        });
         localEnv = await localEnvManager.getLocalDebugEnvs(
           workspacePath,
           projectSettings,

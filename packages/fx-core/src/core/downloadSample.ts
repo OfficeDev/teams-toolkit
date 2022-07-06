@@ -42,8 +42,14 @@ export async function fetchCodeZip(
       await new Promise<void>((resolve: () => void): NodeJS.Timer => setTimeout(resolve, 10000));
       if (e.response) {
         error.message += `, status code: ${e.response.status}`;
-      } else if (e.request && e.code === "ENOTFOUND") {
-        error.message += ". Network issue, please check your network connectivity";
+      } else if (e.request) {
+        if (e.code === "ENOTFOUND") {
+          error.message += ". Network issue, please check your network connectivity";
+        } else {
+          error.message += `. Request: ${e.request} failed with error message ${e.message}`;
+        }
+      } else {
+        error.message += `. ${e.message}`;
       }
     }
   }

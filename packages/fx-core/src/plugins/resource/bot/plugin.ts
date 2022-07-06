@@ -47,7 +47,6 @@ import {
   getSubscriptionIdFromResourceId,
   isBotNotificationEnabled,
   generateBicepFromFile,
-  isConfigUnifyEnabled,
   AppStudioScopes,
   GraphScopes,
 } from "../../../common";
@@ -372,22 +371,15 @@ export class TeamsBotImpl implements PluginImpl {
     this.ctx = context;
     await this.config.restoreConfigFromContext(context);
 
-    if (isConfigUnifyEnabled()) {
-      checkAndThrowIfMissing(
-        ConfigNames.LOCAL_ENDPOINT,
-        context.envInfo.state.get(ResourcePlugins.Bot).get(ConfigKeys.SITE_ENDPOINT)
-      );
-      await this.updateMessageEndpointOnAppStudio(
-        `${context.envInfo.state.get(ResourcePlugins.Bot).get(ConfigKeys.SITE_ENDPOINT)}${
-          CommonStrings.MESSAGE_ENDPOINT_SUFFIX
-        }`
-      );
-    } else {
-      checkAndThrowIfMissing(ConfigNames.LOCAL_ENDPOINT, this.config.localDebug.localEndpoint);
-      await this.updateMessageEndpointOnAppStudio(
-        `${this.config.localDebug.localEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`
-      );
-    }
+    checkAndThrowIfMissing(
+      ConfigNames.LOCAL_ENDPOINT,
+      context.envInfo.state.get(ResourcePlugins.Bot).get(ConfigKeys.SITE_ENDPOINT)
+    );
+    await this.updateMessageEndpointOnAppStudio(
+      `${context.envInfo.state.get(ResourcePlugins.Bot).get(ConfigKeys.SITE_ENDPOINT)}${
+        CommonStrings.MESSAGE_ENDPOINT_SUFFIX
+      }`
+    );
 
     this.config.saveConfigIntoContext(context);
 
@@ -404,15 +396,11 @@ export class TeamsBotImpl implements PluginImpl {
     );
     checkAndThrowIfMissing(
       ConfigNames.LOCAL_BOT_ID,
-      isConfigUnifyEnabled()
-        ? this.ctx?.envInfo.state.get(ResourcePlugins.Bot).get(BOT_ID)
-        : this.config.localDebug.localBotId
+      this.ctx?.envInfo.state.get(ResourcePlugins.Bot).get(BOT_ID)
     );
 
     const botReg: IBotRegistration = {
-      botId: isConfigUnifyEnabled()
-        ? this.ctx?.envInfo.state.get(ResourcePlugins.Bot).get(BOT_ID)
-        : this.config.localDebug.localBotId,
+      botId: this.ctx?.envInfo.state.get(ResourcePlugins.Bot).get(BOT_ID),
       name:
         (!this.ctx!.projectSettings?.appName
           ? ""
@@ -458,10 +446,7 @@ export class TeamsBotImpl implements PluginImpl {
       botAuthCreds.clientSecret = this.config.localDebug.localBotPassword;
       botAuthCreds.objectId = this.config.localDebug.localObjectId;
       Logger.debug(Messages.SuccessfullyGetExistingBotAadAppCredential);
-    } else if (
-      isConfigUnifyEnabled() &&
-      this.ctx?.envInfo.state.get(ResourcePlugins.Bot)?.get(BOT_ID)
-    ) {
+    } else if (this.ctx?.envInfo.state.get(ResourcePlugins.Bot)?.get(BOT_ID)) {
       botAuthCreds.clientId = this.ctx?.envInfo.state
         .get(ResourcePlugins.Bot)
         .get(PluginBot.BOT_ID);
@@ -507,28 +492,14 @@ export class TeamsBotImpl implements PluginImpl {
 
     await AppStudio.createBotRegistration(appStudioToken, botReg);
 
-    if (isConfigUnifyEnabled()) {
-      if (!this.config.scaffold.botId) {
-        this.config.scaffold.botId = botAuthCreds.clientId;
-      }
-      if (!this.config.scaffold.botPassword) {
-        this.config.scaffold.botPassword = botAuthCreds.clientSecret;
-      }
-      if (!this.config.scaffold.objectId) {
-        this.config.scaffold.objectId = botAuthCreds.objectId;
-      }
-    } else {
-      if (!this.config.localDebug.localBotId) {
-        this.config.localDebug.localBotId = botAuthCreds.clientId;
-      }
-
-      if (!this.config.localDebug.localBotPassword) {
-        this.config.localDebug.localBotPassword = botAuthCreds.clientSecret;
-      }
-
-      if (!this.config.localDebug.localObjectId) {
-        this.config.localDebug.localObjectId = botAuthCreds.objectId;
-      }
+    if (!this.config.scaffold.botId) {
+      this.config.scaffold.botId = botAuthCreds.clientId;
+    }
+    if (!this.config.scaffold.botPassword) {
+      this.config.scaffold.botPassword = botAuthCreds.clientSecret;
+    }
+    if (!this.config.scaffold.objectId) {
+      this.config.scaffold.objectId = botAuthCreds.objectId;
     }
 
     Logger.info(Messages.SuccessfullyProvisionedBotRegistration);

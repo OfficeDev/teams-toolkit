@@ -3,7 +3,7 @@
 
 import { Inputs } from "@microsoft/teamsfx-api";
 import path from "path";
-import { isAadManifestEnabled, isConfigUnifyEnabled } from "../../common/tools";
+import { isAadManifestEnabled } from "../../common/tools";
 import { CoreHookContext } from "../types";
 import fs from "fs-extra";
 import { PluginNames } from "../../plugins";
@@ -66,7 +66,7 @@ export async function generateAadManifest(
 
 export async function needMigrateToAadManifest(ctx: CoreHookContext): Promise<boolean> {
   try {
-    if (!isConfigUnifyEnabled() || !isAadManifestEnabled()) {
+    if (!isAadManifestEnabled()) {
       return false;
     }
 

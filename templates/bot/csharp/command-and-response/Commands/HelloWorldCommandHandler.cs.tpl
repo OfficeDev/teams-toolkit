@@ -1,12 +1,12 @@
-﻿namespace {{SafeProjectName}}.Commands
-{
-    using {{SafeProjectName}}.Models;
-    using AdaptiveCards.Templating;
-    using Microsoft.Bot.Builder;
-    using Microsoft.Bot.Schema;
-    using Microsoft.TeamsFx.Conversation;
-    using Newtonsoft.Json;
+﻿using {{SafeProjectName}}.Models;
+using AdaptiveCards.Templating;
+using Microsoft.Bot.Builder;
+using Microsoft.Bot.Schema;
+using Microsoft.TeamsFx.Conversation;
+using Newtonsoft.Json;
 
+namespace {{SafeProjectName}}.Commands
+{
     /// <summary>
     /// The <see cref="HelloWorldCommandHandler"/> registers a pattern with the <see cref="ITeamsCommandHandler"/> and 
     /// responds with an Adaptive Card if the user types the <see cref="TriggerPatterns"/>.
@@ -18,7 +18,8 @@
 
         public IEnumerable<ITriggerPattern> TriggerPatterns => new List<ITriggerPattern>
         {
-            new StringTrigger("helloworld")
+            // Used to trigger the command handler if the command text contains 'helloWorld'
+            new RegExpTrigger("helloWorld")
         };
 
         public HelloWorldCommandHandler(ILogger<HelloWorldCommandHandler> logger)

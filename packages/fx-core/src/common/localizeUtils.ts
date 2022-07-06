@@ -32,6 +32,10 @@ export function getLocalizedString(key: string, ...params: any[]): string {
   if (value && params && params.length > 0) {
     value = util.format(value, ...params);
   }
+
+  if (!value) {
+    return getDefaultString(key, ...params);
+  }
   return value || "";
 }
 

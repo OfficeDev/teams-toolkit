@@ -7,6 +7,7 @@ import { performance } from "perf_hooks";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   TelemetryEvent,
+  TelemetryMeasurements,
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/extTelemetryEvents";
@@ -41,10 +42,13 @@ export const localTelemetryReporter = new LocalTelemetryReporter(
   saveEventTime
 );
 
-export async function sendDebugAllStartEvent(): Promise<void> {
+export async function sendDebugAllStartEvent(additionalProperties: {
+  [key: string]: string;
+}): Promise<void> {
   const session = getLocalDebugSession();
   const components = await getProjectComponents();
   session.properties[TelemetryProperty.DebugProjectComponents] = components + "";
+  Object.assign(session.properties, additionalProperties);
 
   const properties = Object.assign(
     { [TelemetryProperty.CorrelationId]: session.id },
@@ -54,7 +58,6 @@ export async function sendDebugAllStartEvent(): Promise<void> {
 }
 
 export async function sendDebugAllEvent(
-  isRemote?: boolean,
   error?: FxError,
   additionalProperties?: { [key: string]: string }
 ): Promise<void> {
@@ -92,7 +95,6 @@ export async function sendDebugAllEvent(
 
   const properties = {
     [TelemetryProperty.CorrelationId]: session.id,
-    [TelemetryProperty.DebugRemote]: `${isRemote}`, // undefined, true or false
     [TelemetryProperty.Success]: error === undefined ? TelemetrySuccess.Yes : TelemetrySuccess.No,
     ...session.properties,
     ...additionalProperties,
@@ -100,8 +102,8 @@ export async function sendDebugAllEvent(
 
   const measurements = {
     [LocalTelemetryReporter.PropertyDuration]: duration,
-    [TelemetryProperty.DebugPrecheckGapDuration]: precheckGap,
-    [TelemetryProperty.DebugServicesGapDuration]: servicesGap,
+    [TelemetryMeasurements.DebugPrecheckGapDuration]: precheckGap,
+    [TelemetryMeasurements.DebugServicesGapDuration]: servicesGap,
   };
 
   if (error === undefined) {

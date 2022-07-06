@@ -129,6 +129,23 @@ export class YoChecker implements DependencyChecker {
     try {
       await fs.emptyDir(this.getPackagePath());
       await fs.remove(this.getSentinelPath());
+
+      const yoExecutables = [
+        "yo",
+        "yo.cmd",
+        "yo.ps1",
+        "yo-complete",
+        "yo-complete.cmd",
+        "yo-complete.ps1",
+      ];
+      await Promise.all(
+        yoExecutables.map(async (executable) => {
+          const executablePath = path.join(this.getDefaultInstallPath(), executable);
+          if (await fs.pathExists(executablePath)) {
+            await fs.remove(executablePath);
+          }
+        })
+      );
     } catch (err) {
       await this._logger.error(`Failed to clean up path: ${this.getPackagePath()}, error: ${err}`);
     }

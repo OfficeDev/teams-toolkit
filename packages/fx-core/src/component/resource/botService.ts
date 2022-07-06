@@ -6,23 +6,18 @@ import {
   ok,
   Result,
   Action,
-  Bicep,
   ContextV3,
   MaybePromise,
   InputsWithProjectPath,
   ProvisionContextV3,
-  CloudResource,
   v3,
   err,
   AzureAccountProvider,
   Effect,
 } from "@microsoft/teamsfx-api";
-import fs from "fs-extra";
-import * as path from "path";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
 import { AppStudioScopes, compileHandlebarsTemplateString, GraphScopes } from "../../common/tools";
-import { getTemplatesFolder } from "../../folder";
 import {
   CommonStrings,
   ConfigNames,
@@ -43,7 +38,7 @@ import { getComponent } from "../workflow";
 import * as clientFactory from "../../plugins/resource/bot/clientFactory";
 import { AzureResource } from "./azureResource";
 @Service("bot-service")
-export class BotService implements CloudResource {
+export class BotService extends AzureResource {
   outputs = {
     botId: {
       key: "botId",
@@ -55,46 +50,21 @@ export class BotService implements CloudResource {
   finalOutputKeys = ["botId", "botPassword"];
   secretFields = ["botPassword"];
   readonly name = "bot-service";
+  readonly bicepModuleName = "botService";
   generateBicep(
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const action: Action = {
-      name: "bot-service.generateBicep",
-      type: "function",
-      plan: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const bicep: Bicep = {
-          type: "bicep",
-          Configuration: {
-            Modules: { botService: "1" },
-            Orchestration: "1",
-          },
-        };
-        return ok([bicep]);
-      },
-      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const mPath = path.join(getTemplatesFolder(), "bicep", "botService.config.module.bicep");
-        const oPath = path.join(
-          getTemplatesFolder(),
-          "bicep",
-          "botService.config.orchestration.bicep"
-        );
-        let module = await fs.readFile(mPath, "utf-8");
-        const templateContext: any = {};
-        try {
-          const resource = Container.get(inputs.hosting) as AzureResource;
-          templateContext.endpointVarName = resource.outputs.endpoint.bicepVariable;
-        } catch {}
-        module = compileHandlebarsTemplateString(module, templateContext);
-        const orch = await fs.readFile(oPath, "utf-8");
-        const bicep: Bicep = {
-          type: "bicep",
-          Configuration: { Modules: { botService: module }, Orchestration: orch },
-        };
-        return ok([bicep]);
-      },
-    };
-    return ok(action);
+    try {
+      const resource = Container.get(inputs.hosting) as AzureResource;
+      this.templateContext.endpointVarName = compileHandlebarsTemplateString(
+        resource.outputs.endpoint.bicepVariable ?? "",
+        inputs
+      );
+    } catch {}
+    // Bot service's component must be Bot, omit it.
+    inputs.componentName = "";
+    return super.generateBicep(context, inputs);
   }
   provision(
     context: ContextV3,
@@ -214,7 +184,6 @@ export class BotService implements CloudResource {
             name: "graph.microsoft.com",
             remarks: "update message endpoint in AppStudio",
           });
-          const botServiceState = ctx.envInfo.state[ComponentNames.BotService];
           const teamsBotState = ctx.envInfo.state[ComponentNames.TeamsBot];
           const appStudioTokenRes = await ctx.tokenProvider.m365TokenProvider.getAccessToken({
             scopes: AppStudioScopes,
@@ -222,9 +191,9 @@ export class BotService implements CloudResource {
           const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
           CheckThrowSomethingMissing(ConfigNames.LOCAL_ENDPOINT, teamsBotState.endpoint);
           CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
-          CheckThrowSomethingMissing(ConfigNames.LOCAL_BOT_ID, botServiceState.botId);
+          CheckThrowSomethingMissing(ConfigNames.LOCAL_BOT_ID, teamsBotState.botId);
           const botReg: IBotRegistration = {
-            botId: botServiceState.botId,
+            botId: teamsBotState.botId,
             name: normalizeName(ctx.projectSetting.appName) + PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
             description: "",
             iconUrl: "",
@@ -247,8 +216,8 @@ export async function createBotAAD(ctx: ProvisionContextV3): Promise<Result<any,
   const graphToken = graphTokenRes.isOk() ? graphTokenRes.value : undefined;
   CheckThrowSomethingMissing(ConfigNames.GRAPH_TOKEN, graphToken);
   CheckThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, ctx.projectSetting.appName);
-  ctx.envInfo.state[ComponentNames.BotService] = ctx.envInfo.state[ComponentNames.BotService] || {};
-  const botConfig = ctx.envInfo.state[ComponentNames.BotService];
+  ctx.envInfo.state[ComponentNames.TeamsBot] = ctx.envInfo.state[ComponentNames.TeamsBot] || {};
+  const botConfig = ctx.envInfo.state[ComponentNames.TeamsBot];
   const botAADCreated = botConfig?.botId !== undefined && botConfig?.botPassword !== undefined;
   if (!botAADCreated) {
     const solutionConfig = ctx.envInfo.state.solution as v3.AzureSolutionConfig;

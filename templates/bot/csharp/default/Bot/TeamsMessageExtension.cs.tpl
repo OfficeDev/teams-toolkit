@@ -11,16 +11,16 @@ public class TeamsMessageExtension : TeamsActivityHandler
 {
     // Message Extension Code
     // Action.
-    protected override async Task<MessagingExtensionActionResponse> OnTeamsMessagingExtensionSubmitActionAsync(ITurnContext<IInvokeActivity> turnContext, MessagingExtensionAction action, CancellationToken cancellationToken)
+    protected override Task<MessagingExtensionActionResponse> OnTeamsMessagingExtensionSubmitActionAsync(ITurnContext<IInvokeActivity> turnContext, MessagingExtensionAction action, CancellationToken cancellationToken)
     {
         switch (action.CommandId)
         {
             case "createCard":
-                return CreateCardCommand(turnContext, action);
+                return Task.FromResult(CreateCardCommand(turnContext, action));
             case "shareMessage":
-                return ShareMessageCommand(turnContext, action);
+                return Task.FromResult(ShareMessageCommand(turnContext, action));
         }
-        return new MessagingExtensionActionResponse();
+        return Task.FromResult(new MessagingExtensionActionResponse());
     }
 
     private MessagingExtensionActionResponse CreateCardCommand(ITurnContext<IInvokeActivity> turnContext, MessagingExtensionAction action)
@@ -59,7 +59,7 @@ public class TeamsMessageExtension : TeamsActivityHandler
         // The user has chosen to share a message by choosing the 'Share Message' context menu command.
         var heroCard = new HeroCard
         {
-            Title = $"{action.MessagePayload.From?.User?.DisplayName} orignally sent this message:",
+            Title = $"{action.MessagePayload.From?.User?.DisplayName} originally sent this message:",
             Text = action.MessagePayload.Body.Content,
         };
 

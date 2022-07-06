@@ -441,3 +441,8 @@ export function generateResourceBaseName(appName: string, envName: string): stri
     uuid.v4().substr(0, 6)
   );
 }
+
+// TODO:implement after V3 project setting update
+export function isHostedByAzure(context: ContextV3): boolean {
+  return true;
+}

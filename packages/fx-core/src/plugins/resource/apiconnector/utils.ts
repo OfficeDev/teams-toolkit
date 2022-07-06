@@ -1,14 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 "use strict";
-import { Inputs } from "@microsoft/teamsfx-api";
+import { Inputs, FxError, SystemError } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import { LanguageType, FileType } from "./constants";
 import { ErrorMessage } from "./errors";
 import { ResultFactory } from "./result";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import path from "path";
-import { ApiConnectorConfiguration, AADAuthConfig } from "./config";
+import { ApiConnectorConfiguration } from "./config";
+import { Telemetry, TelemetryUtils } from "./telemetry";
 
 export function generateTempFolder(): string {
   const timestamp = Date.now();
@@ -31,6 +32,14 @@ export async function removeFileIfExist(file: string) {
   if (await fs.pathExists(file)) {
     await fs.remove(file);
   }
+}
+
+export function sendErrorTelemetry(thrownErr: FxError, stage: string) {
+  const errorCode = thrownErr.source + "." + thrownErr.name;
+  const errorType = thrownErr instanceof SystemError ? Telemetry.systemError : Telemetry.userError;
+  const errorMessage = thrownErr.message;
+  TelemetryUtils.sendErrorEvent(stage, errorCode, errorType, errorMessage);
+  return thrownErr;
 }
 
 export function checkInputEmpty(inputs: Inputs, ...keys: string[]) {

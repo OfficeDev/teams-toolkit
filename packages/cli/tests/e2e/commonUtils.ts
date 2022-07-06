@@ -534,7 +534,7 @@ export async function validateTabAndBotProjectProvision(projectPath: string, env
   await AadValidator.validate(aad);
 
   // Validate Tab Frontend
-  const frontend = FrontendValidator.init(context, true);
+  const frontend = FrontendValidator.init(context);
   await FrontendValidator.validateProvision(frontend);
 
   // Validate Bot Provision

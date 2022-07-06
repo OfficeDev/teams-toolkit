@@ -43,7 +43,6 @@ import {
   isSPFxProject,
   PluginNames,
   isValidProject,
-  isConfigUnifyEnabled,
   ProjectSettingsHelper,
   LocalEnvManager,
 } from "@microsoft/teamsfx-core";
@@ -426,28 +425,15 @@ export function getLocalTeamsAppId(rootfolder: string | undefined): any {
   }
 
   if (isWorkspaceSupported(rootfolder)) {
-    if (isConfigUnifyEnabled()) {
-      const result = readLocalStateJsonFile(rootfolder);
-      if (result.isErr()) {
-        return undefined;
-      }
-      const localState = result.value;
-      try {
-        return localState[PluginNames.APPST].teamsAppId;
-      } catch (error) {
-        return undefined;
-      }
-    } else {
-      const result = readLocalSettingsJsonFile(rootfolder);
-      if (result.isErr()) {
-        return undefined;
-      }
-      const localSettings = result.value;
-      try {
-        return localSettings.teamsApp.appId;
-      } catch (error) {
-        return undefined;
-      }
+    const result = readLocalStateJsonFile(rootfolder);
+    if (result.isErr()) {
+      return undefined;
+    }
+    const localState = result.value;
+    try {
+      return localState[PluginNames.APPST].teamsAppId;
+    } catch (error) {
+      return undefined;
     }
   }
 

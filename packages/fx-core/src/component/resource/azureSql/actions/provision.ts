@@ -13,7 +13,12 @@ import {
   Result,
   traverse,
 } from "@microsoft/teamsfx-api";
-import { ComponentNames, ActionNames, ActionTypeFunction } from "../../../constants";
+import {
+  ComponentNames,
+  ActionNames,
+  ActionTypeFunction,
+  ComponentStateKeys,
+} from "../../../constants";
 import { LoggerMW, ActionLogger } from "../../../middleware/logger";
 import { RunWithCatchErrorMW, ActionErrorHandler } from "../../../middleware/runWithCatchError";
 import { TelemetryMW, ActionTelemetryImplement } from "../../../middleware/telemetry";
@@ -48,7 +53,7 @@ export class ProvisionActionImplement {
     inputs: InputsWithProjectPath
   ): Promise<Result<Effect[], FxError>> {
     const ctx = context as ProvisionContextV3;
-    const state = (ctx.envInfo.state[ComponentNames.AzureSQL] ??= {});
+    const state = (ctx.envInfo.state[ComponentStateKeys[ComponentNames.AzureSQL]] ??= {});
     removeDatabases(state);
     let shouldAsk;
     if (state.sqlResourceId) {

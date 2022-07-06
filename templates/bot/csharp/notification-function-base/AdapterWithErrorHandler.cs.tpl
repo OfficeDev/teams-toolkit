@@ -1,10 +1,10 @@
+using Microsoft.Bot.Builder.Integration.AspNet.Core;
+using Microsoft.Bot.Builder.TraceExtensions;
+using Microsoft.Bot.Connector.Authentication;
+using Microsoft.Extensions.Logging;
+
 namespace {{SafeProjectName}}
 {
-    using Microsoft.Bot.Builder.Integration.AspNet.Core;
-    using Microsoft.Bot.Builder.TraceExtensions;
-    using Microsoft.Bot.Connector.Authentication;
-    using Microsoft.Extensions.Logging;
-
     public class AdapterWithErrorHandler : CloudAdapter
     {
         public AdapterWithErrorHandler(BotFrameworkAuthentication auth, ILogger<CloudAdapter> logger)

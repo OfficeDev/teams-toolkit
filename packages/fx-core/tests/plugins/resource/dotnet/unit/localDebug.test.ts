@@ -59,7 +59,6 @@ describe("WebappPlugin", () => {
           [PluginNames.SOLUTION, new Map([[DependentPluginInfo.appTenantId, tenantId]])],
         ]),
       } as EnvInfo;
-      sinon.stub(core, "isConfigUnifyEnabled").returns(true);
     });
 
     afterEach(() => {

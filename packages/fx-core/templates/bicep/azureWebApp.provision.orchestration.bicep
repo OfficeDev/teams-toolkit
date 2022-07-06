@@ -1,18 +1,18 @@
 // Resources web app
-module azureWebAppProvision './provision/azureWebApp.bicep' = {
-  name: 'azureWebAppProvision'
+module azureWebApp{{componentName}}Provision './provision/azureWebApp{{componentName}}.bicep' = {
+  name: 'azureWebApp{{componentName}}Provision'
   params: {
     provisionParameters: provisionParameters
   }
 }
 
 
-output azureWebAppOutput object = {
-  teamsFxPluginId: 'azure-web-app'
-  sku: azureWebAppProvision.outputs.sku
-  appName: azureWebAppProvision.outputs.appName
-  domain: azureWebAppProvision.outputs.domain
-  appServicePlanName: azureWebAppProvision.outputs.appServicePlanName
-  resourceId: azureWebAppProvision.outputs.resourceId
-  endpoint: azureWebAppProvision.outputs.endpoint
+output azureWebApp{{componentName}}Output object = {
+  teamsFxPluginId: '{{componentId}}'
+  sku: azureWebApp{{componentName}}Provision.outputs.sku
+  appName: azureWebApp{{componentName}}Provision.outputs.appName
+  domain: azureWebApp{{componentName}}Provision.outputs.domain
+  appServicePlanName: azureWebApp{{componentName}}Provision.outputs.appServicePlanName
+  resourceId: azureWebApp{{componentName}}Provision.outputs.resourceId
+  endpoint: azureWebApp{{componentName}}Provision.outputs.endpoint
 }

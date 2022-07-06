@@ -353,7 +353,8 @@ export class AppStudioPlugin implements Plugin {
     if (ctx.answers?.platform === Platform.VSCode) {
       const answer = ctx.answers![Constants.BUILD_OR_PUBLISH_QUESTION] as string;
       if (answer === manuallySubmitOption.id) {
-        //const appDirectory = `${ctx.root}/.${ConfigFolderName}`;
+        const properties: { [key: string]: string } = {};
+        properties[TelemetryPropertyKey.manual] = String(true);
         try {
           const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, false);
           const msg = getLocalizedString(
@@ -366,10 +367,10 @@ export class AppStudioPlugin implements Plugin {
               ctx.ui?.openUrl(Constants.PUBLISH_GUIDE);
             }
           });
-          TelemetryUtils.sendSuccessEvent(TelemetryEventName.publish);
+          TelemetryUtils.sendSuccessEvent(TelemetryEventName.publish, properties);
           return ok(appPackagePath);
         } catch (error) {
-          TelemetryUtils.sendErrorEvent(TelemetryEventName.publish, error);
+          TelemetryUtils.sendErrorEvent(TelemetryEventName.publish, error, properties);
           return err(
             AppStudioResultFactory.UserError(
               AppStudioError.TeamsPackageBuildError.name,
@@ -577,8 +578,7 @@ export class AppStudioPlugin implements Plugin {
         })
       );
     } else if (func.method === "getManifestTemplatePath") {
-      const isLocalDebug = (func.params.type as string) === "localDebug";
-      const filePath = await getManifestTemplatePath(ctx.root, isLocalDebug);
+      const filePath = await getManifestTemplatePath(ctx.root);
       return ok(filePath);
     } else if (func.method === "updateManifest") {
       return await this.updateManifest(ctx, func.params && func.params.envName === "local");

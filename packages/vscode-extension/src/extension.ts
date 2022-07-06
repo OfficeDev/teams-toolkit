@@ -16,12 +16,7 @@ import {
   Result,
   TemplateFolderName,
 } from "@microsoft/teamsfx-api";
-import {
-  Correlator,
-  isAADEnabled,
-  isConfigUnifyEnabled,
-  isValidProject,
-} from "@microsoft/teamsfx-core";
+import { Correlator, isAADEnabled, isValidProject } from "@microsoft/teamsfx-core";
 
 import {
   AadAppTemplateCodeLensProvider,
@@ -266,7 +261,8 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   // localdebug session starts from prerequisites checker
   const validatePrerequisitesCmd = vscode.commands.registerCommand(
     "fx-extension.validate-local-prerequisites",
-    () => Correlator.runWithId(startLocalDebugSession(), handlers.validateLocalPrerequisitesHandler)
+    // Do not run with Correlator because it is handled inside `validateLocalPrerequisitesHandler()`.
+    handlers.validateLocalPrerequisitesHandler
   );
   context.subscriptions.push(validatePrerequisitesCmd);
 
@@ -651,12 +647,6 @@ async function initializeContextKey(isTeamsFxProject: boolean) {
     "fx-extension.canUpgradeToArmAndMultiEnv",
     await canUpgradeToArmAndMultiEnv(workspaceUri?.fsPath)
   );
-
-  await vscode.commands.executeCommand(
-    "setContext",
-    "fx-extension.isConfigUnifyEnabled",
-    isConfigUnifyEnabled()
-  );
 }
 
 async function setAadManifestEnabledContext() {
@@ -700,9 +690,7 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
   const manifestTemplateSelector = {
     language: "json",
     scheme: "file",
-    pattern: isConfigUnifyEnabled()
-      ? `**/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`
-      : `**/manifest.*.template.json`,
+    pattern: `**/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`,
   };
   const manifestPreviewSelector = {
     language: "json",

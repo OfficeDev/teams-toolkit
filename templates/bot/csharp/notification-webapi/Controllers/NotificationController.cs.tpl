@@ -1,11 +1,11 @@
-﻿namespace {{SafeProjectName}}.Controllers
-{
-    using {{SafeProjectName}}.Models;
-    using AdaptiveCards.Templating;
-    using Microsoft.AspNetCore.Mvc;
-    using Microsoft.TeamsFx.Conversation;
-    using Newtonsoft.Json;
+﻿using {{SafeProjectName}}.Models;
+using AdaptiveCards.Templating;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.TeamsFx.Conversation;
+using Newtonsoft.Json;
 
+namespace {{SafeProjectName}}.Controllers
+{
     [Route("api/notification")]
     [ApiController]
     public class NotificationController : ControllerBase

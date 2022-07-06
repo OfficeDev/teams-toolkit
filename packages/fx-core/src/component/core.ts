@@ -34,6 +34,7 @@ import "./resource/azureStorage";
 import "./resource/azureAppService/azureWebApp";
 import "./resource/botService";
 import "./resource/spfx";
+import "./feature/api";
 import "./feature/bot";
 import "./feature/sql";
 import "./feature/tab";

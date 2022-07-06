@@ -5,6 +5,7 @@ import { FxResult } from "../result";
 import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { TelemetryKeys, TelemetryValues } from "../constants";
 import { PluginBot, PluginSolution } from "../resources/strings";
+import { getAppStudioEndpoint } from "../../../../common/tools";
 
 export class telemetryHelper {
   static fillCommonProperty(ctx: PluginContext, properties: { [key: string]: string }): void {
@@ -23,22 +24,26 @@ export class telemetryHelper {
     properties[TelemetryKeys.BotCapabilities] = capabilities ? JSON.stringify(capabilities) : "";
   }
 
-  static fillAxiosErrorProperty(
+  static fillAppStudioErrorProperty(
     innerError: any | undefined,
     properties: { [key: string]: string }
   ): void {
-    const statusCode = `${innerError?.response?.status}`;
-    const url = innerError?.toJSON?.()?.config?.url;
-    const method = innerError?.toJSON?.()?.config?.method;
+    const appStudioUrl = `${getAppStudioEndpoint()}/api/botframework`;
+    const url = innerError?.toJSON?.()?.config?.url as string;
+    if (url && url.startsWith(appStudioUrl)) {
+      properties[TelemetryKeys.Url] = "<botframework-url>";
+    } else {
+      return;
+    }
 
+    const statusCode = `${innerError?.response?.status}`;
     if (statusCode) {
       properties[TelemetryKeys.StatusCode] = statusCode;
     }
+
+    const method = innerError?.toJSON?.()?.config?.method;
     if (method) {
       properties[TelemetryKeys.Method] = method;
-    }
-    if (url) {
-      properties[TelemetryKeys.Url] = url;
     }
   }
 
@@ -77,7 +82,7 @@ export class telemetryHelper {
     properties[TelemetryKeys.ErrorMessage] = e.message;
     properties[TelemetryKeys.ErrorCode] = e.name;
     this.fillCommonProperty(ctx, properties);
-    this.fillAxiosErrorProperty(e.innerError, properties);
+    this.fillAppStudioErrorProperty(e.innerError, properties);
     if (e instanceof SystemError) {
       properties[TelemetryKeys.ErrorType] = TelemetryValues.SystemError;
     } else if (e instanceof UserError) {

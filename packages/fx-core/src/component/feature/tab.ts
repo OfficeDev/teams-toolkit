@@ -15,7 +15,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { isVSProject } from "../../common/projectSettingsHelper";
 import { CoreQuestionNames } from "../../core/question";
 import { ComponentNames } from "../constants";
 import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "../projectSettingsManager";
@@ -27,9 +26,10 @@ export class TeamsfxCore {
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     inputs.hosting =
-      inputs.hosting || isVSProject(context.projectSetting)
+      inputs.hosting ||
+      (inputs?.["programming-language"] === "csharp"
         ? ComponentNames.AzureWebApp
-        : ComponentNames.AzureStorage;
+        : ComponentNames.AzureStorage);
     const actions: Action[] = [
       LoadProjectSettingsAction,
       {
@@ -48,6 +48,7 @@ export class TeamsfxCore {
           // add hosting component
           projectSettings.components.push({
             name: inputs.hosting,
+            connections: ["teams-tab"],
             provision: true,
           });
           projectSettings.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
@@ -84,6 +85,7 @@ export class TeamsfxCore {
           capabilities: [{ name: "staticTab" }, { name: "configurableTab" }],
         },
       },
+      // TODO: connect AAD for blazor web app
       {
         name: "call:debug.generateLocalDebugSettings",
         type: "call",

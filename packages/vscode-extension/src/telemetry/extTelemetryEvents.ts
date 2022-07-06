@@ -111,11 +111,13 @@ export enum TelemetryEvent {
   DebugServiceStart = "debug-service-start",
   DebugService = "debug-service",
   DebugPrereqsCheckM365Account = "debug-prereqs-check-m365-account",
+  DebugPrereqsCheckM365AccountSignIn = "debug-prereqs-check-m365-account-sign-in",
+  DebugPrereqsCheckM365Sideloading = "debug-prereqs-check-m365-sideloading",
   DebugPrereqsCheckNode = "debug-prereqs-check-node",
   DebugPrereqsCheckPorts = "debug-prereqs-check-ports",
   DebugPrereqsCheckCert = "debug-prereqs-check-cert",
   DebugPrereqsCheckDependencies = "debug-prereqs-check-dependencies",
-  DebugPrereqsEnsureDependencies = "debug-prereqs-ensure-dependencies",
+  DebugPrereqsCheckNpmInstall = "debug-prereqs-check-npm-install",
   DebugPrereqsInstallPackages = "debug-prereqs-install-packages",
   DebugPreCheckCoreLocalDebug = "debug-precheck-core-local-debug",
   DebugTaskProvider = "debug-task-provider",
@@ -218,6 +220,7 @@ export enum TelemetryProperty {
   DebugCheckResultsSafe = "debug-check-results-safe",
   DebugErrorCodes = "debug-error-codes",
   DebugNpmInstallName = "debug-npm-install-name",
+  DebugNpmInstallAlreadyInstalled = "debug-npm-install-already-installed",
   DebugNpmInstallExitCode = "debug-npm-install-exit-code",
   DebugNpmInstallErrorMessage = "debug-npm-install-error-message",
   DebugNpmInstallNodeVersion = "debug-npm-install-node-version",
@@ -226,6 +229,11 @@ export enum TelemetryProperty {
   DebugServiceExitCode = "debug-service-exit-code",
   DebugPrereqsDepsType = "debug-prereqs-deps-type",
   DebugFailedServices = "debug-failed-services",
+  DebugPortsInUse = "debug-ports-in-use",
+  DebugM365AccountStatus = "debug-m365-account-status",
+  DebugIsSideloadingAllowed = "debug-is-sideloading-allowed",
+  DebugConcurrentCorrelationId = "debug-concurrent-correlation-id",
+  DebugConcurrentLastEventName = "debug-concurrent-last-event-name",
   Internal = "internal",
   InternalAlias = "internal-alias",
   OSArch = "os-arch",
@@ -255,6 +263,12 @@ export enum TelemetryProperty {
   DocumentationName = "documentation-name",
   // Used with Deactivate
   Timestamp = "timestamp",
+}
+
+export enum TelemetryMeasurements {
+  Duration = "duration",
+  DebugPrecheckGapDuration = "debug-precheck-gap-duration",
+  DebugServicesGapDuration = "debug-services-gap-duration",
 }
 
 export enum TelemetrySuccess {

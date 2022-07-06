@@ -135,12 +135,21 @@ async function runWithCheckResultTelemetry(
   eventName: string,
   action: (ctx: TelemetryContext) => Promise<CheckResult>
 ): Promise<CheckResult> {
+  return runWithCheckResultTelemetryProperties(eventName, {}, action);
+}
+
+async function runWithCheckResultTelemetryProperties(
+  eventName: string,
+  initialProperties: { [key: string]: string },
+  action: (ctx: TelemetryContext) => Promise<CheckResult>
+): Promise<CheckResult> {
   return await localTelemetryReporter.runWithTelemetryGeneric(
     eventName,
     action,
     (result: CheckResult) => {
       return result.result === ResultStatus.success ? undefined : result.error;
-    }
+    },
+    initialProperties
   );
 }
 
@@ -221,30 +230,37 @@ async function checkPort(
   projectSettings: ProjectSettings,
   displayMessage: string
 ): Promise<CheckResult> {
-  return await runWithCheckResultTelemetry(TelemetryEvent.DebugPrereqsCheckPorts, async () => {
-    VsCodeLogInstance.outputChannel.appendLine(displayMessage);
-    const portsInUse = await localEnvManager.getPortsInUse(workspacePath, projectSettings);
-    if (portsInUse.length > 0) {
-      let message: string;
-      if (portsInUse.length > 1) {
-        message = util.format(
-          localize("teamstoolkit.localDebug.portsAlreadyInUse"),
-          portsInUse.join(", ")
-        );
-      } else {
-        message = util.format(localize("teamstoolkit.localDebug.portAlreadyInUse"), portsInUse[0]);
+  return await runWithCheckResultTelemetry(
+    TelemetryEvent.DebugPrereqsCheckPorts,
+    async (ctx: TelemetryContext) => {
+      VsCodeLogInstance.outputChannel.appendLine(displayMessage);
+      const portsInUse = await localEnvManager.getPortsInUse(workspacePath, projectSettings);
+      if (portsInUse.length > 0) {
+        ctx.properties[TelemetryProperty.DebugPortsInUse] = JSON.stringify(portsInUse);
+        let message: string;
+        if (portsInUse.length > 1) {
+          message = util.format(
+            localize("teamstoolkit.localDebug.portsAlreadyInUse"),
+            portsInUse.join(", ")
+          );
+        } else {
+          message = util.format(
+            localize("teamstoolkit.localDebug.portAlreadyInUse"),
+            portsInUse[0]
+          );
+        }
+        return {
+          checker: Checker.Ports,
+          result: ResultStatus.failed,
+          error: new UserError(ExtensionSource, ExtensionErrors.PortAlreadyInUse, message),
+        };
       }
       return {
         checker: Checker.Ports,
-        result: ResultStatus.failed,
-        error: new UserError(ExtensionSource, ExtensionErrors.PortAlreadyInUse, message),
+        result: ResultStatus.success,
       };
     }
-    return {
-      checker: Checker.Ports,
-      result: ResultStatus.success,
-    };
-  });
+  );
 }
 
 export async function checkPrerequisitesForGetStarted(): Promise<Result<any, FxError>> {
@@ -289,7 +305,8 @@ export async function checkAndInstall(): Promise<Result<void, FxError>> {
   const projectComponents = await commonUtils.getProjectComponents();
   return await localTelemetryReporter.runWithTelemetryProperties(
     TelemetryEvent.DebugPrerequisites,
-    { [TelemetryProperty.DebugProjectComponents]: JSON.stringify(projectComponents) },
+    // projectComponents is already serialized JSON string
+    { [TelemetryProperty.DebugProjectComponents]: `${projectComponents}` },
     _checkAndInstall
   );
 }
@@ -482,53 +499,81 @@ async function _checkAndInstall(ctx: TelemetryContext): Promise<Result<void, FxE
 async function ensureM365Account(
   showLoginPage: boolean
 ): Promise<Result<{ token: string; loginHint?: string }, FxError>> {
-  let loginStatusRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
-  if (loginStatusRes.isErr()) {
-    return err(loginStatusRes.error);
-  }
-  let token = loginStatusRes.value.token;
-  let upn = loginStatusRes.value.accountInfo?.upn;
-  if (loginStatusRes.value.status === signedOut && showLoginPage) {
-    const tokenRes = await tools.tokenProvider.m365TokenProvider.getAccessToken({
-      scopes: AppStudioScopes,
-      showDialog: true,
-    });
-    if (tokenRes.isErr()) {
-      return err(tokenRes.error);
+  // Check M365 account token
+  const m365Result = await localTelemetryReporter.runWithTelemetry(
+    TelemetryEvent.DebugPrereqsCheckM365AccountSignIn,
+    async (
+      ctx: TelemetryContext
+    ): Promise<Result<{ token: string; loginHint?: string }, FxError>> => {
+      let loginStatusRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+      if (loginStatusRes.isErr()) {
+        ctx.properties[TelemetryProperty.DebugM365AccountStatus] = "error";
+        return err(loginStatusRes.error);
+      }
+      ctx.properties[TelemetryProperty.DebugM365AccountStatus] = loginStatusRes.value.status;
+
+      let token = loginStatusRes.value.token;
+      let upn = loginStatusRes.value.accountInfo?.upn;
+      if (loginStatusRes.value.status === signedOut && showLoginPage) {
+        const tokenRes = await tools.tokenProvider.m365TokenProvider.getAccessToken({
+          scopes: AppStudioScopes,
+          showDialog: true,
+        });
+        if (tokenRes.isErr()) {
+          return err(tokenRes.error);
+        }
+        loginStatusRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+        if (loginStatusRes.isErr()) {
+          return err(loginStatusRes.error);
+        }
+        token = loginStatusRes.value.token;
+        upn = loginStatusRes.value.accountInfo?.upn;
+      }
+      if (token === undefined) {
+        // corner case but need to handle
+        return err(
+          new SystemError(
+            ExtensionSource,
+            ExtensionErrors.PrerequisitesNoM365AccountError,
+            "No M365 account login"
+          )
+        );
+      }
+      const loginHint = typeof upn === "string" ? upn : undefined;
+      return ok({ token, loginHint });
     }
-    loginStatusRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
-    if (loginStatusRes.isErr()) {
-      return err(loginStatusRes.error);
-    }
-    token = loginStatusRes.value.token;
-    upn = loginStatusRes.value.accountInfo?.upn;
-  }
-  if (token === undefined) {
-    // corner case but need to handle
-    return err(
-      new SystemError(
-        ExtensionSource,
-        ExtensionErrors.PrerequisitesNoM365AccountError,
-        "No M365 account login"
-      )
-    );
+  );
+  if (m365Result.isErr()) {
+    return err(m365Result.error);
   }
 
-  const isSideloadingEnabled = await getSideloadingStatus(token);
-  if (isSideloadingEnabled === false) {
-    // sideloading disabled
-    return err(
-      new UserError(
-        ExtensionSource,
-        ExtensionErrors.PrerequisitesSideloadingDisabledError,
-        getDefaultString("teamstoolkit.accountTree.sideloadingWarningTooltip"),
-        localize("teamstoolkit.accountTree.sideloadingWarningTooltip")
-      )
-    );
+  // Check sideloading permission
+  const sideloadingResult = await localTelemetryReporter.runWithTelemetry(
+    TelemetryEvent.DebugPrereqsCheckM365Sideloading,
+    async (ctx: TelemetryContext) => {
+      const isSideloadingEnabled = await getSideloadingStatus(m365Result.value.token);
+      // true, false or undefined for error
+      ctx.properties[TelemetryProperty.DebugIsSideloadingAllowed] = `${isSideloadingEnabled}`;
+      if (isSideloadingEnabled === false) {
+        // sideloading disabled
+        return err(
+          new UserError(
+            ExtensionSource,
+            ExtensionErrors.PrerequisitesSideloadingDisabledError,
+            getDefaultString("teamstoolkit.accountTree.sideloadingWarningTooltip"),
+            localize("teamstoolkit.accountTree.sideloadingWarningTooltip")
+          )
+        );
+      }
+
+      return ok(undefined);
+    }
+  );
+  if (sideloadingResult.isErr()) {
+    return err(sideloadingResult.error);
   }
 
-  const loginHint = typeof upn === "string" ? upn : undefined;
-  return ok({ token, loginHint });
+  return m365Result;
 }
 
 function checkM365Account(prefix: string, showLoginPage: boolean): Promise<CheckResult> {
@@ -811,85 +856,94 @@ function handleNodeNotSupportedError(
   }
 }
 
-async function checkNpmInstall(
+function checkNpmInstall(
   component: string,
   folder: string,
   appName: string,
   displayMessage: string
 ): Promise<CheckResult> {
-  VsCodeLogInstance.outputChannel.appendLine(displayMessage);
+  const taskName = `${component} npm install`;
+  return runWithCheckResultTelemetryProperties(
+    TelemetryEvent.DebugPrereqsCheckNpmInstall,
+    { [TelemetryProperty.DebugNpmInstallName]: taskName },
+    async (ctx: TelemetryContext) => {
+      VsCodeLogInstance.outputChannel.appendLine(displayMessage);
 
-  let installed = false;
-  try {
-    installed = await checkNpmDependencies(folder);
-  } catch (error: any) {
-    // treat check error as uninstalled
-    await VsCodeLogInstance.warning(`Error when checking npm dependencies: ${error}`);
-  }
+      let installed = false;
+      try {
+        installed = await checkNpmDependencies(folder);
+      } catch (error: unknown) {
+        // treat check error as uninstalled
+        await VsCodeLogInstance.warning(`Error when checking npm dependencies: ${error}`);
+      }
+      ctx.properties[TelemetryProperty.DebugNpmInstallAlreadyInstalled] = installed.toString();
 
-  let result = ResultStatus.success;
-  let error = undefined;
-  try {
-    if (!installed) {
-      let exitCode: number | undefined;
+      let result = ResultStatus.success;
+      let error = undefined;
+      try {
+        if (!installed) {
+          let exitCode: number | undefined;
 
-      const checkNpmInstallRunning = () => {
-        for (const [key, value] of trackedTasks) {
-          if (value === `${component} npm install`) {
-            return true;
+          const checkNpmInstallRunning = () => {
+            for (const [key, value] of trackedTasks) {
+              if (value === taskName) {
+                return true;
+              }
+            }
+            return false;
+          };
+          if (checkNpmInstallRunning()) {
+            exitCode = await new Promise((resolve: (value: number | undefined) => void) => {
+              const endListener = taskEndEventEmitter.event((result) => {
+                if (result.name === taskName) {
+                  endListener.dispose();
+                  resolve(result.exitCode);
+                }
+              });
+              if (!checkNpmInstallRunning()) {
+                endListener.dispose();
+                resolve(undefined);
+              }
+            });
+          } else {
+            exitCode = await runTask(
+              new vscode.Task(
+                {
+                  type: "shell",
+                  command: taskName,
+                },
+                vscode.workspace.workspaceFolders![0],
+                taskName,
+                ProductName,
+                new vscode.ShellExecution(npmInstallCommand, { cwd: folder })
+              )
+            );
+          }
+          ctx.properties[TelemetryProperty.DebugNpmInstallExitCode] = `${exitCode}`;
+
+          // check npm dependencies again if exit code not zero
+          if (exitCode !== 0 && !(await checkNpmDependencies(folder))) {
+            result = ResultStatus.failed;
+            error = new UserError(
+              ExtensionSource,
+              "NpmInstallFailure",
+              `Failed to npm install for ${component}`
+            );
           }
         }
-        return false;
+      } catch (err: any) {
+        // treat unexpected error as installed
+        error = err;
+      }
+      return {
+        checker: component,
+        result: result,
+        successMsg: doctorConstant.NpmInstallSuccess.split("@app").join(appName),
+        failureMsg: doctorConstant.NpmInstallFailure.split("@app").join(appName),
+        error: error,
       };
-      if (checkNpmInstallRunning()) {
-        exitCode = await new Promise((resolve: (value: number | undefined) => void) => {
-          const endListener = taskEndEventEmitter.event((result) => {
-            if (result.name === `${component} npm install`) {
-              endListener.dispose();
-              resolve(result.exitCode);
-            }
-          });
-          if (!checkNpmInstallRunning()) {
-            endListener.dispose();
-            resolve(undefined);
-          }
-        });
-      } else {
-        exitCode = await runTask(
-          new vscode.Task(
-            {
-              type: "shell",
-              command: `${component} npm install`,
-            },
-            vscode.workspace.workspaceFolders![0],
-            `${component} npm install`,
-            ProductName,
-            new vscode.ShellExecution(npmInstallCommand, { cwd: folder })
-          )
-        );
-      }
-
-      // check npm dependencies again if exit code not zero
-      if (exitCode !== 0 && !(await checkNpmDependencies(folder))) {
-        result = ResultStatus.failed;
-        error = new UserError(
-          ExtensionSource,
-          "NpmInstallFailure",
-          `Failed to npm install for ${component}`
-        );
-      }
     }
-  } catch (err: any) {
-    // treat unexpected error as installed
-    error = err;
-  }
-  return {
-    checker: component,
-    result: result,
-    successMsg: doctorConstant.NpmInstallSuccess.split("@app").join(appName),
-    failureMsg: doctorConstant.NpmInstallFailure.split("@app").join(appName),
-    error: error,
-  };
+  );
 }
 
 async function handleCheckResults(

@@ -21,43 +21,71 @@ export class AppStudioError {
     ],
   };
 
+  public static readonly DeveloperPortalAPIFailedError = {
+    name: "DeveloperPortalAPIFailed",
+    message: (
+      e: any,
+      correlationId: string,
+      requestPath: string,
+      apiName: string,
+      extraData: string
+    ): [string, string] => [
+      getDefaultString(
+        "error.appstudio.apiFailed.telemetry",
+        e.name,
+        e.message,
+        apiName,
+        correlationId,
+        extraData
+      ),
+      getLocalizedString(
+        "error.appstudio.apiFailed",
+        e.name,
+        e.message,
+        requestPath,
+        correlationId,
+        extraData
+      ),
+    ],
+  };
+
   public static readonly RemoteAppIdCreateFailedError = {
     name: "RemoteAppIdCreateFailed",
     message: (error?: any): [string, string] => [
-      getDefaultString("error.appstudio.remoteTeamsAppCreateFailed", error?.name, error?.message),
-      getLocalizedString("error.appstudio.remoteTeamsAppCreateFailed", error?.name, error?.message),
+      getDefaultString("error.appstudio.remoteTeamsAppCreateFailed", error?.message),
+      getLocalizedString("error.appstudio.remoteTeamsAppCreateFailed", error?.displayMessage),
     ],
   };
 
   public static readonly RemoteAppIdUpdateFailedError = {
     name: "RemoteAppIdUpdateFailed",
     message: (error?: any): [string, string] => [
-      getDefaultString("error.appstudio.remoteTeamsAppUpdateFailed", error?.name, error?.message),
-      getLocalizedString("error.appstudio.remoteTeamsAppUpdateFailed", error?.name, error?.message),
+      getDefaultString("error.appstudio.remoteTeamsAppUpdateFailed", error?.message),
+      getLocalizedString("error.appstudio.remoteTeamsAppUpdateFailed", error?.displayMessage),
     ],
   };
 
   public static readonly LocalAppIdCreateFailedError = {
     name: "LocalAppIdCreateFailed",
     message: (error?: any): [string, string] => [
-      getDefaultString("error.appstudio.localTeamsAppCreateFailed", error?.name, error?.message),
-      getLocalizedString("error.appstudio.localTeamsAppCreateFailed", error?.name, error?.message),
+      getDefaultString("error.appstudio.localTeamsAppCreateFailed", error?.message),
+      getLocalizedString("error.appstudio.localTeamsAppCreateFailed", error?.displayMessage),
     ],
   };
 
   public static readonly LocalAppIdUpdateFailedError = {
     name: "LocalAppIdUpdateFailed",
     message: (error?: any): [string, string] => [
-      getDefaultString("error.appstudio.localTeamsAppUpdateFailed", error?.name, error?.message),
-      getLocalizedString("error.appstudio.localTeamsAppUpdateFailed", error?.name, error?.message),
+      getDefaultString("error.appstudio.localTeamsAppUpdateFailed", error?.message),
+      getLocalizedString("error.appstudio.localTeamsAppUpdateFailed", error?.displayMessage),
     ],
   };
 
   public static readonly TeamsAppCreateFailedError = {
     name: "TeamsAppCreateFailed",
     message: (error?: any): [string, string] => [
-      getDefaultString("error.appstudio.teamsAppCreateFailed", error?.name, error?.message),
-      getLocalizedString("error.appstudio.teamsAppCreateFailed", error?.name, error?.message),
+      getDefaultString("error.appstudio.teamsAppCreateFailed", error?.message),
+      getLocalizedString("error.appstudio.teamsAppCreateFailed", error?.displayMessage),
     ],
   };
 

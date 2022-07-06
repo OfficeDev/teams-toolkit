@@ -37,7 +37,6 @@ import {
   ProjectSettingsHelper,
   TaskDefinition,
   ProgrammingLanguage,
-  isConfigUnifyEnabled,
   environmentManager,
   DepsManager,
   getSideloadingStatus,
@@ -221,8 +220,6 @@ export default class Preview extends YargsCommand {
         // whether on success or failure, send this.telemetryProperties and this.telemetryMeasurements
         Object.assign(ctx.properties, this.telemetryProperties);
         Object.assign(ctx.measurements, this.telemetryMeasurements);
-        ctx.properties[TelemetryProperty.PreviewLastEventName] =
-          localTelemetryReporter.getLastEventName();
         return result.isErr() ? result.error : undefined;
       },
       this.telemetryProperties
@@ -274,10 +271,7 @@ export default class Preview extends YargsCommand {
 
     const skipNgrok = !(await isNgrokCheckerEnabled());
     const trustDevCert = await isTrustDevCertEnabled();
-    let ignoreEnvInfo = true;
-    if (isConfigUnifyEnabled()) {
-      ignoreEnvInfo = false;
-    }
+    const ignoreEnvInfo = false;
     const inputs: Inputs = {
       projectPath: workspaceFolder,
       platform: Platform.CLI,
@@ -286,7 +280,7 @@ export default class Preview extends YargsCommand {
         skipNgrok: skipNgrok,
         trustDevCert: trustDevCert,
       },
-      env: isConfigUnifyEnabled() ? environmentManager.getLocalEnvName() : undefined,
+      env: environmentManager.getLocalEnvName(),
     };
 
     const localEnvManager = new LocalEnvManager(cliLogger, CliTelemetry.getReporter());
@@ -296,11 +290,7 @@ export default class Preview extends YargsCommand {
       throw NotM365Project();
     }
 
-    let localSettings = undefined;
     let configResult = undefined;
-    if (!isConfigUnifyEnabled()) {
-      localSettings = await localEnvManager.getLocalSettings(workspaceFolder); // here does not need crypt data
-    }
     const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
     const includeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
     const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
@@ -446,28 +436,20 @@ export default class Preview extends YargsCommand {
     let tenantId = undefined;
     let localTeamsAppId = undefined;
     let localBotId = undefined;
-    if (isConfigUnifyEnabled()) {
-      configResult = await core.getProjectConfig(inputs);
-      if (configResult.isErr()) {
-        return err(configResult.error);
-      }
-      const config = configResult.value;
-      tenantId = config?.config
-        ?.get(constants.solutionPluginName)
-        ?.get(constants.teamsAppTenantIdConfigKey) as string;
-      localTeamsAppId = config?.config
-        ?.get(constants.appstudioPluginName)
-        ?.get(constants.remoteTeamsAppIdConfigKey);
-      localBotId = config?.config
-        ?.get(constants.botPluginName)
-        ?.get(constants.botIdConfigKey) as string;
-    } else {
-      localSettings = await localEnvManager.getLocalSettings(workspaceFolder); // here does not need crypt data
-
-      tenantId = localSettings?.teamsApp?.tenantId as string;
-      localTeamsAppId = localSettings?.teamsApp?.teamsAppId as string;
-      localBotId = localSettings?.bot?.botId as string;
+    configResult = await core.getProjectConfig(inputs);
+    if (configResult.isErr()) {
+      return err(configResult.error);
     }
+    const config = configResult.value;
+    tenantId = config?.config
+      ?.get(constants.solutionPluginName)
+      ?.get(constants.teamsAppTenantIdConfigKey) as string;
+    localTeamsAppId = config?.config
+      ?.get(constants.appstudioPluginName)
+      ?.get(constants.remoteTeamsAppIdConfigKey);
+    localBotId = config?.config
+      ?.get(constants.botPluginName)
+      ?.get(constants.botIdConfigKey) as string;
 
     if (localTeamsAppId === undefined || localTeamsAppId.length === 0) {
       return err(errors.TeamsAppIdNotExists());

@@ -2,11 +2,7 @@
 // Licensed under the MIT license.
 
 import * as vscode from "vscode";
-import {
-  getPropertyByPath,
-  environmentManager,
-  isConfigUnifyEnabled,
-} from "@microsoft/teamsfx-core";
+import { getPropertyByPath, environmentManager } from "@microsoft/teamsfx-core";
 import { manifestConfigDataRegex, manifestStateDataRegex } from "./constants";
 import { core, getSystemInputs } from "./handlers";
 import { getProvisionSucceedFromEnv } from "./utils/commonUtils";
@@ -17,9 +13,6 @@ export class ManifestTemplateHoverProvider implements vscode.HoverProvider {
     position: vscode.Position,
     token: vscode.CancellationToken
   ): Promise<vscode.Hover | undefined> {
-    if (!isConfigUnifyEnabled()) {
-      return undefined;
-    }
     const line = document.lineAt(position.line);
 
     let regex;

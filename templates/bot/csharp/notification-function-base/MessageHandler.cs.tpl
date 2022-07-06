@@ -1,14 +1,14 @@
+using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Bot.Builder.Integration.AspNet.Core;
+using Microsoft.Bot.Builder;
+using Microsoft.Extensions.Logging;
+using Microsoft.TeamsFx.Conversation;
+
 namespace {{SafeProjectName}}
 {
-    using Microsoft.Azure.WebJobs;
-    using Microsoft.Azure.WebJobs.Extensions.Http;
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Bot.Builder.Integration.AspNet.Core;
-    using Microsoft.Bot.Builder;
-    using Microsoft.Extensions.Logging;
-    using Microsoft.TeamsFx.Conversation;
-
     public sealed class MessageHandler
     {
         private readonly ConversationBot _conversation;

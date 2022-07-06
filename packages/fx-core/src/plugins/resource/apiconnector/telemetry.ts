@@ -10,6 +10,7 @@ export class Telemetry {
   static systemError = "system";
 
   static readonly stage = {
+    questionModel: "question-model",
     scaffold: "scaffold",
     updatePkg: "update-package",
   };

@@ -53,13 +53,7 @@ import {
   newProjectSettings,
 } from "../common/projectSettingsHelper";
 import { TelemetryReporterInstance } from "../common/telemetry";
-import {
-  createV2Context,
-  isAadManifestEnabled,
-  isConfigUnifyEnabled,
-  mapToJson,
-  undefinedName,
-} from "../common/tools";
+import { createV2Context, mapToJson, undefinedName } from "../common/tools";
 import { getTemplatesFolder } from "../folder";
 import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
 import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
@@ -77,6 +71,8 @@ import {
   TabSsoItem,
   BotFeatureIds,
   TabFeatureIds,
+  CicdOptionItem,
+  ApiConnectionOptionItem,
 } from "../plugins/solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { CallbackRegistry } from "./callback";
@@ -91,6 +87,7 @@ import {
   InvalidInputError,
   LoadSolutionError,
   NonExistEnvNameError,
+  NotImplementedError,
   ObjectIsUndefinedError,
   OperationNotPermittedError,
   ProjectFolderExistError,
@@ -112,8 +109,6 @@ import { EnvInfoLoaderMW_V3, loadEnvInfoV3 } from "./middleware/envInfoLoaderV3"
 import { EnvInfoWriterMW } from "./middleware/envInfoWriter";
 import { EnvInfoWriterMW_V3 } from "./middleware/envInfoWriterV3";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
-import { LocalSettingsLoaderMW } from "./middleware/localSettingsLoader";
-import { LocalSettingsWriterMW } from "./middleware/localSettingsWriter";
 import { ProjectMigratorMW } from "./middleware/projectMigrator";
 import {
   getProjectSettingsPath,
@@ -275,15 +270,13 @@ export class FxCore implements v3.ICore {
         return err(createEnvResult.error);
       }
 
-      if (isConfigUnifyEnabled()) {
-        const createLocalEnvResult = await this.createEnvWithName(
-          environmentManager.getLocalEnvName(),
-          projectSettings,
-          inputs
-        );
-        if (createLocalEnvResult.isErr()) {
-          return err(createLocalEnvResult.error);
-        }
+      const createLocalEnvResult = await this.createEnvWithName(
+        environmentManager.getLocalEnvName(),
+        projectSettings,
+        inputs
+      );
+      if (createLocalEnvResult.isErr()) {
+        return err(createLocalEnvResult.error);
       }
 
       const solution = await getSolutionPluginV2ByName(inputs[CoreQuestionNames.Solution]);
@@ -398,6 +391,10 @@ export class FxCore implements v3.ICore {
       if (BotFeatureIds.includes(feature)) {
         inputs.feature = feature;
         await runAction("teams-bot.add", context, inputs as InputsWithProjectPath);
+      }
+      if (TabFeatureIds.includes(feature)) {
+        inputs.feature = feature;
+        await runAction("teams-tab.add", context, inputs as InputsWithProjectPath);
       }
     }
     if (inputs.platform === Platform.VSCode) {
@@ -589,13 +586,11 @@ export class FxCore implements v3.ICore {
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
-    LocalSettingsLoaderMW,
     SolutionLoaderMW,
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
     EnvInfoWriterMW(true),
-    LocalSettingsWriterMW,
   ])
   async localDebugV2(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.debug);
@@ -612,7 +607,7 @@ export class FxCore implements v3.ICore {
     }
     if (!ctx.localSettings) ctx.localSettings = {};
     if (ctx.solutionV2.provisionLocalResource) {
-      if (isConfigUnifyEnabled() && ctx.envInfoV2?.config) {
+      if (ctx.envInfoV2?.config) {
         ctx.envInfoV2.config.isLocalDebug = true;
       }
       const res = await ctx.solutionV2.provisionLocalResource(
@@ -730,10 +725,52 @@ export class FxCore implements v3.ICore {
     ctx!.projectSettings = context.projectSetting;
     return ok(Void);
   }
+
   async executeUserTask(func: Func, inputs: Inputs): Promise<Result<unknown, FxError>> {
-    if (isV3()) return this.executeUserTaskV3(func, inputs);
-    else return this.executeUserTaskV2(func, inputs);
+    if (isV3()) {
+      if (func.method === "addFeature") {
+        const res = await this.addFeature(inputs as v2.InputsWithProjectPath);
+        if (res.isErr()) return err(res.error);
+        return ok(undefined);
+      }
+      return err(new NotImplementedError(func.method));
+    } else return this.executeUserTaskV2(func, inputs);
   }
+
+  @hooks([
+    ErrorHandlerMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW_V3(false),
+    QuestionModelMW_V3,
+    ContextInjectorMW,
+    ProjectSettingsWriterMW,
+    EnvInfoWriterMW_V3(),
+  ])
+  async addFeature(
+    inputs: v2.InputsWithProjectPath,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+    const feature = inputs.feature as string;
+    let res;
+    if (feature === "sql") {
+      res = await runAction("sql.add", context, inputs as InputsWithProjectPath);
+    } else if (BotFeatureIds.includes(feature)) {
+      res = await runAction("teams-bot.add", context, inputs as InputsWithProjectPath);
+    } else if (TabFeatureIds.includes(feature)) {
+      res = await runAction("teams-tab.add", context, inputs as InputsWithProjectPath);
+    } else if (feature === CicdOptionItem.id) {
+      res = await runAction("cicd.add", context, inputs as InputsWithProjectPath);
+    } else if (feature === ApiConnectionOptionItem.id) {
+      res = await runAction("api-connector.add", context, inputs as InputsWithProjectPath);
+    } else {
+      return err(new NotImplementedError(feature));
+    }
+    if (res.isErr()) return err(res.error);
+    ctx!.projectSettings = context.projectSetting;
+    return ok(Void);
+  }
+
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -743,7 +780,6 @@ export class FxCore implements v3.ICore {
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
-    LocalSettingsLoaderMW,
     SolutionLoaderMW,
     QuestionModelMW,
     ContextInjectorMW,
@@ -759,11 +795,7 @@ export class FxCore implements v3.ICore {
     inputs.stage = Stage.userTask;
     const namespace = func.namespace;
     const array = namespace ? namespace.split("/") : [];
-    if (
-      isConfigUnifyEnabled() &&
-      inputs.env === environmentManager.getLocalEnvName() &&
-      ctx?.envInfoV2
-    ) {
+    if (inputs.env === environmentManager.getLocalEnvName() && ctx?.envInfoV2) {
       ctx.envInfoV2.config.isLocalDebug = true;
     }
     if ("" !== namespace && array.length > 0) {
@@ -942,7 +974,6 @@ export class FxCore implements v3.ICore {
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
-    LocalSettingsLoaderMW,
     ContextInjectorMW,
   ])
   async getProjectConfig(
@@ -1546,18 +1577,6 @@ export class FxCore implements v3.ICore {
     return result;
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW])
-  async addFeature(inputs: v2.InputsWithProjectPath): Promise<Result<Void, FxError>> {
-    const context = createContextV3();
-    const feature = inputs.features;
-    if (feature === BotOptionItem.id) {
-      inputs.hosting = "azure-web-app";
-      inputs.scenario = TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME;
-    }
-    await runAction("fx.addBot", context, inputs);
-    return ok(Void);
-  }
-
   //V1,V2 questions
   _getQuestionsForCreateProjectV2 = getQuestionsForCreateProjectV2;
   _getQuestionsForCreateProjectV3 = getQuestionsForCreateProjectV3;
@@ -1630,10 +1649,8 @@ export async function ensureBasicFolderStructure(
         "subscriptionInfo.json",
         BuildFolderName,
       ];
-      if (isConfigUnifyEnabled()) {
-        gitIgnoreContent.push(`.${ConfigFolderName}/${InputConfigsFolderName}/config.local.json`);
-        gitIgnoreContent.push(`.${ConfigFolderName}/${StatesFolderName}/state.local.json`);
-      }
+      gitIgnoreContent.push(`.${ConfigFolderName}/${InputConfigsFolderName}/config.local.json`);
+      gitIgnoreContent.push(`.${ConfigFolderName}/${StatesFolderName}/state.local.json`);
       if (inputs.platform === Platform.VS) {
         gitIgnoreContent.push("appsettings.Development.json");
       }

@@ -22,7 +22,6 @@ describe("Middleware - aadManifestMigration.test", () => {
 
   beforeEach(function () {
     sandbox.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
-    sandbox.stub<any, any>(tool, "isConfigUnifyEnabled").returns(true);
     sandbox.stub<any, any>(fs, "writeJSON").resolves();
     sandbox.stub<any, any>(fs, "ensureDir").resolves();
     sandbox.stub<any, any>(fs, "writeJson").resolves();

@@ -142,7 +142,7 @@ describe("Multi Env Happy Path for Azure", function () {
           await AadValidator.validate(aad);
 
           // Validate Tab Frontend
-          const frontend = FrontendValidator.init(context, true);
+          const frontend = FrontendValidator.init(context);
           await FrontendValidator.validateProvision(frontend);
 
           // Validate Function App
@@ -175,7 +175,7 @@ describe("Multi Env Happy Path for Azure", function () {
           const context = contextResult.value;
 
           // Validate Tab Frontend
-          const frontend = FrontendValidator.init(context, true);
+          const frontend = FrontendValidator.init(context);
           await FrontendValidator.validateDeploy(frontend);
 
           // Validate Function App

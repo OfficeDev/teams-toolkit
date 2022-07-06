@@ -152,7 +152,6 @@ describe("AadAppForTeamsPlugin: CI", () => {
 
   it("provision: using manifest", async function () {
     sinon.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
-    sinon.stub<any, any>(tool, "isConfigUnifyEnabled").returns(true);
     context = await TestHelper.pluginContext(new Map(), true, false, false);
     context.m365TokenProvider = mockTokenProviderM365();
     sinon.stub<any, any>(AadAppManifestManager, "loadAadManifest").resolves({
@@ -178,7 +177,6 @@ describe("AadAppForTeamsPlugin: CI", () => {
 
   it("setApplicationInContext: using manifest", async function () {
     sinon.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
-    sinon.stub<any, any>(tool, "isConfigUnifyEnabled").returns(true);
     context = await TestHelper.pluginContext(new Map(), true, true, false);
     context.m365TokenProvider = mockTokenProviderM365();
     mockProvisionResult(context);
@@ -322,10 +320,10 @@ describe("AadAppForTeamsPlugin: CI", () => {
 
   it("scaffold without bot", async function () {
     sinon.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
-    sinon.stub<any, any>(tool, "isConfigUnifyEnabled").returns(true);
     sinon.stub(fs, "ensureDir").resolves();
     const config = new Map();
     const context = await TestHelper.pluginContext(config, true, false, false);
+    context.root = "./";
 
     sinon.stub(fs, "pathExists").resolves(true);
 
@@ -358,10 +356,10 @@ describe("AadAppForTeamsPlugin: CI", () => {
 
   it("scaffold with bot", async function () {
     sinon.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
-    sinon.stub<any, any>(tool, "isConfigUnifyEnabled").returns(true);
     sinon.stub(fs, "ensureDir").resolves();
     const config = new Map();
     const context = await TestHelper.pluginContext(config, true, false, false);
+    context.root = "./";
     (context.projectSettings!.solutionSettings as any).capabilities.push("Bot");
     sinon.stub(fs, "pathExists").resolves(true);
 
@@ -393,13 +391,11 @@ describe("AadAppForTeamsPlugin: CI", () => {
       );
     });
     const result = await plugin.scaffold(context);
-
     chai.assert.equal(result.isOk(), true);
   });
 
   it("deploy", async function () {
     sinon.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
-    sinon.stub<any, any>(tool, "isConfigUnifyEnabled").returns(true);
     sinon.stub<any, any>(AadAppManifestManager, "loadAadManifest").resolves({
       id: "fake-aad-id",
       name: "fake-aad-name",

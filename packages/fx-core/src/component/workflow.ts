@@ -471,9 +471,23 @@ export function getComponent(
   projectSettings: ProjectSettingsV3,
   resourceType: string
 ): Component | undefined {
-  if (!projectSettings.components) return undefined;
-  const results = projectSettings.components.filter((r) => r.name === resourceType);
-  return results[0];
+  return projectSettings.components?.find((r) => r.name === resourceType);
+}
+
+export function getHostingParentComponent(
+  projectSettings: ProjectSettingsV3,
+  resourceType: string
+): Component | undefined {
+  const hostingComponent = getComponent(projectSettings, resourceType);
+  const parentName = hostingComponent?.connections?.find((name) => {
+    const component = getComponent(projectSettings, name);
+    return component?.hosting === hostingComponent.name;
+  });
+  if (!parentName) {
+    return undefined;
+  }
+  const parent = getComponent(projectSettings, parentName);
+  return parent;
 }
 
 export async function runAction(
@@ -502,6 +516,14 @@ export async function runAction(
     if (execRes.isErr()) return execRes;
     await showSummary(`${actionName} summary:`, execEffects, context, inputs);
     // }
+  } else {
+    return err(
+      new SystemError({
+        source: "fx",
+        name: "ActionNotFoundError",
+        message: "action not found:" + actionName,
+      })
+    );
   }
   context.logProvider.info(
     `------------------------run action: ${actionName} finish!------------------------`

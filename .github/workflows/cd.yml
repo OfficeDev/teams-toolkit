@@ -44,7 +44,7 @@ jobs:
         run: |
           echo It's only allowed to alpha on dev branch.
           exit 1
-      
+
       - name: Validate inputs for ga
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/ga' && github.event.inputs.preid != 'beta' }}
         run: |
@@ -85,8 +85,7 @@ jobs:
 
       - name: manage pkgs to release
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.pkgs }}
-        run:
-          bash .github/scripts/lerna.sh ${{github.event.inputs.pkgs}}
+        run: bash .github/scripts/lerna.sh ${{github.event.inputs.pkgs}}
 
       - name: Setup project
         run: |
@@ -101,7 +100,7 @@ jobs:
         if: ${{ github.ref == 'refs/heads/dev' }}
         run: |
           npx lerna version prerelease --preid=alpha.$(git rev-parse --short HEAD) --exact --no-push --allow-branch dev --yes
-      
+
       - name: release beta npm packages to npmjs.org
         if: ${{ github.ref == 'refs/heads/ga' }}
         run: |
@@ -174,7 +173,7 @@ jobs:
           artifacts: ${{ runner.temp }}/teamsfx_templates/*.zip
           allowUpdates: true
           removeArtifacts: true
-      
+
       - name: release templates' beta version to github
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.ref == 'refs/heads/ga' }}
         uses: ncipollo/release-action@v1.10.0
@@ -210,7 +209,7 @@ jobs:
         uses: ncipollo/release-action@v1.10.0
         with:
           artifacts: ${{ runner.temp }}/teamsfx_templates/*.zip
-          name: 'Release for ${{ steps.version-change.outputs.TEMPLATE_VERSION }}'
+          name: "Release for ${{ steps.version-change.outputs.TEMPLATE_VERSION }}"
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ steps.version-change.outputs.TEMPLATE_VERSION }}
           allowUpdates: true
@@ -224,10 +223,10 @@ jobs:
         uses: ncipollo/release-action@v1.10.0
         with:
           artifacts: ${{ runner.temp }}/template-tags.txt
-          name: 'Template Tag List'
-          body: 'Release to maintain template tag list.'
+          name: "Template Tag List"
+          body: "Release to maintain template tag list."
           token: ${{ secrets.github_token }}
-          tag: 'template-tag-list'
+          tag: "template-tag-list"
           allowUpdates: true
 
       - name: download simpleauth to fx-core
@@ -298,7 +297,7 @@ jobs:
         uses: ncipollo/release-action@v1.10.0
         with:
           token: ${{ secrets.CD_PAT }}
-          tag: '@microsoft/teamsfx-server-${{ steps.version-change.outputs.SERVER_VERSION_NUM }}'
+          tag: "@microsoft/teamsfx-server-${{ steps.version-change.outputs.SERVER_VERSION_NUM }}"
           artifacts: ./packages/server/lib/*.exe
           prerelease: true
           artifactErrorsFailBuild: true
@@ -340,7 +339,7 @@ jobs:
         uses: ncipollo/release-action@v1.10.0
         with:
           token: ${{ secrets.CD_PAT }}
-          tag: 'vscode-extension-${{ steps.version-change.outputs.EXTENSION_VERSION_NUM }}'
+          tag: "vscode-extension-${{ steps.version-change.outputs.EXTENSION_VERSION_NUM }}"
           artifacts: ./packages/**/*.vsix
           prerelease: true
           artifactErrorsFailBuild: true
@@ -370,7 +369,7 @@ jobs:
           rm -f versions.json
           echo ${{steps.version-change.outputs.CHANGED}} > changed.txt
           npx lerna ls -all --json > versions.json
-      
+
       - name: upload release info to artifact
         uses: actions/upload-artifact@v3
         with:

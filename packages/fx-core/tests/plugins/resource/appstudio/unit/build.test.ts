@@ -23,12 +23,6 @@ import { newEnvInfo } from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import { getAzureProjectRoot } from "../helper";
 import { v4 as uuid } from "uuid";
-import {
-  LocalSettingsAuthKeys,
-  LocalSettingsBotKeys,
-  LocalSettingsFrontendKeys,
-  LocalSettingsTeamsAppKeys,
-} from "../../../../../src/common/localSettingsConstants";
 
 describe("Build Teams Package", () => {
   let plugin: AppStudioPlugin;
@@ -38,23 +32,7 @@ describe("Build Teams Package", () => {
   let selectedPlugins: Plugin[];
   const sandbox = sinon.createSandbox();
 
-  const localDebugApplicationIdUris = "local web application info source";
-  const localDebugClientId = uuid();
-  const localDebugBotId = uuid();
-  const localDebugBotDomain = "local debug bot domain";
-
   beforeEach(async () => {
-    localSettings = {
-      auth: new ConfigMap([
-        [LocalSettingsAuthKeys.ApplicationIdUris, localDebugApplicationIdUris],
-        [LocalSettingsAuthKeys.ClientId, localDebugClientId],
-      ]),
-      bot: new ConfigMap([
-        [LocalSettingsBotKeys.BotId, localDebugBotId],
-        [LocalSettingsBotKeys.BotDomain, localDebugBotDomain],
-      ]),
-      teamsApp: new ConfigMap([[LocalSettingsTeamsAppKeys.TeamsAppId, uuid()]]),
-    };
     plugin = new AppStudioPlugin();
     ctx = {
       root: getAzureProjectRoot(),

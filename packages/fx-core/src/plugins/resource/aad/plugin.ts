@@ -66,7 +66,7 @@ import { Bicep, ConstantString, HelpLinks } from "../../../common/constants";
 import { getTemplatesFolder } from "../../../folder";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 import { AppUser } from "../appstudio/interfaces/appUser";
-import { isAadManifestEnabled, isConfigUnifyEnabled } from "../../../common/tools";
+import { isAadManifestEnabled } from "../../../common/tools";
 import { getPermissionMap } from "./permissions";
 import { AadAppManifestManager } from "./aadAppManifestManager";
 import { AADManifest, ReplyUrlsWithType } from "./interfaces/AADManifest";
@@ -81,7 +81,7 @@ import { generateAadManifestTemplate } from "../../../core/generateAadManifestTe
 
 export class AadAppForTeamsImpl {
   public async provision(ctx: PluginContext, isLocalDebug = false): Promise<AadResult> {
-    if (isAadManifestEnabled() && isConfigUnifyEnabled()) {
+    if (isAadManifestEnabled()) {
       return await this.provisionUsingManifest(ctx, isLocalDebug);
     }
 
@@ -100,15 +100,10 @@ export class AadAppForTeamsImpl {
     await TokenProvider.init({ m365: ctx.m365TokenProvider });
 
     // Move objectId etc. from input to output.
-    const skip = Utils.skipAADProvision(
-      ctx,
-      isLocalDebug ? (isConfigUnifyEnabled() ? false : true) : false
-    );
+    const skip = Utils.skipAADProvision(ctx, false);
     DialogUtils.init(ctx.ui, ProgressTitle.Provision, ProgressTitle.ProvisionSteps);
 
-    let config: ProvisionConfig = new ProvisionConfig(
-      isLocalDebug ? (isConfigUnifyEnabled() ? false : true) : false
-    );
+    let config: ProvisionConfig = new ProvisionConfig(false);
     await config.restoreConfigFromContext(ctx);
     const permissions = AadAppForTeamsImpl.parsePermission(
       config.permissionRequest as string,
@@ -124,11 +119,7 @@ export class AadAppForTeamsImpl {
           config.objectId,
           config.password,
           ctx.m365TokenProvider,
-          isLocalDebug
-            ? isConfigUnifyEnabled()
-              ? ctx.envInfo.envName
-              : undefined
-            : ctx.envInfo.envName
+          ctx.envInfo.envName
         );
         ctx.logProvider?.info(Messages.getLog(Messages.GetAadAppSuccess));
       }
@@ -307,7 +298,7 @@ export class AadAppForTeamsImpl {
   }
 
   public async postProvision(ctx: PluginContext, isLocalDebug = false): Promise<AadResult> {
-    if (isAadManifestEnabled() && isConfigUnifyEnabled()) {
+    if (isAadManifestEnabled()) {
       return await this.postProvisionUsingManifest(ctx, isLocalDebug);
     }
     TelemetryUtils.init(ctx);
@@ -318,16 +309,11 @@ export class AadAppForTeamsImpl {
       isLocalDebug
     );
 
-    const skip = Utils.skipAADProvision(
-      ctx,
-      isLocalDebug ? (isConfigUnifyEnabled() ? false : true) : false
-    );
+    const skip = Utils.skipAADProvision(ctx, false);
     DialogUtils.init(ctx.ui, ProgressTitle.PostProvision, ProgressTitle.PostProvisionSteps);
 
     await TokenProvider.init({ m365: ctx.m365TokenProvider });
-    const config: PostProvisionConfig = new PostProvisionConfig(
-      isLocalDebug ? (isConfigUnifyEnabled() ? false : true) : false
-    );
+    const config: PostProvisionConfig = new PostProvisionConfig(false);
     config.restoreConfigFromContext(ctx);
 
     await DialogUtils.progress?.start(ProgressDetail.Starting);
@@ -789,7 +775,7 @@ export class AadAppForTeamsImpl {
   }
 
   public async scaffold(ctx: PluginContext): Promise<AadResult> {
-    if (isAadManifestEnabled() && isConfigUnifyEnabled()) {
+    if (isAadManifestEnabled()) {
       TelemetryUtils.init(ctx);
       Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartScaffold);
       await generateAadManifestTemplate(ctx.root, ctx.projectSettings);
@@ -799,7 +785,7 @@ export class AadAppForTeamsImpl {
   }
 
   public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
-    if (isAadManifestEnabled() && isConfigUnifyEnabled()) {
+    if (isAadManifestEnabled()) {
       TelemetryUtils.init(ctx);
       Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartDeploy);
 

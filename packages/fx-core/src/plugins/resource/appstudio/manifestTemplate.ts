@@ -13,51 +13,32 @@ import {
   IStaticTab,
   Inputs,
 } from "@microsoft/teamsfx-api";
-import { getAppDirectory, isConfigUnifyEnabled, deepCopy } from "../../../common/tools";
+import { getAppDirectory, deepCopy } from "../../../common/tools";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
 import {
   STATIC_TABS_MAX_ITEMS,
-  MANIFEST_LOCAL,
-  MANIFEST_TEMPLATE,
   TEAMS_APP_MANIFEST_TEMPLATE_V3,
-  TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3,
   STATIC_TABS_TPL_FOR_MULTI_ENV,
-  STATIC_TABS_TPL_LOCAL_DEBUG,
   STATIC_TABS_TPL_EXISTING_APP,
   CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV,
-  CONFIGURABLE_TABS_TPL_LOCAL_DEBUG,
   CONFIGURABLE_TABS_TPL_EXISTING_APP,
   BOTS_TPL_FOR_MULTI_ENV,
-  BOTS_TPL_LOCAL_DEBUG,
   BOTS_TPL_EXISTING_APP,
   COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV,
-  COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG,
   COMPOSE_EXTENSIONS_TPL_EXISTING_APP,
-  TEAMS_APP_SHORT_NAME_MAX_LENGTH,
   MANIFEST_TEMPLATE_CONSOLIDATE,
   WEB_APPLICATION_INFO_MULTI_ENV,
-  WEB_APPLICATION_INFO_LOCAL_DEBUG,
-  DEFAULT_DEVELOPER_WEBSITE_URL,
-  DEFAULT_DEVELOPER_PRIVACY_URL,
-  DEFAULT_DEVELOPER_TERM_OF_USE_URL,
+  DEFAULT_DEVELOPER,
   BOTS_TPL_FOR_COMMAND_AND_RESPONSE,
   BOTS_TPL_FOR_NOTIFICATION,
 } from "./constants";
-import { replaceConfigValue } from "./utils/utils";
 import { AzureSolutionQuestionNames, BotScenario } from "../../solution/fx-solution/question";
 import { isBotNotificationEnabled } from "../../../common/featureFlags";
 
-export async function getManifestTemplatePath(
-  projectRoot: string,
-  isLocalDebug = false
-): Promise<string> {
+export async function getManifestTemplatePath(projectRoot: string): Promise<string> {
   const appDir = await getAppDirectory(projectRoot);
-  if (isConfigUnifyEnabled()) {
-    return `${appDir}/${MANIFEST_TEMPLATE_CONSOLIDATE}`;
-  } else {
-    return isLocalDebug ? `${appDir}/${MANIFEST_LOCAL}` : `${appDir}/${MANIFEST_TEMPLATE}`;
-  }
+  return `${appDir}/${MANIFEST_TEMPLATE_CONSOLIDATE}`;
 }
 
 export async function init(
@@ -68,42 +49,20 @@ export async function init(
   const newAppPackageFolder = `${projectRoot}/templates/${AppPackageFolderName}`;
   await fs.ensureDir(newAppPackageFolder);
 
-  if (isConfigUnifyEnabled()) {
-    const manifestString = TEAMS_APP_MANIFEST_TEMPLATE_V3;
-    const manifest = JSON.parse(manifestString);
-    if (existingApp) {
-      manifest.developer = {
-        name: "Teams App, Inc.",
-        websiteUrl: DEFAULT_DEVELOPER_WEBSITE_URL,
-        privacyUrl: DEFAULT_DEVELOPER_PRIVACY_URL,
-        termsOfUseUrl: DEFAULT_DEVELOPER_TERM_OF_USE_URL,
-      };
-    }
-    await saveManifest(projectRoot, manifest);
-  } else {
-    let localManifestString = TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3;
-    const suffix = "-local-debug";
-    let localAppName = appName;
-    if (suffix.length + appName.length <= TEAMS_APP_SHORT_NAME_MAX_LENGTH) {
-      localAppName = localAppName + suffix;
-    }
-    localManifestString = replaceConfigValue(localManifestString, "appName", localAppName);
-    const localManifest = JSON.parse(localManifestString);
-    await saveManifest(projectRoot, localManifest, true);
-
-    const remoteManifestString = TEAMS_APP_MANIFEST_TEMPLATE_V3;
-    const remoteManifest = JSON.parse(remoteManifestString);
-    await saveManifest(projectRoot, remoteManifest, false);
+  const manifestString = TEAMS_APP_MANIFEST_TEMPLATE_V3;
+  const manifest = JSON.parse(manifestString);
+  if (existingApp) {
+    manifest.developer = DEFAULT_DEVELOPER;
   }
+  await saveManifest(projectRoot, manifest);
 
   return ok(undefined);
 }
 
 export async function loadManifest(
-  projectRoot: string,
-  isLocalDebug = false
+  projectRoot: string
 ): Promise<Result<TeamsAppManifest, FxError>> {
-  const manifestFilePath = await getManifestTemplatePath(projectRoot, isLocalDebug);
+  const manifestFilePath = await getManifestTemplatePath(projectRoot);
   if (!(await fs.pathExists(manifestFilePath))) {
     return err(
       AppStudioResultFactory.UserError(
@@ -140,10 +99,9 @@ export async function loadManifest(
 
 export async function saveManifest(
   projectRoot: string,
-  manifest: TeamsAppManifest,
-  isLocalDebug = false
+  manifest: TeamsAppManifest
 ): Promise<Result<any, FxError>> {
-  const manifestFilePath = await getManifestTemplatePath(projectRoot, isLocalDebug);
+  const manifestFilePath = await getManifestTemplatePath(projectRoot);
   await fs.writeFile(manifestFilePath, JSON.stringify(manifest, null, 4));
   return ok(manifestFilePath);
 }
@@ -154,8 +112,6 @@ export async function saveManifest(
  * @returns
  */
 export async function getCapabilities(projectRoot: string): Promise<Result<string[], FxError>> {
-  if (!isConfigUnifyEnabled()) return ok([]);
-
   const manifestRes = await loadManifest(projectRoot);
   if (manifestRes.isErr()) {
     return err(manifestRes.error);
@@ -180,48 +136,31 @@ export async function capabilityExceedLimit(
   projectRoot: string,
   capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension" | "WebApplicationInfo"
 ): Promise<Result<boolean, FxError>> {
-  const localManifest = await loadManifest(projectRoot, true);
-  if (localManifest.isErr()) {
-    return err(localManifest.error);
+  const manifest = await loadManifest(projectRoot);
+  if (manifest.isErr()) {
+    return err(manifest.error);
   }
 
-  const remoteManifest = await loadManifest(projectRoot, false);
-  if (remoteManifest.isErr()) {
-    return err(remoteManifest.error);
-  }
-
-  let localExceed,
-    remoteExceed = false;
+  let exceed = false;
   switch (capability) {
     case "staticTab":
-      localExceed =
-        localManifest.value.staticTabs !== undefined &&
-        localManifest.value.staticTabs!.length >= STATIC_TABS_MAX_ITEMS;
-      remoteExceed =
-        remoteManifest.value.staticTabs !== undefined &&
-        remoteManifest.value.staticTabs!.length >= STATIC_TABS_MAX_ITEMS;
-      return ok(localExceed || remoteExceed);
+      exceed =
+        manifest.value.staticTabs !== undefined &&
+        manifest.value.staticTabs!.length >= STATIC_TABS_MAX_ITEMS;
+      return ok(exceed);
     case "configurableTab":
-      localExceed =
-        localManifest.value.configurableTabs !== undefined &&
-        localManifest.value.configurableTabs!.length >= 1;
-      remoteExceed =
-        remoteManifest.value.configurableTabs !== undefined &&
-        remoteManifest.value.configurableTabs!.length >= 1;
-      return ok(localExceed || remoteExceed);
+      exceed =
+        manifest.value.configurableTabs !== undefined &&
+        manifest.value.configurableTabs!.length >= 1;
+      return ok(exceed);
     case "Bot":
-      localExceed = localManifest.value.bots !== undefined && localManifest.value.bots!.length >= 1;
-      remoteExceed =
-        remoteManifest.value.bots !== undefined && remoteManifest.value.bots!.length >= 1;
-      return ok(localExceed || remoteExceed);
+      exceed = manifest.value.bots !== undefined && manifest.value.bots!.length >= 1;
+      return ok(exceed);
     case "MessageExtension":
-      localExceed =
-        localManifest.value.composeExtensions !== undefined &&
-        localManifest.value.composeExtensions!.length >= 1;
-      remoteExceed =
-        remoteManifest.value.composeExtensions !== undefined &&
-        remoteManifest.value.composeExtensions!.length >= 1;
-      return ok(localExceed || remoteExceed);
+      exceed =
+        manifest.value.composeExtensions !== undefined &&
+        manifest.value.composeExtensions!.length >= 1;
+      return ok(exceed);
     case "WebApplicationInfo":
       return ok(false);
     default:
@@ -239,65 +178,75 @@ export async function addCapabilities(
   capabilities: v3.ManifestCapability[],
   inputs: Inputs
 ): Promise<Result<any, FxError>> {
-  const remoteManifestRes = await loadManifest(projectRoot, false);
-  if (remoteManifestRes.isErr()) {
-    return err(remoteManifestRes.error);
+  const manifestRes = await loadManifest(projectRoot);
+  if (manifestRes.isErr()) {
+    return err(manifestRes.error);
   }
-  const remoteManifest = remoteManifestRes.value;
+  const manifest = manifestRes.value;
 
-  let staticTabIndex = remoteManifest.staticTabs?.length ?? 0;
+  let staticTabIndex = manifest.staticTabs?.length ?? 0;
 
   capabilities.map((capability) => {
     switch (capability.name) {
       case "staticTab":
-        if (!remoteManifest.staticTabs) {
-          Object.assign(remoteManifest, { staticTabs: [] });
+        if (!manifest.staticTabs) {
+          Object.assign(manifest, { staticTabs: [] });
         }
         if (capability.snippet) {
-          remoteManifest.staticTabs!.push(capability.snippet);
+          manifest.staticTabs!.push(capability.snippet);
         } else {
           if (capability.existingApp) {
             const template = deepCopy(STATIC_TABS_TPL_EXISTING_APP[0]);
             template.entityId = "index" + staticTabIndex;
-            remoteManifest.staticTabs!.push(template);
+            manifest.staticTabs!.push(template);
           } else {
             const template = deepCopy(STATIC_TABS_TPL_FOR_MULTI_ENV[0]);
             template.entityId = "index" + staticTabIndex;
-            remoteManifest.staticTabs!.push(template);
+            manifest.staticTabs!.push(template);
+            if (
+              manifest.validDomains?.indexOf("{{state.fx-resource-frontend-hosting.domain}}") == -1
+            ) {
+              manifest.validDomains?.push("{{state.fx-resource-frontend-hosting.domain}}");
+            }
           }
           staticTabIndex++;
         }
         break;
       case "configurableTab":
-        if (!remoteManifest.configurableTabs) {
-          Object.assign(remoteManifest, { configurableTabs: [] });
+        if (!manifest.configurableTabs) {
+          Object.assign(manifest, { configurableTabs: [] });
         }
         if (capability.snippet) {
-          remoteManifest.configurableTabs!.push(capability.snippet);
+          manifest.configurableTabs!.push(capability.snippet);
         } else {
           if (capability.existingApp) {
-            remoteManifest.configurableTabs = remoteManifest.configurableTabs!.concat(
+            manifest.configurableTabs = manifest.configurableTabs!.concat(
               CONFIGURABLE_TABS_TPL_EXISTING_APP
             );
           } else {
-            remoteManifest.configurableTabs = remoteManifest.configurableTabs!.concat(
+            manifest.configurableTabs = manifest.configurableTabs!.concat(
               CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV
             );
+            if (
+              manifest.validDomains?.indexOf("{{state.fx-resource-frontend-hosting.domain}}") == -1
+            ) {
+              manifest.validDomains?.push("{{state.fx-resource-frontend-hosting.domain}}");
+            }
           }
         }
         break;
       case "Bot":
-        if (!remoteManifest.bots) {
-          Object.assign(remoteManifest, { bots: [] });
+        if (!manifest.bots) {
+          Object.assign(manifest, { bots: [] });
         }
         if (capability.snippet) {
-          remoteManifest.bots!.push(capability.snippet);
+          manifest.bots!.push(capability.snippet);
         } else {
           if (capability.existingApp) {
-            remoteManifest.bots = remoteManifest.bots!.concat(BOTS_TPL_EXISTING_APP);
+            manifest.bots = manifest.bots!.concat(BOTS_TPL_EXISTING_APP);
           } else {
-            if (remoteManifest.bots === undefined) {
-              remoteManifest.bots = [];
+            if (manifest.bots === undefined) {
+              manifest.bots = [];
             }
 
             if (isBotNotificationEnabled()) {
@@ -306,33 +255,35 @@ export async function addCapabilities(
 
               if (scenarios.includes(BotScenario.CommandAndResponseBot)) {
                 // command and response bot
-                remoteManifest.bots = remoteManifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE);
+                manifest.bots = manifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE);
               } else if (scenarios.includes(BotScenario.NotificationBot)) {
                 // notification
-                remoteManifest.bots = remoteManifest.bots.concat(BOTS_TPL_FOR_NOTIFICATION);
+                manifest.bots = manifest.bots.concat(BOTS_TPL_FOR_NOTIFICATION);
               } else {
                 // legacy bot
-                remoteManifest.bots = remoteManifest.bots.concat(BOTS_TPL_FOR_MULTI_ENV);
+                manifest.bots = manifest.bots.concat(BOTS_TPL_FOR_MULTI_ENV);
               }
             } else {
-              remoteManifest.bots = remoteManifest.bots.concat(BOTS_TPL_FOR_MULTI_ENV);
+              manifest.bots = manifest.bots.concat(BOTS_TPL_FOR_MULTI_ENV);
             }
+
+            manifest.validDomains?.push("{{state.fx-resource-bot.validDomain}}");
           }
         }
         break;
       case "MessageExtension":
-        if (!remoteManifest.composeExtensions) {
-          Object.assign(remoteManifest, { composeExtensions: [] });
+        if (!manifest.composeExtensions) {
+          Object.assign(manifest, { composeExtensions: [] });
         }
         if (capability.snippet) {
-          remoteManifest.composeExtensions!.push(capability.snippet);
+          manifest.composeExtensions!.push(capability.snippet);
         } else {
           if (capability.existingApp) {
-            remoteManifest.composeExtensions = remoteManifest.composeExtensions!.concat(
+            manifest.composeExtensions = manifest.composeExtensions!.concat(
               COMPOSE_EXTENSIONS_TPL_EXISTING_APP
             );
           } else {
-            remoteManifest.composeExtensions = remoteManifest.composeExtensions!.concat(
+            manifest.composeExtensions = manifest.composeExtensions!.concat(
               COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV
             );
           }
@@ -340,94 +291,18 @@ export async function addCapabilities(
         break;
       case "WebApplicationInfo":
         if (capability.snippet) {
-          remoteManifest.webApplicationInfo = capability.snippet;
+          manifest.webApplicationInfo = capability.snippet;
         } else {
-          remoteManifest.webApplicationInfo = WEB_APPLICATION_INFO_MULTI_ENV;
+          manifest.webApplicationInfo = WEB_APPLICATION_INFO_MULTI_ENV;
         }
         break;
     }
   });
-  const res = await saveManifest(projectRoot, remoteManifest, false);
+  const res = await saveManifest(projectRoot, manifest);
   if (res.isErr()) {
     return err(res.error);
   }
 
-  if (!isConfigUnifyEnabled()) {
-    const localManifestRes = await loadManifest(projectRoot, true);
-    if (localManifestRes.isErr()) {
-      return err(localManifestRes.error);
-    }
-    const localManifest = localManifestRes.value;
-
-    let staticTabIndex = localManifest.staticTabs?.length ?? 0;
-    capabilities.map((capability) => {
-      switch (capability.name) {
-        case "staticTab":
-          if (!localManifest.staticTabs) {
-            Object.assign(localManifest, { staticTabs: [] });
-          }
-          if (capability.existingApp) {
-            const template = deepCopy(STATIC_TABS_TPL_EXISTING_APP[0]);
-            template.entityId = "index" + staticTabIndex;
-            localManifest.staticTabs!.push(template);
-          } else {
-            const template = deepCopy(STATIC_TABS_TPL_LOCAL_DEBUG[0]);
-            template.entityId = "index" + staticTabIndex;
-            localManifest.staticTabs!.push(template);
-          }
-          staticTabIndex++;
-          break;
-        case "configurableTab":
-          if (!localManifest.configurableTabs) {
-            Object.assign(localManifest, { configurableTabs: [] });
-          }
-          if (capability.existingApp) {
-            localManifest.configurableTabs = localManifest.configurableTabs!.concat(
-              CONFIGURABLE_TABS_TPL_EXISTING_APP
-            );
-          } else {
-            localManifest.configurableTabs = localManifest.configurableTabs!.concat(
-              CONFIGURABLE_TABS_TPL_LOCAL_DEBUG
-            );
-          }
-          break;
-        case "Bot":
-          if (!localManifest.bots) {
-            Object.assign(localManifest, { bots: [] });
-          }
-          if (capability.existingApp) {
-            localManifest.bots = localManifest.bots!.concat(BOTS_TPL_EXISTING_APP);
-          } else {
-            localManifest.bots = localManifest.bots!.concat(BOTS_TPL_LOCAL_DEBUG);
-          }
-          break;
-        case "MessageExtension":
-          if (!localManifest.composeExtensions) {
-            Object.assign(localManifest, { composeExtensions: [] });
-          }
-          if (capability.existingApp) {
-            localManifest.composeExtensions = localManifest.composeExtensions!.concat(
-              COMPOSE_EXTENSIONS_TPL_EXISTING_APP
-            );
-          } else {
-            localManifest.composeExtensions = localManifest.composeExtensions!.concat(
-              COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG
-            );
-          }
-          break;
-        case "WebApplicationInfo":
-          if (!localManifest.webApplicationInfo) {
-            Object.assign(localManifest, { webApplicationInfo: [] });
-          }
-          localManifest.webApplicationInfo = WEB_APPLICATION_INFO_LOCAL_DEBUG;
-          break;
-      }
-    });
-    const res = await saveManifest(projectRoot, localManifest, true);
-    if (res.isErr()) {
-      return err(res.error);
-    }
-  }
   return ok(undefined);
 }
 
@@ -435,7 +310,7 @@ export async function updateCapability(
   projectRoot: string,
   capability: v3.ManifestCapability
 ): Promise<Result<any, FxError>> {
-  const manifestRes = await loadManifest(projectRoot, false);
+  const manifestRes = await loadManifest(projectRoot);
   if (manifestRes.isErr()) {
     return err(manifestRes.error);
   }
@@ -497,7 +372,7 @@ export async function updateCapability(
       break;
   }
 
-  const res = await saveManifest(projectRoot, manifest, false);
+  const res = await saveManifest(projectRoot, manifest);
   if (res.isErr()) {
     return err(res.error);
   }
@@ -508,7 +383,7 @@ export async function deleteCapability(
   projectRoot: string,
   capability: v3.ManifestCapability
 ): Promise<Result<any, FxError>> {
-  const manifestRes = await loadManifest(projectRoot, false);
+  const manifestRes = await loadManifest(projectRoot);
   if (manifestRes.isErr()) {
     return err(manifestRes.error);
   }
@@ -569,7 +444,7 @@ export async function deleteCapability(
       manifest.webApplicationInfo = undefined;
       break;
   }
-  const res = await saveManifest(projectRoot, manifest, false);
+  const res = await saveManifest(projectRoot, manifest);
   if (res.isErr()) {
     return err(res.error);
   }

@@ -69,7 +69,6 @@ export class FeatureFlagName {
   // This will default to true and this environment is only for tests. It does not expose to user.
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
   static readonly VSCallingCLI = "VS_CALLING_CLI";
-  static readonly ConfigUnify = "TEAMSFX_CONFIG_UNIFY";
   static readonly ExistingTabApp = "TEAMSFX_INIT_APP";
   static readonly AadManifest = "TEAMSFX_AAD_MANIFEST";
   static readonly DebugTemplate = "TEAMSFX_DEBUG_TEMPLATE";

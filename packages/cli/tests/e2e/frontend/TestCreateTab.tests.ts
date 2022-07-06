@@ -79,7 +79,7 @@ describe("Create single tab", function () {
           await AadValidator.validate(aad);
 
           // Validate Tab Frontend
-          const frontend = FrontendValidator.init(context, true);
+          const frontend = FrontendValidator.init(context);
           await FrontendValidator.validateProvision(frontend);
         }
       );
@@ -99,7 +99,7 @@ describe("Create single tab", function () {
           const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
 
           // Validate Tab Frontend
-          const frontend = FrontendValidator.init(context, true);
+          const frontend = FrontendValidator.init(context);
           await FrontendValidator.validateDeploy(frontend);
         }
       );

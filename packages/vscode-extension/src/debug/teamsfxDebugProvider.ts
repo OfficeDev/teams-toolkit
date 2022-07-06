@@ -1,12 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  AppStudioScopes,
-  Correlator,
-  environmentManager,
-  isConfigUnifyEnabled,
-} from "@microsoft/teamsfx-core";
+import { AppStudioScopes, Correlator, environmentManager } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 
 import M365TokenInstance from "../commonlib/m365Login";
@@ -46,6 +41,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
     debugConfiguration: TeamsfxDebugConfiguration,
     token?: vscode.CancellationToken
   ): Promise<vscode.DebugConfiguration | undefined> {
+    let telemetryIsRemote: boolean | undefined = undefined;
     try {
       if (!folder) {
         return debugConfiguration;
@@ -75,8 +71,9 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
         url.includes(localTeamsAppInternalIdPlaceholder) ||
         host === Host.outlook ||
         host === Host.office;
-      const isLocalSideloading: boolean =
+      const isLocalSideloading =
         isLocalSideloadingConfiguration || isLocalM365SideloadingConfiguration;
+      telemetryIsRemote = !isLocalSideloading;
 
       if (
         !isLocalSideloadingConfiguration &&
@@ -95,7 +92,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
           }
 
           let debugConfig = undefined;
-          if (isLocalSideloading && isConfigUnifyEnabled()) {
+          if (isLocalSideloading) {
             debugConfig = await commonUtils.getDebugConfig(
               false,
               environmentManager.getLocalEnvName()
@@ -146,7 +143,10 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
       showError(error);
       terminateAllRunningTeamsfxTasks();
       await vscode.debug.stopDebugging();
-      await sendDebugAllEvent(error);
+      // not for undefined
+      if (telemetryIsRemote === false) {
+        await sendDebugAllEvent(error);
+      }
       commonUtils.endLocalDebugSession();
     }
     return debugConfiguration;

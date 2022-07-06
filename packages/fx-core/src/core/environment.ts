@@ -22,6 +22,8 @@ import {
   Inputs,
   Platform,
   Void,
+  CloudResource,
+  ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
 import path, { basename } from "path";
 import fs from "fs-extra";
@@ -49,6 +51,9 @@ import {
 } from "./error";
 import { loadProjectSettings } from "./middleware/projectSettingsLoader";
 import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
+import { Container } from "typedi";
+import { pick } from "lodash";
+import { convertEnvStateV2ToV3, convertEnvStateV3ToV2 } from "../component/migrate";
 
 export interface EnvStateFiles {
   envState: string;
@@ -96,13 +101,13 @@ class EnvironmentManager {
     if (stateResult.isErr()) {
       return err(stateResult.error);
     }
-    if (isV3)
+    if (isV3) {
       return ok({
         envName,
         config: configResult.value as Json,
         state: stateResult.value as v3.ResourceStates,
       });
-    else
+    } else
       return ok({
         envName,
         config: configResult.value,
@@ -176,15 +181,15 @@ class EnvironmentManager {
     envName = envName ?? this.getDefaultEnvName();
     const envFiles = this.getEnvStateFilesPath(envName, projectPath);
 
-    const data: Json = envData instanceof Map ? mapToJson(envData) : envData;
-    const secrets = isV3
-      ? separateSecretDataV3(data as v3.ResourceStates)
-      : separateSecretData(data);
+    let envState: Json = envData instanceof Map ? mapToJson(envData) : envData;
+    // v3 envState will be converted into v2 for compatibility
+    if (isV3) envState = convertEnvStateV3ToV2(envState);
+    const secrets = separateSecretData(envState);
     this.encrypt(secrets, cryptoProvider);
 
     try {
-      if (!this.isEmptyRecord(data)) {
-        await fs.writeFile(envFiles.envState, JSON.stringify(data, null, 4));
+      if (!this.isEmptyRecord(envState)) {
+        await fs.writeFile(envFiles.envState, JSON.stringify(envState, null, 4));
       }
 
       if (!this.isEmptyRecord(secrets)) {
@@ -351,8 +356,11 @@ class EnvironmentManager {
 
     const template = await fs.readFile(envFiles.envState, { encoding: "utf-8" });
     const result = replaceTemplateWithUserData(template, userData);
-    const resultJson: Json = JSON.parse(result);
-    if (isV3) return ok(resultJson as v3.ResourceStates);
+    let resultJson: Json = JSON.parse(result);
+    if (isV3) {
+      resultJson = convertEnvStateV2ToV3(resultJson);
+      return ok(resultJson as v3.ResourceStates);
+    }
     const data = objectToMap(resultJson);
 
     return ok(data as Map<string, any>);
@@ -469,17 +477,22 @@ class EnvironmentManager {
   }
 }
 
-export function separateSecretDataV3(envState: v3.ResourceStates): Record<string, string> {
+export function separateSecretDataV3(envState: any): Record<string, string> {
   const res: Record<string, string> = {};
-  for (const key of Object.keys(envState)) {
-    const config = envState[key] as v3.CloudResource;
-    if (config.secretFields && config.secretFields.length > 0) {
-      config.secretFields.forEach((f: string) => {
-        const keyName = `${key}.${f}`;
-        res[keyName] = config[f];
-        config[f] = `{{${keyName}}}`;
+  for (const resourceName of Object.keys(envState)) {
+    if (resourceName === "solution") continue;
+    const component = Container.get<CloudResource>(resourceName);
+    const state = envState[resourceName] as Json;
+    if (component.secretKeys && component.secretKeys.length > 0) {
+      component.secretKeys.forEach((secretKey: string) => {
+        const keyName = component.outputs[secretKey].key;
+        const fullKeyName = `${resourceName}.${keyName}`;
+        res[keyName] = state[keyName];
+        state[secretKey] = `{{${fullKeyName}}}`;
       });
     }
+    const outputKeys = component.finalOutputKeys.map((k) => component.outputs[k].key);
+    envState[resourceName] = pick(state, outputKeys);
   }
   return res;
 }

@@ -60,7 +60,6 @@ import {
 } from "../appstudio/constants";
 import axios from "axios";
 import { SPOClient } from "./spoClient";
-import { isConfigUnifyEnabled } from "../../../common";
 import { DefaultManifestProvider } from "../../solution/fx-solution/v3/addFeature";
 import { convert2Context } from "../utils4v2";
 import { getLocalizedString } from "../../../common/localizeUtils";
@@ -188,50 +187,45 @@ export class SPFxPluginImpl {
       );
 
       const appDirectory = await getAppDirectory(ctx.root);
-      if (isConfigUnifyEnabled()) {
-        await Utils.configure(path.join(appDirectory, MANIFEST_TEMPLATE_CONSOLIDATE), replaceMap);
+      await Utils.configure(path.join(appDirectory, MANIFEST_TEMPLATE_CONSOLIDATE), replaceMap);
 
-        const appManifestProvider = new DefaultManifestProvider();
-        const capabilitiesToAddManifest: v3.ManifestCapability[] = [];
-        const remoteStaticSnippet: IStaticTab = {
-          entityId: componentId,
-          name: webpartName,
-          contentUrl: util.format(ManifestTemplate.REMOTE_CONTENT_URL, componentId, componentId),
-          websiteUrl: ManifestTemplate.WEBSITE_URL,
-          scopes: ["personal"],
-        };
-        const remoteConfigurableSnippet: IConfigurableTab = {
-          configurationUrl: util.format(
-            ManifestTemplate.REMOTE_CONFIGURATION_URL,
-            componentId,
-            componentId
-          ),
-          canUpdateConfiguration: true,
-          scopes: ["team"],
-        };
-        capabilitiesToAddManifest.push(
-          {
-            name: "staticTab",
-            snippet: remoteStaticSnippet,
-          },
-          {
-            name: "configurableTab",
-            snippet: remoteConfigurableSnippet,
-          }
-        );
-
-        const contextWithInputs = convert2Context(ctx, true);
-        for (const capability of capabilitiesToAddManifest) {
-          const addCapRes = await appManifestProvider.updateCapability(
-            contextWithInputs.context,
-            contextWithInputs.inputs,
-            capability
-          );
-          if (addCapRes.isErr()) return err(addCapRes.error);
+      const appManifestProvider = new DefaultManifestProvider();
+      const capabilitiesToAddManifest: v3.ManifestCapability[] = [];
+      const remoteStaticSnippet: IStaticTab = {
+        entityId: componentId,
+        name: webpartName,
+        contentUrl: util.format(ManifestTemplate.REMOTE_CONTENT_URL, componentId, componentId),
+        websiteUrl: ManifestTemplate.WEBSITE_URL,
+        scopes: ["personal"],
+      };
+      const remoteConfigurableSnippet: IConfigurableTab = {
+        configurationUrl: util.format(
+          ManifestTemplate.REMOTE_CONFIGURATION_URL,
+          componentId,
+          componentId
+        ),
+        canUpdateConfiguration: true,
+        scopes: ["team"],
+      };
+      capabilitiesToAddManifest.push(
+        {
+          name: "staticTab",
+          snippet: remoteStaticSnippet,
+        },
+        {
+          name: "configurableTab",
+          snippet: remoteConfigurableSnippet,
         }
-      } else {
-        await Utils.configure(path.join(appDirectory, MANIFEST_TEMPLATE), replaceMap);
-        await Utils.configure(path.join(appDirectory, MANIFEST_LOCAL), replaceMap);
+      );
+
+      const contextWithInputs = convert2Context(ctx, true);
+      for (const capability of capabilitiesToAddManifest) {
+        const addCapRes = await appManifestProvider.updateCapability(
+          contextWithInputs.context,
+          contextWithInputs.inputs,
+          capability
+        );
+        if (addCapRes.isErr()) return err(addCapRes.error);
       }
       await progressHandler?.end(true);
       return ok(undefined);

@@ -3,7 +3,6 @@
 
 import { PluginContext, SystemError, UserError, v2 } from "@microsoft/teamsfx-api";
 import { Constants } from "./../constants";
-import { deepCopy } from "../../../../common";
 import { PluginNames, REMOTE_TEAMS_APP_TENANT_ID } from "../../../solution/fx-solution/constants";
 
 export enum TelemetryPropertyKey {
@@ -18,6 +17,10 @@ export enum TelemetryPropertyKey {
   tenantId = "tenant-id",
   publishedAppId = "published-app-id",
   customizedKeys = "customized-manifest-keys",
+  manual = "manual",
+  statusCode = "status-code",
+  url = "url",
+  method = "method",
 }
 
 enum TelemetryPropertyValue {
@@ -45,6 +48,7 @@ export enum TelemetryEventName {
   addCapability = "add-capability",
   loadManifest = "load-manifest",
   saveManifest = "save-manifest",
+  appStudioApi = "app-studio-api",
 }
 
 export class TelemetryUtils {
@@ -59,12 +63,7 @@ export class TelemetryUtils {
     _properties?: { [key: string]: string },
     measurements?: { [key: string]: number }
   ) {
-    let properties;
-    if (!properties) {
-      properties = {};
-    } else {
-      properties = deepCopy(_properties!);
-    }
+    const properties = Object.assign({}, _properties);
     properties[TelemetryPropertyKey.component] = Constants.PLUGIN_NAME;
     const tenantId = (this.ctx as PluginContext).envInfo?.state
       .get(PluginNames.SOLUTION)
@@ -90,12 +89,7 @@ export class TelemetryUtils {
     _properties?: { [key: string]: string },
     measurements?: { [key: string]: number }
   ) {
-    let properties;
-    if (!properties) {
-      properties = {};
-    } else {
-      properties = deepCopy(_properties!);
-    }
+    const properties = Object.assign({}, _properties);
     properties[TelemetryPropertyKey.component] = Constants.PLUGIN_NAME;
     properties[TelemetryPropertyKey.success] = TelemetryPropertyValue.success;
     const tenantId = (this.ctx as PluginContext).envInfo?.state
@@ -119,12 +113,7 @@ export class TelemetryUtils {
     _properties?: { [key: string]: string },
     measurements?: { [key: string]: number }
   ) {
-    let properties;
-    if (!properties) {
-      properties = {};
-    } else {
-      properties = deepCopy(_properties!);
-    }
+    const properties = Object.assign({}, _properties);
     properties[TelemetryPropertyKey.component] = Constants.PLUGIN_NAME;
     if (error instanceof SystemError) {
       properties[TelemetryPropertyKey.errorType] = TelemetryPropertyValue.SystemError;

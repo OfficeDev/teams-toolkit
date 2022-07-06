@@ -21,6 +21,4 @@ Object.values(obj).forEach(
   (v, i, a) => (rules[Object.keys(v)[0]] = Object.values(v)[0])
 );
 
-console.log(rules);
-
 module.exports = { rules };

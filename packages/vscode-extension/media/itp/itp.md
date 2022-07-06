@@ -16,7 +16,7 @@ If you don't have a personal Microsoft account, or a work or school account. You
 
 ![Create account](./createone.png)
 
->Note: You cannot Sign in with *.onmicrosoft.com account, otherwise you will meet following error in next step.
+>Note: Please do not Sign in Microsoft 365 Dev program with a *.onmicrosoft.com account. Otherwise, you will meet the following error in the next step.
 
 ![Sign in with wrong account](./joinnowerror.png)
 
@@ -44,7 +44,9 @@ If you don't have a personal Microsoft account, or a work or school account. You
 
 ![Phone verification](./phoneverification.png)
 
-- Now you have an instant sandbox. You can sign in Teams Toolkit with admin or users account in this tenant, and the sideloading permission is pre-configured. 
+## Now you have an instant sandbox.
+
+>Note: You can use the newly created “*.onmicorosoft.com” accounts to log in to Teams Toolkit for VS Code. The sideloading permission has already been configured.
 
 ![Instant sandbox](./m365-dev-program-instant-sandbox.png)
 
@@ -59,5 +61,3 @@ If you don't have a personal Microsoft account, or a work or school account. You
 ![Instant sandbox](./turn-on-sideload.png)
 
 - Select `Save`.
-
->Note: It can take up to 24 hours for the sideloading option to be active.

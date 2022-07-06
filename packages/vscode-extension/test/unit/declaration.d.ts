@@ -1,1 +1,0 @@
-declare module "@istanbuljs/nyc-config-typescript";

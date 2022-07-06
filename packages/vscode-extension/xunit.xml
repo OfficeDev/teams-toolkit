@@ -1,0 +1,105 @@
+<testsuite name="Mocha Tests" tests="100" failures="0" errors="1" skipped="0" timestamp="Wed, 06 Jul 2022 08:07:04 GMT" time="2.541">
+<testcase classname="CommonUtils getPackageVersion" name="alpha version" time="0.001"/>
+<testcase classname="CommonUtils getPackageVersion" name="beta version" time="0.001"/>
+<testcase classname="CommonUtils getPackageVersion" name="rc version" time="0"/>
+<testcase classname="CommonUtils getPackageVersion" name="formal version" time="0"/>
+<testcase classname="CommonUtils isFeatureFlag" name="return true when enabled" time="0.002"/>
+<testcase classname="CommonUtils isFeatureFlag" name="return false when disabled" time="0.001"/>
+<testcase classname="CommonUtils sleep" name="sleep should be accurate" time="0.002"/>
+<testcase classname="CommonUtils os assertion" name="should return exactly result according to os.type" time="0.004"/>
+<testcase classname="CommonUtils getProjectId" name="Multi env enabled and both new files and old files exist" time="0.017"/>
+<testcase classname="CommonUtils getProjectId" name="Multi env enabled and only new files exist" time="0.002"/>
+<testcase classname="CommonUtils getProjectId" name="Multi env enabled and only old files exist" time="0.003"/>
+<testcase classname="CommonUtils getProjectId" name="Multi env enabled and neither new nor old files exist" time="0.001"/>
+<testcase classname="CommonUtils getProjectId menus" name="preview" time="0"/>
+<testcase classname="ExtTelemetry setHasSentTelemetry" name="query-expfeature" time="0"/>
+<testcase classname="ExtTelemetry setHasSentTelemetry" name="other-event" time="0.001"/>
+<testcase classname="ExtTelemetry stageToEvent" name="Stage.create" time="0.001"/>
+<testcase classname="ExtTelemetry stageToEvent" name="Stage.provision" time="0.001"/>
+<testcase classname="ExtTelemetry stageToEvent" name="Stage.deploy" time="0"/>
+<testcase classname="ExtTelemetry stageToEvent" name="Stage.publish" time="0"/>
+<testcase classname="ExtTelemetry stageToEvent" name="Stage.creatEnv" time="0.001"/>
+<testcase classname="ExtTelemetry stageToEvent" name="unknown" time="0"/>
+<testcase classname="ExtTelemetry Send Telemetry" name="sendTelemetryEvent" time="0.002"/>
+<testcase classname="ExtTelemetry Send Telemetry" name="sendTelemetryErrorEvent" time="0.003"/>
+<testcase classname="ExtTelemetry Send Telemetry" name="sendTelemetryException" time="0.001"/>
+<testcase classname="ExtTelemetry deactivate event" name="cacheTelemetryEventAsync" time="0.004"/>
+<testcase classname="ExtTelemetry deactivate event" name="sendCachedTelemetryEventsAsync" time="0.002"/>
+<testcase classname="Global Variables isSPFxProject" name="return false for non-spfx project" time="0.001"/>
+<testcase classname="Global Variables isSPFxProject" name="return true for spfx project" time="0.001"/>
+<testcase classname="handlers" name="getSystemInputs()" time="0.002"/>
+<testcase classname="handlers" name="openWelcomeHandler" time="0.002"/>
+<testcase classname="handlers" name="openSamplesHandler" time="0.001"/>
+<testcase classname="handlers" name="signOutM365" time="0.001"/>
+<testcase classname="handlers" name="signOutAzure" time="0.001"/>
+<testcase classname="handlers" name="downloadSample" time="0.002"/>
+<testcase classname="handlers" name="deployAadAppManifest" time="0.005"/>
+<testcase classname="handlers activate()" name="No globalState error" time="0.004"/>
+<testcase classname="handlers command handlers" name="createNewProjectHandler()" time="0.006"/>
+<testcase classname="handlers command handlers" name="provisionHandler()" time="0.004"/>
+<testcase classname="handlers command handlers" name="deployHandler()" time="0.003"/>
+<testcase classname="handlers command handlers" name="publishHandler()" time="0.002"/>
+<testcase classname="handlers command handlers" name="buildPackageHandler()" time="0.003"/>
+<testcase classname="handlers runCommand()" name="openConfigStateFile() - local" time="0.035"/>
+<testcase classname="handlers runCommand()" name="create sample with projectid" time="0.003"/>
+<testcase classname="handlers runCommand()" name="create from scratch without projectid" time="0.002"/>
+<testcase classname="handlers runCommand()" name="provisionResources" time="0.002"/>
+<testcase classname="handlers runCommand()" name="deployArtifacts" time="0.003"/>
+<testcase classname="handlers runCommand()" name="localDebug" time="0.002"/>
+<testcase classname="handlers runCommand()" name="publishApplication" time="0.004"/>
+<testcase classname="handlers runCommand()" name="createEnv" time="0.002"/>
+<testcase classname="handlers detectVsCodeEnv()" name="locally run" time="0.001"/>
+<testcase classname="handlers detectVsCodeEnv()" name="Remotely run" time="0.002"/>
+<testcase classname="handlers decryptSecret" name="successfully update secret" time="0.006"/>
+<testcase classname="handlers decryptSecret" name="failed to update due to corrupted secret" time="0.004"/>
+<testcase classname="handlers permissions" name="grant permission" time="0.01"/>
+<testcase classname="handlers permissions" name="grant permission with empty tenant id" time="0.003"/>
+<testcase classname="handlers permissions" name="list collaborators" time="0.006"/>
+<testcase classname="handlers permissions" name="list collaborators with empty tenant id" time="0.006"/>
+<testcase classname="handlers manifest" name="edit manifest template: local" time="0.004"/>
+<testcase classname="handlers manifest" name="edit manifest template: remote" time="0.002"/>
+<testcase classname="telemetry" name="sendTelemetryEvent" time="0.001"/>
+<testcase classname="telemetry" name="sendTelemetryErrorEvent" time="0.002"/>
+<testcase classname="telemetry" name="sendTelemetryException" time="0.001"/>
+<testcase classname="Mock Tests User Input" name="Creation" time="0.001"/>
+<testcase classname="Mock Tests User Input" name="Interection" time="0.001"/>
+<testcase classname="Mock Tests User Input" name="progress" time="2.009"><failure>Timeout of 2000ms exceeded. For async tests and hooks, ensure &#x22;done()&#x22; is called; if returning a Promise, ensure it resolves. (C:\Codes\TeamsFx_old\packages\vscode-extension\out\test\unit\extension\testUserInput.test.js)
+Error: Timeout of 2000ms exceeded. For async tests and hooks, ensure &#x22;done()&#x22; is called; if returning a Promise, ensure it resolves. (C:\Codes\TeamsFx_old\packages\vscode-extension\out\test\unit\extension\testUserInput.test.js)
+    at listOnTimeout (internal/timers.js:554:17)
+    at processTimers (internal/timers.js:497:7)</failure></testcase>
+<testcase classname="versionUtil Compare Version" name="same version" time="0.001"/>
+<testcase classname="versionUtil Compare Version" name="Compare Pre Version" time="0.001"/>
+<testcase classname="versionUtil Compare Version" name="Compare Empty Version" time="0.001"/>
+<testcase classname="[Checker UT - Backend Extension Install] resolve" name="display error" time="0.001"/>
+<testcase classname="[debug &#x3E; commonUtils] loadPackageJson()" name="happy path" time="0.048"/>
+<testcase classname="[debug &#x3E; commonUtils] loadPackageJson()" name="file not found" time="0.007"/>
+<testcase classname="[debug &#x3E; commonUtils] loadPackageJson()" name="bad format" time="0.014"/>
+<testcase classname="[Checker UT - Extension] resolve" name="azure + f5: installed [windows + linux]" time="0.008"/>
+<testcase classname="[Checker UT - Extension] resolve" name="azure + f5: failed [windows]" time="0.007"/>
+<testcase classname="[Checker UT - Extension] resolve" name="azure + f5: failed [linux]" time="0.006"/>
+<testcase classname="[Checker UT - Extension] resolve" name="azure + f5: all disabled 1" time="0.004"/>
+<testcase classname="[Checker UT - Extension] resolve" name="azure + f5: all disabled 2" time="0.006"/>
+<testcase classname="npmInstallHandler automaticNpmInstallHandler" name="Create SPFx" time="0.001"/>
+<testcase classname="npmInstallHandler automaticNpmInstallHandler" name="Create Tab" time="0"/>
+<testcase classname="npmInstallHandler automaticNpmInstallHandler" name="Create Bot" time="0.001"/>
+<testcase classname="npmInstallHandler automaticNpmInstallHandler" name="Create Message extension" time="0.001"/>
+<testcase classname="npmInstallHandler automaticNpmInstallHandler" name="Create Tab + Bot" time="0.001"/>
+<testcase classname="npmInstallHandler automaticNpmInstallHandler" name="Create Tab + Message extension" time="0.001"/>
+<testcase classname="npmInstallHandler automaticNpmInstallHandler" name="Create Tab + Bot + Message extension" time="0.001"/>
+<testcase classname="npmInstallHandler automaticNpmInstallHandler" name="Tab add Function" time="0.001"/>
+<testcase classname="npmInstallHandler automaticNpmInstallHandler" name="Bot add Function" time="0.001"/>
+<testcase classname="npmInstallHandler automaticNpmInstallHandler" name="Message extension add Function" time="0.001"/>
+<testcase classname="npmInstallHandler automaticNpmInstallHandler" name="Tab + Bot add Function" time="0"/>
+<testcase classname="npmInstallHandler automaticNpmInstallHandler" name="Tab + Function add Function" time="0.001"/>
+<testcase classname="npmInstallHandler automaticNpmInstallHandler" name="Tab add Bot" time="0"/>
+<testcase classname="npmInstallHandler automaticNpmInstallHandler" name="Bot add Tab" time="0.001"/>
+<testcase classname="[debug &#x3E; ProgressHelper] ParallelProgressHelper" name="empty" time="0.003"/>
+<testcase classname="[debug &#x3E; ProgressHelper] ParallelProgressHelper" name="Only one message" time="0.001"/>
+<testcase classname="[debug &#x3E; ProgressHelper] ParallelProgressHelper" name="Two message asc" time="0.002"/>
+<testcase classname="[debug &#x3E; ProgressHelper] ParallelProgressHelper" name="Two message desc" time="0.002"/>
+<testcase classname="[debug &#x3E; ProgressHelper] ParallelProgressHelper" name="Three message asc" time="0.003"/>
+<testcase classname="[debug &#x3E; ProgressHelper] ParallelProgressHelper" name="Three message desc" time="0.002"/>
+<testcase classname="[debug &#x3E; ProgressHelper] ParallelProgressHelper" name="Three message random order" time="0.001"/>
+<testcase classname="[debug &#x3E; ProgressHelper] ParallelProgressHelper" name="Not finished" time="0.002"/>
+<testcase classname="[debug &#x3E; teamsfxTaskProvider] resolveTask" name="no task" time="0.001"/>
+</testsuite>

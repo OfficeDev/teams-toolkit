@@ -8,7 +8,6 @@ import { AppUser } from "./interfaces/appUser";
 import { AppStudioError } from "./errors";
 import { IPublishingAppDenition } from "./interfaces/IPublishingAppDefinition";
 import { AppStudioResultFactory } from "./results";
-import { getLocalizedString } from "../../../common/localizeUtils";
 import { Constants, ErrorMessages } from "./constants";
 import { RetryHandler } from "./utils/utils";
 import { TelemetryEventName, TelemetryUtils } from "./utils/telemetry";
@@ -74,16 +73,18 @@ export namespace AppStudioClient {
   }
 
   /**
-   * Creates an app registration in app studio with the given archived file and returns the app definition.
+   * Import an app registration in app studio with the given archived file and returns the app definition.
    * @param {Buffer}  file - Zip file with manifest.json and two icons
    * @param {string}  appStudioToken
+   * @param {boolean} overwrite
    * @param {LogProvider} logProvider
    * @returns {Promise<AppDefinition>}
    */
-  export async function createApp(
+  export async function importApp(
     file: Buffer,
     appStudioToken: string,
-    logProvider?: LogProvider
+    logProvider?: LogProvider,
+    overwrite = false
   ): Promise<AppDefinition> {
     try {
       const requester = createRequesterWithToken(appStudioToken);
@@ -91,12 +92,15 @@ export namespace AppStudioClient {
       const response = await RetryHandler.Retry(() =>
         requester.post(`/api/appdefinitions/v2/import`, file, {
           headers: { "Content-Type": "application/zip" },
+          params: {
+            overwriteIfAppAlreadyExists: overwrite,
+          },
         })
       );
 
       if (response && response.data) {
         const app = <AppDefinition>response.data;
-        await logProvider?.debug(`recieved data from app studio ${JSON.stringify(app)}`);
+        await logProvider?.debug(`Received data from app studio ${JSON.stringify(app)}`);
         return app;
       } else {
         throw new Error(`Cannot create teams app`);
@@ -107,6 +111,10 @@ export namespace AppStudioClient {
     }
   }
 
+  /**
+   * @deprecated
+   * @returns
+   */
   async function uploadIcon(
     teamsAppId: string,
     appStudioToken: string,
@@ -171,6 +179,7 @@ export namespace AppStudioClient {
 
   /**
    * Updates an existing app if it exists with the configuration given.  Returns whether or not it was successful.
+   * @deprecated
    * @param {string}  teamsAppId
    * @param {IAppDefinition} appDefinition
    * @param {string}  appStudioToken

@@ -112,7 +112,7 @@ import { TreatmentVariables } from "./exp/treatmentVariables";
 import { VS_CODE_UI } from "./extension";
 import * as globalVariables from "./globalVariables";
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
-import { ExtTelemetry } from "./telemetry/extTelemetry";
+import * as ExtTelemetry from "./telemetry/telemetry";
 import {
   AccountType,
   TelemetryEvent,

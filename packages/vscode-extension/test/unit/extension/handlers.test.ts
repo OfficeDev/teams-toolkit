@@ -19,7 +19,7 @@ import {
   ProjectSettingsFileName,
 } from "@microsoft/teamsfx-api";
 import M365TokenInstance from "../../../src/commonlib/m365Login";
-import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
+import * as ExtTelemetry from "../../../src/telemetry/telemetry";
 import { WebviewPanel } from "../../../src/controls/webviewPanel";
 import { PanelType } from "../../../src/controls/PanelType";
 import { AzureAccountManager } from "../../../src/commonlib/azureLogin";

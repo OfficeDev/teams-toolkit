@@ -29,6 +29,9 @@ const reporterSpy = spy.interface({
     measurements?: { [p: string]: number }
   ): void {},
 });
+const cacheSpy = spy.interface({
+  addEvent(event: TelemetryEventCache): void {},
+});
 
 const mock = require("mock-require");
 mock("@vscode/extension-telemetry", {
@@ -42,8 +45,11 @@ mock("@vscode/extension-telemetry", {
   },
 });
 
-import { VSCodeTelemetryReporter } from "../../../src/commonlib/telemetry";
+import { VSCodeTelemetryReporter } from "../../../src/telemetry/telemetry";
+import * as Telemetry from "../../../src/telemetry/telemetry";
 import { getAllFeatureFlags } from "../../../src/utils/commonUtils";
+import { TelemetryEventCache } from "../../../src/telemetry/extTelemetryEvents";
+import * as sinon from "sinon";
 
 const featureFlags = getAllFeatureFlags()?.join(";") ?? "";
 
@@ -54,28 +60,34 @@ suite("telemetry", () => {
     tester = new VSCodeTelemetryReporter("test", "1.0.0-rc.1", "test");
     (tester as VSCodeTelemetryReporter).addSharedProperty("project-id", "");
     chai.util.addProperty(tester, "reporter", () => reporterSpy);
+    chai.util.addProperty(Telemetry, "cache", () => cacheSpy);
   });
 
   test("sendTelemetryEvent", () => {
+    const clock = sinon.useFakeTimers();
     tester.sendTelemetryEvent(
       "sampleEvent",
       { stringProp: "some string" },
       { numericMeasure: 123 }
     );
 
-    expect(reporterSpy.sendTelemetryEvent).to.have.been.called.with(
-      "sampleEvent",
-      {
+    expect(cacheSpy.addEvent).to.have.been.called.with({
+      type: "normal",
+      eventName: "sampleEvent",
+      occurTime: new clock.Date(),
+      properties: {
         stringProp: "some string",
         "project-id": "",
         "correlation-id": "",
         "feature-flags": featureFlags,
       },
-      { numericMeasure: 123 }
-    );
+      measurements: { numericMeasure: 123 },
+    } as TelemetryEventCache);
+    clock.restore();
   });
 
   test("sendTelemetryErrorEvent", () => {
+    const clock = sinon.useFakeTimers();
     tester.sendTelemetryErrorEvent(
       "sampleErrorEvent",
       {
@@ -86,17 +98,20 @@ suite("telemetry", () => {
       ["stackProp"]
     );
 
-    expect(reporterSpy.sendTelemetryErrorEvent).to.have.been.called.with(
-      "sampleErrorEvent",
-      {
+    expect(cacheSpy.addEvent).to.have.been.called.with({
+      type: "error",
+      eventName: "sampleErrorEvent",
+      occurTime: new clock.Date(),
+      properties: {
         stringProp: "some string",
         stackProp: "some user stack trace",
         "project-id": "",
         "correlation-id": "",
         "feature-flags": featureFlags,
       },
-      { numericMeasure: 123 }
-    );
+      measurements: { numericMeasure: 123 },
+    } as TelemetryEventCache);
+    clock.restore();
   });
 
   test("sendTelemetryException", () => {

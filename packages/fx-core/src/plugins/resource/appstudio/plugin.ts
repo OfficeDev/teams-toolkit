@@ -1759,9 +1759,9 @@ export async function createManifest(
       if (!isM365) {
         manifest.configurableTabs = CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV;
       }
+      manifest.validDomains?.push("{{state.fx-resource-frontend-hosting.domain}}");
     } else {
       manifest.developer = DEFAULT_DEVELOPER;
-      manifest.validDomains = [];
     }
     if (hasBot) {
       if (hasCommandAndResponseBot) {
@@ -1771,7 +1771,7 @@ export async function createManifest(
       } else {
         manifest.bots = BOTS_TPL_FOR_MULTI_ENV;
       }
-      manifest.validDomains?.push("state.fx-resource-bot.validDomain");
+      manifest.validDomains?.push("{{state.fx-resource-bot.validDomain}}");
     }
     if (hasMessageExtension) {
       manifest.composeExtensions = isM365

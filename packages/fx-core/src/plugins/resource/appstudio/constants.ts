@@ -94,51 +94,7 @@ export const TEAMS_APP_MANIFEST_TEMPLATE_V3 = `{
       "identity",
       "messageTeamMembers"
   ],
-  "validDomains": [
-    "{{state.fx-resource-frontend-hosting.domain}}"
-  ]
-}`;
-
-export const TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV = `{
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.13/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.13",
-  "version": "1.0.0",
-  "id": "{{state.fx-resource-appstudio.teamsAppId}}",
-  "packageName": "com.microsoft.teams.extension",
-  "developer": {
-      "name": "Teams App, Inc.",
-      "websiteUrl": "{{state.fx-resource-frontend-hosting.endpoint}}",
-      "privacyUrl": "{{state.fx-resource-frontend-hosting.endpoint}}{{state.fx-resource-frontend-hosting.indexPath}}/privacy",
-      "termsOfUseUrl": "{{state.fx-resource-frontend-hosting.endpoint}}{{state.fx-resource-frontend-hosting.indexPath}}/termsofuse"
-  },
-  "icons": {
-      "color": "resources/color.png",
-      "outline": "resources/outline.png"
-  },
-  "name": {
-      "short": "{{config.manifest.appName.short}}",
-      "full": "{{config.manifest.appName.full}}"
-  },
-  "description": {
-      "short": "Short description of {{config.manifest.appName.short}}",
-      "full": "Full description of {{config.manifest.appName.short}}"
-  },
-  "accentColor": "#FFFFFF",
-  "bots": [],
-  "composeExtensions": [],
-  "configurableTabs": [],
-  "staticTabs": [],
-  "permissions": [
-      "identity",
-      "messageTeamMembers"
-  ],
-  "validDomains": [
-    "{{state.fx-resource-frontend-hosting.domain}}"
-  ],
-  "webApplicationInfo": {
-      "id": "{{state.fx-resource-aad-app-for-teams.clientId}}",
-      "resource": "{{state.fx-resource-aad-app-for-teams.applicationIdUris}}"
-  }
+  "validDomains": []
 }`;
 
 export const STATIC_TABS_TPL_FOR_MULTI_ENV: IStaticTab[] = [

@@ -9,6 +9,7 @@ export const ComponentNames = {
   AzureWebApp: "azure-web-app",
   AzureStorage: "azure-storage",
   BotService: "bot-service",
+  SPFxTab: "spfx-tab",
   SPFx: "spfx",
   Identity: "identity",
   APIM: "apim",

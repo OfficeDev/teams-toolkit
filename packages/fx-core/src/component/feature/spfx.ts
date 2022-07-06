@@ -18,14 +18,14 @@ import { Service } from "typedi";
 import { CoreQuestionNames } from "../../core/question";
 import {
   frameworkQuestion,
-  webpartDescriptionQuestion,
+  versionCheckQuestion,
   webpartNameQuestion,
 } from "../../plugins/resource/spfx/utils/questions";
 import { ComponentNames } from "../constants";
 import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "../projectSettingsManager";
-@Service(ComponentNames.SPFx)
+@Service(ComponentNames.SPFxTab)
 export class SPFxTab {
-  name = ComponentNames.SPFx;
+  name = ComponentNames.SPFxTab;
   add(
     context: ContextV3,
     inputs: InputsWithProjectPath
@@ -40,12 +40,12 @@ export class SPFxTab {
           const spfx_frontend_host = new QTreeNode({
             type: "group",
           });
+          const spfx_version_check = new QTreeNode(versionCheckQuestion);
+          spfx_frontend_host.addChild(spfx_version_check);
           const spfx_framework_type = new QTreeNode(frameworkQuestion);
-          spfx_frontend_host.addChild(spfx_framework_type);
+          spfx_version_check.addChild(spfx_framework_type);
           const spfx_webpart_name = new QTreeNode(webpartNameQuestion);
-          spfx_frontend_host.addChild(spfx_webpart_name);
-          const spfx_webpart_desp = new QTreeNode(webpartDescriptionQuestion);
-          spfx_frontend_host.addChild(spfx_webpart_desp);
+          spfx_version_check.addChild(spfx_webpart_name);
           return ok(spfx_frontend_host);
         },
         plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
@@ -68,15 +68,10 @@ export class SPFxTab {
         },
       },
       {
-        name: "call:tab-code.generate",
+        name: "call:spfx-tab-code.generate",
         type: "call",
         required: true,
-        targetAction: "tab-code.generate",
-      },
-      {
-        type: "call",
-        targetAction: "bicep.init",
-        required: true,
+        targetAction: "spfx-tab-code.generate",
       },
       {
         name: "call:debug.generateLocalDebugSettings",

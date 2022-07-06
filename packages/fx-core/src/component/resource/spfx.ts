@@ -15,10 +15,11 @@ import {
 import "reflect-metadata";
 import { Service } from "typedi";
 import { SPFxPluginImpl } from "../../plugins/resource/spfx/v3/plugin";
+import { ComponentNames } from "../constants";
 
-@Service("spfx")
+@Service(ComponentNames.SPFx)
 export class SpfxResource implements CloudResource {
-  readonly name = "spfx";
+  readonly name = ComponentNames.SPFx;
   outputs = {};
   finalOutputKeys = [];
   spfxPluginImpl: SPFxPluginImpl = new SPFxPluginImpl();

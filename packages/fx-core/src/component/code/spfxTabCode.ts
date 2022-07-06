@@ -39,10 +39,9 @@ import { SPFXQuestionNames } from "../../plugins/resource/spfx/utils/questions";
 import { Utils } from "../../plugins/resource/spfx/utils/utils";
 import { cpUtils } from "../../plugins/solution/fx-solution/utils/depsChecker/cpUtils";
 import { ComponentNames } from "../constants";
-import { DefaultManifestProvider } from "../resource/appManifest/manifestProvider";
 import { getComponent } from "../workflow";
 /**
- * tab scaffold
+ * SPFx tab scaffold
  */
 @Service(ComponentNames.SPFxTabCode)
 export class SPFxTabCodeProvider implements SourceCodeProvider {
@@ -67,37 +66,38 @@ export class SPFxTabCodeProvider implements SourceCodeProvider {
         if (!teamsTab) return ok([]);
         merge(teamsTab, { build: true, folder: folder });
         const workingDir = path.resolve(inputs.projectPath, folder);
+        const scaffoldRes = await scaffoldSPFx(context, inputs, workingDir);
         return ok([`scaffold tab source code in folder: ${workingDir}`]);
       },
     };
     return ok(action);
   }
-  build(
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const action: Action = {
-      name: "tab-code.build",
-      type: "function",
-      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
-        if (!teamsTab) return ok([]);
-        const tabDir = teamsTab?.folder;
-        if (!tabDir) return ok([]);
-        return ok([`build project: ${tabDir}`]);
-      },
-      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok([]);
-      },
-    };
-    return ok(action);
-  }
+  // build(
+  //   context: ContextV3,
+  //   inputs: InputsWithProjectPath
+  // ): MaybePromise<Result<Action | undefined, FxError>> {
+  //   const action: Action = {
+  //     name: "tab-code.build",
+  //     type: "function",
+  //     plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
+  //       const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
+  //       if (!teamsTab) return ok([]);
+  //       const tabDir = teamsTab?.folder;
+  //       if (!tabDir) return ok([]);
+  //       return ok([`build project: ${tabDir}`]);
+  //     },
+  //     execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+  //       return ok([]);
+  //     },
+  //   };
+  //   return ok(action);
+  // }
 }
 
 export async function scaffoldSPFx(
   context: ContextV3,
   inputs: InputsWithProjectPath,
-  folder: string
+  outputFolderPath: string
 ): Promise<Result<any, FxError>> {
   const progressHandler = await ProgressHelper.startScaffoldProgressHandler(
     context.userInteraction
@@ -107,7 +107,6 @@ export async function scaffoldSPFx(
     const componentName = Utils.normalizeComponentName(webpartName);
     const componentNameCamelCase = camelCase(componentName);
     const templateFolder = path.join(getTemplatesFolder(), "plugins", "resource", "spfx");
-    const outputFolderPath = path.resolve(inputs.projectPath, folder);
     const replaceMap: Map<string, string> = new Map();
 
     await progressHandler?.next(ScaffoldProgressMessage.DependencyCheck);

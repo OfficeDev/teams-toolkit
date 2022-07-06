@@ -252,7 +252,7 @@ async function getQuestionsForAddFeature(
     options.push(ApiConnectionOptionItem);
   }
   // TODO: if (hasTab(projectSettingsV3) && hasAAD(projectSettingsV3)) {
-  if (hasTab(projectSettingsV3)) {
+  if (hasTab(projectSettingsV3) && !hasFunction(projectSettingsV3)) {
     options.push(AzureResourceFunctionNewUI);
   }
   const isCicdAddable = await canAddCICDWorkflows(inputs, ctx);

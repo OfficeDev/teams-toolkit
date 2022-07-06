@@ -13,6 +13,7 @@ import {
   ProjectSettingsV3,
   Result,
 } from "@microsoft/teamsfx-api";
+import { merge } from "lodash";
 import "reflect-metadata";
 import { Service } from "typedi";
 import { CoreQuestionNames } from "../../core/question";
@@ -20,9 +21,10 @@ import { DefaultValues } from "../../plugins/resource/function/constants";
 import { QuestionKey } from "../../plugins/resource/function/enums";
 import { ComponentNames } from "../constants";
 import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "../projectSettingsManager";
-@Service("teams-api")
+import { getComponent } from "../workflow";
+@Service(ComponentNames.TeamsApi)
 export class TeamsApi {
-  name = "teams-api";
+  name = ComponentNames.TeamsApi;
   add(
     context: ContextV3,
     inputs: InputsWithProjectPath
@@ -36,24 +38,26 @@ export class TeamsApi {
         name: "fx.configApi",
         type: "function",
         plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-          return ok(["config 'teams-api' in projectSettings"]);
+          return ok([`config '${this.name}' in projectSettings`]);
         },
         execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
           const projectSettings = context.projectSetting as ProjectSettingsV3;
           // add teams-api
           projectSettings.components.push({
-            name: "teams-api",
+            name: this.name,
             hosting: inputs.hosting,
             functionNames: [functionName],
           });
           // add hosting component
           projectSettings.components.push({
             name: inputs.hosting,
-            connections: ["teams-api"],
-            provision: true,
+            connections: [this.name],
           });
+          const teamsTab = getComponent(projectSettings, ComponentNames.TeamsTab);
+          if (!teamsTab?.connections) merge(teamsTab, { connections: [this.name] });
+          else teamsTab.connections.push(this.name);
           projectSettings.programmingLanguage ??= inputs[CoreQuestionNames.ProgrammingLanguage];
-          return ok(["config 'teams-api' in projectSettings"]);
+          return ok([`config '${this.name}' in projectSettings`]);
         },
       },
       {
@@ -74,7 +78,17 @@ export class TeamsApi {
         targetAction: `${inputs.hosting}.generateBicep`,
         inputs: {
           componentId: this.name,
-          componentName: "api",
+          componentName: "Api",
+        },
+      },
+      {
+        name: `call:${inputs.hosting}-config.generateBicep`,
+        type: "call",
+        required: true,
+        targetAction: `${inputs.hosting}-config.generateBicep`,
+        inputs: {
+          componentId: this.name,
+          componentName: "Api",
         },
       },
       {
@@ -87,7 +101,7 @@ export class TeamsApi {
     ];
     const group: GroupAction = {
       type: "group",
-      name: "teams-api.add",
+      name: `${this.name}.add`,
       mode: "sequential",
       actions: actions,
     };
@@ -98,7 +112,7 @@ export class TeamsApi {
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const action: CallAction = {
-      name: "teams-api.build",
+      name: `${this.name}.build`,
       type: "call",
       targetAction: "api-code.build",
       required: true,

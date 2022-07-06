@@ -9,7 +9,6 @@ import {
   MaybePromise,
   ok,
   ProjectSettingsV3,
-  ProvisionContextV3,
   Result,
   SourceCodeProvider,
 } from "@microsoft/teamsfx-api";
@@ -19,8 +18,10 @@ import { Service } from "typedi";
 import { getComponent } from "../workflow";
 import { DefaultValues, FunctionPluginPathInfo } from "../../plugins/resource/function/constants";
 import { FunctionScaffold } from "../../plugins/resource/function/ops/scaffold";
-import { QuestionKey } from "../../plugins/resource/function/enums";
+import { FunctionLanguage, QuestionKey } from "../../plugins/resource/function/enums";
 import { ComponentNames } from "../constants";
+import { FunctionDeploy } from "../../plugins/resource/function/ops/deploy";
+import { merge } from "lodash";
 /**
  * api scaffold
  */
@@ -46,6 +47,9 @@ export class ApiCodeProvider implements SourceCodeProvider {
           context.projectSetting.programmingLanguage ||
           "javascript";
         const folder = inputs.folder || FunctionPluginPathInfo.solutionFolderName;
+        const teamsApi = getComponent(projectSettings, ComponentNames.TeamsApi);
+        if (!teamsApi) return ok([]);
+        merge(teamsApi, { build: true, folder: folder });
         const workingDir = path.join(inputs.projectPath, folder);
         const functionName =
           (inputs?.[QuestionKey.functionName] as string) ?? DefaultValues.functionName;
@@ -80,8 +84,17 @@ export class ApiCodeProvider implements SourceCodeProvider {
         return ok([`build project: ${apiDir}`]);
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const ctx = context as ProvisionContextV3;
-        return ok([`build project`]);
+        const teamsApi = getComponent(context.projectSetting, ComponentNames.TeamsApi);
+        if (!teamsApi) return ok([]);
+        if (teamsApi.folder == undefined) throw new Error("path not found");
+        const language = context.projectSetting.programmingLanguage;
+        if (!language || !Object.values(FunctionLanguage).includes(language as FunctionLanguage))
+          throw new Error("Invalid programming language found in project settings.");
+        const buildPath = path.resolve(inputs.projectPath, teamsApi.folder);
+        await FunctionDeploy.build(buildPath, language as FunctionLanguage);
+        const artifactFolder = teamsApi.artifactFolder || teamsApi.folder;
+        merge(teamsApi, { build: true, artifactFolder: path.join(artifactFolder) });
+        return ok([`build project: ${buildPath}`]);
       },
     };
     return ok(action);

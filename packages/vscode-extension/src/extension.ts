@@ -355,8 +355,7 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
   const createNewEnvironment = vscode.commands.registerCommand(
     // TODO: fix trigger from
     "fx-extension.addEnvironment",
-    (...args) =>
-      Correlator.run(handlers.createNewEnvironment, [TelemetryTriggerFrom.ViewTitleNavigation])
+    (...args) => Correlator.run(handlers.createNewEnvironment, args)
   );
   context.subscriptions.push(createNewEnvironment);
 
@@ -444,6 +443,12 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
  * Commands used in menus, e.g. Explorer context & view item title/context
  */
 function registerMenuCommands(context: vscode.ExtensionContext) {
+  const createNewEnvironmentWithIcon = vscode.commands.registerCommand(
+    "fx-extension.addEnvironmentWithIcon",
+    (...args) => Correlator.run(handlers.createNewEnvironment, [TelemetryTriggerFrom.TreeView])
+  );
+  context.subscriptions.push(createNewEnvironmentWithIcon);
+
   const azureAccountSettingsCmd = vscode.commands.registerCommand(
     "fx-extension.azureAccountSettings",
     () => Correlator.run(handlers.openAzureAccountHandler)
@@ -452,8 +457,7 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
 
   const createAccountCmd = vscode.commands.registerCommand(
     "fx-extension.createAccount",
-    (...args) =>
-      Correlator.run(handlers.createAccountHandler, [TelemetryTriggerFrom.ViewTitleNavigation])
+    (...args) => Correlator.run(handlers.createAccountHandler, [TelemetryTriggerFrom.TreeView])
   );
   context.subscriptions.push(createAccountCmd);
 
@@ -597,8 +601,7 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
 
   const refreshEnvironment = vscode.commands.registerCommand(
     "fx-extension.refreshEnvironment",
-    (...args) =>
-      Correlator.run(handlers.refreshEnvironment, [TelemetryTriggerFrom.ViewTitleNavigation])
+    (...args) => Correlator.run(handlers.refreshEnvironment, [TelemetryTriggerFrom.TreeView])
   );
   context.subscriptions.push(refreshEnvironment);
 

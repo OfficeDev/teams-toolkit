@@ -222,7 +222,6 @@ export async function scaffoldSPFx(
 
     await Utils.configure(path.join(appDirectory, MANIFEST_TEMPLATE_CONSOLIDATE), replaceMap);
 
-    const appManifestProvider = new DefaultManifestProvider();
     const capabilitiesToAddManifest: v3.ManifestCapability[] = [];
     const remoteStaticSnippet: IStaticTab = {
       entityId: componentId,

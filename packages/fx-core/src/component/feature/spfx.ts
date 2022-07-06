@@ -7,16 +7,20 @@ import {
   FxError,
   GroupAction,
   InputsWithProjectPath,
-  IStaticTab,
   MaybePromise,
   ok,
   ProjectSettingsV3,
+  QTreeNode,
   Result,
-  v3,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
 import { CoreQuestionNames } from "../../core/question";
+import {
+  frameworkQuestion,
+  webpartDescriptionQuestion,
+  webpartNameQuestion,
+} from "../../plugins/resource/spfx/utils/questions";
 import { ComponentNames } from "../constants";
 import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "../projectSettingsManager";
 @Service(ComponentNames.SPFx)
@@ -32,6 +36,18 @@ export class SPFxTab {
       {
         name: "fx.configTab",
         type: "function",
+        question: (context: ContextV3, inputs: InputsWithProjectPath) => {
+          const spfx_frontend_host = new QTreeNode({
+            type: "group",
+          });
+          const spfx_framework_type = new QTreeNode(frameworkQuestion);
+          spfx_frontend_host.addChild(spfx_framework_type);
+          const spfx_webpart_name = new QTreeNode(webpartNameQuestion);
+          spfx_frontend_host.addChild(spfx_webpart_name);
+          const spfx_webpart_desp = new QTreeNode(webpartDescriptionQuestion);
+          spfx_frontend_host.addChild(spfx_webpart_desp);
+          return ok(spfx_frontend_host);
+        },
         plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
           return ok(["config 'teams-tab' in projectSettings"]);
         },
@@ -61,12 +77,6 @@ export class SPFxTab {
         type: "call",
         targetAction: "bicep.init",
         required: true,
-      },
-      {
-        name: `call:${inputs.hosting}.generateBicep`,
-        type: "call",
-        required: true,
-        targetAction: `${inputs.hosting}.generateBicep`,
       },
       {
         name: "call:debug.generateLocalDebugSettings",

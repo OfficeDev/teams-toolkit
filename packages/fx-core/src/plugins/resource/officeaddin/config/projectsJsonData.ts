@@ -1,12 +1,13 @@
 import * as fs from "fs";
 import * as _ from "lodash";
+import * as path from "path";
 
 export default class projectsJsonData {
   m_projectJsonDataFile = "\\projectProperties.json";
   m_projectJsonData;
 
   constructor() {
-    const jsonData = fs.readFileSync(__dirname + this.m_projectJsonDataFile);
+    const jsonData = fs.readFileSync(path.join(__dirname, this.m_projectJsonDataFile));
     this.m_projectJsonData = JSON.parse(jsonData.toString());
   }
 

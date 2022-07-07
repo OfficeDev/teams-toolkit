@@ -12,6 +12,7 @@ import {
   MaybePromise,
   ok,
   Platform,
+  PluginContext,
   ProjectSettingsV3,
   Result,
   SourceCodeProvider,
@@ -23,6 +24,7 @@ import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
 import * as util from "util";
+import { Context } from "vm";
 import { getAppDirectory, isGeneratorCheckerEnabled, isYoCheckerEnabled } from "../../common";
 import { getTemplatesFolder } from "../../folder";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../plugins/resource/appstudio/constants";
@@ -37,8 +39,10 @@ import {
 import { ProgressHelper } from "../../plugins/resource/spfx/utils/progress-helper";
 import { SPFXQuestionNames } from "../../plugins/resource/spfx/utils/questions";
 import { Utils } from "../../plugins/resource/spfx/utils/utils";
+import { convert2Context } from "../../plugins/resource/utils4v2";
 import { cpUtils } from "../../plugins/solution/fx-solution/utils/depsChecker/cpUtils";
 import { ComponentNames } from "../constants";
+import { DefaultManifestProvider } from "../resource/appManifest/manifestProvider";
 import { getComponent } from "../workflow";
 /**
  * SPFx tab scaffold
@@ -67,6 +71,7 @@ export class SPFxTabCodeProvider implements SourceCodeProvider {
         merge(teamsTab, { build: true, folder: folder });
         const workingDir = path.resolve(inputs.projectPath, folder);
         const scaffoldRes = await scaffoldSPFx(context, inputs, workingDir);
+        if (scaffoldRes.isErr()) return err(scaffoldRes.error);
         return ok([`scaffold tab source code in folder: ${workingDir}`]);
       },
     };
@@ -95,13 +100,12 @@ export class SPFxTabCodeProvider implements SourceCodeProvider {
 }
 
 export async function scaffoldSPFx(
-  context: ContextV3,
+  context: ContextV3 | PluginContext,
   inputs: InputsWithProjectPath,
   outputFolderPath: string
 ): Promise<Result<any, FxError>> {
-  const progressHandler = await ProgressHelper.startScaffoldProgressHandler(
-    context.userInteraction
-  );
+  const ui = (context as ContextV3).userInteraction || (context as PluginContext).ui;
+  const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ui);
   try {
     const webpartName = inputs[SPFXQuestionNames.webpart_name] as string;
     const componentName = Utils.normalizeComponentName(webpartName);
@@ -111,8 +115,8 @@ export async function scaffoldSPFx(
 
     await progressHandler?.next(ScaffoldProgressMessage.DependencyCheck);
 
-    const yoChecker = new YoChecker(context.logProvider);
-    const spGeneratorChecker = new GeneratorChecker(context.logProvider);
+    const yoChecker = new YoChecker(context.logProvider!);
+    const spGeneratorChecker = new GeneratorChecker(context.logProvider!);
 
     const yoInstalled = await yoChecker.isInstalled();
     const generatorInstalled = await spGeneratorChecker.isInstalled();
@@ -137,7 +141,9 @@ export async function scaffoldSPFx(
 
     await progressHandler?.next(ScaffoldProgressMessage.ScaffoldProject);
     const framework = inputs[SPFXQuestionNames.framework_type] as string;
-    const solutionName = context.projectSetting.appName as string;
+    const solutionName =
+      ((context as ContextV3).projectSetting.appName as string) ||
+      ((context as PluginContext).projectSettings?.appName as string);
     if (inputs.platform === Platform.VSCode) {
       (context.logProvider as any).outputChannel.show();
     }
@@ -248,8 +254,12 @@ export async function scaffoldSPFx(
         snippet: remoteConfigurableSnippet,
       }
     );
-    const addCapRes = await context.manifestProvider.addCapabilities(
-      context,
+    const manifestProvider =
+      (context as ContextV3).manifestProvider || new DefaultManifestProvider();
+    const addCapRes = await manifestProvider.addCapabilities(
+      (context as ContextV3).manifestProvider
+        ? (context as ContextV3)
+        : convert2Context(context as PluginContext, true).context,
       inputs,
       capabilitiesToAddManifest
     );

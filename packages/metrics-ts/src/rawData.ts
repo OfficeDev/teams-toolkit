@@ -8,7 +8,7 @@ export interface tracePoint {
   timestamp: number;
   method: string;
   /* eslint-disable  @typescript-eslint/no-explicit-any */
-  args: any;
+  args?: any;
   timer?: timerData;
 }
 

@@ -1,22 +1,28 @@
 import * as path123 from "path";
+import { timer } from "@microsoft/metrics-ts";
 
 function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 class Foo {
-  async bar() {
-    await delay(1000);
-    path123.join("a", "b");
+  @timer()
+  bar() {
+    const r = this.baz();
+    console.log(r);
+    console.log(r.indexOf(0));
   }
 
-  baz() {
+  @timer()
+  baz(): number[] {
     path123.join("a", "b");
+    return [1];
   }
 
+  @timer()
   async buz(arg: string, arg2: any) {
     await delay(1000);
-    await this.bar();
+    this.bar();
   }
 }
 

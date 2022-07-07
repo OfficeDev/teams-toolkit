@@ -211,7 +211,18 @@ export class TabCodeProvider implements SourceCodeProvider {
       }
     };
 
-    // TODO: add environemnt variables for aad, simple auth and function api
+    const connections = getComponent(ctx.projectSetting, ComponentNames.TeamsTab)?.connections;
+    if (connections?.includes(ComponentNames.TeamsApi)) {
+      const teamsApi = getComponent(ctx.projectSetting, ComponentNames.TeamsApi);
+      addToEnvs(EnvKeys.FuncName, teamsApi?.functionNames[0]);
+      addToEnvs(
+        EnvKeys.FuncEndpoint,
+        // TODO: Read function app endpoint from inputs
+        ctx.envInfo?.state?.[ComponentNames.TeamsApi]?.functionEndpoint as string
+      );
+    }
+
+    // TODO: add environment variables for aad, simple auth
     addToEnvs(EnvKeys.StartLoginPage, DependentPluginInfo.StartLoginPageURL);
     return envs;
   }

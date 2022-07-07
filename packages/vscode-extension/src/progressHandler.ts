@@ -3,10 +3,13 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { IProgressHandler, ok } from "@microsoft/teamsfx-api";
-import { ProgressLocation, window } from "vscode";
-import { sleep } from "./utils/commonUtils";
+import { Mutex } from "async-mutex";
 import * as util from "util";
+import { ProgressLocation, window } from "vscode";
+
+import { IProgressHandler, ok } from "@microsoft/teamsfx-api";
+
+import { sleep } from "./utils/commonUtils";
 import { localize } from "./utils/localizeUtils";
 
 export class ProgressHandler implements IProgressHandler {
@@ -15,6 +18,7 @@ export class ProgressHandler implements IProgressHandler {
   private title: string;
   private detail?: string;
   private ended: boolean;
+  private mutex: Mutex;
 
   private resolve?: any;
 
@@ -23,6 +27,7 @@ export class ProgressHandler implements IProgressHandler {
     this.currentStep = 0;
     this.title = title;
     this.ended = false;
+    this.mutex = new Mutex();
   }
 
   private generateWholeMessage(): string {
@@ -76,9 +81,11 @@ export class ProgressHandler implements IProgressHandler {
   }
 
   public async next(detail?: string) {
-    this.detail = detail;
-    this.currentStep++;
-    this.totalSteps = Math.max(this.currentStep, this.totalSteps);
-    this.resolve = await new Promise((resolve) => this.resolve?.(resolve));
+    await this.mutex.runExclusive(async () => {
+      this.detail = detail;
+      this.currentStep++;
+      this.totalSteps = Math.max(this.currentStep, this.totalSteps);
+      this.resolve = await new Promise((resolve) => this.resolve?.(resolve));
+    });
   }
 }

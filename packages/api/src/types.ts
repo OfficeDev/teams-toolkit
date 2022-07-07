@@ -276,6 +276,7 @@ export interface Component extends Json {
   build?: boolean;
   provision?: boolean;
   connections?: string[];
+  sso?: boolean;
 }
 export interface ProjectSettingsV3 extends ProjectSettings {
   components: Component[];

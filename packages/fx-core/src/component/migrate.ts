@@ -93,7 +93,7 @@ export const EnvStateMigrationComponentNames = [
   ["fx-resource-identity", ComponentNames.Identity],
   ["fx-resource-azure-sql", ComponentNames.AzureSQL],
   ["fx-resource-aad-app-for-teams", ComponentNames.AadApp],
-  ["fx-resource-function", ComponentNames.Function],
+  ["fx-resource-function", ComponentNames.TeamsApi],
   ["fx-resource-apim", ComponentNames.APIM],
   ["fx-resource-key-vault", ComponentNames.KeyVault],
   ["fx-resource-bot", ComponentNames.TeamsBot],

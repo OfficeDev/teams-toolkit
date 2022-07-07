@@ -6,23 +6,18 @@ import {
   ok,
   Result,
   Action,
-  Bicep,
   ContextV3,
   MaybePromise,
   InputsWithProjectPath,
   ProvisionContextV3,
-  CloudResource,
   v3,
   err,
   AzureAccountProvider,
   Effect,
 } from "@microsoft/teamsfx-api";
-import fs from "fs-extra";
-import * as path from "path";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
 import { AppStudioScopes, compileHandlebarsTemplateString, GraphScopes } from "../../common/tools";
-import { getTemplatesFolder } from "../../folder";
 import {
   CommonStrings,
   ConfigNames,
@@ -189,7 +184,6 @@ export class BotService extends AzureResource {
             name: "graph.microsoft.com",
             remarks: "update message endpoint in AppStudio",
           });
-          const botServiceState = ctx.envInfo.state[ComponentNames.BotService];
           const teamsBotState = ctx.envInfo.state[ComponentNames.TeamsBot];
           const appStudioTokenRes = await ctx.tokenProvider.m365TokenProvider.getAccessToken({
             scopes: AppStudioScopes,
@@ -218,8 +212,8 @@ export async function createBotAAD(ctx: ProvisionContextV3): Promise<Result<any,
   const graphToken = graphTokenRes.isOk() ? graphTokenRes.value : undefined;
   CheckThrowSomethingMissing(ConfigNames.GRAPH_TOKEN, graphToken);
   CheckThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, ctx.projectSetting.appName);
-  ctx.envInfo.state[ComponentNames.BotService] = ctx.envInfo.state[ComponentNames.BotService] || {};
-  const botConfig = ctx.envInfo.state[ComponentNames.BotService];
+  ctx.envInfo.state[ComponentNames.TeamsBot] = ctx.envInfo.state[ComponentNames.TeamsBot] || {};
+  const botConfig = ctx.envInfo.state[ComponentNames.TeamsBot];
   const botAADCreated = botConfig?.botId !== undefined && botConfig?.botPassword !== undefined;
   if (!botAADCreated) {
     const solutionConfig = ctx.envInfo.state.solution as v3.AzureSolutionConfig;

@@ -1,4 +1,4 @@
 {
-  "botAadAppClientId": "{{state.bot-service.botId}}",
-  "botAadAppClientSecret": "{{state.bot-service.botPassword}}"
+  "botAadAppClientId": "{{state.teams-bot.botId}}",
+  "botAadAppClientSecret": "{{state.teams-bot.botPassword}}"
 }

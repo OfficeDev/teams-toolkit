@@ -203,6 +203,11 @@ export async function addCapabilities(
             const template = deepCopy(STATIC_TABS_TPL_FOR_MULTI_ENV[0]);
             template.entityId = "index" + staticTabIndex;
             manifest.staticTabs!.push(template);
+            if (
+              manifest.validDomains?.indexOf("{{state.fx-resource-frontend-hosting.domain}}") == -1
+            ) {
+              manifest.validDomains?.push("{{state.fx-resource-frontend-hosting.domain}}");
+            }
           }
           staticTabIndex++;
         }
@@ -222,6 +227,11 @@ export async function addCapabilities(
             manifest.configurableTabs = manifest.configurableTabs!.concat(
               CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV
             );
+            if (
+              manifest.validDomains?.indexOf("{{state.fx-resource-frontend-hosting.domain}}") == -1
+            ) {
+              manifest.validDomains?.push("{{state.fx-resource-frontend-hosting.domain}}");
+            }
           }
         }
         break;
@@ -256,6 +266,8 @@ export async function addCapabilities(
             } else {
               manifest.bots = manifest.bots.concat(BOTS_TPL_FOR_MULTI_ENV);
             }
+
+            manifest.validDomains?.push("{{state.fx-resource-bot.validDomain}}");
           }
         }
         break;

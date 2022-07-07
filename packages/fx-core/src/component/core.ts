@@ -299,9 +299,6 @@ export class TeamsfxCore {
           type: "call",
           targetAction: `${componentConfig.hosting}.deploy`,
           required: false,
-          inputs: {
-            code: componentConfig,
-          },
         });
       }
     });

@@ -2,13 +2,16 @@ import * as chai from "chai";
 import * as spies from "chai-spies";
 import { Stage, UserError } from "@microsoft/teamsfx-api";
 import * as ExtTelemetry from "../../../src/telemetry/telemetry";
-import { TelemetryEvent } from "../../../src/telemetry/extTelemetryEvents";
+import {
+  TelemetryEvent,
+  TelemetryEventCache,
+  TelemetryProperty,
+} from "../../../src/telemetry/extTelemetryEvents";
 import sinon = require("sinon");
 import * as commonUtils from "../../../src/utils/commonUtils";
 import * as fs from "fs-extra";
 import * as globalVariables from "../../../src/globalVariables";
 import { Uri } from "vscode";
-import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
 
 chai.use(spies);
 const spy = chai.spy;
@@ -30,6 +33,14 @@ const reporterSpy = spy.interface({
     properties?: { [p: string]: string },
     measurements?: { [p: string]: number }
   ): void {},
+  dispose(): Promise<void> {
+    return Promise.resolve();
+  },
+});
+const cacheSpy = spy.interface({
+  persistUnsentEventsToDiskAsync(event: TelemetryEventCache): Promise<void> {
+    return Promise.resolve();
+  },
 });
 
 suite("ExtTelemetry", () => {
@@ -166,6 +177,30 @@ suite("ExtTelemetry", () => {
         },
         { numericMeasure: 123 }
       );
+    });
+  });
+
+  suite("deactivate event", () => {
+    test("telemetry dispose", async () => {
+      const clock = sinon.useFakeTimers();
+      sinon.stub(ExtTelemetry, "lastCorrelationId").value("correlation-id");
+      chai.util.addProperty(ExtTelemetry, "cache", () => cacheSpy);
+      sinon.stub(commonUtils, "getProjectId").returns("project-id");
+
+      await ExtTelemetry.dispose();
+
+      chai.expect(cacheSpy.persistUnsentEventsToDiskAsync).to.have.been.called.with({
+        type: "normal",
+        occurTime: new clock.Date(),
+        eventName: TelemetryEvent.Deactivate,
+        properties: {
+          [TelemetryProperty.CorrelationId]: "correlation-id",
+          [TelemetryProperty.ProjectId]: "project-id",
+        },
+      });
+
+      clock.restore();
+      sinon.restore();
     });
   });
 });

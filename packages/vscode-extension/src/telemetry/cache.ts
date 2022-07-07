@@ -25,8 +25,8 @@ export class TelemetryCache {
     this.mutex = new Mutex();
   }
 
-  public addEvent(event: TelemetryEventCache): void {
-    this.mutex.runExclusive(() => {
+  public async addEvent(event: TelemetryEventCache): Promise<void> {
+    await this.mutex.runExclusive(() => {
       this.cachedEvents[this.insertPos] = event;
       this.insertPos = (this.insertPos + 1) % CacheSize;
       const size = (this.insertPos + CacheSize - this.endPos) % CacheSize;
@@ -34,11 +34,11 @@ export class TelemetryCache {
         clearTimeout(this.timeout);
         this.timeout = undefined;
       }
-      if (size > CacheLimit) {
+      if (size >= CacheLimit) {
         this.sendEventsInCache();
       } else {
         this.timeout = setTimeout(
-          () => this.mutex.runExclusive(() => this.sendEventsInCache()),
+          async () => await this.mutex.runExclusive(() => this.sendEventsInCache()),
           FlushCacheDelay
         );
       }
@@ -53,7 +53,7 @@ export class TelemetryCache {
           [TelemetryProperty.Timestamp]: event.occurTime.toISOString(),
           ...event.properties,
         };
-        switch (event.eventName) {
+        switch (event.type) {
           case "normal":
             this.reporter.sendTelemetryEvent(event.eventName, properties, event.measurements);
             break;

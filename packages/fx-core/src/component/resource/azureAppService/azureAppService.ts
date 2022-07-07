@@ -3,7 +3,6 @@
 
 import {
   Action,
-  Component,
   ContextV3,
   FxError,
   InputsWithProjectPath,

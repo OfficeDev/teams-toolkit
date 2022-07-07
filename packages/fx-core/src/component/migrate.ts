@@ -1,4 +1,10 @@
-import { Json } from "@microsoft/teamsfx-api";
+import {
+  AzureSolutionSettings,
+  Json,
+  ProjectSettings,
+  ProjectSettingsV3,
+} from "@microsoft/teamsfx-api";
+import { cloneDeep } from "lodash";
 import { ComponentNames } from "./constants";
 
 export interface EnvStateV2 {
@@ -127,3 +133,16 @@ export function convertEnvStateV2ToV3(envStateV2: Json): Json {
   }
   return envStateV3;
 }
+
+export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings) {
+  const settingsV3 = cloneDeep(settingsV2) as ProjectSettingsV3;
+  settingsV3.components = [];
+  const solutionSettings = settingsV2.solutionSettings as AzureSolutionSettings;
+  if (solutionSettings) {
+    if (solutionSettings.activeResourcePlugins.includes("fx-resource-frontend-hosting")) {
+      // settingsV3.components.push({})
+    }
+  }
+}
+
+export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3) {}

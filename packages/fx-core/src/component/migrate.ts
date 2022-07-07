@@ -174,6 +174,11 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings) {
         });
       }
     }
+    if (solutionSettings.activeResourcePlugins.includes("fx-resource-identity")) {
+      settingsV3.components.push({
+        name: ComponentNames.Identity,
+      });
+    }
   }
 }
 

@@ -3,6 +3,7 @@
 
 import {
   Action,
+  assembleError,
   Bicep,
   Component,
   ContextV3,
@@ -498,32 +499,36 @@ export async function runAction(
   context.logProvider.info(
     `------------------------run action: ${actionName} start!------------------------`
   );
-  const action = await getAction(actionName, context, inputs);
-  if (action) {
-    const questionRes = await askQuestionForAction(action, context, inputs);
-    if (questionRes.isErr()) return err(questionRes.error);
-    const planEffects: Effect[] = [];
-    await planAction(action, context, cloneDeep(inputs), planEffects);
-    // const confirm = await showPlanAndConfirm(
-    //   `action: ${actionName} will do the following changes:`,
-    //   planEffects,
-    //   context,
-    //   inputs
-    // );
-    // if (confirm) {
-    const execEffects: Effect[] = [];
-    const execRes = await executeAction(action, context, inputs, execEffects);
-    if (execRes.isErr()) return execRes;
-    await showSummary(`${actionName} summary:`, execEffects, context, inputs);
-    // }
-  } else {
-    return err(
-      new SystemError({
-        source: "fx",
-        name: "ActionNotFoundError",
-        message: "action not found:" + actionName,
-      })
-    );
+  try {
+    const action = await getAction(actionName, context, inputs);
+    if (action) {
+      const questionRes = await askQuestionForAction(action, context, inputs);
+      if (questionRes.isErr()) return err(questionRes.error);
+      const planEffects: Effect[] = [];
+      await planAction(action, context, cloneDeep(inputs), planEffects);
+      // const confirm = await showPlanAndConfirm(
+      //   `action: ${actionName} will do the following changes:`,
+      //   planEffects,
+      //   context,
+      //   inputs
+      // );
+      // if (confirm) {
+      const execEffects: Effect[] = [];
+      const execRes = await executeAction(action, context, inputs, execEffects);
+      if (execRes.isErr()) return execRes;
+      await showSummary(`${actionName} summary:`, execEffects, context, inputs);
+      // }
+    } else {
+      return err(
+        new SystemError({
+          source: "fx",
+          name: "ActionNotFoundError",
+          message: "action not found:" + actionName,
+        })
+      );
+    }
+  } catch (e) {
+    return err(assembleError(e));
   }
   context.logProvider.info(
     `------------------------run action: ${actionName} finish!------------------------`

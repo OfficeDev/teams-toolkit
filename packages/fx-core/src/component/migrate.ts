@@ -1,5 +1,6 @@
 import {
   AzureSolutionSettings,
+  Component,
   Json,
   ProjectSettings,
   ProjectSettingsV3,
@@ -210,11 +211,11 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings) {
           name: hostingComponent,
           connections: ["teams-bot"],
           provision: true,
+          scenario: "bot",
         });
       }
       settingsV3.components.push({
-        name: hostingComponent,
-        connections: ["bot-service"],
+        name: ComponentNames.BotService,
         provision: true,
       });
     }
@@ -244,6 +245,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings) {
       });
       settingsV3.components.push({
         name: ComponentNames.Function,
+        scenario: "api",
       });
     }
     connectComponents(settingsV3);
@@ -252,15 +254,13 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings) {
 }
 
 function connectResourceToComponent(
-  computeComponent: string,
-  resource: string,
+  computeComponent: Component,
+  resource: Component,
   settingsV3: ProjectSettingsV3
 ) {
-  const hostingConfig = getComponent(settingsV3, computeComponent);
-  if (hostingConfig) {
-    hostingConfig.connections = hostingConfig.connections || [];
-    if (hostingConfig.connections.includes(resource)) hostingConfig.connections.push(resource);
-  }
+  computeComponent.connections = computeComponent.connections || [];
+  if (!computeComponent.connections.includes(resource.name))
+    computeComponent.connections.push(resource.name);
 }
 
 function connectComponents(settingsV3: ProjectSettingsV3) {
@@ -272,12 +272,11 @@ function connectComponents(settingsV3: ProjectSettingsV3) {
     ComponentNames.TeamsBot,
   ];
   const computingComponentNames = [ComponentNames.AzureWebApp, ComponentNames.Function];
-  for (const computingComponentName of computingComponentNames) {
-    const component = getComponent(settingsV3, computingComponentName);
-    if (component) {
-      for (const resource of resources) {
-        if (getComponent(settingsV3, resource)) {
-          connectResourceToComponent(computingComponentName, resource, settingsV3);
+  for (const component1 of settingsV3.components) {
+    if (computingComponentNames.includes(component1.name)) {
+      for (const component2 of settingsV3.components) {
+        if (resources.includes(component2.name)) {
+          connectResourceToComponent(component1, component2, settingsV3);
         }
       }
     }

@@ -142,7 +142,7 @@ export async function scaffoldSPFx(
     await progressHandler?.next(ScaffoldProgressMessage.ScaffoldProject);
     const framework = inputs[SPFXQuestionNames.framework_type] as string;
     const solutionName =
-      ((context as ContextV3).projectSetting.appName as string) ||
+      ((context as ContextV3).projectSetting?.appName as string) ||
       ((context as PluginContext).projectSettings?.appName as string);
     if (inputs.platform === Platform.VSCode) {
       (context.logProvider as any).outputChannel.show();

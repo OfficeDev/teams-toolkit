@@ -84,21 +84,21 @@ describe("Workflow test for v3", () => {
     assert.isTrue(res.isOk());
   });
   it("spfx-tab.add", async () => {
-    // sandbox.stub(Utils, "configure");
-    // sandbox.stub(fs, "stat").resolves();
-    // sandbox.stub(YoChecker.prototype, "isInstalled").resolves(true);
-    // sandbox.stub(GeneratorChecker.prototype, "isInstalled").resolves(true);
-    // sandbox.stub(cpUtils, "executeCommand").resolves("succeed");
-    // const manifestId = uuid.v4();
-    // sandbox.stub(fs, "readFile").resolves(new Buffer(`{"id": "${manifestId}"}`));
-    // sandbox.stub(fs, "writeFile").resolves();
-    // sandbox.stub(fs, "rename").resolves();
-    // sandbox.stub(fs, "copyFile").resolves();
+    sandbox.stub(Utils, "configure");
+    sandbox.stub(fs, "stat").resolves();
+    sandbox.stub(YoChecker.prototype, "isInstalled").resolves(true);
+    sandbox.stub(GeneratorChecker.prototype, "isInstalled").resolves(true);
+    sandbox.stub(cpUtils, "executeCommand").resolves("succeed");
+    const manifestId = uuid.v4();
+    sandbox.stub(fs, "readFile").resolves(new Buffer(`{"id": "${manifestId}"}`));
+    sandbox.stub(fs, "writeFile").resolves();
+    sandbox.stub(fs, "rename").resolves();
+    sandbox.stub(fs, "copyFile").resolves();
     sandbox.stub(versionCheckQuestion as FuncQuestion, "func").resolves(undefined);
-    sandbox.stub(spfxCode, "scaffoldSPFx").resolves(ok(undefined));
+    // sandbox.stub(spfxCode, "scaffoldSPFx").resolves(ok(undefined));
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
-      platform: Platform.VSCode,
+      platform: Platform.CLI,
       language: "typescript",
       [SPFXQuestionNames.webpart_name]: "hello",
       [SPFXQuestionNames.framework_type]: "none",

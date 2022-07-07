@@ -84,18 +84,18 @@ describe("Workflow test for v3", () => {
     assert.isTrue(res.isOk());
   });
   it("spfx-tab.add", async () => {
-    // sinon.stub(Utils, "configure");
-    // sinon.stub(fs, "stat").resolves();
-    // sinon.stub(YoChecker.prototype, "isInstalled").resolves(true);
-    // sinon.stub(GeneratorChecker.prototype, "isInstalled").resolves(true);
-    // sinon.stub(cpUtils, "executeCommand").resolves("succeed");
+    // sandbox.stub(Utils, "configure");
+    // sandbox.stub(fs, "stat").resolves();
+    // sandbox.stub(YoChecker.prototype, "isInstalled").resolves(true);
+    // sandbox.stub(GeneratorChecker.prototype, "isInstalled").resolves(true);
+    // sandbox.stub(cpUtils, "executeCommand").resolves("succeed");
     // const manifestId = uuid.v4();
-    // sinon.stub(fs, "readFile").resolves(new Buffer(`{"id": "${manifestId}"}`));
-    // sinon.stub(fs, "writeFile").resolves();
-    // sinon.stub(fs, "rename").resolves();
-    // sinon.stub(fs, "copyFile").resolves();
-    sinon.stub(versionCheckQuestion as FuncQuestion, "func").resolves(undefined);
-    sinon.stub(spfxCode, "scaffoldSPFx").resolves(ok(undefined));
+    // sandbox.stub(fs, "readFile").resolves(new Buffer(`{"id": "${manifestId}"}`));
+    // sandbox.stub(fs, "writeFile").resolves();
+    // sandbox.stub(fs, "rename").resolves();
+    // sandbox.stub(fs, "copyFile").resolves();
+    sandbox.stub(versionCheckQuestion as FuncQuestion, "func").resolves(undefined);
+    sandbox.stub(spfxCode, "scaffoldSPFx").resolves(ok(undefined));
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,

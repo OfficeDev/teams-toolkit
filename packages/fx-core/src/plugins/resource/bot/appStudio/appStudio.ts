@@ -158,7 +158,6 @@ export class AppStudio {
   ): Promise<IBotRegistration | undefined> {
     const axiosInstance = AppStudio.newAxiosInstance(accessToken);
 
-    const response = undefined;
     const getBotRegistrationResponse: AxiosResponse<any> | undefined = await RetryHandler.Retry(
       async () => {
         try {

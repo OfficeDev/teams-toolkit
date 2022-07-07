@@ -15,20 +15,41 @@ import {
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
+import { ComponentNames } from "../../constants";
+import { GetActionGenerateAuthFiles } from "./actions/generateAuthFiles";
+import { GetActionGenerateBicep } from "./actions/generateBicep";
+import { GetActionGenerateManifest } from "./actions/generateManifest";
 
-//TODO
-@Service("aad")
-export class Aad implements CloudResource {
+@Service(ComponentNames.AadApp)
+export class AadApp implements CloudResource {
   readonly type = "cloud";
-  readonly name = "aad";
+  readonly name = ComponentNames.AadApp;
   outputs = {};
   finalOutputKeys = [];
+  generateManifest(
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    return ok(GetActionGenerateManifest());
+  }
+  generateAuthFiles(
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    return ok(GetActionGenerateAuthFiles());
+  }
+  generateBicep(
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    return ok(GetActionGenerateBicep());
+  }
   provision(
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const action: Action = {
-      name: "aad.provision",
+      name: `${ComponentNames.AadApp}.provision`,
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         return ok([
@@ -66,7 +87,7 @@ export class Aad implements CloudResource {
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const action: Action = {
-      name: "aad.configure",
+      name: `${ComponentNames.AadApp}.configure`,
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         return ok([

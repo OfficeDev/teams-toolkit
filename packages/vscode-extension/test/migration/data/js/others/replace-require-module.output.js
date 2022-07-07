@@ -1,8 +1,10 @@
-const msft = require("@microsoft/teams-js"); //TODO: Require module is not handled, please update it manually.
+const msft = //TODO: Require module is not handled, please update it manually.
+require("@microsoft/teams-js");
 
 msft.initialize();
 
-const initialize = require("@microsoft/teams-js").initialize; //TODO: Require module is not handled, please update it manually.
+const initialize = //TODO: Require module is not handled, please update it manually.
+require("@microsoft/teams-js").initialize;
 
 //TODO: Require module is not handled, please update it manually.
 require("@microsoft/teams-js").initialize();

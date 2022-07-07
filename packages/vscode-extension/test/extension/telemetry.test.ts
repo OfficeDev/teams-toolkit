@@ -47,16 +47,16 @@ import { getAllFeatureFlags } from "../../src/utils/commonUtils";
 
 const featureFlags = getAllFeatureFlags()?.join(";") ?? "";
 
-suite("telemetry", () => {
+describe("telemetry", () => {
   let tester: TelemetryReporter;
 
-  suiteSetup(() => {
+  before(() => {
     tester = new VSCodeTelemetryReporter("test", "1.0.0-rc.1", "test");
     (tester as VSCodeTelemetryReporter).addSharedProperty("project-id", "");
     chai.util.addProperty(tester, "reporter", () => reporterSpy);
   });
 
-  test("sendTelemetryEvent", () => {
+  it("sendTelemetryEvent", () => {
     tester.sendTelemetryEvent(
       "sampleEvent",
       { stringProp: "some string" },
@@ -75,7 +75,7 @@ suite("telemetry", () => {
     );
   });
 
-  test("sendTelemetryErrorEvent", () => {
+  it("sendTelemetryErrorEvent", () => {
     tester.sendTelemetryErrorEvent(
       "sampleErrorEvent",
       {
@@ -99,7 +99,7 @@ suite("telemetry", () => {
     );
   });
 
-  test("sendTelemetryException", () => {
+  it("sendTelemetryException", () => {
     const error = new Error("error for test");
     tester.sendTelemetryException(error, { stringProp: "some string" }, { numericMeasure: 123 });
 

@@ -19,35 +19,35 @@ import * as globalVariables from "../../src/globalVariables";
 import { Uri } from "vscode";
 import * as tmp from "tmp";
 
-suite("CommonUtils", () => {
-  suite("getPackageVersion", () => {
-    test("alpha version", () => {
+describe("CommonUtils", () => {
+  describe("getPackageVersion", () => {
+    it("alpha version", () => {
       const version = "1.1.1-alpha.4";
 
       chai.expect(commonUtils.getPackageVersion(version)).equals("alpha");
     });
 
-    test("beta version", () => {
+    it("beta version", () => {
       const version = "1.1.1-beta.2";
 
       chai.expect(commonUtils.getPackageVersion(version)).equals("beta");
     });
 
-    test("rc version", () => {
+    it("rc version", () => {
       const version = "1.0.0-rc.3";
 
       chai.expect(commonUtils.getPackageVersion(version)).equals("rc");
     });
 
-    test("formal version", () => {
+    it("formal version", () => {
       const version = "4.6.0";
 
       chai.expect(commonUtils.getPackageVersion(version)).equals("formal");
     });
   });
 
-  suite("isFeatureFlag", () => {
-    test("return true when enabled", () => {
+  describe("isFeatureFlag", () => {
+    it("return true when enabled", () => {
       sinon.stub(extensionPackage, "featureFlag").value("true");
 
       chai.expect(commonUtils.isFeatureFlag()).equals(true);
@@ -55,7 +55,7 @@ suite("CommonUtils", () => {
       sinon.restore();
     });
 
-    test("return false when disabled", () => {
+    it("return false when disabled", () => {
       sinon.stub(extensionPackage, "featureFlag").value("false");
 
       chai.expect(commonUtils.isFeatureFlag()).equals(false);
@@ -64,8 +64,8 @@ suite("CommonUtils", () => {
     });
   });
 
-  suite("sleep", () => {
-    test("sleep should be accurate", async () => {
+  describe("sleep", () => {
+    it("sleep should be accurate", async () => {
       const start = Date.now();
 
       commonUtils.sleep(1000).then(() => {
@@ -78,8 +78,8 @@ suite("CommonUtils", () => {
     });
   });
 
-  suite("os assertion", () => {
-    test("should return exactly result according to os.type", async () => {
+  describe("os assertion", () => {
+    it("should return exactly result according to os.type", async () => {
       sinon.stub(os, "type").returns("Windows_NT");
 
       chai.expect(commonUtils.isWindows()).equals(true);
@@ -100,7 +100,7 @@ suite("CommonUtils", () => {
     });
   });
 
-  suite("getProjectId", async () => {
+  describe("getProjectId", async () => {
     const sandbox = sinon.createSandbox();
 
     let workspacePath: string;
@@ -132,7 +132,7 @@ suite("CommonUtils", () => {
       });
     }
 
-    setup(() => {
+    beforeEach(() => {
       // Use real file system instead of stub because of cross-package stub issues of ES6 import
       // https://github.com/sinonjs/sinon/issues/1711
       const { name, removeCallback } = tmp.dirSync({ unsafeCleanup: true });
@@ -141,13 +141,13 @@ suite("CommonUtils", () => {
       sandbox.stub(globalVariables, "workspaceUri").value(Uri.file(workspacePath));
     });
 
-    teardown(() => {
+    afterEach(() => {
       if (cleanupCallback) {
         cleanupCallback();
       }
     });
 
-    suiteSetup(() => {
+    before(() => {
       // stub existsSync for other project files besides project settings file
       sandbox.stub(fs, "existsSync").callsFake((pathLike: fs.PathLike) => {
         const _path = pathLike.toString();
@@ -155,33 +155,33 @@ suite("CommonUtils", () => {
       });
     });
 
-    suiteTeardown(() => {
+    after(() => {
       sandbox.restore();
     });
 
-    test("Multi env enabled and both new files and old files exist", async () => {
+    it("Multi env enabled and both new files and old files exist", async () => {
       createOldProjectSettings();
       createNewProjectSettings();
       const result = commonUtils.getProjectId();
       chai.expect(result).equals("new");
     });
-    test("Multi env enabled and only new files exist", async () => {
+    it("Multi env enabled and only new files exist", async () => {
       createNewProjectSettings();
       const result = commonUtils.getProjectId();
       chai.expect(result).equals("new");
     });
-    test("Multi env enabled and only old files exist", async () => {
+    it("Multi env enabled and only old files exist", async () => {
       createOldProjectSettings();
       const result = commonUtils.getProjectId();
       chai.expect(result).equals("old");
     });
-    test("Multi env enabled and neither new nor old files exist", async () => {
+    it("Multi env enabled and neither new nor old files exist", async () => {
       const result = commonUtils.getProjectId();
       chai.expect(result).equals(undefined);
     });
 
-    suite("menus", async () => {
-      test("preview", async () => {
+    describe("menus", async () => {
+      it("preview", async () => {
         const previewCommand = extensionPackage.contributes.menus["editor/title"].find(
           (x) => x.command === "fx-extension.openPreviewFile"
         );

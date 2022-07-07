@@ -1,14 +1,10 @@
 import * as microsoftTeams from "@microsoft/teams-js";
 
-async function f1(
-  x: microsoftTeams.pages.config.Config
-): Promise<microsoftTeams.pages.config.Config> {
+async function f1(x: microsoftTeams.pages.config.Config): Promise<microsoftTeams.pages.config.Config> {
   return x;
 }
 
-async function f2(
-  x: microsoftTeams.pages.config.Config
-): Promise<microsoftTeams.pages.config.Config> {
+async function f2(x: microsoftTeams.pages.config.Config): Promise<microsoftTeams.pages.config.Config> {
   return x;
 }
 

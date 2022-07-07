@@ -43,8 +43,8 @@ import * as util from "util";
 import * as os from "os";
 import { vscodeHelper } from "../../src/debug/depsChecker/vscodeHelper";
 
-suite("handlers", () => {
-  suite("activate()", function () {
+describe("handlers", () => {
+  describe("activate()", function () {
     const sandbox = sinon.createSandbox();
     let setStatusChangeMap: any;
 
@@ -59,25 +59,25 @@ suite("handlers", () => {
       sandbox.restore();
     });
 
-    test("No globalState error", async () => {
+    it("No globalState error", async () => {
       const result = await handlers.activate();
       chai.assert.deepEqual(result.isOk() ? result.value : result.error.name, {});
     });
   });
 
-  test("getSystemInputs()", () => {
+  it("getSystemInputs()", () => {
     sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
     const input: Inputs = handlers.getSystemInputs();
 
     chai.expect(input.platform).equals(Platform.VSCode);
   });
 
-  suite("command handlers", function () {
+  describe("command handlers", function () {
     this.afterEach(() => {
       sinon.restore();
     });
 
-    test("createNewProjectHandler()", async () => {
+    it("createNewProjectHandler()", async () => {
       const clock = sinon.useFakeTimers();
 
       sinon.stub(handlers, "core").value(new MockCore());
@@ -107,7 +107,7 @@ suite("handlers", () => {
       clock.restore();
     });
 
-    test("provisionHandler()", async () => {
+    it("provisionHandler()", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -121,7 +121,7 @@ suite("handlers", () => {
       sinon.restore();
     });
 
-    test("deployHandler()", async () => {
+    it("deployHandler()", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -134,7 +134,7 @@ suite("handlers", () => {
       sinon.restore();
     });
 
-    test("publishHandler()", async () => {
+    it("publishHandler()", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -147,7 +147,7 @@ suite("handlers", () => {
       sinon.restore();
     });
 
-    test("buildPackageHandler()", async () => {
+    it("buildPackageHandler()", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -160,12 +160,12 @@ suite("handlers", () => {
     });
   });
 
-  suite("runCommand()", function () {
+  describe("runCommand()", function () {
     this.afterEach(() => {
       sinon.restore();
     });
 
-    test("openConfigStateFile() - local", async () => {
+    it("openConfigStateFile() - local", async () => {
       const env = "local";
       const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
 
@@ -201,7 +201,7 @@ suite("handlers", () => {
       }
     });
 
-    test("create sample with projectid", async () => {
+    it("create sample with projectid", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -216,7 +216,7 @@ suite("handlers", () => {
       chai.assert.isTrue(sendTelemetryEvent.args[0][1]!["new-project-id"] != undefined);
     });
 
-    test("create from scratch without projectid", async () => {
+    it("create from scratch without projectid", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -232,7 +232,7 @@ suite("handlers", () => {
       chai.assert.isTrue(sendTelemetryEvent.args[0][1]!["new-project-id"] != undefined);
     });
 
-    test("provisionResources", async () => {
+    it("provisionResources", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -245,7 +245,7 @@ suite("handlers", () => {
       sinon.assert.calledOnce(provisionResources);
     });
 
-    test("deployArtifacts", async () => {
+    it("deployArtifacts", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -258,7 +258,7 @@ suite("handlers", () => {
       sinon.assert.calledOnce(deployArtifacts);
     });
 
-    test("localDebug", async () => {
+    it("localDebug", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
@@ -285,7 +285,7 @@ suite("handlers", () => {
       chai.expect(localDebugCalled).equals(1);
     });
 
-    test("publishApplication", async () => {
+    it("publishApplication", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -298,7 +298,7 @@ suite("handlers", () => {
       sinon.assert.calledOnce(publishApplication);
     });
 
-    test("createEnv", async () => {
+    it("createEnv", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -313,12 +313,12 @@ suite("handlers", () => {
     });
   });
 
-  suite("detectVsCodeEnv()", function () {
+  describe("detectVsCodeEnv()", function () {
     this.afterEach(() => {
       sinon.restore();
     });
 
-    test("locally run", () => {
+    it("locally run", () => {
       const expectedResult = {
         extensionKind: vscode.ExtensionKind.UI,
         id: "",
@@ -339,7 +339,7 @@ suite("handlers", () => {
       getExtension.restore();
     });
 
-    test("Remotely run", () => {
+    it("Remotely run", () => {
       const expectedResult = {
         extensionKind: vscode.ExtensionKind.Workspace,
         id: "",
@@ -363,7 +363,7 @@ suite("handlers", () => {
     });
   });
 
-  test("openWelcomeHandler", async () => {
+  it("openWelcomeHandler", async () => {
     const executeCommands = sinon.stub(vscode.commands, "executeCommand");
     const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
 
@@ -378,7 +378,7 @@ suite("handlers", () => {
     sendTelemetryEvent.restore();
   });
 
-  test("openSamplesHandler", async () => {
+  it("openSamplesHandler", async () => {
     const createOrShow = sinon.stub(WebviewPanel, "createOrShow");
     const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
 
@@ -389,7 +389,7 @@ suite("handlers", () => {
     sendTelemetryEvent.restore();
   });
 
-  test("signOutM365", async () => {
+  it("signOutM365", async () => {
     const signOut = sinon.stub(M365TokenInstance, "signout");
     const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
     sinon.stub(envTreeProviderInstance, "reloadEnvironments");
@@ -401,7 +401,7 @@ suite("handlers", () => {
     sendTelemetryEvent.restore();
   });
 
-  test("signOutAzure", async () => {
+  it("signOutAzure", async () => {
     Object.setPrototypeOf(AzureAccountManager, sinon.stub());
     const signOut = sinon.stub(AzureAccountManager.getInstance(), "signout");
     const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
@@ -413,11 +413,11 @@ suite("handlers", () => {
     sendTelemetryEvent.restore();
   });
 
-  suite("decryptSecret", function () {
+  describe("decryptSecret", function () {
     this.afterEach(() => {
       sinon.restore();
     });
-    test("successfully update secret", async () => {
+    it("successfully update secret", async () => {
       sinon.stub(globalVariables, "context").value({ extensionPath: "" });
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
@@ -449,7 +449,7 @@ suite("handlers", () => {
       sinon.restore();
     });
 
-    test("failed to update due to corrupted secret", async () => {
+    it("failed to update due to corrupted secret", async () => {
       sinon.stub(globalVariables, "context").value({ extensionPath: "" });
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
@@ -482,11 +482,11 @@ suite("handlers", () => {
     });
   });
 
-  suite("permissions", async function () {
+  describe("permissions", async function () {
     this.afterEach(() => {
       sinon.restore();
     });
-    test("grant permission", async () => {
+    it("grant permission", async () => {
       sinon.restore();
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
@@ -529,7 +529,7 @@ suite("handlers", () => {
       chai.expect(result.isOk()).equals(true);
     });
 
-    test("grant permission with empty tenant id", async () => {
+    it("grant permission with empty tenant id", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -553,7 +553,7 @@ suite("handlers", () => {
       chai.expect(result.value.state === CollaborationState.EmptyM365Tenant);
     });
 
-    test("list collaborators", async () => {
+    it("list collaborators", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -570,7 +570,7 @@ suite("handlers", () => {
       await handlers.listCollaborator("env");
     });
 
-    test("list collaborators with empty tenant id", async () => {
+    it("list collaborators with empty tenant id", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -597,8 +597,8 @@ suite("handlers", () => {
     });
   });
 
-  suite("manifest", () => {
-    test("edit manifest template: local", async () => {
+  describe("manifest", () => {
+    it("edit manifest template: local", async () => {
       sinon.restore();
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const openTextDocument = sinon
@@ -617,7 +617,7 @@ suite("handlers", () => {
       );
     });
 
-    test("edit manifest template: remote", async () => {
+    it("edit manifest template: remote", async () => {
       sinon.restore();
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const openTextDocument = sinon
@@ -637,7 +637,7 @@ suite("handlers", () => {
     });
   });
 
-  test("downloadSample", async () => {
+  it("downloadSample", async () => {
     const inputs: Inputs = {
       scratch: "no",
       platform: Platform.VSCode,
@@ -651,7 +651,7 @@ suite("handlers", () => {
     chai.assert.isTrue(createProject.calledOnceWith(inputs));
   });
 
-  test("deployAadAppManifest", async () => {
+  it("deployAadAppManifest", async () => {
     sinon.stub(handlers, "core").value(new MockCore());
     sinon.stub(ExtTelemetry, "sendTelemetryEvent");
     sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");

@@ -6,11 +6,11 @@ import * as vscode from "vscode";
 
 import { TeamsfxTaskProvider } from "../../src/debug/teamsfxTaskProvider";
 
-suite("[debug > teamsfxTaskProvider]", () => {
+describe("[debug > teamsfxTaskProvider]", () => {
   const taskProvider = new TeamsfxTaskProvider();
   const testWorkspaceFolder = {} as vscode.WorkspaceFolder;
-  suite("resolveTask", () => {
-    test("no task", async () => {
+  describe("resolveTask", () => {
+    it("no task", async () => {
       const inputTask = new vscode.Task(
         {
           type: "teamsfx",

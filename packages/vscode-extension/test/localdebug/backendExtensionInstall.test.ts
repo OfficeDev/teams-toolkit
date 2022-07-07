@@ -10,24 +10,24 @@ const expect = chai.expect;
 import { VSCodeDepsChecker } from "../../src/debug/depsChecker/vscodeChecker";
 import * as installer from "../../src/debug/depsChecker/backendExtensionsInstall";
 
-suite("[Checker UT - Backend Extension Install]", () => {
+describe("[Checker UT - Backend Extension Install]", () => {
   const logger: DepsLogger = <DepsLogger>{};
   const telemetry: DepsTelemetry = <DepsTelemetry>{};
   const sandbox = sinon.createSandbox();
   const sendEventSpy = sandbox.stub();
-  suite("resolve", async () => {
-    setup(() => {
+  describe("resolve", async () => {
+    beforeEach(() => {
       logger.cleanup = sandbox.stub().resolves();
       logger.error = sandbox.stub().resolves();
       logger.debug = sandbox.stub().resolves();
       logger.printDetailLog = sandbox.stub().resolves();
       telemetry.sendEvent = sendEventSpy.resolves();
     });
-    teardown(() => {
+    afterEach(() => {
       sandbox.restore();
     });
 
-    test("display error", async () => {
+    it("display error", async () => {
       const checker = new VSCodeDepsChecker(logger, telemetry);
       sandbox.stub(checker, "getDepsStatus").resolves({
         name: "DotNet",

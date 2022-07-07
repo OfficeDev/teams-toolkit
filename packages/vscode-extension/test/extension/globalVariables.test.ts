@@ -5,9 +5,9 @@ import { ExtensionContext } from "vscode";
 
 import * as globalVariables from "../../src/globalVariables";
 
-suite("Global Variables", () => {
-  suite("isSPFxProject", () => {
-    test("return false for non-spfx project", async () => {
+describe("Global Variables", () => {
+  describe("isSPFxProject", () => {
+    it("return false for non-spfx project", async () => {
       sinon.stub(fs, "existsSync").callsFake((path: fs.PathLike) => {
         return false;
       });
@@ -23,7 +23,7 @@ suite("Global Variables", () => {
       sinon.restore();
     });
 
-    test("return true for spfx project", async () => {
+    it("return true for spfx project", async () => {
       sinon.stub(fs, "existsSync").callsFake((path: fs.PathLike) => {
         return true;
       });

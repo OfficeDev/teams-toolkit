@@ -6,9 +6,9 @@ import * as chai from "chai";
 import { ProgressHelper } from "../../src/debug/progressHelper";
 import { ProgressHandler } from "../../src/progressHandler";
 
-suite("[debug > ProgressHelper]", () => {
-  suite("ParallelProgressHelper", () => {
-    teardown(() => {
+describe("[debug > ProgressHelper]", () => {
+  describe("ParallelProgressHelper", () => {
+    afterEach(() => {
       sinon.restore();
     });
 
@@ -91,7 +91,7 @@ suite("[debug > ProgressHelper]", () => {
       },
     ];
     testData.forEach((data) => {
-      test(data.name, async () => {
+      it(data.name, async () => {
         const mockProgressHandler = sinon.createSandbox().createStubInstance(ProgressHandler);
         const testProgressHelper = new ProgressHelper(mockProgressHandler);
         await testProgressHelper.start(data.input);

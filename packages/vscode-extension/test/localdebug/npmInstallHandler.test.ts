@@ -16,8 +16,8 @@ import * as teamsfxTaskHandler from "../../src/debug/teamsfxTaskHandler";
 import { automaticNpmInstallHandler } from "../../src/debug/npmInstallHandler";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 
-suite("npmInstallHandler", () => {
-  suite("automaticNpmInstallHandler", () => {
+describe("npmInstallHandler", () => {
+  describe("automaticNpmInstallHandler", () => {
     const workspaceFolder: vscode.WorkspaceFolder = {
       uri: vscode.Uri.file("test"),
       name: "test",
@@ -45,7 +45,7 @@ suite("npmInstallHandler", () => {
     let runTaskStub: sinon.SinonStub;
     let showMessageCalledCount: number;
 
-    setup(() => {
+    beforeEach(() => {
       sinon.restore();
       sinon.stub(vscode.workspace, "workspaceFolders").value([workspaceFolder]);
       globalStateGetStub = sinon.stub(globalState, "globalStateGet").callsFake(async () => state);
@@ -71,11 +71,11 @@ suite("npmInstallHandler", () => {
       runTaskStub = sinon.stub(teamsfxTaskHandler, "runTask").callsFake(async () => undefined);
     });
 
-    teardown(() => {
+    afterEach(() => {
       sinon.restore();
     });
 
-    test("Create SPFx", async () => {
+    it("Create SPFx", async () => {
       state = true;
       solutionSettings.hostType = "SPFx";
       solutionSettings.capabilities = ["TabSPFx"];
@@ -87,7 +87,7 @@ suite("npmInstallHandler", () => {
       sinon.assert.notCalled(runTaskStub);
     });
 
-    test("Create Tab", async () => {
+    it("Create Tab", async () => {
       state = true;
       solutionSettings.capabilities = ["Tab"];
       await automaticNpmInstallHandler(false, false, false);
@@ -98,7 +98,7 @@ suite("npmInstallHandler", () => {
       sinon.assert.notCalled(runTaskStub);
     });
 
-    test("Create Bot", async () => {
+    it("Create Bot", async () => {
       state = true;
       solutionSettings.capabilities = ["Bot"];
       await automaticNpmInstallHandler(false, false, false);
@@ -109,7 +109,7 @@ suite("npmInstallHandler", () => {
       sinon.assert.notCalled(runTaskStub);
     });
 
-    test("Create Message extension", async () => {
+    it("Create Message extension", async () => {
       state = true;
       solutionSettings.capabilities = ["MessagingExtension"];
       await automaticNpmInstallHandler(false, false, false);
@@ -120,7 +120,7 @@ suite("npmInstallHandler", () => {
       sinon.assert.notCalled(runTaskStub);
     });
 
-    test("Create Tab + Bot", async () => {
+    it("Create Tab + Bot", async () => {
       state = true;
       solutionSettings.capabilities = ["Tab", "Bot"];
       await automaticNpmInstallHandler(false, false, false);
@@ -131,7 +131,7 @@ suite("npmInstallHandler", () => {
       sinon.assert.notCalled(runTaskStub);
     });
 
-    test("Create Tab + Message extension", async () => {
+    it("Create Tab + Message extension", async () => {
       state = true;
       solutionSettings.capabilities = ["Tab", "MessagingExtension"];
       await automaticNpmInstallHandler(false, false, false);
@@ -142,7 +142,7 @@ suite("npmInstallHandler", () => {
       sinon.assert.notCalled(runTaskStub);
     });
 
-    test("Create Tab + Bot + Message extension", async () => {
+    it("Create Tab + Bot + Message extension", async () => {
       state = true;
       solutionSettings.capabilities = ["Tab", "Bot", "MessagingExtension"];
       await automaticNpmInstallHandler(false, false, false);
@@ -153,7 +153,7 @@ suite("npmInstallHandler", () => {
       sinon.assert.notCalled(runTaskStub);
     });
 
-    test("Tab add Function", async () => {
+    it("Tab add Function", async () => {
       state = true;
       solutionSettings.capabilities = ["Tab"];
       solutionSettings.azureResources = ["function"];
@@ -165,7 +165,7 @@ suite("npmInstallHandler", () => {
       sinon.assert.notCalled(runTaskStub);
     });
 
-    test("Bot add Function", async () => {
+    it("Bot add Function", async () => {
       state = true;
       solutionSettings.capabilities = ["Bot"];
       solutionSettings.azureResources = ["function"];
@@ -177,7 +177,7 @@ suite("npmInstallHandler", () => {
       sinon.assert.notCalled(runTaskStub);
     });
 
-    test("Message extension add Function", async () => {
+    it("Message extension add Function", async () => {
       state = true;
       solutionSettings.capabilities = ["MessagingExtension"];
       solutionSettings.azureResources = ["function"];
@@ -189,7 +189,7 @@ suite("npmInstallHandler", () => {
       sinon.assert.notCalled(runTaskStub);
     });
 
-    test("Tab + Bot add Function", async () => {
+    it("Tab + Bot add Function", async () => {
       state = true;
       solutionSettings.capabilities = ["Tab", "Bot"];
       solutionSettings.azureResources = ["function"];
@@ -201,7 +201,7 @@ suite("npmInstallHandler", () => {
       sinon.assert.notCalled(runTaskStub);
     });
 
-    test("Tab + Function add Function", async () => {
+    it("Tab + Function add Function", async () => {
       state = true;
       solutionSettings.capabilities = ["Tab"];
       solutionSettings.azureResources = ["function"];
@@ -213,7 +213,7 @@ suite("npmInstallHandler", () => {
       sinon.assert.notCalled(runTaskStub);
     });
 
-    test("Tab add Bot", async () => {
+    it("Tab add Bot", async () => {
       state = true;
       solutionSettings.capabilities = ["Tab", "Bot"];
       await automaticNpmInstallHandler(true, false, false);
@@ -224,7 +224,7 @@ suite("npmInstallHandler", () => {
       sinon.assert.notCalled(runTaskStub);
     });
 
-    test("Bot add Tab", async () => {
+    it("Bot add Tab", async () => {
       state = true;
       solutionSettings.capabilities = ["Tab", "Bot"];
       await automaticNpmInstallHandler(false, false, true);

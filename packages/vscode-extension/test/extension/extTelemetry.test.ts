@@ -33,56 +33,56 @@ const reporterSpy = spy.interface({
   ): void {},
 });
 
-suite("ExtTelemetry", () => {
-  suite("setHasSentTelemetry", () => {
-    test("query-expfeature", () => {
+describe("ExtTelemetry", () => {
+  describe("setHasSentTelemetry", () => {
+    it("query-expfeature", () => {
       const eventName = "query-expfeature";
       ExtTelemetry.setHasSentTelemetry(eventName);
       chai.expect(ExtTelemetry.hasSentTelemetry).equals(false);
     });
 
-    test("other-event", () => {
+    it("other-event", () => {
       const eventName = "other-event";
       ExtTelemetry.setHasSentTelemetry(eventName);
       chai.expect(ExtTelemetry.hasSentTelemetry).equals(true);
     });
   });
 
-  suite("stageToEvent", () => {
-    test("Stage.create", () => {
+  describe("stageToEvent", () => {
+    it("Stage.create", () => {
       const stage = Stage.create;
       chai.expect(ExtTelemetry.stageToEvent(stage)).equals(TelemetryEvent.CreateProject);
     });
 
-    test("Stage.provision", () => {
+    it("Stage.provision", () => {
       const stage = Stage.provision;
       chai.expect(ExtTelemetry.stageToEvent(stage)).equals(TelemetryEvent.Provision);
     });
 
-    test("Stage.deploy", () => {
+    it("Stage.deploy", () => {
       const stage = Stage.deploy;
       chai.expect(ExtTelemetry.stageToEvent(stage)).equals(TelemetryEvent.Deploy);
     });
 
-    test("Stage.publish", () => {
+    it("Stage.publish", () => {
       const stage = Stage.publish;
       chai.expect(ExtTelemetry.stageToEvent(stage)).equals(TelemetryEvent.Publish);
     });
 
-    test("Stage.creatEnv", () => {
+    it("Stage.creatEnv", () => {
       const stage = Stage.createEnv;
       chai.expect(ExtTelemetry.stageToEvent(stage)).equals(TelemetryEvent.CreateNewEnvironment);
     });
 
-    test("unknown", () => {
+    it("unknown", () => {
       const stage = "unknown";
       chai.expect(ExtTelemetry.stageToEvent(stage as Stage)).equals(undefined);
     });
   });
 
-  suite("Send Telemetry", () => {
+  describe("Send Telemetry", () => {
     const sandbox = sinon.createSandbox();
-    suiteSetup(() => {
+    before(() => {
       chai.util.addProperty(ExtTelemetry, "reporter", () => reporterSpy);
       sandbox.stub(fs, "pathExistsSync").returns(false);
       sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
@@ -90,11 +90,11 @@ suite("ExtTelemetry", () => {
       sandbox.stub(globalVariables, "isExistingUser").value("no");
     });
 
-    suiteTeardown(() => {
+    after(() => {
       sandbox.restore();
     });
 
-    test("sendTelemetryEvent", () => {
+    it("sendTelemetryEvent", () => {
       ExtTelemetry.sendTelemetryEvent(
         "sampleEvent",
         { stringProp: "some string" },
@@ -113,7 +113,7 @@ suite("ExtTelemetry", () => {
       );
     });
 
-    test("sendTelemetryErrorEvent", () => {
+    it("sendTelemetryErrorEvent", () => {
       const error = new UserError(
         "test",
         "UserTestError",
@@ -163,7 +163,7 @@ suite("ExtTelemetry", () => {
       );
     });
 
-    test("sendTelemetryException", () => {
+    it("sendTelemetryException", () => {
       const error = new UserError("test", "UserTestError", "test error message");
       ExtTelemetry.sendTelemetryException(
         error,
@@ -184,8 +184,8 @@ suite("ExtTelemetry", () => {
     });
   });
 
-  suite("deactivate event", () => {
-    test("cacheTelemetryEventAsync", () => {
+  describe("deactivate event", () => {
+    it("cacheTelemetryEventAsync", () => {
       const clock = sinon.useFakeTimers();
       let state = "";
       sinon.stub(telemetryModule, "lastCorrelationId").value("correlation-id");
@@ -212,7 +212,7 @@ suite("ExtTelemetry", () => {
       sinon.restore();
     });
 
-    test("sendCachedTelemetryEventsAsync", async () => {
+    it("sendCachedTelemetryEventsAsync", async () => {
       const timestamp = new Date().toISOString();
       const telemetryEvents = {
         eventName: "deactivate",

@@ -4,17 +4,16 @@
 
 import { ExtensionContext } from "vscode";
 
-import { TestUserInput } from "../mocks/testUserInput";
 import { sleep } from "../../src/utils/commonUtils";
 import { VsCodeUI } from "../../src/qm/vsc_ui";
 
-suite("UI Unit Tests", async () => {
-  suiteSetup(() => {
+describe("UI Unit Tests", async () => {
+  before(() => {
     // Mock user input.
   });
 
-  suite("Manually", () => {
-    test("Show Progress 2", async function (this: Mocha.Context) {
+  describe("Manually", () => {
+    it("Show Progress 2", async function (this: Mocha.Context) {
       this.timeout(0);
       const VS_CODE_UI = new VsCodeUI(<ExtensionContext>{});
       const handler = VS_CODE_UI.createProgressBar("Test Progress Bar", 3);

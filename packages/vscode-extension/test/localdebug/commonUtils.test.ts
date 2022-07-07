@@ -9,14 +9,14 @@ import * as commonUtils from "../../src/debug/commonUtils";
 
 const testDataFolder = path.resolve(__dirname, "test-data");
 
-suite("[debug > commonUtils]", () => {
-  suiteSetup(async () => {
+describe("[debug > commonUtils]", () => {
+  beforeEach(async () => {
     await fs.ensureDir(testDataFolder);
     await fs.emptyDir(testDataFolder);
   });
 
-  suite("loadPackageJson()", () => {
-    test("happy path", async () => {
+  describe("loadPackageJson()", () => {
+    it("happy path", async () => {
       const content = `\
         {\n\
           "name": "test",\n\
@@ -35,7 +35,7 @@ suite("[debug > commonUtils]", () => {
       chai.expect(packageJson!.scripts).eql({ build: "tsc --build" });
     });
 
-    test("file not found", async () => {
+    it("file not found", async () => {
       const packageJsonPath = path.join(testDataFolder, "package.json");
       await fs.remove(packageJsonPath);
 
@@ -43,7 +43,7 @@ suite("[debug > commonUtils]", () => {
       chai.expect(packageJson).to.be.undefined;
     });
 
-    test("bad format", async () => {
+    it("bad format", async () => {
       const content = `\
         {\n\
           "name": "test",,,,\n\

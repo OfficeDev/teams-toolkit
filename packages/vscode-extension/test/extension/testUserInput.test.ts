@@ -17,9 +17,9 @@ import { sleep } from "../../src/utils/commonUtils";
 import { VsCodeUI } from "../../src/qm/vsc_ui";
 import { ExtensionContext } from "vscode";
 
-suite("Mock Tests", () => {
-  suite("User Input", function () {
-    test("Creation", () => {
+describe("Mock Tests", () => {
+  describe("User Input", function () {
+    it("Creation", () => {
       const ui: TestUserInput = new TestUserInput();
       chai.assert(ui["inputs"].length === 0);
 
@@ -34,7 +34,7 @@ suite("Mock Tests", () => {
       });
     });
 
-    test("Interection", async () => {
+    it("Interection", async () => {
       const ui: TestUserInput = new TestUserInput();
       const items: IUserInputItem[] = [
         { type: EInputType.specifiedItem, index: 0 },
@@ -52,7 +52,7 @@ suite("Mock Tests", () => {
       // TODO: add other mock tests.
     });
 
-    test("progress", async () => {
+    it("progress", async () => {
       const task1: RunnableTask<undefined> = {
         name: "task1",
         run: async (...args: any): Promise<Result<undefined, FxError>> => {

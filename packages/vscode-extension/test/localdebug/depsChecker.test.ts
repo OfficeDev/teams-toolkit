@@ -18,24 +18,24 @@ const expect = chai.expect;
 import { vscodeHelper } from "../../src/debug/depsChecker/vscodeHelper";
 import { VSCodeDepsChecker } from "../../src/debug/depsChecker/vscodeChecker";
 
-suite("[Checker UT - Extension]", () => {
+describe("[Checker UT - Extension]", () => {
   const logger: DepsLogger = <DepsLogger>{};
   const telemetry: DepsTelemetry = <DepsTelemetry>{};
   const sandbox = sinon.createSandbox();
   const sendEventSpy = sandbox.stub();
-  suite("resolve", async () => {
-    setup(() => {
+  describe("resolve", async () => {
+    beforeEach(() => {
       logger.cleanup = sandbox.stub().resolves();
       logger.error = sandbox.stub().resolves();
       logger.debug = sandbox.stub().resolves();
       logger.printDetailLog = sandbox.stub().resolves();
       telemetry.sendEvent = sendEventSpy.resolves();
     });
-    teardown(() => {
+    afterEach(() => {
       sandbox.restore();
     });
 
-    test("azure + f5: installed [windows + linux]", async () => {
+    it("azure + f5: installed [windows + linux]", async () => {
       const checker = new VSCodeDepsChecker(logger, telemetry);
       const deps = [DepsType.AzureNode, DepsType.Dotnet, DepsType.FuncCoreTools, DepsType.Ngrok];
 
@@ -52,7 +52,7 @@ suite("[Checker UT - Extension]", () => {
       expect(resolveLinux).to.be.true;
     });
 
-    test("azure + f5: failed [windows]", async () => {
+    it("azure + f5: failed [windows]", async () => {
       const checker = new VSCodeDepsChecker(logger, telemetry);
       const deps = [DepsType.AzureNode, DepsType.Dotnet, DepsType.FuncCoreTools, DepsType.Ngrok];
       const dotnetMessage = "Failed install dotnet";
@@ -82,7 +82,7 @@ suite("[Checker UT - Extension]", () => {
       sendEventSpy.secondCall.calledWith(DepsCheckerEvent.clickCancel);
     });
 
-    test("azure + f5: failed [linux]", async () => {
+    it("azure + f5: failed [linux]", async () => {
       const checker = new VSCodeDepsChecker(logger, telemetry);
       const deps = [DepsType.AzureNode, DepsType.Dotnet, DepsType.FuncCoreTools, DepsType.Ngrok];
 
@@ -110,7 +110,7 @@ suite("[Checker UT - Extension]", () => {
       expect(shouldContinue).to.be.false;
     });
 
-    test("azure + f5: all disabled 1", async () => {
+    it("azure + f5: all disabled 1", async () => {
       const checker = new VSCodeDepsChecker(logger, telemetry);
       const deps = [
         DepsType.SpfxNode,
@@ -138,7 +138,7 @@ suite("[Checker UT - Extension]", () => {
       expect(shouldContinue).to.be.true;
     });
 
-    test("azure + f5: all disabled 2", async () => {
+    it("azure + f5: all disabled 2", async () => {
       const checker = new VSCodeDepsChecker(logger, telemetry);
       const deps = [
         DepsType.SpfxNode,

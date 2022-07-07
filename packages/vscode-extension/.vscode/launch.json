@@ -36,16 +36,16 @@
       "preLaunchTask": "npm: build-failpoint"
     },
     {
-      "name": "Extension Unit Tests (without VS Code)",
+      "name": "Extension Unit Tests",
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
       "stopOnEntry": false,
       "sourceMaps": true,
       "args": [
-        "./out/test/**/*.test.js",
+        "${workspaceFolder}/test/**/*.test.ts",
+        "--require=ts-node/register",
         "--require=out/test/setup.js",
-        "--ui=tdd",
         "--recursive",
         "--colors",
       ],
@@ -57,18 +57,6 @@
       "skipFiles": [
         "<node_internals>/**"
       ]
-    },
-    {
-      "name": "Extension Tests (Environment Checker)",
-      "type": "extensionHost",
-      "request": "launch",
-      "args": [
-        "--extensionDevelopmentPath=${workspaceFolder}",
-        "--extensionTestsPath=${workspaceFolder}/out/test/integration/envChecker/index"
-      ],
-      "outFiles": ["${workspaceFolder}/out/src/**/*.js", "${workspaceFolder}/out/test/**/*.js"],
-      "preLaunchTask": "npm: test-watch",
-      "sourceMaps": true
     }
   ]
 }

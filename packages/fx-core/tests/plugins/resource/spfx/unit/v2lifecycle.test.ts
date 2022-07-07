@@ -103,8 +103,8 @@ describe("SPFX V2", () => {
     inputs[SPFXQuestionNames.framework_type] = "test";
     inputs[SPFXQuestionNames.framework_type] = "none";
     const res = await pluginV2.scaffoldSourceCode(context, inputs);
+    if (res.isErr()) console.log(res.error);
     assert.isTrue(res.isOk());
-    await fs.rmdir(projectPath, { recursive: true });
   });
 
   it("deploy - happy path", async () => {

@@ -36,17 +36,6 @@
       "preLaunchTask": "npm: build-failpoint"
     },
     {
-      "name": "Extension Unit Tests",
-      "type": "extensionHost",
-      "request": "launch",
-      "args": [
-        "--extensionDevelopmentPath=${workspaceFolder}",
-        "--extensionTestsPath=${workspaceFolder}/out/test/unit/index"
-      ],
-      "outFiles": ["${workspaceFolder}/out/test/**/*.js"],
-      "preLaunchTask": "npm: test-watch"
-    },
-    {
       "name": "Extension Unit Tests (without VS Code)",
       "type": "node",
       "request": "launch",
@@ -55,7 +44,7 @@
       "sourceMaps": true,
       "args": [
         "./out/test/**/*.test.js",
-        "--require=out/test/unit/setup.js",
+        "--require=out/test/setup.js",
         "--ui=tdd",
         "--recursive",
         "--colors",

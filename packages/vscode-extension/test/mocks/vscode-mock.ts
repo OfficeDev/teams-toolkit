@@ -115,6 +115,9 @@ mockedVSCode.Task = vscodeMocks.vscMockExtHostedTypes.Task;
   showWarningMessage: () => {},
   createOutputChannel: () => {},
   registerTreeDataProvider: () => {},
+  withProgress: async (options: any, task: (progress: any, token: any) => Promise<any>) => {
+    return await task({ report: () => {} }, new vscodeMocks.CancellationToken());
+  },
 };
 (mockedVSCode as any).workspace = {
   workspaceFolders: undefined,

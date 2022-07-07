@@ -1,7 +1,7 @@
 {
     "spec": "./out/test/**/**.test.js",
     "require": [
-        "out/test/unit/setup.js"
+        "out/test/setup.js"
     ],
     "ignore": "out/**/migrate.test.js",
     "reporter": "mocha-multi-reporters",

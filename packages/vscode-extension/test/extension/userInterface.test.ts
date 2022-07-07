@@ -4,9 +4,9 @@
 
 import { ExtensionContext } from "vscode";
 
-import { TestUserInput } from "./mocks/testUserInput";
-import { sleep } from "../../../src/utils/commonUtils";
-import { VsCodeUI } from "../../../src/qm/vsc_ui";
+import { TestUserInput } from "../mocks/testUserInput";
+import { sleep } from "../../src/utils/commonUtils";
+import { VsCodeUI } from "../../src/qm/vsc_ui";
 
 suite("UI Unit Tests", async () => {
   suiteSetup(() => {

@@ -42,8 +42,8 @@ mock("@vscode/extension-telemetry", {
   },
 });
 
-import { VSCodeTelemetryReporter } from "../../../src/commonlib/telemetry";
-import { getAllFeatureFlags } from "../../../src/utils/commonUtils";
+import { VSCodeTelemetryReporter } from "../../src/commonlib/telemetry";
+import { getAllFeatureFlags } from "../../src/utils/commonUtils";
 
 const featureFlags = getAllFeatureFlags()?.join(";") ?? "";
 

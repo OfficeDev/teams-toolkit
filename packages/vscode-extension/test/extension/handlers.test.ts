@@ -1,8 +1,8 @@
 import * as chai from "chai";
 import * as vscode from "vscode";
 import * as sinon from "sinon";
-import * as handlers from "../../../src/handlers";
-import * as StringResources from "../../../package.nls.json";
+import * as handlers from "../../src/handlers";
+import * as StringResources from "../../package.nls.json";
 import {
   Inputs,
   Platform,

@@ -5,8 +5,7 @@ import {
   ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
 import { cloneDeep } from "lodash";
-import { isVSProject } from "../common";
-import { Component } from "../common/telemetry";
+import { isVSProject } from "../common/projectSettingsHelper";
 import { ComponentNames } from "./constants";
 import { getComponent } from "./workflow";
 

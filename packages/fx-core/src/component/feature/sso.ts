@@ -3,14 +3,12 @@
 
 import {
   Action,
-  Component,
   ContextV3,
   FxError,
   GroupAction,
   InputsWithProjectPath,
   MaybePromise,
   ok,
-  ProjectSettingsV3,
   Result,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
@@ -22,7 +20,7 @@ import "../resource/azureSql";
 import "../resource/identity";
 import { ComponentNames } from "../constants";
 import { LoadProjectSettingsAction } from "../projectSettingsManager";
-import { getHostingComponent, isInComponentConnection } from "../utils";
+import { getHostingComponent } from "../utils";
 
 @Service("sso")
 export class SSO {

@@ -3,7 +3,7 @@
 "use strict";
 
 import { NextFunction, Middleware } from "@feathersjs/hooks";
-import { Inputs, Stage, StaticPlatforms } from "@microsoft/teamsfx-api";
+import { FxError, Inputs, Result, Stage, StaticPlatforms } from "@microsoft/teamsfx-api";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { environmentManager } from "../environment";
 import { TOOLS } from "../globalVars";
@@ -22,6 +22,10 @@ export function EnvInfoWriterMW(skip = false): Middleware {
     let error1: any = undefined;
     try {
       await next();
+      const res = ctx.result as Result<any, FxError>;
+      if (res.isErr() && res.error.name === "CancelProvision") {
+        return;
+      }
     } catch (e) {
       if ((e as any)["name"] === "CancelProvision") throw e;
       error1 = e;

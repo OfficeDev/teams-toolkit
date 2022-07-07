@@ -58,17 +58,10 @@ import { getTemplatesFolder } from "../folder";
 import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
 import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
 import {
-  BotOptionItem,
-  BotSsoItem,
-  CommandAndResponseOptionItem,
   ExistingTabOptionItem,
   M365SearchAppOptionItem,
   M365SsoLaunchPageOptionItem,
-  MessageExtensionItem,
-  NotificationOptionItem,
-  TabOptionItem,
   TabSPFxItem,
-  TabSsoItem,
   BotFeatureIds,
   TabFeatureIds,
   CicdOptionItem,
@@ -91,7 +84,6 @@ import {
   ObjectIsUndefinedError,
   OperationNotPermittedError,
   ProjectFolderExistError,
-  ProjectFolderInvalidError,
   TaskNotSupportError,
   WriteFileError,
 } from "./error";
@@ -110,10 +102,7 @@ import { EnvInfoWriterMW } from "./middleware/envInfoWriter";
 import { EnvInfoWriterMW_V3 } from "./middleware/envInfoWriterV3";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { ProjectMigratorMW } from "./middleware/projectMigrator";
-import {
-  getProjectSettingsPath,
-  ProjectSettingsLoaderMW,
-} from "./middleware/projectSettingsLoader";
+import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
 import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
 import {
   getQuestionsForAddFeature,
@@ -129,7 +118,6 @@ import {
   QuestionModelMW,
 } from "./middleware/questionModel";
 import { SolutionLoaderMW } from "./middleware/solutionLoader";
-import { SolutionLoaderMW_V3 } from "./middleware/solutionLoaderV3";
 import {
   CoreQuestionNames,
   ProjectNamePattern,
@@ -147,7 +135,6 @@ import {
 import { CoreHookContext } from "./types";
 import { isPreviewFeaturesEnabled } from "../common";
 import { runAction } from "../component/workflow";
-import { TemplateProjectsScenarios } from "../plugins/resource/bot/constants";
 import { createContextV3 } from "../component/utils";
 import "../component/core";
 import { QuestionModelMW_V3 } from "./middleware/questionModelV3";
@@ -759,6 +746,8 @@ export class FxCore implements v3.ICore {
       res = await runAction("teams-bot.add", context, inputs as InputsWithProjectPath);
     } else if (TabFeatureIds.includes(feature)) {
       res = await runAction("teams-tab.add", context, inputs as InputsWithProjectPath);
+    } else if (feature === "function") {
+      res = await runAction("teams-api.add", context, inputs as InputsWithProjectPath);
     } else if (feature === CicdOptionItem.id) {
       res = await runAction("cicd.add", context, inputs as InputsWithProjectPath);
     } else if (feature === ApiConnectionOptionItem.id) {
@@ -896,6 +885,8 @@ export class FxCore implements v3.ICore {
         res = await runAction("teams-bot.add", context, inputs as InputsWithProjectPath);
       } else if (TabFeatureIds.includes(feature)) {
         res = await runAction("teams-tab.add", context, inputs as InputsWithProjectPath);
+      } else if (feature === "function") {
+        res = await runAction("teams-api.add", context, inputs as InputsWithProjectPath);
       } else {
         return err(new TaskNotSupportError(feature));
       }

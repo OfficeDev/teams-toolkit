@@ -34,6 +34,7 @@ import "./resource/azureStorage";
 import "./resource/azureAppService/azureWebApp";
 import "./resource/botService";
 import "./resource/spfx";
+import "./feature/api";
 import "./feature/bot";
 import "./feature/sql";
 import "./feature/tab";
@@ -299,9 +300,6 @@ export class TeamsfxCore {
           type: "call",
           targetAction: `${componentConfig.hosting}.deploy`,
           required: false,
-          inputs: {
-            code: componentConfig,
-          },
         });
       }
     });

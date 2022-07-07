@@ -455,7 +455,7 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
         if (currentSession.id !== DebugNoSessionId && currentSession.failedServices.length > 0) {
           terminateAllRunningTeamsfxTasks();
           await vscode.debug.stopDebugging();
-          sendDebugAllEvent(
+          await sendDebugAllEvent(
             new UserError({
               source: ExtensionSource,
               name: ExtensionErrors.DebugServiceFailedBeforeStartError,

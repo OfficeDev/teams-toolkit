@@ -25,7 +25,7 @@
     "accentColor": "#FFFFFF",
     "bots": [
         {
-            "botId": "{{localSettings.bot.botId}}",
+            "botId": "{{state.fx-resource-bot.botId}}",
             "scopes": [
                 "personal",
                 "team",

@@ -13,53 +13,58 @@ import {
   ProjectSettingsV3,
   Result,
 } from "@microsoft/teamsfx-api";
+import { merge } from "lodash";
 import "reflect-metadata";
 import { Service } from "typedi";
 import { CoreQuestionNames } from "../../core/question";
+import { DefaultValues } from "../../plugins/resource/function/constants";
+import { QuestionKey } from "../../plugins/resource/function/enums";
 import { ComponentNames } from "../constants";
 import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "../projectSettingsManager";
-@Service("teams-tab")
-export class TeamsTab {
-  name = "teams-tab";
+import { getComponent } from "../workflow";
+@Service(ComponentNames.TeamsApi)
+export class TeamsApi {
+  name = ComponentNames.TeamsApi;
   add(
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    inputs.hosting =
-      inputs.hosting ||
-      (inputs?.["programming-language"] === "csharp"
-        ? ComponentNames.AzureWebApp
-        : ComponentNames.AzureStorage);
+    inputs.hosting = inputs.hosting || ComponentNames.Function;
+    const functionName: string =
+      (inputs?.[QuestionKey.functionName] as string) ?? DefaultValues.functionName;
     const actions: Action[] = [
       LoadProjectSettingsAction,
       {
-        name: "fx.configTab",
+        name: "fx.configApi",
         type: "function",
         plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-          return ok(["config 'teams-tab' in projectSettings"]);
+          return ok([`config '${this.name}' in projectSettings`]);
         },
         execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
           const projectSettings = context.projectSetting as ProjectSettingsV3;
-          // add teams-tab
+          // add teams-api
           projectSettings.components.push({
-            name: "teams-tab",
+            name: this.name,
             hosting: inputs.hosting,
+            functionNames: [functionName],
           });
           // add hosting component
           projectSettings.components.push({
             name: inputs.hosting,
-            connections: ["teams-tab"],
-            provision: true,
+            connections: [this.name],
           });
-          projectSettings.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
-          return ok(["config 'teams-tab' in projectSettings"]);
+          const teamsTab = getComponent(projectSettings, ComponentNames.TeamsTab);
+          if (!teamsTab?.connections) merge(teamsTab, { connections: [this.name] });
+          else teamsTab.connections.push(this.name);
+          projectSettings.programmingLanguage ??= inputs[CoreQuestionNames.ProgrammingLanguage];
+          return ok([`config '${this.name}' in projectSettings`]);
         },
       },
       {
-        name: "call:tab-code.generate",
+        name: "call:api-code.generate",
         type: "call",
         required: true,
-        targetAction: "tab-code.generate",
+        targetAction: "api-code.generate",
       },
       {
         type: "call",
@@ -73,19 +78,19 @@ export class TeamsTab {
         targetAction: `${inputs.hosting}.generateBicep`,
         inputs: {
           componentId: this.name,
-          componentName: "Tab",
+          componentName: "Api",
         },
       },
       {
-        name: "call:app-manifest.addCapability",
+        name: `call:${inputs.hosting}-config.generateBicep`,
         type: "call",
         required: true,
-        targetAction: "app-manifest.addCapability",
+        targetAction: `${inputs.hosting}-config.generateBicep`,
         inputs: {
-          capabilities: [{ name: "staticTab" }, { name: "configurableTab" }],
+          componentId: this.name,
+          componentName: "Api",
         },
       },
-      // TODO: connect AAD for blazor web app
       {
         name: "call:debug.generateLocalDebugSettings",
         type: "call",
@@ -96,32 +101,20 @@ export class TeamsTab {
     ];
     const group: GroupAction = {
       type: "group",
-      name: "teams-tab.add",
+      name: `${this.name}.add`,
       mode: "sequential",
       actions: actions,
     };
     return ok(group);
-  }
-  configure(
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const action: CallAction = {
-      name: "teams-tab.configure",
-      type: "call",
-      targetAction: "tab-code.configure",
-      required: true,
-    };
-    return ok(action);
   }
   build(
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const action: CallAction = {
-      name: "teams-tab.build",
+      name: `${this.name}.build`,
       type: "call",
-      targetAction: "tab-code.build",
+      targetAction: "api-code.build",
       required: true,
     };
     return ok(action);

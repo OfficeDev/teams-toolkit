@@ -40,6 +40,10 @@ describe("Workflow test for v3", () => {
     sandbox.restore();
   });
 
+  after(async () => {
+    await fs.remove(projectPath);
+  });
+
   it("fx.init", async () => {
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
@@ -152,6 +156,7 @@ describe("Workflow test for v3", () => {
   });
 
   it("azure-storage.deploy", async () => {
+    sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(FrontendDeployment, "doFrontendDeploymentV3").resolves();
     sandbox
       .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
@@ -159,9 +164,6 @@ describe("Workflow test for v3", () => {
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
-      code: {
-        folder: "tabs",
-      },
     };
     context.envInfo = newEnvInfoV3();
     context.tokenProvider = tools.tokenProvider;
@@ -177,13 +179,18 @@ describe("Workflow test for v3", () => {
         subscriptionName: "mockSname",
         tenantId: "mockAzureTid",
       },
-      "azure-storage": {
+      "teams-tab": {
         location: "centreus",
         resourceId:
           "/subscriptions/mockSid/resourceGroups/jay-texas/providers/Microsoft.Storage/storageAccounts/testaccount",
         endpoint: "https://testaccount.azurewebsites.net",
       },
     };
+    const addTabRes = await runAction("teams-tab.add", context, inputs);
+    if (addTabRes.isErr()) {
+      console.log(addTabRes.error);
+    }
+    assert.isTrue(addTabRes.isOk());
     const res = await runAction("azure-storage.deploy", context, inputs);
     if (res.isErr()) {
       console.log(res.error);

@@ -25,6 +25,7 @@ import {
 } from "./errors";
 import { AzureResource } from "./../azureResource";
 import { Messages } from "./messages";
+import { getHostingParentComponent } from "../../workflow";
 export abstract class AzureAppService extends AzureResource {
   abstract readonly name: string;
   abstract readonly alias: string;
@@ -52,28 +53,30 @@ export abstract class AzureAppService extends AzureResource {
       name: `${this.name}.deploy`,
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
+        const parent = getHostingParentComponent(context.projectSetting, this.name);
+        const deployDir = path.resolve(inputs.projectPath, parent?.folder ?? "");
         return ok([
           {
             type: "service",
             name: "azure",
-            remarks: `deploy ${this.displayName} in folder: ${inputs.projectPath}`,
+            remarks: `deploy ${this.displayName} in folder: ${deployDir}`,
           },
         ]);
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const ctx = context as ProvisionContextV3;
+        const parent = getHostingParentComponent(ctx.projectSetting, this.name);
         // Preconditions checking.
-        const codeComponent = inputs.code as Component;
-        if (!inputs.projectPath || !codeComponent?.artifactFolder) {
+        if (!inputs.projectPath || !parent?.artifactFolder) {
           throw new PreconditionError(this.alias, Messages.WorkingDirIsMissing, []);
         }
-        const publishDir = path.join(inputs.projectPath, codeComponent.artifactFolder);
+        const publishDir = path.resolve(inputs.projectPath, parent.artifactFolder);
         const packDirExisted = await fs.pathExists(publishDir);
         if (!packDirExisted) {
           throw new PackDirectoryExistenceError(this.alias);
         }
 
-        const state = ctx.envInfo.state[this.name];
+        const state = ctx.envInfo.state[parent.name];
         const resourceId = CheckThrowSomethingMissing(
           this.alias,
           this.outputs.resourceId.key,

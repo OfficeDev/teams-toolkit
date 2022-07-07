@@ -8,6 +8,7 @@ import { cloneDeep } from "lodash";
 import { isVSProject } from "../common";
 import { Component } from "../common/telemetry";
 import { ComponentNames } from "./constants";
+import { getComponent } from "./workflow";
 
 export interface EnvStateV2 {
   solution: {
@@ -170,6 +171,45 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings) {
         settingsV3.components.push({
           name: ComponentNames.AzureStorage,
           connections: ["teams-tab"],
+          provision: true,
+        });
+      }
+    }
+    if (solutionSettings.activeResourcePlugins.includes("fx-resource-bot")) {
+      const hostType = settingsV2.pluginSettings?.["fx-resource-bot"]?.["host-type"];
+      const isHostingFunction = hostType === "azure-functions";
+      if (isVS) {
+        const teamsBot: any = {
+          name: "teams-bot",
+          hosting: isHostingFunction ? ComponentNames.Function : ComponentNames.AzureWebApp,
+          build: true,
+          folder: "",
+          artifactFolder: "bin\\Release\\net6.0\\win-x86\\publish",
+        };
+        settingsV3.components.push(teamsBot);
+        const webApp = getComponent(settingsV3, ComponentNames.AzureWebApp);
+        if (webApp) {
+          webApp.connections = webApp.connections || [];
+          webApp.connections.push("teams-bot");
+        } else {
+          settingsV3.components.push({
+            name: ComponentNames.AzureWebApp,
+            connections: ["teams-bot"],
+            provision: true,
+          });
+        }
+      } else {
+        const teamsBot: any = {
+          hosting: ComponentNames.AzureWebApp,
+          name: "teams-bot",
+          build: true,
+          provision: true,
+          folder: "tabs",
+        };
+        settingsV3.components.push(teamsBot);
+        settingsV3.components.push({
+          name: ComponentNames.AzureWebApp,
+          connections: ["teams-bot"],
           provision: true,
         });
       }

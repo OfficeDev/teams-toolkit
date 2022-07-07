@@ -144,9 +144,10 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings) {
   if (solutionSettings) {
     const isVS = isVSProject(settingsV2);
     if (solutionSettings.activeResourcePlugins.includes("fx-resource-frontend-hosting")) {
+      const hostingComponent = isVS ? ComponentNames.AzureWebApp : ComponentNames.AzureStorage;
       if (isVS) {
         const teamsTab: any = {
-          hosting: ComponentNames.AzureWebApp,
+          hosting: hostingComponent,
           name: "teams-tab",
           build: true,
           provision: false,
@@ -154,22 +155,23 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings) {
           artifactFolder: "bin\\Release\\net6.0\\win-x86\\publish",
         };
         settingsV3.components.push(teamsTab);
-        settingsV3.components.push({
-          name: ComponentNames.AzureWebApp,
-          connections: ["teams-tab"],
-          provision: true,
-        });
       } else {
         const teamsTab: any = {
-          hosting: ComponentNames.AzureStorage,
+          hosting: hostingComponent,
           name: "teams-tab",
           build: true,
           provision: true,
           folder: "tabs",
         };
         settingsV3.components.push(teamsTab);
+      }
+      const hostingConfig = getComponent(settingsV3, hostingComponent);
+      if (hostingConfig) {
+        hostingConfig.connections = hostingConfig.connections || [];
+        hostingConfig.connections.push("teams-tab");
+      } else {
         settingsV3.components.push({
-          name: ComponentNames.AzureStorage,
+          name: hostingComponent,
           connections: ["teams-tab"],
           provision: true,
         });
@@ -178,48 +180,111 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings) {
     if (solutionSettings.activeResourcePlugins.includes("fx-resource-bot")) {
       const hostType = settingsV2.pluginSettings?.["fx-resource-bot"]?.["host-type"];
       const isHostingFunction = hostType === "azure-functions";
+      const hostingComponent = isHostingFunction
+        ? ComponentNames.Function
+        : ComponentNames.AzureWebApp;
       if (isVS) {
         const teamsBot: any = {
           name: "teams-bot",
-          hosting: isHostingFunction ? ComponentNames.Function : ComponentNames.AzureWebApp,
+          hosting: hostingComponent,
           build: true,
           folder: "",
           artifactFolder: "bin\\Release\\net6.0\\win-x86\\publish",
         };
         settingsV3.components.push(teamsBot);
-        const webApp = getComponent(settingsV3, ComponentNames.AzureWebApp);
-        if (webApp) {
-          webApp.connections = webApp.connections || [];
-          webApp.connections.push("teams-bot");
-        } else {
-          settingsV3.components.push({
-            name: ComponentNames.AzureWebApp,
-            connections: ["teams-bot"],
-            provision: true,
-          });
-        }
       } else {
         const teamsBot: any = {
-          hosting: ComponentNames.AzureWebApp,
+          hosting: hostingComponent,
           name: "teams-bot",
           build: true,
           provision: true,
-          folder: "tabs",
+          folder: "bot",
         };
         settingsV3.components.push(teamsBot);
+      }
+      const hostingConfig = getComponent(settingsV3, hostingComponent);
+      if (hostingConfig) {
+        hostingConfig.connections = hostingConfig.connections || [];
+        hostingConfig.connections.push("teams-bot");
+      } else {
         settingsV3.components.push({
-          name: ComponentNames.AzureWebApp,
+          name: hostingComponent,
           connections: ["teams-bot"],
           provision: true,
         });
       }
+      settingsV3.components.push({
+        name: hostingComponent,
+        connections: ["bot-service"],
+        provision: true,
+      });
     }
     if (solutionSettings.activeResourcePlugins.includes("fx-resource-identity")) {
       settingsV3.components.push({
         name: ComponentNames.Identity,
       });
     }
+    if (solutionSettings.activeResourcePlugins.includes("fx-resource-key-vault")) {
+      settingsV3.components.push({
+        name: ComponentNames.KeyVault,
+      });
+    }
+    if (solutionSettings.activeResourcePlugins.includes("fx-resource-azure-sql")) {
+      settingsV3.components.push({
+        name: ComponentNames.AzureSQL,
+        provision: true,
+      });
+    }
+    if (solutionSettings.activeResourcePlugins.includes("fx-resource-function")) {
+      settingsV3.components.push({
+        name: ComponentNames.TeamsApi,
+        hosting: ComponentNames.Function,
+        functionNames: ["getUserProfile"],
+        build: true,
+        folder: "api",
+      });
+      settingsV3.components.push({
+        name: ComponentNames.Function,
+      });
+    }
+    connectComponents(settingsV3);
+  }
+  return settingsV3;
+}
+
+function connectResourceToComponent(
+  computeComponent: string,
+  resource: string,
+  settingsV3: ProjectSettingsV3
+) {
+  const hostingConfig = getComponent(settingsV3, computeComponent);
+  if (hostingConfig) {
+    hostingConfig.connections = hostingConfig.connections || [];
+    if (hostingConfig.connections.includes(resource)) hostingConfig.connections.push(resource);
   }
 }
 
-export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3) {}
+function connectComponents(settingsV3: ProjectSettingsV3) {
+  const resources = [
+    ComponentNames.Identity,
+    ComponentNames.AzureSQL,
+    ComponentNames.KeyVault,
+    ComponentNames.TeamsTab,
+    ComponentNames.TeamsBot,
+  ];
+  const computingComponentNames = [ComponentNames.AzureWebApp, ComponentNames.Function];
+  for (const computingComponentName of computingComponentNames) {
+    const component = getComponent(settingsV3, computingComponentName);
+    if (component) {
+      for (const resource of resources) {
+        if (getComponent(settingsV3, resource)) {
+          connectResourceToComponent(computingComponentName, resource, settingsV3);
+        }
+      }
+    }
+  }
+}
+
+export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3) {
+  return settingsV3;
+}

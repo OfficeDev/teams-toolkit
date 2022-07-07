@@ -4,7 +4,7 @@
 import { performance } from "perf_hooks";
 import { timerData, tracePoint } from "../rawData";
 import { traceId } from "../tracing";
-import { appendOutput, appendOutputSync } from "../writter";
+import { appendOutput, appendOutputSync } from "../writer";
 
 export const timer = () => {
   /* eslint-disable  @typescript-eslint/no-explicit-any */

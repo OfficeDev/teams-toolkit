@@ -17,13 +17,7 @@ import "../../../src/component/feature/bot";
 import "../../../src/component/core";
 import { environmentManager } from "../../../src/core/environment";
 import { ComponentNames } from "../../../src/component/constants";
-import { NotificationOptionItem } from "../../../src/plugins/solution/fx-solution/question";
-import {
-  QuestionNames,
-  TemplateProjectsScenarios,
-} from "../../../src/plugins/resource/bot/constants";
-import { AppServiceOptionItem } from "../../../src/plugins/resource/bot/question";
-describe("Bot Feature", () => {
+describe("Tab Feature", () => {
   const sandbox = createSandbox();
   const tools = new MockTools();
   setTools(tools);
@@ -59,35 +53,27 @@ describe("Bot Feature", () => {
     sandbox.restore();
   });
 
-  it("add restify notification bot", async () => {
+  it("add react tab", async () => {
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
-      feature: NotificationOptionItem.id,
       language: "typescript",
       "app-name": appName,
-      [QuestionNames.BOT_HOST_TYPE_TRIGGER]: [AppServiceOptionItem.id],
     };
-    const addBotRes = await runAction(`${ComponentNames.TeamsBot}.add`, context, inputs);
-    if (addBotRes.isErr()) {
-      console.log(addBotRes.error);
+    const addTabRes = await runAction(`${ComponentNames.TeamsTab}.add`, context, inputs);
+    if (addTabRes.isErr()) {
+      console.log(addTabRes.error);
     }
-    assert.isTrue(addBotRes.isOk());
-    assert.equal(inputs.hosting, ComponentNames.AzureWebApp);
-    assert.deepEqual(inputs.scenarios, [
-      TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME,
-    ]);
+    assert.isTrue(addTabRes.isOk());
+    assert.equal(inputs.hosting, ComponentNames.AzureStorage);
 
-    const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
-    assert.exists(teamsBot);
-    assert.equal(teamsBot?.hosting, ComponentNames.AzureWebApp);
-    assert.equal(teamsBot?.folder, "bot");
-    assert.isTrue(teamsBot?.build);
-    const webApp = getComponent(context.projectSetting, ComponentNames.AzureWebApp);
-    assert.exists(webApp);
-    assert.deepEqual(webApp?.connections, [ComponentNames.TeamsBot]);
-    const botService = getComponent(context.projectSetting, ComponentNames.BotService);
-    assert.exists(botService);
-    assert.isTrue(botService?.provision);
+    const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
+    assert.exists(teamsTab);
+    assert.equal(teamsTab?.hosting, ComponentNames.AzureStorage);
+    assert.equal(teamsTab?.folder, "tabs");
+    assert.isTrue(teamsTab?.build);
+    const storage = getComponent(context.projectSetting, ComponentNames.AzureStorage);
+    assert.exists(storage);
+    assert.deepEqual(storage?.connections, [ComponentNames.TeamsTab]);
   });
 });

@@ -191,10 +191,10 @@ export class BotService extends AzureResource {
           const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
           CheckThrowSomethingMissing(ConfigNames.LOCAL_ENDPOINT, teamsBotState.endpoint);
           CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
-          CheckThrowSomethingMissing(ConfigNames.LOCAL_BOT_ID, botServiceState.botId);
+          CheckThrowSomethingMissing(ConfigNames.LOCAL_BOT_ID, teamsBotState.botId);
           await AppStudio.updateMessageEndpoint(
             appStudioToken!,
-            botServiceState.botId,
+            teamsBotState.botId,
             `${teamsBotState.endpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`
           );
         }

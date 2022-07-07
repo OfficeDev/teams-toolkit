@@ -5,6 +5,8 @@ import {
   ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
 import { cloneDeep } from "lodash";
+import { isVSProject } from "../common";
+import { Component } from "../common/telemetry";
 import { ComponentNames } from "./constants";
 
 export interface EnvStateV2 {
@@ -139,8 +141,38 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings) {
   settingsV3.components = [];
   const solutionSettings = settingsV2.solutionSettings as AzureSolutionSettings;
   if (solutionSettings) {
+    const isVS = isVSProject(settingsV2);
     if (solutionSettings.activeResourcePlugins.includes("fx-resource-frontend-hosting")) {
-      // settingsV3.components.push({})
+      if (isVS) {
+        const teamsTab: any = {
+          hosting: ComponentNames.AzureWebApp,
+          name: "teams-tab",
+          build: true,
+          provision: false,
+          folder: "",
+          artifactFolder: "bin\\Release\\net6.0\\win-x86\\publish",
+        };
+        settingsV3.components.push(teamsTab);
+        settingsV3.components.push({
+          name: ComponentNames.AzureWebApp,
+          connections: ["teams-tab"],
+          provision: true,
+        });
+      } else {
+        const teamsTab: any = {
+          hosting: ComponentNames.AzureStorage,
+          name: "teams-tab",
+          build: true,
+          provision: true,
+          folder: "tabs",
+        };
+        settingsV3.components.push(teamsTab);
+        settingsV3.components.push({
+          name: ComponentNames.AzureStorage,
+          connections: ["teams-tab"],
+          provision: true,
+        });
+      }
     }
   }
 }

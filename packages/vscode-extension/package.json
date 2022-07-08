@@ -173,7 +173,7 @@
       ],
       "view/title": [
         {
-          "command": "fx-extension.addEnvironment",
+          "command": "fx-extension.addEnvironmentWithIcon",
           "when": "view == teamsfx-environment",
           "group": "navigation@1"
         },
@@ -323,6 +323,10 @@
         }
       ],
       "commandPalette": [
+        {
+          "command": "fx-extension.addEnvironmentWithIcon",
+          "when": "false"
+        },
         {
           "command": "fx-extension.azureAccountSettings",
           "when": "false"
@@ -491,9 +495,14 @@
       {
         "command": "fx-extension.addEnvironment",
         "title": "%teamstoolkit.commands.createEnvironment.title%",
-        "icon": "$(add)",
         "enablement": "fx-extension.isTeamsFx",
         "category": "Teams"
+      },
+      {
+        "command": "fx-extension.addEnvironmentWithIcon",
+        "title": "%teamstoolkit.commands.createEnvironment.title%",
+        "icon": "$(add)",
+        "enablement": "fx-extension.isTeamsFx"
       },
       {
         "command": "fx-extension.addFeature",

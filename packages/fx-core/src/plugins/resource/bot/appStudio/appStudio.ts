@@ -14,16 +14,8 @@ import { CommonStrings, ConfigNames } from "../resources/strings";
 import { RetryHandler } from "../utils/retryHandler";
 import { Messages } from "../resources/messages";
 import { Logger } from "../logger";
-/**
- * Get app studio endpoint for prod/int environment, mainly for ux e2e test
- */
-export function getAppStudioEndpoint(): string {
-  if (process.env.APP_STUDIO_ENV && process.env.APP_STUDIO_ENV === "int") {
-    return "https://dev-int.teams.microsoft.com";
-  } else {
-    return "https://dev.teams.microsoft.com";
-  }
-}
+import { getAppStudioEndpoint } from "../../../../common/tools";
+
 export class AppStudio {
   private static baseUrl = getAppStudioEndpoint();
 

@@ -137,7 +137,7 @@ export function convertEnvStateV2ToV3(envStateV2: Json): Json {
   return envStateV3;
 }
 
-export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings) {
+export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): ProjectSettingsV3 {
   const settingsV3 = cloneDeep(settingsV2) as ProjectSettingsV3;
   settingsV3.components = [];
   const solutionSettings = settingsV2.solutionSettings as AzureSolutionSettings;
@@ -232,6 +232,12 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings) {
     if (solutionSettings.activeResourcePlugins.includes("fx-resource-azure-sql")) {
       settingsV3.components.push({
         name: ComponentNames.AzureSQL,
+        provision: true,
+      });
+    }
+    if (solutionSettings.activeResourcePlugins.includes("fx-resource-apim")) {
+      settingsV3.components.push({
+        name: ComponentNames.APIM,
         provision: true,
       });
     }

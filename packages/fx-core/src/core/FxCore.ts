@@ -66,6 +66,7 @@ import {
   TabFeatureIds,
   CicdOptionItem,
   ApiConnectionOptionItem,
+  SingleSignOnOptionItem,
 } from "../plugins/solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { CallbackRegistry } from "./callback";
@@ -372,16 +373,24 @@ export class FxCore implements v3.ICore {
       projectPath = path.join(folder, appName);
       inputs.projectPath = projectPath;
       globalVars.isVS = isVSProject(context.projectSetting);
-      await runAction("fx.init", context, inputs as InputsWithProjectPath);
+      const initRes = await runAction("fx.init", context, inputs as InputsWithProjectPath);
+      if (initRes.isErr()) return err(initRes.error);
       const feature = inputs.capabilities;
       delete inputs.folder;
       if (BotFeatureIds.includes(feature)) {
         inputs.feature = feature;
-        await runAction("teams-bot.add", context, inputs as InputsWithProjectPath);
+        const res = await runAction("teams-bot.add", context, inputs as InputsWithProjectPath);
+        if (res.isErr()) return err(res.error);
       }
       if (TabFeatureIds.includes(feature)) {
         inputs.feature = feature;
-        await runAction("teams-tab.add", context, inputs as InputsWithProjectPath);
+        const res = await runAction("teams-tab.add", context, inputs as InputsWithProjectPath);
+        if (res.isErr()) return err(res.error);
+      }
+      if (feature === TabSPFxItem.id) {
+        inputs.feature = feature;
+        const res = await runAction("spfx-tab.add", context, inputs as InputsWithProjectPath);
+        if (res.isErr()) return err(res.error);
       }
     }
     if (inputs.platform === Platform.VSCode) {
@@ -752,6 +761,8 @@ export class FxCore implements v3.ICore {
       res = await runAction("cicd.add", context, inputs as InputsWithProjectPath);
     } else if (feature === ApiConnectionOptionItem.id) {
       res = await runAction("api-connector.add", context, inputs as InputsWithProjectPath);
+    } else if (feature === SingleSignOnOptionItem.id) {
+      res = await runAction("sso.add", context, inputs as InputsWithProjectPath);
     } else {
       return err(new NotImplementedError(feature));
     }

@@ -10,6 +10,7 @@ export const ComponentNames = {
   AzureWebApp: "azure-web-app",
   AzureStorage: "azure-storage",
   BotService: "bot-service",
+  SPFxTab: "spfx-tab",
   SPFx: "spfx",
   Identity: "identity",
   APIM: "apim",
@@ -17,9 +18,11 @@ export const ComponentNames = {
   AzureSQL: "azure-sql",
   TabCode: "tab-code",
   BotCode: "bot-code",
+  SPFxTabCode: "spfx-tab-code",
   ApiCode: "api-code",
   Function: "azure-function",
   SimpleAuth: "simple-auth",
+  SSO: "SSO",
 };
 
 export const ComponentStateKeys = {

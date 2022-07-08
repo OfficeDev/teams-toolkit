@@ -389,6 +389,8 @@ export interface Component extends Json {
     name: string;
     // (undocumented)
     provision?: boolean;
+    // (undocumented)
+    sso?: boolean;
 }
 
 // @public (undocumented)

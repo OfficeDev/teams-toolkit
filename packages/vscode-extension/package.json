@@ -1169,8 +1169,7 @@
     "sudo-prompt": "^9.2.1",
     "underscore": "^1.12.1",
     "validator": "^13.7.0",
-    "vscode-tas-client": "^0.1.47",
-    "vscode-test": "^1.5.2"
+    "vscode-tas-client": "^0.1.47"
   },
   "extensionDependencies": [
     "ms-vscode.azure-account"

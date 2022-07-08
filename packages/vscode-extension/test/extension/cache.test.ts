@@ -7,11 +7,11 @@ import * as sinon from "sinon";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
 import TelemetryReporter from "@vscode/extension-telemetry";
 
-import { TelemetryCache } from "../../../src/telemetry/cache";
-import { TelemetryEventCache } from "../../../src/telemetry/extTelemetryEvents";
+import { TelemetryCache } from "../../src/telemetry/cache";
+import { TelemetryEventCache } from "../../src/telemetry/extTelemetryEvents";
 
-suite("Telemetry Cache", () => {
-  test("addEvent - excess limit number", async () => {
+describe("Telemetry Cache", () => {
+  it("addEvent - excess limit number", async () => {
     const mockReporter = sinon.createStubInstance(TelemetryReporter);
     const cache = new TelemetryCache(mockReporter);
     for (let i = 0; i < 3; i += 1) {
@@ -29,7 +29,7 @@ suite("Telemetry Cache", () => {
     sinon.restore();
   });
 
-  test("addEvent - excess timeout", async () => {
+  it("addEvent - excess timeout", async () => {
     const clock = sinon.useFakeTimers();
     const mockReporter = sinon.createStubInstance(TelemetryReporter);
     const cache = new TelemetryCache(mockReporter);
@@ -47,7 +47,7 @@ suite("Telemetry Cache", () => {
     sinon.restore();
   });
 
-  test("persistUnsentEventsToDiskAsync", async () => {
+  it("persistUnsentEventsToDiskAsync", async () => {
     const mockReporter = sinon.createStubInstance(TelemetryReporter);
     const cache = new TelemetryCache(mockReporter);
     let state = "";
@@ -101,7 +101,7 @@ suite("Telemetry Cache", () => {
     sinon.restore();
   });
 
-  test("recoverUnsentEventsFromDiskAsync", async () => {
+  it("recoverUnsentEventsFromDiskAsync", async () => {
     const mockReporter = sinon.createStubInstance(TelemetryReporter);
     const cache = new TelemetryCache(mockReporter);
     const time = new Date();

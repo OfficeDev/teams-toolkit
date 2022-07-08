@@ -138,7 +138,9 @@ After successfully add SSO in your project, you can also add a new command.
         // let photoUrl = "";
         // try {
         //   const photo = await graphClient.api("/me/photo/$value").get();
-        //   photoUrl = URL.createObjectURL(photo);
+        //   const arrayBuffer = await photo.arrayBuffer();
+        //   const buffer=Buffer.from(arrayBuffer, 'binary');
+        //   photoUrl = "data:image/png;base64," + buffer.toString("base64");
         // } catch {
         //   // Could not fetch photo from user's profile, return empty string as placeholder.
         // }

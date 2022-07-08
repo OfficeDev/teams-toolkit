@@ -2,11 +2,11 @@
 // Licensed under the MIT license.
 
 import { Constants, TelemetryKey, TelemetryValue } from "./constants";
-import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { ContextV3, PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
 
 export class telemetryHelper {
   static sendSuccessEvent(
-    ctx: PluginContext,
+    ctx: PluginContext | ContextV3,
     eventName: string,
     properties: { [key: string]: string } = {},
     measurements: { [key: string]: number } = {}
@@ -18,7 +18,7 @@ export class telemetryHelper {
   }
 
   static sendErrorEvent(
-    ctx: PluginContext,
+    ctx: PluginContext | ContextV3,
     eventName: string,
     e: SystemError | UserError,
     properties: { [key: string]: string } = {},

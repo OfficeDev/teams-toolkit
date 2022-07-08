@@ -1,5 +1,6 @@
 !out/templates/**
-.coverconfig.json
+.mocharc.json
+.nycrc
 .github
 .gitignore
 .prettierignore
@@ -13,6 +14,7 @@
 **/tsconfig.json
 build/**
 coverage
+.nyc_output
 img/**
 node_modules
 scripts/**

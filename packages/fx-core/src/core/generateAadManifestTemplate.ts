@@ -11,6 +11,9 @@ import {
 } from "../plugins/resource/aad/interfaces/AADManifest";
 import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
 import { getAppDirectory } from "../common";
+import { isV3 } from "./globalVars";
+import { ComponentNames } from "../component/constants";
+import { getComponent } from "../component/workflow";
 
 interface Permission {
   resource: string;
@@ -49,49 +52,52 @@ export async function generateAadManifestTemplate(
     aadJson.requiredResourceAccess = requiredResourceAccess;
   }
 
-  if (azureSolutionSettings.capabilities.includes("Tab")) {
-    const tabRedirectUrl1 =
-      "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/auth-end.html";
+  if (isV3()) {
+    updateRedirectUrlV3(aadJson, projectSettings);
+  } else {
+    if (azureSolutionSettings.capabilities.includes("Tab")) {
+      const tabRedirectUrl1 =
+        "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/auth-end.html";
 
-    if (!isRedirectUrlExist(aadJson.replyUrlsWithType, tabRedirectUrl1, "Web")) {
-      aadJson.replyUrlsWithType.push({
-        url: tabRedirectUrl1,
-        type: "Web",
-      });
+      if (!isRedirectUrlExist(aadJson.replyUrlsWithType, tabRedirectUrl1, "Web")) {
+        aadJson.replyUrlsWithType.push({
+          url: tabRedirectUrl1,
+          type: "Web",
+        });
+      }
+
+      const tabRedirectUrl2 =
+        "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/auth-end.html?clientId={{state.fx-resource-aad-app-for-teams.clientId}}";
+
+      if (!isRedirectUrlExist(aadJson.replyUrlsWithType, tabRedirectUrl2, "Spa")) {
+        aadJson.replyUrlsWithType.push({
+          url: tabRedirectUrl2,
+          type: "Spa",
+        });
+      }
+
+      const tabRedirectUrl3 =
+        "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/blank-auth-end.html";
+
+      if (!isRedirectUrlExist(aadJson.replyUrlsWithType, tabRedirectUrl3, "Spa")) {
+        aadJson.replyUrlsWithType.push({
+          url: tabRedirectUrl3,
+          type: "Spa",
+        });
+      }
     }
 
-    const tabRedirectUrl2 =
-      "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/auth-end.html?clientId={{state.fx-resource-aad-app-for-teams.clientId}}";
+    if (azureSolutionSettings.capabilities.includes("Bot")) {
+      const botRedirectUrl = "{{state.fx-resource-aad-app-for-teams.botEndpoint}}/auth-end.html";
 
-    if (!isRedirectUrlExist(aadJson.replyUrlsWithType, tabRedirectUrl2, "Spa")) {
-      aadJson.replyUrlsWithType.push({
-        url: tabRedirectUrl2,
-        type: "Spa",
-      });
-    }
-
-    const tabRedirectUrl3 =
-      "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/blank-auth-end.html";
-
-    if (!isRedirectUrlExist(aadJson.replyUrlsWithType, tabRedirectUrl3, "Spa")) {
-      aadJson.replyUrlsWithType.push({
-        url: tabRedirectUrl3,
-        type: "Spa",
-      });
+      if (!isRedirectUrlExist(aadJson.replyUrlsWithType, botRedirectUrl, "Web")) {
+        aadJson.replyUrlsWithType.push({
+          url: botRedirectUrl,
+          type: "Web",
+        });
+      }
     }
   }
-
-  if (azureSolutionSettings.capabilities.includes("Bot")) {
-    const botRedirectUrl = "{{state.fx-resource-aad-app-for-teams.botEndpoint}}/auth-end.html";
-
-    if (!isRedirectUrlExist(aadJson.replyUrlsWithType, botRedirectUrl, "Web")) {
-      aadJson.replyUrlsWithType.push({
-        url: botRedirectUrl,
-        type: "Web",
-      });
-    }
-  }
-
   if (updateCapabilities) {
     if (
       projectSettings.solutionSettings.capabilities.includes("Tab") &&
@@ -118,4 +124,49 @@ function isRedirectUrlExist(replyUrls: ReplyUrlsWithType[], url: string, type: s
   return (
     replyUrls.filter((item: ReplyUrlsWithType) => item.url === url && item.type === type).length > 0
   );
+}
+
+function updateRedirectUrlV3(aadJson: any, projectSetting: any) {
+  const teamsTabComponent = getComponent(projectSetting, ComponentNames.TeamsTab);
+  if (teamsTabComponent) {
+    const tabRedirectUrl1 = "{{state.aad-app.frontendEndpoint}}/auth-end.html";
+
+    if (!isRedirectUrlExist(aadJson.replyUrlsWithType, tabRedirectUrl1, "Web")) {
+      aadJson.replyUrlsWithType.push({
+        url: tabRedirectUrl1,
+        type: "Web",
+      });
+    }
+
+    const tabRedirectUrl2 =
+      "{{state.aad-app.frontendEndpoint}}/auth-end.html?clientId={{state.aad-app.clientId}}";
+
+    if (!isRedirectUrlExist(aadJson.replyUrlsWithType, tabRedirectUrl2, "Spa")) {
+      aadJson.replyUrlsWithType.push({
+        url: tabRedirectUrl2,
+        type: "Spa",
+      });
+    }
+
+    const tabRedirectUrl3 = "{{state.aad-app.frontendEndpoint}}/blank-auth-end.html";
+
+    if (!isRedirectUrlExist(aadJson.replyUrlsWithType, tabRedirectUrl3, "Spa")) {
+      aadJson.replyUrlsWithType.push({
+        url: tabRedirectUrl3,
+        type: "Spa",
+      });
+    }
+  }
+
+  const teamsBotComponent = getComponent(projectSetting, ComponentNames.TeamsBot);
+  if (teamsBotComponent) {
+    const botRedirectUrl = "{{state.aad-app.botEndpoint}}/auth-end.html";
+
+    if (!isRedirectUrlExist(aadJson.replyUrlsWithType, botRedirectUrl, "Web")) {
+      aadJson.replyUrlsWithType.push({
+        url: botRedirectUrl,
+        type: "Web",
+      });
+    }
+  }
 }

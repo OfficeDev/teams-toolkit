@@ -41,12 +41,6 @@ const TelemetryTestLoggerFile = "telemetryTest.log";
 let isFromSample: boolean | undefined = undefined;
 let settingsVersion: string | undefined = undefined;
 let isM365: boolean | undefined = undefined;
-/**
- * events are cached in memory first and sent later to reduce date loss.
- * strategy: send at least once.
- * assumption: if an event is sent to server 10 seconds ago, it is treated as successfully sent telemetry event.
- */
-export let cache: TelemetryCache;
 
 export let reporter: VSCodeTelemetryReporter;
 // export for UT
@@ -65,6 +59,12 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
   private readonly reporter: Reporter;
   private readonly logger: Logger | undefined;
   private readonly testFeatureFlag: boolean;
+  /**
+   * events are cached in memory first and sent later to reduce date loss.
+   * strategy: send at least once.
+   * assumption: if an event is sent to server 10 seconds ago, it is treated as successfully sent telemetry event.
+   */
+  private cache: TelemetryCache;
 
   private sharedProperties: { [key: string]: string } = {};
 
@@ -80,7 +80,7 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
       });
       this.logger = getLogger("TelemTest");
     }
-    cache = new TelemetryCache(this.reporter);
+    this.cache = new TelemetryCache(this.reporter);
   }
 
   public addSharedProperty(name: string, value: string): void {
@@ -104,7 +104,7 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
         properties: filledProperties,
         measurements,
       };
-      cache.addEvent(eventCache);
+      this.cache.addEvent(eventCache);
     }
   }
 
@@ -126,7 +126,7 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
         properties: filledProperties,
         measurements,
       };
-      cache.addEvent(eventCache);
+      this.cache.addEvent(eventCache);
     }
   }
 
@@ -145,7 +145,7 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
   }
 
   public async recover() {
-    await cache.recoverUnsentEventsFromDiskAsync();
+    await this.cache.recoverUnsentEventsFromDiskAsync();
   }
 
   private fillProperties(properties?: { [p: string]: string }): { [p: string]: string } {
@@ -163,6 +163,7 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
       properties[TelemetryProperty.ProjectId] = projectId ? projectId : "unknown";
     }
 
+    lastCorrelationId = Correlator.getId();
     if (properties[TelemetryProperty.CorrelationId] === undefined) {
       // deactivate event will set correlation id and should not be overwritten
       properties[TelemetryProperty.CorrelationId] = Correlator.getId();
@@ -177,6 +178,16 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
   }
 
   public async dispose() {
+    const deactivateEvent: TelemetryEventCache = {
+      type: "normal",
+      occurTime: new Date(),
+      eventName: TelemetryEvent.Deactivate,
+      properties: {
+        [TelemetryProperty.CorrelationId]: lastCorrelationId || "",
+        [TelemetryProperty.ProjectId]: getProjectId() || "",
+      },
+    };
+    await this.cache.persistUnsentEventsToDiskAsync(deactivateEvent);
     await this.reporter.dispose();
   }
 
@@ -206,15 +217,12 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
   }
 }
 
-export class ExtensionTelemetryReporter extends vscode.Disposable {
-  constructor(ctx: vscode.ExtensionContext) {
-    super(() => reporter.dispose());
-    reporter = new VSCodeTelemetryReporter(
-      extensionPackage.aiKey,
-      extensionPackage.version,
-      extensionPackage.name
-    );
-  }
+export function initializeExtensionTelemetryReporter() {
+  reporter = new VSCodeTelemetryReporter(
+    extensionPackage.aiKey,
+    extensionPackage.version,
+    extensionPackage.name
+  );
 }
 
 export function addSharedProperty(name: string, value: string): void {
@@ -248,7 +256,6 @@ export function sendTelemetryEvent(
   properties?: { [p: string]: string },
   measurements?: { [p: string]: number }
 ): void {
-  lastCorrelationId = Correlator.getId();
   properties = mergeExtensionProperties(properties);
 
   reporter.sendTelemetryEvent(eventName, properties, measurements);
@@ -300,16 +307,6 @@ export async function initializeTelemetry(
 }
 
 export async function dispose() {
-  const deactivateEvent: TelemetryEventCache = {
-    type: "normal",
-    occurTime: new Date(),
-    eventName: TelemetryEvent.Deactivate,
-    properties: {
-      [TelemetryProperty.CorrelationId]: lastCorrelationId || "",
-      [TelemetryProperty.ProjectId]: getProjectId() || "",
-    },
-  };
-  await cache.persistUnsentEventsToDiskAsync(deactivateEvent);
   await reporter.dispose();
 }
 
@@ -329,13 +326,13 @@ function mergeExtensionProperties(properties?: { [p: string]: string }): { [p: s
   }
 
   if (isFromSample !== undefined) {
-    properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
+    properties[TelemetryProperty.IsFromSample] = isFromSample.toString();
   }
   if (isM365 !== undefined) {
-    properties![TelemetryProperty.IsM365] = isM365.toString();
+    properties[TelemetryProperty.IsM365] = isM365.toString();
   }
   if (settingsVersion !== undefined) {
-    properties![TelemetryProperty.SettingsVersion] = settingsVersion.toString();
+    properties[TelemetryProperty.SettingsVersion] = settingsVersion.toString();
   }
 
   return properties;

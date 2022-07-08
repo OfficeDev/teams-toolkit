@@ -615,6 +615,7 @@ describe("handlers", () => {
           "undefined/templates/appPackage/manifest.template.json" as any
         )
       );
+      sinon.restore();
     });
 
     it("edit manifest template: remote", async () => {
@@ -634,6 +635,7 @@ describe("handlers", () => {
           "undefined/templates/appPackage/manifest.template.json" as any
         )
       );
+      sinon.restore();
     });
   });
 

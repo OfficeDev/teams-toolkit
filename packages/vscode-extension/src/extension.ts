@@ -63,7 +63,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // load the feature flags.
   syncFeatureFlags();
 
-  context.subscriptions.push(new ExtTelemetry.ExtensionTelemetryReporter(context));
+  ExtTelemetry.initializeExtensionTelemetryReporter();
 
   VS_CODE_UI = new VsCodeUI(context);
   initializeGlobalVariables(context);

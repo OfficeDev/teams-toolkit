@@ -33,6 +33,7 @@ import "./resource/azureAppService/azureFunction";
 import "./resource/azureStorage";
 import "./resource/azureAppService/azureWebApp";
 import "./resource/botService";
+import "./feature/apim";
 import "./resource/apim";
 import "./feature/spfx";
 import "./resource/spfx";

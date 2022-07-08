@@ -39,9 +39,14 @@ export class ApimFeature {
         plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
           const component = getComponent(context.projectSetting, ComponentNames.APIM);
           if (component) return ok([]);
+          return ok(["add component 'apim' in projectSettings"]);
+        },
+        execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+          const component = getComponent(context.projectSetting, ComponentNames.APIM);
+          if (component) return ok([]);
           const remarks: string[] = ["add component 'apim' in projectSettings"];
           const apimConfig: Component = {
-            name: this.name,
+            name: ComponentNames.APIM,
             provision: true,
             deploy: true,
             connections: [],
@@ -55,24 +60,6 @@ export class ApimFeature {
           if (teamsBot) {
             apimConfig.connections?.push("teams-bot");
           }
-          return ok([
-            {
-              type: "file",
-              operate: "replace",
-              filePath: getProjectSettingsPath(inputs.projectPath),
-              remarks: remarks.join(";"),
-            },
-          ]);
-        },
-        execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-          const component = getComponent(context.projectSetting, ComponentNames.APIM);
-          if (component) return ok([]);
-          const remarks: string[] = ["add component 'apim' in projectSettings"];
-          context.projectSetting.components.push({
-            name: this.name,
-            provision: true,
-            deploy: true,
-          });
           return ok([
             {
               type: "file",

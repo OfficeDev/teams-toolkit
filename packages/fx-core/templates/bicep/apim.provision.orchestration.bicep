@@ -1,5 +1,5 @@
 // Resources for APIM
-module apimProvision './teamsFx/apim.bicep'  = {
+module apimProvision './provision/apim.bicep'  = {
   name: 'apimProvision'
   params: {
     provisionParameters: provisionParameters

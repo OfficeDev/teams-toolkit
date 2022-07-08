@@ -33,6 +33,7 @@ import "./resource/azureAppService/azureFunction";
 import "./resource/azureStorage";
 import "./resource/azureAppService/azureWebApp";
 import "./resource/botService";
+import "./resource/apim";
 import "./feature/spfx";
 import "./resource/spfx";
 import "./feature/api";
@@ -49,6 +50,7 @@ import "./code/spfxTabCode";
 import "./connection/aadConfig";
 import "./connection/azureWebAppConfig";
 import "./connection/azureFunctionConfig";
+import "./connection/apimConfig";
 
 import { WriteProjectSettingsAction } from "./projectSettingsManager";
 import { ComponentNames } from "./constants";

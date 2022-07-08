@@ -18,15 +18,11 @@ var botId = provisionParameters['botAadAppClientId']
 {{/if}}
 
 {{#if (contains "teams-tab" connections) }}
-var tabAppDomain = \{{teams-tab.outputs.domain}}
-{{/if}}
-
-{{#if (contains "teams-tab" connections) }}
   {{#if (contains "teams-bot" connections)}}
-var m365ApplicationIdUri = 'api://${tabAppDomain}/botid-${botId}'
+var m365ApplicationIdUri = 'api://{{tabDomainVarName}}/botid-${botId}'
   {{else}}
 var m365ClientId = provisionParameters['m365ClientId']
-var m365ApplicationIdUri = 'api://${tabAppDomain}/${m365ClientId}'
+var m365ApplicationIdUri = 'api://{{tabDomainVarName}}/${m365ClientId}'
   {{/if}}
 {{else}}
   {{#if (contains "teams-bot" connections) }}

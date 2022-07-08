@@ -13,6 +13,7 @@ export const ComponentNames = {
   SPFxTab: "spfx-tab",
   SPFx: "spfx",
   Identity: "identity",
+  APIMFeature: "apim-feature",
   APIM: "apim",
   KeyVault: "key-vault",
   AzureSQL: "azure-sql",

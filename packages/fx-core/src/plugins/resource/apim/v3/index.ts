@@ -40,6 +40,7 @@ import { Factory } from "../factory";
 import { ProgressBar } from "../utils/progressBar";
 import fs from "fs-extra";
 import { convertToAlphanumericOnly } from "../../../../common/utils";
+import { ComponentNames } from "../../../../component/constants";
 
 @Service(BuiltInFeaturePluginNames.apim)
 export class ApimPluginV3 implements v3.PluginV3 {
@@ -187,12 +188,8 @@ export class ApimPluginV3 implements v3.PluginV3 {
       PluginLifeCycleToProgressStep[PluginLifeCycle.Provision],
       ctx.userInteraction
     );
-    const apimState = envInfo.state[this.name] as v3.APIM;
-    if (!apimState.secretFields) {
-      apimState.secretFields = ["apimClientAADClientSecret"];
-    }
-    const apimConfig = new ApimPluginConfig(envInfo.state[this.name], envInfo.envName);
-
+    const apimState = envInfo.state[ComponentNames.APIM];
+    const apimConfig = new ApimPluginConfig(apimState, envInfo.envName);
     const apimManager = await Factory.buildApimManager(
       envInfo,
       ctx.telemetryReporter,
@@ -217,7 +214,6 @@ export class ApimPluginV3 implements v3.PluginV3 {
       ProgressMessages[ProgressStep.Provision].CreateAad
     );
     await aadManager.provision(apimConfig, appName);
-
     await this.progressBar.close(ProgressStep.Provision, true);
     return ok(Void);
   }
@@ -229,7 +225,7 @@ export class ApimPluginV3 implements v3.PluginV3 {
     envInfo: v3.EnvInfoV3,
     tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
-    const apimResource = envInfo.state[this.name];
+    const apimResource = envInfo.state[ComponentNames.APIM];
     const apimConfig = new ApimPluginConfig(apimResource, envInfo.envName);
     const aadConfig = new AadPluginConfig(envInfo);
     const aadManager = await Factory.buildAadManager(
@@ -271,7 +267,7 @@ export class ApimPluginV3 implements v3.PluginV3 {
     tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
     const solutionConfig = new SolutionConfig(envInfo as v3.EnvInfoV3);
-    const apimConfig = new ApimPluginConfig(envInfo.state[this.name], envInfo.envName);
+    const apimConfig = new ApimPluginConfig(envInfo.state[ComponentNames.APIM], envInfo.envName);
     const functionConfig = new FunctionPluginConfig(envInfo as v3.EnvInfoV3);
     const answer = buildAnswer(inputs);
 

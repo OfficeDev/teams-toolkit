@@ -14,7 +14,7 @@ describe("Telemetry Cache", () => {
   it("addEvent - excess limit number", async () => {
     const mockReporter = sinon.createStubInstance(TelemetryReporter);
     const cache = new TelemetryCache(mockReporter);
-    for (let i = 0; i < 3; i += 1) {
+    for (let i = 0; i < 10; i += 1) {
       await cache.addEvent({
         type: "normal",
         eventName: "test",
@@ -24,7 +24,7 @@ describe("Telemetry Cache", () => {
     }
 
     const calls = mockReporter.sendTelemetryEvent.getCalls();
-    chai.expect(calls.length).to.equal(3);
+    chai.expect(calls.length).to.equal(10);
 
     sinon.restore();
   });

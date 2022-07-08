@@ -9,8 +9,8 @@ import Reporter from "@vscode/extension-telemetry";
 import { TelemetryEventCache, TelemetryProperty } from "./extTelemetryEvents";
 
 const TelemetryCacheKey = "TelemetryEvents";
-const CacheSize = 20;
-const CacheLimit = 3;
+const CacheSize = 100;
+const CacheLimit = 10;
 const SuccessTimeSpan = 10 * 1000; // 10 seconds
 const FlushCacheDelay = 3 * 1000; // 3 seconds
 

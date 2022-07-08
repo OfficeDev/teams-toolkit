@@ -183,22 +183,21 @@ describe("Test AppStudio APIs", () => {
     it("Happy Path", async () => {
       // Arrange
       const accessToken = "anything";
-      const botReg: IBotRegistration = {
-        botId: "anything",
-        name: "anything",
-        description: "",
-        iconUrl: "",
-        messagingEndpoint: "",
-        callingEndpoint: "",
-      };
 
       sinon.stub(RetryHandler, "Retry").resolves({
         data: {},
       });
+      sinon.stub(AppStudio, "getBotRegistration").resolves({
+        name: "",
+        description: "",
+        iconUrl: "",
+        messagingEndpoint: "",
+        callingEndpoint: "",
+      });
 
       // Act
       try {
-        await AppStudio.updateMessageEndpoint(accessToken, "anything", botReg);
+        await AppStudio.updateMessageEndpoint(accessToken, "anything", "anything");
       } catch {
         chai.assert.fail(Messages.ShouldNotReachHere);
       }
@@ -207,20 +206,12 @@ describe("Test AppStudio APIs", () => {
     it("Empty Data", async () => {
       // Arrange
       const accessToken = "anything";
-      const botReg: IBotRegistration = {
-        botId: "anything",
-        name: "anything",
-        description: "",
-        iconUrl: "",
-        messagingEndpoint: "",
-        callingEndpoint: "",
-      };
 
       sinon.stub(RetryHandler, "Retry").resolves({});
 
       // Act
       try {
-        await AppStudio.updateMessageEndpoint(accessToken, "anything", botReg);
+        await AppStudio.updateMessageEndpoint(accessToken, "anything", "");
       } catch (e) {
         chai.assert.isTrue(e instanceof PluginError);
         return;
@@ -233,20 +224,19 @@ describe("Test AppStudio APIs", () => {
     it("Retry Exception", async () => {
       // Arrange
       const accessToken = "anything";
-      const botReg: IBotRegistration = {
-        botId: "anything",
-        name: "anything",
+      sinon.stub(AppStudio, "getBotRegistration").resolves({
+        name: "",
         description: "",
         iconUrl: "",
         messagingEndpoint: "",
         callingEndpoint: "",
-      };
+      });
 
       sinon.stub(RetryHandler, "Retry").throwsException();
 
       // Act
       try {
-        await AppStudio.updateMessageEndpoint(accessToken, "anything", botReg);
+        await AppStudio.updateMessageEndpoint(accessToken, "anything", "anything");
       } catch (e) {
         chai.assert.isTrue(e instanceof PluginError);
         return;

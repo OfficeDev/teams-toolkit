@@ -445,7 +445,8 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
 function registerMenuCommands(context: vscode.ExtensionContext) {
   const createNewEnvironmentWithIcon = vscode.commands.registerCommand(
     "fx-extension.addEnvironmentWithIcon",
-    (...args) => Correlator.run(handlers.createNewEnvironment, [TelemetryTriggerFrom.TreeView])
+    (...args) =>
+      Correlator.run(handlers.createNewEnvironment, [TelemetryTriggerFrom.ViewTitleNavigation])
   );
   context.subscriptions.push(createNewEnvironmentWithIcon);
 
@@ -457,7 +458,8 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
 
   const createAccountCmd = vscode.commands.registerCommand(
     "fx-extension.createAccount",
-    (...args) => Correlator.run(handlers.createAccountHandler, [TelemetryTriggerFrom.TreeView])
+    (...args) =>
+      Correlator.run(handlers.createAccountHandler, [TelemetryTriggerFrom.ViewTitleNavigation])
   );
   context.subscriptions.push(createAccountCmd);
 
@@ -601,7 +603,8 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
 
   const refreshEnvironment = vscode.commands.registerCommand(
     "fx-extension.refreshEnvironment",
-    (...args) => Correlator.run(handlers.refreshEnvironment, [TelemetryTriggerFrom.TreeView])
+    (...args) =>
+      Correlator.run(handlers.refreshEnvironment, [TelemetryTriggerFrom.ViewTitleNavigation])
   );
   context.subscriptions.push(refreshEnvironment);
 

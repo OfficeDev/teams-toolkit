@@ -2985,7 +2985,11 @@ export async function openDocumentLinkHandler(args?: any[]): Promise<Result<bool
   });
   switch (node.contextValue) {
     case "signinM365": {
-      return VS_CODE_UI.openUrl("https://www.office.com/");
+      await vscode.commands.executeCommand("workbench.action.openWalkthrough", {
+        category: "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStarted",
+        step: "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStarted#teamsToolkitCreateFreeAccount",
+      });
+      return Promise.resolve(ok(true));
     }
     case "signinAzure": {
       return VS_CODE_UI.openUrl("https://portal.azure.com/");

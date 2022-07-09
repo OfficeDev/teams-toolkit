@@ -139,9 +139,9 @@ export function convertEnvStateV2ToV3(envStateV2: Json): Json {
 
 export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): ProjectSettingsV3 {
   const settingsV3 = cloneDeep(settingsV2) as ProjectSettingsV3;
-  settingsV3.components = settingsV3.components || [];
   const solutionSettings = settingsV2.solutionSettings as AzureSolutionSettings;
-  if (solutionSettings) {
+  if (solutionSettings && (!settingsV3.components || settingsV3.components.length === 0)) {
+    settingsV3.components = [];
     const isVS = isVSProject(settingsV2);
     if (solutionSettings.activeResourcePlugins.includes("fx-resource-frontend-hosting")) {
       const hostingComponent = isVS ? ComponentNames.AzureWebApp : ComponentNames.AzureStorage;

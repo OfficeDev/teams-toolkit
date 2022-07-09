@@ -55,5 +55,6 @@ export const timer = () => {
         return result;
       };
     }
+    return descriptor;
   };
 };

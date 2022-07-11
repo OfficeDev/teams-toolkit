@@ -20,12 +20,12 @@ export class AzureFunctionResource extends AzureAppService {
   readonly displayName = "Azure Functions";
   readonly bicepModuleName = "azureFunction";
   outputs = {
-    resourceId: {
+    functionAppResourceId: {
       key: "functionAppResourceId",
       bicepVariable:
         "provisionOutputs.azureFunction{{componentName}}Output.value.functionAppResourceId",
     },
-    endpoint: {
+    functionEndpoint: {
       key: "functionEndpoint",
       bicepVariable: "azureFunction{{componentName}}Provision.outputs.functionEndpoint",
     },

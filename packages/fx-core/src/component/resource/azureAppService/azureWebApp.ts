@@ -16,7 +16,7 @@ export class AzureWebAppResource extends AzureAppService {
     },
     siteEndpoint: {
       key: "siteEndpoint",
-      bicepVariable: "azureWebApp{{componentName}}Provision.outputs.endpoint",
+      bicepVariable: "azureWebApp{{componentName}}Provision.outputs.siteEndpoint",
     },
   };
   readonly finalOutputKeys = ["resourceId", "endpoint"];

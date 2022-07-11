@@ -40,7 +40,7 @@ export class AzureStorageResource extends AzureResource {
     },
     storageResourceId: {
       key: "storageResourceId",
-      bicepVariable: "provisionOutputs.azureStorage{{componentName}}Output.value.resourceId",
+      bicepVariable: "provisionOutputs.azureStorage{{componentName}}Output.value.storageResourceId",
     },
     domain: {
       key: "domain",

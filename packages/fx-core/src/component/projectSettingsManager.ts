@@ -28,6 +28,7 @@ import {
 import { LocalCrypto } from "../core/crypto";
 import { getProjectSettingsPath } from "../core/middleware/projectSettingsLoader";
 import { createFileEffect } from "./utils";
+import { convertProjectSettingsV2ToV3 } from "./migrate";
 
 @Service("project-settings")
 export class ProjectSettingsManager {
@@ -44,13 +45,14 @@ export class ProjectSettingsManager {
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const filePath = getProjectSettingsPath(inputs.projectPath);
-        const projectSettings = (await fs.readJson(filePath)) as ProjectSettingsV3;
+        let projectSettings = (await fs.readJson(filePath)) as ProjectSettingsV3;
         if (!projectSettings.projectId) {
           projectSettings.projectId = uuid.v4();
           sendTelemetryEvent(Component.core, TelemetryEvent.FillProjectId, {
             [TelemetryProperty.ProjectId]: projectSettings.projectId,
           });
         }
+        projectSettings = convertProjectSettingsV2ToV3(projectSettings);
         context.projectSetting = projectSettings;
         context.cryptoProvider = new LocalCrypto(projectSettings.projectId);
         return ok([]);

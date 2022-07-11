@@ -399,20 +399,11 @@ export class TeamsBotImpl implements PluginImpl {
       this.ctx?.envInfo.state.get(ResourcePlugins.Bot).get(BOT_ID)
     );
 
-    const botReg: IBotRegistration = {
-      botId: this.ctx?.envInfo.state.get(ResourcePlugins.Bot).get(BOT_ID),
-      name:
-        (!this.ctx!.projectSettings?.appName
-          ? ""
-          : convertToAlphanumericOnly(this.ctx!.projectSettings?.appName)) +
-        PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
-      description: "",
-      iconUrl: "",
-      messagingEndpoint: endpoint,
-      callingEndpoint: "",
-    };
-
-    await AppStudio.updateMessageEndpoint(appStudioToken, botReg.botId!, botReg);
+    await AppStudio.updateMessageEndpoint(
+      appStudioToken,
+      this.ctx?.envInfo.state.get(ResourcePlugins.Bot).get(BOT_ID),
+      endpoint
+    );
   }
   private async createNewBotRegistrationOnAppStudio() {
     const graphTokenRes = await this.ctx?.m365TokenProvider?.getAccessToken({

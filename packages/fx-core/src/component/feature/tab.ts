@@ -18,6 +18,7 @@ import { Service } from "typedi";
 import { CoreQuestionNames } from "../../core/question";
 import { ComponentNames } from "../constants";
 import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "../projectSettingsManager";
+import { getComponent } from "../workflow";
 @Service("teams-tab")
 export class TeamsTab {
   name = "teams-tab";
@@ -51,6 +52,10 @@ export class TeamsTab {
             connections: ["teams-tab"],
             provision: true,
           });
+          const apimConfig = getComponent(projectSettings, ComponentNames.APIM);
+          if (apimConfig) {
+            apimConfig.connections?.push("teams-tab");
+          }
           projectSettings.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
           return ok(["config 'teams-tab' in projectSettings"]);
         },

@@ -401,7 +401,6 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
   }
 
   private async updateMessageEndpointOnAppStudio(
-    appName: string,
     tokenProvider: TokenProvider,
     botId: string,
     endpoint: string
@@ -413,16 +412,7 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
     CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
     CheckThrowSomethingMissing(ConfigNames.LOCAL_BOT_ID, botId);
 
-    const botReg: IBotRegistration = {
-      botId: botId,
-      name: appName + PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
-      description: "",
-      iconUrl: "",
-      messagingEndpoint: endpoint,
-      callingEndpoint: "",
-    };
-
-    await AppStudio.updateMessageEndpoint(appStudioToken!, botReg.botId!, botReg);
+    await AppStudio.updateMessageEndpoint(appStudioToken!, botId, endpoint);
   }
 
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.bot } })])
@@ -436,7 +426,6 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
       const botConfig = envInfo.state[this.name] as v3.AzureBot;
       CheckThrowSomethingMissing(ConfigNames.LOCAL_ENDPOINT, botConfig.siteEndpoint);
       await this.updateMessageEndpointOnAppStudio(
-        convertToAlphanumericOnly(ctx.projectSetting.appName),
         tokenProvider,
         botConfig.botId,
         `${botConfig.siteEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`

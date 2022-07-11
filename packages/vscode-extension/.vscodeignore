@@ -5,7 +5,6 @@
 .gitignore
 .prettierignore
 .prettierrc.json
-.vscode-test/**
 .vscode/**
 .yarnrc
 **/.eslintrc.json

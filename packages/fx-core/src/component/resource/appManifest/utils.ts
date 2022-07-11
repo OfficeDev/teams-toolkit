@@ -5,6 +5,7 @@ import fs from "fs-extra";
 import * as path from "path";
 import "reflect-metadata";
 import { getProjectTemplatesFolderPath } from "../../../common/utils";
+import { isV3 } from "../../../core/globalVars";
 import { convertManifestTemplateToV3 } from "../../migrate";
 
 export async function readAppManifest(
@@ -12,7 +13,7 @@ export async function readAppManifest(
 ): Promise<Result<TeamsAppManifest, FxError>> {
   const filePath = await getTeamsAppManifestPath(projectPath);
   const content = await fs.readFile(filePath, { encoding: "utf-8" });
-  const contentV3 = convertManifestTemplateToV3(content);
+  const contentV3 = isV3() ? convertManifestTemplateToV3(content) : content;
   const manifest = JSON.parse(contentV3) as TeamsAppManifest;
   if (contentV3 !== content) {
     await fs.writeFile(filePath, contentV3);

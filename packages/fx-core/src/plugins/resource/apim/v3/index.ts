@@ -188,6 +188,7 @@ export class ApimPluginV3 implements v3.PluginV3 {
       PluginLifeCycleToProgressStep[PluginLifeCycle.Provision],
       ctx.userInteraction
     );
+    envInfo.state[ComponentNames.APIM] = envInfo.state[ComponentNames.APIM] || {};
     const apimState = envInfo.state[ComponentNames.APIM];
     const apimConfig = new ApimPluginConfig(apimState, envInfo.envName);
     const apimManager = await Factory.buildApimManager(

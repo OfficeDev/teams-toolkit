@@ -12,6 +12,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
+import { compileHandlebarsTemplateString } from "../../common/tools";
 import { getComponent } from "../workflow";
 import { AzureResourceConfig } from "./azureResourceConfig";
 @Service("apim-config")
@@ -19,7 +20,7 @@ export class APIMConfig extends AzureResourceConfig {
   readonly name = "apim-config";
   readonly bicepModuleName = "apim";
   readonly requisite = "apim";
-  references = [];
+  references = ["azure-web-app", "azure-storage"];
   generateBicep(
     context: ContextV3,
     inputs: InputsWithProjectPath
@@ -28,9 +29,14 @@ export class APIMConfig extends AzureResourceConfig {
       const tabConfig = getComponent(context.projectSetting, "teams-tab");
       if (tabConfig?.hosting) {
         const tabHosting = Container.get(tabConfig.hosting) as CloudResource;
-        this.templateContext.tabDomainVarName = tabHosting.outputs.endpoint.bicepVariable;
+        this.templateContext.tabDomainVarName = compileHandlebarsTemplateString(
+          tabHosting.outputs.domain.bicepVariable || "",
+          { componentName: "Tab" }
+        );
       }
     } catch {}
+    inputs.componentName = "";
+    inputs.componentId = "";
     return super.generateBicep(context, inputs);
   }
 }

@@ -36,6 +36,7 @@ import {
   versionCheckQuestion,
 } from "../../src/plugins/resource/spfx/utils/questions";
 import * as spfxCode from "../../src/component/code/spfxTabCode";
+import { DefaultManifestProvider } from "../../src/component/resource/appManifest/manifestProvider";
 
 describe("Workflow test for v3", () => {
   const sandbox = sinon.createSandbox();
@@ -95,7 +96,8 @@ describe("Workflow test for v3", () => {
     sandbox.stub(fs, "rename").resolves();
     sandbox.stub(fs, "copyFile").resolves();
     sandbox.stub(versionCheckQuestion as FuncQuestion, "func").resolves(undefined);
-    // sandbox.stub(spfxCode, "scaffoldSPFx").resolves(ok(undefined));
+    sinon.stub(DefaultManifestProvider.prototype, "updateCapability").resolves(ok(Void));
+
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.CLI,

@@ -95,10 +95,10 @@ export class TeamsBot {
     }
     const configActions: Action[] = [
       {
-        name: `call:${inputs.hosting}.generateBicep`,
+        name: `call:${inputs.hosting}-config.generateBicep`,
         type: "call",
         required: true,
-        targetAction: `${inputs.hosting}.generateBicep`,
+        targetAction: `${inputs.hosting}-config.generateBicep`,
         inputs: {
           componentId: this.name,
           componentName: "Bot",
@@ -107,10 +107,10 @@ export class TeamsBot {
     ];
     if (getComponent(context.projectSetting, ComponentNames.APIM) !== undefined) {
       configActions.push({
-        name: "call:apim.generateBicep",
+        name: "call:apim-config.generateBicep",
         type: "call",
         required: true,
-        targetAction: "apim.generateBicep",
+        targetAction: "apim-config.generateBicep",
       });
     }
     const actions: Action[] = [

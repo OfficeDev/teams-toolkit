@@ -35,10 +35,10 @@ export class TeamsTab {
       getComponent(context.projectSetting, ComponentNames.APIM) !== undefined
         ? [
             {
-              name: "call:apim.generateBicep",
+              name: "call:apim-config.generateBicep",
               type: "call",
               required: true,
-              targetAction: "apim.generateBicep",
+              targetAction: "apim-config.generateBicep",
             },
           ]
         : [];

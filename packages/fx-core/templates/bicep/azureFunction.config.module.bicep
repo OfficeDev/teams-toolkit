@@ -4,6 +4,8 @@
 param provisionParameters object
 param provisionOutputs object
 @secure()
+param currentConfigs object
+@secure()
 param currentAppSettings object
 
 var functionAppName = split({{azure-function.outputs.resourceId}}, '/')[8]

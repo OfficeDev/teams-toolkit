@@ -446,7 +446,75 @@ export class VsCodeUI implements UserInteraction {
   }
 
   async selectFolder(config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> {
-    return this.selectFileInQuickPick(config, "folder", config.default);
+    // return this.selectFileInQuickPick(config, "folder", config.default);
+    const disposables: Disposable[] = [];
+    try {
+      const quickPick = window.createQuickPick<FxQuickPickItem>();
+      quickPick.title = config.title;
+      if (config.step && config.step > 1) {
+        quickPick.buttons = [QuickInputButtons.Back];
+      }
+      quickPick.placeholder = config.placeholder;
+      quickPick.ignoreFocusOut = true;
+      quickPick.matchOnDescription = true;
+      quickPick.matchOnDetail = true;
+      quickPick.canSelectMany = false;
+      return await new Promise<Result<SelectFolderResult, FxError>>(
+        async (resolve): Promise<void> => {
+          // set items
+          quickPick.items = [
+            {
+              id: "default",
+              label: "Default folder",
+              description: config.default,
+            },
+            {
+              id: "browse",
+              label: "$(folder) Browse...",
+            },
+          ];
+
+          const onDidAccept = async () => {
+            const selectedItems = quickPick.selectedItems;
+            if (selectedItems && selectedItems.length > 0) {
+              const item = selectedItems[0];
+              if (item.id === "default") {
+                resolve(ok({ type: "success", result: config.default }));
+              } else {
+                const uriList: Uri[] | undefined = await window.showOpenDialog({
+                  defaultUri: config.default ? Uri.file(config.default) : undefined,
+                  canSelectFiles: false,
+                  canSelectFolders: true,
+                  canSelectMany: false,
+                  title: config.title,
+                });
+                if (uriList && uriList.length > 0) {
+                  const result = uriList[0].fsPath;
+                  resolve(ok({ type: "success", result: result }));
+                }
+              }
+            }
+          };
+
+          disposables.push(
+            quickPick.onDidAccept(onDidAccept),
+            quickPick.onDidHide(() => {
+              resolve(err(UserCancelError));
+            }),
+            quickPick.onDidTriggerButton((button) => {
+              if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
+            })
+          );
+
+          disposables.push(quickPick);
+          quickPick.show();
+        }
+      );
+    } finally {
+      disposables.forEach((d) => {
+        d.dispose();
+      });
+    }
   }
 
   async selectFile(config: SelectFileConfig): Promise<Result<SelectFileResult, FxError>> {

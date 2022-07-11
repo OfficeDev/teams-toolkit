@@ -17,6 +17,7 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import * as os from "os";
 import { environmentManager } from "./environment";
+import { ConstantString } from "../common/constants";
 import { sampleProvider } from "../common/samples";
 import { isAadManifestEnabled, isExistingTabAppEnabled, isM365AppEnabled } from "../common/tools";
 import { isBotNotificationEnabled, isPreviewFeaturesEnabled } from "../common/featureFlags";
@@ -125,6 +126,7 @@ export const QuestionRootFolder: FolderQuestion = {
   type: "folder",
   name: CoreQuestionNames.Folder,
   title: "Workspace folder",
+  default: path.join(os.homedir(), ConstantString.RootFolder),
 };
 
 export const ProgrammingLanguageQuestionForDotNet: SingleSelectQuestion = {

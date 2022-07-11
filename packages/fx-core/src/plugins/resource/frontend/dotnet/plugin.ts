@@ -311,14 +311,13 @@ export class DotnetPluginImpl implements PluginImpl {
     );
     const projectPath = path.dirname(projectFilePath);
 
-    const framework = await Deploy.getFrameworkVersion(projectFilePath);
     const runtime = PluginInfo.defaultRuntime;
 
     const client = AzureClientFactory.getWebSiteManagementClient(credential, subscriptionId);
 
     await Deploy.build(projectPath, runtime);
 
-    const folderToBeZipped = PathInfo.publishFolderPath(projectPath, framework, runtime);
+    const folderToBeZipped = PathInfo.publishFolderPath(projectPath);
     await Deploy.zipDeploy(client, resourceGroupName, webAppName, folderToBeZipped);
 
     await ProgressHelper.endProgress(true);

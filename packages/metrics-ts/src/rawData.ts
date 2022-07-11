@@ -2,7 +2,6 @@ export interface tracePoint {
   traceId: string;
   //pspanId: number;
   //spanId: number;
-  dir: string;
   file: string;
   class: string;
   timestamp: number;

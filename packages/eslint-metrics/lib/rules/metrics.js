@@ -68,7 +68,8 @@ module.exports = {
             context.report({
               node,
               message: "auto add timer",
-              fix: (fixer) => fixer.insertTextBefore(node, "@timer()\n"),
+              fix: (fixer) =>
+                fixer.insertTextBefore(node, "@timer(__filename)\n"),
             });
           }
         },

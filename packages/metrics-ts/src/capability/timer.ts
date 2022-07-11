@@ -6,19 +6,20 @@ import { timerData, tracePoint } from "../rawData";
 import { traceId } from "../tracing";
 import { appendOutput, appendOutputSync } from "../writer";
 
-export const timer = () => {
+export const timer = (fn: string) => {
   /* eslint-disable  @typescript-eslint/no-explicit-any */
   /* eslint-disable  @typescript-eslint/explicit-module-boundary-types */
+  console.log(`fn is ${fn}`);
   return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
 
+    console.log(`__file is ${__filename}`);
     /**
      * get essential properties
      */
     const data: tracePoint = {
       traceId: traceId(),
-      dir: __dirname,
-      file: __filename,
+      file: fn,
       class: target.constructor.name,
       method: originalMethod.name,
       timestamp: Date.now(),
@@ -28,6 +29,7 @@ export const timer = () => {
       descriptor.value = async function (...args: any[]) {
         data.args = args;
 
+        console.log(`async desc __file is ${__filename}`);
         const start = performance.now();
         const result = await originalMethod.apply(this, args);
         const end = performance.now();
@@ -43,6 +45,7 @@ export const timer = () => {
       descriptor.value = function (...args: any[]) {
         data.args = args;
 
+        console.log(`sync desc __file is ${__filename}`);
         const start = performance.now();
         const result = originalMethod.apply(this, args);
         const end = performance.now();

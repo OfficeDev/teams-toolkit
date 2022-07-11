@@ -154,13 +154,13 @@ async function buildFrontendConfig(
     return err(new UnauthenticatedError());
   }
   const storage = envInfo.state[componentName];
-  const resourceId = storage?.resourceId;
+  const resourceId = storage?.storageResourceId;
   if (!resourceId) {
     return err(
       new UserError({
         source: "azure-storage",
         name: "StateValueMissingError",
-        message: "Missing resourceIf for storage",
+        message: "Missing resourceId for storage",
       })
     );
   }

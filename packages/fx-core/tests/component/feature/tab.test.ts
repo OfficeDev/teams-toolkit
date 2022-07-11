@@ -1,8 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { InputsWithProjectPath, ok, Platform, ProjectSettingsV3 } from "@microsoft/teamsfx-api";
+import {
+  InputsWithProjectPath,
+  ok,
+  Platform,
+  ProjectSettingsV3,
+  TeamsAppManifest,
+} from "@microsoft/teamsfx-api";
 import * as templatesAction from "../../../src/common/template-utils/templatesActions";
+import * as manifestUtils from "../../../src/component/resource/appManifest/utils";
 import { assert } from "chai";
 import "mocha";
 import * as os from "os";
@@ -17,6 +24,7 @@ import "../../../src/component/feature/bot";
 import "../../../src/component/core";
 import { environmentManager } from "../../../src/core/environment";
 import { ComponentNames } from "../../../src/component/constants";
+import { Component } from "../../../src/common/telemetry";
 describe("Tab Feature", () => {
   const sandbox = createSandbox();
   const tools = new MockTools();
@@ -30,10 +38,13 @@ describe("Tab Feature", () => {
     programmingLanguage: "typescript",
     components: [],
   };
+  context.projectSetting = projectSetting;
+  const manifest = {} as TeamsAppManifest;
   beforeEach(() => {
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
-    sandbox.stub(templatesAction, "scaffoldFromTemplates").resolves();
-    sandbox.stub(fs, "readJson").resolves(projectSetting);
+    sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
+    sandbox.stub(manifestUtils, "writeAppManifest").resolves();
+    sandbox.stub(fs, "readJson").resolves(context.projectSetting);
     sandbox.stub(fs, "writeJSON").resolves();
     sandbox.stub(fs, "writeJson").resolves();
     sandbox.stub(fs, "pathExists").resolves(true);
@@ -46,7 +57,6 @@ describe("Tab Feature", () => {
     sandbox.stub(fs, "appendFileSync").returns();
     sandbox.stub(fs, "writeFileSync").returns();
     sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev"]));
-    sandbox.stub(utils, "persistBicep").resolves();
   });
 
   afterEach(() => {
@@ -54,6 +64,9 @@ describe("Tab Feature", () => {
   });
 
   it("add react tab", async () => {
+    sandbox.stub(templatesAction, "scaffoldFromTemplates").resolves();
+    sandbox.stub(utils, "persistBicep").resolves();
+
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
@@ -75,5 +88,30 @@ describe("Tab Feature", () => {
     const storage = getComponent(context.projectSetting, ComponentNames.AzureStorage);
     assert.exists(storage);
     assert.deepEqual(storage?.connections, [ComponentNames.TeamsTab]);
+  });
+
+  it("add react tab twice", async () => {
+    sandbox.stub(templatesAction, "scaffoldFromTemplates").rejects();
+    sandbox.stub(utils, "persistBicep").rejects();
+
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+      language: "typescript",
+      "app-name": appName,
+    };
+    const addTabRes = await runAction(`${ComponentNames.TeamsTab}.add`, context, inputs);
+    if (addTabRes.isErr()) {
+      console.log(addTabRes.error);
+    }
+    assert.isTrue(addTabRes.isOk());
+    const teamsTab = context.projectSetting.components.filter(
+      (component) => component.name === ComponentNames.TeamsTab
+    );
+    assert.equal(teamsTab.length, 1);
+    const storage = context.projectSetting.components.filter(
+      (component) => component.name === ComponentNames.AzureStorage
+    );
+    assert.equal(storage.length, 1);
   });
 });

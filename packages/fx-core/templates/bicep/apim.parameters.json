@@ -1,0 +1,6 @@
+{
+  "apimClientId": "{{state.apim.apimClientAADClientId}}",
+  "apimClientSecret": "{{state.apim.apimClientAADClientSecret}}",
+  "apimPublisherEmail": "{{state.apim.publisherEmail}}",
+  "apimPublisherName": "{{state.apim.publisherName}}"
+}

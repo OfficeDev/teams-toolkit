@@ -30,12 +30,7 @@ export class DotnetPluginInfo {
 }
 
 export class DotnetPathInfo {
-  static readonly publishFolderPath = (
-    workingPath: string,
-    framework = DotnetPluginInfo.defaultFramework,
-    runtime = DotnetPluginInfo.defaultRuntime
-  ): string => path.join(workingPath, "bin", "Release", framework, runtime, "publish");
-
+  static readonly publishFolderPath = (workingPath: string) => path.join(workingPath, "publish");
   static readonly bicepTemplateFolder = (templateFolder: string) =>
     path.join(templateFolder, "plugins", "resource", "webapp", "bicep");
   static readonly projectFilename = (projectName: string): string => `${projectName}.csproj`;
@@ -48,7 +43,7 @@ export class DotnetPathInfo {
 
 export class DotnetCommands {
   static readonly buildRelease = (runtime: string) =>
-    `dotnet publish --configuration Release --runtime ${runtime} --self-contained`;
+    `dotnet publish --output publish --configuration Release --runtime ${runtime} --self-contained`;
 }
 
 export class DependentPluginInfo {

@@ -34,6 +34,7 @@ import "../resource/appManifest/appManifest";
 import "../resource/botService";
 import "../resource/azureAppService/azureWebApp";
 import "../connection/azureWebAppConfig";
+import { ComponentNames } from "../constants";
 @Service("teams-bot")
 export class TeamsBot {
   name = "teams-bot";
@@ -136,6 +137,10 @@ export class TeamsBot {
             remarks.push(
               `connect 'azure-sql' to hosting component '${inputs.hosting}' in projectSettings`
             );
+          }
+          const apimConfig = getComponent(projectSettings, ComponentNames.APIM);
+          if (apimConfig) {
+            apimConfig.connections?.push("teams-bot");
           }
           projectSettings.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
           return ok([

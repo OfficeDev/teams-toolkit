@@ -7,7 +7,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import { cloneDeep } from "lodash";
 import { isVSProject } from "../common/projectSettingsHelper";
-import plugin from "../plugins/resource/bot/v2/plugin";
 import { ComponentNames } from "./constants";
 import { getComponent } from "./workflow";
 

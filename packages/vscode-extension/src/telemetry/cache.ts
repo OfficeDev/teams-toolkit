@@ -68,7 +68,9 @@ export class TelemetryCache {
     this.timeout = undefined;
   }
 
-  public async persistUnsentEventsToDiskAsync(deactivateEvent: TelemetryEventCache): Promise<void> {
+  public async persistUncertainEventsToDiskAsync(
+    deactivateEvent: TelemetryEventCache
+  ): Promise<void> {
     const events: TelemetryEventCache[] = [];
     const now = new Date();
     for (let i = 0; i < CacheSize; i += 1) {

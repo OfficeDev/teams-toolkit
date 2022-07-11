@@ -187,7 +187,8 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
         [TelemetryProperty.ProjectId]: getProjectId() || "",
       },
     };
-    await this.cache.persistUnsentEventsToDiskAsync(deactivateEvent);
+    this.cache.sendEventsInCache();
+    await this.cache.persistUncertainEventsToDiskAsync(deactivateEvent);
     await this.reporter.dispose();
   }
 

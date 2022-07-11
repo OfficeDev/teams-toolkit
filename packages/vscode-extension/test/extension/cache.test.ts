@@ -47,7 +47,7 @@ describe("Telemetry Cache", () => {
     sinon.restore();
   });
 
-  it("persistUnsentEventsToDiskAsync", async () => {
+  it("persistUncertainEventsToDiskAsync", async () => {
     const mockReporter = sinon.createStubInstance(TelemetryReporter);
     const cache = new TelemetryCache(mockReporter);
     let state = "";
@@ -87,7 +87,7 @@ describe("Telemetry Cache", () => {
     });
     const expectedValue = JSON.stringify(telemetryEvents);
 
-    await cache.persistUnsentEventsToDiskAsync({
+    await cache.persistUncertainEventsToDiskAsync({
       type: "normal",
       eventName: "deactivate",
       occurTime: time,

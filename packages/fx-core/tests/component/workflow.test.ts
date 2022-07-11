@@ -67,7 +67,6 @@ describe("Workflow test for v3", () => {
     assert.isTrue(res.isOk());
     assert.equal(context.projectSetting!.appName, appName);
     assert.deepEqual(context.projectSetting.components, []);
-    assert.isTrue(fs.pathExistsSync(getProjectSettingsPath(inputs.projectPath)));
   });
 
   it("teams-bot.add", async () => {
@@ -230,7 +229,7 @@ describe("Workflow test for v3", () => {
       },
       "teams-tab": {
         location: "centreus",
-        resourceId:
+        storageResourceId:
           "/subscriptions/mockSid/resourceGroups/jay-texas/providers/Microsoft.Storage/storageAccounts/testaccount",
         endpoint: "https://testaccount.azurewebsites.net",
       },

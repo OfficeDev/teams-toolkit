@@ -143,7 +143,7 @@ describe("Workflow test for v3", () => {
     sandbox.stub(provisionV3, "fillInAzureConfigs").resolves(ok(Void));
     sandbox.stub(provisionV3, "askForProvisionConsent").resolves(ok(Void));
     sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
-    sandbox.stub(AppStudioClient, "createApp").resolves({ teamsAppId: "mockTeamsAppId" });
+    sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
     sandbox.stub(AppStudioClient, "updateApp").resolves({ teamsAppId: "mockTeamsAppId" });
     sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
     sandbox.stub(clientFactory, "ensureResourceProvider").resolves();

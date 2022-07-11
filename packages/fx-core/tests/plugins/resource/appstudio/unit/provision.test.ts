@@ -62,7 +62,7 @@ describe("Provision Teams app with Azure", () => {
       },
     };
 
-    sandbox.stub(AppStudioClient, "createApp").resolves(appDef);
+    sandbox.stub(AppStudioClient, "importApp").resolves(appDef);
 
     const teamsAppId = await plugin.provision(ctx);
     chai.assert.isTrue(teamsAppId.isOk());

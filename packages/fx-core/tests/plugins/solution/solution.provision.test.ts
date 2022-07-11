@@ -473,7 +473,7 @@ describe("provision() happy path for SPFx projects", () => {
         `./tests/plugins/resource/appstudio/spfx-resources/${AppPackageFolderName}/${MANIFEST_TEMPLATE}`
       )
       .resolves(mockedManifest);
-    mocker.stub(AppStudioClient, "createApp").resolves(mockedAppDef);
+    mocker.stub(AppStudioClient, "importApp").resolves(mockedAppDef);
     mocker.stub(AppStudioClient, "updateApp").resolves(mockedAppDef);
     mocker.stub(manifestTemplate, "loadManifest").resolves(ok(new TeamsAppManifest()));
     mocker.stub(AppStudioPluginImpl.prototype, "buildTeamsAppPackage").resolves("");
@@ -529,7 +529,7 @@ function mockAzureProjectDeps(
     .stub<any, any>(fs, "readJson")
     .withArgs(`./.${ConfigFolderName}/${REMOTE_MANIFEST}`)
     .resolves(mockedManifest);
-  mocker.stub(AppStudioClient, "createApp").resolves(mockedAppDef);
+  mocker.stub(AppStudioClient, "importApp").resolves(mockedAppDef);
   mocker.stub(AppStudioClient, "updateApp").resolves(mockedAppDef);
   mocker.stub(solutionUtil, "getSubsriptionDisplayName").resolves(mockedSubscriptionName);
 }

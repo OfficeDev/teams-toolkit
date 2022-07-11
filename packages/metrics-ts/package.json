@@ -48,6 +48,9 @@
     "ttypescript": "^1.5.13",
     "typescript": "^4.3.5"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "lint-staged": {
     "*.{js,jsx,css,ts,tsx}": [
       "npx eslint --cache --fix --quiet"

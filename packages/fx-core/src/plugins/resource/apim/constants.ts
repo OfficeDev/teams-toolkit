@@ -4,6 +4,7 @@
 import path from "path";
 import { IName } from "./interfaces/IName";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { ComponentNames } from "../../../component/constants";
 
 export class ProjectConstants {
   public static readonly pluginShortName: string = "APIM";
@@ -205,6 +206,13 @@ export enum TeamsToolkitComponent {
   ApimPlugin = "fx-resource-apim",
 }
 
+export enum TeamsToolkitComponentV3 {
+  FunctionPlugin = "azure-function",
+  AadPlugin = "aad-app",
+  Solution = "solution",
+  ApimPlugin = "apim",
+}
+
 export const RetryOperation = Object.freeze({
   Create: getLocalizedString("plugins.apim.RetryOperation.Create"),
   Update: getLocalizedString("plugins.apim.RetryOperation.Update"),
@@ -216,21 +224,34 @@ export const RetryOperation = Object.freeze({
 export type RetryOperation = typeof RetryOperation[keyof typeof RetryOperation];
 
 export const ComponentRetryOperations: {
-  [key in TeamsToolkitComponent]: RetryOperation;
+  [key in TeamsToolkitComponent | TeamsToolkitComponentV3]: RetryOperation;
 } = Object.freeze({
   [TeamsToolkitComponent.FunctionPlugin]: RetryOperation.Update,
   [TeamsToolkitComponent.AadPlugin]: RetryOperation.Create,
   [TeamsToolkitComponent.Solution]: RetryOperation.Create,
   [TeamsToolkitComponent.ApimPlugin]: RetryOperation.Update,
+  [TeamsToolkitComponentV3.FunctionPlugin]: RetryOperation.Update,
+  [TeamsToolkitComponentV3.AadPlugin]: RetryOperation.Create,
+  [TeamsToolkitComponentV3.Solution]: RetryOperation.Create,
+  [TeamsToolkitComponentV3.ApimPlugin]: RetryOperation.Update,
 });
 
 export const ConfigRetryOperations: {
-  [key in TeamsToolkitComponent]: { [key: string]: RetryOperation };
+  [key in TeamsToolkitComponent | TeamsToolkitComponentV3]: { [key: string]: RetryOperation };
 } = {
   [TeamsToolkitComponent.FunctionPlugin]: {
     [FunctionPluginConfigKeys.functionEndpoint]: RetryOperation.Provision,
   },
+  [TeamsToolkitComponentV3.FunctionPlugin]: {
+    [FunctionPluginConfigKeys.functionEndpoint]: RetryOperation.Provision,
+  },
   [TeamsToolkitComponent.AadPlugin]: {
+    [AadPluginConfigKeys.objectId]: RetryOperation.Provision,
+    [AadPluginConfigKeys.clientId]: RetryOperation.Provision,
+    [AadPluginConfigKeys.oauth2PermissionScopeId]: RetryOperation.Provision,
+    [AadPluginConfigKeys.applicationIdUris]: RetryOperation.Provision,
+  },
+  [TeamsToolkitComponentV3.AadPlugin]: {
     [AadPluginConfigKeys.objectId]: RetryOperation.Provision,
     [AadPluginConfigKeys.clientId]: RetryOperation.Provision,
     [AadPluginConfigKeys.oauth2PermissionScopeId]: RetryOperation.Provision,
@@ -243,6 +264,20 @@ export const ConfigRetryOperations: {
     [SolutionConfigKeys.location]: RetryOperation.Provision,
   },
   [TeamsToolkitComponent.ApimPlugin]: {
+    [ApimPluginConfigKeys.apimClientAADObjectId]: RetryOperation.Provision,
+    [ApimPluginConfigKeys.apimClientAADClientId]: RetryOperation.Provision,
+    [ApimPluginConfigKeys.apimClientAADClientSecret]: RetryOperation.Provision,
+    [ApimPluginConfigKeys.serviceResourceId]: RetryOperation.Provision,
+    [ApimPluginConfigKeys.productResourceId]: RetryOperation.Provision,
+    [ApimPluginConfigKeys.authServerResourceId]: RetryOperation.Provision,
+    [ApimPluginConfigKeys.publisherEmail]: RetryOperation.Provision,
+    [ApimPluginConfigKeys.publisherName]: RetryOperation.Provision,
+    [ApimPluginConfigKeys.apiPrefix]: RetryOperation.Deploy,
+    [ApimPluginConfigKeys.versionSetId]: RetryOperation.Deploy,
+    [ApimPluginConfigKeys.apiPath]: RetryOperation.Deploy,
+    [ApimPluginConfigKeys.apiDocumentPath]: RetryOperation.Deploy,
+  },
+  [TeamsToolkitComponentV3.ApimPlugin]: {
     [ApimPluginConfigKeys.apimClientAADObjectId]: RetryOperation.Provision,
     [ApimPluginConfigKeys.apimClientAADClientId]: RetryOperation.Provision,
     [ApimPluginConfigKeys.apimClientAADClientSecret]: RetryOperation.Provision,

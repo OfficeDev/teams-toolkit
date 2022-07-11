@@ -31,6 +31,17 @@ export class TeamsTab {
       (inputs?.["programming-language"] === "csharp"
         ? ComponentNames.AzureWebApp
         : ComponentNames.AzureStorage);
+    const configActions: Action[] =
+      getComponent(context.projectSetting, ComponentNames.APIM) !== undefined
+        ? [
+            {
+              name: "call:apim.generateBicep",
+              type: "call",
+              required: true,
+              targetAction: "apim.generateBicep",
+            },
+          ]
+        : [];
     const actions: Action[] = [
       LoadProjectSettingsAction,
       {
@@ -81,6 +92,7 @@ export class TeamsTab {
           componentName: "Tab",
         },
       },
+      ...configActions,
       {
         name: "call:app-manifest.addCapability",
         type: "call",

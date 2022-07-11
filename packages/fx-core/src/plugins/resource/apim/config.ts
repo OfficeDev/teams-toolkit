@@ -8,6 +8,7 @@ import {
   ReadonlySolutionConfig,
   v3,
 } from "@microsoft/teamsfx-api";
+import { isV3 } from "../../../core";
 import {
   TeamsToolkitComponent,
   SolutionConfigKeys,
@@ -17,6 +18,7 @@ import {
   ProjectConstants,
   ConfigRetryOperations,
   ComponentRetryOperations,
+  TeamsToolkitComponentV3,
 } from "./constants";
 import {
   AssertConfigNotEmpty,
@@ -69,11 +71,8 @@ export class ApimPluginConfig implements IApimPluginConfig {
   private readonly envName: string;
   constructor(config: PluginConfig | Json, envName: string) {
     if (!config) {
-      throw BuildError(
-        NoPluginConfig,
-        TeamsToolkitComponent.ApimPlugin,
-        ComponentRetryOperations[TeamsToolkitComponent.ApimPlugin]
-      );
+      const cname = isV3() ? TeamsToolkitComponentV3.AadPlugin : TeamsToolkitComponent.ApimPlugin;
+      throw BuildError(NoPluginConfig, cname, ComponentRetryOperations[cname]);
     }
     this.config = config;
     this.envName = envName;
@@ -164,7 +163,12 @@ export class ApimPluginConfig implements IApimPluginConfig {
     if (namingRule && value) {
       const message = NamingRules.validate(value, namingRule);
       if (message) {
-        throw BuildError(InvalidConfigValue, TeamsToolkitComponent.ApimPlugin, key, message);
+        throw BuildError(
+          InvalidConfigValue,
+          isV3() ? TeamsToolkitComponentV3.ApimPlugin : TeamsToolkitComponent.ApimPlugin,
+          key,
+          message
+        );
       }
     }
     return value;
@@ -176,7 +180,7 @@ export class ApimPluginConfig implements IApimPluginConfig {
 
   public checkAndGet(key: string): string {
     const value = AssertConfigNotEmpty(
-      TeamsToolkitComponent.ApimPlugin,
+      isV3() ? TeamsToolkitComponentV3.ApimPlugin : TeamsToolkitComponent.ApimPlugin,
       key,
       this.getValue(key),
       this.envName
@@ -200,7 +204,7 @@ export class FunctionPluginConfig implements IFunctionPluginConfig {
   private checkAndGet(key: string): string {
     return checkAndGetOtherPluginConfig(
       this.configOfOtherPlugins,
-      TeamsToolkitComponent.FunctionPlugin,
+      isV3() ? TeamsToolkitComponentV3.FunctionPlugin : TeamsToolkitComponent.FunctionPlugin,
       key,
       this.envName
     );
@@ -231,7 +235,7 @@ export class AadPluginConfig implements IAadPluginConfig {
   private checkAndGet(key: string): string {
     return checkAndGetOtherPluginConfig(
       this.configOfOtherPlugins,
-      TeamsToolkitComponent.AadPlugin,
+      isV3() ? TeamsToolkitComponentV3.AadPlugin : TeamsToolkitComponent.AadPlugin,
       key,
       this.envName
     );
@@ -273,7 +277,7 @@ export class SolutionConfig implements ISolutionConfig {
 
 function checkAndGetOtherPluginConfig(
   configOfOtherPlugins: ReadonlySolutionConfig | v3.ResourceStates,
-  component: TeamsToolkitComponent,
+  component: TeamsToolkitComponent | TeamsToolkitComponentV3,
   key: string,
   envName: string
 ): string {

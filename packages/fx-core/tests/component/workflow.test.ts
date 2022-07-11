@@ -120,7 +120,17 @@ describe("Workflow test for v3", () => {
     }
     assert.isTrue(res.isOk());
   });
-
+  it("apim-feature.add", async () => {
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+    };
+    const res = await runAction("apim-feature.add", context, inputs);
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    assert.isTrue(res.isOk());
+  });
   it("fx.provision", async () => {
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));

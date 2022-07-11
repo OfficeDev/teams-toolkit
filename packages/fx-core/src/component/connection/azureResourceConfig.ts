@@ -62,7 +62,7 @@ export abstract class AzureResourceConfig {
             }
           } catch (e) {}
         }
-        this.templateContext.componentName = inputs.componentName;
+        this.templateContext.componentName = inputs.componentName || "";
         const modulePath = path.join(
           getTemplatesFolder(),
           "bicep",
@@ -90,7 +90,7 @@ export abstract class AzureResourceConfig {
               await fs.readFile(orchPath, "utf-8"),
               this.templateContext
             );
-        const moduleName = this.bicepModuleName + inputs.componentName ?? "";
+        const moduleName = this.bicepModuleName + (inputs.componentName || "");
         const bicep: Bicep = {
           type: "bicep",
           Configuration: {

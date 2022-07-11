@@ -39,6 +39,6 @@ resource sqlFirewallRules 'Microsoft.Sql/servers/firewallRules@2021-05-01-previe
   }
 }
 
-output resourceId string = sqlServer.id
+output sqlResourceId string = sqlServer.id
 output sqlEndpoint string = sqlServer.properties.fullyQualifiedDomainName
 output sqlDatabaseName string = sqlDatabaseName

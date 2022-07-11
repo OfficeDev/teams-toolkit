@@ -339,7 +339,7 @@ export class FxCore implements v3.ICore {
     return result;
   }
 
-  @hooks([ErrorHandlerMW, QuestionModelMW_V3, ContextInjectorMW])
+  @hooks([ErrorHandlerMW, QuestionModelMW_V3, ContextInjectorMW, ProjectSettingsWriterMW])
   async createProjectV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     if (!ctx) {
       return err(new ObjectIsUndefinedError("ctx for createProject"));
@@ -394,6 +394,7 @@ export class FxCore implements v3.ICore {
         const res = await runAction("spfx-tab.add", context, inputs as InputsWithProjectPath);
         if (res.isErr()) return err(res.error);
       }
+      ctx.projectSettings = context.projectSetting;
     }
     if (inputs.platform === Platform.VSCode) {
       await globalStateUpdate(automaticNpmInstall, true);
@@ -468,6 +469,7 @@ export class FxCore implements v3.ICore {
     const res = await runAction("fx.provision", context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
+    ctx!.envInfoV3 = context.envInfo;
     return ok(Void);
   }
 

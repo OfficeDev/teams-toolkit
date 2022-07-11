@@ -53,7 +53,6 @@ import "./connection/azureWebAppConfig";
 import "./connection/azureFunctionConfig";
 import "./connection/apimConfig";
 
-import { WriteProjectSettingsAction } from "./projectSettingsManager";
 import { ComponentNames } from "./constants";
 import { getLocalizedString } from "../common/localizeUtils";
 import { getResourceGroupInPortal } from "../common/tools";
@@ -124,7 +123,6 @@ export class TeamsfxCore {
           targetAction: "env-manager.create",
           required: true,
         },
-        WriteProjectSettingsAction,
       ],
     };
     return ok(action);

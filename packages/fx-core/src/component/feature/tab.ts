@@ -17,7 +17,6 @@ import "reflect-metadata";
 import { Service } from "typedi";
 import { CoreQuestionNames } from "../../core/question";
 import { ComponentNames } from "../constants";
-import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "../projectSettingsManager";
 import { getComponent } from "../workflow";
 @Service("teams-tab")
 export class TeamsTab {
@@ -43,7 +42,6 @@ export class TeamsTab {
           ]
         : [];
     const actions: Action[] = [
-      LoadProjectSettingsAction,
       {
         name: "fx.configTab",
         type: "function",
@@ -109,7 +107,6 @@ export class TeamsTab {
         required: true,
         targetAction: "debug.generateLocalDebugSettings",
       },
-      WriteProjectSettingsAction,
     ];
     const group: GroupAction = {
       type: "group",

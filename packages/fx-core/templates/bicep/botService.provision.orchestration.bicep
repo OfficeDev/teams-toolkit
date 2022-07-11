@@ -3,6 +3,6 @@ module botProvision './provision/botService.bicep' = {
   name: 'botProvision'
   params: {
     provisionParameters: provisionParameters
-    botEndpoint: {{endpointVarName}}
+    botEndpoint: ${{{endpointVarName}}}
   }
 }

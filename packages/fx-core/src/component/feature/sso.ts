@@ -19,7 +19,6 @@ import "../connection/azureWebAppConfig";
 import "../resource/azureSql";
 import "../resource/identity";
 import { ComponentNames } from "../constants";
-import { LoadProjectSettingsAction } from "../projectSettingsManager";
 import { getHostingComponent } from "../utils";
 
 @Service("sso")
@@ -61,7 +60,6 @@ export class SSO {
     }
 
     const actions: Action[] = [
-      LoadProjectSettingsAction,
       {
         name: "SSO.configSSO",
         type: "function",

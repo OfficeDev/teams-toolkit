@@ -192,15 +192,11 @@ export class BotService extends AzureResource {
           CheckThrowSomethingMissing(ConfigNames.LOCAL_ENDPOINT, teamsBotState.endpoint);
           CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
           CheckThrowSomethingMissing(ConfigNames.LOCAL_BOT_ID, teamsBotState.botId);
-          const botReg: IBotRegistration = {
-            botId: teamsBotState.botId,
-            name: normalizeName(ctx.projectSetting.appName) + PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
-            description: "",
-            iconUrl: "",
-            messagingEndpoint: `${teamsBotState.endpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`,
-            callingEndpoint: "",
-          };
-          await AppStudio.updateMessageEndpoint(appStudioToken!, botReg.botId!, botReg);
+          await AppStudio.updateMessageEndpoint(
+            appStudioToken!,
+            teamsBotState.botId,
+            `${teamsBotState.endpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`
+          );
         }
         return ok(plans);
       },

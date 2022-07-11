@@ -18,6 +18,7 @@ import { Service } from "typedi";
 import { CoreQuestionNames } from "../../core/question";
 import { ComponentNames } from "../constants";
 import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "../projectSettingsManager";
+import { getComponent } from "../workflow";
 @Service("teams-tab")
 export class TeamsTab {
   name = "teams-tab";
@@ -30,6 +31,17 @@ export class TeamsTab {
       (inputs?.["programming-language"] === "csharp"
         ? ComponentNames.AzureWebApp
         : ComponentNames.AzureStorage);
+    const configActions: Action[] =
+      getComponent(context.projectSetting, ComponentNames.APIM) !== undefined
+        ? [
+            {
+              name: "call:apim-config.generateBicep",
+              type: "call",
+              required: true,
+              targetAction: "apim-config.generateBicep",
+            },
+          ]
+        : [];
     const actions: Action[] = [
       LoadProjectSettingsAction,
       {
@@ -51,6 +63,10 @@ export class TeamsTab {
             connections: ["teams-tab"],
             provision: true,
           });
+          const apimConfig = getComponent(projectSettings, ComponentNames.APIM);
+          if (apimConfig) {
+            apimConfig.connections?.push("teams-tab");
+          }
           projectSettings.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
           return ok(["config 'teams-tab' in projectSettings"]);
         },
@@ -76,6 +92,7 @@ export class TeamsTab {
           componentName: "Tab",
         },
       },
+      ...configActions,
       {
         name: "call:app-manifest.addCapability",
         type: "call",

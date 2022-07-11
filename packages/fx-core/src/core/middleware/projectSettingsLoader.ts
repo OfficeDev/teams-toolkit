@@ -42,6 +42,7 @@ import {
 import { globalVars, isV3 } from "../globalVars";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 import { CoreHookContext } from "../types";
+import { convertProjectSettingsV2ToV3 } from "../../component/migrate";
 
 export const ProjectSettingsLoaderMW: Middleware = async (
   ctx: CoreHookContext,
@@ -64,14 +65,14 @@ export const ProjectSettingsLoaderMW: Middleware = async (
       return;
     }
 
-    const projectSettings = loadRes.value;
+    let projectSettings = loadRes.value;
 
     const validRes = validateProjectSettings(projectSettings);
     if (validRes) {
       ctx.result = err(new InvalidProjectSettingsFileError(validRes));
       return;
     }
-
+    if (isV3()) projectSettings = convertProjectSettingsV2ToV3(projectSettings);
     ctx.projectSettings = projectSettings;
     (ctx.self as any).isFromSample = projectSettings.isFromSample === true;
     (ctx.self as any).settingsVersion = projectSettings.version;

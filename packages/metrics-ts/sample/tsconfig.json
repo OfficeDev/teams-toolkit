@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "module": "CommonJS",
+    "target": "es2017",
+    "outDir": "build",
+    "lib": ["es6", "dom.iterable", "dom"],
+    "allowJs": true,
+    "importHelpers": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": true,
+    "declarationMap": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "jsx": "react",
+    "declaration": true,
+    "plugins": [{ "transform": "@microsoft/metrics-ts", "capabilities": ["timer"]}]
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "**/tests/*"]
+}

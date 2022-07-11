@@ -43,8 +43,8 @@ import { SubscriptionClient } from "@azure/arm-subscriptions";
 import { PluginDisplayName } from "../../../common/constants";
 import {
   CoreQuestionNames,
+  newResourceGroupNameQuestion,
   QuestionNewResourceGroupLocation,
-  QuestionNewResourceGroupName,
   QuestionSelectResourceGroup,
 } from "../../../core/question";
 import { getHashedEnv } from "../../../common/tools";
@@ -166,7 +166,8 @@ export async function checkM365Tenant(
 async function getQuestionsForResourceGroup(
   defaultResourceGroupName: string,
   existingResourceGroupNameLocations: [string, string][],
-  availableLocations: string[]
+  availableLocations: string[],
+  rmClient: ResourceManagementClient
 ) {
   const selectResourceGroup = QuestionSelectResourceGroup;
 
@@ -185,7 +186,7 @@ async function getQuestionsForResourceGroup(
 
   const node = new QTreeNode(selectResourceGroup);
 
-  const inputNewResourceGroupName = QuestionNewResourceGroupName;
+  const inputNewResourceGroupName = newResourceGroupNameQuestion(rmClient);
   inputNewResourceGroupName.default = defaultResourceGroupName;
   const newResourceGroupNameNode = new QTreeNode(inputNewResourceGroupName);
   newResourceGroupNameNode.condition = { equals: newResourceGroupOption };
@@ -237,7 +238,8 @@ export async function askResourceGroupInfo(
   const node = await getQuestionsForResourceGroup(
     defaultResourceGroupName,
     resourceGroupNameLocations,
-    locations.value!
+    locations.value!,
+    rmClient
   );
   if (node) {
     const res = await traverse(node, inputs, ui);

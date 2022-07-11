@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { InputsWithProjectPath, ok, Platform, Void } from "@microsoft/teamsfx-api";
+import { FuncQuestion, InputsWithProjectPath, ok, Platform, Void } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
@@ -25,6 +25,19 @@ import { TestHelper } from "../plugins/resource/frontend/helper";
 import arm from "../../src/plugins/solution/fx-solution/arm";
 import { FrontendDeployment } from "../../src/plugins/resource/frontend/ops/deploy";
 import { newEnvInfoV3 } from "../../src/core/environment";
+import { Utils } from "../../src/plugins/resource/spfx/utils/utils";
+import { YoChecker } from "../../src/plugins/resource/spfx/depsChecker/yoChecker";
+import { GeneratorChecker } from "../../src/plugins/resource/spfx/depsChecker/generatorChecker";
+import { cpUtils } from "../../src/plugins/solution/fx-solution/utils/depsChecker/cpUtils";
+import * as uuid from "uuid";
+import * as appManifest from "../../src/component/resource/appManifest/appManifest";
+import {
+  SPFXQuestionNames,
+  versionCheckQuestion,
+} from "../../src/plugins/resource/spfx/utils/questions";
+import * as spfxCode from "../../src/component/code/spfxTabCode";
+import { DefaultManifestProvider } from "../../src/component/resource/appManifest/manifestProvider";
+
 describe("Workflow test for v3", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -71,7 +84,33 @@ describe("Workflow test for v3", () => {
     }
     assert.isTrue(res.isOk());
   });
+  it("spfx-tab.add", async () => {
+    sandbox.stub(Utils, "configure");
+    sandbox.stub(fs, "stat").resolves();
+    sandbox.stub(YoChecker.prototype, "isInstalled").resolves(true);
+    sandbox.stub(GeneratorChecker.prototype, "isInstalled").resolves(true);
+    sandbox.stub(cpUtils, "executeCommand").resolves("succeed");
+    const manifestId = uuid.v4();
+    sandbox.stub(fs, "readFile").resolves(new Buffer(`{"id": "${manifestId}"}`));
+    sandbox.stub(fs, "writeFile").resolves();
+    sandbox.stub(fs, "rename").resolves();
+    sandbox.stub(fs, "copyFile").resolves();
+    sandbox.stub(versionCheckQuestion as FuncQuestion, "func").resolves(undefined);
+    sinon.stub(DefaultManifestProvider.prototype, "updateCapability").resolves(ok(Void));
 
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.CLI,
+      language: "typescript",
+      [SPFXQuestionNames.webpart_name]: "hello",
+      [SPFXQuestionNames.framework_type]: "none",
+    };
+    const res = await runAction("spfx-tab.add", context, inputs);
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    assert.isTrue(res.isOk());
+  });
   it("sql.add", async () => {
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
@@ -83,7 +122,17 @@ describe("Workflow test for v3", () => {
     }
     assert.isTrue(res.isOk());
   });
-
+  it("apim-feature.add", async () => {
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+    };
+    const res = await runAction("apim-feature.add", context, inputs);
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    assert.isTrue(res.isOk());
+  });
   it("fx.provision", async () => {
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));

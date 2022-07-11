@@ -41,21 +41,9 @@ export class TeamsTab {
   private addTabAction(context: ContextV3, inputs: InputsWithProjectPath): Action {
     const actions: Action[] = [];
     inputs.hosting = this.resolveHosting(inputs);
-    const configActions: Action[] =
-      getComponent(context.projectSetting, ComponentNames.APIM) !== undefined
-        ? [
-            {
-              name: "call:apim-config.generateBicep",
-              type: "call",
-              required: true,
-              targetAction: "apim-config.generateBicep",
-            },
-          ]
-        : [];
     this.setupConfiguration(actions, context);
     this.setupCode(actions, context);
     this.setupBicep(actions, context, inputs);
-    actions.concat(configActions);
     this.setupCapabilities(actions, context);
     if (this.hasTab(context)) {
       actions.push(showTabAlreadyAddMessage);
@@ -102,6 +90,18 @@ export class TeamsTab {
     if (this.hasTab(context)) {
       return actions;
     }
+    const configActions: Action[] =
+      getComponent(context.projectSetting, ComponentNames.APIM) !== undefined
+        ? [
+            {
+              name: "call:apim-config.generateBicep",
+              type: "call",
+              required: true,
+              targetAction: "apim-config.generateBicep",
+            },
+          ]
+        : [];
+
     actions.push(initBicep);
     actions.push(
       generateBicep(inputs.hosting, {
@@ -110,6 +110,7 @@ export class TeamsTab {
       })
     );
     // TODO: connect AAD for blazor web app
+    actions.push(...configActions);
     return actions;
   }
 

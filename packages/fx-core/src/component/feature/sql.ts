@@ -18,7 +18,6 @@ import { getComponent } from "../workflow";
 import "../connection/azureWebAppConfig";
 import "../resource/azureSql";
 import "../resource/identity";
-import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "../projectSettingsManager";
 
 @Service("sql")
 export class Sql {

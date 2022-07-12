@@ -19,7 +19,6 @@ import "../connection/azureWebAppConfig";
 import "../resource/azureSql";
 import "../resource/identity";
 import { ComponentNames } from "../constants";
-import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "../projectSettingsManager";
 import { getHostingComponent } from "../utils";
 
 @Service("sso")

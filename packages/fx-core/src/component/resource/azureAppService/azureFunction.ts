@@ -27,6 +27,10 @@ export class AzureFunctionResource extends AzureAppService {
     },
     functionEndpoint: {
       key: "functionEndpoint",
+      bicepVariable: "provisionOutputs.azureFunction{{componentName}}Output.value.functionEndpoint",
+    },
+    functionEndpointAsParam: {
+      key: "functionEndpointAsParam",
       bicepVariable: "azureFunction{{componentName}}Provision.outputs.functionEndpoint",
     },
   };

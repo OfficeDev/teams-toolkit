@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { Action } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
 import { ComponentNames, IdentityOutputs } from "../constants";
@@ -12,3 +13,10 @@ export class IdentityResource extends AzureResource {
   outputs = IdentityOutputs;
   finalOutputKeys = ["identityResourceId", "identityName", "identityClientId"];
 }
+
+export const identityAction: Action = {
+  name: "call:identity.generateBicep",
+  type: "call",
+  required: true,
+  targetAction: "identity.generateBicep",
+};

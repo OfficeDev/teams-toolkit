@@ -35,6 +35,7 @@ import "../resource/botService";
 import "../resource/azureAppService/azureWebApp";
 import "../connection/azureWebAppConfig";
 import { ComponentNames, Scenarios } from "../constants";
+import { identityAction } from "../resource/identity";
 @Service("teams-bot")
 export class TeamsBot {
   name = "teams-bot";
@@ -158,6 +159,15 @@ export class TeamsBot {
             name: "bot-service",
             provision: true,
           });
+          // add default identity
+          if (!getComponent(context.projectSetting, ComponentNames.Identity)) {
+            projectSettings.components.push({
+              name: ComponentNames.Identity,
+              provision: true,
+            });
+          }
+          // connect identity to hosting component
+          hostingComponent.connections.push(ComponentNames.Identity);
           // connect azure-sql to hosting component
           if (getComponent(context.projectSetting, "azure-sql")) {
             hostingComponent.connections.push("azure-sql");
@@ -204,6 +214,7 @@ export class TeamsBot {
           scenario: "Bot",
         },
       },
+      identityAction,
       ...configActions,
       {
         name: "call:app-manifest.addCapability",

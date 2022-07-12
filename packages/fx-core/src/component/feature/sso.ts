@@ -3,12 +3,14 @@
 
 import {
   Action,
+  Component,
   ContextV3,
   FxError,
   GroupAction,
   InputsWithProjectPath,
   MaybePromise,
   ok,
+  ProjectSettingsV3,
   Result,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
@@ -39,6 +41,7 @@ export class SSO {
     let needsBot = false;
     let needsBotHostingConnection = false;
     let needsTab = false;
+    let needsTabApiConnection = false;
     const aadComponent = getComponent(context.projectSetting, ComponentNames.AadApp);
     const teamsBotComponent = getComponent(context.projectSetting, ComponentNames.TeamsBot);
     if (teamsBotComponent && !teamsBotComponent.sso) {
@@ -56,7 +59,8 @@ export class SSO {
     const teamsTabComponent = getComponent(context.projectSetting, ComponentNames.TeamsTab);
     if (teamsTabComponent && !teamsTabComponent.sso) {
       needsTab = true;
-      // TODO: add connection for needsTabApiConnection
+      const apiComponent = getTabApiComponent(teamsTabComponent, context.projectSetting);
+      needsTabApiConnection = !apiComponent?.connections?.includes(ComponentNames.AadApp);
     }
 
     const actions: Action[] = [
@@ -78,6 +82,11 @@ export class SSO {
           }
           if (needsTab) {
             remarks.push("add feature 'SSO' to component 'teams-tab' in projectSettings");
+            if (needsTabApiConnection) {
+              remarks.push(
+                `connect 'aad-app' to component 'azure-function' of teams-api in projectSettings`
+              );
+            }
           }
           return ok([
             {
@@ -115,6 +124,13 @@ export class SSO {
           if (needsTab && teamsTabComponent) {
             teamsTabComponent.sso = true;
             remarks.push("add feature 'SSO' to component 'teams-tab' in projectSettings");
+            if (needsTabApiConnection) {
+              const tabApiComponent = getTabApiComponent(teamsTabComponent, context.projectSetting);
+              tabApiComponent?.connections?.push(ComponentNames.AadApp);
+              remarks.push(
+                `connect 'aad-app' to component 'azure-function' of teams-api in projectSettings`
+              );
+            }
           }
           return ok([
             {
@@ -150,7 +166,6 @@ export class SSO {
           needsTab: needsTab,
         },
       },
-      // TODO: update local debugging
       {
         name: "call:app-manifest.addCapability",
         type: "call",
@@ -167,8 +182,8 @@ export class SSO {
         targetAction: "debug.generateLocalDebugSettings",
       },
     ];
-    const botHosting = teamsBotComponent?.hosting;
-    if (needsBot && botHosting) {
+    if (needsBotHostingConnection) {
+      const botHosting = teamsBotComponent?.hosting;
       actions.push({
         name: `call:${botHosting}-config.generateBicep`,
         type: "call",
@@ -180,6 +195,15 @@ export class SSO {
         },
       });
     }
+    if (needsTabApiConnection) {
+      const tabApi = getTabApiComponent(teamsTabComponent!, context.projectSetting);
+      actions.push({
+        name: `call:${tabApi?.name}-config.generateBicep`,
+        type: "call",
+        required: true,
+        targetAction: `${tabApi?.name}-config.generateBicep`,
+      });
+    }
     const group: GroupAction = {
       type: "group",
       name: "sso.add",
@@ -188,4 +212,12 @@ export class SSO {
     };
     return ok(group);
   }
+}
+
+// TODO: replace it after tab component update
+function getTabApiComponent(
+  tabComponent: Component,
+  projectSettings: ProjectSettingsV3
+): Component | undefined {
+  return getComponent(projectSettings, ComponentNames.Function);
 }

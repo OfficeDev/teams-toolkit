@@ -15,12 +15,11 @@ public class TeamsBotSsoPromptSettings
     /// <summary>
     /// Constructor of TeamsBotSsoPromptSettings
     /// </summary>
-    public TeamsBotSsoPromptSettings(BotAuthenticationOptions botAuthOptions, string[] scopes, TimeSpan? timeout = null, bool? endOnInvalidMessage = null)
+    public TeamsBotSsoPromptSettings(BotAuthenticationOptions botAuthOptions, string[] scopes, int timeout = 900000)
     {
         BotAuthOptions = botAuthOptions;
         Scopes = scopes;
-        Timeout = timeout ?? TimeSpan.FromMinutes(15);
-        EndOnInvalidMessage = endOnInvalidMessage ?? true;
+        Timeout = timeout;
     }
 
     /// <summary>
@@ -35,18 +34,7 @@ public class TeamsBotSsoPromptSettings
     /// Default is 900,000 (15 minutes).
     /// </summary>
     /// <value>The number of milliseconds the prompt waits for the user to authenticate.</value>
-    public TimeSpan Timeout { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether the <see cref="TeamsBotSsoPrompt"/> should end upon
-    /// receiving an invalid message.  Generally the <see cref="TeamsBotSsoPrompt"/> will end 
-    /// the auth flow when receives user message not related to the auth flow.
-    /// Setting the flag to false ignores the user's message instead.
-    /// Defaults to value `true`
-    /// </summary>
-    /// <value>True if the <see cref="TeamsBotSsoPrompt"/> should automatically end upon receiving
-    /// an invalid message.</value>
-    public bool EndOnInvalidMessage { get; set; }
+    public int Timeout { get; set; }
 
     /// <summary>
     /// Gets or sets bot related authentication options.

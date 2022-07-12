@@ -120,7 +120,6 @@ public class TeamsUserCredential : TokenCredential, IAsyncDisposable
     /// <exception cref="ExceptionCode.ConsentFailed">When user canceled or failed to consent.</exception>
     public async Task LoginAsync(string scopes)
     { 
-    
         _logger.LogInformation($"Popup consent page to get user's access token with scopes: {scopes}");
 
         await EnsureTeamsSdkInitialized().ConfigureAwait(false);

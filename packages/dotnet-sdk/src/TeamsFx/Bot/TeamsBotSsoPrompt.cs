@@ -71,7 +71,7 @@ public class TeamsBotSsoPrompt : Dialog
         EnsureMsTeamsChannel(dc);
 
         var state = dc.ActiveDialog?.State;
-        state[PersistedExpires] = DateTime.UtcNow.AddMilliseconds(_settings.Timeout.TotalMilliseconds);
+        state[PersistedExpires] = DateTime.UtcNow.AddMilliseconds(_settings.Timeout);
 
         // Send OAuthCard that tells Teams to obtain an authentication token for the bot application.
         await SendOAuthCardToObtainTokenAsync(dc.Context, cancellationToken).ConfigureAwait(false);
@@ -124,7 +124,7 @@ public class TeamsBotSsoPrompt : Dialog
                     return await dc.EndDialogAsync(recognized.Value, cancellationToken).ConfigureAwait(false);
                 }
             }
-            else if (isMessage && _settings.EndOnInvalidMessage)
+            else if (isMessage)
             {
                 return await dc.EndDialogAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
             }

@@ -6,17 +6,14 @@ import {
   InputsWithProjectPath,
   ok,
   FunctionAction,
-  FileEffect,
   ProvisionContextV3,
 } from "@microsoft/teamsfx-api";
-import * as path from "path";
 import {
   ComponentNames,
   ActionTypeFunction,
   ActionNames,
   ComponentStateKeys,
 } from "../../../constants";
-import { generateAadManifestTemplate } from "../../../../core/generateAadManifestTemplate";
 import { AadAppForTeamsImpl } from "../../../../plugins/resource/aad/plugin";
 import { convertContext } from "./provision";
 

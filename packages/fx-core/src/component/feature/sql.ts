@@ -38,7 +38,6 @@ export class Sql {
     const sqlComponent = getComponent(context.projectSetting, "azure-sql");
     const provisionType = sqlComponent ? "database" : "server";
     const actions: Action[] = [
-      LoadProjectSettingsAction,
       {
         name: "sql.configSql",
         type: "function",
@@ -150,7 +149,6 @@ export class Sql {
         targetAction: "azure-function-config.generateBicep",
       });
     }
-    actions.push(WriteProjectSettingsAction);
     const group: GroupAction = {
       type: "group",
       name: "sql.add",

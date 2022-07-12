@@ -61,7 +61,6 @@ export class SSO {
     }
 
     const actions: Action[] = [
-      LoadProjectSettingsAction,
       {
         name: "SSO.configSSO",
         type: "function",
@@ -178,7 +177,6 @@ export class SSO {
         targetAction: `${botHosting}-config.generateBicep`,
       });
     }
-    actions.push(WriteProjectSettingsAction);
     const group: GroupAction = {
       type: "group",
       name: "sso.add",

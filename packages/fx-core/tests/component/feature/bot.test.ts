@@ -1,8 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { InputsWithProjectPath, ok, Platform, ProjectSettingsV3 } from "@microsoft/teamsfx-api";
+import {
+  InputsWithProjectPath,
+  ok,
+  Platform,
+  ProjectSettingsV3,
+  TeamsAppManifest,
+} from "@microsoft/teamsfx-api";
 import * as templatesAction from "../../../src/common/template-utils/templatesActions";
+import * as manifestUtils from "../../../src/component/resource/appManifest/utils";
 import { assert } from "chai";
 import "mocha";
 import * as os from "os";
@@ -36,9 +43,12 @@ describe("Bot Feature", () => {
     programmingLanguage: "typescript",
     components: [],
   };
+  const manifest = {} as TeamsAppManifest;
   beforeEach(() => {
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     sandbox.stub(templatesAction, "scaffoldFromTemplates").resolves();
+    sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
+    sandbox.stub(manifestUtils, "writeAppManifest").resolves();
     sandbox.stub(fs, "readJson").resolves(projectSetting);
     sandbox.stub(fs, "writeJSON").resolves();
     sandbox.stub(fs, "writeJson").resolves();

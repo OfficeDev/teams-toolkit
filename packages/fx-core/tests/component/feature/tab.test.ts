@@ -24,7 +24,6 @@ import "../../../src/component/feature/bot";
 import "../../../src/component/core";
 import { environmentManager } from "../../../src/core/environment";
 import { ComponentNames } from "../../../src/component/constants";
-import { Component } from "../../../src/common/telemetry";
 describe("Tab Feature", () => {
   const sandbox = createSandbox();
   const tools = new MockTools();

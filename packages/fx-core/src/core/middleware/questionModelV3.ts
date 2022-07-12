@@ -259,6 +259,9 @@ async function getQuestionsForAddFeature(
   }
   question.staticOptions = options;
   const addFeatureNode = new QTreeNode(question);
+  const triggerNode = new QTreeNode(createHostTypeTriggerQuestion(inputs.platform));
+  triggerNode.condition = { equals: NotificationOptionItem.id };
+  addFeatureNode.addChild(triggerNode);
   if (!ctx.projectSetting.programmingLanguage) {
     // Language
     const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);

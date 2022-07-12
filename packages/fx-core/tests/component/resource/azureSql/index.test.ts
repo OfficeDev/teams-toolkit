@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import "mocha";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";

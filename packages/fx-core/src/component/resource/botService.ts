@@ -58,7 +58,7 @@ export class BotService extends AzureResource {
     try {
       const resource = Container.get(inputs.hosting) as AzureResource;
       this.templateContext.endpointVarName = compileHandlebarsTemplateString(
-        resource.outputs.siteEndpoint.bicepVariable ?? "",
+        resource.outputs.siteEndpointAsParam.bicepVariable ?? "",
         inputs
       );
     } catch {}

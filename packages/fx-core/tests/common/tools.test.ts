@@ -273,7 +273,7 @@ describe("tools", () => {
 
     it("project settings not exists", async () => {
       sandbox.stub<any, any>(fs, "pathExistsSync").callsFake((file: string) => {
-        return true;
+        return false;
       });
       const result = getFixedCommonProjectSettings("root-path");
       chai.assert.isUndefined(result);

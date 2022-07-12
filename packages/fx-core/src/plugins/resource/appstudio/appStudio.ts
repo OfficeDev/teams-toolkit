@@ -111,44 +111,6 @@ export namespace AppStudioClient {
     }
   }
 
-  /**
-   * @deprecated
-   * @returns
-   */
-  async function uploadIcon(
-    teamsAppId: string,
-    appStudioToken: string,
-    colorIconContent: string,
-    outlineIconContent: string,
-    logProvider?: LogProvider
-  ): Promise<{ colorIconUrl: string; outlineIconUrl: string }> {
-    await logProvider?.info(`Uploading icon for teams ${teamsAppId}`);
-    const requester = createRequesterWithToken(appStudioToken);
-    try {
-      const colorIcon: Icon = {
-        name: "color",
-        type: "color",
-        base64String: colorIconContent,
-      };
-      const outlineIcon: Icon = {
-        name: "outline",
-        type: "outline",
-        base64String: outlineIconContent,
-      };
-      const colorIconResult = requester.post(`/api/appdefinitions/${teamsAppId}/image`, colorIcon);
-      const outlineIconResult = requester.post(
-        `/api/appdefinitions/${teamsAppId}/image`,
-        outlineIcon
-      );
-      const results = await Promise.all([colorIconResult, outlineIconResult]);
-      await logProvider?.info(`successfully uploaded two icons`);
-      return { colorIconUrl: results[0].data, outlineIconUrl: results[1].data };
-    } catch (e: any) {
-      const error = wrapException(e, "update-icon");
-      throw error;
-    }
-  }
-
   export async function getApp(
     teamsAppId: string,
     appStudioToken: string,
@@ -175,66 +137,6 @@ export namespace AppStudioClient {
       throw error;
     }
     throw new Error(`Cannot get the app definition with app ID ${teamsAppId}`);
-  }
-
-  /**
-   * Updates an existing app if it exists with the configuration given.  Returns whether or not it was successful.
-   * @deprecated
-   * @param {string}  teamsAppId
-   * @param {IAppDefinition} appDefinition
-   * @param {string}  appStudioToken
-   * @param {LogProvider} logProvider
-   * @param {string} colorIconContent - base64 encoded
-   * @param {string} outlineIconContent - base64 encoded
-   * @returns {Promise<IAppDefinition>}
-   */
-  export async function updateApp(
-    teamsAppId: string,
-    appDefinition: AppDefinition,
-    appStudioToken: string,
-    logProvider?: LogProvider,
-    colorIconContent?: string,
-    outlineIconContent?: string
-  ): Promise<AppDefinition> {
-    // Get userlist from existing app
-    const existingAppDefinition = await getApp(teamsAppId, appStudioToken, logProvider);
-    const userlist = existingAppDefinition.userList;
-    appDefinition.userList = userlist;
-
-    let result: { colorIconUrl: string; outlineIconUrl: string } | undefined;
-    if (colorIconContent && outlineIconContent) {
-      result = await uploadIcon(
-        teamsAppId,
-        appStudioToken,
-        colorIconContent,
-        outlineIconContent,
-        logProvider
-      );
-      if (!result) {
-        await logProvider?.error(`failed to upload color icon for: ${teamsAppId}`);
-        throw new Error(`failed to upload icons for ${teamsAppId}`);
-      }
-      appDefinition.colorIcon = result.colorIconUrl;
-      appDefinition.outlineIcon = result.outlineIconUrl;
-    }
-    const requester = createRequesterWithToken(appStudioToken);
-    try {
-      const response = await requester.post(
-        `/api/appdefinitions/${teamsAppId}/override`,
-        appDefinition
-      );
-      if (response && response.data) {
-        const app = <AppDefinition>response.data;
-        return app;
-      } else {
-        throw new Error(
-          `Cannot update teams app ${teamsAppId}, response: ${JSON.stringify(response)}`
-        );
-      }
-    } catch (e: any) {
-      const error = wrapException(e, "update-app");
-      throw error;
-    }
   }
 
   /**

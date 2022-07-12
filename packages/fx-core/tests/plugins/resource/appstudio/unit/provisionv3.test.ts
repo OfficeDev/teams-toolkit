@@ -102,7 +102,6 @@ describe("Provision Teams app with Azure", () => {
     (error.name as any) = 409;
     sandbox.stub(AppStudioClient, "getApp").resolves(appDef);
     sandbox.stub(AppStudioClient, "importApp").resolves(appDef);
-    sandbox.stub(AppStudioClient, "updateApp").resolves(appDef);
     const teamsAppId = await plugin.registerTeamsApp(
       context,
       inputs,

@@ -221,10 +221,6 @@ export class AppStudioPluginImpl {
     return ok(errors);
   }
 
-  public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
-    return this.updateManifest(ctx, false);
-  }
-
   public async updateManifest(
     ctx: PluginContext,
     isLocalDebug: boolean

@@ -467,6 +467,7 @@ describe("provision() happy path for SPFx projects", () => {
     mocker.stub(fs, "writeJSON").callsFake((file: string, obj: any) => {
       fileContent.set(file, JSON.stringify(obj));
     });
+    mocker.stub(fs, "readFile").resolves(Buffer.from(""));
     mocker
       .stub<any, any>(fs, "readJson")
       .withArgs(

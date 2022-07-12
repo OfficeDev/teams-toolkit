@@ -4,6 +4,7 @@
 import "mocha";
 import * as chai from "chai";
 import sinon from "sinon";
+import fs from "fs-extra";
 import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
 import { AppStudioPluginImpl } from "./../../../../../src/plugins/resource/appstudio/plugin";
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
@@ -83,7 +84,8 @@ describe("Provision Teams app with Azure", () => {
       },
     };
 
-    sandbox.stub(AppStudioClient, "updateApp").resolves(appDef);
+    sandbox.stub(AppStudioClient, "importApp").resolves(appDef);
+    sandbox.stub(fs, "readFile").resolves(Buffer.from(""));
     sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns({
       tabEndpoint: "https://www.endpoint.com/",
       tabDomain: undefined,

@@ -19,11 +19,11 @@ import {
 import { DependencyChecker, DependencyInfo } from "./dependencyChecker";
 import { telemetryHelper } from "../utils/telemetry-helper";
 import { TelemetryEvents, TelemetryProperty } from "../utils/telemetryEvents";
-import { DependencyValidateError, NpmInstallError, NpmNotFoundError } from "../error";
+import { DependencyValidateError, NpmInstallError } from "../error";
 import { cpUtils } from "../../../../common/deps-checker/util/cpUtils";
 
 const name = "@microsoft/generator-sharepoint";
-const supportedVersion = "1.14.0";
+const supportedVersion = "1.15.0";
 const displayName = `${name}@${supportedVersion}`;
 const timeout = 6 * 60 * 1000;
 

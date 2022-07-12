@@ -19,7 +19,6 @@ import "../connection/azureWebAppConfig";
 import "../resource/azureSql";
 import "../resource/identity";
 import { ComponentNames } from "../constants";
-import { LoadProjectSettingsAction } from "../projectSettingsManager";
 import { getHostingComponent } from "../utils";
 
 @Service("sso")
@@ -27,11 +26,11 @@ export class SSO {
   name = "sso";
 
   /**
-   * 1. config aad
-   * 2. add sql provision bicep
-   * 3. add identity provision bicep
-   * 4. re-generate resources that connect to sql
-   * 5. persist bicep
+   * 1. config sso/aad
+   * 2. generate aad manifest
+   * 3. genearte aad bicep
+   * 4. genearte aad auth files
+   * 5. update app manifest
    */
   add(
     context: ContextV3,
@@ -61,7 +60,6 @@ export class SSO {
     }
 
     const actions: Action[] = [
-      LoadProjectSettingsAction,
       {
         name: "SSO.configSSO",
         type: "function",
@@ -162,6 +160,12 @@ export class SSO {
           capabilities: [{ name: "WebApplicationInfo" }],
         },
       },
+      {
+        name: "call:debug.generateLocalDebugSettings",
+        type: "call",
+        required: true,
+        targetAction: "debug.generateLocalDebugSettings",
+      },
     ];
     const botHosting = teamsBotComponent?.hosting;
     if (needsBot && botHosting) {
@@ -172,16 +176,6 @@ export class SSO {
         targetAction: `${botHosting}-config.generateBicep`,
       });
     }
-    const tabHosting = teamsTabComponent?.hosting;
-    if (needsTab && tabHosting) {
-      actions.push({
-        name: `call:${tabHosting}-config.generateBicep`,
-        type: "call",
-        required: true,
-        targetAction: `${tabHosting}-config.generateBicep`,
-      });
-    }
-
     const group: GroupAction = {
       type: "group",
       name: "sso.add",

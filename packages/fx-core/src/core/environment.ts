@@ -181,9 +181,9 @@ class EnvironmentManager {
     envName = envName ?? this.getDefaultEnvName();
     const envFiles = this.getEnvStateFilesPath(envName, projectPath);
 
-    let envState: Json = envData instanceof Map ? mapToJson(envData) : envData;
+    const envState: Json = envData instanceof Map ? mapToJson(envData) : envData;
     // v3 envState will be converted into v2 for compatibility
-    if (isV3) envState = convertEnvStateV3ToV2(envState);
+    // if (isV3) envState = convertEnvStateV3ToV2(envState);
     const secrets = separateSecretData(envState);
     this.encrypt(secrets, cryptoProvider);
 

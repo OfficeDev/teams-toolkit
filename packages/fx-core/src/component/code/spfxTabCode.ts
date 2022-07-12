@@ -255,14 +255,16 @@ export async function scaffoldSPFx(
     );
     const manifestProvider =
       (context as ContextV3).manifestProvider || new DefaultManifestProvider();
-    const addCapRes = await manifestProvider.addCapabilities(
-      (context as ContextV3).manifestProvider
-        ? (context as ContextV3)
-        : convert2Context(context as PluginContext, true).context,
-      inputs,
-      capabilitiesToAddManifest
-    );
-    if (addCapRes.isErr()) return err(addCapRes.error);
+    for (const capability of capabilitiesToAddManifest) {
+      const addCapRes = await manifestProvider.updateCapability(
+        (context as ContextV3).manifestProvider
+          ? (context as ContextV3)
+          : convert2Context(context as PluginContext, true).context,
+        inputs,
+        capability
+      );
+      if (addCapRes.isErr()) return err(addCapRes.error);
+    }
     await progressHandler?.end(true);
     return ok(undefined);
   } catch (error) {

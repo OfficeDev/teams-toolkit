@@ -9,11 +9,9 @@ import { appendOutput, appendOutputSync } from "../writer";
 export const timer = (fn: string) => {
   /* eslint-disable  @typescript-eslint/no-explicit-any */
   /* eslint-disable  @typescript-eslint/explicit-module-boundary-types */
-  console.log(`fn is ${fn}`);
   return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
 
-    console.log(`__file is ${__filename}`);
     /**
      * get essential properties
      */
@@ -29,7 +27,6 @@ export const timer = (fn: string) => {
       descriptor.value = async function (...args: any[]) {
         data.args = args;
 
-        console.log(`async desc __file is ${__filename}`);
         const start = performance.now();
         const result = await originalMethod.apply(this, args);
         const end = performance.now();
@@ -45,7 +42,6 @@ export const timer = (fn: string) => {
       descriptor.value = function (...args: any[]) {
         data.args = args;
 
-        console.log(`sync desc __file is ${__filename}`);
         const start = performance.now();
         const result = originalMethod.apply(this, args);
         const end = performance.now();

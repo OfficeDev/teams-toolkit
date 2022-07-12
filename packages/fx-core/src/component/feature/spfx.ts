@@ -22,7 +22,6 @@ import {
   webpartNameQuestion,
 } from "../../plugins/resource/spfx/utils/questions";
 import { ComponentNames } from "../constants";
-import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "../projectSettingsManager";
 @Service(ComponentNames.SPFxTab)
 export class SPFxTab {
   name = ComponentNames.SPFxTab;
@@ -32,7 +31,6 @@ export class SPFxTab {
   ): MaybePromise<Result<Action | undefined, FxError>> {
     inputs.hosting = ComponentNames.SPFx;
     const actions: Action[] = [
-      LoadProjectSettingsAction,
       {
         name: "fx.configTab",
         type: "function",
@@ -79,7 +77,6 @@ export class SPFxTab {
         required: true,
         targetAction: "debug.generateLocalDebugSettings",
       },
-      WriteProjectSettingsAction,
     ];
     const group: GroupAction = {
       type: "group",

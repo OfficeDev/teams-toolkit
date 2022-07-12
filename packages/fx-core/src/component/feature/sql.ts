@@ -37,7 +37,6 @@ export class Sql {
     const sqlComponent = getComponent(context.projectSetting, "azure-sql");
     const provisionType = sqlComponent ? "database" : "server";
     const actions: Action[] = [
-      // LoadProjectSettingsAction,
       {
         name: "sql.configSql",
         type: "function",

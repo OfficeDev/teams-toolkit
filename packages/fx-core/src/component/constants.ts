@@ -72,22 +72,22 @@ export const ErrorConstants = {
 
 export const AzureSqlOutputs = {
   sqlResourceId: {
-    key: "resourceId",
-    bicepVariable: "provisionOutputs.azureSqlOutput.value.resourceId",
+    key: "sqlResourceId",
+    bicepVariable: "provisionOutputs.azureSqlOutput.value.sqlResourceId",
   },
   sqlEndpoint: {
-    key: "endpoint",
+    key: "sqlEndpoint",
     bicepVariable: "provisionOutputs.azureSqlOutput.value.sqlEndpoint",
   },
   sqlDatabaseName: {
-    key: "databaseName",
+    key: "sqlDatabaseName",
     bicepVariable: "provisionOutputs.azureSqlOutput.value.sqlDatabaseName",
   },
 };
 
 export const IdentityOutputs = {
   identityResourceId: {
-    key: "resourceId",
+    key: "identityResourceId",
     bicepVariable: "provisionOutputs.identityOutput.value.identityResourceId",
   },
   identityName: {

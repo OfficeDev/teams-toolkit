@@ -7,21 +7,31 @@ import {
   ContextV3,
   FxError,
   GroupAction,
+  Inputs,
   InputsWithProjectPath,
   MaybePromise,
   ok,
   ProjectSettingsV3,
+  QTreeNode,
   Result,
+  Stage,
 } from "@microsoft/teamsfx-api";
 import { merge } from "lodash";
 import "reflect-metadata";
 import { Service } from "typedi";
 import { CoreQuestionNames } from "../../core/question";
-import { DefaultValues } from "../../plugins/resource/function/constants";
-import { QuestionKey } from "../../plugins/resource/function/enums";
+import {
+  DefaultValues,
+  FunctionPluginPathInfo,
+  RegularExpr,
+} from "../../plugins/resource/function/constants";
+import { FunctionLanguage, QuestionKey } from "../../plugins/resource/function/enums";
+import { FunctionScaffold } from "../../plugins/resource/function/ops/scaffold";
+import { functionNameQuestion } from "../../plugins/resource/function/question";
+import { ErrorMessages } from "../../plugins/resource/function/resources/message";
 import { ComponentNames } from "../constants";
-import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "../projectSettingsManager";
 import { getComponent } from "../workflow";
+import * as path from "path";
 @Service(ComponentNames.TeamsApi)
 export class TeamsApi {
   name = ComponentNames.TeamsApi;
@@ -33,12 +43,42 @@ export class TeamsApi {
     const functionName: string =
       (inputs?.[QuestionKey.functionName] as string) ?? DefaultValues.functionName;
     const actions: Action[] = [
-      LoadProjectSettingsAction,
       {
         name: "fx.configApi",
         type: "function",
         plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
           return ok([`config '${this.name}' in projectSettings`]);
+        },
+        question: (context: ContextV3, inputs: InputsWithProjectPath) => {
+          functionNameQuestion.validation = {
+            validFunc: async (
+              input: string,
+              previousInputs?: Inputs
+            ): Promise<string | undefined> => {
+              const workingPath: string = path.join(
+                inputs.projectPath,
+                FunctionPluginPathInfo.solutionFolderName
+              );
+              const name = input as string;
+              if (!name || !RegularExpr.validFunctionNamePattern.test(name)) {
+                return ErrorMessages.invalidFunctionName;
+              }
+              if (inputs.stage === Stage.create) {
+                return undefined;
+              }
+              const language: FunctionLanguage =
+                (inputs[QuestionKey.programmingLanguage] as FunctionLanguage) ??
+                (context.projectSetting.programmingLanguage as FunctionLanguage);
+              // If language is unknown, skip checking and let scaffold handle the error.
+              if (
+                language &&
+                (await FunctionScaffold.doesFunctionPathExist(workingPath, language, name))
+              ) {
+                return ErrorMessages.functionAlreadyExists;
+              }
+            },
+          };
+          return ok(new QTreeNode(functionNameQuestion));
         },
         execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
           const projectSettings = context.projectSetting as ProjectSettingsV3;
@@ -97,7 +137,6 @@ export class TeamsApi {
         required: true,
         targetAction: "debug.generateLocalDebugSettings",
       },
-      WriteProjectSettingsAction,
     ];
     const group: GroupAction = {
       type: "group",

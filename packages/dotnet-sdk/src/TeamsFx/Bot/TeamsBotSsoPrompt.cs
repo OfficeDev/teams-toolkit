@@ -27,7 +27,7 @@ namespace Microsoft.TeamsFx.Bot;
 /// </remarks>
 public class TeamsBotSsoPrompt : Dialog
 {
-    private TeamsBotSsoPromptSettings _settings;
+    private readonly TeamsBotSsoPromptSettings _settings;
     private const string PersistedExpires = "expires";
 
 
@@ -181,13 +181,21 @@ public class TeamsBotSsoPrompt : Dialog
 
                     await SendInvokeResponseAsync(context, HttpStatusCode.OK, null, cancellationToken).ConfigureAwait(false);
                 }
-                catch (Exception e)
+                catch (MsalUiRequiredException) // Need user interaction
                 {
-                    var warningMsg = "The bot is unable to exchange token. Ask for user consent." + e.Message;
+                    var warningMsg = "The bot is unable to exchange token. Ask for user consent first.";
                     await SendInvokeResponseAsync(context, HttpStatusCode.PreconditionFailed, new TokenExchangeInvokeResponse {
                         Id = context.Activity.Id,
                         FailureDetail = warningMsg,
                     }, cancellationToken).ConfigureAwait(false);
+                }
+                catch (MsalServiceException ex) // Errors that returned from AAD service
+                {
+                    throw new ExceptionWithCode($"Failed to get access token from OAuth identity server with error: {ex.ResponseBody}", ExceptionCode.ServiceError);
+                }
+                catch (MsalClientException ex) // Exceptions that are local to the MSAL library
+                {
+                    throw new ExceptionWithCode($"Failed to get access token with error: {ex.Message}", ExceptionCode.InternalError);
                 }
 
             }

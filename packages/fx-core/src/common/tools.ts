@@ -970,7 +970,7 @@ export function getFixedCommonProjectSettings(rootPath: string | undefined) {
       projectId: projectSettings?.projectId ?? undefined,
       isFromSample: projectSettings?.isFromSample ?? undefined,
       programmingLanguage: projectSettings?.programmingLanguage ?? undefined,
-      hostType: projectSettings?.solutionSettings?.hostType,
+      hostType: projectSettings?.solutionSettings?.hostType ?? undefined,
     };
   } catch {
     return undefined;

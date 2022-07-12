@@ -161,22 +161,16 @@ export function activate(): Result<Void, FxError> {
     const fixedProjectSettings = getFixedCommonProjectSettings(
       globalVariables.workspaceUri?.fsPath
     );
-    ExtTelemetry.addSharedProperty(
-      TelemetryProperty.ProjectId,
-      fixedProjectSettings?.projectId ?? ""
-    );
+    ExtTelemetry.addSharedProperty(TelemetryProperty.ProjectId, fixedProjectSettings?.projectId);
     ExtTelemetry.addSharedProperty(
       TelemetryProperty.IsFromSample,
-      fixedProjectSettings?.isFromSample ?? ""
+      fixedProjectSettings?.isFromSample
     );
     ExtTelemetry.addSharedProperty(
       TelemetryProperty.ProgrammingLanguage,
-      fixedProjectSettings?.programmingLanguage ?? ""
+      fixedProjectSettings?.programmingLanguage
     );
-    ExtTelemetry.addSharedProperty(
-      TelemetryProperty.HostType,
-      fixedProjectSettings?.hostType ?? ""
-    );
+    ExtTelemetry.addSharedProperty(TelemetryProperty.HostType, fixedProjectSettings?.hostType);
 
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTeamsApp, {});
     AzureAccountManager.setStatusChangeMap(

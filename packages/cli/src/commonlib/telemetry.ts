@@ -35,22 +35,19 @@ export class CliTelemetryReporter implements TelemetryReporter {
 
       // add shared properties
       const fixedProjectSettings = getFixedCommonProjectSettings(rootPath);
-      this.addSharedProperty(TelemetryProperty.ProjectId, fixedProjectSettings?.projectId ?? "");
-      this.addSharedProperty(
-        TelemetryProperty.IsFromSample,
-        fixedProjectSettings?.isFromSample ?? ""
-      );
+      this.addSharedProperty(TelemetryProperty.ProjectId, fixedProjectSettings?.projectId);
+      this.addSharedProperty(TelemetryProperty.IsFromSample, fixedProjectSettings?.isFromSample);
       this.addSharedProperty(
         TelemetryProperty.ProgrammingLanguage,
-        fixedProjectSettings?.programmingLanguage ?? ""
+        fixedProjectSettings?.programmingLanguage
       );
-      this.addSharedProperty(TelemetryProperty.HostType, fixedProjectSettings?.hostType ?? "");
+      this.addSharedProperty(TelemetryProperty.HostType, fixedProjectSettings?.hostType);
     }
     return this;
   }
 
   addSharedProperty(name: string, value: string): void {
-    this.sharedProperties[name] = value;
+    this.sharedProperties[name] = value ?? "";
   }
 
   sendTelemetryErrorEvent(

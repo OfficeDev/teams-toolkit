@@ -53,7 +53,7 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
   }
 
   addSharedProperty(name: string, value: string): void {
-    this.sharedProperties[name] = value;
+    this.sharedProperties[name] = value ?? "";
   }
 
   logTelemetryEvent(

@@ -7,6 +7,7 @@ using Microsoft.Identity.Client;
 using Microsoft.TeamsFx;
 using Microsoft.TeamsFx.Configuration;
 using Microsoft.TeamsFx.Helper;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -31,7 +32,16 @@ public static class TeamsFxConfigurationMethods
         services.AddScoped<TeamsUserCredential>();
 
         services.AddOptions<AuthenticationOptions>().Bind(namedConfigurationSection.GetSection(AuthenticationOptions.Authentication)).ValidateDataAnnotations();
-
+        services.AddOptions<BotAuthenticationOptions>().Configure<IOptions<AuthenticationOptions>, IHttpContextAccessor> ((botAuthOption, authOptions, contextAccessor) => {
+            AuthenticationOptions authOptionsValue = authOptions.Value;
+            botAuthOption.ClientId = authOptionsValue.ClientId;
+            botAuthOption.ClientSecret = authOptionsValue.ClientSecret;
+            botAuthOption.OAuthAuthority = authOptionsValue.OAuthAuthority;
+            botAuthOption.TenantId = authOptionsValue.TenantId;
+            botAuthOption.ApplicationIdUri = authOptionsValue.ApplicationIdUri;
+            botAuthOption.LoginStartPageEndpoint = authOptionsValue.Bot.LoginStartPageEndpoint;
+        }).ValidateDataAnnotations();
+        
         services.AddSingleton<IIdentityClientAdapter>(sp => {
             var authenticationOptions = sp.GetRequiredService<IOptions<AuthenticationOptions>>().Value;
             var builder = ConfidentialClientApplicationBuilder.Create(authenticationOptions.ClientId)
@@ -40,7 +50,7 @@ public static class TeamsFxConfigurationMethods
             var identityClientAdapter = new IdentityClientAdapter(builder.Build());
             return identityClientAdapter;
         });
-
+        
         return services;
     }
 
@@ -62,6 +72,15 @@ public static class TeamsFxConfigurationMethods
         services.Configure(configureOptions);
         services.AddOptions<AuthenticationOptions>()
             .Configure(configureOptions).ValidateDataAnnotations();
+        services.AddOptions<BotAuthenticationOptions>().Configure<IOptions<AuthenticationOptions>, IHttpContextAccessor>((botAuthOption, authOptions, contextAccessor) => {
+                AuthenticationOptions authOptionsValue = authOptions.Value;
+                botAuthOption.ClientId = authOptionsValue.ClientId;
+                botAuthOption.ClientSecret = authOptionsValue.ClientSecret;
+                botAuthOption.OAuthAuthority = authOptionsValue.OAuthAuthority;
+                botAuthOption.TenantId = authOptionsValue.TenantId;
+                botAuthOption.ApplicationIdUri = authOptionsValue.ApplicationIdUri;
+                botAuthOption.LoginStartPageEndpoint = authOptionsValue.Bot.LoginStartPageEndpoint;
+            }).ValidateDataAnnotations();
 
         services.AddSingleton<IIdentityClientAdapter>(sp => {
             var authenticationOptions = sp.GetRequiredService<IOptions<AuthenticationOptions>>().Value;
@@ -97,6 +116,15 @@ public static class TeamsFxConfigurationMethods
                 options.ClientSecret = userOptions.ClientSecret;
                 options.OAuthAuthority = userOptions.OAuthAuthority;
             }).ValidateDataAnnotations();
+        services.AddOptions<BotAuthenticationOptions>().Configure<IOptions<AuthenticationOptions>, IHttpContextAccessor>((botAuthOption, authOptions, contextAccessor) => {
+            AuthenticationOptions authOptionsValue = authOptions.Value;
+            botAuthOption.ClientId = authOptionsValue.ClientId;
+            botAuthOption.ClientSecret = authOptionsValue.ClientSecret;
+            botAuthOption.OAuthAuthority = authOptionsValue.OAuthAuthority;
+            botAuthOption.TenantId = authOptionsValue.TenantId;
+            botAuthOption.ApplicationIdUri = authOptionsValue.ApplicationIdUri;
+            botAuthOption.LoginStartPageEndpoint = authOptionsValue.Bot.LoginStartPageEndpoint;
+        }).ValidateDataAnnotations();
 
         services.AddSingleton<IIdentityClientAdapter>(sp => {
             var authenticationOptions = sp.GetRequiredService<IOptions<AuthenticationOptions>>().Value;

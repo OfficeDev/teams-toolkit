@@ -747,6 +747,7 @@ export async function deployArmTemplatesV3(
   return result;
 }
 
+// Copy parameters Json -> could be used as reference for generating new resource base name (todo:)
 export async function copyParameterJson(
   projectPath: string,
   appName: string,
@@ -774,6 +775,29 @@ export async function copyParameterJson(
       generateResourceBaseName(appName, targetEnvName);
   }
 
+  await fs.ensureDir(parameterFolderPath);
+  await fs.writeFile(
+    targetParameterFilePath,
+    JSON.stringify(targetParameterContent, undefined, 2).replace(/\r?\n/g, os.EOL)
+  );
+}
+
+export async function updateResourceBaseName(
+  projectPath: string,
+  appName: string,
+  envName: string
+) {
+  if (!envName) {
+    return;
+  }
+
+  const parameterFolderPath = path.join(projectPath, configsFolder);
+  const targetParameterFileName = parameterFileNameTemplate.replace(EnvNamePlaceholder, envName);
+
+  const targetParameterFilePath = path.join(parameterFolderPath, targetParameterFileName);
+  const targetParameterContent = await fs.readJson(targetParameterFilePath);
+  targetParameterContent[parameterName].provisionParameters.value!.resourceBaseName =
+    generateResourceBaseName(appName, envName);
   await fs.ensureDir(parameterFolderPath);
   await fs.writeFile(
     targetParameterFilePath,

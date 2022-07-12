@@ -66,14 +66,17 @@ export class FxPreProvisionAction implements FunctionAction {
       if (solutionConfigRes.isErr()) {
         return err(solutionConfigRes.error);
       }
-      // ask for provision consent
-      const consentResult = await askForProvisionConsent(
-        ctx,
-        ctx.tokenProvider.azureAccountProvider,
-        envInfo
-      );
-      if (consentResult.isErr()) {
-        return err(consentResult.error);
+
+      if (!solutionConfigRes.value.hasSwitchedSubscription) {
+        // ask for provision consent
+        const consentResult = await askForProvisionConsent(
+          ctx,
+          ctx.tokenProvider.azureAccountProvider,
+          envInfo
+        );
+        if (consentResult.isErr()) {
+          return err(consentResult.error);
+        }
       }
       // create resource group if needed
       if (solutionConfig.needCreateResourceGroup) {

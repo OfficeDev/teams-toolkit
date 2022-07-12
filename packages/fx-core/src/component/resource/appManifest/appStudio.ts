@@ -183,6 +183,7 @@ export async function createOrUpdateTeamsAppByZip(
         appStudioTokenRes.value,
         ctx.logProvider
       );
+      ctx.logProvider.info(`Teams app created: ${appDefinition.teamsAppId}`);
       return ok(appDefinition.teamsAppId!);
     } catch (e: any) {
       return err(
@@ -212,6 +213,7 @@ export async function createOrUpdateTeamsAppByZip(
         colorIconContent,
         outlineIconContent
       );
+      ctx.logProvider.info(`Teams app updated: ${app.teamsAppId}`);
       return ok(app.teamsAppId!);
     } catch (e: any) {
       return err(

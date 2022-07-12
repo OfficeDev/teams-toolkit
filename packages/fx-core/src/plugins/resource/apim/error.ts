@@ -2,7 +2,12 @@
 // Licensed under the MIT license.
 import { FxError, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
-import { ConfigRetryOperations, ProjectConstants, TeamsToolkitComponent } from "./constants";
+import {
+  ConfigRetryOperations,
+  ProjectConstants,
+  TeamsToolkitComponent,
+  TeamsToolkitComponentV3,
+} from "./constants";
 
 enum ErrorType {
   User,
@@ -248,7 +253,7 @@ export function AssertNotEmpty(name: string, value: any): any {
 }
 
 export function AssertConfigNotEmpty(
-  component: TeamsToolkitComponent,
+  component: TeamsToolkitComponent | TeamsToolkitComponentV3,
   name: string,
   value: string | undefined,
   envName: string

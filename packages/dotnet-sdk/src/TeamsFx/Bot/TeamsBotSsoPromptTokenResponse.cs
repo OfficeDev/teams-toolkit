@@ -15,7 +15,7 @@ public class TeamsBotSsoPromptTokenResponse: TokenResponse
     public string SsoToken;
 
     /// <summary>
-    /// Expire time of SSO token
+    /// Expiration time of SSO token
     /// </summary>
     public string SsoTokenExpiration;
 }

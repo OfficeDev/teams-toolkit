@@ -20,11 +20,59 @@ namespace Microsoft.TeamsFx.Bot;
 /// help receive oauth token, asks the user to consent if needed.
 /// </summary>
 /// <remarks>
-/// The prompt will attempt to retrieve the users current token of the desired scopes and store it in
-/// the token store. 
+/// The prompt will attempt to retrieve the users current token of the desired scopes.
 /// User will be automatically signed in leveraging Teams support of Bot Single Sign On(SSO):
 /// https://docs.microsoft.com/en-us/microsoftteams/platform/bots/how-to/authentication/auth-aad-sso-bots
 /// </remarks>
+/// 
+/// <example>
+/// ## Prompt Usage
+///
+/// When used with your bot's <see cref="DialogSet"/> you can simply add a new instance of the prompt as a named
+/// dialog using <see cref="DialogSet.Add(Dialog)"/>. You can then start the prompt from a waterfall step using either
+/// <see cref="DialogContext.BeginDialogAsync(string, object, CancellationToken)"/> or
+/// <see cref="DialogContext.PromptAsync(string, PromptOptions, CancellationToken)"/>. The user
+/// will be prompted to signin as needed and their access token will be passed as an argument to
+/// the callers next waterfall step.
+/// 
+/// <code>
+/// var convoState = new ConversationState(new MemoryStorage());
+/// var dialogState = convoState.CreateProperty&lt;DialogState&gt;("dialogState");
+/// var dialogs = new DialogSet(dialogState); 
+/// var botAuthOptions = new BotAuthenticationOptions { 
+///     ClientId = "{client_id_guid_value}", 
+///     ClientSecret = "{client_secret_value}", 
+///     TenantId = "{tenant_id_guid_value}", 
+///     ApplicationIdUri = "api://botid-{bot_aad_client_id}", 
+///     OAuthAuthority = "https://login.microsoftonline.com/{tenant_id_guid_value}", 
+///     LoginStartPageEndpoint = "https://{bot_web_app_domain}/bot-auth-start" 
+///     };
+///     
+/// var scopes = new string[] { "User.Read" };
+/// var teamsBotSsoPromptSettings = new TeamsBotSsoPromptSettings(botAuthOptions, scopes);
+/// 
+/// dialogs.Add(new TeamsBotSsoPrompt(nameof(TeamsBotSsoPrompt), teamsBotSsoPromptSettings)); 
+/// dialogs.Add(new WaterfallDialog(nameof(WaterfallDialog), new WaterfallStep[] 
+/// { 
+///     async(WaterfallStepContext stepContext, CancellationToken cancellationToken) => {
+///         return await stepContext.BeginDialogAsync(nameof(TeamsBotSsoPrompt), null, cancellationToken);
+///     }, 
+///     async(WaterfallStepContext stepContext, CancellationToken cancellationToken) => { 
+///         var tokenResponse = (TeamsBotSsoPromptTokenResponse)stepContext.Result; 
+///         if (tokenResponse?.Token != null) 
+///         { 
+///             // ... continue with task needing access token ... 
+///         } 
+///         else
+///         {
+///             await stepContext.Context.SendActivityAsync(MessageFactory.Text("Login was not successful please try again."), cancellationToken);
+///         }
+///         return await stepContext.EndDialogAsync(cancellationToken: cancellationToken); 
+///     } 
+/// }));
+/// </code>
+/// 
+/// </example>
 public class TeamsBotSsoPrompt : Dialog
 {
     private readonly TeamsBotSsoPromptSettings _settings;
@@ -39,6 +87,7 @@ public class TeamsBotSsoPrompt : Dialog
     /// custom validation for this prompt.</param>
     /// <remarks>The value of <paramref name="dialogId"/> must be unique within the
     /// <see cref="DialogSet"/> or <see cref="ComponentDialog"/> to which the prompt is added.</remarks>
+    /// <exception cref="ArgumentNullException">When input parameters is null.</exception>
     public TeamsBotSsoPrompt(string dialogId, TeamsBotSsoPromptSettings settings) : base(dialogId)
     {
         if (string.IsNullOrWhiteSpace(dialogId))
@@ -61,6 +110,7 @@ public class TeamsBotSsoPrompt : Dialog
     /// <remarks>
     /// If the task is successful, the result indicates whether the dialog is still active after the turn has been processed by the dialog.
     /// </remarks>
+    /// <exception cref="ArgumentNullException">When dialog context is null.</exception>
     public override async Task<DialogTurnResult> BeginDialogAsync(DialogContext dc, object options = null, CancellationToken cancellationToken = default)
     {
         if (dc == null)
@@ -79,20 +129,18 @@ public class TeamsBotSsoPrompt : Dialog
     }
 
     /// <summary>
-    /// Called when the dialog is _continued_, where it is the active dialog and the
-    /// user replies with a new activity.
+    /// Called when a prompt dialog is the active dialog and the user replied with a new activity.
     /// </summary>
     /// <param name="dc">The <see cref="DialogContext"/> for the current turn of conversation.</param>
     /// <param name="cancellationToken">A cancellation token that can be used by other objects
     /// or threads to receive notice of cancellation.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     /// <remarks>If the task is successful, the result indicates whether the dialog is still
-    /// active after the turn has been processed by the dialog. The result may also contain a
-    /// return value.
-    ///
-    /// If this method is *not* overridden, the dialog automatically ends when the user replies.
-    /// </remarks>
-    /// <seealso cref="DialogContext.ContinueDialogAsync(CancellationToken)"/>
+    /// active after the turn has been processed by the dialog.
+    /// <para>The prompt generally continues to receive the user's replies until it accepts the
+    /// user's reply as valid input for the prompt.</para></remarks>
+    /// <exception cref="ExceptionCode.InternalError">When failed to login with unknown error.</exception>
+    /// <exception cref="ExceptionCode.ServiceError">When failed to get access token from identity server(AAD).</exception>
     public override async Task<DialogTurnResult> ContinueDialogAsync(DialogContext dc, CancellationToken cancellationToken = default(CancellationToken))
     {
         EnsureMsTeamsChannel(dc);
@@ -134,13 +182,14 @@ public class TeamsBotSsoPrompt : Dialog
     }
 
     /// <summary>
-    /// Shared implementation of the RecognizeTokenAsync function. This is intended for internal use, to
-    /// consolidate the implementation of the OAuthPrompt and OAuthInput. Application logic should use
-    /// those dialog classes.
+    /// This is intended for internal use.
     /// </summary>
     /// <param name="dc">DialogContext.</param>
     /// <param name="cancellationToken">CancellationToken.</param>
     /// <returns>PromptRecognizerResult.</returns>
+    /// 
+    /// <exception cref="ExceptionCode.InternalError">When failed to login with unknown error.</exception>
+    /// <exception cref="ExceptionCode.ServiceError">When failed to get access token from identity server(AAD).</exception>
     private async Task<PromptRecognizerResult<TeamsBotSsoPromptTokenResponse>> RecognizeTokenAsync(DialogContext dc, CancellationToken cancellationToken)
     {
 
@@ -277,7 +326,7 @@ public class TeamsBotSsoPrompt : Dialog
     /// <summary>
     /// Get sign in authentication configuration
     /// </summary>
-    /// <param name="loginHint"></param>
+    /// <param name="loginHint">login hint</param>
     /// <returns>sign in resource</returns>
     private SignInResource GetSignInResource(string loginHint)
     {

@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using Microsoft.TeamsFx.Configuration;
-using System.ComponentModel.DataAnnotations;
 
 namespace Microsoft.TeamsFx.Bot;
 
@@ -26,7 +25,6 @@ public class TeamsBotSsoPromptSettings
     /// Gets or sets the array of strings that declare the desired permissions and the resources requested.
     /// </summary>
     /// <value>The array of strings that declare the desired permissions and the resources requested.</value>
-    [Required(ErrorMessage = "Scope is required")]
     public string[] Scopes { get; set; }
 
     /// <summary>

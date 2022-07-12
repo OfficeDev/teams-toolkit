@@ -239,6 +239,37 @@ export class AppStudioPluginImpl {
       manifestString = JSON.stringify(manifestResult.value);
     }
 
+    if (isSPFxProject(ctx.projectSettings)) {
+      manifestString = await this.getSPFxManifest(ctx);
+      manifest = JSON.parse(manifestString);
+    } else {
+      const appManifest = await this.getAppDefinitionAndManifest(ctx, isLocalDebug);
+      if (appManifest.isErr()) {
+        ctx.logProvider?.error(getLocalizedString("error.appstudio.updateManifestFailed"));
+        const isProvisionSucceeded = !!(ctx.envInfo.state
+          .get("solution")
+          ?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean);
+        if (
+          appManifest.error.name === AppStudioError.GetRemoteConfigFailedError.name &&
+          !isProvisionSucceeded
+        ) {
+          return err(
+            AppStudioResultFactory.UserError(
+              AppStudioError.GetRemoteConfigFailedError.name,
+              AppStudioError.GetRemoteConfigFailedError.message(
+                getLocalizedString("error.appstudio.updateManifestFailed"),
+                isProvisionSucceeded
+              ),
+              HelpLinks.WhyNeedProvision
+            )
+          );
+        } else {
+          return err(appManifest.error);
+        }
+      }
+      manifest = appManifest.value[1];
+    }
+
     const manifestFileName =
       `${ctx.root}/${BuildFolderName}/${AppPackageFolderName}/manifest.` +
       (isLocalDebug ? environmentManager.getLocalEnvName() : ctx.envInfo.envName) +

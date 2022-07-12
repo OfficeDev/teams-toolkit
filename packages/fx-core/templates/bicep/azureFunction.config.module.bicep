@@ -8,7 +8,7 @@ param currentConfigs object
 @secure()
 param currentAppSettings object
 
-var functionAppName = split({{azure-function.outputs.resourceId}}, '/')[8]
+var functionAppName = split({{azure-function.outputs.functionAppResourceId}}, '/')[8]
 {{#if (contains "aad-app" connections)}}
 var m365ClientId = provisionParameters['m365ClientId']
   {{#if (contains "key-vault" connections) }}

@@ -127,7 +127,8 @@ export const DefaultAppNameFunc: FuncQuestion = {
 export const QuestionRootFolder: FolderQuestion = {
   type: "folder",
   name: CoreQuestionNames.Folder,
-  title: "Workspace folder",
+  title: getLocalizedString("core.question.workspaceFolder.title"),
+  placeholder: getLocalizedString("core.question.workspaceFolder.placeholder"),
   default: path.join(os.homedir(), ConstantString.RootFolder),
 };
 

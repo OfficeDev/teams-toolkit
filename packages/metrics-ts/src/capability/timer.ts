@@ -2,9 +2,16 @@
  * Timer - measures call-rate of a function and the distribution of the duration of all calls
  */
 import { performance } from "perf_hooks";
-import { timerData, tracePoint } from "../rawData";
+import { timerData, TimerSeverity, tracePoint } from "../rawData";
 import { traceId } from "../tracing";
 import { appendOutput, appendOutputSync } from "../writer";
+
+/**
+ * TODO: allow cutomization
+ * all in millsecond
+ */
+const fast = 1;
+const normal = 20;
 
 export const timer = (fn: string) => {
   /* eslint-disable  @typescript-eslint/no-explicit-any */
@@ -30,9 +37,20 @@ export const timer = (fn: string) => {
         const start = performance.now();
         const result = await originalMethod.apply(this, args);
         const end = performance.now();
+        const duration = end - start;
+        let severity: TimerSeverity;
+        if (duration > normal) {
+          severity = TimerSeverity.Slow;
+        } else if (duration > fast) {
+          severity = TimerSeverity.Normal;
+        } else {
+          severity = TimerSeverity.Fast;
+        }
         const timerData: timerData = {
-          duraion: end - start,
+          duration: duration,
+          severity: severity,
         };
+
         data.timer = timerData;
 
         await appendOutput(data);
@@ -45,9 +63,20 @@ export const timer = (fn: string) => {
         const start = performance.now();
         const result = originalMethod.apply(this, args);
         const end = performance.now();
+        const duration = end - start;
+        let severity: TimerSeverity;
+        if (duration > normal) {
+          severity = TimerSeverity.Slow;
+        } else if (duration > fast) {
+          severity = TimerSeverity.Normal;
+        } else {
+          severity = TimerSeverity.Fast;
+        }
         const timerData: timerData = {
-          duraion: end - start,
+          duration: duration,
+          severity: severity,
         };
+
         data.timer = timerData;
 
         appendOutputSync(data);

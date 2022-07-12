@@ -187,7 +187,7 @@ jobs:
           timeout_minutes: 10
           max_attempts: 5
           command: |
-            npm run setup
+            npm run setup-metrics
 
       - name: Package CLI and install
         working-directory: packages/cli
@@ -217,15 +217,22 @@ jobs:
           name="${name//'.tests.ts'/}"
           name="${name//.\//}"
           name="${name//\//_}"
-          echo "::set-output name=name::$name"
+          echo "::set-output name=name::$name_${{ github.job }}"
 
       - name: Upload test report
         uses: actions/upload-artifact@v2
-        if: failure()
+        if: ${{ failure() }}
         with:
           name: ${{ steps.get-report-name.outputs.name }}.json
           path: |
             ./packages/cli/tests/e2e/mochawesome-report/mochawesome.json
+
+      - name: Upload perf metrics
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ steps.get-report-name.outputs.name }}_metrics.txt
+          path: |
+            /tmp/.metrics/output.txt
 
       - name: Sync to Azure DevOps Test Plan
         if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
@@ -314,7 +321,7 @@ jobs:
 
           done <<< $cases
 
-          body="<table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>Case</th> <th>Status</th> <th>Author</th> <th>Duration</th> <th>URL</th> </tr> $lists </table> <br /> The detail can be found here: <a> https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }} </a>"
+          body="<table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>CASE</th> <th>STATUS</th> <th>AUTHOR</th> <th>DURATION</th> <th>Fast(<1ms)</th> <th>NORMAL(1~20ms)</th> <th>SLOW(>20ms)</th> <th>URL</th> </tr> $lists </table> <br /> The detail can be found here: <a> https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }} </a>"
 
           total=$((passed+failed))
 
@@ -336,7 +343,7 @@ jobs:
           method: POST
           payload: |
             {
-              "to": "${{ steps.list-jobs.outputs.to }}",
+              "to": "haolong@microsoft.com",
               "body": "${{ steps.list-jobs.outputs.body }}",
               "subject": "${{ steps.list-jobs.outputs.subject }}",
               "apiKey": "${{ secrets.MAIL_API_KEY }}"

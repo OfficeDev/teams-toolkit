@@ -468,7 +468,12 @@ export async function executeFunctionAction(
       );
       progressBar.start();
     }
-    const res = await action.execute(context, inputs, progressBar, telemetryProps);
+    const res = await action.execute(
+      context,
+      inputs,
+      progressBar,
+      action.enableTelemetry ? telemetryProps : undefined
+    );
     if (res.isErr()) throw res.error;
     if (res.value) {
       //persist bicep files for bicep effects

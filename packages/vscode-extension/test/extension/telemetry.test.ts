@@ -68,7 +68,8 @@ const vscReporterSpy = spy.interface({
 });
 const cacheSpy = spy.interface({
   addEvent(event: TelemetryEventCache): void {},
-  persistUnsentEventsToDiskAsync(event: TelemetryEventCache): Promise<void> {
+  sendEventsInCache(): void {},
+  persistUncertainEventsToDiskAsync(event: TelemetryEventCache): Promise<void> {
     return Promise.resolve();
   },
 });
@@ -314,7 +315,7 @@ describe("telemetry", () => {
       await clock.nextAsync();
 
       chai
-        .expect(cacheSpy.persistUnsentEventsToDiskAsync)
+        .expect(cacheSpy.persistUncertainEventsToDiskAsync)
         .to.have.been.called.with(expectedArgument);
 
       clock.restore();

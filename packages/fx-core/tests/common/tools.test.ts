@@ -278,5 +278,13 @@ describe("tools", () => {
       const result = getFixedCommonProjectSettings("root-path");
       chai.assert.isUndefined(result);
     });
+
+    it("throw error", async () => {
+      sandbox.stub<any, any>(fs, "pathExistsSync").callsFake((file: string) => {
+        throw new Error("new error");
+      });
+      const result = getFixedCommonProjectSettings("root-path");
+      chai.assert.isUndefined(result);
+    });
   });
 });

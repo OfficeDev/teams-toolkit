@@ -158,7 +158,7 @@ After successfully add SSO in your project, you can also add a new command.
 
     ```javascript
     // for JavaScript:
-    export async function showUserImage(context, ssoToken, param) {
+    async function showUserImage(context, ssoToken, param) {
         await context.sendActivity("Retrieving user photo from Microsoft Graph ...");
     
         // Init TeamsFx instance with SSO token
@@ -171,7 +171,9 @@ After successfully add SSO in your project, you can also add a new command.
         // let photoUrl = "";
         // try {
         //   const photo = await graphClient.api("/me/photo/$value").get();
-        //   photoUrl = URL.createObjectURL(photo);
+        //   const arrayBuffer = await photo.arrayBuffer();
+        //   const buffer=Buffer.from(arrayBuffer, 'binary');
+        //   photoUrl = "data:image/png;base64," + buffer.toString("base64");
         // } catch {
         //   // Could not fetch photo from user's profile, return empty string as placeholder.
         // }
@@ -185,6 +187,10 @@ After successfully add SSO in your project, you can also add a new command.
     
         return;
     }
+
+    module.exports = {
+      showUserImage,
+    };
     ```
 
 1. Register a new command using `addCommand` in `teamsSsoBot`:

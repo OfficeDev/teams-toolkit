@@ -53,7 +53,6 @@ import "./connection/azureWebAppConfig";
 import "./connection/azureFunctionConfig";
 import "./connection/apimConfig";
 
-import { WriteProjectSettingsAction } from "./projectSettingsManager";
 import { ComponentNames } from "./constants";
 import { getLocalizedString } from "../common/localizeUtils";
 import { getResourceGroupInPortal } from "../common/tools";
@@ -124,7 +123,6 @@ export class TeamsfxCore {
           targetAction: "env-manager.create",
           required: true,
         },
-        WriteProjectSettingsAction,
       ],
     };
     return ok(action);
@@ -134,8 +132,6 @@ export class TeamsfxCore {
     inputs: InputsWithProjectPath
   ): Promise<Result<Action | undefined, FxError>> {
     const ctx = context as ProvisionContextV3;
-    const filePath = getProjectSettingsPath(inputs.projectPath);
-    ctx.projectSetting = (await fs.readJson(filePath)) as ProjectSettingsV3;
     const resourcesToProvision = ctx.projectSetting.components.filter((r) => r.provision);
     const provisionActions: Action[] = resourcesToProvision.map((r) => {
       return {

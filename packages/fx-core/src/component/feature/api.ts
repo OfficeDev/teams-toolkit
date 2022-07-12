@@ -30,7 +30,6 @@ import { FunctionScaffold } from "../../plugins/resource/function/ops/scaffold";
 import { functionNameQuestion } from "../../plugins/resource/function/question";
 import { ErrorMessages } from "../../plugins/resource/function/resources/message";
 import { ComponentNames } from "../constants";
-import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "../projectSettingsManager";
 import { getComponent } from "../workflow";
 import * as path from "path";
 @Service(ComponentNames.TeamsApi)
@@ -44,7 +43,6 @@ export class TeamsApi {
     const functionName: string =
       (inputs?.[QuestionKey.functionName] as string) ?? DefaultValues.functionName;
     const actions: Action[] = [
-      LoadProjectSettingsAction,
       {
         name: "fx.configApi",
         type: "function",
@@ -139,7 +137,6 @@ export class TeamsApi {
         required: true,
         targetAction: "debug.generateLocalDebugSettings",
       },
-      WriteProjectSettingsAction,
     ];
     const group: GroupAction = {
       type: "group",

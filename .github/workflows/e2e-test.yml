@@ -216,8 +216,8 @@ jobs:
           name="${{ matrix.cases }}"
           name="${name//'.tests.ts'/}"
           name="${name//.\//}"
-          name="${name//\//_}"
-          echo "::set-output name=name::$name_${{ github.job }}"
+          name="${name//\//_}"_${{ github.job }}
+          echo "::set-output name=name::$name"
 
       - name: Upload test report
         uses: actions/upload-artifact@v2
@@ -256,12 +256,17 @@ jobs:
         id: list-jobs
         working-directory: packages/cli
         run: |
-          result=`curl \
+          jobs=`curl \
             -u :${{ secrets.GITHUB_TOKEN }}\
             https://api.github.com/repos/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs?per_page=100`
 
+          artifacts=`curl \
+            -u :${{ secrets.GITHUB_TOKEN }}\
+            https://api.github.com/repos/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}/artifacts?per_page=100`
 
-          cases=`echo $result | jq -r '.jobs[] | select(.name | contains("tests.ts")) | .name'`
+          echo $artifacts
+
+          cases=`echo $jobs| jq -r '.jobs[] | select(.name | contains("tests.ts")) | .name'`
 
           lists=""
           passed=0
@@ -282,14 +287,14 @@ jobs:
               email=`grep '@author' $file | grep -i -o '[A-Z0-9._%+-]\+@[A-Z0-9.-]\+\.[A-Z]\{2,4\}'`
             fi
 
-            status=`echo $result | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .conclusion'`
+            status=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .conclusion'`
 
             if [[ ! -z "$email" && ! "$emails" == *"$email"* && "$status" == "failure" ]]; then
               emails="$emails;$email"
             fi
 
-            started_at=`echo $result | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .started_at'`
-            completed_at=`echo $result | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .completed_at'`
+            started_at=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .started_at'`
+            completed_at=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .completed_at'`
             duration=`dateutils.ddiff $started_at $completed_at -f "%Mm %Ss"`
 
             author=""
@@ -308,7 +313,7 @@ jobs:
               label="<span style=\\\"background-color: #dc322f;color:white;font-weight:bold;\\\">FAILED</span>"
             fi
 
-            url=`echo $result | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .html_url'`
+            url=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .html_url'`
             url="<a href=\\\"$url\\\">For Detail</a>"
 
             row="<tr> <td style=\\\"text-align: left;\\\">$elegant_path</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> <td>$duration</td> <td>$url</td> </tr>"

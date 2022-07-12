@@ -13,9 +13,7 @@ import { GeneratorChecker } from "../../../../../src/plugins/resource/spfx/depsC
 import { cpUtils } from "../../../../../src/plugins/solution/fx-solution/utils/depsChecker/cpUtils";
 import * as uuid from "uuid";
 import { ok, Void } from "@microsoft/teamsfx-api";
-import { Container } from "typedi";
-import * as appManifest from "../../../../../src/component/resource/appManifest/appManifest";
-import { BuiltInFeaturePluginNames } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
+import { DefaultManifestProvider } from "../../../../../src/component/resource/appManifest/manifestProvider";
 
 describe("SPFxScaffold", function () {
   const testFolder = path.resolve("./tmp");
@@ -36,7 +34,9 @@ describe("SPFxScaffold", function () {
     sinon.stub(fs, "rename").resolves();
     sinon.stub(fs, "copyFile").resolves();
     sinon.stub(fs, "remove").resolves();
-    sinon.stub(appManifest, "addCapabilities").resolves(ok(undefined));
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readJson").resolves({});
+    sinon.stub(DefaultManifestProvider.prototype, "updateCapability").resolves(ok(Void));
   });
 
   it("scaffold SPFx project without framework", async function () {

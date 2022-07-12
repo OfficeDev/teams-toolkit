@@ -9,10 +9,10 @@ module azureWebApp{{componentName}}Provision './provision/azureWebApp{{component
 
 output azureWebApp{{componentName}}Output object = {
   teamsFxPluginId: '{{componentId}}'
-  sku: azureWebApp{{componentName}}Provision.outputs.sku
-  appName: azureWebApp{{componentName}}Provision.outputs.appName
-  domain: azureWebApp{{componentName}}Provision.outputs.domain
+  skuName: azureWebApp{{componentName}}Provision.outputs.skuName
+  siteName: azureWebApp{{componentName}}Provision.outputs.siteName
+  validDomain: azureWebApp{{componentName}}Provision.outputs.validDomain
   appServicePlanName: azureWebApp{{componentName}}Provision.outputs.appServicePlanName
   resourceId: azureWebApp{{componentName}}Provision.outputs.resourceId
-  endpoint: azureWebApp{{componentName}}Provision.outputs.endpoint
+  siteEndpoint: azureWebApp{{componentName}}Provision.outputs.siteEndpoint
 }

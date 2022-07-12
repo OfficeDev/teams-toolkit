@@ -101,6 +101,14 @@ export const EnvStateMigrationComponentNames = [
   ["fx-resource-frontend-hosting", ComponentNames.TeamsTab],
 ];
 
+export function pluginName2ComponentName(pluginName: string): string {
+  const map = new Map<string, string>();
+  EnvStateMigrationComponentNames.forEach((e) => {
+    map.set(e[0], e[1]);
+  });
+  return map.get(pluginName) || pluginName;
+}
+
 /**
  * convert envState from V3 to V2
  */
@@ -291,4 +299,14 @@ function connectComponents(settingsV3: ProjectSettingsV3) {
 
 export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3) {
   return settingsV3;
+}
+
+export function convertManifestTemplateToV3(content: string): string {
+  for (const pluginAndComponentArray of EnvStateMigrationComponentNames) {
+    const pluginName = pluginAndComponentArray[0];
+    const componentName = pluginAndComponentArray[1];
+    if (pluginName !== componentName)
+      content = content.replace(new RegExp(pluginName, "g"), componentName);
+  }
+  return content;
 }

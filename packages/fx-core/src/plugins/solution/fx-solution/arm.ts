@@ -58,6 +58,8 @@ import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/uti
 import { NamedArmResourcePluginAdaptor } from "./v2/adaptor";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { convertToAlphanumericOnly, getProjectTemplatesFolderPath } from "../../../common/utils";
+import { isV3 } from "../../../core";
+import { pluginName2ComponentName } from "../../../component/migrate";
 
 const bicepOrchestrationFileName = "main.bicep";
 const bicepOrchestrationProvisionMainFileName = "mainProvision.bicep";
@@ -598,8 +600,11 @@ function syncArmOutput(envInfo: EnvInfo | v3.EnvInfoV3, armOutput: any) {
           const pluginOutput = moduleOutput[moduleOutputKey].value;
 
           if (pluginOutput instanceof Object) {
-            const pluginId = pluginOutput[TEAMS_FX_RESOURCE_ID_KEY];
+            let pluginId = pluginOutput[TEAMS_FX_RESOURCE_ID_KEY];
             if (pluginId) {
+              if (isV3()) {
+                pluginId = pluginName2ComponentName(pluginId);
+              }
               const pluginOutputKeys = Object.keys(pluginOutput);
               for (const pluginOutputKey of pluginOutputKeys) {
                 if (pluginOutputKey != TEAMS_FX_RESOURCE_ID_KEY) {

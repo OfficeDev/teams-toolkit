@@ -141,6 +141,7 @@ import { createContextV3 } from "../component/utils";
 import "../component/core";
 import { QuestionModelMW_V3 } from "./middleware/questionModelV3";
 import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
+import { hasFunction } from "../common/projectSettingsHelperV3";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -338,7 +339,7 @@ export class FxCore implements v3.ICore {
     return result;
   }
 
-  @hooks([ErrorHandlerMW, QuestionModelMW_V3, ContextInjectorMW])
+  @hooks([ErrorHandlerMW, QuestionModelMW_V3, ContextInjectorMW, ProjectSettingsWriterMW])
   async createProjectV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     if (!ctx) {
       return err(new ObjectIsUndefinedError("ctx for createProject"));
@@ -393,6 +394,7 @@ export class FxCore implements v3.ICore {
         const res = await runAction("spfx-tab.add", context, inputs as InputsWithProjectPath);
         if (res.isErr()) return err(res.error);
       }
+      ctx.projectSettings = context.projectSetting;
     }
     if (inputs.platform === Platform.VSCode) {
       await globalStateUpdate(automaticNpmInstall, true);
@@ -467,6 +469,7 @@ export class FxCore implements v3.ICore {
     const res = await runAction("fx.provision", context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
+    ctx!.envInfoV3 = context.envInfo;
     return ok(Void);
   }
 
@@ -765,6 +768,11 @@ export class FxCore implements v3.ICore {
     } else if (feature === SingleSignOnOptionItem.id) {
       res = await runAction("sso.add", context, inputs as InputsWithProjectPath);
     } else if (feature === AzureResourceApim.id) {
+      const hasFunc = hasFunction(context.projectSetting);
+      if (!hasFunc) {
+        res = await runAction("teams-api.add", context, inputs as InputsWithProjectPath);
+        if (res.isErr()) return err(res.error);
+      }
       res = await runAction("apim-feature.add", context, inputs as InputsWithProjectPath);
     } else {
       return err(new NotImplementedError(feature));

@@ -26,7 +26,6 @@ import {
   FunctionsHttpTriggerOptionItem,
   FunctionsTimerTriggerOptionItem,
 } from "../../plugins/resource/bot/question";
-import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "../projectSettingsManager";
 import { getComponent } from "../workflow";
 import { CoreQuestionNames } from "../../core/question";
 import "../code/botCode";
@@ -93,8 +92,27 @@ export class TeamsBot {
     } else {
       scenarios.push(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
     }
+    const configActions: Action[] = [
+      {
+        name: `call:${inputs.hosting}-config.generateBicep`,
+        type: "call",
+        required: true,
+        targetAction: `${inputs.hosting}-config.generateBicep`,
+        inputs: {
+          componentId: this.name,
+          componentName: "Bot",
+        },
+      },
+    ];
+    if (getComponent(context.projectSetting, ComponentNames.APIM) !== undefined) {
+      configActions.push({
+        name: "call:apim-config.generateBicep",
+        type: "call",
+        required: true,
+        targetAction: "apim-config.generateBicep",
+      });
+    }
     const actions: Action[] = [
-      LoadProjectSettingsAction,
       {
         name: "fx.configBot",
         type: "function",
@@ -187,16 +205,7 @@ export class TeamsBot {
           componentName: "Bot",
         },
       },
-      {
-        name: `call:${inputs.hosting}-config.generateBicep`,
-        type: "call",
-        required: true,
-        targetAction: `${inputs.hosting}-config.generateBicep`,
-        inputs: {
-          componentId: this.name,
-          componentName: "Bot",
-        },
-      },
+      ...configActions,
       {
         name: "call:app-manifest.addCapability",
         type: "call",
@@ -212,7 +221,6 @@ export class TeamsBot {
         required: true,
         targetAction: "debug.generateLocalDebugSettings",
       },
-      WriteProjectSettingsAction,
     ];
     const group: GroupAction = {
       type: "group",

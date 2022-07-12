@@ -37,6 +37,8 @@ import {
   MessageExtensionNewUIItem,
   BotNewUIOptionItem,
 } from "../plugins/solution/fx-solution/question";
+import { resourceGroupHelper } from "../plugins/solution/fx-solution/utils/ResourceGroupHelper";
+import { ResourceManagementClient } from "@azure/arm-resources";
 
 export enum CoreQuestionNames {
   AppName = "app-name",
@@ -495,12 +497,11 @@ export const QuestionSelectResourceGroup: SingleSelectQuestion = {
   skipSingleOption: true,
   forgetLastValue: true,
 };
-
-export const QuestionNewResourceGroupName: TextInputQuestion = {
-  type: "text",
-  name: CoreQuestionNames.NewResourceGroupName,
-  title: getLocalizedString("core.QuestionNewResourceGroupName.title"),
-  validation: {
+export function newResourceGroupNameQuestion(
+  rmClient: ResourceManagementClient
+): TextInputQuestion {
+  const question = QuestionNewResourceGroupName;
+  question.validation = {
     validFunc: async (input: string): Promise<string | undefined> => {
       const name = input as string;
       // https://docs.microsoft.com/en-us/rest/api/resources/resource-groups/create-or-update#uri-parameters
@@ -508,10 +509,22 @@ export const QuestionNewResourceGroupName: TextInputQuestion = {
       if (!match) {
         return getLocalizedString("core.QuestionNewResourceGroupName.validation");
       }
-
+      const maybeExist = await resourceGroupHelper.checkResourceGroupExistence(name, rmClient);
+      if (maybeExist.isErr()) {
+        return maybeExist.error.message;
+      }
+      if (maybeExist.value) {
+        return `resource group already exists: ${name}`;
+      }
       return undefined;
     },
-  },
+  };
+  return question;
+}
+export const QuestionNewResourceGroupName: TextInputQuestion = {
+  type: "text",
+  name: CoreQuestionNames.NewResourceGroupName,
+  title: getLocalizedString("core.QuestionNewResourceGroupName.title"),
   placeholder: getLocalizedString("core.QuestionNewResourceGroupName.placeholder"),
   // default resource group name will change with env name
   forgetLastValue: true,

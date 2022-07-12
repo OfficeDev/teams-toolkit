@@ -14,6 +14,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
+import { hasFunction } from "../../common/projectSettingsHelperV3";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { getProjectSettingsPath } from "../../core/middleware/projectSettingsLoader";
 import { buildAnswer } from "../../plugins/resource/apim/answer";

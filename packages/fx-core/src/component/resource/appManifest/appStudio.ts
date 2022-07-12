@@ -32,9 +32,6 @@ import { AppStudioResultFactory } from "../../../plugins/resource/appstudio/resu
 import { convertToAppDefinition } from "../../../plugins/resource/appstudio/utils/utils";
 import { readAppManifest } from "./utils";
 
-/**
- * not support the scenario: user provide app package
- */
 export async function createOrUpdateTeamsApp(
   ctx: v2.Context,
   inputs: InputsWithProjectPath,

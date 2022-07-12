@@ -22,6 +22,7 @@ import {
   ActionNames,
   ActionTypeFunction,
   TelemetryConstants,
+  ComponentStateKeys,
 } from "../../../constants";
 import { ActionLogger, LoggerMW } from "../../../middleware/logger";
 import { ProgressBarMW } from "../../../middleware/progressbar";
@@ -71,7 +72,7 @@ export class ConfigureActionImplement {
     const ctx = context as ProvisionContextV3;
     const actionContext = context as ActionContext;
     const solutionConfig = ctx.envInfo.state.solution as v3.AzureSolutionConfig;
-    const state = ctx.envInfo.state[ComponentNames.AzureSQL];
+    const state = ctx.envInfo.state[ComponentStateKeys[ComponentNames.AzureSQL]];
     const sqlMgrConfig = LoadManagementConfig(state);
     const sqlMgrClient = await ManagementClient.create(
       ctx.tokenProvider.azureAccountProvider,
@@ -119,7 +120,7 @@ export class ConfigureActionImplement {
       if (adminInfo.userType === UserType.User) {
         actionContext.progressBar?.next(ConfigureActionImplement.progressMessage.addUser);
         const sqlClient = await SqlClient.create(ctx.tokenProvider.azureAccountProvider, sqlConfig);
-        ctx.logProvider?.info(Message.addDatabaseUser(identity));
+        actionContext.logger?.info(Message.addDatabaseUser(identity));
         await UtilFunctions.addDatabaseUser(ctx.logProvider, sqlClient, sqlMgrClient);
       } else {
         const message = ErrorMessage.ServicePrincipalWarning(
@@ -194,7 +195,7 @@ export class UtilFunctions {
   }
 
   static getIdentity(ctx: ProvisionContextV3): string {
-    const config = ctx.envInfo.state[ComponentNames.Identity];
+    const config = ctx.envInfo.state[ComponentStateKeys[ComponentNames.Identity]];
     const identity = config[Constants.identityName] as string;
     if (!identity) {
       const error = SqlResultFactory.SystemError(

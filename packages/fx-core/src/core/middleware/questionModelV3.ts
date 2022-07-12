@@ -5,7 +5,6 @@ import { Middleware, NextFunction } from "@feathersjs/hooks";
 import {
   DynamicPlatforms,
   err,
-  Func,
   FxError,
   Inputs,
   MultiSelectQuestion,
@@ -46,6 +45,7 @@ import {
   AzureResourceApimNewUI,
   AzureResourceKeyVaultNewUI,
   AzureResourceSQLNewUI,
+  AzureResourceFunctionNewUI,
   BotNewUIOptionItem,
   CicdOptionItem,
   CommandAndResponseOptionItem,
@@ -251,6 +251,8 @@ async function getQuestionsForAddFeature(
   if (hasBot(projectSettingsV3) || hasFunction(projectSettingsV3)) {
     options.push(ApiConnectionOptionItem);
   }
+  // function can always be added
+  options.push(AzureResourceFunctionNewUI);
   const isCicdAddable = await canAddCICDWorkflows(inputs, ctx);
   if (isCicdAddable) {
     options.push(CicdOptionItem);

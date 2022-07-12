@@ -1,15 +1,17 @@
+using {{SafeProjectName}}.Models;
+using AdaptiveCards.Templating;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Microsoft.TeamsFx.Conversation;
+using Newtonsoft.Json;
+
+using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
+
 namespace {{SafeProjectName}}
 {
-    using {{SafeProjectName}}.Models;
-    using AdaptiveCards.Templating;
-    using Microsoft.Azure.WebJobs;
-    using Microsoft.Azure.WebJobs.Extensions.Http;
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.AspNetCore.Mvc;
-    using Newtonsoft.Json;
-    using Microsoft.Extensions.Logging;
-    using Microsoft.TeamsFx.Conversation;
-
     public sealed class NotifyHttpTrigger
     {
         private readonly ConversationBot _conversation;
@@ -28,7 +30,7 @@ namespace {{SafeProjectName}}
 
             // Read adaptive card template
             var adaptiveCardFilePath = Path.Combine(context.FunctionAppDirectory, "Resources", "NotificationDefault.json");
-            var cardTemplate = await System.IO.File.ReadAllTextAsync(adaptiveCardFilePath, req.HttpContext.RequestAborted);
+            var cardTemplate = await File.ReadAllTextAsync(adaptiveCardFilePath, req.HttpContext.RequestAborted);
 
             var installations = await _conversation.Notification.GetInstallationsAsync(req.HttpContext.RequestAborted);
             foreach (var installation in installations)

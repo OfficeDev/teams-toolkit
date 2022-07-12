@@ -58,7 +58,28 @@ export class DotnetBotImpl extends TeamsBotImpl {
     await super.postLocalDebug(context);
     const appSettingsPath = path.join(context.root, PathInfo.appSettingDevelopment);
     try {
-      let appSettings = await fs.readFile(appSettingsPath, "utf-8");
+      let appSettings: string;
+      if (await fs.pathExists(appSettingsPath)) {
+        appSettings = await fs.readFile(appSettingsPath, "utf-8");
+      } else {
+        // if appsetting file not exist, generate a new one
+        // TODO(qidon): load content from resource file or template
+        appSettings =
+          '\
+{\r\n\
+  "Logging": {\r\n\
+    "LogLevel": {\r\n\
+      "Default": "Information",\r\n\
+      "Microsoft": "Warning",\r\n\
+      "Microsoft.Hosting.Lifetime": "Information"\r\n\
+    }\r\n\
+  },\r\n\
+  "AllowedHosts": "*",\r\n\
+  "BOT_ID": "$botId$",\r\n\
+  "BOT_PASSWORD": "$bot-password$"\r\n\
+}\r\n';
+      }
+
       const botId = context.envInfo.state.get(PluginNames.BOT)?.get(PluginBot.BOT_ID);
       const botPassword = context.envInfo.state.get(PluginNames.BOT)?.get(PluginBot.BOT_PASSWORD);
       if (!botId && !botPassword) {

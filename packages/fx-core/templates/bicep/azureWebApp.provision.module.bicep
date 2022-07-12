@@ -16,7 +16,7 @@ resource serverfarm 'Microsoft.Web/serverfarms@2021-02-01' = {
   }
 }
 
-// Web App that hosts your bot
+// Web App that hosts your app
 resource webApp 'Microsoft.Web/sites@2021-02-01' = {
   kind: 'app'
   location: resourceGroup().location
@@ -34,24 +34,24 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
           name: 'SCM_SCRIPT_GENERATOR_ARGS'
           value: '--node' // Register as node server
         }
-        {{else}}
-        {
-          name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
-          value: 'true' // Execute build steps on your site during deployment
-        }
-        {{/if}}
         {
           name: 'RUNNING_ON_AZURE'
           value: '1'
         }
+        {{else}}
+        {
+          name: 'WEBSITE_RUN_FROM_PACKAGE'
+          value: '1'
+        }
+        {{/if}}
       ]
     }
   }
 }
 
-output sku string = webAppSKU
-output appName string = webAppName
-output domain string = webApp.properties.defaultHostName
+output skuName string = webAppSKU
+output siteName string = webAppName
+output validDomain string = webApp.properties.defaultHostName
 output appServicePlanName string = serverfarmsName
 output resourceId string = webApp.id
-output endpoint string = 'https://${webApp.properties.defaultHostName}'
+output siteEndpoint string = 'https://${webApp.properties.defaultHostName}'

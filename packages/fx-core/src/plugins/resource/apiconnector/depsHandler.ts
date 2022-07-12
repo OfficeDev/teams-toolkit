@@ -27,7 +27,7 @@ export class DepsHandler {
   public static async getDepsConfig(): Promise<Json> {
     const configPath = path.join(getTemplatesFolder(), "plugins", "resource", "apiconnector");
     const sdkConfigPath = path.join(configPath, Constants.pkgJsonFile);
-    const sdkContent: Json = await fs.readJson(sdkConfigPath);
+    const sdkContent: Json = fs.readJsonSync(sdkConfigPath);
     return sdkContent.dependencies;
   }
 
@@ -36,10 +36,11 @@ export class DepsHandler {
     component: string
   ): Promise<boolean> {
     const localPkgPath = path.join(projectPath, component, Constants.pkgJsonFile);
-    if (!(await fs.pathExists(localPkgPath))) {
+    // fs.pathExist and fs.readJson in CLI question validation will cause unexpected behaviors
+    if (!fs.pathExistsSync(localPkgPath)) {
       return false;
     }
-    const pkgContent = await fs.readJson(localPkgPath);
+    const pkgContent = fs.readJsonSync(localPkgPath);
     const depsConfig: Json = await DepsHandler.getDepsConfig();
     for (const pkgItem in depsConfig) {
       if (

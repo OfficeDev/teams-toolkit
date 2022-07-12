@@ -1215,20 +1215,34 @@ export async function validateSpfxDependenciesHandler(): Promise<string | undefi
  * Check & install required local prerequisites before local debug.
  */
 export async function validateLocalPrerequisitesHandler(): Promise<string | undefined> {
-  if (commonUtils.checkAndSkipDebugging()) {
-    // return non-zero value to let task "exit ${command:xxx}" to exit
-    return "1";
+  const additionalProperties: { [key: string]: string } = {};
+  {
+    // If we know this session is concurrently running with another session, send that correlationId in `debug-all-start` event.
+    // Mostly, this happens when user stops debugging while preLaunchTasks are running and immediately hit F5 again.
+    const session = commonUtils.getLocalDebugSession();
+    if (session.id !== commonUtils.DebugNoSessionId) {
+      additionalProperties[TelemetryProperty.DebugConcurrentCorrelationId] = session.id;
+      // Indicates in which stage (of the first F5) the user hits F5 again.
+      additionalProperties[TelemetryProperty.DebugConcurrentLastEventName] =
+        localTelemetryReporter.getLastEventName();
+    }
   }
+  return await Correlator.runWithId(commonUtils.startLocalDebugSession(), async () => {
+    if (commonUtils.checkAndSkipDebugging()) {
+      // return non-zero value to let task "exit ${command:xxx}" to exit
+      return "1";
+    }
 
-  await sendDebugAllStartEvent();
-  const result = await localPrerequisites.checkAndInstall();
-  if (result.isErr()) {
-    // Only local debug use validate-local-prerequisites command
-    await sendDebugAllEvent(result.error);
-    commonUtils.endLocalDebugSession();
-    // return non-zero value to let task "exit ${command:xxx}" to exit
-    return "1";
-  }
+    await sendDebugAllStartEvent(additionalProperties);
+    const result = await localPrerequisites.checkAndInstall();
+    if (result.isErr()) {
+      // Only local debug use validate-local-prerequisites command
+      await sendDebugAllEvent(result.error);
+      commonUtils.endLocalDebugSession();
+      // return non-zero value to let task "exit ${command:xxx}" to exit
+      return "1";
+    }
+  });
 }
 
 /*
@@ -2984,7 +2998,11 @@ export async function openDocumentLinkHandler(args?: any[]): Promise<Result<bool
   });
   switch (node.contextValue) {
     case "signinM365": {
-      return VS_CODE_UI.openUrl("https://www.office.com/");
+      await vscode.commands.executeCommand("workbench.action.openWalkthrough", {
+        category: "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStarted",
+        step: "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStarted#teamsToolkitCreateFreeAccount",
+      });
+      return Promise.resolve(ok(true));
     }
     case "signinAzure": {
       return VS_CODE_UI.openUrl("https://portal.azure.com/");

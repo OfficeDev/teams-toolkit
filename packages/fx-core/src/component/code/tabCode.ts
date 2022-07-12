@@ -44,6 +44,10 @@ import { ComponentNames } from "../constants";
 import { getComponent } from "../workflow";
 import { convertToLangKey } from "./botCode";
 import { envFilePath, EnvKeys, saveEnvFile } from "../../plugins/resource/frontend/env";
+import { isVSProject } from "../../common/projectSettingsHelper";
+import { DotnetCommands } from "../../plugins/resource/frontend/dotnet/constants";
+import { Utils } from "../../plugins/resource/frontend/utils";
+import { CommandExecutionError } from "../../plugins/resource/bot/errors";
 /**
  * tab scaffold
  */
@@ -77,7 +81,7 @@ export class TabCodeProvider implements SourceCodeProvider {
         const folder = inputs.folder || language === "csharp" ? "" : FrontendPathInfo.WorkingDir;
         const teamsTab = getComponent(projectSettings, ComponentNames.TeamsTab);
         if (!teamsTab) return ok([]);
-        merge(teamsTab, { build: true, provision: true, folder: folder });
+        merge(teamsTab, { build: true, provision: language != "csharp", folder: folder });
         const langKey = convertToLangKey(language);
         const workingDir = path.join(inputs.projectPath, folder);
         const hasFunction = false; //TODO
@@ -184,9 +188,16 @@ export class TabCodeProvider implements SourceCodeProvider {
         const ctx = context as ProvisionContextV3;
         const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
         if (!teamsTab) return ok([]);
-        const tabDir = path.join(inputs.projectPath, teamsTab.folder!);
-        await FrontendDeployment.doFrontendBuildV3(tabDir, ctx.envInfo.envName);
-        return ok([`build project: ${tabDir}`]);
+        if (teamsTab.folder == undefined) throw new Error("path not found");
+        const tabPath = path.resolve(inputs.projectPath, teamsTab.folder);
+        const artifactFolder = isVSProject(context.projectSetting)
+          ? await this.doBlazorBuild(tabPath)
+          : await this.doReactBuild(tabPath, ctx.envInfo.envName);
+        merge(teamsTab, {
+          build: true,
+          artifactFolder: path.join(teamsTab.folder, artifactFolder),
+        });
+        return ok([`build project: ${tabPath}`]);
       },
     };
     return ok(action);
@@ -200,8 +211,32 @@ export class TabCodeProvider implements SourceCodeProvider {
       }
     };
 
-    // TODO: add environemnt variables for aad, simple auth and function api
+    const connections = getComponent(ctx.projectSetting, ComponentNames.TeamsTab)?.connections;
+    if (connections?.includes(ComponentNames.TeamsApi)) {
+      const teamsApi = getComponent(ctx.projectSetting, ComponentNames.TeamsApi);
+      addToEnvs(EnvKeys.FuncName, teamsApi?.functionNames[0]);
+      addToEnvs(
+        EnvKeys.FuncEndpoint,
+        // TODO: Read function app endpoint from inputs
+        ctx.envInfo?.state?.[ComponentNames.TeamsApi]?.functionEndpoint as string
+      );
+    }
+
+    // TODO: add environment variables for aad, simple auth
     addToEnvs(EnvKeys.StartLoginPage, DependentPluginInfo.StartLoginPageURL);
     return envs;
+  }
+  private async doBlazorBuild(tabPath: string): Promise<string> {
+    const command = DotnetCommands.buildRelease("win-x86");
+    try {
+      await Utils.execute(command, tabPath);
+    } catch (e) {
+      throw new CommandExecutionError(command, tabPath, e);
+    }
+    return path.join("bin", "Release", "net6.0", "win-x86", "publish");
+  }
+  private async doReactBuild(tabPath: string, envName: string): Promise<string> {
+    await FrontendDeployment.doFrontendBuildV3(tabPath, envName);
+    return "build";
   }
 }

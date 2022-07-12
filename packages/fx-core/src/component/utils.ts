@@ -5,6 +5,7 @@
 import {
   Bicep,
   CallServiceEffect,
+  Component,
   ConfigurationBicep,
   ContextV3,
   err,
@@ -29,6 +30,7 @@ import * as uuid from "uuid";
 import { getProjectSettingsVersion } from "../common/projectSettingsHelper";
 import { DefaultManifestProvider } from "./resource/appManifest/manifestProvider";
 import { getProjectTemplatesFolderPath } from "../common/utils";
+import { getComponent } from "./workflow";
 
 export async function persistProvisionBicep(
   projectPath: string,
@@ -440,4 +442,26 @@ export function generateResourceBaseName(appName: string, envName: string): stri
     normalizedEnvName.substr(0, maxEnvNameLength) +
     uuid.v4().substr(0, 6)
   );
+}
+
+export function isInComponentConnection(component: Component, item: string): boolean {
+  if (component.connections?.includes(item)) {
+    return true;
+  }
+  return false;
+}
+
+export function getHostingComponent(
+  component: Component,
+  projectSettings: ProjectSettingsV3
+): Component | undefined {
+  if (component.hosting) {
+    return getComponent(projectSettings, component.hosting);
+  }
+  return undefined;
+}
+
+// TODO:implement after V3 project setting update
+export function isHostedByAzure(context: ContextV3): boolean {
+  return true;
 }

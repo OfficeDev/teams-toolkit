@@ -26,14 +26,14 @@ import {
   FunctionsHttpTriggerOptionItem,
   FunctionsTimerTriggerOptionItem,
 } from "../../plugins/resource/bot/question";
-import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "../projectSettingsManager";
 import { getComponent } from "../workflow";
 import { CoreQuestionNames } from "../../core/question";
 import "../code/botCode";
 import "../resource/appManifest/appManifest";
 import "../resource/botService";
-import "../resource/azureWebApp";
+import "../resource/azureAppService/azureWebApp";
 import "../connection/azureWebAppConfig";
+import { ComponentNames } from "../constants";
 @Service("teams-bot")
 export class TeamsBot {
   name = "teams-bot";
@@ -92,8 +92,27 @@ export class TeamsBot {
     } else {
       scenarios.push(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
     }
+    const configActions: Action[] = [
+      {
+        name: `call:${inputs.hosting}-config.generateBicep`,
+        type: "call",
+        required: true,
+        targetAction: `${inputs.hosting}-config.generateBicep`,
+        inputs: {
+          componentId: this.name,
+          componentName: "Bot",
+        },
+      },
+    ];
+    if (getComponent(context.projectSetting, ComponentNames.APIM) !== undefined) {
+      configActions.push({
+        name: "call:apim-config.generateBicep",
+        type: "call",
+        required: true,
+        targetAction: "apim-config.generateBicep",
+      });
+    }
     const actions: Action[] = [
-      LoadProjectSettingsAction,
       {
         name: "fx.configBot",
         type: "function",
@@ -137,6 +156,10 @@ export class TeamsBot {
               `connect 'azure-sql' to hosting component '${inputs.hosting}' in projectSettings`
             );
           }
+          const apimConfig = getComponent(projectSettings, ComponentNames.APIM);
+          if (apimConfig) {
+            apimConfig.connections?.push("teams-bot");
+          }
           projectSettings.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
           return ok([
             {
@@ -167,19 +190,22 @@ export class TeamsBot {
         type: "call",
         required: true,
         targetAction: `${inputs.hosting}.generateBicep`,
+        inputs: {
+          componentId: this.name,
+          componentName: "Bot",
+        },
       },
       {
         name: "call:bot-service.generateBicep",
         type: "call",
         required: true,
         targetAction: "bot-service.generateBicep",
+        inputs: {
+          componentId: this.name,
+          componentName: "Bot",
+        },
       },
-      {
-        name: `call:${inputs.hosting}-config.generateBicep`,
-        type: "call",
-        required: true,
-        targetAction: `${inputs.hosting}-config.generateBicep`,
-      },
+      ...configActions,
       {
         name: "call:app-manifest.addCapability",
         type: "call",
@@ -195,7 +221,6 @@ export class TeamsBot {
         required: true,
         targetAction: "debug.generateLocalDebugSettings",
       },
-      WriteProjectSettingsAction,
     ];
     const group: GroupAction = {
       type: "group",

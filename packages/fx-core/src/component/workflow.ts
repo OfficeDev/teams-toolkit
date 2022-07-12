@@ -3,6 +3,7 @@
 
 import {
   Action,
+  assembleError,
   Bicep,
   Component,
   ContextV3,
@@ -35,29 +36,43 @@ import {
   persistBicepPlans,
   serviceEffectPlanString,
 } from "./utils";
-import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { convertToAlphanumericOnly } from "../common/utils";
+import { ActionNotExist, ComponentNotExist } from "./error";
 
 export async function getAction(
   name: string,
   context: ContextV3,
-  inputs: InputsWithProjectPath
+  inputs: InputsWithProjectPath,
+  required: boolean
 ): Promise<Action | undefined> {
   const arr = name.split(".");
-  const resourceName = arr[0];
+  if (arr.length !== 2) {
+    throw new ActionNotExist(name);
+  }
+  const componentName = arr[0];
   const actionName = arr[1];
-  if (!resourceName) throw new Error(`invalid action name: ${name}`);
+  let component;
   try {
-    const resource = Container.get(resourceName) as any;
-    if (resource[actionName]) {
-      const res = await resource[actionName](context, inputs);
-      if (res.isOk()) {
-        const action = res.value;
-        return action;
-      }
+    component = Container.get(componentName) as any;
+  } catch (e) {
+    if (required) throw new ComponentNotExist(componentName);
+    else return undefined;
+  }
+  if (!component[actionName]) {
+    if (required) throw new ActionNotExist(name);
+    else return undefined;
+  }
+  try {
+    const res = await component[actionName](context, inputs);
+    if (res.isOk()) {
+      const action = res.value;
+      return action;
+    } else {
+      throw res.error;
     }
-  } catch (e) {}
-  return undefined;
+  } catch (e) {
+    throw assembleError(e);
+  }
 }
 
 function _resolveVariables(schema: Json) {
@@ -171,7 +186,7 @@ export async function resolveAction(
     if (action.inputs) {
       resolveVariables(inputs, action.inputs);
     }
-    const targetAction = await getAction(action.targetAction, context, inputs);
+    const targetAction = await getAction(action.targetAction, context, inputs, action.required);
     if (targetAction) {
       if (targetAction.type !== "function") {
         const resolvedAction = await resolveAction(targetAction, context, inputs);
@@ -221,7 +236,7 @@ export async function askQuestionForAction(
     if (action.inputs) {
       resolveVariables(inputs, action.inputs);
     }
-    const targetAction = await getAction(action.targetAction, context, inputs);
+    const targetAction = await getAction(action.targetAction, context, inputs, action.required);
     if (action.required && !targetAction) {
       return err(new ActionNotExist(action.targetAction));
     }
@@ -238,16 +253,6 @@ export async function askQuestionForAction(
     }
   }
   return ok(undefined);
-}
-
-export class ActionNotExist extends SystemError {
-  constructor(action: string) {
-    super({
-      source: "fx",
-      message: getDefaultString("error.ActionNotExist", action),
-      displayMessage: getLocalizedString("error.ActionNotExist", action),
-    });
-  }
 }
 
 export async function showPlanAndConfirm(
@@ -327,7 +332,7 @@ export async function planAction(
     if (action.inputs) {
       resolveVariables(inputs, action.inputs);
     }
-    const targetAction = await getAction(action.targetAction, context, inputs);
+    const targetAction = await getAction(action.targetAction, context, inputs, action.required);
     if (action.required && !targetAction) {
       return err(new ActionNotExist(action.targetAction));
     }
@@ -362,7 +367,7 @@ export async function executeAction(
     if (action.inputs) {
       resolveVariables(inputs, action.inputs);
     }
-    const targetAction = await getAction(action.targetAction, context, inputs);
+    const targetAction = await getAction(action.targetAction, context, inputs, action.required);
     if (action.required && !targetAction) {
       return err(new ActionNotExist(action.targetAction));
     }
@@ -471,9 +476,23 @@ export function getComponent(
   projectSettings: ProjectSettingsV3,
   resourceType: string
 ): Component | undefined {
-  if (!projectSettings.components) return undefined;
-  const results = projectSettings.components.filter((r) => r.name === resourceType);
-  return results[0];
+  return projectSettings.components?.find((r) => r.name === resourceType);
+}
+
+export function getHostingParentComponent(
+  projectSettings: ProjectSettingsV3,
+  resourceType: string
+): Component | undefined {
+  const hostingComponent = getComponent(projectSettings, resourceType);
+  const parentName = hostingComponent?.connections?.find((name) => {
+    const component = getComponent(projectSettings, name);
+    return component?.hosting === hostingComponent.name;
+  });
+  if (!parentName) {
+    return undefined;
+  }
+  const parent = getComponent(projectSettings, parentName);
+  return parent;
 }
 
 export async function runAction(
@@ -484,32 +503,36 @@ export async function runAction(
   context.logProvider.info(
     `------------------------run action: ${actionName} start!------------------------`
   );
-  const action = await getAction(actionName, context, inputs);
-  if (action) {
-    const questionRes = await askQuestionForAction(action, context, inputs);
-    if (questionRes.isErr()) return err(questionRes.error);
-    const planEffects: Effect[] = [];
-    await planAction(action, context, cloneDeep(inputs), planEffects);
-    // const confirm = await showPlanAndConfirm(
-    //   `action: ${actionName} will do the following changes:`,
-    //   planEffects,
-    //   context,
-    //   inputs
-    // );
-    // if (confirm) {
-    const execEffects: Effect[] = [];
-    const execRes = await executeAction(action, context, inputs, execEffects);
-    if (execRes.isErr()) return execRes;
-    await showSummary(`${actionName} summary:`, execEffects, context, inputs);
-    // }
-  } else {
-    return err(
-      new SystemError({
-        source: "fx",
-        name: "ActionNotFoundError",
-        message: "action not found:" + actionName,
-      })
-    );
+  try {
+    const action = await getAction(actionName, context, inputs, true);
+    if (action) {
+      const questionRes = await askQuestionForAction(action, context, inputs);
+      if (questionRes.isErr()) return err(questionRes.error);
+      const planEffects: Effect[] = [];
+      await planAction(action, context, cloneDeep(inputs), planEffects);
+      // const confirm = await showPlanAndConfirm(
+      //   `action: ${actionName} will do the following changes:`,
+      //   planEffects,
+      //   context,
+      //   inputs
+      // );
+      // if (confirm) {
+      const execEffects: Effect[] = [];
+      const execRes = await executeAction(action, context, inputs, execEffects);
+      if (execRes.isErr()) return execRes;
+      await showSummary(`${actionName} summary:`, execEffects, context, inputs);
+      // }
+    } else {
+      return err(
+        new SystemError({
+          source: "fx",
+          name: "ActionNotFoundError",
+          message: "action not found:" + actionName,
+        })
+      );
+    }
+  } catch (e) {
+    return err(assembleError(e));
   }
   context.logProvider.info(
     `------------------------run action: ${actionName} finish!------------------------`

@@ -148,11 +148,20 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
       - name: check feature history
         id: description
+        shell: '/bin/bash {0}'
         run: | 
           head=$(git describe --first-parent --abbrev=0)
+          echo $head
           history_cli=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/cli | grep "^feat")
+          echo $history_cli
           history_toolkit=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/vscode-extension | grep "^feat")
-          echo -e '\nCLI feat commits: \n' "$history_cli" '\n\nExtension-toolkit feat commits:\n' "$history_toolkit" > history.txt
+          echo $history_toolkit
+          echo -e '\nCLI feat commits:\n' "$history_cli" '\n\nExtension-toolkit feat commits:\n' "$history_toolkit" > feat_history.txt
+          breaking_change_cli=$(git log $head...HEAD -- packages/cli | grep -i "BREAKING CHANGE")
+          echo $breaking_change_cli
+          breaking_change_toolkit=$(git log $head...HEAD -- packages/vscode-extension| grep -i "BREAKING CHANGE")
+          echo $breaking_change_toolkit
+          echo -e '\nCLI BREAKING CHANGE:\n' "$breaking_change_cli" '\n\nExtension-toolkit BREAKING CHANGE:\n' "$breaking_change_toolkit" > breaking_change_history.txt
       - name: Setup node
         uses: actions/setup-node@v2.1.2
         with:
@@ -160,13 +169,14 @@ jobs:
       - name: lerna expect rc version
         run: |
           npx lerna version --conventional-commits --conventional-prerelease --preid=rc --no-git-tag-version --allow-branch ${{ github.event.pull_request.head.ref }} --yes
-          npx lerna changed -l | awk '{ print $1 "\t" $2 }'> info.txt
+          npx lerna changed -l | awk '{ print $1 "\t" $2 }'> version_info.txt
       - uses: edwardgeorge/file-outputs-action@main
         id: test
         with:
           files: |
-            output1=info.txt
-            output2=history.txt
+            output1=version_info.txt
+            output2=breaking_change_history.txt
+            outpot3=feat_history.txt
       - uses: riskledger/update-pr-description@v2
         with:
           body: ${{join(steps.test.outputs.*, '')}}

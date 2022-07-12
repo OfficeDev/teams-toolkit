@@ -93,5 +93,5 @@ output sku string = functionAppSKU
 output appName string = functionAppName
 output domain string = functionApp.properties.defaultHostName
 output appServicePlanName string = serverfarmsName
-output resourceId string = functionApp.id
-output endpoint string = 'https://${functionApp.properties.defaultHostName}'
+output functionAppResourceId string = functionApp.id
+output functionEndpoint string = 'https://${functionApp.properties.defaultHostName}'

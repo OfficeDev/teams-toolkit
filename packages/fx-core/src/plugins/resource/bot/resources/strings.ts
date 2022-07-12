@@ -110,6 +110,7 @@ export class Commands {
 export const BotCapabilities = {
   NOTIFICATION: "notification",
   COMMAND_AND_RESPONSE: "command-response",
+  MESSAGE_EXTENSION: "message-extension",
 } as const;
 
 export type BotCapability = typeof BotCapabilities[keyof typeof BotCapabilities];

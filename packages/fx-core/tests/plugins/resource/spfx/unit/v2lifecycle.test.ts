@@ -27,7 +27,7 @@ import sinon from "sinon";
 import { Container } from "typedi";
 import * as uuid from "uuid";
 import "../../../../../src/index";
-import { setTools } from "../../../../../src/index";
+import { setTools } from "../../../../../src/core/globalVars";
 import { TabLanguage } from "../../../../../src/plugins/resource/frontend/resources/templateInfo";
 import { SpfxPluginV2 } from "../../../../../src/plugins/resource/spfx/v2/index";
 import {
@@ -103,8 +103,8 @@ describe("SPFX V2", () => {
     inputs[SPFXQuestionNames.framework_type] = "test";
     inputs[SPFXQuestionNames.framework_type] = "none";
     const res = await pluginV2.scaffoldSourceCode(context, inputs);
+    if (res.isErr()) console.log(res.error);
     assert.isTrue(res.isOk());
-    await fs.rmdir(projectPath, { recursive: true });
   });
 
   it("deploy - happy path", async () => {

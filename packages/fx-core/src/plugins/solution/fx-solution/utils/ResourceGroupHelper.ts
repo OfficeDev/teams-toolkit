@@ -22,8 +22,8 @@ import { getDefaultString, getLocalizedString } from "../../../../common/localiz
 import { desensitize } from "../../../../core/middleware/questionModel";
 import {
   CoreQuestionNames,
+  newResourceGroupNameQuestion,
   QuestionNewResourceGroupLocation,
-  QuestionNewResourceGroupName,
   QuestionSelectResourceGroup,
 } from "../../../../core/question";
 import { SolutionError, SolutionSource } from "../constants";
@@ -204,7 +204,8 @@ export class ResourceGroupHelper {
   async getQuestionsForResourceGroup(
     defaultResourceGroupName: string,
     existingResourceGroupNameLocations: [string, string][],
-    availableLocations: string[]
+    availableLocations: string[],
+    rmClient: ResourceManagementClient
   ): Promise<QTreeNode | undefined> {
     const selectResourceGroup = QuestionSelectResourceGroup;
     const staticOptions: OptionItem[] = [
@@ -222,7 +223,7 @@ export class ResourceGroupHelper {
 
     const node = new QTreeNode(selectResourceGroup);
 
-    const inputNewResourceGroupName = QuestionNewResourceGroupName;
+    const inputNewResourceGroupName = newResourceGroupNameQuestion(rmClient);
     inputNewResourceGroupName.default = defaultResourceGroupName;
     const newResourceGroupNameNode = new QTreeNode(inputNewResourceGroupName);
     newResourceGroupNameNode.condition = { equals: newResourceGroupOption };
@@ -258,7 +259,8 @@ export class ResourceGroupHelper {
     const node = await this.getQuestionsForResourceGroup(
       defaultResourceGroupName,
       listRgRes.value,
-      getLocationsRes.value
+      getLocationsRes.value,
+      rmClient
     );
     if (node) {
       const res = await traverse(node, inputs, ctx.userInteraction);

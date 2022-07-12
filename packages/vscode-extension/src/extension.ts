@@ -261,7 +261,8 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   // localdebug session starts from prerequisites checker
   const validatePrerequisitesCmd = vscode.commands.registerCommand(
     "fx-extension.validate-local-prerequisites",
-    () => Correlator.runWithId(startLocalDebugSession(), handlers.validateLocalPrerequisitesHandler)
+    // Do not run with Correlator because it is handled inside `validateLocalPrerequisitesHandler()`.
+    handlers.validateLocalPrerequisitesHandler
   );
   context.subscriptions.push(validatePrerequisitesCmd);
 
@@ -354,8 +355,7 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
   const createNewEnvironment = vscode.commands.registerCommand(
     // TODO: fix trigger from
     "fx-extension.addEnvironment",
-    (...args) =>
-      Correlator.run(handlers.createNewEnvironment, [TelemetryTriggerFrom.ViewTitleNavigation])
+    (...args) => Correlator.run(handlers.createNewEnvironment, args)
   );
   context.subscriptions.push(createNewEnvironment);
 
@@ -443,6 +443,13 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
  * Commands used in menus, e.g. Explorer context & view item title/context
  */
 function registerMenuCommands(context: vscode.ExtensionContext) {
+  const createNewEnvironmentWithIcon = vscode.commands.registerCommand(
+    "fx-extension.addEnvironmentWithIcon",
+    (...args) =>
+      Correlator.run(handlers.createNewEnvironment, [TelemetryTriggerFrom.ViewTitleNavigation])
+  );
+  context.subscriptions.push(createNewEnvironmentWithIcon);
+
   const azureAccountSettingsCmd = vscode.commands.registerCommand(
     "fx-extension.azureAccountSettings",
     () => Correlator.run(handlers.openAzureAccountHandler)

@@ -6,6 +6,7 @@ import * as path from "path";
 import * as os from "os";
 import {
   ConfigFolderName,
+  ContextV3,
   err,
   FxError,
   LogProvider,
@@ -37,7 +38,7 @@ export class YoChecker implements DependencyChecker {
     return { supportedVersion: supportedVersion, displayName: displayName };
   }
 
-  public async ensureDependency(ctx: PluginContext): Promise<Result<boolean, FxError>> {
+  public async ensureDependency(ctx: PluginContext | ContextV3): Promise<Result<boolean, FxError>> {
     telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureYoStart);
     try {
       if (!(await this.isInstalled())) {
@@ -128,6 +129,23 @@ export class YoChecker implements DependencyChecker {
     try {
       await fs.emptyDir(this.getPackagePath());
       await fs.remove(this.getSentinelPath());
+
+      const yoExecutables = [
+        "yo",
+        "yo.cmd",
+        "yo.ps1",
+        "yo-complete",
+        "yo-complete.cmd",
+        "yo-complete.ps1",
+      ];
+      await Promise.all(
+        yoExecutables.map(async (executable) => {
+          const executablePath = path.join(this.getDefaultInstallPath(), executable);
+          if (await fs.pathExists(executablePath)) {
+            await fs.remove(executablePath);
+          }
+        })
+      );
     } catch (err) {
       await this._logger.error(`Failed to clean up path: ${this.getPackagePath()}, error: ${err}`);
     }

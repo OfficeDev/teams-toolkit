@@ -28,25 +28,31 @@ import "./debug";
 import "./envManager";
 import "./resource/appManifest/appManifest";
 import "./resource/azureSql";
-import "./resource/aad";
-import "./resource/azureFunction";
+import "./resource/aadApp/aadApp";
+import "./resource/azureAppService/azureFunction";
 import "./resource/azureStorage";
-import "./resource/azureWebApp";
+import "./resource/azureAppService/azureWebApp";
 import "./resource/botService";
+import "./feature/apim";
+import "./resource/apim";
+import "./feature/spfx";
 import "./resource/spfx";
+import "./feature/api";
 import "./feature/bot";
 import "./feature/sql";
 import "./feature/tab";
 import "./feature/cicd";
+import "./feature/sso";
 import "./feature/apiConnector";
 import "./code/botCode";
 import "./code/tabCode";
 import "./code/apiCode";
+import "./code/spfxTabCode";
 import "./connection/aadConfig";
 import "./connection/azureWebAppConfig";
 import "./connection/azureFunctionConfig";
+import "./connection/apimConfig";
 
-import { WriteProjectSettingsAction } from "./projectSettingsManager";
 import { ComponentNames } from "./constants";
 import { getLocalizedString } from "../common/localizeUtils";
 import { getResourceGroupInPortal } from "../common/tools";
@@ -117,7 +123,6 @@ export class TeamsfxCore {
           targetAction: "env-manager.create",
           required: true,
         },
-        WriteProjectSettingsAction,
       ],
     };
     return ok(action);
@@ -127,8 +132,6 @@ export class TeamsfxCore {
     inputs: InputsWithProjectPath
   ): Promise<Result<Action | undefined, FxError>> {
     const ctx = context as ProvisionContextV3;
-    const filePath = getProjectSettingsPath(inputs.projectPath);
-    ctx.projectSetting = (await fs.readJson(filePath)) as ProjectSettingsV3;
     const resourcesToProvision = ctx.projectSetting.components.filter((r) => r.provision);
     const provisionActions: Action[] = resourcesToProvision.map((r) => {
       return {
@@ -226,26 +229,11 @@ export class TeamsfxCore {
       },
       execute: (context: ContextV3, inputs: InputsWithProjectPath) => {
         const ctx = context as ProvisionContextV3;
-        const teamsBot = getComponent(ctx.projectSetting, ComponentNames.TeamsBot);
         const teamsTab = getComponent(ctx.projectSetting, ComponentNames.TeamsTab);
-        if (teamsBot) {
-          if (ctx.envInfo.envName !== "local") {
-            const teamsBotConfig: any = {
-              endpoint: ctx.envInfo.state[teamsBot.hosting!].endpoint!,
-              domain: ctx.envInfo.state[teamsBot.hosting!].domain,
-            };
-            ctx.envInfo.state[ComponentNames.TeamsBot] = teamsBotConfig;
-          }
-        }
         if (teamsTab) {
-          const teamsTabConfig: any = {
-            endpoint: ctx.envInfo.state[teamsTab.hosting!].endpoint!,
-            domain: ctx.envInfo.state[teamsTab.hosting!].domain,
-          };
-          ctx.envInfo.state[ComponentNames.TeamsBot] = teamsTabConfig;
           const aad = getComponent(ctx.projectSetting, ComponentNames.AadApp);
           if (aad) {
-            const tabEndpoint = ctx.envInfo.state[teamsTab.hosting!].endpoint;
+            const tabEndpoint = ctx.envInfo.state[ComponentNames.TeamsTab].endpoint;
             inputs.m365ApplicationIdUri = `api://${tabEndpoint}`;
           }
         }
@@ -314,9 +302,6 @@ export class TeamsfxCore {
           type: "call",
           targetAction: `${componentConfig.hosting}.deploy`,
           required: false,
-          inputs: {
-            code: componentConfig,
-          },
         });
       }
     });

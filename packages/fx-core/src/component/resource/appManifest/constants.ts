@@ -61,7 +61,7 @@ export const CONFIGURABLE_TABS_TPL_V3: IConfigurableTab[] = [
   },
 ];
 
-export const BOT_ID_PLACEHOLDER = "{{state.bot-service.botId}}";
+export const BOT_ID_PLACEHOLDER = "{{state.teams-bot.botId}}";
 
 export const BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3: IBot[] = [
   {

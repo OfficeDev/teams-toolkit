@@ -578,8 +578,7 @@ export class AppStudioPlugin implements Plugin {
         })
       );
     } else if (func.method === "getManifestTemplatePath") {
-      const isLocalDebug = (func.params.type as string) === "localDebug";
-      const filePath = await getManifestTemplatePath(ctx.root, isLocalDebug);
+      const filePath = await getManifestTemplatePath(ctx.root);
       return ok(filePath);
     } else if (func.method === "updateManifest") {
       return await this.updateManifest(ctx, func.params && func.params.envName === "local");

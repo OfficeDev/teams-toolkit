@@ -15,23 +15,33 @@ import {
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { isVSProject } from "../../common/projectSettingsHelper";
 import { CoreQuestionNames } from "../../core/question";
 import { ComponentNames } from "../constants";
-import { LoadProjectSettingsAction, WriteProjectSettingsAction } from "../projectSettingsManager";
+import { getComponent } from "../workflow";
 @Service("teams-tab")
-export class TeamsfxCore {
+export class TeamsTab {
   name = "teams-tab";
   add(
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     inputs.hosting =
-      inputs.hosting || isVSProject(context.projectSetting)
+      inputs.hosting ||
+      (inputs?.["programming-language"] === "csharp"
         ? ComponentNames.AzureWebApp
-        : ComponentNames.AzureStorage;
+        : ComponentNames.AzureStorage);
+    const configActions: Action[] =
+      getComponent(context.projectSetting, ComponentNames.APIM) !== undefined
+        ? [
+            {
+              name: "call:apim-config.generateBicep",
+              type: "call",
+              required: true,
+              targetAction: "apim-config.generateBicep",
+            },
+          ]
+        : [];
     const actions: Action[] = [
-      LoadProjectSettingsAction,
       {
         name: "fx.configTab",
         type: "function",
@@ -48,8 +58,13 @@ export class TeamsfxCore {
           // add hosting component
           projectSettings.components.push({
             name: inputs.hosting,
+            connections: ["teams-tab"],
             provision: true,
           });
+          const apimConfig = getComponent(projectSettings, ComponentNames.APIM);
+          if (apimConfig) {
+            apimConfig.connections?.push("teams-tab");
+          }
           projectSettings.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
           return ok(["config 'teams-tab' in projectSettings"]);
         },
@@ -70,7 +85,12 @@ export class TeamsfxCore {
         type: "call",
         required: true,
         targetAction: `${inputs.hosting}.generateBicep`,
+        inputs: {
+          componentId: this.name,
+          componentName: "Tab",
+        },
       },
+      ...configActions,
       {
         name: "call:app-manifest.addCapability",
         type: "call",
@@ -80,13 +100,13 @@ export class TeamsfxCore {
           capabilities: [{ name: "staticTab" }, { name: "configurableTab" }],
         },
       },
+      // TODO: connect AAD for blazor web app
       {
         name: "call:debug.generateLocalDebugSettings",
         type: "call",
         required: true,
         targetAction: "debug.generateLocalDebugSettings",
       },
-      WriteProjectSettingsAction,
     ];
     const group: GroupAction = {
       type: "group",

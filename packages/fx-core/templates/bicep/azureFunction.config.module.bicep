@@ -4,10 +4,12 @@
 param provisionParameters object
 param provisionOutputs object
 @secure()
+param currentConfigs object
+@secure()
 param currentAppSettings object
 
 var functionAppName = split({{azure-function.outputs.resourceId}}, '/')[8]
-{{#if (contains "aad" connections)}}
+{{#if (contains "aad-app" connections)}}
 var m365ClientId = provisionParameters['m365ClientId']
   {{#if (contains "key-vault" connections) }}
 var m365ClientSecret = {{key-vault.outputs.m365ClientSecretReference}}
@@ -16,7 +18,7 @@ var m365ClientSecret = provisionParameters['m365ClientSecret']
   {{/if}}
 var m365TenantId = provisionParameters['m365TenantId']
 var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
-  {{#if (contains "bot-service" connections) }}
+  {{#if (contains "teams-bot" connections) }}
 var botId = provisionParameters['botAadAppClientId']
     {{#if (contains "teams-tab" connections)}}
 var m365ApplicationIdUri = 'api://${ {{tabDomainVarName}} }/botid-${botId}'
@@ -39,7 +41,7 @@ var botAadAppClientSecret = provisionParameters['botAadAppClientSecret']
 resource functionAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   name: '${functionAppName}/appsettings'
   properties: union({
-    {{#if (contains "aad" connections)}}
+    {{#if (contains "aad-app" connections)}}
     INITIATE_LOGIN_ENDPOINT: uri({{azure-web-app.outputs.endpoint}}, 'auth-start.html') // The page is used to let users consent required OAuth permissions during bot SSO process
     M365_AUTHORITY_HOST: m365OauthAuthorityHost // AAD authority host
     M365_CLIENT_ID: m365ClientId // Client id of AAD application

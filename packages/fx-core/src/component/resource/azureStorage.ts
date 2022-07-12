@@ -19,7 +19,6 @@ import "reflect-metadata";
 import { Service } from "typedi";
 import * as path from "path";
 import { FrontendConfig } from "../../plugins/resource/frontend/configs";
-import { ComponentNames } from "../constants";
 import {
   getResourceGroupNameFromResourceId,
   getStorageAccountNameFromResourceId,
@@ -29,6 +28,7 @@ import { UnauthenticatedError } from "../../plugins/resource/frontend/v3/error";
 import { AzureStorageClient } from "../../plugins/resource/frontend/clients";
 import { FrontendDeployment } from "../../plugins/resource/frontend/ops/deploy";
 import { AzureResource } from "./azureResource";
+import { getHostingParentComponent } from "../workflow";
 @Service("azure-storage")
 export class AzureStorageResource extends AzureResource {
   readonly name = "azure-storage";
@@ -36,19 +36,19 @@ export class AzureStorageResource extends AzureResource {
   readonly outputs = {
     endpoint: {
       key: "endpoint",
-      bicepVariable: "provisionOutputs.azureStorageOutput.value.endpoint",
+      bicepVariable: "provisionOutputs.azureStorage{{componentName}}Output.value.endpoint",
     },
-    resourceId: {
-      key: "resourceId",
-      bicepVariable: "provisionOutputs.azureStorageOutput.value.resourceId",
+    storageResourceId: {
+      key: "storageResourceId",
+      bicepVariable: "provisionOutputs.azureStorage{{componentName}}Output.value.storageResourceId",
     },
     domain: {
       key: "domain",
-      bicepVariable: "provisionOutputs.azureStorageOutput.value.domain",
+      bicepVariable: "provisionOutputs.azureStorage{{componentName}}Output.value.domain",
     },
     indexPath: {
       key: "indexPath",
-      bicepVariable: "provisionOutputs.azureStorageOutput.value.indexPath",
+      bicepVariable: "provisionOutputs.azureStorage{{componentName}}Output.value.indexPath",
     },
   };
   readonly finalOutputKeys = ["domain", "endpoint", "resourceId", "indexPath"];
@@ -70,8 +70,13 @@ export class AzureStorageResource extends AzureResource {
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const ctx = context as ProvisionContextV3;
+        const parent = getHostingParentComponent(ctx.projectSetting, this.name);
+        if (!parent) {
+          throw new Error("Hosting component no parent");
+        }
         const frontendConfigRes = await buildFrontendConfig(
           ctx.envInfo,
+          parent.name,
           ctx.tokenProvider.azureAccountProvider
         );
         if (frontendConfigRes.isErr()) {
@@ -98,7 +103,8 @@ export class AzureStorageResource extends AzureResource {
       name: "azure-storage.deploy",
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const deployDir = path.join(inputs.projectPath, inputs.code.folder);
+        const parent = getHostingParentComponent(context.projectSetting, this.name);
+        const deployDir = path.resolve(inputs.projectPath, parent?.folder ?? "");
         return ok([
           {
             type: "service",
@@ -109,9 +115,14 @@ export class AzureStorageResource extends AzureResource {
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const ctx = context as ProvisionContextV3;
-        const deployDir = path.resolve(inputs.projectPath, inputs.code.folder);
+        const parent = getHostingParentComponent(ctx.projectSetting, this.name);
+        if (!parent?.folder) {
+          throw new Error("");
+        }
+        const deployDir = path.resolve(inputs.projectPath, parent.folder);
         const frontendConfigRes = await buildFrontendConfig(
           ctx.envInfo,
+          parent.name,
           ctx.tokenProvider.azureAccountProvider
         );
         if (frontendConfigRes.isErr()) {
@@ -135,20 +146,21 @@ export class AzureStorageResource extends AzureResource {
 
 async function buildFrontendConfig(
   envInfo: v3.EnvInfoV3,
+  componentName: string,
   tokenProvider: AzureAccountProvider
 ): Promise<Result<FrontendConfig, FxError>> {
   const credentials = await tokenProvider.getAccountCredentialAsync();
   if (!credentials) {
     return err(new UnauthenticatedError());
   }
-  const storage = envInfo.state[ComponentNames.AzureStorage];
-  const resourceId = storage?.resourceId;
+  const storage = envInfo.state[componentName];
+  const resourceId = storage?.storageResourceId;
   if (!resourceId) {
     return err(
       new UserError({
         source: "azure-storage",
         name: "StateValueMissingError",
-        message: "Missing resourceIf for storage",
+        message: "Missing resourceId for storage",
       })
     );
   }

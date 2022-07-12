@@ -174,6 +174,10 @@ export class SSO {
         type: "call",
         required: true,
         targetAction: `${botHosting}-config.generateBicep`,
+        inputs: {
+          update: true,
+          componentName: "Bot",
+        },
       });
     }
     const group: GroupAction = {

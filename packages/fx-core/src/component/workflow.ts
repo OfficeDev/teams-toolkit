@@ -38,6 +38,7 @@ import {
 } from "./utils";
 import { convertToAlphanumericOnly } from "../common/utils";
 import { ActionNotExist, ComponentNotExist } from "./error";
+import { TelemetryConstants } from "./constants";
 
 export async function getAction(
   name: string,
@@ -430,46 +431,96 @@ export async function executeFunctionAction(
   effects: Effect[]
 ): Promise<Result<undefined, FxError>> {
   context.logProvider.info(`executeFunctionAction [${action.name}] start!`);
-  // validate inputs
-  if (action.question) {
-    const getQuestionRes = await action.question(context, inputs);
-    if (getQuestionRes.isErr()) return err(getQuestionRes.error);
-    const node = getQuestionRes.value;
-    if (node) {
-      const validationRes = await traverse(
-        node,
-        inputs,
-        context.userInteraction,
-        context.telemetryReporter,
-        validateQuestion
-      );
-      if (validationRes.isErr()) err(validationRes.error);
+  const arr = action.name.split(".");
+  const eventName = action.telemetryEventName || arr[1];
+  const componentName = action.telemetryComponentName || arr[0];
+  const telemetryProps = {
+    [TelemetryConstants.properties.component]: componentName,
+  };
+  let progressBar;
+  try {
+    // send start telemetry
+    if (action.enableTelemetry) {
+      const startEvent = eventName + "-start";
+      context.telemetryReporter.sendTelemetryEvent(startEvent, telemetryProps);
     }
-  }
-  const res = await action.execute(context, inputs);
-  if (res.isErr()) return err(res.error);
-  if (res.value) {
-    //persist bicep files for bicep effects
-    for (const effect of res.value) {
-      if (typeof effect !== "string" && effect.type === "bicep") {
-        const bicep = effect as Bicep;
-        if (bicep) {
-          const bicepPlans = await persistBicepPlans(inputs.projectPath, bicep);
-          bicepPlans.forEach((p) => effects.push(p));
-          // TODO: handle the returned error of bicep generation
-          await persistBicep(
-            inputs.projectPath,
-            convertToAlphanumericOnly(context.projectSetting.appName),
-            bicep
-          );
-        }
-      } else {
-        effects.push(effect);
+    // validate inputs
+    if (action.question) {
+      const getQuestionRes = await action.question(context, inputs);
+      if (getQuestionRes.isErr()) throw getQuestionRes.error;
+      const node = getQuestionRes.value;
+      if (node) {
+        const validationRes = await traverse(
+          node,
+          inputs,
+          context.userInteraction,
+          context.telemetryReporter,
+          validateQuestion
+        );
+        if (validationRes.isErr()) throw validationRes.error;
       }
     }
+    // progress bar
+    if (action.enableProgressBar) {
+      progressBar = context.userInteraction.createProgressBar(
+        action.progressTitle || action.name,
+        action.progressSteps || 1
+      );
+      progressBar.start();
+    }
+    const res = await action.execute(context, inputs, progressBar, telemetryProps);
+    if (res.isErr()) throw res.error;
+    if (res.value) {
+      //persist bicep files for bicep effects
+      for (const effect of res.value) {
+        if (typeof effect !== "string" && effect.type === "bicep") {
+          const bicep = effect as Bicep;
+          if (bicep) {
+            const bicepPlans = await persistBicepPlans(inputs.projectPath, bicep);
+            bicepPlans.forEach((p) => effects.push(p));
+            // TODO: handle the returned error of bicep generation
+            const bicepRes = await persistBicep(
+              inputs.projectPath,
+              convertToAlphanumericOnly(context.projectSetting.appName),
+              bicep
+            );
+            if (bicepRes.isErr()) throw bicepRes.error;
+          }
+        } else {
+          effects.push(effect);
+        }
+      }
+    }
+    // send end telemetry
+    if (action.enableTelemetry) {
+      context.telemetryReporter.sendTelemetryEvent(eventName, {
+        ...telemetryProps,
+        [TelemetryConstants.properties.success]: TelemetryConstants.values.yes,
+      });
+    }
+    progressBar?.end(true);
+    context.logProvider.info(`executeFunctionAction [${action.name}] finish!`);
+    return ok(undefined);
+  } catch (e) {
+    const error = assembleError(e);
+    // send error telemetry
+    if (action.enableTelemetry) {
+      const errorCode = error.source + "." + error.name;
+      const errorType =
+        error instanceof SystemError
+          ? TelemetryConstants.values.systemError
+          : TelemetryConstants.values.userError;
+      context.telemetryReporter.sendTelemetryEvent(eventName, {
+        ...telemetryProps,
+        [TelemetryConstants.properties.success]: TelemetryConstants.values.no,
+        [TelemetryConstants.properties.errorCode]: errorCode,
+        [TelemetryConstants.properties.errorType]: errorType,
+        [TelemetryConstants.properties.errorMessage]: error.message,
+      });
+    }
+    progressBar?.end(false);
+    return err(error);
   }
-  context.logProvider.info(`executeFunctionAction [${action.name}] finish!`);
-  return ok(undefined);
 }
 
 export function getComponent(

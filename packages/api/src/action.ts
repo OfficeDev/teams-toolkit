@@ -4,6 +4,7 @@
 import { Result } from "neverthrow";
 import { Bicep } from "./bicep";
 import { FxError } from "./error";
+import { IProgressHandler } from "./qm";
 import { QTreeNode } from "./qm/question";
 import { Json, ContextV3, MaybePromise } from "./types";
 import { InputsWithProjectPath } from "./v2/types";
@@ -37,7 +38,6 @@ export interface ActionBase {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
-
   exception?: (
     context: ContextV3,
     inputs: InputsWithProjectPath
@@ -84,13 +84,23 @@ export interface CallAction extends ActionBase {
  * function action: run a javascript function call that can do any kinds of work
  */
 export interface FunctionAction extends ActionBase {
+  name: string;
   type: "function";
+  errorSource?: string;
+  enableTelemetry?: boolean;
+  telemetryComponentName?: string;
+  telemetryEventName?: string;
+  enableProgressBar?: boolean;
+  progressTitle?: string;
+  progressSteps?: number;
   /**
    * function body is a function that takes some context and inputs as parameter
    */
   execute: (
     context: ContextV3,
-    inputs: InputsWithProjectPath
+    inputs: InputsWithProjectPath,
+    progress?: IProgressHandler,
+    telemetryProps?: Record<string, string>
   ) => MaybePromise<Result<Effect[], FxError>>;
 }
 

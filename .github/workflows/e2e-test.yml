@@ -249,7 +249,7 @@ jobs:
           npx ts-node .github/scripts/testPlan.ts sync ./packages/cli/tests/e2e/mochawesome-report/mochawesome.json cli $version
 
   report:
-    if: ${{ always() && github.event_name == 'schedule' }}
+    if: ${{ always() }}
     needs: execute-case
     runs-on: ubuntu-latest
     steps:

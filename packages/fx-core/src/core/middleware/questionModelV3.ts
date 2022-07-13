@@ -226,6 +226,11 @@ async function getQuestionsForAddFeature(
     options.push(SingleSignOnOptionItem);
     options.push(ApiConnectionOptionItem);
     options.push(CicdOptionItem);
+    const triggerNode = new QTreeNode(createHostTypeTriggerQuestion(inputs.platform));
+    triggerNode.condition = { equals: NotificationOptionItem.id };
+    const addFeatureNode = new QTreeNode(question);
+    addFeatureNode.addChild(triggerNode);
+    return ok(addFeatureNode);
   }
   // check capability options
   const manifestRes = await readAppManifest(inputs.projectPath!);

@@ -2,12 +2,15 @@
 // Licensed under the MIT license.
 import "mocha";
 import { assert } from "chai";
-import { convertProjectSettingsV2ToV3 } from "../../src/component/migrate";
+import {
+  convertProjectSettingsV2ToV3,
+  convertProjectSettingsV3ToV2,
+} from "../../src/component/migrate";
 describe("Migration test for v3", () => {
   it("convertProjectSettingsV2ToV3", async () => {
     const projectSettings = {
       appName: "hj070701",
-      projectId: "22ce7500-713f-4c74-8736-cd0811563dc6",
+      projectId: "112233",
       version: "2.1.0",
       isFromSample: false,
       solutionSettings: {
@@ -42,5 +45,64 @@ describe("Migration test for v3", () => {
     const v3 = convertProjectSettingsV2ToV3(projectSettings);
     console.log(JSON.stringify(v3, undefined, 4));
     assert.isTrue(v3.components.length > 0);
+  });
+  it("convertProjectSettingsV3ToV2", async () => {
+    const projectSettings = {
+      appName: "hj070701",
+      projectId: "112233",
+      version: "2.1.0",
+      isFromSample: false,
+      components: [
+        {
+          name: "teams-bot",
+          hosting: "azure-function",
+          triggers: ["http-functions"],
+          scenarios: ["notification-function-base", "notification-trigger-http"],
+          build: true,
+          folder: "bot",
+        },
+        {
+          name: "azure-function",
+          connections: ["teams-bot"],
+        },
+        {
+          name: "bot-service",
+          provision: true,
+        },
+        {
+          name: "teams-tab",
+          hosting: "azure-storage",
+          build: true,
+          provision: true,
+          folder: "tabs",
+          connections: ["teams-api"],
+        },
+        {
+          name: "azure-storage",
+          connections: ["teams-tab"],
+          provision: true,
+        },
+        {
+          name: "apim",
+          provision: true,
+          deploy: true,
+          connections: ["teams-tab", "teams-bot"],
+        },
+        {
+          name: "teams-api",
+          hosting: "azure-function",
+          functionNames: ["getUserProfile"],
+          build: true,
+          folder: "api",
+        },
+        {
+          name: "azure-function",
+          connections: ["teams-api"],
+        },
+      ],
+      programmingLanguage: "javascript",
+    };
+    const v2 = convertProjectSettingsV3ToV2(projectSettings);
+    assert.isTrue(v2.solutionSettings !== undefined);
   });
 });

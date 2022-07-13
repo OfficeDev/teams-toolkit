@@ -11,5 +11,5 @@ output azureStorage{{componentName}}Output object = {
   domain: azureStorage{{componentName}}Provision.outputs.domain
   endpoint: azureStorage{{componentName}}Provision.outputs.endpoint
   indexPath: azureStorage{{componentName}}Provision.outputs.indexPath
-  storageResourceId: azureStorage{{componentName}}Provision.outputs.resourceId
+  storageResourceId: azureStorage{{componentName}}Provision.outputs.storageResourceId
 }

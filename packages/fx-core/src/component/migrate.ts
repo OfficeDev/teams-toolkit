@@ -228,7 +228,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           name: hostingComponent,
           connections: ["teams-bot"],
           provision: true,
-          scenario: "bot",
+          scenario: "Bot",
         });
       }
       settingsV3.components.push({
@@ -259,17 +259,16 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
       });
     }
     if (solutionSettings.activeResourcePlugins.includes("fx-resource-function")) {
-      //TODO
       settingsV3.components.push({
         name: ComponentNames.TeamsApi,
         hosting: ComponentNames.Function,
-        functionNames: ["getUserProfile"],
+        functionNames: [settingsV2.defaultFunctionName || "getUserProfile"],
         build: true,
         folder: "api",
       });
       settingsV3.components.push({
         name: ComponentNames.Function,
-        scenario: "api",
+        scenario: "Api",
       });
     }
     connectComponents(settingsV3);
@@ -307,7 +306,7 @@ function connectComponents(settingsV3: ProjectSettingsV3) {
   }
 }
 
-export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3) {
+export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): ProjectSettings {
   const settingsV2: ProjectSettings = cloneDeep(settingsV3) as ProjectSettings;
   if (settingsV3.components.length > 0) {
     const hostType = hasAzureResourceV3(settingsV3) ? "Azure" : "SPFx";
@@ -361,19 +360,26 @@ export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3) {
     }
     if (getComponent(settingsV3, ComponentNames.KeyVault)) {
       settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-key-vault");
+      settingsV2.solutionSettings.azureResources.push("keyvault");
     }
     if (getComponent(settingsV3, ComponentNames.AzureSQL)) {
       settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-azure-sql");
+      settingsV2.solutionSettings.azureResources.push("sql");
     }
     if (getComponent(settingsV3, ComponentNames.APIM)) {
       settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-apim");
+      settingsV2.solutionSettings.azureResources.push("apim");
     }
-    if (getComponent(settingsV3, ComponentNames.Function)) {
+    const teamsApi = getComponent(settingsV3, ComponentNames.TeamsApi);
+    if (teamsApi) {
       settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-function");
-      //TODO
+      settingsV2.defaultFunctionName =
+        teamsApi.functionNames && teamsApi.functionNames.length > 0
+          ? teamsApi.functionNames[0]
+          : "getUserProfile";
+      settingsV2.solutionSettings.azureResources.push("function");
     }
   }
-
   return settingsV2;
 }
 

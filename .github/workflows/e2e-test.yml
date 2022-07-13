@@ -260,6 +260,14 @@ jobs:
         run: |
           sudo apt install dateutils
 
+      - uses: actions/download-artifact@v3
+        with:
+          path: ~/artifacts
+
+      - name: Display structure of downloaded files
+        working-directory: ~/artifacts/artifact
+        run: ls -alh
+
       - name: List jobs
         id: list-jobs
         working-directory: packages/cli
@@ -322,11 +330,9 @@ jobs:
             fi
 
             job_id=`echo $jobs| jq --arg case $case -r '.jobs[] | select(.name == $case ) | .id'`
-            download_url=`echo $artifacts | jq --arg job_id $job_id -r '.artifacts[] | select(.name | contains($job_id)) | .archive_download_url'`
+            path=`find ~/artifacts/artifact -type f -name "*${job_id}_metrics.txt"`
 
-            curl -L -u :${{ secrets.GITHUB_TOKEN }} $download_url --output $job_id.zip
-            unzip -o $job_id.zip
-            slow=`cat output.txt | grep '"severity":"slow"' | wc -l`
+            slow=`cat $path | grep '"severity":"slow"' | wc -l`
             normal=`cat output.txt | grep '"severity":"normal"' | wc -l`
             fast=`cat output.txt | grep '"severity":"fast"' | wc -l`
 

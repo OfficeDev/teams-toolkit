@@ -358,7 +358,7 @@ jobs:
           method: POST
           payload: |
             {
-              "to": "${{ steps.list-jobs.outputs.to }}",
+              "to": "haolong@microsoft.com",
               "body": "${{ steps.list-jobs.outputs.body }}",
               "subject": "${{ steps.list-jobs.outputs.subject }}",
               "apiKey": "${{ secrets.MAIL_API_KEY }}"

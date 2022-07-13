@@ -8,6 +8,7 @@ import {
 import { cloneDeep } from "lodash";
 import { isVSProject } from "../common/projectSettingsHelper";
 import { hasAzureResourceV3 } from "../common/projectSettingsHelperV3";
+import { MessageExtensionNewUIItem } from "../plugins";
 import { ComponentNames } from "./constants";
 import { getComponent } from "./workflow";
 
@@ -170,6 +171,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           provision: false,
           folder: "",
           artifactFolder: "bin\\Release\\net6.0\\win-x86\\publish",
+          sso: solutionSettings.capabilities.includes("TabSSO"),
         };
         settingsV3.components.push(teamsTab);
       } else {
@@ -179,6 +181,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           build: true,
           provision: true,
           folder: "tabs",
+          sso: solutionSettings.capabilities.includes("TabSSO"),
         };
         settingsV3.components.push(teamsTab);
       }
@@ -196,6 +199,14 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
     }
     if (solutionSettings.activeResourcePlugins.includes("fx-resource-bot")) {
       const hostType = settingsV2.pluginSettings?.["fx-resource-bot"]?.["host-type"];
+      let botCapabilities = settingsV2.pluginSettings?.["fx-resource-bot"]?.["capabilities"];
+      if (
+        solutionSettings.capabilities.includes(MessageExtensionNewUIItem.id) &&
+        !botCapabilities?.includes("message-extension")
+      ) {
+        botCapabilities = botCapabilities || [];
+        botCapabilities.push("message-extension");
+      }
       const isHostingFunction = hostType === "azure-functions";
       const hostingComponent = isHostingFunction
         ? ComponentNames.Function
@@ -207,6 +218,8 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           build: true,
           folder: "",
           artifactFolder: "bin\\Release\\net6.0\\win-x86\\publish",
+          capabilities: botCapabilities,
+          sso: solutionSettings.capabilities.includes("BotSSO"),
         };
         settingsV3.components.push(teamsBot);
       } else {
@@ -216,6 +229,8 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           build: true,
           provision: true,
           folder: "bot",
+          capabilities: botCapabilities,
+          sso: solutionSettings.capabilities.includes("BotSSO"),
         };
         settingsV3.components.push(teamsBot);
       }
@@ -334,20 +349,22 @@ export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): Pro
     }
     const teamsBot = getComponent(settingsV3, ComponentNames.TeamsBot);
     if (teamsBot) {
-      settingsV2.solutionSettings.capabilities.push("Bot");
-      if (teamsBot.sso) {
-        settingsV2.solutionSettings.capabilities.push("BotSSO");
+      const botCapabilities = teamsBot?.capabilities;
+      if (botCapabilities?.includes("bot")) {
+        settingsV2.solutionSettings.capabilities.push("Bot");
+        if (teamsBot.sso) {
+          settingsV2.solutionSettings.capabilities.push("BotSSO");
+        }
+      }
+      if (
+        botCapabilities?.includes("message-extension") &&
+        !settingsV2.solutionSettings.capabilities.includes(MessageExtensionNewUIItem.id)
+      ) {
+        settingsV2.solutionSettings.capabilities.push(MessageExtensionNewUIItem.id);
       }
       settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-bot");
       const hostType =
         teamsBot.hosting === ComponentNames.AzureWebApp ? "app-service" : "azure-function";
-      const scenarios = teamsBot.scenarios;
-      const botCapabilities = scenarios?.includes("command-and-response")
-        ? ["command-response"]
-        : scenarios?.includes("notification-function-base") ||
-          scenarios?.includes("notification-restify")
-        ? ["notification"]
-        : [];
       settingsV2.pluginSettings = {
         "fx-resource-bot": {
           "host-type": hostType,

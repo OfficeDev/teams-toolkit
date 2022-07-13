@@ -35,6 +35,7 @@ import {
   hasTab,
 } from "../../common/projectSettingsHelperV3";
 import { canAddCICDWorkflows, getAppDirectory } from "../../common/tools";
+import { readAppManifest } from "../../component/resource/appManifest/utils";
 import {
   MANIFEST_TEMPLATE_CONSOLIDATE,
   STATIC_TABS_MAX_ITEMS,
@@ -208,9 +209,9 @@ async function getQuestionsForAddFeature(
   };
   const options: OptionItem[] = [];
   // check capability options
-  const appDir = await getAppDirectory(inputs.projectPath!);
-  const manifestPath = path.resolve(appDir, MANIFEST_TEMPLATE_CONSOLIDATE);
-  const manifest = (await fs.readJson(manifestPath)) as TeamsAppManifest;
+  const manifestRes = await readAppManifest(inputs.projectPath!);
+  if (manifestRes.isErr()) return err(manifestRes.error);
+  const manifest = manifestRes.value;
   const canAddTab = manifest.staticTabs!.length < STATIC_TABS_MAX_ITEMS;
   const canAddBot = manifest.bots!.length < 1;
   const canAddME = manifest.composeExtensions!.length < 1;

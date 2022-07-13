@@ -38,6 +38,7 @@ describe("Migration test for v3", () => {
       pluginSettings: {
         "fx-resource-bot": {
           "host-type": "azure-functions",
+          capabilities: ["notification"],
         },
       },
       defaultFunctionName: "getUserProfile",
@@ -56,8 +57,7 @@ describe("Migration test for v3", () => {
         {
           name: "teams-bot",
           hosting: "azure-function",
-          triggers: ["http-functions"],
-          scenarios: ["notification-function-base", "notification-trigger-http"],
+          capabilities: ["notification"],
           build: true,
           folder: "bot",
         },

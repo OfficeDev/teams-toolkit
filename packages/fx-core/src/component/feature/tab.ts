@@ -138,10 +138,18 @@ const configTab: Action = {
   name: "fx.configTab",
   type: "function",
   plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(["config 'teams-tab' in projectSettings"]);
+    const tabConfig = getComponent(context.projectSetting, ComponentNames.TeamsBot);
+    if (tabConfig) {
+      return ok([]);
+    }
+    return ok(["config Tab in projectSettings"]);
   },
   execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
     const projectSettings = context.projectSetting as ProjectSettingsV3;
+    const tabConfig = getComponent(projectSettings, ComponentNames.TeamsBot);
+    if (tabConfig) {
+      return ok([]);
+    }
     // add teams-tab
     projectSettings.components.push({
       name: "teams-tab",
@@ -158,7 +166,7 @@ const configTab: Action = {
       apimConfig.connections?.push("teams-tab");
     }
     projectSettings.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
-    return ok(["config 'teams-tab' in projectSettings"]);
+    return ok(["config Tab in projectSettings"]);
   },
 };
 

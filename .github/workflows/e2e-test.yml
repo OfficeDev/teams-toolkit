@@ -236,6 +236,7 @@ jobs:
 
       - name: Upload perf metrics
         uses: actions/upload-artifact@v2
+        if: ${{ always() }}
         with:
           name: ${{ steps.get-report-name.outputs.name }}_metrics.txt
           path: |

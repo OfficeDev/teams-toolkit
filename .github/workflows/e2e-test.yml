@@ -324,23 +324,17 @@ jobs:
             echo "*${job_id}_metrics.txt"
             ls -alh ~/artifacts
 
-            find ~/artifacts -type f -name "*${job_id}_metrics.txt"
-            metrics_file=`find ~/artifacts -type f -name "*${job_id}_metrics.txt"`
+            find ~/artifacts -name "*${job_id}*"
+            metrics_file=`find ~/artifacts -type f -name "*${job_id}*"`
             echo $metrics_file
             cat $metrics_file
 
             slow=`cat $metrics_file | grep '"severity":"slow"' | wc -l`
-            normal=`cat $metrics_file | grep '"severity":"normal"' | wc -l`
-            fast=`cat $metrics_file | grep '"severity":"fast"' | wc -l`
-
-            echo $slow
-            echo $normal
-            echo $fast
 
             url=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .html_url'`
             url="<a href=\\\"$url\\\">For Detail</a>"
 
-            row="<tr> <td style=\\\"text-align: left;\\\">$elegant_path</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> <td>$duration</td> <td>$fast</td> <td>$normal</td> <td>$slow</td> <td>$url</td> </tr>"
+            row="<tr> <td style=\\\"text-align: left;\\\">$elegant_path</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> <td style=\\\"text-align: center;\\\">$duration</td> <td style=\\\"text-align: center;\\\">$slow</td> <td style=\\\"text-align: center;\\\">$url</td> </tr>"
 
             if [ "$status" == "success" ]; then
               lists="$lists $row"
@@ -350,7 +344,7 @@ jobs:
 
           done <<< $cases
 
-          body="<table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>CASE</th> <th>STATUS</th> <th>AUTHOR</th> <th>DURATION</th> <th>FAST( < 1ms )</th> <th>NORMAL( 1~20ms )</th> <th>SLOW( > 20ms )</th> <th>URL</th> </tr> $lists </table> <br /> The detail can be found here: <a> https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }} </a>"
+          body="<table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>CASE</th> <th>STATUS</th> <th>AUTHOR</th> <th>DURATION</th> <th>SLOW METHOD( > 20ms )</th> <th>URL</th> </tr> $lists </table> <br /> The detail can be found here: <a> https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }} </a>"
 
           total=$((passed+failed))
 

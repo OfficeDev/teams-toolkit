@@ -33,7 +33,7 @@ import "../resource/appManifest/appManifest";
 import "../resource/botService";
 import "../resource/azureAppService/azureWebApp";
 import "../connection/azureWebAppConfig";
-import { ComponentNames } from "../constants";
+import { ComponentNames, Scenarios } from "../constants";
 @Service("teams-bot")
 export class TeamsBot {
   name = "teams-bot";
@@ -100,7 +100,7 @@ export class TeamsBot {
         targetAction: `${inputs.hosting}-config.generateBicep`,
         inputs: {
           componentId: this.name,
-          componentName: "Bot",
+          scenario: "Bot",
         },
       },
     ];
@@ -139,6 +139,7 @@ export class TeamsBot {
           const hostingComponent = {
             name: inputs.hosting,
             connections: ["teams-bot"],
+            scenario: Scenarios.Bot,
           };
           projectSettings.components.push(hostingComponent);
           //add bot-service
@@ -192,7 +193,7 @@ export class TeamsBot {
         targetAction: `${inputs.hosting}.generateBicep`,
         inputs: {
           componentId: this.name,
-          componentName: "Bot",
+          scenario: "Bot",
         },
       },
       {
@@ -202,7 +203,7 @@ export class TeamsBot {
         targetAction: "bot-service.generateBicep",
         inputs: {
           componentId: this.name,
-          componentName: "Bot",
+          scenario: "Bot",
         },
       },
       ...configActions,

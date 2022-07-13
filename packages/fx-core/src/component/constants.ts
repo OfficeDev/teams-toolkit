@@ -26,6 +26,18 @@ export const ComponentNames = {
   SSO: "SSO",
 };
 
+export enum Scenarios {
+  Tab = "Tab",
+  Bot = "Bot",
+  Api = "Api",
+}
+
+export const componentToScenario = new Map([
+  [ComponentNames.TeamsApi, Scenarios.Api],
+  [ComponentNames.TeamsBot, Scenarios.Bot],
+  [ComponentNames.TeamsTab, Scenarios.Tab],
+]);
+
 export const ComponentStateKeys = {
   [ComponentNames.AzureSQL]: "azure-sql",
   [ComponentNames.Identity]: "identity",

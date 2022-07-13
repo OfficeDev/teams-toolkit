@@ -17,7 +17,7 @@ import { Container } from "typedi";
 import * as path from "path";
 import fs from "fs-extra";
 import { getTemplatesFolder } from "../../folder";
-import { getComponent, getComponentByScenario } from "../workflow";
+import { getComponentByScenario } from "../workflow";
 import { compileHandlebarsTemplateString } from "../../common/tools";
 import { getProjectTemplatesFolderPath } from "../../common/utils";
 

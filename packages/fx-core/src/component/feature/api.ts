@@ -32,7 +32,6 @@ import { ErrorMessages } from "../../plugins/resource/function/resources/message
 import { ComponentNames, Scenarios } from "../constants";
 import { getComponent } from "../workflow";
 import * as path from "path";
-import { Context } from "vm";
 
 @Service(ComponentNames.TeamsApi)
 export class TeamsApi {

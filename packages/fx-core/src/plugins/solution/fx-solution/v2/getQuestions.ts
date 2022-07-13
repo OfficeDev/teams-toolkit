@@ -845,7 +845,8 @@ async function getStaticOptionsForAddCapability(
   }
 
   const hasMe = settings?.capabilities.includes(MessageExtensionItem.id);
-  const isBotAddable = !botExceedRes.value && !hasMe;
+  const isScenarioBotAddable = !botExceedRes.value && !hasMe;
+  const isDefaultBotAddable = !botExceedRes.value;
   const meExceedRes = await appStudioPlugin.capabilityExceedLimit(
     ctx,
     inputs as v2.InputsWithProjectPath,
@@ -862,7 +863,7 @@ async function getStaticOptionsForAddCapability(
   const isMEAddable = isBotNotificationEnabled()
     ? !meExceedRes.value && !hasNewBot
     : !meExceedRes.value;
-  if (!(isTabAddable || isBotAddable || isMEAddable)) {
+  if (!(isTabAddable || isDefaultBotAddable || isScenarioBotAddable || isMEAddable)) {
     ctx.userInteraction?.showMessage(
       "error",
       getLocalizedString("core.addCapability.exceedMaxLimit"),
@@ -872,7 +873,7 @@ async function getStaticOptionsForAddCapability(
   }
 
   const options: OptionItem[] = [];
-  if (isBotAddable) {
+  if (isScenarioBotAddable) {
     options.push(NotificationOptionItem);
     options.push(CommandAndResponseOptionItem);
   }
@@ -885,7 +886,7 @@ async function getStaticOptionsForAddCapability(
       );
     }
   }
-  if (isBotAddable) {
+  if (isDefaultBotAddable) {
     options.push(BotNewUIOptionItem);
   }
   if (isMEAddable) {

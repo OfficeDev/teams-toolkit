@@ -308,7 +308,7 @@ function connectComponents(settingsV3: ProjectSettingsV3) {
 
 export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): ProjectSettings {
   const settingsV2: ProjectSettings = cloneDeep(settingsV3) as ProjectSettings;
-  if (settingsV3.components.length > 0) {
+  if (settingsV3.components?.length > 0) {
     const hostType = hasAzureResourceV3(settingsV3) ? "Azure" : "SPFx";
     settingsV2.solutionSettings = {
       name: "fx-solution-azure",

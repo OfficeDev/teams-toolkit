@@ -11,69 +11,60 @@ import {
   ok,
   OptionItem,
   Platform,
+  Plugin,
   ProjectSettingsV3,
   QTreeNode,
   Result,
   SingleSelectQuestion,
   Stage,
-  TeamsAppManifest,
   traverse,
   UserError,
   v2,
 } from "@microsoft/teamsfx-api";
 import { EnvInfoV3 } from "@microsoft/teamsfx-api/build/v3";
-import fs from "fs-extra";
-import * as path from "path";
+import Container from "typedi";
+import { isVSProject } from "../../common";
 import { HelpLinks } from "../../common/constants";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 import {
   hasAAD,
+  hasApi,
   hasAPIM,
   hasAzureResourceV3,
   hasBot,
-  hasApi,
   hasKeyVault,
   hasTab,
 } from "../../common/projectSettingsHelperV3";
-import { canAddCICDWorkflows, getAppDirectory } from "../../common/tools";
+import { canAddCICDWorkflows } from "../../common/tools";
 import { ComponentNames } from "../../component/constants";
+import { ComponentName2pluginName } from "../../component/migrate";
 import { readAppManifest } from "../../component/resource/appManifest/utils";
 import { getComponent } from "../../component/workflow";
-import {
-  MANIFEST_TEMPLATE_CONSOLIDATE,
-  STATIC_TABS_MAX_ITEMS,
-} from "../../plugins/resource/appstudio/constants";
+import { Constants } from "../../plugins/resource/aad/constants";
+import { STATIC_TABS_MAX_ITEMS } from "../../plugins/resource/appstudio/constants";
 import { createHostTypeTriggerQuestion } from "../../plugins/resource/bot/question";
 import {
   ApiConnectionOptionItem,
   AzureResourceApimNewUI,
+  AzureResourceFunctionNewUI,
   AzureResourceKeyVaultNewUI,
   AzureResourceSQLNewUI,
-  AzureResourceFunctionNewUI,
   BotNewUIOptionItem,
   CicdOptionItem,
   CommandAndResponseOptionItem,
+  DeployPluginSelectQuestion,
   MessageExtensionItem,
   MessageExtensionNewUIItem,
   NotificationOptionItem,
   SingleSignOnOptionItem,
   TabNewUIOptionItem,
   TabNonSsoItem,
-  TabSsoItem,
 } from "../../plugins/solution/fx-solution/question";
+import { getPluginCLIName } from "../../plugins/solution/fx-solution/v2/getQuestions";
 import { checkWetherProvisionSucceeded } from "../../plugins/solution/fx-solution/v2/utils";
 import { NoCapabilityFoundError } from "../error";
 import { TOOLS } from "../globalVars";
-import {
-  createAppNameQuestion,
-  createCapabilityQuestionPreview,
-  getCreateNewOrFromSampleQuestion,
-  ProgrammingLanguageQuestion,
-  QuestionRootFolder,
-  SampleSelect,
-  ScratchOptionNo,
-  ScratchOptionYes,
-} from "../question";
+import { ProgrammingLanguageQuestion } from "../question";
 import { CoreHookContext } from "../types";
 import { getQuestionsForTargetEnv } from "./envInfoLoader";
 import { getQuestionsForCreateProjectV2 } from "./questionModel";
@@ -120,55 +111,34 @@ export const QuestionModelMW_V3: Middleware = async (ctx: CoreHookContext, next:
   await next();
 };
 
-// async function createProjectQuestionV3(
-//   inputs: Inputs
-// ): Promise<Result<QTreeNode | undefined, FxError>> {
-//   const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
-
-//   // create new
-//   const root = new QTreeNode({ type: "group" });
-//   node.addChild(root);
-//   root.condition = { equals: ScratchOptionYes.id };
-
-//   // capabilities
-//   const capQuestion = createCapabilityQuestionPreview();
-//   const capNode = new QTreeNode(capQuestion);
-//   root.addChild(capNode);
-
-//   const triggerQuestion = createHostTypeTriggerQuestion(inputs.platform);
-//   const triggerNode = new QTreeNode(triggerQuestion);
-//   triggerNode.condition = { equals: NotificationOptionItem.id };
-//   capNode.addChild(triggerNode);
-
-//   // Language
-//   const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
-//   capNode.addChild(programmingLanguage);
-
-//   root.addChild(new QTreeNode(QuestionRootFolder));
-//   root.addChild(new QTreeNode(createAppNameQuestion()));
-
-//   // create from sample
-//   const sampleNode = new QTreeNode(SampleSelect);
-//   node.addChild(sampleNode);
-//   sampleNode.condition = { equals: ScratchOptionNo.id };
-//   sampleNode.addChild(new QTreeNode(QuestionRootFolder));
-//   return ok(node.trim());
-// }
-
 async function getQuestionsForDeploy(
   ctx: v2.Context,
   envInfo: EnvInfoV3,
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (inputs.platform === Platform.VSCode && inputs[Constants.INCLUDE_AAD_MANIFEST] === "yes") {
+    return ok(undefined);
+  }
+  if (isVSProject(ctx.projectSetting)) {
+    return ok(undefined);
+  }
   const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
   const projectSetting = ctx.projectSetting as ProjectSettingsV3;
-  if (isDynamicQuestion) {
+  const deployableComponents = [
+    ComponentNames.TeamsTab,
+    ComponentNames.TeamsBot,
+    ComponentNames.TeamsApi,
+  ];
+  let selectableComponents: string[];
+  if (!isDynamicQuestion) {
+    selectableComponents = deployableComponents;
+  } else {
     const hasAzureResource = hasAzureResourceV3(projectSetting);
     const provisioned = checkWetherProvisionSucceeded(envInfo.state);
     if (hasAzureResource && !provisioned) {
       return err(
         new UserError({
-          source: "fx",
+          source: "Solution",
           name: "CannotDeployBeforeProvision",
           message: getDefaultString("core.deploy.FailedToDeployBeforeProvision"),
           displayMessage: getLocalizedString("core.deploy.FailedToDeployBeforeProvision"),
@@ -176,30 +146,31 @@ async function getQuestionsForDeploy(
         })
       );
     }
-    const selectComponentsQuestion: MultiSelectQuestion = {
-      name: "deploy-plugin",
-      title: "Select component(s) to deploy",
-      type: "multiSelect",
-      skipSingleOption: false,
-      staticOptions: [],
-      default: [],
-    };
-    selectComponentsQuestion.staticOptions = projectSetting.components
-      .filter((component) => component.build && component.hosting)
-      .map((component) => {
-        const item: OptionItem = {
-          id: component.name,
-          label: component.name,
-          cliName: component.name,
-        };
-        return item;
-      });
-    if (selectComponentsQuestion.staticOptions.length === 0) {
-      return err(new NoCapabilityFoundError(Stage.deploy));
-    }
-    return ok(new QTreeNode(selectComponentsQuestion));
+    selectableComponents = projectSetting.components
+      .filter(
+        (component) =>
+          component.build && component.hosting && deployableComponents.includes(component.name)
+      )
+      .map((component) => component.name) as string[];
   }
-  return ok(undefined);
+  const options = selectableComponents.map((c) => {
+    const pluginName = ComponentName2pluginName(c);
+    const plugin = Container.get<Plugin>(pluginName);
+    const item: OptionItem = {
+      id: pluginName,
+      label: plugin.displayName,
+      cliName: getPluginCLIName(plugin.name),
+    };
+    return item;
+  });
+  if (options.length === 0 && inputs[Constants.INCLUDE_AAD_MANIFEST] !== "yes") {
+    return err(new NoCapabilityFoundError(Stage.deploy));
+  }
+  const selectQuestion = DeployPluginSelectQuestion;
+  selectQuestion.staticOptions = options;
+  selectQuestion.default = options.map((i) => i.id);
+  // TODO check for add manifest deploy and teams manifest deploy
+  return ok(new QTreeNode(selectQuestion));
 }
 
 async function getQuestionsForAddFeature(

@@ -20,6 +20,7 @@ import { format } from "util";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { CoreQuestionNames } from "../../core/question";
 import { ComponentNames, Scenarios } from "../constants";
+import { identityAction } from "../resource/identity";
 import { getComponent } from "../workflow";
 
 @Service("teams-tab")
@@ -101,7 +102,9 @@ export class TeamsTab {
             },
           ]
         : [];
-
+    if (!getComponent(context.projectSetting, ComponentNames.Identity)) {
+      configActions.push(identityAction);
+    }
     actions.push(initBicep);
     actions.push(
       generateBicep(inputs.hosting, {
@@ -165,6 +168,13 @@ const configTab: Action = {
     const apimConfig = getComponent(projectSettings, ComponentNames.APIM);
     if (apimConfig) {
       apimConfig.connections?.push(ComponentNames.TeamsTab);
+    }
+    // add default identity
+    if (!getComponent(context.projectSetting, ComponentNames.Identity)) {
+      projectSettings.components.push({
+        name: ComponentNames.Identity,
+        provision: true,
+      });
     }
     projectSettings.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
     return ok(["config Tab in projectSettings"]);

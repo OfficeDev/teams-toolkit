@@ -19,4 +19,8 @@ export const identityAction: Action = {
   type: "call",
   required: true,
   targetAction: "identity.generateBicep",
+  inputs: {
+    componentId: "",
+    scenario: "",
+  },
 };

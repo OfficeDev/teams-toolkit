@@ -48,111 +48,10 @@ export class TeamsApi {
 
   addApiAction(context: ContextV3, inputs: InputsWithProjectPath): Action {
     inputs.hosting = inputs.hosting || ComponentNames.Function;
-<<<<<<< HEAD
     const actions: Action[] = [];
     this.setupConfiguration(actions, context);
     this.setupCode(actions, context, inputs);
     this.setupBicep(actions, context, inputs);
-=======
-    const functionName: string =
-      (inputs?.[QuestionKey.functionName] as string) ?? DefaultValues.functionName;
-    const actions: Action[] = [
-      {
-        name: "fx.configApi",
-        type: "function",
-        plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-          return ok([`config '${this.name}' in projectSettings`]);
-        },
-        question: (context: ContextV3, inputs: InputsWithProjectPath) => {
-          functionNameQuestion.validation = {
-            validFunc: async (
-              input: string,
-              previousInputs?: Inputs
-            ): Promise<string | undefined> => {
-              const workingPath: string = path.join(
-                inputs.projectPath,
-                FunctionPluginPathInfo.solutionFolderName
-              );
-              const name = input as string;
-              if (!name || !RegularExpr.validFunctionNamePattern.test(name)) {
-                return ErrorMessages.invalidFunctionName;
-              }
-              if (inputs.stage === Stage.create) {
-                return undefined;
-              }
-              const language: FunctionLanguage =
-                (inputs[QuestionKey.programmingLanguage] as FunctionLanguage) ??
-                (context.projectSetting.programmingLanguage as FunctionLanguage);
-              // If language is unknown, skip checking and let scaffold handle the error.
-              if (
-                language &&
-                (await FunctionScaffold.doesFunctionPathExist(workingPath, language, name))
-              ) {
-                return ErrorMessages.functionAlreadyExists;
-              }
-            },
-          };
-          return ok(new QTreeNode(functionNameQuestion));
-        },
-        execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-          const projectSettings = context.projectSetting as ProjectSettingsV3;
-          // add teams-api
-          projectSettings.components.push({
-            name: this.name,
-            hosting: inputs.hosting,
-            functionNames: [functionName],
-          });
-          // add hosting component
-          projectSettings.components.push({
-            name: inputs.hosting,
-            connections: [this.name, ComponentNames.Identity],
-          });
-          const teamsTab = getComponent(projectSettings, ComponentNames.TeamsTab);
-          if (!teamsTab?.connections) merge(teamsTab, { connections: [this.name] });
-          else teamsTab.connections.push(this.name);
-          projectSettings.programmingLanguage ??= inputs[CoreQuestionNames.ProgrammingLanguage];
-          return ok([`config '${this.name}' in projectSettings`]);
-        },
-      },
-      {
-        name: "call:api-code.generate",
-        type: "call",
-        required: true,
-        targetAction: "api-code.generate",
-      },
-      {
-        type: "call",
-        targetAction: "bicep.init",
-        required: true,
-      },
-      {
-        name: `call:${inputs.hosting}.generateBicep`,
-        type: "call",
-        required: true,
-        targetAction: `${inputs.hosting}.generateBicep`,
-        inputs: {
-          componentId: this.name,
-          componentName: "Api",
-        },
-      },
-      {
-        name: `call:${inputs.hosting}-config.generateBicep`,
-        type: "call",
-        required: true,
-        targetAction: `${inputs.hosting}-config.generateBicep`,
-        inputs: {
-          componentId: this.name,
-          componentName: "Api",
-        },
-      },
-      {
-        name: "call:debug.generateLocalDebugSettings",
-        type: "call",
-        required: true,
-        targetAction: "debug.generateLocalDebugSettings",
-      },
-    ];
->>>>>>> e214a94b1... chore(component): update identity and aad in tab
     const group: GroupAction = {
       type: "group",
       name: `${this.name}.add`,
@@ -241,7 +140,7 @@ const configApiAction: Action = {
     // add hosting component
     projectSettings.components.push({
       name: inputs.hosting,
-      connections: [ComponentNames.TeamsApi, ComponentNames.TeamsTab],
+      connections: [ComponentNames.TeamsApi, ComponentNames.TeamsTab, ComponentNames.Identity],
       scenario: Scenarios.Api,
     });
     const teamsTab = getComponent(projectSettings, ComponentNames.TeamsTab);

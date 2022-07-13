@@ -20,7 +20,7 @@ import { getComponent } from "../workflow";
 import "../connection/azureWebAppConfig";
 import "../resource/azureSql";
 import "../resource/identity";
-import { ComponentNames } from "../constants";
+import { ComponentNames, Scenarios } from "../constants";
 import { getHostingComponent } from "../utils";
 
 @Service("sso")
@@ -65,7 +65,7 @@ export class SSO {
 
     const actions: Action[] = [
       {
-        name: "SSO.configSSO",
+        name: "sso.configSSO",
         type: "function",
         plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
           const remarks: string[] = [];
@@ -191,7 +191,7 @@ export class SSO {
         targetAction: `${botHosting}-config.generateBicep`,
         inputs: {
           update: true,
-          scenario: "Bot",
+          scenario: Scenarios.Bot,
         },
       });
     }
@@ -202,6 +202,10 @@ export class SSO {
         type: "call",
         required: true,
         targetAction: `${tabApi?.name}-config.generateBicep`,
+        inputs: {
+          update: true,
+          scenario: Scenarios.Api,
+        },
       });
     }
     const group: GroupAction = {

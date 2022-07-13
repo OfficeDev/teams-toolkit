@@ -249,7 +249,7 @@ jobs:
           npx ts-node .github/scripts/testPlan.ts sync ./packages/cli/tests/e2e/mochawesome-report/mochawesome.json cli $version
 
   report:
-    if: ${{ always() }}
+    if: ${{ always() && github.event_name == 'schedule' }}
     needs: execute-case
     runs-on: ubuntu-latest
     steps:
@@ -358,7 +358,7 @@ jobs:
           method: POST
           payload: |
             {
-              "to": "haolong@microsoft.com",
+              "to": "${{ steps.list-jobs.outputs.to }}",
               "body": "${{ steps.list-jobs.outputs.body }}",
               "subject": "${{ steps.list-jobs.outputs.subject }}",
               "apiKey": "${{ secrets.MAIL_API_KEY }}"

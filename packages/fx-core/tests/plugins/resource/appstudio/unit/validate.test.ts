@@ -4,12 +4,14 @@
 import "mocha";
 import * as chai from "chai";
 import sinon from "sinon";
+import { v4 as uuid } from "uuid";
 import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
+import { AppStudioPluginImpl } from "./../../../../../src/plugins/resource/appstudio/plugin";
 import { TeamsBot } from "./../../../../../src/plugins/resource/bot";
-import { ConfigMap, PluginContext, TeamsAppManifest, ok, Plugin } from "@microsoft/teamsfx-api";
+import { ConfigMap, PluginContext, ok, Plugin, ManifestUtil } from "@microsoft/teamsfx-api";
 import { newEnvInfo } from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
-import { AppStudioClient } from "../../../../../src/plugins/resource/appstudio/appStudio";
+import { getAzureProjectRoot } from "./../helper";
 
 describe("validate manifest", () => {
   let plugin: AppStudioPlugin;
@@ -20,7 +22,7 @@ describe("validate manifest", () => {
   beforeEach(async () => {
     plugin = new AppStudioPlugin();
     ctx = {
-      root: "./",
+      root: getAzureProjectRoot(),
       envInfo: newEnvInfo(),
       config: new ConfigMap(),
       cryptoProvider: new LocalCrypto(""),
@@ -31,6 +33,17 @@ describe("validate manifest", () => {
     BotPlugin.name = "fx-resource-bot";
     BotPlugin.displayName = "Bot";
     selectedPlugins = [BotPlugin];
+
+    sinon.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns({
+      tabEndpoint: "https://tabEndpoint",
+      tabDomain: "tabDomain",
+      tabIndexPath: "/index",
+      aadId: uuid(),
+      botDomain: "botDomain",
+      botId: uuid(),
+      webApplicationInfoResource: "webApplicationInfoResource",
+      teamsAppId: uuid(),
+    });
   });
 
   afterEach(async () => {
@@ -38,7 +51,7 @@ describe("validate manifest", () => {
   });
 
   it("valid manifest", async () => {
-    sinon.stub(plugin, "validateManifest").resolves(ok([]));
+    sinon.stub(ManifestUtil, "validateManifest").resolves([]);
 
     const validationResult = await plugin.validateManifest(ctx);
     chai.assert.isTrue(validationResult.isOk());
@@ -49,13 +62,10 @@ describe("validate manifest", () => {
 
   it("invalid manifest", async () => {
     sinon
-      .stub(plugin, "validateManifest")
-      .resolves(ok(["developer | Required properties are missing from object: []."]));
+      .stub(ManifestUtil, "validateManifest")
+      .resolves(["developer | Required properties are missing from object: []."]);
 
     const validationResult = await plugin.validateManifest(ctx);
-    chai.assert.isTrue(validationResult.isOk());
-    if (validationResult.isOk()) {
-      chai.expect(validationResult.value).to.have.lengthOf(1);
-    }
+    chai.assert.isTrue(validationResult.isErr());
   });
 });

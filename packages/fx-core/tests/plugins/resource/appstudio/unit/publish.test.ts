@@ -56,7 +56,6 @@ describe("Publish Teams app with Azure", () => {
     selectedPlugins = [BotPlugin];
     sandbox.stub(AppStudioClient, "publishTeamsApp").resolves(uuid());
     sandbox.stub(AppStudioClient, "publishTeamsAppUpdate").resolves(uuid());
-    sandbox.stub(AppStudioClient, "updateApp").resolves();
     sandbox.stub(fs, "move").resolves();
   });
 
@@ -164,7 +163,6 @@ describe("Publish Teams app with SPFx", () => {
     };
     sandbox.stub(AppStudioClient, "publishTeamsApp").resolves(uuid());
     sandbox.stub(AppStudioClient, "publishTeamsAppUpdate").resolves(uuid());
-    sandbox.stub(AppStudioClient, "updateApp").resolves();
     sandbox.stub(fs, "move").resolves();
     sandbox.stub(AppStudioPluginImpl.prototype, <any>"beforePublish").returns(uuid());
   });

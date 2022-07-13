@@ -121,7 +121,7 @@ export class AzureStorageResource extends AzureResource {
         const ctx = context as ProvisionContextV3;
         const parent = getHostingParentComponent(ctx.projectSetting, this.name);
         if (!parent?.folder) {
-          throw new Error("");
+          throw new Error("parent component not found for azure-storage");
         }
         const deployDir = path.resolve(inputs.projectPath, parent.folder);
         const frontendConfigRes = await buildFrontendConfig(

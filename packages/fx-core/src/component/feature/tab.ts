@@ -138,7 +138,7 @@ const configTab: Action = {
   name: "fx.configTab",
   type: "function",
   plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    const tabConfig = getComponent(context.projectSetting, ComponentNames.TeamsBot);
+    const tabConfig = getComponent(context.projectSetting, ComponentNames.TeamsTab);
     if (tabConfig) {
       return ok([]);
     }
@@ -146,7 +146,7 @@ const configTab: Action = {
   },
   execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
     const projectSettings = context.projectSetting as ProjectSettingsV3;
-    const tabConfig = getComponent(projectSettings, ComponentNames.TeamsBot);
+    const tabConfig = getComponent(projectSettings, ComponentNames.TeamsTab);
     if (tabConfig) {
       return ok([]);
     }

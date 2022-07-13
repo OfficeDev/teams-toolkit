@@ -265,7 +265,7 @@ jobs:
           path: ~/artifacts
 
       - name: Display structure of downloaded files
-        working-directory: ~/artifacts/artifact
+        working-directory: ~/artifacts
         run: ls -alh
 
       - name: List jobs
@@ -330,7 +330,7 @@ jobs:
             fi
 
             job_id=`echo $jobs| jq --arg case $case -r '.jobs[] | select(.name == $case ) | .id'`
-            path=`find ~/artifacts/artifact -type f -name "*${job_id}_metrics.txt"`
+            path=`find ~/artifacts -type f -name "*${job_id}_metrics.txt"`
 
             slow=`cat $path | grep '"severity":"slow"' | wc -l`
             normal=`cat output.txt | grep '"severity":"normal"' | wc -l`

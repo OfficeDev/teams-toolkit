@@ -216,7 +216,7 @@ jobs:
           name="${{ matrix.cases }}"
 
           jobs=`curl \
-            -u :${{ secrets.GITHUB_TOKEN }}\
+            -u :${{ secrets.GITHUB_TOKEN }} \
             https://api.github.com/repos/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs?per_page=100`
 
           id=`echo $jobs| jq --arg name $name -r '.jobs[] | select(.name == $name) | .id'`
@@ -265,11 +265,11 @@ jobs:
         working-directory: packages/cli
         run: |
           jobs=`curl \
-            -u :${{ secrets.GITHUB_TOKEN }}\
+            -u :${{ secrets.GITHUB_TOKEN }} \
             https://api.github.com/repos/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs?per_page=100`
 
           artifacts=`curl \
-            -u :${{ secrets.GITHUB_TOKEN }}\
+            -u :${{ secrets.GITHUB_TOKEN }} \
             https://api.github.com/repos/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}/artifacts?per_page=100`
 
           echo $artifacts

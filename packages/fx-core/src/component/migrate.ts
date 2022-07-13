@@ -259,6 +259,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
       });
     }
     if (solutionSettings.activeResourcePlugins.includes("fx-resource-function")) {
+      //TODO
       settingsV3.components.push({
         name: ComponentNames.TeamsApi,
         hosting: ComponentNames.Function,
@@ -339,6 +340,37 @@ export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3) {
         settingsV2.solutionSettings.capabilities.push("BotSSO");
       }
       settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-bot");
+      const hostType =
+        teamsBot.hosting === ComponentNames.AzureWebApp ? "app-service" : "azure-function";
+      const scenarios = teamsBot.scenarios;
+      const botCapabilities = scenarios?.includes("command-and-response")
+        ? ["command-response"]
+        : scenarios?.includes("notification-function-base") ||
+          scenarios?.includes("notification-restify")
+        ? ["notification"]
+        : [];
+      settingsV2.pluginSettings = {
+        "fx-resource-bot": {
+          "host-type": hostType,
+          capabilities: botCapabilities,
+        },
+      };
+    }
+    if (getComponent(settingsV3, ComponentNames.Identity)) {
+      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-identity");
+    }
+    if (getComponent(settingsV3, ComponentNames.KeyVault)) {
+      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-key-vault");
+    }
+    if (getComponent(settingsV3, ComponentNames.AzureSQL)) {
+      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-azure-sql");
+    }
+    if (getComponent(settingsV3, ComponentNames.APIM)) {
+      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-apim");
+    }
+    if (getComponent(settingsV3, ComponentNames.Function)) {
+      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-function");
+      //TODO
     }
   }
 

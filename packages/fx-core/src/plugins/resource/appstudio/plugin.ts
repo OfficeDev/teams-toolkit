@@ -10,7 +10,6 @@ import {
   Result,
   PluginContext,
   TeamsAppManifest,
-  LogProvider,
   AppPackageFolderName,
   BuildFolderName,
   ManifestUtil,
@@ -34,7 +33,6 @@ import {
   WEB_APPLICATION_INFO_SOURCE,
   PluginNames,
   SOLUTION_PROVISION_SUCCEEDED,
-  SolutionError,
 } from "../../solution/fx-solution/constants";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
@@ -95,120 +93,6 @@ export class AppStudioPluginImpl {
 
   constructor() {}
 
-  public async getAppDefinitionAndUpdate(
-    ctx: PluginContext,
-    isLocalDebug: boolean,
-    manifest: TeamsAppManifest
-  ): Promise<Result<string, FxError>> {
-    let teamsAppId: Result<string, FxError>;
-    const appDirectory = await getAppDirectory(ctx.root);
-    const appStudioTokenRes = await ctx.m365TokenProvider!.getAccessToken({
-      scopes: AppStudioScopes,
-    });
-    if (appStudioTokenRes.isErr()) {
-      return err(appStudioTokenRes.error);
-    }
-    const appStudioToken = appStudioTokenRes.value;
-
-    if (isLocalDebug) {
-      const appDefinitionAndManifest = await this.getAppDefinitionAndManifest(ctx, true);
-
-      if (appDefinitionAndManifest.isErr()) {
-        return err(appDefinitionAndManifest.error);
-      }
-
-      const localTeamsAppID = await this.getTeamsAppId(ctx);
-
-      let createIfNotExist = false;
-      if (!localTeamsAppID) {
-        createIfNotExist = true;
-      } else {
-        try {
-          await AppStudioClient.getApp(localTeamsAppID, appStudioToken, ctx.logProvider);
-        } catch (error) {
-          createIfNotExist = true;
-        }
-      }
-
-      teamsAppId = await this.updateApp(
-        ctx,
-        appDefinitionAndManifest.value[0],
-        appStudioToken,
-        isLocalDebug,
-        createIfNotExist,
-        appDirectory,
-        createIfNotExist ? undefined : localTeamsAppID,
-        ctx.logProvider
-      );
-
-      return teamsAppId;
-    } else {
-      const appDefinitionRes = await this.convertToAppDefinition(ctx, manifest, true);
-      if (appDefinitionRes.isErr()) {
-        return err(appDefinitionRes.error);
-      }
-
-      teamsAppId = await this.updateApp(
-        ctx,
-        appDefinitionRes.value,
-        appStudioToken,
-        isLocalDebug,
-        true,
-        appDirectory,
-        undefined,
-        ctx.logProvider
-      );
-
-      return teamsAppId;
-    }
-  }
-
-  private async getSPFxLocalDebugAppDefinitionAndUpdate(
-    ctx: PluginContext,
-    manifest: TeamsAppManifest
-  ): Promise<Result<string, FxError>> {
-    const appDirectory = await getAppDirectory(ctx.root);
-    const appStudioTokenRes = await ctx.m365TokenProvider!.getAccessToken({
-      scopes: AppStudioScopes,
-    });
-    if (appStudioTokenRes.isErr()) {
-      return err(appStudioTokenRes.error);
-    }
-    const appStudioToken = appStudioTokenRes.value;
-    const localTeamsAppID = await this.getTeamsAppId(ctx);
-    let create = !localTeamsAppID;
-    if (localTeamsAppID) {
-      try {
-        await AppStudioClient.getApp(localTeamsAppID, appStudioToken, ctx.logProvider);
-      } catch (error) {
-        create = true;
-      }
-    }
-
-    const view = {
-      config: ctx.envInfo.config,
-    };
-    const manifestString = renderTemplate(JSON.stringify(manifest), view);
-    manifest = JSON.parse(manifestString);
-
-    const appDefinition = await this.convertToAppDefinition(ctx, manifest, false);
-    if (appDefinition.isErr()) {
-      return err(appDefinition.error);
-    }
-    const teamsAppId = await this.updateApp(
-      ctx,
-      appDefinition.value,
-      appStudioToken,
-      true,
-      create,
-      appDirectory,
-      create ? undefined : localTeamsAppID,
-      ctx.logProvider
-    );
-
-    return teamsAppId;
-  }
-
   public async provision(ctx: PluginContext): Promise<Result<string, FxError>> {
     const provisionProgress = ctx.ui?.createProgressBar(
       getLocalizedString("plugins.appstudio.provisionTitle"),
@@ -263,66 +147,16 @@ export class AppStudioPluginImpl {
       getLocalizedString("plugins.appstudio.postProvisionProgress", ctx.projectSettings!.appName)
     );
     await postProvisionProgress?.next();
-    const remoteTeamsAppId = await this.getTeamsAppId(ctx);
-    let manifestString: string;
-    const manifestResult = await loadManifest(ctx.root);
-    if (manifestResult.isErr()) {
-      await postProvisionProgress?.end(false);
-      return err(manifestResult.error);
-    } else {
-      manifestString = JSON.stringify(manifestResult.value);
-    }
 
-    let appDefinition: AppDefinition;
-    if (isSPFxProject(ctx.projectSettings)) {
-      manifestString = await this.getSPFxManifest(ctx);
-      const appDefinitionRes = await this.convertToAppDefinition(
-        ctx,
-        JSON.parse(manifestString),
-        false
-      );
-      if (appDefinitionRes.isErr()) {
-        await postProvisionProgress?.end(false);
-        return err(appDefinitionRes.error);
-      }
-      appDefinition = appDefinitionRes.value;
-    } else {
-      const remoteManifest = await this.getAppDefinitionAndManifest(ctx, false);
-      if (remoteManifest.isErr()) {
-        await postProvisionProgress?.end(false);
-        return err(remoteManifest.error);
-      }
-      [appDefinition] = remoteManifest.value;
-    }
-
-    const appDirectory = await getAppDirectory(ctx.root);
-    const appStudioTokenRes = await ctx?.m365TokenProvider!.getAccessToken({
-      scopes: AppStudioScopes,
-    });
-    if (appStudioTokenRes.isErr()) {
-      return err(appStudioTokenRes.error);
-    }
-    const appStudioToken = appStudioTokenRes.value;
-    const result = await this.updateApp(
-      ctx,
-      appDefinition,
-      appStudioToken,
-      false,
-      false,
-      appDirectory,
-      remoteTeamsAppId,
-      ctx.logProvider
-    );
+    const result = await this.updateApp(ctx, false);
     if (result.isErr()) {
       await postProvisionProgress?.end(false);
       return err(result.error);
     }
 
-    ctx.logProvider?.info(
-      getLocalizedString("plugins.appstudio.teamsAppUpdatedLog", remoteTeamsAppId)
-    );
+    ctx.logProvider?.info(getLocalizedString("plugins.appstudio.teamsAppUpdatedLog", result.value));
     await postProvisionProgress?.end(true);
-    return ok(remoteTeamsAppId);
+    return ok(result.value);
   }
 
   public async validateManifest(
@@ -387,10 +221,6 @@ export class AppStudioPluginImpl {
     return ok(errors);
   }
 
-  public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
-    return this.updateManifest(ctx, false);
-  }
-
   public async updateManifest(
     ctx: PluginContext,
     isLocalDebug: boolean
@@ -405,15 +235,9 @@ export class AppStudioPluginImpl {
       manifestString = JSON.stringify(manifestResult.value);
     }
 
-    let appDefinition: AppDefinition;
     if (isSPFxProject(ctx.projectSettings)) {
       manifestString = await this.getSPFxManifest(ctx);
       manifest = JSON.parse(manifestString);
-      const appDefinitionRes = await this.convertToAppDefinition(ctx, manifest, false);
-      if (appDefinitionRes.isErr()) {
-        return err(appDefinitionRes.error);
-      }
-      appDefinition = appDefinitionRes.value;
     } else {
       const appManifest = await this.getAppDefinitionAndManifest(ctx, isLocalDebug);
       if (appManifest.isErr()) {
@@ -439,13 +263,12 @@ export class AppStudioPluginImpl {
           return err(appManifest.error);
         }
       }
-      [appDefinition] = appManifest.value;
       manifest = appManifest.value[1];
     }
 
     const manifestFileName =
       `${ctx.root}/${BuildFolderName}/${AppPackageFolderName}/manifest.` +
-      (isLocalDebug ? "local" : ctx.envInfo.envName) +
+      (isLocalDebug ? environmentManager.getLocalEnvName() : ctx.envInfo.envName) +
       `.json`;
     if (!(await fs.pathExists(manifestFileName))) {
       const isProvisionSucceeded = !!(ctx.envInfo.state
@@ -524,17 +347,7 @@ export class AppStudioPluginImpl {
         }
       }
 
-      const appDirectory = await getAppDirectory(ctx.root);
-      const result = await this.updateApp(
-        ctx,
-        appDefinition,
-        appStudioToken!,
-        isLocalDebug,
-        false,
-        appDirectory,
-        teamsAppId,
-        ctx.logProvider
-      );
+      const result = await this.updateApp(ctx, false);
       if (result.isErr()) {
         return err(result.error);
       }
@@ -896,16 +709,7 @@ export class AppStudioPluginImpl {
   }
 
   public async postLocalDebug(ctx: PluginContext): Promise<Result<string, FxError>> {
-    let teamsAppId;
-    const manifest = await loadManifest(ctx.root);
-    if (manifest.isErr()) {
-      return err(manifest.error);
-    }
-    if (isSPFxProject(ctx.projectSettings)) {
-      teamsAppId = await this.getSPFxLocalDebugAppDefinitionAndUpdate(ctx, manifest.value);
-    } else {
-      teamsAppId = await this.getAppDefinitionAndUpdate(ctx, true, manifest.value);
-    }
+    const teamsAppId = await this.updateApp(ctx, true);
     if (teamsAppId.isErr()) {
       return teamsAppId;
     }
@@ -1055,10 +859,8 @@ export class AppStudioPluginImpl {
       await publishProgress?.next(
         getLocalizedString("plugins.appstudio.publishProgressUpdate", remoteTeamsAppId)
       );
-      const appDefinitionRes = await this.convertToAppDefinition(ctx, manifest, true);
-      if (appDefinitionRes.isErr()) {
-        throw appDefinitionRes.error;
-      }
+      const buildPackage = await this.buildTeamsAppPackage(ctx, false);
+      const archivedFile = await fs.readFile(buildPackage);
       const appStudioTokenRes = await ctx?.m365TokenProvider!.getAccessToken({
         scopes: AppStudioScopes,
       });
@@ -1066,21 +868,8 @@ export class AppStudioPluginImpl {
         throw appStudioTokenRes.error;
       }
       const appStudioToken = appStudioTokenRes.value;
-      const colorIconContent = manifest.icons.color
-        ? (await fs.readFile(`${appDirectory}/${manifest.icons.color}`)).toString("base64")
-        : undefined;
-      const outlineIconContent = manifest.icons.outline
-        ? (await fs.readFile(`${appDirectory}/${manifest.icons.outline}`)).toString("base64")
-        : undefined;
       try {
-        const app = await AppStudioClient.updateApp(
-          remoteTeamsAppId,
-          appDefinitionRes.value,
-          appStudioToken,
-          undefined,
-          colorIconContent,
-          outlineIconContent
-        );
+        const app = await AppStudioClient.importApp(archivedFile, appStudioToken, undefined, true);
 
         if (app.updatedAt) {
           ctx.envInfo.state
@@ -1383,7 +1172,7 @@ export class AppStudioPluginImpl {
     }
     const appStudioToken = appStudioTokenRes.value;
     try {
-      const appDefinition = await AppStudioClient.createApp(
+      const appDefinition = await AppStudioClient.importApp(
         archivedFile,
         appStudioToken,
         ctx.logProvider
@@ -1406,73 +1195,31 @@ export class AppStudioPluginImpl {
 
   private async updateApp(
     ctx: PluginContext,
-    appDefinition: AppDefinition,
-    appStudioToken: string,
-    isLocalDebug: boolean,
-    createIfNotExist: boolean,
-    appDirectory: string,
-    teamsAppId?: string,
-    logProvider?: LogProvider
+    isLocalDebug: boolean
   ): Promise<Result<string, FxError>> {
-    if (appStudioToken === undefined || appStudioToken.length === 0) {
-      return err(
-        AppStudioResultFactory.SystemError(SolutionError.NoAppStudioToken, [
-          getDefaultString("error.appstudio.noAppStudioToken"),
-          getLocalizedString("error.appstudio.noAppStudioToken"),
-        ])
-      );
+    const appStudioTokenRes = await ctx?.m365TokenProvider!.getAccessToken({
+      scopes: AppStudioScopes,
+    });
+    if (appStudioTokenRes.isErr()) {
+      return err(appStudioTokenRes.error);
     }
-
-    if (createIfNotExist) {
-      const appDef = await this.createApp(ctx, isLocalDebug);
-      if (appDef.isErr()) {
-        return err(appDef.error);
-      }
-      if (!appDef.value.teamsAppId) {
-        return err(
-          isLocalDebug
-            ? AppStudioResultFactory.SystemError(
-                AppStudioError.LocalAppIdCreateFailedError.name,
-                AppStudioError.LocalAppIdCreateFailedError.message()
-              )
-            : AppStudioResultFactory.SystemError(
-                AppStudioError.RemoteAppIdCreateFailedError.name,
-                AppStudioError.RemoteAppIdCreateFailedError.message()
-              )
-        );
-      }
-      teamsAppId = appDef.value.teamsAppId;
-      appDefinition.outlineIcon = appDef.value.outlineIcon;
-      appDefinition.colorIcon = appDef.value.colorIcon;
-    }
-
-    const colorIconContent =
-      appDirectory && appDefinition.colorIcon && !appDefinition.colorIcon.startsWith("https://")
-        ? (await fs.readFile(`${appDirectory}/${appDefinition.colorIcon}`)).toString("base64")
-        : undefined;
-    const outlineIconContent =
-      appDirectory && appDefinition.outlineIcon && !appDefinition.outlineIcon.startsWith("https://")
-        ? (await fs.readFile(`${appDirectory}/${appDefinition.outlineIcon}`)).toString("base64")
-        : undefined;
-    appDefinition.appId = teamsAppId;
+    const appStudioToken = appStudioTokenRes.value;
 
     try {
-      const app = await AppStudioClient.updateApp(
-        teamsAppId!,
-        appDefinition,
+      const buildPackage = await this.buildTeamsAppPackage(ctx, isLocalDebug);
+      const archivedFile = await fs.readFile(buildPackage);
+      const app = await AppStudioClient.importApp(
+        archivedFile,
         appStudioToken,
-        logProvider,
-        colorIconContent,
-        outlineIconContent
+        ctx.logProvider,
+        true
       );
-
       if (app.updatedAt) {
         const time = new Date(app.updatedAt).getTime();
         ctx.envInfo.state.get(PluginNames.APPST)?.set(Constants.TEAMS_APP_UPDATED_AT, time);
       }
-
-      return ok(teamsAppId!);
-    } catch (e) {
+      return ok(app.teamsAppId!);
+    } catch (e: any) {
       if (e instanceof Error) {
         return err(
           isLocalDebug

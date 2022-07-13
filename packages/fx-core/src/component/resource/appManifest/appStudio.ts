@@ -30,7 +30,6 @@ import { AppStudioError } from "../../../plugins/resource/appstudio/errors";
 import { AppDefinition } from "../../../plugins/resource/appstudio/interfaces/appDefinition";
 import { AppStudioResultFactory } from "../../../plugins/resource/appstudio/results";
 import { convertToAppDefinition } from "../../../plugins/resource/appstudio/utils/utils";
-import { ComponentNames } from "../../constants";
 import { readAppManifest } from "./utils";
 
 export async function createOrUpdateTeamsApp(
@@ -46,183 +45,43 @@ export async function createOrUpdateTeamsApp(
     return err(appStudioTokenRes.error);
   }
   const appStudioToken = appStudioTokenRes.value;
+
+  let archivedFile;
+
   if (inputs.appPackagePath) {
-    return await createOrUpdateTeamsAppByZip(inputs.appPackagePath, ctx, tokenProvider);
-  }
-  const teamsAppId = envInfo.state[ComponentNames.AppManifest]?.teamsAppId;
-  let create = true;
-  if (teamsAppId) {
-    try {
-      await AppStudioClient.getApp(teamsAppId, appStudioToken, ctx.logProvider);
-      create = false;
-    } catch (error) {}
-  }
-  if (create) {
-    // create teams app
-    try {
-      const buildPackage = await buildTeamsAppPackage(inputs.projectPath, envInfo!, true);
-      if (buildPackage.isErr()) {
-        return err(buildPackage.error);
-      }
-      const archivedFile = await fs.readFile(buildPackage.value);
-      const appDefinition = await AppStudioClient.createApp(
-        archivedFile,
-        appStudioTokenRes.value,
-        ctx.logProvider
-      );
-      ctx.logProvider.info(`teams app created: ${appDefinition.teamsAppId!}`);
-      return ok(appDefinition.teamsAppId!);
-    } catch (e: any) {
-      return err(
-        AppStudioResultFactory.SystemError(
-          AppStudioError.TeamsAppCreateFailedError.name,
-          AppStudioError.TeamsAppCreateFailedError.message(e)
-        )
-      );
-    }
-  } else {
-    //update teams app
-    const buildPackage = await buildTeamsAppPackage(inputs.projectPath, envInfo!);
-    if (buildPackage.isErr()) {
-      return err(buildPackage.error);
-    }
-    const archivedFile = await fs.readFile(buildPackage.value);
-    const zipEntries = new AdmZip(archivedFile).getEntries();
-    const manifestFile = zipEntries.find((x) => x.entryName === Constants.MANIFEST_FILE);
-    if (!manifestFile) {
+    if (!(await fs.pathExists(inputs.appPackagePath))) {
       return err(
         AppStudioResultFactory.UserError(
           AppStudioError.FileNotFoundError.name,
-          AppStudioError.FileNotFoundError.message(Constants.MANIFEST_FILE)
+          AppStudioError.FileNotFoundError.message(inputs.appPackagePath)
         )
       );
     }
-    const manifestString = manifestFile.getData().toString();
-    const manifest = JSON.parse(manifestString) as TeamsAppManifest;
-    const appDefinition = convertToAppDefinition(manifest);
-
-    const colorIconContent = zipEntries
-      .find((x) => x.entryName === manifest.icons.color)
-      ?.getData()
-      .toString("base64");
-    const outlineIconContent = zipEntries
-      .find((x) => x.entryName === manifest.icons.outline)
-      ?.getData()
-      .toString("base64");
-    try {
-      const app = await AppStudioClient.updateApp(
-        manifest.id,
-        appDefinition,
-        appStudioTokenRes.value,
-        undefined,
-        colorIconContent,
-        outlineIconContent
-      );
-      ctx.logProvider.info(`teams app updated: ${app.teamsAppId!}`);
-      return ok(app.teamsAppId!);
-    } catch (e: any) {
-      return err(
-        AppStudioResultFactory.SystemError(
-          AppStudioError.TeamsAppUpdateFailedError.name,
-          AppStudioError.TeamsAppUpdateFailedError.message(manifest.id)
-        )
-      );
-    }
-  }
-}
-
-/**
- * not support the scenario: user provide app package
- */
-export async function createOrUpdateTeamsAppByZip(
-  zipFilePath: string,
-  ctx: v2.Context,
-  tokenProvider: TokenProvider
-): Promise<Result<string, FxError>> {
-  if (!(await fs.pathExists(zipFilePath))) {
-    return err(
-      AppStudioResultFactory.UserError(
-        AppStudioError.FileNotFoundError.name,
-        AppStudioError.FileNotFoundError.message(zipFilePath)
-      )
-    );
-  }
-  const appStudioTokenRes = await tokenProvider.m365TokenProvider.getAccessToken({
-    scopes: AppStudioScopes,
-  });
-  if (appStudioTokenRes.isErr()) {
-    return err(appStudioTokenRes.error);
-  }
-  const appStudioToken = appStudioTokenRes.value;
-  const archivedFileBuffer = await fs.readFile(zipFilePath);
-  const zipEntries = new AdmZip(archivedFileBuffer).getEntries();
-  const manifestFile = zipEntries.find((x) => x.entryName === Constants.MANIFEST_FILE);
-  if (!manifestFile) {
-    return err(
-      AppStudioResultFactory.UserError(
-        AppStudioError.FileNotFoundError.name,
-        AppStudioError.FileNotFoundError.message(Constants.MANIFEST_FILE)
-      )
-    );
-  }
-  const manifestString = manifestFile.getData().toString();
-  const manifest = JSON.parse(manifestString) as TeamsAppManifest;
-  const teamsAppId = manifest.id;
-  let create = true;
-  if (teamsAppId) {
-    try {
-      await AppStudioClient.getApp(teamsAppId, appStudioToken, ctx.logProvider);
-      create = false;
-    } catch (error) {}
-  }
-  if (create) {
-    // create teams app
-    try {
-      const appDefinition = await AppStudioClient.createApp(
-        archivedFileBuffer,
-        appStudioTokenRes.value,
-        ctx.logProvider
-      );
-      ctx.logProvider.info(`Teams app created: ${appDefinition.teamsAppId}`);
-      return ok(appDefinition.teamsAppId!);
-    } catch (e: any) {
-      return err(
-        AppStudioResultFactory.SystemError(
-          AppStudioError.TeamsAppCreateFailedError.name,
-          AppStudioError.TeamsAppCreateFailedError.message(e)
-        )
-      );
-    }
+    archivedFile = await fs.readFile(inputs.appPackagePath);
   } else {
-    //update teams app
-    const appDefinition = convertToAppDefinition(manifest);
-    const colorIconContent = zipEntries
-      .find((x) => x.entryName === manifest.icons.color)
-      ?.getData()
-      .toString("base64");
-    const outlineIconContent = zipEntries
-      .find((x) => x.entryName === manifest.icons.outline)
-      ?.getData()
-      .toString("base64");
-    try {
-      const app = await AppStudioClient.updateApp(
-        manifest.id,
-        appDefinition,
-        appStudioTokenRes.value,
-        undefined,
-        colorIconContent,
-        outlineIconContent
-      );
-      ctx.logProvider.info(`Teams app updated: ${app.teamsAppId}`);
-      return ok(app.teamsAppId!);
-    } catch (e: any) {
-      return err(
-        AppStudioResultFactory.SystemError(
-          AppStudioError.TeamsAppUpdateFailedError.name,
-          AppStudioError.TeamsAppUpdateFailedError.message(manifest.id)
-        )
-      );
+    const buildPackage = await buildTeamsAppPackage(inputs.projectPath, envInfo!, true);
+    if (buildPackage.isErr()) {
+      return err(buildPackage.error);
     }
+    archivedFile = await fs.readFile(buildPackage.value);
+  }
+
+  try {
+    const appDefinition = await AppStudioClient.importApp(
+      archivedFile,
+      appStudioToken,
+      ctx.logProvider,
+      true
+    );
+    ctx.logProvider.info(`Teams app imported: ${appDefinition.teamsAppId!}`);
+    return ok(appDefinition.teamsAppId!);
+  } catch (e: any) {
+    return err(
+      AppStudioResultFactory.SystemError(
+        AppStudioError.TeamsAppCreateFailedError.name,
+        AppStudioError.TeamsAppCreateFailedError.message(e)
+      )
+    );
   }
 }
 

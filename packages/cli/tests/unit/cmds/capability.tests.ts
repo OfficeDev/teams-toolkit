@@ -75,16 +75,13 @@ describe("Capability Command Tests", function () {
     sandbox
       .stub(FxCore.prototype, "executeUserTask")
       .callsFake(async (func: Func, inputs: Inputs) => {
-        expect(func).deep.equals({
-          namespace: "fx-solution-azure",
-          method: "addCapability",
-        });
+        expect(func).deep.equals(constants.AddFeatureFunc);
         if (inputs.projectPath?.includes("real")) return ok("");
         else return err(NotSupportedProjectType());
       });
-    sandbox.stub(FxCore.prototype, "getProjectConfig").callsFake(async (inputs: Inputs) => {
+    sandbox.stub(FxCore.prototype, "getProjectConfigV3").callsFake(async (inputs: Inputs) => {
       if (inputs.projectPath?.includes("real")) {
-        return ok({});
+        return ok({ projectSettings: { appName: "test", projectId: "" }, envInfos: {} });
       } else {
         return err(NotSupportedProjectType());
       }

@@ -45,7 +45,7 @@ export abstract class YargsCommand {
    * builds the command using supplied yargs handle.
    * @param yargs the yargs handle
    */
-  abstract builder(yargs: Argv): Argv<any>;
+  abstract builder(yargs: Argv<any>): Argv<any> | Promise<Argv<any>>;
 
   /**
    * before running command, some command may modify the arguments that users input.

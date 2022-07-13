@@ -325,13 +325,13 @@ jobs:
             ls -alh ~/artifacts
 
             find ~/artifacts -type f -name "*${job_id}_metrics.txt"
-            path=`find ~/artifacts -type f -name "*${job_id}_metrics.txt"`
+            metrics_file=`find ~/artifacts -type f -name "*${job_id}_metrics.txt"`
+            echo $metrics_file
+            cat $metrics_file
 
-            cat $path
-
-            slow=`cat $path | grep '"severity":"slow"' | wc -l`
-            normal=`cat $path | grep '"severity":"normal"' | wc -l`
-            fast=`cat $path | grep '"severity":"fast"' | wc -l`
+            slow=`cat $metrics_file | grep '"severity":"slow"' | wc -l`
+            normal=`cat $metrics_file | grep '"severity":"normal"' | wc -l`
+            fast=`cat $metrics_file | grep '"severity":"fast"' | wc -l`
 
             echo $slow
             echo $normal

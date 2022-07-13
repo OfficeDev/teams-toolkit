@@ -854,7 +854,7 @@ async function getStaticOptionsForAddCapability(
   const isMEAddable = isBotNotificationEnabled()
     ? !meExceedRes.value && !hasNewBot
     : !meExceedRes.value;
-  if (!(isTabAddable || isScenarioBotAddable || isMEAddable)) {
+  if (!(isTabAddable || isDefaultBotAddable || isScenarioBotAddable || isMEAddable)) {
     ctx.userInteraction?.showMessage(
       "error",
       getLocalizedString("core.addCapability.exceedMaxLimit"),

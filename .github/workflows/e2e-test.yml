@@ -219,7 +219,7 @@ jobs:
             -u :${{ secrets.GITHUB_TOKEN }}\
             https://api.github.com/repos/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs?per_page=100`
 
-          id=`echo $jobs| jq --arg name $name -r '.jobs[] | select(.name == $name)) | .id'`
+          id=`echo $jobs| jq --arg name $name -r '.jobs[] | select(.name == $name) | .id'`
 
           name="${name//'.tests.ts'/}"
           name="${name//.\//}"
@@ -320,10 +320,19 @@ jobs:
               label="<span style=\\\"background-color: #dc322f;color:white;font-weight:bold;\\\">FAILED</span>"
             fi
 
+            job_id=`echo $jobs| jq --arg case $case -r '.jobs[] | select(.name == $case ) | .id'`
+            download_url=`echo $artifacts | jq --arg job_id $job_id -r '.artifacts[] | select(.name | contains($job_id)) | .archive_download_url'`
+
+            curl -L -u :${{ secrets.GITHUB_TOKEN }} $download_url --output $job_id.zip
+            unzip -o $job_id.zip
+            slow=`cat output.txt | grep '"severity":"slow"' | wc -l`
+            normal=`cat output.txt | grep '"severity":"normal"' | wc -l`
+            fast=`cat output.txt | grep '"severity":"fast"' | wc -l`
+
             url=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .html_url'`
             url="<a href=\\\"$url\\\">For Detail</a>"
 
-            row="<tr> <td style=\\\"text-align: left;\\\">$elegant_path</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> <td>$duration</td> <td>$url</td> </tr>"
+            row="<tr> <td style=\\\"text-align: left;\\\">$elegant_path</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> <td>$duration</td> <td>$fast</td> <td>$normal</td> <td>$slow</td> <td>$url</td> </tr>"
 
             if [ "$status" == "success" ]; then
               lists="$lists $row"

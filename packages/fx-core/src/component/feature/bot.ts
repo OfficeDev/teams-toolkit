@@ -17,6 +17,7 @@ import "reflect-metadata";
 import { Service } from "typedi";
 import {
   CommandAndResponseOptionItem,
+  M365SearchAppOptionItem,
   MessageExtensionItem,
   NotificationOptionItem,
 } from "../../plugins/solution/fx-solution/question";
@@ -96,13 +97,16 @@ export class TeamsBot {
     } else if (feature === CommandAndResponseOptionItem.id) {
       scenarios.push(TemplateProjectsScenarios.COMMAND_AND_RESPONSE_SCENARIO_NAME);
       botCapability = "command-response";
+    } else if (feature === MessageExtensionItem.id || feature === M365SearchAppOptionItem.id) {
+      botCapability = "message-extension";
+      if (feature === M365SearchAppOptionItem.id) {
+        scenarios.push(TemplateProjectsScenarios.M365_SCENARIO_NAME);
+      } else {
+        scenarios.push(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
+      }
     } else {
       scenarios.push(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
-      if (feature === MessageExtensionItem.id) {
-        botCapability = "message-extension";
-      } else {
-        botCapability = "bot";
-      }
+      botCapability = "bot";
     }
     const configActions: Action[] = [
       {

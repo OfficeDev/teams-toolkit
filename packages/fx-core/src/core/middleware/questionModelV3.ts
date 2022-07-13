@@ -75,6 +75,7 @@ import {
 } from "../question";
 import { CoreHookContext } from "../types";
 import { getQuestionsForTargetEnv } from "./envInfoLoader";
+import { getQuestionsForCreateProjectV2 } from "./questionModel";
 
 /**
  * This middleware will help to collect input from question flow
@@ -85,7 +86,7 @@ export const QuestionModelMW_V3: Middleware = async (ctx: CoreHookContext, next:
 
   let getQuestionRes: Result<QTreeNode | undefined, FxError> = ok(undefined);
   if (method === "createProjectV3") {
-    getQuestionRes = await createProjectQuestionV3(inputs);
+    getQuestionRes = await getQuestionsForCreateProjectV2(inputs);
   } else if (method === "provisionResourcesV3") {
     getQuestionRes = await getQuestionsForTargetEnv(inputs);
   } else if (method === "deployArtifactsV3") {
@@ -118,40 +119,40 @@ export const QuestionModelMW_V3: Middleware = async (ctx: CoreHookContext, next:
   await next();
 };
 
-async function createProjectQuestionV3(
-  inputs: Inputs
-): Promise<Result<QTreeNode | undefined, FxError>> {
-  const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
+// async function createProjectQuestionV3(
+//   inputs: Inputs
+// ): Promise<Result<QTreeNode | undefined, FxError>> {
+//   const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
 
-  // create new
-  const root = new QTreeNode({ type: "group" });
-  node.addChild(root);
-  root.condition = { equals: ScratchOptionYes.id };
+//   // create new
+//   const root = new QTreeNode({ type: "group" });
+//   node.addChild(root);
+//   root.condition = { equals: ScratchOptionYes.id };
 
-  // capabilities
-  const capQuestion = createCapabilityQuestionPreview();
-  const capNode = new QTreeNode(capQuestion);
-  root.addChild(capNode);
+//   // capabilities
+//   const capQuestion = createCapabilityQuestionPreview();
+//   const capNode = new QTreeNode(capQuestion);
+//   root.addChild(capNode);
 
-  const triggerQuestion = createHostTypeTriggerQuestion(inputs.platform);
-  const triggerNode = new QTreeNode(triggerQuestion);
-  triggerNode.condition = { equals: NotificationOptionItem.id };
-  capNode.addChild(triggerNode);
+//   const triggerQuestion = createHostTypeTriggerQuestion(inputs.platform);
+//   const triggerNode = new QTreeNode(triggerQuestion);
+//   triggerNode.condition = { equals: NotificationOptionItem.id };
+//   capNode.addChild(triggerNode);
 
-  // Language
-  const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
-  capNode.addChild(programmingLanguage);
+//   // Language
+//   const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
+//   capNode.addChild(programmingLanguage);
 
-  root.addChild(new QTreeNode(QuestionRootFolder));
-  root.addChild(new QTreeNode(createAppNameQuestion()));
+//   root.addChild(new QTreeNode(QuestionRootFolder));
+//   root.addChild(new QTreeNode(createAppNameQuestion()));
 
-  // create from sample
-  const sampleNode = new QTreeNode(SampleSelect);
-  node.addChild(sampleNode);
-  sampleNode.condition = { equals: ScratchOptionNo.id };
-  sampleNode.addChild(new QTreeNode(QuestionRootFolder));
-  return ok(node.trim());
-}
+//   // create from sample
+//   const sampleNode = new QTreeNode(SampleSelect);
+//   node.addChild(sampleNode);
+//   sampleNode.condition = { equals: ScratchOptionNo.id };
+//   sampleNode.addChild(new QTreeNode(QuestionRootFolder));
+//   return ok(node.trim());
+// }
 
 async function getQuestionsForDeploy(
   ctx: v2.Context,

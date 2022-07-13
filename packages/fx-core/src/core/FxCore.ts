@@ -379,6 +379,12 @@ export class FxCore implements v3.ICore {
       if (initRes.isErr()) return err(initRes.error);
       const feature = inputs.capabilities;
       delete inputs.folder;
+
+      if (feature === M365SsoLaunchPageOptionItem.id || feature === M365SearchAppOptionItem.id) {
+        context.projectSetting.isM365 = true;
+        inputs.isM365 = true;
+      }
+
       if (BotFeatureIds.includes(feature)) {
         inputs.feature = feature;
         const res = await runAction("teams-bot.add", context, inputs as InputsWithProjectPath);

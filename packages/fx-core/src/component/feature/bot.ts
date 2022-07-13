@@ -134,7 +134,6 @@ export class TeamsBot {
           projectSettings.components.push({
             name: "teams-bot",
             hosting: inputs.hosting,
-            triggers: triggers,
             scenarios: scenarios,
           });
           // add hosting component

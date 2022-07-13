@@ -1,17 +1,17 @@
 // Resources Azure Function App
-module azureFunction{{componentName}}Provision './provision/azureFunction{{componentName}}.bicep' = {
-  name: 'azureFunction{{componentName}}Provision'
+module azureFunction{{scenario}}Provision './provision/azureFunction{{scenario}}.bicep' = {
+  name: 'azureFunction{{scenario}}Provision'
   params: {
     provisionParameters: provisionParameters
   }
 }
 
-output azureFunction{{componentName}}Output object = {
+output azureFunction{{scenario}}Output object = {
   teamsFxPluginId: '{{componentId}}'
-  sku: azureFunction{{componentName}}Provision.outputs.sku
-  appName: azureFunction{{componentName}}Provision.outputs.appName
-  domain: azureFunction{{componentName}}Provision.outputs.domain
-  appServicePlanName: azureFunction{{componentName}}Provision.outputs.appServicePlanName
-  functionAppResourceId: azureFunction{{componentName}}Provision.outputs.functionAppResourceId
-  functionEndpoint: azureFunction{{componentName}}Provision.outputs.functionEndpoint
+  sku: azureFunction{{scenario}}Provision.outputs.sku
+  appName: azureFunction{{scenario}}Provision.outputs.appName
+  domain: azureFunction{{scenario}}Provision.outputs.domain
+  appServicePlanName: azureFunction{{scenario}}Provision.outputs.appServicePlanName
+  functionAppResourceId: azureFunction{{scenario}}Provision.outputs.functionAppResourceId
+  functionEndpoint: azureFunction{{scenario}}Provision.outputs.functionEndpoint
 }

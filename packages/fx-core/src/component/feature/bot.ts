@@ -11,12 +11,13 @@ import {
   MaybePromise,
   ok,
   Result,
+  v3,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { getProjectSettingsPath } from "../../core/middleware/projectSettingsLoader";
 import {
   CommandAndResponseOptionItem,
+  MessageExtensionItem,
   NotificationOptionItem,
 } from "../../plugins/solution/fx-solution/question";
 import { QuestionNames, TemplateProjectsScenarios } from "../../plugins/resource/bot/constants";
@@ -33,7 +34,7 @@ import "../resource/appManifest/appManifest";
 import "../resource/botService";
 import "../resource/azureAppService/azureWebApp";
 import "../connection/azureWebAppConfig";
-import { ComponentNames } from "../constants";
+import { ComponentNames, Scenarios } from "../constants";
 @Service("teams-bot")
 export class TeamsBot {
   name = "teams-bot";
@@ -68,6 +69,10 @@ export class TeamsBot {
     const triggers = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] as string[];
     inputs.hosting = "azure-web-app";
     const scenarios: string[] = [];
+    const manifestCapability: v3.ManifestCapability = {
+      name: feature === MessageExtensionItem.id ? "MessageExtension" : "Bot",
+    };
+    let botCapability: string;
     if (feature === NotificationOptionItem.id) {
       if (triggers.includes(AppServiceOptionItem.id)) {
         scenarios.push(TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME);
@@ -87,10 +92,17 @@ export class TeamsBot {
           );
         }
       }
+      botCapability = "notification";
     } else if (feature === CommandAndResponseOptionItem.id) {
       scenarios.push(TemplateProjectsScenarios.COMMAND_AND_RESPONSE_SCENARIO_NAME);
+      botCapability = "command-response";
     } else {
       scenarios.push(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
+      if (feature === MessageExtensionItem.id) {
+        botCapability = "message-extension";
+      } else {
+        botCapability = "bot";
+      }
     }
     const configActions: Action[] = [
       {
@@ -100,7 +112,7 @@ export class TeamsBot {
         targetAction: `${inputs.hosting}-config.generateBicep`,
         inputs: {
           componentId: this.name,
-          componentName: "Bot",
+          scenario: "Bot",
         },
       },
     ];
@@ -117,28 +129,28 @@ export class TeamsBot {
         name: "fx.configBot",
         type: "function",
         plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-          const remarks = [
-            `add components 'teams-bot', '${inputs.hosting}', 'bot-service' in projectSettings`,
-          ];
-          // connect to azure-sql
-          if (getComponent(context.projectSetting, "azure-sql")) {
-            remarks.push(
-              `connect 'azure-sql' to hosting component '${inputs.hosting}' in projectSettings`
-            );
-          }
-          return ok(remarks);
+          return ok(["config Bot in project settings"]);
         },
         execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
           const projectSettings = context.projectSetting;
           // add teams-bot
+          const botConfig = getComponent(projectSettings, ComponentNames.TeamsBot);
+          if (botConfig) {
+            if (botCapability && !botConfig.capabilities.includes(botCapability)) {
+              botConfig.capabilities.push(botCapability);
+            }
+            return ok(["config Bot in project settings"]);
+          }
           projectSettings.components.push({
             name: "teams-bot",
             hosting: inputs.hosting,
+            capabilities: botCapability ? [botCapability] : [],
           });
           // add hosting component
           const hostingComponent = {
             name: inputs.hosting,
             connections: ["teams-bot"],
+            scenario: Scenarios.Bot,
           };
           projectSettings.components.push(hostingComponent);
           //add bot-service
@@ -146,29 +158,16 @@ export class TeamsBot {
             name: "bot-service",
             provision: true,
           });
-          const remarks = [
-            `add components 'teams-bot', '${inputs.hosting}', 'bot-service' in projectSettings`,
-          ];
           // connect azure-sql to hosting component
           if (getComponent(context.projectSetting, "azure-sql")) {
             hostingComponent.connections.push("azure-sql");
-            remarks.push(
-              `connect 'azure-sql' to hosting component '${inputs.hosting}' in projectSettings`
-            );
           }
           const apimConfig = getComponent(projectSettings, ComponentNames.APIM);
           if (apimConfig) {
             apimConfig.connections?.push("teams-bot");
           }
           projectSettings.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
-          return ok([
-            {
-              type: "file",
-              operate: "replace",
-              filePath: getProjectSettingsPath(inputs.projectPath),
-              remarks: remarks.join(";"),
-            },
-          ]);
+          return ok(["config Bot in project settings"]);
         },
       },
       {
@@ -192,7 +191,7 @@ export class TeamsBot {
         targetAction: `${inputs.hosting}.generateBicep`,
         inputs: {
           componentId: this.name,
-          componentName: "Bot",
+          scenario: "Bot",
         },
       },
       {
@@ -202,7 +201,7 @@ export class TeamsBot {
         targetAction: "bot-service.generateBicep",
         inputs: {
           componentId: this.name,
-          componentName: "Bot",
+          scenario: "Bot",
         },
       },
       ...configActions,
@@ -212,7 +211,7 @@ export class TeamsBot {
         required: true,
         targetAction: "app-manifest.addCapability",
         inputs: {
-          capabilities: [{ name: "Bot" }],
+          capabilities: [manifestCapability],
         },
       },
       {

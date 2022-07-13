@@ -53,7 +53,7 @@ import "./connection/azureWebAppConfig";
 import "./connection/azureFunctionConfig";
 import "./connection/apimConfig";
 
-import { ComponentNames } from "./constants";
+import { ComponentNames, componentToScenario } from "./constants";
 import { getLocalizedString } from "../common/localizeUtils";
 import { getResourceGroupInPortal } from "../common/tools";
 import { getComponent } from "./workflow";
@@ -302,6 +302,9 @@ export class TeamsfxCore {
           type: "call",
           targetAction: `${componentConfig.hosting}.deploy`,
           required: false,
+          inputs: {
+            scenario: componentToScenario.get(componentName),
+          },
         });
       }
     });

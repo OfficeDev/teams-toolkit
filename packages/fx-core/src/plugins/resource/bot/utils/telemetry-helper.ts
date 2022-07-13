@@ -5,7 +5,7 @@ import { FxResult } from "../result";
 import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { TelemetryKeys, TelemetryValues } from "../constants";
 import { PluginBot, PluginSolution } from "../resources/strings";
-import { getAppStudioEndpoint } from "../../../../common/tools";
+import { getAppStudioEndpoint } from "../../../../component/resource/appManifest/constants";
 
 export class telemetryHelper {
   static fillCommonProperty(ctx: PluginContext, properties: { [key: string]: string }): void {

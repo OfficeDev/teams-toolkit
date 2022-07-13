@@ -39,6 +39,7 @@ import {
 import { convertToAlphanumericOnly } from "../common/utils";
 import { ActionNotExist, ComponentNotExist } from "./error";
 import { TelemetryConstants } from "./constants";
+import { Scenarios } from "./constants";
 
 export async function getAction(
   name: string,
@@ -535,11 +536,22 @@ export function getComponent(
   return projectSettings.components?.find((r) => r.name === resourceType);
 }
 
+export function getComponentByScenario(
+  projectSetting: ProjectSettingsV3,
+  resourceType: string,
+  scenario?: Scenarios
+): Component | undefined {
+  return scenario
+    ? projectSetting.components?.find((r) => r.name === resourceType && r.scenario === scenario)
+    : getComponent(projectSetting, resourceType);
+}
+
 export function getHostingParentComponent(
   projectSettings: ProjectSettingsV3,
-  resourceType: string
+  resourceType: string,
+  scenario?: Scenarios
 ): Component | undefined {
-  const hostingComponent = getComponent(projectSettings, resourceType);
+  const hostingComponent = getComponentByScenario(projectSettings, resourceType, scenario);
   const parentName = hostingComponent?.connections?.find((name) => {
     const component = getComponent(projectSettings, name);
     return component?.hosting === hostingComponent.name;

@@ -19,7 +19,7 @@ import { Service } from "typedi";
 import { format } from "util";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { CoreQuestionNames } from "../../core/question";
-import { ComponentNames } from "../constants";
+import { ComponentNames, Scenarios } from "../constants";
 import { getComponent } from "../workflow";
 
 @Service("teams-tab")
@@ -106,7 +106,7 @@ export class TeamsTab {
     actions.push(
       generateBicep(inputs.hosting, {
         componentId: this.name,
-        componentName: "Tab",
+        scenario: "Tab",
       })
     );
     // TODO: connect AAD for blazor web app
@@ -152,18 +152,19 @@ const configTab: Action = {
     }
     // add teams-tab
     projectSettings.components.push({
-      name: "teams-tab",
+      name: ComponentNames.TeamsTab,
       hosting: inputs.hosting,
     });
     // add hosting component
     projectSettings.components.push({
       name: inputs.hosting,
-      connections: ["teams-tab"],
+      connections: [ComponentNames.TeamsTab],
       provision: true,
+      scenario: Scenarios.Tab,
     });
     const apimConfig = getComponent(projectSettings, ComponentNames.APIM);
     if (apimConfig) {
-      apimConfig.connections?.push("teams-tab");
+      apimConfig.connections?.push(ComponentNames.TeamsTab);
     }
     projectSettings.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
     return ok(["config Tab in projectSettings"]);

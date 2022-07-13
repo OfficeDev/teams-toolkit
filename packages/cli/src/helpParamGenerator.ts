@@ -17,7 +17,6 @@ import {
   isAutoSkipSelect,
   SingleSelectQuestion,
   MultiSelectQuestion,
-  OptionItem,
   StringValidation,
 } from "@microsoft/teamsfx-api";
 
@@ -161,7 +160,7 @@ export class HelpParamGenerator {
         this.setQuestionNodes(`${Stage.create}-m365`, result.value);
       }
     }
-    const userTasks = ["addCapability", "addResource", "addCICDWorkflows", "connectExistingApi"];
+    const userTasks = ["addResource", "addCICDWorkflows", "connectExistingApi"];
     for (const userTask of userTasks) {
       const result = await this.getQuestionsForUserTask(userTask, systemInput, this.core);
       if (result.isErr()) {
@@ -183,14 +182,10 @@ export class HelpParamGenerator {
       throw NoInitializedHelpGenerator();
     }
     let resourceName: string | undefined;
-    let capabilityId: string | undefined;
     let authType: string | undefined;
     if (stage.startsWith("addResource")) {
       resourceName = stage.split("-")[1];
       stage = "addResource";
-    } else if (stage.startsWith("addCapability")) {
-      capabilityId = this.splitFirst(stage, "-")[1];
-      stage = "addCapability";
     } else if (stage.startsWith("connectExistingApi")) {
       authType = stage.split("-")[1];
       stage = "connectExistingApi";
@@ -218,22 +213,6 @@ export class HelpParamGenerator {
       if (resourcesNodes) {
         resourcesNodes.forEach((node) => (nodes = nodes.concat(flattenNodes(node))));
       }
-    } else if (capabilityId && root?.children) {
-      const rootCopy: QTreeNode = JSON.parse(JSON.stringify(root));
-      // Do CLI map for capability add
-      const capabilityNodes = rootCopy.children!.filter((node) =>
-        ((node.condition as any).containsAny as string[]).includes(capabilityId as string)
-      )[0];
-      const items = (rootCopy.data as MultiSelectQuestion).staticOptions as OptionItem[];
-      const index = items.findIndex(
-        (item) => item.id === capabilityId || item.cliName === capabilityId
-      );
-      if (index > -1) {
-        (rootCopy.data as any).default = [items[index].cliName || items[index].id];
-      }
-      (rootCopy.data as any).hide = true;
-      rootCopy.children = undefined;
-      nodes = [rootCopy].concat(capabilityNodes ? flattenNodes(capabilityNodes) : []);
     } else if (authType && root?.children) {
       const rootCopy: QTreeNode = JSON.parse(JSON.stringify(root));
       const authNodes = rootCopy.children!.filter((node: any) => node.data.name === "auth-type")[0];

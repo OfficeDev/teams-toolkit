@@ -64,7 +64,7 @@ export abstract class AzureAppService extends AzureResource {
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const ctx = context as ProvisionContextV3;
-        const parent = getHostingParentComponent(ctx.projectSetting, this.name);
+        const parent = getHostingParentComponent(ctx.projectSetting, this.name, inputs.scenario);
         // Preconditions checking.
         if (!inputs.projectPath || !parent?.artifactFolder) {
           throw new PreconditionError(this.alias, Messages.WorkingDirIsMissing, []);

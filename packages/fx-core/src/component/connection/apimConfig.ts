@@ -31,11 +31,11 @@ export class APIMConfig extends AzureResourceConfig {
         const tabHosting = Container.get(tabConfig.hosting) as CloudResource;
         this.templateContext.tabDomainVarName = compileHandlebarsTemplateString(
           tabHosting.outputs.domain.bicepVariable || "",
-          { componentName: "Tab" }
+          { scenario: "Tab" }
         );
       }
     } catch {}
-    inputs.componentName = "";
+    inputs.scenario = "";
     inputs.componentId = "";
     return super.generateBicep(context, inputs);
   }

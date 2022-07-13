@@ -54,10 +54,12 @@ import {
   ApiConnectionOptionItem,
   TabNonSsoItem,
   TabOptionItem,
+  SingleSignOnOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import { ResourcePluginsV2 } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import {
   getQuestions,
+  getQuestionsForAddFeature,
   getQuestionsForScaffolding,
   getQuestionsForUserTask,
 } from "../../../src/plugins/solution/fx-solution/v2/getQuestions";
@@ -381,6 +383,71 @@ describe("getQuestionsForScaffolding()", async () => {
       if (res.isOk()) {
         const node = res.value;
         assert.isTrue(node !== undefined && node.data !== undefined);
+      }
+    }
+  });
+
+  it("getQuestionsForAddFeature - CLI_HELP", async () => {
+    sandbox.stub<any, any>(tool, "canAddCICDWorkflows").resolves(true);
+    const mockedCtx = new MockedV2Context(projectSettings);
+    const mockedInputs: Inputs = {
+      platform: Platform.CLI_HELP,
+      stage: Stage.grantPermission,
+      projectPath: "test path",
+    };
+    const func: Func = {
+      method: "addFeature",
+      namespace: "fx-solution-azure",
+    };
+    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    sandbox
+      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
+      .callsFake(
+        async (
+          ctx: v2.Context,
+          inputs: v2.InputsWithProjectPath,
+          capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
+        ) => {
+          return ok(false);
+        }
+      );
+    (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType =
+      HostTypeOptionAzure.id;
+    const res = await getQuestionsForAddFeature(
+      mockedCtx,
+      mockedInputs,
+      func,
+      envInfo,
+      mockedProvider
+    );
+    assert.isTrue(res.isOk() && res.value && res.value !== undefined);
+    if (res.isOk()) {
+      const node = res.value;
+      assert.isTrue(
+        node && node.data && node.data.type === "singleSelect",
+        "option item count check"
+      );
+      if (node && node.data && node.data.type === "singleSelect") {
+        const options = (node.data as SingleSelectQuestion).staticOptions as OptionItem[];
+        assert.deepEqual(
+          options,
+          [
+            NotificationOptionItem,
+            CommandAndResponseOptionItem,
+            TabNewUIOptionItem,
+            TabNonSsoItem,
+            BotNewUIOptionItem,
+            MessageExtensionNewUIItem,
+            AzureResourceFunctionNewUI,
+            AzureResourceApimNewUI,
+            AzureResourceSQLNewUI,
+            AzureResourceKeyVaultNewUI,
+            SingleSignOnOptionItem,
+            ApiConnectionOptionItem,
+            CicdOptionItem,
+          ],
+          "option item should match"
+        );
       }
     }
   });

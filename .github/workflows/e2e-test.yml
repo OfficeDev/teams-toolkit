@@ -272,12 +272,6 @@ jobs:
             -u :${{ secrets.GITHUB_TOKEN }} \
             https://api.github.com/repos/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs?per_page=100`
 
-          artifacts=`curl \
-            -u :${{ secrets.GITHUB_TOKEN }} \
-            https://api.github.com/repos/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}/artifacts?per_page=100`
-
-          echo $artifacts
-
           cases=`echo $jobs| jq -r '.jobs[] | select(.name | contains("tests.ts")) | .name'`
 
           lists=""
@@ -329,8 +323,8 @@ jobs:
             path=`find ~/artifacts -type f -name "*${job_id}_metrics.txt"`
 
             slow=`cat $path | grep '"severity":"slow"' | wc -l`
-            normal=`cat output.txt | grep '"severity":"normal"' | wc -l`
-            fast=`cat output.txt | grep '"severity":"fast"' | wc -l`
+            normal=`cat $path | grep '"severity":"normal"' | wc -l`
+            fast=`cat $path | grep '"severity":"fast"' | wc -l`
 
             url=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .html_url'`
             url="<a href=\\\"$url\\\">For Detail</a>"
@@ -345,7 +339,7 @@ jobs:
 
           done <<< $cases
 
-          body="<table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>CASE</th> <th>STATUS</th> <th>AUTHOR</th> <th>DURATION</th> <th>Fast(<1ms)</th> <th>NORMAL(1~20ms)</th> <th>SLOW(>20ms)</th> <th>URL</th> </tr> $lists </table> <br /> The detail can be found here: <a> https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }} </a>"
+          body="<table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>CASE</th> <th>STATUS</th> <th>AUTHOR</th> <th>DURATION</th> <th>Fast( < 1ms )</th> <th>NORMAL( 1~20ms )</th> <th>SLOW( > 20ms )</th> <th>URL</th> </tr> $lists </table> <br /> The detail can be found here: <a> https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }} </a>"
 
           total=$((passed+failed))
 

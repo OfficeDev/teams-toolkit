@@ -35,7 +35,9 @@ import {
   hasTab,
 } from "../../common/projectSettingsHelperV3";
 import { canAddCICDWorkflows, getAppDirectory } from "../../common/tools";
+import { ComponentNames } from "../../component/constants";
 import { readAppManifest } from "../../component/resource/appManifest/utils";
+import { getComponent } from "../../component/workflow";
 import {
   MANIFEST_TEMPLATE_CONSOLIDATE,
   STATIC_TABS_MAX_ITEMS,
@@ -213,12 +215,17 @@ async function getQuestionsForAddFeature(
   if (manifestRes.isErr()) return err(manifestRes.error);
   const manifest = manifestRes.value;
   const canAddTab = manifest.staticTabs!.length < STATIC_TABS_MAX_ITEMS;
-  const canAddBot = manifest.bots!.length < 1;
-  const canAddME = manifest.composeExtensions!.length < 1;
+  const botExceedLimit = manifest.bots!.length > 0;
+  const meExceedLimit = manifest.composeExtensions!.length > 0;
   const projectSettingsV3 = ctx.projectSetting as ProjectSettingsV3;
-  if (canAddBot) {
+  const teamsBot = getComponent(ctx.projectSetting as ProjectSettingsV3, ComponentNames.TeamsBot);
+  const alreadyHasNewBot =
+    teamsBot?.capabilities?.includes("notification") ||
+    teamsBot?.capabilities?.includes("command-response");
+  if (!botExceedLimit && !alreadyHasNewBot) {
     options.push(NotificationOptionItem);
     options.push(CommandAndResponseOptionItem);
+    options.push(BotNewUIOptionItem);
   }
   if (canAddTab) {
     if (hasTab(projectSettingsV3)) {
@@ -232,10 +239,7 @@ async function getQuestionsForAddFeature(
       }
     }
   }
-  if (canAddBot) {
-    options.push(BotNewUIOptionItem);
-  }
-  if (canAddME) {
+  if (!meExceedLimit && !alreadyHasNewBot) {
     options.push(MessageExtensionNewUIItem);
   }
   // check cloud resource options

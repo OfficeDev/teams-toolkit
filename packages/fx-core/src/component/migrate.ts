@@ -8,7 +8,7 @@ import {
 import { cloneDeep } from "lodash";
 import { isVSProject } from "../common/projectSettingsHelper";
 import { hasAzureResourceV3 } from "../common/projectSettingsHelperV3";
-import { MessageExtensionNewUIItem } from "../plugins";
+import { MessageExtensionNewUIItem } from "../plugins/solution/fx-solution/question";
 import { ComponentNames } from "./constants";
 import { getComponent } from "./workflow";
 
@@ -350,7 +350,11 @@ export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): Pro
     const teamsBot = getComponent(settingsV3, ComponentNames.TeamsBot);
     if (teamsBot) {
       const botCapabilities = teamsBot?.capabilities;
-      if (botCapabilities?.includes("bot")) {
+      if (
+        botCapabilities?.includes("bot") ||
+        botCapabilities?.includes("notification") ||
+        botCapabilities?.includes("command-response")
+      ) {
         settingsV2.solutionSettings.capabilities.push("Bot");
         if (teamsBot.sso) {
           settingsV2.solutionSettings.capabilities.push("BotSSO");

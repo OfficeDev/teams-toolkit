@@ -816,6 +816,15 @@ async function getStaticOptionsForAddCapability(
   inputs: Inputs,
   settings?: AzureSolutionSettings
 ): Promise<Result<OptionItem[], FxError>> {
+  if (inputs.platform === Platform.CLI_HELP) {
+    const options: OptionItem[] = [];
+    options.push(NotificationOptionItem);
+    options.push(CommandAndResponseOptionItem);
+    options.push(TabNewUIOptionItem, TabNonSsoItem);
+    options.push(BotNewUIOptionItem);
+    options.push(MessageExtensionNewUIItem);
+    return ok(options);
+  }
   const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
   const tabExceedRes = await appStudioPlugin.capabilityExceedLimit(
     ctx,
@@ -914,40 +923,47 @@ export async function getQuestionsForAddFeature(
     options.push(...optionsResult.value);
   }
   // check and generate cloud resource options
-  const canAddResourceResult = canAddResource(ctx.projectSetting, ctx.telemetryReporter);
-  if (canAddResourceResult.isOk()) {
-    // resources
-    if (!settings) {
-      return err(new NoCapabilityFoundError(Stage.addResource));
+  if (inputs.platform === Platform.CLI_HELP) {
+    options.push(...createAddCloudResourceOptions(false, false));
+  } else {
+    const canAddResourceResult = canAddResource(ctx.projectSetting, ctx.telemetryReporter);
+    if (canAddResourceResult.isOk()) {
+      // resources
+      if (!settings) {
+        return err(new NoCapabilityFoundError(Stage.addResource));
+      }
+      const alreadyHaveAPIM = settings.azureResources.includes(AzureResourceApim.id);
+      const alreadyHaveKeyVault = settings.azureResources.includes(AzureResourceKeyVault.id);
+      const addResourceOptions = createAddCloudResourceOptions(
+        alreadyHaveAPIM,
+        alreadyHaveKeyVault
+      );
+      options.push(...addResourceOptions);
     }
-    const alreadyHaveAPIM = settings.azureResources.includes(AzureResourceApim.id);
-    const alreadyHaveKeyVault = settings.azureResources.includes(AzureResourceKeyVault.id);
-    const addResourceOptions = createAddCloudResourceOptions(alreadyHaveAPIM, alreadyHaveKeyVault);
-    options.push(...addResourceOptions);
-  }
-  // Only return error when both of them are errors.
-  if (canAddCapabilityResult.isErr() && canAddResourceResult.isErr()) {
-    return err(canAddCapabilityResult.error);
+    // Only return error when both of them are errors.
+    if (canAddCapabilityResult.isErr() && canAddResourceResult.isErr()) {
+      return err(canAddCapabilityResult.error);
+    }
   }
 
   // check and generate additional feature options
-  if (canAddSso(ctx.projectSetting)) {
+  if (inputs.platform === Platform.CLI_HELP || canAddSso(ctx.projectSetting)) {
     options.push(SingleSignOnOptionItem);
   }
   const isApiConnectionAddable = canAddApiConnection(settings);
-  if (isApiConnectionAddable) {
+  if (inputs.platform === Platform.CLI_HELP || isApiConnectionAddable) {
     options.push(ApiConnectionOptionItem);
   }
 
   const isCicdAddable = await canAddCICDWorkflows(inputs, ctx);
-  if (isCicdAddable) {
+  if (inputs.platform === Platform.CLI_HELP || isCicdAddable) {
     options.push(CicdOptionItem);
   }
 
   addFeatureQuestion.staticOptions = options;
   const addFeatureNode = new QTreeNode(addFeatureQuestion);
 
-  if (!ctx.projectSetting.programmingLanguage) {
+  if (inputs.platform !== Platform.CLI_HELP && !ctx.projectSetting.programmingLanguage) {
     // Language
     const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
     programmingLanguage.condition = {
@@ -969,10 +985,10 @@ export async function getQuestionsForAddFeature(
     [ResourcePluginsV2.BotPlugin, BotNewUIOptionItem.id],
     [ResourcePluginsV2.FunctionPlugin, AzureResourceFunction.id],
   ];
-  if (isCicdAddable) {
+  if (inputs.platform === Platform.CLI_HELP || isCicdAddable) {
     pluginsWithResources.push([ResourcePluginsV2.CICDPlugin, CicdOptionItem.id]);
   }
-  if (isApiConnectionAddable) {
+  if (inputs.platform === Platform.CLI_HELP || isApiConnectionAddable) {
     pluginsWithResources.push([ResourcePluginsV2.ApiConnectorPlugin, ApiConnectionOptionItem.id]);
   }
   const alreadyHaveFunction = settings?.azureResources.includes(AzureResourceFunction.id);

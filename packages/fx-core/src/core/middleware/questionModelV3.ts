@@ -58,6 +58,7 @@ import {
   SingleSignOnOptionItem,
   TabNewUIOptionItem,
   TabNonSsoItem,
+  TabSsoItem,
 } from "../../plugins/solution/fx-solution/question";
 import { checkWetherProvisionSucceeded } from "../../plugins/solution/fx-solution/v2/utils";
 import { NoCapabilityFoundError } from "../error";
@@ -229,11 +230,11 @@ async function getQuestionsForAddFeature(
   }
   if (canAddTab) {
     if (hasTab(projectSettingsV3)) {
-      options.push(TabNewUIOptionItem, TabNonSsoItem);
+      options.push(TabNewUIOptionItem);
     } else {
       //if aad is added, display name is SsoTab, otherwise the display name is NonSsoTab
       if (hasAAD(projectSettingsV3)) {
-        options.push(TabNewUIOptionItem);
+        options.push(TabSsoItem);
       } else {
         options.push(TabNonSsoItem);
       }

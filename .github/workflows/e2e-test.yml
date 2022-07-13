@@ -320,15 +320,7 @@ jobs:
             fi
 
             job_id=`echo $jobs| jq --arg case $case -r '.jobs[] | select(.name == $case ) | .id'`
-            echo $job_id
-            echo "*${job_id}_metrics.txt"
-            ls -alh ~/artifacts
-
-            find ~/artifacts -name "*${job_id}*"
-            metrics_file=`find ~/artifacts -type f -name "*${job_id}*"`
-            echo $metrics_file
-            cat $metrics_file
-
+            metrics_file=`find ~/artifacts -name "*${job_id}_metrics.txt"`
             slow=`cat $metrics_file | grep '"severity":"slow"' | wc -l`
 
             url=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .html_url'`

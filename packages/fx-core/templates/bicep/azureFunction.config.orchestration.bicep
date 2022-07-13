@@ -1,6 +1,6 @@
 // Get existing app settings for merge
-var functionCurrentConfigs = reference('${ {{azure-function.outputs.resourceId}} }/config/web', '2021-02-01')
-var functionCurrentAppSettings = list('${ {{azure-function.outputs.resourceId}} }/config/appsettings', '2021-02-01').properties
+var functionCurrentConfigs = reference('${ {{azure-function.outputs.functionAppResourceId}} }/config/web', '2021-02-01')
+var functionCurrentAppSettings = list('${ {{azure-function.outputs.functionAppResourceId}} }/config/appsettings', '2021-02-01').properties
 
 // Merge TeamsFx configurations to Azure Function App
 module teamsFxAzureFunction{{componentName}}Config './teamsFx/azureFunction{{componentName}}Config.bicep' = {

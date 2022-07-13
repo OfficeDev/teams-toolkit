@@ -10,13 +10,15 @@ import {
   InputConfigsFolderName,
   Inputs,
   ProjectSettingsFileName,
+  ProjectSettingsV3,
   Result,
   StaticPlatforms,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
+import { convertProjectSettingsV3ToV2 } from "../../component/migrate";
 import { WriteFileError } from "../error";
-import { TOOLS } from "../globalVars";
+import { isV3, TOOLS } from "../globalVars";
 import { CoreHookContext } from "../types";
 import { shouldIgnored } from "./projectSettingsLoader";
 
@@ -37,8 +39,11 @@ export const ProjectSettingsWriterMW: Middleware = async (
       StaticPlatforms.includes(inputs.platform)
     )
       return;
-    const projectSettings = ctx.projectSettings;
+    let projectSettings = ctx.projectSettings;
     if (projectSettings === undefined) return;
+    if (isV3()) {
+      projectSettings = convertProjectSettingsV3ToV2(projectSettings as ProjectSettingsV3);
+    }
     try {
       const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
       const solutionSettings = projectSettings.solutionSettings;

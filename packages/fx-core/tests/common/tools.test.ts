@@ -286,5 +286,10 @@ describe("tools", () => {
       const result = getFixedCommonProjectSettings("root-path");
       chai.assert.isUndefined(result);
     });
+
+    it("empty root path", async () => {
+      const result = getFixedCommonProjectSettings("");
+      chai.assert.isUndefined(result);
+    });
   });
 });

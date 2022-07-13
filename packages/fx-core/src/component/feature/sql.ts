@@ -18,6 +18,7 @@ import { getComponent } from "../workflow";
 import "../connection/azureWebAppConfig";
 import "../resource/azureSql";
 import "../resource/identity";
+import { hasApi } from "../../common/projectSettingsHelperV3";
 
 @Service("sql")
 export class Sql {
@@ -36,7 +37,18 @@ export class Sql {
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const sqlComponent = getComponent(context.projectSetting, "azure-sql");
     const provisionType = sqlComponent ? "database" : "server";
+    const hasFunc = hasApi(context.projectSetting);
+    const dependentActions: Action[] = [];
+    if (!hasFunc) {
+      dependentActions.push({
+        name: "call:teams-api.add",
+        type: "call",
+        required: true,
+        targetAction: "teams-api.add",
+      });
+    }
     const actions: Action[] = [
+      ...dependentActions,
       {
         name: "sql.configSql",
         type: "function",

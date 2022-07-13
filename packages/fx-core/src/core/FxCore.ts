@@ -141,7 +141,7 @@ import { createContextV3 } from "../component/utils";
 import "../component/core";
 import { QuestionModelMW_V3 } from "./middleware/questionModelV3";
 import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
-import { hasFunction } from "../common/projectSettingsHelperV3";
+import { hasApi } from "../common/projectSettingsHelperV3";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -774,11 +774,6 @@ export class FxCore implements v3.ICore {
     } else if (feature === SingleSignOnOptionItem.id) {
       res = await runAction("sso.add", context, inputs as InputsWithProjectPath);
     } else if (feature === AzureResourceApim.id) {
-      const hasFunc = hasFunction(context.projectSetting);
-      if (!hasFunc) {
-        res = await runAction("teams-api.add", context, inputs as InputsWithProjectPath);
-        if (res.isErr()) return err(res.error);
-      }
       res = await runAction("apim-feature.add", context, inputs as InputsWithProjectPath);
     } else {
       return err(new NotImplementedError(feature));

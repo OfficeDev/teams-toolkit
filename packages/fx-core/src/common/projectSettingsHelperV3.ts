@@ -32,9 +32,9 @@ export function hasAAD(projectSettings: ProjectSettingsV3): boolean {
   const components = projectSettings.components;
   return components.filter((c) => c.name === ComponentNames.AadApp).length > 0;
 }
-export function hasFunction(projectSettings: ProjectSettingsV3): boolean {
+export function hasApi(projectSettings: ProjectSettingsV3): boolean {
   const components = projectSettings.components;
-  return components.filter((c) => c.name === ComponentNames.Function).length > 0;
+  return components.filter((c) => c.name === ComponentNames.TeamsApi).length > 0;
 }
 export function hasSimpleAuth(projectSettings: ProjectSettingsV3): boolean {
   const components = projectSettings.components;

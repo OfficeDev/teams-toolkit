@@ -10,6 +10,7 @@ import {
   MultiSelectQuestion,
   ok,
   OptionItem,
+  Platform,
   ProjectSettingsV3,
   QTreeNode,
   Result,
@@ -30,7 +31,7 @@ import {
   hasAPIM,
   hasAzureResourceV3,
   hasBot,
-  hasFunction,
+  hasApi,
   hasKeyVault,
   hasTab,
 } from "../../common/projectSettingsHelperV3";
@@ -212,6 +213,20 @@ async function getQuestionsForAddFeature(
     staticOptions: [],
   };
   const options: OptionItem[] = [];
+  if (inputs.platform === Platform.CLI_HELP) {
+    options.push(NotificationOptionItem);
+    options.push(CommandAndResponseOptionItem);
+    options.push(BotNewUIOptionItem);
+    options.push(TabNewUIOptionItem, TabNonSsoItem);
+    options.push(MessageExtensionNewUIItem);
+    options.push(AzureResourceApimNewUI);
+    options.push(AzureResourceSQLNewUI);
+    options.push(AzureResourceFunctionNewUI);
+    options.push(AzureResourceKeyVaultNewUI);
+    options.push(SingleSignOnOptionItem);
+    options.push(ApiConnectionOptionItem);
+    options.push(CicdOptionItem);
+  }
   // check capability options
   const manifestRes = await readAppManifest(inputs.projectPath!);
   if (manifestRes.isErr()) return err(manifestRes.error);
@@ -230,15 +245,10 @@ async function getQuestionsForAddFeature(
     options.push(BotNewUIOptionItem);
   }
   if (canAddTab) {
-    if (hasTab(projectSettingsV3)) {
-      options.push(TabNewUIOptionItem);
+    if (!hasTab(projectSettingsV3)) {
+      options.push(TabNewUIOptionItem, TabNonSsoItem);
     } else {
-      //if aad is added, display name is SsoTab, otherwise the display name is NonSsoTab
-      if (hasAAD(projectSettingsV3)) {
-        options.push(TabSsoItem);
-      } else {
-        options.push(TabNonSsoItem);
-      }
+      options.push(hasAAD(projectSettingsV3) ? TabNewUIOptionItem : TabNonSsoItem);
     }
   }
   if (!meExceedLimit && !alreadyHasNewBot) {
@@ -255,7 +265,7 @@ async function getQuestionsForAddFeature(
   if (!hasAAD(projectSettingsV3)) {
     options.push(SingleSignOnOptionItem);
   }
-  if (hasBot(projectSettingsV3) || hasFunction(projectSettingsV3)) {
+  if (hasBot(projectSettingsV3) || hasApi(projectSettingsV3)) {
     options.push(ApiConnectionOptionItem);
   }
   // function can always be added

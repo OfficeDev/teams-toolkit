@@ -264,10 +264,6 @@ jobs:
         with:
           path: ~/artifacts
 
-      - name: Display structure of downloaded files
-        working-directory: ~/artifacts
-        run: ls -alh
-
       - name: List jobs
         id: list-jobs
         working-directory: packages/cli
@@ -309,8 +305,8 @@ jobs:
               emails="$emails;$email"
             fi
 
-            started_at=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .started_at'`
-            completed_at=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .completed_at'`
+            started_at=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .steps[] | select(.name == "run test") | .started_at'`
+            completed_at=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .steps[] | select(.name == "run test") | .completed_at'`
             duration=`dateutils.ddiff $started_at $completed_at -f "%Mm %Ss"`
 
             author=""

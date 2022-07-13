@@ -320,6 +320,11 @@ jobs:
             fi
 
             job_id=`echo $jobs| jq --arg case $case -r '.jobs[] | select(.name == $case ) | .id'`
+            echo $job_id
+            echo "*${job_id}_metrics.txt"
+            ls -alh ~/artifacts
+
+            find ~/artifacts -type f -name "*${job_id}_metrics.txt"
             path=`find ~/artifacts -type f -name "*${job_id}_metrics.txt"`
 
             cat $path

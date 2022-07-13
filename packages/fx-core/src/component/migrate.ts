@@ -7,6 +7,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { cloneDeep } from "lodash";
 import { isVSProject } from "../common/projectSettingsHelper";
+import { hasAzureResourceV3 } from "../common/projectSettingsHelperV3";
 import { ComponentNames } from "./constants";
 import { getComponent } from "./workflow";
 
@@ -107,6 +108,14 @@ export function pluginName2ComponentName(pluginName: string): string {
     map.set(e[0], e[1]);
   });
   return map.get(pluginName) || pluginName;
+}
+
+export function ComponentName2pluginName(componentName: string): string {
+  const map = new Map<string, string>();
+  EnvStateMigrationComponentNames.forEach((e) => {
+    map.set(e[1], e[0]);
+  });
+  return map.get(componentName) || componentName;
 }
 
 /**
@@ -298,7 +307,42 @@ function connectComponents(settingsV3: ProjectSettingsV3) {
 }
 
 export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3) {
-  return settingsV3;
+  const settingsV2: ProjectSettings = cloneDeep(settingsV3) as ProjectSettings;
+  if (settingsV3.components.length > 0) {
+    const hostType = hasAzureResourceV3(settingsV3) ? "Azure" : "SPFx";
+    settingsV2.solutionSettings = {
+      name: "fx-solution-azure",
+      version: "1.0.0",
+      hostType: hostType,
+      azureResources: [],
+      capabilities: [],
+      activeResourcePlugins: [
+        "fx-resource-local-debug",
+        "fx-resource-appstudio",
+        "fx-resource-key-vault",
+        "fx-resource-cicd",
+        "fx-resource-api-connector",
+      ],
+    };
+    const teamsTab = getComponent(settingsV3, ComponentNames.TeamsTab);
+    if (teamsTab) {
+      settingsV2.solutionSettings.capabilities.push("Tab");
+      if (teamsTab.sso) {
+        settingsV2.solutionSettings.capabilities.push("TabSSO");
+      }
+      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-frontend-hosting");
+    }
+    const teamsBot = getComponent(settingsV3, ComponentNames.TeamsBot);
+    if (teamsBot) {
+      settingsV2.solutionSettings.capabilities.push("Bot");
+      if (teamsBot.sso) {
+        settingsV2.solutionSettings.capabilities.push("BotSSO");
+      }
+      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-bot");
+    }
+  }
+
+  return settingsV2;
 }
 
 export function convertManifestTemplateToV3(content: string): string {
@@ -307,6 +351,16 @@ export function convertManifestTemplateToV3(content: string): string {
     const componentName = pluginAndComponentArray[1];
     if (pluginName !== componentName)
       content = content.replace(new RegExp(pluginName, "g"), componentName);
+  }
+  return content;
+}
+
+export function convertManifestTemplateToV2(content: string): string {
+  for (const pluginAndComponentArray of EnvStateMigrationComponentNames) {
+    const pluginName = pluginAndComponentArray[0];
+    const componentName = pluginAndComponentArray[1];
+    if (pluginName !== componentName)
+      content = content.replace(new RegExp(componentName, "g"), pluginName);
   }
   return content;
 }

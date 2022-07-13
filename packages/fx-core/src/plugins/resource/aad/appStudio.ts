@@ -4,9 +4,9 @@
 import { AppStudioErrorMessage } from "./errors";
 import { IAADPassword } from "./interfaces/IAADApplication";
 import { IAADDefinition } from "./interfaces/IAADDefinition";
+import { getAppStudioEndpoint } from "../../../common/tools";
 
 import axios from "axios";
-import { getAppStudioEndpoint } from "../../../component/resource/appManifest/constants";
 const baseUrl = getAppStudioEndpoint();
 
 // eslint-disable-next-line @typescript-eslint/no-namespace

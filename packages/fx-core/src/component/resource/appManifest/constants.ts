@@ -193,13 +193,3 @@ export const WEB_APPLICATION_INFO_V3 = {
   id: `{{state.${AAD_COMPONENT_NAME}.clientId}}`,
   resource: `{{{state.${AAD_COMPONENT_NAME}.applicationIdUris}}}`,
 };
-
-export function getAppStudioEndpoint(): string {
-  if (process.env.APP_STUDIO_ENV && process.env.APP_STUDIO_ENV === "int") {
-    return "https://dev-int.teams.microsoft.com";
-  } else {
-    return "https://dev.teams.microsoft.com";
-  }
-}
-
-export const AppStudioScopes = [`${getAppStudioEndpoint()}/AppDefinitions.ReadWrite`];

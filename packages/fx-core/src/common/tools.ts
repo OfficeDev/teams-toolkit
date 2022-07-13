@@ -75,7 +75,6 @@ import { NoProjectOpenedError } from "../plugins/resource/cicd/errors";
 import { getProjectTemplatesFolderPath } from "./utils";
 import * as path from "path";
 import { isMiniApp } from "./projectSettingsHelperV3";
-import { getAppStudioEndpoint } from "../component/resource/appManifest/constants";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -648,6 +647,17 @@ export async function getAppDirectory(projectRoot: string): Promise<string> {
     return appDirNewLoc;
   } else {
     return appDirOldLoc;
+  }
+}
+
+/**
+ * Get app studio endpoint for prod/int environment, mainly for ux e2e test
+ */
+export function getAppStudioEndpoint(): string {
+  if (process.env.APP_STUDIO_ENV && process.env.APP_STUDIO_ENV === "int") {
+    return "https://dev-int.teams.microsoft.com";
+  } else {
+    return "https://dev.teams.microsoft.com";
   }
 }
 

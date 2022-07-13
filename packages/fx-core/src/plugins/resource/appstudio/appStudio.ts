@@ -11,7 +11,7 @@ import { AppStudioResultFactory } from "./results";
 import { Constants, ErrorMessages } from "./constants";
 import { RetryHandler } from "./utils/utils";
 import { TelemetryEventName, TelemetryUtils } from "./utils/telemetry";
-import { getAppStudioEndpoint } from "../../../component/resource/appManifest/constants";
+import { getAppStudioEndpoint } from "../../../common/tools";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {

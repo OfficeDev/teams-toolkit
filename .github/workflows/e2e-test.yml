@@ -238,7 +238,7 @@ jobs:
         uses: actions/upload-artifact@v2
         if: ${{ always() }}
         with:
-          name: ${{ steps.get-report-name.outputs.name }}_metrics.txt
+          name: ${{ steps.get-report-name.outputs.name }}_metrics
           path: |
             /tmp/.metrics/output.txt
 
@@ -320,7 +320,7 @@ jobs:
             fi
 
             job_id=`echo $jobs| jq --arg case $case -r '.jobs[] | select(.name == $case ) | .id'`
-            metrics_file=`find ~/artifacts -name "*${job_id}_metrics.txt"`
+            metrics_file=`find ~/artifacts -name "*${job_id}_metrics/output.txt"`
             slow=`cat $metrics_file | grep '"severity":"slow"' | wc -l`
 
             url=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .html_url'`

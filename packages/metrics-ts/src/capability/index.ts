@@ -1,1 +1,1 @@
-export { timer } from "./timer";
+export { MSTimer } from "./timer";

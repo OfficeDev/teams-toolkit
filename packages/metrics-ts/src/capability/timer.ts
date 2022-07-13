@@ -13,7 +13,7 @@ import { appendOutput, appendOutputSync } from "../writer";
 const fast = 1;
 const normal = 20;
 
-export const timer = (fn: string) => {
+export const MSTimer = (fn: string) => {
   /* eslint-disable  @typescript-eslint/no-explicit-any */
   /* eslint-disable  @typescript-eslint/explicit-module-boundary-types */
   return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {

@@ -278,7 +278,7 @@ jobs:
           passed=0
           failed=0
 
-          emails="vsciotadt@microsoft.com"
+          emails="vsciotadt@microsoft.com;v-helzha@microsoft.com;v-ivanchen@microsoft.com"
           while IFS= read -r case;
           do
             if [ -z "$case" ]; then

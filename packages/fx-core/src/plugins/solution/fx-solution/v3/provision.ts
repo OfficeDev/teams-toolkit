@@ -29,7 +29,7 @@ import { v4 as uuidv4 } from "uuid";
 import { hasAzureResource } from "../../../../common";
 import { PluginDisplayName } from "../../../../common/constants";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
-import { LocalSettingsBotKeys } from "../../../../common/localSettingsConstants";
+import { LocalStateAuthKeys, LocalStateBotKeys } from "../../../../common/localStateConstants";
 import {
   CustomizeResourceGroupType,
   TelemetryEvent,
@@ -424,16 +424,17 @@ async function compareWithStateSubscription(
       envInfo.state.solution.resourceGroupName = "";
 
       // we need to have another bot id if provisioning a new azure bot service.
-      if (envInfo.state[BuiltInFeaturePluginNames.bot]) {
-        if (envInfo.state[BuiltInFeaturePluginNames.bot][LocalSettingsBotKeys.BotId]) {
-          envInfo.state[BuiltInFeaturePluginNames.bot][LocalSettingsBotKeys.BotId] = undefined;
+      const botResource =
+        envInfo.state[BuiltInFeaturePluginNames.bot] ?? envInfo.state["teams-bot"];
+      if (botResource) {
+        if (botResource[LocalStateBotKeys.BotId]) {
+          botResource[LocalStateBotKeys.BotId] = undefined;
         }
-        if (envInfo.state[BuiltInFeaturePluginNames.bot][LocalSettingsBotKeys.BotPassword]) {
-          envInfo.state[BuiltInFeaturePluginNames.bot][LocalSettingsBotKeys.BotPassword] =
-            undefined;
+        if (botResource[LocalStateBotKeys.BotPassword]) {
+          botResource[LocalStateBotKeys.BotPassword] = undefined;
         }
-        if (envInfo.state[BuiltInFeaturePluginNames.bot]["objectId"]) {
-          envInfo.state[BuiltInFeaturePluginNames.bot]["objectId"] = undefined;
+        if (botResource[LocalStateAuthKeys.ObjectId]) {
+          botResource[LocalStateAuthKeys.ObjectId] = undefined;
         }
       }
       ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);

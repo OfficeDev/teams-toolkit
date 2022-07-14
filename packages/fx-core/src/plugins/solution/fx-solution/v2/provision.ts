@@ -172,14 +172,16 @@ async function provisionResourceImpl(
       return err(solutionConfigRes.error);
     }
 
-    // ask for provision consent
-    const consentResult = await askForProvisionConsent(
-      ctx,
-      tokenProvider.azureAccountProvider,
-      envInfo as v3.EnvInfoV3
-    );
-    if (consentResult.isErr()) {
-      return err(consentResult.error);
+    if (!solutionConfigRes.value.hasSwitchedSubscription) {
+      // ask for provision consent
+      const consentResult = await askForProvisionConsent(
+        ctx,
+        tokenProvider.azureAccountProvider,
+        envInfo as v3.EnvInfoV3
+      );
+      if (consentResult.isErr()) {
+        return err(consentResult.error);
+      }
     }
 
     // create resource group if needed

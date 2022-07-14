@@ -51,7 +51,6 @@ import "./code/botCode";
 import "./code/tabCode";
 import "./code/apiCode";
 import "./code/spfxTabCode";
-import "./connection/aadConfig";
 import "./connection/azureWebAppConfig";
 import "./connection/azureFunctionConfig";
 import "./connection/apimConfig";

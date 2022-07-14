@@ -136,6 +136,7 @@ const configApiAction: Action = {
       name: ComponentNames.TeamsApi,
       hosting: inputs.hosting,
       functionNames: [functionName],
+      deploy: true,
     });
     // add hosting component
     projectSettings.components.push({

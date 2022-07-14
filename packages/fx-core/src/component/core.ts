@@ -10,6 +10,7 @@ import {
   InputsWithProjectPath,
   MaybePromise,
   ok,
+  Platform,
   ProjectSettingsV3,
   ProvisionContextV3,
   QTreeNode,
@@ -59,6 +60,7 @@ import { getResourceGroupInPortal } from "../common/tools";
 import { getComponent } from "./workflow";
 import { FxPreDeployAction } from "./fx/preDeployAction";
 import { FxPreProvisionAction } from "./fx/preProvisionAction";
+import { pluginName2ComponentName } from "./migrate";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -294,7 +296,11 @@ export class TeamsfxCore {
         required: true,
       },
     ];
-    const components = inputs["deploy-plugin"] as string[];
+    const components: string[] =
+      inputs.platform === Platform.VS
+        ? projectSettings.components.filter((component) => component.deploy).map((c) => c.name)
+        : (inputs["deploy-plugin"] as string[]).map((plugin) => pluginName2ComponentName(plugin));
+
     components.forEach((componentName) => {
       const componentConfig = getComponent(projectSettings, componentName);
       if (componentConfig) {

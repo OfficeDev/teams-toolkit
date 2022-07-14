@@ -3,6 +3,7 @@
 
 import { Middleware, NextFunction } from "@feathersjs/hooks";
 import {
+  CLIPlatforms,
   DynamicPlatforms,
   err,
   FxError,
@@ -119,6 +120,7 @@ async function getQuestionsForDeploy(
   if (inputs.platform === Platform.VSCode && inputs[Constants.INCLUDE_AAD_MANIFEST] === "yes") {
     return ok(undefined);
   }
+  //VS project has no selection interaction, and will deploy all selectable components by default.
   if (isVSProject(ctx.projectSetting)) {
     return ok(undefined);
   }
@@ -128,6 +130,8 @@ async function getQuestionsForDeploy(
     ComponentNames.TeamsTab,
     ComponentNames.TeamsBot,
     ComponentNames.TeamsApi,
+    ComponentNames.APIM,
+    ComponentNames.AppManifest,
   ];
   let selectableComponents: string[];
   if (!isDynamicQuestion) {
@@ -147,11 +151,11 @@ async function getQuestionsForDeploy(
       );
     }
     selectableComponents = projectSetting.components
-      .filter(
-        (component) =>
-          component.build && component.hosting && deployableComponents.includes(component.name)
-      )
+      .filter((component) => component.deploy && deployableComponents.includes(component.name))
       .map((component) => component.name) as string[];
+    if (CLIPlatforms.includes(inputs.platform)) {
+      deployableComponents.push(ComponentNames.AppManifest);
+    }
   }
   const options = selectableComponents.map((c) => {
     const pluginName = ComponentName2pluginName(c);
@@ -169,7 +173,6 @@ async function getQuestionsForDeploy(
   const selectQuestion = DeployPluginSelectQuestion;
   selectQuestion.staticOptions = options;
   selectQuestion.default = options.map((i) => i.id);
-  // TODO check for add manifest deploy and teams manifest deploy
   return ok(new QTreeNode(selectQuestion));
 }
 

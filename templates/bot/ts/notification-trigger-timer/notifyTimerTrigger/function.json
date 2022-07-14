@@ -7,5 +7,5 @@
       "schedule": "*/30 * * * * *"
     }
   ],
-  "scriptFile": "../dist/timerTrigger.js"
+  "scriptFile": "../dist/src/timerTrigger.js"
 }

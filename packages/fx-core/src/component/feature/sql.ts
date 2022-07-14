@@ -18,6 +18,7 @@ import { getComponent } from "../workflow";
 import "../connection/azureWebAppConfig";
 import "../resource/azureSql";
 import "../resource/identity";
+import { ComponentNames } from "../constants";
 import { hasApi } from "../../common/projectSettingsHelperV3";
 
 @Service("sql")
@@ -35,7 +36,9 @@ export class Sql {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const sqlComponent = getComponent(context.projectSetting, "azure-sql");
+    const sqlComponent = getComponent(context.projectSetting, ComponentNames.AzureSQL);
+    const webAppComponent = getComponent(context.projectSetting, ComponentNames.AzureWebApp);
+    const functionComponent = getComponent(context.projectSetting, ComponentNames.Function);
     const provisionType = sqlComponent ? "database" : "server";
     const hasFunc = hasApi(context.projectSetting);
     const dependentActions: Action[] = [];
@@ -53,20 +56,13 @@ export class Sql {
         name: "sql.configSql",
         type: "function",
         plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-          const sqlComponent = getComponent(context.projectSetting, "azure-sql");
           if (sqlComponent) {
             return ok([]);
           }
           const remarks: string[] = ["add component 'azure-sql' in projectSettings"];
-          const identityComponent = getComponent(context.projectSetting, "identity");
-          if (!identityComponent) {
-            remarks.push("add component 'identity' in projectSettings");
-          }
-          const webAppComponent = getComponent(context.projectSetting, "azure-web-app");
           if (webAppComponent) {
             remarks.push("connect 'azure-sql' to component 'azure-web-app' in projectSettings");
           }
-          const functionComponent = getComponent(context.projectSetting, "azure-function");
           if (functionComponent) {
             remarks.push("connect 'azure-sql' to component 'azure-function' in projectSettings");
           }
@@ -80,7 +76,6 @@ export class Sql {
           ]);
         },
         execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-          const sqlComponent = getComponent(context.projectSetting, "azure-sql");
           if (sqlComponent) return ok([]);
           const projectSettings = context.projectSetting;
           const remarks: string[] = ["add component 'azure-sql' in projectSettings"];
@@ -88,21 +83,11 @@ export class Sql {
             name: "azure-sql",
             provision: true,
           });
-          const identityComponent = getComponent(context.projectSetting, "identity");
-          if (!identityComponent) {
-            projectSettings.components.push({
-              name: "identity",
-              provision: true,
-            });
-            remarks.push("add component 'identity' in projectSettings");
-          }
-          const webAppComponent = getComponent(context.projectSetting, "azure-web-app");
           if (webAppComponent) {
             if (!webAppComponent.connections) webAppComponent.connections = [];
             webAppComponent.connections.push("azure-sql");
             remarks.push("connect 'azure-sql' to component 'azure-web-app' in projectSettings");
           }
-          const functionComponent = getComponent(context.projectSetting, "azure-function");
           if (functionComponent) {
             if (!functionComponent.connections) functionComponent.connections = [];
             functionComponent.connections.push("azure-sql");
@@ -133,16 +118,6 @@ export class Sql {
         },
       },
     ];
-    const identityComponent = getComponent(context.projectSetting, "identity");
-    if (!identityComponent) {
-      actions.push({
-        name: "call:identity.generateBicep",
-        type: "call",
-        required: true,
-        targetAction: "identity.generateBicep",
-      });
-    }
-    const webAppComponent = getComponent(context.projectSetting, "azure-web-app");
     if (webAppComponent) {
       actions.push({
         name: "call:azure-web-app-config.generateBicep",
@@ -151,7 +126,6 @@ export class Sql {
         targetAction: "azure-web-app-config.generateBicep",
       });
     }
-    const functionComponent = getComponent(context.projectSetting, "azure-function");
     if (functionComponent) {
       actions.push({
         name: "call:azure-function-config.generateBicep",

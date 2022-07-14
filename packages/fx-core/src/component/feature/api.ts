@@ -140,7 +140,7 @@ const configApiAction: Action = {
     // add hosting component
     projectSettings.components.push({
       name: inputs.hosting,
-      connections: [ComponentNames.TeamsApi, ComponentNames.TeamsTab],
+      connections: [ComponentNames.TeamsApi, ComponentNames.TeamsTab, ComponentNames.Identity],
       scenario: Scenarios.Api,
     });
     const teamsTab = getComponent(projectSettings, ComponentNames.TeamsTab);

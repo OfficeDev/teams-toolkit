@@ -27,16 +27,15 @@ import {
 import { AppStudioClient } from "../../../plugins/resource/appstudio/appStudio";
 import { Constants } from "../../../plugins/resource/appstudio/constants";
 import { AppStudioError } from "../../../plugins/resource/appstudio/errors";
-import { AppDefinition } from "../../../plugins/resource/appstudio/interfaces/appDefinition";
 import { AppStudioResultFactory } from "../../../plugins/resource/appstudio/results";
-import { convertToAppDefinition } from "../../../plugins/resource/appstudio/utils/utils";
 import { readAppManifest } from "./utils";
 
 export async function createOrUpdateTeamsApp(
   ctx: v2.Context,
   inputs: InputsWithProjectPath,
   envInfo: v3.EnvInfoV3,
-  tokenProvider: TokenProvider
+  tokenProvider: TokenProvider,
+  withEmptyCapabilities = false
 ): Promise<Result<string, FxError>> {
   const appStudioTokenRes = await tokenProvider.m365TokenProvider.getAccessToken({
     scopes: AppStudioScopes,
@@ -59,7 +58,11 @@ export async function createOrUpdateTeamsApp(
     }
     archivedFile = await fs.readFile(inputs.appPackagePath);
   } else {
-    const buildPackage = await buildTeamsAppPackage(inputs.projectPath, envInfo!, true);
+    const buildPackage = await buildTeamsAppPackage(
+      inputs.projectPath,
+      envInfo!,
+      withEmptyCapabilities
+    );
     if (buildPackage.isErr()) {
       return err(buildPackage.error);
     }
@@ -177,11 +180,11 @@ export async function buildTeamsAppPackage(
 ): Promise<Result<string, FxError>> {
   const buildFolderPath = path.join(projectPath, BuildFolderName, AppPackageFolderName);
   await fs.ensureDir(buildFolderPath);
-  const appDefinitionRes = await getAppDefinitionAndManifest(projectPath, envInfo);
-  if (appDefinitionRes.isErr()) {
-    return err(appDefinitionRes.error);
+  const manifestRes = await getManifest(projectPath, envInfo);
+  if (manifestRes.isErr()) {
+    return err(manifestRes.error);
   }
-  const manifest: TeamsAppManifest = appDefinitionRes.value[1];
+  const manifest: TeamsAppManifest = manifestRes.value;
   if (!isUUID(manifest.id)) {
     manifest.id = v4();
   }
@@ -246,10 +249,10 @@ export async function validateManifest(
   return ok([]);
 }
 
-async function getAppDefinitionAndManifest(
+async function getManifest(
   projectPath: string,
   envInfo: v3.EnvInfoV3
-): Promise<Result<[AppDefinition, TeamsAppManifest], FxError>> {
+): Promise<Result<TeamsAppManifest, FxError>> {
   // Read template
   const manifestTemplateRes = await readAppManifest(projectPath);
   if (manifestTemplateRes.isErr()) {
@@ -265,7 +268,6 @@ async function getAppDefinitionAndManifest(
   manifestString = compileHandlebarsTemplateString(manifestString, view);
 
   const manifest: TeamsAppManifest = JSON.parse(manifestString);
-  const appDefinition = convertToAppDefinition(manifest);
 
-  return ok([appDefinition, manifest]);
+  return ok(manifest);
 }

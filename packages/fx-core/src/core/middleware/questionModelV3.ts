@@ -163,7 +163,7 @@ async function getQuestionsForDeploy(
     };
     return item;
   });
-  if (options.length === 0 && inputs[Constants.INCLUDE_AAD_MANIFEST] !== "yes") {
+  if (options.length === 0) {
     return err(new NoCapabilityFoundError(Stage.deploy));
   }
   const selectQuestion = DeployPluginSelectQuestion;

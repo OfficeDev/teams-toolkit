@@ -63,8 +63,6 @@ import { getComponent } from "./workflow";
 import { FxPreDeployForAzureAction } from "./fx/preDeployAction";
 import { FxPreProvisionAction } from "./fx/preProvisionAction";
 import { pluginName2ComponentName } from "./migrate";
-import { hasAzureResourceV3 } from "../common/projectSettingsHelperV3";
-import { AzureResource } from "./resource/azureResource";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";

@@ -38,7 +38,6 @@ import {
 import { AppStudioScopes, getHashedEnv, getResourceGroupInPortal } from "../../../../common/tools";
 import { convertToAlphanumericOnly } from "../../../../common/utils";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
-import { envFileNamePrefix } from "../../../resource/frontend/env";
 import arm, { updateResourceBaseName } from "../arm";
 import { ResourceGroupInfo } from "../commonQuestions";
 import {

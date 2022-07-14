@@ -108,11 +108,7 @@ export class GeneratorChecker implements DependencyChecker {
   }
 
   private getDefaultInstallPath(): string {
-    return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "spfx");
-  }
-
-  private getPackagePath(): string {
-    return path.join(this.getDefaultInstallPath(), "node_modules", "@microsoft");
+    return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "spGenerator");
   }
 
   private getSentinelPath(): string {
@@ -136,10 +132,18 @@ export class GeneratorChecker implements DependencyChecker {
 
   private async cleanup(): Promise<void> {
     try {
-      await fs.emptyDir(this.getPackagePath());
+      const legacyDirectory = path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "spfx");
+      if (fs.existsSync(legacyDirectory)) {
+        await fs.emptyDir(legacyDirectory);
+        await fs.rmdir(legacyDirectory);
+      }
+
+      await fs.emptyDir(this.getDefaultInstallPath());
       await fs.remove(this.getSentinelPath());
     } catch (err) {
-      await this._logger.error(`Failed to clean up path: ${this.getPackagePath()}, error: ${err}`);
+      await this._logger.error(
+        `Failed to clean up path: ${this.getDefaultInstallPath()}, error: ${err}`
+      );
     }
   }
 

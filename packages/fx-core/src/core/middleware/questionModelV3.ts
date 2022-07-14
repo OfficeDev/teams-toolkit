@@ -40,7 +40,6 @@ import { ComponentNames } from "../../component/constants";
 import { ComponentName2pluginName } from "../../component/migrate";
 import { readAppManifest } from "../../component/resource/appManifest/utils";
 import { getComponent } from "../../component/workflow";
-import { Constants } from "../../plugins/resource/aad/constants";
 import { STATIC_TABS_MAX_ITEMS } from "../../plugins/resource/appstudio/constants";
 import { createHostTypeTriggerQuestion } from "../../plugins/resource/bot/question";
 import {

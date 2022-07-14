@@ -36,7 +36,8 @@ export async function createOrUpdateTeamsApp(
   ctx: v2.Context,
   inputs: InputsWithProjectPath,
   envInfo: v3.EnvInfoV3,
-  tokenProvider: TokenProvider
+  tokenProvider: TokenProvider,
+  withEmptyCapabilities = false
 ): Promise<Result<string, FxError>> {
   const appStudioTokenRes = await tokenProvider.m365TokenProvider.getAccessToken({
     scopes: AppStudioScopes,
@@ -59,7 +60,11 @@ export async function createOrUpdateTeamsApp(
     }
     archivedFile = await fs.readFile(inputs.appPackagePath);
   } else {
-    const buildPackage = await buildTeamsAppPackage(inputs.projectPath, envInfo!, true);
+    const buildPackage = await buildTeamsAppPackage(
+      inputs.projectPath,
+      envInfo!,
+      withEmptyCapabilities
+    );
     if (buildPackage.isErr()) {
       return err(buildPackage.error);
     }

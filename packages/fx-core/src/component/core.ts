@@ -45,6 +45,7 @@ import "./feature/bot";
 import "./feature/sql";
 import "./feature/tab";
 import "./feature/cicd";
+import "./feature/keyVault";
 import "./feature/sso";
 import "./feature/apiConnector";
 import "./code/botCode";

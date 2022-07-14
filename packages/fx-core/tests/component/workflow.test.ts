@@ -37,6 +37,7 @@ import {
 } from "../../src/plugins/resource/spfx/utils/questions";
 import * as spfxCode from "../../src/component/code/spfxTabCode";
 import { DefaultManifestProvider } from "../../src/component/resource/appManifest/manifestProvider";
+import { ComponentNames } from "../../src/component/constants";
 
 describe("Workflow test for v3", () => {
   const sandbox = sinon.createSandbox();
@@ -150,9 +151,9 @@ describe("Workflow test for v3", () => {
     sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
     sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
     sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
-      clientId: "mockClientId",
+      clientId: "00000000-0000-0000-0000-000000000000",
       clientSecret: "mockClientSecret",
-      objectId: "mockObjectId",
+      objectId: "00000000-0000-0000-0000-000000000000",
     });
     sandbox.stub(arm, "deployArmTemplates").resolves(ok(undefined));
     const inputs: InputsWithProjectPath = {
@@ -195,6 +196,12 @@ describe("Workflow test for v3", () => {
         resourceId:
           "/subscriptions/mockSid/resourceGroups/jay-texas/providers/Microsoft.Web/sites/testwebApp",
         endpoint: "https://testwebApp.azurewebsites.net",
+      },
+      [ComponentNames.BotService]: {
+        botId: "00000000-0000-0000-0000-000000000000",
+      },
+      [ComponentNames.AadApp]: {
+        clientId: "00000000-0000-0000-0000-000000000000",
       },
     };
     const provisionRes = await runAction("fx.provision", context, inputs);

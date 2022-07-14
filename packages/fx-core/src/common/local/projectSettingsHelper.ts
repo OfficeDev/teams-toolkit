@@ -19,7 +19,7 @@ import {
   hasAAD,
   hasAzureTab,
   hasBot,
-  hasFunction,
+  hasApi,
   hasFunctionBot,
   hasSimpleAuth,
   hasTab,
@@ -42,7 +42,7 @@ export class ProjectSettingsHelper {
   }
 
   public static includeBackend(projectSettings: ProjectSettings | undefined): boolean {
-    if (isV3()) return hasFunction(projectSettings as ProjectSettingsV3);
+    if (isV3()) return hasApi(projectSettings as ProjectSettingsV3);
     const solutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
     const azureResources = (solutionSettings?.azureResources as string[]) || [];
     return (

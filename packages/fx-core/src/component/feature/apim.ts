@@ -15,7 +15,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { hasFunction } from "../../common/projectSettingsHelperV3";
+import { hasApi } from "../../common/projectSettingsHelperV3";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { getProjectSettingsPath } from "../../core/middleware/projectSettingsLoader";
 import { buildAnswer } from "../../plugins/resource/apim/answer";
@@ -38,7 +38,18 @@ export class ApimFeature {
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const component = getComponent(context.projectSetting, ComponentNames.APIM);
     if (component) return ok(undefined);
+    const hasFunc = hasApi(context.projectSetting);
+    const dependentActions: Action[] = [];
+    if (!hasFunc) {
+      dependentActions.push({
+        name: "call:teams-api.add",
+        type: "call",
+        required: true,
+        targetAction: "teams-api.add",
+      });
+    }
     const actions: Action[] = [
+      ...dependentActions,
       {
         name: "apim-feature.configApim",
         type: "function",

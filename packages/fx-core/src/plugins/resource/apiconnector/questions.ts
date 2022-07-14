@@ -33,7 +33,7 @@ import { Notification, sendErrorTelemetry } from "./utils";
 import { ResultFactory } from "./result";
 import { ErrorMessage } from "./errors";
 import { ResourcePlugins } from "../../../common/constants";
-import { hasBot, hasFunction } from "../../../common/projectSettingsHelperV3";
+import { hasBot, hasApi } from "../../../common/projectSettingsHelperV3";
 import { TelemetryUtils, Telemetry } from "./telemetry";
 
 export interface IQuestionService {
@@ -91,7 +91,7 @@ export class ComponentsQuestion extends BaseQuestionService implements IQuestion
         if (hasBot(ctx.projectSetting as ProjectSettingsV3)) {
           this.components.push(botOption);
         }
-        if (hasFunction(ctx.projectSetting as ProjectSettingsV3)) {
+        if (hasApi(ctx.projectSetting as ProjectSettingsV3)) {
           this.components.push(functionOption);
         }
       }

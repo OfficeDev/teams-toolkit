@@ -90,9 +90,8 @@ export namespace AadAppManifestManager {
 
     try {
       let manifestString = await fs.readFile(manifestFilePath, "utf8");
-      if (isV3()) manifestString = convertManifestTemplateToV3(manifestString);
       const stateObject = JSON.parse(JSON.stringify(fromEntries(ctx.envInfo.state)));
-      const aadKey = isV3() ? ComponentNames.AadApp : "fx-resource-aad-app-for-teams";
+      const aadKey = "fx-resource-aad-app-for-teams";
       if (!stateObject[aadKey].oauth2PermissionScopeId) {
         stateObject[aadKey].oauth2PermissionScopeId = uuidv4();
       }

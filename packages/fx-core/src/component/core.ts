@@ -222,29 +222,16 @@ export class TeamsfxCore {
       },
     };
     const preConfigureStep: Action = {
-      type: "function",
-      name: "fx.preConfigure",
-      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok([]);
-      },
-      execute: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const ctx = context as ProvisionContextV3;
-        const teamsTab = getComponent(ctx.projectSetting, ComponentNames.TeamsTab);
-        if (teamsTab) {
-          const aad = getComponent(ctx.projectSetting, ComponentNames.AadApp);
-          if (aad) {
-            const tabEndpoint = ctx.envInfo.state[ComponentNames.TeamsTab].endpoint;
-            inputs.m365ApplicationIdUri = `api://${tabEndpoint}`;
-          }
-        }
-        return ok([]);
-      },
+      type: "call",
+      name: "call:aad-app.setApplicationInContext",
+      required: true,
+      targetAction: "aad-app.setApplicationInContext",
     };
     const provisionSequences: Action[] = [
       preProvisionStep,
       createTeamsAppStep,
       provisionResourcesStep,
-      ctx.envInfo.envName !== "local" ? deployBicepStep : setupLocalEnvironmentStep,
+      // ctx.envInfo.envName !== "local" ? deployBicepStep : setupLocalEnvironmentStep,
       preConfigureStep,
       configureResourcesStep,
       ctx.envInfo.envName === "local" ? configLocalEnvironmentStep : postProvisionStep,

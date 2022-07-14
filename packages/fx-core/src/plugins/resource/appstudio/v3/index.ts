@@ -47,11 +47,11 @@ import { ResourcePermission, TeamsAppAdmin } from "../../../../common/permission
 import isUUID from "validator/lib/isUUID";
 import { AppStudioClient } from "../appStudio";
 import { AppUser } from "../interfaces/appUser";
-import { isExistingTabApp, isVSProject } from "../../../../common/projectSettingsHelper";
-import { InitializedFileAlreadyExistError } from "../../../../core/error";
+import { isExistingTabApp } from "../../../../common/projectSettingsHelper";
 import { AppStudioScopes } from "../../../../common";
 import {
-  createOrUpdateTeamsApp,
+  createTeamsApp,
+  updateTeamsApp,
   publishTeamsApp,
 } from "../../../../component/resource/appManifest/appStudio";
 import { getProjectTemplatesFolderPath } from "../../../../common/utils";
@@ -203,7 +203,7 @@ export class AppStudioPluginV3 {
   ): Promise<Result<string, FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.provisionManifest);
-    const result = await createOrUpdateTeamsApp(ctx, inputs, envInfo, tokenProvider, true);
+    const result = await createTeamsApp(ctx, inputs, envInfo, tokenProvider);
     if (result.isOk()) {
       const properties: { [key: string]: string } = {};
       properties[TelemetryPropertyKey.appId] = result.value;
@@ -222,7 +222,7 @@ export class AppStudioPluginV3 {
   ): Promise<Result<string, FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.updateManifest);
-    const result = await createOrUpdateTeamsApp(ctx, inputs, envInfo, tokenProvider);
+    const result = await updateTeamsApp(ctx, inputs, envInfo, tokenProvider);
     if (result.isOk()) {
       const properties: { [key: string]: string } = {};
       properties[TelemetryPropertyKey.appId] = result.value;

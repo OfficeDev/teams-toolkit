@@ -19,6 +19,7 @@ import "../connection/azureWebAppConfig";
 import "../resource/azureSql";
 import "../resource/identity";
 import { ComponentNames } from "../constants";
+import { hasApi } from "../../common/projectSettingsHelperV3";
 
 @Service("sql")
 export class Sql {

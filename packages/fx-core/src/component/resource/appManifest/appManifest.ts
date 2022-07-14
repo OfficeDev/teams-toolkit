@@ -39,7 +39,7 @@ import {
   BotScenario,
 } from "../../../plugins/solution/fx-solution/question";
 import { ComponentNames } from "../../constants";
-import { createOrUpdateTeamsApp, publishTeamsApp } from "./appStudio";
+import { createTeamsApp, updateTeamsApp, publishTeamsApp } from "./appStudio";
 import {
   BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3,
   BOTS_TPL_FOR_NOTIFICATION_V3,
@@ -147,13 +147,13 @@ export class AppManifest implements CloudResource {
           {
             type: "service",
             name: "teams.microsoft.com",
-            remarks: "create or update teams app",
+            remarks: "create Teams app if not exists",
           },
         ]);
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const ctx = context as ProvisionContextV3;
-        const res = await createOrUpdateTeamsApp(ctx, inputs, ctx.envInfo, ctx.tokenProvider, true);
+        const res = await createTeamsApp(ctx, inputs, ctx.envInfo, ctx.tokenProvider);
         if (res.isErr()) return err(res.error);
         ctx.envInfo.state[ComponentNames.AppManifest].teamsAppId = res.value;
         globalVars.teamsAppId = res.value;
@@ -161,7 +161,7 @@ export class AppManifest implements CloudResource {
           {
             type: "service",
             name: "teams.microsoft.com",
-            remarks: "create or update teams app",
+            remarks: "create Teams app if not exists",
           },
         ]);
       },
@@ -180,19 +180,19 @@ export class AppManifest implements CloudResource {
           {
             type: "service",
             name: "teams.microsoft.com",
-            remarks: "update teams app",
+            remarks: "update Teams app",
           },
         ]);
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const ctx = context as ProvisionContextV3;
-        const res = await createOrUpdateTeamsApp(ctx, inputs, ctx.envInfo, ctx.tokenProvider);
+        const res = await updateTeamsApp(ctx, inputs, ctx.envInfo, ctx.tokenProvider);
         if (res.isErr()) return err(res.error);
         return ok([
           {
             type: "service",
             name: "teams.microsoft.com",
-            remarks: "update teams app",
+            remarks: "update Teams app",
           },
         ]);
       },

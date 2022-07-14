@@ -249,7 +249,7 @@ jobs:
           npx ts-node .github/scripts/testPlan.ts sync ./packages/cli/tests/e2e/mochawesome-report/mochawesome.json cli $version
 
   report:
-    if: ${{ always() && github.event_name == 'schedule' }}
+    if: ${{ always() }}
     needs: execute-case
     runs-on: ubuntu-latest
     steps:
@@ -326,7 +326,7 @@ jobs:
             url=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .html_url'`
             url="<a href=\\\"$url\\\">For Detail</a>"
 
-            row="<tr> <td style=\\\"text-align: left;\\\">$elegant_path</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> <td style=\\\"text-align: center;\\\">$duration</td> <td style=\\\"text-align: center;\\\">$slow</td> <td style=\\\"text-align: center;\\\">$url</td> </tr>"
+            row="<tr> <td style=\\\"text-align: left;\\\">$elegant_path</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> <td style=\\\"text-align: center;\\\">$duration</td> <td style=\\\"text-align: center;\\\">$slow_count</td> <td style=\\\"text-align: center;\\\">$url</td> </tr>"
 
             if [ "$status" == "success" ]; then
               lists="$lists $row"
@@ -358,7 +358,7 @@ jobs:
           method: POST
           payload: |
             {
-              "to": "${{ steps.list-jobs.outputs.to }}",
+              "to": "haolong@microsoft.com",
               "body": "${{ steps.list-jobs.outputs.body }}",
               "subject": "${{ steps.list-jobs.outputs.subject }}",
               "apiKey": "${{ secrets.MAIL_API_KEY }}"

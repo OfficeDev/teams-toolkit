@@ -1,17 +1,26 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { DepsCheckerError } from "./depsError";
-import { Result } from "@microsoft/teamsfx-api";
 
 export interface DepsChecker {
-  isInstalled(): Promise<boolean>;
+  getInstallationInfo(): Promise<DependencyStatus>;
 
-  resolve(): Promise<Result<boolean, DepsCheckerError>>;
-
-  command(): Promise<string>;
-
-  getDepsInfo(): Promise<DepsInfo>;
+  resolve(): Promise<DependencyStatus>;
 }
+
+export type DependencyStatus = {
+  name: string;
+  type: DepsType;
+  isInstalled: boolean;
+  command: string;
+  details: {
+    isLinuxSupported: boolean;
+    supportedVersions: string[];
+    installVersion?: string;
+    binFolders?: string[];
+  };
+  error?: DepsCheckerError;
+};
 
 export interface DepsInfo {
   name: string;

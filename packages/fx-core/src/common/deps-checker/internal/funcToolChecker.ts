@@ -4,7 +4,7 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as os from "os";
-import { ConfigFolderName, Result, ok, err } from "@microsoft/teamsfx-api";
+import { ConfigFolderName } from "@microsoft/teamsfx-api";
 
 import { defaultHelpLink, functionDepsVersionsLink } from "../constant/helpLink";
 import { runWithProgressIndicator } from "../util/progressIndicator";
@@ -14,7 +14,7 @@ import { isLinux, isWindows } from "../util/system";
 import { DepsCheckerEvent, TelemtryMessages } from "../constant/telemetry";
 import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
-import { DepsInfo, DepsChecker } from "../depsChecker";
+import { DepsChecker, DependencyStatus, DepsType } from "../depsChecker";
 import { Messages } from "../constant/message";
 import { getInstalledNodeVersion } from "./nodeChecker";
 
@@ -56,44 +56,58 @@ export class FuncToolChecker implements DepsChecker {
     this._telemetry = telemetry;
   }
 
-  public async getDepsInfo(): Promise<DepsInfo> {
+  public async getDepsInfo(
+    isPortableFuncInstalled: boolean,
+    isGlobalFuncInstalled: boolean,
+    error?: DepsCheckerError
+  ): Promise<DependencyStatus> {
     return Promise.resolve({
       name: funcToolName,
-      isLinuxSupported: false,
-      installVersion: installVersion,
-      supportedVersions: supportedVersions,
-      binFolders: (await this.isPortableFuncInstalled())
-        ? this.getPortableFuncBinFolders()
-        : undefined,
-      details: new Map<string, string>(),
+      type: DepsType.FuncCoreTools,
+      isInstalled: isPortableFuncInstalled || isGlobalFuncInstalled,
+      command: await this.command(),
+      details: {
+        isLinuxSupported: false,
+        installVersion: installVersion,
+        supportedVersions: supportedVersions,
+        binFolders: isPortableFuncInstalled ? this.getPortableFuncBinFolders() : undefined,
+      },
+      error: error,
     });
   }
 
-  public async resolve(): Promise<Result<boolean, DepsCheckerError>> {
+  public async resolve(): Promise<DependencyStatus> {
+    let installationInfo: DependencyStatus;
     try {
-      if (!(await this.isInstalled())) {
+      installationInfo = await this.getInstallationInfo();
+      if (!installationInfo.isInstalled) {
         await this.install();
+        installationInfo = await this.getInstallationInfo();
       }
     } catch (error) {
       await this._logger.printDetailLog();
       await this._logger.error(`${error.message}, error = '${error}'`);
       if (error instanceof DepsCheckerError) {
-        return err(error);
+        return await this.getDepsInfo(false, false, error);
       }
-      return err(new DepsCheckerError(error.message, defaultHelpLink));
+      return await this.getDepsInfo(
+        false,
+        false,
+        new DepsCheckerError(error.message, defaultHelpLink)
+      );
     } finally {
       this._logger.cleanup();
     }
 
     const error = await this.checkGlobalFuncAndNode();
     if (error) {
-      return err(error);
+      return await this.getDepsInfo(false, false, error);
     }
 
-    return ok(true);
+    return installationInfo;
   }
 
-  public async isInstalled(): Promise<boolean> {
+  public async getInstallationInfo(): Promise<DependencyStatus> {
     const isGlobalFuncInstalled: boolean = await this.isGlobalFuncInstalled();
     const isPortableFuncInstalled: boolean = await this.isPortableFuncInstalled();
 
@@ -110,7 +124,7 @@ export class FuncToolChecker implements DepsChecker {
       this._telemetry.sendEvent(DepsCheckerEvent.funcInstallCompleted);
     }
 
-    return isPortableFuncInstalled || isGlobalFuncInstalled;
+    return await this.getDepsInfo(isPortableFuncInstalled, isGlobalFuncInstalled);
   }
 
   private async checkGlobalFuncAndNode(): Promise<FuncNodeNotMatchedError | undefined> {

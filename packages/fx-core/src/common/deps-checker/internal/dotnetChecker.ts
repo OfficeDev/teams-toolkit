@@ -6,7 +6,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as child_process from "child_process";
 import * as util from "util";
-import { ConfigFolderName, Result, ok, err } from "@microsoft/teamsfx-api";
+import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import { performance } from "perf_hooks";
 import { dotnetFailToInstallHelpLink, dotnetExplanationHelpLink } from "../constant/helpLink";
 import { DepsCheckerError, LinuxNotSupportedError } from "../depsError";
@@ -16,7 +16,7 @@ import { isLinux, isWindows, isArm64, isMacOS } from "../util/system";
 import { DepsCheckerEvent, TelemtryMessages } from "../constant/telemetry";
 import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
-import { DepsInfo, DepsChecker } from "../depsChecker";
+import { DepsChecker, DependencyStatus, DepsType } from "../depsChecker";
 import { Messages } from "../constant/message";
 import { getResourceFolder } from "../../../folder";
 
@@ -47,7 +47,10 @@ export class DotnetChecker implements DepsChecker {
     this._telemetry = telemetry;
   }
 
-  public async getDepsInfo(): Promise<DepsInfo> {
+  public async getDepsInfo(
+    isInstalled: boolean,
+    error?: DepsCheckerError
+  ): Promise<DependencyStatus> {
     const map = new Map<string, string>();
     const execPath = await this.getDotnetExecPathFromConfig();
     if (execPath) {
@@ -56,15 +59,20 @@ export class DotnetChecker implements DepsChecker {
     map.set("configPath", DotnetChecker.getDotnetConfigPath());
     return {
       name: DotnetCoreSDKName,
-      isLinuxSupported: false,
-      installVersion: `${installVersion}`,
-      supportedVersions: supportedVersions,
-      binFolders: execPath ? [execPath] : undefined,
-      details: map,
+      type: DepsType.Dotnet,
+      isInstalled: isInstalled,
+      command: await this.command(),
+      details: {
+        isLinuxSupported: false,
+        installVersion: `${installVersion}`,
+        supportedVersions: supportedVersions,
+        binFolders: execPath ? [execPath] : undefined,
+      },
+      error: error,
     };
   }
 
-  public async isInstalled(): Promise<boolean> {
+  public async getInstallationInfo(): Promise<DependencyStatus> {
     const configPath = DotnetChecker.getDotnetConfigPath();
     await this._logger.debug(`[start] read dotnet path from '${configPath}'`);
     const dotnetPath = await this.getDotnetExecPathFromConfig();
@@ -78,7 +86,7 @@ export class DotnetChecker implements DepsChecker {
       if (dotnetPath.includes(`.${ConfigFolderName}`)) {
         this._telemetry.sendEvent(DepsCheckerEvent.dotnetInstallCompleted);
       }
-      return true;
+      return await this.getDepsInfo(true);
     }
     await this._logger.debug(`[end] check dotnet version`);
 
@@ -87,29 +95,35 @@ export class DotnetChecker implements DepsChecker {
       await this._logger.info(
         `${Messages.useGlobalDotnet} '${await this.getDotnetExecPathFromConfig()}'`
       );
-      return true;
+      return await this.getDepsInfo(true);
     }
 
-    return false;
+    return await this.getDepsInfo(false);
   }
 
-  public async resolve(): Promise<Result<boolean, DepsCheckerError>> {
+  public async resolve(): Promise<DependencyStatus> {
+    let installationInfo: DependencyStatus;
     try {
-      if (!(await this.isInstalled())) {
+      installationInfo = await this.getInstallationInfo();
+      if (!installationInfo.isInstalled) {
         await this.install();
+        installationInfo = await this.getInstallationInfo();
       }
     } catch (error) {
       await this._logger.printDetailLog();
       await this._logger.error(`${error.message}, error = '${error}'`);
       if (error instanceof DepsCheckerError) {
-        return err(error);
+        return await this.getDepsInfo(false, error);
       }
-      return err(new DepsCheckerError(error.message, dotnetFailToInstallHelpLink));
+      return await this.getDepsInfo(
+        false,
+        new DepsCheckerError(error.message, dotnetFailToInstallHelpLink)
+      );
     } finally {
       this._logger.cleanup();
     }
 
-    return ok(true);
+    return installationInfo;
   }
 
   public async install(): Promise<void> {

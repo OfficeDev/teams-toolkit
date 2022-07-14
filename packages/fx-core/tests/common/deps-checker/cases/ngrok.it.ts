@@ -39,8 +39,8 @@ describe("NgrokChecker E2E Test", async () => {
 
     const res = await ngrokChecker.resolve();
 
-    expect(res.isOk() && res.value).to.be.equal(true);
-    assert.isTrue(await ngrokChecker.isInstalled());
+    expect(res.isInstalled).to.be.equal(true);
+    assert.isTrue((await ngrokChecker.getInstallationInfo()).isInstalled);
     await assertNgrokVersion(ngrokChecker);
   });
 });

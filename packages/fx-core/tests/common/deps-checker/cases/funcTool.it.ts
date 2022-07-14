@@ -43,11 +43,10 @@ describe("FuncToolChecker E2E Test", async () => {
     );
 
     const res = await funcToolChecker.resolve();
-    const depsInfo = await funcToolChecker.getDepsInfo();
 
-    expect(res.isOk() && res.value).to.be.equal(true);
-    expect(await funcToolChecker.isInstalled()).to.be.equal(true);
-    expect(depsInfo.binFolders).to.be.equal(funcToolChecker.getPortableFuncBinFolders());
+    expect(res.isInstalled).to.be.equal(true);
+    expect((await funcToolChecker.getInstallationInfo()).isInstalled).to.be.equal(true);
+    expect(res.details.binFolders).to.be.equal(funcToolChecker.getPortableFuncBinFolders());
     assert.isTrue(
       /node "[^"]*"$/g.test(await funcToolChecker.command()),
       `should use portable func, and func command = ${await funcToolChecker.command()}`
@@ -71,15 +70,18 @@ describe("FuncToolChecker E2E Test", async () => {
     );
 
     const res = await funcToolChecker.resolve();
-    assert.isFalse(res.isOk() && res.value);
-    assert.isFalse(await funcToolChecker.isInstalled());
+    assert.isFalse(res.isInstalled);
+    assert.isFalse((await funcToolChecker.getInstallationInfo()).isInstalled);
 
     // second: still works well
     sandbox.restore(funcToolChecker, "doInstallPortableFunc");
     const retryRes = await funcToolChecker.resolve();
 
-    assert.isTrue(retryRes.isOk() && retryRes.value);
-    assert.isTrue(await funcToolChecker.isInstalled(), "second run, should success");
+    assert.isTrue(retryRes.isInstalled);
+    assert.isTrue(
+      (await funcToolChecker.getInstallationInfo()).isInstalled,
+      "second run, should success"
+    );
     await assertFuncStart(funcToolChecker);
   });
 
@@ -92,10 +94,10 @@ describe("FuncToolChecker E2E Test", async () => {
       logger,
       new TestTelemetry()
     ) as FuncToolChecker;
-    const depsInfo = await funcToolChecker.getDepsInfo();
+    const depsInfo = await funcToolChecker.getInstallationInfo();
 
-    expect(depsInfo.isLinuxSupported).to.be.equal(false);
-    expect(await funcToolChecker.command()).to.be.equal("npx azure-functions-core-tools@3");
+    expect(depsInfo.details.isLinuxSupported).to.be.equal(false);
+    expect(depsInfo.command).to.be.equal("npx azure-functions-core-tools@3");
   });
 
   it("already install + linux", async function () {
@@ -109,8 +111,9 @@ describe("FuncToolChecker E2E Test", async () => {
       new TestTelemetry()
     ) as FuncToolChecker;
 
-    expect(funcToolChecker.isInstalled()).to.be.equal(true);
-    expect(await funcToolChecker.command()).to.be.equal("func", `should use global func`);
+    const depsInfo = await funcToolChecker.getInstallationInfo();
+    expect(depsInfo.isInstalled).to.be.equal(true);
+    expect(depsInfo.command).to.be.equal("func", `should use global func`);
     await assertFuncStart(funcToolChecker);
   });
 
@@ -130,8 +133,8 @@ describe("FuncToolChecker E2E Test", async () => {
     ) as FuncToolChecker;
     const res = await funcToolChecker.resolve();
 
-    assert.isTrue(res.isOk() && res.value);
-    expect(await funcToolChecker.isInstalled()).to.be.equal(true);
+    assert.isTrue(res.isInstalled);
+    expect((await funcToolChecker.getInstallationInfo()).isInstalled).to.be.equal(true);
     assert.isTrue(
       /node "[^"]*"$/g.test(await funcToolChecker.command()),
       `should use portable func`

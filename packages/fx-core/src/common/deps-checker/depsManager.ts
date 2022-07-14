@@ -3,7 +3,7 @@
 
 import { DepsLogger, EmptyLogger } from "./depsLogger";
 import { DepsTelemetry } from "./depsTelemetry";
-import { DepsChecker, DepsInfo, DepsType } from "./depsChecker";
+import { DependencyStatus, DepsChecker, DepsInfo, DepsType } from "./depsChecker";
 import { CheckerFactory } from "./checkerFactory";
 import { DepsCheckerError } from "./depsError";
 import { NodeChecker } from "./internal/nodeChecker";
@@ -11,20 +11,6 @@ import { NodeChecker } from "./internal/nodeChecker";
 export type DepsOptions = {
   fastFail?: boolean;
   doctor?: boolean;
-};
-
-export type DependencyStatus = {
-  name: string;
-  type: DepsType;
-  isInstalled: boolean;
-  command: string;
-  details: {
-    isLinuxSupported: boolean;
-    supportedVersions: string[];
-    installVersion?: string;
-    binFolders?: string[];
-  };
-  error?: DepsCheckerError;
 };
 
 export class DepsManager {
@@ -104,27 +90,12 @@ export class DepsManager {
       doctor ? this.emptyLogger : this.logger,
       this.telemetry
     );
-    let error = undefined;
 
     if (shouldInstall) {
-      const result = await checker.resolve();
-      error = result.isErr() ? result.error : undefined;
+      return await checker.resolve();
+    } else {
+      return await checker.getInstallationInfo();
     }
-    const depsInfo: DepsInfo = await checker.getDepsInfo();
-
-    return {
-      name: depsInfo.name,
-      type: type,
-      isInstalled: await checker.isInstalled(),
-      command: await checker.command(),
-      details: {
-        isLinuxSupported: depsInfo.isLinuxSupported,
-        supportedVersions: depsInfo.supportedVersions,
-        installVersion: depsInfo.installVersion,
-        binFolders: depsInfo.binFolders,
-      },
-      error: error,
-    };
   }
 
   public static sortBySequence(dependencies: DepsType[]): DepsType[] {

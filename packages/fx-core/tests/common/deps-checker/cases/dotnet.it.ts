@@ -12,7 +12,7 @@ import {
   DotnetChecker,
   DotnetVersion,
 } from "../../../../src/common/deps-checker/internal/dotnetChecker";
-import { DepsChecker, DepsInfo, DepsType } from "../../../../src/common/deps-checker/depsChecker";
+import { DepsChecker, DepsType } from "../../../../src/common/deps-checker/depsChecker";
 import { CheckerFactory } from "../../../../src/common/deps-checker/checkerFactory";
 import { logger } from "../adapters/testLogger";
 import { TestTelemetry } from "../adapters/testTelemetry";
@@ -46,15 +46,13 @@ describe("DotnetChecker E2E Test - first run", async () => {
       new TestTelemetry()
     );
 
-    const isInstalled = await dotnetChecker.isInstalled();
-    assert.isFalse(isInstalled, ".NET is not installed, but isInstalled() return true");
-
-    const depsInfo: DepsInfo = await dotnetChecker.getDepsInfo();
+    const depsInfo = await dotnetChecker.getInstallationInfo();
     assert.isNotNull(depsInfo);
-    assert.isFalse(depsInfo.isLinuxSupported, "Linux should not support .NET");
+    assert.isFalse(depsInfo.isInstalled, ".NET is not installed, but isInstalled() return true");
+    assert.isFalse(depsInfo.details.isLinuxSupported, "Linux should not support .NET");
 
     const res = await dotnetChecker.resolve();
-    assert.isTrue(res.isOk() && res.value);
+    assert.isTrue(res.isInstalled);
     await verifyPrivateInstallation(dotnetChecker);
   });
 
@@ -76,7 +74,7 @@ describe("DotnetChecker E2E Test - first run", async () => {
       sinon.stub(dotnetChecker, "getResourceDir").returns(resourceDir);
 
       const res = await dotnetChecker.resolve();
-      assert.isTrue(res.isOk() && res.value);
+      assert.isTrue(res.isInstalled);
       await verifyPrivateInstallation(dotnetChecker);
     } finally {
       cleanupCallback();
@@ -102,7 +100,8 @@ describe("DotnetChecker E2E Test - first run", async () => {
       new TestTelemetry()
     );
 
-    assert.isTrue(await dotnetChecker.isInstalled());
+    const depsInfo = await dotnetChecker.getInstallationInfo();
+    assert.isTrue(depsInfo.isInstalled);
 
     const dotnetExecPathFromConfig = await dotnetUtils.getDotnetExecPathFromConfig(
       dotnetUtils.dotnetConfigPath
@@ -116,7 +115,7 @@ describe("DotnetChecker E2E Test - first run", async () => {
     );
 
     // test dotnet executable is from config file.
-    assertPathEqual(dotnetExecPathFromConfig!, await dotnetChecker.command());
+    assertPathEqual(dotnetExecPathFromConfig!, depsInfo.command);
   });
 
   it(".NET SDK is too old", async function () {
@@ -144,7 +143,7 @@ describe("DotnetChecker E2E Test - first run", async () => {
     );
     const res = await dotnetChecker.resolve();
 
-    assert.isTrue(res.isOk() && res.value);
+    assert.isTrue(res.isInstalled);
     await verifyPrivateInstallation(dotnetChecker);
   });
 
@@ -164,7 +163,7 @@ describe("DotnetChecker E2E Test - first run", async () => {
 
     const res = await dotnetChecker.resolve();
 
-    assert.isFalse(res.isOk() && res.value);
+    assert.isFalse(res.isInstalled);
     await verifyInstallationFailed(dotnetChecker);
 
     // DotnetChecker with correct dotnet-install script
@@ -185,7 +184,8 @@ describe("DotnetChecker E2E Test - first run", async () => {
         );
 
         await dotnetChecker.resolve();
-        assert.isTrue(await dotnetChecker.isInstalled());
+        const depsInfo = await dotnetChecker.getInstallationInfo();
+        assert.isTrue(depsInfo.isInstalled);
         const dotnetExecPath = await dotnetChecker.command();
         assertPathEqual(dotnetExecPath, installedDotnetExecPath);
         assert.isTrue(
@@ -221,7 +221,7 @@ describe("DotnetChecker E2E Test - first run", async () => {
       );
       const res = await dotnetChecker.resolve();
 
-      assert.isTrue(res.isOk() && res.value);
+      assert.isTrue(res.isInstalled);
       await verifyPrivateInstallation(dotnetChecker);
     });
   });
@@ -276,7 +276,7 @@ describe("DotnetChecker E2E Test - second run", () => {
         const res = await dotnetChecker.resolve();
         const dotnetExecPath = await dotnetChecker.command();
 
-        assert.isTrue(res.isOk() && res.value);
+        assert.isTrue(res.isInstalled);
         assertPathEqual(dotnetExecPath, installedDotnetExecPath);
         assert.isTrue(
           await dotnetUtils.hasDotnetVersion(dotnetExecPath, dotnetUtils.dotnetInstallVersion)
@@ -310,7 +310,7 @@ describe("DotnetChecker E2E Test - second run", () => {
     );
     const res = await dotnetChecker.resolve();
 
-    assert.isTrue(res.isOk() && res.value);
+    assert.isTrue(res.isInstalled);
     await verifyPrivateInstallation(dotnetChecker);
   });
 
@@ -349,7 +349,7 @@ describe("DotnetChecker E2E Test - second run", () => {
           dotnetUtils.dotnetConfigPath
         );
 
-        assert.isTrue(res.isOk() && res.value);
+        assert.isTrue(res.isInstalled);
         assertPathEqual(dotnetExecPath, installedDotnetExecPath);
         assert.isNotNull(dotnetExecPathFromConfig);
         assertPathEqual(dotnetExecPath, dotnetExecPathFromConfig!);
@@ -362,13 +362,11 @@ describe("DotnetChecker E2E Test - second run", () => {
 });
 
 async function verifyPrivateInstallation(dotnetChecker: DepsChecker) {
-  assert.isTrue(await dotnetChecker.isInstalled(), ".NET installation failed");
+  const depsInfo = await dotnetChecker.getInstallationInfo();
+  assert.isTrue(depsInfo.isInstalled, ".NET installation failed");
 
   assert.isTrue(
-    await dotnetUtils.hasDotnetVersion(
-      await dotnetChecker.command(),
-      dotnetUtils.dotnetInstallVersion
-    )
+    await dotnetUtils.hasDotnetVersion(depsInfo.command, dotnetUtils.dotnetInstallVersion)
   );
 
   // validate dotnet config file
@@ -382,9 +380,10 @@ async function verifyPrivateInstallation(dotnetChecker: DepsChecker) {
 }
 
 async function verifyInstallationFailed(dotnetChecker: DepsChecker) {
-  assert.isFalse(await dotnetChecker.isInstalled());
+  const depsInfo = await dotnetChecker.getInstallationInfo();
+  assert.isFalse(depsInfo.isInstalled);
   assert.isNull(await dotnetUtils.getDotnetExecPathFromConfig(dotnetUtils.dotnetConfigPath));
-  assert.equal(await dotnetChecker.command(), dotnetUtils.dotnetCommand);
+  assert.equal(depsInfo.command, dotnetUtils.dotnetCommand);
 }
 
 function getErrorResourceDir(): string {

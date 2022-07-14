@@ -8,7 +8,6 @@ import {
   err,
   FxError,
   Inputs,
-  MultiSelectQuestion,
   ok,
   OptionItem,
   Platform,
@@ -21,10 +20,10 @@ import {
   traverse,
   UserError,
   v2,
+  v3,
 } from "@microsoft/teamsfx-api";
-import { EnvInfoV3 } from "@microsoft/teamsfx-api/build/v3";
 import Container from "typedi";
-import { isVSProject } from "../../common";
+import { isVSProject } from "../../common/projectSettingsHelper";
 import { HelpLinks } from "../../common/constants";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 import {
@@ -114,12 +113,9 @@ export const QuestionModelMW_V3: Middleware = async (ctx: CoreHookContext, next:
 
 async function getQuestionsForDeploy(
   ctx: v2.Context,
-  envInfo: EnvInfoV3,
+  envInfo: v3.EnvInfoV3,
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  if (inputs.platform === Platform.VSCode && inputs[Constants.INCLUDE_AAD_MANIFEST] === "yes") {
-    return ok(undefined);
-  }
   //VS project has no selection interaction, and will deploy all selectable components by default.
   if (isVSProject(ctx.projectSetting)) {
     return ok(undefined);

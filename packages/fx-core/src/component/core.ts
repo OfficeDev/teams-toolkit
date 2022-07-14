@@ -23,7 +23,7 @@ import "reflect-metadata";
 import { Service } from "typedi";
 import { getProjectSettingsPath } from "../core/middleware/projectSettingsLoader";
 import { ProjectNamePattern } from "../core/question";
-import { newProjectSettings } from "./../common/projectSettingsHelper";
+import { isVSProject, newProjectSettings } from "./../common/projectSettingsHelper";
 import "./bicep";
 import "./debug";
 import "./envManager";
@@ -296,10 +296,9 @@ export class TeamsfxCore {
         required: true,
       },
     ];
-    const components: string[] =
-      inputs.platform === Platform.VS
-        ? projectSettings.components.filter((component) => component.deploy).map((c) => c.name)
-        : (inputs["deploy-plugin"] as string[]).map((plugin) => pluginName2ComponentName(plugin));
+    const components: string[] = isVSProject(projectSettings)
+      ? projectSettings.components.filter((component) => component.deploy).map((c) => c.name)
+      : (inputs["deploy-plugin"] as string[]).map((plugin) => pluginName2ComponentName(plugin));
 
     components.forEach((componentName) => {
       const componentConfig = getComponent(projectSettings, componentName);

@@ -62,7 +62,7 @@ describe("Bot Feature", () => {
     sandbox.stub(fs, "appendFileSync").returns();
     sandbox.stub(fs, "writeFileSync").returns();
     sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev"]));
-    sandbox.stub(utils, "persistBicep").resolves();
+    sandbox.stub(utils, "persistBicep").resolves(ok(undefined));
   });
 
   afterEach(() => {

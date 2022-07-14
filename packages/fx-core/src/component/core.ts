@@ -286,10 +286,7 @@ export class TeamsfxCore {
     return ok(group);
   }
 
-  deploy(
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
+  deploy(context: ContextV3, inputs: InputsWithProjectPath): Result<Action | undefined, FxError> {
     const projectSettings = context.projectSetting as ProjectSettingsV3;
     const buildAction: Action = {
       name: "call:fx.build",
@@ -335,11 +332,16 @@ export class TeamsfxCore {
     }
     const callDeployGroup: GroupAction = {
       type: "group",
-      name: "fx.deploy",
+      name: "fx.callComponentDeploy",
       mode: "parallel",
       actions: callDeployActions,
     };
     actions.push(callDeployGroup);
-    return ok(actions);
+    const finalAction: Action = {
+      type: "group",
+      name: "fx.deploy",
+      actions: actions,
+    };
+    return ok(finalAction);
   }
 }

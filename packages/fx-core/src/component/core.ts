@@ -221,6 +221,7 @@ export class TeamsfxCore {
         return ok([]);
       },
     };
+    const aadComponent = getComponent(context.projectSetting, ComponentNames.AadApp);
     const preConfigureStep: Action = {
       type: "call",
       name: "call:aad-app.setApplicationInContext",
@@ -232,7 +233,7 @@ export class TeamsfxCore {
       createTeamsAppStep,
       provisionResourcesStep,
       ctx.envInfo.envName !== "local" ? deployBicepStep : setupLocalEnvironmentStep,
-      preConfigureStep,
+      ...(aadComponent ? [preConfigureStep] : []),
       configureResourcesStep,
       ctx.envInfo.envName === "local" ? configLocalEnvironmentStep : postProvisionStep,
       updateTeamsAppStep,

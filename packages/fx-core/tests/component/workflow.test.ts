@@ -144,7 +144,9 @@ describe("Workflow test for v3", () => {
     sandbox
       .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
       .resolves(TestHelper.fakeCredential);
-    sandbox.stub(provisionV3, "fillInAzureConfigs").resolves(ok(Void));
+    sandbox
+      .stub(provisionV3, "fillInAzureConfigs")
+      .resolves(ok({ hasSwitchedSubscription: false }));
     sandbox.stub(provisionV3, "askForProvisionConsent").resolves(ok(Void));
     sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
     sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
@@ -202,6 +204,76 @@ describe("Workflow test for v3", () => {
       },
       [ComponentNames.AadApp]: {
         clientId: "00000000-0000-0000-0000-000000000000",
+      },
+    };
+    const provisionRes = await runAction("fx.provision", context, inputs);
+    if (provisionRes.isErr()) {
+      console.log(provisionRes.error);
+    }
+    assert.isTrue(provisionRes.isOk());
+  });
+
+  it("fx.provision after switching subscription", async () => {
+    sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
+    sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
+    sandbox
+      .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
+      .resolves(ok({ tid: "mockTid" }));
+    sandbox
+      .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
+      .resolves(TestHelper.fakeCredential);
+    sandbox.stub(provisionV3, "fillInAzureConfigs").resolves(ok({ hasSwitchedSubscription: true }));
+    sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
+    sandbox.stub(AppStudioClient, "createApp").resolves({ teamsAppId: "mockTeamsAppId" });
+    sandbox.stub(AppStudioClient, "updateApp").resolves({ teamsAppId: "mockTeamsAppId" });
+    sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
+    sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
+    sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
+      clientId: "mockClientId",
+      clientSecret: "mockClientSecret",
+      objectId: "mockObjectId",
+    });
+    sandbox.stub(arm, "deployArmTemplates").resolves(ok(undefined));
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+      feature: "Bot",
+      language: "typescript",
+      "app-name": appName,
+    };
+    const initRes = await runAction("fx.init", context, inputs);
+    if (initRes.isErr()) {
+      console.log(initRes.error);
+    }
+    assert.isTrue(initRes.isOk());
+
+    const addBotRes = await runAction("teams-bot.add", context, inputs);
+    if (addBotRes.isErr()) {
+      console.log(addBotRes.error);
+    }
+    assert.isTrue(addBotRes.isOk());
+    context.envInfo = newEnvInfoV3();
+    context.tokenProvider = tools.tokenProvider;
+    context.envInfo.state = {
+      solution: {
+        provisionSucceeded: true,
+        needCreateResourceGroup: false,
+        resourceGroupName: "mockRG",
+        location: "eastasia",
+        resourceNameSuffix: "3bf854123",
+        teamsAppTenantId: "mockTid",
+        subscriptionId: "mockSid",
+        subscriptionName: "mockSname",
+        tenantId: "mockAzureTid",
+      },
+      "azure-web-app": {
+        sku: "F1",
+        appName: "testwebApp",
+        domain: "testwebApp.azurewebsites.net",
+        appServicePlanName: "testwebAppPlan",
+        resourceId:
+          "/subscriptions/mockSid/resourceGroups/jay-texas/providers/Microsoft.Web/sites/testwebApp",
+        endpoint: "https://testwebApp.azurewebsites.net",
       },
     };
     const provisionRes = await runAction("fx.provision", context, inputs);

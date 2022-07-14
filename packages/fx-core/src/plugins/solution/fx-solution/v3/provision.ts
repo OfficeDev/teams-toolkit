@@ -29,6 +29,7 @@ import { v4 as uuidv4 } from "uuid";
 import { hasAzureResource } from "../../../../common";
 import { PluginDisplayName } from "../../../../common/constants";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
+import { LocalSettingsBotKeys } from "../../../../common/localSettingsConstants";
 import {
   CustomizeResourceGroupType,
   TelemetryEvent,
@@ -37,6 +38,7 @@ import {
 import { AppStudioScopes, getHashedEnv, getResourceGroupInPortal } from "../../../../common/tools";
 import { convertToAlphanumericOnly } from "../../../../common/utils";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
+import { envFileNamePrefix } from "../../../resource/frontend/env";
 import arm, { updateResourceBaseName } from "../arm";
 import { ResourceGroupInfo } from "../commonQuestions";
 import {
@@ -302,9 +304,11 @@ export async function checkProvisionAzureSubscription(
   projectPath: string
 ): Promise<Result<ProvisionSubscriptionCheckResult, FxError>> {
   const subscriptionIdInConfig: string | undefined = envInfo.config.azure?.subscriptionId;
-  const subscriptionNameInConfig: string = envInfo.config.azure?.subscriptionName ?? "";
+  const subscriptionNameInConfig: string | undefined =
+    envInfo.config.azure?.subscriptionName || subscriptionIdInConfig;
   const subscriptionIdInState: string | undefined = envInfo.state.solution.subscriptionId;
-  const subscriptionNameInState: string | undefined = envInfo.state.solution.subscriptionName;
+  const subscriptionNameInState: string | undefined =
+    envInfo.state.solution.subscriptionName || subscriptionIdInState;
 
   const subscriptionInAccount = await azureAccountProvider.getSelectedSubscription(true);
 
@@ -408,8 +412,8 @@ async function compareWithStateSubscription(
   if (shouldAskForSubscriptionConfirmation) {
     const confirmResult = await askForSubscriptionConfirm(
       ctx,
-      subscriptionInStateName ?? subscriptionInStateId,
-      targetSubscriptionInfo.subscriptionName ?? targetSubscriptionInfo.subscriptionId
+      subscriptionInStateName!,
+      targetSubscriptionInfo.subscriptionName || targetSubscriptionInfo.subscriptionId
     );
     if (confirmResult.isErr()) {
       return err(confirmResult.error);
@@ -419,6 +423,20 @@ async function compareWithStateSubscription(
       updateEnvInfoSubscription(envInfo, targetSubscriptionInfo);
       envInfo.state.solution.resourceNameSuffix = "";
       envInfo.state.solution.resourceGroupName = "";
+
+      // we need to have another bot id if provisioning a new azure bot service.
+      if (envInfo.state[BuiltInFeaturePluginNames.bot]) {
+        if (envInfo.state[BuiltInFeaturePluginNames.bot][LocalSettingsBotKeys.BotId]) {
+          envInfo.state[BuiltInFeaturePluginNames.bot][LocalSettingsBotKeys.BotId] = undefined;
+        }
+        if (envInfo.state[BuiltInFeaturePluginNames.bot][LocalSettingsBotKeys.BotPassword]) {
+          envInfo.state[BuiltInFeaturePluginNames.bot][LocalSettingsBotKeys.BotPassword] =
+            undefined;
+        }
+        if (envInfo.state[BuiltInFeaturePluginNames.bot]["objectId"]) {
+          envInfo.state[BuiltInFeaturePluginNames.bot]["objectId"] = undefined;
+        }
+      }
       ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
       return ok({ hasSwitchedSubscription: true });
     }

@@ -509,6 +509,9 @@ export async function executeFunctionAction(
     return ok(undefined);
   } catch (e) {
     const error = assembleError(e);
+    if (error.source === "unknown") {
+      error.source = action.errorSource || error.source;
+    }
     // send error telemetry
     if (action.enableTelemetry) {
       const errorCode = error.source + "." + error.name;

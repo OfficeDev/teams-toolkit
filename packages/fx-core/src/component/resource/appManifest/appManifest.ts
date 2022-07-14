@@ -21,7 +21,7 @@ import "reflect-metadata";
 import { Service } from "typedi";
 import { isBotNotificationEnabled } from "../../../common/featureFlags";
 import { hasTab } from "../../../common/projectSettingsHelperV3";
-import { globalVars } from "../../../core";
+import { globalVars } from "../../../core/globalVars";
 import { getTemplatesFolder } from "../../../folder";
 import {
   BOTS_TPL_EXISTING_APP,

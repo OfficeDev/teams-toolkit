@@ -48,6 +48,8 @@ import { isVSProject } from "../../common/projectSettingsHelper";
 import { DotnetCommands } from "../../plugins/resource/frontend/dotnet/constants";
 import { Utils } from "../../plugins/resource/frontend/utils";
 import { CommandExecutionError } from "../../plugins/resource/bot/errors";
+import { isAadManifestEnabled } from "../../common/tools";
+import { hasAAD } from "../../common/projectSettingsHelperV3";
 /**
  * tab scaffold
  */
@@ -92,10 +94,15 @@ export class TabCodeProvider implements SourceCodeProvider {
           ProjectName: appName,
           SafeProjectName: safeProjectName,
         };
+        const scenario = ctx.projectSetting.isM365
+          ? Scenario.M365
+          : isAadManifestEnabled() && !hasAAD(ctx.projectSetting)
+          ? Scenario.NonSso
+          : Scenario.Default;
         await scaffoldFromTemplates({
           group: TemplateInfo.TemplateGroupName,
           lang: langKey,
-          scenario: Scenario.Default,
+          scenario: scenario,
           dst: workingDir,
           fileNameReplaceFn: (name: string, data: Buffer) =>
             name.replace(/ProjectName/, appName).replace(/\.tpl/, ""),

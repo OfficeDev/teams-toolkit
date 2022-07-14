@@ -39,7 +39,18 @@ export class Sql {
     const webAppComponent = getComponent(context.projectSetting, ComponentNames.AzureWebApp);
     const functionComponent = getComponent(context.projectSetting, ComponentNames.Function);
     const provisionType = sqlComponent ? "database" : "server";
+    const hasFunc = hasApi(context.projectSetting);
+    const dependentActions: Action[] = [];
+    if (!hasFunc) {
+      dependentActions.push({
+        name: "call:teams-api.add",
+        type: "call",
+        required: true,
+        targetAction: "teams-api.add",
+      });
+    }
     const actions: Action[] = [
+      ...dependentActions,
       {
         name: "sql.configSql",
         type: "function",

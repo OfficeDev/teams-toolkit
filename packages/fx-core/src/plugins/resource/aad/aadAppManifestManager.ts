@@ -10,6 +10,9 @@ import { v4 as uuidv4 } from "uuid";
 import * as fs from "fs-extra";
 import Mustache from "mustache";
 import { getAppDirectory } from "../../../common/tools";
+import { isV3 } from "../../../core";
+import { convertManifestTemplateToV3 } from "../../../component/migrate";
+import { ComponentNames } from "../../../component/constants";
 
 const baseUrl = `https://graph.microsoft.com/v1.0`;
 
@@ -87,9 +90,11 @@ export namespace AadAppManifestManager {
 
     try {
       let manifestString = await fs.readFile(manifestFilePath, "utf8");
+      if (isV3()) manifestString = convertManifestTemplateToV3(manifestString);
       const stateObject = JSON.parse(JSON.stringify(fromEntries(ctx.envInfo.state)));
-      if (!stateObject["fx-resource-aad-app-for-teams"].oauth2PermissionScopeId) {
-        stateObject["fx-resource-aad-app-for-teams"].oauth2PermissionScopeId = uuidv4();
+      const aadKey = isV3() ? ComponentNames.AadApp : "fx-resource-aad-app-for-teams";
+      if (!stateObject[aadKey].oauth2PermissionScopeId) {
+        stateObject[aadKey].oauth2PermissionScopeId = uuidv4();
       }
 
       const view = {

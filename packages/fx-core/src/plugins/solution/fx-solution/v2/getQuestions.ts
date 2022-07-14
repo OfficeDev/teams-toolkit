@@ -370,7 +370,7 @@ export async function getTabScaffoldQuestionsV2(
   return ok(tabNode);
 }
 
-function getPluginCLIName(name: string): string {
+export function getPluginCLIName(name: string): string {
   const pluginPrefix = "fx-resource-";
   if (name === ResourcePlugins.Aad) {
     return "aad-manifest";

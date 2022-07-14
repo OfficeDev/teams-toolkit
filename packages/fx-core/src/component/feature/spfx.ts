@@ -55,6 +55,7 @@ export class SPFxTab {
           projectSettings.components.push({
             name: "teams-tab",
             hosting: inputs.hosting,
+            deploy: true,
           });
           // add hosting component
           projectSettings.components.push({

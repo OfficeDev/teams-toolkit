@@ -21,6 +21,7 @@ import "reflect-metadata";
 import { Service } from "typedi";
 import { isBotNotificationEnabled } from "../../../common/featureFlags";
 import { hasTab } from "../../../common/projectSettingsHelperV3";
+import { globalVars } from "../../../core/globalVars";
 import { getTemplatesFolder } from "../../../folder";
 import {
   BOTS_TPL_EXISTING_APP,
@@ -155,6 +156,7 @@ export class AppManifest implements CloudResource {
         const res = await createTeamsApp(ctx, inputs, ctx.envInfo, ctx.tokenProvider);
         if (res.isErr()) return err(res.error);
         ctx.envInfo.state[ComponentNames.AppManifest].teamsAppId = res.value;
+        globalVars.teamsAppId = res.value;
         return ok([
           {
             type: "service",

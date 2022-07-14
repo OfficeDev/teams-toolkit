@@ -38,5 +38,6 @@ export function setCurrentStage(stage: Stage): void {
 }
 export class GlobalVars {
   isVS?: boolean = false;
+  teamsAppId = "";
 }
 export const globalVars = new GlobalVars();

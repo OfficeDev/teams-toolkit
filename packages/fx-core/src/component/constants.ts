@@ -26,6 +26,16 @@ export const ComponentNames = {
   SSO: "SSO",
 };
 
+export const AzureResources = [
+  ComponentNames.APIM,
+  ComponentNames.AzureWebApp,
+  ComponentNames.Function,
+  ComponentNames.Identity,
+  ComponentNames.KeyVault,
+  ComponentNames.AzureSQL,
+  ComponentNames.AzureStorage,
+];
+
 export enum Scenarios {
   Tab = "Tab",
   Bot = "Bot",

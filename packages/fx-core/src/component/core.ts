@@ -5,16 +5,19 @@ import {
   Action,
   ConfigFolderName,
   ContextV3,
+  err,
   FxError,
   GroupAction,
   InputsWithProjectPath,
   MaybePromise,
   ok,
+  Platform,
   ProjectSettingsV3,
   ProvisionContextV3,
   QTreeNode,
   Result,
   TextInputQuestion,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import path from "path";
@@ -22,7 +25,7 @@ import "reflect-metadata";
 import { Service } from "typedi";
 import { getProjectSettingsPath } from "../core/middleware/projectSettingsLoader";
 import { ProjectNamePattern } from "../core/question";
-import { newProjectSettings } from "./../common/projectSettingsHelper";
+import { isVSProject, newProjectSettings } from "./../common/projectSettingsHelper";
 import "./bicep";
 import "./debug";
 import "./envManager";
@@ -48,17 +51,17 @@ import "./code/botCode";
 import "./code/tabCode";
 import "./code/apiCode";
 import "./code/spfxTabCode";
-import "./connection/aadConfig";
 import "./connection/azureWebAppConfig";
 import "./connection/azureFunctionConfig";
 import "./connection/apimConfig";
 
-import { ComponentNames, componentToScenario } from "./constants";
-import { getLocalizedString } from "../common/localizeUtils";
+import { AzureResources, ComponentNames, componentToScenario } from "./constants";
+import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { getResourceGroupInPortal } from "../common/tools";
 import { getComponent } from "./workflow";
-import { FxPreDeployAction } from "./fx/preDeployAction";
+import { FxPreDeployForAzureAction } from "./fx/preDeployAction";
 import { FxPreProvisionAction } from "./fx/preProvisionAction";
+import { pluginName2ComponentName } from "./migrate";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -280,27 +283,33 @@ export class TeamsfxCore {
     return ok(group);
   }
 
-  deploy(
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
+  deploy(context: ContextV3, inputs: InputsWithProjectPath): Result<Action | undefined, FxError> {
     const projectSettings = context.projectSetting as ProjectSettingsV3;
-    const actions: Action[] = [
-      new FxPreDeployAction(),
-      {
-        name: "call:fx.build",
-        type: "call",
-        targetAction: "fx.build",
-        required: true,
-      },
-    ];
-    const components = inputs["deploy-plugin"] as string[];
+    const buildAction: Action = {
+      name: "call:fx.build",
+      type: "call",
+      targetAction: "fx.build",
+      required: true,
+    };
+    const actions: Action[] = [];
+    const components: string[] = isVSProject(projectSettings)
+      ? projectSettings.components.filter((component) => component.deploy).map((c) => c.name)
+      : (inputs["deploy-plugin"] as string[]).map((plugin) => pluginName2ComponentName(plugin));
+
+    if (components.filter((c) => AzureResources.includes(c)).length > 0) {
+      actions.push(new FxPreDeployForAzureAction());
+    }
+    actions.push(buildAction);
+    const callDeployActions: Action[] = [];
     components.forEach((componentName) => {
       const componentConfig = getComponent(projectSettings, componentName);
       if (componentConfig) {
-        actions.push({
+        callDeployActions.push({
           type: "call",
-          targetAction: `${componentConfig.hosting}.deploy`,
+          targetAction:
+            componentName === ComponentNames.AppManifest
+              ? `${ComponentNames.AppManifest}.configure`
+              : `${componentConfig.hosting}.deploy`,
           required: false,
           inputs: {
             scenario: componentToScenario.get(componentName),
@@ -308,11 +317,28 @@ export class TeamsfxCore {
         });
       }
     });
-    const action: GroupAction = {
+    if (callDeployActions.length === 0) {
+      return err(
+        new UserError(
+          "fx",
+          "NoResourcePluginSelected",
+          getDefaultString("core.NoPluginSelected"),
+          getLocalizedString("core.NoPluginSelected")
+        )
+      );
+    }
+    const callDeployGroup: GroupAction = {
+      type: "group",
+      name: "fx.callComponentDeploy",
+      mode: "parallel",
+      actions: callDeployActions,
+    };
+    actions.push(callDeployGroup);
+    const finalAction: Action = {
       type: "group",
       name: "fx.deploy",
       actions: actions,
     };
-    return ok(action);
+    return ok(finalAction);
   }
 }

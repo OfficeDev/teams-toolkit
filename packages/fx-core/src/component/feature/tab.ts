@@ -157,6 +157,7 @@ const configTab: Action = {
     projectSettings.components.push({
       name: ComponentNames.TeamsTab,
       hosting: inputs.hosting,
+      deploy: true,
     });
     // add hosting component
     projectSettings.components.push({

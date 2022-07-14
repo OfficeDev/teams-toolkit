@@ -70,12 +70,24 @@ export class TeamsApi {
     return action;
   }
 
+  private hasApi(context: ContextV3): boolean {
+    const api = getComponent(context.projectSetting, ComponentNames.TeamsApi);
+    return api != undefined; // using != to match both undefined and null
+  }
+
   setupConfiguration(actions: Action[], context: ContextV3): Action[] {
-    actions.push(configApiAction);
+    if (this.hasApi(context)) {
+      actions.push(addApiTriggerAction);
+    } else {
+      actions.push(configApiAction);
+    }
     return actions;
   }
 
   setupBicep(actions: Action[], context: ContextV3, inputs: InputsWithProjectPath): Action[] {
+    if (this.hasApi(context)) {
+      return actions;
+    }
     actions.push(initBicep);
     actions.push(
       generateBicep(inputs.hosting, { scenario: Scenarios.Api, componentId: this.name })
@@ -88,10 +100,54 @@ export class TeamsApi {
 
   setupCode(actions: Action[], context: ContextV3, inputs: InputsWithProjectPath): Action[] {
     actions.push(generateApiCode);
-    actions.push(initLocalDebug);
+    if (!this.hasApi(context)) {
+      actions.push(initLocalDebug);
+    }
     return actions;
   }
 }
+
+const getFunctionNameQuestionValidation = (context: ContextV3, inputs: InputsWithProjectPath) => ({
+  validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
+    const workingPath: string = path.join(
+      inputs.projectPath,
+      FunctionPluginPathInfo.solutionFolderName
+    );
+    const name = input as string;
+    if (!name || !RegularExpr.validFunctionNamePattern.test(name)) {
+      return ErrorMessages.invalidFunctionName;
+    }
+    if (inputs.stage === Stage.create) {
+      return undefined;
+    }
+    const language: FunctionLanguage =
+      (inputs[QuestionKey.programmingLanguage] as FunctionLanguage) ??
+      (context.projectSetting.programmingLanguage as FunctionLanguage);
+    // If language is unknown, skip checking and let scaffold handle the error.
+    if (language && (await FunctionScaffold.doesFunctionPathExist(workingPath, language, name))) {
+      return ErrorMessages.functionAlreadyExists;
+    }
+  },
+});
+
+const addApiTriggerAction: Action = {
+  name: "fx.addApiTrigger",
+  type: "function",
+  plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
+    return ok([`add new function to '${ComponentNames.TeamsApi}' in projectSettings`]);
+  },
+  question: (context: ContextV3, inputs: InputsWithProjectPath) => {
+    functionNameQuestion.validation = getFunctionNameQuestionValidation(context, inputs);
+    return ok(new QTreeNode(functionNameQuestion));
+  },
+  execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+    const functionName: string =
+      (inputs?.[QuestionKey.functionName] as string) ?? DefaultValues.functionName;
+    const api = getComponent(context.projectSetting, ComponentNames.TeamsApi);
+    api?.functionNames?.push(functionName);
+    return ok([`add new function to '${ComponentNames.TeamsApi}' in projectSettings`]);
+  },
+};
 
 const configApiAction: Action = {
   name: "fx.configApi",
@@ -100,31 +156,7 @@ const configApiAction: Action = {
     return ok([`config '${ComponentNames.TeamsApi}' in projectSettings`]);
   },
   question: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    functionNameQuestion.validation = {
-      validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
-        const workingPath: string = path.join(
-          inputs.projectPath,
-          FunctionPluginPathInfo.solutionFolderName
-        );
-        const name = input as string;
-        if (!name || !RegularExpr.validFunctionNamePattern.test(name)) {
-          return ErrorMessages.invalidFunctionName;
-        }
-        if (inputs.stage === Stage.create) {
-          return undefined;
-        }
-        const language: FunctionLanguage =
-          (inputs[QuestionKey.programmingLanguage] as FunctionLanguage) ??
-          (context.projectSetting.programmingLanguage as FunctionLanguage);
-        // If language is unknown, skip checking and let scaffold handle the error.
-        if (
-          language &&
-          (await FunctionScaffold.doesFunctionPathExist(workingPath, language, name))
-        ) {
-          return ErrorMessages.functionAlreadyExists;
-        }
-      },
-    };
+    functionNameQuestion.validation = getFunctionNameQuestionValidation(context, inputs);
     return ok(new QTreeNode(functionNameQuestion));
   },
   execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {

@@ -41,6 +41,7 @@ import {
   getBotTroubleShootMessage,
   getSelectedPlugins,
   isAzureProject,
+  isBotProject,
 } from "./utils";
 
 export async function deploy(
@@ -58,7 +59,7 @@ export async function deploy(
     inputs[Constants.INCLUDE_AAD_MANIFEST] === "yes" && inputs.platform === Platform.VSCode;
   const provisionOutputs: Json = envInfo.state;
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
-  const botTroubleShootMsg = getBotTroubleShootMessage(getAzureSolutionSettings(ctx));
+  const botTroubleShootMsg = getBotTroubleShootMessage(isBotProject(getAzureSolutionSettings(ctx)));
   const provisioned =
     (provisionOutputs[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] as boolean) ||
     isDeployAADManifestFromVSCode;

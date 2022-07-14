@@ -41,7 +41,7 @@ export type Action = GroupAction | ShellAction | CallAction | FunctionAction;
 // @public
 export interface ActionBase {
     // (undocumented)
-    exception?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+    exception?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<undefined, FxError>>;
     // (undocumented)
     inputs?: Json;
     // (undocumented)
@@ -49,9 +49,9 @@ export interface ActionBase {
     // (undocumented)
     plan?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Effect[], FxError>>;
     // (undocumented)
-    post?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+    post?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<undefined, FxError>>;
     // (undocumented)
-    pre?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+    pre?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<undefined, FxError>>;
     // (undocumented)
     question?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)

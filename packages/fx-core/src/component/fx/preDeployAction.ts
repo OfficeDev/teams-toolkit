@@ -10,33 +10,20 @@ import {
   ok,
   ProvisionContextV3,
   Result,
-  UserError,
 } from "@microsoft/teamsfx-api";
-import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 import {
   askForDeployConsent,
   checkAzureSubscription,
 } from "../../plugins/solution/fx-solution/v3/provision";
 
-export class FxPreDeployAction implements FunctionAction {
+export class FxPreDeployForAzureAction implements FunctionAction {
   type: "function" = "function";
-  name = "fx.preDeploy";
+  name = "fx.preDeployForAzure";
   async execute(
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<Effect[], FxError>> {
     const ctx = context as ProvisionContextV3;
-    const components = inputs["deploy-plugin"];
-    if (components === undefined || components.length === 0) {
-      return err(
-        new UserError(
-          "fx",
-          "NoResourcePluginSelected",
-          getDefaultString("core.NoPluginSelected"),
-          getLocalizedString("core.NoPluginSelected")
-        )
-      );
-    }
     const subscriptionResult = await checkAzureSubscription(
       ctx,
       ctx.envInfo,

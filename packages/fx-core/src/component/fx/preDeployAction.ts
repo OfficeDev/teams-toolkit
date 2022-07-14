@@ -11,10 +11,8 @@ import {
   ProvisionContextV3,
   Result,
 } from "@microsoft/teamsfx-api";
-import {
-  askForDeployConsent,
-  checkDeployAzureSubscription,
-} from "../../plugins/solution/fx-solution/v3/provision";
+import { checkDeployAzureSubscription } from "../../plugins/solution/fx-solution/v3/deploy";
+import { askForDeployConsent } from "../../plugins/solution/fx-solution/v3/provision";
 
 export class FxPreDeployForAzureAction implements FunctionAction {
   type: "function" = "function";

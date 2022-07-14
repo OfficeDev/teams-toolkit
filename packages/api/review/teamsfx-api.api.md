@@ -750,7 +750,23 @@ export interface FuncQuestion extends BaseQuestion {
 
 // @public
 export interface FunctionAction extends ActionBase {
-    execute: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Effect[], FxError>>;
+    // (undocumented)
+    enableProgressBar?: boolean;
+    // (undocumented)
+    enableTelemetry?: boolean;
+    // (undocumented)
+    errorSource?: string;
+    execute: (context: ContextV3, inputs: InputsWithProjectPath, progress?: IProgressHandler, telemetryProps?: Record<string, string>) => MaybePromise<Result<Effect[], FxError>>;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    progressSteps?: number;
+    // (undocumented)
+    progressTitle?: string;
+    // (undocumented)
+    telemetryComponentName?: string;
+    // (undocumented)
+    telemetryEventName?: string;
     // (undocumented)
     type: "function";
 }

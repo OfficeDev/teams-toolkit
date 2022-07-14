@@ -64,7 +64,7 @@ describe("Tab Feature", () => {
 
   it("add react tab", async () => {
     sandbox.stub(templatesAction, "scaffoldFromTemplates").resolves();
-    sandbox.stub(utils, "persistBicep").resolves();
+    sandbox.stub(utils, "persistBicep").resolves(ok(undefined));
 
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,

@@ -74,15 +74,17 @@ export abstract class AzureResource implements CloudResource {
           "bicep",
           `${this.bicepModuleName}.parameters.json`
         );
+        let params;
+        if (await fs.pathExists(parametersPath)) {
+          params = await fs.readJson(parametersPath);
+        }
         const bicep: Bicep = {
           type: "bicep",
           Provision: {
             Modules: { [moduleName]: module },
             Orchestration: orchestration,
           },
-          Parameters: (await fs.pathExists(parametersPath))
-            ? await fs.readJson(parametersPath)
-            : undefined,
+          Parameters: params,
         };
         return ok([bicep]);
       },

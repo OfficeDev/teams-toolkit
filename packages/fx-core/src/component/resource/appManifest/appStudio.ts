@@ -29,13 +29,105 @@ import { Constants } from "../../../plugins/resource/appstudio/constants";
 import { AppStudioError } from "../../../plugins/resource/appstudio/errors";
 import { AppStudioResultFactory } from "../../../plugins/resource/appstudio/results";
 import { readAppManifest } from "./utils";
+import { ComponentNames } from "../../constants";
 
-export async function createOrUpdateTeamsApp(
+/**
+ * Create Teams app if not exists
+ * @param ctx
+ * @param inputs
+ * @param envInfo
+ * @param tokenProvider
+ * @returns Teams app id
+ */
+export async function createTeamsApp(
   ctx: v2.Context,
   inputs: InputsWithProjectPath,
   envInfo: v3.EnvInfoV3,
-  tokenProvider: TokenProvider,
-  withEmptyCapabilities = false
+  tokenProvider: TokenProvider
+): Promise<Result<string, FxError>> {
+  const appStudioTokenRes = await tokenProvider.m365TokenProvider.getAccessToken({
+    scopes: AppStudioScopes,
+  });
+  if (appStudioTokenRes.isErr()) {
+    return err(appStudioTokenRes.error);
+  }
+  const appStudioToken = appStudioTokenRes.value;
+
+  let teamsAppId;
+  let archivedFile;
+  if (inputs.appPackagePath) {
+    if (!(await fs.pathExists(inputs.appPackagePath))) {
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.FileNotFoundError.name,
+          AppStudioError.FileNotFoundError.message(inputs.appPackagePath)
+        )
+      );
+    }
+    archivedFile = await fs.readFile(inputs.appPackagePath);
+    const zipEntries = new AdmZip(archivedFile).getEntries();
+    const manifestFile = zipEntries.find((x) => x.entryName === Constants.MANIFEST_FILE);
+    if (!manifestFile) {
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.FileNotFoundError.name,
+          AppStudioError.FileNotFoundError.message(Constants.MANIFEST_FILE)
+        )
+      );
+    }
+    const manifestString = manifestFile.getData().toString();
+    const manifest = JSON.parse(manifestString) as TeamsAppManifest;
+    teamsAppId = manifest.id;
+  } else {
+    const buildPackage = await buildTeamsAppPackage(inputs.projectPath, envInfo!, true);
+    if (buildPackage.isErr()) {
+      return err(buildPackage.error);
+    }
+    archivedFile = await fs.readFile(buildPackage.value);
+    teamsAppId = envInfo.state[ComponentNames.AppManifest]?.teamsAppId;
+  }
+  let create = true;
+  if (teamsAppId) {
+    try {
+      await AppStudioClient.getApp(teamsAppId, appStudioToken, ctx.logProvider);
+      create = false;
+    } catch (error) {}
+  }
+  if (create) {
+    try {
+      const appDefinition = await AppStudioClient.importApp(
+        archivedFile,
+        appStudioTokenRes.value,
+        ctx.logProvider
+      );
+      ctx.logProvider.info(`Teams app created: ${appDefinition.teamsAppId!}`);
+      return ok(appDefinition.teamsAppId!);
+    } catch (e: any) {
+      return err(
+        AppStudioResultFactory.SystemError(
+          AppStudioError.TeamsAppCreateFailedError.name,
+          AppStudioError.TeamsAppCreateFailedError.message(e)
+        )
+      );
+    }
+  } else {
+    return ok(teamsAppId);
+  }
+}
+
+/**
+ * Update Teams app
+ * @param ctx
+ * @param inputs
+ * @param envInfo
+ * @param tokenProvider
+ * @returns
+ */
+export async function updateTeamsApp(
+  ctx: v2.Context,
+  inputs: InputsWithProjectPath,
+  envInfo: v3.EnvInfoV3,
+  tokenProvider: TokenProvider
 ): Promise<Result<string, FxError>> {
   const appStudioTokenRes = await tokenProvider.m365TokenProvider.getAccessToken({
     scopes: AppStudioScopes,
@@ -46,7 +138,6 @@ export async function createOrUpdateTeamsApp(
   const appStudioToken = appStudioTokenRes.value;
 
   let archivedFile;
-
   if (inputs.appPackagePath) {
     if (!(await fs.pathExists(inputs.appPackagePath))) {
       return err(
@@ -58,11 +149,7 @@ export async function createOrUpdateTeamsApp(
     }
     archivedFile = await fs.readFile(inputs.appPackagePath);
   } else {
-    const buildPackage = await buildTeamsAppPackage(
-      inputs.projectPath,
-      envInfo!,
-      withEmptyCapabilities
-    );
+    const buildPackage = await buildTeamsAppPackage(inputs.projectPath, envInfo!);
     if (buildPackage.isErr()) {
       return err(buildPackage.error);
     }
@@ -76,7 +163,7 @@ export async function createOrUpdateTeamsApp(
       ctx.logProvider,
       true
     );
-    ctx.logProvider.info(`Teams app imported: ${appDefinition.teamsAppId!}`);
+    ctx.logProvider.info(`Teams app updated: ${appDefinition.teamsAppId!}`);
     return ok(appDefinition.teamsAppId!);
   } catch (e: any) {
     return err(

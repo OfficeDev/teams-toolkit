@@ -28,10 +28,10 @@ import { HelpLinks } from "../../common/constants";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 import {
   hasAAD,
-  hasApi,
   hasAPIM,
   hasAzureResourceV3,
   hasBot,
+  hasApi,
   hasKeyVault,
   hasTab,
 } from "../../common/projectSettingsHelperV3";

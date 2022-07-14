@@ -10,6 +10,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import * as templatesAction from "../../../src/common/template-utils/templatesActions";
 import * as manifestUtils from "../../../src/component/resource/appManifest/utils";
+import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
 import { assert } from "chai";
 import "mocha";
 import * as os from "os";
@@ -20,7 +21,6 @@ import * as utils from "../../../src/component/utils";
 import { getComponent, runAction } from "../../../src/component/workflow";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools, randomAppName } from "../../core/utils";
-import "../../../src/component/feature/bot";
 import "../../../src/component/core";
 import { environmentManager } from "../../../src/core/environment";
 import { ComponentNames } from "../../../src/component/constants";
@@ -49,7 +49,8 @@ describe("Bot Feature", () => {
     sandbox.stub(templatesAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
     sandbox.stub(manifestUtils, "writeAppManifest").resolves();
-    sandbox.stub(fs, "readJson").resolves(projectSetting);
+    sandbox.stub(projectSettingsLoader, "loadProjectSettings").resolves(ok(projectSetting));
+    sandbox.stub(fs, "readJson").resolves({});
     sandbox.stub(fs, "writeJSON").resolves();
     sandbox.stub(fs, "writeJson").resolves();
     sandbox.stub(fs, "pathExists").resolves(true);

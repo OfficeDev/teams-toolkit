@@ -747,7 +747,6 @@ export async function deployArmTemplatesV3(
   return result;
 }
 
-// Copy parameters Json -> could be used as reference for generating new resource base name (todo:)
 export async function copyParameterJson(
   projectPath: string,
   appName: string,

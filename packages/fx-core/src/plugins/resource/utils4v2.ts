@@ -172,14 +172,6 @@ export async function provisionResourceAdapter(
   }
 
   const res = await plugin.provision(pluginContext);
-
-  // const fxError: FxError = {
-  //   source: "no idea",
-  //   timestamp: new Date(),
-  //   message: "test message",
-  //   name: "just an error",
-  // };
-  // return err(fxError);
   if (res.isErr()) {
     return err(res.error);
   }

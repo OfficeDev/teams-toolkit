@@ -323,7 +323,7 @@ jobs:
             metrics_file=`find ~/artifacts -wholename "*${job_id}_metrics/output.txt"`
             slow_count=0
             if [ ! -z "$metrics_file" ]; then
-              slow_count=`grep -c ''"severity":"slow"'' $metrics_file || true`
+              slow_count=`grep -c '"severity":"slow"' $metrics_file || true`
             fi
 
             url=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .html_url'`

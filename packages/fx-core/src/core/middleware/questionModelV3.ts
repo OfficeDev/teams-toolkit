@@ -10,6 +10,7 @@ import {
   MultiSelectQuestion,
   ok,
   OptionItem,
+  Platform,
   ProjectSettingsV3,
   QTreeNode,
   Result,
@@ -30,11 +31,14 @@ import {
   hasAPIM,
   hasAzureResourceV3,
   hasBot,
-  hasFunction,
+  hasApi,
   hasKeyVault,
   hasTab,
 } from "../../common/projectSettingsHelperV3";
 import { canAddCICDWorkflows, getAppDirectory } from "../../common/tools";
+import { ComponentNames } from "../../component/constants";
+import { readAppManifest } from "../../component/resource/appManifest/utils";
+import { getComponent } from "../../component/workflow";
 import {
   MANIFEST_TEMPLATE_CONSOLIDATE,
   STATIC_TABS_MAX_ITEMS,
@@ -55,6 +59,7 @@ import {
   SingleSignOnOptionItem,
   TabNewUIOptionItem,
   TabNonSsoItem,
+  TabSsoItem,
 } from "../../plugins/solution/fx-solution/question";
 import { checkWetherProvisionSucceeded } from "../../plugins/solution/fx-solution/v2/utils";
 import { NoCapabilityFoundError } from "../error";
@@ -71,6 +76,7 @@ import {
 } from "../question";
 import { CoreHookContext } from "../types";
 import { getQuestionsForTargetEnv } from "./envInfoLoader";
+import { getQuestionsForCreateProjectV2 } from "./questionModel";
 
 /**
  * This middleware will help to collect input from question flow
@@ -81,7 +87,7 @@ export const QuestionModelMW_V3: Middleware = async (ctx: CoreHookContext, next:
 
   let getQuestionRes: Result<QTreeNode | undefined, FxError> = ok(undefined);
   if (method === "createProjectV3") {
-    getQuestionRes = await createProjectQuestionV3(inputs);
+    getQuestionRes = await getQuestionsForCreateProjectV2(inputs);
   } else if (method === "provisionResourcesV3") {
     getQuestionRes = await getQuestionsForTargetEnv(inputs);
   } else if (method === "deployArtifactsV3") {
@@ -114,40 +120,40 @@ export const QuestionModelMW_V3: Middleware = async (ctx: CoreHookContext, next:
   await next();
 };
 
-async function createProjectQuestionV3(
-  inputs: Inputs
-): Promise<Result<QTreeNode | undefined, FxError>> {
-  const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
+// async function createProjectQuestionV3(
+//   inputs: Inputs
+// ): Promise<Result<QTreeNode | undefined, FxError>> {
+//   const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
 
-  // create new
-  const root = new QTreeNode({ type: "group" });
-  node.addChild(root);
-  root.condition = { equals: ScratchOptionYes.id };
+//   // create new
+//   const root = new QTreeNode({ type: "group" });
+//   node.addChild(root);
+//   root.condition = { equals: ScratchOptionYes.id };
 
-  // capabilities
-  const capQuestion = createCapabilityQuestionPreview();
-  const capNode = new QTreeNode(capQuestion);
-  root.addChild(capNode);
+//   // capabilities
+//   const capQuestion = createCapabilityQuestionPreview();
+//   const capNode = new QTreeNode(capQuestion);
+//   root.addChild(capNode);
 
-  const triggerQuestion = createHostTypeTriggerQuestion(inputs.platform);
-  const triggerNode = new QTreeNode(triggerQuestion);
-  triggerNode.condition = { equals: NotificationOptionItem.id };
-  capNode.addChild(triggerNode);
+//   const triggerQuestion = createHostTypeTriggerQuestion(inputs.platform);
+//   const triggerNode = new QTreeNode(triggerQuestion);
+//   triggerNode.condition = { equals: NotificationOptionItem.id };
+//   capNode.addChild(triggerNode);
 
-  // Language
-  const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
-  capNode.addChild(programmingLanguage);
+//   // Language
+//   const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
+//   capNode.addChild(programmingLanguage);
 
-  root.addChild(new QTreeNode(QuestionRootFolder));
-  root.addChild(new QTreeNode(createAppNameQuestion()));
+//   root.addChild(new QTreeNode(QuestionRootFolder));
+//   root.addChild(new QTreeNode(createAppNameQuestion()));
 
-  // create from sample
-  const sampleNode = new QTreeNode(SampleSelect);
-  node.addChild(sampleNode);
-  sampleNode.condition = { equals: ScratchOptionNo.id };
-  sampleNode.addChild(new QTreeNode(QuestionRootFolder));
-  return ok(node.trim());
-}
+//   // create from sample
+//   const sampleNode = new QTreeNode(SampleSelect);
+//   node.addChild(sampleNode);
+//   sampleNode.condition = { equals: ScratchOptionNo.id };
+//   sampleNode.addChild(new QTreeNode(QuestionRootFolder));
+//   return ok(node.trim());
+// }
 
 async function getQuestionsForDeploy(
   ctx: v2.Context,
@@ -207,34 +213,50 @@ async function getQuestionsForAddFeature(
     staticOptions: [],
   };
   const options: OptionItem[] = [];
-  // check capability options
-  const appDir = await getAppDirectory(inputs.projectPath!);
-  const manifestPath = path.resolve(appDir, MANIFEST_TEMPLATE_CONSOLIDATE);
-  const manifest = (await fs.readJson(manifestPath)) as TeamsAppManifest;
-  const canAddTab = manifest.staticTabs!.length < STATIC_TABS_MAX_ITEMS;
-  const canAddBot = manifest.bots!.length < 1;
-  const canAddME = manifest.composeExtensions!.length < 1;
-  const projectSettingsV3 = ctx.projectSetting as ProjectSettingsV3;
-  if (canAddBot) {
+  if (inputs.platform === Platform.CLI_HELP) {
     options.push(NotificationOptionItem);
     options.push(CommandAndResponseOptionItem);
+    options.push(BotNewUIOptionItem);
+    options.push(TabNewUIOptionItem, TabNonSsoItem);
+    options.push(MessageExtensionNewUIItem);
+    options.push(AzureResourceApimNewUI);
+    options.push(AzureResourceSQLNewUI);
+    options.push(AzureResourceFunctionNewUI);
+    options.push(AzureResourceKeyVaultNewUI);
+    options.push(SingleSignOnOptionItem);
+    options.push(ApiConnectionOptionItem);
+    options.push(CicdOptionItem);
+    const triggerNode = new QTreeNode(createHostTypeTriggerQuestion(inputs.platform));
+    triggerNode.condition = { equals: NotificationOptionItem.id };
+    const addFeatureNode = new QTreeNode(question);
+    addFeatureNode.addChild(triggerNode);
+    return ok(addFeatureNode);
   }
-  if (canAddTab) {
-    if (hasTab(projectSettingsV3)) {
-      options.push(TabNewUIOptionItem, TabNonSsoItem);
-    } else {
-      //if aad is added, display name is SsoTab, otherwise the display name is NonSsoTab
-      if (hasAAD(projectSettingsV3)) {
-        options.push(TabNewUIOptionItem);
-      } else {
-        options.push(TabNonSsoItem);
-      }
-    }
-  }
-  if (canAddBot) {
+  // check capability options
+  const manifestRes = await readAppManifest(inputs.projectPath!);
+  if (manifestRes.isErr()) return err(manifestRes.error);
+  const manifest = manifestRes.value;
+  const canAddTab = manifest.staticTabs!.length < STATIC_TABS_MAX_ITEMS;
+  const botExceedLimit = manifest.bots!.length > 0;
+  const meExceedLimit = manifest.composeExtensions!.length > 0;
+  const projectSettingsV3 = ctx.projectSetting as ProjectSettingsV3;
+  const teamsBot = getComponent(ctx.projectSetting as ProjectSettingsV3, ComponentNames.TeamsBot);
+  const alreadyHasNewBot =
+    teamsBot?.capabilities?.includes("notification") ||
+    teamsBot?.capabilities?.includes("command-response");
+  if (!botExceedLimit && !alreadyHasNewBot) {
+    options.push(NotificationOptionItem);
+    options.push(CommandAndResponseOptionItem);
     options.push(BotNewUIOptionItem);
   }
-  if (canAddME) {
+  if (canAddTab) {
+    if (!hasTab(projectSettingsV3)) {
+      options.push(TabNewUIOptionItem, TabNonSsoItem);
+    } else {
+      options.push(hasAAD(projectSettingsV3) ? TabNewUIOptionItem : TabNonSsoItem);
+    }
+  }
+  if (!meExceedLimit && !alreadyHasNewBot) {
     options.push(MessageExtensionNewUIItem);
   }
   // check cloud resource options
@@ -248,7 +270,7 @@ async function getQuestionsForAddFeature(
   if (!hasAAD(projectSettingsV3)) {
     options.push(SingleSignOnOptionItem);
   }
-  if (hasBot(projectSettingsV3) || hasFunction(projectSettingsV3)) {
+  if (hasBot(projectSettingsV3) || hasApi(projectSettingsV3)) {
     options.push(ApiConnectionOptionItem);
   }
   // function can always be added

@@ -448,6 +448,7 @@ export const BotFeatureIds = [
   NotificationOptionItem.id,
   CommandAndResponseOptionItem.id,
   MessageExtensionItem.id,
+  M365SearchAppOptionItem.id,
 ];
 
-export const TabFeatureIds = [TabOptionItem.id, TabNonSsoItem.id];
+export const TabFeatureIds = [TabOptionItem.id, TabNonSsoItem.id, M365SsoLaunchPageOptionItem.id];

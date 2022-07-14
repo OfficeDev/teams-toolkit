@@ -176,7 +176,7 @@ export class SSO {
         targetAction: `${botHosting}-config.generateBicep`,
         inputs: {
           update: true,
-          componentName: "Bot",
+          scenario: "Bot",
         },
       });
     }

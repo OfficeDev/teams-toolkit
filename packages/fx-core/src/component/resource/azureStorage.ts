@@ -36,19 +36,19 @@ export class AzureStorageResource extends AzureResource {
   readonly outputs = {
     endpoint: {
       key: "endpoint",
-      bicepVariable: "provisionOutputs.azureStorage{{componentName}}Output.value.endpoint",
+      bicepVariable: "provisionOutputs.azureStorage{{scenario}}Output.value.endpoint",
     },
     storageResourceId: {
       key: "storageResourceId",
-      bicepVariable: "provisionOutputs.azureStorage{{componentName}}Output.value.storageResourceId",
+      bicepVariable: "provisionOutputs.azureStorage{{scenario}}Output.value.storageResourceId",
     },
     domain: {
       key: "domain",
-      bicepVariable: "provisionOutputs.azureStorage{{componentName}}Output.value.domain",
+      bicepVariable: "provisionOutputs.azureStorage{{scenario}}Output.value.domain",
     },
     indexPath: {
       key: "indexPath",
-      bicepVariable: "provisionOutputs.azureStorage{{componentName}}Output.value.indexPath",
+      bicepVariable: "provisionOutputs.azureStorage{{scenario}}Output.value.indexPath",
     },
   };
   readonly finalOutputKeys = ["domain", "endpoint", "resourceId", "indexPath"];
@@ -103,7 +103,11 @@ export class AzureStorageResource extends AzureResource {
       name: "azure-storage.deploy",
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const parent = getHostingParentComponent(context.projectSetting, this.name);
+        const parent = getHostingParentComponent(
+          context.projectSetting,
+          this.name,
+          inputs.scenario
+        );
         const deployDir = path.resolve(inputs.projectPath, parent?.folder ?? "");
         return ok([
           {
@@ -117,7 +121,7 @@ export class AzureStorageResource extends AzureResource {
         const ctx = context as ProvisionContextV3;
         const parent = getHostingParentComponent(ctx.projectSetting, this.name);
         if (!parent?.folder) {
-          throw new Error("");
+          throw new Error("parent component not found for azure-storage");
         }
         const deployDir = path.resolve(inputs.projectPath, parent.folder);
         const frontendConfigRes = await buildFrontendConfig(
@@ -146,14 +150,14 @@ export class AzureStorageResource extends AzureResource {
 
 async function buildFrontendConfig(
   envInfo: v3.EnvInfoV3,
-  componentName: string,
+  scenario: string,
   tokenProvider: AzureAccountProvider
 ): Promise<Result<FrontendConfig, FxError>> {
   const credentials = await tokenProvider.getAccountCredentialAsync();
   if (!credentials) {
     return err(new UnauthenticatedError());
   }
-  const storage = envInfo.state[componentName];
+  const storage = envInfo.state[scenario];
   const resourceId = storage?.storageResourceId;
   if (!resourceId) {
     return err(

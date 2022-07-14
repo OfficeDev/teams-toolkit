@@ -203,7 +203,7 @@ export class AppStudioPluginV3 {
   ): Promise<Result<string, FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.provisionManifest);
-    const result = await createOrUpdateTeamsApp(ctx, inputs, envInfo, tokenProvider);
+    const result = await createOrUpdateTeamsApp(ctx, inputs, envInfo, tokenProvider, true);
     if (result.isOk()) {
       const properties: { [key: string]: string } = {};
       properties[TelemetryPropertyKey.appId] = result.value;

@@ -61,9 +61,10 @@ export abstract class AzureResource implements CloudResource {
             this.templateContext = this.getTemplateContext(context, inputs);
           } catch {}
         }
-        const moduleName = this.bicepModuleName + (inputs.componentName || "");
+        const moduleName = this.bicepModuleName + (inputs.scenario || "");
         this.templateContext.componentId = inputs.componentId || "";
-        this.templateContext.componentName = inputs.componentName || "";
+        this.templateContext.scenario = inputs.scenario || "";
+        this.templateContext.scenarioInLowerCase = (inputs.scenario || "").toLowerCase();
         let module = await fs.readFile(pmPath, "utf-8");
         let orchestration = await fs.readFile(poPath, "utf-8");
         module = compileHandlebarsTemplateString(module, this.templateContext);

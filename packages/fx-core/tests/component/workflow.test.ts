@@ -114,6 +114,7 @@ describe("Workflow test for v3", () => {
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
+      ["function-name"]: "getUserProfile",
     };
     const res = await runAction("sql.add", context, inputs);
     if (res.isErr()) {
@@ -125,6 +126,7 @@ describe("Workflow test for v3", () => {
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
+      ["function-name"]: "getUserProfile",
     };
     const res = await runAction("apim-feature.add", context, inputs);
     if (res.isErr()) {

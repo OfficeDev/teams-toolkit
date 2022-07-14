@@ -33,7 +33,7 @@ import {
 } from "../../plugins/solution/fx-solution/v3/constants";
 import { getQuestionsForGrantPermission } from "../collaborator";
 import { CoreSource, FunctionRouterError } from "../error";
-import { TOOLS } from "../globalVars";
+import { isV3, TOOLS } from "../globalVars";
 import {
   createAppNameQuestion,
   createCapabilityForDotNet,
@@ -434,11 +434,12 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   }
   createNew.addChild(capNode);
 
-  const solutionNodeResult = await setSolutionScaffoldingQuestionNodeAsChild(inputs, capNode);
-  if (solutionNodeResult.isErr()) {
-    return err(solutionNodeResult.error);
+  if (!isV3()) {
+    const solutionNodeResult = await setSolutionScaffoldingQuestionNodeAsChild(inputs, capNode);
+    if (solutionNodeResult.isErr()) {
+      return err(solutionNodeResult.error);
+    }
   }
-
   // Language
   const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
   if (isPreviewFeaturesEnabled()) {

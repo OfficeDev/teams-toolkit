@@ -46,7 +46,7 @@ export class CliTelemetryReporter implements TelemetryReporter {
     return this;
   }
 
-  addSharedProperty(name: string, value: string): void {
+  addSharedProperty(name: string, value?: string): void {
     this.sharedProperties[name] = value ?? "";
   }
 

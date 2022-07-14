@@ -38,6 +38,22 @@ var botAadAppClientSecret = provisionParameters['botAadAppClientSecret']
   {{/if}}
 {{/if}}
 
+{{#if (contains "teams-tab" connections) }}
+var tabEndpoint = {{tabEndpointVarName}}
+var currentAllowedOrigins = empty(currentConfigs.cors) ? [] : currentConfigs.cors.allowedOrigins
+resource appConfig 'Microsoft.Web/sites/config@2021-02-01' = {
+  name: '${functionAppName}/web'
+  kind: 'functionapp'
+  properties: {
+    cors: {
+      allowedOrigins: union(currentAllowedOrigins, [
+        tabEndpoint // allow requests from tab app
+      ])
+    }
+  }
+}
+
+{{/if}}
 resource functionAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   name: '${functionAppName}/appsettings'
   properties: union({

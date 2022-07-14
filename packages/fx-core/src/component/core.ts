@@ -231,7 +231,7 @@ export class TeamsfxCore {
       preProvisionStep,
       createTeamsAppStep,
       provisionResourcesStep,
-      // ctx.envInfo.envName !== "local" ? deployBicepStep : setupLocalEnvironmentStep,
+      ctx.envInfo.envName !== "local" ? deployBicepStep : setupLocalEnvironmentStep,
       preConfigureStep,
       configureResourcesStep,
       ctx.envInfo.envName === "local" ? configLocalEnvironmentStep : postProvisionStep,

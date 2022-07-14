@@ -320,8 +320,8 @@ jobs:
             fi
 
             job_id=`echo $jobs| jq --arg case $case -r '.jobs[] | select(.name == $case ) | .id'`
-            metrics_file=`find ~/artifacts -name "*${job_id}_metrics/output.txt"`
-            slow=`cat $metrics_file | grep '"severity":"slow"' | wc -l`
+            metrics_file=`find ~/artifacts -wholename "*${job_id}_metrics/output.txt"`
+            slow_count=`grep -c ''"severity":"slow"'' $metrics_file || true`
 
             url=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .html_url'`
             url="<a href=\\\"$url\\\">For Detail</a>"

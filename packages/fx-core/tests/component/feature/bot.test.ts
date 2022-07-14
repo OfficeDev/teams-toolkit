@@ -95,7 +95,7 @@ describe("Bot Feature", () => {
     assert.isTrue(teamsBot?.build);
     const webApp = getComponent(context.projectSetting, ComponentNames.AzureWebApp);
     assert.exists(webApp);
-    assert.deepEqual(webApp?.connections, [ComponentNames.TeamsBot]);
+    assert.deepEqual(webApp?.connections, [ComponentNames.TeamsBot, ComponentNames.Identity]);
     const botService = getComponent(context.projectSetting, ComponentNames.BotService);
     assert.exists(botService);
     assert.isTrue(botService?.provision);

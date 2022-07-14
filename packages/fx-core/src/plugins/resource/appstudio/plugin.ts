@@ -18,8 +18,6 @@ import {
 import { AppStudioClient } from "./appStudio";
 import { AppDefinition } from "./interfaces/appDefinition";
 import { AppUser } from "./interfaces/appUser";
-import { Language } from "./interfaces/language";
-import { AppPermissionNodeItemType } from "./interfaces/appPermissionNodeItemType";
 import {
   AzureSolutionQuestionNames,
   BotOptionItem,
@@ -73,11 +71,7 @@ import { v4 } from "uuid";
 import isUUID from "validator/lib/isUUID";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import Mustache from "mustache";
-import {
-  getCustomizedKeys,
-  convertToAppDefinitionBots,
-  convertToAppDefinitionMessagingExtensions,
-} from "./utils/utils";
+import { getCustomizedKeys } from "./utils/utils";
 import { TelemetryPropertyKey } from "./utils/telemetry";
 import _ from "lodash";
 import { HelpLinks, ResourcePlugins } from "../../../common/constants";
@@ -172,12 +166,12 @@ export class AppStudioPluginImpl {
       }
       manifestString = JSON.stringify(manifest, null, 4);
     } else {
-      const appDefinitionAndManifest = await this.getAppDefinitionAndManifest(ctx, isLocalDebug);
-      if (appDefinitionAndManifest.isErr()) {
+      const manifestRes = await this.getManifest(ctx, isLocalDebug);
+      if (manifestRes.isErr()) {
         ctx.logProvider?.error(getLocalizedString("plugins.appstudio.validationFailedNotice"));
-        return err(appDefinitionAndManifest.error);
+        return err(manifestRes.error);
       } else {
-        manifestString = JSON.stringify(appDefinitionAndManifest.value[1]);
+        manifestString = JSON.stringify(manifestRes.value);
       }
     }
     const manifest: TeamsAppManifest = JSON.parse(manifestString);
@@ -239,7 +233,7 @@ export class AppStudioPluginImpl {
       manifestString = await this.getSPFxManifest(ctx);
       manifest = JSON.parse(manifestString);
     } else {
-      const appManifest = await this.getAppDefinitionAndManifest(ctx, isLocalDebug);
+      const appManifest = await this.getManifest(ctx, isLocalDebug);
       if (appManifest.isErr()) {
         ctx.logProvider?.error(getLocalizedString("error.appstudio.updateManifestFailed"));
         const isProvisionSucceeded = !!(ctx.envInfo.state
@@ -263,7 +257,7 @@ export class AppStudioPluginImpl {
           return err(appManifest.error);
         }
       }
-      manifest = appManifest.value[1];
+      manifest = appManifest.value;
     }
 
     const manifestFileName =
@@ -479,9 +473,9 @@ export class AppStudioPluginImpl {
       }
       manifestString = JSON.stringify(manifest, null, 4);
     } else {
-      const manifest = await this.getAppDefinitionAndManifest(ctx, isLocalDebug);
+      const manifest = await this.getManifest(ctx, isLocalDebug);
       if (manifest.isOk()) {
-        manifestString = JSON.stringify(manifest.value[1], null, 4);
+        manifestString = JSON.stringify(manifest.value, null, 4);
       } else {
         ctx.logProvider?.error(getLocalizedString("plugins.appstudio.buildFailedNotice"));
         const isProvisionSucceeded = !!(ctx.envInfo.state
@@ -650,9 +644,9 @@ export class AppStudioPluginImpl {
       const manifestString = await this.getSPFxManifest(ctx);
       manifest = JSON.parse(manifestString);
     } else {
-      const fillinRes = await this.getAppDefinitionAndManifest(ctx, false);
+      const fillinRes = await this.getManifest(ctx, false);
       if (fillinRes.isOk()) {
-        manifest = fillinRes.value[1];
+        manifest = fillinRes.value;
       } else {
         throw fillinRes.error;
       }
@@ -963,161 +957,6 @@ export class AppStudioPluginImpl {
     return teamsAppId;
   }
 
-  /**
-   *
-   * Refer to AppDefinitionProfile.cs
-   */
-  private async convertToAppDefinition(
-    ctx: PluginContext,
-    appManifest: TeamsAppManifest,
-    ignoreIcon: boolean
-  ): Promise<Result<AppDefinition, FxError>> {
-    const appDefinition: AppDefinition = {
-      appName: appManifest.name.short,
-      validDomains: appManifest.validDomains || [],
-    };
-
-    appDefinition.showLoadingIndicator = appManifest.showLoadingIndicator;
-    appDefinition.isFullScreen = appManifest.isFullScreen;
-    appDefinition.appId = appManifest.id;
-
-    appDefinition.appName = appManifest.name.short;
-    appDefinition.shortName = appManifest.name.short;
-    appDefinition.longName = appManifest.name.full;
-    appDefinition.manifestVersion = appManifest.manifestVersion;
-    appDefinition.version = appManifest.version;
-
-    appDefinition.packageName = appManifest.packageName;
-    appDefinition.accentColor = appManifest.accentColor;
-
-    appDefinition.developerName = appManifest.developer.name;
-    appDefinition.mpnId = appManifest.developer.mpnId;
-    appDefinition.websiteUrl = appManifest.developer.websiteUrl;
-    appDefinition.privacyUrl = appManifest.developer.privacyUrl;
-    appDefinition.termsOfUseUrl = appManifest.developer.termsOfUseUrl;
-
-    appDefinition.shortDescription = appManifest.description.short;
-    appDefinition.longDescription = appManifest.description.full;
-
-    appDefinition.staticTabs = appManifest.staticTabs?.map((x) => {
-      return {
-        objectId: x.objectId,
-        entityId: x.entityId,
-        name: x.name ?? "",
-        contentUrl: x.contentUrl ?? "",
-        websiteUrl: x.websiteUrl ?? "",
-        scopes: x.scopes,
-        context: x.context ?? [],
-      };
-    });
-    appDefinition.configurableTabs = appManifest.configurableTabs?.map((x) => {
-      return {
-        objectId: x.objectId,
-        configurationUrl: x.configurationUrl,
-        canUpdateConfiguration: x.canUpdateConfiguration ?? false,
-        scopes: x.scopes,
-        context: x.context ?? [],
-        sharePointPreviewImage: x.sharePointPreviewImage ?? "",
-        supportedSharePointHosts: x.supportedSharePointHosts ?? [],
-      };
-    });
-    appDefinition.bots = convertToAppDefinitionBots(appManifest);
-    appDefinition.messagingExtensions = convertToAppDefinitionMessagingExtensions(appManifest);
-
-    appDefinition.connectors = appManifest.connectors?.map((x) => {
-      return {
-        connectorId: x.connectorId,
-        configurationUrl: x.configurationUrl ?? "",
-        name: "",
-        scopes: x.scopes,
-      };
-    });
-    appDefinition.subscriptionOffer = appManifest.subscriptionOffer;
-    appDefinition.graphConnector = appManifest.graphConnector;
-    appDefinition.devicePermissions = appManifest.devicePermissions;
-
-    if (appManifest.localizationInfo) {
-      let languages: Language[] = [];
-      if (appManifest.localizationInfo.additionalLanguages) {
-        try {
-          languages = await Promise.all(
-            appManifest.localizationInfo.additionalLanguages!.map(async function (item: any) {
-              const templateDirectory = await getAppDirectory(ctx.root);
-              const fileName = `${templateDirectory}/${item.file}`;
-              if (!(await fs.pathExists(fileName))) {
-                throw AppStudioResultFactory.UserError(
-                  AppStudioError.FileNotFoundError.name,
-                  AppStudioError.FileNotFoundError.message(fileName)
-                );
-              }
-              const content = await fs.readJSON(fileName);
-              return {
-                languageTag: item.languageTag,
-                file: content,
-              };
-            })
-          );
-        } catch (error) {
-          return err(error);
-        }
-      }
-      appDefinition.localizationInfo = {
-        defaultLanguageTag: appManifest.localizationInfo.defaultLanguageTag,
-        languages: languages,
-      };
-    }
-
-    if (appManifest.webApplicationInfo) {
-      appDefinition.webApplicationInfoId = appManifest.webApplicationInfo.id;
-      appDefinition.webApplicationInfoResource = appManifest.webApplicationInfo.resource;
-    }
-
-    appDefinition.activities = {
-      activityTypes: appManifest.activities?.activityTypes ?? [],
-    };
-
-    if (!ignoreIcon && appManifest.icons.color) {
-      appDefinition.colorIcon = appManifest.icons.color;
-    }
-
-    if (!ignoreIcon && appManifest.icons.outline) {
-      appDefinition.outlineIcon = appManifest.icons.outline;
-    }
-
-    appDefinition.configurableProperties = appManifest.configurableProperties;
-    appDefinition.defaultBlockUntilAdminAction = appManifest.defaultBlockUntilAdminAction;
-    appDefinition.defaultInstallScope = appManifest.defaultInstallScope;
-    appDefinition.defaultGroupCapability = appManifest.defaultGroupCapability;
-    appDefinition.meetingExtensionDefinition = {
-      scenes: appManifest.meetingExtensionDefinition?.scenes ?? [],
-    };
-    appDefinition.publisherDocsUrl = appManifest.publisherDocsUrl;
-
-    if (appManifest.authorization?.permissions?.resourceSpecific) {
-      appDefinition.authorization = {
-        permissions: {
-          resourceSpecific: appManifest.authorization!.permissions!.resourceSpecific!.map((x) => {
-            let type: AppPermissionNodeItemType;
-            switch (x.type) {
-              case "Application":
-                type = AppPermissionNodeItemType.Application;
-                break;
-              case "Delegated":
-                type = AppPermissionNodeItemType.Delegated;
-            }
-            return {
-              name: x.name,
-              type: type,
-            };
-          }),
-          orgWide: [],
-        },
-      };
-    }
-
-    return ok(appDefinition);
-  }
-
   private async createApp(
     ctx: PluginContext,
     isLocalDebug: boolean
@@ -1272,10 +1111,10 @@ export class AppStudioPluginImpl {
     }
   }
 
-  private async getAppDefinitionAndManifest(
+  private async getManifest(
     ctx: PluginContext,
     isLocalDebug: boolean
-  ): Promise<Result<[AppDefinition, TeamsAppManifest], FxError>> {
+  ): Promise<Result<TeamsAppManifest, FxError>> {
     const {
       tabEndpoint,
       tabDomain,
@@ -1451,14 +1290,7 @@ export class AppStudioPluginImpl {
         }
       }
     }
-
-    const appDefinitionRes = await this.convertToAppDefinition(ctx, updatedManifest, false);
-    if (appDefinitionRes.isErr()) {
-      return err(appDefinitionRes.error);
-    }
-    const appDefinition = appDefinitionRes.value;
-
-    return ok([appDefinition, updatedManifest]);
+    return ok(updatedManifest);
   }
 
   private async getSPFxManifest(ctx: PluginContext): Promise<string> {

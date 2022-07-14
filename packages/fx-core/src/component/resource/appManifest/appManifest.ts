@@ -152,7 +152,7 @@ export class AppManifest implements CloudResource {
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const ctx = context as ProvisionContextV3;
-        const res = await createOrUpdateTeamsApp(ctx, inputs, ctx.envInfo, ctx.tokenProvider);
+        const res = await createOrUpdateTeamsApp(ctx, inputs, ctx.envInfo, ctx.tokenProvider, true);
         if (res.isErr()) return err(res.error);
         ctx.envInfo.state[ComponentNames.AppManifest].teamsAppId = res.value;
         return ok([

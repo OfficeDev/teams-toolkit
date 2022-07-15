@@ -29,7 +29,7 @@ import * as Handlebars from "handlebars";
 import "reflect-metadata";
 import { Container } from "typedi";
 import toposort from "toposort";
-import { cloneDeep, merge } from "lodash";
+import { assign, cloneDeep, merge } from "lodash";
 import {
   fileEffectPlanStrings,
   persistBicep,
@@ -466,6 +466,7 @@ export async function executeFunctionAction(
   try {
     // send start telemetry
     if (action.enableTelemetry) {
+      if (action.telemetryProps) assign(telemetryProps, action.telemetryProps);
       const startEvent = eventName + "-start";
       context.telemetryReporter.sendTelemetryEvent(startEvent, telemetryProps);
     }
@@ -534,7 +535,7 @@ export async function executeFunctionAction(
   } catch (e) {
     let fxError;
     if (action.errorHandler) {
-      fxError = action.errorHandler(e);
+      fxError = action.errorHandler(e, telemetryProps);
     } else {
       fxError = assembleError(e);
       if (fxError.source === "unknown") {

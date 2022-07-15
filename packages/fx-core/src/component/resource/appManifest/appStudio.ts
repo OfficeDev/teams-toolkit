@@ -30,6 +30,9 @@ import { AppStudioError } from "../../../plugins/resource/appstudio/errors";
 import { AppStudioResultFactory } from "../../../plugins/resource/appstudio/results";
 import { readAppManifest } from "./utils";
 import { ComponentNames } from "../../constants";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { getCustomizedKeys } from "../../../plugins/resource/appstudio/utils/utils";
+import { TelemetryPropertyKey } from "../../../plugins/resource/appstudio/utils/telemetry";
 
 /**
  * Create Teams app if not exists
@@ -100,7 +103,9 @@ export async function createTeamsApp(
         appStudioTokenRes.value,
         ctx.logProvider
       );
-      ctx.logProvider.info(`Teams app created: ${appDefinition.teamsAppId!}`);
+      ctx.logProvider.info(
+        getLocalizedString("plugins.appstudio.teamsAppCreatedNotice", appDefinition.teamsAppId!)
+      );
       return ok(appDefinition.teamsAppId!);
     } catch (e: any) {
       return err(
@@ -163,7 +168,9 @@ export async function updateTeamsApp(
       ctx.logProvider,
       true
     );
-    ctx.logProvider.info(`Teams app updated: ${appDefinition.teamsAppId!}`);
+    ctx.logProvider.info(
+      getLocalizedString("plugins.appstudio.teamsAppUpdatedLog", appDefinition.teamsAppId!)
+    );
     return ok(appDefinition.teamsAppId!);
   } catch (e: any) {
     return err(
@@ -179,7 +186,8 @@ export async function publishTeamsApp(
   ctx: v2.Context,
   inputs: InputsWithProjectPath,
   envInfo: v3.EnvInfoV3,
-  tokenProvider: M365TokenProvider
+  tokenProvider: M365TokenProvider,
+  telemetryProps?: Record<string, string>
 ): Promise<Result<{ appName: string; publishedAppId: string; update: boolean }, FxError>> {
   let archivedFile;
   // User provided zip file
@@ -195,7 +203,12 @@ export async function publishTeamsApp(
       );
     }
   } else {
-    const buildPackage = await buildTeamsAppPackage(inputs.projectPath, envInfo!);
+    const buildPackage = await buildTeamsAppPackage(
+      inputs.projectPath,
+      envInfo!,
+      false,
+      telemetryProps
+    );
     if (buildPackage.isErr()) {
       return err(buildPackage.error);
     }
@@ -263,11 +276,12 @@ export async function publishTeamsApp(
 export async function buildTeamsAppPackage(
   projectPath: string,
   envInfo: v3.EnvInfoV3,
-  withEmptyCapabilities = false
+  withEmptyCapabilities = false,
+  telemetryProps?: Record<string, string>
 ): Promise<Result<string, FxError>> {
   const buildFolderPath = path.join(projectPath, BuildFolderName, AppPackageFolderName);
   await fs.ensureDir(buildFolderPath);
-  const manifestRes = await getManifest(projectPath, envInfo);
+  const manifestRes = await getManifest(projectPath, envInfo, telemetryProps);
   if (manifestRes.isErr()) {
     return err(manifestRes.error);
   }
@@ -338,7 +352,8 @@ export async function validateManifest(
 
 async function getManifest(
   projectPath: string,
-  envInfo: v3.EnvInfoV3
+  envInfo: v3.EnvInfoV3,
+  telemetryProps?: Record<string, string>
 ): Promise<Result<TeamsAppManifest, FxError>> {
   // Read template
   const manifestTemplateRes = await readAppManifest(projectPath);
@@ -346,7 +361,10 @@ async function getManifest(
     return err(manifestTemplateRes.error);
   }
   let manifestString = JSON.stringify(manifestTemplateRes.value);
-
+  const customizedKeys = getCustomizedKeys("", JSON.parse(manifestString));
+  if (telemetryProps) {
+    telemetryProps[TelemetryPropertyKey.customizedKeys] = JSON.stringify(customizedKeys);
+  }
   // Render mustache template with state and config
   const view = {
     config: envInfo.config,

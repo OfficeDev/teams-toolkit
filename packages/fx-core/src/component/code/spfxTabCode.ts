@@ -24,7 +24,7 @@ import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
 import * as util from "util";
-import { getAppDirectory, isGeneratorCheckerEnabled, isYoCheckerEnabled } from "../../common";
+import { getAppDirectory, isGeneratorCheckerEnabled, isYoCheckerEnabled } from "../../common/tools";
 import { getTemplatesFolder } from "../../folder";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../plugins/resource/appstudio/constants";
 import { GeneratorChecker } from "../../plugins/resource/spfx/depsChecker/generatorChecker";
@@ -56,6 +56,10 @@ export class SPFxTabCodeProvider implements SourceCodeProvider {
     const action: Action = {
       name: `${this.name}.generate`,
       type: "function",
+      enableTelemetry: true,
+      telemetryComponentName: "fx-resource-spfx",
+      telemetryEventName: "scaffold",
+      errorSource: "SPFx",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
         if (!teamsTab) return ok([]);
@@ -76,26 +80,6 @@ export class SPFxTabCodeProvider implements SourceCodeProvider {
     };
     return ok(action);
   }
-  // build(
-  //   context: ContextV3,
-  //   inputs: InputsWithProjectPath
-  // ): MaybePromise<Result<Action | undefined, FxError>> {
-  //   const action: Action = {
-  //     name: "tab-code.build",
-  //     type: "function",
-  //     plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-  //       const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
-  //       if (!teamsTab) return ok([]);
-  //       const tabDir = teamsTab?.folder;
-  //       if (!tabDir) return ok([]);
-  //       return ok([`build project: ${tabDir}`]);
-  //     },
-  //     execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-  //       return ok([]);
-  //     },
-  //   };
-  //   return ok(action);
-  // }
 }
 
 export async function scaffoldSPFx(

@@ -165,6 +165,10 @@ export async function provisionResources(
           return err(createRgRes.error);
         }
       }
+
+      if (solutionConfigRes.value.hasSwitchedSubscription) {
+        updateResourceBaseName(inputs.projectPath, ctx.projectSetting.appName, envInfo.envName);
+      }
     }
 
     // 4. collect plugins and provisionResources
@@ -299,8 +303,7 @@ export async function provisionResources(
 export async function checkProvisionAzureSubscription(
   ctx: v2.Context,
   envInfo: v3.EnvInfoV3,
-  azureAccountProvider: AzureAccountProvider,
-  projectPath: string
+  azureAccountProvider: AzureAccountProvider
 ): Promise<Result<ProvisionSubscriptionCheckResult, FxError>> {
   const subscriptionIdInConfig: string | undefined = envInfo.config.azure?.subscriptionId;
   const subscriptionNameInConfig: string | undefined =
@@ -356,8 +359,7 @@ export async function checkProvisionAzureSubscription(
         envInfo,
         targetConfigSubInfo,
         subscriptionIdInState,
-        subscriptionNameInState,
-        projectPath
+        subscriptionNameInState
       );
     }
   } else {
@@ -385,8 +387,7 @@ export async function checkProvisionAzureSubscription(
         envInfo,
         subscriptionInAccount,
         subscriptionIdInState,
-        subscriptionNameInState,
-        projectPath
+        subscriptionNameInState
       );
     }
   }
@@ -403,8 +404,7 @@ async function compareWithStateSubscription(
   envInfo: v3.EnvInfoV3,
   targetSubscriptionInfo: SubscriptionInfo,
   subscriptionInStateId: string | undefined,
-  subscriptionInStateName: string | undefined,
-  projectPath: string
+  subscriptionInStateName: string | undefined
 ): Promise<Result<ProvisionSubscriptionCheckResult, FxError>> {
   const shouldAskForSubscriptionConfirmation =
     !!subscriptionInStateId && targetSubscriptionInfo.subscriptionId !== subscriptionInStateId;
@@ -417,8 +417,6 @@ async function compareWithStateSubscription(
     if (confirmResult.isErr()) {
       return err(confirmResult.error);
     } else {
-      updateResourceBaseName(projectPath, ctx.projectSetting.appName, envInfo.envName);
-
       updateEnvInfoSubscription(envInfo, targetSubscriptionInfo);
       envInfo.state.solution.resourceNameSuffix = "";
       envInfo.state.solution.resourceGroupName = "";
@@ -481,8 +479,7 @@ export async function fillInAzureConfigs(
   const subscriptionResult = await checkProvisionAzureSubscription(
     ctx,
     envInfo,
-    tokenProvider.azureAccountProvider,
-    inputs.projectPath
+    tokenProvider.azureAccountProvider
   );
   if (subscriptionResult.isErr()) {
     return err(subscriptionResult.error);

@@ -39,7 +39,7 @@ import {
 import _, { isUndefined } from "lodash";
 import { PluginDisplayName } from "../../../../common/constants";
 import { ProvisionContextAdapter } from "./adaptor";
-import { deployArmTemplates } from "../arm";
+import { deployArmTemplates, updateResourceBaseName } from "../arm";
 import { Container } from "typedi";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
@@ -172,14 +172,16 @@ async function provisionResourceImpl(
       return err(solutionConfigRes.error);
     }
 
-    // ask for provision consent
-    const consentResult = await askForProvisionConsent(
-      ctx,
-      tokenProvider.azureAccountProvider,
-      envInfo as v3.EnvInfoV3
-    );
-    if (consentResult.isErr()) {
-      return err(consentResult.error);
+    if (!solutionConfigRes.value.hasSwitchedSubscription) {
+      // ask for provision consent
+      const consentResult = await askForProvisionConsent(
+        ctx,
+        tokenProvider.azureAccountProvider,
+        envInfo as v3.EnvInfoV3
+      );
+      if (consentResult.isErr()) {
+        return err(consentResult.error);
+      }
     }
 
     // create resource group if needed
@@ -193,6 +195,10 @@ async function provisionResourceImpl(
       if (createRgRes.isErr()) {
         return err(createRgRes.error);
       }
+    }
+
+    if (solutionConfigRes.value.hasSwitchedSubscription) {
+      updateResourceBaseName(inputs.projectPath, ctx.projectSetting.appName, envInfo.envName);
     }
   }
 

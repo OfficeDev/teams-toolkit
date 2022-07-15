@@ -11,10 +11,8 @@ import {
   ProvisionContextV3,
   Result,
 } from "@microsoft/teamsfx-api";
-import {
-  askForDeployConsent,
-  checkAzureSubscription,
-} from "../../plugins/solution/fx-solution/v3/provision";
+import { checkDeployAzureSubscription } from "../../plugins/solution/fx-solution/v3/deploy";
+import { askForDeployConsent } from "../../plugins/solution/fx-solution/v3/provision";
 
 export class FxPreDeployForAzureAction implements FunctionAction {
   type: "function" = "function";
@@ -24,7 +22,7 @@ export class FxPreDeployForAzureAction implements FunctionAction {
     inputs: InputsWithProjectPath
   ): Promise<Result<Effect[], FxError>> {
     const ctx = context as ProvisionContextV3;
-    const subscriptionResult = await checkAzureSubscription(
+    const subscriptionResult = await checkDeployAzureSubscription(
       ctx,
       ctx.envInfo,
       ctx.tokenProvider.azureAccountProvider

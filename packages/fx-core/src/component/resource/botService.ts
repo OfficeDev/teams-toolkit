@@ -14,6 +14,7 @@ import {
   err,
   AzureAccountProvider,
   Effect,
+  IProgressHandler,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
@@ -26,7 +27,11 @@ import {
 import { CheckThrowSomethingMissing, PreconditionError } from "../../plugins/resource/bot/v3/error";
 import * as uuid from "uuid";
 import { ResourceNameFactory } from "../../plugins/resource/bot/utils/resourceNameFactory";
-import { AzureConstants, MaxLengths } from "../../plugins/resource/bot/constants";
+import {
+  AzureConstants,
+  MaxLengths,
+  ProgressBarConstants,
+} from "../../plugins/resource/bot/constants";
 import { AADRegistration } from "../../plugins/resource/bot/aadRegistration";
 import { Messages } from "../../plugins/resource/bot/resources/messages";
 import { IBotRegistration } from "../../plugins/resource/bot/appStudio/interfaces/IBotRegistration";
@@ -73,6 +78,9 @@ export class BotService extends AzureResource {
     const action: Action = {
       name: "bot-service.provision",
       type: "function",
+      enableProgressBar: true,
+      progressTitle: `Provision ${this.name}`,
+      progressSteps: 1,
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         const ctx = context as ProvisionContextV3;
         const plans: Effect[] = [];
@@ -101,8 +109,13 @@ export class BotService extends AzureResource {
         }
         return ok(plans);
       },
-      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+      execute: async (
+        context: ContextV3,
+        inputs: InputsWithProjectPath,
+        progress?: IProgressHandler
+      ) => {
         // create bot aad app by API call
+        await progress?.next(ProgressBarConstants.PROVISION_STEP_BOT_REG);
         const ctx = context as ProvisionContextV3;
         const plans: Effect[] = [];
         if (ctx.envInfo.envName === "local") {

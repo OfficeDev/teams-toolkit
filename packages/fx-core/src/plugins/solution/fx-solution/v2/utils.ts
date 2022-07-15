@@ -62,7 +62,7 @@ export function isAzureProject(azureSettings: AzureSolutionSettings | undefined)
   return azureSettings !== undefined && HostTypeOptionAzure.id === azureSettings.hostType;
 }
 
-function isBotProject(azureSettings: AzureSolutionSettings | undefined): boolean {
+export function isBotProject(azureSettings: AzureSolutionSettings | undefined): boolean {
   return (
     azureSettings !== undefined &&
     (azureSettings.capabilities?.includes(BotOptionItem.id) ||
@@ -77,9 +77,7 @@ export interface BotTroubleShootMessage {
   textForActionButton: string;
 }
 
-export function getBotTroubleShootMessage(
-  azureSettings: AzureSolutionSettings | undefined
-): BotTroubleShootMessage {
+export function getBotTroubleShootMessage(isBot: boolean): BotTroubleShootMessage {
   const botTroubleShootLink =
     "https://aka.ms/teamsfx-bot-help#how-can-i-troubleshoot-issues-when-teams-bot-isnt-responding-on-azure";
   const botTroubleShootDesc = getLocalizedString("core.deploy.botTroubleShoot");
@@ -88,7 +86,7 @@ export function getBotTroubleShootMessage(
 
   return {
     troubleShootLink: botTroubleShootLink,
-    textForLogging: isBotProject(azureSettings) ? botTroubleShootMsg : "",
+    textForLogging: isBot ? botTroubleShootMsg : "",
     textForMsgBox: botTroubleShootDesc,
     textForActionButton: botTroubleShootLearnMore,
   } as BotTroubleShootMessage;

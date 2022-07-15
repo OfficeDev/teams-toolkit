@@ -33,15 +33,15 @@ export interface ActionBase {
   pre?: (
     context: ContextV3,
     inputs: InputsWithProjectPath
-  ) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+  ) => MaybePromise<Result<undefined, FxError>>;
   post?: (
     context: ContextV3,
     inputs: InputsWithProjectPath
-  ) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+  ) => MaybePromise<Result<undefined, FxError>>;
   exception?: (
     context: ContextV3,
     inputs: InputsWithProjectPath
-  ) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+  ) => MaybePromise<Result<undefined, FxError>>;
 }
 
 export type Action = GroupAction | ShellAction | CallAction | FunctionAction;

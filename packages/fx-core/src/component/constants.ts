@@ -48,13 +48,6 @@ export const componentToScenario = new Map([
   [ComponentNames.TeamsTab, Scenarios.Tab],
 ]);
 
-export const ComponentStateKeys = {
-  [ComponentNames.AzureSQL]: "azure-sql",
-  [ComponentNames.Identity]: "identity",
-  [ComponentNames.AadApp]: "aad",
-  [ComponentNames.KeyVault]: "key-vault",
-};
-
 export const ActionNames = {
   provision: "provision",
   configure: "configure",

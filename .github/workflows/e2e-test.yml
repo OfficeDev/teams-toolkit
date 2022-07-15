@@ -209,21 +209,23 @@ jobs:
             npx mocha --reporter mochawesome --timeout 900000 $file
           fi
 
+      - name: get job id
+        id: get-job-id
+        uses: ayachensiyuan/get-action-job-id@v1.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          run-id: ${{ github.run_id }}
+          run-attempt: ${{ github.run_attempt }}
+
       - name: get report name
         id: get-report-name
         if: ${{ always() }}
         run: |
           name="${{ matrix.cases }}"
-
-          jobs=`curl \
-            -u :${{ secrets.GITHUB_TOKEN }} \
-            https://api.github.com/repos/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs?per_page=100`
-
-          id=`echo $jobs| jq --arg name $name -r '.jobs[] | select(.name == $name) | .id'`
-
           name="${name//'.tests.ts'/}"
           name="${name//.\//}"
-          name="${name//\//_}"_${id}
+          name="${name//\//_}"_${{ steps.get-job-id.outputs.jobId }}
           echo "::set-output name=name::$name"
 
       - name: Upload test report

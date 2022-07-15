@@ -149,7 +149,9 @@ export async function scaffoldSPFx(
 
     const yoEnv: NodeJS.ProcessEnv = process.env;
     yoEnv.PATH = isYoCheckerEnabled()
-      ? `${await yoChecker.getBinFolder()}${path.delimiter}${process.env.PATH ?? ""}`
+      ? `${await (await yoChecker.getBinFolders()).join(path.delimiter)}${path.delimiter}${
+          process.env.PATH ?? ""
+        }`
       : process.env.PATH;
     await cpUtils.executeCommand(
       inputs.projectPath,
@@ -159,7 +161,7 @@ export async function scaffoldSPFx(
         env: yoEnv,
       },
       "yo",
-      "@microsoft/sharepoint",
+      spGeneratorChecker.getSpGeneratorPath(),
       "--skip-install",
       "true",
       "--component-type",

@@ -177,7 +177,8 @@ const configTab: Action = {
         provision: true,
       });
     }
-    projectSettings.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
+    projectSettings.programmingLanguage =
+      projectSettings.programmingLanguage || inputs[CoreQuestionNames.ProgrammingLanguage];
     return ok(["config Tab in projectSettings"]);
   },
 };

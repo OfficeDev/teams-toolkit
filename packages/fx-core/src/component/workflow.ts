@@ -38,7 +38,7 @@ import {
 } from "./utils";
 import { convertToAlphanumericOnly } from "../common/utils";
 import { ActionNotExist, ComponentNotExist } from "./error";
-import { globalVars } from "../core";
+import { globalVars } from "../core/globalVars";
 import { TelemetryConstants, Scenarios } from "./constants";
 
 export async function getAction(

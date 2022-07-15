@@ -13,7 +13,6 @@ import {
 import { ContextV3, MaybePromise, ProvisionContextV3 } from "@microsoft/teamsfx-api/build/types";
 import "reflect-metadata";
 import { Service, Container } from "typedi";
-import { ProgressMessages, ProgressStep } from "../../plugins/resource/apim/constants";
 import { ApimPluginV3 } from "../../plugins/resource/apim/v3";
 import { BuiltInFeaturePluginNames } from "../../plugins/solution/fx-solution/v3/constants";
 import { APIMOutputs, ComponentNames } from "../constants";

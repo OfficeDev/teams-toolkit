@@ -29,6 +29,7 @@ import { AzureStorageClient } from "../../plugins/resource/frontend/clients";
 import { FrontendDeployment } from "../../plugins/resource/frontend/ops/deploy";
 import { AzureResource } from "./azureResource";
 import { getHostingParentComponent } from "../workflow";
+import { FrontendPluginInfo } from "../../plugins/resource/frontend/constants";
 @Service("azure-storage")
 export class AzureStorageResource extends AzureResource {
   readonly name = "azure-storage";
@@ -102,6 +103,12 @@ export class AzureStorageResource extends AzureResource {
     const action: Action = {
       name: "azure-storage.deploy",
       type: "function",
+      enableTelemetry: true,
+      telemetryComponentName: FrontendPluginInfo.PluginName,
+      telemetryEventName: "deploy",
+      errorSource: FrontendPluginInfo.ShortName,
+      errorIssueLink: FrontendPluginInfo.IssueLink,
+      errorHelpLink: FrontendPluginInfo.HelpLink,
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         const parent = getHostingParentComponent(
           context.projectSetting,

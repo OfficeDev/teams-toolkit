@@ -149,6 +149,7 @@ export class GeneratorChecker implements DependencyChecker {
 
   private async installGenerator(): Promise<void> {
     try {
+      await fs.ensureDir(path.join(this.getDefaultInstallPath(), "node_modules"));
       await cpUtils.executeCommand(
         undefined,
         this._logger,

@@ -15,6 +15,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { hasAzureResourceV3 } from "../../common/projectSettingsHelperV3";
+import { globalVars } from "../../core";
 import { resourceGroupHelper } from "../../plugins/solution/fx-solution/utils/ResourceGroupHelper";
 import {
   askForProvisionConsent,
@@ -56,6 +57,7 @@ export class FxPreProvisionAction implements FunctionAction {
     if (!tenantIdInConfig) {
       appManifest.tenantId = tenantIdInToken;
       solutionConfig.teamsAppTenantId = tenantIdInToken;
+      globalVars.m365TenantId = tenantIdInToken;
     }
     // 3. check Azure configs
     if (hasAzureResourceV3(ctx.projectSetting) && envInfo.envName !== "local") {

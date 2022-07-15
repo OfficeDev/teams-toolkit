@@ -40,6 +40,7 @@ import { convertToAlphanumericOnly } from "../common/utils";
 import { ActionNotExist, ComponentNotExist } from "./error";
 import { TelemetryConstants } from "./constants";
 import { Scenarios } from "./constants";
+import { globalVars } from "../core";
 
 export async function getAction(
   name: string,
@@ -437,6 +438,8 @@ export async function executeFunctionAction(
   const componentName = action.telemetryComponentName || arr[0];
   const telemetryProps = {
     [TelemetryConstants.properties.component]: componentName,
+    [TelemetryConstants.properties.appId]: globalVars.teamsAppId,
+    [TelemetryConstants.properties.tenantId]: globalVars.m365TenantId,
   };
   let progressBar;
   try {
@@ -508,15 +511,26 @@ export async function executeFunctionAction(
     context.logProvider.info(`executeFunctionAction [${action.name}] finish!`);
     return ok(undefined);
   } catch (e) {
-    const error = assembleError(e);
-    if (error.source === "unknown") {
-      error.source = action.errorSource || error.source;
+    let fxError;
+    if (action.errorHandler) {
+      fxError = action.errorHandler(e);
+    } else {
+      fxError = assembleError(e);
+      if (fxError.source === "unknown") {
+        fxError.source = action.errorSource || fxError.source;
+      }
+      if (fxError instanceof UserError) {
+        fxError.helpLink = fxError.helpLink || action.errorHelpLink;
+      }
+      if (fxError instanceof SystemError) {
+        fxError.issueLink = fxError.issueLink || action.errorIssueLink;
+      }
     }
     // send error telemetry
     if (action.enableTelemetry) {
-      const errorCode = error.source + "." + error.name;
+      const errorCode = fxError.source + "." + fxError.name;
       const errorType =
-        error instanceof SystemError
+        fxError instanceof SystemError
           ? TelemetryConstants.values.systemError
           : TelemetryConstants.values.userError;
       context.telemetryReporter.sendTelemetryEvent(eventName, {
@@ -524,11 +538,11 @@ export async function executeFunctionAction(
         [TelemetryConstants.properties.success]: TelemetryConstants.values.no,
         [TelemetryConstants.properties.errorCode]: errorCode,
         [TelemetryConstants.properties.errorType]: errorType,
-        [TelemetryConstants.properties.errorMessage]: error.message,
+        [TelemetryConstants.properties.errorMessage]: fxError.message,
       });
     }
     progressBar?.end(false);
-    return err(error);
+    return err(fxError);
   }
 }
 

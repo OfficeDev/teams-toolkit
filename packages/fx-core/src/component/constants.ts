@@ -74,6 +74,8 @@ export const TelemetryConstants = {
   eventPrefix: "-start",
   properties: {
     component: "component",
+    appId: "appid",
+    tenantId: "tenant-id",
     success: "success",
     errorCode: "error-code",
     errorType: "error-type",

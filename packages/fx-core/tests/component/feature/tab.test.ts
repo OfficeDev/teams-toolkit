@@ -24,6 +24,7 @@ import { MockTools, randomAppName } from "../../core/utils";
 import "../../../src/component/core";
 import { environmentManager } from "../../../src/core/environment";
 import { ComponentNames } from "../../../src/component/constants";
+import * as aadManifest from "../../../src/core/generateAadManifestTemplate";
 describe("Tab Feature", () => {
   const sandbox = createSandbox();
   const tools = new MockTools();
@@ -57,6 +58,7 @@ describe("Tab Feature", () => {
     sandbox.stub(fs, "appendFileSync").returns();
     sandbox.stub(fs, "writeFileSync").returns();
     sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev"]));
+    sandbox.stub(aadManifest, "generateAadManifestTemplate").resolves();
   });
 
   afterEach(() => {

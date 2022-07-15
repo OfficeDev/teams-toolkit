@@ -102,13 +102,13 @@ export class DotnetChecker implements DepsChecker {
   }
 
   public async resolve(): Promise<DependencyStatus> {
-    let installationInfo: DependencyStatus;
     try {
-      installationInfo = await this.getInstallationInfo();
+      let installationInfo = await this.getInstallationInfo();
       if (!installationInfo.isInstalled) {
         await this.install();
         installationInfo = await this.getInstallationInfo();
       }
+      return installationInfo;
     } catch (error) {
       await this._logger.printDetailLog();
       await this._logger.error(`${error.message}, error = '${error}'`);
@@ -122,8 +122,6 @@ export class DotnetChecker implements DepsChecker {
     } finally {
       this._logger.cleanup();
     }
-
-    return installationInfo;
   }
 
   public async install(): Promise<void> {

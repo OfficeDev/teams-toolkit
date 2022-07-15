@@ -44,76 +44,67 @@ export abstract class NodeChecker implements DepsChecker {
 
   public async getInstallationInfo(): Promise<DependencyStatus> {
     try {
-      return await this.checkInstallation();
-    } catch (error) {
-      if (error instanceof DepsCheckerError) {
+      const supportedVersions = await this.getSupportedVersions();
+
+      this._logger.debug(
+        `NodeChecker checking for supported versions: '${JSON.stringify(supportedVersions)}'`
+      );
+
+      const currentVersion = await getInstalledNodeVersion();
+      if (currentVersion === null) {
+        this._telemetry.sendUserErrorEvent(
+          DepsCheckerEvent.nodeNotFound,
+          "Node.js can't be found."
+        );
+        const error = new NodeNotFoundError(
+          Messages.NodeNotFound.split("@NodeVersion").join(
+            supportedVersions[supportedVersions.length - 1]
+          ),
+          this._nodeNotFoundHelpLink
+        );
         return await this.getDepsInfo(false, undefined, error);
       }
+      this._telemetry.sendEvent(DepsCheckerEvent.nodeVersion, {
+        "global-version": `${currentVersion.version}`,
+        "global-major-version": `${currentVersion.majorVersion}`,
+      });
+
+      if (!NodeChecker.isVersionSupported(supportedVersions, currentVersion)) {
+        const supportedVersionsString = supportedVersions.map((v) => "v" + v).join(" ,");
+        this._telemetry.sendUserErrorEvent(
+          this._nodeNotSupportedEvent,
+          `Node.js ${currentVersion.version} is not supported.`
+        );
+        const error = new NodeNotSupportedError(
+          Messages.NodeNotSupported.split("@CurrentVersion")
+            .join(currentVersion.version)
+            .split("@SupportedVersions")
+            .join(supportedVersionsString),
+          await this.getNodeNotSupportedHelpLink()
+        );
+        return await this.getDepsInfo(false, currentVersion.version, error);
+      }
+
+      return await this.getDepsInfo(true, currentVersion.version);
+    } catch (error) {
       return await this.getDepsInfo(
         false,
         undefined,
         new DepsCheckerError(error.message, nodeNotFoundHelpLink)
       );
     }
-  }
-
-  public async checkInstallation(): Promise<DependencyStatus> {
-    const supportedVersions = await this.getSupportedVersions();
-
-    this._logger.debug(
-      `NodeChecker checking for supported versions: '${JSON.stringify(supportedVersions)}'`
-    );
-
-    const currentVersion = await getInstalledNodeVersion();
-    if (currentVersion === null) {
-      this._telemetry.sendUserErrorEvent(DepsCheckerEvent.nodeNotFound, "Node.js can't be found.");
-      throw new NodeNotFoundError(
-        Messages.NodeNotFound.split("@NodeVersion").join(
-          supportedVersions[supportedVersions.length - 1]
-        ),
-        this._nodeNotFoundHelpLink
-      );
-    }
-    this._telemetry.sendEvent(DepsCheckerEvent.nodeVersion, {
-      "global-version": `${currentVersion.version}`,
-      "global-major-version": `${currentVersion.majorVersion}`,
-    });
-
-    if (!NodeChecker.isVersionSupported(supportedVersions, currentVersion)) {
-      const supportedVersionsString = supportedVersions.map((v) => "v" + v).join(" ,");
-      this._telemetry.sendUserErrorEvent(
-        this._nodeNotSupportedEvent,
-        `Node.js ${currentVersion.version} is not supported.`
-      );
-      throw new NodeNotSupportedError(
-        Messages.NodeNotSupported.split("@CurrentVersion")
-          .join(currentVersion.version)
-          .split("@SupportedVersions")
-          .join(supportedVersionsString),
-        await this.getNodeNotSupportedHelpLink()
-      );
-    }
-
-    return await this.getDepsInfo(true, currentVersion.version);
   }
 
   public async resolve(): Promise<DependencyStatus> {
-    try {
-      return await this.checkInstallation();
-    } catch (error) {
+    const installationInfo = await this.getInstallationInfo();
+    if (installationInfo.error) {
       await this._logger.printDetailLog();
-      await this._logger.error(`${error.message}, error = '${error}'`);
-      if (error instanceof DepsCheckerError) {
-        return await this.getDepsInfo(false, undefined, error);
-      }
-      return await this.getDepsInfo(
-        false,
-        undefined,
-        new DepsCheckerError(error.message, nodeNotFoundHelpLink)
+      await this._logger.error(
+        `${installationInfo.error.message}, error = '${installationInfo.error}'`
       );
-    } finally {
-      this._logger.cleanup();
     }
+    this._logger.cleanup();
+    return installationInfo;
   }
 
   public async install(): Promise<void> {

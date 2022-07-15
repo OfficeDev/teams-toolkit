@@ -3,10 +3,8 @@
 
 import { DepsLogger, EmptyLogger } from "./depsLogger";
 import { DepsTelemetry } from "./depsTelemetry";
-import { DependencyStatus, DepsChecker, DepsInfo, DepsType } from "./depsChecker";
+import { DependencyStatus, DepsChecker, DepsType } from "./depsChecker";
 import { CheckerFactory } from "./checkerFactory";
-import { DepsCheckerError } from "./depsError";
-import { NodeChecker } from "./internal/nodeChecker";
 
 export type DepsOptions = {
   fastFail?: boolean;

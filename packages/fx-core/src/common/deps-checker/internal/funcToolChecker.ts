@@ -108,12 +108,13 @@ export class FuncToolChecker implements DepsChecker {
   }
 
   public async getInstallationInfo(): Promise<DependencyStatus> {
-    const isGlobalFuncInstalled: boolean = await this.isGlobalFuncInstalled();
+    const globalFuncVersion: string | undefined = await this.checkGlobalFuncVersion();
+    const isGlobalFuncInstalled = !!globalFuncVersion;
     const isPortableFuncInstalled: boolean = await this.isPortableFuncInstalled();
 
     if (isGlobalFuncInstalled) {
       this._telemetry.sendEvent(DepsCheckerEvent.funcAlreadyInstalled, {
-        "global-func-version": `${await this.queryGlobalFuncVersion()}`,
+        "global-func-version": globalFuncVersion,
       });
       if (!isPortableFuncInstalled) {
         await this.cleanup();
@@ -172,8 +173,14 @@ export class FuncToolChecker implements DepsChecker {
   }
 
   public async isGlobalFuncInstalled(): Promise<boolean> {
+    return !!(await this.checkGlobalFuncVersion());
+  }
+
+  public async checkGlobalFuncVersion(): Promise<string | undefined> {
     const globalFuncVersion = await this.queryGlobalFuncVersion();
-    return globalFuncVersion !== null && supportedVersions.includes(globalFuncVersion);
+    return globalFuncVersion !== null && supportedVersions.includes(globalFuncVersion)
+      ? globalFuncVersion
+      : undefined;
   }
 
   public async install(): Promise<void> {

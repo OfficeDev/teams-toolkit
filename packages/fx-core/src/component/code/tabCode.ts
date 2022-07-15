@@ -224,13 +224,14 @@ export class TabCodeProvider implements SourceCodeProvider {
       addToEnvs(EnvKeys.FuncName, teamsApi?.functionNames[0]);
       addToEnvs(
         EnvKeys.FuncEndpoint,
-        // TODO: Read function app endpoint from inputs
         ctx.envInfo?.state?.[ComponentNames.TeamsApi]?.functionEndpoint as string
       );
     }
+    if (connections?.includes(ComponentNames.AadApp)) {
+      addToEnvs(EnvKeys.ClientID, ctx.envInfo?.state?.[ComponentNames.AadApp]?.clientId as string);
+      addToEnvs(EnvKeys.StartLoginPage, DependentPluginInfo.StartLoginPageURL);
+    }
 
-    // TODO: add environment variables for aad, simple auth
-    addToEnvs(EnvKeys.StartLoginPage, DependentPluginInfo.StartLoginPageURL);
     return envs;
   }
   private async doBlazorBuild(tabPath: string): Promise<string> {

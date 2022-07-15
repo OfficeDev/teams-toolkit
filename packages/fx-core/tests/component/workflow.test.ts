@@ -15,7 +15,6 @@ import "../../src/component/feature/bot";
 import "../../src/component/feature/sql";
 import { createContextV3 } from "../../src/component/utils";
 import { runAction } from "../../src/component/workflow";
-import { getProjectSettingsPath } from "../../src/core/middleware/projectSettingsLoader";
 import { MockTools, randomAppName } from "../core/utils";
 import * as provisionV3 from "../../src/plugins/solution/fx-solution/v3/provision";
 import { AppStudioClient } from "../../src/plugins/resource/appstudio/appStudio";
@@ -30,12 +29,11 @@ import { YoChecker } from "../../src/plugins/resource/spfx/depsChecker/yoChecker
 import { GeneratorChecker } from "../../src/plugins/resource/spfx/depsChecker/generatorChecker";
 import { cpUtils } from "../../src/plugins/solution/fx-solution/utils/depsChecker/cpUtils";
 import * as uuid from "uuid";
-import * as appManifest from "../../src/component/resource/appManifest/appManifest";
+import * as aadManifest from "../../src/core/generateAadManifestTemplate";
 import {
   SPFXQuestionNames,
   versionCheckQuestion,
 } from "../../src/plugins/resource/spfx/utils/questions";
-import * as spfxCode from "../../src/component/code/spfxTabCode";
 import { DefaultManifestProvider } from "../../src/component/resource/appManifest/manifestProvider";
 import { ComponentNames } from "../../src/component/constants";
 
@@ -285,6 +283,7 @@ describe("Workflow test for v3", () => {
   it("azure-storage.deploy", async () => {
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(FrontendDeployment, "doFrontendDeploymentV3").resolves();
+    sandbox.stub(aadManifest, "generateAadManifestTemplate").resolves();
     sandbox
       .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
       .resolves(TestHelper.fakeCredential);

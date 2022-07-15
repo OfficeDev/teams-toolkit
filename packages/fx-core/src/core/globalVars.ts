@@ -39,5 +39,6 @@ export function setCurrentStage(stage: Stage): void {
 export class GlobalVars {
   isVS?: boolean = false;
   teamsAppId = "";
+  m365TenantId = "";
 }
 export const globalVars = new GlobalVars();

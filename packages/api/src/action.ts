@@ -79,7 +79,7 @@ export interface CallAction extends ActionBase {
   required: boolean; // required=true, throw error of target action does not exist; required=false, ignore this step if target action does not exist.
   targetAction: string;
 }
-
+export type ErrorHandler = (error: any) => FxError;
 /**
  * function action: run a javascript function call that can do any kinds of work
  */
@@ -87,6 +87,9 @@ export interface FunctionAction extends ActionBase {
   name: string;
   type: "function";
   errorSource?: string;
+  errorHelpLink?: string;
+  errorIssueLink?: string;
+  errorHandler?: ErrorHandler;
   enableTelemetry?: boolean;
   telemetryComponentName?: string;
   telemetryEventName?: string;

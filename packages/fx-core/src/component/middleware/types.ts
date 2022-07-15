@@ -28,5 +28,5 @@ export interface ActionTelemetryReporter extends TelemetryReporter {
   sendEndEventWithError?: (context: ActionContext, error: FxError) => void;
 }
 
-export type ErrorHandler = (context: ActionContext, error: any) => FxError;
+export type AErrorHandler = (context: ActionContext, error: any) => FxError;
 export type ActionHandler = (context: ActionContext) => void;

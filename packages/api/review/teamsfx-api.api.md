@@ -672,6 +672,9 @@ export const EnvNamePlaceholder = "@envName";
 export const EnvStateFileNameTemplate: string;
 
 // @public (undocumented)
+export type ErrorHandler = (error: any) => FxError;
+
+// @public (undocumented)
 export interface ErrorOptionBase {
     // (undocumented)
     displayMessage?: string;
@@ -754,6 +757,12 @@ export interface FunctionAction extends ActionBase {
     enableProgressBar?: boolean;
     // (undocumented)
     enableTelemetry?: boolean;
+    // (undocumented)
+    errorHandler?: ErrorHandler;
+    // (undocumented)
+    errorHelpLink?: string;
+    // (undocumented)
+    errorIssueLink?: string;
     // (undocumented)
     errorSource?: string;
     execute: (context: ContextV3, inputs: InputsWithProjectPath, progress?: IProgressHandler, telemetryProps?: Record<string, string>) => MaybePromise<Result<Effect[], FxError>>;

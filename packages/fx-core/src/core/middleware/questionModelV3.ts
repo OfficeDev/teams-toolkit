@@ -170,7 +170,6 @@ async function getQuestionsForDeploy(
   selectQuestion.default = options.map((i) => i.id);
   return ok(new QTreeNode(selectQuestion));
 }
-
 async function getQuestionsForAddFeature(
   ctx: v2.Context,
   inputs: Inputs

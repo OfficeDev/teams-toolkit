@@ -31,6 +31,7 @@ import {
   AzureConstants,
   MaxLengths,
   ProgressBarConstants,
+  TelemetryKeys,
 } from "../../plugins/resource/bot/constants";
 import { AADRegistration } from "../../plugins/resource/bot/aadRegistration";
 import { Messages } from "../../plugins/resource/bot/resources/messages";
@@ -42,6 +43,7 @@ import { normalizeName } from "../utils";
 import { getComponent } from "../workflow";
 import * as clientFactory from "../../plugins/resource/bot/clientFactory";
 import { AzureResource } from "./azureResource";
+import { telemetryHelper } from "../../plugins/resource/bot/utils/telemetry-helper";
 @Service("bot-service")
 export class BotService extends AzureResource {
   outputs = {
@@ -81,6 +83,14 @@ export class BotService extends AzureResource {
       enableProgressBar: true,
       progressTitle: `Provision ${this.name}`,
       progressSteps: 1,
+      enableTelemetry: true,
+      telemetryProps: commonTelemetryPropsForBot(context),
+      telemetryComponentName: "fx-resource-bot",
+      telemetryEventName: "provision",
+      errorHandler: (e, t) => {
+        telemetryHelper.fillAppStudioErrorProperty(e, t);
+        return e as FxError;
+      },
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         const ctx = context as ProvisionContextV3;
         const plans: Effect[] = [];
@@ -112,7 +122,8 @@ export class BotService extends AzureResource {
       execute: async (
         context: ContextV3,
         inputs: InputsWithProjectPath,
-        progress?: IProgressHandler
+        progress?: IProgressHandler,
+        telemetryProps?: Record<string, string>
       ) => {
         // create bot aad app by API call
         await progress?.next(ProgressBarConstants.PROVISION_STEP_BOT_REG);
@@ -173,6 +184,17 @@ export class BotService extends AzureResource {
     const action: Action = {
       name: "bot-service.configure",
       type: "function",
+      enableProgressBar: true,
+      progressTitle: `Provision ${this.name}`,
+      progressSteps: 1,
+      enableTelemetry: true,
+      telemetryProps: commonTelemetryPropsForBot(context),
+      telemetryComponentName: "fx-resource-bot",
+      telemetryEventName: "post-local-debug",
+      errorHandler: (e, t) => {
+        telemetryHelper.fillAppStudioErrorProperty(e, t);
+        return e as FxError;
+      },
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         const ctx = context as ProvisionContextV3;
         const plans: Effect[] = [];
@@ -185,7 +207,12 @@ export class BotService extends AzureResource {
         }
         return ok(plans);
       },
-      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+      execute: async (
+        context: ContextV3,
+        inputs: InputsWithProjectPath,
+        progress?: IProgressHandler,
+        telemetryProps?: Record<string, string>
+      ) => {
         // create bot aad app by API call
         const ctx = context as ProvisionContextV3;
         const teamsBot = getComponent(ctx.projectSetting, ComponentNames.TeamsBot);
@@ -205,6 +232,7 @@ export class BotService extends AzureResource {
           CheckThrowSomethingMissing(ConfigNames.LOCAL_ENDPOINT, teamsBotState.endpoint);
           CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
           CheckThrowSomethingMissing(ConfigNames.LOCAL_BOT_ID, teamsBotState.botId);
+          progress?.next("update message endpoint in app studio");
           await AppStudio.updateMessageEndpoint(
             appStudioToken!,
             teamsBotState.botId,
@@ -284,4 +312,16 @@ export async function getAzureAccountCredential(
     throw new PreconditionError(Messages.FailToGetAzureCreds, [Messages.TryLoginAzure]);
   }
   return serviceClientCredentials;
+}
+
+export function commonTelemetryPropsForBot(context: ContextV3): Record<string, string> {
+  const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
+  const props: Record<string, string> = {
+    [TelemetryKeys.HostType]:
+      teamsBot?.hosting === ComponentNames.Function ? "azure-function" : "app-service",
+    [TelemetryKeys.BotCapabilities]: teamsBot?.capabilities
+      ? JSON.stringify(teamsBot.capabilities)
+      : "",
+  };
+  return props;
 }

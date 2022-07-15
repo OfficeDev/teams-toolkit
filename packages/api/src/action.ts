@@ -79,7 +79,7 @@ export interface CallAction extends ActionBase {
   required: boolean; // required=true, throw error of target action does not exist; required=false, ignore this step if target action does not exist.
   targetAction: string;
 }
-export type ErrorHandler = (error: any) => FxError;
+export type ErrorHandler = (error: any, telemetryProps: Record<string, string>) => FxError;
 /**
  * function action: run a javascript function call that can do any kinds of work
  */
@@ -93,6 +93,7 @@ export interface FunctionAction extends ActionBase {
   enableTelemetry?: boolean;
   telemetryComponentName?: string;
   telemetryEventName?: string;
+  telemetryProps?: Record<string, string>;
   enableProgressBar?: boolean;
   progressTitle?: string;
   progressSteps?: number;

@@ -93,7 +93,13 @@ export abstract class AzureAppService extends AzureResource {
         await progress?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_FOLDER);
         const zipBuffer = await utils.zipFolderAsync(publishDir, "");
 
-        await azureWebSiteDeploy(resourceId, ctx.tokenProvider, zipBuffer, progress);
+        await azureWebSiteDeploy(
+          resourceId,
+          ctx.tokenProvider,
+          zipBuffer,
+          context.logProvider,
+          progress
+        );
         return ok([
           {
             type: "service",

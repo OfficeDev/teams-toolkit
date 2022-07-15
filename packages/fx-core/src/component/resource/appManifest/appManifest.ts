@@ -156,6 +156,9 @@ export class AppManifest implements CloudResource {
     const action: Action = {
       name: "app-manifest.provision",
       type: "function",
+      enableProgressBar: true,
+      progressTitle: getLocalizedString("plugins.appstudio.provisionTitle"),
+      progressSteps: 1,
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         return ok([
           {
@@ -165,8 +168,15 @@ export class AppManifest implements CloudResource {
           },
         ]);
       },
-      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+      execute: async (
+        context: ContextV3,
+        inputs: InputsWithProjectPath,
+        progress?: IProgressHandler
+      ) => {
         const ctx = context as ProvisionContextV3;
+        await progress?.next(
+          getLocalizedString("plugins.appstudio.provisionProgress", ctx.projectSetting.appName)
+        );
         const res = await createTeamsApp(ctx, inputs, ctx.envInfo, ctx.tokenProvider);
         if (res.isErr()) return err(res.error);
         ctx.envInfo.state[ComponentNames.AppManifest].teamsAppId = res.value;
@@ -184,11 +194,15 @@ export class AppManifest implements CloudResource {
   }
   configure(
     context: ContextV3,
-    inputs: InputsWithProjectPath
+    inputs: InputsWithProjectPath,
+    progress?: IProgressHandler
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const action: Action = {
       name: "app-manifest.configure",
       type: "function",
+      enableProgressBar: true,
+      progressTitle: getLocalizedString("plugins.appstudio.provisionTitle"),
+      progressSteps: 1,
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         return ok([
           {
@@ -200,6 +214,9 @@ export class AppManifest implements CloudResource {
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const ctx = context as ProvisionContextV3;
+        await progress?.next(
+          getLocalizedString("plugins.appstudio.postProvisionProgress", ctx.projectSetting.appName)
+        );
         const res = await updateTeamsApp(ctx, inputs, ctx.envInfo, ctx.tokenProvider);
         if (res.isErr()) return err(res.error);
         return ok([
@@ -258,7 +275,12 @@ export class AppManifest implements CloudResource {
         ) {
           if (telemetryProps) telemetryProps[TelemetryPropertyKey.manual] = String(true);
           try {
-            const appPackagePath = await buildTeamsAppPackage(inputs.projectPath, ctx.envInfo);
+            const appPackagePath = await buildTeamsAppPackage(
+              inputs.projectPath,
+              ctx.envInfo,
+              false,
+              telemetryProps
+            );
             const msg = getLocalizedString(
               "plugins.appstudio.adminApprovalTip",
               ctx.projectSetting.appName,

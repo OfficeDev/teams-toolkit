@@ -672,7 +672,7 @@ export const EnvNamePlaceholder = "@envName";
 export const EnvStateFileNameTemplate: string;
 
 // @public (undocumented)
-export type ErrorHandler = (error: any) => FxError;
+export type ErrorHandler = (error: any, telemetryProps: Record<string, string>) => FxError;
 
 // @public (undocumented)
 export interface ErrorOptionBase {
@@ -776,6 +776,8 @@ export interface FunctionAction extends ActionBase {
     telemetryComponentName?: string;
     // (undocumented)
     telemetryEventName?: string;
+    // (undocumented)
+    telemetryProps?: Record<string, string>;
     // (undocumented)
     type: "function";
 }

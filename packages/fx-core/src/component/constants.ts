@@ -113,6 +113,25 @@ export const IdentityOutputs = {
     key: "identityClientId",
     bicepVariable: "provisionOutputs.identityOutput.value.identityClientId",
   },
+  identityPrincipalId: {
+    key: "identityPrincipalId",
+    bicepVariable: "provisionOutputs.identityOutput.value.identityPrincipalId",
+  },
+};
+
+export const KeyVaultOutputs = {
+  keyVaultResourceId: {
+    key: "keyVaultResourceId",
+    bicepVariable: "provisionOutputs.keyVaultOutput.value.keyVaultResourceId",
+  },
+  m365ClientSecretReference: {
+    key: "m365ClientSecretReference",
+    bicepVariable: "provisionOutputs.keyVaultOutput.value.m365ClientSecretReference",
+  },
+  botClientSecretReference: {
+    key: "botClientSecretReference",
+    bicepVariable: "provisionOutputs.keyVaultOutput.value.botClientSecretReference",
+  },
 };
 
 export const APIMOutputs = {

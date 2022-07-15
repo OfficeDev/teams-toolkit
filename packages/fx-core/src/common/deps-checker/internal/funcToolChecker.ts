@@ -65,7 +65,7 @@ export class FuncToolChecker implements DepsChecker {
       name: funcToolName,
       type: DepsType.FuncCoreTools,
       isInstalled: isPortableFuncInstalled || isGlobalFuncInstalled,
-      command: await this.command(),
+      command: await this.command(isPortableFuncInstalled, isGlobalFuncInstalled),
       details: {
         isLinuxSupported: false,
         installVersion: installVersion,
@@ -77,7 +77,7 @@ export class FuncToolChecker implements DepsChecker {
   }
 
   public async resolve(): Promise<DependencyStatus> {
-    let installationInfo: DependencyStatus;
+    let installationInfo: DependencyStatus & { globalFuncVersion: FuncVersion | null };
     try {
       installationInfo = await this.getInstallationInfo();
       if (!installationInfo.isInstalled) {
@@ -99,7 +99,7 @@ export class FuncToolChecker implements DepsChecker {
       this._logger.cleanup();
     }
 
-    const error = await this.checkGlobalFuncAndNode();
+    const error = await this.checkGlobalFuncAndNode(installationInfo.globalFuncVersion);
     if (error) {
       return await this.getDepsInfo(false, false, error);
     }
@@ -107,14 +107,16 @@ export class FuncToolChecker implements DepsChecker {
     return installationInfo;
   }
 
-  public async getInstallationInfo(): Promise<DependencyStatus> {
-    const globalFuncVersion: string | undefined = await this.checkGlobalFuncVersion();
-    const isGlobalFuncInstalled = !!globalFuncVersion;
+  public async getInstallationInfo(): Promise<
+    DependencyStatus & { globalFuncVersion: FuncVersion | null }
+  > {
+    const globalFunc = await this.checkGlobalFuncVersion();
+    const isGlobalFuncInstalled = globalFunc.isInstalled;
     const isPortableFuncInstalled: boolean = await this.isPortableFuncInstalled();
 
     if (isGlobalFuncInstalled) {
       this._telemetry.sendEvent(DepsCheckerEvent.funcAlreadyInstalled, {
-        "global-func-version": globalFuncVersion,
+        "global-func-version": globalFunc.globalFuncVersion ?? "",
       });
       if (!isPortableFuncInstalled) {
         await this.cleanup();
@@ -125,25 +127,27 @@ export class FuncToolChecker implements DepsChecker {
       this._telemetry.sendEvent(DepsCheckerEvent.funcInstallCompleted);
     }
 
-    return await this.getDepsInfo(isPortableFuncInstalled, isGlobalFuncInstalled);
+    const depsInfo = await this.getDepsInfo(isPortableFuncInstalled, isGlobalFuncInstalled);
+    return Object.assign(depsInfo, { globalFuncVersion: globalFunc.globalFuncVersion });
   }
 
-  private async checkGlobalFuncAndNode(): Promise<FuncNodeNotMatchedError | undefined> {
-    const funcVersion = await this.queryGlobalFuncVersion();
-    if (!funcVersion) {
+  private async checkGlobalFuncAndNode(
+    globalFuncVersion: FuncVersion | null
+  ): Promise<FuncNodeNotMatchedError | undefined> {
+    if (!globalFuncVersion) {
       return undefined;
     }
     const nodeVersion = (await getInstalledNodeVersion())?.majorVersion;
     if (!nodeVersion) {
       return undefined;
     }
-    if (FuncNodeVersionWhiteList[funcVersion.toString()]![nodeVersion]) {
+    if (FuncNodeVersionWhiteList[globalFuncVersion.toString()]![nodeVersion]) {
       return undefined;
     }
     return new FuncNodeNotMatchedError(
       Messages.funcNodeNotMatched
         .split("@FuncVersion")
-        .join(`v${funcVersion.toString()}`)
+        .join(`v${globalFuncVersion.toString()}`)
         .split("@NodeVersion")
         .join(`v${nodeVersion}`),
       functionDepsVersionsLink
@@ -172,15 +176,15 @@ export class FuncToolChecker implements DepsChecker {
     return isVersionSupported && hasSentinel;
   }
 
-  public async isGlobalFuncInstalled(): Promise<boolean> {
-    return !!(await this.checkGlobalFuncVersion());
-  }
-
-  public async checkGlobalFuncVersion(): Promise<string | undefined> {
+  public async checkGlobalFuncVersion(): Promise<{
+    isInstalled: boolean;
+    globalFuncVersion: FuncVersion | null;
+  }> {
     const globalFuncVersion = await this.queryGlobalFuncVersion();
-    return globalFuncVersion !== null && supportedVersions.includes(globalFuncVersion)
-      ? globalFuncVersion
-      : undefined;
+    return {
+      isInstalled: globalFuncVersion !== null && supportedVersions.includes(globalFuncVersion),
+      globalFuncVersion: globalFuncVersion,
+    };
   }
 
   public async install(): Promise<void> {
@@ -272,11 +276,14 @@ export class FuncToolChecker implements DepsChecker {
     );
   }
 
-  public async command(): Promise<string> {
-    if (await this.isPortableFuncInstalled()) {
+  public async command(
+    isPortableFuncInstalled: boolean,
+    isGlobalFuncInstalled: boolean
+  ): Promise<string> {
+    if (isPortableFuncInstalled) {
       return `node "${FuncToolChecker.getPortableFuncExecPath()}"`;
     }
-    if (await this.isGlobalFuncInstalled()) {
+    if (isGlobalFuncInstalled) {
       return "func";
     }
     return "npx azure-functions-core-tools@3";

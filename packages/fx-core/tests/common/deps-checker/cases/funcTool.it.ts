@@ -48,8 +48,8 @@ describe("FuncToolChecker E2E Test", async () => {
     expect((await funcToolChecker.getInstallationInfo()).isInstalled).to.be.equal(true);
     expect(res.details.binFolders).to.be.equal(funcToolChecker.getPortableFuncBinFolders());
     assert.isTrue(
-      /node "[^"]*"$/g.test(await funcToolChecker.command()),
-      `should use portable func, and func command = ${await funcToolChecker.command()}`
+      /node "[^"]*"$/g.test(res.command),
+      `should use portable func, and func command = ${res.command}`
     );
     await assertFuncStart(funcToolChecker);
   });
@@ -135,16 +135,13 @@ describe("FuncToolChecker E2E Test", async () => {
 
     assert.isTrue(res.isInstalled);
     expect((await funcToolChecker.getInstallationInfo()).isInstalled).to.be.equal(true);
-    assert.isTrue(
-      /node "[^"]*"$/g.test(await funcToolChecker.command()),
-      `should use portable func`
-    );
+    assert.isTrue(/node "[^"]*"$/g.test(res.command), `should use portable func`);
     await assertFuncStart(funcToolChecker);
   });
 });
 
 async function assertFuncStart(funcToolChecker: FuncToolChecker): Promise<void> {
-  const funcExecCommand = await funcToolChecker.command();
+  const funcExecCommand = (await funcToolChecker.getInstallationInfo()).command;
   const funcStartResult: cpUtils.ICommandResult = await cpUtils.tryExecuteCommand(
     undefined,
     logger,

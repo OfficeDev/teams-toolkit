@@ -51,12 +51,7 @@ export class DotnetChecker implements DepsChecker {
     isInstalled: boolean,
     error?: DepsCheckerError
   ): Promise<DependencyStatus> {
-    const map = new Map<string, string>();
     const execPath = await this.getDotnetExecPathFromConfig();
-    if (execPath) {
-      map.set("execPath", execPath);
-    }
-    map.set("configPath", DotnetChecker.getDotnetConfigPath());
     return {
       name: DotnetCoreSDKName,
       type: DepsType.Dotnet,

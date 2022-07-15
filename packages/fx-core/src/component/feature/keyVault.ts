@@ -19,51 +19,38 @@ import "../connection/azureWebAppConfig";
 import "../resource/azureSql";
 import "../resource/identity";
 import { ComponentNames } from "../constants";
-import { hasApi } from "../../common/projectSettingsHelperV3";
 
-@Service("sql")
-export class Sql {
-  name = "sql";
+@Service("key-vault-feature")
+export class KeyVaultFeature {
+  name = "key-vault-feature";
 
   /**
-   * 1. config sql
-   * 2. add sql provision bicep
-   * 3. re-generate resources that connect to sql
+   * 1. config keyVault
+   * 2. add keyVault provision bicep
+   * 3. re-generate resources that connect to key-vault
    * 4. persist bicep
    */
   add(
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const sqlComponent = getComponent(context.projectSetting, ComponentNames.AzureSQL);
+    const keyVaultComponent = getComponent(context.projectSetting, ComponentNames.KeyVault);
     const webAppComponent = getComponent(context.projectSetting, ComponentNames.AzureWebApp);
     const functionComponent = getComponent(context.projectSetting, ComponentNames.Function);
-    const provisionType = sqlComponent ? "database" : "server";
-    const hasFunc = hasApi(context.projectSetting);
-    const dependentActions: Action[] = [];
-    if (!hasFunc) {
-      dependentActions.push({
-        name: "call:teams-api.add",
-        type: "call",
-        required: true,
-        targetAction: "teams-api.add",
-      });
-    }
     const actions: Action[] = [
-      ...dependentActions,
       {
-        name: "sql.configSql",
+        name: "keyVault.configKeyVault",
         type: "function",
         plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-          if (sqlComponent) {
+          if (keyVaultComponent) {
             return ok([]);
           }
-          const remarks: string[] = ["add component 'azure-sql' in projectSettings"];
+          const remarks: string[] = ["add component 'key-vault' in projectSettings"];
           if (webAppComponent) {
-            remarks.push("connect 'azure-sql' to component 'azure-web-app' in projectSettings");
+            remarks.push("connect 'key-vault' to component 'azure-web-app' in projectSettings");
           }
           if (functionComponent) {
-            remarks.push("connect 'azure-sql' to component 'azure-function' in projectSettings");
+            remarks.push("connect 'key-vault' to component 'azure-function' in projectSettings");
           }
           return ok([
             {
@@ -75,22 +62,23 @@ export class Sql {
           ]);
         },
         execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-          if (sqlComponent) return ok([]);
+          if (keyVaultComponent) return ok([]);
           const projectSettings = context.projectSetting;
-          const remarks: string[] = ["add component 'azure-sql' in projectSettings"];
+          const remarks: string[] = ["add component 'key-vault' in projectSettings"];
           projectSettings.components.push({
-            name: "azure-sql",
+            name: ComponentNames.KeyVault,
+            connections: [ComponentNames.Identity],
             provision: true,
           });
           if (webAppComponent) {
-            if (!webAppComponent.connections) webAppComponent.connections = [];
-            webAppComponent.connections.push("azure-sql");
-            remarks.push("connect 'azure-sql' to component 'azure-web-app' in projectSettings");
+            webAppComponent.connections ??= [];
+            webAppComponent.connections.push(ComponentNames.KeyVault);
+            remarks.push("connect 'key-vault' to component 'azure-web-app' in projectSettings");
           }
           if (functionComponent) {
-            if (!functionComponent.connections) functionComponent.connections = [];
-            functionComponent.connections.push("azure-sql");
-            remarks.push("connect 'azure-sql' to component 'azure-function' in projectSettings");
+            functionComponent.connections ??= [];
+            functionComponent.connections.push(ComponentNames.KeyVault);
+            remarks.push("connect 'key-vault' to component 'azure-function' in projectSettings");
           }
           return ok([
             {
@@ -108,13 +96,10 @@ export class Sql {
         required: true,
       },
       {
-        name: "call:azure-sql.generateBicep",
+        name: "call:key-vault.generateBicep",
         type: "call",
         required: true,
-        targetAction: "azure-sql.generateBicep",
-        inputs: {
-          provisionType: provisionType,
-        },
+        targetAction: "key-vault.generateBicep",
       },
     ];
     if (webAppComponent) {

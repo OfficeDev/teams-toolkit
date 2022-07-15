@@ -22,8 +22,8 @@ export class Constants {
   public static readonly CREATE_APP_CATALOG_GUIDE =
     "https://docs.microsoft.com/en-us/sharepoint/use-app-catalog#create-the-app-catalog";
   public static readonly SPFX_VERSION = 14;
-  public static readonly SUPPORTED_NODE_VERSION = ["12", "14"];
-  public static readonly SUPPORTED_NPM_VERSION = ["5", "6"];
+  public static readonly SUPPORTED_NODE_VERSION = ["12", "14", "16"];
+  public static readonly SUPPORTED_NPM_VERSION = ["5", "6", "7", "8"];
 }
 
 export class PlaceHolders {

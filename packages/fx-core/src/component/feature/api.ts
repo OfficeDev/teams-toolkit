@@ -179,7 +179,8 @@ const configApiAction: Action = {
     const teamsTab = getComponent(projectSettings, ComponentNames.TeamsTab);
     if (!teamsTab?.connections) merge(teamsTab, { connections: [ComponentNames.TeamsApi] });
     else teamsTab.connections.push(ComponentNames.TeamsApi);
-    projectSettings.programmingLanguage ??= inputs[CoreQuestionNames.ProgrammingLanguage];
+    projectSettings.programmingLanguage =
+      projectSettings.programmingLanguage || inputs[CoreQuestionNames.ProgrammingLanguage];
     return ok([`config '${ComponentNames.TeamsApi}' in projectSettings`]);
   },
 };

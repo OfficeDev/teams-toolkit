@@ -62,7 +62,8 @@ export class SPFxTab {
             name: inputs.hosting,
             provision: true,
           });
-          projectSettings.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
+          projectSettings.programmingLanguage =
+            projectSettings.programmingLanguage || inputs[CoreQuestionNames.ProgrammingLanguage];
           return ok(["config 'teams-tab' in projectSettings"]);
         },
       },

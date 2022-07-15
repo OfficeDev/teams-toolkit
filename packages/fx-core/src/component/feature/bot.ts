@@ -181,7 +181,8 @@ export class TeamsBot {
           if (apimConfig) {
             apimConfig.connections?.push("teams-bot");
           }
-          projectSettings.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
+          projectSettings.programmingLanguage =
+            projectSettings.programmingLanguage || inputs[CoreQuestionNames.ProgrammingLanguage];
           return ok(["config Bot in project settings"]);
         },
       },

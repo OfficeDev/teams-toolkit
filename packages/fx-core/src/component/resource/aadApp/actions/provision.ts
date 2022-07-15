@@ -11,14 +11,9 @@ import {
   ConfigMap,
   ProvisionContextV3,
 } from "@microsoft/teamsfx-api";
-import {
-  ComponentNames,
-  ActionTypeFunction,
-  ActionNames,
-  ComponentStateKeys,
-} from "../../../constants";
+import { ComponentNames, ActionTypeFunction, ActionNames } from "../../../constants";
 import { AadAppForTeamsImpl } from "../../../../plugins/resource/aad/plugin";
-import { getComponent } from "../../../workflow";
+import { convertEnvStateV3ToV2, convertProjectSettingsV3ToV2 } from "../../../migrate";
 
 export function GetActionProvision(): FunctionAction {
   return {
@@ -35,16 +30,15 @@ export function GetActionProvision(): FunctionAction {
     },
     execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
       const ctx = context as ProvisionContextV3;
-      ctx.envInfo!.state[ComponentStateKeys[ComponentNames.AadApp]] ??= {};
+      ctx.envInfo!.state[ComponentNames.AadApp] ??= {};
       const aadAppImplement = new AadAppForTeamsImpl();
       const convertCtx = convertContext(ctx, inputs);
       await aadAppImplement.provisionUsingManifest(convertCtx);
 
       const convertState = convertCtx.envInfo.state.get("fx-resource-aad-app-for-teams");
       convertState.forEach((v: any, k: string) => {
-        ctx.envInfo!.state[ComponentStateKeys[ComponentNames.AadApp]][k] = v;
+        ctx.envInfo!.state[ComponentNames.AadApp][k] = v;
       });
-      delete ctx.projectSetting.solutionSettings!.capabilities;
 
       return ok([
         {
@@ -58,31 +52,18 @@ export function GetActionProvision(): FunctionAction {
 }
 
 export function convertContext(context: ContextV3, inputs: InputsWithProjectPath): PluginContext {
-  const aadState = context.envInfo!.state[ComponentStateKeys[ComponentNames.AadApp]];
-  const aadConvertState: any = {};
-  const state = new Map<string, any>();
-  Object.entries(aadState).forEach((entry) => {
-    aadConvertState[entry[0]] = entry[1];
-  });
-  const value = ConfigMap.fromJSON(aadConvertState);
-  state.set("fx-resource-aad-app-for-teams", value);
-  const teamsBotComponent = getComponent(context.projectSetting, ComponentNames.TeamsBot);
-  const teamsTabComponent = getComponent(context.projectSetting, ComponentNames.TeamsTab);
-  context.projectSetting.solutionSettings ??= { name: "solution" };
-  context.projectSetting.solutionSettings.capabilities = [];
-  if (teamsBotComponent) {
-    context.projectSetting.solutionSettings.capabilities.push("Bot");
-  }
-  if (teamsTabComponent) {
-    context.projectSetting.solutionSettings.capabilities.push("Tab");
-  }
+  const projectSetting = convertProjectSettingsV3ToV2(context.projectSetting);
+  const stateV2 = convertEnvStateV3ToV2(context.envInfo!.state!);
+  stateV2["fx-resource-aad-app-for-teams"] ??= {};
+  const value = ConfigMap.fromJSON(stateV2);
+
   const pluginCtx: PluginContext = {
     cryptoProvider: context.cryptoProvider,
     config: new ConfigMap(),
     logProvider: context.logProvider,
     m365TokenProvider: context.tokenProvider?.m365TokenProvider,
     ui: context.userInteraction,
-    projectSettings: context.projectSetting,
+    projectSettings: projectSetting,
     permissionRequestProvider: context.permissionRequestProvider,
     root: inputs.projectPath,
     envInfo: {
@@ -94,7 +75,7 @@ export function convertContext(context: ContextV3, inputs: InputsWithProjectPath
         },
       },
       envName: inputs.env,
-      state: state,
+      state: value,
     } as EnvInfo,
   };
   return pluginCtx;

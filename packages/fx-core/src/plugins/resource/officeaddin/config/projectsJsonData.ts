@@ -3,7 +3,7 @@ import * as _ from "lodash";
 import * as path from "path";
 
 export default class projectsJsonData {
-  m_projectJsonDataFile = "\\projectProperties.json";
+  m_projectJsonDataFile = "projectProperties.json";
   m_projectJsonData;
 
   constructor() {

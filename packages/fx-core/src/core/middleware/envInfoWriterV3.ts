@@ -7,6 +7,7 @@ import { FxError, Inputs, Result, StaticPlatforms } from "@microsoft/teamsfx-api
 import { environmentManager } from "../environment";
 import { TOOLS } from "../globalVars";
 import { CoreHookContext } from "../types";
+import { shouldSkipWriteEnvInfo } from "./envInfoWriter";
 import { shouldIgnored } from "./projectSettingsLoader";
 
 /**
@@ -18,7 +19,7 @@ export function EnvInfoWriterMW_V3(skip = false): Middleware {
     try {
       await next();
       const res = ctx.result as Result<any, FxError>;
-      if (res.isErr() && res.error.name === "CancelProvision") {
+      if (shouldSkipWriteEnvInfo(ctx, res)) {
         return;
       }
     } catch (e) {

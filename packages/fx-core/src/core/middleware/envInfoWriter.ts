@@ -23,7 +23,7 @@ export function EnvInfoWriterMW(skip = false): Middleware {
     try {
       await next();
       const res = ctx.result as Result<any, FxError>;
-      if (res.isErr() && res.error.name === "CancelProvision") {
+      if (shouldSkipWriteEnvInfo(ctx, res)) {
         return;
       }
     } catch (e) {
@@ -39,6 +39,15 @@ export function EnvInfoWriterMW(skip = false): Middleware {
     if (error1) throw error1;
     if (error2) throw error2;
   };
+}
+
+export function shouldSkipWriteEnvInfo(ctx: CoreHookContext, res: Result<any, FxError>): boolean {
+  return (
+    res.isErr() &&
+    (res.error.name === "CancelProvision" ||
+      (res.error.name === "UserCancel" &&
+        (ctx.method === "provisionResourcesV2" || ctx.method === "provisionResourcesV3")))
+  );
 }
 
 async function writeEnvInfo(ctx: CoreHookContext, skip: boolean) {

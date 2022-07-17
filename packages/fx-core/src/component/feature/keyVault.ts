@@ -91,11 +91,6 @@ export class KeyVaultFeature {
         },
       },
       {
-        type: "call",
-        targetAction: "bicep.init",
-        required: true,
-      },
-      {
         name: "call:key-vault.generateBicep",
         type: "call",
         required: true,

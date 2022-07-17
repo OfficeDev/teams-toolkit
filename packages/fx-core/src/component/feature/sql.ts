@@ -103,11 +103,6 @@ export class Sql {
         },
       },
       {
-        type: "call",
-        targetAction: "bicep.init",
-        required: true,
-      },
-      {
         name: "call:azure-sql.generateBicep",
         type: "call",
         required: true,

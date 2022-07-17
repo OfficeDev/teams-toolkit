@@ -1,9 +1,9 @@
 // Resources for Azure Key Vault
-module keyVaultProvision '\{{fx-resource-key-vault.Provision.keyVault.path}}' = {
+module keyVaultProvision './provision/keyVault.bicep' = {
   name: 'keyVaultProvision'
   params: {
     provisionParameters: provisionParameters
-    userAssignedIdentityObjectId: \{{fx-resource-identity.References.identityPrincipalId}}
+    userAssignedIdentityObjectId: {{identity.principalId}}
   }
 }
 

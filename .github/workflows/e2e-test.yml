@@ -211,7 +211,7 @@ jobs:
 
       - name: get job id
         id: get-job-id
-        uses: ayachensiyuan/get-action-job-id@1.5
+        uses: ayachensiyuan/get-action-job-id@v1.5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:

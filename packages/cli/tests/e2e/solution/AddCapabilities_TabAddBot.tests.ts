@@ -25,7 +25,6 @@ describe("Add capabilities", function () {
   const subscription = getSubscriptionId();
   let appName: string | undefined;
   let projectPath: string | undefined;
-  const env = environmentManager.getDefaultEnvName();
   let mockedEnvRestore: RestoreFn | undefined;
   afterEach(async () => {
     if (appName && projectPath) {
@@ -40,6 +39,7 @@ describe("Add capabilities", function () {
       mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: v3flag });
       appName = getUniqueAppName();
       projectPath = path.resolve(testFolder, appName);
+      const env = environmentManager.getDefaultEnvName();
       // Arrange
       await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
       // Act

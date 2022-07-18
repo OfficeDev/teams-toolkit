@@ -1,12 +1,7 @@
 name: Unit Test
 
 on:
-  pull_request:
-    branches:
-      - main
-      - dev
-      - ga
-      - hotfix/**/*
+  push: ivanchen/unit-test
 
 jobs:
   unit-test:
@@ -21,8 +16,8 @@ jobs:
 
       - name: Merge Branches
         run: |
-          git config --global user.email "bot@user.noreply.github.com"
-          git config --global user.name "bot"
+          git config --global user.email ayachensiyuan@163.com"
+          git config --global user.name "ayachensiyuan"
 
           git remote add ${{ github.event.pull_request.base.repo.owner.login }} ${{ github.event.pull_request.base.repo.clone_url }}
           git fetch ${{ github.event.pull_request.base.repo.owner.login }}
@@ -45,3 +40,7 @@ jobs:
       - name: Unit Test
         run: |
           xvfb-run -a npx lerna run test:unit --stream
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          directory: './coverage'

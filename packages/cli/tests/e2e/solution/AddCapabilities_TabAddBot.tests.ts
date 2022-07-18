@@ -19,31 +19,35 @@ import {
 import "mocha";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
-
+import mockedEnv, { RestoreFn } from "mocked-env";
 describe("Add capabilities", function () {
   const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
   const env = environmentManager.getDefaultEnvName();
-
-  after(async () => {
+  let mockedEnvRestore: RestoreFn;
+  afterEach(async () => {
     await cleanUp(appName, projectPath, true, true, false);
+    if (mockedEnvRestore) {
+      mockedEnvRestore();
+    }
   });
+  for (const v3flag of [false, true]) {
+    it(`tab project can add bot capability and provision (v3=${v3flag})`, async () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: false + "" });
+      // Arrange
+      await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
+      // Act
+      await CliHelper.addCapabilityToProject(projectPath, Capability.Bot);
 
-  it("tab project can add bot capability and provision", async () => {
-    // Arrange
-    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
+      await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+      await setBotSkuNameToB1Bicep(projectPath, env);
+      await CliHelper.setSubscription(subscription, projectPath);
+      await CliHelper.provisionProject(projectPath);
 
-    // Act
-    await CliHelper.addCapabilityToProject(projectPath, Capability.Bot);
-
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-    await setBotSkuNameToB1Bicep(projectPath, env);
-    await CliHelper.setSubscription(subscription, projectPath);
-    await CliHelper.provisionProject(projectPath);
-
-    // Assert
-    await validateTabAndBotProjectProvision(projectPath, env);
-  });
+      // Assert
+      await validateTabAndBotProjectProvision(projectPath, env);
+    });
+  }
 });

@@ -9,12 +9,14 @@ import {
   Inputs,
   Json,
   ok,
+  Platform,
   ProjectSettings,
   QTreeNode,
   Result,
   SolutionConfig,
   SolutionContext,
   Stage,
+  TextInputQuestion,
   Tools,
   traverse,
   UserCancelError,
@@ -34,6 +36,7 @@ import {
   PROGRAMMING_LANGUAGE,
 } from "../../plugins/solution/fx-solution/constants";
 import {
+  CoreQuestionNames,
   getQuestionNewTargetEnvironmentName,
   QuestionSelectSourceEnvironment,
   QuestionSelectTargetEnvironment,
@@ -43,6 +46,7 @@ import { PermissionRequestFileProvider } from "../permissionRequest";
 import { legacyConfig2EnvState } from "../../plugins/resource/utils4v2";
 import { CoreHookContext } from "../types";
 import { getLocalAppName } from "../../plugins/resource/appstudio/utils/utils";
+import { getLocalizedString } from "../../common/localizeUtils";
 
 const newTargetEnvNameOption = "+ new environment";
 const lastUsedMark = " (last used)";
@@ -345,6 +349,22 @@ export async function getQuestionsForTargetEnv(
   inputs: Inputs,
   lastUsed?: string
 ): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (inputs.platform === Platform.CLI_HELP) {
+    const selectEnv = QuestionSelectTargetEnvironment;
+    selectEnv.staticOptions = ["dev", newTargetEnvNameOption];
+    const node = new QTreeNode(selectEnv);
+    const envNameQuestion: TextInputQuestion = {
+      type: "text",
+      name: CoreQuestionNames.NewTargetEnvName,
+      title: getLocalizedString("core.getQuestionNewTargetEnvironmentName.title"),
+      placeholder: getLocalizedString("core.getQuestionNewTargetEnvironmentName.placeholder"),
+    };
+    const childNode = new QTreeNode(envNameQuestion);
+    childNode.condition = { equals: newTargetEnvNameOption };
+    node.addChild(childNode);
+    return ok(node);
+  }
+
   if (!inputs.projectPath) {
     return err(new NoProjectOpenedError());
   }

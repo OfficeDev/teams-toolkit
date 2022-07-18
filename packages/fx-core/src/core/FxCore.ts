@@ -947,8 +947,6 @@ export class FxCore implements v3.ICore {
       const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
       if (stage === Stage.deploy) {
         return await getQuestionsForDeployV3(context, ctx.envInfoV2 as EnvInfoV3, inputs);
-      } else if (stage === Stage.provision) {
-        return await getQuestionsForTargetEnv(inputs);
       }
       return ok(undefined);
     }

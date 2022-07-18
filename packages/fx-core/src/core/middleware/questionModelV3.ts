@@ -78,8 +78,6 @@ export const QuestionModelMW_V3: Middleware = async (ctx: CoreHookContext, next:
   let getQuestionRes: Result<QTreeNode | undefined, FxError> = ok(undefined);
   if (method === "createProjectV3") {
     getQuestionRes = await getQuestionsForCreateProjectV2(inputs);
-  } else if (method === "provisionResourcesV3") {
-    getQuestionRes = await getQuestionsForTargetEnv(inputs);
   } else if (method === "deployArtifactsV3") {
     getQuestionRes = await getQuestionsForDeployV3(ctx.contextV2!, ctx.envInfoV3!, inputs);
   } else if (method === "addFeature") {

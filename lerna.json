@@ -1,7 +1,7 @@
 {
   "version": "independent",
   "packages": [
-    "packages/cli"
+    "packages/api"
   ],
   "command": {
     "version": {

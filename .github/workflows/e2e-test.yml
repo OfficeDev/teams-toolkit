@@ -211,12 +211,11 @@ jobs:
 
       - name: get job id
         id: get-job-id
-        uses: ayachensiyuan/get-action-job-id@dev
+        uses: ayachensiyuan/get-action-job-id@1.5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          run-id: ${{ github.run_id }}
-          run-attempt: ${{ github.run_attempt }}
+          job-name: ${{ matrix.cases }}
 
       - name: get report name
         id: get-report-name

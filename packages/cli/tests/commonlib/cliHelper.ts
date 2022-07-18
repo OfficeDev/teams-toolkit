@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core";
+import { isPreviewFeaturesEnabled, isV3 } from "@microsoft/teamsfx-core";
 
 import { execAsync, execAsyncWithRetry } from "../e2e/commonUtils";
 import { Capability, Resource, ResourceToDeploy } from "./constants";
@@ -247,6 +247,7 @@ export class CliHelper {
       : `teamsfx capability add ${capabilityToAdd}`;
     const timeout = 100000;
     try {
+      console.log(`isV3: ${isV3()}`);
       const result = await execAsync(command, {
         cwd: projectPath,
         env: process.env,

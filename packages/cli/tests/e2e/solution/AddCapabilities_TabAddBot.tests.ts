@@ -23,8 +23,8 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 describe("Add capabilities", function () {
   const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
-  let appName;
-  let projectPath;
+  let appName: string;
+  let projectPath: string;
   const env = environmentManager.getDefaultEnvName();
   let mockedEnvRestore: RestoreFn;
   afterEach(async () => {

@@ -34,7 +34,6 @@ describe("Regression test for bug 14739454", function () {
     });
     console.log(`[Successfully] scaffold to ${projectPath}`);
 
-    // provision
     await execAsyncWithRetry(`teamsfx add command-and-response`, {
       cwd: projectPath,
       env: env,
@@ -42,6 +41,14 @@ describe("Regression test for bug 14739454", function () {
     });
 
     console.log(`[Successfully] add feature for ${projectPath}`);
+
+    /// for bug 14924542
+    const result = await execAsyncWithRetry(`teamsfx add command-and-response`, {
+      cwd: projectPath,
+      env: env,
+      timeout: 0,
+    });
+    chai.assert.isNotEmpty(result.stderr);
 
     // Validate Bot scaffold
     await BotValidator.validateScaffold(projectPath, "typescript", "src");

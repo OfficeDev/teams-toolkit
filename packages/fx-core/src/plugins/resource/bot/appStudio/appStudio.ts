@@ -14,7 +14,7 @@ import { CommonStrings, ConfigNames } from "../resources/strings";
 import { RetryHandler } from "../utils/retryHandler";
 import { Messages } from "../resources/messages";
 import { Logger } from "../logger";
-import { getAppStudioEndpoint } from "../../../../common/tools";
+import { getAppStudioEndpoint } from "../../../../component/resource/appManifest/constants";
 
 export class AppStudio {
   private static baseUrl = getAppStudioEndpoint();

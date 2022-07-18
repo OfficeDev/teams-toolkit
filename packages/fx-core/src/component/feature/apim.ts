@@ -8,18 +8,23 @@ import {
   FxError,
   GroupAction,
   InputsWithProjectPath,
+  IProgressHandler,
   MaybePromise,
   ok,
   Result,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { hasFunction } from "../../common/projectSettingsHelperV3";
+import { hasApi } from "../../common/projectSettingsHelperV3";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { getProjectSettingsPath } from "../../core/middleware/projectSettingsLoader";
 import { buildAnswer } from "../../plugins/resource/apim/answer";
 import { ApimPluginConfig } from "../../plugins/resource/apim/config";
-import { PluginLifeCycle } from "../../plugins/resource/apim/constants";
+import {
+  PluginLifeCycle,
+  ProgressMessages,
+  ProgressStep,
+} from "../../plugins/resource/apim/constants";
 import { Factory } from "../../plugins/resource/apim/factory";
 import { ComponentNames } from "../constants";
 import { getComponent } from "../workflow";
@@ -33,7 +38,18 @@ export class ApimFeature {
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const component = getComponent(context.projectSetting, ComponentNames.APIM);
     if (component) return ok(undefined);
+    const hasFunc = hasApi(context.projectSetting);
+    const dependentActions: Action[] = [];
+    if (!hasFunc) {
+      dependentActions.push({
+        name: "call:teams-api.add",
+        type: "call",
+        required: true,
+        targetAction: "teams-api.add",
+      });
+    }
     const actions: Action[] = [
+      ...dependentActions,
       {
         name: "apim-feature.configApim",
         type: "function",
@@ -111,11 +127,22 @@ export class ApimFeature {
     const action: Action = {
       name: "apim-feature.generateCode",
       type: "function",
+      errorSource: "APIM",
+      enableTelemetry: true,
+      telemetryComponentName: "fx-resource-apim",
+      telemetryEventName: "scaffold",
+      enableProgressBar: true,
+      progressTitle: ProgressStep.Scaffold,
+      progressSteps: Object.keys(ProgressMessages[ProgressStep.Scaffold]).length,
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok(["generate openapi artifacts"]);
+        return ok([ProgressStep.Scaffold]);
       },
-      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const remarks: string[] = ["generate openapi artifacts"];
+      execute: async (
+        context: ContextV3,
+        inputs: InputsWithProjectPath,
+        progress?: IProgressHandler
+      ) => {
+        const remarks: string[] = [ProgressStep.Scaffold];
         const apimConfig = new ApimPluginConfig({}, "");
         const answer = buildAnswer(inputs);
         const scaffoldManager = await Factory.buildScaffoldManager(
@@ -127,6 +154,7 @@ export class ApimFeature {
           await answer.validate(PluginLifeCycle.Scaffold, apimConfig, inputs.projectPath);
         }
         answer.save(PluginLifeCycle.Scaffold, apimConfig);
+        progress?.next(ProgressMessages[ProgressStep.Scaffold].Scaffold);
         await scaffoldManager.scaffold(appName, inputs.projectPath);
         return ok(remarks);
       },

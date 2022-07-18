@@ -11,6 +11,7 @@ import {
 import * as path from "path";
 import { ComponentNames, ActionTypeFunction } from "../../../constants";
 import { generateAadManifestTemplate } from "../../../../core/generateAadManifestTemplate";
+import { getProjectTemplatesFolderPath } from "../../../../common/utils";
 
 export function GetActionGenerateManifest(): FunctionAction {
   return {
@@ -37,7 +38,11 @@ export function GetActionGenerateManifest(): FunctionAction {
     execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
       await generateAadManifestTemplate(inputs.projectPath, context.projectSetting);
       const createFilePath = [
-        path.join(inputs.projectPath, "templates", "appPackage", "aad.template.json"),
+        path.join(
+          await getProjectTemplatesFolderPath(inputs.projectPath),
+          "appPackage",
+          "aad.template.json"
+        ),
       ];
       const effect: FileEffect = {
         type: "file",

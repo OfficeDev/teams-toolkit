@@ -24,8 +24,9 @@ import { MockTools, randomAppName } from "../../core/utils";
 import "../../../src/component/core";
 import { environmentManager } from "../../../src/core/environment";
 import { ComponentNames } from "../../../src/component/constants";
-import * as aadManifest from "../../../src/core/generateAadManifestTemplate";
-describe("Tab Feature", () => {
+import { FunctionScaffold } from "../../../src/plugins/resource/function/ops/scaffold";
+
+describe("Api Feature", () => {
   const sandbox = createSandbox();
   const tools = new MockTools();
   setTools(tools);
@@ -42,9 +43,11 @@ describe("Tab Feature", () => {
   const manifest = {} as TeamsAppManifest;
   beforeEach(() => {
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
+    sandbox.stub(tools.ui, "inputText").resolves(ok({ type: "success", result: "getUserProfile" }));
     sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
     sandbox.stub(manifestUtils, "writeAppManifest").resolves();
     sandbox.stub(projectSettingsLoader, "loadProjectSettings").resolves(ok(projectSetting));
+    sandbox.stub(templatesAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(fs, "readJson").resolves({});
     sandbox.stub(fs, "writeJSON").resolves();
     sandbox.stub(fs, "writeJson").resolves();
@@ -58,15 +61,14 @@ describe("Tab Feature", () => {
     sandbox.stub(fs, "appendFileSync").returns();
     sandbox.stub(fs, "writeFileSync").returns();
     sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev"]));
-    sandbox.stub(aadManifest, "generateAadManifestTemplate").resolves();
+    sandbox.stub(FunctionScaffold, "doesFunctionPathExist").resolves(false);
   });
 
   afterEach(() => {
     sandbox.restore();
   });
 
-  it("add react tab", async () => {
-    sandbox.stub(templatesAction, "scaffoldFromTemplates").resolves();
+  it("add api", async () => {
     sandbox.stub(utils, "persistBicep").resolves(ok(undefined));
 
     const inputs: InputsWithProjectPath = {
@@ -75,25 +77,27 @@ describe("Tab Feature", () => {
       language: "typescript",
       "app-name": appName,
     };
-    const addTabRes = await runAction(`${ComponentNames.TeamsTab}.add`, context, inputs);
-    if (addTabRes.isErr()) {
-      console.log(addTabRes.error);
+    const addApiRes = await runAction(`${ComponentNames.TeamsApi}.add`, context, inputs);
+    if (addApiRes.isErr()) {
+      console.log(addApiRes.error);
     }
-    assert.isTrue(addTabRes.isOk());
-    assert.equal(inputs.hosting, ComponentNames.AzureStorage);
+    assert.isTrue(addApiRes.isOk());
+    assert.equal(inputs.hosting, ComponentNames.Function);
 
-    const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
-    assert.exists(teamsTab);
-    assert.equal(teamsTab?.hosting, ComponentNames.AzureStorage);
-    assert.equal(teamsTab?.folder, "tabs");
-    assert.isTrue(teamsTab?.build);
-    const storage = getComponent(context.projectSetting, ComponentNames.AzureStorage);
-    assert.exists(storage);
-    assert.deepEqual(storage?.connections, [ComponentNames.TeamsTab]);
+    const teamsApi = getComponent(context.projectSetting, ComponentNames.TeamsApi);
+    assert.exists(teamsApi);
+    assert.equal(teamsApi?.hosting, ComponentNames.Function);
+    assert.equal(teamsApi?.folder, "api");
+    assert.isTrue(teamsApi?.build);
+    const azureFunction = getComponent(context.projectSetting, ComponentNames.Function);
+    assert.exists(azureFunction?.connections);
+    if (azureFunction?.connections) {
+      assert.include(azureFunction.connections, ComponentNames.TeamsApi);
+      assert.include(azureFunction.connections, ComponentNames.TeamsTab);
+    }
   });
 
-  it("add react tab twice", async () => {
-    sandbox.stub(templatesAction, "scaffoldFromTemplates").rejects();
+  it("add api twice", async () => {
     sandbox.stub(utils, "persistBicep").rejects();
 
     const inputs: InputsWithProjectPath = {
@@ -102,18 +106,19 @@ describe("Tab Feature", () => {
       language: "typescript",
       "app-name": appName,
     };
-    const addTabRes = await runAction(`${ComponentNames.TeamsTab}.add`, context, inputs);
-    if (addTabRes.isErr()) {
-      console.log(addTabRes.error);
+    const addApiRes = await runAction(`${ComponentNames.TeamsApi}.add`, context, inputs);
+    if (addApiRes.isErr()) {
+      console.log(addApiRes.error);
     }
-    assert.isTrue(addTabRes.isOk());
-    const teamsTab = context.projectSetting.components.filter(
-      (component) => component.name === ComponentNames.TeamsTab
+    assert.isTrue(addApiRes.isOk());
+    const teamsApi = context.projectSetting.components.filter(
+      (component) => component.name === ComponentNames.TeamsApi
     );
-    assert.equal(teamsTab.length, 1);
-    const storage = context.projectSetting.components.filter(
-      (component) => component.name === ComponentNames.AzureStorage
+    assert.equal(teamsApi.length, 1);
+    assert.equal(teamsApi[0].functionNames.length, 2);
+    const azureFunction = context.projectSetting.components.filter(
+      (component) => component.name === ComponentNames.Function
     );
-    assert.equal(storage.length, 1);
+    assert.equal(azureFunction.length, 1);
   });
 });

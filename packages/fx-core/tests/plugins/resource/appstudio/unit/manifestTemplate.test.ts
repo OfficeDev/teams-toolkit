@@ -397,4 +397,14 @@ describe("Delete capability", () => {
       chai.assert.equal(result.error.name, AppStudioError.CapabilityNotExistError.name);
     }
   });
+
+  it("Delete message extension should failed", async () => {
+    const result = await plugin.deleteCapability(ctx, inputsWithStaticTabs, {
+      name: "MessageExtension",
+    });
+    chai.assert.isTrue(result.isErr());
+    if (result.isErr()) {
+      chai.assert.equal(result.error.name, AppStudioError.CapabilityNotExistError.name);
+    }
+  });
 });

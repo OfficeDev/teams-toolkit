@@ -30,6 +30,10 @@ export class SpfxResource implements CloudResource {
     const action: Action = {
       name: "spfx.deploy",
       type: "function",
+      enableTelemetry: true,
+      telemetryComponentName: "fx-resource-spfx",
+      telemetryEventName: "deploy",
+      errorSource: "SPFx",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         return ok([
           {

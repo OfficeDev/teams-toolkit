@@ -6,6 +6,7 @@ import {
   ContextV3,
   FxError,
   InputsWithProjectPath,
+  IProgressHandler,
   MaybePromise,
   ok,
   ProjectSettingsV3,
@@ -35,11 +36,21 @@ export class ApiCodeProvider implements SourceCodeProvider {
     const action: Action = {
       name: "api-code.generate",
       type: "function",
+      enableTelemetry: true,
+      telemetryComponentName: "fx-resource-function",
+      telemetryEventName: "scaffold",
+      errorSource: "BE",
+      errorIssueLink: DefaultValues.issueLink,
+      errorHelpLink: DefaultValues.helpLink,
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         const folder = inputs.folder || FunctionPluginPathInfo.solutionFolderName;
         return ok([`scaffold api source code in folder: ${path.join(inputs.projectPath, folder)}`]);
       },
-      execute: async (ctx: ContextV3, inputs: InputsWithProjectPath) => {
+      execute: async (
+        ctx: ContextV3,
+        inputs: InputsWithProjectPath,
+        progress?: IProgressHandler
+      ) => {
         const projectSettings = ctx.projectSetting as ProjectSettingsV3;
         const appName = projectSettings.appName;
         const language =
@@ -76,6 +87,8 @@ export class ApiCodeProvider implements SourceCodeProvider {
     const action: Action = {
       name: "api-code.build",
       type: "function",
+      enableProgressBar: true,
+      progressTitle: "",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         const teamsApi = getComponent(context.projectSetting, ComponentNames.TeamsApi);
         if (!teamsApi) return ok([]);

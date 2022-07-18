@@ -5,7 +5,7 @@ import { LogLevel, NotImplementedError, SingleSelectConfig } from "@microsoft/te
 import { createMessageConnection } from "vscode-jsonrpc/node";
 import WebSocket from "ws";
 import os from "os";
-import { Namespaces, NotificationTypes, RequestTypes } from "./apis";
+import { Namespaces, NotificationTypes, RequestTypes } from "../src/apis";
 
 const ws = new WebSocket("ws://localhost:7920");
 ws.on("message", (ms) => {

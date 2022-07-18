@@ -195,28 +195,28 @@ export async function persistParams(
       if (params) {
         const json = await fs.readJson(parameterEnvFilePath);
         const existingParams = json.parameters.provisionParameters.value;
-        const dupParamKeys = Object.keys(params).filter((val) =>
-          Object.keys(existingParams).includes(val)
-        );
-        if (dupParamKeys && dupParamKeys.length != 0) {
-          return err(
-            new UserError({
-              name: SolutionError.FailedToUpdateArmParameters,
-              source: "bicep",
-              helpLink: HelpLinks.ArmHelpLink,
-              message: getDefaultString(
-                "core.generateArmTemplates.DuplicateParameter",
-                parameterEnvFilePath,
-                dupParamKeys
-              ),
-              displayMessage: getLocalizedString(
-                "core.generateArmTemplates.DuplicateParameter",
-                parameterEnvFilePath,
-                dupParamKeys
-              ),
-            })
-          );
-        }
+        // const dupParamKeys = Object.keys(params).filter((val) =>
+        //   Object.keys(existingParams).includes(val)
+        // );
+        // if (dupParamKeys && dupParamKeys.length != 0) {
+        //   return err(
+        //     new UserError({
+        //       name: SolutionError.FailedToUpdateArmParameters,
+        //       source: "bicep",
+        //       helpLink: HelpLinks.ArmHelpLink,
+        //       message: getDefaultString(
+        //         "core.generateArmTemplates.DuplicateParameter",
+        //         parameterEnvFilePath,
+        //         dupParamKeys
+        //       ),
+        //       displayMessage: getLocalizedString(
+        //         "core.generateArmTemplates.DuplicateParameter",
+        //         parameterEnvFilePath,
+        //         dupParamKeys
+        //       ),
+        //     })
+        //   );
+        // }
         Object.assign(existingParams, params);
         if (!existingParams.resourceBaseName) {
           params.resourceBaseName = generateResourceBaseName(appName, "");

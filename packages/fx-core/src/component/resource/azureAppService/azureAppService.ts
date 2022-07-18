@@ -6,6 +6,7 @@ import {
   ContextV3,
   FxError,
   InputsWithProjectPath,
+  IProgressHandler,
   MaybePromise,
   ok,
   ProvisionContextV3,
@@ -25,6 +26,7 @@ import {
 import { AzureResource } from "./../azureResource";
 import { Messages } from "./messages";
 import { getHostingParentComponent } from "../../workflow";
+import { ProgressBarConstants } from "../../../plugins/resource/bot/constants";
 export abstract class AzureAppService extends AzureResource {
   abstract readonly name: string;
   abstract readonly alias: string;
@@ -51,6 +53,9 @@ export abstract class AzureAppService extends AzureResource {
     const action: Action = {
       name: `${this.name}.deploy`,
       type: "function",
+      enableProgressBar: true,
+      progressTitle: `Deploy ${this.name}`,
+      progressSteps: 2,
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         const parent = getHostingParentComponent(context.projectSetting, this.name);
         const deployDir = path.resolve(inputs.projectPath, parent?.folder ?? "");
@@ -62,9 +67,13 @@ export abstract class AzureAppService extends AzureResource {
           },
         ]);
       },
-      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+      execute: async (
+        context: ContextV3,
+        inputs: InputsWithProjectPath,
+        progress?: IProgressHandler
+      ) => {
         const ctx = context as ProvisionContextV3;
-        const parent = getHostingParentComponent(ctx.projectSetting, this.name);
+        const parent = getHostingParentComponent(ctx.projectSetting, this.name, inputs.scenario);
         // Preconditions checking.
         if (!inputs.projectPath || !parent?.artifactFolder) {
           throw new PreconditionError(this.alias, Messages.WorkingDirIsMissing, []);
@@ -81,10 +90,16 @@ export abstract class AzureAppService extends AzureResource {
           this.outputs.resourceId.key,
           state[this.outputs.resourceId.key]
         );
-
+        await progress?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_FOLDER);
         const zipBuffer = await utils.zipFolderAsync(publishDir, "");
 
-        await azureWebSiteDeploy(resourceId, ctx.tokenProvider, zipBuffer);
+        await azureWebSiteDeploy(
+          resourceId,
+          ctx.tokenProvider,
+          zipBuffer,
+          context.logProvider,
+          progress
+        );
         return ok([
           {
             type: "service",

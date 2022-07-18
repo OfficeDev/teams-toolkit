@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { ProjectSettingsV3 } from "@microsoft/teamsfx-api";
-import { ComponentNames } from "../component/constants";
+import { AzureResources, ComponentNames } from "../component/constants";
 import { getComponent } from "../component/workflow";
 
 export function validateProjectSettings(projectSettings: ProjectSettingsV3): string | undefined {
@@ -32,28 +32,18 @@ export function hasAAD(projectSettings: ProjectSettingsV3): boolean {
   const components = projectSettings.components;
   return components.filter((c) => c.name === ComponentNames.AadApp).length > 0;
 }
-export function hasFunction(projectSettings: ProjectSettingsV3): boolean {
+export function hasApi(projectSettings: ProjectSettingsV3): boolean {
   const components = projectSettings.components;
-  return components.filter((c) => c.name === ComponentNames.Function).length > 0;
+  return components.filter((c) => c.name === ComponentNames.TeamsApi).length > 0;
 }
 export function hasSimpleAuth(projectSettings: ProjectSettingsV3): boolean {
   const components = projectSettings.components;
   return components.filter((c) => c.name === ComponentNames.SimpleAuth).length > 0;
 }
 export function hasAzureResourceV3(projectSetting: ProjectSettingsV3, excludeAad = false): boolean {
-  const azureResources = [
-    ComponentNames.APIM,
-    ComponentNames.AzureWebApp,
-    ComponentNames.Function,
-    ComponentNames.Identity,
-    ComponentNames.KeyVault,
-    ComponentNames.AzureSQL,
-    ComponentNames.AzureStorage,
-  ];
-  if (!excludeAad) {
-    azureResources.push(ComponentNames.AadApp);
-  }
-  const filtered = projectSetting.components.filter((c) => azureResources.includes(c.name));
+  const filtered = projectSetting.components?.filter(
+    (c) => AzureResources.includes(c.name) || (!excludeAad && c.name === ComponentNames.AadApp)
+  );
   return filtered.length > 0;
 }
 export function hasSPFxTab(projectSetting: ProjectSettingsV3): boolean {

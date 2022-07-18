@@ -9,7 +9,7 @@ jobs:
     steps:
       - name: checkEnv
         run: |
-          echo "fullname: ${{ github.event.pull_request.head.repo.full_name }} "
+          echo "fullname: ${{ github.event.push.head.repo.full_name }} "
           echo "login: ${{ github.event.pull_request.base.repo.owner.login }}  "
           echo "url: ${{ github.event.pull_request.base.repo.clone_url }}"
   

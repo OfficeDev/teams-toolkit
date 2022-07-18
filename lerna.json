@@ -2,7 +2,8 @@
   "version": "independent",
   "packages": [
     "packages/manifest",
-    "packages/api"
+    "packages/api",
+    "packages/fx-core"
   ],
   "command": {
     "version": {

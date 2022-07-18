@@ -108,7 +108,6 @@ import { ProjectMigratorMW } from "./middleware/projectMigrator";
 import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
 import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
 import {
-  getQuestionsForAddFeature,
   getQuestionsForCreateProjectV2,
   getQuestionsForCreateProjectV3,
   getQuestionsForDeploy,
@@ -140,7 +139,7 @@ import { isPreviewFeaturesEnabled } from "../common";
 import { runAction } from "../component/workflow";
 import { createContextV3 } from "../component/utils";
 import "../component/core";
-import { QuestionModelMW_V3 } from "./middleware/questionModelV3";
+import { getQuestionsForAddFeature, QuestionModelMW_V3 } from "./middleware/questionModelV3";
 import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
 
 export class FxCore implements v3.ICore {
@@ -973,6 +972,10 @@ export class FxCore implements v3.ICore {
     if (!ctx) return err(new ObjectIsUndefinedError("getQuestionsForUserTask input stuff"));
     inputs.stage = Stage.getQuestions;
     setCurrentStage(Stage.getQuestions);
+    if (isV3() && func.method === "addFeature") {
+      const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+      return await getQuestionsForAddFeature(context, inputs);
+    }
     const contextV2 = ctx.contextV2 ? ctx.contextV2 : createV2Context(newProjectSettings());
     const solutionV2 = ctx.solutionV2 ? ctx.solutionV2 : await getAllSolutionPluginsV2()[0];
     const envInfoV2 = ctx.envInfoV2

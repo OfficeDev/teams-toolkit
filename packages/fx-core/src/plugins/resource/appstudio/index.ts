@@ -435,7 +435,6 @@ export class AppStudioPlugin implements Plugin {
     const localTeamsAppId = await this.appStudioPluginImpl.postLocalDebug(ctx);
     if (localTeamsAppId.isOk()) {
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.localDebug);
-      await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, true);
       return localTeamsAppId;
     } else {
       const error = localTeamsAppId.error;

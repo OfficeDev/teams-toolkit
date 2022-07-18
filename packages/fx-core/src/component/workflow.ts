@@ -575,6 +575,13 @@ export function getComponent(
   return projectSettings.components?.find((r) => r.name === resourceType);
 }
 
+export function getComponents(
+  projectSettings: ProjectSettingsV3,
+  resourceType: string
+): Component[] | undefined {
+  return projectSettings.components?.filter((r) => r.name === resourceType);
+}
+
 export function getComponentByScenario(
   projectSetting: ProjectSettingsV3,
   resourceType: string,

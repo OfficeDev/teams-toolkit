@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { Service } from "typedi";
+import { IdentityOutputs } from "../../constants";
 import { AzureAppService } from "./azureAppService";
 @Service("azure-web-app")
 export class AzureWebAppResource extends AzureAppService {
@@ -24,4 +25,9 @@ export class AzureWebAppResource extends AzureAppService {
     },
   };
   readonly finalOutputKeys = ["resourceId", "endpoint"];
+  templateContext = {
+    identity: {
+      resourceId: IdentityOutputs.identityResourceId.bicepVariable,
+    },
+  };
 }

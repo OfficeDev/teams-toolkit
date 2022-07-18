@@ -156,6 +156,7 @@ export class YoChecker implements DependencyChecker {
 
   private async installYo(): Promise<void> {
     try {
+      await fs.ensureDir(path.join(this.getDefaultInstallPath(), "node_modules"));
       await cpUtils.executeCommand(
         undefined,
         this._logger,

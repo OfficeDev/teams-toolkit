@@ -501,9 +501,14 @@ async function getQuestionsForCreateProjectWithDotNet(
   const dotnetCapNode = new QTreeNode(createCapabilityForDotNet());
   dotnetNode.addChild(dotnetCapNode);
 
-  const solutionNodeResult = await setSolutionScaffoldingQuestionNodeAsChild(inputs, dotnetCapNode);
-  if (solutionNodeResult.isErr()) {
-    return err(solutionNodeResult.error);
+  if (!isV3()) {
+    const solutionNodeResult = await setSolutionScaffoldingQuestionNodeAsChild(
+      inputs,
+      dotnetCapNode
+    );
+    if (solutionNodeResult.isErr()) {
+      return err(solutionNodeResult.error);
+    }
   }
 
   dotnetCapNode.addChild(new QTreeNode(ProgrammingLanguageQuestionForDotNet));

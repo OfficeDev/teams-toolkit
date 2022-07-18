@@ -38,6 +38,10 @@ export class LocalDebugConfig {
     this.localRedirectUri = context.localSettings?.bot?.get(
       LocalSettingsBotKeys.BotRedirectUri
     ) as string;
+
+    // To respect existing Bot AAD.
+    this.localBotId = context.envInfo.config.bot?.appId ?? this.localBotId;
+    this.localBotPassword = context.envInfo.config.bot?.appPassword ?? this.localBotPassword;
   }
 
   public saveConfigIntoContext(context: PluginContext): void {

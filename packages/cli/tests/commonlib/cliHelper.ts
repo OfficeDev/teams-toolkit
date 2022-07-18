@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core";
+import { isPreviewFeaturesEnabled, isV3 } from "@microsoft/teamsfx-core";
 
 import { execAsync, execAsyncWithRetry } from "../e2e/commonUtils";
 import { Capability, Resource, ResourceToDeploy } from "./constants";
@@ -227,7 +227,9 @@ export class CliHelper {
       const message = `scaffold project to ${path.resolve(
         testFolder,
         appName
-      )} with capability ${capability}`;
+      )} with capability ${capability}, env: ${JSON.stringify(
+        processEnv ? processEnv : process.env
+      )}, v3: ${isV3()}`;
       if (result.stderr) {
         console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
       } else {

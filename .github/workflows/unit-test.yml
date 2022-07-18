@@ -3,6 +3,12 @@ name: Unit Test
 on:
   push: 
     branches: ['ivanchen/unit-test']
+  pull_request:
+    branches:
+      - main
+      - dev
+      - ga
+      - hotfix/**/*
 
 jobs:
   unit-test:

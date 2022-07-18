@@ -17,7 +17,7 @@ jobs:
 
       - name: Merge Branches
         run: |
-          git config --global user.email ayachensiyuan@163.com"
+          git config --global user.email "ayachensiyuan@163.com"
           git config --global user.name "ayachensiyuan"
 
           git remote add ${{ github.event.pull_request.base.repo.owner.login }} ${{ github.event.pull_request.base.repo.clone_url }}

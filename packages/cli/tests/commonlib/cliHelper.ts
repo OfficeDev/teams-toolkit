@@ -227,9 +227,7 @@ export class CliHelper {
       const message = `scaffold project to ${path.resolve(
         testFolder,
         appName
-      )} with capability ${capability}, env: ${JSON.stringify(
-        processEnv ? processEnv : process.env
-      )}, v3: ${isV3()}`;
+      )} with capability ${capability}, v3: ${isV3()}`;
       if (result.stderr) {
         console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
       } else {
@@ -255,7 +253,7 @@ export class CliHelper {
         env: process.env,
         timeout: timeout,
       });
-      const message = `add capability ${capabilityToAdd} to ${projectPath}`;
+      const message = `add capability ${capabilityToAdd} to ${projectPath}, v3: ${isV3()}`;
       if (result.stderr) {
         console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
       } else {

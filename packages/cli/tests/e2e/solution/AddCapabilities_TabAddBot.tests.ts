@@ -23,8 +23,8 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 describe("Add capabilities", function () {
   const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
-  const appName = getUniqueAppName();
-  const projectPath = path.resolve(testFolder, appName);
+  let appName;
+  let projectPath;
   const env = environmentManager.getDefaultEnvName();
   let mockedEnvRestore: RestoreFn;
   afterEach(async () => {
@@ -36,6 +36,8 @@ describe("Add capabilities", function () {
   for (const v3flag of ["false", "true"]) {
     it(`tab project can add bot capability and provision (v3=${v3flag})`, async () => {
       mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: v3flag });
+      appName = getUniqueAppName();
+      projectPath = path.resolve(testFolder, appName);
       // Arrange
       await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
       // Act

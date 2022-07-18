@@ -48,6 +48,7 @@ import {
   AzureResourceFunctionNewUI,
   AzureResourceKeyVaultNewUI,
   AzureResourceSQLNewUI,
+  AzureSolutionQuestionNames,
   BotNewUIOptionItem,
   CicdOptionItem,
   CommandAndResponseOptionItem,
@@ -108,7 +109,7 @@ export const QuestionModelMW_V3: Middleware = async (ctx: CoreHookContext, next:
   await next();
 };
 
-async function getQuestionsForDeployV3(
+export async function getQuestionsForDeployV3(
   ctx: v2.Context,
   envInfo: v3.EnvInfoV3,
   inputs: Inputs
@@ -173,12 +174,13 @@ export async function getQuestionsForAddFeatureV3(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const question: SingleSelectQuestion = {
-    name: "feature",
+    name: AzureSolutionQuestionNames.Features,
     title: getLocalizedString("core.addFeatureQuestion.title"),
     type: "singleSelect",
     staticOptions: [],
   };
   const options: OptionItem[] = [];
+  question.staticOptions = options;
   if (inputs.platform === Platform.CLI_HELP) {
     options.push(NotificationOptionItem);
     options.push(CommandAndResponseOptionItem);
@@ -245,7 +247,6 @@ export async function getQuestionsForAddFeatureV3(
   if (isCicdAddable) {
     options.push(CicdOptionItem);
   }
-  question.staticOptions = options;
   const addFeatureNode = new QTreeNode(question);
   const triggerNode = new QTreeNode(createHostTypeTriggerQuestion(inputs.platform));
   triggerNode.condition = { equals: NotificationOptionItem.id };

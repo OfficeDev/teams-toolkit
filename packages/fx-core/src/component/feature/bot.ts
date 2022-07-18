@@ -16,6 +16,7 @@ import {
 import "reflect-metadata";
 import { Service } from "typedi";
 import {
+  AzureSolutionQuestionNames,
   CommandAndResponseOptionItem,
   M365SearchAppOptionItem,
   MessageExtensionItem,
@@ -67,7 +68,7 @@ export class TeamsBot {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const feature = inputs.feature as string;
+    const feature = inputs[AzureSolutionQuestionNames.Features] as string;
     const triggers = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] as string[];
     inputs.hosting = "azure-web-app";
     const scenarios: string[] = [];

@@ -20,7 +20,7 @@ import {
   StringValidation,
 } from "@microsoft/teamsfx-api";
 
-import { FxCore, isCLIDotNetEnabled, isM365AppEnabled } from "@microsoft/teamsfx-core";
+import { FxCore, isCLIDotNetEnabled, isM365AppEnabled, isV3 } from "@microsoft/teamsfx-core";
 import AzureAccountManager from "./commonlib/azureLogin";
 import M365TokenProvider from "./commonlib/m365Login";
 import CLILogProvider from "./commonlib/log";
@@ -160,7 +160,9 @@ export class HelpParamGenerator {
         this.setQuestionNodes(`${Stage.create}-m365`, result.value);
       }
     }
-    const userTasks = ["addResource", "addCICDWorkflows", "connectExistingApi"];
+    const userTasks = isV3()
+      ? ["addFeature"]
+      : ["addResource", "addCICDWorkflows", "connectExistingApi"];
     for (const userTask of userTasks) {
       const result = await this.getQuestionsForUserTask(userTask, systemInput, this.core);
       if (result.isErr()) {

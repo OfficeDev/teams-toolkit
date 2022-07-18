@@ -69,6 +69,7 @@ import {
   AzureResourceApim,
   AzureResourceKeyVaultNewUI,
   AzureResourceSQLNewUI,
+  AzureSolutionQuestionNames,
 } from "../plugins/solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { CallbackRegistry } from "./callback";
@@ -140,8 +141,13 @@ import { isPreviewFeaturesEnabled } from "../common";
 import { runAction } from "../component/workflow";
 import { createContextV3 } from "../component/utils";
 import "../component/core";
-import { getQuestionsForAddFeatureV3, QuestionModelMW_V3 } from "./middleware/questionModelV3";
+import {
+  getQuestionsForAddFeatureV3,
+  getQuestionsForDeployV3,
+  QuestionModelMW_V3,
+} from "./middleware/questionModelV3";
 import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
+import { EnvInfoV3 } from "@microsoft/teamsfx-api/build/v3";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -386,17 +392,17 @@ export class FxCore implements v3.ICore {
       }
 
       if (BotFeatureIds.includes(feature)) {
-        inputs.feature = feature;
+        inputs[AzureSolutionQuestionNames.Features] = feature;
         const res = await runAction("teams-bot.add", context, inputs as InputsWithProjectPath);
         if (res.isErr()) return err(res.error);
       }
       if (TabFeatureIds.includes(feature)) {
-        inputs.feature = feature;
+        inputs[AzureSolutionQuestionNames.Features] = feature;
         const res = await runAction("teams-tab.add", context, inputs as InputsWithProjectPath);
         if (res.isErr()) return err(res.error);
       }
       if (feature === TabSPFxItem.id) {
-        inputs.feature = feature;
+        inputs[AzureSolutionQuestionNames.Features] = feature;
         const res = await runAction("spfx-tab.add", context, inputs as InputsWithProjectPath);
         if (res.isErr()) return err(res.error);
       }
@@ -757,7 +763,7 @@ export class FxCore implements v3.ICore {
     ctx?: CoreHookContext
   ): Promise<Result<Void, FxError>> {
     const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-    const feature = inputs.feature as string;
+    const feature = inputs[AzureSolutionQuestionNames.Features] as string;
     let res;
     if (feature === AzureResourceSQLNewUI.id) {
       res = await runAction("sql.add", context, inputs as InputsWithProjectPath);
@@ -900,10 +906,14 @@ export class FxCore implements v3.ICore {
     inputs: Inputs,
     ctx?: CoreHookContext
   ): Promise<Result<unknown, FxError>> {
-    if (func.method === "addFeature") {
-      const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-      const feature = inputs.feature as string;
-      let res;
+    let res: Result<undefined, FxError> = ok(undefined);
+    const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+    if (func.method === "addCICDWorkflows") {
+      res = await runAction("cicd.add", context, inputs as InputsWithProjectPath);
+    } else if (func.method === "connectExistingApi") {
+      res = await runAction("api-connector.add", context, inputs as InputsWithProjectPath);
+    } else if (func.method === "addFeature") {
+      const feature = inputs[AzureSolutionQuestionNames.Features] as string;
       if (feature === "sql") {
         res = await runAction("sql.add", context, inputs as InputsWithProjectPath);
       } else if (BotFeatureIds.includes(feature)) {
@@ -918,7 +928,7 @@ export class FxCore implements v3.ICore {
       if (res.isErr()) return err(res.error);
       ctx!.projectSettings = context.projectSetting;
     }
-    return ok(undefined);
+    return res;
   }
   @hooks([
     ErrorHandlerMW,
@@ -937,7 +947,15 @@ export class FxCore implements v3.ICore {
     if (!ctx) return err(new ObjectIsUndefinedError("getQuestions input stuff"));
     inputs.stage = Stage.getQuestions;
     setCurrentStage(Stage.getQuestions);
-
+    if (isV3()) {
+      const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+      if (stage === Stage.create) {
+        return await this._getQuestionsForCreateProjectV2(inputs);
+      } else if (stage === Stage.deploy) {
+        return await getQuestionsForDeployV3(context, ctx.envInfoV2 as EnvInfoV3, inputs);
+      }
+      return ok(undefined);
+    }
     switch (stage) {
       case Stage.create:
         delete inputs.projectPath;

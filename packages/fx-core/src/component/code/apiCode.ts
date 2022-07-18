@@ -23,6 +23,7 @@ import { FunctionLanguage, QuestionKey } from "../../plugins/resource/function/e
 import { ComponentNames } from "../constants";
 import { FunctionDeploy } from "../../plugins/resource/function/ops/deploy";
 import { merge } from "lodash";
+import { Plans, ProgressMessages, ProgressTitles } from "../messages";
 /**
  * api scaffold
  */
@@ -37,7 +38,7 @@ export class ApiCodeProvider implements SourceCodeProvider {
       name: "api-code.generate",
       type: "function",
       enableProgressBar: true,
-      progressTitle: "Scaffolding Api",
+      progressTitle: ProgressTitles.scaffoldApi,
       progressSteps: 1,
       enableTelemetry: true,
       telemetryComponentName: "fx-resource-function",
@@ -47,7 +48,7 @@ export class ApiCodeProvider implements SourceCodeProvider {
       errorHelpLink: DefaultValues.helpLink,
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         const folder = inputs.folder || FunctionPluginPathInfo.solutionFolderName;
-        return ok([`scaffold api source code in folder: ${path.join(inputs.projectPath, folder)}`]);
+        return ok([Plans.scaffold("api", path.join(inputs.projectPath, folder))]);
       },
       execute: async (
         ctx: ContextV3,
@@ -71,6 +72,7 @@ export class ApiCodeProvider implements SourceCodeProvider {
           appName: appName,
           functionName: functionName,
         };
+        progress?.next(ProgressMessages.scaffoldApi);
         await FunctionScaffold.scaffoldFunction(
           workingDir,
           language,
@@ -78,7 +80,7 @@ export class ApiCodeProvider implements SourceCodeProvider {
           functionName,
           variables
         );
-        return ok([`scaffold api source code in folder: ${workingDir}`]);
+        return ok([Plans.scaffold("api", workingDir)]);
       },
     };
     return ok(action);
@@ -91,7 +93,7 @@ export class ApiCodeProvider implements SourceCodeProvider {
       name: "api-code.build",
       type: "function",
       enableProgressBar: true,
-      progressTitle: "Building Api",
+      progressTitle: ProgressTitles.buildingApi,
       progressSteps: 1,
       enableTelemetry: true,
       telemetryComponentName: "fx-resource-function",
@@ -101,7 +103,7 @@ export class ApiCodeProvider implements SourceCodeProvider {
         if (!teamsApi) return ok([]);
         const apiDir = teamsApi?.folder;
         if (!apiDir) return ok([]);
-        return ok([`build project: ${apiDir}`]);
+        return ok([Plans.buildProject(apiDir)]);
       },
       execute: async (
         context: ContextV3,
@@ -114,12 +116,12 @@ export class ApiCodeProvider implements SourceCodeProvider {
         const language = context.projectSetting.programmingLanguage;
         if (!language || !Object.values(FunctionLanguage).includes(language as FunctionLanguage))
           throw new Error("Invalid programming language found in project settings.");
-        progress?.next("Building Function Api");
+        progress?.next(ProgressMessages.buildingApi);
         const buildPath = path.resolve(inputs.projectPath, teamsApi.folder);
         await FunctionDeploy.build(buildPath, language as FunctionLanguage);
         const artifactFolder = teamsApi.artifactFolder || teamsApi.folder;
         merge(teamsApi, { build: true, artifactFolder: path.join(artifactFolder) });
-        return ok([`build project: ${buildPath}`]);
+        return ok([Plans.buildProject(buildPath)]);
       },
     };
     return ok(action);

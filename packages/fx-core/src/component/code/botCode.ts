@@ -26,7 +26,6 @@ import {
 } from "../../common/template-utils/templatesActions";
 import {
   DEFAULT_DOTNET_FRAMEWORK,
-  ProgressBarConstants,
   TemplateProjectsConstants,
 } from "../../plugins/resource/bot/constants";
 import { ProgrammingLanguage } from "../../plugins/resource/bot/enums/programmingLanguage";
@@ -41,6 +40,7 @@ import { CoreQuestionNames } from "../../core/question";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { telemetryHelper } from "../../plugins/resource/bot/utils/telemetry-helper";
 import { commonTelemetryPropsForBot } from "../resource/botService";
+import { Plans, ProgressMessages, ProgressTitles } from "../messages";
 /**
  * bot scaffold plugin
  */
@@ -55,7 +55,7 @@ export class BotCodeProvider implements SourceCodeProvider {
       name: "bot-code.generate",
       type: "function",
       enableProgressBar: true,
-      progressTitle: ProgressBarConstants.SCAFFOLD_TITLE,
+      progressTitle: ProgressTitles.scaffoldBot,
       progressSteps: 1,
       enableTelemetry: true,
       telemetryProps: commonTelemetryPropsForBot(context),
@@ -69,10 +69,7 @@ export class BotCodeProvider implements SourceCodeProvider {
         const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
         if (!teamsBot) return ok([]);
         const folder = inputs.folder || CommonStrings.BOT_WORKING_DIR_NAME;
-        return ok([
-          "add component 'bot-code' in projectSettings",
-          `scaffold bot source code in folder: ${path.join(inputs.projectPath, folder)}`,
-        ]);
+        return ok([Plans.scaffold("bot", path.join(inputs.projectPath, folder))]);
       },
       execute: async (
         context: ContextV3,
@@ -95,7 +92,8 @@ export class BotCodeProvider implements SourceCodeProvider {
         const workingDir = path.join(inputs.projectPath, botFolder);
         const safeProjectName =
           inputs[CoreQuestionNames.SafeProjectName] ?? convertToAlphanumericOnly(appName);
-        await progress?.next(ProgressBarConstants.SCAFFOLD_STEP_FETCH_ZIP);
+
+        await progress?.next(ProgressMessages.scaffoldBot);
         for (const scenario of inputs.scenarios as string[]) {
           await scaffoldFromTemplates({
             group: group_name,
@@ -127,9 +125,7 @@ export class BotCodeProvider implements SourceCodeProvider {
             },
           });
         }
-        return ok([
-          `scaffold bot source code in folder: ${path.join(inputs.projectPath, botFolder)}`,
-        ]);
+        return ok([Plans.scaffold("bot", path.join(inputs.projectPath, botFolder))]);
       },
     };
     return ok(action);
@@ -142,7 +138,7 @@ export class BotCodeProvider implements SourceCodeProvider {
       name: "bot-code.build",
       type: "function",
       enableProgressBar: true,
-      progressTitle: ProgressBarConstants.BUILD_TITLE,
+      progressTitle: ProgressTitles.buildingBot,
       progressSteps: 1,
       enableTelemetry: true,
       telemetryProps: commonTelemetryPropsForBot(context),
@@ -153,7 +149,7 @@ export class BotCodeProvider implements SourceCodeProvider {
         if (!teamsBot) return ok([]);
         const packDir = teamsBot?.folder;
         if (!packDir) return ok([]);
-        return ok([`build project: ${packDir}`]);
+        return ok([Plans.buildProject(packDir)]);
       },
       execute: async (
         context: ContextV3,
@@ -164,7 +160,7 @@ export class BotCodeProvider implements SourceCodeProvider {
         if (!teamsBot) return ok([]);
         const packDir = path.join(inputs.projectPath, teamsBot.folder!);
         const language = context.projectSetting.programmingLanguage || "javascript";
-        await progress?.next(ProgressBarConstants.DEPLOY_STEP_NPM_INSTALL);
+        await progress?.next(ProgressMessages.buildingBot);
         if (language === ProgrammingLanguage.TypeScript) {
           //Typescript needs tsc build before deploy because of windows app server. other languages don"t need it.
           try {
@@ -195,7 +191,7 @@ export class BotCodeProvider implements SourceCodeProvider {
           const artifactFolder = path.join(".", "bin", "Release", framework, "publish");
           merge(teamsBot, { build: true, artifactFolder: artifactFolder });
         }
-        return ok([`build project: ${packDir}`]);
+        return ok([Plans.buildProject(packDir)]);
       },
     };
     return ok(action);

@@ -31,32 +31,13 @@ import { FrontendDeployment } from "../../plugins/resource/frontend/ops/deploy";
 import { AzureResource } from "./azureResource";
 import { getHostingParentComponent } from "../workflow";
 import { FrontendPluginInfo } from "../../plugins/resource/frontend/constants";
-import {
-  DeployProgress,
-  PostProvisionProgress,
-} from "../../plugins/resource/frontend/resources/steps";
+import { StorageOutputs } from "../constants";
+import { Plans, ProgressMessages, ProgressTitles } from "../messages";
 @Service("azure-storage")
 export class AzureStorageResource extends AzureResource {
   readonly name = "azure-storage";
   readonly bicepModuleName = "azureStorage";
-  readonly outputs = {
-    endpoint: {
-      key: "endpoint",
-      bicepVariable: "provisionOutputs.azureStorage{{scenario}}Output.value.endpoint",
-    },
-    storageResourceId: {
-      key: "storageResourceId",
-      bicepVariable: "provisionOutputs.azureStorage{{scenario}}Output.value.storageResourceId",
-    },
-    domain: {
-      key: "domain",
-      bicepVariable: "provisionOutputs.azureStorage{{scenario}}Output.value.domain",
-    },
-    indexPath: {
-      key: "indexPath",
-      bicepVariable: "provisionOutputs.azureStorage{{scenario}}Output.value.indexPath",
-    },
-  };
+  readonly outputs = StorageOutputs;
   readonly finalOutputKeys = ["domain", "endpoint", "resourceId", "indexPath"];
   configure(
     context: ContextV3,
@@ -72,16 +53,10 @@ export class AzureStorageResource extends AzureResource {
       errorIssueLink: FrontendPluginInfo.IssueLink,
       errorHelpLink: FrontendPluginInfo.HelpLink,
       enableProgressBar: true,
-      progressTitle: PostProvisionProgress.title,
+      progressTitle: ProgressTitles.configureStorage,
       progressSteps: 1,
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok([
-          {
-            type: "service",
-            name: "azure",
-            remarks: "configure azure storage (enable static web site)",
-          },
-        ]);
+        return ok([Plans.enableStaticWebsite()]);
       },
       execute: async (
         context: ContextV3,
@@ -101,16 +76,10 @@ export class AzureStorageResource extends AzureResource {
         if (frontendConfigRes.isErr()) {
           return err(frontendConfigRes.error);
         }
-        progress?.next(PostProvisionProgress.steps.EnableStaticWebsite);
+        progress?.next(ProgressMessages.enableStaticWebsite);
         const client = new AzureStorageClient(frontendConfigRes.value);
         await client.enableStaticWebsite();
-        return ok([
-          {
-            type: "service",
-            name: "azure",
-            remarks: "configure azure storage (enable static web site)",
-          },
-        ]);
+        return ok([Plans.enableStaticWebsite()]);
       },
     };
     return ok(action);
@@ -126,7 +95,7 @@ export class AzureStorageResource extends AzureResource {
       errorIssueLink: FrontendPluginInfo.IssueLink,
       errorHelpLink: FrontendPluginInfo.HelpLink,
       enableProgressBar: true,
-      progressTitle: DeployProgress.title,
+      progressTitle: ProgressTitles.deployingStorage,
       progressSteps: 3,
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         const parent = getHostingParentComponent(
@@ -135,13 +104,7 @@ export class AzureStorageResource extends AzureResource {
           inputs.scenario
         );
         const deployDir = path.resolve(inputs.projectPath, parent?.folder ?? "");
-        return ok([
-          {
-            type: "service",
-            name: "azure",
-            remarks: `deploy azure storage with path: ${deployDir}`,
-          },
-        ]);
+        return ok([Plans.deploy("Azure Storage", deployDir)]);
       },
       execute: async (
         context: ContextV3,
@@ -165,13 +128,7 @@ export class AzureStorageResource extends AzureResource {
         const client = new AzureStorageClient(frontendConfigRes.value);
         const envName = ctx.envInfo.envName;
         await FrontendDeployment.doFrontendDeploymentV3(client, deployDir, envName, progress);
-        return ok([
-          {
-            type: "service",
-            name: "azure",
-            remarks: `deploy azure storage with path: ${deployDir}`,
-          },
-        ]);
+        return ok([Plans.deploy("Azure Storage", deployDir)]);
       },
     };
     return ok(action);

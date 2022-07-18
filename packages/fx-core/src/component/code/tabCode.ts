@@ -37,7 +37,6 @@ import {
 } from "../../plugins/resource/frontend/constants";
 import { FrontendDeployment } from "../../plugins/resource/frontend/ops/deploy";
 import {
-  ErrorMessages,
   UnknownScaffoldError,
   UnzipTemplateError,
 } from "../../plugins/resource/frontend/resources/errors";
@@ -53,7 +52,8 @@ import { Utils } from "../../plugins/resource/frontend/utils";
 import { CommandExecutionError } from "../../plugins/resource/bot/errors";
 import { isAadManifestEnabled } from "../../common/tools";
 import { hasAAD, hasApi } from "../../common/projectSettingsHelperV3";
-import { DeployProgress, ScaffoldProgress } from "../../plugins/resource/frontend/resources/steps";
+import { ScaffoldProgress } from "../../plugins/resource/frontend/resources/steps";
+import { Plans, ProgressMessages, ProgressTitles } from "../messages";
 /**
  * tab scaffold
  */
@@ -74,7 +74,7 @@ export class TabCodeProvider implements SourceCodeProvider {
       errorIssueLink: FrontendPluginInfo.IssueLink,
       errorHelpLink: FrontendPluginInfo.HelpLink,
       enableProgressBar: true,
-      progressTitle: ScaffoldProgress.title,
+      progressTitle: ProgressTitles.scaffoldTab,
       progressSteps: Object.keys(ScaffoldProgress.steps).length,
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
@@ -84,7 +84,7 @@ export class TabCodeProvider implements SourceCodeProvider {
           context.projectSetting.programmingLanguage ||
           "javascript";
         const folder = inputs.folder || language === "csharp" ? "" : FrontendPathInfo.WorkingDir;
-        return ok([`scaffold tab source code in folder: ${path.join(inputs.projectPath, folder)}`]);
+        return ok([Plans.scaffold("tab", path.join(inputs.projectPath, folder))]);
       },
       execute: async (
         ctx: ContextV3,
@@ -116,7 +116,7 @@ export class TabCodeProvider implements SourceCodeProvider {
           : isAadManifestEnabled() && !hasAAD(ctx.projectSetting)
           ? Scenario.NonSso
           : Scenario.Default;
-        await progress?.next(ScaffoldProgress.steps.Scaffold);
+        await progress?.next(ProgressMessages.scaffoldTab);
         await scaffoldFromTemplates({
           group: TemplateInfo.TemplateGroupName,
           lang: langKey,
@@ -148,7 +148,7 @@ export class TabCodeProvider implements SourceCodeProvider {
             }
           },
         });
-        return ok([`scaffold tab source code in folder: ${workingDir}`]);
+        return ok([Plans.scaffold("tab", workingDir)]);
       },
     };
     return ok(action);
@@ -203,7 +203,7 @@ export class TabCodeProvider implements SourceCodeProvider {
       name: "tab-code.build",
       type: "function",
       enableProgressBar: true,
-      progressTitle: "Building Tab",
+      progressTitle: ProgressTitles.buildingTab,
       progressSteps: 1,
       enableTelemetry: true,
       telemetryComponentName: "fx-resource-frontend",
@@ -213,7 +213,7 @@ export class TabCodeProvider implements SourceCodeProvider {
         if (!teamsTab) return ok([]);
         const tabDir = teamsTab?.folder;
         if (!tabDir) return ok([]);
-        return ok([`build project: ${tabDir}`]);
+        return ok([Plans.buildProject(tabDir)]);
       },
       execute: async (
         context: ContextV3,
@@ -224,7 +224,7 @@ export class TabCodeProvider implements SourceCodeProvider {
         const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
         if (!teamsTab) return ok([]);
         if (teamsTab.folder == undefined) throw new Error("path not found");
-        progress?.next(DeployProgress.steps.Build);
+        progress?.next(ProgressMessages.buildingTab);
         const tabPath = path.resolve(inputs.projectPath, teamsTab.folder);
         const artifactFolder = isVSProject(context.projectSetting)
           ? await this.doBlazorBuild(tabPath)
@@ -233,7 +233,7 @@ export class TabCodeProvider implements SourceCodeProvider {
           build: true,
           artifactFolder: path.join(teamsTab.folder, artifactFolder),
         });
-        return ok([`build project: ${tabPath}`]);
+        return ok([Plans.buildProject(tabPath)]);
       },
     };
     return ok(action);

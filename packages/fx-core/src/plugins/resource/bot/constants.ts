@@ -79,8 +79,6 @@ export class ProgressBarConstants {
 
   public static readonly LOCAL_DEBUG_STEPS_NUM: number = 1;
 
-  public static readonly BUILD_TITLE: string = "Building bot";
-
   public static readonly DEPLOY_TITLE: string = "Deploying bot";
   public static readonly DEPLOY_STEP_START = "Deploying bot.";
   public static readonly DEPLOY_STEP_NPM_INSTALL = "Installing dependencies.";

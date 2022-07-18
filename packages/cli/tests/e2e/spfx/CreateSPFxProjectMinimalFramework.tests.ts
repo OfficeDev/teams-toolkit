@@ -15,8 +15,8 @@ describe("Start a new project", function () {
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
 
-  it("Create SPFx project without framework", async function () {
-    const command = `teamsfx new --interactive false --app-name ${appName} --capabilities tab-spfx --spfx-framework-type none --spfx-webpart-name helloworld --programming-language typescript`;
+  it("Create SPFx project with minimal framework", async function () {
+    const command = `teamsfx new --interactive false --app-name ${appName} --capabilities tab-spfx --spfx-framework-type minimal --spfx-webpart-name helloworld --programming-language typescript`;
     const result = await execAsync(command, {
       cwd: testFolder,
       env: process.env,
@@ -35,8 +35,6 @@ describe("Start a new project", function () {
       "src/webparts/helloworld/HelloworldWebPart.ts",
       "src/webparts/helloworld/loc/en-us.js",
       "src/webparts/helloworld/loc/mystrings.d.ts",
-      "src/webparts/helloworld/assets/welcome-dark.png",
-      "src/webparts/helloworld/assets/welcome-light.png",
       "src/index.ts",
       ".gitignore",
       ".npmignore",

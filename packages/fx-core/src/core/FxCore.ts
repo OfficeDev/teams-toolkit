@@ -740,7 +740,11 @@ export class FxCore implements v3.ICore {
 
   async executeUserTask(func: Func, inputs: Inputs): Promise<Result<unknown, FxError>> {
     if (isV3()) {
-      if (func.method === "addFeature") {
+      if (
+        func.method === "addFeature" ||
+        func.method === "addResource" ||
+        func.method === "addCapability"
+      ) {
         const res = await this.addFeature(inputs as v2.InputsWithProjectPath);
         if (res.isErr()) return err(res.error);
         return ok(undefined);

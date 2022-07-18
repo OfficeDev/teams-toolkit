@@ -1,7 +1,8 @@
 name: Unit Test
 
 on:
-  push: ['ivanchen/unit-test']
+  push: 
+    branches: ['ivanchen/unit-test']
 
 jobs:
   unit-test:

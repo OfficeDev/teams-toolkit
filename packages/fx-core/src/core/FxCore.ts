@@ -69,6 +69,7 @@ import {
   AzureResourceApim,
   AzureResourceKeyVaultNewUI,
   AzureResourceSQLNewUI,
+  AzureSolutionQuestionNames,
 } from "../plugins/solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { CallbackRegistry } from "./callback";
@@ -907,7 +908,15 @@ export class FxCore implements v3.ICore {
   ): Promise<Result<unknown, FxError>> {
     if (func.method === "addFeature") {
       const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-      const feature = inputs.feature as string;
+      let feature = inputs.feature as string;
+      if (!feature) {
+        if (inputs[AzureSolutionQuestionNames.AddResources]) {
+          feature = inputs[AzureSolutionQuestionNames.AddResources][0];
+        }
+        if (inputs[AzureSolutionQuestionNames.Capabilities]) {
+          feature = inputs[AzureSolutionQuestionNames.Capabilities][0];
+        }
+      }
       let res;
       if (feature === "sql") {
         res = await runAction("sql.add", context, inputs as InputsWithProjectPath);
@@ -987,7 +996,12 @@ export class FxCore implements v3.ICore {
     if (!ctx) return err(new ObjectIsUndefinedError("getQuestionsForUserTask input stuff"));
     inputs.stage = Stage.getQuestions;
     setCurrentStage(Stage.getQuestions);
-    if (isV3() && func.method === "addFeature") {
+    if (
+      isV3() &&
+      (func.method === "addFeature" ||
+        func.method === "addCapability" ||
+        func.method === "addResource")
+    ) {
       const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
       return await getQuestionsForAddFeatureV3(context, inputs);
     }

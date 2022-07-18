@@ -43,9 +43,6 @@ else
 }
 
 @code {
-    string userName;
-    string errorMessage;
-    bool isInTeams;
     bool isLoading = true; 
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -54,13 +51,6 @@ else
 
         if(firstRender)
         {
-            isInTeams = await MicrosoftTeams.IsInTeams();
-
-            if (!isInTeams)
-            { 
-               errorMessage = "Not running in Microsoft Teams.";
-            }
-
             isLoading = false;
             StateHasChanged();            
         }

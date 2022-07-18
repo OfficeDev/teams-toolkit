@@ -366,7 +366,8 @@ export async function getQuestionsForTargetEnv(
   }
 
   if (!inputs.projectPath) {
-    return err(new NoProjectOpenedError());
+    return ok(undefined);
+    // return err(new NoProjectOpenedError());
   }
 
   const envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath);

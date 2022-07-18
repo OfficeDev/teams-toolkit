@@ -60,7 +60,8 @@ export class SSO {
     if (teamsTabComponent && !teamsTabComponent.sso) {
       needsTab = true;
       const apiComponent = getTabApiComponent(teamsTabComponent, context.projectSetting);
-      needsTabApiConnection = !apiComponent?.connections?.includes(ComponentNames.AadApp);
+      needsTabApiConnection =
+        !!apiComponent && !apiComponent.connections?.includes(ComponentNames.AadApp);
     }
 
     const actions: Action[] = [

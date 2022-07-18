@@ -3,6 +3,7 @@ module azureWebApp{{scenario}}Provision './provision/azureWebApp{{scenario}}.bic
   name: 'azureWebApp{{scenario}}Provision'
   params: {
     provisionParameters: provisionParameters
+    userAssignedIdentityId: {{identity.resourceId}}
   }
 }
 

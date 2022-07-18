@@ -249,6 +249,7 @@ export class CliHelper {
       : `teamsfx capability add ${capabilityToAdd}`;
     const timeout = 100000;
     try {
+      console.log(`isV3: ${isV3()}`);
       const result = await execAsync(command, {
         cwd: projectPath,
         env: process.env,

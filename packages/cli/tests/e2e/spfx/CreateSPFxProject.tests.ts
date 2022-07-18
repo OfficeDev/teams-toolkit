@@ -54,7 +54,6 @@ describe("Start a new project", function () {
       "src/webparts/helloworld/assets/welcome-dark.png",
       "src/webparts/helloworld/assets/welcome-light.png",
       "src/webparts/helloworld/components/Helloworld.module.scss",
-      "src/webparts/helloworld/components/Helloworld.module.scss.ts",
       "src/webparts/helloworld/components/Helloworld.tsx",
       "src/webparts/helloworld/components/IHelloworldProps.ts",
       "src/index.ts",
@@ -65,7 +64,7 @@ describe("Start a new project", function () {
       "package.json",
       "README.md",
       "tsconfig.json",
-      "eslintrc.js",
+      ".eslintrc.js",
     ];
     for (const file of files) {
       const filePath = path.join(testFolder, appName, `SPFx`, file);

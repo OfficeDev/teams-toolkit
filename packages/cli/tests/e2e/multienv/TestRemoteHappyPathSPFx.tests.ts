@@ -61,7 +61,7 @@ describe("Multi Env Happy Path for SPFx", function () {
       "package.json",
       "README.md",
       "tsconfig.json",
-      "eslintrc.js",
+      ".eslintrc.js",
     ];
     for (const file of files) {
       const filePath = path.join(testFolder, appName, `SPFx`, file);

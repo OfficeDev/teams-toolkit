@@ -961,6 +961,7 @@ export function getFixedCommonProjectSettings(rootPath: string | undefined) {
       isFromSample: projectSettings?.isFromSample ?? undefined,
       programmingLanguage: projectSettings?.programmingLanguage ?? undefined,
       hostType: projectSettings?.solutionSettings?.hostType ?? undefined,
+      isM365: projectSettings?.isM365 ?? false,
     };
   } catch {
     return undefined;

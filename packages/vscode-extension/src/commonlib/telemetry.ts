@@ -187,6 +187,11 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
         properties[TelemetryProperty.IsFromSample] = fixedProjectSettings?.isFromSample;
         this.sharedProperties[TelemetryProperty.IsFromSample] = fixedProjectSettings?.isFromSample;
       }
+
+      if (fixedProjectSettings?.isM365) {
+        properties[TelemetryProperty.IsM365] = fixedProjectSettings?.isM365;
+        this.sharedProperties[TelemetryProperty.IsM365] = fixedProjectSettings?.isM365;
+      }
     }
   }
 }

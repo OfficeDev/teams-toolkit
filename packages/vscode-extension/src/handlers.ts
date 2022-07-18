@@ -171,6 +171,7 @@ export function activate(): Result<Void, FxError> {
       fixedProjectSettings?.programmingLanguage
     );
     ExtTelemetry.addSharedProperty(TelemetryProperty.HostType, fixedProjectSettings?.hostType);
+    ExtTelemetry.addSharedProperty(TelemetryProperty.IsM365, fixedProjectSettings?.isM365);
 
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTeamsApp, {});
     AzureAccountManager.setStatusChangeMap(

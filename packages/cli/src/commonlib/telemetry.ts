@@ -42,6 +42,7 @@ export class CliTelemetryReporter implements TelemetryReporter {
         fixedProjectSettings?.programmingLanguage
       );
       this.addSharedProperty(TelemetryProperty.HostType, fixedProjectSettings?.hostType);
+      this.addSharedProperty(TelemetryProperty.IsM365, fixedProjectSettings?.isM365);
     }
     return this;
   }

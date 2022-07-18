@@ -232,6 +232,7 @@ describe("tools", () => {
         projectId: "project-id",
         version: "0.0.0",
         isFromSample: false,
+        isM365: false,
         solutionSettings: {
           name: "fx-solution-azure",
           version: "1.0.0",
@@ -268,6 +269,7 @@ describe("tools", () => {
       chai.assert.equal(result!.projectId, projectSettings.projectId);
       chai.assert.equal(result!.programmingLanguage, projectSettings.programmingLanguage);
       chai.assert.equal(result!.isFromSample, projectSettings.isFromSample);
+      chai.assert.equal(result!.isM365, projectSettings.isM365);
       chai.assert.equal(result!.hostType, projectSettings.solutionSettings?.hostType);
     });
 

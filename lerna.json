@@ -1,7 +1,8 @@
 {
   "version": "independent",
   "packages": [
-    "packages/manifest"
+    "packages/manifest",
+    "packages/api"
   ],
   "command": {
     "version": {

@@ -1342,7 +1342,10 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
     async (): Promise<Result<void, FxError>> => {
       const result = await localTelemetryReporter.runWithTelemetry(
         TelemetryEvent.DebugPreCheckCoreLocalDebug,
-        () => runCommand(Stage.debug)
+        () => {
+          VsCodeLogInstance.outputChannel.show();
+          return runCommand(Stage.debug);
+        }
       );
       if (result.isErr()) {
         return err(result.error);

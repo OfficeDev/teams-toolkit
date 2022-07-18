@@ -149,6 +149,7 @@ export class TeamsBot {
           projectSettings.components.push({
             name: "teams-bot",
             hosting: inputs.hosting,
+            deploy: true,
             capabilities: botCapability ? [botCapability] : [],
           });
           // add hosting component
@@ -180,7 +181,8 @@ export class TeamsBot {
           if (apimConfig) {
             apimConfig.connections?.push("teams-bot");
           }
-          projectSettings.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
+          projectSettings.programmingLanguage =
+            projectSettings.programmingLanguage || inputs[CoreQuestionNames.ProgrammingLanguage];
           return ok(["config Bot in project settings"]);
         },
       },

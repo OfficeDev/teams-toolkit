@@ -33,15 +33,15 @@ export interface ActionBase {
   pre?: (
     context: ContextV3,
     inputs: InputsWithProjectPath
-  ) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+  ) => MaybePromise<Result<undefined, FxError>>;
   post?: (
     context: ContextV3,
     inputs: InputsWithProjectPath
-  ) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+  ) => MaybePromise<Result<undefined, FxError>>;
   exception?: (
     context: ContextV3,
     inputs: InputsWithProjectPath
-  ) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+  ) => MaybePromise<Result<undefined, FxError>>;
 }
 
 export type Action = GroupAction | ShellAction | CallAction | FunctionAction;
@@ -79,7 +79,7 @@ export interface CallAction extends ActionBase {
   required: boolean; // required=true, throw error of target action does not exist; required=false, ignore this step if target action does not exist.
   targetAction: string;
 }
-
+export type ErrorHandler = (error: any, telemetryProps: Record<string, string>) => FxError;
 /**
  * function action: run a javascript function call that can do any kinds of work
  */
@@ -87,9 +87,13 @@ export interface FunctionAction extends ActionBase {
   name: string;
   type: "function";
   errorSource?: string;
+  errorHelpLink?: string;
+  errorIssueLink?: string;
+  errorHandler?: ErrorHandler;
   enableTelemetry?: boolean;
   telemetryComponentName?: string;
   telemetryEventName?: string;
+  telemetryProps?: Record<string, string>;
   enableProgressBar?: boolean;
   progressTitle?: string;
   progressSteps?: number;

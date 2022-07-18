@@ -1,25 +1,25 @@
 import * as path123 from "path";
-import { timer } from "@microsoft/metrics-ts";
+import { MSTimer } from "@microsoft/metrics-ts";
 
 function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 class Foo {
-  @timer()
+  @MSTimer(__filename)
   bar() {
     const r = this.baz();
     console.log(r);
     console.log(r.indexOf(0));
   }
 
-  @timer()
+  @MSTimer(__filename)
   baz(): number[] {
     path123.join("a", "b");
     return [1];
   }
 
-  @timer()
+  @MSTimer(__filename)
   async buz(arg: string, arg2: any) {
     await delay(1000);
     this.bar();

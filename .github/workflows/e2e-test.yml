@@ -209,21 +209,22 @@ jobs:
             npx mocha --reporter mochawesome --timeout 900000 $file
           fi
 
+      - name: get job id
+        id: get-job-id
+        uses: ayachensiyuan/get-action-job-id@v1.5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          job-name: ${{ matrix.cases }}
+
       - name: get report name
         id: get-report-name
         if: ${{ always() }}
         run: |
           name="${{ matrix.cases }}"
-
-          jobs=`curl \
-            -u :${{ secrets.GITHUB_TOKEN }} \
-            https://api.github.com/repos/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs?per_page=100`
-
-          id=`echo $jobs| jq --arg name $name -r '.jobs[] | select(.name == $name) | .id'`
-
           name="${name//'.tests.ts'/}"
           name="${name//.\//}"
-          name="${name//\//_}"_${id}
+          name="${name//\//_}"_${{ steps.get-job-id.outputs.jobId }}
           echo "::set-output name=name::$name"
 
       - name: Upload test report
@@ -320,13 +321,16 @@ jobs:
             fi
 
             job_id=`echo $jobs| jq --arg case $case -r '.jobs[] | select(.name == $case ) | .id'`
-            metrics_file=`find ~/artifacts -name "*${job_id}_metrics/output.txt"`
-            slow=`cat $metrics_file | grep '"severity":"slow"' | wc -l`
+            metrics_file=`find ~/artifacts -wholename "*${job_id}_metrics/output.txt"`
+            slow_count=0
+            if [ ! -z "$metrics_file" ]; then
+              slow_count=`grep -c '"severity":"slow"' $metrics_file || true`
+            fi
 
             url=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .html_url'`
             url="<a href=\\\"$url\\\">For Detail</a>"
 
-            row="<tr> <td style=\\\"text-align: left;\\\">$elegant_path</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> <td style=\\\"text-align: center;\\\">$duration</td> <td style=\\\"text-align: center;\\\">$slow</td> <td style=\\\"text-align: center;\\\">$url</td> </tr>"
+            row="<tr> <td style=\\\"text-align: left;\\\">$elegant_path</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> <td style=\\\"text-align: center;\\\">$duration</td> <td style=\\\"text-align: center;\\\">$slow_count</td> <td style=\\\"text-align: center;\\\">$url</td> </tr>"
 
             if [ "$status" == "success" ]; then
               lists="$lists $row"

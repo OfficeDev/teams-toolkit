@@ -330,3 +330,9 @@ export class AddSsoParameters {
 export class UserTaskFunctionName {
   static readonly ConnectExistingApi = "connectExistingApi";
 }
+
+export interface ProvisionSubscriptionCheckResult {
+  hasSwitchedSubscription: boolean;
+}
+
+export type FillInAzureConfigsResult = ProvisionSubscriptionCheckResult;

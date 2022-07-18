@@ -11,6 +11,7 @@ import {
   ProjectSettingsV3,
   SourceCodeProvider,
   InputsWithProjectPath,
+  IProgressHandler,
 } from "@microsoft/teamsfx-api";
 import { merge } from "lodash";
 import * as path from "path";
@@ -25,6 +26,7 @@ import {
 } from "../../common/template-utils/templatesActions";
 import {
   DEFAULT_DOTNET_FRAMEWORK,
+  ProgressBarConstants,
   TemplateProjectsConstants,
 } from "../../plugins/resource/bot/constants";
 import { ProgrammingLanguage } from "../../plugins/resource/bot/enums/programmingLanguage";
@@ -37,6 +39,8 @@ import * as fs from "fs-extra";
 import { CommandExecutionError } from "../../plugins/resource/bot/errors";
 import { CoreQuestionNames } from "../../core/question";
 import { convertToAlphanumericOnly } from "../../common/utils";
+import { telemetryHelper } from "../../plugins/resource/bot/utils/telemetry-helper";
+import { commonTelemetryPropsForBot } from "../resource/botService";
 /**
  * bot scaffold plugin
  */
@@ -50,6 +54,17 @@ export class BotCodeProvider implements SourceCodeProvider {
     const action: Action = {
       name: "bot-code.generate",
       type: "function",
+      enableProgressBar: true,
+      progressTitle: ProgressBarConstants.SCAFFOLD_TITLE,
+      progressSteps: 1,
+      enableTelemetry: true,
+      telemetryProps: commonTelemetryPropsForBot(context),
+      telemetryComponentName: "fx-resource-bot",
+      telemetryEventName: "scaffold",
+      errorHandler: (e, t) => {
+        telemetryHelper.fillAppStudioErrorProperty(e, t);
+        return e as FxError;
+      },
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
         if (!teamsBot) return ok([]);
@@ -59,7 +74,11 @@ export class BotCodeProvider implements SourceCodeProvider {
           `scaffold bot source code in folder: ${path.join(inputs.projectPath, folder)}`,
         ]);
       },
-      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+      execute: async (
+        context: ContextV3,
+        inputs: InputsWithProjectPath,
+        progress?: IProgressHandler
+      ) => {
         const projectSettings = context.projectSetting as ProjectSettingsV3;
         const appName = projectSettings.appName;
         const language =
@@ -76,6 +95,7 @@ export class BotCodeProvider implements SourceCodeProvider {
         const workingDir = path.join(inputs.projectPath, botFolder);
         const safeProjectName =
           inputs[CoreQuestionNames.SafeProjectName] ?? convertToAlphanumericOnly(appName);
+        await progress?.next(ProgressBarConstants.SCAFFOLD_STEP_FETCH_ZIP);
         for (const scenario of inputs.scenarios as string[]) {
           await scaffoldFromTemplates({
             group: group_name,

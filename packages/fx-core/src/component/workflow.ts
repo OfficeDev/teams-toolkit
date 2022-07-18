@@ -29,7 +29,7 @@ import * as Handlebars from "handlebars";
 import "reflect-metadata";
 import { Container } from "typedi";
 import toposort from "toposort";
-import { cloneDeep, merge } from "lodash";
+import { assign, cloneDeep, merge } from "lodash";
 import {
   fileEffectPlanStrings,
   persistBicep,
@@ -38,8 +38,8 @@ import {
 } from "./utils";
 import { convertToAlphanumericOnly } from "../common/utils";
 import { ActionNotExist, ComponentNotExist } from "./error";
-import { TelemetryConstants } from "./constants";
-import { Scenarios } from "./constants";
+import { globalVars } from "../core/globalVars";
+import { TelemetryConstants, Scenarios } from "./constants";
 
 export async function getAction(
   name: string,
@@ -360,41 +360,63 @@ export async function executeAction(
   effects: Effect[]
 ): Promise<Result<undefined, FxError>> {
   console.log(`executeAction: ${action.name}`);
+  if (action.pre) {
+    const res = await action.pre(context, inputs);
+    if (res.isErr()) return err(res.error);
+  }
+  let res: Result<undefined, FxError>;
   if (action.type === "function") {
-    return await executeFunctionAction(action, context, inputs, effects);
+    res = await executeFunctionAction(action, context, inputs, effects);
   } else if (action.type === "shell") {
     effects.push(`shell executed: ${action.command}`);
-    return ok(undefined);
+    res = ok(undefined);
   } else if (action.type === "call") {
+    const clonedInputs = cloneDeep(inputs);
     if (action.inputs) {
-      resolveVariables(inputs, action.inputs);
+      resolveVariables(clonedInputs, action.inputs);
     }
-    const targetAction = await getAction(action.targetAction, context, inputs, action.required);
+    const targetAction = await getAction(
+      action.targetAction,
+      context,
+      clonedInputs,
+      action.required
+    );
     if (action.required && !targetAction) {
       return err(new ActionNotExist(action.targetAction));
     }
     if (targetAction) {
-      return await executeAction(targetAction, context, inputs, effects);
+      res = await executeAction(targetAction, context, clonedInputs, effects);
+    } else {
+      res = ok(undefined);
     }
-    return ok(undefined);
   } else {
+    const clonedInputs = cloneDeep(inputs);
     if (action.inputs) {
-      resolveVariables(inputs, action.inputs);
+      resolveVariables(clonedInputs, action.inputs);
     }
     if (action.mode === "parallel") {
-      const promises = action.actions.map((a) => executeAction(a, context, inputs, effects));
+      const promises = action.actions.map((a) => {
+        const subInputs = cloneDeep(clonedInputs);
+        return executeAction(a, context, subInputs, effects);
+      });
       const results = await Promise.all(promises);
       for (const result of results) {
         if (result.isErr()) return err(result.error);
       }
     } else {
       for (const act of action.actions) {
-        const res = await executeAction(act, context, inputs, effects);
+        const subInputs = cloneDeep(clonedInputs);
+        const res = await executeAction(act, context, subInputs, effects);
         if (res.isErr()) return err(res.error);
       }
     }
-    return ok(undefined);
+    res = ok(undefined);
   }
+  if (action.post) {
+    const res = await action.post(context, inputs);
+    if (res.isErr()) return err(res.error);
+  }
+  return res;
 }
 
 export class ValidationError extends UserError {
@@ -437,11 +459,14 @@ export async function executeFunctionAction(
   const componentName = action.telemetryComponentName || arr[0];
   const telemetryProps = {
     [TelemetryConstants.properties.component]: componentName,
+    [TelemetryConstants.properties.appId]: globalVars.teamsAppId,
+    [TelemetryConstants.properties.tenantId]: globalVars.m365TenantId,
   };
   let progressBar;
   try {
     // send start telemetry
     if (action.enableTelemetry) {
+      if (action.telemetryProps) assign(telemetryProps, action.telemetryProps);
       const startEvent = eventName + "-start";
       context.telemetryReporter.sendTelemetryEvent(startEvent, telemetryProps);
     }
@@ -508,12 +533,26 @@ export async function executeFunctionAction(
     context.logProvider.info(`executeFunctionAction [${action.name}] finish!`);
     return ok(undefined);
   } catch (e) {
-    const error = assembleError(e);
+    let fxError;
+    if (action.errorHandler) {
+      fxError = action.errorHandler(e, telemetryProps);
+    } else {
+      fxError = assembleError(e);
+      if (fxError.source === "unknown") {
+        fxError.source = action.errorSource || fxError.source;
+      }
+      if (fxError instanceof UserError) {
+        fxError.helpLink = fxError.helpLink || action.errorHelpLink;
+      }
+      if (fxError instanceof SystemError) {
+        fxError.issueLink = fxError.issueLink || action.errorIssueLink;
+      }
+    }
     // send error telemetry
     if (action.enableTelemetry) {
-      const errorCode = error.source + "." + error.name;
+      const errorCode = fxError.source + "." + fxError.name;
       const errorType =
-        error instanceof SystemError
+        fxError instanceof SystemError
           ? TelemetryConstants.values.systemError
           : TelemetryConstants.values.userError;
       context.telemetryReporter.sendTelemetryEvent(eventName, {
@@ -521,11 +560,11 @@ export async function executeFunctionAction(
         [TelemetryConstants.properties.success]: TelemetryConstants.values.no,
         [TelemetryConstants.properties.errorCode]: errorCode,
         [TelemetryConstants.properties.errorType]: errorType,
-        [TelemetryConstants.properties.errorMessage]: error.message,
+        [TelemetryConstants.properties.errorMessage]: fxError.message,
       });
     }
     progressBar?.end(false);
-    return err(error);
+    return err(fxError);
   }
 }
 

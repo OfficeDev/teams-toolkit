@@ -7,6 +7,7 @@ import {
   Effect,
   FxError,
   InputsWithProjectPath,
+  IProgressHandler,
   MaybePromise,
   ok,
   ProjectSettingsV3,
@@ -32,9 +33,11 @@ import {
   Constants,
   FrontendPathInfo,
   DependentPluginInfo,
+  FrontendPluginInfo,
 } from "../../plugins/resource/frontend/constants";
 import { FrontendDeployment } from "../../plugins/resource/frontend/ops/deploy";
 import {
+  ErrorMessages,
   UnknownScaffoldError,
   UnzipTemplateError,
 } from "../../plugins/resource/frontend/resources/errors";
@@ -49,7 +52,8 @@ import { DotnetCommands } from "../../plugins/resource/frontend/dotnet/constants
 import { Utils } from "../../plugins/resource/frontend/utils";
 import { CommandExecutionError } from "../../plugins/resource/bot/errors";
 import { isAadManifestEnabled } from "../../common/tools";
-import { hasAAD } from "../../common/projectSettingsHelperV3";
+import { hasAAD, hasApi } from "../../common/projectSettingsHelperV3";
+import { ScaffoldProgress } from "../../plugins/resource/frontend/resources/steps";
 /**
  * tab scaffold
  */
@@ -63,6 +67,15 @@ export class TabCodeProvider implements SourceCodeProvider {
     const action: Action = {
       name: "tab-code.generate",
       type: "function",
+      enableTelemetry: true,
+      telemetryComponentName: FrontendPluginInfo.PluginName,
+      telemetryEventName: "scaffold",
+      errorSource: FrontendPluginInfo.ShortName,
+      errorIssueLink: FrontendPluginInfo.IssueLink,
+      errorHelpLink: FrontendPluginInfo.HelpLink,
+      enableProgressBar: true,
+      progressTitle: ScaffoldProgress.title,
+      progressSteps: Object.keys(ScaffoldProgress.steps).length,
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
         if (!teamsTab) return ok([]);
@@ -73,12 +86,16 @@ export class TabCodeProvider implements SourceCodeProvider {
         const folder = inputs.folder || language === "csharp" ? "" : FrontendPathInfo.WorkingDir;
         return ok([`scaffold tab source code in folder: ${path.join(inputs.projectPath, folder)}`]);
       },
-      execute: async (ctx: ContextV3, inputs: InputsWithProjectPath) => {
+      execute: async (
+        ctx: ContextV3,
+        inputs: InputsWithProjectPath,
+        progress?: IProgressHandler
+      ) => {
         const projectSettings = ctx.projectSetting as ProjectSettingsV3;
         const appName = projectSettings.appName;
         const language =
           inputs?.["programming-language"] ||
-          context.projectSetting.programmingLanguage ||
+          ctx.projectSetting.programmingLanguage ||
           "javascript";
         const folder = inputs.folder || language === "csharp" ? "" : FrontendPathInfo.WorkingDir;
         const teamsTab = getComponent(projectSettings, ComponentNames.TeamsTab);
@@ -86,7 +103,7 @@ export class TabCodeProvider implements SourceCodeProvider {
         merge(teamsTab, { build: true, provision: language != "csharp", folder: folder });
         const langKey = convertToLangKey(language);
         const workingDir = path.join(inputs.projectPath, folder);
-        const hasFunction = false; //TODO
+        const hasFunction = hasApi(ctx.projectSetting);
         const safeProjectName =
           inputs[CoreQuestionNames.SafeProjectName] ?? convertToAlphanumericOnly(appName);
         const variables = {
@@ -99,6 +116,7 @@ export class TabCodeProvider implements SourceCodeProvider {
           : isAadManifestEnabled() && !hasAAD(ctx.projectSetting)
           ? Scenario.NonSso
           : Scenario.Default;
+        await progress?.next(ScaffoldProgress.steps.Scaffold);
         await scaffoldFromTemplates({
           group: TemplateInfo.TemplateGroupName,
           lang: langKey,
@@ -224,13 +242,14 @@ export class TabCodeProvider implements SourceCodeProvider {
       addToEnvs(EnvKeys.FuncName, teamsApi?.functionNames[0]);
       addToEnvs(
         EnvKeys.FuncEndpoint,
-        // TODO: Read function app endpoint from inputs
         ctx.envInfo?.state?.[ComponentNames.TeamsApi]?.functionEndpoint as string
       );
     }
+    if (connections?.includes(ComponentNames.AadApp)) {
+      addToEnvs(EnvKeys.ClientID, ctx.envInfo?.state?.[ComponentNames.AadApp]?.clientId as string);
+      addToEnvs(EnvKeys.StartLoginPage, DependentPluginInfo.StartLoginPageURL);
+    }
 
-    // TODO: add environment variables for aad, simple auth
-    addToEnvs(EnvKeys.StartLoginPage, DependentPluginInfo.StartLoginPageURL);
     return envs;
   }
   private async doBlazorBuild(tabPath: string): Promise<string> {

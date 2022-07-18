@@ -19,6 +19,7 @@ import { Service } from "typedi";
 import { format } from "util";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { CoreQuestionNames } from "../../core/question";
+import { TabNonSsoItem } from "../../plugins/solution/fx-solution/question";
 import { ComponentNames, Scenarios } from "../constants";
 import { identityAction } from "../resource/identity";
 import { getComponent } from "../workflow";
@@ -42,7 +43,7 @@ export class TeamsTab {
   private addTabAction(context: ContextV3, inputs: InputsWithProjectPath): Action {
     const actions: Action[] = [];
     inputs.hosting = this.resolveHosting(inputs);
-    this.setupConfiguration(actions, context);
+    this.setupConfiguration(actions, context, inputs);
     this.setupCode(actions, context);
     this.setupBicep(actions, context, inputs);
     this.setupCapabilities(actions, context);
@@ -66,9 +67,16 @@ export class TeamsTab {
     return tab != undefined; // using != to match both undefined and null
   }
 
-  private setupConfiguration(actions: Action[], context: ContextV3): Action[] {
+  private setupConfiguration(
+    actions: Action[],
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ): Action[] {
     if (this.hasTab(context)) {
       return actions;
+    }
+    if (inputs.feature !== TabNonSsoItem.id) {
+      actions.push(addSSO);
     }
     actions.push(configTab);
     return actions;
@@ -157,6 +165,7 @@ const configTab: Action = {
     projectSettings.components.push({
       name: ComponentNames.TeamsTab,
       hosting: inputs.hosting,
+      deploy: true,
     });
     // add hosting component
     projectSettings.components.push({
@@ -176,9 +185,16 @@ const configTab: Action = {
         provision: true,
       });
     }
-    projectSettings.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
+    projectSettings.programmingLanguage =
+      projectSettings.programmingLanguage || inputs[CoreQuestionNames.ProgrammingLanguage];
     return ok(["config Tab in projectSettings"]);
   },
+};
+
+const addSSO: Action = {
+  type: "call",
+  targetAction: "sso.add",
+  required: true,
 };
 
 const showTabAlreadyAddMessage: Action = {

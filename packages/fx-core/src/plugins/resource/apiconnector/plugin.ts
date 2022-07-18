@@ -397,6 +397,7 @@ export class ApiConnectorImpl {
 
   public buildAADAuthQuestion(ctx: Context, inputs: Inputs): QTreeNode {
     let aad;
+    console.log(`buildAADAuthQuestion isV3()=${isV3()}`);
     if (isV3()) {
       aad = hasAAD(ctx.projectSetting as ProjectSettingsV3);
     } else {

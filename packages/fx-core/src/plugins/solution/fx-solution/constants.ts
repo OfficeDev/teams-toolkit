@@ -335,4 +335,6 @@ export interface ProvisionSubscriptionCheckResult {
   hasSwitchedSubscription: boolean;
 }
 
-export type FillInAzureConfigsResult = ProvisionSubscriptionCheckResult;
+export interface FillInAzureConfigsResult extends ProvisionSubscriptionCheckResult {
+  shouldUpdateResourceBaseName: boolean;
+}

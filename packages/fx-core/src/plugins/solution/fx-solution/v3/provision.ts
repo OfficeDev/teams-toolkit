@@ -166,8 +166,12 @@ export async function provisionResources(
         }
       }
 
-      if (solutionConfigRes.value.hasSwitchedSubscription) {
-        updateResourceBaseName(inputs.projectPath, ctx.projectSetting.appName, envInfo.envName);
+      if (solutionConfigRes.value.shouldUpdateResourceBaseName) {
+        await updateResourceBaseName(
+          inputs.projectPath,
+          ctx.projectSetting.appName,
+          envInfo.envName
+        );
       }
     }
 
@@ -418,23 +422,9 @@ async function compareWithStateSubscription(
       return err(confirmResult.error);
     } else {
       updateEnvInfoSubscription(envInfo, targetSubscriptionInfo);
-      envInfo.state.solution.resourceNameSuffix = "";
       envInfo.state.solution.resourceGroupName = "";
+      clearEnvInfoStateResource(envInfo);
 
-      // we need to have another bot id if provisioning a new azure bot service.
-      const botResource =
-        envInfo.state[BuiltInFeaturePluginNames.bot] ?? envInfo.state["teams-bot"];
-      if (botResource) {
-        if (botResource[LocalStateBotKeys.BotId]) {
-          botResource[LocalStateBotKeys.BotId] = undefined;
-        }
-        if (botResource[LocalStateBotKeys.BotPassword]) {
-          botResource[LocalStateBotKeys.BotPassword] = undefined;
-        }
-        if (botResource[LocalStateAuthKeys.ObjectId]) {
-          botResource[LocalStateAuthKeys.ObjectId] = undefined;
-        }
-      }
       ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
       return ok({ hasSwitchedSubscription: true });
     }
@@ -442,6 +432,25 @@ async function compareWithStateSubscription(
     updateEnvInfoSubscription(envInfo, targetSubscriptionInfo);
     ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
     return ok({ hasSwitchedSubscription: false });
+  }
+}
+
+// clear resources related info in envInfo so that we could provision successfully using new sub or rg.
+function clearEnvInfoStateResource(envInfo: v3.EnvInfoV3): void {
+  envInfo.state.solution.resourceNameSuffix = "";
+
+  // we need to have another bot id if provisioning a new azure bot service.
+  const botResource = envInfo.state[BuiltInFeaturePluginNames.bot] ?? envInfo.state["teams-bot"];
+  if (botResource) {
+    if (botResource[LocalStateBotKeys.BotId]) {
+      botResource[LocalStateBotKeys.BotId] = undefined;
+    }
+    if (botResource[LocalStateBotKeys.BotPassword]) {
+      botResource[LocalStateBotKeys.BotPassword] = undefined;
+    }
+    if (botResource[LocalStateAuthKeys.ObjectId]) {
+      botResource[LocalStateAuthKeys.ObjectId] = undefined;
+    }
   }
 }
 
@@ -484,6 +493,7 @@ export async function fillInAzureConfigs(
   if (subscriptionResult.isErr()) {
     return err(subscriptionResult.error);
   }
+  let shouldUpdateResourceBaseName = subscriptionResult.value.hasSwitchedSubscription;
 
   // Note setSubscription here will change the token returned by getAccountCredentialAsync according to the subscription selected.
   // So getting azureToken needs to precede setSubscription.
@@ -551,6 +561,14 @@ export async function fillInAzureConfigs(
       telemetryProperties[TelemetryProperty.CustomizeResourceGroupType] =
         CustomizeResourceGroupType.CommandLine;
       resourceGroupInfo = getRes.value;
+    }
+
+    if (
+      !!envInfo.state.solution.resourceGroupName &&
+      envInfo.state.solution.resourceGroupName !== resourceGroupInfo.name
+    ) {
+      shouldUpdateResourceBaseName = true;
+      clearEnvInfoStateResource(envInfo);
     }
   } else if (resourceGroupNameFromEnvConfig) {
     const resourceGroupName = resourceGroupNameFromEnvConfig;
@@ -628,7 +646,10 @@ export async function fillInAzureConfigs(
     uuidv4().substr(0, 6);
   envInfo.state.solution.resourceNameSuffix = resourceNameSuffix;
   ctx.logProvider?.info(`[${PluginDisplayName.Solution}] check resourceNameSuffix pass!`);
-  return ok({ hasSwitchedSubscription: subscriptionResult.value.hasSwitchedSubscription });
+  return ok({
+    shouldUpdateResourceBaseName,
+    hasSwitchedSubscription: subscriptionResult.value.hasSwitchedSubscription,
+  });
 }
 
 export async function askForDeployConsent(

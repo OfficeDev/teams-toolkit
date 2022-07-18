@@ -19,6 +19,7 @@ import { assert } from "chai";
 import "mocha";
 import sinon from "sinon";
 import * as uuid from "uuid";
+import fs from "fs-extra";
 import arm from "../../../src/plugins/solution/fx-solution/arm";
 import {
   BuiltInFeaturePluginNames,
@@ -40,6 +41,8 @@ import {
   publishApplication,
   getQuestionsForPublish,
 } from "../../../src/plugins/solution/fx-solution/v3/publish";
+import { TestHelper } from "../solution/helper";
+import { TestFilePath } from "../../constants";
 describe("SolutionV3 - provision", () => {
   const sandbox = sinon.createSandbox();
   beforeEach(async () => {
@@ -142,7 +145,33 @@ describe("SolutionV3 - provision", () => {
     }
   });
 
-  it("provision - has provisioned before in same account", async () => {
+  it.only("provision - has provisioned before in same account", async () => {
+    const parameterFileNameTemplate = (env: string) => `azure.parameters.${env}.json`;
+    const configDir = path.join(TestHelper.rootDir, TestFilePath.configFolder);
+    const targetEnvName = "dev";
+    const originalResourceBaseName = "originalResourceBaseName";
+    const paramContent = TestHelper.getParameterFileContent(
+      {
+        resourceBaseName: originalResourceBaseName,
+        param1: "value1",
+        param2: "value2",
+      },
+      {
+        userParam1: "userParamValue1",
+        userParam2: "userParamValue2",
+      }
+    );
+
+    after(async () => {
+      await fs.remove(TestHelper.rootDir);
+    });
+    await fs.ensureDir(configDir);
+
+    await fs.writeFile(
+      path.join(configDir, parameterFileNameTemplate(targetEnvName)),
+      paramContent
+    );
+
     const projectSettings: ProjectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -158,7 +187,7 @@ describe("SolutionV3 - provision", () => {
     const ctx = new MockedV2Context(projectSettings);
     const inputs: v2.InputsWithProjectPath = {
       platform: Platform.VSCode,
-      projectPath: path.join(os.tmpdir(), randomAppName()),
+      projectPath: TestHelper.rootDir,
     };
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),

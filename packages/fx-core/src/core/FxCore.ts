@@ -98,6 +98,7 @@ import { ContextInjectorMW } from "./middleware/contextInjector";
 import {
   askNewEnvironment,
   EnvInfoLoaderMW,
+  getQuestionsForTargetEnv,
   loadSolutionContext,
 } from "./middleware/envInfoLoader";
 import { EnvInfoLoaderMW_V3, loadEnvInfoV3 } from "./middleware/envInfoLoaderV3";
@@ -139,8 +140,13 @@ import { isPreviewFeaturesEnabled } from "../common";
 import { runAction } from "../component/workflow";
 import { createContextV3 } from "../component/utils";
 import "../component/core";
-import { getQuestionsForAddFeature, QuestionModelMW_V3 } from "./middleware/questionModelV3";
+import {
+  getQuestionsForAddFeatureV3,
+  getQuestionsForDeployV3,
+  QuestionModelMW_V3,
+} from "./middleware/questionModelV3";
 import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
+import { EnvInfoV3 } from "@microsoft/teamsfx-api/build/v3";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -937,6 +943,16 @@ export class FxCore implements v3.ICore {
     inputs.stage = Stage.getQuestions;
     setCurrentStage(Stage.getQuestions);
 
+    if (isV3()) {
+      const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+      if (stage === Stage.deploy) {
+        return await getQuestionsForDeployV3(context, ctx.envInfoV2 as EnvInfoV3, inputs);
+      } else if (stage === Stage.provision) {
+        return await getQuestionsForTargetEnv(inputs);
+      }
+      return ok(undefined);
+    }
+
     switch (stage) {
       case Stage.create:
         delete inputs.projectPath;
@@ -974,7 +990,7 @@ export class FxCore implements v3.ICore {
     setCurrentStage(Stage.getQuestions);
     if (isV3() && func.method === "addFeature") {
       const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-      return await getQuestionsForAddFeature(context, inputs);
+      return await getQuestionsForAddFeatureV3(context, inputs);
     }
     const contextV2 = ctx.contextV2 ? ctx.contextV2 : createV2Context(newProjectSettings());
     const solutionV2 = ctx.solutionV2 ? ctx.solutionV2 : await getAllSolutionPluginsV2()[0];
@@ -1602,7 +1618,7 @@ export class FxCore implements v3.ICore {
   _getQuestionsForUserTask = getQuestionsForUserTaskV2;
   _getQuestions = getQuestionsV2;
   //v3 questions
-  _getQuestionsForAddFeature = getQuestionsForAddFeature;
+  _getQuestionsForAddFeature = getQuestionsForAddFeatureV3;
   _getQuestionsForProvision = getQuestionsForProvision;
   _getQuestionsForDeploy = getQuestionsForDeploy;
   _getQuestionsForPublish = getQuestionsForPublish;

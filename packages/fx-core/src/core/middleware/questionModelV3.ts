@@ -81,9 +81,9 @@ export const QuestionModelMW_V3: Middleware = async (ctx: CoreHookContext, next:
   } else if (method === "provisionResourcesV3") {
     getQuestionRes = await getQuestionsForTargetEnv(inputs);
   } else if (method === "deployArtifactsV3") {
-    getQuestionRes = await getQuestionsForDeploy(ctx.contextV2!, ctx.envInfoV3!, inputs);
+    getQuestionRes = await getQuestionsForDeployV3(ctx.contextV2!, ctx.envInfoV3!, inputs);
   } else if (method === "addFeature") {
-    getQuestionRes = await getQuestionsForAddFeature(ctx.contextV2!, inputs);
+    getQuestionRes = await getQuestionsForAddFeatureV3(ctx.contextV2!, inputs);
   }
   if (getQuestionRes.isErr()) {
     TOOLS?.logProvider.error(
@@ -110,7 +110,7 @@ export const QuestionModelMW_V3: Middleware = async (ctx: CoreHookContext, next:
   await next();
 };
 
-async function getQuestionsForDeploy(
+export async function getQuestionsForDeployV3(
   ctx: v2.Context,
   envInfo: v3.EnvInfoV3,
   inputs: Inputs
@@ -170,7 +170,7 @@ async function getQuestionsForDeploy(
   selectQuestion.default = options.map((i) => i.id);
   return ok(new QTreeNode(selectQuestion));
 }
-export async function getQuestionsForAddFeature(
+export async function getQuestionsForAddFeatureV3(
   ctx: v2.Context,
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {

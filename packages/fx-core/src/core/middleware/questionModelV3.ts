@@ -168,7 +168,7 @@ async function getQuestionsForDeployV3(
   selectQuestion.default = options.map((i) => i.id);
   return ok(new QTreeNode(selectQuestion));
 }
-async function getQuestionsForAddFeatureV3(
+export async function getQuestionsForAddFeatureV3(
   ctx: v2.Context,
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {

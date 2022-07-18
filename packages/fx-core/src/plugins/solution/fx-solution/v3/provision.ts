@@ -363,7 +363,8 @@ export async function checkProvisionAzureSubscription(
         envInfo,
         targetConfigSubInfo,
         subscriptionIdInState,
-        subscriptionNameInState
+        subscriptionNameInState,
+        azureAccountProvider
       );
     }
   } else {
@@ -391,7 +392,8 @@ export async function checkProvisionAzureSubscription(
         envInfo,
         subscriptionInAccount,
         subscriptionIdInState,
-        subscriptionNameInState
+        subscriptionNameInState,
+        azureAccountProvider
       );
     }
   }
@@ -408,7 +410,8 @@ async function compareWithStateSubscription(
   envInfo: v3.EnvInfoV3,
   targetSubscriptionInfo: SubscriptionInfo,
   subscriptionInStateId: string | undefined,
-  subscriptionInStateName: string | undefined
+  subscriptionInStateName: string | undefined,
+  azureAccountProvider: AzureAccountProvider
 ): Promise<Result<ProvisionSubscriptionCheckResult, FxError>> {
   const shouldAskForSubscriptionConfirmation =
     !!subscriptionInStateId && targetSubscriptionInfo.subscriptionId !== subscriptionInStateId;
@@ -416,7 +419,9 @@ async function compareWithStateSubscription(
     const confirmResult = await askForSubscriptionConfirm(
       ctx,
       subscriptionInStateName!,
-      targetSubscriptionInfo.subscriptionName || targetSubscriptionInfo.subscriptionId
+      targetSubscriptionInfo.subscriptionName || targetSubscriptionInfo.subscriptionId,
+      azureAccountProvider,
+      envInfo
     );
     if (confirmResult.isErr()) {
       return err(confirmResult.error);
@@ -457,13 +462,20 @@ function clearEnvInfoStateResource(envInfo: v3.EnvInfoV3): void {
 async function askForSubscriptionConfirm(
   ctx: v2.Context,
   subscriptionInState: string,
-  subscriptionInAccount: string
+  subscriptionInAccount: string,
+  azureAccountProvider: AzureAccountProvider,
+  envInfo: v3.EnvInfoV3
 ): Promise<Result<Void, FxError>> {
+  const azureToken = await azureAccountProvider.getAccountCredentialAsync();
+
+  // Only Azure project requires this confirm dialog
+  const username = (azureToken as any).username || "";
   const msgNew = getLocalizedString(
     "core.provision.confirmSubscription",
-    subscriptionInAccount,
     subscriptionInState,
-    subscriptionInState
+    envInfo.envName,
+    username,
+    subscriptionInAccount
   );
   const confirmRes = await ctx.userInteraction.showMessage("warn", msgNew, true, "Provision");
   const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;

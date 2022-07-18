@@ -145,7 +145,7 @@ describe("SolutionV3 - provision", () => {
     }
   });
 
-  it.only("provision - has provisioned before in same account", async () => {
+  it("provision - has provisioned before in same account", async () => {
     const parameterFileNameTemplate = (env: string) => `azure.parameters.${env}.json`;
     const configDir = path.join(TestHelper.rootDir, TestFilePath.configFolder);
     const targetEnvName = "dev";

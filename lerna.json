@@ -1,19 +1,7 @@
 {
   "version": "independent",
   "packages": [
-    "packages/api",
-    "packages/fx-core",
-    "packages/sdk",
-    "packages/sdk-react",
-    "packages/cli",
-    "packages/server",
-    "packages/vscode-extension",
-    "packages/failpoint-ts",
-    "packages/metrics-ts",
-    "packages/adaptivecards-tools-sdk",
-    "packages/manifest",
-    "packages/eslint-config",
-    "templates"
+    "packages/manifest"
   ],
   "command": {
     "version": {

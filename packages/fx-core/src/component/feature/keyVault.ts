@@ -106,7 +106,7 @@ export class KeyVaultFeature {
     ];
     webAppComponents?.forEach((component) =>
       actions.push({
-        name: "call:-config.generateBicep",
+        name: "call:azure-web-app-config.generateBicep",
         type: "call",
         required: true,
         targetAction: "azure-web-app-config.generateBicep",

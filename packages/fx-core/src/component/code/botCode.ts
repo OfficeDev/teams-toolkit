@@ -141,6 +141,13 @@ export class BotCodeProvider implements SourceCodeProvider {
     const action: Action = {
       name: "bot-code.build",
       type: "function",
+      enableProgressBar: true,
+      progressTitle: ProgressBarConstants.BUILD_TITLE,
+      progressSteps: 1,
+      enableTelemetry: true,
+      telemetryProps: commonTelemetryPropsForBot(context),
+      telemetryComponentName: "fx-resource-bot",
+      telemetryEventName: "build",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
         if (!teamsBot) return ok([]);
@@ -148,11 +155,16 @@ export class BotCodeProvider implements SourceCodeProvider {
         if (!packDir) return ok([]);
         return ok([`build project: ${packDir}`]);
       },
-      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+      execute: async (
+        context: ContextV3,
+        inputs: InputsWithProjectPath,
+        progress?: IProgressHandler
+      ) => {
         const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
         if (!teamsBot) return ok([]);
         const packDir = path.join(inputs.projectPath, teamsBot.folder!);
         const language = context.projectSetting.programmingLanguage || "javascript";
+        await progress?.next(ProgressBarConstants.DEPLOY_STEP_NPM_INSTALL);
         if (language === ProgrammingLanguage.TypeScript) {
           //Typescript needs tsc build before deploy because of windows app server. other languages don"t need it.
           try {

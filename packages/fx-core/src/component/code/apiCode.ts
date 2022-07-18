@@ -36,6 +36,9 @@ export class ApiCodeProvider implements SourceCodeProvider {
     const action: Action = {
       name: "api-code.generate",
       type: "function",
+      enableProgressBar: true,
+      progressTitle: "Scaffolding Api",
+      progressSteps: 1,
       enableTelemetry: true,
       telemetryComponentName: "fx-resource-function",
       telemetryEventName: "scaffold",
@@ -88,7 +91,11 @@ export class ApiCodeProvider implements SourceCodeProvider {
       name: "api-code.build",
       type: "function",
       enableProgressBar: true,
-      progressTitle: "",
+      progressTitle: "Building Api",
+      progressSteps: 1,
+      enableTelemetry: true,
+      telemetryComponentName: "fx-resource-function",
+      telemetryEventName: "build",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         const teamsApi = getComponent(context.projectSetting, ComponentNames.TeamsApi);
         if (!teamsApi) return ok([]);
@@ -96,13 +103,18 @@ export class ApiCodeProvider implements SourceCodeProvider {
         if (!apiDir) return ok([]);
         return ok([`build project: ${apiDir}`]);
       },
-      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+      execute: async (
+        context: ContextV3,
+        inputs: InputsWithProjectPath,
+        progress?: IProgressHandler
+      ) => {
         const teamsApi = getComponent(context.projectSetting, ComponentNames.TeamsApi);
         if (!teamsApi) return ok([]);
         if (teamsApi.folder == undefined) throw new Error("path not found");
         const language = context.projectSetting.programmingLanguage;
         if (!language || !Object.values(FunctionLanguage).includes(language as FunctionLanguage))
           throw new Error("Invalid programming language found in project settings.");
+        progress?.next("Building Function Api");
         const buildPath = path.resolve(inputs.projectPath, teamsApi.folder);
         await FunctionDeploy.build(buildPath, language as FunctionLanguage);
         const artifactFolder = teamsApi.artifactFolder || teamsApi.folder;

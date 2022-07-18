@@ -146,19 +146,6 @@ export class BotService extends AzureResource {
             remarks: "create bot registration",
           });
         } else {
-          // Check Resource Provider
-          const azureCredential = await getAzureAccountCredential(
-            ctx.tokenProvider.azureAccountProvider
-          );
-          const solutionConfig = ctx.envInfo.state.solution as v3.AzureSolutionConfig;
-          const rpClient = clientFactory.createResourceProviderClient(
-            azureCredential,
-            solutionConfig.subscriptionId!
-          );
-          await clientFactory.ensureResourceProvider(
-            rpClient,
-            AzureConstants.requiredResourceProviders
-          );
           const aadRes = await createBotAAD(ctx);
           if (aadRes.isErr()) return err(aadRes.error);
           plans.push({
@@ -184,9 +171,6 @@ export class BotService extends AzureResource {
     const action: Action = {
       name: "bot-service.configure",
       type: "function",
-      enableProgressBar: true,
-      progressTitle: `Provision ${this.name}`,
-      progressSteps: 1,
       enableTelemetry: true,
       telemetryProps: commonTelemetryPropsForBot(context),
       telemetryComponentName: "fx-resource-bot",
@@ -207,12 +191,7 @@ export class BotService extends AzureResource {
         }
         return ok(plans);
       },
-      execute: async (
-        context: ContextV3,
-        inputs: InputsWithProjectPath,
-        progress?: IProgressHandler,
-        telemetryProps?: Record<string, string>
-      ) => {
+      execute: async (context: ContextV3) => {
         // create bot aad app by API call
         const ctx = context as ProvisionContextV3;
         const teamsBot = getComponent(ctx.projectSetting, ComponentNames.TeamsBot);
@@ -232,7 +211,6 @@ export class BotService extends AzureResource {
           CheckThrowSomethingMissing(ConfigNames.LOCAL_ENDPOINT, teamsBotState.endpoint);
           CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
           CheckThrowSomethingMissing(ConfigNames.LOCAL_BOT_ID, teamsBotState.botId);
-          progress?.next("update message endpoint in app studio");
           await AppStudio.updateMessageEndpoint(
             appStudioToken!,
             teamsBotState.botId,

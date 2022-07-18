@@ -54,7 +54,7 @@ export abstract class AzureAppService extends AzureResource {
       name: `${this.name}.deploy`,
       type: "function",
       enableProgressBar: true,
-      progressTitle: `Deploy ${this.name}`,
+      progressTitle: `Deploy ${this.name}` + inputs.scenario ? `[${inputs.scenario}]` : "",
       progressSteps: 2,
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         const parent = getHostingParentComponent(context.projectSetting, this.name);

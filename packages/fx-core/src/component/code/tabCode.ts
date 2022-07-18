@@ -53,7 +53,7 @@ import { Utils } from "../../plugins/resource/frontend/utils";
 import { CommandExecutionError } from "../../plugins/resource/bot/errors";
 import { isAadManifestEnabled } from "../../common/tools";
 import { hasAAD, hasApi } from "../../common/projectSettingsHelperV3";
-import { ScaffoldProgress } from "../../plugins/resource/frontend/resources/steps";
+import { DeployProgress, ScaffoldProgress } from "../../plugins/resource/frontend/resources/steps";
 /**
  * tab scaffold
  */
@@ -202,6 +202,12 @@ export class TabCodeProvider implements SourceCodeProvider {
     const action: Action = {
       name: "tab-code.build",
       type: "function",
+      enableProgressBar: true,
+      progressTitle: "Building Tab",
+      progressSteps: 1,
+      enableTelemetry: true,
+      telemetryComponentName: "fx-resource-frontend",
+      telemetryEventName: "build",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
         if (!teamsTab) return ok([]);
@@ -209,11 +215,16 @@ export class TabCodeProvider implements SourceCodeProvider {
         if (!tabDir) return ok([]);
         return ok([`build project: ${tabDir}`]);
       },
-      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+      execute: async (
+        context: ContextV3,
+        inputs: InputsWithProjectPath,
+        progress?: IProgressHandler
+      ) => {
         const ctx = context as ProvisionContextV3;
         const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
         if (!teamsTab) return ok([]);
         if (teamsTab.folder == undefined) throw new Error("path not found");
+        progress?.next(DeployProgress.steps.Build);
         const tabPath = path.resolve(inputs.projectPath, teamsTab.folder);
         const artifactFolder = isVSProject(context.projectSetting)
           ? await this.doBlazorBuild(tabPath)

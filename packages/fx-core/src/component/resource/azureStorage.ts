@@ -8,6 +8,7 @@ import {
   err,
   FxError,
   InputsWithProjectPath,
+  IProgressHandler,
   MaybePromise,
   ok,
   ProvisionContextV3,
@@ -30,6 +31,10 @@ import { FrontendDeployment } from "../../plugins/resource/frontend/ops/deploy";
 import { AzureResource } from "./azureResource";
 import { getHostingParentComponent } from "../workflow";
 import { FrontendPluginInfo } from "../../plugins/resource/frontend/constants";
+import {
+  DeployProgress,
+  PostProvisionProgress,
+} from "../../plugins/resource/frontend/resources/steps";
 @Service("azure-storage")
 export class AzureStorageResource extends AzureResource {
   readonly name = "azure-storage";
@@ -60,6 +65,15 @@ export class AzureStorageResource extends AzureResource {
     const action: Action = {
       name: "azure-storage.configure",
       type: "function",
+      enableTelemetry: true,
+      telemetryComponentName: FrontendPluginInfo.PluginName,
+      telemetryEventName: "deploy",
+      errorSource: FrontendPluginInfo.ShortName,
+      errorIssueLink: FrontendPluginInfo.IssueLink,
+      errorHelpLink: FrontendPluginInfo.HelpLink,
+      enableProgressBar: true,
+      progressTitle: PostProvisionProgress.title,
+      progressSteps: 1,
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         return ok([
           {
@@ -69,7 +83,11 @@ export class AzureStorageResource extends AzureResource {
           },
         ]);
       },
-      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+      execute: async (
+        context: ContextV3,
+        inputs: InputsWithProjectPath,
+        progress?: IProgressHandler
+      ) => {
         const ctx = context as ProvisionContextV3;
         const parent = getHostingParentComponent(ctx.projectSetting, this.name);
         if (!parent) {
@@ -83,6 +101,7 @@ export class AzureStorageResource extends AzureResource {
         if (frontendConfigRes.isErr()) {
           return err(frontendConfigRes.error);
         }
+        progress?.next(PostProvisionProgress.steps.EnableStaticWebsite);
         const client = new AzureStorageClient(frontendConfigRes.value);
         await client.enableStaticWebsite();
         return ok([
@@ -96,10 +115,7 @@ export class AzureStorageResource extends AzureResource {
     };
     return ok(action);
   }
-  deploy(
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
+  deploy(): MaybePromise<Result<Action | undefined, FxError>> {
     const action: Action = {
       name: "azure-storage.deploy",
       type: "function",
@@ -109,6 +125,9 @@ export class AzureStorageResource extends AzureResource {
       errorSource: FrontendPluginInfo.ShortName,
       errorIssueLink: FrontendPluginInfo.IssueLink,
       errorHelpLink: FrontendPluginInfo.HelpLink,
+      enableProgressBar: true,
+      progressTitle: DeployProgress.title,
+      progressSteps: 3,
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         const parent = getHostingParentComponent(
           context.projectSetting,
@@ -124,7 +143,11 @@ export class AzureStorageResource extends AzureResource {
           },
         ]);
       },
-      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+      execute: async (
+        context: ContextV3,
+        inputs: InputsWithProjectPath,
+        progress?: IProgressHandler
+      ) => {
         const ctx = context as ProvisionContextV3;
         const parent = getHostingParentComponent(ctx.projectSetting, this.name);
         if (!parent?.folder) {
@@ -141,7 +164,7 @@ export class AzureStorageResource extends AzureResource {
         }
         const client = new AzureStorageClient(frontendConfigRes.value);
         const envName = ctx.envInfo.envName;
-        await FrontendDeployment.doFrontendDeploymentV3(client, deployDir, envName);
+        await FrontendDeployment.doFrontendDeploymentV3(client, deployDir, envName, progress);
         return ok([
           {
             type: "service",

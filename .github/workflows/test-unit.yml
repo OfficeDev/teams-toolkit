@@ -1,54 +1,15 @@
-name: Unit Test
+name: Test01
 
 on:
   push:
     branches: [ivanchen/unit-test]
-  pull_request:
-    branches:
-      - main
-      - dev
-      - ga
-      - hotfix/**/*
-
 jobs:
   unit-test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-          ref: ${{ github.head_ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-
-      - name: Merge Branches
+      - name: checkEnv
         run: |
-          git config --global user.email "bot@user.noreply.github.com"
-          git config --global user.name "bot"
-
-          git remote add ${{ github.event.pull_request.base.repo.owner.login }} ${{ github.event.pull_request.base.repo.clone_url }}
-          git fetch ${{ github.event.pull_request.base.repo.owner.login }}
-          git merge ${{ github.event.pull_request.base.repo.owner.login }}/${{ github.event.pull_request.base.ref }}
-
-      - name: Setup node
-        uses: actions/setup-node@v2.1.2
-        with:
-          node-version: 14
-
-      - name: Setup .NET Core
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 3.1.x
-
-      - name: Setup project
-        run: |
-          npm run setup
-
-      - name: Unit Test
-        run: |
-          xvfb-run -a npx lerna run test:unit --stream
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          directory: './coverage'
+          echo "fullname: ${{ github.event.pull_request.head.repo.full_name }} "
+          echo "login: ${{ github.event.pull_request.base.repo.owner.login }}  "
+          echo "url: ${{ github.event.pull_request.base.repo.clone_url }}"
+  

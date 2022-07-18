@@ -973,9 +973,12 @@ export class FxCore implements v3.ICore {
     if (!ctx) return err(new ObjectIsUndefinedError("getQuestionsForUserTask input stuff"));
     inputs.stage = Stage.getQuestions;
     setCurrentStage(Stage.getQuestions);
-    if (isV3() && func.method === "addFeature") {
-      const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-      return await getQuestionsForAddFeatureV3(context, inputs);
+    if (isV3()) {
+      if (func.method === "addFeature") {
+        const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+        return await getQuestionsForAddFeatureV3(context, inputs);
+      }
+      return ok(undefined);
     }
     const contextV2 = ctx.contextV2 ? ctx.contextV2 : createV2Context(newProjectSettings());
     const solutionV2 = ctx.solutionV2 ? ctx.solutionV2 : await getAllSolutionPluginsV2()[0];

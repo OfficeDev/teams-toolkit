@@ -105,7 +105,7 @@ export const AzureSqlOutputs = {
 export const IdentityOutputs = {
   identityResourceId: {
     key: "identityResourceId",
-    bicepVariable: "provisionOutputs.identityOutput.value.identityResourceId",
+    bicepVariable: "userAssignedIdentityProvision.outputs.identityResourceId",
   },
   identityName: {
     key: "identityName",
@@ -117,7 +117,7 @@ export const IdentityOutputs = {
   },
   identityPrincipalId: {
     key: "identityPrincipalId",
-    bicepVariable: "provisionOutputs.identityOutput.value.identityPrincipalId",
+    bicepVariable: "userAssignedIdentityProvision.outputs.identityPrincipalId",
   },
 };
 

@@ -15,17 +15,21 @@ import { cpUtils } from "../../../../src/common/deps-checker/util/cpUtils";
 import { isLinux } from "../../../../src/common/deps-checker/util/system";
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import "mocha";
+import * as sinon from "sinon";
 
 chai.use(spies);
 const expect = chai.expect;
 const assert = chai.assert;
-const sandbox = chai.spy.sandbox();
 
 describe("FuncToolChecker E2E Test", async () => {
+  const sandbox = sinon.createSandbox();
   beforeEach(async function () {
     await funcUtils.cleanup();
-    sandbox.restore();
     console.error("cleanup portable func and sandbox");
+  });
+
+  afterEach(async function () {
+    sandbox.restore();
   });
 
   it("not install + special character dir", async function () {
@@ -38,11 +42,15 @@ describe("FuncToolChecker E2E Test", async () => {
       logger,
       new TestTelemetry()
     ) as FuncToolChecker;
-    sandbox.on(funcToolChecker, "getDefaultInstallPath", () =>
-      path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "func", "Aarón García", "for test")
-    );
+    sinon
+      .stub(FuncToolChecker.prototype, <any>"getDefaultInstallPath")
+      .returns(
+        path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "func", "Aarón García", "for test")
+      );
 
-    const res = await funcToolChecker.resolve();
+    const spyChecker = sandbox.spy(funcToolChecker);
+    const res = await spyChecker.resolve();
+    assert.isTrue(spyChecker.getInstallationInfo.calledTwice);
 
     expect(res.isInstalled).to.be.equal(true);
     expect((await funcToolChecker.getInstallationInfo()).isInstalled).to.be.equal(true);
@@ -65,17 +73,17 @@ describe("FuncToolChecker E2E Test", async () => {
       logger,
       new TestTelemetry()
     ) as FuncToolChecker;
-    sandbox.on(funcToolChecker, "doInstallPortableFunc", async () =>
-      console.log("spy on doInstallPortableFunc")
-    );
+    sinon.stub(FuncToolChecker.prototype, <any>"doInstallPortableFunc");
 
     const res = await funcToolChecker.resolve();
     assert.isFalse(res.isInstalled);
     assert.isFalse((await funcToolChecker.getInstallationInfo()).isInstalled);
 
     // second: still works well
-    sandbox.restore(funcToolChecker, "doInstallPortableFunc");
-    const retryRes = await funcToolChecker.resolve();
+    sandbox.restore();
+    const spyChecker = sandbox.spy(funcToolChecker);
+    const retryRes = await spyChecker.resolve();
+    assert.isTrue(spyChecker.getInstallationInfo.calledTwice);
 
     assert.isTrue(retryRes.isInstalled);
     assert.isTrue(
@@ -114,6 +122,12 @@ describe("FuncToolChecker E2E Test", async () => {
     const depsInfo = await funcToolChecker.getInstallationInfo();
     expect(depsInfo.isInstalled).to.be.equal(true);
     expect(depsInfo.command).to.be.equal("func", `should use global func`);
+
+    const spyChecker = sandbox.spy(funcToolChecker);
+    const retryRes = await spyChecker.resolve();
+    assert.isTrue(spyChecker.getInstallationInfo.calledOnce);
+    expect(retryRes.isInstalled).to.be.equal(true);
+
     await assertFuncStart(funcToolChecker);
   });
 
@@ -131,7 +145,10 @@ describe("FuncToolChecker E2E Test", async () => {
       logger,
       new TestTelemetry()
     ) as FuncToolChecker;
-    const res = await funcToolChecker.resolve();
+
+    const spyChecker = sandbox.spy(funcToolChecker);
+    const res = await spyChecker.resolve();
+    assert.isTrue(spyChecker.getInstallationInfo.calledTwice);
 
     assert.isTrue(res.isInstalled);
     expect((await funcToolChecker.getInstallationInfo()).isInstalled).to.be.equal(true);

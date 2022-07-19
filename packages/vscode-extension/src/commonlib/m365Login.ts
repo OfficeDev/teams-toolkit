@@ -71,6 +71,8 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
   private static instance: M365Login;
   private static codeFlowInstance: CodeFlowLogin;
 
+  private static cachedJsonObject: Record<string, unknown>;
+
   private constructor() {
     super();
     M365Login.codeFlowInstance = new CodeFlowLogin([], config, SERVER_PORT, m365CacheName);
@@ -125,6 +127,7 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
     }
 
     if (tokenRes.isOk()) {
+      M365Login.cachedJsonObject = ConvertTokenToJson(tokenRes.value) as Record<string, unknown>;
       return ok(tokenRes.value);
     } else {
       return tokenRes;
@@ -207,6 +210,7 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
       );
       if (tokenRes.isOk()) {
         const tokenJson = ConvertTokenToJson(tokenRes.value);
+        M365Login.cachedJsonObject = tokenJson as Record<string, unknown>;
         return ok({ status: signedIn, token: tokenRes.value, accountInfo: tokenJson as any });
       } else {
         if (
@@ -227,6 +231,10 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
     } else {
       return ok({ status: signedOut, token: undefined, accountInfo: undefined });
     }
+  }
+
+  getCachedJsonObject(): Record<string, unknown> {
+    return M365Login.cachedJsonObject;
   }
 }
 

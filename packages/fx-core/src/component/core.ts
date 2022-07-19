@@ -352,11 +352,13 @@ export class TeamsfxCore {
         initProjectSettings,
         {
           type: "call",
+          name: "call:app-manifest.init",
           targetAction: "app-manifest.init",
           required: true,
         },
         {
           type: "call",
+          name: "call:env-manager.create",
           targetAction: "env-manager.create",
           required: true,
         },

@@ -42,6 +42,7 @@ import { convertToAlphanumericOnly } from "../common/utils";
 import { ActionNotExist, ComponentNotExist } from "./error";
 import { globalVars } from "../core/globalVars";
 import { TelemetryConstants, Scenarios } from "./constants";
+import { getActionNameByFeatureId } from "./questionV3";
 
 export async function getAction(
   name: string,
@@ -231,6 +232,10 @@ export async function getQuestionsV3(
   group.children = nodes;
   return ok(group);
 }
+export function getActionName(action: Action): string {
+  if (action.type === "call") return `call:${action.targetAction}`;
+  return action.name as string;
+}
 /**
  * traverse the workflow tree, collect all questions rooted on action, use for CLI_HELP
  */
@@ -240,7 +245,7 @@ export async function collectActionQuestions(
   inputs: InputsWithProjectPath,
   nodes: QTreeNode[]
 ): Promise<Result<undefined, FxError>> {
-  console.log(`collectActionQuestions: ${action.name}`);
+  console.log(`collectActionQuestions: ${getActionName(action)}`);
   if (action.question) {
     const res = await action.question(context, inputs);
     if (res.isErr()) return err(res.error);
@@ -435,7 +440,7 @@ export async function executeAction(
   inputs: InputsWithProjectPath,
   effects: Effect[]
 ): Promise<Result<undefined, FxError>> {
-  console.log(`executeAction: ${action.name}`);
+  console.log(`executeAction: ${getActionName(action)}`);
   if (action.condition) {
     const res = await action.condition(context, inputs);
     if (res.isErr()) return err(res.error);
@@ -537,7 +542,7 @@ export async function executeFunctionAction(
   inputs: InputsWithProjectPath,
   effects: Effect[]
 ): Promise<Result<undefined, FxError>> {
-  context.logProvider.info(`executeFunctionAction [${action.name}] start!`);
+  context.logProvider.info(`executeFunctionAction [${getActionName(action)}] start!`);
   const arr = action.name.split(".");
   const eventName = action.telemetryEventName || arr[1];
   const componentName = action.telemetryComponentName || arr[0];

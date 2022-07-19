@@ -44,7 +44,6 @@ export class TeamsTab {
 
   private addTabAction(context: ContextV3, inputs: InputsWithProjectPath): Action {
     const actions: Action[] = [];
-    inputs.hosting = this.resolveHosting(inputs);
     this.setupConfiguration(actions, context, inputs);
     this.setupCode(actions, context);
     this.setupBicep(actions, context, inputs);
@@ -53,15 +52,6 @@ export class TeamsTab {
       actions.push(showTabAlreadyAddMessage);
     }
     return addTab(actions);
-  }
-
-  private resolveHosting(inputs: InputsWithProjectPath): string {
-    return (
-      inputs.hosting ||
-      (inputs?.["programming-language"] === "csharp"
-        ? ComponentNames.AzureWebApp
-        : ComponentNames.AzureStorage)
-    );
   }
 
   private hasTab(context: ContextV3): boolean {
@@ -101,27 +91,54 @@ export class TeamsTab {
     if (this.hasTab(context)) {
       return actions;
     }
-    const configActions: Action[] =
-      getComponent(context.projectSetting, ComponentNames.APIM) !== undefined
-        ? [
-            {
-              name: "call:apim-config.generateBicep",
-              type: "call",
-              required: true,
-              targetAction: "apim-config.generateBicep",
-            },
-          ]
-        : [];
-    if (!getComponent(context.projectSetting, ComponentNames.Identity)) {
-      configActions.push(identityAction);
-    }
+    const configActions: Action[] = [
+      {
+        name: "call:apim-config.generateBicep",
+        type: "call",
+        required: true,
+        targetAction: "apim-config.generateBicep",
+        condition: (context, inputs) => {
+          return ok(getComponent(context.projectSetting, ComponentNames.APIM) !== undefined);
+        },
+      },
+      {
+        name: "call:identity.generateBicep",
+        type: "call",
+        required: true,
+        targetAction: "identity.generateBicep",
+        inputs: {
+          componentId: "",
+          scenario: "",
+        },
+        condition: (context, inputs) => {
+          const needed =
+            getComponent(context.projectSetting, ComponentNames.Identity) === undefined;
+          if (needed) {
+            inputs.componentId = "";
+            inputs.scenario = "";
+          }
+          return ok(needed);
+        },
+      },
+    ];
     actions.push(initBicep);
-    actions.push(
-      generateBicep(inputs.hosting, {
-        componentId: this.name,
-        scenario: "Tab",
-      })
-    );
+    if (inputs.hosting) {
+    }
+    if (inputs.hosting) {
+      actions.push({
+        name: `call:${inputs.hosting}.generateBicep`,
+        type: "call",
+        required: true,
+        targetAction: `${inputs.hosting}.generateBicep`,
+        inputs: inputs,
+        pre: (context, inputs) => {
+          inputs.componentId = this.name;
+          inputs.scenario = "Tab";
+          return ok(undefined);
+        },
+      });
+    }
+
     // TODO: connect AAD for blazor web app
     actions.push(...configActions);
     return actions;
@@ -158,6 +175,7 @@ const configTab: Action = {
     return ok(["config Tab in projectSettings"]);
   },
   execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+    inputs.hosting = resolveHosting(inputs);
     const projectSettings = context.projectSetting as ProjectSettingsV3;
     const tabConfig = getComponent(projectSettings, ComponentNames.TeamsTab);
     if (tabConfig) {
@@ -196,6 +214,7 @@ const configTab: Action = {
 
 const addSSO: Action = {
   type: "call",
+  name: "call:sso.add",
   targetAction: "sso.add",
   required: true,
 };
@@ -234,16 +253,16 @@ const initBicep: Action = {
   targetAction: "bicep.init",
   required: true,
 };
-const generateBicep: (hosting: string, inputs: Record<string, unknown>) => Action = (
-  hosting,
-  inputs
-) => ({
-  name: `call:${hosting}.generateBicep`,
-  type: "call",
-  required: true,
-  targetAction: `${hosting}.generateBicep`,
-  inputs: inputs,
-});
+// const generateBicep: (hosting: string, inputs: Record<string, unknown>) => Action = (
+//   hosting,
+//   inputs
+// ) => ({
+//   name: `call:${inputs.hosting}.generateBicep`,
+//   type: "call",
+//   required: true,
+//   targetAction: `${inputs.hosting}.generateBicep`,
+//   inputs: inputs,
+// });
 
 const configureTab: CallAction = {
   name: "teams-tab.configure",
@@ -263,3 +282,12 @@ const addTab: (actions: Action[]) => GroupAction = (actions: Action[]) => ({
   mode: "sequential",
   actions: actions,
 });
+
+function resolveHosting(inputs: InputsWithProjectPath): string {
+  return (
+    inputs.hosting ||
+    (inputs?.["programming-language"] === "csharp"
+      ? ComponentNames.AzureWebApp
+      : ComponentNames.AzureStorage)
+  );
+}

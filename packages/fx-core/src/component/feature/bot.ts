@@ -71,29 +71,63 @@ export class TeamsBot {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const configActions: Action[] = [
-      {
+    const configBicepActions: Action[] = [];
+    if (inputs.hosting) {
+      configBicepActions.push({
         name: `call:${inputs.hosting}-config.generateBicep`,
         type: "call",
         required: true,
         targetAction: `${inputs.hosting}-config.generateBicep`,
+        condition: (context, inputs) => {
+          if (inputs.hosting) {
+            inputs.componentId = this.name;
+            inputs.scenario = "Bot";
+          }
+          return ok(inputs.hosting !== undefined);
+        },
+      });
+    }
+    configBicepActions.push({
+      name: "call:apim-config.generateBicep",
+      type: "call",
+      required: true,
+      targetAction: "apim-config.generateBicep",
+      condition: (context, inputs) => {
+        return ok(getComponent(context.projectSetting, ComponentNames.APIM) !== undefined);
+      },
+    });
+    configBicepActions.push({
+      name: "call:identity.generateBicep",
+      type: "call",
+      required: true,
+      targetAction: "identity.generateBicep",
+      condition: (context, inputs) => {
+        const needed: boolean =
+          getComponent(context.projectSetting, ComponentNames.Identity) === undefined;
+        if (needed) {
+          inputs.componentId = "";
+          inputs.scenario = "";
+        }
+        return ok(needed);
+      },
+    });
+    const provisionBicepActions: Action[] = [];
+    if (inputs.hosting) {
+      provisionBicepActions.push({
+        name: `call:${inputs.hosting}.generateBicep`,
+        type: "call",
+        required: true,
+        targetAction: `${inputs.hosting}.generateBicep`,
         inputs: {
           componentId: this.name,
           scenario: "Bot",
         },
-      },
-    ];
-    // Configure apim if it exists, create identity if it does not exist
-    if (getComponent(context.projectSetting, ComponentNames.APIM) !== undefined) {
-      configActions.push({
-        name: "call:apim-config.generateBicep",
-        type: "call",
-        required: true,
-        targetAction: "apim-config.generateBicep",
+        pre: (context: ContextV3, inputs: InputsWithProjectPath) => {
+          inputs.scenario = "Bot";
+          inputs.componentId = this.name;
+          return ok(undefined);
+        },
       });
-    }
-    if (!getComponent(context.projectSetting, ComponentNames.Identity)) {
-      configActions.push(identityAction);
     }
     const actions: Action[] = [
       {
@@ -170,27 +204,8 @@ export class TeamsBot {
         targetAction: "bicep.init",
         required: true,
       },
-      {
-        name: `call:${inputs.hosting}.generateBicep`,
-        type: "call",
-        required: true,
-        targetAction: `${inputs.hosting}.generateBicep`,
-        inputs: {
-          componentId: this.name,
-          scenario: "Bot",
-        },
-      },
-      {
-        name: "call:bot-service.generateBicep",
-        type: "call",
-        required: true,
-        targetAction: "bot-service.generateBicep",
-        inputs: {
-          componentId: this.name,
-          scenario: "Bot",
-        },
-      },
-      ...configActions,
+      ...provisionBicepActions,
+      ...configBicepActions,
       {
         name: "call:app-manifest.addCapability",
         type: "call",

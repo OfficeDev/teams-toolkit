@@ -7,7 +7,6 @@ coverage:
     project:
       default:
         target: auto   # require coverage equal or more than current
-        threshold: 1%  # the leniency in hitting the target
         if_ci_failed: error #success, failure, error, ignore
 comment:
   layout: "reach, diff, flags, files"  # Remove items here to change the format

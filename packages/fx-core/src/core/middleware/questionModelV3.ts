@@ -269,3 +269,56 @@ export async function getQuestionsForAddFeatureV3(
   }
   return ok(addFeatureNode);
 }
+
+export async function getQuestionsForAddResourceV3(
+  ctx: v2.Context,
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const question: SingleSelectQuestion = {
+    name: AzureSolutionQuestionNames.AddResources,
+    title: getLocalizedString("core.addFeatureQuestion.title"),
+    type: "singleSelect",
+    staticOptions: [],
+  };
+  const options: OptionItem[] = [];
+  question.staticOptions = options;
+  if (inputs.platform === Platform.CLI_HELP) {
+    options.push(AzureResourceApimNewUI);
+    options.push(AzureResourceSQLNewUI);
+    options.push(AzureResourceFunctionNewUI);
+    options.push(AzureResourceKeyVaultNewUI);
+    const addFeatureNode = new QTreeNode(question);
+    return ok(addFeatureNode);
+  }
+  const projectSettingsV3 = ctx.projectSetting as ProjectSettingsV3;
+  if (!hasAPIM(projectSettingsV3)) {
+    options.push(AzureResourceApimNewUI);
+  }
+  options.push(AzureResourceSQLNewUI);
+  if (!hasKeyVault(projectSettingsV3)) {
+    options.push(AzureResourceKeyVaultNewUI);
+  }
+  // function can always be added
+  options.push(AzureResourceFunctionNewUI);
+  const addFeatureNode = new QTreeNode(question);
+  const triggerNode = new QTreeNode(createHostTypeTriggerQuestion(inputs.platform));
+  triggerNode.condition = { equals: NotificationOptionItem.id };
+  addFeatureNode.addChild(triggerNode);
+  if (!ctx.projectSetting.programmingLanguage) {
+    // Language
+    const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
+    programmingLanguage.condition = {
+      enum: [
+        NotificationOptionItem.id,
+        CommandAndResponseOptionItem.id,
+        TabNewUIOptionItem.id,
+        TabNonSsoItem.id,
+        BotNewUIOptionItem.id,
+        MessageExtensionItem.id,
+        SingleSignOnOptionItem.id, // adding sso means adding sample codes
+      ],
+    };
+    addFeatureNode.addChild(programmingLanguage);
+  }
+  return ok(addFeatureNode);
+}

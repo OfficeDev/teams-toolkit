@@ -211,6 +211,23 @@ export async function resolveAction(
   }
   return action;
 }
+
+export async function getQuestionsV3(
+  actionName: string,
+  context: ContextV3,
+  inputs: InputsWithProjectPath
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const nodes: QTreeNode[] = [];
+  const action = await getAction(actionName, context, inputs, true);
+  if (!action) {
+    return err(new ActionNotExist(actionName));
+  }
+  await collectActionQuestions(action, context, inputs, nodes);
+  if (nodes.length === 0) return ok(undefined);
+  const group = new QTreeNode({ type: "group" });
+  group.children = nodes;
+  return ok(group);
+}
 /**
  * traverse the workflow tree, collect all questions rooted on action, use for CLI_HELP
  */

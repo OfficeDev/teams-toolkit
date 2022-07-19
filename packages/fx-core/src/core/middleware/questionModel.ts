@@ -463,8 +463,11 @@ async function getQuestionsForCreateProjectWithoutDotNet(
     capNode.addChild(existingTabEndpoint);
   }
 
-  createNew.addChild(new QTreeNode(QuestionRootFolder));
-  createNew.addChild(new QTreeNode(createAppNameQuestion()));
+  // for v3, the two questions are implemented in fx.init action's question
+  if (!isV3()) {
+    createNew.addChild(new QTreeNode(QuestionRootFolder));
+    createNew.addChild(new QTreeNode(createAppNameQuestion()));
+  }
 
   // create from sample
   const sampleNode = new QTreeNode(SampleSelect);

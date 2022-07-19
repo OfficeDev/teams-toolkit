@@ -27,7 +27,9 @@ import { Service } from "typedi";
 import { getProjectSettingsPath } from "../core/middleware/projectSettingsLoader";
 import {
   CoreQuestionNames,
+  createAppNameQuestion,
   ProjectNamePattern,
+  QuestionRootFolder,
   ScratchOptionNo,
   ScratchOptionYes,
 } from "../core/question";
@@ -80,13 +82,24 @@ import { downloadSample } from "../core/downloadSample";
 import * as jsonschema from "jsonschema";
 import { globalVars } from "../core/globalVars";
 import {
+  ApiConnectionOptionItem,
+  AzureResourceApim,
+  AzureResourceFunctionNewUI,
+  AzureResourceKeyVaultNewUI,
+  AzureResourceSQLNewUI,
   AzureSolutionQuestionNames,
   BotFeatureIds,
+  CicdOptionItem,
   M365SearchAppOptionItem,
   M365SsoLaunchPageOptionItem,
+  SingleSignOnOptionItem,
   TabFeatureIds,
   TabSPFxItem,
 } from "../plugins/solution/fx-solution/question";
+import {
+  getQuestionsForAddFeatureV3,
+  getQuestionsForDeployV3,
+} from "../core/middleware/questionModelV3";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -110,7 +123,8 @@ export class TeamsfxCore {
         if (downloadRes.isErr()) {
           return err(downloadRes.error);
         }
-        context.projectPath = downloadRes.value;
+        context.projectPath = downloadRes.value; // used as output for the action
+        inputs.projectPath = downloadRes.value; // used as inputs for sub-actions
         return ok(["create app from sample"]);
       },
     };
@@ -131,7 +145,9 @@ export class TeamsfxCore {
           return err(InvalidInputError(`${validateResult.errors[0].message}`, inputs));
         }
         const folder = inputs[CoreQuestionNames.Folder] as string;
+        inputs.projectPath = path.join(folder, appName);
         context.projectPath = path.join(folder, appName);
+        delete inputs.folder;
         globalVars.isVS = isVSProject(context.projectSetting);
         const features = inputs.capabilities;
         if (
@@ -199,6 +215,100 @@ export class TeamsfxCore {
     };
     return ok(action);
   }
+  /**
+   * add feature
+   */
+  addFeature(
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ): MaybePromise<Result<Action | undefined, FxError>> {
+    const action: GroupAction = {
+      type: "group",
+      name: "fx.addFeature",
+      question: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+        return await getQuestionsForAddFeatureV3(context, inputs);
+      },
+      actions: [
+        {
+          type: "call",
+          targetAction: "sql.add",
+          required: true,
+          condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
+            return ok(inputs[AzureSolutionQuestionNames.Features] === AzureResourceSQLNewUI.id);
+          },
+        },
+        {
+          type: "call",
+          targetAction: "teams-bot.add",
+          required: true,
+          condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
+            return ok(BotFeatureIds.includes(inputs[AzureSolutionQuestionNames.Features]));
+          },
+        },
+        {
+          type: "call",
+          targetAction: "teams-tab.add",
+          required: true,
+          condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
+            return ok(TabFeatureIds.includes(inputs[AzureSolutionQuestionNames.Features]));
+          },
+        },
+        {
+          type: "call",
+          targetAction: "teams-api.add",
+          required: true,
+          condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
+            return ok(
+              inputs[AzureSolutionQuestionNames.Features] === AzureResourceFunctionNewUI.id
+            );
+          },
+        },
+        {
+          type: "call",
+          targetAction: "cicd.add",
+          required: true,
+          condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
+            return ok(inputs[AzureSolutionQuestionNames.Features] === CicdOptionItem.id);
+          },
+        },
+        {
+          type: "call",
+          targetAction: "api-connector.add",
+          required: true,
+          condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
+            return ok(inputs[AzureSolutionQuestionNames.Features] === ApiConnectionOptionItem.id);
+          },
+        },
+        {
+          type: "call",
+          targetAction: "sso.add",
+          required: true,
+          condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
+            return ok(inputs[AzureSolutionQuestionNames.Features] === SingleSignOnOptionItem.id);
+          },
+        },
+        {
+          type: "call",
+          targetAction: "apim-feature.add",
+          required: true,
+          condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
+            return ok(inputs[AzureSolutionQuestionNames.Features] === AzureResourceApim.id);
+          },
+        },
+        {
+          type: "call",
+          targetAction: "key-vault-feature.add",
+          required: true,
+          condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
+            return ok(
+              inputs[AzureSolutionQuestionNames.Features] === AzureResourceKeyVaultNewUI.id
+            );
+          },
+        },
+      ],
+    };
+    return ok(action);
+  }
   init(
     context: ContextV3,
     inputs: InputsWithProjectPath
@@ -216,17 +326,10 @@ export class TeamsfxCore {
         ]);
       },
       question: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const question: TextInputQuestion = {
-          type: "text",
-          name: "app-name",
-          title: "Application name",
-          validation: {
-            pattern: ProjectNamePattern,
-            maxLength: 30,
-          },
-          placeholder: "Application name",
-        };
-        return ok(new QTreeNode(question));
+        const root = new QTreeNode({ type: "group" });
+        root.addChild(new QTreeNode(QuestionRootFolder));
+        root.addChild(new QTreeNode(createAppNameQuestion()));
+        return ok(root);
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const projectSettings = newProjectSettings() as ProjectSettingsV3;
@@ -507,6 +610,9 @@ export class TeamsfxCore {
     const finalAction: Action = {
       type: "group",
       name: "fx.deploy",
+      question: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+        return await getQuestionsForDeployV3(context, context.envInfo!, inputs);
+      },
       actions: actions,
     };
     return ok(finalAction);

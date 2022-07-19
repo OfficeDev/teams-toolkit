@@ -138,16 +138,19 @@ import {
 } from "./telemetry";
 import { CoreHookContext } from "./types";
 import { isPreviewFeaturesEnabled } from "../common";
-import { runAction } from "../component/workflow";
+import { collectActionQuestions, getQuestionsV3, runAction } from "../component/workflow";
 import { createContextV3 } from "../component/utils";
 import "../component/core";
 import {
   getQuestionsForAddFeatureV3,
+  getQuestionsForAddResourceV3,
   getQuestionsForDeployV3,
   QuestionModelMW_V3,
 } from "./middleware/questionModelV3";
 import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
 import { EnvInfoV3 } from "@microsoft/teamsfx-api/build/v3";
+import { addCicdQuestion } from "../component/feature/cicd";
+import { AddApiConnectorAction } from "../component/feature/apiConnector";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -345,7 +348,7 @@ export class FxCore implements v3.ICore {
     return result;
   }
 
-  @hooks([ErrorHandlerMW, QuestionModelMW_V3, ContextInjectorMW, ProjectSettingsWriterMW])
+  @hooks([ErrorHandlerMW, ContextInjectorMW, ProjectSettingsWriterMW])
   async createProjectV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     if (!ctx) {
       return err(new ObjectIsUndefinedError("ctx for createProject"));
@@ -405,7 +408,7 @@ export class FxCore implements v3.ICore {
     //     const res = await runAction("spfx-tab.add", context, inputs as InputsWithProjectPath);
     //     if (res.isErr()) return err(res.error);
     //   }
-    //   ctx.projectSettings = context.projectSetting;
+    //
     // }
     // if (inputs.platform === Platform.VSCode) {
     //   await globalStateUpdate(automaticNpmInstall, true);
@@ -413,6 +416,8 @@ export class FxCore implements v3.ICore {
     const context = createContextV3();
     const res = await runAction("fx.create", context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
+    ctx.projectSettings = context.projectSetting;
+    inputs.projectPath = context.projectPath;
     return ok(context.projectPath!);
   }
 
@@ -569,7 +574,6 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
-    QuestionModelMW_V3,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
     EnvInfoWriterMW_V3(),
@@ -755,7 +759,6 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
-    QuestionModelMW_V3,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
     EnvInfoWriterMW_V3(),
@@ -765,29 +768,7 @@ export class FxCore implements v3.ICore {
     ctx?: CoreHookContext
   ): Promise<Result<Void, FxError>> {
     const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-    const feature = inputs[AzureSolutionQuestionNames.Features] as string;
-    let res;
-    if (feature === AzureResourceSQLNewUI.id) {
-      res = await runAction("sql.add", context, inputs as InputsWithProjectPath);
-    } else if (BotFeatureIds.includes(feature)) {
-      res = await runAction("teams-bot.add", context, inputs as InputsWithProjectPath);
-    } else if (TabFeatureIds.includes(feature)) {
-      res = await runAction("teams-tab.add", context, inputs as InputsWithProjectPath);
-    } else if (feature === "function") {
-      res = await runAction("teams-api.add", context, inputs as InputsWithProjectPath);
-    } else if (feature === CicdOptionItem.id) {
-      res = await runAction("cicd.add", context, inputs as InputsWithProjectPath);
-    } else if (feature === ApiConnectionOptionItem.id) {
-      res = await runAction("api-connector.add", context, inputs as InputsWithProjectPath);
-    } else if (feature === SingleSignOnOptionItem.id) {
-      res = await runAction("sso.add", context, inputs as InputsWithProjectPath);
-    } else if (feature === AzureResourceApim.id) {
-      res = await runAction("apim-feature.add", context, inputs as InputsWithProjectPath);
-    } else if (feature === AzureResourceKeyVaultNewUI.id) {
-      res = await runAction("key-vault-feature.add", context, inputs as InputsWithProjectPath);
-    } else {
-      return err(new NotImplementedError(feature));
-    }
+    const res = await runAction("fx.addFeature", context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
     return ok(Void);
@@ -951,12 +932,9 @@ export class FxCore implements v3.ICore {
     setCurrentStage(Stage.getQuestions);
     if (isV3()) {
       const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-      if (stage === Stage.create) {
-        return await this._getQuestionsForCreateProjectV2(inputs);
-      } else if (stage === Stage.deploy) {
-        return await getQuestionsForDeployV3(context, ctx.envInfoV2 as EnvInfoV3, inputs);
-      }
-      return ok(undefined);
+      const actionName = `fx.${inputs.state}`;
+      const res = await getQuestionsV3(actionName, context, inputs as InputsWithProjectPath);
+      return res;
     }
     switch (stage) {
       case Stage.create:
@@ -994,18 +972,30 @@ export class FxCore implements v3.ICore {
     inputs.stage = Stage.getQuestions;
     setCurrentStage(Stage.getQuestions);
     if (isV3()) {
+      const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+      let actionName;
       if (func.method === "addFeature") {
-        const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-        return await getQuestionsForAddFeatureV3(context, inputs);
+        actionName = "fx.addFeature";
+      } else if (func.method === "addResource") {
+        return await getQuestionsForAddResourceV3(context, inputs);
+      } else if (func.method === "addCICDWorkflows") {
+        return await addCicdQuestion(context, inputs as InputsWithProjectPath);
+      } else if (func.method === "connectExistingApi") {
+        return await new AddApiConnectorAction().question(context, inputs as InputsWithProjectPath);
+      }
+      if (actionName) {
+        const res = await getQuestionsV3(actionName, context, inputs as InputsWithProjectPath);
+        return res;
       }
       return ok(undefined);
+    } else {
+      const contextV2 = ctx.contextV2 ? ctx.contextV2 : createV2Context(newProjectSettings());
+      const solutionV2 = ctx.solutionV2 ? ctx.solutionV2 : await getAllSolutionPluginsV2()[0];
+      const envInfoV2 = ctx.envInfoV2
+        ? ctx.envInfoV2
+        : { envName: environmentManager.getDefaultEnvName(), config: {}, state: {} };
+      return await this._getQuestionsForUserTask(contextV2, solutionV2, func, inputs, envInfoV2);
     }
-    const contextV2 = ctx.contextV2 ? ctx.contextV2 : createV2Context(newProjectSettings());
-    const solutionV2 = ctx.solutionV2 ? ctx.solutionV2 : await getAllSolutionPluginsV2()[0];
-    const envInfoV2 = ctx.envInfoV2
-      ? ctx.envInfoV2
-      : { envName: environmentManager.getDefaultEnvName(), config: {}, state: {} };
-    return await this._getQuestionsForUserTask(contextV2, solutionV2, func, inputs, envInfoV2);
   }
 
   @hooks([

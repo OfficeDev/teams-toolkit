@@ -468,7 +468,6 @@ async function askForSubscriptionConfirm(
 ): Promise<Result<Void, FxError>> {
   const azureToken = await azureAccountProvider.getAccountCredentialAsync();
 
-  // Only Azure project requires this confirm dialog
   const username = (azureToken as any).username || "";
   const msgNew = getLocalizedString(
     "core.provision.confirmSubscription",

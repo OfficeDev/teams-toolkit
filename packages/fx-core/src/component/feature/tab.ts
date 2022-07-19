@@ -23,6 +23,7 @@ import { globalVars } from "../../core/globalVars";
 import { CoreQuestionNames } from "../../core/question";
 import { TabNonSsoItem } from "../../plugins/solution/fx-solution/question";
 import { ComponentNames, Scenarios } from "../constants";
+import { Plans } from "../messages";
 import { identityAction } from "../resource/identity";
 import { getComponent } from "../workflow";
 
@@ -154,7 +155,7 @@ const configTab: Action = {
     if (tabConfig) {
       return ok([]);
     }
-    return ok(["config Tab in projectSettings"]);
+    return ok([Plans.addFeature("Tab")]);
   },
   execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
     inputs.hosting = resolveHosting(inputs);
@@ -176,6 +177,7 @@ const configTab: Action = {
       provision: true,
       scenario: Scenarios.Tab,
     });
+    // connect to existing apim
     const apimConfig = getComponent(projectSettings, ComponentNames.APIM);
     if (apimConfig) {
       apimConfig.connections?.push(ComponentNames.TeamsTab);
@@ -187,10 +189,9 @@ const configTab: Action = {
         provision: true,
       });
     }
-    projectSettings.programmingLanguage =
-      projectSettings.programmingLanguage || inputs[CoreQuestionNames.ProgrammingLanguage];
     globalVars.isVS = isVSProject(projectSettings);
-    return ok(["config Tab in projectSettings"]);
+    projectSettings.programmingLanguage ||= inputs[CoreQuestionNames.ProgrammingLanguage];
+    return ok([Plans.addFeature("Tab")]);
   },
 };
 

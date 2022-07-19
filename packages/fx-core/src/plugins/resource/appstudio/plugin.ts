@@ -703,11 +703,21 @@ export class AppStudioPluginImpl {
   }
 
   public async postLocalDebug(ctx: PluginContext): Promise<Result<string, FxError>> {
-    const teamsAppId = await this.updateApp(ctx, true);
-    if (teamsAppId.isErr()) {
-      return teamsAppId;
+    let teamsAppId = ctx.envInfo.state.get(ResourcePlugins.AppStudio).get(Constants.TEAMS_APP_ID);
+    if (teamsAppId) {
+      const res = await this.updateApp(ctx, true);
+      if (res.isErr()) {
+        return res;
+      }
+      teamsAppId = res.value;
+    } else {
+      const res = await this.createApp(ctx, true);
+      if (res.isErr()) {
+        return err(res.error);
+      }
+      teamsAppId = res.value.teamsAppId;
     }
-    ctx.envInfo.state.get(ResourcePlugins.AppStudio).set(Constants.TEAMS_APP_ID, teamsAppId.value);
+    ctx.envInfo.state.get(ResourcePlugins.AppStudio).set(Constants.TEAMS_APP_ID, teamsAppId);
     return ok(teamsAppId.value);
   }
 

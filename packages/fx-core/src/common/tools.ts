@@ -24,6 +24,8 @@ import {
   Platform,
   M365TokenProvider,
   ProjectSettingsV3,
+  InputConfigsFolderName,
+  ProjectSettingsFileName,
 } from "@microsoft/teamsfx-api";
 import axios from "axios";
 import { exec, ExecOptions } from "child_process";
@@ -934,4 +936,34 @@ export async function getSPFxToken(
     spoToken = spfxTokenRes.isOk() ? spfxTokenRes.value : undefined;
   }
   return spoToken;
+}
+
+export function getFixedCommonProjectSettings(rootPath: string | undefined) {
+  if (!rootPath) {
+    return undefined;
+  }
+
+  try {
+    const projectSettingsPath = path.join(
+      rootPath,
+      `.${ConfigFolderName}`,
+      InputConfigsFolderName,
+      ProjectSettingsFileName
+    );
+
+    if (!projectSettingsPath || !fs.pathExistsSync(projectSettingsPath)) {
+      return undefined;
+    }
+
+    const projectSettings = fs.readJsonSync(projectSettingsPath);
+    return {
+      projectId: projectSettings?.projectId ?? undefined,
+      isFromSample: projectSettings?.isFromSample ?? undefined,
+      programmingLanguage: projectSettings?.programmingLanguage ?? undefined,
+      hostType: projectSettings?.solutionSettings?.hostType ?? undefined,
+      isM365: projectSettings?.isM365 ?? false,
+    };
+  } catch {
+    return undefined;
+  }
 }

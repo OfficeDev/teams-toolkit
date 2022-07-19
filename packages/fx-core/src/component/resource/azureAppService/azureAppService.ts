@@ -26,7 +26,7 @@ import {
 import { AzureResource } from "./../azureResource";
 import { Messages } from "./messages";
 import { getHostingParentComponent } from "../../workflow";
-import { ProgressBarConstants } from "../../../plugins/resource/bot/constants";
+import { Plans, ProgressMessages, ProgressTitles } from "../../messages";
 export abstract class AzureAppService extends AzureResource {
   abstract readonly name: string;
   abstract readonly alias: string;
@@ -54,18 +54,12 @@ export abstract class AzureAppService extends AzureResource {
       name: `${this.name}.deploy`,
       type: "function",
       enableProgressBar: true,
-      progressTitle: `Deploy ${this.name}`,
+      progressTitle: ProgressTitles.deploying(this.displayName, inputs.scenario),
       progressSteps: 2,
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         const parent = getHostingParentComponent(context.projectSetting, this.name);
         const deployDir = path.resolve(inputs.projectPath, parent?.folder ?? "");
-        return ok([
-          {
-            type: "service",
-            name: "azure",
-            remarks: `deploy ${this.displayName} in folder: ${deployDir}`,
-          },
-        ]);
+        return ok([Plans.deploy(this.displayName, deployDir)]);
       },
       execute: async (
         context: ContextV3,
@@ -90,7 +84,7 @@ export abstract class AzureAppService extends AzureResource {
           this.outputs.resourceId.key,
           state[this.outputs.resourceId.key]
         );
-        await progress?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_FOLDER);
+        await progress?.next(ProgressMessages.packingCode);
         const zipBuffer = await utils.zipFolderAsync(publishDir, "");
 
         await azureWebSiteDeploy(
@@ -100,13 +94,7 @@ export abstract class AzureAppService extends AzureResource {
           context.logProvider,
           progress
         );
-        return ok([
-          {
-            type: "service",
-            name: "azure",
-            remarks: `deploy ${this.displayName} in folder: ${publishDir}`,
-          },
-        ]);
+        return ok([Plans.deploy(this.displayName, publishDir)]);
       },
     };
     return ok(action);

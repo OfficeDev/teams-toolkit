@@ -145,7 +145,9 @@ export async function scaffoldSPFx(
         env: yoEnv,
       },
       "yo",
-      spGeneratorChecker.getSpGeneratorPath(),
+      isGeneratorCheckerEnabled()
+        ? spGeneratorChecker.getSpGeneratorPath()
+        : "@microsoft/sharepoint",
       "--skip-install",
       "true",
       "--component-type",

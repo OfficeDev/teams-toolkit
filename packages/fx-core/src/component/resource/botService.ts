@@ -12,7 +12,6 @@ import {
   ProvisionContextV3,
   v3,
   err,
-  AzureAccountProvider,
   Effect,
   IProgressHandler,
 } from "@microsoft/teamsfx-api";
@@ -24,36 +23,23 @@ import {
   ConfigNames,
   PluginLocalDebug,
 } from "../../plugins/resource/bot/resources/strings";
-import { CheckThrowSomethingMissing, PreconditionError } from "../../plugins/resource/bot/v3/error";
+import { CheckThrowSomethingMissing } from "../../plugins/resource/bot/v3/error";
 import * as uuid from "uuid";
 import { ResourceNameFactory } from "../../plugins/resource/bot/utils/resourceNameFactory";
-import {
-  AzureConstants,
-  MaxLengths,
-  ProgressBarConstants,
-  TelemetryKeys,
-} from "../../plugins/resource/bot/constants";
+import { MaxLengths, TelemetryKeys } from "../../plugins/resource/bot/constants";
 import { AADRegistration } from "../../plugins/resource/bot/aadRegistration";
 import { Messages } from "../../plugins/resource/bot/resources/messages";
 import { IBotRegistration } from "../../plugins/resource/bot/appStudio/interfaces/IBotRegistration";
 import { AppStudio } from "../../plugins/resource/bot/appStudio/appStudio";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import { ComponentNames } from "../constants";
+import { BotServiceOutputs, ComponentNames } from "../constants";
 import { normalizeName } from "../utils";
 import { getComponent } from "../workflow";
-import * as clientFactory from "../../plugins/resource/bot/clientFactory";
 import { AzureResource } from "./azureResource";
 import { telemetryHelper } from "../../plugins/resource/bot/utils/telemetry-helper";
+import { Plans, ProgressMessages, ProgressTitles } from "../messages";
 @Service("bot-service")
 export class BotService extends AzureResource {
-  outputs = {
-    botId: {
-      key: "botId",
-    },
-    botPassword: {
-      key: "botPassword",
-    },
-  };
+  outputs = BotServiceOutputs;
   finalOutputKeys = ["botId", "botPassword"];
   secretFields = ["botPassword"];
   readonly name = "bot-service";
@@ -81,7 +67,7 @@ export class BotService extends AzureResource {
       name: "bot-service.provision",
       type: "function",
       enableProgressBar: true,
-      progressTitle: `Provision ${this.name}`,
+      progressTitle: ProgressTitles.provisionBot,
       progressSteps: 1,
       enableTelemetry: true,
       telemetryProps: commonTelemetryPropsForBot(context),
@@ -94,83 +80,29 @@ export class BotService extends AzureResource {
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         const ctx = context as ProvisionContextV3;
         const plans: Effect[] = [];
+        plans.push(Plans.createAADforBot());
         if (ctx.envInfo.envName === "local") {
-          plans.push({
-            type: "service",
-            name: "graph.microsoft.com",
-            remarks: "create AAD app for bot service (botId, botPassword)",
-          });
-          plans.push({
-            type: "service",
-            name: "teams.microsoft.com",
-            remarks: "create bot registration",
-          });
-        } else {
-          plans.push({
-            type: "service",
-            name: "graph.microsoft.com",
-            remarks: "create AAD app for bot service (botId, botPassword)",
-          });
-          plans.push({
-            type: "service",
-            name: "management.azure.com",
-            remarks: "ensure resource providers for: " + AzureConstants.requiredResourceProviders,
-          });
+          plans.push(Plans.registerBot());
         }
         return ok(plans);
       },
       execute: async (
         context: ContextV3,
         inputs: InputsWithProjectPath,
-        progress?: IProgressHandler,
-        telemetryProps?: Record<string, string>
+        progress?: IProgressHandler
       ) => {
         // create bot aad app by API call
-        await progress?.next(ProgressBarConstants.PROVISION_STEP_BOT_REG);
+        await progress?.next(ProgressMessages.provisionBot);
         const ctx = context as ProvisionContextV3;
         const plans: Effect[] = [];
+        const aadRes = await createBotAAD(ctx);
+        if (aadRes.isErr()) return err(aadRes.error);
+        plans.push(Plans.createAADforBot());
         if (ctx.envInfo.envName === "local") {
-          const aadRes = await createBotAAD(ctx);
-          if (aadRes.isErr()) return err(aadRes.error);
           const botConfig = aadRes.value;
           const regRes = await createBotRegInAppStudio(botConfig, ctx);
           if (regRes.isErr()) return err(regRes.error);
-          plans.push({
-            type: "service",
-            name: "graph.microsoft.com",
-            remarks: "create AAD app for bot service (botId, botPassword)",
-          });
-          plans.push({
-            type: "service",
-            name: "teams.microsoft.com",
-            remarks: "create bot registration",
-          });
-        } else {
-          // Check Resource Provider
-          const azureCredential = await getAzureAccountCredential(
-            ctx.tokenProvider.azureAccountProvider
-          );
-          const solutionConfig = ctx.envInfo.state.solution as v3.AzureSolutionConfig;
-          const rpClient = clientFactory.createResourceProviderClient(
-            azureCredential,
-            solutionConfig.subscriptionId!
-          );
-          await clientFactory.ensureResourceProvider(
-            rpClient,
-            AzureConstants.requiredResourceProviders
-          );
-          const aadRes = await createBotAAD(ctx);
-          if (aadRes.isErr()) return err(aadRes.error);
-          plans.push({
-            type: "service",
-            name: "management.azure.com",
-            remarks: "ensure resource providers for: " + AzureConstants.requiredResourceProviders,
-          });
-          plans.push({
-            type: "service",
-            name: "graph.microsoft.com",
-            remarks: "create AAD app for bot service (botId, botPassword)",
-          });
+          plans.push(Plans.registerBot());
         }
         return ok(plans);
       },
@@ -184,9 +116,6 @@ export class BotService extends AzureResource {
     const action: Action = {
       name: "bot-service.configure",
       type: "function",
-      enableProgressBar: true,
-      progressTitle: `Provision ${this.name}`,
-      progressSteps: 1,
       enableTelemetry: true,
       telemetryProps: commonTelemetryPropsForBot(context),
       telemetryComponentName: "fx-resource-bot",
@@ -199,31 +128,18 @@ export class BotService extends AzureResource {
         const ctx = context as ProvisionContextV3;
         const plans: Effect[] = [];
         if (ctx.envInfo.envName === "local") {
-          plans.push({
-            type: "service",
-            name: "graph.microsoft.com",
-            remarks: "update message endpoint in AppStudio",
-          });
+          plans.push(Plans.updateBotEndpoint());
         }
         return ok(plans);
       },
-      execute: async (
-        context: ContextV3,
-        inputs: InputsWithProjectPath,
-        progress?: IProgressHandler,
-        telemetryProps?: Record<string, string>
-      ) => {
+      execute: async (context: ContextV3) => {
         // create bot aad app by API call
         const ctx = context as ProvisionContextV3;
         const teamsBot = getComponent(ctx.projectSetting, ComponentNames.TeamsBot);
         if (!teamsBot) return ok([]);
         const plans: Effect[] = [];
         if (ctx.envInfo.envName === "local") {
-          plans.push({
-            type: "service",
-            name: "graph.microsoft.com",
-            remarks: "update message endpoint in AppStudio",
-          });
+          plans.push(Plans.updateBotEndpoint());
           const teamsBotState = ctx.envInfo.state[ComponentNames.TeamsBot];
           const appStudioTokenRes = await ctx.tokenProvider.m365TokenProvider.getAccessToken({
             scopes: AppStudioScopes,
@@ -232,7 +148,6 @@ export class BotService extends AzureResource {
           CheckThrowSomethingMissing(ConfigNames.LOCAL_ENDPOINT, teamsBotState.endpoint);
           CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
           CheckThrowSomethingMissing(ConfigNames.LOCAL_BOT_ID, teamsBotState.botId);
-          progress?.next("update message endpoint in app studio");
           await AppStudio.updateMessageEndpoint(
             appStudioToken!,
             teamsBotState.botId,
@@ -302,16 +217,6 @@ export async function createBotRegInAppStudio(
   await AppStudio.createBotRegistration(appStudioToken!, botReg);
   ctx.logProvider.info(Messages.SuccessfullyProvisionedBotRegistration);
   return ok(undefined);
-}
-
-export async function getAzureAccountCredential(
-  tokenProvider: AzureAccountProvider
-): Promise<TokenCredentialsBase> {
-  const serviceClientCredentials = await tokenProvider.getAccountCredentialAsync();
-  if (!serviceClientCredentials) {
-    throw new PreconditionError(Messages.FailToGetAzureCreds, [Messages.TryLoginAzure]);
-  }
-  return serviceClientCredentials;
 }
 
 export function commonTelemetryPropsForBot(context: ContextV3): Record<string, string> {

@@ -3,6 +3,7 @@ module azureFunction{{scenario}}Provision './provision/azureFunction{{scenario}}
   name: 'azureFunction{{scenario}}Provision'
   params: {
     provisionParameters: provisionParameters
+    userAssignedIdentityId: {{identity.resourceId}}
   }
 }
 

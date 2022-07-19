@@ -1,5 +1,6 @@
 @secure()
 param provisionParameters object
+param userAssignedIdentityId string
 
 var resourceBaseName = provisionParameters.resourceBaseName
 var serverfarmsName = contains(provisionParameters, 'webAppServerfarmsName') ? provisionParameters['webAppServerfarmsName'] : '${resourceBaseName}{{scenarioInLowerCase}}' // Try to read name for App Service Plan from parameters
@@ -45,6 +46,12 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
         }
         {{/if}}
       ]
+    }
+  }
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${userAssignedIdentityId}': {} // The identity is used to access other Azure resources
     }
   }
 }

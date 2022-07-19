@@ -98,19 +98,23 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
       if (tokenRequest.showDialog === undefined || tokenRequest.showDialog) {
         const userConfirmation: boolean = await this.doesUserConfirmLogin();
         if (!userConfirmation) {
-          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Login, {
-            [TelemetryProperty.AccountType]: AccountType.M365,
-            [TelemetryProperty.Success]: TelemetrySuccess.No,
-            [TelemetryProperty.UserId]: "",
-            [TelemetryProperty.Internal]: "",
-            [TelemetryProperty.ErrorType]: TelemetryErrorType.UserError,
-            [TelemetryProperty.ErrorCode]: `${getDefaultString(
-              "teamstoolkit.codeFlowLogin.loginComponent"
-            )}.${ExtensionErrors.UserCancel}`,
-            [TelemetryProperty.ErrorMessage]: `${getDefaultString(
-              "teamstoolkit.common.userCancel"
-            )}`,
-          });
+          ExtTelemetry.sendTelemetryErrorEvent(
+            TelemetryEvent.Login,
+            UserCancelError(getDefaultString("teamstoolkit.codeFlowLogin.loginComponent")),
+            {
+              [TelemetryProperty.AccountType]: AccountType.M365,
+              [TelemetryProperty.Success]: TelemetrySuccess.No,
+              [TelemetryProperty.UserId]: "",
+              [TelemetryProperty.Internal]: "",
+              [TelemetryProperty.ErrorType]: TelemetryErrorType.UserError,
+              [TelemetryProperty.ErrorCode]: `${getDefaultString(
+                "teamstoolkit.codeFlowLogin.loginComponent"
+              )}.${ExtensionErrors.UserCancel}`,
+              [TelemetryProperty.ErrorMessage]: `${getDefaultString(
+                "teamstoolkit.common.userCancel"
+              )}`,
+            }
+          );
           return err(
             UserCancelError(getDefaultString("teamstoolkit.codeFlowLogin.loginComponent"))
           );
@@ -147,17 +151,21 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
     await M365Login.codeFlowInstance.reloadCache();
     const userConfirmation = await this.doesUserConfirmSignout();
     if (!userConfirmation) {
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOut, {
-        [TelemetryProperty.AccountType]: AccountType.M365,
-        [TelemetryProperty.Success]: TelemetrySuccess.No,
-        [TelemetryProperty.UserId]: "",
-        [TelemetryProperty.Internal]: "",
-        [TelemetryProperty.ErrorType]: TelemetryErrorType.UserError,
-        [TelemetryProperty.ErrorCode]: `${getDefaultString(
-          "teamstoolkit.codeFlowLogin.loginComponent"
-        )}.${ExtensionErrors.UserCancel}`,
-        [TelemetryProperty.ErrorMessage]: `${getDefaultString("teamstoolkit.common.userCancel")}`,
-      });
+      ExtTelemetry.sendTelemetryErrorEvent(
+        TelemetryEvent.SignOut,
+        UserCancelError(getDefaultString("teamstoolkit.commands.signOut.title")),
+        {
+          [TelemetryProperty.AccountType]: AccountType.M365,
+          [TelemetryProperty.Success]: TelemetrySuccess.No,
+          [TelemetryProperty.UserId]: "",
+          [TelemetryProperty.Internal]: "",
+          [TelemetryProperty.ErrorType]: TelemetryErrorType.UserError,
+          [TelemetryProperty.ErrorCode]: `${getDefaultString(
+            "teamstoolkit.codeFlowLogin.loginComponent"
+          )}.${ExtensionErrors.UserCancel}`,
+          [TelemetryProperty.ErrorMessage]: `${getDefaultString("teamstoolkit.common.userCancel")}`,
+        }
+      );
       throw UserCancelError(getDefaultString("teamstoolkit.commands.signOut.title"));
     }
     await M365Login.codeFlowInstance.logout();

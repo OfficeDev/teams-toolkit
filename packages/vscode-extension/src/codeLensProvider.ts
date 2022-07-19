@@ -19,6 +19,7 @@ import {
   getAllowedAppMaps,
   environmentManager,
   getPropertyByPath,
+  convertManifestTemplateToV3,
 } from "@microsoft/teamsfx-core";
 import { localize } from "./utils/localizeUtils";
 import { core, getSystemInputs } from "./handlers";
@@ -52,10 +53,12 @@ async function resolveStateAndConfigCodeLens(
       const localEnvInfo = projectConfigs.envInfos[environmentManager.getLocalEnvName()];
       const defaultEnvInfo = projectConfigs.envInfos[environmentManager.getDefaultEnvName()];
 
-      const localValue = getPropertyByPath(localEnvInfo, key);
+      const keyV3 = convertManifestTemplateToV3(key);
+
+      const localValue = getPropertyByPath(localEnvInfo, keyV3);
       title = `${title} ${environmentManager.getLocalEnvName()}: ${localValue}`;
 
-      const defaultValue = getPropertyByPath(defaultEnvInfo, key);
+      const defaultValue = getPropertyByPath(defaultEnvInfo, keyV3);
       title = `${title}, ${defaultEnvInfo.envName}: ${defaultValue}`;
 
       lens.command = {

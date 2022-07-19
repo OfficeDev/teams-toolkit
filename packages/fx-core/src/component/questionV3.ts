@@ -1,13 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-
-import { Middleware, NextFunction } from "@feathersjs/hooks";
 import {
   CLIPlatforms,
   DynamicPlatforms,
   err,
   FxError,
   Inputs,
+  InputsWithProjectPath,
   ok,
   OptionItem,
   Platform,
@@ -17,15 +16,14 @@ import {
   Result,
   SingleSelectQuestion,
   Stage,
-  traverse,
   UserError,
   v2,
   v3,
 } from "@microsoft/teamsfx-api";
 import Container from "typedi";
-import { isVSProject } from "../../common/projectSettingsHelper";
-import { HelpLinks } from "../../common/constants";
-import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
+import { isVSProject } from "../common/projectSettingsHelper";
+import { HelpLinks } from "../common/constants";
+import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import {
   hasAAD,
   hasAPIM,
@@ -34,14 +32,14 @@ import {
   hasApi,
   hasKeyVault,
   hasTab,
-} from "../../common/projectSettingsHelperV3";
-import { canAddCICDWorkflows } from "../../common/tools";
-import { ComponentNames } from "../../component/constants";
-import { ComponentName2pluginName } from "../../component/migrate";
-import { readAppManifest } from "../../component/resource/appManifest/utils";
-import { getComponent } from "../../component/workflow";
-import { STATIC_TABS_MAX_ITEMS } from "../../plugins/resource/appstudio/constants";
-import { createHostTypeTriggerQuestion } from "../../plugins/resource/bot/question";
+} from "../common/projectSettingsHelperV3";
+import { canAddCICDWorkflows } from "../common/tools";
+import { ComponentNames } from "./constants";
+import { ComponentName2pluginName } from "./migrate";
+import { readAppManifest } from "./resource/appManifest/utils";
+import { getComponent, getQuestionsV3 } from "./workflow";
+import { STATIC_TABS_MAX_ITEMS } from "../plugins/resource/appstudio/constants";
+import { createHostTypeTriggerQuestion } from "../plugins/resource/bot/question";
 import {
   ApiConnectionOptionItem,
   AzureResourceApimNewUI,
@@ -59,55 +57,12 @@ import {
   SingleSignOnOptionItem,
   TabNewUIOptionItem,
   TabNonSsoItem,
-} from "../../plugins/solution/fx-solution/question";
-import { getPluginCLIName } from "../../plugins/solution/fx-solution/v2/getQuestions";
-import { checkWetherProvisionSucceeded } from "../../plugins/solution/fx-solution/v2/utils";
-import { NoCapabilityFoundError } from "../error";
-import { TOOLS } from "../globalVars";
-import { ProgrammingLanguageQuestion } from "../question";
-import { CoreHookContext } from "../types";
-import { getQuestionsForTargetEnv } from "./envInfoLoader";
-import { getQuestionsForCreateProjectV2 } from "./questionModel";
-
-/**
- * This middleware will help to collect input from question flow
- */
-export const QuestionModelMW_V3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
-  const inputs: Inputs = ctx.arguments[ctx.arguments.length - 1];
-  const method = ctx.method;
-
-  let getQuestionRes: Result<QTreeNode | undefined, FxError> = ok(undefined);
-  if (method === "createProjectV3") {
-    getQuestionRes = await getQuestionsForCreateProjectV2(inputs);
-  } else if (method === "deployArtifactsV3") {
-    getQuestionRes = await getQuestionsForDeployV3(ctx.contextV2!, ctx.envInfoV3!, inputs);
-  } else if (method === "addFeature") {
-    getQuestionRes = await getQuestionsForAddFeatureV3(ctx.contextV2!, inputs);
-  }
-  if (getQuestionRes.isErr()) {
-    TOOLS?.logProvider.error(
-      `[core] failed to get questions for ${method}: ${getQuestionRes.error.message}`
-    );
-    ctx.result = err(getQuestionRes.error);
-    return;
-  }
-
-  TOOLS?.logProvider.debug(`[core] success to get questions for ${method}`);
-
-  const node = getQuestionRes.value;
-  if (node) {
-    const res = await traverse(node, inputs, TOOLS.ui, TOOLS.telemetryReporter);
-    if (res.isErr()) {
-      TOOLS?.logProvider.debug(`[core] failed to run question model for ${method}`);
-      ctx.result = err(res.error);
-      return;
-    }
-    TOOLS?.logProvider.info(
-      `[core] success to run question model for ${method}, answers:${JSON.stringify(inputs)}`
-    );
-  }
-  await next();
-};
+} from "../plugins/solution/fx-solution/question";
+import { getPluginCLIName } from "../plugins/solution/fx-solution/v2/getQuestions";
+import { checkWetherProvisionSucceeded } from "../plugins/solution/fx-solution/v2/utils";
+import { NoCapabilityFoundError } from "../core/error";
+import { ProgrammingLanguageQuestion } from "../core/question";
+import { createContextV3 } from "./utils";
 
 export async function getQuestionsForDeployV3(
   ctx: v2.Context,
@@ -169,6 +124,7 @@ export async function getQuestionsForDeployV3(
   selectQuestion.default = options.map((i) => i.id);
   return ok(new QTreeNode(selectQuestion));
 }
+
 export async function getQuestionsForAddFeatureV3(
   ctx: v2.Context,
   inputs: Inputs
@@ -321,4 +277,60 @@ export async function getQuestionsForAddResourceV3(
     addFeatureNode.addChild(programmingLanguage);
   }
   return ok(addFeatureNode);
+}
+
+export enum FeatureId {
+  Tab = "Tab",
+  TabNonSso = "TabNonSso",
+  Notification = "Notification",
+  CommandAndResponse = "command-bot",
+  Bot = "Bot",
+  MessagingExtension = "MessagingExtension",
+  function = "function",
+  apim = "apim",
+  sql = "sql",
+  keyvault = "keyvault",
+  sso = "sso",
+  ApiConnector = "api-connection",
+  cicd = "cicd",
+}
+
+export const FeatureIdToComponent = {
+  [FeatureId.Tab]: ComponentNames.TeamsTab,
+  [FeatureId.TabNonSso]: ComponentNames.TeamsTab,
+  [FeatureId.Notification]: ComponentNames.TeamsBot,
+  [FeatureId.CommandAndResponse]: ComponentNames.TeamsBot,
+  [FeatureId.Bot]: ComponentNames.TeamsBot,
+  [FeatureId.MessagingExtension]: ComponentNames.TeamsBot,
+  [FeatureId.function]: ComponentNames.TeamsApi,
+  [FeatureId.apim]: ComponentNames.APIMFeature,
+  [FeatureId.sql]: ComponentNames.AzureSQL,
+  [FeatureId.keyvault]: ComponentNames.KeyVault,
+  [FeatureId.sso]: ComponentNames.SSO,
+  [FeatureId.ApiConnector]: ComponentNames.ApiConnector,
+  [FeatureId.cicd]: ComponentNames.CICD,
+};
+
+export function getActionNameByFeatureId(featureId: FeatureId): string | undefined {
+  const component = FeatureIdToComponent[featureId];
+  if (component) {
+    return `${component}.add`;
+  }
+}
+
+export async function getQuestionsForAddFeatureSubCommand(
+  featureId: FeatureId,
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const actionName = getActionNameByFeatureId(featureId);
+  if (actionName) {
+    const res = await getQuestionsV3(
+      actionName,
+      createContextV3(),
+      inputs as InputsWithProjectPath,
+      false
+    );
+    return res;
+  }
+  return ok(undefined);
 }

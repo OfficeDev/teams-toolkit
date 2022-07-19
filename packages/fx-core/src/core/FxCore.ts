@@ -63,12 +63,6 @@ import {
   TabSPFxItem,
   BotFeatureIds,
   TabFeatureIds,
-  CicdOptionItem,
-  ApiConnectionOptionItem,
-  SingleSignOnOptionItem,
-  AzureResourceApim,
-  AzureResourceKeyVaultNewUI,
-  AzureResourceSQLNewUI,
   AzureSolutionQuestionNames,
 } from "../plugins/solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
@@ -138,17 +132,15 @@ import {
 } from "./telemetry";
 import { CoreHookContext } from "./types";
 import { isPreviewFeaturesEnabled } from "../common";
-import { collectActionQuestions, getQuestionsV3, runAction } from "../component/workflow";
+import { getQuestionsV3, runAction } from "../component/workflow";
 import { createContextV3 } from "../component/utils";
 import "../component/core";
 import {
-  getQuestionsForAddFeatureV3,
+  FeatureId,
+  getQuestionsForAddFeatureSubCommand,
   getQuestionsForAddResourceV3,
-  getQuestionsForDeployV3,
-  QuestionModelMW_V3,
-} from "./middleware/questionModelV3";
+} from "../component/questionV3";
 import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
-import { EnvInfoV3 } from "@microsoft/teamsfx-api/build/v3";
 import { addCicdQuestion } from "../component/feature/cicd";
 import { AddApiConnectorAction } from "../component/feature/apiConnector";
 
@@ -470,7 +462,6 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
-    QuestionModelMW_V3,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
     EnvInfoWriterMW_V3(),
@@ -652,7 +643,6 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
-    QuestionModelMW_V3,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
     EnvInfoWriterMW_V3(),
@@ -723,7 +713,6 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
-    QuestionModelMW_V3,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
     EnvInfoWriterMW_V3(),
@@ -879,7 +868,6 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
-    QuestionModelMW_V3,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
     EnvInfoWriterMW_V3(),
@@ -896,21 +884,10 @@ export class FxCore implements v3.ICore {
     } else if (func.method === "connectExistingApi") {
       res = await runAction("api-connector.add", context, inputs as InputsWithProjectPath);
     } else if (func.method === "addFeature") {
-      const feature = inputs[AzureSolutionQuestionNames.Features] as string;
-      if (feature === "sql") {
-        res = await runAction("sql.add", context, inputs as InputsWithProjectPath);
-      } else if (BotFeatureIds.includes(feature)) {
-        res = await runAction("teams-bot.add", context, inputs as InputsWithProjectPath);
-      } else if (TabFeatureIds.includes(feature)) {
-        res = await runAction("teams-tab.add", context, inputs as InputsWithProjectPath);
-      } else if (feature === "function") {
-        res = await runAction("teams-api.add", context, inputs as InputsWithProjectPath);
-      } else {
-        return err(new TaskNotSupportError(feature));
-      }
-      if (res.isErr()) return err(res.error);
-      ctx!.projectSettings = context.projectSetting;
+      res = await runAction("fx.addFeature", context, inputs as InputsWithProjectPath);
     }
+    if (res.isErr()) return err(res.error);
+    ctx!.projectSettings = context.projectSetting;
     return res;
   }
   @hooks([
@@ -932,7 +909,10 @@ export class FxCore implements v3.ICore {
     setCurrentStage(Stage.getQuestions);
     if (isV3()) {
       const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-      const actionName = `fx.${inputs.state}`;
+      let actionName = `fx.${stage}`;
+      if (stage === Stage.publish) {
+        actionName = "app-manifest.publish";
+      }
       const res = await getQuestionsV3(actionName, context, inputs as InputsWithProjectPath);
       return res;
     }
@@ -952,6 +932,14 @@ export class FxCore implements v3.ICore {
         inputs.stage = stage;
         return await this._getQuestions(contextV2, solutionV2, stage, inputs, envInfoV2);
     }
+  }
+
+  async getQuestionsForAddFeature(
+    featureId: FeatureId,
+    inputs: Inputs
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    const res = await getQuestionsForAddFeatureSubCommand(featureId, inputs);
+    return res;
   }
 
   @hooks([

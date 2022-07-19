@@ -3,7 +3,7 @@
 "use strict";
 
 import "reflect-metadata";
-
+export { FeatureId as FeatureIds } from "./component/questionV3";
 export * from "./common";
 export * from "./plugins";
 export * from "./core";

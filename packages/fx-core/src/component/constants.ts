@@ -24,6 +24,8 @@ export const ComponentNames = {
   Function: "azure-function",
   SimpleAuth: "simple-auth",
   SSO: "SSO",
+  ApiConnector: "api-connector",
+  CICD: "cicd",
 };
 
 export const AzureResources = [

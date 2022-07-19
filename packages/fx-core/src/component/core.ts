@@ -96,10 +96,7 @@ import {
   TabFeatureIds,
   TabSPFxItem,
 } from "../plugins/solution/fx-solution/question";
-import {
-  getQuestionsForAddFeatureV3,
-  getQuestionsForDeployV3,
-} from "../core/middleware/questionModelV3";
+import { getQuestionsForAddFeatureV3, getQuestionsForDeployV3 } from "./questionV3";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -393,13 +390,19 @@ export class TeamsfxCore {
       type: "call",
       name: "call debug.setupLocalEnvInfo",
       targetAction: "debug.setupLocalEnvInfo",
-      required: false,
+      required: true,
+      condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
+        return ok(ctx.envInfo && ctx.envInfo.envName === "local");
+      },
     };
     const configLocalEnvironmentStep: Action = {
       type: "call",
       name: "call debug.configLocalEnvInfo",
       targetAction: "debug.configLocalEnvInfo",
-      required: false,
+      required: true,
+      condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
+        return ok(ctx.envInfo && ctx.envInfo.envName === "local");
+      },
     };
     const preProvisionStep: Action = new FxPreProvisionAction();
     const createTeamsAppStep: Action = {
@@ -431,10 +434,16 @@ export class TeamsfxCore {
       name: "call:bicep.deploy",
       required: true,
       targetAction: "bicep.deploy",
+      condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
+        return ok(ctx.envInfo && ctx.envInfo.envName !== "local");
+      },
     };
     const postProvisionStep: Action = {
       type: "function",
       name: "fx.postProvision",
+      condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
+        return ok(ctx.envInfo && ctx.envInfo.envName !== "local");
+      },
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         return ok([]);
       },
@@ -472,10 +481,12 @@ export class TeamsfxCore {
       preProvisionStep,
       createTeamsAppStep,
       provisionResourcesStep,
-      ctx.envInfo.envName !== "local" ? deployBicepStep : setupLocalEnvironmentStep,
+      deployBicepStep,
+      setupLocalEnvironmentStep,
       ...(aadComponent ? [preConfigureStep] : []),
       configureResourcesStep,
-      ctx.envInfo.envName === "local" ? configLocalEnvironmentStep : postProvisionStep,
+      postProvisionStep,
+      configLocalEnvironmentStep,
       updateTeamsAppStep,
     ];
     const result: Action = {
@@ -517,9 +528,12 @@ export class TeamsfxCore {
       required: true,
     };
     const actions: Action[] = [];
+    // if is vs project, no selection question, deploy all deployable components
+    // if is none vs project, only deploy selected components
+    const inputPlugins = inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] || [];
     const components: string[] = isVSProject(projectSettings)
       ? projectSettings.components.filter((component) => component.deploy).map((c) => c.name)
-      : (inputs["deploy-plugin"] as string[]).map((plugin) => pluginName2ComponentName(plugin));
+      : inputPlugins.map((plugin: string) => pluginName2ComponentName(plugin));
 
     let hasAzureResource = false;
     const callDeployActions: Action[] = [];
@@ -542,7 +556,7 @@ export class TeamsfxCore {
         });
       }
     });
-    if (callDeployActions.length === 0) {
+    if (inputs.platform !== Platform.CLI_HELP && callDeployActions.length === 0) {
       return err(
         new UserError(
           "fx",

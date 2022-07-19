@@ -31,7 +31,6 @@ export class SPFxTab {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    inputs.hosting = ComponentNames.SPFx;
     const actions: Action[] = [
       {
         name: "fx.configTab",
@@ -56,7 +55,7 @@ export class SPFxTab {
           // add teams-tab
           projectSettings.components.push({
             name: "teams-tab",
-            hosting: inputs.hosting,
+            hosting: ComponentNames.SPFx,
             deploy: true,
           });
           // add hosting component

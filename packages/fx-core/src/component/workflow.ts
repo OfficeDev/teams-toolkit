@@ -63,8 +63,9 @@ export async function getAction(
     else return undefined;
   }
   if (!component[actionName]) {
-    if (required) throw new ActionNotExist(name);
-    else return undefined;
+    if (required) {
+      throw new ActionNotExist(name);
+    } else return undefined;
   }
   try {
     const res = await component[actionName](context, inputs);
@@ -215,11 +216,13 @@ export async function resolveAction(
 export async function getQuestionsV3(
   actionName: string,
   context: ContextV3,
-  inputs: InputsWithProjectPath
+  inputs: InputsWithProjectPath,
+  required = false
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const nodes: QTreeNode[] = [];
-  const action = await getAction(actionName, context, inputs, true);
+  const action = await getAction(actionName, context, inputs, required);
   if (!action) {
+    if (!required) return ok(undefined);
     return err(new ActionNotExist(actionName));
   }
   await collectActionQuestions(action, context, inputs, nodes);
@@ -237,6 +240,7 @@ export async function collectActionQuestions(
   inputs: InputsWithProjectPath,
   nodes: QTreeNode[]
 ): Promise<Result<undefined, FxError>> {
+  console.log(`collectActionQuestions: ${action.name}`);
   if (action.question) {
     const res = await action.question(context, inputs);
     if (res.isErr()) return err(res.error);

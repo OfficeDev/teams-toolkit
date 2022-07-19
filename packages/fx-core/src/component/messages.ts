@@ -65,4 +65,5 @@ export class Plans {
     name: "graph.microsoft.com",
     remarks: "update message endpoint in AppStudio",
   });
+  static readonly addFeature = (feature: string): Effect => `config ${feature} in project settings`;
 }

@@ -30,10 +30,10 @@ describe("DotnetChecker E2E Test - first run", async () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(async function () {
-    await dotnetUtils.cleanup();
     // cleanup to make sure the environment is clean before test
+    await dotnetUtils.cleanup();
   });
-  afterEach(async function (t) {
+  afterEach(async function () {
     sandbox.restore();
     // cleanup to make sure the environment is clean
     await dotnetUtils.cleanup();

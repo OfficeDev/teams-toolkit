@@ -42,8 +42,8 @@ describe("FuncToolChecker E2E Test", async () => {
       logger,
       new TestTelemetry()
     ) as FuncToolChecker;
-    sinon
-      .stub(FuncToolChecker.prototype, <any>"getDefaultInstallPath")
+    sandbox
+      .stub(FuncToolChecker, <any>"getDefaultInstallPath")
       .returns(
         path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "func", "Aarón García", "for test")
       );
@@ -73,7 +73,7 @@ describe("FuncToolChecker E2E Test", async () => {
       logger,
       new TestTelemetry()
     ) as FuncToolChecker;
-    sinon.stub(FuncToolChecker.prototype, <any>"doInstallPortableFunc");
+    sandbox.stub(FuncToolChecker.prototype, <any>"doInstallPortableFunc");
 
     const res = await funcToolChecker.resolve();
     assert.isFalse(res.isInstalled);

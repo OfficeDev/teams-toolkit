@@ -10,11 +10,9 @@ import {
   RequiredResourceAccess,
 } from "../plugins/resource/aad/interfaces/AADManifest";
 import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
-import { getAppDirectory, ProjectSettingsHelper } from "../common";
-import { isV3 } from "./globalVars";
+import { getAppDirectory, ProjectSettingsHelper } from "../common/tools";
 import { ComponentNames } from "../component/constants";
 import { getComponent } from "../component/workflow";
-import { hasAzureTab } from "../common/projectSettingsHelperV3";
 
 interface Permission {
   resource: string;

@@ -44,7 +44,6 @@ describe("Migration test for v3", () => {
       defaultFunctionName: "getUserProfile",
     };
     const v3 = convertProjectSettingsV2ToV3(projectSettings);
-    console.log(JSON.stringify(v3, undefined, 4));
     assert.isTrue(v3.components.length > 0);
   });
   it("convertProjectSettingsV3ToV2", async () => {

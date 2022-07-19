@@ -82,7 +82,6 @@ describe("Api Feature", () => {
       console.log(addApiRes.error);
     }
     assert.isTrue(addApiRes.isOk());
-    assert.equal(inputs.hosting, ComponentNames.Function);
 
     const teamsApi = getComponent(context.projectSetting, ComponentNames.TeamsApi);
     assert.exists(teamsApi);

@@ -43,20 +43,6 @@ import { isVSProject } from "../../common/projectSettingsHelper";
 @Service("teams-bot")
 export class TeamsBot {
   name = "teams-bot";
-  /**
-   *
-   *   capability = Notification
-   *     bot-host-type-trigger = http-restify
-   *       group=bot, scenario=notification-restify, host=app-service
-   *     bot-host-type-trigger = [http-functions, timer-functions]
-   *       group=bot, host=function, scenario=notification-function-base + [notification-trigger-http, notification-trigger-timer]
-   *   capability = command-bot:
-   *     group=bot, host=app-service, scenario=command-and-response
-   *   capability = Bot
-   *     group=bot, host=app-service, scenario=default
-   *   capability = MessagingExtension
-   *     group=bot, host=app-service, scenario=default
-   */
 
   /**
    * 1. config bot in project settings
@@ -231,6 +217,20 @@ export class TeamsBot {
   }
 }
 
+/**
+ *
+ *   capability = Notification
+ *     bot-host-type-trigger = http-restify
+ *       group=bot, scenario=notification-restify, host=app-service
+ *     bot-host-type-trigger = [http-functions, timer-functions]
+ *       group=bot, host=function, scenario=notification-function-base + [notification-trigger-http, notification-trigger-timer]
+ *   capability = command-bot:
+ *     group=bot, host=app-service, scenario=command-and-response
+ *   capability = Bot
+ *     group=bot, host=app-service, scenario=default
+ *   capability = MessagingExtension
+ *     group=bot, host=app-service, scenario=default
+ */
 function getScenariosAndBotCapability(inputs: InputsWithProjectPath): {
   scenarios: string[];
   botCapability: string;
@@ -243,13 +243,14 @@ function getScenariosAndBotCapability(inputs: InputsWithProjectPath): {
     name: feature === MessageExtensionItem.id ? "MessageExtension" : "Bot",
   };
   let botCapability: string;
+  inputs.hosting = ComponentNames.AzureWebApp;
   if (feature === NotificationOptionItem.id) {
     if (triggers.includes(AppServiceOptionItem.id)) {
       scenarios.push(TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME);
     } else if (triggers.includes(AppServiceOptionItemForVS.id)) {
       scenarios.push(TemplateProjectsScenarios.NOTIFICATION_WEBAPI_SCENARIO_NAME);
     } else {
-      inputs.hosting = "azure-function";
+      inputs.hosting = ComponentNames.Function;
       scenarios.push(TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME);
       if (triggers.includes(FunctionsHttpTriggerOptionItem.id)) {
         scenarios.push(TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_HTTP_SCENARIO_NAME);

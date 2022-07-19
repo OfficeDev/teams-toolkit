@@ -80,8 +80,6 @@ describe("Tab Feature", () => {
       console.log(addTabRes.error);
     }
     assert.isTrue(addTabRes.isOk());
-    assert.equal(inputs.hosting, ComponentNames.AzureStorage);
-
     const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
     assert.exists(teamsTab);
     assert.equal(teamsTab?.hosting, ComponentNames.AzureStorage);

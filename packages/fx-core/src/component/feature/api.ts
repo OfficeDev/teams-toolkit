@@ -59,9 +59,6 @@ export class TeamsApi {
       name: `${this.name}.add`,
       mode: "sequential",
       actions: actions,
-      condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok(hasAzureTab(context.projectSetting));
-      },
     };
     return group;
   }

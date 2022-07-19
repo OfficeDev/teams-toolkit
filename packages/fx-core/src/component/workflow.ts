@@ -596,6 +596,7 @@ export async function executeFunctionAction(
     context.logProvider.info(`executeFunctionAction [${action.name}] finish!`);
     return ok(undefined);
   } catch (e) {
+    progressBar?.end(false);
     let fxError;
     if (action.errorHandler) {
       fxError = action.errorHandler(e, telemetryProps);
@@ -618,7 +619,7 @@ export async function executeFunctionAction(
         fxError instanceof SystemError
           ? TelemetryConstants.values.systemError
           : TelemetryConstants.values.userError;
-      context.telemetryReporter.sendTelemetryEvent(eventName, {
+      context.telemetryReporter.sendTelemetryErrorEvent(eventName, {
         ...telemetryProps,
         [TelemetryConstants.properties.success]: TelemetryConstants.values.no,
         [TelemetryConstants.properties.errorCode]: errorCode,
@@ -626,7 +627,6 @@ export async function executeFunctionAction(
         [TelemetryConstants.properties.errorMessage]: fxError.message,
       });
     }
-    progressBar?.end(false);
     return err(fxError);
   }
 }

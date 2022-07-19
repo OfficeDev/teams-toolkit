@@ -444,7 +444,7 @@ export class TeamsBotImpl implements PluginImpl {
       botAuthCreds.clientSecret = this.ctx?.envInfo.state
         .get(ResourcePlugins.Bot)
         .get(PluginBot.BOT_PASSWORD);
-      botAuthCreds.clientSecret = this.ctx?.envInfo.state
+      botAuthCreds.objectId = this.ctx?.envInfo.state
         .get(ResourcePlugins.Bot)
         .get(PluginBot.OBJECT_ID);
       Logger.debug(Messages.SuccessfullyGetExistingBotAadAppCredential);

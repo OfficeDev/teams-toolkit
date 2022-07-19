@@ -124,6 +124,7 @@ export class TeamsBot {
         },
       },
     ];
+    // Configure apim if it exists, create identity if it does not exist
     if (getComponent(context.projectSetting, ComponentNames.APIM) !== undefined) {
       configActions.push({
         name: "call:apim-config.generateBicep",
@@ -131,6 +132,9 @@ export class TeamsBot {
         required: true,
         targetAction: "apim-config.generateBicep",
       });
+    }
+    if (!getComponent(context.projectSetting, ComponentNames.Identity)) {
+      configActions.push(identityAction);
     }
     const actions: Action[] = [
       {
@@ -224,7 +228,6 @@ export class TeamsBot {
           scenario: "Bot",
         },
       },
-      identityAction,
       ...configActions,
       {
         name: "call:app-manifest.addCapability",

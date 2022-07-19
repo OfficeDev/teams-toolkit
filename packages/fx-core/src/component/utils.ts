@@ -15,17 +15,13 @@ import {
   ProjectSettingsV3,
   ProvisionBicep,
   Result,
-  UserError,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import os from "os";
 import * as path from "path";
-import { HelpLinks } from "../common/constants";
-import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { LocalCrypto } from "../core/crypto";
 import { environmentManager } from "../core/environment";
 import { TOOLS } from "../core/globalVars";
-import { SolutionError } from "../plugins/solution/fx-solution/constants";
 import * as uuid from "uuid";
 import { getProjectSettingsVersion } from "../common/projectSettingsHelper";
 import { DefaultManifestProvider } from "./resource/appManifest/manifestProvider";

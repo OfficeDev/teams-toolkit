@@ -138,7 +138,7 @@ export async function azureWebSiteDeploy(
     tokenProvider
   );
   const zipDeployEndpoint: string = getZipDeployEndpoint(siteName);
-  await progress?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_FOLDER);
+  await progress?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_DEPLOY);
   const statusUrl = await AzureOperations.zipDeployPackage(zipDeployEndpoint, buffer, config);
   await AzureOperations.checkDeployStatus(statusUrl, config);
 

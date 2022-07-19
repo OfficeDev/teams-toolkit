@@ -158,3 +158,61 @@ export const APIMOutputs = {
     key: "apimClientAADClientSecret",
   },
 };
+
+export const WebAppOutputs = {
+  resourceId: {
+    key: "resourceId",
+    bicepVariable: "provisionOutputs.azureWebApp{{scenario}}Output.value.resourceId",
+  },
+  endpoint: {
+    key: "siteEndpoint",
+    bicepVariable: "provisionOutputs.azureWebApp{{scenario}}Output.value.siteEndpoint",
+  },
+  endpointAsParam: {
+    key: "siteEndpointAsParam",
+    bicepVariable: "azureWebApp{{scenario}}Provision.outputs.siteEndpoint",
+  },
+};
+
+export const FunctionOutputs = {
+  resourceId: {
+    key: "functionAppResourceId",
+    bicepVariable: "provisionOutputs.azureFunction{{scenario}}Output.value.functionAppResourceId",
+  },
+  endpoint: {
+    key: "functionEndpoint",
+    bicepVariable: "provisionOutputs.azureFunction{{scenario}}Output.value.functionEndpoint",
+  },
+  endpointAsParam: {
+    key: "functionEndpointAsParam",
+    bicepVariable: "azureFunction{{scenario}}Provision.outputs.functionEndpoint",
+  },
+};
+
+export const StorageOutputs = {
+  endpoint: {
+    key: "endpoint",
+    bicepVariable: "provisionOutputs.azureStorage{{scenario}}Output.value.endpoint",
+  },
+  storageResourceId: {
+    key: "storageResourceId",
+    bicepVariable: "provisionOutputs.azureStorage{{scenario}}Output.value.storageResourceId",
+  },
+  domain: {
+    key: "domain",
+    bicepVariable: "provisionOutputs.azureStorage{{scenario}}Output.value.domain",
+  },
+  indexPath: {
+    key: "indexPath",
+    bicepVariable: "provisionOutputs.azureStorage{{scenario}}Output.value.indexPath",
+  },
+};
+
+export const BotServiceOutputs = {
+  botId: {
+    key: "botId",
+  },
+  botPassword: {
+    key: "botPassword",
+  },
+};

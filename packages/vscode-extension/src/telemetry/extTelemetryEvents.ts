@@ -264,6 +264,8 @@ export enum TelemetryProperty {
   DocumentationName = "documentation-name",
   // Used with Deactivate
   Timestamp = "timestamp",
+  ProgrammingLanguage = "programming-language",
+  HostType = "host-type",
   // Used with Activate
   IsTeamsFx = "is-teamsfx",
   ActivationTime = "activation-time",

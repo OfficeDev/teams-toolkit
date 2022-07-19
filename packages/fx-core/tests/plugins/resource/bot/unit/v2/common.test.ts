@@ -170,7 +170,7 @@ describe("Bot Plugin v2", () => {
       inputs[AzureSolutionQuestionNames.Scenarios] = undefined;
     });
 
-    it("scenario for restify notification bot", async () => {
+    it("bot capabilities for restify notification bot", async () => {
       inputs[AzureSolutionQuestionNames.Capabilities] = [NotificationOptionItem.id];
       inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [AppServiceOptionItem.id];
       fillInSolutionSettings(context.projectSetting, inputs);
@@ -179,7 +179,7 @@ describe("Bot Plugin v2", () => {
       chai.assert.isTrue(botCapabilities.includes(BotCapabilities.NOTIFICATION));
     });
 
-    it("scenario for command and response bot", async () => {
+    it("bot capabilities for command and response bot", async () => {
       inputs[AzureSolutionQuestionNames.Capabilities] = [CommandAndResponseOptionItem.id];
       fillInSolutionSettings(context.projectSetting, inputs);
       const botCapabilities = resolveBotCapabilities(inputs);
@@ -187,7 +187,7 @@ describe("Bot Plugin v2", () => {
       chai.assert.isTrue(botCapabilities.includes(BotCapabilities.COMMAND_AND_RESPONSE));
     });
 
-    it("scenario for default bot", async () => {
+    it("bot capabilities for default bot", async () => {
       inputs[AzureSolutionQuestionNames.Capabilities] = [BotOptionItem.id];
       fillInSolutionSettings(context.projectSetting, inputs);
       const botCapabilities = resolveBotCapabilities(inputs);
@@ -195,7 +195,7 @@ describe("Bot Plugin v2", () => {
       chai.assert.isTrue(botCapabilities.includes(BotCapabilities.BOT));
     });
 
-    it("scenario for message extension", async () => {
+    it("bot capabilities for message extension", async () => {
       inputs[AzureSolutionQuestionNames.Capabilities] = [MessageExtensionNewUIItem.id];
       fillInSolutionSettings(context.projectSetting, inputs);
       const botCapabilities = resolveBotCapabilities(inputs);
@@ -203,7 +203,7 @@ describe("Bot Plugin v2", () => {
       chai.assert.isTrue(botCapabilities.includes(BotCapabilities.MESSAGE_EXTENSION));
     });
 
-    it("scenario for M365 search based message extension", async () => {
+    it("bot capabilities for M365 search based message extension", async () => {
       inputs[AzureSolutionQuestionNames.Capabilities] = [M365SearchAppOptionItem.id];
       context.projectSetting.isM365 = true;
       inputs.isM365 = true;

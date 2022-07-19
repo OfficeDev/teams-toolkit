@@ -10,3 +10,4 @@ export * from "./core";
 export * from "./folder";
 export * from "./core/environment";
 export * from "./common/localSettingsProvider";
+export * from "./component/migrate";

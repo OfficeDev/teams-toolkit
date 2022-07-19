@@ -2,7 +2,11 @@
 // Licensed under the MIT license.
 
 import * as vscode from "vscode";
-import { getPropertyByPath, environmentManager } from "@microsoft/teamsfx-core";
+import {
+  getPropertyByPath,
+  environmentManager,
+  convertManifestTemplateToV3,
+} from "@microsoft/teamsfx-core";
 import { manifestConfigDataRegex, manifestStateDataRegex } from "./constants";
 import { core, getSystemInputs } from "./handlers";
 import { getProvisionSucceedFromEnv } from "./utils/commonUtils";
@@ -53,7 +57,8 @@ export class ManifestTemplateHoverProvider implements vscode.HoverProvider {
     if (projectConfigs && projectConfigs.envInfos) {
       for (const envName in projectConfigs.envInfos) {
         const envInfo = projectConfigs.envInfos[envName];
-        const value = getPropertyByPath(envInfo, key);
+        const keyV3 = convertManifestTemplateToV3(key);
+        const value = getPropertyByPath(envInfo, keyV3);
         if (value || key.startsWith("config")) {
           message += `**${envName}**: ${value} \n\n`;
         } else {

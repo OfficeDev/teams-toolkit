@@ -316,7 +316,7 @@ describe("DotnetChecker E2E Test - second run", () => {
   });
 
   it("Invalid dotnet.json file and .NET SDK installed", async function () {
-    if (await commandExistsInPath(dotnetUtils.dotnetCommand)) {
+    if (isLinux() || (await commandExistsInPath(dotnetUtils.dotnetCommand))) {
       this.skip();
     }
 

@@ -269,7 +269,7 @@ function verifyAllSuccess(depsStatus: DependencyStatus[]) {
   for (const dep of depsStatus) {
     assert.isTrue(dep.isInstalled);
     assert.isNotNull(dep.command);
-    assert.isNull(dep.error);
+    assert.isUndefined(dep.error);
     assert.isNotNull(dep.details.supportedVersions);
   }
 }

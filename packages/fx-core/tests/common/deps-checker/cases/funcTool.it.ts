@@ -47,6 +47,10 @@ describe("FuncToolChecker E2E Test", async () => {
 
     expect(res.isOk() && res.value).to.be.equal(true);
     expect(await funcToolChecker.isInstalled()).to.be.equal(true);
+    console.log(
+      JSON.stringify(depsInfo.binFolders) +
+        JSON.stringify(funcToolChecker.getPortableFuncBinFolders())
+    );
     expect(depsInfo.binFolders).to.be.equal(funcToolChecker.getPortableFuncBinFolders());
     assert.isTrue(
       /node "[^"]*"$/g.test(await funcToolChecker.command()),

@@ -246,7 +246,7 @@ describe("All checkers E2E test", async () => {
     assert.equal(node.type, DepsType.AzureNode);
     assert.isTrue(node.isInstalled);
     assert.isNotNull(node.command);
-    assert.isNull(node.error);
+    assert.isUndefined(node.error);
 
     // verify dotnet
     const dotnet = depsStatus[1];

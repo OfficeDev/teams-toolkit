@@ -37,7 +37,7 @@ describe("DotnetChecker E2E Test - first run", async () => {
   });
 
   it(".NET SDK is not installed, whether globally or in home dir", async function () {
-    if (await commandExistsInPath(dotnetUtils.dotnetCommand)) {
+    if (isLinux() || (await commandExistsInPath(dotnetUtils.dotnetCommand))) {
       this.skip();
     }
     const dotnetChecker = CheckerFactory.createChecker(
@@ -167,6 +167,7 @@ describe("DotnetChecker E2E Test - first run", async () => {
     assert.isFalse(res.isOk() && res.value);
     await verifyInstallationFailed(dotnetChecker);
 
+    sinon.restore();
     // DotnetChecker with correct dotnet-install script
     sinon.stub(dotnetChecker, "getResourceDir").returns(correctResourceDir);
 

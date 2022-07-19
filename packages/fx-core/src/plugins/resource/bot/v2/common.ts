@@ -91,7 +91,11 @@ export function resolveServiceType(ctx: Context): ServiceType {
 
 export function resolveBotCapabilities(inputs: Inputs): BotCapability[] {
   const capabilities = inputs?.[AzureSolutionQuestionNames.Capabilities];
-  if (Array.isArray(capabilities) && capabilities.includes(MessageExtensionNewUIItem.id)) {
+  if (
+    Array.isArray(capabilities) &&
+    (capabilities.includes(MessageExtensionNewUIItem.id) ||
+      capabilities.includes(M365SearchAppOptionItem.id))
+  ) {
     return [BotCapabilities.MESSAGE_EXTENSION];
   }
   const botScenarios = inputs?.[AzureSolutionQuestionNames.Scenarios];

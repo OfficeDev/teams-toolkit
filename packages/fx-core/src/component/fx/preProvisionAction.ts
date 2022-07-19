@@ -93,7 +93,7 @@ export class FxPreProvisionAction implements FunctionAction {
         }
       }
 
-      if (solutionConfigRes.value.shouldUpdateResourceBaseName) {
+      if (solutionConfigRes.value.hasSwitchedSubscription) {
         updateResourceBaseName(inputs.projectPath, ctx.projectSetting.appName, envInfo.envName);
       }
     }

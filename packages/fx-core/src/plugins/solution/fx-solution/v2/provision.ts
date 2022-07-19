@@ -197,7 +197,7 @@ async function provisionResourceImpl(
       }
     }
 
-    if (solutionConfigRes.value.shouldUpdateResourceBaseName) {
+    if (solutionConfigRes.value.hasSwitchedSubscription) {
       await updateResourceBaseName(inputs.projectPath, ctx.projectSetting.appName, envInfo.envName);
     }
   }

@@ -166,7 +166,7 @@ export async function provisionResources(
         }
       }
 
-      if (solutionConfigRes.value.shouldUpdateResourceBaseName) {
+      if (solutionConfigRes.value.hasSwitchedSubscription) {
         await updateResourceBaseName(
           inputs.projectPath,
           ctx.projectSetting.appName,
@@ -427,7 +427,6 @@ async function compareWithStateSubscription(
       return err(confirmResult.error);
     } else {
       updateEnvInfoSubscription(envInfo, targetSubscriptionInfo);
-      envInfo.state.solution.resourceGroupName = "";
       clearEnvInfoStateResource(envInfo);
 
       ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
@@ -440,8 +439,9 @@ async function compareWithStateSubscription(
   }
 }
 
-// clear resources related info in envInfo so that we could provision successfully using new sub or rg.
+// clear resources related info in envInfo so that we could provision successfully using new sub.
 function clearEnvInfoStateResource(envInfo: v3.EnvInfoV3): void {
+  envInfo.state.solution.resourceGroupName = "";
   envInfo.state.solution.resourceNameSuffix = "";
 
   // we need to have another bot id if provisioning a new azure bot service.
@@ -504,7 +504,6 @@ export async function fillInAzureConfigs(
   if (subscriptionResult.isErr()) {
     return err(subscriptionResult.error);
   }
-  let shouldUpdateResourceBaseName = subscriptionResult.value.hasSwitchedSubscription;
 
   // Note setSubscription here will change the token returned by getAccountCredentialAsync according to the subscription selected.
   // So getting azureToken needs to precede setSubscription.
@@ -572,14 +571,6 @@ export async function fillInAzureConfigs(
       telemetryProperties[TelemetryProperty.CustomizeResourceGroupType] =
         CustomizeResourceGroupType.CommandLine;
       resourceGroupInfo = getRes.value;
-    }
-
-    if (
-      !!envInfo.state.solution.resourceGroupName &&
-      envInfo.state.solution.resourceGroupName !== resourceGroupInfo.name
-    ) {
-      shouldUpdateResourceBaseName = true;
-      clearEnvInfoStateResource(envInfo);
     }
   } else if (resourceGroupNameFromEnvConfig) {
     const resourceGroupName = resourceGroupNameFromEnvConfig;
@@ -657,10 +648,7 @@ export async function fillInAzureConfigs(
     uuidv4().substr(0, 6);
   envInfo.state.solution.resourceNameSuffix = resourceNameSuffix;
   ctx.logProvider?.info(`[${PluginDisplayName.Solution}] check resourceNameSuffix pass!`);
-  return ok({
-    shouldUpdateResourceBaseName,
-    hasSwitchedSubscription: subscriptionResult.value.hasSwitchedSubscription,
-  });
+  return ok({ hasSwitchedSubscription: subscriptionResult.value.hasSwitchedSubscription });
 }
 
 export async function askForDeployConsent(

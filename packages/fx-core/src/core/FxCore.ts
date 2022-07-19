@@ -352,66 +352,68 @@ export class FxCore implements v3.ICore {
     }
     setCurrentStage(Stage.create);
     inputs.stage = Stage.create;
-    const folder = inputs[QuestionRootFolder.name] as string;
-    if (!folder) {
-      return err(InvalidInputError("folder is undefined"));
-    }
-    inputs.folder = folder;
-    const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
-    let projectPath: string;
-    const automaticNpmInstall = "automaticNpmInstall";
-    if (scratch === ScratchOptionNo.id) {
-      // create from sample
-      const downloadRes = await downloadSample(inputs, ctx);
-      if (downloadRes.isErr()) {
-        return err(downloadRes.error);
-      }
-      projectPath = downloadRes.value;
-    } else {
-      const context = createContextV3();
-      // create from new
-      const appName = inputs[CoreQuestionNames.AppName] as string;
-      if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
-      const validateResult = jsonschema.validate(appName, {
-        pattern: ProjectNamePattern,
-      });
-      if (validateResult.errors && validateResult.errors.length > 0) {
-        return err(InvalidInputError(`${validateResult.errors[0].message}`, inputs));
-      }
-      projectPath = path.join(folder, appName);
-      inputs.projectPath = projectPath;
-      globalVars.isVS = isVSProject(context.projectSetting);
-      const initRes = await runAction("fx.init", context, inputs as InputsWithProjectPath);
-      if (initRes.isErr()) return err(initRes.error);
-      const feature = inputs.capabilities;
-      delete inputs.folder;
+    // const folder = inputs[QuestionRootFolder.name] as string;
+    // if (!folder) {
+    //   return err(InvalidInputError("folder is undefined"));
+    // }
+    // inputs.folder = folder;
+    // const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
+    // let projectPath: string;
+    // const automaticNpmInstall = "automaticNpmInstall";
+    // if (scratch === ScratchOptionNo.id) {
+    //   // create from sample
+    //   const downloadRes = await downloadSample(inputs, ctx);
+    //   if (downloadRes.isErr()) {
+    //     return err(downloadRes.error);
+    //   }
+    //   projectPath = downloadRes.value;
+    // } else {
+    //   const context = createContextV3();
+    //   // create from new
+    //   const appName = inputs[CoreQuestionNames.AppName] as string;
+    //   if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
+    //   const validateResult = jsonschema.validate(appName, {
+    //     pattern: ProjectNamePattern,
+    //   });
+    //   if (validateResult.errors && validateResult.errors.length > 0) {
+    //     return err(InvalidInputError(`${validateResult.errors[0].message}`, inputs));
+    //   }
+    //   projectPath = path.join(folder, appName);
+    //   inputs.projectPath = projectPath;
+    //   const initRes = await runAction("fx.init", context, inputs as InputsWithProjectPath);
+    //   if (initRes.isErr()) return err(initRes.error);
+    //   const feature = inputs.capabilities;
+    //   delete inputs.folder;
 
-      if (feature === M365SsoLaunchPageOptionItem.id || feature === M365SearchAppOptionItem.id) {
-        context.projectSetting.isM365 = true;
-        inputs.isM365 = true;
-      }
+    //   if (feature === M365SsoLaunchPageOptionItem.id || feature === M365SearchAppOptionItem.id) {
+    //     context.projectSetting.isM365 = true;
+    //     inputs.isM365 = true;
+    //   }
 
-      if (BotFeatureIds.includes(feature)) {
-        inputs[AzureSolutionQuestionNames.Features] = feature;
-        const res = await runAction("teams-bot.add", context, inputs as InputsWithProjectPath);
-        if (res.isErr()) return err(res.error);
-      }
-      if (TabFeatureIds.includes(feature)) {
-        inputs[AzureSolutionQuestionNames.Features] = feature;
-        const res = await runAction("teams-tab.add", context, inputs as InputsWithProjectPath);
-        if (res.isErr()) return err(res.error);
-      }
-      if (feature === TabSPFxItem.id) {
-        inputs[AzureSolutionQuestionNames.Features] = feature;
-        const res = await runAction("spfx-tab.add", context, inputs as InputsWithProjectPath);
-        if (res.isErr()) return err(res.error);
-      }
-      ctx.projectSettings = context.projectSetting;
-    }
-    if (inputs.platform === Platform.VSCode) {
-      await globalStateUpdate(automaticNpmInstall, true);
-    }
-    return ok(projectPath);
+    //   if (BotFeatureIds.includes(feature)) {
+    //     inputs[AzureSolutionQuestionNames.Features] = feature;
+    //     const res = await runAction("teams-bot.add", context, inputs as InputsWithProjectPath);
+    //     if (res.isErr()) return err(res.error);
+    //   }
+    //   if (TabFeatureIds.includes(feature)) {
+    //     inputs[AzureSolutionQuestionNames.Features] = feature;
+    //     const res = await runAction("teams-tab.add", context, inputs as InputsWithProjectPath);
+    //     if (res.isErr()) return err(res.error);
+    //   }
+    //   if (feature === TabSPFxItem.id) {
+    //     inputs[AzureSolutionQuestionNames.Features] = feature;
+    //     const res = await runAction("spfx-tab.add", context, inputs as InputsWithProjectPath);
+    //     if (res.isErr()) return err(res.error);
+    //   }
+    //   ctx.projectSettings = context.projectSetting;
+    // }
+    // if (inputs.platform === Platform.VSCode) {
+    //   await globalStateUpdate(automaticNpmInstall, true);
+    // }
+    const context = createContextV3();
+    const res = await runAction("fx.create", context, inputs as InputsWithProjectPath);
+    if (res.isErr()) return err(res.error);
+    return ok(context.projectPath!);
   }
 
   /**
@@ -1496,6 +1498,9 @@ export class FxCore implements v3.ICore {
     // create ProjectSettings
     const projectSettings = newProjectSettings();
     projectSettings.appName = appName;
+    if (isV3()) {
+      (projectSettings as ProjectSettingsV3).components = [];
+    }
     ctx.projectSettings = projectSettings;
 
     // create folder structure

@@ -40,6 +40,7 @@ export type Action = GroupAction | ShellAction | CallAction | FunctionAction;
 
 // @public
 export interface ActionBase {
+    condition?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<boolean, FxError>>;
     // (undocumented)
     exception?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<undefined, FxError>>;
     // (undocumented)
@@ -493,6 +494,8 @@ export interface ContextV3 extends Context_2 {
     envInfo?: EnvInfoV3;
     // (undocumented)
     manifestProvider: AppManifestProvider;
+    // (undocumented)
+    projectPath?: string;
     // (undocumented)
     projectSetting: ProjectSettingsV3;
     // (undocumented)

@@ -38,6 +38,8 @@ import "../resource/azureAppService/azureWebApp";
 import "../connection/azureWebAppConfig";
 import { ComponentNames, Scenarios } from "../constants";
 import { identityAction } from "../resource/identity";
+import { globalVars } from "../../core/globalVars";
+import { isVSProject } from "../../common/projectSettingsHelper";
 @Service("teams-bot")
 export class TeamsBot {
   name = "teams-bot";
@@ -184,6 +186,7 @@ export class TeamsBot {
           }
           projectSettings.programmingLanguage =
             projectSettings.programmingLanguage || inputs[CoreQuestionNames.ProgrammingLanguage];
+          globalVars.isVS = isVSProject(projectSettings);
           return ok(["config Bot in project settings"]);
         },
       },

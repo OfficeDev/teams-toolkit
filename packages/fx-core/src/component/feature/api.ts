@@ -32,6 +32,8 @@ import { ErrorMessages } from "../../plugins/resource/function/resources/message
 import { ComponentNames, Scenarios } from "../constants";
 import { getComponent } from "../workflow";
 import * as path from "path";
+import { isVSProject } from "../../common/projectSettingsHelper";
+import { globalVars } from "../../core/globalVars";
 
 @Service(ComponentNames.TeamsApi)
 export class TeamsApi {
@@ -181,6 +183,7 @@ const configApiAction: Action = {
     else teamsTab.connections.push(ComponentNames.TeamsApi);
     projectSettings.programmingLanguage =
       projectSettings.programmingLanguage || inputs[CoreQuestionNames.ProgrammingLanguage];
+    globalVars.isVS = isVSProject(projectSettings);
     return ok([`config '${ComponentNames.TeamsApi}' in projectSettings`]);
   },
 };

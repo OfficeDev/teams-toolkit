@@ -160,9 +160,7 @@ export class HelpParamGenerator {
         this.setQuestionNodes(`${Stage.create}-m365`, result.value);
       }
     }
-    const userTasks = isV3()
-      ? ["addFeature"]
-      : ["addResource", "addCICDWorkflows", "connectExistingApi"];
+    const userTasks = ["addResource", "addCICDWorkflows", "connectExistingApi"];
     for (const userTask of userTasks) {
       const result = await this.getQuestionsForUserTask(userTask, systemInput, this.core);
       if (result.isErr()) {

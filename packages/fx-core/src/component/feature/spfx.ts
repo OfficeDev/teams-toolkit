@@ -15,6 +15,8 @@ import {
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
+import { isVSProject } from "../../common/projectSettingsHelper";
+import { globalVars } from "../../core/globalVars";
 import { CoreQuestionNames } from "../../core/question";
 import {
   frameworkQuestion,
@@ -64,6 +66,7 @@ export class SPFxTab {
           });
           projectSettings.programmingLanguage =
             projectSettings.programmingLanguage || inputs[CoreQuestionNames.ProgrammingLanguage];
+          globalVars.isVS = isVSProject(projectSettings);
           return ok(["config 'teams-tab' in projectSettings"]);
         },
       },

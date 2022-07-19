@@ -18,6 +18,8 @@ import "reflect-metadata";
 import { Service } from "typedi";
 import { format } from "util";
 import { getLocalizedString } from "../../common/localizeUtils";
+import { isVSProject } from "../../common/projectSettingsHelper";
+import { globalVars } from "../../core/globalVars";
 import { CoreQuestionNames } from "../../core/question";
 import { TabNonSsoItem } from "../../plugins/solution/fx-solution/question";
 import { ComponentNames, Scenarios } from "../constants";
@@ -187,6 +189,7 @@ const configTab: Action = {
     }
     projectSettings.programmingLanguage =
       projectSettings.programmingLanguage || inputs[CoreQuestionNames.ProgrammingLanguage];
+    globalVars.isVS = isVSProject(projectSettings);
     return ok(["config Tab in projectSettings"]);
   },
 };

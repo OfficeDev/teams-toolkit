@@ -14,17 +14,21 @@ import { DepsType } from "../../../../src/common/deps-checker/depsChecker";
 import { CheckerFactory } from "../../../../src/common/deps-checker/checkerFactory";
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import "mocha";
+import * as sinon from "sinon";
 
 chai.use(spies);
 const expect = chai.expect;
 const assert = chai.assert;
-const sandbox = chai.spy.sandbox();
 
 describe("NgrokChecker E2E Test", async () => {
+  const sandbox = sinon.createSandbox();
   beforeEach(async function (this: Mocha.Context) {
     await ngrokUtils.cleanup();
-    sandbox.restore();
     console.error("cleanup ngrok and sandbox");
+  });
+
+  afterEach(async function () {
+    sandbox.restore();
   });
 
   it("not install + special character dir", async function (this: Mocha.Context) {
@@ -33,13 +37,36 @@ describe("NgrokChecker E2E Test", async () => {
       logger,
       new TestTelemetry()
     ) as NgrokChecker;
-    sandbox.on(ngrokChecker, "getDefaultInstallPath", () =>
-      path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "ngrok", "Aarón García", "for test")
-    );
+    sandbox
+      .stub(NgrokChecker.prototype, <any>"getDefaultInstallPath")
+      .returns(
+        path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "ngrok", "Aarón García", "for test")
+      );
 
+    const getInstallationInfoSpy = sandbox.spy(ngrokChecker, "getInstallationInfo");
     const res = await ngrokChecker.resolve();
+    assert.isTrue(getInstallationInfoSpy.calledTwice);
 
     expect(res.isInstalled).to.be.equal(true);
+    assert.isTrue((await ngrokChecker.getInstallationInfo()).isInstalled);
+    await assertNgrokVersion(ngrokChecker);
+  });
+
+  it("install twice", async function (this: Mocha.Context) {
+    const ngrokChecker = CheckerFactory.createChecker(
+      DepsType.Ngrok,
+      logger,
+      new TestTelemetry()
+    ) as NgrokChecker;
+
+    const res1 = await ngrokChecker.resolve();
+    expect(res1.isInstalled).to.be.equal(true);
+
+    const spyChecker = sandbox.spy(ngrokChecker);
+    const res2 = await spyChecker.resolve();
+    assert.isTrue(spyChecker.getInstallationInfo.calledOnce);
+
+    expect(res2.isInstalled).to.be.equal(true);
     assert.isTrue((await ngrokChecker.getInstallationInfo()).isInstalled);
     await assertNgrokVersion(ngrokChecker);
   });

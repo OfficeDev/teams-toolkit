@@ -34,7 +34,6 @@ import { getComponent } from "../workflow";
 import * as path from "path";
 import { isVSProject } from "../../common/projectSettingsHelper";
 import { globalVars } from "../../core/globalVars";
-import { hasAzureTab } from "../../common/projectSettingsHelperV3";
 
 @Service(ComponentNames.TeamsApi)
 export class TeamsApi {

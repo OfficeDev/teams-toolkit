@@ -17,7 +17,6 @@ import {
   InputsWithProjectPath,
   Json,
   ok,
-  Platform,
   ProjectSettingsV3,
   QTreeNode,
   Question,
@@ -42,7 +41,6 @@ import { convertToAlphanumericOnly } from "../common/utils";
 import { ActionNotExist, ComponentNotExist } from "./error";
 import { globalVars } from "../core/globalVars";
 import { TelemetryConstants, Scenarios } from "./constants";
-import { getActionNameByFeatureId } from "./questionV3";
 
 export async function getAction(
   name: string,

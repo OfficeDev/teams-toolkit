@@ -786,7 +786,7 @@ export async function updateResourceBaseName(
   appName: string,
   envName: string
 ) {
-  if (!envName) {
+  if (!envName || !appName || !projectPath) {
     return;
   }
 

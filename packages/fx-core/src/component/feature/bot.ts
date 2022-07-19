@@ -40,7 +40,6 @@ import { ComponentNames, Scenarios } from "../constants";
 import { identityAction } from "../resource/identity";
 import { globalVars } from "../../core/globalVars";
 import { isVSProject } from "../../common/projectSettingsHelper";
-import { stringify } from "querystring";
 @Service("teams-bot")
 export class TeamsBot {
   name = "teams-bot";
@@ -96,21 +95,7 @@ export class TeamsBot {
         return ok(getComponent(context.projectSetting, ComponentNames.APIM) !== undefined);
       },
     });
-    configBicepActions.push({
-      name: "call:identity.generateBicep",
-      type: "call",
-      required: true,
-      targetAction: "identity.generateBicep",
-      condition: (context, inputs) => {
-        const needed: boolean =
-          getComponent(context.projectSetting, ComponentNames.Identity) === undefined;
-        if (needed) {
-          inputs.componentId = "";
-          inputs.scenario = "";
-        }
-        return ok(needed);
-      },
-    });
+    configBicepActions.push(identityAction);
     const provisionBicepActions: Action[] = [];
     if (inputs.hosting) {
       provisionBicepActions.push({

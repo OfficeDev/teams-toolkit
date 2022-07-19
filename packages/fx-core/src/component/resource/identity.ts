@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Action } from "@microsoft/teamsfx-api";
+import { Action, ok } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
 import { ComponentNames, IdentityOutputs } from "../constants";
+import { getComponent } from "../workflow";
 import { AzureResource } from "./azureResource";
 @Service(ComponentNames.Identity)
 export class IdentityResource extends AzureResource {
@@ -22,5 +23,14 @@ export const identityAction: Action = {
   inputs: {
     componentId: "",
     scenario: "",
+  },
+  condition: (context, inputs) => {
+    const needed: boolean =
+      getComponent(context.projectSetting, ComponentNames.Identity) === undefined;
+    if (needed) {
+      inputs.componentId = "";
+      inputs.scenario = "";
+    }
+    return ok(needed);
   },
 };

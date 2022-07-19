@@ -101,25 +101,7 @@ export class TeamsTab {
           return ok(getComponent(context.projectSetting, ComponentNames.APIM) !== undefined);
         },
       },
-      {
-        name: "call:identity.generateBicep",
-        type: "call",
-        required: true,
-        targetAction: "identity.generateBicep",
-        inputs: {
-          componentId: "",
-          scenario: "",
-        },
-        condition: (context, inputs) => {
-          const needed =
-            getComponent(context.projectSetting, ComponentNames.Identity) === undefined;
-          if (needed) {
-            inputs.componentId = "";
-            inputs.scenario = "";
-          }
-          return ok(needed);
-        },
-      },
+      identityAction,
     ];
     actions.push(initBicep);
     if (inputs.hosting) {

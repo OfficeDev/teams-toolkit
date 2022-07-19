@@ -24,11 +24,14 @@ import { cloneDeep } from "lodash";
 import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { isBotNotificationEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { hasTab } from "../../../common/projectSettingsHelperV3";
 import { globalVars } from "../../../core/globalVars";
 import { getTemplatesFolder } from "../../../folder";
+import {
+  CommandAndResponseOptionItem,
+  NotificationOptionItem,
+} from "../../../plugins/solution/fx-solution/question";
 import {
   BOTS_TPL_EXISTING_APP,
   COLOR_TEMPLATE,
@@ -48,10 +51,6 @@ import {
 } from "../../../plugins/resource/appstudio/questions";
 import { AppStudioResultFactory } from "../../../plugins/resource/appstudio/results";
 import { TelemetryPropertyKey } from "../../../plugins/resource/appstudio/utils/telemetry";
-import {
-  AzureSolutionQuestionNames,
-  BotScenario,
-} from "../../../plugins/solution/fx-solution/question";
 import { ComponentNames } from "../../constants";
 import { createTeamsApp, updateTeamsApp, publishTeamsApp, buildTeamsAppPackage } from "./appStudio";
 import {
@@ -418,21 +417,15 @@ export async function addCapabilities(
               appManifest.bots = [];
             }
 
-            if (isBotNotificationEnabled()) {
-              const scenariosRaw = inputs[AzureSolutionQuestionNames.Scenarios];
-              const scenarios = Array.isArray(scenariosRaw) ? scenariosRaw : [];
-
-              if (scenarios.includes(BotScenario.CommandAndResponseBot)) {
-                // command and response bot
-                appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3);
-              } else if (scenarios.includes(BotScenario.NotificationBot)) {
-                // notification
-                appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_NOTIFICATION_V3);
-              } else {
-                // legacy bot
-                appManifest.bots = appManifest.bots.concat(BOTS_TPL_V3);
-              }
+            const feature = inputs.feature;
+            if (feature === CommandAndResponseOptionItem.id) {
+              // command and response bot
+              appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3);
+            } else if (feature === NotificationOptionItem.id) {
+              // notification
+              appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_NOTIFICATION_V3);
             } else {
+              // legacy bot
               appManifest.bots = appManifest.bots.concat(BOTS_TPL_V3);
             }
           }

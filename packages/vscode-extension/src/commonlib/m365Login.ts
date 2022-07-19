@@ -16,7 +16,7 @@ import {
   LoginStatus,
   BasicLogin,
 } from "@microsoft/teamsfx-api";
-import { LogLevel } from "@azure/msal-node";
+import { AccountInfo, LogLevel } from "@azure/msal-node";
 import { ExtensionErrors } from "../error";
 import { CodeFlowLogin, ConvertTokenToJson, UserCancelError } from "./codeFlowLogin";
 import VsCodeLogInstance from "./log";
@@ -70,8 +70,6 @@ const config = {
 export class M365Login extends BasicLogin implements M365TokenProvider {
   private static instance: M365Login;
   private static codeFlowInstance: CodeFlowLogin;
-
-  private static cachedJsonObject: Record<string, unknown>;
 
   private constructor() {
     super();
@@ -127,7 +125,6 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
     }
 
     if (tokenRes.isOk()) {
-      M365Login.cachedJsonObject = ConvertTokenToJson(tokenRes.value) as Record<string, unknown>;
       return ok(tokenRes.value);
     } else {
       return tokenRes;
@@ -210,7 +207,6 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
       );
       if (tokenRes.isOk()) {
         const tokenJson = ConvertTokenToJson(tokenRes.value);
-        M365Login.cachedJsonObject = tokenJson as Record<string, unknown>;
         return ok({ status: signedIn, token: tokenRes.value, accountInfo: tokenJson as any });
       } else {
         if (
@@ -233,8 +229,8 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
     }
   }
 
-  getCachedJsonObject(): Record<string, unknown> {
-    return M365Login.cachedJsonObject;
+  getCachedAccountInfo(): AccountInfo | undefined {
+    return M365Login.codeFlowInstance.account;
   }
 }
 

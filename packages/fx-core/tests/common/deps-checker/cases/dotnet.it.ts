@@ -31,7 +31,7 @@ describe("DotnetChecker E2E Test - first run", async () => {
     await dotnetUtils.cleanup();
     // cleanup to make sure the environment is clean before test
   });
-  afterEach(async function (t) {
+  afterEach(async function () {
     // cleanup to make sure the environment is clean
     await dotnetUtils.cleanup();
   });

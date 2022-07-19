@@ -220,6 +220,13 @@ describe("telemetry", () => {
     beforeEach(() => {
       tester = new ExtTelemetry.VSCodeTelemetryReporter("test", "1.0.0-rc.1", "test");
       (tester as ExtTelemetry.VSCodeTelemetryReporter).addSharedProperty("project-id", "");
+      (tester as ExtTelemetry.VSCodeTelemetryReporter).addSharedProperty(
+        "programming-language",
+        ""
+      );
+      (tester as ExtTelemetry.VSCodeTelemetryReporter).addSharedProperty("host-type", "");
+      (tester as ExtTelemetry.VSCodeTelemetryReporter).addSharedProperty("is-from-sample", "");
+
       chai.util.addProperty(tester, "reporter", () => reporterSpy);
       chai.util.addProperty(tester, "cache", () => cacheSpy);
     });
@@ -245,6 +252,9 @@ describe("telemetry", () => {
           "project-id": "",
           "correlation-id": "",
           "feature-flags": featureFlags,
+          "programming-language": "",
+          "host-type": "",
+          "is-from-sample": "",
         },
         measurements: { numericMeasure: 123 },
       } as TelemetryEventCache);
@@ -273,6 +283,9 @@ describe("telemetry", () => {
           "project-id": "",
           "correlation-id": "",
           "feature-flags": featureFlags,
+          "programming-language": "",
+          "host-type": "",
+          "is-from-sample": "",
         },
         measurements: { numericMeasure: 123 },
       } as TelemetryEventCache);
@@ -290,6 +303,9 @@ describe("telemetry", () => {
           "project-id": "",
           "correlation-id": "",
           "feature-flags": featureFlags,
+          "programming-language": "",
+          "host-type": "",
+          "is-from-sample": "",
         },
         { numericMeasure: 123 }
       );

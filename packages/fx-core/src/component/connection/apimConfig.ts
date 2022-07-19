@@ -13,6 +13,7 @@ import {
 import "reflect-metadata";
 import { Container, Service } from "typedi";
 import { compileHandlebarsTemplateString } from "../../common/tools";
+import { ComponentNames, componentToScenario } from "../constants";
 import { getComponent } from "../workflow";
 import { AzureResourceConfig } from "./azureResourceConfig";
 @Service("apim-config")
@@ -26,16 +27,16 @@ export class APIMConfig extends AzureResourceConfig {
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     try {
-      const tabConfig = getComponent(context.projectSetting, "teams-tab");
+      const tabConfig = getComponent(context.projectSetting, ComponentNames.TeamsTab);
       if (tabConfig?.hosting) {
         const tabHosting = Container.get(tabConfig.hosting) as CloudResource;
         this.templateContext.tabDomainVarName = compileHandlebarsTemplateString(
           tabHosting.outputs.domain.bicepVariable || "",
-          { componentName: "Tab" }
+          { scenario: componentToScenario.get(ComponentNames.TeamsTab) }
         );
       }
     } catch {}
-    inputs.componentName = "";
+    inputs.scenario = "";
     inputs.componentId = "";
     return super.generateBicep(context, inputs);
   }

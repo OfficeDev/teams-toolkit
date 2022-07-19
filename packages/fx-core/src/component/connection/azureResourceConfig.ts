@@ -17,7 +17,7 @@ import { Container } from "typedi";
 import * as path from "path";
 import fs from "fs-extra";
 import { getTemplatesFolder } from "../../folder";
-import { getComponent } from "../workflow";
+import { getComponentByScenario } from "../workflow";
 import { compileHandlebarsTemplateString } from "../../common/tools";
 import { getProjectTemplatesFolderPath } from "../../common/utils";
 
@@ -46,7 +46,11 @@ export abstract class AzureResourceConfig {
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const update = inputs.update as boolean;
-        const requisiteComponent = getComponent(context.projectSetting, this.requisite);
+        const requisiteComponent = getComponentByScenario(
+          context.projectSetting,
+          this.requisite,
+          inputs.scenario
+        );
         if (!requisiteComponent) return ok([]);
         this.templateContext.connections = requisiteComponent.connections || [];
         for (const ref of this.references) {
@@ -57,12 +61,13 @@ export abstract class AzureResourceConfig {
               for (const key of Object.keys(refResource.outputs)) {
                 const entry = refResource.outputs[key];
                 const value = compileHandlebarsTemplateString(entry.bicepVariable ?? "", inputs);
-                this.templateContext[ref].outputs[key] = value;
+                this.templateContext[ref].outputs[entry.key] = value;
               }
             }
           } catch (e) {}
         }
-        this.templateContext.componentName = inputs.componentName || "";
+        this.templateContext.scenario = inputs.scenario || "";
+        this.templateContext.scenarioInLowerCase = (inputs.scenario || "").toLowerCase();
         const modulePath = path.join(
           getTemplatesFolder(),
           "bicep",
@@ -90,7 +95,7 @@ export abstract class AzureResourceConfig {
               await fs.readFile(orchPath, "utf-8"),
               this.templateContext
             );
-        const moduleName = this.bicepModuleName + (inputs.componentName || "");
+        const moduleName = this.bicepModuleName + (inputs.scenario || "");
         const bicep: Bicep = {
           type: "bicep",
           Configuration: {

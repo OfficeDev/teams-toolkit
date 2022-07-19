@@ -64,7 +64,6 @@ describe("Start a new project", function () {
       "package.json",
       "README.md",
       "tsconfig.json",
-      "tslint.json",
     ];
     for (const file of files) {
       const filePath = path.join(testFolder, appName, `SPFx`, file);

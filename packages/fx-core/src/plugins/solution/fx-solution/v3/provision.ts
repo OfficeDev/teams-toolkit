@@ -21,6 +21,7 @@ import {
   v2,
   v3,
   Void,
+  SubscriptionInfo,
 } from "@microsoft/teamsfx-api";
 import { isUndefined, snakeCase } from "lodash";
 import { Container } from "typedi";
@@ -28,6 +29,7 @@ import { v4 as uuidv4 } from "uuid";
 import { hasAzureResource } from "../../../../common";
 import { PluginDisplayName } from "../../../../common/constants";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
+import { LocalStateAuthKeys, LocalStateBotKeys } from "../../../../common/localStateConstants";
 import {
   CustomizeResourceGroupType,
   TelemetryEvent,
@@ -36,9 +38,14 @@ import {
 import { AppStudioScopes, getHashedEnv, getResourceGroupInPortal } from "../../../../common/tools";
 import { convertToAlphanumericOnly } from "../../../../common/utils";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
-import arm from "../arm";
+import arm, { updateResourceBaseName } from "../arm";
 import { ResourceGroupInfo } from "../commonQuestions";
-import { SolutionError, SolutionSource } from "../constants";
+import {
+  FillInAzureConfigsResult,
+  SolutionError,
+  SolutionSource,
+  ProvisionSubscriptionCheckResult,
+} from "../constants";
 import { configLocalEnvironment, setupLocalEnvironment } from "../debug/provisionLocal";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { executeConcurrently } from "../v2/executor";
@@ -133,14 +140,17 @@ export async function provisionResources(
       if (solutionConfigRes.isErr()) {
         return err(solutionConfigRes.error);
       }
-      // ask for provision consent
-      const consentResult = await askForProvisionConsent(
-        ctx,
-        tokenProvider.azureAccountProvider,
-        envInfo as v3.EnvInfoV3
-      );
-      if (consentResult.isErr()) {
-        return err(consentResult.error);
+
+      if (!solutionConfigRes.value.hasSwitchedSubscription) {
+        // ask for provision consent
+        const consentResult = await askForProvisionConsent(
+          ctx,
+          tokenProvider.azureAccountProvider,
+          envInfo as v3.EnvInfoV3
+        );
+        if (consentResult.isErr()) {
+          return err(consentResult.error);
+        }
       }
 
       // create resource group if needed
@@ -154,6 +164,10 @@ export async function provisionResources(
         if (createRgRes.isErr()) {
           return err(createRgRes.error);
         }
+      }
+
+      if (solutionConfigRes.value.hasSwitchedSubscription) {
+        updateResourceBaseName(inputs.projectPath, ctx.projectSetting.appName, envInfo.envName);
       }
     }
 
@@ -283,25 +297,25 @@ export async function provisionResources(
 }
 
 /**
- * make sure subscription is correct
+ * make sure subscription is correct before provision
  *
  */
-export async function checkAzureSubscription(
+export async function checkProvisionAzureSubscription(
   ctx: v2.Context,
   envInfo: v3.EnvInfoV3,
   azureAccountProvider: AzureAccountProvider
-): Promise<Result<Void, FxError>> {
-  const subscriptionIdInConfig =
-    envInfo.config.azure?.subscriptionId || (envInfo.state.solution.subscriptionId as string);
+): Promise<Result<ProvisionSubscriptionCheckResult, FxError>> {
+  const subscriptionIdInConfig: string | undefined = envInfo.config.azure?.subscriptionId;
+  const subscriptionNameInConfig: string | undefined =
+    envInfo.config.azure?.subscriptionName || subscriptionIdInConfig;
+  const subscriptionIdInState: string | undefined = envInfo.state.solution.subscriptionId;
+  const subscriptionNameInState: string | undefined =
+    envInfo.state.solution.subscriptionName || subscriptionIdInState;
+
   const subscriptionInAccount = await azureAccountProvider.getSelectedSubscription(true);
-  if (!subscriptionIdInConfig) {
-    if (subscriptionInAccount) {
-      envInfo.state.solution.subscriptionId = subscriptionInAccount.subscriptionId;
-      envInfo.state.solution.subscriptionName = subscriptionInAccount.subscriptionName;
-      envInfo.state.solution.tenantId = subscriptionInAccount.tenantId;
-      ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
-      return ok(Void);
-    } else {
+
+  if (!subscriptionIdInState && !subscriptionIdInConfig) {
+    if (!subscriptionInAccount) {
       return err(
         new UserError(
           SolutionSource,
@@ -309,35 +323,145 @@ export async function checkAzureSubscription(
           "Failed to select subscription"
         )
       );
+    } else {
+      updateEnvInfoSubscription(envInfo, subscriptionInAccount);
+      ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
+      return ok({ hasSwitchedSubscription: false });
     }
   }
+
   // make sure the user is logged in
   await azureAccountProvider.getAccountCredentialAsync(true);
   // verify valid subscription (permission)
   const subscriptions = await azureAccountProvider.listSubscriptions();
-  const targetSubInfo = subscriptions.find(
-    (item) => item.subscriptionId === subscriptionIdInConfig
-  );
-  if (!targetSubInfo) {
-    return err(
-      new UserError(
-        SolutionSource,
-        SolutionError.SubscriptionNotFound,
-        `The subscription '${subscriptionIdInConfig}'(${
-          envInfo.state.solution.subscriptionName
-        }) for '${
-          envInfo.envName
-        }' environment is not found in the current account, please use the right Azure account or check the '${EnvConfigFileNameTemplate.replace(
-          EnvNamePlaceholder,
-          envInfo.envName
-        )}' file.`
-      )
+
+  if (subscriptionIdInConfig) {
+    const targetConfigSubInfo = subscriptions.find(
+      (item) => item.subscriptionId === subscriptionIdInConfig
     );
+
+    if (!targetConfigSubInfo) {
+      return err(
+        new UserError(
+          SolutionSource,
+          SolutionError.SubscriptionNotFound,
+          `The subscription '${subscriptionIdInConfig}'(${subscriptionNameInConfig}) for '${
+            envInfo.envName
+          }' environment is not found in the current account, please use the right Azure account or check the '${EnvConfigFileNameTemplate.replace(
+            EnvNamePlaceholder,
+            envInfo.envName
+          )}' file.`
+        )
+      );
+    } else {
+      return compareWithStateSubscription(
+        ctx,
+        envInfo,
+        targetConfigSubInfo,
+        subscriptionIdInState,
+        subscriptionNameInState
+      );
+    }
+  } else {
+    const targetStateSubInfo = subscriptions.find(
+      (item) => item.subscriptionId === subscriptionIdInState
+    );
+
+    if (!subscriptionInAccount) {
+      if (targetStateSubInfo) {
+        updateEnvInfoSubscription(envInfo, targetStateSubInfo);
+        ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
+        return ok({ hasSwitchedSubscription: false });
+      } else {
+        return err(
+          new UserError(
+            SolutionSource,
+            SolutionError.SubscriptionNotFound,
+            `The subscription '${subscriptionIdInState}'(${subscriptionNameInState}) for '${envInfo.envName}' environment is not found in the current account, please use the right Azure account.`
+          )
+        );
+      }
+    } else {
+      return compareWithStateSubscription(
+        ctx,
+        envInfo,
+        subscriptionInAccount,
+        subscriptionIdInState,
+        subscriptionNameInState
+      );
+    }
   }
-  envInfo.state.solution.subscriptionId = targetSubInfo.subscriptionId;
-  envInfo.state.solution.subscriptionName = targetSubInfo.subscriptionName;
-  envInfo.state.solution.tenantId = targetSubInfo.tenantId;
-  ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
+}
+
+function updateEnvInfoSubscription(envInfo: v3.EnvInfoV3, subscriptionInfo: SubscriptionInfo) {
+  envInfo.state.solution.subscriptionId = subscriptionInfo.subscriptionId;
+  envInfo.state.solution.subscriptionName = subscriptionInfo.subscriptionName;
+  envInfo.state.solution.tenantId = subscriptionInfo.tenantId;
+}
+
+async function compareWithStateSubscription(
+  ctx: v2.Context,
+  envInfo: v3.EnvInfoV3,
+  targetSubscriptionInfo: SubscriptionInfo,
+  subscriptionInStateId: string | undefined,
+  subscriptionInStateName: string | undefined
+): Promise<Result<ProvisionSubscriptionCheckResult, FxError>> {
+  const shouldAskForSubscriptionConfirmation =
+    !!subscriptionInStateId && targetSubscriptionInfo.subscriptionId !== subscriptionInStateId;
+  if (shouldAskForSubscriptionConfirmation) {
+    const confirmResult = await askForSubscriptionConfirm(
+      ctx,
+      subscriptionInStateName!,
+      targetSubscriptionInfo.subscriptionName || targetSubscriptionInfo.subscriptionId
+    );
+    if (confirmResult.isErr()) {
+      return err(confirmResult.error);
+    } else {
+      updateEnvInfoSubscription(envInfo, targetSubscriptionInfo);
+      envInfo.state.solution.resourceNameSuffix = "";
+      envInfo.state.solution.resourceGroupName = "";
+
+      // we need to have another bot id if provisioning a new azure bot service.
+      const botResource =
+        envInfo.state[BuiltInFeaturePluginNames.bot] ?? envInfo.state["teams-bot"];
+      if (botResource) {
+        if (botResource[LocalStateBotKeys.BotId]) {
+          botResource[LocalStateBotKeys.BotId] = undefined;
+        }
+        if (botResource[LocalStateBotKeys.BotPassword]) {
+          botResource[LocalStateBotKeys.BotPassword] = undefined;
+        }
+        if (botResource[LocalStateAuthKeys.ObjectId]) {
+          botResource[LocalStateAuthKeys.ObjectId] = undefined;
+        }
+      }
+      ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
+      return ok({ hasSwitchedSubscription: true });
+    }
+  } else {
+    updateEnvInfoSubscription(envInfo, targetSubscriptionInfo);
+    ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
+    return ok({ hasSwitchedSubscription: false });
+  }
+}
+
+async function askForSubscriptionConfirm(
+  ctx: v2.Context,
+  subscriptionInState: string,
+  subscriptionInAccount: string
+): Promise<Result<Void, FxError>> {
+  const msgNew = getLocalizedString(
+    "core.provision.confirmSubscription",
+    subscriptionInAccount,
+    subscriptionInState,
+    subscriptionInState
+  );
+  const confirmRes = await ctx.userInteraction.showMessage("warn", msgNew, true, "Provision");
+  const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
+
+  if (confirm !== "Provision") {
+    return err(new UserError(SolutionSource, "CancelProvision", "CancelProvision"));
+  }
   return ok(Void);
 }
 
@@ -350,9 +474,9 @@ export async function fillInAzureConfigs(
   inputs: v2.InputsWithProjectPath,
   envInfo: v3.EnvInfoV3,
   tokenProvider: TokenProvider
-): Promise<Result<Void, FxError>> {
+): Promise<Result<FillInAzureConfigsResult, FxError>> {
   //1. check subscriptionId
-  const subscriptionResult = await checkAzureSubscription(
+  const subscriptionResult = await checkProvisionAzureSubscription(
     ctx,
     envInfo,
     tokenProvider.azureAccountProvider
@@ -504,7 +628,7 @@ export async function fillInAzureConfigs(
     uuidv4().substr(0, 6);
   envInfo.state.solution.resourceNameSuffix = resourceNameSuffix;
   ctx.logProvider?.info(`[${PluginDisplayName.Solution}] check resourceNameSuffix pass!`);
-  return ok(Void);
+  return ok({ hasSwitchedSubscription: subscriptionResult.value.hasSwitchedSubscription });
 }
 
 export async function askForDeployConsent(

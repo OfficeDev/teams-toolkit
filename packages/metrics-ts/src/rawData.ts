@@ -11,6 +11,13 @@ export interface tracePoint {
   timer?: timerData;
 }
 
+export enum TimerSeverity {
+  Fast = "fast",
+  Normal = "normal",
+  Slow = "slow",
+}
+
 export interface timerData {
-  duraion: number;
+  duration: number;
+  severity: TimerSeverity;
 }

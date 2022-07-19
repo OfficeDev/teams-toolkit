@@ -187,7 +187,7 @@ jobs:
           timeout_minutes: 10
           max_attempts: 5
           command: |
-            npm run setup
+            npm run setup-metrics
 
       - name: Package CLI and install
         working-directory: packages/cli
@@ -209,6 +209,14 @@ jobs:
             npx mocha --reporter mochawesome --timeout 900000 $file
           fi
 
+      - name: get job id
+        id: get-job-id
+        uses: ayachensiyuan/get-action-job-id@v1.5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          job-name: ${{ matrix.cases }}
+
       - name: get report name
         id: get-report-name
         if: ${{ always() }}
@@ -216,16 +224,24 @@ jobs:
           name="${{ matrix.cases }}"
           name="${name//'.tests.ts'/}"
           name="${name//.\//}"
-          name="${name//\//_}"
+          name="${name//\//_}"_${{ steps.get-job-id.outputs.jobId }}
           echo "::set-output name=name::$name"
 
       - name: Upload test report
         uses: actions/upload-artifact@v2
-        if: failure()
+        if: ${{ failure() }}
         with:
           name: ${{ steps.get-report-name.outputs.name }}.json
           path: |
             ./packages/cli/tests/e2e/mochawesome-report/mochawesome.json
+
+      - name: Upload perf metrics
+        uses: actions/upload-artifact@v2
+        if: ${{ always() }}
+        with:
+          name: ${{ steps.get-report-name.outputs.name }}_metrics
+          path: |
+            /tmp/.metrics/output.txt
 
       - name: Sync to Azure DevOps Test Plan
         if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
@@ -245,22 +261,25 @@ jobs:
         run: |
           sudo apt install dateutils
 
+      - uses: actions/download-artifact@v3
+        with:
+          path: ~/artifacts
+
       - name: List jobs
         id: list-jobs
         working-directory: packages/cli
         run: |
-          result=`curl \
-            -u :${{ secrets.GITHUB_TOKEN }}\
+          jobs=`curl \
+            -u :${{ secrets.GITHUB_TOKEN }} \
             https://api.github.com/repos/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs?per_page=100`
 
-
-          cases=`echo $result | jq -r '.jobs[] | select(.name | contains("tests.ts")) | .name'`
+          cases=`echo $jobs| jq -r '.jobs[] | select(.name | contains("tests.ts")) | .name'`
 
           lists=""
           passed=0
           failed=0
 
-          emails="vsciotadt@microsoft.com"
+          emails="vsciotadt@microsoft.com;v-helzha@microsoft.com;v-ivanchen@microsoft.com"
           while IFS= read -r case;
           do
             if [ -z "$case" ]; then
@@ -275,14 +294,14 @@ jobs:
               email=`grep '@author' $file | grep -i -o '[A-Z0-9._%+-]\+@[A-Z0-9.-]\+\.[A-Z]\{2,4\}'`
             fi
 
-            status=`echo $result | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .conclusion'`
+            status=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .conclusion'`
 
             if [[ ! -z "$email" && ! "$emails" == *"$email"* && "$status" == "failure" ]]; then
               emails="$emails;$email"
             fi
 
-            started_at=`echo $result | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .started_at'`
-            completed_at=`echo $result | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .completed_at'`
+            started_at=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .steps[] | select(.name == "run test") | .started_at'`
+            completed_at=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .steps[] | select(.name == "run test") | .completed_at'`
             duration=`dateutils.ddiff $started_at $completed_at -f "%Mm %Ss"`
 
             author=""
@@ -301,10 +320,17 @@ jobs:
               label="<span style=\\\"background-color: #dc322f;color:white;font-weight:bold;\\\">FAILED</span>"
             fi
 
-            url=`echo $result | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .html_url'`
+            job_id=`echo $jobs| jq --arg case $case -r '.jobs[] | select(.name == $case ) | .id'`
+            metrics_file=`find ~/artifacts -wholename "*${job_id}_metrics/output.txt"`
+            slow_count=0
+            if [ ! -z "$metrics_file" ]; then
+              slow_count=`grep -c '"severity":"slow"' $metrics_file || true`
+            fi
+
+            url=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .html_url'`
             url="<a href=\\\"$url\\\">For Detail</a>"
 
-            row="<tr> <td style=\\\"text-align: left;\\\">$elegant_path</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> <td>$duration</td> <td>$url</td> </tr>"
+            row="<tr> <td style=\\\"text-align: left;\\\">$elegant_path</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> <td style=\\\"text-align: center;\\\">$duration</td> <td style=\\\"text-align: center;\\\">$slow_count</td> <td style=\\\"text-align: center;\\\">$url</td> </tr>"
 
             if [ "$status" == "success" ]; then
               lists="$lists $row"
@@ -314,7 +340,7 @@ jobs:
 
           done <<< $cases
 
-          body="<table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>Case</th> <th>Status</th> <th>Author</th> <th>Duration</th> <th>URL</th> </tr> $lists </table> <br /> The detail can be found here: <a> https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }} </a>"
+          body="<table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>CASE</th> <th>STATUS</th> <th>AUTHOR</th> <th>DURATION</th> <th>SLOW METHOD( > 20ms )</th> <th>URL</th> </tr> $lists </table> <br /> The detail can be found here: <a> https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }} </a>"
 
           total=$((passed+failed))
 

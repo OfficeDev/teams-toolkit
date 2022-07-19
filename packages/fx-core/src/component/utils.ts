@@ -15,17 +15,13 @@ import {
   ProjectSettingsV3,
   ProvisionBicep,
   Result,
-  UserError,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import os from "os";
 import * as path from "path";
-import { HelpLinks } from "../common/constants";
-import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { LocalCrypto } from "../core/crypto";
 import { environmentManager } from "../core/environment";
 import { TOOLS } from "../core/globalVars";
-import { SolutionError } from "../plugins/solution/fx-solution/constants";
 import * as uuid from "uuid";
 import { getProjectSettingsVersion } from "../common/projectSettingsHelper";
 import { DefaultManifestProvider } from "./resource/appManifest/manifestProvider";
@@ -195,28 +191,28 @@ export async function persistParams(
       if (params) {
         const json = await fs.readJson(parameterEnvFilePath);
         const existingParams = json.parameters.provisionParameters.value;
-        const dupParamKeys = Object.keys(params).filter((val) =>
-          Object.keys(existingParams).includes(val)
-        );
-        if (dupParamKeys && dupParamKeys.length != 0) {
-          return err(
-            new UserError({
-              name: SolutionError.FailedToUpdateArmParameters,
-              source: "bicep",
-              helpLink: HelpLinks.ArmHelpLink,
-              message: getDefaultString(
-                "core.generateArmTemplates.DuplicateParameter",
-                parameterEnvFilePath,
-                dupParamKeys
-              ),
-              displayMessage: getLocalizedString(
-                "core.generateArmTemplates.DuplicateParameter",
-                parameterEnvFilePath,
-                dupParamKeys
-              ),
-            })
-          );
-        }
+        // const dupParamKeys = Object.keys(params).filter((val) =>
+        //   Object.keys(existingParams).includes(val)
+        // );
+        // if (dupParamKeys && dupParamKeys.length != 0) {
+        //   return err(
+        //     new UserError({
+        //       name: SolutionError.FailedToUpdateArmParameters,
+        //       source: "bicep",
+        //       helpLink: HelpLinks.ArmHelpLink,
+        //       message: getDefaultString(
+        //         "core.generateArmTemplates.DuplicateParameter",
+        //         parameterEnvFilePath,
+        //         dupParamKeys
+        //       ),
+        //       displayMessage: getLocalizedString(
+        //         "core.generateArmTemplates.DuplicateParameter",
+        //         parameterEnvFilePath,
+        //         dupParamKeys
+        //       ),
+        //     })
+        //   );
+        // }
         Object.assign(existingParams, params);
         if (!existingParams.resourceBaseName) {
           params.resourceBaseName = generateResourceBaseName(appName, "");

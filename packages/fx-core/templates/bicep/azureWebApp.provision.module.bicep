@@ -1,10 +1,11 @@
 @secure()
 param provisionParameters object
+param userAssignedIdentityId string
 
 var resourceBaseName = provisionParameters.resourceBaseName
-var serverfarmsName = contains(provisionParameters, 'webAppServerfarmsName') ? provisionParameters['webAppServerfarmsName'] : '${resourceBaseName}webApp' // Try to read name for App Service Plan from parameters
+var serverfarmsName = contains(provisionParameters, 'webAppServerfarmsName') ? provisionParameters['webAppServerfarmsName'] : '${resourceBaseName}{{scenarioInLowerCase}}' // Try to read name for App Service Plan from parameters
 var webAppSKU = contains(provisionParameters, 'webAppSKU') ? provisionParameters['webAppSKU'] : 'F1' // Try to read SKU for Azure Web App from parameters
-var webAppName = contains(provisionParameters, 'webAppSitesName') ? provisionParameters['webAppSitesName'] : '${resourceBaseName}webApp' // Try to read name for Azure Web App from parameters
+var webAppName = contains(provisionParameters, 'webAppSitesName') ? provisionParameters['webAppSitesName'] : '${resourceBaseName}{{scenarioInLowerCase}}' // Try to read name for Azure Web App from parameters
 
 // Compute resources for your Web App
 resource serverfarm 'Microsoft.Web/serverfarms@2021-02-01' = {
@@ -47,11 +48,17 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
       ]
     }
   }
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${userAssignedIdentityId}': {} // The identity is used to access other Azure resources
+    }
+  }
 }
 
-output sku string = webAppSKU
-output appName string = webAppName
-output domain string = webApp.properties.defaultHostName
+output skuName string = webAppSKU
+output siteName string = webAppName
+output validDomain string = webApp.properties.defaultHostName
 output appServicePlanName string = serverfarmsName
 output resourceId string = webApp.id
-output endpoint string = 'https://${webApp.properties.defaultHostName}'
+output siteEndpoint string = 'https://${webApp.properties.defaultHostName}'

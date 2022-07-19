@@ -29,36 +29,52 @@ import * as Handlebars from "handlebars";
 import "reflect-metadata";
 import { Container } from "typedi";
 import toposort from "toposort";
-import { cloneDeep, merge } from "lodash";
+import { assign, cloneDeep, merge } from "lodash";
 import {
   fileEffectPlanStrings,
   persistBicep,
   persistBicepPlans,
   serviceEffectPlanString,
 } from "./utils";
-import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { convertToAlphanumericOnly } from "../common/utils";
+import { ActionNotExist, ComponentNotExist } from "./error";
+import { globalVars } from "../core/globalVars";
+import { TelemetryConstants, Scenarios } from "./constants";
 
 export async function getAction(
   name: string,
   context: ContextV3,
-  inputs: InputsWithProjectPath
+  inputs: InputsWithProjectPath,
+  required: boolean
 ): Promise<Action | undefined> {
   const arr = name.split(".");
-  const resourceName = arr[0];
+  if (arr.length !== 2) {
+    throw new ActionNotExist(name);
+  }
+  const componentName = arr[0];
   const actionName = arr[1];
-  if (!resourceName) throw new Error(`invalid action name: ${name}`);
+  let component;
   try {
-    const resource = Container.get(resourceName) as any;
-    if (resource[actionName]) {
-      const res = await resource[actionName](context, inputs);
-      if (res.isOk()) {
-        const action = res.value;
-        return action;
-      }
+    component = Container.get(componentName) as any;
+  } catch (e) {
+    if (required) throw new ComponentNotExist(componentName);
+    else return undefined;
+  }
+  if (!component[actionName]) {
+    if (required) throw new ActionNotExist(name);
+    else return undefined;
+  }
+  try {
+    const res = await component[actionName](context, inputs);
+    if (res.isOk()) {
+      const action = res.value;
+      return action;
+    } else {
+      throw res.error;
     }
-  } catch (e) {}
-  return undefined;
+  } catch (e) {
+    throw assembleError(e);
+  }
 }
 
 function _resolveVariables(schema: Json) {
@@ -172,7 +188,7 @@ export async function resolveAction(
     if (action.inputs) {
       resolveVariables(inputs, action.inputs);
     }
-    const targetAction = await getAction(action.targetAction, context, inputs);
+    const targetAction = await getAction(action.targetAction, context, inputs, action.required);
     if (targetAction) {
       if (targetAction.type !== "function") {
         const resolvedAction = await resolveAction(targetAction, context, inputs);
@@ -222,7 +238,7 @@ export async function askQuestionForAction(
     if (action.inputs) {
       resolveVariables(inputs, action.inputs);
     }
-    const targetAction = await getAction(action.targetAction, context, inputs);
+    const targetAction = await getAction(action.targetAction, context, inputs, action.required);
     if (action.required && !targetAction) {
       return err(new ActionNotExist(action.targetAction));
     }
@@ -239,16 +255,6 @@ export async function askQuestionForAction(
     }
   }
   return ok(undefined);
-}
-
-export class ActionNotExist extends SystemError {
-  constructor(action: string) {
-    super({
-      source: "fx",
-      message: getDefaultString("error.ActionNotExist", action),
-      displayMessage: getLocalizedString("error.ActionNotExist", action),
-    });
-  }
 }
 
 export async function showPlanAndConfirm(
@@ -328,7 +334,7 @@ export async function planAction(
     if (action.inputs) {
       resolveVariables(inputs, action.inputs);
     }
-    const targetAction = await getAction(action.targetAction, context, inputs);
+    const targetAction = await getAction(action.targetAction, context, inputs, action.required);
     if (action.required && !targetAction) {
       return err(new ActionNotExist(action.targetAction));
     }
@@ -354,41 +360,63 @@ export async function executeAction(
   effects: Effect[]
 ): Promise<Result<undefined, FxError>> {
   console.log(`executeAction: ${action.name}`);
+  if (action.pre) {
+    const res = await action.pre(context, inputs);
+    if (res.isErr()) return err(res.error);
+  }
+  let res: Result<undefined, FxError>;
   if (action.type === "function") {
-    return await executeFunctionAction(action, context, inputs, effects);
+    res = await executeFunctionAction(action, context, inputs, effects);
   } else if (action.type === "shell") {
     effects.push(`shell executed: ${action.command}`);
-    return ok(undefined);
+    res = ok(undefined);
   } else if (action.type === "call") {
+    const clonedInputs = cloneDeep(inputs);
     if (action.inputs) {
-      resolveVariables(inputs, action.inputs);
+      resolveVariables(clonedInputs, action.inputs);
     }
-    const targetAction = await getAction(action.targetAction, context, inputs);
+    const targetAction = await getAction(
+      action.targetAction,
+      context,
+      clonedInputs,
+      action.required
+    );
     if (action.required && !targetAction) {
       return err(new ActionNotExist(action.targetAction));
     }
     if (targetAction) {
-      return await executeAction(targetAction, context, inputs, effects);
+      res = await executeAction(targetAction, context, clonedInputs, effects);
+    } else {
+      res = ok(undefined);
     }
-    return ok(undefined);
   } else {
+    const clonedInputs = cloneDeep(inputs);
     if (action.inputs) {
-      resolveVariables(inputs, action.inputs);
+      resolveVariables(clonedInputs, action.inputs);
     }
     if (action.mode === "parallel") {
-      const promises = action.actions.map((a) => executeAction(a, context, inputs, effects));
+      const promises = action.actions.map((a) => {
+        const subInputs = cloneDeep(clonedInputs);
+        return executeAction(a, context, subInputs, effects);
+      });
       const results = await Promise.all(promises);
       for (const result of results) {
         if (result.isErr()) return err(result.error);
       }
     } else {
       for (const act of action.actions) {
-        const res = await executeAction(act, context, inputs, effects);
+        const subInputs = cloneDeep(clonedInputs);
+        const res = await executeAction(act, context, subInputs, effects);
         if (res.isErr()) return err(res.error);
       }
     }
-    return ok(undefined);
+    res = ok(undefined);
   }
+  if (action.post) {
+    const res = await action.post(context, inputs);
+    if (res.isErr()) return err(res.error);
+  }
+  return res;
 }
 
 export class ValidationError extends UserError {
@@ -426,46 +454,118 @@ export async function executeFunctionAction(
   effects: Effect[]
 ): Promise<Result<undefined, FxError>> {
   context.logProvider.info(`executeFunctionAction [${action.name}] start!`);
-  // validate inputs
-  if (action.question) {
-    const getQuestionRes = await action.question(context, inputs);
-    if (getQuestionRes.isErr()) return err(getQuestionRes.error);
-    const node = getQuestionRes.value;
-    if (node) {
-      const validationRes = await traverse(
-        node,
-        inputs,
-        context.userInteraction,
-        context.telemetryReporter,
-        validateQuestion
-      );
-      if (validationRes.isErr()) err(validationRes.error);
+  const arr = action.name.split(".");
+  const eventName = action.telemetryEventName || arr[1];
+  const componentName = action.telemetryComponentName || arr[0];
+  const telemetryProps = {
+    [TelemetryConstants.properties.component]: componentName,
+    [TelemetryConstants.properties.appId]: globalVars.teamsAppId,
+    [TelemetryConstants.properties.tenantId]: globalVars.m365TenantId,
+  };
+  let progressBar;
+  try {
+    // send start telemetry
+    if (action.enableTelemetry) {
+      if (action.telemetryProps) assign(telemetryProps, action.telemetryProps);
+      const startEvent = eventName + "-start";
+      context.telemetryReporter.sendTelemetryEvent(startEvent, telemetryProps);
     }
-  }
-  const res = await action.execute(context, inputs);
-  if (res.isErr()) return err(res.error);
-  if (res.value) {
-    //persist bicep files for bicep effects
-    for (const effect of res.value) {
-      if (typeof effect !== "string" && effect.type === "bicep") {
-        const bicep = effect as Bicep;
-        if (bicep) {
-          const bicepPlans = await persistBicepPlans(inputs.projectPath, bicep);
-          bicepPlans.forEach((p) => effects.push(p));
-          // TODO: handle the returned error of bicep generation
-          await persistBicep(
-            inputs.projectPath,
-            convertToAlphanumericOnly(context.projectSetting.appName),
-            bicep
-          );
-        }
-      } else {
-        effects.push(effect);
+    // validate inputs
+    if (action.question) {
+      const getQuestionRes = await action.question(context, inputs);
+      if (getQuestionRes.isErr()) throw getQuestionRes.error;
+      const node = getQuestionRes.value;
+      if (node) {
+        const validationRes = await traverse(
+          node,
+          inputs,
+          context.userInteraction,
+          context.telemetryReporter,
+          validateQuestion
+        );
+        if (validationRes.isErr()) throw validationRes.error;
       }
     }
+    // progress bar
+    if (action.enableProgressBar) {
+      progressBar = context.userInteraction.createProgressBar(
+        action.progressTitle || action.name,
+        action.progressSteps || 1
+      );
+      progressBar.start();
+    }
+    const res = await action.execute(
+      context,
+      inputs,
+      progressBar,
+      action.enableTelemetry ? telemetryProps : undefined
+    );
+    if (res.isErr()) throw res.error;
+    if (res.value) {
+      //persist bicep files for bicep effects
+      for (const effect of res.value) {
+        if (typeof effect !== "string" && effect.type === "bicep") {
+          const bicep = effect as Bicep;
+          if (bicep) {
+            const bicepPlans = await persistBicepPlans(inputs.projectPath, bicep);
+            bicepPlans.forEach((p) => effects.push(p));
+            // TODO: handle the returned error of bicep generation
+            const bicepRes = await persistBicep(
+              inputs.projectPath,
+              convertToAlphanumericOnly(context.projectSetting.appName),
+              bicep
+            );
+            if (bicepRes.isErr()) throw bicepRes.error;
+          }
+        } else {
+          effects.push(effect);
+        }
+      }
+    }
+    // send end telemetry
+    if (action.enableTelemetry) {
+      context.telemetryReporter.sendTelemetryEvent(eventName, {
+        ...telemetryProps,
+        [TelemetryConstants.properties.success]: TelemetryConstants.values.yes,
+      });
+    }
+    progressBar?.end(true);
+    context.logProvider.info(`executeFunctionAction [${action.name}] finish!`);
+    return ok(undefined);
+  } catch (e) {
+    progressBar?.end(false);
+    let fxError;
+    if (action.errorHandler) {
+      fxError = action.errorHandler(e, telemetryProps);
+    } else {
+      fxError = assembleError(e);
+      if (fxError.source === "unknown") {
+        fxError.source = action.errorSource || fxError.source;
+      }
+      if (fxError instanceof UserError) {
+        fxError.helpLink = fxError.helpLink || action.errorHelpLink;
+      }
+      if (fxError instanceof SystemError) {
+        fxError.issueLink = fxError.issueLink || action.errorIssueLink;
+      }
+    }
+    // send error telemetry
+    if (action.enableTelemetry) {
+      const errorCode = fxError.source + "." + fxError.name;
+      const errorType =
+        fxError instanceof SystemError
+          ? TelemetryConstants.values.systemError
+          : TelemetryConstants.values.userError;
+      context.telemetryReporter.sendTelemetryErrorEvent(eventName, {
+        ...telemetryProps,
+        [TelemetryConstants.properties.success]: TelemetryConstants.values.no,
+        [TelemetryConstants.properties.errorCode]: errorCode,
+        [TelemetryConstants.properties.errorType]: errorType,
+        [TelemetryConstants.properties.errorMessage]: fxError.message,
+      });
+    }
+    return err(fxError);
   }
-  context.logProvider.info(`executeFunctionAction [${action.name}] finish!`);
-  return ok(undefined);
 }
 
 export function getComponent(
@@ -475,11 +575,29 @@ export function getComponent(
   return projectSettings.components?.find((r) => r.name === resourceType);
 }
 
-export function getHostingParentComponent(
+export function getComponents(
   projectSettings: ProjectSettingsV3,
   resourceType: string
+): Component[] | undefined {
+  return projectSettings.components?.filter((r) => r.name === resourceType);
+}
+
+export function getComponentByScenario(
+  projectSetting: ProjectSettingsV3,
+  resourceType: string,
+  scenario?: Scenarios
 ): Component | undefined {
-  const hostingComponent = getComponent(projectSettings, resourceType);
+  return scenario
+    ? projectSetting.components?.find((r) => r.name === resourceType && r.scenario === scenario)
+    : getComponent(projectSetting, resourceType);
+}
+
+export function getHostingParentComponent(
+  projectSettings: ProjectSettingsV3,
+  resourceType: string,
+  scenario?: Scenarios
+): Component | undefined {
+  const hostingComponent = getComponentByScenario(projectSettings, resourceType, scenario);
   const parentName = hostingComponent?.connections?.find((name) => {
     const component = getComponent(projectSettings, name);
     return component?.hosting === hostingComponent.name;
@@ -500,7 +618,7 @@ export async function runAction(
     `------------------------run action: ${actionName} start!------------------------`
   );
   try {
-    const action = await getAction(actionName, context, inputs);
+    const action = await getAction(actionName, context, inputs, true);
     if (action) {
       const questionRes = await askQuestionForAction(action, context, inputs);
       if (questionRes.isErr()) return err(questionRes.error);

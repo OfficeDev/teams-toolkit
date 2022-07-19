@@ -4,6 +4,7 @@
     "target": "es2016",
     "module": "commonjs",
     "outDir": "./dist",
+    "rootDir": "./",
     "sourceMap": true,
     "incremental": true,
     "resolveJsonModule": true,

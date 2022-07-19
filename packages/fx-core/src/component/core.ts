@@ -5,16 +5,19 @@ import {
   Action,
   ConfigFolderName,
   ContextV3,
+  err,
   FxError,
   GroupAction,
   InputsWithProjectPath,
   MaybePromise,
   ok,
+  Platform,
   ProjectSettingsV3,
   ProvisionContextV3,
   QTreeNode,
   Result,
   TextInputQuestion,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import path from "path";
@@ -22,7 +25,7 @@ import "reflect-metadata";
 import { Service } from "typedi";
 import { getProjectSettingsPath } from "../core/middleware/projectSettingsLoader";
 import { ProjectNamePattern } from "../core/question";
-import { newProjectSettings } from "./../common/projectSettingsHelper";
+import { isVSProject, newProjectSettings } from "./../common/projectSettingsHelper";
 import "./bicep";
 import "./debug";
 import "./envManager";
@@ -33,6 +36,7 @@ import "./resource/azureAppService/azureFunction";
 import "./resource/azureStorage";
 import "./resource/azureAppService/azureWebApp";
 import "./resource/botService";
+import "./resource/keyVault";
 import "./feature/apim";
 import "./resource/apim";
 import "./feature/spfx";
@@ -42,24 +46,27 @@ import "./feature/bot";
 import "./feature/sql";
 import "./feature/tab";
 import "./feature/cicd";
+import "./feature/keyVault";
 import "./feature/sso";
 import "./feature/apiConnector";
 import "./code/botCode";
 import "./code/tabCode";
 import "./code/apiCode";
 import "./code/spfxTabCode";
-import "./connection/aadConfig";
 import "./connection/azureWebAppConfig";
 import "./connection/azureFunctionConfig";
 import "./connection/apimConfig";
 
-import { WriteProjectSettingsAction } from "./projectSettingsManager";
-import { ComponentNames } from "./constants";
-import { getLocalizedString } from "../common/localizeUtils";
+import { AzureResources, ComponentNames, componentToScenario } from "./constants";
+import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { getResourceGroupInPortal } from "../common/tools";
 import { getComponent } from "./workflow";
-import { FxPreDeployAction } from "./fx/preDeployAction";
+import { FxPreDeployForAzureAction } from "./fx/preDeployAction";
 import { FxPreProvisionAction } from "./fx/preProvisionAction";
+import { pluginName2ComponentName } from "./migrate";
+import { PluginDisplayName } from "../common/constants";
+import { hasBot } from "../common/projectSettingsHelperV3";
+import { getBotTroubleShootMessage } from "../plugins/solution/fx-solution/v2/utils";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -124,7 +131,6 @@ export class TeamsfxCore {
           targetAction: "env-manager.create",
           required: true,
         },
-        WriteProjectSettingsAction,
       ],
     };
     return ok(action);
@@ -134,8 +140,6 @@ export class TeamsfxCore {
     inputs: InputsWithProjectPath
   ): Promise<Result<Action | undefined, FxError>> {
     const ctx = context as ProvisionContextV3;
-    const filePath = getProjectSettingsPath(inputs.projectPath);
-    ctx.projectSetting = (await fs.readJson(filePath)) as ProjectSettingsV3;
     const resourcesToProvision = ctx.projectSetting.components.filter((r) => r.provision);
     const provisionActions: Action[] = resourcesToProvision.map((r) => {
       return {
@@ -225,31 +229,19 @@ export class TeamsfxCore {
         return ok([]);
       },
     };
+    const aadComponent = getComponent(context.projectSetting, ComponentNames.AadApp);
     const preConfigureStep: Action = {
-      type: "function",
-      name: "fx.preConfigure",
-      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok([]);
-      },
-      execute: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const ctx = context as ProvisionContextV3;
-        const teamsTab = getComponent(ctx.projectSetting, ComponentNames.TeamsTab);
-        if (teamsTab) {
-          const aad = getComponent(ctx.projectSetting, ComponentNames.AadApp);
-          if (aad) {
-            const tabEndpoint = ctx.envInfo.state[ComponentNames.TeamsTab].endpoint;
-            inputs.m365ApplicationIdUri = `api://${tabEndpoint}`;
-          }
-        }
-        return ok([]);
-      },
+      type: "call",
+      name: "call:aad-app.setApplicationInContext",
+      required: true,
+      targetAction: "aad-app.setApplicationInContext",
     };
     const provisionSequences: Action[] = [
       preProvisionStep,
       createTeamsAppStep,
       provisionResourcesStep,
       ctx.envInfo.envName !== "local" ? deployBicepStep : setupLocalEnvironmentStep,
-      preConfigureStep,
+      ...(aadComponent ? [preConfigureStep] : []),
       configureResourcesStep,
       ctx.envInfo.envName === "local" ? configLocalEnvironmentStep : postProvisionStep,
       updateTeamsAppStep,
@@ -284,36 +276,110 @@ export class TeamsfxCore {
     return ok(group);
   }
 
-  deploy(
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
+  deploy(context: ContextV3, inputs: InputsWithProjectPath): Result<Action | undefined, FxError> {
     const projectSettings = context.projectSetting as ProjectSettingsV3;
-    const actions: Action[] = [
-      new FxPreDeployAction(),
-      {
-        name: "call:fx.build",
-        type: "call",
-        targetAction: "fx.build",
-        required: true,
-      },
-    ];
-    const components = inputs["deploy-plugin"] as string[];
+    const buildAction: Action = {
+      name: "call:fx.build",
+      type: "call",
+      targetAction: "fx.build",
+      required: true,
+    };
+    const actions: Action[] = [];
+    const components: string[] = isVSProject(projectSettings)
+      ? projectSettings.components.filter((component) => component.deploy).map((c) => c.name)
+      : (inputs["deploy-plugin"] as string[]).map((plugin) => pluginName2ComponentName(plugin));
+
+    let hasAzureResource = false;
+    const callDeployActions: Action[] = [];
     components.forEach((componentName) => {
       const componentConfig = getComponent(projectSettings, componentName);
       if (componentConfig) {
-        actions.push({
+        if (componentConfig.hosting && AzureResources.includes(componentConfig.hosting)) {
+          hasAzureResource = true;
+        }
+        callDeployActions.push({
           type: "call",
-          targetAction: `${componentConfig.hosting}.deploy`,
+          targetAction:
+            componentName === ComponentNames.AppManifest
+              ? `${ComponentNames.AppManifest}.configure`
+              : `${componentConfig.hosting}.deploy`,
           required: false,
+          inputs: {
+            scenario: componentToScenario.get(componentName),
+          },
         });
       }
     });
-    const action: GroupAction = {
+    if (callDeployActions.length === 0) {
+      return err(
+        new UserError(
+          "fx",
+          "NoResourcePluginSelected",
+          getDefaultString("core.NoPluginSelected"),
+          getLocalizedString("core.NoPluginSelected")
+        )
+      );
+    }
+    if (hasAzureResource) {
+      actions.push(new FxPreDeployForAzureAction());
+    }
+    actions.push(buildAction);
+    context.logProvider.info(
+      getLocalizedString(
+        "core.deploy.selectedPluginsToDeployNotice",
+        PluginDisplayName.Solution,
+        JSON.stringify(components)
+      )
+    );
+    const callDeployGroup: GroupAction = {
+      type: "group",
+      name: "fx.callComponentDeploy",
+      mode: "parallel",
+      pre: (context: ContextV3, inputs: InputsWithProjectPath) => {
+        context.logProvider.info(
+          getLocalizedString("core.deploy.startNotice", PluginDisplayName.Solution)
+        );
+        return ok(undefined);
+      },
+      post: (context: ContextV3, inputs: InputsWithProjectPath) => {
+        if (hasAzureResource) {
+          const botTroubleShootMsg = getBotTroubleShootMessage(hasBot(context.projectSetting));
+          const msg =
+            getLocalizedString("core.deploy.successNotice", context.projectSetting.appName) +
+            botTroubleShootMsg.textForLogging;
+          context.logProvider.info(msg);
+          if (botTroubleShootMsg.textForLogging) {
+            // Show a `Learn more` action button for bot trouble shooting.
+            context.userInteraction
+              .showMessage(
+                "info",
+                `${getLocalizedString(
+                  "core.deploy.successNotice",
+                  context.projectSetting.appName
+                )} ${botTroubleShootMsg.textForMsgBox}`,
+                false,
+                botTroubleShootMsg.textForActionButton
+              )
+              .then((result) => {
+                const userSelected = result.isOk() ? result.value : undefined;
+                if (userSelected === botTroubleShootMsg.textForActionButton) {
+                  context.userInteraction.openUrl(botTroubleShootMsg.troubleShootLink);
+                }
+              });
+          } else {
+            context.userInteraction.showMessage("info", msg, false);
+          }
+        }
+        return ok(undefined);
+      },
+      actions: callDeployActions,
+    };
+    actions.push(callDeployGroup);
+    const finalAction: Action = {
       type: "group",
       name: "fx.deploy",
       actions: actions,
     };
-    return ok(action);
+    return ok(finalAction);
   }
 }

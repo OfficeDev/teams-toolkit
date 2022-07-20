@@ -77,11 +77,10 @@ describe("DotnetChecker E2E Test - first run", async () => {
         new TestTelemetry()
       ) as DotnetChecker;
       sinon.stub(dotnetChecker, "getResourceDir").returns(resourceDir);
-
-      const spyChecker = sandbox.spy(dotnetChecker);
-      const res = await spyChecker.resolve();
+      const getInstallationInfoSpy = sinon.spy(dotnetChecker, "getInstallationInfo");
+      const res = await dotnetChecker.resolve();
       assert.isTrue(res.isInstalled);
-      assert.isTrue(spyChecker.getInstallationInfo.calledTwice);
+      assert.isTrue(getInstallationInfoSpy.calledTwice);
       await verifyPrivateInstallation(dotnetChecker);
     } finally {
       cleanupCallback();

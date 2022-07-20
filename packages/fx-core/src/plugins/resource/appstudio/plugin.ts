@@ -703,22 +703,13 @@ export class AppStudioPluginImpl {
   }
 
   public async postLocalDebug(ctx: PluginContext): Promise<Result<string, FxError>> {
-    let teamsAppId = ctx.envInfo.state.get(ResourcePlugins.AppStudio).get(Constants.TEAMS_APP_ID);
-    if (teamsAppId) {
-      const res = await this.updateApp(ctx, true);
-      if (res.isErr()) {
-        return res;
-      }
-      teamsAppId = res.value;
-    } else {
-      const res = await this.createApp(ctx, true);
-      if (res.isErr()) {
-        return err(res.error);
-      }
-      teamsAppId = res.value.teamsAppId;
+    const res = await this.updateApp(ctx, true);
+    if (res.isErr()) {
+      return res;
     }
+    const teamsAppId = res.value;
     ctx.envInfo.state.get(ResourcePlugins.AppStudio).set(Constants.TEAMS_APP_ID, teamsAppId);
-    return ok(teamsAppId.value);
+    return ok(teamsAppId);
   }
 
   public async checkPermission(
@@ -1182,7 +1173,7 @@ export class AppStudioPluginImpl {
             "{{state.fx-resource-aad-app-for-teams.applicationIdUris}}",
         },
         "fx-resource-appstudio": {
-          teamsAppId: teamsAppId ?? "{{state.fx-resource-appstudio.teamsAppId}}",
+          teamsAppId: teamsAppId ?? v4(),
         },
         "fx-resource-bot": {
           botId: botId ?? "{{state.fx-resource-bot.botId}}",

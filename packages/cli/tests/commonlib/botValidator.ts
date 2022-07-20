@@ -107,6 +107,7 @@ export class BotValidator {
       this.botAppSiteName,
       token as string
     );
+    console.log(`getWebappSettings:${JSON.stringify(response)}`);
     chai.assert.exists(response);
     chai.assert.equal(
       response[BaseConfig.BOT_ID],

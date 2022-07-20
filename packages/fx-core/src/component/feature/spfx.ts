@@ -15,6 +15,8 @@ import {
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
+import { isVSProject } from "../../common/projectSettingsHelper";
+import { globalVars } from "../../core/globalVars";
 import { CoreQuestionNames } from "../../core/question";
 import {
   frameworkQuestion,
@@ -29,7 +31,6 @@ export class SPFxTab {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    inputs.hosting = ComponentNames.SPFx;
     const actions: Action[] = [
       {
         name: "fx.configTab",
@@ -54,7 +55,7 @@ export class SPFxTab {
           // add teams-tab
           projectSettings.components.push({
             name: "teams-tab",
-            hosting: inputs.hosting,
+            hosting: ComponentNames.SPFx,
             deploy: true,
           });
           // add hosting component
@@ -64,6 +65,7 @@ export class SPFxTab {
           });
           projectSettings.programmingLanguage =
             projectSettings.programmingLanguage || inputs[CoreQuestionNames.ProgrammingLanguage];
+          globalVars.isVS = isVSProject(projectSettings);
           return ok(["config 'teams-tab' in projectSettings"]);
         },
       },

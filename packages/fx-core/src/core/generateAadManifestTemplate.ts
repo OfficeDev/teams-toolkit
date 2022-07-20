@@ -10,10 +10,10 @@ import {
   RequiredResourceAccess,
 } from "../plugins/resource/aad/interfaces/AADManifest";
 import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
-import { getAppDirectory } from "../common";
-import { isV3 } from "./globalVars";
+import { getAppDirectory } from "../common/tools";
 import { ComponentNames } from "../component/constants";
 import { getComponent } from "../component/workflow";
+import { ProjectSettingsHelper } from "../common/local/projectSettingsHelper";
 
 interface Permission {
   resource: string;
@@ -55,7 +55,8 @@ export async function generateAadManifestTemplate(
   // if (isV3()) {
   //   updateRedirectUrlV3(aadJson, projectSettings);
   // } else {
-  if (azureSolutionSettings.capabilities.includes("Tab")) {
+  const hasTab = ProjectSettingsHelper.includeFrontend(projectSettings);
+  if (hasTab) {
     const tabRedirectUrl1 =
       "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/auth-end.html";
 
@@ -86,8 +87,8 @@ export async function generateAadManifestTemplate(
       });
     }
   }
-
-  if (azureSolutionSettings.capabilities.includes("Bot")) {
+  const hasBot = ProjectSettingsHelper.includeBot(projectSettings);
+  if (hasBot) {
     const botRedirectUrl = "{{state.fx-resource-aad-app-for-teams.botEndpoint}}/auth-end.html";
 
     if (!isRedirectUrlExist(aadJson.replyUrlsWithType, botRedirectUrl, "Web")) {

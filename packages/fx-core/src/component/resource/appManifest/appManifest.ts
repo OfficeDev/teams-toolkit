@@ -81,21 +81,11 @@ export class AppManifest implements CloudResource {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const createFilePath = [
-      path.join(inputs.projectPath, "templates", "appPackage", "resources", "color.png"),
-      path.join(inputs.projectPath, "templates", "appPackage", "resources", "outline.png"),
-      path.join(inputs.projectPath, "templates", "appPackage", "manifest.template.json"),
-    ];
-    const effect: FileEffect = {
-      type: "file",
-      operate: "create",
-      filePath: createFilePath,
-    };
     const action: Action = {
       name: "app-manifest.init",
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok([effect]);
+        return ok(["init app manifest template"]);
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const existingApp = inputs.existingApp as boolean;
@@ -117,7 +107,7 @@ export class AppManifest implements CloudResource {
         const defaultOutlinePath = path.join(templatesFolder, OUTLINE_TEMPLATE);
         await fs.copy(defaultColorPath, path.join(resourcesFolder, DEFAULT_COLOR_PNG_FILENAME));
         await fs.copy(defaultOutlinePath, path.join(resourcesFolder, DEFAULT_OUTLINE_PNG_FILENAME));
-        return ok([effect]);
+        return ok(["init app manifest template"]);
       },
     };
     return ok(action);
@@ -126,24 +116,21 @@ export class AppManifest implements CloudResource {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const effect: FileEffect = {
-      type: "file",
-      operate: "replace",
-      filePath: path.join(inputs.projectPath, "templates", "appPackage", "manifest.template.json"),
-    };
     const action: Action = {
       name: "app-manifest.addCapability",
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        effect.remarks = `add capabilities (${JSON.stringify(inputs.capabilities)}) in manifest`;
-        return ok([effect]);
+        return ok([
+          `add capabilities (${JSON.stringify(inputs.capabilities)}) in manifest template`,
+        ]);
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const capabilities = inputs.capabilities as v3.ManifestCapability[];
         const res = await addCapabilities(inputs, capabilities);
         if (res.isErr()) return err(res.error);
-        effect.remarks = `capabilities: ${capabilities.map((c) => c.name).join(",")}`;
-        return ok([effect]);
+        return ok([
+          `add capabilities (${JSON.stringify(inputs.capabilities)}) in manifest template`,
+        ]);
       },
     };
     return ok(action);

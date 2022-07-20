@@ -16,6 +16,7 @@ import {
 import "reflect-metadata";
 import { Service } from "typedi";
 import {
+  AzureSolutionQuestionNames,
   CommandAndResponseOptionItem,
   M365SearchAppOptionItem,
   MessageExtensionItem,
@@ -37,23 +38,11 @@ import "../resource/azureAppService/azureWebApp";
 import "../connection/azureWebAppConfig";
 import { ComponentNames, Scenarios } from "../constants";
 import { identityAction } from "../resource/identity";
+import { globalVars } from "../../core/globalVars";
+import { isVSProject } from "../../common/projectSettingsHelper";
 @Service("teams-bot")
 export class TeamsBot {
   name = "teams-bot";
-  /**
-   *
-   *   capability = Notification
-   *     bot-host-type-trigger = http-restify
-   *       group=bot, scenario=notification-restify, host=app-service
-   *     bot-host-type-trigger = [http-functions, timer-functions]
-   *       group=bot, host=function, scenario=notification-function-base + [notification-trigger-http, notification-trigger-timer]
-   *   capability = command-bot:
-   *     group=bot, host=app-service, scenario=command-and-response
-   *   capability = Bot
-   *     group=bot, host=app-service, scenario=default
-   *   capability = MessagingExtension
-   *     group=bot, host=app-service, scenario=default
-   */
 
   /**
    * 1. config bot in project settings
@@ -67,71 +56,49 @@ export class TeamsBot {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const feature = inputs.feature as string;
-    const triggers = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] as string[];
-    inputs.hosting = "azure-web-app";
-    const scenarios: string[] = [];
-    const manifestCapability: v3.ManifestCapability = {
-      name: feature === MessageExtensionItem.id ? "MessageExtension" : "Bot",
-    };
-    let botCapability: string;
-    if (feature === NotificationOptionItem.id) {
-      if (triggers.includes(AppServiceOptionItem.id)) {
-        scenarios.push(TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME);
-      } else if (triggers.includes(AppServiceOptionItemForVS.id)) {
-        scenarios.push(TemplateProjectsScenarios.NOTIFICATION_WEBAPI_SCENARIO_NAME);
-      } else {
-        inputs.hosting = "azure-function";
-        scenarios.push(TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME);
-        if (triggers.includes(FunctionsHttpTriggerOptionItem.id)) {
-          scenarios.push(
-            TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_HTTP_SCENARIO_NAME
-          );
-        }
-        if (triggers.includes(FunctionsTimerTriggerOptionItem.id)) {
-          scenarios.push(
-            TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_TIMER_SCENARIO_NAME
-          );
-        }
-      }
-      botCapability = "notification";
-    } else if (feature === CommandAndResponseOptionItem.id) {
-      scenarios.push(TemplateProjectsScenarios.COMMAND_AND_RESPONSE_SCENARIO_NAME);
-      botCapability = "command-response";
-    } else if (feature === MessageExtensionItem.id || feature === M365SearchAppOptionItem.id) {
-      botCapability = "message-extension";
-      if (feature === M365SearchAppOptionItem.id) {
-        scenarios.push(TemplateProjectsScenarios.M365_SCENARIO_NAME);
-      } else {
-        scenarios.push(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
-      }
-    } else {
-      scenarios.push(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
-      botCapability = "bot";
-    }
-    const configActions: Action[] = [
-      {
+    const configBicepActions: Action[] = [];
+    if (inputs.hosting) {
+      configBicepActions.push({
         name: `call:${inputs.hosting}-config.generateBicep`,
         type: "call",
         required: true,
         targetAction: `${inputs.hosting}-config.generateBicep`,
+        condition: (context, inputs) => {
+          if (inputs.hosting) {
+            inputs.componentId = this.name;
+            inputs.scenario = "Bot";
+          }
+          return ok(inputs.hosting !== undefined);
+        },
+      });
+    }
+    configBicepActions.push({
+      name: "call:apim-config.generateBicep",
+      type: "call",
+      required: true,
+      targetAction: "apim-config.generateBicep",
+      condition: (context, inputs) => {
+        return ok(getComponent(context.projectSetting, ComponentNames.APIM) !== undefined);
+      },
+    });
+    configBicepActions.push(identityAction);
+    const provisionBicepActions: Action[] = [];
+    if (inputs.hosting) {
+      provisionBicepActions.push({
+        name: `call:${inputs.hosting}.generateBicep`,
+        type: "call",
+        required: true,
+        targetAction: `${inputs.hosting}.generateBicep`,
         inputs: {
           componentId: this.name,
           scenario: "Bot",
         },
-      },
-    ];
-    // Configure apim if it exists, create identity if it does not exist
-    if (getComponent(context.projectSetting, ComponentNames.APIM) !== undefined) {
-      configActions.push({
-        name: "call:apim-config.generateBicep",
-        type: "call",
-        required: true,
-        targetAction: "apim-config.generateBicep",
+        pre: (context: ContextV3, inputs: InputsWithProjectPath) => {
+          inputs.scenario = "Bot";
+          inputs.componentId = this.name;
+          return ok(undefined);
+        },
       });
-    }
-    if (!getComponent(context.projectSetting, ComponentNames.Identity)) {
-      configActions.push(identityAction);
     }
     const actions: Action[] = [
       {
@@ -142,11 +109,12 @@ export class TeamsBot {
         },
         execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
           const projectSettings = context.projectSetting;
+          const res = getScenariosAndBotCapability(inputs);
           // add teams-bot
           const botConfig = getComponent(projectSettings, ComponentNames.TeamsBot);
           if (botConfig) {
-            if (botCapability && !botConfig.capabilities.includes(botCapability)) {
-              botConfig.capabilities.push(botCapability);
+            if (res.botCapability && !botConfig.capabilities.includes(res.botCapability)) {
+              botConfig.capabilities.push(res.botCapability);
             }
             return ok(["config Bot in project settings"]);
           }
@@ -154,7 +122,7 @@ export class TeamsBot {
             name: "teams-bot",
             hosting: inputs.hosting,
             deploy: true,
-            capabilities: botCapability ? [botCapability] : [],
+            capabilities: res.botCapability ? [res.botCapability] : [],
           });
           // add hosting component
           const hostingComponent = {
@@ -187,6 +155,7 @@ export class TeamsBot {
           }
           projectSettings.programmingLanguage =
             projectSettings.programmingLanguage || inputs[CoreQuestionNames.ProgrammingLanguage];
+          globalVars.isVS = isVSProject(projectSettings);
           return ok(["config Bot in project settings"]);
         },
       },
@@ -195,8 +164,10 @@ export class TeamsBot {
         type: "call",
         required: true,
         targetAction: "bot-code.generate",
-        inputs: {
-          scenarios: scenarios,
+        pre: (context: ContextV3, inputs: InputsWithProjectPath) => {
+          const res = getScenariosAndBotCapability(inputs);
+          inputs.scenarios = res.scenarios;
+          return ok(undefined);
         },
       },
       {
@@ -204,34 +175,17 @@ export class TeamsBot {
         targetAction: "bicep.init",
         required: true,
       },
-      {
-        name: `call:${inputs.hosting}.generateBicep`,
-        type: "call",
-        required: true,
-        targetAction: `${inputs.hosting}.generateBicep`,
-        inputs: {
-          componentId: this.name,
-          scenario: "Bot",
-        },
-      },
-      {
-        name: "call:bot-service.generateBicep",
-        type: "call",
-        required: true,
-        targetAction: "bot-service.generateBicep",
-        inputs: {
-          componentId: this.name,
-          scenario: "Bot",
-        },
-      },
-      ...configActions,
+      ...provisionBicepActions,
+      ...configBicepActions,
       {
         name: "call:app-manifest.addCapability",
         type: "call",
         required: true,
         targetAction: "app-manifest.addCapability",
-        inputs: {
-          capabilities: [manifestCapability],
+        pre: (context: ContextV3, inputs: InputsWithProjectPath) => {
+          const res = getScenariosAndBotCapability(inputs);
+          inputs.capabilities = [res.manifestCapability];
+          return ok(undefined);
         },
       },
       {
@@ -261,4 +215,68 @@ export class TeamsBot {
     };
     return ok(action);
   }
+}
+
+/**
+ *
+ *   capability = Notification
+ *     bot-host-type-trigger = http-restify
+ *       group=bot, scenario=notification-restify, host=app-service
+ *     bot-host-type-trigger = [http-functions, timer-functions]
+ *       group=bot, host=function, scenario=notification-function-base + [notification-trigger-http, notification-trigger-timer]
+ *   capability = command-bot:
+ *     group=bot, host=app-service, scenario=command-and-response
+ *   capability = Bot
+ *     group=bot, host=app-service, scenario=default
+ *   capability = MessagingExtension
+ *     group=bot, host=app-service, scenario=default
+ */
+function getScenariosAndBotCapability(inputs: InputsWithProjectPath): {
+  scenarios: string[];
+  botCapability: string;
+  manifestCapability: v3.ManifestCapability;
+} {
+  const feature = inputs[AzureSolutionQuestionNames.Features] as string;
+  const triggers = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] as string[];
+  const scenarios: string[] = [];
+  const manifestCapability: v3.ManifestCapability = {
+    name: feature === MessageExtensionItem.id ? "MessageExtension" : "Bot",
+  };
+  let botCapability: string;
+  inputs.hosting = ComponentNames.AzureWebApp;
+  if (feature === NotificationOptionItem.id) {
+    if (triggers.includes(AppServiceOptionItem.id)) {
+      scenarios.push(TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME);
+    } else if (triggers.includes(AppServiceOptionItemForVS.id)) {
+      scenarios.push(TemplateProjectsScenarios.NOTIFICATION_WEBAPI_SCENARIO_NAME);
+    } else {
+      inputs.hosting = ComponentNames.Function;
+      scenarios.push(TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME);
+      if (triggers.includes(FunctionsHttpTriggerOptionItem.id)) {
+        scenarios.push(TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_HTTP_SCENARIO_NAME);
+      }
+      if (triggers.includes(FunctionsTimerTriggerOptionItem.id)) {
+        scenarios.push(TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_TIMER_SCENARIO_NAME);
+      }
+    }
+    botCapability = "notification";
+  } else if (feature === CommandAndResponseOptionItem.id) {
+    scenarios.push(TemplateProjectsScenarios.COMMAND_AND_RESPONSE_SCENARIO_NAME);
+    botCapability = "command-response";
+  } else if (feature === MessageExtensionItem.id || feature === M365SearchAppOptionItem.id) {
+    botCapability = "message-extension";
+    if (feature === M365SearchAppOptionItem.id) {
+      scenarios.push(TemplateProjectsScenarios.M365_SCENARIO_NAME);
+    } else {
+      scenarios.push(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
+    }
+  } else {
+    scenarios.push(TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME);
+    botCapability = "bot";
+  }
+  return {
+    scenarios,
+    botCapability,
+    manifestCapability,
+  };
 }

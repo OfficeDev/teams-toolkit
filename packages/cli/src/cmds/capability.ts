@@ -49,11 +49,9 @@ abstract class CapabilityAddBase extends YargsCommand {
       if (result.isErr()) {
         throw result.error;
       }
-      if (result.value) {
-        const node = result.value;
-        const nodes = flattenNodes(node).concat([RootFolderNode]);
-        this.params = toYargsOptionsGroup(nodes);
-      }
+      const node = result.value;
+      const nodes = node ? flattenNodes(node).concat([RootFolderNode]) : [RootFolderNode];
+      this.params = toYargsOptionsGroup(nodes);
     }
     return yargs.options(this.params);
   }

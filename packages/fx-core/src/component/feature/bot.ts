@@ -91,13 +91,20 @@ export class TeamsBot {
         type: "call",
         required: true,
         targetAction: `${inputs.hosting}.generateBicep`,
-        inputs: {
-          componentId: this.name,
-          scenario: "Bot",
-        },
         pre: (context: ContextV3, inputs: InputsWithProjectPath) => {
           inputs.scenario = "Bot";
           inputs.componentId = this.name;
+          return ok(undefined);
+        },
+      });
+      provisionBicepActions.push({
+        name: `call:bot-service.generateBicep`,
+        type: "call",
+        required: true,
+        targetAction: "bot-service.generateBicep",
+        pre: (context: ContextV3, inputs: InputsWithProjectPath) => {
+          inputs.scenario = "";
+          inputs.componentId = "";
           return ok(undefined);
         },
       });

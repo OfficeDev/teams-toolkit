@@ -40,6 +40,7 @@ import { ComponentNames, Scenarios } from "../constants";
 import { identityAction } from "../resource/identity";
 import { globalVars } from "../../core/globalVars";
 import { isVSProject } from "../../common/projectSettingsHelper";
+import { hasAAD, hasAzureTab } from "../../common/projectSettingsHelperV3";
 @Service("teams-bot")
 export class TeamsBot {
   name = "teams-bot";
@@ -163,6 +164,19 @@ export class TeamsBot {
           const apimConfig = getComponent(projectSettings, ComponentNames.APIM);
           if (apimConfig) {
             apimConfig.connections?.push(ComponentNames.TeamsBot);
+          }
+          if (hasAAD(projectSettings)) {
+            hostingComponent.connections.push(ComponentNames.AadApp);
+          }
+          if (hasAzureTab(projectSettings)) {
+            hostingComponent.connections.push(ComponentNames.TeamsTab);
+          }
+          if (getComponent(projectSettings, ComponentNames.KeyVault)) {
+            hostingComponent.connections.push(ComponentNames.KeyVault);
+          }
+          // TODO How to distinguish azure-function???
+          if (getComponent(projectSettings, ComponentNames.Function)) {
+            hostingComponent.connections.push(ComponentNames.Function);
           }
           projectSettings.programmingLanguage =
             projectSettings.programmingLanguage || inputs[CoreQuestionNames.ProgrammingLanguage];

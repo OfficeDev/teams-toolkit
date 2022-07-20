@@ -10,6 +10,7 @@ import { err, FxError, ok, Platform, ProjectSettings, Result } from "@microsoft/
 import {
   AzureSolutionQuestionNames as Names,
   isBotNotificationEnabled,
+  isV3,
   ProjectSettingsHelper,
 } from "@microsoft/teamsfx-core";
 
@@ -25,6 +26,7 @@ import {
 import { automaticNpmInstallHandler } from "./preview/npmInstallHandler";
 import { AddFeatureFunc, CLIHelpInputs, RootFolderNode } from "../constants";
 import { filterQTreeNode, toYargsOptionsGroup } from "../questionUtils";
+import { FeatureId } from "@microsoft/teamsfx-core/build/component/questionV3";
 
 abstract class CapabilityAddBase extends YargsCommand {
   abstract readonly capabilityName: string;
@@ -41,13 +43,17 @@ abstract class CapabilityAddBase extends YargsCommand {
     }
     const core = result.value;
     {
-      const result = await core.getQuestionsForUserTask(AddFeatureFunc, CLIHelpInputs);
+      const result = isV3()
+        ? await core.getQuestionsForAddFeature(this.capabilityName as FeatureId, CLIHelpInputs)
+        : await core.getQuestionsForUserTask(AddFeatureFunc, CLIHelpInputs);
       if (result.isErr()) {
         throw result.error;
       }
-      const node = await filterQTreeNode(result.value!, Names.Features, this.capabilityName);
-      const nodes = flattenNodes(node!).concat([RootFolderNode]);
-      this.params = toYargsOptionsGroup(nodes);
+      if (result.value) {
+        const node = result.value;
+        const nodes = flattenNodes(node).concat([RootFolderNode]);
+        this.params = toYargsOptionsGroup(nodes);
+      }
     }
     return yargs.options(this.params);
   }

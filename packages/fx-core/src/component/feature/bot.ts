@@ -57,6 +57,8 @@ export class TeamsBot {
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const configBicepActions: Action[] = [];
+    const res = convertBotInputs(inputs);
+    inputs.hosting = res.hosting;
     if (inputs.hosting) {
       configBicepActions.push({
         name: `call:${inputs.hosting}-config.generateBicep`,
@@ -109,7 +111,7 @@ export class TeamsBot {
         },
         execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
           const projectSettings = context.projectSetting;
-          const res = getScenariosAndBotCapability(inputs);
+          const res = convertBotInputs(inputs);
           // add teams-bot
           const botConfig = getComponent(projectSettings, ComponentNames.TeamsBot);
           if (botConfig) {
@@ -119,7 +121,7 @@ export class TeamsBot {
             return ok(["config Bot in project settings"]);
           }
           projectSettings.components.push({
-            name: "teams-bot",
+            name: ComponentNames.TeamsBot,
             hosting: inputs.hosting,
             deploy: true,
             capabilities: res.botCapability ? [res.botCapability] : [],
@@ -127,18 +129,20 @@ export class TeamsBot {
           // add hosting component
           const hostingComponent = {
             name: inputs.hosting,
-            connections: ["teams-bot"],
+            connections: [ComponentNames.TeamsBot],
             scenario: Scenarios.Bot,
           };
           projectSettings.components.push(hostingComponent);
           //add bot-service
-          projectSettings.components.push({
-            name: "bot-service",
-            provision: true,
-          });
-          // add default identity
-          if (!getComponent(context.projectSetting, ComponentNames.Identity)) {
+          if (!getComponent(context.projectSetting, ComponentNames.BotService)) {
             projectSettings.components.push({
+              name: ComponentNames.BotService,
+              provision: true,
+            });
+          }
+          // ensure identity config
+          if (!getComponent(context.projectSetting, ComponentNames.Identity)) {
+            context.projectSetting.components.push({
               name: ComponentNames.Identity,
               provision: true,
             });
@@ -146,12 +150,12 @@ export class TeamsBot {
           // connect identity to hosting component
           hostingComponent.connections.push(ComponentNames.Identity);
           // connect azure-sql to hosting component
-          if (getComponent(context.projectSetting, "azure-sql")) {
-            hostingComponent.connections.push("azure-sql");
+          if (getComponent(context.projectSetting, ComponentNames.AzureSQL)) {
+            hostingComponent.connections.push(ComponentNames.AzureSQL);
           }
           const apimConfig = getComponent(projectSettings, ComponentNames.APIM);
           if (apimConfig) {
-            apimConfig.connections?.push("teams-bot");
+            apimConfig.connections?.push(ComponentNames.TeamsBot);
           }
           projectSettings.programmingLanguage =
             projectSettings.programmingLanguage || inputs[CoreQuestionNames.ProgrammingLanguage];
@@ -165,7 +169,7 @@ export class TeamsBot {
         required: true,
         targetAction: "bot-code.generate",
         pre: (context: ContextV3, inputs: InputsWithProjectPath) => {
-          const res = getScenariosAndBotCapability(inputs);
+          const res = convertBotInputs(inputs);
           inputs.scenarios = res.scenarios;
           return ok(undefined);
         },
@@ -183,7 +187,7 @@ export class TeamsBot {
         required: true,
         targetAction: "app-manifest.addCapability",
         pre: (context: ContextV3, inputs: InputsWithProjectPath) => {
-          const res = getScenariosAndBotCapability(inputs);
+          const res = convertBotInputs(inputs);
           inputs.capabilities = [res.manifestCapability];
           return ok(undefined);
         },
@@ -231,7 +235,8 @@ export class TeamsBot {
  *   capability = MessagingExtension
  *     group=bot, host=app-service, scenario=default
  */
-function getScenariosAndBotCapability(inputs: InputsWithProjectPath): {
+function convertBotInputs(inputs: InputsWithProjectPath): {
+  hosting: string;
   scenarios: string[];
   botCapability: string;
   manifestCapability: v3.ManifestCapability;
@@ -243,14 +248,14 @@ function getScenariosAndBotCapability(inputs: InputsWithProjectPath): {
     name: feature === MessageExtensionItem.id ? "MessageExtension" : "Bot",
   };
   let botCapability: string;
-  inputs.hosting = ComponentNames.AzureWebApp;
+  let hosting = ComponentNames.AzureWebApp;
   if (feature === NotificationOptionItem.id) {
     if (triggers.includes(AppServiceOptionItem.id)) {
       scenarios.push(TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME);
     } else if (triggers.includes(AppServiceOptionItemForVS.id)) {
       scenarios.push(TemplateProjectsScenarios.NOTIFICATION_WEBAPI_SCENARIO_NAME);
     } else {
-      inputs.hosting = ComponentNames.Function;
+      hosting = ComponentNames.Function;
       scenarios.push(TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME);
       if (triggers.includes(FunctionsHttpTriggerOptionItem.id)) {
         scenarios.push(TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_HTTP_SCENARIO_NAME);
@@ -275,6 +280,7 @@ function getScenariosAndBotCapability(inputs: InputsWithProjectPath): {
     botCapability = "bot";
   }
   return {
+    hosting,
     scenarios,
     botCapability,
     manifestCapability,

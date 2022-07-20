@@ -21,7 +21,10 @@ import { getLocalizedString } from "../../common/localizeUtils";
 import { isVSProject } from "../../common/projectSettingsHelper";
 import { globalVars } from "../../core/globalVars";
 import { CoreQuestionNames } from "../../core/question";
-import { TabNonSsoItem } from "../../plugins/solution/fx-solution/question";
+import {
+  AzureSolutionQuestionNames,
+  TabNonSsoItem,
+} from "../../plugins/solution/fx-solution/question";
 import { ComponentNames, Scenarios } from "../constants";
 import { identityAction } from "../resource/identity";
 import { getComponent } from "../workflow";
@@ -43,6 +46,7 @@ export class TeamsTab {
   }
 
   private addTabAction(context: ContextV3, inputs: InputsWithProjectPath): Action {
+    inputs.hosting = resolveHosting(context, inputs);
     const actions: Action[] = [];
     this.setupConfiguration(actions, context, inputs);
     this.setupCode(actions, context);
@@ -67,7 +71,7 @@ export class TeamsTab {
     if (this.hasTab(context)) {
       return actions;
     }
-    if (inputs.feature !== TabNonSsoItem.id) {
+    if (inputs[AzureSolutionQuestionNames.Features] !== TabNonSsoItem.id) {
       actions.push(addSSO);
     }
     actions.push(configTab);
@@ -105,8 +109,6 @@ export class TeamsTab {
     ];
     actions.push(initBicep);
     if (inputs.hosting) {
-    }
-    if (inputs.hosting) {
       actions.push({
         name: `call:${inputs.hosting}.generateBicep`,
         type: "call",
@@ -120,7 +122,6 @@ export class TeamsTab {
         },
       });
     }
-
     // TODO: connect AAD for blazor web app
     actions.push(...configActions);
     return actions;
@@ -157,7 +158,6 @@ const configTab: Action = {
     return ok(["config Tab in projectSettings"]);
   },
   execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-    inputs.hosting = resolveHosting(inputs);
     const projectSettings = context.projectSetting as ProjectSettingsV3;
     const tabConfig = getComponent(projectSettings, ComponentNames.TeamsTab);
     if (tabConfig) {
@@ -180,13 +180,7 @@ const configTab: Action = {
     if (apimConfig) {
       apimConfig.connections?.push(ComponentNames.TeamsTab);
     }
-    // add default identity
-    if (!getComponent(context.projectSetting, ComponentNames.Identity)) {
-      projectSettings.components.push({
-        name: ComponentNames.Identity,
-        provision: true,
-      });
-    }
+
     projectSettings.programmingLanguage =
       projectSettings.programmingLanguage || inputs[CoreQuestionNames.ProgrammingLanguage];
     globalVars.isVS = isVSProject(projectSettings);
@@ -265,11 +259,12 @@ const addTab: (actions: Action[]) => GroupAction = (actions: Action[]) => ({
   actions: actions,
 });
 
-function resolveHosting(inputs: InputsWithProjectPath): string {
-  return (
-    inputs.hosting ||
-    (inputs?.["programming-language"] === "csharp"
-      ? ComponentNames.AzureWebApp
-      : ComponentNames.AzureStorage)
-  );
+function resolveHosting(context: ContextV3, inputs: InputsWithProjectPath): string {
+  if (!inputs.hosting) {
+    const programmingLanguage =
+      context.projectSetting.programmingLanguage || inputs[CoreQuestionNames.ProgrammingLanguage];
+    inputs.hosting =
+      programmingLanguage === "csharp" ? ComponentNames.AzureWebApp : ComponentNames.AzureStorage;
+  }
+  return inputs.hosting;
 }

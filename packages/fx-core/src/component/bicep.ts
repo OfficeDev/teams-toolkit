@@ -17,6 +17,7 @@ import fs from "fs-extra";
 import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
+import { getProjectTemplatesFolderPath } from "../common/utils";
 import { createCapabilityForDotNet } from "../core/question";
 import { getTemplatesFolder } from "../folder";
 import arm from "../plugins/solution/fx-solution/arm";
@@ -31,25 +32,32 @@ export class BicepProvider {
     const action: Action = {
       name: "bicep.init",
       type: "function",
-      plan: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const targetFolder = path.join(inputs.projectPath, "templates", "azure");
-        return ok(
-          createFilesEffects(
-            [
-              path.join(targetFolder, "main.bicep"),
-              path.join(targetFolder, "provision.bicep"),
-              path.join(targetFolder, "config.bicep"),
-            ],
-            "skip"
-          )
+      condition: async (context, inputs) => {
+        const targetFolder = path.join(
+          await getProjectTemplatesFolderPath(inputs.projectPath),
+          "azure"
         );
+        if (
+          (await fs.pathExists(path.join(targetFolder, "main.bicep"))) &&
+          (await fs.pathExists(path.join(targetFolder, "provision.bicep"))) &&
+          (await fs.pathExists(path.join(targetFolder, "config.bicep")))
+        ) {
+          return ok(false);
+        }
+        return ok(true);
+      },
+      plan: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+        return ok(["initialize bicep template folder"]);
       },
       execute: async (
         context: ContextV3,
         inputs: InputsWithProjectPath
       ): Promise<Result<any, FxError>> => {
         const sourceFolder = path.join(getTemplatesFolder(), "bicep");
-        const targetFolder = path.join(inputs.projectPath, "templates", "azure");
+        const targetFolder = path.join(
+          await getProjectTemplatesFolderPath(inputs.projectPath),
+          "azure"
+        );
         if (
           (await fs.pathExists(path.join(targetFolder, "main.bicep"))) &&
           (await fs.pathExists(path.join(targetFolder, "provision.bicep"))) &&

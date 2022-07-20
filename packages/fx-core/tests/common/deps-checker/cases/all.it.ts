@@ -246,7 +246,7 @@ describe("All checkers E2E test", async () => {
     assert.equal(node.type, DepsType.AzureNode);
     assert.isTrue(node.isInstalled);
     assert.isNotNull(node.command);
-    assert.isNull(node.error);
+    assert.isUndefined(node.error);
 
     // verify dotnet
     const dotnet = depsStatus[1];
@@ -269,7 +269,7 @@ function verifyAllSuccess(depsStatus: DependencyStatus[]) {
   for (const dep of depsStatus) {
     assert.isTrue(dep.isInstalled);
     assert.isNotNull(dep.command);
-    assert.isNull(dep.error);
+    assert.isUndefined(dep.error);
     assert.isNotNull(dep.details.supportedVersions);
   }
 }

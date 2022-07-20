@@ -342,7 +342,6 @@ export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): Pro
       activeResourcePlugins: [
         "fx-resource-local-debug",
         "fx-resource-appstudio",
-        "fx-resource-key-vault",
         "fx-resource-cicd",
         "fx-resource-api-connector",
       ],

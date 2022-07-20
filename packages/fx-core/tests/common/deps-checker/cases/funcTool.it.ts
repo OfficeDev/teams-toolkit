@@ -54,7 +54,9 @@ describe("FuncToolChecker E2E Test", async () => {
 
     expect(res.isInstalled).to.be.equal(true);
     expect((await funcToolChecker.getInstallationInfo()).isInstalled).to.be.equal(true);
-    expect(res.details.binFolders).to.be.equal(funcToolChecker.getPortableFuncBinFolders());
+    expect(res.details.binFolders).to.to.have.all.members(
+      funcToolChecker.getPortableFuncBinFolders()
+    );
     assert.isTrue(
       /node "[^"]*"$/g.test(res.command),
       `should use portable func, and func command = ${res.command}`

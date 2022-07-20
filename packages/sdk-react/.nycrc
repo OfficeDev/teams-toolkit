@@ -3,7 +3,7 @@
   "all": true,
   "include": ["src/**/*.ts", "src/**/*.js"],
   "exclude": ["src/useTeamsFx.ts"],
-  "reporter": ["text", "html", "json-summary", "cobertura"],
+  "reporter": ["text", "html", "json-summary", "cobertura", "lcov"],
   "check-coverage": true,
   "lines": 90
 }

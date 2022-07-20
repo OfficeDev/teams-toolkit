@@ -191,7 +191,7 @@ describe("Post Local Debug", () => {
     });
 
     sandbox.stub(axios, "create").returns(fakeAxiosInstance);
-    sandbox.stub(AppStudioClient, "createApp").resolves(appDef);
+    sandbox.stub(AppStudioClient, "importApp").resolves(appDef);
     sandbox.stub(ManifestUtil, "validateManifest").resolves([]);
 
     const postLocalDebugResult = await plugin.postLocalDebug(ctx);
@@ -249,7 +249,7 @@ describe("Post Local Debug", () => {
     });
 
     sandbox.stub(axios, "create").returns(fakeAxiosInstance);
-    sandbox.stub(AppStudioClient, "createApp").resolves(appDef);
+    sandbox.stub(AppStudioClient, "importApp").resolves(appDef);
 
     const postLocalDebugResult = await plugin.postLocalDebug(ctx);
 

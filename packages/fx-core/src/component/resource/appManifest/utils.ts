@@ -6,7 +6,7 @@ import * as path from "path";
 import "reflect-metadata";
 import { getProjectTemplatesFolderPath } from "../../../common/utils";
 import { isV3 } from "../../../core/globalVars";
-import { convertManifestTemplateToV3 } from "../../migrate";
+import { convertManifestTemplateToV2, convertManifestTemplateToV3 } from "../../migrate";
 
 export async function readAppManifest(
   projectPath: string
@@ -15,9 +15,6 @@ export async function readAppManifest(
   const content = await fs.readFile(filePath, { encoding: "utf-8" });
   const contentV3 = isV3() ? convertManifestTemplateToV3(content) : content;
   const manifest = JSON.parse(contentV3) as TeamsAppManifest;
-  if (contentV3 !== content) {
-    await fs.writeFile(filePath, contentV3);
-  }
   return ok(manifest);
 }
 
@@ -26,7 +23,9 @@ export async function writeAppManifest(
   projectPath: string
 ): Promise<Result<undefined, FxError>> {
   const filePath = await getTeamsAppManifestPath(projectPath);
-  await fs.writeFile(filePath, JSON.stringify(appManifest, undefined, 4));
+  const content = JSON.stringify(appManifest, undefined, 4);
+  const contentV2 = isV3() ? convertManifestTemplateToV2(content) : content;
+  await fs.writeFile(filePath, contentV2);
   return ok(undefined);
 }
 

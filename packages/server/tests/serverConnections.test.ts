@@ -7,7 +7,7 @@ import sinon from "sinon";
 import { CancellationToken, createMessageConnection, Event } from "vscode-jsonrpc";
 import ServerConnection from "../src/serverConnection";
 import { Duplex } from "stream";
-import { Inputs, ok } from "@microsoft/teamsfx-api";
+import { Inputs, ok, Platform, Stage } from "@microsoft/teamsfx-api";
 import { setFunc } from "../src/customizedFuncAdapter";
 
 class TestStream extends Duplex {
@@ -39,6 +39,19 @@ describe("serverConnections", () => {
     const connection = new ServerConnection(msgConn);
     connection.listen();
     assert.isTrue(stub.calledOnce);
+  });
+
+  it("getQuestionsRequest", () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.returns(undefined);
+    sandbox.replace(connection["core"], "getQuestions", fake);
+    const stage = Stage.create;
+    const inputs = { platform: Platform.VS };
+    const token = {};
+    const res = connection.getQuestionsRequest(stage, inputs as Inputs, token as CancellationToken);
+    res.then((data) => {
+      assert.equal(data, ok(undefined));
+    });
   });
 
   it("createProjectRequest", () => {

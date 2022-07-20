@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { Service } from "typedi";
+import { IdentityOutputs, WebAppOutputs } from "../../constants";
 import { AzureAppService } from "./azureAppService";
 @Service("azure-web-app")
 export class AzureWebAppResource extends AzureAppService {
@@ -9,19 +10,11 @@ export class AzureWebAppResource extends AzureAppService {
   readonly alias = "WA";
   readonly displayName = "Azure Web App";
   readonly bicepModuleName = "azureWebApp";
-  readonly outputs = {
-    resourceId: {
-      key: "resourceId",
-      bicepVariable: "provisionOutputs.azureWebApp{{componentName}}Output.value.resourceId",
-    },
-    siteEndpoint: {
-      key: "siteEndpoint",
-      bicepVariable: "provisionOutputs.azureWebApp{{componentName}}Output.value.siteEndpoint",
-    },
-    siteEndpointAsParam: {
-      key: "siteEndpointAsParam",
-      bicepVariable: "azureWebApp{{componentName}}Provision.outputs.siteEndpoint",
+  readonly outputs = WebAppOutputs;
+  readonly finalOutputKeys = ["resourceId", "endpoint"];
+  templateContext = {
+    identity: {
+      resourceId: IdentityOutputs.identityResourceId.bicepVariable,
     },
   };
-  readonly finalOutputKeys = ["resourceId", "endpoint"];
 }

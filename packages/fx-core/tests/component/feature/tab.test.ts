@@ -10,6 +10,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import * as templatesAction from "../../../src/common/template-utils/templatesActions";
 import * as manifestUtils from "../../../src/component/resource/appManifest/utils";
+import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
 import { assert } from "chai";
 import "mocha";
 import * as os from "os";
@@ -20,10 +21,10 @@ import * as utils from "../../../src/component/utils";
 import { getComponent, runAction } from "../../../src/component/workflow";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools, randomAppName } from "../../core/utils";
-import "../../../src/component/feature/bot";
 import "../../../src/component/core";
 import { environmentManager } from "../../../src/core/environment";
 import { ComponentNames } from "../../../src/component/constants";
+import * as aadManifest from "../../../src/core/generateAadManifestTemplate";
 describe("Tab Feature", () => {
   const sandbox = createSandbox();
   const tools = new MockTools();
@@ -43,7 +44,8 @@ describe("Tab Feature", () => {
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
     sandbox.stub(manifestUtils, "writeAppManifest").resolves();
-    sandbox.stub(fs, "readJson").resolves(context.projectSetting);
+    sandbox.stub(projectSettingsLoader, "loadProjectSettings").resolves(ok(projectSetting));
+    sandbox.stub(fs, "readJson").resolves({});
     sandbox.stub(fs, "writeJSON").resolves();
     sandbox.stub(fs, "writeJson").resolves();
     sandbox.stub(fs, "pathExists").resolves(true);
@@ -56,6 +58,7 @@ describe("Tab Feature", () => {
     sandbox.stub(fs, "appendFileSync").returns();
     sandbox.stub(fs, "writeFileSync").returns();
     sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev"]));
+    sandbox.stub(aadManifest, "generateAadManifestTemplate").resolves();
   });
 
   afterEach(() => {
@@ -64,7 +67,7 @@ describe("Tab Feature", () => {
 
   it("add react tab", async () => {
     sandbox.stub(templatesAction, "scaffoldFromTemplates").resolves();
-    sandbox.stub(utils, "persistBicep").resolves();
+    sandbox.stub(utils, "persistBicep").resolves(ok(undefined));
 
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,

@@ -13,6 +13,7 @@ import {
 import "reflect-metadata";
 import { Container, Service } from "typedi";
 import { compileHandlebarsTemplateString } from "../../common/tools";
+import { ComponentNames, componentToScenario } from "../constants";
 import { getComponent } from "../workflow";
 import { AzureResourceConfig } from "./azureResourceConfig";
 @Service("azure-web-app-config")
@@ -26,12 +27,12 @@ export class AzureWebAppConfig extends AzureResourceConfig {
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     try {
-      const tabConfig = getComponent(context.projectSetting, "teams-tab");
+      const tabConfig = getComponent(context.projectSetting, ComponentNames.TeamsTab);
       if (tabConfig?.hosting) {
         const tabHosting = Container.get(tabConfig.hosting) as CloudResource;
         this.templateContext.tabDomainVarName = compileHandlebarsTemplateString(
           tabHosting.outputs.domain.bicepVariable || "",
-          inputs
+          { scenario: componentToScenario.get(ComponentNames.TeamsTab) }
         );
       }
     } catch {}

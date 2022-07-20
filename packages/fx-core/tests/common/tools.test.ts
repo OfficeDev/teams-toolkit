@@ -7,11 +7,17 @@ import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
 
-import { getSideloadingStatus, canAddApiConnection, canAddSso } from "../../src/common/tools";
+import {
+  getSideloadingStatus,
+  canAddApiConnection,
+  canAddSso,
+  getFixedCommonProjectSettings,
+} from "../../src/common/tools";
 import * as telemetry from "../../src/common/telemetry";
 import { AzureSolutionSettings, ProjectSettings } from "@microsoft/teamsfx-api";
 import { TabSsoItem } from "../../src/plugins/solution/fx-solution/question";
 import * as featureFlags from "../../src/common/featureFlags";
+import fs from "fs-extra";
 
 chai.use(chaiAsPromised);
 
@@ -210,6 +216,82 @@ describe("tools", () => {
 
       chai.assert.isDefined(result);
       chai.assert.isFalse(result);
+    });
+  });
+
+  describe("getFixedCommonProjectSettings", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("happy path", async () => {
+      const projectSettings: ProjectSettings = {
+        appName: "app-name",
+        projectId: "project-id",
+        version: "0.0.0",
+        isFromSample: false,
+        isM365: false,
+        solutionSettings: {
+          name: "fx-solution-azure",
+          version: "1.0.0",
+          hostType: "Azure",
+          azureResources: [],
+          capabilities: ["Tab", "Bot"],
+          activeResourcePlugins: [
+            "fx-resource-frontend-hosting",
+            "fx-resource-identity",
+            "fx-resource-bot",
+            "fx-resource-local-debug",
+            "fx-resource-appstudio",
+            "fx-resource-cicd",
+            "fx-resource-api-connector",
+          ],
+        },
+        programmingLanguage: "typescript",
+        pluginSettings: {
+          "fx-resource-bot": {
+            "host-type": "app-service",
+          },
+        },
+      };
+
+      sandbox.stub<any, any>(fs, "readJsonSync").callsFake((file: string) => {
+        return projectSettings;
+      });
+      sandbox.stub<any, any>(fs, "pathExistsSync").callsFake((file: string) => {
+        return true;
+      });
+
+      const result = getFixedCommonProjectSettings("root-path");
+      chai.assert.isNotEmpty(result);
+      chai.assert.equal(result!.projectId, projectSettings.projectId);
+      chai.assert.equal(result!.programmingLanguage, projectSettings.programmingLanguage);
+      chai.assert.equal(result!.isFromSample, projectSettings.isFromSample);
+      chai.assert.equal(result!.isM365, projectSettings.isM365);
+      chai.assert.equal(result!.hostType, projectSettings.solutionSettings?.hostType);
+    });
+
+    it("project settings not exists", async () => {
+      sandbox.stub<any, any>(fs, "pathExistsSync").callsFake((file: string) => {
+        return false;
+      });
+      const result = getFixedCommonProjectSettings("root-path");
+      chai.assert.isUndefined(result);
+    });
+
+    it("throw error", async () => {
+      sandbox.stub<any, any>(fs, "pathExistsSync").callsFake((file: string) => {
+        throw new Error("new error");
+      });
+      const result = getFixedCommonProjectSettings("root-path");
+      chai.assert.isUndefined(result);
+    });
+
+    it("empty root path", async () => {
+      const result = getFixedCommonProjectSettings("");
+      chai.assert.isUndefined(result);
     });
   });
 });

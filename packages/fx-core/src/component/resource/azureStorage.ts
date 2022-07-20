@@ -8,6 +8,7 @@ import {
   err,
   FxError,
   InputsWithProjectPath,
+  IProgressHandler,
   MaybePromise,
   ok,
   ProvisionContextV3,
@@ -29,28 +30,14 @@ import { AzureStorageClient } from "../../plugins/resource/frontend/clients";
 import { FrontendDeployment } from "../../plugins/resource/frontend/ops/deploy";
 import { AzureResource } from "./azureResource";
 import { getHostingParentComponent } from "../workflow";
+import { FrontendPluginInfo } from "../../plugins/resource/frontend/constants";
+import { StorageOutputs } from "../constants";
+import { Plans, ProgressMessages, ProgressTitles } from "../messages";
 @Service("azure-storage")
 export class AzureStorageResource extends AzureResource {
   readonly name = "azure-storage";
   readonly bicepModuleName = "azureStorage";
-  readonly outputs = {
-    endpoint: {
-      key: "endpoint",
-      bicepVariable: "provisionOutputs.azureStorage{{componentName}}Output.value.endpoint",
-    },
-    storageResourceId: {
-      key: "storageResourceId",
-      bicepVariable: "provisionOutputs.azureStorage{{componentName}}Output.value.storageResourceId",
-    },
-    domain: {
-      key: "domain",
-      bicepVariable: "provisionOutputs.azureStorage{{componentName}}Output.value.domain",
-    },
-    indexPath: {
-      key: "indexPath",
-      bicepVariable: "provisionOutputs.azureStorage{{componentName}}Output.value.indexPath",
-    },
-  };
+  readonly outputs = StorageOutputs;
   readonly finalOutputKeys = ["domain", "endpoint", "resourceId", "indexPath"];
   configure(
     context: ContextV3,
@@ -59,16 +46,23 @@ export class AzureStorageResource extends AzureResource {
     const action: Action = {
       name: "azure-storage.configure",
       type: "function",
+      enableTelemetry: true,
+      telemetryComponentName: FrontendPluginInfo.PluginName,
+      telemetryEventName: "deploy",
+      errorSource: FrontendPluginInfo.ShortName,
+      errorIssueLink: FrontendPluginInfo.IssueLink,
+      errorHelpLink: FrontendPluginInfo.HelpLink,
+      enableProgressBar: true,
+      progressTitle: ProgressTitles.configureStorage,
+      progressSteps: 1,
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok([
-          {
-            type: "service",
-            name: "azure",
-            remarks: "configure azure storage (enable static web site)",
-          },
-        ]);
+        return ok([Plans.enableStaticWebsite()]);
       },
-      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+      execute: async (
+        context: ContextV3,
+        inputs: InputsWithProjectPath,
+        progress?: IProgressHandler
+      ) => {
         const ctx = context as ProvisionContextV3;
         const parent = getHostingParentComponent(ctx.projectSetting, this.name);
         if (!parent) {
@@ -82,42 +76,45 @@ export class AzureStorageResource extends AzureResource {
         if (frontendConfigRes.isErr()) {
           return err(frontendConfigRes.error);
         }
+        progress?.next(ProgressMessages.enableStaticWebsite);
         const client = new AzureStorageClient(frontendConfigRes.value);
         await client.enableStaticWebsite();
-        return ok([
-          {
-            type: "service",
-            name: "azure",
-            remarks: "configure azure storage (enable static web site)",
-          },
-        ]);
+        return ok([Plans.enableStaticWebsite()]);
       },
     };
     return ok(action);
   }
-  deploy(
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
+  deploy(): MaybePromise<Result<Action | undefined, FxError>> {
     const action: Action = {
       name: "azure-storage.deploy",
       type: "function",
+      enableTelemetry: true,
+      telemetryComponentName: FrontendPluginInfo.PluginName,
+      telemetryEventName: "deploy",
+      errorSource: FrontendPluginInfo.ShortName,
+      errorIssueLink: FrontendPluginInfo.IssueLink,
+      errorHelpLink: FrontendPluginInfo.HelpLink,
+      enableProgressBar: true,
+      progressTitle: ProgressTitles.deployingStorage,
+      progressSteps: 3,
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const parent = getHostingParentComponent(context.projectSetting, this.name);
+        const parent = getHostingParentComponent(
+          context.projectSetting,
+          this.name,
+          inputs.scenario
+        );
         const deployDir = path.resolve(inputs.projectPath, parent?.folder ?? "");
-        return ok([
-          {
-            type: "service",
-            name: "azure",
-            remarks: `deploy azure storage with path: ${deployDir}`,
-          },
-        ]);
+        return ok([Plans.deploy("Azure Storage", deployDir)]);
       },
-      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+      execute: async (
+        context: ContextV3,
+        inputs: InputsWithProjectPath,
+        progress?: IProgressHandler
+      ) => {
         const ctx = context as ProvisionContextV3;
         const parent = getHostingParentComponent(ctx.projectSetting, this.name);
         if (!parent?.folder) {
-          throw new Error("");
+          throw new Error("parent component not found for azure-storage");
         }
         const deployDir = path.resolve(inputs.projectPath, parent.folder);
         const frontendConfigRes = await buildFrontendConfig(
@@ -130,14 +127,8 @@ export class AzureStorageResource extends AzureResource {
         }
         const client = new AzureStorageClient(frontendConfigRes.value);
         const envName = ctx.envInfo.envName;
-        await FrontendDeployment.doFrontendDeploymentV3(client, deployDir, envName);
-        return ok([
-          {
-            type: "service",
-            name: "azure",
-            remarks: `deploy azure storage with path: ${deployDir}`,
-          },
-        ]);
+        await FrontendDeployment.doFrontendDeploymentV3(client, deployDir, envName, progress);
+        return ok([Plans.deploy("Azure Storage", deployDir)]);
       },
     };
     return ok(action);
@@ -146,14 +137,14 @@ export class AzureStorageResource extends AzureResource {
 
 async function buildFrontendConfig(
   envInfo: v3.EnvInfoV3,
-  componentName: string,
+  scenario: string,
   tokenProvider: AzureAccountProvider
 ): Promise<Result<FrontendConfig, FxError>> {
   const credentials = await tokenProvider.getAccountCredentialAsync();
   if (!credentials) {
     return err(new UnauthenticatedError());
   }
-  const storage = envInfo.state[componentName];
+  const storage = envInfo.state[scenario];
   const resourceId = storage?.storageResourceId;
   if (!resourceId) {
     return err(

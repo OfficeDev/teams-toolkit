@@ -68,6 +68,7 @@ import {
   FolderName,
   FxCore,
   getAppDirectory,
+  getFixedCommonProjectSettings,
   getHashedEnv,
   globalStateGet,
   globalStateUpdate,
@@ -157,8 +158,21 @@ export function activate(): Result<Void, FxError> {
   const result: Result<Void, FxError> = ok(Void);
   const validProject = isValidProject(globalVariables.workspaceUri?.fsPath);
   if (validProject) {
-    const projectId = getProjectId() || "unknown";
-    ExtTelemetry.addSharedProperty(TelemetryProperty.ProjectId, projectId);
+    const fixedProjectSettings = getFixedCommonProjectSettings(
+      globalVariables.workspaceUri?.fsPath
+    );
+    ExtTelemetry.addSharedProperty(TelemetryProperty.ProjectId, fixedProjectSettings?.projectId);
+    ExtTelemetry.addSharedProperty(
+      TelemetryProperty.IsFromSample,
+      fixedProjectSettings?.isFromSample
+    );
+    ExtTelemetry.addSharedProperty(
+      TelemetryProperty.ProgrammingLanguage,
+      fixedProjectSettings?.programmingLanguage
+    );
+    ExtTelemetry.addSharedProperty(TelemetryProperty.HostType, fixedProjectSettings?.hostType);
+    ExtTelemetry.addSharedProperty(TelemetryProperty.IsM365, fixedProjectSettings?.isM365);
+
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTeamsApp, {});
     AzureAccountManager.setStatusChangeMap(
       "successfully-sign-in-azure",

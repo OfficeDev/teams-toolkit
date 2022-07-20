@@ -19,7 +19,9 @@ import { Service } from "typedi";
 import { format } from "util";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { CoreQuestionNames } from "../../core/question";
-import { ComponentNames } from "../constants";
+import { TabNonSsoItem } from "../../plugins/solution/fx-solution/question";
+import { ComponentNames, Scenarios } from "../constants";
+import { identityAction } from "../resource/identity";
 import { getComponent } from "../workflow";
 
 @Service("teams-tab")
@@ -41,7 +43,7 @@ export class TeamsTab {
   private addTabAction(context: ContextV3, inputs: InputsWithProjectPath): Action {
     const actions: Action[] = [];
     inputs.hosting = this.resolveHosting(inputs);
-    this.setupConfiguration(actions, context);
+    this.setupConfiguration(actions, context, inputs);
     this.setupCode(actions, context);
     this.setupBicep(actions, context, inputs);
     this.setupCapabilities(actions, context);
@@ -65,9 +67,16 @@ export class TeamsTab {
     return tab != undefined; // using != to match both undefined and null
   }
 
-  private setupConfiguration(actions: Action[], context: ContextV3): Action[] {
+  private setupConfiguration(
+    actions: Action[],
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ): Action[] {
     if (this.hasTab(context)) {
       return actions;
+    }
+    if (inputs.feature !== TabNonSsoItem.id) {
+      actions.push(addSSO);
     }
     actions.push(configTab);
     return actions;
@@ -101,12 +110,14 @@ export class TeamsTab {
             },
           ]
         : [];
-
+    if (!getComponent(context.projectSetting, ComponentNames.Identity)) {
+      configActions.push(identityAction);
+    }
     actions.push(initBicep);
     actions.push(
       generateBicep(inputs.hosting, {
         componentId: this.name,
-        componentName: "Tab",
+        scenario: "Tab",
       })
     );
     // TODO: connect AAD for blazor web app
@@ -138,28 +149,52 @@ const configTab: Action = {
   name: "fx.configTab",
   type: "function",
   plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(["config 'teams-tab' in projectSettings"]);
+    const tabConfig = getComponent(context.projectSetting, ComponentNames.TeamsTab);
+    if (tabConfig) {
+      return ok([]);
+    }
+    return ok(["config Tab in projectSettings"]);
   },
   execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
     const projectSettings = context.projectSetting as ProjectSettingsV3;
+    const tabConfig = getComponent(projectSettings, ComponentNames.TeamsTab);
+    if (tabConfig) {
+      return ok([]);
+    }
     // add teams-tab
     projectSettings.components.push({
-      name: "teams-tab",
+      name: ComponentNames.TeamsTab,
       hosting: inputs.hosting,
+      deploy: true,
     });
     // add hosting component
     projectSettings.components.push({
       name: inputs.hosting,
-      connections: ["teams-tab"],
+      connections: [ComponentNames.TeamsTab],
       provision: true,
+      scenario: Scenarios.Tab,
     });
     const apimConfig = getComponent(projectSettings, ComponentNames.APIM);
     if (apimConfig) {
-      apimConfig.connections?.push("teams-tab");
+      apimConfig.connections?.push(ComponentNames.TeamsTab);
     }
-    projectSettings.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
-    return ok(["config 'teams-tab' in projectSettings"]);
+    // add default identity
+    if (!getComponent(context.projectSetting, ComponentNames.Identity)) {
+      projectSettings.components.push({
+        name: ComponentNames.Identity,
+        provision: true,
+      });
+    }
+    projectSettings.programmingLanguage =
+      projectSettings.programmingLanguage || inputs[CoreQuestionNames.ProgrammingLanguage];
+    return ok(["config Tab in projectSettings"]);
   },
+};
+
+const addSSO: Action = {
+  type: "call",
+  targetAction: "sso.add",
+  required: true,
 };
 
 const showTabAlreadyAddMessage: Action = {

@@ -24,13 +24,4 @@ export const identityAction: Action = {
     componentId: "",
     scenario: "",
   },
-  condition: (context, inputs) => {
-    const needed: boolean =
-      getComponent(context.projectSetting, ComponentNames.Identity) === undefined;
-    if (needed) {
-      inputs.componentId = "";
-      inputs.scenario = "";
-    }
-    return ok(needed);
-  },
 };

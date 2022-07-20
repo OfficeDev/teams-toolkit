@@ -12,6 +12,7 @@ import {
   Platform,
   ProjectSettingsV3,
   Result,
+  v3,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
@@ -20,7 +21,10 @@ import { getLocalizedString } from "../../common/localizeUtils";
 import { isVSProject } from "../../common/projectSettingsHelper";
 import { globalVars } from "../../core/globalVars";
 import { CoreQuestionNames } from "../../core/question";
-import { TabNonSsoItem } from "../../plugins/solution/fx-solution/question";
+import {
+  TabNonSsoItem,
+  AzureSolutionQuestionNames,
+} from "../../plugins/solution/fx-solution/question";
 import { ComponentNames, Scenarios } from "../constants";
 import { Plans } from "../messages";
 import { identityAction } from "../resource/identity";
@@ -44,11 +48,13 @@ export class TeamsTab {
 
   private addTabAction(context: ContextV3, inputs: InputsWithProjectPath): Action {
     const actions: Action[] = [];
-    this.setupConfiguration(actions);
+    this.setupConfiguration(actions, context);
     this.setupCode(actions, context);
-    this.setupBicep(actions, inputs);
-    this.setupCapabilities(actions);
-    actions.push(showTabAlreadyAddMessage);
+    this.setupBicep(actions, context, inputs);
+    this.setupCapabilities(actions, context);
+    if (this.hasTab(context)) {
+      actions.push(showTabAlreadyAddMessage);
+    }
     return {
       type: "group",
       name: "teams-tab.add",
@@ -57,61 +63,72 @@ export class TeamsTab {
     };
   }
 
-  private setupConfiguration(actions: Action[]): Action[] {
+  private setupConfiguration(actions: Action[], context: ContextV3): Action[] {
+    if (this.hasTab(context)) {
+      return actions;
+    }
     actions.push(addSSO);
     actions.push(configTab);
     return actions;
   }
 
   private setupCode(actions: Action[], context: ContextV3): Action[] {
+    if (this.hasTab(context)) {
+      return actions;
+    }
     actions.push(generateCode);
     actions.push(initLocalDebug);
     return actions;
   }
 
-  private setupBicep(actions: Action[], inputs: InputsWithProjectPath): Action[] {
+  private setupBicep(
+    actions: Action[],
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ): Action[] {
+    if (this.hasTab(context)) {
+      return actions;
+    }
     const hosting = resolveHosting(inputs);
     actions.push(initBicep);
     actions.push(generateBicep(hosting, this.name));
 
     // TODO: connect AAD for blazor web app
-    actions.push(identityAction);
+    if (getComponent(context.projectSetting, ComponentNames.Identity) === undefined) {
+      actions.push(identityAction);
+    }
     actions.push(configureApim);
     return actions;
   }
 
-  private setupCapabilities(actions: Action[]): Action[] {
-    actions.push(addTabCapability);
+  private setupCapabilities(actions: Action[], context: ContextV3): Action[] {
+    const capabilities: v3.ManifestCapability[] = [{ name: "staticTab" }];
+    if (!this.hasTab(context)) {
+      capabilities.push({ name: "configurableTab" });
+    }
+    actions.push(addTabCapability(capabilities));
     return actions;
+  }
+
+  private hasTab(context: ContextV3): boolean {
+    const tab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
+    return tab != undefined; // using != to match both undefined and null
   }
 }
 
-function hasTab(context: ContextV3): boolean {
-  const tab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
-  return tab != undefined; // using != to match both undefined and null
-}
-
-const addTabCapability: Action = {
+const addTabCapability: (capabilities: v3.ManifestCapability[]) => Action = (capabilities) => ({
   name: "call:app-manifest.addCapability",
   type: "call",
   required: true,
   targetAction: "app-manifest.addCapability",
-  pre: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    const capabilities = [{ name: "staticTab" }];
-    if (!hasTab(context)) {
-      capabilities.push({ name: "configurableTab" });
-    }
-    inputs.capabilities = capabilities;
-    return ok(undefined);
+  inputs: {
+    capabilities: capabilities,
   },
-};
+});
 
 const configTab: Action = {
   name: "fx.configTab",
   type: "function",
-  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(!hasTab(context));
-  },
   plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
     const tabConfig = getComponent(context.projectSetting, ComponentNames.TeamsTab);
     if (tabConfig) {
@@ -163,16 +180,13 @@ const addSSO: CallAction = {
   targetAction: "sso.add",
   required: true,
   condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(inputs.feature !== TabNonSsoItem.id);
+    return ok(inputs[AzureSolutionQuestionNames.Features] !== TabNonSsoItem.id);
   },
 };
 
 const showTabAlreadyAddMessage: Action = {
   name: "teams-tab.showTabAlreadyAddMessage",
   type: "function",
-  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(hasTab(context));
-  },
   plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
     return ok([]);
   },
@@ -191,27 +205,18 @@ const generateCode: Action = {
   type: "call",
   required: true,
   targetAction: "tab-code.generate",
-  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(!hasTab(context));
-  },
 };
 const initLocalDebug: Action = {
   name: "call:debug.generateLocalDebugSettings",
   type: "call",
   required: true,
   targetAction: "debug.generateLocalDebugSettings",
-  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(!hasTab(context));
-  },
 };
 
 const initBicep: Action = {
   type: "call",
   targetAction: "bicep.init",
   required: true,
-  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(!hasTab(context));
-  },
 };
 
 const generateBicep: (hosting: string, componentId: string) => Action = (hosting, componentId) => ({
@@ -222,9 +227,6 @@ const generateBicep: (hosting: string, componentId: string) => Action = (hosting
   inputs: {
     scenario: "Tab",
     componentId: componentId,
-  },
-  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(!hasTab(context));
   },
 });
 
@@ -243,9 +245,6 @@ const configureTab: CallAction = {
   type: "call",
   targetAction: "tab-code.configure",
   required: true,
-  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(!hasTab(context));
-  },
 };
 const buildTab: CallAction = {
   name: "teams-tab.build",

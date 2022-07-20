@@ -5,7 +5,6 @@ import {
   Action,
   CallAction,
   ContextV3,
-  FunctionAction,
   FxError,
   InputsWithProjectPath,
   MaybePromise,
@@ -22,6 +21,7 @@ import {
   M365SearchAppOptionItem,
   MessageExtensionItem,
   NotificationOptionItem,
+  AzureSolutionQuestionNames,
 } from "../../plugins/solution/fx-solution/question";
 import { QuestionNames, TemplateProjectsScenarios } from "../../plugins/resource/bot/constants";
 import {
@@ -65,8 +65,8 @@ export class TeamsBot {
    */
   addBotAction(context: ContextV3, inputs: InputsWithProjectPath): Action {
     const actions: Action[] = [];
-    this.setupConfiguration(actions);
-    this.setupCode(actions);
+    this.setupConfiguration(actions, context);
+    this.setupCode(actions, context);
     this.setupBicep(actions, context, inputs);
     this.setupManifest(actions);
     return {
@@ -85,13 +85,19 @@ export class TeamsBot {
     };
   }
 
-  private setupConfiguration(actions: Action[]): Action[] {
-    actions.push(addBotCapability);
-    actions.push(configBot);
+  private setupConfiguration(actions: Action[], context: ContextV3): Action[] {
+    if (this.hasBot(context.projectSetting)) {
+      actions.push(addBotCapability);
+    } else {
+      actions.push(configBot);
+    }
     return actions;
   }
 
-  private setupCode(actions: Action[]): Action[] {
+  private setupCode(actions: Action[], context: ContextV3): Action[] {
+    if (this.hasBot(context.projectSetting)) {
+      return actions;
+    }
     actions.push(generateBotCode);
     actions.push(initLocalDebug);
     return actions;
@@ -102,6 +108,9 @@ export class TeamsBot {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): Action[] {
+    if (this.hasBot(context.projectSetting)) {
+      return actions;
+    }
     const hosting = resolveHosting(inputs);
     actions.push(initBicep);
     actions.push(generateBotService(hosting));
@@ -109,7 +118,7 @@ export class TeamsBot {
     actions.push(configHosting(hosting, this.name));
     // Configure apim if it exists, create identity if it does not exist
     actions.push(configApim);
-    if (!getComponent(context.projectSetting, ComponentNames.Identity)) {
+    if (getComponent(context.projectSetting, ComponentNames.Identity) === undefined) {
       actions.push(identityAction);
     }
     return actions;
@@ -119,10 +128,10 @@ export class TeamsBot {
     actions.push(addCapabilities);
     return actions;
   }
-}
 
-function hasBot(projectSetting: ProjectSettingsV3): boolean {
-  return !!getComponent(projectSetting, ComponentNames.TeamsBot);
+  private hasBot(projectSetting: ProjectSettingsV3): boolean {
+    return !!getComponent(projectSetting, ComponentNames.TeamsBot);
+  }
 }
 
 const addCapabilities: Action = {
@@ -132,7 +141,10 @@ const addCapabilities: Action = {
   targetAction: "app-manifest.addCapability",
   pre: (context: ContextV3, inputs: InputsWithProjectPath) => {
     const manifestCapability: v3.ManifestCapability = {
-      name: inputs.feature === MessageExtensionItem.id ? "MessageExtension" : "Bot",
+      name:
+        inputs[AzureSolutionQuestionNames.Features] === MessageExtensionItem.id
+          ? "MessageExtension"
+          : "Bot",
     };
     inputs.capabilities = [manifestCapability];
     return ok(undefined);
@@ -143,9 +155,6 @@ const initBicep: Action = {
   type: "call",
   targetAction: "bicep.init",
   required: true,
-  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(!hasBot(context.projectSetting));
-  },
 };
 
 const generateBotService: (hosting: string) => Action = (hosting) => ({
@@ -156,9 +165,6 @@ const generateBotService: (hosting: string) => Action = (hosting) => ({
   inputs: {
     hosting: hosting,
     scenario: "Bot",
-  },
-  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(!hasBot(context.projectSetting));
   },
 });
 
@@ -174,9 +180,6 @@ const generateHosting: (hosting: string, componentId: string) => Action = (
     componentId: componentId,
     scenario: "Bot",
   },
-  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(!hasBot(context.projectSetting));
-  },
 });
 
 const configHosting: (hosting: string, componentId: string) => Action = (hosting, componentId) => ({
@@ -188,9 +191,6 @@ const configHosting: (hosting: string, componentId: string) => Action = (hosting
     componentId: componentId,
     scenario: "Bot",
   },
-  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(!hasBot(context.projectSetting));
-  },
 });
 
 const generateBotCode: CallAction = {
@@ -199,14 +199,11 @@ const generateBotCode: CallAction = {
   required: true,
   targetAction: "bot-code.generate",
   pre: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    const scenarios = featureToScenario.get(inputs.feature)?.(
+    const scenarios = featureToScenario.get(inputs[AzureSolutionQuestionNames.Features])?.(
       inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER]
     );
     inputs.scenarios = scenarios;
     return ok(undefined);
-  },
-  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(!hasBot(context.projectSetting));
   },
 };
 
@@ -225,20 +222,16 @@ const initLocalDebug: Action = {
   type: "call",
   required: true,
   targetAction: "debug.generateLocalDebugSettings",
-  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(!hasBot(context.projectSetting));
-  },
 };
 
 const addBotCapability: Action = {
   name: "fx.addBotCapability",
   type: "function",
-  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(hasBot(context.projectSetting));
-  },
   plan: () => ok([Plans.addFeature("Bot")]),
   execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-    const botCapability = featureToCapability.get(inputs.feature as string);
+    const botCapability = featureToCapability.get(
+      inputs[AzureSolutionQuestionNames.Features] as string
+    );
     const bot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
     if (bot && !bot.capabilities) {
       bot.capabilities = [botCapability];
@@ -253,13 +246,12 @@ const addBotCapability: Action = {
 const configBot: Action = {
   name: "fx.configBot",
   type: "function",
-  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(!hasBot(context.projectSetting));
-  },
   plan: () => ok([Plans.addFeature("Bot")]),
   execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
     const projectSettings = context.projectSetting;
-    const botCapability = featureToCapability.get(inputs.feature as string);
+    const botCapability = featureToCapability.get(
+      inputs[AzureSolutionQuestionNames.Features] as string
+    );
     // add teams-bot
     projectSettings.components.push({
       name: ComponentNames.TeamsBot,
@@ -367,8 +359,8 @@ const resolveHosting: (inputs: InputsWithProjectPath) => string = (inputs): stri
   let hosting = "azure-web-app";
   const triggers = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] as string[];
   if (
-    triggers.includes(FunctionsHttpTriggerOptionItem.id) ||
-    triggers.includes(FunctionsTimerTriggerOptionItem.id)
+    triggers?.includes(FunctionsHttpTriggerOptionItem.id) ||
+    triggers?.includes(FunctionsTimerTriggerOptionItem.id)
   ) {
     hosting = "azure-function";
   }

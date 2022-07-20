@@ -12,7 +12,7 @@
   "main": "lib/index.js",
   "scripts": {
     "lint": "eslint .",
-    "test": "mocha tests --recursive"
+    "test": "npx nyc --reporter=lcov mocha tests --recursive"
   },
   "dependencies": {
     "requireindex": "^1.2.0"

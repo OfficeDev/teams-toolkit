@@ -8,9 +8,10 @@ on:
       - dev
       - ga
       - hotfix/**/*
-
+ 
 jobs:
-  unit-test:
+  unit-test-pr:
+    if: ${{  github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -18,16 +19,16 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.head_ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          repository: ${{ github.repository }}
 
       - name: Merge Branches
         run: |
           git config --global user.email "bot@user.noreply.github.com"
           git config --global user.name "bot"
 
-          git remote add ${{ github.event.pull_request.base.repo.owner.login }} ${{ github.event.pull_request.base.repo.clone_url }}
-          git fetch ${{ github.event.pull_request.base.repo.owner.login }}
-          git merge ${{ github.event.pull_request.base.repo.owner.login }}/${{ github.event.pull_request.base.ref }}
+          git remote add ${{ github.repository_owner }} https://github.com/${{ github.repository }}.git
+          git fetch ${{ github.repository_owner }}
+          git merge ${{ github.repository_owner }}/${{ github.head_ref }}
 
       - name: Setup node
         uses: actions/setup-node@v2.1.2
@@ -46,3 +47,43 @@ jobs:
       - name: Unit Test
         run: |
           xvfb-run -a npx lerna run test:unit --stream
+          npx codecov
+
+  unit-test:
+    if: ${{  github.event_name != 'pull_request' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref_name }}
+          repository: ${{ github.repository }}
+
+      - name: Merge Branches
+        run: |
+          git config --global user.email "bot@user.noreply.github.com"
+          git config --global user.name "bot"
+
+          git remote add ${{ github.repository_owner }} https://github.com/${{ github.repository }}.git
+          git fetch ${{ github.repository_owner }}
+          git merge ${{ github.repository_owner }}/${{ github.ref_name }}
+  
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: 14
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.x
+
+      - name: Setup project
+        run: |
+          npm run setup
+
+      - name: Unit Test
+        run: |
+          xvfb-run -a npx lerna run test:unit --stream
+          npx codecov

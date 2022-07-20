@@ -15,6 +15,8 @@ import {
 } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { hasAzureResourceV3 } from "../../common/projectSettingsHelperV3";
+import { globalVars } from "../../core";
+import { updateResourceBaseName } from "../../plugins/solution/fx-solution/arm";
 import { resourceGroupHelper } from "../../plugins/solution/fx-solution/utils/ResourceGroupHelper";
 import {
   askForProvisionConsent,
@@ -56,6 +58,7 @@ export class FxPreProvisionAction implements FunctionAction {
     if (!tenantIdInConfig) {
       appManifest.tenantId = tenantIdInToken;
       solutionConfig.teamsAppTenantId = tenantIdInToken;
+      globalVars.m365TenantId = tenantIdInToken;
     }
     // 3. check Azure configs
     if (hasAzureResourceV3(ctx.projectSetting) && envInfo.envName !== "local") {
@@ -64,15 +67,19 @@ export class FxPreProvisionAction implements FunctionAction {
       if (solutionConfigRes.isErr()) {
         return err(solutionConfigRes.error);
       }
-      // ask for provision consent
-      const consentResult = await askForProvisionConsent(
-        ctx,
-        ctx.tokenProvider.azureAccountProvider,
-        envInfo
-      );
-      if (consentResult.isErr()) {
-        return err(consentResult.error);
+
+      if (!solutionConfigRes.value.hasSwitchedSubscription) {
+        // ask for provision consent
+        const consentResult = await askForProvisionConsent(
+          ctx,
+          ctx.tokenProvider.azureAccountProvider,
+          envInfo
+        );
+        if (consentResult.isErr()) {
+          return err(consentResult.error);
+        }
       }
+
       // create resource group if needed
       if (solutionConfig.needCreateResourceGroup) {
         const createRgRes = await resourceGroupHelper.createNewResourceGroup(
@@ -84,6 +91,10 @@ export class FxPreProvisionAction implements FunctionAction {
         if (createRgRes.isErr()) {
           return err(createRgRes.error);
         }
+      }
+
+      if (solutionConfigRes.value.hasSwitchedSubscription) {
+        updateResourceBaseName(inputs.projectPath, ctx.projectSetting.appName, envInfo.envName);
       }
     }
     return ok([]);

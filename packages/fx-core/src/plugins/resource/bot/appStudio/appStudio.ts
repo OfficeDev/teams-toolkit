@@ -14,16 +14,8 @@ import { CommonStrings, ConfigNames } from "../resources/strings";
 import { RetryHandler } from "../utils/retryHandler";
 import { Messages } from "../resources/messages";
 import { Logger } from "../logger";
-/**
- * Get app studio endpoint for prod/int environment, mainly for ux e2e test
- */
-export function getAppStudioEndpoint(): string {
-  if (process.env.APP_STUDIO_ENV && process.env.APP_STUDIO_ENV === "int") {
-    return "https://dev-int.teams.microsoft.com";
-  } else {
-    return "https://dev.teams.microsoft.com";
-  }
-}
+import { getAppStudioEndpoint } from "../../../../component/resource/appManifest/constants";
+
 export class AppStudio {
   private static baseUrl = getAppStudioEndpoint();
 
@@ -152,6 +144,33 @@ export class AppStudio {
     return app;
   }
 
+  public static async getBotRegistration(
+    accessToken: string,
+    botId: string
+  ): Promise<IBotRegistration | undefined> {
+    const axiosInstance = AppStudio.newAxiosInstance(accessToken);
+
+    const getBotRegistrationResponse: AxiosResponse<any> | undefined = await RetryHandler.Retry(
+      async () => {
+        try {
+          return await axiosInstance.get(`${AppStudio.baseUrl}/api/botframework/${botId}`);
+        } catch (e) {
+          if (e.response?.status === 404) {
+            return e.response;
+          } else {
+            throw e;
+          }
+        }
+      },
+      true
+    );
+    if (getBotRegistrationResponse?.status === 200) {
+      return <IBotRegistration>getBotRegistrationResponse.data;
+    } else {
+      return undefined;
+    }
+  }
+
   public static async createBotRegistration(
     accessToken: string,
     registration: IBotRegistration
@@ -161,23 +180,8 @@ export class AppStudio {
     let response = undefined;
     try {
       if (registration.botId) {
-        const getBotRegistrationResponse: AxiosResponse<any> | undefined = await RetryHandler.Retry(
-          async () => {
-            try {
-              return await axiosInstance.get(
-                `${AppStudio.baseUrl}/api/botframework/${registration.botId}`
-              );
-            } catch (e) {
-              if (e.response?.status === 404) {
-                return e.response;
-              } else {
-                throw e;
-              }
-            }
-          },
-          true
-        );
-        if (getBotRegistrationResponse?.status === 200) {
+        const botReg = await AppStudio.getBotRegistration(accessToken, registration.botId);
+        if (botReg) {
           Logger.info(Messages.BotResourceExist("Appstudio"));
           return;
         }
@@ -200,17 +204,23 @@ export class AppStudio {
   public static async updateMessageEndpoint(
     accessToken: string,
     botId: string,
-    registration: IBotRegistration
+    endpoint: string
   ): Promise<void> {
     const axiosInstance = AppStudio.newAxiosInstance(accessToken);
+
+    const botReg = await AppStudio.getBotRegistration(accessToken, botId);
+    if (!botReg) {
+      throw new MessageEndpointUpdatingError(endpoint);
+    }
+    botReg.messagingEndpoint = endpoint;
 
     let response = undefined;
     try {
       response = await RetryHandler.Retry(() =>
-        axiosInstance.post(`${AppStudio.baseUrl}/api/botframework/${botId}`, registration)
+        axiosInstance.post(`${AppStudio.baseUrl}/api/botframework/${botId}`, botReg)
       );
     } catch (e) {
-      throw new MessageEndpointUpdatingError(registration.messagingEndpoint, e);
+      throw new MessageEndpointUpdatingError(botReg.messagingEndpoint, e);
     }
 
     if (!response || !response.data) {

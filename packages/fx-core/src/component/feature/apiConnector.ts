@@ -17,9 +17,10 @@ import { Service } from "typedi";
 import "../connection/azureWebAppConfig";
 import "../resource/azureSql";
 import { ApiConnectorImpl } from "../../plugins/resource/apiconnector/plugin";
-@Service("api-connector")
+import { ComponentNames } from "../constants";
+@Service(ComponentNames.ApiConnector)
 export class ApiConnector {
-  name = "api-connector";
+  name = ComponentNames.ApiConnector;
   add(
     context: ContextV3,
     inputs: InputsWithProjectPath

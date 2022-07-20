@@ -40,8 +40,9 @@ export type Action = GroupAction | ShellAction | CallAction | FunctionAction;
 
 // @public
 export interface ActionBase {
+    condition?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<boolean, FxError>>;
     // (undocumented)
-    exception?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+    exception?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<undefined, FxError>>;
     // (undocumented)
     inputs?: Json;
     // (undocumented)
@@ -49,9 +50,9 @@ export interface ActionBase {
     // (undocumented)
     plan?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Effect[], FxError>>;
     // (undocumented)
-    post?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+    post?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<undefined, FxError>>;
     // (undocumented)
-    pre?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+    pre?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<undefined, FxError>>;
     // (undocumented)
     question?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
@@ -389,6 +390,8 @@ export interface Component extends Json {
     name: string;
     // (undocumented)
     provision?: boolean;
+    // (undocumented)
+    sso?: boolean;
 }
 
 // @public (undocumented)
@@ -491,6 +494,8 @@ export interface ContextV3 extends Context_2 {
     envInfo?: EnvInfoV3;
     // (undocumented)
     manifestProvider: AppManifestProvider;
+    // (undocumented)
+    projectPath?: string;
     // (undocumented)
     projectSetting: ProjectSettingsV3;
     // (undocumented)
@@ -670,6 +675,9 @@ export const EnvNamePlaceholder = "@envName";
 export const EnvStateFileNameTemplate: string;
 
 // @public (undocumented)
+export type ErrorHandler = (error: any, telemetryProps: Record<string, string>) => FxError;
+
+// @public (undocumented)
 export interface ErrorOptionBase {
     // (undocumented)
     displayMessage?: string;
@@ -748,7 +756,31 @@ export interface FuncQuestion extends BaseQuestion {
 
 // @public
 export interface FunctionAction extends ActionBase {
-    execute: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Effect[], FxError>>;
+    // (undocumented)
+    enableProgressBar?: boolean;
+    // (undocumented)
+    enableTelemetry?: boolean;
+    // (undocumented)
+    errorHandler?: ErrorHandler;
+    // (undocumented)
+    errorHelpLink?: string;
+    // (undocumented)
+    errorIssueLink?: string;
+    // (undocumented)
+    errorSource?: string;
+    execute: (context: ContextV3, inputs: InputsWithProjectPath, progress?: IProgressHandler, telemetryProps?: Record<string, string>) => MaybePromise<Result<Effect[], FxError>>;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    progressSteps?: number;
+    // (undocumented)
+    progressTitle?: string;
+    // (undocumented)
+    telemetryComponentName?: string;
+    // (undocumented)
+    telemetryEventName?: string;
+    // (undocumented)
+    telemetryProps?: Record<string, string>;
     // (undocumented)
     type: "function";
 }

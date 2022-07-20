@@ -5,6 +5,7 @@ import {
   Action,
   CloudResource,
   ContextV3,
+  err,
   FxError,
   InputsWithProjectPath,
   MaybePromise,
@@ -13,12 +14,15 @@ import {
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
+import { SPFxPluginImpl } from "../../plugins/resource/spfx/v3/plugin";
+import { ComponentNames } from "../constants";
 
-@Service("spfx")
+@Service(ComponentNames.SPFx)
 export class SpfxResource implements CloudResource {
-  readonly name = "spfx";
+  readonly name = ComponentNames.SPFx;
   outputs = {};
   finalOutputKeys = [];
+  spfxPluginImpl: SPFxPluginImpl = new SPFxPluginImpl();
   deploy(
     context: ContextV3,
     inputs: InputsWithProjectPath
@@ -26,21 +30,33 @@ export class SpfxResource implements CloudResource {
     const action: Action = {
       name: "spfx.deploy",
       type: "function",
+      enableTelemetry: true,
+      telemetryComponentName: "fx-resource-spfx",
+      telemetryEventName: "deploy",
+      errorSource: "SPFx",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         return ok([
           {
             type: "service",
             name: "sharepoint",
-            remarks: `deploy spfx with path: ${inputs["spfx"].folder}, type: ${inputs["spfx"].type}`,
+            remarks: "deploy spfx",
           },
         ]);
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+        const buildRes = await this.spfxPluginImpl.buildSPPackage(context, inputs);
+        if (buildRes.isErr()) {
+          return err(buildRes.error);
+        }
+        const deployRes = await this.spfxPluginImpl.deploy(context, inputs, context.tokenProvider!);
+        if (deployRes.isErr()) {
+          return err(deployRes.error);
+        }
         return ok([
           {
             type: "service",
             name: "sharepoint",
-            remarks: `deploy spfx with path: ${inputs["spfx"].folder}, type: ${inputs["spfx"].type}`,
+            remarks: "deploy spfx",
           },
         ]);
       },

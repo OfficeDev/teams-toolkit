@@ -30,7 +30,7 @@ import {
   hasAAD,
   hasAzureTab,
   hasBot,
-  hasFunction,
+  hasApi,
   hasFunctionBot,
   hasSimpleAuth,
   hasTab,
@@ -143,7 +143,7 @@ export async function setupLocalEnvironment(
 ): Promise<Result<undefined, FxError>> {
   const vscEnv = inputs.vscodeEnv;
   const includeTab = hasAzureTab(ctx.projectSetting);
-  const includeBackend = hasFunction(ctx.projectSetting);
+  const includeBackend = hasApi(ctx.projectSetting);
   const includeBot = hasBot(ctx.projectSetting);
   const includeAAD = hasAAD(ctx.projectSetting);
   const includeSimpleAuth = hasSimpleAuth(ctx.projectSetting);
@@ -284,7 +284,7 @@ export async function configLocalEnvironment(
   envInfo: v3.EnvInfoV3
 ): Promise<Result<undefined, FxError>> {
   const includeTab = hasAzureTab(ctx.projectSetting);
-  const includeBackend = hasFunction(ctx.projectSetting);
+  const includeBackend = hasApi(ctx.projectSetting);
   const includeBot = hasBot(ctx.projectSetting);
   const includeAAD = hasAAD(ctx.projectSetting);
   const includeSimpleAuth = hasSimpleAuth(ctx.projectSetting);
@@ -435,7 +435,7 @@ export async function generateLocalDebugSettings(
 ): Promise<Result<undefined, FxError>> {
   const isSpfx = hasSPFxTab(context.projectSetting);
   const includeFrontend = hasTab(context.projectSetting);
-  const includeBackend = hasFunction(context.projectSetting);
+  const includeBackend = hasApi(context.projectSetting);
   const includeBot = hasBot(context.projectSetting);
   const includeAAD = hasAAD(context.projectSetting);
   const includeSimpleAuth = hasSimpleAuth(context.projectSetting);

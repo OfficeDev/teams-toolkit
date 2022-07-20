@@ -1,0 +1,6 @@
+{
+  "m365ClientId": "{{state.aad-app.clientId}}",
+  "m365ClientSecret": "{{state.aad-app.clientSecret}}",
+  "m365TenantId": "{{state.aad-app.tenantId}}",
+  "m365OauthAuthorityHost": "{{state.aad-app.oauthHost}}"
+}

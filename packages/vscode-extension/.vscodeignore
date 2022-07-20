@@ -1,10 +1,10 @@
 !out/templates/**
-.coverconfig.json
+.mocharc.json
+.nycrc
 .github
 .gitignore
 .prettierignore
 .prettierrc.json
-.vscode-test/**
 .vscode/**
 .yarnrc
 **/.eslintrc.json
@@ -13,6 +13,7 @@
 **/tsconfig.json
 build/**
 coverage
+.nyc_output
 img/**
 node_modules
 scripts/**

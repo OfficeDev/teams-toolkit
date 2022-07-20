@@ -106,7 +106,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       await this.login(showDialog);
       cred = await this.doGetAccountCredentialAsync();
     } catch (e) {
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Login, {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Login, e, {
         [TelemetryProperty.AccountType]: AccountType.Azure,
         [TelemetryProperty.Success]: TelemetrySuccess.No,
         [TelemetryProperty.UserId]: "",

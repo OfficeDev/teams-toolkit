@@ -1,0 +1,13 @@
+name: Teams JS SDK New Version Released
+on:
+  repository_dispatch:
+    types: [teamsjs-released]
+jobs:
+  notification:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Release Detail
+        run: |
+          release=$(curl -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/OfficeDev/microsoft-teams-library-js/releases/tags/v${{ github.event.client_payload.version }})
+          body=$(echo $release | jq ".body")
+          echo $body

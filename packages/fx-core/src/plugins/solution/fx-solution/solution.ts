@@ -1928,7 +1928,7 @@ export class TeamsAppSolution implements Solution {
     const appStudioPlugin: AppStudioPlugin = this.AppStudioPlugin as any;
     const func: Func = {
       namespace: `${PluginNames.SOLUTION}/${PluginNames.APPST}`,
-      method: "getAppDefinitionAndUpdate",
+      method: "updateManifest",
       params: {
         type: "remote",
         manifest: manifest,

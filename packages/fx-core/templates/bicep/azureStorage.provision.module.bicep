@@ -1,7 +1,7 @@
 @secure()
 param provisionParameters object
 var resourceBaseName = provisionParameters.resourceBaseName
-var storageName = contains(provisionParameters, 'frontendHostingStorageName') ? provisionParameters['frontendHostingStorageName'] : '${resourceBaseName}tab' // Try to read name for frontend hosting Storage Account from parameters
+var storageName = contains(provisionParameters, 'frontendHostingStorageName') ? provisionParameters['frontendHostingStorageName'] : '${resourceBaseName}{{scenarioInLowerCase}}' // Try to read name for frontend hosting Storage Account from parameters
 var storageSku = contains(provisionParameters, 'frontendHostingStorageSku') ? provisionParameters['frontendHostingStorageSku'] : 'Standard_LRS' // Try to read SKU for frontend hosting Storage Account from parameters
 
 // Azure Storage that hosts your static web site
@@ -19,7 +19,7 @@ resource storage 'Microsoft.Storage/storageAccounts@2021-06-01' = {
 
 var siteDomain = replace(replace(storage.properties.primaryEndpoints.web, 'https://', ''), '/', '')
 
-output resourceId string = storage.id
+output storageResourceId string = storage.id
 output endpoint string = 'https://${siteDomain}'
 output domain string = siteDomain
 output indexPath string = '/index.html#'

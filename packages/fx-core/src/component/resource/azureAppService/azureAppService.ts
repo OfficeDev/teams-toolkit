@@ -3,10 +3,10 @@
 
 import {
   Action,
-  Component,
   ContextV3,
   FxError,
   InputsWithProjectPath,
+  IProgressHandler,
   MaybePromise,
   ok,
   ProvisionContextV3,
@@ -26,6 +26,7 @@ import {
 import { AzureResource } from "./../azureResource";
 import { Messages } from "./messages";
 import { getHostingParentComponent } from "../../workflow";
+import { Plans, ProgressMessages, ProgressTitles } from "../../messages";
 export abstract class AzureAppService extends AzureResource {
   abstract readonly name: string;
   abstract readonly alias: string;
@@ -52,20 +53,21 @@ export abstract class AzureAppService extends AzureResource {
     const action: Action = {
       name: `${this.name}.deploy`,
       type: "function",
+      enableProgressBar: true,
+      progressTitle: ProgressTitles.deploying(this.displayName, inputs.scenario),
+      progressSteps: 2,
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         const parent = getHostingParentComponent(context.projectSetting, this.name);
         const deployDir = path.resolve(inputs.projectPath, parent?.folder ?? "");
-        return ok([
-          {
-            type: "service",
-            name: "azure",
-            remarks: `deploy ${this.displayName} in folder: ${deployDir}`,
-          },
-        ]);
+        return ok([Plans.deploy(this.displayName, deployDir)]);
       },
-      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+      execute: async (
+        context: ContextV3,
+        inputs: InputsWithProjectPath,
+        progress?: IProgressHandler
+      ) => {
         const ctx = context as ProvisionContextV3;
-        const parent = getHostingParentComponent(ctx.projectSetting, this.name);
+        const parent = getHostingParentComponent(ctx.projectSetting, this.name, inputs.scenario);
         // Preconditions checking.
         if (!inputs.projectPath || !parent?.artifactFolder) {
           throw new PreconditionError(this.alias, Messages.WorkingDirIsMissing, []);
@@ -82,17 +84,17 @@ export abstract class AzureAppService extends AzureResource {
           this.outputs.resourceId.key,
           state[this.outputs.resourceId.key]
         );
-
+        await progress?.next(ProgressMessages.packingCode);
         const zipBuffer = await utils.zipFolderAsync(publishDir, "");
 
-        await azureWebSiteDeploy(resourceId, ctx.tokenProvider, zipBuffer);
-        return ok([
-          {
-            type: "service",
-            name: "azure",
-            remarks: `deploy ${this.displayName} in folder: ${publishDir}`,
-          },
-        ]);
+        await azureWebSiteDeploy(
+          resourceId,
+          ctx.tokenProvider,
+          zipBuffer,
+          context.logProvider,
+          progress
+        );
+        return ok([Plans.deploy(this.displayName, publishDir)]);
       },
     };
     return ok(action);

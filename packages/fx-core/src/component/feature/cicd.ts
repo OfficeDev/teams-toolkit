@@ -41,9 +41,10 @@ import { isMiniApp } from "../../common/projectSettingsHelperV3";
 import { CICDImpl } from "../../plugins/resource/cicd/plugin";
 import { isV3 } from "../../core/globalVars";
 import { isExistingTabApp } from "../../common/projectSettingsHelper";
-@Service("cicd")
+import { ComponentNames } from "../constants";
+@Service(ComponentNames.CICD)
 export class CICD {
-  name = "cicd";
+  name = ComponentNames.CICD;
   add(
     context: ContextV3,
     inputs: InputsWithProjectPath

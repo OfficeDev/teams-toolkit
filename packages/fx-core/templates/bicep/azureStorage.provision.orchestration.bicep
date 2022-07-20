@@ -1,15 +1,15 @@
 // Resources for frontend hosting
-module azureStorage{{componentName}}Provision './provision/azureStorage{{componentName}}.bicep' = {
-  name: 'azureStorage{{componentName}}Provision'
+module azureStorage{{scenario}}Provision './provision/azureStorage{{scenario}}.bicep' = {
+  name: 'azureStorage{{scenario}}Provision'
   params: {
     provisionParameters: provisionParameters
   }
 }
 
-output azureStorage{{componentName}}Output object = {
+output azureStorage{{scenario}}Output object = {
   teamsFxPluginId: '{{componentId}}'
-  domain: azureStorage{{componentName}}Provision.outputs.domain
-  endpoint: azureStorage{{componentName}}Provision.outputs.endpoint
-  indexPath: azureStorage{{componentName}}Provision.outputs.indexPath
-  resourceId: azureStorage{{componentName}}Provision.outputs.resourceId
+  domain: azureStorage{{scenario}}Provision.outputs.domain
+  endpoint: azureStorage{{scenario}}Provision.outputs.endpoint
+  indexPath: azureStorage{{scenario}}Provision.outputs.indexPath
+  storageResourceId: azureStorage{{scenario}}Provision.outputs.storageResourceId
 }

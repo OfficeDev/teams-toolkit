@@ -61,7 +61,7 @@ import { getAzureSolutionSettings } from "../../solution/fx-solution/v2/utils";
 import { DepsHandler } from "./depsHandler";
 import { Telemetry, TelemetryUtils } from "./telemetry";
 import { isV3 } from "../../../core";
-import { hasAAD, hasBot, hasFunction } from "../../../common/projectSettingsHelperV3";
+import { hasAAD, hasBot, hasApi } from "../../../common/projectSettingsHelperV3";
 
 export class ApiConnectorImpl {
   public async scaffold(ctx: Context, inputs: Inputs): Promise<ApiConnectorResult> {
@@ -90,7 +90,7 @@ export class ApiConnectorImpl {
           ctx.projectSetting.solutionSettings as AzureSolutionSettings
         )?.activeResourcePlugins?.includes(ResourcePlugins.Bot);
     const hasFunc = isV3()
-      ? hasFunction(ctx.projectSetting as ProjectSettingsV3)
+      ? hasApi(ctx.projectSetting as ProjectSettingsV3)
       : (
           ctx.projectSetting.solutionSettings as AzureSolutionSettings
         )?.activeResourcePlugins?.includes(ResourcePlugins.Function);

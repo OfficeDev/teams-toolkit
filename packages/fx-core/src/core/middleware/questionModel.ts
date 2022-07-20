@@ -33,7 +33,7 @@ import {
 } from "../../plugins/solution/fx-solution/v3/constants";
 import { getQuestionsForGrantPermission } from "../collaborator";
 import { CoreSource, FunctionRouterError } from "../error";
-import { TOOLS } from "../globalVars";
+import { isV3, TOOLS } from "../globalVars";
 import {
   createAppNameQuestion,
   createCapabilityForDotNet,
@@ -434,11 +434,12 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   }
   createNew.addChild(capNode);
 
-  const solutionNodeResult = await setSolutionScaffoldingQuestionNodeAsChild(inputs, capNode);
-  if (solutionNodeResult.isErr()) {
-    return err(solutionNodeResult.error);
+  if (!isV3()) {
+    const solutionNodeResult = await setSolutionScaffoldingQuestionNodeAsChild(inputs, capNode);
+    if (solutionNodeResult.isErr()) {
+      return err(solutionNodeResult.error);
+    }
   }
-
   // Language
   const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
   if (isPreviewFeaturesEnabled()) {
@@ -462,8 +463,11 @@ async function getQuestionsForCreateProjectWithoutDotNet(
     capNode.addChild(existingTabEndpoint);
   }
 
-  createNew.addChild(new QTreeNode(QuestionRootFolder));
-  createNew.addChild(new QTreeNode(createAppNameQuestion()));
+  // for v3, the two questions are implemented in fx.init action's question
+  if (!isV3()) {
+    createNew.addChild(new QTreeNode(QuestionRootFolder));
+    createNew.addChild(new QTreeNode(createAppNameQuestion()));
+  }
 
   // create from sample
   const sampleNode = new QTreeNode(SampleSelect);
@@ -500,9 +504,14 @@ async function getQuestionsForCreateProjectWithDotNet(
   const dotnetCapNode = new QTreeNode(createCapabilityForDotNet());
   dotnetNode.addChild(dotnetCapNode);
 
-  const solutionNodeResult = await setSolutionScaffoldingQuestionNodeAsChild(inputs, dotnetCapNode);
-  if (solutionNodeResult.isErr()) {
-    return err(solutionNodeResult.error);
+  if (!isV3()) {
+    const solutionNodeResult = await setSolutionScaffoldingQuestionNodeAsChild(
+      inputs,
+      dotnetCapNode
+    );
+    if (solutionNodeResult.isErr()) {
+      return err(solutionNodeResult.error);
+    }
   }
 
   dotnetCapNode.addChild(new QTreeNode(ProgrammingLanguageQuestionForDotNet));

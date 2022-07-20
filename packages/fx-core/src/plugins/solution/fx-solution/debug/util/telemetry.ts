@@ -2,8 +2,14 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { TelemetryReporter } from "@microsoft/teamsfx-api";
-import { Json, LocalSettings, SystemError, UserError, v2 } from "@microsoft/teamsfx-api";
+import {
+  TelemetryReporter,
+  Json,
+  LocalSettings,
+  SystemError,
+  UserError,
+  v2,
+} from "@microsoft/teamsfx-api";
 import { SolutionTelemetryComponentName } from "../../constants";
 
 enum TelemetryPropertyKey {
@@ -70,12 +76,7 @@ export class TelemetryUtils {
       properties[TelemetryPropertyKey.appId] = TelemetryUtils.localAppId;
     }
     properties[TelemetryPropertyKey.success] = TelemetryPropertyValue.success;
-    TelemetryUtils.telemetryReporter.sendTelemetryErrorEvent(
-      eventName,
-      properties,
-      measurements,
-      errorProps
-    );
+    TelemetryUtils.telemetryReporter.sendTelemetryEvent(eventName, properties, measurements);
   }
 
   public static sendErrorEvent(

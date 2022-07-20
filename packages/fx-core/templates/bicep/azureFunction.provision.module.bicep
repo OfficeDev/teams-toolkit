@@ -1,11 +1,12 @@
 @secure()
 param provisionParameters object
+param userAssignedIdentityId string
 
 var resourceBaseName = provisionParameters.resourceBaseName
-var serverfarmsName = contains(provisionParameters, 'functionServerfarmsName') ? provisionParameters['botServerfarmsName'] : '${resourceBaseName}bot' // Try to read name for App Service Plan from parameters
+var serverfarmsName = contains(provisionParameters, 'functionServerfarmsName') ? provisionParameters['botServerfarmsName'] : '${resourceBaseName}{{scenarioInLowerCase}}' // Try to read name for App Service Plan from parameters
 var functionAppSKU = contains(provisionParameters, 'functionAppSKU') ? provisionParameters['botfunctionAppSKU'] : 'B1' // Try to read SKU for Azure Web App from parameters
-var functionAppName = contains(provisionParameters, 'SitesName') ? provisionParameters['botSitesName'] : '${resourceBaseName}bot' // Try to read name for Azure Web App from parameters
-var storageName = contains(provisionParameters, 'StorageName') ? provisionParameters['botStorageName'] : '${resourceBaseName}bot' // Try to read name for Azure Storage from parameters
+var functionAppName = contains(provisionParameters, 'SitesName') ? provisionParameters['botSitesName'] : '${resourceBaseName}{{scenarioInLowerCase}}' // Try to read name for Azure Web App from parameters
+var storageName = contains(provisionParameters, 'StorageName') ? provisionParameters['botStorageName'] : '${resourceBaseName}{{scenarioInLowerCase}}' // Try to read name for Azure Storage from parameters
 var storageSku = contains(provisionParameters, 'StorageSku') ? provisionParameters['botStorageSku'] : 'Standard_LRS' // Try to read SKU for Azure Storage from parameters
 
 // Compute resources for your Web App
@@ -77,6 +78,12 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
       ftpsState: 'FtpsOnly'
     }
   }
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${userAssignedIdentityId}': {} // The identity is used to access other Azure resources
+    }
+  }
 }
 
 // Azure Storage is required when creating Azure Function instance
@@ -93,5 +100,5 @@ output sku string = functionAppSKU
 output appName string = functionAppName
 output domain string = functionApp.properties.defaultHostName
 output appServicePlanName string = serverfarmsName
-output resourceId string = functionApp.id
-output endpoint string = 'https://${functionApp.properties.defaultHostName}'
+output functionAppResourceId string = functionApp.id
+output functionEndpoint string = 'https://${functionApp.properties.defaultHostName}'

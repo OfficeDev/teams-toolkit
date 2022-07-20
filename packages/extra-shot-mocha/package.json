@@ -10,7 +10,7 @@
     "lint:staged": "lint-staged",
     "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
     "precommit": "npm run check-sensitive && lint-staged",
-    "test:unit": "nyc mocha \"tests/**/*.test.ts\""
+    "test:unit": "nyc mocha \"tests/**/*.test.ts\" && npx codecov"
   },
   "peerDependencies": {
     "mocha": "^9.2.0",

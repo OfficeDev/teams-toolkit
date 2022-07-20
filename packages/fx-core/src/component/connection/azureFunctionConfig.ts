@@ -12,6 +12,8 @@ import {
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
+import { compileHandlebarsTemplateString } from "../../common/tools";
+import { ComponentNames, componentToScenario } from "../constants";
 import { getComponent } from "../workflow";
 import { AzureResourceConfig } from "./azureResourceConfig";
 
@@ -26,10 +28,17 @@ export class AzureFunctionsConfig extends AzureResourceConfig {
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     try {
-      const tabConfig = getComponent(context.projectSetting, "teams-tab");
+      const tabConfig = getComponent(context.projectSetting, ComponentNames.TeamsTab);
       if (tabConfig?.hosting) {
         const tabHosting = Container.get(tabConfig.hosting) as CloudResource;
-        this.templateContext.tabDomainVarName = tabHosting.outputs.endpoint.bicepVariable;
+        this.templateContext.tabDomainVarName = compileHandlebarsTemplateString(
+          tabHosting.outputs.domain.bicepVariable || "",
+          { scenario: componentToScenario.get(ComponentNames.TeamsTab) }
+        );
+        this.templateContext.tabEndpointVarName = compileHandlebarsTemplateString(
+          tabHosting.outputs.endpoint.bicepVariable || "",
+          { scenario: componentToScenario.get(ComponentNames.TeamsTab) }
+        );
       }
     } catch {}
     return super.generateBicep(context, inputs);

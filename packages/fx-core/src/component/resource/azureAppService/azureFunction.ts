@@ -12,6 +12,7 @@ import {
   Effect,
 } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
+import { FunctionOutputs, IdentityOutputs } from "../../constants";
 import { AzureAppService } from "./azureAppService";
 @Service("azure-function")
 export class AzureFunctionResource extends AzureAppService {
@@ -19,17 +20,13 @@ export class AzureFunctionResource extends AzureAppService {
   readonly alias = "FT";
   readonly displayName = "Azure Functions";
   readonly bicepModuleName = "azureFunction";
-  outputs = {
-    functionAppResourceId: {
-      key: "functionAppResourceId",
-      bicepVariable: "provisionOutputs.azureFunction{{componentName}}Output.value.resourceId",
-    },
-    functionEndpoint: {
-      key: "functionEndpoint",
-      bicepVariable: "azureFunction{{componentName}}Provision.outputs.endpoint",
+  outputs = FunctionOutputs;
+  finalOutputKeys = ["resourceId", "endpoint"];
+  templateContext = {
+    identity: {
+      resourceId: IdentityOutputs.identityResourceId.bicepVariable,
     },
   };
-  finalOutputKeys = ["resourceId", "endpoint"];
   configure(
     context: ContextV3,
     inputs: InputsWithProjectPath

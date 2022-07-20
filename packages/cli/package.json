@@ -22,14 +22,15 @@
     "test:e2e:parallel": "mocha --parallel --reporter @mochajs/json-file-reporter \"tests/e2e/**/*.tests.ts\"",
     "test:e2e:smoke": "mocha --reporter @mochajs/json-file-reporter \"tests/e2e/smoke/*.tests.ts\"",
     "test:e2e:others": "mocha --reporter @mochajs/json-file-reporter \"tests/e2e/{,!(smoke)}/*.tests.ts\"",
-    "test:unit": "nyc --no-clean mocha \"tests/unit/**/*.tests.ts\"",
+    "test:unit": "nyc --no-clean mocha \"tests/unit/**/*.tests.ts\" && npx codecov",
     "check-format": "prettier --list-different --config .prettierrc.json --ignore-path .prettierignore \"{src,tests}/**/*.ts\" \"*.{js,json}\"",
     "format": "prettier --write --config .prettierrc.json --ignore-path .prettierignore \"{src,tests}/**/*.ts\" \"*.{js,json}\"",
     "lint:fix": "eslint \"src/**/*.ts\" \"tests/**/*.ts\" --fix",
     "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
     "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
     "precommit": "npm run check-sensitive && lint-staged",
-    "postinstall": "node deletePS1.js"
+    "postinstall": "node deletePS1.js",
+    "build-metrics": "npm install ../metrics-ts && npm install ../eslint-metrics --save-dev && npx eslint --plugin=metrics --rule=\"metrics/add-metrics: warn\" --ignore-pattern=\"src/telemetry/**/*.ts\" --ignore-pattern=\"src/cmds/**/*.ts\" \"src/**/*.ts\" --fix && jq '.dependencies[\"@microsoft/metrics-ts\"]=\"*\"' package.json > package.json.tmp && mv package.json.tmp package.json"
   },
   "keywords": [
     "teamsfx",

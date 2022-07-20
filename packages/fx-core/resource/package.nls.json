@@ -3,6 +3,7 @@
   "core.init.successNotice": "Your project has been successfully initialized to operate with TeamsFx.\n\nSome next steps:\nteamsfx add <feature> will allow you to add features like single sign on or Teams notification integration.\n\nPro tip:\nRead on aka.ms/teams-manifest to learn more about updating manifest file to connect with your existing launch page experience.",
   "core.provision.confirmNotice": "The Teams Toolkit will provision resources and register corresponding resource providers under Azure account (%s) with subscription (%s). Costs may incur according to the pricing calculator.",
   "core.provision.confirmEnvNotice": "Do you want to provision resources in %s environment?\nAzure account (%s) with subscription (%s) will be used to provision the resources. Cost may incur according to the usage.",
+  "core.provision.confirmSubscription": "You are switching away from your previous subscription %s.\nDo you want to provision resources in %s environment? Azure account (%s) with subscription (%s) will be used to provision the resources. Cost may incur according to the usage.",
   "core.deploy.confirmEnvNotice": "Do you want to deploy resources in %s environment?\nAzure account (%s) with subscription (%s) will be used for deployment.",
   "core.provision.successAzure": "Azure resources successfully provisioned in the cloud.",
   "core.provision.successNotice": "'%s' successfully provisioned in the cloud.",
@@ -883,5 +884,6 @@
   "depChecker.depsNotFound": "Cannot find @SupportedPackages.\n\nTeams Toolkit requires these dependencies.\n\nClick \"Install\" to install @InstallPackages.",
   "depChecker.linuxDepsNotFound": "Cannot find @SupportedPackages. Install @SupportedPackages manually and restart Visual Studio Code.",
   "depChecker.linuxDepsNotFoundHelpLinkMessage": "Cannot find @SupportedPackages.\n\nTeams Toolkit requires these dependencies.",
-  "error.ActionNotExist": "Action not exist: %s"
+  "error.ActionNotExist": "Action not found: %s",
+  "error.ComponentNotExist": "Component not found: %s"
 }

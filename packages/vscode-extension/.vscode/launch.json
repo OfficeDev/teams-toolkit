@@ -37,26 +37,26 @@
     },
     {
       "name": "Extension Unit Tests",
-      "type": "extensionHost",
+      "type": "node",
       "request": "launch",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "stopOnEntry": false,
+      "sourceMaps": true,
       "args": [
-        "--extensionDevelopmentPath=${workspaceFolder}",
-        "--extensionTestsPath=${workspaceFolder}/out/test/unit/index"
+        "${workspaceFolder}/test/**/*.test.ts",
+        "--require=ts-node/register",
+        "--require=out/test/setup.js",
+        "--recursive",
+        "--colors",
       ],
-      "outFiles": ["${workspaceFolder}/out/test/**/*.js"],
-      "preLaunchTask": "npm: test-watch"
-    },
-    {
-      "name": "Extension Tests (Environment Checker)",
-      "type": "extensionHost",
-      "request": "launch",
-      "args": [
-        "--extensionDevelopmentPath=${workspaceFolder}",
-        "--extensionTestsPath=${workspaceFolder}/out/test/integration/envChecker/index"
+      "outFiles": [
+        "${workspaceFolder}/out/**/*.js",
+        "!${workspaceFolder}/**/node_modules**/*"
       ],
-      "outFiles": ["${workspaceFolder}/out/src/**/*.js", "${workspaceFolder}/out/test/**/*.js"],
-      "preLaunchTask": "npm: test-watch",
-      "sourceMaps": true
+      "preLaunchTask": "npm: compile",
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
     }
   ]
 }

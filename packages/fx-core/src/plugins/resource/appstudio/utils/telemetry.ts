@@ -77,7 +77,7 @@ export class TelemetryUtils {
     if (teamsAppId) {
       properties[TelemetryPropertyKey.appId] = teamsAppId;
     }
-    TelemetryUtils.ctx.telemetryReporter?.sendTelemetryErrorEvent(
+    TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(
       `${eventName}-start`,
       properties,
       measurements

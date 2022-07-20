@@ -4,28 +4,51 @@
 export const ComponentNames = {
   TeamsTab: "teams-tab",
   TeamsBot: "teams-bot",
+  TeamsApi: "teams-api",
   AppManifest: "app-manifest",
   AadApp: "aad-app",
   AzureWebApp: "azure-web-app",
   AzureStorage: "azure-storage",
   BotService: "bot-service",
+  SPFxTab: "spfx-tab",
   SPFx: "spfx",
   Identity: "identity",
+  APIMFeature: "apim-feature",
   APIM: "apim",
   KeyVault: "key-vault",
   AzureSQL: "azure-sql",
   TabCode: "tab-code",
   BotCode: "bot-code",
+  SPFxTabCode: "spfx-tab-code",
+  ApiCode: "api-code",
   Function: "azure-function",
   SimpleAuth: "simple-auth",
+  SSO: "SSO",
+  ApiConnector: "api-connector",
+  CICD: "cicd",
 };
 
-export const ComponentStateKeys = {
-  [ComponentNames.AzureSQL]: "azure-sql",
-  [ComponentNames.Identity]: "identity",
-  [ComponentNames.AadApp]: "aad",
-  [ComponentNames.KeyVault]: "key-vault",
-};
+export const AzureResources = [
+  ComponentNames.APIM,
+  ComponentNames.AzureWebApp,
+  ComponentNames.Function,
+  ComponentNames.Identity,
+  ComponentNames.KeyVault,
+  ComponentNames.AzureSQL,
+  ComponentNames.AzureStorage,
+];
+
+export enum Scenarios {
+  Tab = "Tab",
+  Bot = "Bot",
+  Api = "Api",
+}
+
+export const componentToScenario = new Map([
+  [ComponentNames.TeamsApi, Scenarios.Api],
+  [ComponentNames.TeamsBot, Scenarios.Bot],
+  [ComponentNames.TeamsTab, Scenarios.Tab],
+]);
 
 export const ActionNames = {
   provision: "provision",
@@ -46,6 +69,8 @@ export const TelemetryConstants = {
   eventPrefix: "-start",
   properties: {
     component: "component",
+    appId: "appid",
+    tenantId: "tenant-id",
     success: "success",
     errorCode: "error-code",
     errorType: "error-type",
@@ -66,23 +91,23 @@ export const ErrorConstants = {
 
 export const AzureSqlOutputs = {
   sqlResourceId: {
-    key: "resourceId",
-    bicepVariable: "provisionOutputs.azureSqlOutput.value.resourceId",
+    key: "sqlResourceId",
+    bicepVariable: "provisionOutputs.azureSqlOutput.value.sqlResourceId",
   },
   sqlEndpoint: {
-    key: "endpoint",
+    key: "sqlEndpoint",
     bicepVariable: "provisionOutputs.azureSqlOutput.value.sqlEndpoint",
   },
   sqlDatabaseName: {
-    key: "databaseName",
+    key: "sqlDatabaseName",
     bicepVariable: "provisionOutputs.azureSqlOutput.value.sqlDatabaseName",
   },
 };
 
 export const IdentityOutputs = {
   identityResourceId: {
-    key: "resourceId",
-    bicepVariable: "provisionOutputs.identityOutput.value.identityResourceId",
+    key: "identityResourceId",
+    bicepVariable: "userAssignedIdentityProvision.outputs.identityResourceId",
   },
   identityName: {
     key: "identityName",
@@ -91,5 +116,105 @@ export const IdentityOutputs = {
   identityClientId: {
     key: "identityClientId",
     bicepVariable: "provisionOutputs.identityOutput.value.identityClientId",
+  },
+  identityPrincipalId: {
+    key: "identityPrincipalId",
+    bicepVariable: "userAssignedIdentityProvision.outputs.identityPrincipalId",
+  },
+};
+
+export const KeyVaultOutputs = {
+  keyVaultResourceId: {
+    key: "keyVaultResourceId",
+    bicepVariable: "provisionOutputs.keyVaultOutput.value.keyVaultResourceId",
+  },
+  m365ClientSecretReference: {
+    key: "m365ClientSecretReference",
+    bicepVariable: "provisionOutputs.keyVaultOutput.value.m365ClientSecretReference",
+  },
+  botClientSecretReference: {
+    key: "botClientSecretReference",
+    bicepVariable: "provisionOutputs.keyVaultOutput.value.botClientSecretReference",
+  },
+};
+
+export const APIMOutputs = {
+  serviceResourceId: {
+    key: "serviceResourceId",
+    bicepVariable: "provisionOutputs.apimOutput.value.serviceResourceId",
+  },
+  productResourceId: {
+    key: "productResourceId",
+    bicepVariable: "provisionOutputs.apimOutput.value.productResourceId",
+  },
+  authServerResourceId: {
+    key: "authServerResourceId",
+  },
+  apimClientAADObjectId: {
+    key: "apimClientAADObjectId",
+  },
+  apimClientAADClientId: {
+    key: "apimClientAADClientId",
+  },
+  apimClientAADClientSecret: {
+    key: "apimClientAADClientSecret",
+  },
+};
+
+export const WebAppOutputs = {
+  resourceId: {
+    key: "resourceId",
+    bicepVariable: "provisionOutputs.azureWebApp{{scenario}}Output.value.resourceId",
+  },
+  endpoint: {
+    key: "siteEndpoint",
+    bicepVariable: "provisionOutputs.azureWebApp{{scenario}}Output.value.siteEndpoint",
+  },
+  endpointAsParam: {
+    key: "siteEndpointAsParam",
+    bicepVariable: "azureWebApp{{scenario}}Provision.outputs.siteEndpoint",
+  },
+};
+
+export const FunctionOutputs = {
+  resourceId: {
+    key: "functionAppResourceId",
+    bicepVariable: "provisionOutputs.azureFunction{{scenario}}Output.value.functionAppResourceId",
+  },
+  endpoint: {
+    key: "functionEndpoint",
+    bicepVariable: "provisionOutputs.azureFunction{{scenario}}Output.value.functionEndpoint",
+  },
+  endpointAsParam: {
+    key: "functionEndpointAsParam",
+    bicepVariable: "azureFunction{{scenario}}Provision.outputs.functionEndpoint",
+  },
+};
+
+export const StorageOutputs = {
+  endpoint: {
+    key: "endpoint",
+    bicepVariable: "provisionOutputs.azureStorage{{scenario}}Output.value.endpoint",
+  },
+  storageResourceId: {
+    key: "storageResourceId",
+    bicepVariable: "provisionOutputs.azureStorage{{scenario}}Output.value.storageResourceId",
+  },
+  domain: {
+    key: "domain",
+    bicepVariable: "provisionOutputs.azureStorage{{scenario}}Output.value.domain",
+  },
+  indexPath: {
+    key: "indexPath",
+    bicepVariable: "provisionOutputs.azureStorage{{scenario}}Output.value.indexPath",
+  },
+};
+
+export const BotServiceOutputs = {
+  botId: {
+    key: "botId",
+  },
+  botPassword: {
+    key: "botPassword",
   },
 };

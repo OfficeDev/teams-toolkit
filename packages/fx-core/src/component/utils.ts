@@ -5,6 +5,7 @@
 import {
   Bicep,
   CallServiceEffect,
+  Component,
   ConfigurationBicep,
   ContextV3,
   err,
@@ -14,21 +15,18 @@ import {
   ProjectSettingsV3,
   ProvisionBicep,
   Result,
-  UserError,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import os from "os";
 import * as path from "path";
-import { HelpLinks } from "../common/constants";
-import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { LocalCrypto } from "../core/crypto";
 import { environmentManager } from "../core/environment";
 import { TOOLS } from "../core/globalVars";
-import { SolutionError } from "../plugins/solution/fx-solution/constants";
 import * as uuid from "uuid";
 import { getProjectSettingsVersion } from "../common/projectSettingsHelper";
 import { DefaultManifestProvider } from "./resource/appManifest/manifestProvider";
 import { getProjectTemplatesFolderPath } from "../common/utils";
+import { getComponent } from "./workflow";
 
 export async function persistProvisionBicep(
   projectPath: string,
@@ -193,28 +191,28 @@ export async function persistParams(
       if (params) {
         const json = await fs.readJson(parameterEnvFilePath);
         const existingParams = json.parameters.provisionParameters.value;
-        const dupParamKeys = Object.keys(params).filter((val) =>
-          Object.keys(existingParams).includes(val)
-        );
-        if (dupParamKeys && dupParamKeys.length != 0) {
-          return err(
-            new UserError({
-              name: SolutionError.FailedToUpdateArmParameters,
-              source: "bicep",
-              helpLink: HelpLinks.ArmHelpLink,
-              message: getDefaultString(
-                "core.generateArmTemplates.DuplicateParameter",
-                parameterEnvFilePath,
-                dupParamKeys
-              ),
-              displayMessage: getLocalizedString(
-                "core.generateArmTemplates.DuplicateParameter",
-                parameterEnvFilePath,
-                dupParamKeys
-              ),
-            })
-          );
-        }
+        // const dupParamKeys = Object.keys(params).filter((val) =>
+        //   Object.keys(existingParams).includes(val)
+        // );
+        // if (dupParamKeys && dupParamKeys.length != 0) {
+        //   return err(
+        //     new UserError({
+        //       name: SolutionError.FailedToUpdateArmParameters,
+        //       source: "bicep",
+        //       helpLink: HelpLinks.ArmHelpLink,
+        //       message: getDefaultString(
+        //         "core.generateArmTemplates.DuplicateParameter",
+        //         parameterEnvFilePath,
+        //         dupParamKeys
+        //       ),
+        //       displayMessage: getLocalizedString(
+        //         "core.generateArmTemplates.DuplicateParameter",
+        //         parameterEnvFilePath,
+        //         dupParamKeys
+        //       ),
+        //     })
+        //   );
+        // }
         Object.assign(existingParams, params);
         if (!existingParams.resourceBaseName) {
           params.resourceBaseName = generateResourceBaseName(appName, "");
@@ -440,6 +438,23 @@ export function generateResourceBaseName(appName: string, envName: string): stri
     normalizedEnvName.substr(0, maxEnvNameLength) +
     uuid.v4().substr(0, 6)
   );
+}
+
+export function isInComponentConnection(component: Component, item: string): boolean {
+  if (component.connections?.includes(item)) {
+    return true;
+  }
+  return false;
+}
+
+export function getHostingComponent(
+  component: Component,
+  projectSettings: ProjectSettingsV3
+): Component | undefined {
+  if (component.hosting) {
+    return getComponent(projectSettings, component.hosting);
+  }
+  return undefined;
 }
 
 // TODO:implement after V3 project setting update

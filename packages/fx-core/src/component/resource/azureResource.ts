@@ -61,9 +61,10 @@ export abstract class AzureResource implements CloudResource {
             this.templateContext = this.getTemplateContext(context, inputs);
           } catch {}
         }
-        const moduleName = this.bicepModuleName + inputs.componentName ?? "";
-        this.templateContext.componentId = inputs.componentId;
-        this.templateContext.componentName = inputs.componentName;
+        const moduleName = this.bicepModuleName + (inputs.scenario || "");
+        this.templateContext.componentId = inputs.componentId || "";
+        this.templateContext.scenario = inputs.scenario || "";
+        this.templateContext.scenarioInLowerCase = (inputs.scenario || "").toLowerCase();
         let module = await fs.readFile(pmPath, "utf-8");
         let orchestration = await fs.readFile(poPath, "utf-8");
         module = compileHandlebarsTemplateString(module, this.templateContext);
@@ -73,15 +74,17 @@ export abstract class AzureResource implements CloudResource {
           "bicep",
           `${this.bicepModuleName}.parameters.json`
         );
+        let params;
+        if (await fs.pathExists(parametersPath)) {
+          params = await fs.readJson(parametersPath);
+        }
         const bicep: Bicep = {
           type: "bicep",
           Provision: {
             Modules: { [moduleName]: module },
             Orchestration: orchestration,
           },
-          Parameters: (await fs.pathExists(parametersPath))
-            ? await fs.readJson(parametersPath)
-            : undefined,
+          Parameters: params,
         };
         return ok([bicep]);
       },

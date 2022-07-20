@@ -291,11 +291,8 @@ export class TeamsBotV2Impl {
 
     if (lang === ProgrammingLanguage.Csharp) {
       try {
-        const framework = await TeamsBotV2Impl.getFrameworkVersion(
-          path.join(workingPath, projectFileName)
-        );
-        await utils.execute(`dotnet publish --configuration Release`, workingPath);
-        return path.join(workingPath, "bin", "Release", framework, "publish");
+        await utils.execute(`dotnet publish --output publish --configuration Release`, workingPath);
+        return path.join(workingPath, "publish");
       } catch (e) {
         throw new CommandExecutionError(`dotnet publish`, workingPath, e);
       }

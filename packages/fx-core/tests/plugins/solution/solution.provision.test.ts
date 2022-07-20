@@ -467,14 +467,14 @@ describe("provision() happy path for SPFx projects", () => {
     mocker.stub(fs, "writeJSON").callsFake((file: string, obj: any) => {
       fileContent.set(file, JSON.stringify(obj));
     });
+    mocker.stub(fs, "readFile").resolves(Buffer.from(""));
     mocker
       .stub<any, any>(fs, "readJson")
       .withArgs(
         `./tests/plugins/resource/appstudio/spfx-resources/${AppPackageFolderName}/${MANIFEST_TEMPLATE}`
       )
       .resolves(mockedManifest);
-    mocker.stub(AppStudioClient, "createApp").resolves(mockedAppDef);
-    mocker.stub(AppStudioClient, "updateApp").resolves(mockedAppDef);
+    mocker.stub(AppStudioClient, "importApp").resolves(mockedAppDef);
     mocker.stub(manifestTemplate, "loadManifest").resolves(ok(new TeamsAppManifest()));
     mocker.stub(AppStudioPluginImpl.prototype, "buildTeamsAppPackage").resolves("");
     mocker.stub(tools, "getSPFxTenant").returns(Promise.resolve("tenant"));
@@ -529,8 +529,7 @@ function mockAzureProjectDeps(
     .stub<any, any>(fs, "readJson")
     .withArgs(`./.${ConfigFolderName}/${REMOTE_MANIFEST}`)
     .resolves(mockedManifest);
-  mocker.stub(AppStudioClient, "createApp").resolves(mockedAppDef);
-  mocker.stub(AppStudioClient, "updateApp").resolves(mockedAppDef);
+  mocker.stub(AppStudioClient, "importApp").resolves(mockedAppDef);
   mocker.stub(solutionUtil, "getSubsriptionDisplayName").resolves(mockedSubscriptionName);
 }
 

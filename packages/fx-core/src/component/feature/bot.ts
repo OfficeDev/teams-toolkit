@@ -103,8 +103,8 @@ export class TeamsBot {
         required: true,
         targetAction: "bot-service.generateBicep",
         pre: (context: ContextV3, inputs: InputsWithProjectPath) => {
-          inputs.scenario = "";
-          inputs.componentId = "";
+          inputs.scenario = "Bot";
+          inputs.componentId = this.name;
           return ok(undefined);
         },
       });

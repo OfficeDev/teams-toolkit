@@ -93,14 +93,8 @@ export class TabCodeProvider implements SourceCodeProvider {
       ) => {
         const projectSettings = ctx.projectSetting as ProjectSettingsV3;
         const appName = projectSettings.appName;
-        const language =
-          inputs?.["programming-language"] ||
-          ctx.projectSetting.programmingLanguage ||
-          "javascript";
-        const folder = inputs.folder || language === "csharp" ? "" : FrontendPathInfo.WorkingDir;
-        const teamsTab = getComponent(projectSettings, ComponentNames.TeamsTab);
-        if (!teamsTab) return ok([]);
-        merge(teamsTab, { build: true, provision: language != "csharp", folder: folder });
+        const language = inputs?.["programming-language"] || "javascript";
+        const folder = inputs.folder ?? "";
         const langKey = convertToLangKey(language);
         const workingDir = path.join(inputs.projectPath, folder);
         const hasFunction = hasApi(ctx.projectSetting);

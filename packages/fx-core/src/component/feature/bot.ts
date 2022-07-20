@@ -3,7 +3,9 @@
 
 import {
   Action,
+  CallAction,
   ContextV3,
+  FunctionAction,
   FxError,
   InputsWithProjectPath,
   MaybePromise,
@@ -65,10 +67,10 @@ export class TeamsBot {
    */
   addBotAction(context: ContextV3, inputs: InputsWithProjectPath): Action {
     const actions: Action[] = [];
-    this.setupConfiguration(actions, context);
     this.setupCode(actions, context);
     this.setupBicep(actions, context, inputs);
     this.setupManifest(actions);
+    this.setupConfiguration(actions);
     return {
       type: "group",
       name: "teams-bot.add",
@@ -85,23 +87,12 @@ export class TeamsBot {
     };
   }
 
-  private hasBot(projectSetting: ProjectSettingsV3): boolean {
-    return !!getComponent(projectSetting, ComponentNames.TeamsBot);
-  }
-
-  private setupConfiguration(actions: Action[], context: ContextV3): Action[] {
-    if (this.hasBot(context.projectSetting)) {
-      actions.push(addBotCapability);
-    } else {
-      actions.push(configBot);
-    }
+  private setupConfiguration(actions: Action[]): Action[] {
+    actions.push(configBot);
     return actions;
   }
 
   private setupCode(actions: Action[], context: ContextV3): Action[] {
-    if (this.hasBot(context.projectSetting)) {
-      return actions;
-    }
     actions.push(generateBotCode);
     actions.push(initLocalDebug);
     return actions;
@@ -112,9 +103,6 @@ export class TeamsBot {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): Action[] {
-    if (this.hasBot(context.projectSetting)) {
-      return actions;
-    }
     const hosting = resolveHosting(inputs);
     actions.push(initBicep);
     actions.push(generateBotService(hosting));
@@ -130,6 +118,10 @@ export class TeamsBot {
     actions.push(addCapabilities);
     return actions;
   }
+}
+
+function hasBot(projectSetting: ProjectSettingsV3): boolean {
+  return !!getComponent(projectSetting, ComponentNames.TeamsBot);
 }
 
 const addCapabilities: Action = {
@@ -150,6 +142,9 @@ const initBicep: Action = {
   type: "call",
   targetAction: "bicep.init",
   required: true,
+  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
+    return ok(!hasBot(context.projectSetting));
+  },
 };
 
 const generateBotService: (hosting: string) => Action = (hosting) => ({
@@ -160,6 +155,9 @@ const generateBotService: (hosting: string) => Action = (hosting) => ({
   inputs: {
     hosting: hosting,
     scenario: "Bot",
+  },
+  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
+    return ok(!hasBot(context.projectSetting));
   },
 });
 
@@ -175,6 +173,9 @@ const generateHosting: (hosting: string, componentId: string) => Action = (
     componentId: componentId,
     scenario: "Bot",
   },
+  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
+    return ok(!hasBot(context.projectSetting));
+  },
 });
 
 const configHosting: (hosting: string, componentId: string) => Action = (hosting, componentId) => ({
@@ -186,6 +187,9 @@ const configHosting: (hosting: string, componentId: string) => Action = (hosting
     componentId: componentId,
     scenario: "Bot",
   },
+  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
+    return ok(!hasBot(context.projectSetting));
+  },
 });
 
 const generateBotCode: Action = {
@@ -193,6 +197,12 @@ const generateBotCode: Action = {
   type: "call",
   required: true,
   targetAction: "bot-code.generate",
+  inputs: {
+    folder: "bot",
+  },
+  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
+    return ok(!hasBot(context.projectSetting));
+  },
   pre: (context: ContextV3, inputs: InputsWithProjectPath) => {
     const scenarios = featureToScenario.get(inputs.feature)?.(
       inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER]
@@ -202,7 +212,7 @@ const generateBotCode: Action = {
   },
 };
 
-const configApim: Action = {
+const configApim: CallAction = {
   name: "call:apim-config.generateBicep",
   type: "call",
   required: true,
@@ -217,22 +227,8 @@ const initLocalDebug: Action = {
   type: "call",
   required: true,
   targetAction: "debug.generateLocalDebugSettings",
-};
-
-const addBotCapability: Action = {
-  name: "fx.addBotCapability",
-  type: "function",
-  plan: () => ok([Plans.addFeature("Bot")]),
-  execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-    const botCapability = featureToCapability.get(inputs.feature as string);
-    const bot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
-    if (bot && !bot.capabilities) {
-      bot.capabilities = [botCapability];
-    }
-    if (bot && !bot.capabilities.includes(botCapability)) {
-      bot.capabilities.push(botCapability);
-    }
-    return ok([Plans.addFeature("Bot")]);
+  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
+    return ok(!hasBot(context.projectSetting));
   },
 };
 
@@ -257,6 +253,8 @@ const configBot: Action = {
       hosting: inputs.hosting,
       deploy: true,
       capabilities: botCapability ? [botCapability] : [],
+      build: true,
+      folder: "bot",
     });
     // add hosting component
     const hostingComponent = {

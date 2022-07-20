@@ -14,6 +14,7 @@ import {
   SingleSelectQuestion,
 } from "@microsoft/teamsfx-api";
 import { Options } from "yargs";
+import { EmptyQTreeNode } from "./constants";
 
 import { getSingleOptionString, toYargsOptions } from "./utils";
 
@@ -21,7 +22,7 @@ export async function filterQTreeNode(
   root: QTreeNode,
   key: string,
   value: any
-): Promise<QTreeNode | undefined> {
+): Promise<QTreeNode> {
   /// finds the searched node
   let searchedNode: QTreeNode | undefined = undefined;
   const parentMap = new Map<QTreeNode, QTreeNode>();
@@ -39,11 +40,11 @@ export async function filterQTreeNode(
       });
     }
   }
-  if (!searchedNode || searchedNode.data.type === "group") return undefined;
+  if (!searchedNode || searchedNode.data.type === "group") return EmptyQTreeNode;
 
   /// checks the answer is valid
   const searchedNodeAns = await calculateByGivenAns(searchedNode.data, value);
-  if (searchedNodeAns === undefined) return undefined;
+  if (searchedNodeAns === undefined) return EmptyQTreeNode;
   searchedNode.data.value = searchedNodeAns;
   (searchedNode.data as any).hide = true;
 

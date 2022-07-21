@@ -81,10 +81,7 @@ export class BotCodeProvider implements SourceCodeProvider {
       ) => {
         const projectSettings = context.projectSetting as ProjectSettingsV3;
         const appName = projectSettings.appName;
-        const language =
-          inputs?.["programming-language"] ||
-          context.projectSetting.programmingLanguage ||
-          "javascript";
+        const language = inputs[CoreQuestionNames.ProgrammingLanguage];
         const botFolder =
           inputs.folder ?? (language === "csharp" ? "" : CommonStrings.BOT_WORKING_DIR_NAME);
         const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;

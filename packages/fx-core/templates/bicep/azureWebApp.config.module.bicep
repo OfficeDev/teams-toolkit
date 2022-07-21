@@ -49,8 +49,8 @@ resource webAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
     BOT_ID: botAadAppClientId // ID of your bot
     BOT_PASSWORD: botAadAppClientSecret // Secret of your bot
     {{/if}}
-    {{#if (contains "azure-function" connections) }}
-    API_ENDPOINT: {{azure-function.outputs.functionEndpoint}} // Azure Function endpoint
+    {{#if (contains "teams-api" connections) }}
+    API_ENDPOINT: provisionOutputs.azureFunctionApiOutput.value.functionEndpoint // Azure Function API endpoint
     {{/if}}
     {{#if (contains "azure-sql" connections)}}
     SQL_DATABASE_NAME: {{azure-sql.outputs.sqlDatabaseName}} // SQL database name

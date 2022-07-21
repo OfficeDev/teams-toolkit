@@ -59,18 +59,7 @@ export abstract class AzureResourceConfig {
         for (const refComponentName of this.references) {
           this.templateContext[refComponentName] = { outputs: {} };
           try {
-            let targetComponentName = refComponentName;
-            if (
-              refComponentName === ComponentNames.TeamsTab ||
-              refComponentName === ComponentNames.TeamsBot ||
-              refComponentName === ComponentNames.TeamsApi
-            ) {
-              const component = getComponent(context.projectSetting, refComponentName);
-              if (component) {
-                targetComponentName = component.hosting!;
-              }
-            }
-            const refResource = Container.get(targetComponentName) as CloudResource;
+            const refResource = Container.get(refComponentName) as CloudResource;
             if (refResource.outputs) {
               for (const key of Object.keys(refResource.outputs)) {
                 const entry = refResource.outputs[key];

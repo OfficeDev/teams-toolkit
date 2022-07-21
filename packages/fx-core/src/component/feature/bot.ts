@@ -10,20 +10,32 @@ import {
   InputsWithProjectPath,
   MaybePromise,
   ok,
+  Platform,
+  QTreeNode,
   Result,
   v3,
 } from "@microsoft/teamsfx-api";
 import { assign, cloneDeep } from "lodash";
 import "reflect-metadata";
 import { Service } from "typedi";
+import { format } from "util";
+import { isCLIDotNetEnabled } from "../../common/featureFlags";
+import { getLocalizedString } from "../../common/localizeUtils";
+import { isVSProject } from "../../common/projectSettingsHelper";
+import { globalVars } from "../../core/globalVars";
 import { CoreQuestionNames } from "../../core/question";
 import { QuestionNames, TemplateProjectsScenarios } from "../../plugins/resource/bot/constants";
 import {
   AppServiceOptionItem,
   AppServiceOptionItemForVS,
+  createHostTypeTriggerQuestion,
   FunctionsHttpTriggerOptionItem,
   FunctionsTimerTriggerOptionItem,
+  getConditionOfNotificationTriggerQuestion,
+  showNotificationTriggerCondition,
 } from "../../plugins/resource/bot/question";
+import { Runtime } from "../../plugins/resource/bot/v2/enum";
+import { getPlatformRuntime } from "../../plugins/resource/bot/v2/mapping";
 import {
   BotOptionItem,
   CommandAndResponseOptionItem,
@@ -56,7 +68,11 @@ export class TeamsBot {
         const projectSettings = context.projectSetting;
         const effects = [];
         const botCapability = featureToCapability.get(inputs[CoreQuestionNames.Features] as string);
-        const hosting = resolveHosting(inputs);
+        inputs.hosting = resolveHosting(inputs);
+        inputs[CoreQuestionNames.ProgrammingLanguage] =
+          context.projectSetting.programmingLanguage ||
+          inputs[CoreQuestionNames.ProgrammingLanguage] ||
+          "javascript";
         // 1. scaffold bot and add bot config
         let botConfig = getComponent(projectSettings, ComponentNames.TeamsBot);
         if (!botConfig) {
@@ -67,20 +83,21 @@ export class TeamsBot {
           assign(clonedInputs, {
             folder: "bot",
             scenarios: scenarios,
+            language: inputs[CoreQuestionNames.ProgrammingLanguage],
           });
           const res = await runActionByName("bot-code.generate", context, clonedInputs);
           if (res.isErr()) return err(res.error);
           effects.push("generate bot code");
           botConfig = {
             name: ComponentNames.TeamsBot,
-            hosting: hosting,
+            hosting: inputs.hosting,
             deploy: true,
             capabilities: botCapability ? [botCapability] : [],
             build: true,
             folder: "bot",
           };
           projectSettings.components.push(botConfig);
-          effects.push(Plans.generateSourceCodeAndConfig("teams-bot"));
+          effects.push(Plans.generateSourceCodeAndConfig(ComponentNames.TeamsBot));
         } else {
           if (botCapability && !botConfig.capabilities.includes(botCapability)) {
             botConfig.capabilities.push(botCapability);
@@ -98,7 +115,7 @@ export class TeamsBot {
         if (!getComponent(projectSettings, ComponentNames.BotService)) {
           const clonedInputs = cloneDeep(inputs);
           assign(clonedInputs, {
-            hosting: hosting,
+            hosting: inputs.hosting,
             scenario: Scenarios.Bot,
           });
           const res = await runActionByName("bot-service.generateBicep", context, clonedInputs);
@@ -111,20 +128,28 @@ export class TeamsBot {
         }
 
         // 2.2 hosting bicep
-        const hostingConfig = getComponentByScenario(projectSettings, hosting, Scenarios.Bot);
+        const hostingConfig = getComponentByScenario(
+          projectSettings,
+          inputs.hosting,
+          Scenarios.Bot
+        );
         if (!hostingConfig) {
           const clonedInputs = cloneDeep(inputs);
           assign(clonedInputs, {
             componentId: ComponentNames.TeamsBot,
             scenario: Scenarios.Bot,
           });
-          const res = await runActionByName(hosting + ".generateBicep", context, clonedInputs);
+          const res = await runActionByName(
+            inputs.hosting + ".generateBicep",
+            context,
+            clonedInputs
+          );
           if (res.isErr()) return err(res.error);
           projectSettings.components.push({
-            name: hosting,
+            name: inputs.hosting,
             scenario: Scenarios.Bot,
           });
-          effects.push(Plans.generateBicepAndConfig(hosting));
+          effects.push(Plans.generateBicepAndConfig(inputs.hosting));
         }
 
         // 2.3 identity bicep
@@ -171,8 +196,17 @@ export class TeamsBot {
           });
           const res = await runActionByName("app-manifest.addCapability", context, clonedInputs);
           if (res.isErr()) return err(res.error);
-          effects.push("add capability in app manifest");
+          effects.push("add bot capability in app manifest");
         }
+
+        globalVars.isVS = isVSProject(projectSettings);
+        projectSettings.programmingLanguage ||= inputs[CoreQuestionNames.ProgrammingLanguage];
+
+        const msg =
+          inputs.platform === Platform.CLI
+            ? getLocalizedString("core.addCapability.addCapabilityNoticeForCli")
+            : getLocalizedString("core.addCapability.addCapabilitiesNoticeForCli");
+        context.userInteraction.showMessage("info", format(msg, "Tab"), false);
         return ok(effects);
       },
     };

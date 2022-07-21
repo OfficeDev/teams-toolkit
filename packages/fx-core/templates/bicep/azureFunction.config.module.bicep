@@ -8,7 +8,7 @@ param currentConfigs object
 @secure()
 param currentAppSettings object
 
-var functionAppName = split({{azure-function.outputs.functionAppResourceId}}, '/')[8]
+var functionAppName = split(provisionOutputs.azureFunction{{scenario}}Output.value.functionAppResourceId, '/')[8]
 {{#if (contains "aad-app" connections)}}
 var m365ClientId = provisionParameters['m365ClientId']
   {{#if (contains "key-vault" connections) }}
@@ -71,6 +71,9 @@ resource functionAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
     {{#if (contains "teams-bot" connections)}}
     BOT_ID: botAadAppClientId // ID of your bot
     BOT_PASSWORD: botAadAppClientSecret // Secret of your bot
+    {{/if}}
+    {{#if (contains "teams-api" connections) }}
+    API_ENDPOINT: provisionOutputs.azureFunctionApiOutput.value.functionEndpoint // Azure Function API endpoint
     {{/if}}
     {{#if (contains "azure-sql" connections)}}
     SQL_DATABASE_NAME: {{azure-sql.outputs.sqlDatabaseName}} // SQL database name

@@ -77,13 +77,11 @@ export class TabCodeProvider implements SourceCodeProvider {
       progressTitle: ProgressTitles.scaffoldTab,
       progressSteps: Object.keys(ScaffoldProgress.steps).length,
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
-        if (!teamsTab) return ok([]);
         const language =
           inputs?.["programming-language"] ||
           context.projectSetting.programmingLanguage ||
           "javascript";
-        const folder = inputs.folder || language === "csharp" ? "" : FrontendPathInfo.WorkingDir;
+        const folder = inputs.folder || (language === "csharp" ? "" : FrontendPathInfo.WorkingDir);
         return ok([Plans.scaffold("tab", path.join(inputs.projectPath, folder))]);
       },
       execute: async (
@@ -97,10 +95,7 @@ export class TabCodeProvider implements SourceCodeProvider {
           inputs?.["programming-language"] ||
           ctx.projectSetting.programmingLanguage ||
           "javascript";
-        const folder = inputs.folder || language === "csharp" ? "" : FrontendPathInfo.WorkingDir;
-        const teamsTab = getComponent(projectSettings, ComponentNames.TeamsTab);
-        if (!teamsTab) return ok([]);
-        merge(teamsTab, { build: true, provision: language != "csharp", folder: folder });
+        const folder = inputs.folder ?? (language === "csharp" ? "" : FrontendPathInfo.WorkingDir);
         const langKey = convertToLangKey(language);
         const workingDir = path.join(inputs.projectPath, folder);
         const hasFunction = hasApi(ctx.projectSetting);

@@ -16,7 +16,6 @@ import {
   Result,
   Stage,
 } from "@microsoft/teamsfx-api";
-import { merge } from "lodash";
 import "reflect-metadata";
 import { Service } from "typedi";
 import { CoreQuestionNames } from "../../core/question";
@@ -34,6 +33,7 @@ import { getComponent } from "../workflow";
 import * as path from "path";
 import { isVSProject } from "../../common/projectSettingsHelper";
 import { globalVars } from "../../core/globalVars";
+import { ensureComponentConnections } from "../migrate";
 
 @Service(ComponentNames.TeamsApi)
 export class TeamsApi {
@@ -50,9 +50,9 @@ export class TeamsApi {
 
   addApiAction(context: ContextV3, inputs: InputsWithProjectPath): Action {
     const actions: Action[] = [];
-    this.setupConfiguration(actions, context);
     this.setupCode(actions, context, inputs);
     this.setupBicep(actions, context, inputs);
+    this.setupConfiguration(actions, context);
     const group: GroupAction = {
       type: "group",
       name: `${this.name}.add`,
@@ -90,14 +90,8 @@ export class TeamsApi {
       return actions;
     }
     actions.push(initBicep);
-    if (inputs.hosting) {
-      actions.push(
-        generateBicep(inputs.hosting, { scenario: Scenarios.Api, componentId: this.name })
-      );
-      actions.push(
-        generateConfigBicep(inputs.hosting, { scenario: Scenarios.Api, componentId: this.name })
-      );
-    }
+    actions.push(generateBicep({ scenario: Scenarios.Api, componentId: this.name }));
+    actions.push(generateConfigBicep({ scenario: Scenarios.Api, componentId: this.name }));
     return actions;
   }
 
@@ -139,10 +133,6 @@ const addApiTriggerAction: Action = {
   plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
     return ok([`add new function to '${ComponentNames.TeamsApi}' in projectSettings`]);
   },
-  question: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    functionNameQuestion.validation = getFunctionNameQuestionValidation(context, inputs);
-    return ok(new QTreeNode(functionNameQuestion));
-  },
   execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
     const functionName: string =
       (inputs?.[QuestionKey.functionName] as string) ?? DefaultValues.functionName;
@@ -158,31 +148,20 @@ const configApiAction: Action = {
   plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
     return ok([`config '${ComponentNames.TeamsApi}' in projectSettings`]);
   },
-  question: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    functionNameQuestion.validation = getFunctionNameQuestionValidation(context, inputs);
-    return ok(new QTreeNode(functionNameQuestion));
-  },
   execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-    inputs.hosting = inputs.hosting || ComponentNames.Function;
     const functionName: string =
       (inputs?.[QuestionKey.functionName] as string) ?? DefaultValues.functionName;
     const projectSettings = context.projectSetting as ProjectSettingsV3;
     // add teams-api
     projectSettings.components.push({
       name: ComponentNames.TeamsApi,
-      hosting: inputs.hosting,
+      hosting: ComponentNames.Function,
       functionNames: [functionName],
       deploy: true,
+      build: true,
+      folder: "api",
     });
-    // add hosting component
-    projectSettings.components.push({
-      name: inputs.hosting,
-      connections: [ComponentNames.TeamsApi, ComponentNames.TeamsTab, ComponentNames.Identity],
-      scenario: Scenarios.Api,
-    });
-    const teamsTab = getComponent(projectSettings, ComponentNames.TeamsTab);
-    if (!teamsTab?.connections) merge(teamsTab, { connections: [ComponentNames.TeamsApi] });
-    else teamsTab.connections.push(ComponentNames.TeamsApi);
+    ensureComponentConnections(projectSettings);
     projectSettings.programmingLanguage =
       projectSettings.programmingLanguage || inputs[CoreQuestionNames.ProgrammingLanguage];
     globalVars.isVS = isVSProject(projectSettings);
@@ -194,30 +173,41 @@ const generateApiCode: Action = {
   type: "call",
   required: true,
   targetAction: "api-code.generate",
+  inputs: {
+    folder: "api",
+  },
+  question: (context: ContextV3, inputs: InputsWithProjectPath) => {
+    functionNameQuestion.validation = getFunctionNameQuestionValidation(context, inputs);
+    return ok(new QTreeNode(functionNameQuestion));
+  },
 };
 const initBicep: Action = {
   type: "call",
   targetAction: "bicep.init",
   required: true,
 };
-const generateBicep: (hosting: string, inputs: Record<string, unknown>) => Action = (
-  hosting,
-  inputs
-) => ({
-  name: `call:${hosting}.generateBicep`,
+const generateBicep: (inputs: Record<string, unknown>) => Action = (inputs) => ({
+  name: `call:azure-function.generateBicep`,
   type: "call",
   required: true,
-  targetAction: `${hosting}.generateBicep`,
+  targetAction: `azure-function.generateBicep`,
   inputs: inputs,
+  post: (context) => {
+    // add hosting component
+    context.projectSetting.components.push({
+      name: ComponentNames.Function,
+      connections: [ComponentNames.TeamsApi, ComponentNames.TeamsTab],
+      scenario: Scenarios.Api,
+    });
+    ensureComponentConnections(context.projectSetting);
+    return ok(undefined);
+  },
 });
-const generateConfigBicep: (hosting: string, inputs: Record<string, unknown>) => Action = (
-  hosting,
-  inputs
-) => ({
-  name: `call:${hosting}-config.generateBicep`,
+const generateConfigBicep: (inputs: Record<string, unknown>) => Action = (inputs) => ({
+  name: `call:azure-function-config.generateBicep`,
   type: "call",
   required: true,
-  targetAction: `${hosting}-config.generateBicep`,
+  targetAction: `azure-function-config.generateBicep`,
   inputs: inputs,
 });
 const initLocalDebug: Action = {

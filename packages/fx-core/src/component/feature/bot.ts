@@ -5,7 +5,6 @@ import {
   Action,
   CallAction,
   ContextV3,
-  FunctionAction,
   FxError,
   InputsWithProjectPath,
   MaybePromise,
@@ -41,7 +40,6 @@ import { ComponentNames, Scenarios } from "../constants";
 import { identityAction } from "../resource/identity";
 import { globalVars } from "../../core/globalVars";
 import { isVSProject } from "../../common/projectSettingsHelper";
-import { hasAAD, hasAzureTab } from "../../common/projectSettingsHelperV3";
 import { Plans } from "../messages";
 import { ensureComponentConnections } from "../migrate";
 @Service("teams-bot")
@@ -93,6 +91,9 @@ export class TeamsBot {
   }
 
   private setupCode(actions: Action[], context: ContextV3): Action[] {
+    if (hasBot(context.projectSetting)) {
+      return actions;
+    }
     actions.push(generateBotCode);
     actions.push(initLocalDebug);
     return actions;
@@ -103,6 +104,9 @@ export class TeamsBot {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): Action[] {
+    if (hasBot(context.projectSetting)) {
+      return actions;
+    }
     const hosting = resolveHosting(inputs);
     actions.push(initBicep);
     actions.push(generateBotService(hosting));
@@ -121,7 +125,7 @@ export class TeamsBot {
 }
 
 function hasBot(projectSetting: ProjectSettingsV3): boolean {
-  return !!getComponent(projectSetting, ComponentNames.TeamsBot);
+  return getComponent(projectSetting, ComponentNames.TeamsBot) != undefined;
 }
 
 const addCapabilities: Action = {
@@ -131,7 +135,8 @@ const addCapabilities: Action = {
   targetAction: "app-manifest.addCapability",
   pre: (context: ContextV3, inputs: InputsWithProjectPath) => {
     const manifestCapability: v3.ManifestCapability = {
-      name: inputs.feature === MessageExtensionItem.id ? "MessageExtension" : "Bot",
+      name:
+        inputs[CoreQuestionNames.Features] === MessageExtensionItem.id ? "MessageExtension" : "Bot",
     };
     inputs.capabilities = [manifestCapability];
     return ok(undefined);
@@ -142,9 +147,6 @@ const initBicep: Action = {
   type: "call",
   targetAction: "bicep.init",
   required: true,
-  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(!hasBot(context.projectSetting));
-  },
 };
 
 const generateBotService: (hosting: string) => Action = (hosting) => ({
@@ -156,8 +158,12 @@ const generateBotService: (hosting: string) => Action = (hosting) => ({
     hosting: hosting,
     scenario: "Bot",
   },
-  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(!hasBot(context.projectSetting));
+  post: (context) => {
+    context.projectSetting.components.push({
+      name: ComponentNames.BotService,
+      provision: true,
+    });
+    return ok(undefined);
   },
 });
 
@@ -173,8 +179,14 @@ const generateHosting: (hosting: string, componentId: string) => Action = (
     componentId: componentId,
     scenario: "Bot",
   },
-  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(!hasBot(context.projectSetting));
+  post: (context) => {
+    context.projectSetting.components.push({
+      name: hosting,
+      connections: [ComponentNames.TeamsBot],
+      scenario: Scenarios.Bot,
+    });
+    ensureComponentConnections(context.projectSetting);
+    return ok(undefined);
   },
 });
 
@@ -187,9 +199,6 @@ const configHosting: (hosting: string, componentId: string) => Action = (hosting
     componentId: componentId,
     scenario: "Bot",
   },
-  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(!hasBot(context.projectSetting));
-  },
 });
 
 const generateBotCode: Action = {
@@ -200,11 +209,8 @@ const generateBotCode: Action = {
   inputs: {
     folder: "bot",
   },
-  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(!hasBot(context.projectSetting));
-  },
   pre: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    const scenarios = featureToScenario.get(inputs.feature)?.(
+    const scenarios = featureToScenario.get(inputs[CoreQuestionNames.Features])?.(
       inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER]
     );
     inputs.scenarios = scenarios;
@@ -217,9 +223,6 @@ const configApim: CallAction = {
   type: "call",
   required: true,
   targetAction: "apim-config.generateBicep",
-  condition: (context: ContextV3) => {
-    return ok(getComponent(context.projectSetting, ComponentNames.APIM) != undefined);
-  },
 };
 
 const initLocalDebug: Action = {
@@ -227,9 +230,6 @@ const initLocalDebug: Action = {
   type: "call",
   required: true,
   targetAction: "debug.generateLocalDebugSettings",
-  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(!hasBot(context.projectSetting));
-  },
 };
 
 const configBot: Action = {
@@ -238,7 +238,7 @@ const configBot: Action = {
   plan: () => ok([Plans.addFeature("Bot")]),
   execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
     const projectSettings = context.projectSetting;
-    const botCapability = featureToCapability.get(inputs.feature as string);
+    const botCapability = featureToCapability.get(inputs[CoreQuestionNames.Features] as string);
     // add teams-bot
     const botConfig = getComponent(projectSettings, ComponentNames.TeamsBot);
     if (botConfig) {
@@ -256,25 +256,6 @@ const configBot: Action = {
       build: true,
       folder: "bot",
     });
-    // add hosting component
-    const hostingComponent = {
-      name: inputs.hosting,
-      connections: [ComponentNames.TeamsBot],
-      scenario: Scenarios.Bot,
-    };
-    projectSettings.components.push(hostingComponent);
-    //add bot-service
-    projectSettings.components.push({
-      name: ComponentNames.BotService,
-      provision: true,
-    });
-    // add default identity
-    if (!getComponent(context.projectSetting, ComponentNames.Identity)) {
-      projectSettings.components.push({
-        name: ComponentNames.Identity,
-        provision: true,
-      });
-    }
     ensureComponentConnections(projectSettings);
     projectSettings.programmingLanguage ||= inputs[CoreQuestionNames.ProgrammingLanguage];
     globalVars.isVS = isVSProject(projectSettings);
@@ -348,8 +329,8 @@ const resolveHosting: (inputs: InputsWithProjectPath) => string = (inputs): stri
   let hosting = "azure-web-app";
   const triggers = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] as string[];
   if (
-    triggers.includes(FunctionsHttpTriggerOptionItem.id) ||
-    triggers.includes(FunctionsTimerTriggerOptionItem.id)
+    triggers?.includes(FunctionsHttpTriggerOptionItem.id) ||
+    triggers?.includes(FunctionsTimerTriggerOptionItem.id)
   ) {
     hosting = "azure-function";
   }

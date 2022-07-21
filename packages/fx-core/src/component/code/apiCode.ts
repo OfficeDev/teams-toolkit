@@ -62,9 +62,6 @@ export class ApiCodeProvider implements SourceCodeProvider {
           context.projectSetting.programmingLanguage ||
           "javascript";
         const folder = inputs.folder || FunctionPluginPathInfo.solutionFolderName;
-        const teamsApi = getComponent(projectSettings, ComponentNames.TeamsApi);
-        if (!teamsApi) return ok([]);
-        merge(teamsApi, { build: true, folder: folder });
         const workingDir = path.join(inputs.projectPath, folder);
         const functionName =
           (inputs?.[QuestionKey.functionName] as string) ?? DefaultValues.functionName;

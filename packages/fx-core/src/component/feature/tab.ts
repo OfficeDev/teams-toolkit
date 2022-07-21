@@ -47,10 +47,10 @@ export class TeamsTab {
   private addTabAction(context: ContextV3, inputs: InputsWithProjectPath): Action {
     inputs.hosting = resolveHosting(context, inputs);
     const actions: Action[] = [];
-    this.setupCode(actions);
+    this.setupCode(actions, context);
     this.setupBicep(actions, context, inputs);
     this.setupCapabilities(actions);
-    this.setupConfiguration(actions);
+    this.setupConfiguration(actions, context);
     actions.push(showTabAlreadyAddMessage);
     return {
       type: "group",
@@ -60,13 +60,19 @@ export class TeamsTab {
     };
   }
 
-  private setupConfiguration(actions: Action[]): Action[] {
+  private setupConfiguration(actions: Action[], context: ContextV3): Action[] {
+    if (hasTab(context)) {
+      return actions;
+    }
     actions.push(addSSO);
     actions.push(configTab);
     return actions;
   }
 
-  private setupCode(actions: Action[]): Action[] {
+  private setupCode(actions: Action[], context: ContextV3): Action[] {
+    if (hasTab(context)) {
+      return actions;
+    }
     actions.push(generateCode);
     actions.push(initLocalDebug);
     return actions;
@@ -77,6 +83,10 @@ export class TeamsTab {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): Action[] {
+    if (hasTab(context)) {
+      return actions;
+    }
+
     actions.push(initBicep);
     const hosting = resolveHosting(context, inputs);
     if (hosting) {
@@ -117,9 +127,6 @@ const addTabCapability: Action = {
 const configTab: Action = {
   name: "fx.configTab",
   type: "function",
-  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(!hasTab(context));
-  },
   plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
     const tabConfig = getComponent(context.projectSetting, ComponentNames.TeamsTab);
     if (tabConfig) {
@@ -146,14 +153,6 @@ const configTab: Action = {
       provision: language != "csharp",
       build: true,
       folder: inputs.folder || language === "csharp" ? "" : FrontendPathInfo.WorkingDir,
-      language: language,
-    });
-    // add hosting component
-    projectSettings.components.push({
-      name: hosting,
-      connections: [ComponentNames.TeamsTab],
-      provision: true,
-      scenario: Scenarios.Tab,
     });
     ensureComponentConnections(projectSettings);
     globalVars.isVS = isVSProject(projectSettings);
@@ -168,16 +167,13 @@ const addSSO: CallAction = {
   targetAction: "sso.add",
   required: true,
   condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(inputs.feature !== TabNonSsoItem.id);
+    return ok(inputs[CoreQuestionNames.Features] !== TabNonSsoItem.id);
   },
 };
 
 const showTabAlreadyAddMessage: Action = {
   name: "teams-tab.showTabAlreadyAddMessage",
   type: "function",
-  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(hasTab(context));
-  },
   plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
     return ok([]);
   },
@@ -196,8 +192,14 @@ const generateCode: Action = {
   type: "call",
   required: true,
   targetAction: "tab-code.generate",
-  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(!hasTab(context));
+  pre: (context: ContextV3, inputs: InputsWithProjectPath) => {
+    const language =
+      inputs?.[CoreQuestionNames.ProgrammingLanguage] ||
+      context.projectSetting.programmingLanguage ||
+      "javascript";
+    inputs.folder ||= language === "csharp" ? "" : FrontendPathInfo.WorkingDir;
+    inputs.language ||= language;
+    return ok(undefined);
   },
 };
 const initLocalDebug: Action = {
@@ -205,18 +207,12 @@ const initLocalDebug: Action = {
   type: "call",
   required: true,
   targetAction: "debug.generateLocalDebugSettings",
-  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(!hasTab(context));
-  },
 };
 
 const initBicep: Action = {
   type: "call",
   targetAction: "bicep.init",
   required: true,
-  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(!hasTab(context));
-  },
 };
 
 const generateBicep: (hosting: string, componentId: string) => Action = (hosting, componentId) => ({
@@ -228,8 +224,16 @@ const generateBicep: (hosting: string, componentId: string) => Action = (hosting
     scenario: "Tab",
     componentId: componentId,
   },
-  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(!hasTab(context));
+  post: (context, inputs) => {
+    // add hosting component
+    context.projectSetting?.components?.push({
+      name: hosting,
+      connections: [ComponentNames.TeamsTab],
+      provision: true,
+      scenario: Scenarios.Tab,
+    });
+    ensureComponentConnections(context.projectSetting);
+    return ok(undefined);
   },
 });
 
@@ -248,9 +252,6 @@ const configureTab: CallAction = {
   type: "call",
   targetAction: "tab-code.configure",
   required: true,
-  condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(!hasTab(context));
-  },
 };
 const buildTab: CallAction = {
   name: "teams-tab.build",

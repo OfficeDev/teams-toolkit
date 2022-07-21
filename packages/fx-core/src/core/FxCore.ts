@@ -132,7 +132,7 @@ import {
 } from "./telemetry";
 import { CoreHookContext } from "./types";
 import { isPreviewFeaturesEnabled } from "../common";
-import { getQuestionsV3, runAction } from "../component/workflow";
+import { getQuestionsV3, runActionByName } from "../component/workflow";
 import { createContextV3 } from "../component/utils";
 import "../component/core";
 import {
@@ -407,7 +407,7 @@ export class FxCore implements v3.ICore {
     //   await globalStateUpdate(automaticNpmInstall, true);
     // }
     const context = createContextV3();
-    const res = await runAction("fx.create", context, inputs as InputsWithProjectPath);
+    const res = await runActionByName("fx.create", context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx.projectSettings = context.projectSetting;
     inputs.projectPath = context.projectPath;
@@ -477,7 +477,7 @@ export class FxCore implements v3.ICore {
     context.envInfo = ctx!.envInfoV3!;
     context.projectSetting = ctx!.projectSettings! as ProjectSettingsV3;
     context.tokenProvider = TOOLS.tokenProvider;
-    const res = await runAction("fx.provision", context, inputs as InputsWithProjectPath);
+    const res = await runActionByName("fx.provision", context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
     ctx!.envInfoV3 = context.envInfo;
@@ -577,7 +577,7 @@ export class FxCore implements v3.ICore {
     context.envInfo = ctx!.envInfoV3!;
     context.projectSetting = ctx!.projectSettings! as ProjectSettingsV3;
     context.tokenProvider = TOOLS.tokenProvider;
-    const res = await runAction("fx.deploy", context, inputs as InputsWithProjectPath);
+    const res = await runActionByName("fx.deploy", context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
     return ok(Void);
@@ -655,7 +655,7 @@ export class FxCore implements v3.ICore {
     context.envInfo = ctx!.envInfoV3!;
     context.projectSetting = ctx!.projectSettings! as ProjectSettingsV3;
     context.tokenProvider = TOOLS.tokenProvider;
-    const res = await runAction("fx.provision", context, inputs as InputsWithProjectPath);
+    const res = await runActionByName("fx.provision", context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
     return ok(Void);
@@ -728,7 +728,11 @@ export class FxCore implements v3.ICore {
     context.envInfo = ctx!.envInfoV3!;
     context.projectSetting = ctx!.projectSettings! as ProjectSettingsV3;
     context.tokenProvider = TOOLS.tokenProvider;
-    const res = await runAction("app-manifest.publish", context, inputs as InputsWithProjectPath);
+    const res = await runActionByName(
+      "app-manifest.publish",
+      context,
+      inputs as InputsWithProjectPath
+    );
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
     return ok(Void);
@@ -758,7 +762,7 @@ export class FxCore implements v3.ICore {
     ctx?: CoreHookContext
   ): Promise<Result<Void, FxError>> {
     const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-    const res = await runAction("fx.addFeature", context, inputs as InputsWithProjectPath);
+    const res = await runActionByName("fx.addFeature", context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
     return ok(Void);
@@ -881,11 +885,11 @@ export class FxCore implements v3.ICore {
     let res: Result<undefined, FxError> = ok(undefined);
     const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
     if (func.method === "addCICDWorkflows") {
-      res = await runAction("cicd.add", context, inputs as InputsWithProjectPath);
+      res = await runActionByName("cicd.add", context, inputs as InputsWithProjectPath);
     } else if (func.method === "connectExistingApi") {
-      res = await runAction("api-connector.add", context, inputs as InputsWithProjectPath);
+      res = await runActionByName("api-connector.add", context, inputs as InputsWithProjectPath);
     } else if (func.method === "addFeature") {
-      res = await runAction("fx.addFeature", context, inputs as InputsWithProjectPath);
+      res = await runActionByName("fx.addFeature", context, inputs as InputsWithProjectPath);
     }
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;

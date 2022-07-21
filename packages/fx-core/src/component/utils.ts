@@ -11,6 +11,7 @@ import {
   err,
   FileEffect,
   FxError,
+  InputsWithProjectPath,
   ok,
   ProjectSettingsV3,
   ProvisionBicep,
@@ -460,4 +461,11 @@ export function getHostingComponent(
 // TODO:implement after V3 project setting update
 export function isHostedByAzure(context: ContextV3): boolean {
   return true;
+}
+
+export async function generateConfigBiceps(
+  projectSettings: ProjectSettingsV3,
+  inputs: InputsWithProjectPath
+): Promise<Result<undefined, FxError>> {
+  return ok(undefined);
 }

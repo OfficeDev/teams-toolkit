@@ -5,6 +5,8 @@ import {
   Action,
   CallAction,
   ContextV3,
+  err,
+  FunctionAction,
   FxError,
   InputsWithProjectPath,
   MaybePromise,
@@ -29,9 +31,9 @@ import {
   FunctionsHttpTriggerOptionItem,
   FunctionsTimerTriggerOptionItem,
 } from "../../plugins/resource/bot/question";
-import { getComponent } from "../workflow";
+import { getComponent, getComponentByScenario, runActionByName } from "../workflow";
 import { CoreQuestionNames } from "../../core/question";
-import "../code/botCode";
+import { BotCodeProvider } from "../code/botCode";
 import "../resource/appManifest/appManifest";
 import "../resource/botService";
 import "../resource/azureAppService/azureWebApp";
@@ -42,6 +44,8 @@ import { globalVars } from "../../core/globalVars";
 import { isVSProject } from "../../common/projectSettingsHelper";
 import { Plans } from "../messages";
 import { ensureComponentConnections } from "../migrate";
+import { assign, cloneDeep } from "lodash";
+import { generateConfigBiceps } from "../utils";
 @Service("teams-bot")
 export class TeamsBot {
   name = "teams-bot";
@@ -49,7 +53,129 @@ export class TeamsBot {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    return ok(this.addBotAction(context, inputs));
+    const action: FunctionAction = {
+      name: `${this.name}.add`,
+      type: "function",
+      plan: (context, inputs) => {
+        return ok(["add Bot to project"]);
+      },
+      execute: async (context, inputs) => {
+        const projectSettings = context.projectSetting;
+        const effects = [];
+        const botCapability = featureToCapability.get(inputs[CoreQuestionNames.Features] as string);
+        const hosting = resolveHosting(inputs);
+        // 1. scaffold bot and add bot config
+        let botConfig = getComponent(projectSettings, ComponentNames.TeamsBot);
+        if (!botConfig) {
+          const clonedInputs = cloneDeep(inputs);
+          const scenarios = featureToScenario.get(inputs[CoreQuestionNames.Features])?.(
+            inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER]
+          );
+          assign(clonedInputs, {
+            folder: "bot",
+            scenario: scenarios,
+          });
+          const res = await runActionByName("bot-code.generate", context, clonedInputs);
+          if (res.isErr()) return err(res.error);
+          effects.push("generate bot code");
+          botConfig = {
+            name: ComponentNames.TeamsBot,
+            hosting: hosting,
+            deploy: true,
+            capabilities: botCapability ? [botCapability] : [],
+            build: true,
+            folder: "bot",
+          };
+          effects.push(Plans.generateSourceCodeAndConfig("teams-bot"));
+        } else {
+          if (botCapability && !botConfig.capabilities.includes(botCapability)) {
+            botConfig.capabilities.push(botCapability);
+          }
+        }
+        // 2. generate provision bicep
+        // 2.1 bot-service bicep
+        if (!getComponent(projectSettings, ComponentNames.BotService)) {
+          const clonedInputs = cloneDeep(inputs);
+          assign(clonedInputs, {
+            hosting: hosting,
+            scenario: Scenarios.Bot,
+          });
+          const res = await runActionByName("bot-service.generateBicep", context, clonedInputs);
+          if (res.isErr()) return err(res.error);
+          projectSettings.components.push({
+            name: ComponentNames.BotService,
+            provision: true,
+          });
+          effects.push(Plans.generateBicepAndConfig(ComponentNames.BotService));
+        }
+
+        // 2.2 hosting bicep
+        const hostingConfig = getComponentByScenario(projectSettings, hosting, Scenarios.Bot);
+        if (!hostingConfig) {
+          const clonedInputs = cloneDeep(inputs);
+          assign(clonedInputs, {
+            componentId: ComponentNames.TeamsBot,
+            scenario: Scenarios.Bot,
+          });
+          const res = await runActionByName(hosting + ".generateBicep", context, clonedInputs);
+          if (res.isErr()) return err(res.error);
+          projectSettings.components.push({
+            name: hosting,
+            scenario: Scenarios.Bot,
+          });
+          effects.push(Plans.generateBicepAndConfig(hosting));
+        }
+
+        // 2.3 identity bicep
+        if (!getComponent(projectSettings, ComponentNames.Identity)) {
+          const clonedInputs = cloneDeep(inputs);
+          assign(clonedInputs, {
+            componentId: "",
+            scenario: "",
+          });
+          const res = await runActionByName("identity.generateBicep", context, clonedInputs);
+          if (res.isErr()) return err(res.error);
+          projectSettings.components.push({
+            name: ComponentNames.Identity,
+            provision: true,
+          });
+          effects.push(Plans.generateBicepAndConfig(ComponentNames.Identity));
+        }
+
+        // 3. generate config bicep
+        {
+          const res = await generateConfigBiceps(projectSettings, inputs);
+          if (res.isErr()) return err(res.error);
+          effects.push("generate config biceps");
+        }
+
+        // 4. local debug settings
+        {
+          const res = await runActionByName("debug.generateLocalDebugSettings", context, inputs);
+          if (res.isErr()) return err(res.error);
+          effects.push("generate local debug configs");
+        }
+
+        // 5. app-manifest.addCapability
+        {
+          const manifestCapability: v3.ManifestCapability = {
+            name:
+              inputs[CoreQuestionNames.Features] === MessageExtensionItem.id
+                ? "MessageExtension"
+                : "Bot",
+          };
+          const clonedInputs = cloneDeep(inputs);
+          assign(clonedInputs, {
+            capabilities: [manifestCapability],
+          });
+          const res = await runActionByName("app-manifest.addCapability", context, clonedInputs);
+          if (res.isErr()) return err(res.error);
+          effects.push("add capability in app manifest");
+        }
+        return ok(effects);
+      },
+    };
+    return ok(action);
   }
   build(): MaybePromise<Result<Action | undefined, FxError>> {
     return ok(this.buildBotAction());

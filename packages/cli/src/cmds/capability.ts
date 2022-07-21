@@ -10,6 +10,7 @@ import { err, FxError, ok, Platform, ProjectSettings, Result } from "@microsoft/
 import {
   AzureSolutionQuestionNames as Names,
   isBotNotificationEnabled,
+  isV3,
   ProjectSettingsHelper,
 } from "@microsoft/teamsfx-core";
 
@@ -23,11 +24,13 @@ import {
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
 import { automaticNpmInstallHandler } from "./preview/npmInstallHandler";
-import { AddFeatureFunc, CLIHelpInputs, RootFolderNode } from "../constants";
+import { AddFeatureFunc, CLIHelpInputs, EmptyQTreeNode, RootFolderNode } from "../constants";
 import { filterQTreeNode, toYargsOptionsGroup } from "../questionUtils";
+import { FeatureId } from "@microsoft/teamsfx-core/build/component/questionV3";
 
 abstract class CapabilityAddBase extends YargsCommand {
   abstract readonly capabilityName: string;
+  abstract readonly featureId: FeatureId; /// For V3
   abstract getNpmInstallExcludeCaps(projectSettings: ProjectSettings | undefined): {
     excludeFrontend: boolean;
     excludeBackend: boolean;
@@ -41,12 +44,15 @@ abstract class CapabilityAddBase extends YargsCommand {
     }
     const core = result.value;
     {
-      const result = await core.getQuestionsForUserTask(AddFeatureFunc, CLIHelpInputs);
+      const result = isV3()
+        ? await core.getQuestionsForAddFeature(this.featureId, CLIHelpInputs)
+        : await core.getQuestionsForUserTask(AddFeatureFunc, CLIHelpInputs);
       if (result.isErr()) {
         throw result.error;
       }
-      const node = await filterQTreeNode(result.value!, Names.Features, this.capabilityName);
-      const nodes = flattenNodes(node!).concat([RootFolderNode]);
+      const node = result.value ?? EmptyQTreeNode;
+      const filteredNode = await filterQTreeNode(node, Names.Features, this.capabilityName);
+      const nodes = flattenNodes(filteredNode).concat([RootFolderNode]);
       this.params = toYargsOptionsGroup(nodes);
     }
     return yargs.options(this.params);
@@ -108,6 +114,7 @@ export class CapabilityAddTab extends CapabilityAddBase {
   public readonly command = `${this.commandHead}`;
   public readonly description = "Hello world webpages embedded in Microsoft Teams";
   public readonly capabilityName = "TabNonSso";
+  public readonly featureId = FeatureId.TabNonSso;
 
   public override getNpmInstallExcludeCaps(settings: ProjectSettings | undefined) {
     return {
@@ -123,6 +130,7 @@ export class CapabilityAddSSOTab extends CapabilityAddBase {
   public readonly command = `${this.commandHead}`;
   public readonly description = "Teams identity aware webpages embedded in Microsoft Teams";
   public readonly capabilityName = "Tab";
+  public readonly featureId = FeatureId.Tab;
 
   public override getNpmInstallExcludeCaps(settings: ProjectSettings | undefined) {
     return {
@@ -148,6 +156,7 @@ export class CapabilityAddBot extends CapabilityAddBotBase {
   public readonly command = `${this.commandHead}`;
   public readonly description = "Hello world chatbot to run simple and repetitive tasks by user";
   public readonly capabilityName = "Bot";
+  public readonly featureId = FeatureId.Bot;
 }
 
 export class CapabilityAddMessageExtension extends CapabilityAddBotBase {
@@ -156,6 +165,7 @@ export class CapabilityAddMessageExtension extends CapabilityAddBotBase {
   public readonly description =
     "Hello world message extension allowing interactions via buttons and forms";
   public readonly capabilityName = "MessagingExtension";
+  public readonly featureId = FeatureId.MessagingExtension;
 }
 
 export class CapabilityAddNotification extends CapabilityAddBotBase {
@@ -163,6 +173,7 @@ export class CapabilityAddNotification extends CapabilityAddBotBase {
   public readonly command = `${this.commandHead}`;
   public readonly description = "Send notification to Microsoft Teams via various triggers";
   public readonly capabilityName = "Notification";
+  public readonly featureId = FeatureId.Notification;
 }
 
 export class CapabilityAddCommandAndResponse extends CapabilityAddBotBase {
@@ -170,6 +181,7 @@ export class CapabilityAddCommandAndResponse extends CapabilityAddBotBase {
   public readonly command = `${this.commandHead}`;
   public readonly description = "Respond to simple commands in Microsoft Teams chat";
   public readonly capabilityName = "command-bot";
+  public readonly featureId = FeatureId.CommandAndResponse;
 }
 
 export class CapabilityAdd extends YargsCommand {

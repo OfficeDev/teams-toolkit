@@ -6,6 +6,7 @@ import sinon from "sinon";
 
 import { expect } from "./utils";
 import { filterQTreeNode } from "../../src/questionUtils";
+import { EmptyQTreeNode } from "../../src/constants";
 
 describe("Question Utils Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -64,8 +65,10 @@ describe("Question Utils Tests", function () {
     expect((newRoot!.data as Question).value).deep.equal(["function"]);
   });
 
-  it("filterQTreeNode - undefined", async function () {
-    expect(await filterQTreeNode(root, "add-azure-resources", "xxx")).undefined;
-    expect(await filterQTreeNode(root, "add-azure-resources", undefined)).undefined;
+  it("filterQTreeNode - EmptyQTreeNode", async function () {
+    expect(await filterQTreeNode(root, "add-azure-resources", "xxx")).deep.equal(EmptyQTreeNode);
+    expect(await filterQTreeNode(root, "add-azure-resources", undefined)).deep.equal(
+      EmptyQTreeNode
+    );
   });
 });

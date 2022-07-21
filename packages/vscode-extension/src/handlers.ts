@@ -150,6 +150,7 @@ import {
   sendDebugAllEvent,
   sendDebugAllStartEvent,
 } from "./debug/localTelemetryReporter";
+import { validatePropertyDeps } from "ajv/dist/vocabularies/applicator/dependencies";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -1170,8 +1171,8 @@ export async function validateAzureDependenciesHandler(): Promise<string | undef
   const deps = [nodeType, DepsType.Dotnet, DepsType.FuncCoreTools, DepsType.Ngrok];
 
   const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
-  const shouldContinue = await vscodeDepsChecker.resolve(deps);
-
+  let shouldContinue = await vscodeDepsChecker.resolve(deps);
+  shouldContinue = shouldContinue && (await validatePorts()).isOk();
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheck, {
     [TelemetryProperty.Success]: shouldContinue ? TelemetrySuccess.Yes : TelemetrySuccess.No,
   });
@@ -1182,6 +1183,34 @@ export async function validateAzureDependenciesHandler(): Promise<string | undef
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
   }
+}
+
+async function validatePorts(): Promise<Result<void, FxError>> {
+  const portsInUse = await commonUtils.getPortsInUse();
+  if (portsInUse.length > 0) {
+    let message: string;
+    if (portsInUse.length > 1) {
+      message = util.format(
+        localize("teamstoolkit.localDebug.portsAlreadyInUse"),
+        portsInUse.join(", ")
+      );
+    } else {
+      message = util.format(localize("teamstoolkit.localDebug.portAlreadyInUse"), portsInUse[0]);
+    }
+    const error = new UserError(ExtensionSource, ExtensionErrors.PortAlreadyInUse, message);
+    VS_CODE_UI.showMessage(
+      "error",
+      message,
+      false,
+      localize("teamstoolkit.localDebug.learnMore")
+    ).then(async (result) => {
+      if (result.isOk() && result.value === localize("teamstoolkit.localDebug.learnMore")) {
+        await VS_CODE_UI.openUrl(constants.portInUseHelpLink);
+      }
+    });
+    return err(error);
+  }
+  return ok(undefined);
 }
 
 /**
@@ -1360,34 +1389,6 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
       );
       if (result.isErr()) {
         return err(result.error);
-      }
-
-      const portsInUse = await commonUtils.getPortsInUse();
-      if (portsInUse.length > 0) {
-        let message: string;
-        if (portsInUse.length > 1) {
-          message = util.format(
-            localize("teamstoolkit.localDebug.portsAlreadyInUse"),
-            portsInUse.join(", ")
-          );
-        } else {
-          message = util.format(
-            localize("teamstoolkit.localDebug.portAlreadyInUse"),
-            portsInUse[0]
-          );
-        }
-        const error = new UserError(ExtensionSource, ExtensionErrors.PortAlreadyInUse, message);
-        VS_CODE_UI.showMessage(
-          "error",
-          message,
-          false,
-          localize("teamstoolkit.localDebug.learnMore")
-        ).then(async (result) => {
-          if (result.isOk() && result.value === localize("teamstoolkit.localDebug.learnMore")) {
-            await VS_CODE_UI.openUrl(constants.portInUseHelpLink);
-          }
-        });
-        return err(error);
       }
       return ok(undefined);
     }

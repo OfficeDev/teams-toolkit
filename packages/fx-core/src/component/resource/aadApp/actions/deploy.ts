@@ -7,21 +7,41 @@ import {
   ok,
   FunctionAction,
   ProvisionContextV3,
+  Platform,
+  QTreeNode,
 } from "@microsoft/teamsfx-api";
-import { ComponentNames, ActionTypeFunction } from "../../../constants";
+import { ComponentNames, ActionTypeFunction, ActionNames } from "../../../constants";
 import { AadAppForTeamsImpl } from "../../../../plugins/resource/aad/plugin";
 import { convertContext } from "./utils";
+import { getLocalizedString } from "../../../../common/localizeUtils";
+import { Constants } from "../../../../plugins/resource/aad/constants";
 
-export function GetActionSetApplication(): FunctionAction {
+export function GetActionDeploy(): FunctionAction {
   return {
-    name: `${ComponentNames.AadApp}.setApplicationInContext`,
+    name: `${ComponentNames.AadApp}.${ActionNames.configure}`,
     type: ActionTypeFunction,
+    question: (context: ContextV3, inputs: InputsWithProjectPath) => {
+      const aadQuestions = new QTreeNode({
+        type: "group",
+      });
+      if (inputs.platform === Platform.CLI_HELP || inputs.platform === Platform.CLI) {
+        const node = new QTreeNode({
+          name: Constants.INCLUDE_AAD_MANIFEST,
+          type: "singleSelect",
+          staticOptions: ["yes", "no"],
+          title: getLocalizedString("core.aad.includeAadQuestionTitle"),
+          default: "no",
+        });
+        aadQuestions.addChild(node);
+      }
+      return ok(aadQuestions);
+    },
     plan: async (context: ContextV3, inputs: InputsWithProjectPath) => {
       return ok([
         {
           type: "service",
           name: "teams.microsoft.com",
-          remarks: "update aad app state",
+          remarks: "deploy aad app",
         },
       ]);
     },
@@ -29,7 +49,7 @@ export function GetActionSetApplication(): FunctionAction {
       const ctx = context as ProvisionContextV3;
       const aadAppImplement = new AadAppForTeamsImpl();
       const convertCtx = convertContext(ctx, inputs);
-      await aadAppImplement.setApplicationInContext(convertCtx);
+      await aadAppImplement.deploy(convertCtx);
       const convertState = convertCtx.envInfo.state.get("fx-resource-aad-app-for-teams");
       convertState.forEach((v: any, k: string) => {
         ctx.envInfo!.state[ComponentNames.AadApp][k] = v;
@@ -38,7 +58,7 @@ export function GetActionSetApplication(): FunctionAction {
         {
           type: "service",
           name: "teams.microsoft.com",
-          remarks: "update aad app state",
+          remarks: "deploy aad app",
         },
       ]);
     },

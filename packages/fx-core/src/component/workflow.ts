@@ -243,7 +243,7 @@ export async function collectActionQuestions(
   inputs: InputsWithProjectPath,
   nodes: QTreeNode[]
 ): Promise<Result<undefined, FxError>> {
-  console.log(`collectActionQuestions: ${getActionName(action)}`);
+  // console.log(`collectActionQuestions: ${getActionName(action)}`);
   if (action.question) {
     const res = await action.question(context, inputs);
     if (res.isErr()) return err(res.error);
@@ -438,7 +438,6 @@ export async function executeAction(
   inputs: InputsWithProjectPath,
   effects: Effect[]
 ): Promise<Result<undefined, FxError>> {
-  console.log(`executeAction: ${getActionName(action)}`);
   if (action.condition) {
     const res = await action.condition(context, inputs);
     if (res.isErr()) return err(res.error);
@@ -447,6 +446,7 @@ export async function executeAction(
       return ok(undefined);
     }
   }
+  console.log(`executeAction: ${getActionName(action)}`);
   if (action.pre) {
     const res = await action.pre(context, inputs);
     if (res.isErr()) return err(res.error);

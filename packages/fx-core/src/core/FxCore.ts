@@ -143,6 +143,7 @@ import {
 import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
 import { addCicdQuestion } from "../component/feature/cicd";
 import { AddApiConnectorAction } from "../component/feature/apiConnector";
+import { createHostTypeTriggerQuestion } from "../plugins/resource/bot/question";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -938,8 +939,14 @@ export class FxCore implements v3.ICore {
     featureId: FeatureId,
     inputs: Inputs
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const res = await getQuestionsForAddFeatureSubCommand(featureId, inputs);
-    return res;
+    if (featureId === FeatureId.Notification) {
+      //notification is a special case
+      const triggerNode = new QTreeNode(createHostTypeTriggerQuestion(inputs.platform));
+      return ok(triggerNode);
+    } else {
+      const res = await getQuestionsForAddFeatureSubCommand(featureId, inputs);
+      return res;
+    }
   }
 
   @hooks([

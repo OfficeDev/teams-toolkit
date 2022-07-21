@@ -40,6 +40,7 @@ import { ComponentNames, Scenarios } from "../constants";
 import { identityAction } from "../resource/identity";
 import { globalVars } from "../../core/globalVars";
 import { isVSProject } from "../../common/projectSettingsHelper";
+import { hasAAD, hasAzureTab } from "../../common/projectSettingsHelperV3";
 @Service("teams-bot")
 export class TeamsBot {
   name = "teams-bot";
@@ -57,6 +58,8 @@ export class TeamsBot {
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const configBicepActions: Action[] = [];
+    const res = convertBotInputs(inputs);
+    inputs.hosting = res.hosting;
     if (inputs.hosting) {
       configBicepActions.push({
         name: `call:${inputs.hosting}-config.generateBicep`,
@@ -89,10 +92,17 @@ export class TeamsBot {
         type: "call",
         required: true,
         targetAction: `${inputs.hosting}.generateBicep`,
-        inputs: {
-          componentId: this.name,
-          scenario: "Bot",
+        pre: (context: ContextV3, inputs: InputsWithProjectPath) => {
+          inputs.scenario = "Bot";
+          inputs.componentId = this.name;
+          return ok(undefined);
         },
+      });
+      provisionBicepActions.push({
+        name: `call:bot-service.generateBicep`,
+        type: "call",
+        required: true,
+        targetAction: "bot-service.generateBicep",
         pre: (context: ContextV3, inputs: InputsWithProjectPath) => {
           inputs.scenario = "Bot";
           inputs.componentId = this.name;
@@ -109,7 +119,7 @@ export class TeamsBot {
         },
         execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
           const projectSettings = context.projectSetting;
-          const res = getScenariosAndBotCapability(inputs);
+          const res = convertBotInputs(inputs);
           // add teams-bot
           const botConfig = getComponent(projectSettings, ComponentNames.TeamsBot);
           if (botConfig) {
@@ -119,7 +129,7 @@ export class TeamsBot {
             return ok(["config Bot in project settings"]);
           }
           projectSettings.components.push({
-            name: "teams-bot",
+            name: ComponentNames.TeamsBot,
             hosting: inputs.hosting,
             deploy: true,
             capabilities: res.botCapability ? [res.botCapability] : [],
@@ -127,18 +137,20 @@ export class TeamsBot {
           // add hosting component
           const hostingComponent = {
             name: inputs.hosting,
-            connections: ["teams-bot"],
+            connections: [ComponentNames.TeamsBot],
             scenario: Scenarios.Bot,
           };
           projectSettings.components.push(hostingComponent);
           //add bot-service
-          projectSettings.components.push({
-            name: "bot-service",
-            provision: true,
-          });
-          // add default identity
-          if (!getComponent(context.projectSetting, ComponentNames.Identity)) {
+          if (!getComponent(context.projectSetting, ComponentNames.BotService)) {
             projectSettings.components.push({
+              name: ComponentNames.BotService,
+              provision: true,
+            });
+          }
+          // ensure identity config
+          if (!getComponent(context.projectSetting, ComponentNames.Identity)) {
+            context.projectSetting.components.push({
               name: ComponentNames.Identity,
               provision: true,
             });
@@ -146,12 +158,25 @@ export class TeamsBot {
           // connect identity to hosting component
           hostingComponent.connections.push(ComponentNames.Identity);
           // connect azure-sql to hosting component
-          if (getComponent(context.projectSetting, "azure-sql")) {
-            hostingComponent.connections.push("azure-sql");
+          if (getComponent(context.projectSetting, ComponentNames.AzureSQL)) {
+            hostingComponent.connections.push(ComponentNames.AzureSQL);
           }
           const apimConfig = getComponent(projectSettings, ComponentNames.APIM);
           if (apimConfig) {
-            apimConfig.connections?.push("teams-bot");
+            apimConfig.connections?.push(ComponentNames.TeamsBot);
+          }
+          if (hasAAD(projectSettings)) {
+            hostingComponent.connections.push(ComponentNames.AadApp);
+          }
+          if (hasAzureTab(projectSettings)) {
+            hostingComponent.connections.push(ComponentNames.TeamsTab);
+          }
+          if (getComponent(projectSettings, ComponentNames.KeyVault)) {
+            hostingComponent.connections.push(ComponentNames.KeyVault);
+          }
+          // TODO How to distinguish azure-function???
+          if (getComponent(projectSettings, ComponentNames.Function)) {
+            hostingComponent.connections.push(ComponentNames.Function);
           }
           projectSettings.programmingLanguage =
             projectSettings.programmingLanguage || inputs[CoreQuestionNames.ProgrammingLanguage];
@@ -165,7 +190,7 @@ export class TeamsBot {
         required: true,
         targetAction: "bot-code.generate",
         pre: (context: ContextV3, inputs: InputsWithProjectPath) => {
-          const res = getScenariosAndBotCapability(inputs);
+          const res = convertBotInputs(inputs);
           inputs.scenarios = res.scenarios;
           return ok(undefined);
         },
@@ -183,7 +208,7 @@ export class TeamsBot {
         required: true,
         targetAction: "app-manifest.addCapability",
         pre: (context: ContextV3, inputs: InputsWithProjectPath) => {
-          const res = getScenariosAndBotCapability(inputs);
+          const res = convertBotInputs(inputs);
           inputs.capabilities = [res.manifestCapability];
           return ok(undefined);
         },
@@ -231,7 +256,8 @@ export class TeamsBot {
  *   capability = MessagingExtension
  *     group=bot, host=app-service, scenario=default
  */
-function getScenariosAndBotCapability(inputs: InputsWithProjectPath): {
+function convertBotInputs(inputs: InputsWithProjectPath): {
+  hosting: string;
   scenarios: string[];
   botCapability: string;
   manifestCapability: v3.ManifestCapability;
@@ -243,14 +269,14 @@ function getScenariosAndBotCapability(inputs: InputsWithProjectPath): {
     name: feature === MessageExtensionItem.id ? "MessageExtension" : "Bot",
   };
   let botCapability: string;
-  inputs.hosting = ComponentNames.AzureWebApp;
+  let hosting = ComponentNames.AzureWebApp;
   if (feature === NotificationOptionItem.id) {
     if (triggers.includes(AppServiceOptionItem.id)) {
       scenarios.push(TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME);
     } else if (triggers.includes(AppServiceOptionItemForVS.id)) {
       scenarios.push(TemplateProjectsScenarios.NOTIFICATION_WEBAPI_SCENARIO_NAME);
     } else {
-      inputs.hosting = ComponentNames.Function;
+      hosting = ComponentNames.Function;
       scenarios.push(TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME);
       if (triggers.includes(FunctionsHttpTriggerOptionItem.id)) {
         scenarios.push(TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_HTTP_SCENARIO_NAME);
@@ -275,6 +301,7 @@ function getScenariosAndBotCapability(inputs: InputsWithProjectPath): {
     botCapability = "bot";
   }
   return {
+    hosting,
     scenarios,
     botCapability,
     manifestCapability,

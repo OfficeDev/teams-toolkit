@@ -20,10 +20,6 @@ export const identityAction: Action = {
   type: "call",
   required: true,
   targetAction: "identity.generateBicep",
-  inputs: {
-    componentId: "",
-    scenario: "",
-  },
   condition: (context, inputs) => {
     const needed: boolean =
       getComponent(context.projectSetting, ComponentNames.Identity) === undefined;
@@ -32,5 +28,14 @@ export const identityAction: Action = {
       inputs.scenario = "";
     }
     return ok(needed);
+  },
+  post: (context, inputs) => {
+    if (!getComponent(context.projectSetting, ComponentNames.Identity)) {
+      context.projectSetting.components.push({
+        name: ComponentNames.Identity,
+        provision: true,
+      });
+    }
+    return ok(undefined);
   },
 };

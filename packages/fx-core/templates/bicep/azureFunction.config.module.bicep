@@ -22,12 +22,12 @@ var oauthAuthority = uri(m365OauthAuthorityHost, m365TenantId)
   {{#if (contains "teams-bot" connections) }}
 var botId = provisionParameters['botAadAppClientId']
     {{#if (contains "teams-tab" connections)}}
-var m365ApplicationIdUri = 'api://${ {{tabDomainVarName}} }/botid-${botId}'
+var m365ApplicationIdUri = 'api://${ provisionOutputs.TabOutput.value.domain }/botid-${botId}'
     {{else}}
 var m365ApplicationIdUri = 'api://botid-${botId}'
     {{/if}}
   {{else}}
-var m365ApplicationIdUri = 'api://${ {{tabDomainVarName}} }'
+var m365ApplicationIdUri = 'api://${ provisionOutputs.TabOutput.value.domain }'
   {{/if}}
 {{/if}}
 {{#if (contains "teams-bot" connections)}}
@@ -40,7 +40,7 @@ var botAadAppClientSecret = provisionParameters['botAadAppClientSecret']
 {{/if}}
 
 {{#if (contains "teams-tab" connections) }}
-var tabEndpoint = {{tabEndpointVarName}}
+var tabEndpoint = provisionOutputs.TabOutput.value.endpoint
 var currentAllowedOrigins = empty(currentConfigs.cors) ? [] : currentConfigs.cors.allowedOrigins
 resource appConfig 'Microsoft.Web/sites/config@2021-02-01' = {
   name: '${functionAppName}/web'

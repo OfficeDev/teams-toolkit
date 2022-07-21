@@ -12,17 +12,14 @@ import {
   ok,
   Result,
 } from "@microsoft/teamsfx-api";
+import fs from "fs-extra";
+import * as path from "path";
 import "reflect-metadata";
 import { Container } from "typedi";
-import * as path from "path";
-import fs from "fs-extra";
-import { getTemplatesFolder } from "../../folder";
-import { getComponent, getComponentByScenario } from "../workflow";
 import { compileHandlebarsTemplateString } from "../../common/tools";
 import { getProjectTemplatesFolderPath } from "../../common/utils";
-import { getHostingComponent } from "../utils";
-import { Component } from "../../common/telemetry";
-import { ComponentNames } from "../constants";
+import { getTemplatesFolder } from "../../folder";
+import { getComponentByScenario } from "../workflow";
 
 export abstract class AzureResourceConfig {
   abstract readonly name: string;

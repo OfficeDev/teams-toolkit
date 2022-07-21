@@ -19,7 +19,7 @@ var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
 var botId = provisionParameters['botAadAppClientId']
   {{#if (contains "teams-tab" connections)}}
     {{#if (contains "teams-bot" connections) }}
-var m365ApplicationIdUri = 'api://${ {{tabDomainVarName}} }/botid-${botId}'
+var m365ApplicationIdUri = 'api://${ provisionOutputs.TabOutput.value.domain }/botid-${botId}'
     {{/if}}
   {{else}}
 var m365ApplicationIdUri = 'api://botid-${botId}'

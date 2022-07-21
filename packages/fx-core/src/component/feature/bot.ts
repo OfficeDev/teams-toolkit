@@ -199,7 +199,7 @@ export class TeamsBot {
           inputs.platform === Platform.CLI
             ? getLocalizedString("core.addCapability.addCapabilityNoticeForCli")
             : getLocalizedString("core.addCapability.addCapabilitiesNoticeForCli");
-        context.userInteraction.showMessage("info", format(msg, "Tab"), false);
+        context.userInteraction.showMessage("info", format(msg, "Bot"), false);
         return ok(effects);
       },
     };

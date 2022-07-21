@@ -34,7 +34,7 @@ describe("Add capabilities", function () {
       mockedEnvRestore();
     }
   });
-  for (const v3flag of ["false"]) {
+  for (const v3flag of ["false", "true"]) {
     it(`tab project can add bot capability and provision (v3=${v3flag})`, async () => {
       mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: v3flag });
       appName = getUniqueAppName();

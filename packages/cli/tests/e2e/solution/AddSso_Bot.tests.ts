@@ -23,8 +23,8 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("Add SSO", () => {
   const testFolder = getTestFolder();
-  let appName;
-  let projectPath;
+  let appName: string | undefined;
+  let projectPath: string | undefined;
   let mockedEnvRestore: RestoreFn | undefined;
   const env = Object.assign({}, process.env);
   env["TEAMSFX_AAD_MANIFEST"] = "true";

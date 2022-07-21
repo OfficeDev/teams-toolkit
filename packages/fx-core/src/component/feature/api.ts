@@ -33,7 +33,7 @@ import { getComponent } from "../workflow";
 import * as path from "path";
 import { isVSProject } from "../../common/projectSettingsHelper";
 import { globalVars } from "../../core/globalVars";
-import { ensureComponentConnections } from "../migrate";
+import { ensureComponentConnections } from "../utils";
 
 @Service(ComponentNames.TeamsApi)
 export class TeamsApi {

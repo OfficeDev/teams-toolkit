@@ -14,6 +14,7 @@ import "reflect-metadata";
 import { Container, Service } from "typedi";
 import { compileHandlebarsTemplateString } from "../../common/tools";
 import { ComponentNames, componentToScenario } from "../constants";
+import { ComponentConnections } from "../utils";
 import { getComponent } from "../workflow";
 import { AzureResourceConfig } from "./azureResourceConfig";
 @Service("apim-config")
@@ -21,7 +22,7 @@ export class APIMConfig extends AzureResourceConfig {
   readonly name = "apim-config";
   readonly bicepModuleName = "apim";
   readonly requisite = "apim";
-  references = ["azure-web-app", "azure-storage"];
+  references = ComponentConnections[ComponentNames.APIM];
   generateBicep(
     context: ContextV3,
     inputs: InputsWithProjectPath

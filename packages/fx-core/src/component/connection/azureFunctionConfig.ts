@@ -14,6 +14,7 @@ import "reflect-metadata";
 import { Container, Service } from "typedi";
 import { compileHandlebarsTemplateString } from "../../common/tools";
 import { ComponentNames, componentToScenario } from "../constants";
+import { ComponentConnections } from "../utils";
 import { getComponent } from "../workflow";
 import { AzureResourceConfig } from "./azureResourceConfig";
 
@@ -22,7 +23,7 @@ export class AzureFunctionsConfig extends AzureResourceConfig {
   readonly name = "azure-function-config";
   readonly bicepModuleName = "azureFunction";
   readonly requisite = "azure-function";
-  references = ["azure-function", "azure-sql", "key-vault", "identity"];
+  references = ComponentConnections[ComponentNames.Function];
   generateBicep(
     context: ContextV3,
     inputs: InputsWithProjectPath

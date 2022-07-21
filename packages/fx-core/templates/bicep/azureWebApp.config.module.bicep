@@ -6,7 +6,7 @@ param provisionOutputs object
 @secure()
 param currentAppSettings object
 
-var webAppName = split({{azure-web-app.outputs.resourceId}} , '/')[8]
+var webAppName = split(provisionOutputs.azureWebApp{{scenario}}Output.value.resourceId , '/')[8]
 {{#if (contains "aad-app" connections)}}
 var m365ClientId = provisionParameters['m365ClientId']
   {{#if (contains "key-vault" connections) }}
@@ -38,7 +38,7 @@ resource webAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   name: '${webAppName}/appsettings'
   properties: union({
     {{#if (contains "aad-app" connections)}}
-    INITIATE_LOGIN_ENDPOINT: uri({{azure-web-app.outputs.siteEndpoint}}, 'auth-start.html') // The page is used to let users consent required OAuth permissions during bot SSO process
+    INITIATE_LOGIN_ENDPOINT: uri(provisionOutputs.azureWebApp{{scenario}}Output.value.siteEndpoint, 'auth-start.html') // The page is used to let users consent required OAuth permissions during bot SSO process
     M365_AUTHORITY_HOST: m365OauthAuthorityHost // AAD authority host
     M365_CLIENT_ID: m365ClientId // Client id of AAD application
     M365_CLIENT_SECRET: m365ClientSecret // Client secret of AAD application

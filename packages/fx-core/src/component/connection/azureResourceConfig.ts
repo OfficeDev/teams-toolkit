@@ -17,9 +17,12 @@ import { Container } from "typedi";
 import * as path from "path";
 import fs from "fs-extra";
 import { getTemplatesFolder } from "../../folder";
-import { getComponentByScenario } from "../workflow";
+import { getComponent, getComponentByScenario } from "../workflow";
 import { compileHandlebarsTemplateString } from "../../common/tools";
 import { getProjectTemplatesFolderPath } from "../../common/utils";
+import { getHostingComponent } from "../utils";
+import { Component } from "../../common/telemetry";
+import { ComponentNames } from "../constants";
 
 export abstract class AzureResourceConfig {
   abstract readonly name: string;
@@ -53,15 +56,26 @@ export abstract class AzureResourceConfig {
         );
         if (!requisiteComponent) return ok([]);
         this.templateContext.connections = requisiteComponent.connections || [];
-        for (const ref of this.references) {
-          this.templateContext[ref] = { outputs: {} };
+        for (const refComponentName of this.references) {
+          this.templateContext[refComponentName] = { outputs: {} };
           try {
-            const refResource = Container.get(ref) as CloudResource;
+            let targetComponentName = refComponentName;
+            if (
+              refComponentName === ComponentNames.TeamsTab ||
+              refComponentName === ComponentNames.TeamsBot ||
+              refComponentName === ComponentNames.TeamsApi
+            ) {
+              const component = getComponent(context.projectSetting, refComponentName);
+              if (component) {
+                targetComponentName = component.hosting!;
+              }
+            }
+            const refResource = Container.get(targetComponentName) as CloudResource;
             if (refResource.outputs) {
               for (const key of Object.keys(refResource.outputs)) {
                 const entry = refResource.outputs[key];
                 const value = compileHandlebarsTemplateString(entry.bicepVariable ?? "", inputs);
-                this.templateContext[ref].outputs[entry.key] = value;
+                this.templateContext[refComponentName].outputs[entry.key] = value;
               }
             }
           } catch (e) {}

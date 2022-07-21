@@ -14,6 +14,7 @@ import "reflect-metadata";
 import { Container, Service } from "typedi";
 import { compileHandlebarsTemplateString } from "../../common/tools";
 import { ComponentNames, componentToScenario } from "../constants";
+import { ComponentConnections } from "../utils";
 import { getComponent } from "../workflow";
 import { AzureResourceConfig } from "./azureResourceConfig";
 @Service("azure-web-app-config")
@@ -21,7 +22,7 @@ export class AzureWebAppConfig extends AzureResourceConfig {
   readonly name = "azure-web-app-config";
   readonly bicepModuleName = "azureWebApp";
   readonly requisite = "azure-web-app";
-  references = ["azure-web-app", "azure-sql", "key-vault", "identity", "azure-function"];
+  references = ComponentConnections[ComponentNames.AzureWebApp];
   generateBicep(
     context: ContextV3,
     inputs: InputsWithProjectPath

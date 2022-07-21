@@ -740,9 +740,6 @@ export async function runActionByName(
   context: ContextV3,
   inputs: InputsWithProjectPath
 ): Promise<Result<undefined, FxError>> {
-  context.logProvider.info(
-    `------------------------run action: ${actionName} start!------------------------`
-  );
   let res: Result<undefined, FxError>;
   try {
     // 1. find the action body
@@ -761,8 +758,5 @@ export async function runActionByName(
   } catch (e) {
     res = err(assembleError(e));
   }
-  context.logProvider.info(
-    `------------------------run action: ${actionName} finish!------------------------`
-  );
   return res;
 }

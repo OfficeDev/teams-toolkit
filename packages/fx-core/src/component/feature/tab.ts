@@ -24,7 +24,7 @@ import { FrontendPathInfo } from "../../plugins/resource/frontend/constants";
 import { TabNonSsoItem } from "../../plugins/solution/fx-solution/question";
 import { ComponentNames, Scenarios } from "../constants";
 import { Plans } from "../messages";
-import { ensureComponentConnections } from "../migrate";
+import { ensureComponentConnections } from "../utils";
 import { identityAction } from "../resource/identity";
 import { getComponent } from "../workflow";
 

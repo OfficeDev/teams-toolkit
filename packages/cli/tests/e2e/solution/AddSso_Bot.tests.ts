@@ -26,9 +26,6 @@ describe("Add SSO", () => {
   let appName: string | undefined;
   let projectPath: string | undefined;
   let mockedEnvRestore: RestoreFn | undefined;
-  const env = Object.assign({}, process.env);
-  env["TEAMSFX_AAD_MANIFEST"] = "true";
-  env["TEAMSFX_CONFIG_UNIFY"] = "true";
 
   afterEach(async () => {
     if (appName && projectPath) {
@@ -40,11 +37,15 @@ describe("Add SSO", () => {
   });
   for (const v3flag of ["false", "true"]) {
     it(`Add SSO to non SSO Bot project (v3=${v3flag})`, async () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: v3flag });
+      mockedEnvRestore = mockedEnv({
+        TEAMSFX_APIV3: v3flag,
+        TEAMSFX_AAD_MANIFEST: "true",
+        TEAMSFX_CONFIG_UNIFY: "true",
+      });
       appName = getUniqueAppName();
       projectPath = path.resolve(testFolder, appName);
       // Arrange
-      await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot, env);
+      await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
 
       // Assert
       {
@@ -64,7 +65,7 @@ describe("Add SSO", () => {
       // Act
       await execAsync(`teamsfx add sso`, {
         cwd: projectPath,
-        env: env,
+        env: process.env,
         timeout: 0,
       });
 
@@ -87,7 +88,7 @@ describe("Add SSO", () => {
         expect(readmeExists).to.be.true;
       }
 
-      await CliHelper.provisionProject(projectPath, "", env);
+      await CliHelper.provisionProject(projectPath, "");
 
       const context = await readContextMultiEnv(projectPath, "dev");
       // Validate Aad App
@@ -102,7 +103,7 @@ describe("Add SSO", () => {
       try {
         await execAsync(`teamsfx add sso`, {
           cwd: projectPath,
-          env: env,
+          env: process.env,
           timeout: 0,
         });
       } catch (error) {

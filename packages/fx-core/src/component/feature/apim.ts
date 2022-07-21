@@ -89,6 +89,7 @@ export class ApimFeature {
       },
       {
         type: "call",
+        name: "call:bicep.init",
         targetAction: "bicep.init",
         required: true,
       },

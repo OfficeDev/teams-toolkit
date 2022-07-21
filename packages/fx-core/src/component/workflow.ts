@@ -18,6 +18,7 @@ import {
   Json,
   ok,
   ProjectSettingsV3,
+  QTreeNode,
   Question,
   Result,
   SystemError,
@@ -61,8 +62,9 @@ export async function getAction(
     else return undefined;
   }
   if (!component[actionName]) {
-    if (required) throw new ActionNotExist(name);
-    else return undefined;
+    if (required) {
+      throw new ActionNotExist(name);
+    } else return undefined;
   }
   try {
     const res = await component[actionName](context, inputs);
@@ -210,31 +212,47 @@ export async function resolveAction(
   return action;
 }
 
-export async function askQuestionForAction(
+export async function getQuestionsV3(
+  actionName: string,
+  context: ContextV3,
+  inputs: InputsWithProjectPath,
+  required = false
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const nodes: QTreeNode[] = [];
+  const action = await getAction(actionName, context, inputs, required);
+  if (!action) {
+    if (!required) return ok(undefined);
+    return err(new ActionNotExist(actionName));
+  }
+  await collectActionQuestions(action, context, inputs, nodes);
+  if (nodes.length === 0) return ok(undefined);
+  const group = new QTreeNode({ type: "group" });
+  group.children = nodes;
+  return ok(group);
+}
+export function getActionName(action: Action): string {
+  if (action.type === "call") return `call:${action.targetAction}`;
+  return action.name as string;
+}
+/**
+ * traverse the workflow tree, collect all questions rooted on action, use for CLI_HELP
+ */
+export async function collectActionQuestions(
   action: Action,
   context: ContextV3,
-  inputs: InputsWithProjectPath
+  inputs: InputsWithProjectPath,
+  nodes: QTreeNode[]
 ): Promise<Result<undefined, FxError>> {
-  if (action.type === "function") {
-    // ask question before plan
-    if (action.question) {
-      const getQuestionRes = await action.question(context, inputs);
-      if (getQuestionRes.isErr()) return err(getQuestionRes.error);
-      const node = getQuestionRes.value;
-      if (node) {
-        const questionRes = await traverse(
-          node,
-          inputs,
-          context.userInteraction,
-          context.telemetryReporter
-        );
-        if (questionRes.isErr()) return err(questionRes.error);
-      }
+  // console.log(`collectActionQuestions: ${getActionName(action)}`);
+  if (action.question) {
+    const res = await action.question(context, inputs);
+    if (res.isErr()) return err(res.error);
+    const node = res.value;
+    if (node) {
+      nodes.push(node);
     }
-  } else if (action.type === "shell") {
-    //TODO
-    context.logProvider.info(`---- plan [${inputs.step++}]: shell command: ${action.description}`);
-  } else if (action.type === "call") {
+  }
+  if (action.type === "call") {
     if (action.inputs) {
       resolveVariables(inputs, action.inputs);
     }
@@ -243,14 +261,67 @@ export async function askQuestionForAction(
       return err(new ActionNotExist(action.targetAction));
     }
     if (targetAction) {
-      return await askQuestionForAction(targetAction, context, inputs);
+      return await collectActionQuestions(targetAction, context, inputs, nodes);
     }
-  } else {
+  } else if (action.type === "group") {
+    if (action.inputs) {
+      resolveVariables(inputs, action.inputs);
+    }
+    for (const subAction of action.actions) {
+      const res = await collectActionQuestions(subAction, context, inputs, nodes);
+      if (res.isErr()) return err(res.error);
+    }
+  }
+  return ok(undefined);
+}
+
+/**
+ * traverse the workflow tree, ask questions on nodes if they have implemented question API.
+ */
+export async function askActionQuestions(
+  action: Action,
+  context: ContextV3,
+  inputs: InputsWithProjectPath
+): Promise<Result<undefined, FxError>> {
+  if (action.condition) {
+    const res = await action.condition(context, inputs);
+    if (res.isErr()) return err(res.error);
+    if (res.value === false) {
+      // skip ask question rooted on this action
+      return ok(undefined);
+    }
+  }
+  if (action.question) {
+    const getQuestionRes = await action.question(context, inputs);
+    if (getQuestionRes.isErr()) return err(getQuestionRes.error);
+    const node = getQuestionRes.value;
+    if (node) {
+      const questionRes = await traverse(
+        node,
+        inputs,
+        context.userInteraction,
+        context.telemetryReporter
+      );
+      if (questionRes.isErr()) return err(questionRes.error);
+    }
+  }
+  if (action.type === "call") {
+    if (action.inputs) {
+      resolveVariables(inputs, action.inputs);
+    }
+    const targetAction = await getAction(action.targetAction, context, inputs, action.required);
+    if (action.required && !targetAction) {
+      return err(new ActionNotExist(action.targetAction));
+    }
+    if (targetAction) {
+      return await askActionQuestions(targetAction, context, inputs);
+    }
+  } else if (action.type === "group") {
     if (action.inputs) {
       resolveVariables(inputs, action.inputs);
     }
     for (const act of action.actions) {
-      const res = await askQuestionForAction(act, context, inputs);
+      const res = await askActionQuestions(act, context, inputs);
       if (res.isErr()) return err(res.error);
     }
   }
@@ -322,6 +393,14 @@ export async function planAction(
   inputs: InputsWithProjectPath,
   effects: Effect[]
 ): Promise<Result<undefined, FxError>> {
+  if (action.condition) {
+    const res = await action.condition(context, inputs);
+    if (res.isErr()) return err(res.error);
+    if (res.value === false) {
+      // skip ask question rooted on this action
+      return ok(undefined);
+    }
+  }
   if (action.type === "function") {
     if (action.plan) {
       const planRes = await action.plan(context, inputs);
@@ -359,7 +438,15 @@ export async function executeAction(
   inputs: InputsWithProjectPath,
   effects: Effect[]
 ): Promise<Result<undefined, FxError>> {
-  console.log(`executeAction: ${action.name}`);
+  if (action.condition) {
+    const res = await action.condition(context, inputs);
+    if (res.isErr()) return err(res.error);
+    if (res.value === false) {
+      // skip ask question rooted on this action
+      return ok(undefined);
+    }
+  }
+  console.log(`executeAction: ${getActionName(action)}`);
   if (action.pre) {
     const res = await action.pre(context, inputs);
     if (res.isErr()) return err(res.error);
@@ -453,7 +540,7 @@ export async function executeFunctionAction(
   inputs: InputsWithProjectPath,
   effects: Effect[]
 ): Promise<Result<undefined, FxError>> {
-  context.logProvider.info(`executeFunctionAction [${action.name}] start!`);
+  context.logProvider.info(`executeFunctionAction [${getActionName(action)}] start!`);
   const arr = action.name.split(".");
   const eventName = action.telemetryEventName || arr[1];
   const componentName = action.telemetryComponentName || arr[0];
@@ -618,12 +705,16 @@ export async function runAction(
     `------------------------run action: ${actionName} start!------------------------`
   );
   try {
+    // 1. find the action body
     const action = await getAction(actionName, context, inputs, true);
     if (action) {
-      const questionRes = await askQuestionForAction(action, context, inputs);
+      // 2. run question model for the whole workflow rooted on action
+      const questionRes = await askActionQuestions(action, context, inputs);
       if (questionRes.isErr()) return err(questionRes.error);
-      const planEffects: Effect[] = [];
-      await planAction(action, context, cloneDeep(inputs), planEffects);
+
+      // 3. plan action
+      // const planEffects: Effect[] = [];
+      // await planAction(action, context, cloneDeep(inputs), planEffects);
       // const confirm = await showPlanAndConfirm(
       //   `action: ${actionName} will do the following changes:`,
       //   planEffects,
@@ -631,6 +722,7 @@ export async function runAction(
       //   inputs
       // );
       // if (confirm) {
+      // 4. execute action
       const execEffects: Effect[] = [];
       const execRes = await executeAction(action, context, inputs, execEffects);
       if (execRes.isErr()) return execRes;

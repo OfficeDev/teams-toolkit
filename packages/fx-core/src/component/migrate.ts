@@ -161,6 +161,13 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
   if (solutionSettings && (!settingsV3.components || settingsV3.components.length === 0)) {
     settingsV3.components = [];
     const isVS = isVSProject(settingsV2);
+    const hasAAD = solutionSettings.activeResourcePlugins.includes("fx-resource-aad-app-for-teams");
+    if (hasAAD) {
+      settingsV3.components.push({
+        name: ComponentNames.AadApp,
+        provision: true,
+      });
+    }
     if (solutionSettings.activeResourcePlugins.includes("fx-resource-frontend-hosting")) {
       const hostingComponent = isVS ? ComponentNames.AzureWebApp : ComponentNames.AzureStorage;
       if (isVS) {
@@ -171,7 +178,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           provision: false,
           folder: "",
           artifactFolder: "bin\\Release\\net6.0\\win-x86\\publish",
-          sso: solutionSettings.capabilities.includes("TabSSO"),
+          sso: solutionSettings.capabilities.includes("TabSSO") || hasAAD,
         };
         settingsV3.components.push(teamsTab);
       } else {
@@ -181,7 +188,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           build: true,
           provision: true,
           folder: "tabs",
-          sso: solutionSettings.capabilities.includes("TabSSO"),
+          sso: solutionSettings.capabilities.includes("TabSSO") || hasAAD,
         };
         settingsV3.components.push(teamsTab);
       }
@@ -286,37 +293,42 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
         scenario: "Api",
       });
     }
-    connectComponents(settingsV3);
+
+    ensureComponentConnections(settingsV3);
   }
   return settingsV3;
 }
 
-function connectResourceToComponent(
-  computeComponent: Component,
-  resource: Component,
-  settingsV3: ProjectSettingsV3
-) {
-  computeComponent.connections = computeComponent.connections || [];
-  if (!computeComponent.connections.includes(resource.name))
-    computeComponent.connections.push(resource.name);
-}
-
-function connectComponents(settingsV3: ProjectSettingsV3) {
-  const resources = [
+export const ComponentConnections = {
+  [ComponentNames.AzureWebApp]: [
     ComponentNames.Identity,
     ComponentNames.AzureSQL,
     ComponentNames.KeyVault,
+    ComponentNames.AadApp,
     ComponentNames.TeamsTab,
     ComponentNames.TeamsBot,
-  ];
-  const computingComponentNames = [ComponentNames.AzureWebApp, ComponentNames.Function];
-  for (const component1 of settingsV3.components) {
-    if (computingComponentNames.includes(component1.name)) {
-      for (const component2 of settingsV3.components) {
-        if (resources.includes(component2.name)) {
-          connectResourceToComponent(component1, component2, settingsV3);
-        }
-      }
+    ComponentNames.TeamsApi,
+  ],
+  [ComponentNames.Function]: [
+    ComponentNames.Identity,
+    ComponentNames.AzureSQL,
+    ComponentNames.KeyVault,
+    ComponentNames.AadApp,
+    ComponentNames.TeamsTab,
+    ComponentNames.TeamsBot,
+    ComponentNames.TeamsApi,
+  ],
+  [ComponentNames.APIM]: [ComponentNames.TeamsTab, ComponentNames.TeamsBot],
+};
+
+export function ensureComponentConnections(settingsV3: ProjectSettingsV3): void {
+  const exists = (c: string) => getComponent(settingsV3, c) !== undefined;
+  const existingConfigNames = Object.keys(ComponentConnections).filter(exists);
+  for (const configName of existingConfigNames) {
+    const existingResources = (ComponentConnections[configName] as string[]).filter(exists);
+    const configs = settingsV3.components.filter((c) => c.name === configName);
+    for (const config of configs) {
+      config.connections = existingResources;
     }
   }
 }
@@ -334,15 +346,19 @@ export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): Pro
       activeResourcePlugins: [
         "fx-resource-local-debug",
         "fx-resource-appstudio",
-        "fx-resource-key-vault",
         "fx-resource-cicd",
         "fx-resource-api-connector",
       ],
     };
+    const aad = getComponent(settingsV3, ComponentNames.AadApp);
+    if (aad) {
+      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-aad-app-for-teams");
+    }
     const teamsTab = getComponent(settingsV3, ComponentNames.TeamsTab);
+    const hasSSO = teamsTab?.sso || aad !== undefined;
     if (teamsTab) {
       settingsV2.solutionSettings.capabilities.push("Tab");
-      if (teamsTab.sso) {
+      if (hasSSO) {
         settingsV2.solutionSettings.capabilities.push("TabSSO");
       }
       settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-frontend-hosting");
@@ -356,7 +372,7 @@ export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): Pro
         botCapabilities?.includes("command-response")
       ) {
         settingsV2.solutionSettings.capabilities.push("Bot");
-        if (teamsBot.sso) {
+        if (teamsBot.sso || hasSSO) {
           settingsV2.solutionSettings.capabilities.push("BotSSO");
         }
       }

@@ -22,6 +22,16 @@ export interface ActionBase {
   name?: string;
   type: "group" | "shell" | "call" | "function";
   inputs?: Json;
+  /**
+   * condition function to tell whether the action should be executed or not
+   * if return true: yes
+   * if return false: skip this node and all sub nodes
+   * if condition is undefined, default behavior is yes
+   */
+  condition?: (
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ) => MaybePromise<Result<boolean, FxError>>;
   plan?: (
     context: ContextV3,
     inputs: InputsWithProjectPath

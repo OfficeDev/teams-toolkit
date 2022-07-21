@@ -76,7 +76,7 @@ export default class SampleGallery extends React.Component<any, any> {
                 <Icon iconName="Library" className="logo" />
               </div>
               <div className="title">
-                <h2>Samples</h2>
+                <h1>Samples</h1>
                 <h3>
                   Explore our sample apps to quickly get started with concepts and code examples.
                 </h3>
@@ -223,7 +223,7 @@ class SampleCard extends React.Component<SampleCardProps, any> {
         >
           sample app title:
         </label>
-        <h2>{this.props.title}</h2>
+        <h3>{this.props.title}</h3>
         <div className="estimation-time">
           <div className="watch">
             <Watch></Watch>

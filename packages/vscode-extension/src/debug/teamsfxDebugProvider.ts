@@ -156,20 +156,26 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
 export async function generateAccountHint(includeTenantId = true): Promise<string> {
   let tenantId = undefined,
     loginHint = undefined;
-  try {
-    const tokenObjectRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
-    const tokenObject = tokenObjectRes.isOk() ? tokenObjectRes.value.accountInfo : undefined;
-    if (tokenObject) {
-      // user signed in
-      tenantId = tokenObject.tid;
-      loginHint = tokenObject.upn;
-    } else {
-      // no signed user
-      tenantId = await commonUtils.getTeamsAppTenantId();
-      loginHint = "login_your_m365_account"; // a workaround that user has the chance to login
+  const accountInfo = M365TokenInstance.getCachedAccountInfo();
+  if (accountInfo !== undefined) {
+    tenantId = accountInfo.tenantId;
+    loginHint = accountInfo.username;
+  } else {
+    try {
+      const tokenObjectRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+      const tokenObject = tokenObjectRes.isOk() ? tokenObjectRes.value.accountInfo : undefined;
+      if (tokenObject) {
+        // user signed in
+        tenantId = tokenObject.tid;
+        loginHint = tokenObject.upn;
+      } else {
+        // no signed user
+        tenantId = await commonUtils.getTeamsAppTenantId();
+        loginHint = "login_your_m365_account"; // a workaround that user has the chance to login
+      }
+    } catch {
+      // ignore error
     }
-  } catch {
-    // ignore error
   }
   if (includeTenantId) {
     return tenantId && loginHint ? `appTenantId=${tenantId}&login_hint=${loginHint}` : "";

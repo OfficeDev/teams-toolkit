@@ -16,7 +16,7 @@ import {
   LoginStatus,
   BasicLogin,
 } from "@microsoft/teamsfx-api";
-import { LogLevel } from "@azure/msal-node";
+import { AccountInfo, LogLevel } from "@azure/msal-node";
 import { ExtensionErrors } from "../error";
 import { CodeFlowLogin, ConvertTokenToJson, UserCancelError } from "./codeFlowLogin";
 import VsCodeLogInstance from "./log";
@@ -235,6 +235,10 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
     } else {
       return ok({ status: signedOut, token: undefined, accountInfo: undefined });
     }
+  }
+
+  getCachedAccountInfo(): AccountInfo | undefined {
+    return M365Login.codeFlowInstance.account;
   }
 }
 

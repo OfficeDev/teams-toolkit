@@ -31,13 +31,13 @@ describe("DotnetChecker E2E Test - first run", async () => {
     await dotnetUtils.cleanup();
     // cleanup to make sure the environment is clean before test
   });
-  afterEach(async function (t) {
+  afterEach(async function () {
     // cleanup to make sure the environment is clean
     await dotnetUtils.cleanup();
   });
 
   it(".NET SDK is not installed, whether globally or in home dir", async function () {
-    if (await commandExistsInPath(dotnetUtils.dotnetCommand)) {
+    if (isLinux() || (await commandExistsInPath(dotnetUtils.dotnetCommand))) {
       this.skip();
     }
     const dotnetChecker = CheckerFactory.createChecker(
@@ -167,6 +167,7 @@ describe("DotnetChecker E2E Test - first run", async () => {
     assert.isFalse(res.isOk() && res.value);
     await verifyInstallationFailed(dotnetChecker);
 
+    sinon.restore();
     // DotnetChecker with correct dotnet-install script
     sinon.stub(dotnetChecker, "getResourceDir").returns(correctResourceDir);
 
@@ -286,7 +287,7 @@ describe("DotnetChecker E2E Test - second run", () => {
   });
 
   it("Invalid dotnet.json file and .NET SDK not installed", async function () {
-    if (await commandExistsInPath(dotnetUtils.dotnetCommand)) {
+    if (isLinux() || (await commandExistsInPath(dotnetUtils.dotnetCommand))) {
       this.skip();
     }
 
@@ -315,7 +316,7 @@ describe("DotnetChecker E2E Test - second run", () => {
   });
 
   it("Invalid dotnet.json file and .NET SDK installed", async function () {
-    if (await commandExistsInPath(dotnetUtils.dotnetCommand)) {
+    if (isLinux() || (await commandExistsInPath(dotnetUtils.dotnetCommand))) {
       this.skip();
     }
 

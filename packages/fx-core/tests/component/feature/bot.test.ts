@@ -24,7 +24,10 @@ import { MockTools, randomAppName } from "../../core/utils";
 import "../../../src/component/core";
 import { environmentManager } from "../../../src/core/environment";
 import { ComponentNames } from "../../../src/component/constants";
-import { NotificationOptionItem } from "../../../src/plugins/solution/fx-solution/question";
+import {
+  AzureSolutionQuestionNames,
+  NotificationOptionItem,
+} from "../../../src/plugins/solution/fx-solution/question";
 import {
   QuestionNames,
   TemplateProjectsScenarios,
@@ -74,7 +77,7 @@ describe("Bot Feature", () => {
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
-      feature: NotificationOptionItem.id,
+      [AzureSolutionQuestionNames.Features]: NotificationOptionItem.id,
       language: "typescript",
       "app-name": appName,
       [QuestionNames.BOT_HOST_TYPE_TRIGGER]: [AppServiceOptionItem.id],
@@ -84,16 +87,12 @@ describe("Bot Feature", () => {
       console.log(addBotRes.error);
     }
     assert.isTrue(addBotRes.isOk());
-    assert.equal(inputs.hosting, ComponentNames.AzureWebApp);
-    assert.deepEqual(inputs.scenarios, [
-      TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME,
-    ]);
-
     const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
     assert.exists(teamsBot);
     assert.equal(teamsBot?.hosting, ComponentNames.AzureWebApp);
     assert.equal(teamsBot?.folder, "bot");
     assert.isTrue(teamsBot?.build);
+    assert.deepEqual(teamsBot?.capabilities, ["notification"]);
     const webApp = getComponent(context.projectSetting, ComponentNames.AzureWebApp);
     assert.exists(webApp);
     assert.deepEqual(webApp?.connections, [ComponentNames.TeamsBot, ComponentNames.Identity]);

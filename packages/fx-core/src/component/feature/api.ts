@@ -32,6 +32,8 @@ import { ErrorMessages } from "../../plugins/resource/function/resources/message
 import { ComponentNames, Scenarios } from "../constants";
 import { getComponent } from "../workflow";
 import * as path from "path";
+import { isVSProject } from "../../common/projectSettingsHelper";
+import { globalVars } from "../../core/globalVars";
 
 @Service(ComponentNames.TeamsApi)
 export class TeamsApi {
@@ -47,7 +49,6 @@ export class TeamsApi {
   }
 
   addApiAction(context: ContextV3, inputs: InputsWithProjectPath): Action {
-    inputs.hosting = inputs.hosting || ComponentNames.Function;
     const actions: Action[] = [];
     this.setupConfiguration(actions, context);
     this.setupCode(actions, context, inputs);
@@ -89,12 +90,14 @@ export class TeamsApi {
       return actions;
     }
     actions.push(initBicep);
-    actions.push(
-      generateBicep(inputs.hosting, { scenario: Scenarios.Api, componentId: this.name })
-    );
-    actions.push(
-      generateConfigBicep(inputs.hosting, { scenario: Scenarios.Api, componentId: this.name })
-    );
+    if (inputs.hosting) {
+      actions.push(
+        generateBicep(inputs.hosting, { scenario: Scenarios.Api, componentId: this.name })
+      );
+      actions.push(
+        generateConfigBicep(inputs.hosting, { scenario: Scenarios.Api, componentId: this.name })
+      );
+    }
     return actions;
   }
 
@@ -160,6 +163,7 @@ const configApiAction: Action = {
     return ok(new QTreeNode(functionNameQuestion));
   },
   execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+    inputs.hosting = inputs.hosting || ComponentNames.Function;
     const functionName: string =
       (inputs?.[QuestionKey.functionName] as string) ?? DefaultValues.functionName;
     const projectSettings = context.projectSetting as ProjectSettingsV3;
@@ -181,6 +185,7 @@ const configApiAction: Action = {
     else teamsTab.connections.push(ComponentNames.TeamsApi);
     projectSettings.programmingLanguage =
       projectSettings.programmingLanguage || inputs[CoreQuestionNames.ProgrammingLanguage];
+    globalVars.isVS = isVSProject(projectSettings);
     return ok([`config '${ComponentNames.TeamsApi}' in projectSettings`]);
   },
 };

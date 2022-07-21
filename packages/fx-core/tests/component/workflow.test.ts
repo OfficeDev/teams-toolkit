@@ -36,7 +36,8 @@ import {
 } from "../../src/plugins/resource/spfx/utils/questions";
 import { DefaultManifestProvider } from "../../src/component/resource/appManifest/manifestProvider";
 import { ComponentNames } from "../../src/component/constants";
-
+import { AzureSolutionQuestionNames } from "../../src";
+import { FunctionScaffold } from "../../src/plugins/resource/function/ops/scaffold";
 describe("Workflow test for v3", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -61,6 +62,7 @@ describe("Workflow test for v3", () => {
       projectPath: projectPath,
       platform: Platform.VSCode,
       "app-name": appName,
+      folder: path.join(os.homedir(), "TeamsApps"),
     };
     const res = await runAction("fx.init", context, inputs);
     assert.isTrue(res.isOk());
@@ -72,7 +74,7 @@ describe("Workflow test for v3", () => {
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
-      feature: "Bot",
+      [AzureSolutionQuestionNames.Features]: "Bot",
       language: "typescript",
     };
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
@@ -110,6 +112,7 @@ describe("Workflow test for v3", () => {
     assert.isTrue(res.isOk());
   });
   it("sql.add", async () => {
+    sandbox.stub(FunctionScaffold, "scaffoldFunction").resolves();
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
@@ -122,6 +125,7 @@ describe("Workflow test for v3", () => {
     assert.isTrue(res.isOk());
   });
   it("apim-feature.add", async () => {
+    sandbox.stub(FunctionScaffold, "scaffoldFunction").resolves();
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
@@ -156,12 +160,14 @@ describe("Workflow test for v3", () => {
       objectId: "00000000-0000-0000-0000-000000000000",
     });
     sandbox.stub(arm, "deployArmTemplates").resolves(ok(undefined));
+    const appName = `unittest${randomAppName()}`;
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
-      feature: "Bot",
+      [AzureSolutionQuestionNames.Features]: "Bot",
       language: "typescript",
       "app-name": appName,
+      folder: path.join(os.homedir(), "TeamsApps"),
     };
     const initRes = await runAction("fx.init", context, inputs);
     if (initRes.isErr()) {
@@ -231,12 +237,14 @@ describe("Workflow test for v3", () => {
       objectId: "mockObjectId",
     });
     sandbox.stub(arm, "deployArmTemplates").resolves(ok(undefined));
+    const appName = `unittest${randomAppName()}`;
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
-      feature: "Bot",
+      [AzureSolutionQuestionNames.Features]: "Bot",
       language: "typescript",
       "app-name": appName,
+      folder: path.join(os.homedir(), "TeamsApps"),
     };
     const initRes = await runAction("fx.init", context, inputs);
     if (initRes.isErr()) {

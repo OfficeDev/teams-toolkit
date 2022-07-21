@@ -31,7 +31,8 @@
     "text",
     "html",
     "json-summary",
-    "cobertura"
+    "cobertura",
+    "lcov"
   ],
   "check-coverage": true,
   "lines": 72.7

@@ -286,6 +286,7 @@ export interface ContextV3 extends Context {
   projectSetting: ProjectSettingsV3;
   envInfo?: EnvInfoV3;
   tokenProvider?: TokenProvider;
+  projectPath?: string;
 }
 export interface ProvisionContextV3 extends ContextV3 {
   envInfo: EnvInfoV3;

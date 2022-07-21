@@ -24,11 +24,14 @@ import { cloneDeep } from "lodash";
 import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { isBotNotificationEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { hasTab } from "../../../common/projectSettingsHelperV3";
 import { globalVars } from "../../../core/globalVars";
 import { getTemplatesFolder } from "../../../folder";
+import {
+  CommandAndResponseOptionItem,
+  NotificationOptionItem,
+} from "../../../plugins/solution/fx-solution/question";
 import {
   BOTS_TPL_EXISTING_APP,
   COLOR_TEMPLATE,
@@ -48,10 +51,6 @@ import {
 } from "../../../plugins/resource/appstudio/questions";
 import { AppStudioResultFactory } from "../../../plugins/resource/appstudio/results";
 import { TelemetryPropertyKey } from "../../../plugins/resource/appstudio/utils/telemetry";
-import {
-  AzureSolutionQuestionNames,
-  BotScenario,
-} from "../../../plugins/solution/fx-solution/question";
 import { ComponentNames } from "../../constants";
 import { createTeamsApp, updateTeamsApp, publishTeamsApp, buildTeamsAppPackage } from "./appStudio";
 import {
@@ -82,21 +81,11 @@ export class AppManifest implements CloudResource {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const createFilePath = [
-      path.join(inputs.projectPath, "templates", "appPackage", "resources", "color.png"),
-      path.join(inputs.projectPath, "templates", "appPackage", "resources", "outline.png"),
-      path.join(inputs.projectPath, "templates", "appPackage", "manifest.template.json"),
-    ];
-    const effect: FileEffect = {
-      type: "file",
-      operate: "create",
-      filePath: createFilePath,
-    };
     const action: Action = {
       name: "app-manifest.init",
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok([effect]);
+        return ok(["init app manifest template"]);
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const existingApp = inputs.existingApp as boolean;
@@ -118,7 +107,7 @@ export class AppManifest implements CloudResource {
         const defaultOutlinePath = path.join(templatesFolder, OUTLINE_TEMPLATE);
         await fs.copy(defaultColorPath, path.join(resourcesFolder, DEFAULT_COLOR_PNG_FILENAME));
         await fs.copy(defaultOutlinePath, path.join(resourcesFolder, DEFAULT_OUTLINE_PNG_FILENAME));
-        return ok([effect]);
+        return ok(["init app manifest template"]);
       },
     };
     return ok(action);
@@ -127,24 +116,21 @@ export class AppManifest implements CloudResource {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const effect: FileEffect = {
-      type: "file",
-      operate: "replace",
-      filePath: path.join(inputs.projectPath, "templates", "appPackage", "manifest.template.json"),
-    };
     const action: Action = {
       name: "app-manifest.addCapability",
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        effect.remarks = `add capabilities (${JSON.stringify(inputs.capabilities)}) in manifest`;
-        return ok([effect]);
+        return ok([
+          `add capabilities (${JSON.stringify(inputs.capabilities)}) in manifest template`,
+        ]);
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const capabilities = inputs.capabilities as v3.ManifestCapability[];
         const res = await addCapabilities(inputs, capabilities);
         if (res.isErr()) return err(res.error);
-        effect.remarks = `capabilities: ${capabilities.map((c) => c.name).join(",")}`;
-        return ok([effect]);
+        return ok([
+          `add capabilities (${JSON.stringify(inputs.capabilities)}) in manifest template`,
+        ]);
       },
     };
     return ok(action);
@@ -418,21 +404,15 @@ export async function addCapabilities(
               appManifest.bots = [];
             }
 
-            if (isBotNotificationEnabled()) {
-              const scenariosRaw = inputs[AzureSolutionQuestionNames.Scenarios];
-              const scenarios = Array.isArray(scenariosRaw) ? scenariosRaw : [];
-
-              if (scenarios.includes(BotScenario.CommandAndResponseBot)) {
-                // command and response bot
-                appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3);
-              } else if (scenarios.includes(BotScenario.NotificationBot)) {
-                // notification
-                appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_NOTIFICATION_V3);
-              } else {
-                // legacy bot
-                appManifest.bots = appManifest.bots.concat(BOTS_TPL_V3);
-              }
+            const feature = inputs.feature;
+            if (feature === CommandAndResponseOptionItem.id) {
+              // command and response bot
+              appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3);
+            } else if (feature === NotificationOptionItem.id) {
+              // notification
+              appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_NOTIFICATION_V3);
             } else {
+              // legacy bot
               appManifest.bots = appManifest.bots.concat(BOTS_TPL_V3);
             }
           }

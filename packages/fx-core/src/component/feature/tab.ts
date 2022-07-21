@@ -22,7 +22,10 @@ import { isVSProject } from "../../common/projectSettingsHelper";
 import { globalVars } from "../../core/globalVars";
 import { CoreQuestionNames } from "../../core/question";
 import { FrontendPathInfo } from "../../plugins/resource/frontend/constants";
-import { AzureSolutionQuestionNames, TabNonSsoItem } from "../../plugins/solution/fx-solution/question";
+import {
+  AzureSolutionQuestionNames,
+  TabNonSsoItem,
+} from "../../plugins/solution/fx-solution/question";
 import { ComponentNames, Scenarios } from "../constants";
 import { Plans } from "../messages";
 import { ensureComponentConnections } from "../migrate";

@@ -1,5 +1,5 @@
 .sample-gallery {
-  margin: 100px 100px;
+  margin: 80px 100px;
 
   .section {
     display: flex;
@@ -22,13 +22,13 @@
     width: auto;
     margin-left: 12px;
 
-    h2 {
+    h1 {
       font-size: 26px;
-      line-height: 30px;
+      line-height: 31px;
       color: var(--vscode-titleBar-activeForeground);
       margin-top: 0px;
       margin-bottom: 0px;
-      font-weight: normal;
+      font-weight: 600;
     }
 
     h3 {
@@ -65,7 +65,7 @@
 
   .sample-card {
     background-color: var(--vscode-editorWidget-background);
-    border-radius: 2px;
+    border-radius: 6px;
     max-width: 276px;
     height: auto;
     position: relative;
@@ -80,11 +80,16 @@
     }
 
     .triangle{
-      display: block;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 16px;
+      border-color: #007ACC transparent transparent #007ACC;
+      float: left;
       position: absolute;
-      height: 32px;
-      width: 32px;
-      z-index: 1;
+      top: 0px;
+      border-radius: 6px 0px 0px 0px;
+      z-index: 2;
     }
 
     .star{
@@ -94,24 +99,16 @@
         width: 12px;
         position: absolute;
         margin: 2px;
-        top: 0;
-        left: 0;
+        top: -16px;
+        left: -16px;
         right: 0;
         bottom: 0;
         z-index: 3;
         color: #CCCCCC;
     }
 
-    .triangle:before {
-      content: '';
-      width: 0;
-      height: 0;
-      border-left: 32px solid #007ACC;
-      border-bottom: 32px solid transparent;
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 2;
+    .ms-Image{
+      border-radius: 6px 6px 0 0;
     }
 
     .tag {
@@ -174,23 +171,14 @@
       }
     }
 
-    h2 {
+    h3 {
       font-size: 13px;
       text-align: center;
       color: var(--vscode-titleBar-activeForeground);
-      font-weight: 700;
+      font-weight: 800;
       text-align: left;
       margin: 8px 12px 0px 12px;
-    }
-
-    h3 {
-      font-size: 12px;
-      color: var(--vscode-titleBar-activeForeground);
-      opacity: 50%;
-      font-weight: normal;
-      text-align: left;
-      margin: 8px 12px 0px 12px;
-      opacity: 50%;
+      line-height: 16px;
     }
 
     button {

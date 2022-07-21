@@ -4,7 +4,7 @@
 import { Mutex } from "async-mutex";
 
 import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
-import Reporter from "@vscode/extension-telemetry";
+import TelemetryReporter from "@vscode/extension-telemetry";
 
 import { TelemetryEventCache, TelemetryProperty } from "./extTelemetryEvents";
 
@@ -21,7 +21,7 @@ export class TelemetryCache {
   private timeout: NodeJS.Timeout | undefined;
   private mutex: Mutex;
 
-  constructor(private reporter: Reporter) {
+  constructor(private reporter: TelemetryReporter) {
     this.mutex = new Mutex();
   }
 

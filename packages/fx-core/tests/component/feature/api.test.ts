@@ -18,7 +18,7 @@ import * as path from "path";
 import fs from "fs-extra";
 import { createSandbox } from "sinon";
 import * as utils from "../../../src/component/utils";
-import { getComponent, runAction } from "../../../src/component/workflow";
+import { getComponent, runAction, runActionByName } from "../../../src/component/workflow";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools, randomAppName } from "../../core/utils";
 import "../../../src/component/core";
@@ -77,7 +77,7 @@ describe("Api Feature", () => {
       language: "typescript",
       "app-name": appName,
     };
-    const addApiRes = await runAction(`${ComponentNames.TeamsApi}.add`, context, inputs);
+    const addApiRes = await runActionByName(`${ComponentNames.TeamsApi}.add`, context, inputs);
     if (addApiRes.isErr()) {
       console.log(addApiRes.error);
     }
@@ -104,7 +104,7 @@ describe("Api Feature", () => {
       language: "typescript",
       "app-name": appName,
     };
-    const addApiRes = await runAction(`${ComponentNames.TeamsApi}.add`, context, inputs);
+    const addApiRes = await runActionByName(`${ComponentNames.TeamsApi}.add`, context, inputs);
     if (addApiRes.isErr()) {
       console.log(addApiRes.error);
     }

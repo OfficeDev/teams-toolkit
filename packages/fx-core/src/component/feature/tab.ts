@@ -73,74 +73,74 @@ export class TeamsTab {
           };
           projectSettings.components.push(tabConfig);
           effects.push(Plans.generateSourceCodeAndConfig(ComponentNames.TeamsTab));
-        }
 
-        // 2. generate provision bicep
+          // 2. generate provision bicep
 
-        // 2.0 bicep.init
-        {
-          const res = await runActionByName("bicep.init", context, inputs);
-          if (res.isErr()) return err(res.error);
-        }
-        // 2.1 hosting bicep
-        const hostingConfig = getComponentByScenario(
-          projectSettings,
-          inputs.hosting,
-          Scenarios.Tab
-        );
-        if (!hostingConfig) {
-          const clonedInputs = cloneDeep(inputs);
-          assign(clonedInputs, {
-            componentId: ComponentNames.TeamsTab,
-            scenario: Scenarios.Tab,
-          });
-          const res = await runActionByName(
-            inputs.hosting + ".generateBicep",
-            context,
-            clonedInputs
+          // 2.0 bicep.init
+          {
+            const res = await runActionByName("bicep.init", context, inputs);
+            if (res.isErr()) return err(res.error);
+          }
+          // 2.1 hosting bicep
+          const hostingConfig = getComponentByScenario(
+            projectSettings,
+            inputs.hosting,
+            Scenarios.Tab
           );
-          if (res.isErr()) return err(res.error);
-          projectSettings.components.push({
-            name: inputs.hosting,
-            scenario: Scenarios.Tab,
-          });
-          effects.push(Plans.generateBicepAndConfig(inputs.hosting));
-        }
+          if (!hostingConfig) {
+            const clonedInputs = cloneDeep(inputs);
+            assign(clonedInputs, {
+              componentId: ComponentNames.TeamsTab,
+              scenario: Scenarios.Tab,
+            });
+            const res = await runActionByName(
+              inputs.hosting + ".generateBicep",
+              context,
+              clonedInputs
+            );
+            if (res.isErr()) return err(res.error);
+            projectSettings.components.push({
+              name: inputs.hosting,
+              scenario: Scenarios.Tab,
+            });
+            effects.push(Plans.generateBicepAndConfig(inputs.hosting));
+          }
 
-        // 2.2 identity bicep
-        if (!getComponent(projectSettings, ComponentNames.Identity)) {
-          const clonedInputs = cloneDeep(inputs);
-          assign(clonedInputs, {
-            componentId: "",
-            scenario: "",
-          });
-          const res = await runActionByName("identity.generateBicep", context, clonedInputs);
-          if (res.isErr()) return err(res.error);
-          projectSettings.components.push({
-            name: ComponentNames.Identity,
-            provision: true,
-          });
-          effects.push(Plans.generateBicepAndConfig(ComponentNames.Identity));
-        }
+          // 2.2 identity bicep
+          if (!getComponent(projectSettings, ComponentNames.Identity)) {
+            const clonedInputs = cloneDeep(inputs);
+            assign(clonedInputs, {
+              componentId: "",
+              scenario: "",
+            });
+            const res = await runActionByName("identity.generateBicep", context, clonedInputs);
+            if (res.isErr()) return err(res.error);
+            projectSettings.components.push({
+              name: ComponentNames.Identity,
+              provision: true,
+            });
+            effects.push(Plans.generateBicepAndConfig(ComponentNames.Identity));
+          }
 
-        // 2.3 add sso
-        if (inputs[CoreQuestionNames.Features] !== TabNonSsoItem.id) {
-          const res = await runActionByName("sso.add", context, inputs);
-          if (res.isErr()) return err(res.error);
-        }
+          // 2.3 add sso
+          if (inputs[CoreQuestionNames.Features] !== TabNonSsoItem.id) {
+            const res = await runActionByName("sso.add", context, inputs);
+            if (res.isErr()) return err(res.error);
+          }
 
-        // 3. generate config bicep
-        {
-          const res = await generateConfigBiceps(context, inputs);
-          if (res.isErr()) return err(res.error);
-          effects.push("generate config biceps");
-        }
+          // 3. generate config bicep
+          {
+            const res = await generateConfigBiceps(context, inputs);
+            if (res.isErr()) return err(res.error);
+            effects.push("generate config biceps");
+          }
 
-        // 4. local debug settings
-        {
-          const res = await runActionByName("debug.generateLocalDebugSettings", context, inputs);
-          if (res.isErr()) return err(res.error);
-          effects.push("generate local debug configs");
+          // 4. local debug settings
+          {
+            const res = await runActionByName("debug.generateLocalDebugSettings", context, inputs);
+            if (res.isErr()) return err(res.error);
+            effects.push("generate local debug configs");
+          }
         }
 
         // 5. app-manifest.addCapability

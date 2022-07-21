@@ -4,6 +4,7 @@
 import {
   Action,
   ContextV3,
+  Effect,
   err,
   FunctionAction,
   FxError,
@@ -59,16 +60,23 @@ export class TeamsBot {
       },
       execute: async (context, inputs) => {
         const projectSettings = context.projectSetting;
-        const effects = [];
+        const effects: Effect[] = [];
         const botCapability = featureToCapability.get(inputs[CoreQuestionNames.Features] as string);
         inputs.hosting = resolveHosting(inputs);
         inputs[CoreQuestionNames.ProgrammingLanguage] =
           context.projectSetting.programmingLanguage ||
           inputs[CoreQuestionNames.ProgrammingLanguage] ||
           "javascript";
-        // 1. scaffold bot and add bot config
+
         let botConfig = getComponent(projectSettings, ComponentNames.TeamsBot);
-        if (!botConfig) {
+
+        // bot can only add once
+        if (botConfig) {
+          return ok(effects);
+        }
+
+        // 1. scaffold bot and add bot config
+        {
           const clonedInputs = cloneDeep(inputs);
           const scenarios = featureToScenario.get(inputs[CoreQuestionNames.Features])?.(
             inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER]
@@ -91,13 +99,9 @@ export class TeamsBot {
           };
           projectSettings.components.push(botConfig);
           effects.push(Plans.generateSourceCodeAndConfig(ComponentNames.TeamsBot));
-        } else {
-          if (botCapability && !botConfig.capabilities.includes(botCapability)) {
-            botConfig.capabilities.push(botCapability);
-          }
         }
-        // 2. generate provision bicep
 
+        // 2. generate provision bicep
         // 2.0 bicep.init
         {
           const res = await runActionByName("bicep.init", context, inputs);

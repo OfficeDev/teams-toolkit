@@ -5,25 +5,35 @@ import {
   Action,
   ContextV3,
   FxError,
+  Inputs,
   InputsWithProjectPath,
   IProgressHandler,
   MaybePromise,
   ok,
   ProjectSettingsV3,
+  QTreeNode,
   Result,
   SourceCodeProvider,
+  Stage,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
 import { getComponent } from "../workflow";
-import { DefaultValues, FunctionPluginPathInfo } from "../../plugins/resource/function/constants";
+import {
+  DefaultValues,
+  FunctionPluginPathInfo,
+  RegularExpr,
+} from "../../plugins/resource/function/constants";
 import { FunctionScaffold } from "../../plugins/resource/function/ops/scaffold";
 import { FunctionLanguage, QuestionKey } from "../../plugins/resource/function/enums";
 import { ComponentNames } from "../constants";
 import { FunctionDeploy } from "../../plugins/resource/function/ops/deploy";
 import { merge } from "lodash";
 import { Plans, ProgressMessages, ProgressTitles } from "../messages";
+import { functionNameQuestion } from "../../plugins/resource/function/question";
+import { ErrorMessages } from "../../plugins/resource/function/resources/message";
+import { CoreQuestionNames } from "../../core/question";
 /**
  * api scaffold
  */
@@ -57,14 +67,10 @@ export class ApiCodeProvider implements SourceCodeProvider {
       ) => {
         const projectSettings = ctx.projectSetting as ProjectSettingsV3;
         const appName = projectSettings.appName;
-        const language =
-          inputs?.["programming-language"] ||
-          context.projectSetting.programmingLanguage ||
-          "javascript";
+        const language = inputs[CoreQuestionNames.ProgrammingLanguage];
         const folder = inputs.folder || FunctionPluginPathInfo.solutionFolderName;
         const workingDir = path.join(inputs.projectPath, folder);
-        const functionName =
-          (inputs?.[QuestionKey.functionName] as string) ?? DefaultValues.functionName;
+        const functionName = inputs[QuestionKey.functionName];
         const variables = {
           appName: appName,
           functionName: functionName,
@@ -124,3 +130,26 @@ export class ApiCodeProvider implements SourceCodeProvider {
     return ok(action);
   }
 }
+
+const getFunctionNameQuestionValidation = (context: ContextV3, inputs: InputsWithProjectPath) => ({
+  validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
+    const workingPath: string = path.join(
+      inputs.projectPath,
+      FunctionPluginPathInfo.solutionFolderName
+    );
+    const name = input as string;
+    if (!name || !RegularExpr.validFunctionNamePattern.test(name)) {
+      return ErrorMessages.invalidFunctionName;
+    }
+    if (inputs.stage === Stage.create) {
+      return undefined;
+    }
+    const language: FunctionLanguage =
+      (inputs[QuestionKey.programmingLanguage] as FunctionLanguage) ??
+      (context.projectSetting.programmingLanguage as FunctionLanguage);
+    // If language is unknown, skip checking and let scaffold handle the error.
+    if (language && (await FunctionScaffold.doesFunctionPathExist(workingPath, language, name))) {
+      return ErrorMessages.functionAlreadyExists;
+    }
+  },
+});

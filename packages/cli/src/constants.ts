@@ -69,3 +69,5 @@ export const AddFeatureFunc = {
   namespace: "fx-solution-azure",
   method: Stage.addFeature,
 };
+
+export const EmptyQTreeNode = new QTreeNode({ type: "group" });

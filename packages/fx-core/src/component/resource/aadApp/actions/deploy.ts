@@ -15,6 +15,7 @@ import { AadAppForTeamsImpl } from "../../../../plugins/resource/aad/plugin";
 import { convertContext } from "./utils";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import { Constants } from "../../../../plugins/resource/aad/constants";
+import { AzureSolutionQuestionNames } from "../../../../plugins/solution/fx-solution/question";
 
 export function GetActionDeploy(): FunctionAction {
   return {
@@ -61,6 +62,16 @@ export function GetActionDeploy(): FunctionAction {
           remarks: "deploy aad app",
         },
       ]);
+    },
+    condition: (context, inputs) => {
+      if (
+        inputs.platform === Platform.CLI_HELP ||
+        (inputs.platform === Platform.CLI && inputs[Constants.INCLUDE_AAD_MANIFEST] === "yes") ||
+        inputs[AzureSolutionQuestionNames.Features] !== "TabNonSsoItem.id"
+      ) {
+        return ok(true);
+      }
+      return ok(false);
     },
   };
 }

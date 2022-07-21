@@ -13,6 +13,7 @@ import {
   Platform,
   ProjectSettingsV3,
   Result,
+  Stage,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
@@ -56,7 +57,10 @@ export class TeamsTab {
       actions.push(showTabAlreadyAddMessage);
     }
 
-    if (inputs[AzureSolutionQuestionNames.Features] !== TabNonSsoItem.id) {
+    if (
+      inputs.stage === Stage.create &&
+      inputs[AzureSolutionQuestionNames.Features] !== TabNonSsoItem.id
+    ) {
       actions.push(addSSO);
     }
     return addTab(actions);

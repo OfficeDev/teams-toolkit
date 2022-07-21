@@ -24,7 +24,6 @@ import "../resource/azureSql";
 import "../resource/identity";
 import { ComponentNames, Scenarios } from "../constants";
 import { getHostingComponent } from "../utils";
-import { update } from "lodash";
 
 @Service("sso")
 export class SSO {

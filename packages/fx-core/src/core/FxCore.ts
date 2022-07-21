@@ -888,6 +888,34 @@ export class FxCore implements v3.ICore {
       res = await runAction("fx.addFeature", context, inputs as InputsWithProjectPath);
     }
     if (res.isErr()) return err(res.error);
+    // reset provisionSucceeded state for all env
+    const allEnvRes = await environmentManager.listRemoteEnvConfigs(inputs.projectPath!);
+    if (allEnvRes.isOk()) {
+      for (const env of allEnvRes.value) {
+        const loadEnvRes = await loadEnvInfoV3(
+          inputs as v2.InputsWithProjectPath,
+          ctx!.projectSettings!,
+          env,
+          false
+        );
+        if (loadEnvRes.isOk()) {
+          const envInfo = loadEnvRes.value;
+          if (
+            envInfo.state?.solution?.provisionSucceeded === true ||
+            envInfo.state?.solution?.provisionSucceeded === "true"
+          ) {
+            envInfo.state.solution.provisionSucceeded = false;
+            await environmentManager.writeEnvState(
+              envInfo.state,
+              inputs.projectPath!,
+              context.cryptoProvider,
+              env,
+              true
+            );
+          }
+        }
+      }
+    }
     ctx!.projectSettings = context.projectSetting;
     return res;
   }

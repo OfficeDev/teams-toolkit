@@ -28,10 +28,7 @@ import {
   AzureSolutionQuestionNames,
   NotificationOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
-import {
-  QuestionNames,
-  TemplateProjectsScenarios,
-} from "../../../src/plugins/resource/bot/constants";
+import { QuestionNames } from "../../../src/plugins/resource/bot/constants";
 import { AppServiceOptionItem } from "../../../src/plugins/resource/bot/question";
 describe("Bot Feature", () => {
   const sandbox = createSandbox();
@@ -94,8 +91,12 @@ describe("Bot Feature", () => {
     assert.isTrue(teamsBot?.build);
     assert.deepEqual(teamsBot?.capabilities, ["notification"]);
     const webApp = getComponent(context.projectSetting, ComponentNames.AzureWebApp);
-    assert.exists(webApp);
-    assert.deepEqual(webApp?.connections, [ComponentNames.TeamsBot, ComponentNames.Identity]);
+    assert.exists(webApp?.connections);
+    if (webApp?.connections) {
+      assert.include(webApp.connections, ComponentNames.TeamsBot);
+      assert.include(webApp.connections, ComponentNames.Identity);
+      assert.equal(webApp.connections.length, 2);
+    }
     const botService = getComponent(context.projectSetting, ComponentNames.BotService);
     assert.exists(botService);
     assert.isTrue(botService?.provision);

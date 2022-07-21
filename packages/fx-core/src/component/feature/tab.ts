@@ -224,7 +224,7 @@ const generateBicep: (hosting: string, componentId: string) => Action = (hosting
     scenario: "Tab",
     componentId: componentId,
   },
-  post: (context, inputs) => {
+  post: (context) => {
     // add hosting component
     context.projectSetting?.components?.push({
       name: hosting,
@@ -242,7 +242,7 @@ const configureApim: CallAction = {
   type: "call",
   required: true,
   targetAction: "apim-config.generateBicep",
-  condition: (context, inputs) => {
+  condition: (context) => {
     return ok(getComponent(context.projectSetting, ComponentNames.APIM) !== undefined);
   },
 };

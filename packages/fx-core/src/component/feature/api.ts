@@ -196,7 +196,7 @@ const generateBicep: (inputs: Record<string, unknown>) => Action = (inputs) => (
     // add hosting component
     context.projectSetting.components.push({
       name: ComponentNames.Function,
-      connections: [ComponentNames.TeamsApi, ComponentNames.TeamsTab, ComponentNames.Identity],
+      connections: [ComponentNames.TeamsApi, ComponentNames.TeamsTab],
       scenario: Scenarios.Api,
     });
     ensureComponentConnections(context.projectSetting);

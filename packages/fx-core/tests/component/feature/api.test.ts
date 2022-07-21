@@ -92,7 +92,6 @@ describe("Api Feature", () => {
     assert.exists(azureFunction?.connections);
     if (azureFunction?.connections) {
       assert.include(azureFunction.connections, ComponentNames.TeamsApi);
-      assert.include(azureFunction.connections, ComponentNames.TeamsTab);
     }
   });
 

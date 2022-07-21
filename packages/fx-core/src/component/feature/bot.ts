@@ -11,7 +11,6 @@ import {
   MaybePromise,
   ok,
   Platform,
-  QTreeNode,
   Result,
   v3,
 } from "@microsoft/teamsfx-api";
@@ -19,7 +18,6 @@ import { assign, cloneDeep } from "lodash";
 import "reflect-metadata";
 import { Service } from "typedi";
 import { format } from "util";
-import { isCLIDotNetEnabled } from "../../common/featureFlags";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { isVSProject } from "../../common/projectSettingsHelper";
 import { globalVars } from "../../core/globalVars";
@@ -28,14 +26,9 @@ import { QuestionNames, TemplateProjectsScenarios } from "../../plugins/resource
 import {
   AppServiceOptionItem,
   AppServiceOptionItemForVS,
-  createHostTypeTriggerQuestion,
   FunctionsHttpTriggerOptionItem,
   FunctionsTimerTriggerOptionItem,
-  getConditionOfNotificationTriggerQuestion,
-  showNotificationTriggerCondition,
 } from "../../plugins/resource/bot/question";
-import { Runtime } from "../../plugins/resource/bot/v2/enum";
-import { getPlatformRuntime } from "../../plugins/resource/bot/v2/mapping";
 import {
   BotOptionItem,
   CommandAndResponseOptionItem,

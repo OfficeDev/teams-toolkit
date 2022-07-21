@@ -294,37 +294,41 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
       });
     }
 
-    connectComponents(settingsV3);
+    ensureComponentConnections(settingsV3);
   }
   return settingsV3;
 }
 
-function connectResourceToComponent(
-  computeComponent: Component,
-  resource: Component,
-  settingsV3: ProjectSettingsV3
-) {
-  computeComponent.connections = computeComponent.connections || [];
-  if (!computeComponent.connections.includes(resource.name))
-    computeComponent.connections.push(resource.name);
-}
-
-function connectComponents(settingsV3: ProjectSettingsV3) {
-  const resources = [
+export const ComponentConnections = {
+  [ComponentNames.AzureWebApp]: [
     ComponentNames.Identity,
     ComponentNames.AzureSQL,
     ComponentNames.KeyVault,
+    ComponentNames.AadApp,
     ComponentNames.TeamsTab,
     ComponentNames.TeamsBot,
-  ];
-  const computingComponentNames = [ComponentNames.AzureWebApp, ComponentNames.Function];
-  for (const component1 of settingsV3.components) {
-    if (computingComponentNames.includes(component1.name)) {
-      for (const component2 of settingsV3.components) {
-        if (resources.includes(component2.name)) {
-          connectResourceToComponent(component1, component2, settingsV3);
-        }
-      }
+    ComponentNames.TeamsApi,
+  ],
+  [ComponentNames.Function]: [
+    ComponentNames.Identity,
+    ComponentNames.AzureSQL,
+    ComponentNames.KeyVault,
+    ComponentNames.AadApp,
+    ComponentNames.TeamsTab,
+    ComponentNames.TeamsBot,
+    ComponentNames.TeamsApi,
+  ],
+  [ComponentNames.APIM]: [ComponentNames.TeamsTab, ComponentNames.TeamsBot],
+};
+
+export function ensureComponentConnections(settingsV3: ProjectSettingsV3): void {
+  const exists = (c: string) => getComponent(settingsV3, c) !== undefined;
+  const existingConfigNames = Object.keys(ComponentConnections).filter(exists);
+  for (const configName of existingConfigNames) {
+    const existingResources = (ComponentConnections[configName] as string[]).filter(exists);
+    const configs = settingsV3.components.filter((c) => c.name === configName);
+    for (const config of configs) {
+      config.connections = existingResources;
     }
   }
 }

@@ -69,7 +69,7 @@ import { AzureResources, ComponentNames, componentToScenario } from "./constants
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { getResourceGroupInPortal } from "../common/tools";
 import { getComponent } from "./workflow";
-import { FxPreDeployForAzureAction } from "./fx/preDeployAction";
+import { FxPreDeployAction } from "./fx/preDeployAction";
 import { FxPreProvisionAction } from "./fx/preProvisionAction";
 import { pluginName2ComponentName } from "./migrate";
 import { PluginDisplayName } from "../common/constants";
@@ -523,63 +523,54 @@ export class TeamsfxCore {
 
   deploy(context: ContextV3, inputs: InputsWithProjectPath): Result<Action | undefined, FxError> {
     const projectSettings = context.projectSetting as ProjectSettingsV3;
+    const deployableActions = projectSettings.components
+      .filter((component) => component.deploy && component.hosting !== undefined)
+      .map((component) => {
+        const action: Action = {
+          type: "call",
+          targetAction: `${component.hosting}.deploy`,
+          required: false,
+          inputs: {
+            scenario: componentToScenario.get(component.name),
+          },
+          condition: (context, inputs) => {
+            if (isVSProject(projectSettings)) {
+              // for vs project, no selection is needed, deploy all deployable components
+              return ok(true);
+            }
+            const inputPlugins: string[] =
+              inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] || [];
+            const selectedComponents = inputPlugins.map((plugin: string) =>
+              pluginName2ComponentName(plugin)
+            );
+            return ok(selectedComponents.includes(component.name));
+          },
+        };
+        return action;
+      });
+
+    deployableActions.push({
+      type: "call",
+      targetAction: `${ComponentNames.AppManifest}.configure`,
+      required: false,
+      condition: (context, inputs) => {
+        const inputPlugins: string[] =
+          inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] || [];
+        const selectedComponents = inputPlugins.map((plugin: string) =>
+          pluginName2ComponentName(plugin)
+        );
+        return ok(selectedComponents.includes(ComponentNames.AppManifest));
+      },
+    });
+
     const buildAction: Action = {
       name: "call:fx.build",
       type: "call",
       targetAction: "fx.build",
       required: true,
     };
-    const actions: Action[] = [];
-    // if is vs project, no selection question, deploy all deployable components
-    // if is none vs project, only deploy selected components
-    const inputPlugins = inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] || [];
-    const components: string[] = isVSProject(projectSettings)
-      ? projectSettings.components.filter((component) => component.deploy).map((c) => c.name)
-      : inputPlugins.map((plugin: string) => pluginName2ComponentName(plugin));
 
-    let hasAzureResource = false;
-    const callDeployActions: Action[] = [];
-    components.forEach((componentName) => {
-      const componentConfig = getComponent(projectSettings, componentName);
-      if (componentConfig) {
-        if (componentConfig.hosting && AzureResources.includes(componentConfig.hosting)) {
-          hasAzureResource = true;
-        }
-        callDeployActions.push({
-          type: "call",
-          targetAction:
-            componentName === ComponentNames.AppManifest
-              ? `${ComponentNames.AppManifest}.configure`
-              : `${componentConfig.hosting}.deploy`,
-          required: false,
-          inputs: {
-            scenario: componentToScenario.get(componentName),
-          },
-        });
-      }
-    });
-    if (inputs.platform !== Platform.CLI_HELP && callDeployActions.length === 0) {
-      return err(
-        new UserError(
-          "fx",
-          "NoResourcePluginSelected",
-          getDefaultString("core.NoPluginSelected"),
-          getLocalizedString("core.NoPluginSelected")
-        )
-      );
-    }
-    if (hasAzureResource) {
-      actions.push(new FxPreDeployForAzureAction());
-    }
-    actions.push(buildAction);
-    context.logProvider.info(
-      getLocalizedString(
-        "core.deploy.selectedPluginsToDeployNotice",
-        PluginDisplayName.Solution,
-        JSON.stringify(components)
-      )
-    );
-    const callDeployGroup: GroupAction = {
+    const callComponentsDeployGroup: GroupAction = {
       type: "group",
       name: "fx.callComponentDeploy",
       mode: "parallel",
@@ -590,7 +581,7 @@ export class TeamsfxCore {
         return ok(undefined);
       },
       post: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        if (hasAzureResource) {
+        if (inputs.hasAzureResource) {
           const botTroubleShootMsg = getBotTroubleShootMessage(hasBot(context.projectSetting));
           const msg =
             getLocalizedString("core.deploy.successNotice", context.projectSetting.appName) +
@@ -620,16 +611,16 @@ export class TeamsfxCore {
         }
         return ok(undefined);
       },
-      actions: callDeployActions,
+      actions: deployableActions,
     };
-    actions.push(callDeployGroup);
+
     const finalAction: Action = {
       type: "group",
       name: "fx.deploy",
       question: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         return await getQuestionsForDeployV3(context, context.envInfo!, inputs);
       },
-      actions: actions,
+      actions: [new FxPreDeployAction(), buildAction, callComponentsDeployGroup],
     };
     return ok(finalAction);
   }

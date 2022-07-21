@@ -11,10 +11,13 @@ import {
   ProvisionContextV3,
   Result,
 } from "@microsoft/teamsfx-api";
+import { AzureSolutionQuestionNames } from "../../plugins";
 import { checkDeployAzureSubscription } from "../../plugins/solution/fx-solution/v3/deploy";
 import { askForDeployConsent } from "../../plugins/solution/fx-solution/v3/provision";
+import { AzureResources } from "../constants";
+import { pluginName2ComponentName } from "../migrate";
 
-export class FxPreDeployForAzureAction implements FunctionAction {
+export class FxPreDeployAction implements FunctionAction {
   type: "function" = "function";
   name = "fx.preDeployForAzure";
   async execute(
@@ -22,6 +25,20 @@ export class FxPreDeployForAzureAction implements FunctionAction {
     inputs: InputsWithProjectPath
   ): Promise<Result<Effect[], FxError>> {
     const ctx = context as ProvisionContextV3;
+    const inputPlugins: string[] = inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] || [];
+    const selectedComponents = inputPlugins.map((plugin: string) =>
+      pluginName2ComponentName(plugin)
+    );
+    const hasAzureResource =
+      ctx.projectSetting.components.filter(
+        (c) =>
+          selectedComponents.includes(c.name) &&
+          c.deploy &&
+          c.hosting !== undefined &&
+          AzureResources.includes(c.hosting)
+      ).length > 0;
+    inputs.hasAzureResource = hasAzureResource;
+    if (!hasAzureResource) return ok([]);
     const subscriptionResult = await checkDeployAzureSubscription(
       ctx,
       ctx.envInfo,
@@ -38,6 +55,6 @@ export class FxPreDeployForAzureAction implements FunctionAction {
     if (consent.isErr()) {
       return err(consent.error);
     }
-    return ok([]);
+    return ok(["check account and subscription"]);
   }
 }

@@ -242,7 +242,7 @@ export class UtilFunctions {
     }
   }
 
-  static buildQuestionNode() {
+  static buildQuestionNode(): QTreeNode {
     const sqlNode = new QTreeNode({
       type: "group",
     });

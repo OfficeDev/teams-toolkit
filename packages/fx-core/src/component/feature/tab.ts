@@ -55,6 +55,10 @@ export class TeamsTab {
     if (this.hasTab(context)) {
       actions.push(showTabAlreadyAddMessage);
     }
+
+    if (inputs[AzureSolutionQuestionNames.Features] !== TabNonSsoItem.id) {
+      actions.push(addSSO);
+    }
     return addTab(actions);
   }
 
@@ -70,9 +74,6 @@ export class TeamsTab {
   ): Action[] {
     if (this.hasTab(context)) {
       return actions;
-    }
-    if (inputs[AzureSolutionQuestionNames.Features] !== TabNonSsoItem.id) {
-      actions.push(addSSO);
     }
     actions.push(configTab);
     return actions;

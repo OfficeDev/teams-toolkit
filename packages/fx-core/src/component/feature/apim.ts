@@ -5,6 +5,9 @@ import {
   Action,
   Component,
   ContextV3,
+  Effect,
+  err,
+  FunctionAction,
   FxError,
   GroupAction,
   InputsWithProjectPath,
@@ -17,7 +20,6 @@ import "reflect-metadata";
 import { Service } from "typedi";
 import { hasApi } from "../../common/projectSettingsHelperV3";
 import { convertToAlphanumericOnly } from "../../common/utils";
-import { getProjectSettingsPath } from "../../core/middleware/projectSettingsLoader";
 import { buildAnswer } from "../../plugins/resource/apim/answer";
 import { ApimPluginConfig } from "../../plugins/resource/apim/config";
 import {
@@ -27,7 +29,9 @@ import {
 } from "../../plugins/resource/apim/constants";
 import { Factory } from "../../plugins/resource/apim/factory";
 import { ComponentNames } from "../constants";
-import { getComponent } from "../workflow";
+import { Plans } from "../messages";
+import { generateConfigBiceps } from "../utils";
+import { getComponent, runAction, runActionByName } from "../workflow";
 
 @Service(ComponentNames.APIMFeature)
 export class ApimFeature {
@@ -36,89 +40,67 @@ export class ApimFeature {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const component = getComponent(context.projectSetting, ComponentNames.APIM);
-    if (component) return ok(undefined);
-    const hasFunc = hasApi(context.projectSetting);
-    const dependentActions: Action[] = [];
-    if (!hasFunc) {
-      dependentActions.push({
-        name: "call:teams-api.add",
-        type: "call",
-        required: true,
-        targetAction: "teams-api.add",
-      });
-    }
-    const actions: Action[] = [
-      ...dependentActions,
-      {
-        name: "apim-feature.configApim",
-        type: "function",
-        plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-          const component = getComponent(context.projectSetting, ComponentNames.APIM);
-          if (component) return ok([]);
-          return ok(["add component 'apim' in projectSettings"]);
-        },
-        execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-          const component = getComponent(context.projectSetting, ComponentNames.APIM);
-          if (component) return ok([]);
-          const remarks: string[] = ["add component 'apim' in projectSettings"];
-          const apimConfig: Component = {
-            name: ComponentNames.APIM,
-            provision: true,
-            deploy: true,
-            connections: [],
-          };
-          context.projectSetting.components.push(apimConfig);
-          const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
-          if (teamsTab) {
-            apimConfig.connections?.push("teams-tab");
-          }
-          const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
-          if (teamsBot) {
-            apimConfig.connections?.push("teams-bot");
-          }
-          return ok([
-            {
-              type: "file",
-              operate: "replace",
-              filePath: getProjectSettingsPath(inputs.projectPath),
-              remarks: remarks.join(";"),
-            },
-          ]);
-        },
-      },
-      {
-        type: "call",
-        name: "call:bicep.init",
-        targetAction: "bicep.init",
-        required: true,
-      },
-      {
-        name: "call:apim-feature.generateCode",
-        type: "call",
-        required: true,
-        targetAction: "apim-feature.generateCode",
-      },
-      {
-        name: "call:apim.generateBicep",
-        type: "call",
-        required: true,
-        targetAction: "apim.generateBicep",
-      },
-      {
-        name: "call:apim-config.generateBicep",
-        type: "call",
-        required: true,
-        targetAction: "apim-config.generateBicep",
-      },
-    ];
-    const group: GroupAction = {
-      type: "group",
+    const action: FunctionAction = {
+      type: "function",
       name: "apim-feature.add",
-      mode: "sequential",
-      actions: actions,
+      execute: async (context, inputs) => {
+        const component = getComponent(context.projectSetting, ComponentNames.APIM);
+        if (component) return ok([]);
+
+        const effects: Effect[] = [];
+
+        const hasFunc = hasApi(context.projectSetting);
+
+        // 1. call teams-api.add if necessary
+        if (!hasFunc) {
+          const res = await runActionByName("teams-api.add", context, inputs);
+          if (res.isErr()) return err(res.error);
+          effects.push("add teams-api");
+        }
+
+        // 2. scaffold
+        {
+          const codeActionRes = await this.generateCode(context, inputs);
+          if (codeActionRes.isOk() && codeActionRes.value) {
+            const res = await runAction(codeActionRes.value, context, inputs);
+            if (res.isErr()) return err(res.error);
+            effects.push("scaffold api doc");
+          }
+        }
+
+        // 3. config
+        const apimConfig: Component = {
+          name: ComponentNames.APIM,
+          provision: true,
+          deploy: true,
+          connections: [],
+        };
+        context.projectSetting.components.push(apimConfig);
+        effects.push(Plans.addFeature("apim"));
+        // 4. bicep.init
+        {
+          const res = await runActionByName("bicep.init", context, inputs);
+          if (res.isErr()) return err(res.error);
+        }
+
+        // 5. apim.generateBicep
+        {
+          const res = await runActionByName("apim.generateBicep", context, inputs);
+          if (res.isErr()) return err(res.error);
+        }
+
+        // 6. generate config bicep
+        {
+          const res = await generateConfigBiceps(context, inputs);
+          if (res.isErr()) return err(res.error);
+          effects.push("generate config biceps");
+        }
+        effects.push("generate bicep");
+
+        return ok(effects);
+      },
     };
-    return ok(group);
+    return ok(action);
   }
 
   generateCode(

@@ -72,7 +72,7 @@ public static class TeamsFxConfigurationMethods
         services.Configure(configureOptions);
         services.AddOptions<AuthenticationOptions>()
             .Configure(configureOptions).ValidateDataAnnotations();
-        services.AddOptions<BotAuthenticationOptions>().Configure<IOptions<AuthenticationOptions>, IHttpContextAccessor>((botAuthOption, authOptions, contextAccessor) => {
+        services.AddOptions<BotAuthenticationOptions>().Configure<IOptions<AuthenticationOptions>>((botAuthOption, authOptions) => {
                 AuthenticationOptions authOptionsValue = authOptions.Value;
                 botAuthOption.ClientId = authOptionsValue.ClientId;
                 botAuthOption.ClientSecret = authOptionsValue.ClientSecret;

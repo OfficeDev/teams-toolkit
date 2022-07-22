@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <AdditionalDesignTimeBuildInput Remove="FakesAssemblies\**" />
+    <Reference Include="FakesAssemblies\Microsoft.Bot.Builder.Fakes.dll" />
   </ItemGroup>
 
 </Project>

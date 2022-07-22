@@ -15,6 +15,7 @@ import {
   UserError,
 } from "@microsoft/teamsfx-api";
 import { Correlator, getFixedCommonProjectSettings } from "@microsoft/teamsfx-core";
+/* eslint-disable-next-line import/no-default-export */
 import Reporter from "@vscode/extension-telemetry";
 
 import * as extensionPackage from "../../package.json";

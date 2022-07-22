@@ -12,6 +12,7 @@ import {
   Platform,
   ProjectSettingsV3,
   Result,
+  Stage,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
@@ -21,7 +22,10 @@ import { isVSProject } from "../../common/projectSettingsHelper";
 import { globalVars } from "../../core/globalVars";
 import { CoreQuestionNames } from "../../core/question";
 import { FrontendPathInfo } from "../../plugins/resource/frontend/constants";
-import { TabNonSsoItem } from "../../plugins/solution/fx-solution/question";
+import {
+  AzureSolutionQuestionNames,
+  TabNonSsoItem,
+} from "../../plugins/solution/fx-solution/question";
 import { ComponentNames, Scenarios } from "../constants";
 import { Plans } from "../messages";
 import { ensureComponentConnections } from "../migrate";
@@ -51,6 +55,12 @@ export class TeamsTab {
     this.setupBicep(actions, context, inputs);
     this.setupCapabilities(actions);
     this.setupConfiguration(actions, context);
+    if (
+      inputs.stage === Stage.create &&
+      inputs[AzureSolutionQuestionNames.Features] !== TabNonSsoItem.id
+    ) {
+      actions.push(addSSO);
+    }
     actions.push(showTabAlreadyAddMessage);
     return {
       type: "group",
@@ -64,7 +74,6 @@ export class TeamsTab {
     if (hasTab(context)) {
       return actions;
     }
-    actions.push(addSSO);
     actions.push(configTab);
     return actions;
   }

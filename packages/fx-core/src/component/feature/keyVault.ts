@@ -130,7 +130,7 @@ export class KeyVaultFeature {
     );
     const group: GroupAction = {
       type: "group",
-      name: "key-vault.add",
+      name: "key-vault-feature.add",
       mode: "sequential",
       actions: actions,
     };

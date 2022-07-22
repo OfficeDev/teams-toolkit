@@ -38,7 +38,6 @@ public class TeamsUserCrendentialTest
     private readonly string fakeScopes = "fake_scope";
     private static readonly string fakeClientId = "fake_client_id";
     private static readonly string fakeClientSecret = "fake_client_secret";
-    private static readonly string fakeLoginUrl = "fake_login_url";
     private static readonly string fakeOauthAuthority = "https://localhost";
     private readonly string invalidSsoToken = "invalid-sso-token";
     /// <summary>

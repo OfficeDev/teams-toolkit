@@ -20,7 +20,7 @@ namespace Microsoft.TeamsFx.Bot;
 /// help receive oauth token, asks the user to consent if needed.
 /// </summary>
 /// <remarks>
-/// The prompt will attempt to retrieve the users current token of the desired scopes.
+/// The prompt will attempt to retrieve the user's current token of the desired scopes.
 /// User will be automatically signed in leveraging Teams support of Bot Single Sign On(SSO):
 /// https://docs.microsoft.com/en-us/microsoftteams/platform/bots/how-to/authentication/auth-aad-sso-bots
 /// </remarks>
@@ -33,7 +33,7 @@ namespace Microsoft.TeamsFx.Bot;
 /// <see cref="DialogContext.BeginDialogAsync(string, object, CancellationToken)"/> or
 /// <see cref="DialogContext.PromptAsync(string, PromptOptions, CancellationToken)"/>. The user
 /// will be prompted to signin as needed and their access token will be passed as an argument to
-/// the callers next waterfall step.
+/// the caller's next waterfall step.
 /// 
 /// <code>
 /// var convoState = new ConversationState(new MemoryStorage());
@@ -43,7 +43,7 @@ namespace Microsoft.TeamsFx.Bot;
 ///     ClientId = "{client_id_guid_value}", 
 ///     ClientSecret = "{client_secret_value}", 
 ///     TenantId = "{tenant_id_guid_value}", 
-///     ApplicationIdUri = "api://botid-{bot_aad_client_id}", 
+///     ApplicationIdUri = "{application_id_uri_value}", 
 ///     OAuthAuthority = "https://login.microsoftonline.com/{tenant_id_guid_value}", 
 ///     LoginStartPageEndpoint = "https://{bot_web_app_domain}/bot-auth-start" 
 ///     };
@@ -51,7 +51,7 @@ namespace Microsoft.TeamsFx.Bot;
 /// var scopes = new string[] { "User.Read" };
 /// var teamsBotSsoPromptSettings = new TeamsBotSsoPromptSettings(botAuthOptions, scopes);
 /// 
-/// dialogs.Add(new TeamsBotSsoPrompt(nameof(TeamsBotSsoPrompt), teamsBotSsoPromptSettings)); 
+/// dialogs.Add(new TeamsBotSsoPrompt("{unique_id_for_the_prompt}", teamsBotSsoPromptSettings)); 
 /// dialogs.Add(new WaterfallDialog(nameof(WaterfallDialog), new WaterfallStep[] 
 /// { 
 ///     async(WaterfallStepContext stepContext, CancellationToken cancellationToken) => {
@@ -77,6 +77,7 @@ public class TeamsBotSsoPrompt : Dialog
 {
     private readonly TeamsBotSsoPromptSettings _settings;
     private const string PersistedExpires = "expires";
+    internal IIdentityClientAdapter _identityClientAdapter { private get; set; }
 
 
     /// <summary>
@@ -88,15 +89,20 @@ public class TeamsBotSsoPrompt : Dialog
     /// <remarks>The value of <paramref name="dialogId"/> must be unique within the
     /// <see cref="DialogSet"/> or <see cref="ComponentDialog"/> to which the prompt is added.</remarks>
     /// <exception cref="ArgumentNullException">When input parameters is null.</exception>
-    public TeamsBotSsoPrompt(string dialogId, TeamsBotSsoPromptSettings settings) : base(dialogId)
+    public TeamsBotSsoPrompt(string dialogId, TeamsBotSsoPromptSettings settings): base(dialogId)
     {
         if (string.IsNullOrWhiteSpace(dialogId))
         {
             throw new ArgumentNullException(nameof(dialogId));
         }
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
-    }
 
+        var confidentialClientApplication = ConfidentialClientApplicationBuilder.Create(_settings.BotAuthOptions.ClientId)
+            .WithClientSecret(_settings.BotAuthOptions.ClientSecret)
+            .WithAuthority(_settings.BotAuthOptions.OAuthAuthority)
+            .Build();
+        _identityClientAdapter = new IdentityClientAdapter(confidentialClientApplication);
+    }
 
     /// <summary>
     /// Called when the dialog is started and pushed onto the dialog stack.
@@ -212,14 +218,7 @@ public class TeamsBotSsoPrompt : Dialog
             {
                 try
                 {
-                    var cca = ConfidentialClientApplicationBuilder.Create(_settings.BotAuthOptions.ClientId)
-                        .WithClientSecret(_settings.BotAuthOptions.ClientSecret)
-                        .WithAuthority(_settings.BotAuthOptions.OAuthAuthority)
-                        .Build();
-                    var authenticationResult = await cca
-                        .AcquireTokenOnBehalfOf(_settings.Scopes, new UserAssertion(ssoToken))
-                        .ExecuteAsync(cancellationToken)
-                        .ConfigureAwait(false);
+                    var authenticationResult = await _identityClientAdapter.GetAccessToken(ssoToken, _settings.Scopes).ConfigureAwait(false);
                     var ssoTokenObj = Utils.ParseJwt(ssoToken);
                     tokenResponse = new TeamsBotSsoPromptTokenResponse {
                         SsoToken = ssoToken,

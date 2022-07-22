@@ -11,22 +11,25 @@ import {
   err,
   FileEffect,
   FxError,
+  InputsWithProjectPath,
   ok,
   ProjectSettingsV3,
   ProvisionBicep,
   Result,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
+import { assign, cloneDeep } from "lodash";
 import os from "os";
 import * as path from "path";
+import * as uuid from "uuid";
+import { getProjectSettingsVersion } from "../common/projectSettingsHelper";
+import { getProjectTemplatesFolderPath } from "../common/utils";
 import { LocalCrypto } from "../core/crypto";
 import { environmentManager } from "../core/environment";
 import { TOOLS } from "../core/globalVars";
-import * as uuid from "uuid";
-import { getProjectSettingsVersion } from "../common/projectSettingsHelper";
+import { ComponentNames, scenarioToComponent } from "./constants";
 import { DefaultManifestProvider } from "./resource/appManifest/manifestProvider";
-import { getProjectTemplatesFolderPath } from "../common/utils";
-import { getComponent } from "./workflow";
+import { getComponent, runActionByName } from "./workflow";
 
 export async function persistProvisionBicep(
   projectPath: string,
@@ -460,4 +463,63 @@ export function getHostingComponent(
 // TODO:implement after V3 project setting update
 export function isHostedByAzure(context: ContextV3): boolean {
   return true;
+}
+
+export async function generateConfigBiceps(
+  context: ContextV3,
+  inputs: InputsWithProjectPath
+): Promise<Result<undefined, FxError>> {
+  ensureComponentConnections(context.projectSetting);
+  for (const config of context.projectSetting.components) {
+    if (
+      config.name === ComponentNames.AzureWebApp ||
+      config.name === ComponentNames.Function ||
+      config.name === ComponentNames.APIM
+    ) {
+      const configActionName = config.name + "-config.generateBicep";
+      const scenario = config.scenario;
+      const clonedInputs = cloneDeep(inputs);
+      assign(clonedInputs, {
+        componentId: config.name === ComponentNames.APIM ? "" : scenarioToComponent.get(scenario),
+        scenario: config.name === ComponentNames.APIM ? "" : scenario,
+      });
+      const res = await runActionByName(configActionName, context, clonedInputs);
+      if (res.isErr()) return err(res.error);
+    }
+  }
+  return ok(undefined);
+}
+
+export const ComponentConnections = {
+  [ComponentNames.AzureWebApp]: [
+    ComponentNames.Identity,
+    ComponentNames.AzureSQL,
+    ComponentNames.KeyVault,
+    ComponentNames.AadApp,
+    ComponentNames.TeamsTab,
+    ComponentNames.TeamsBot,
+    ComponentNames.TeamsApi,
+  ],
+  [ComponentNames.Function]: [
+    ComponentNames.Identity,
+    ComponentNames.AzureSQL,
+    ComponentNames.KeyVault,
+    ComponentNames.AadApp,
+    ComponentNames.TeamsTab,
+    ComponentNames.TeamsBot,
+    ComponentNames.TeamsApi,
+  ],
+  [ComponentNames.APIM]: [ComponentNames.TeamsTab, ComponentNames.TeamsBot],
+};
+
+export function ensureComponentConnections(settingsV3: ProjectSettingsV3): void {
+  const exists = (c: string) => getComponent(settingsV3, c) !== undefined;
+  const existingConfigNames = Object.keys(ComponentConnections).filter(exists);
+  for (const configName of existingConfigNames) {
+    const existingResources = (ComponentConnections[configName] as string[]).filter(exists);
+    const configs = settingsV3.components.filter((c) => c.name === configName);
+    for (const config of configs) {
+      config.connections = existingResources;
+    }
+  }
 }

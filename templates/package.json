@@ -34,6 +34,7 @@
         "function-triggers/js/HTTPTrigger",
         "function-triggers/ts/HTTPTrigger",
         "tab/csharp/default",
+        "tab/csharp/non-sso",
         "tab/js/default",
         "tab/ts/default",
         "tab/js/non-sso",

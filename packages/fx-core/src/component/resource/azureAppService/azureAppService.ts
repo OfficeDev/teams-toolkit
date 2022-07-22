@@ -25,7 +25,6 @@ import {
 } from "./errors";
 import { AzureResource } from "./../azureResource";
 import { Messages } from "./messages";
-import { getHostingParentComponent } from "../../workflow";
 import { Plans, ProgressMessages, ProgressTitles } from "../../messages";
 export abstract class AzureAppService extends AzureResource {
   abstract readonly name: string;
@@ -57,8 +56,7 @@ export abstract class AzureAppService extends AzureResource {
       progressTitle: ProgressTitles.deploying(this.displayName, inputs.scenario),
       progressSteps: 2,
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const parent = getHostingParentComponent(context.projectSetting, this.name);
-        const deployDir = path.resolve(inputs.projectPath, parent?.folder ?? "");
+        const deployDir = path.resolve(inputs.projectPath, inputs.folder ?? "");
         return ok([Plans.deploy(this.displayName, deployDir)]);
       },
       execute: async (
@@ -67,12 +65,11 @@ export abstract class AzureAppService extends AzureResource {
         progress?: IProgressHandler
       ) => {
         const ctx = context as ProvisionContextV3;
-        const parent = getHostingParentComponent(ctx.projectSetting, this.name, inputs.scenario);
         // Preconditions checking.
-        if (!inputs.projectPath || !parent?.artifactFolder) {
+        if (!inputs.projectPath || !inputs.artifactFolder) {
           throw new PreconditionError(this.alias, Messages.WorkingDirIsMissing, []);
         }
-        const publishDir = path.resolve(inputs.projectPath, parent.artifactFolder);
+        const publishDir = path.resolve(inputs.projectPath, inputs.artifactFolder);
         const packDirExisted = await fs.pathExists(publishDir);
         if (!packDirExisted) {
           throw new PackDirectoryExistenceError(this.alias);

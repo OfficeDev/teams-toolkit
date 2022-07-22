@@ -66,9 +66,12 @@ export class BotCodeProvider implements SourceCodeProvider {
         return e as FxError;
       },
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
-        if (!teamsBot) return ok([]);
-        const folder = inputs.folder || CommonStrings.BOT_WORKING_DIR_NAME;
+        const language =
+          inputs?.["programming-language"] ||
+          context.projectSetting.programmingLanguage ||
+          "javascript";
+        const folder =
+          inputs.folder ?? (language === "csharp" ? "" : CommonStrings.BOT_WORKING_DIR_NAME);
         return ok([Plans.scaffold("bot", path.join(inputs.projectPath, folder))]);
       },
       execute: async (
@@ -83,10 +86,7 @@ export class BotCodeProvider implements SourceCodeProvider {
           context.projectSetting.programmingLanguage ||
           "javascript";
         const botFolder =
-          inputs.folder || language === "csharp" ? "" : CommonStrings.BOT_WORKING_DIR_NAME;
-        const teamsBot = getComponent(projectSettings, ComponentNames.TeamsBot);
-        if (!teamsBot) return ok([]);
-        merge(teamsBot, { build: true, folder: botFolder });
+          inputs.folder ?? (language === "csharp" ? "" : CommonStrings.BOT_WORKING_DIR_NAME);
         const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
         const lang = convertToLangKey(language);
         const workingDir = path.join(inputs.projectPath, botFolder);

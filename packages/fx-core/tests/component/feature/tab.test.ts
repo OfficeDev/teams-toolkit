@@ -18,7 +18,7 @@ import * as path from "path";
 import fs from "fs-extra";
 import { createSandbox } from "sinon";
 import * as utils from "../../../src/component/utils";
-import { getComponent, runAction } from "../../../src/component/workflow";
+import { getComponent, runActionByName } from "../../../src/component/workflow";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools, randomAppName } from "../../core/utils";
 import "../../../src/component/core";
@@ -75,7 +75,7 @@ describe("Tab Feature", () => {
       language: "typescript",
       "app-name": appName,
     };
-    const addTabRes = await runAction(`${ComponentNames.TeamsTab}.add`, context, inputs);
+    const addTabRes = await runActionByName(`${ComponentNames.TeamsTab}.add`, context, inputs);
     if (addTabRes.isErr()) {
       console.log(addTabRes.error);
     }
@@ -87,7 +87,6 @@ describe("Tab Feature", () => {
     assert.isTrue(teamsTab?.build);
     const storage = getComponent(context.projectSetting, ComponentNames.AzureStorage);
     assert.exists(storage);
-    assert.deepEqual(storage?.connections, [ComponentNames.TeamsTab]);
   });
 
   it("add react tab twice", async () => {
@@ -100,7 +99,7 @@ describe("Tab Feature", () => {
       language: "typescript",
       "app-name": appName,
     };
-    const addTabRes = await runAction(`${ComponentNames.TeamsTab}.add`, context, inputs);
+    const addTabRes = await runActionByName(`${ComponentNames.TeamsTab}.add`, context, inputs);
     if (addTabRes.isErr()) {
       console.log(addTabRes.error);
     }

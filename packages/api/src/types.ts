@@ -275,6 +275,7 @@ export interface Component extends Json {
   artifactFolder?: string;
   build?: boolean;
   provision?: boolean;
+  deploy?: boolean;
   connections?: string[];
   sso?: boolean;
 }

@@ -15,17 +15,21 @@ import { cpUtils } from "../../../../src/common/deps-checker/util/cpUtils";
 import { isLinux } from "../../../../src/common/deps-checker/util/system";
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import "mocha";
+import * as sinon from "sinon";
 
 chai.use(spies);
 const expect = chai.expect;
 const assert = chai.assert;
-const sandbox = chai.spy.sandbox();
 
 describe("FuncToolChecker E2E Test", async () => {
+  const sandbox = sinon.createSandbox();
   beforeEach(async function () {
     await funcUtils.cleanup();
-    sandbox.restore();
     console.error("cleanup portable func and sandbox");
+  });
+
+  afterEach(async function () {
+    sandbox.restore();
   });
 
   it("not install + special character dir", async function () {
@@ -38,19 +42,24 @@ describe("FuncToolChecker E2E Test", async () => {
       logger,
       new TestTelemetry()
     ) as FuncToolChecker;
-    sandbox.on(funcToolChecker, "getDefaultInstallPath", () =>
-      path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "func", "Aarón García", "for test")
+    sandbox
+      .stub(FuncToolChecker, <any>"getDefaultInstallPath")
+      .returns(
+        path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "func", "Aarón García", "for test")
+      );
+
+    const spyChecker = sandbox.spy(funcToolChecker);
+    const res = await spyChecker.resolve();
+    assert.isTrue(spyChecker.getInstallationInfo.calledTwice);
+
+    expect(res.isInstalled).to.be.equal(true);
+    expect((await funcToolChecker.getInstallationInfo()).isInstalled).to.be.equal(true);
+    expect(res.details.binFolders).to.to.have.all.members(
+      funcToolChecker.getPortableFuncBinFolders()
     );
-
-    const res = await funcToolChecker.resolve();
-    const depsInfo = await funcToolChecker.getDepsInfo();
-
-    expect(res.isOk() && res.value).to.be.equal(true);
-    expect(await funcToolChecker.isInstalled()).to.be.equal(true);
-    expect(depsInfo.binFolders).to.to.have.all.members(funcToolChecker.getPortableFuncBinFolders());
     assert.isTrue(
-      /node "[^"]*"$/g.test(await funcToolChecker.command()),
-      `should use portable func, and func command = ${await funcToolChecker.command()}`
+      /node "[^"]*"$/g.test(res.command),
+      `should use portable func, and func command = ${res.command}`
     );
     await assertFuncStart(funcToolChecker);
   });
@@ -66,20 +75,23 @@ describe("FuncToolChecker E2E Test", async () => {
       logger,
       new TestTelemetry()
     ) as FuncToolChecker;
-    sandbox.on(funcToolChecker, "doInstallPortableFunc", async () =>
-      console.log("spy on doInstallPortableFunc")
-    );
+    sandbox.stub(FuncToolChecker.prototype, <any>"doInstallPortableFunc");
 
     const res = await funcToolChecker.resolve();
-    assert.isFalse(res.isOk() && res.value);
-    assert.isFalse(await funcToolChecker.isInstalled());
+    assert.isFalse(res.isInstalled);
+    assert.isFalse((await funcToolChecker.getInstallationInfo()).isInstalled);
 
     // second: still works well
-    sandbox.restore(funcToolChecker, "doInstallPortableFunc");
-    const retryRes = await funcToolChecker.resolve();
+    sandbox.restore();
+    const spyChecker = sandbox.spy(funcToolChecker);
+    const retryRes = await spyChecker.resolve();
+    assert.isTrue(spyChecker.getInstallationInfo.calledTwice);
 
-    assert.isTrue(retryRes.isOk() && retryRes.value);
-    assert.isTrue(await funcToolChecker.isInstalled(), "second run, should success");
+    assert.isTrue(retryRes.isInstalled);
+    assert.isTrue(
+      (await funcToolChecker.getInstallationInfo()).isInstalled,
+      "second run, should success"
+    );
     await assertFuncStart(funcToolChecker);
   });
 
@@ -92,10 +104,10 @@ describe("FuncToolChecker E2E Test", async () => {
       logger,
       new TestTelemetry()
     ) as FuncToolChecker;
-    const depsInfo = await funcToolChecker.getDepsInfo();
+    const depsInfo = await funcToolChecker.getInstallationInfo();
 
-    expect(depsInfo.isLinuxSupported).to.be.equal(false);
-    expect(await funcToolChecker.command()).to.be.equal("npx azure-functions-core-tools@3");
+    expect(depsInfo.details.isLinuxSupported).to.be.equal(false);
+    expect(depsInfo.command).to.be.equal("npx azure-functions-core-tools@3");
   });
 
   it("already install + linux", async function () {
@@ -109,8 +121,15 @@ describe("FuncToolChecker E2E Test", async () => {
       new TestTelemetry()
     ) as FuncToolChecker;
 
-    expect(funcToolChecker.isInstalled()).to.be.equal(true);
-    expect(await funcToolChecker.command()).to.be.equal("func", `should use global func`);
+    const depsInfo = await funcToolChecker.getInstallationInfo();
+    expect(depsInfo.isInstalled).to.be.equal(true);
+    expect(depsInfo.command).to.be.equal("func", `should use global func`);
+
+    const spyChecker = sandbox.spy(funcToolChecker);
+    const retryRes = await spyChecker.resolve();
+    assert.isTrue(spyChecker.getInstallationInfo.calledOnce);
+    expect(retryRes.isInstalled).to.be.equal(true);
+
     await assertFuncStart(funcToolChecker);
   });
 
@@ -128,20 +147,20 @@ describe("FuncToolChecker E2E Test", async () => {
       logger,
       new TestTelemetry()
     ) as FuncToolChecker;
-    const res = await funcToolChecker.resolve();
 
-    assert.isTrue(res.isOk() && res.value);
-    expect(await funcToolChecker.isInstalled()).to.be.equal(true);
-    assert.isTrue(
-      /node "[^"]*"$/g.test(await funcToolChecker.command()),
-      `should use portable func`
-    );
+    const spyChecker = sandbox.spy(funcToolChecker);
+    const res = await spyChecker.resolve();
+    assert.isTrue(spyChecker.getInstallationInfo.calledTwice);
+
+    assert.isTrue(res.isInstalled);
+    expect((await funcToolChecker.getInstallationInfo()).isInstalled).to.be.equal(true);
+    assert.isTrue(/node "[^"]*"$/g.test(res.command), `should use portable func`);
     await assertFuncStart(funcToolChecker);
   });
 });
 
 async function assertFuncStart(funcToolChecker: FuncToolChecker): Promise<void> {
-  const funcExecCommand = await funcToolChecker.command();
+  const funcExecCommand = (await funcToolChecker.getInstallationInfo()).command;
   const funcStartResult: cpUtils.ICommandResult = await cpUtils.tryExecuteCommand(
     undefined,
     logger,

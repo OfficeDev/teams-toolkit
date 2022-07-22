@@ -65,4 +65,9 @@ export class Plans {
     name: "graph.microsoft.com",
     remarks: "update message endpoint in AppStudio",
   });
+  static readonly generateSourceCodeAndConfig = (feature: string): Effect =>
+    `generate source code and config for ${feature} in project settings`;
+  static readonly generateBicepAndConfig = (feature: string): Effect =>
+    `generate bicep and config for ${feature} in project settings`;
+  static readonly addFeature = (feature: string): Effect => `config ${feature} in project settings`;
 }

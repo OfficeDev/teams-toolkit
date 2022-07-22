@@ -7,6 +7,7 @@ import {
   ReadonlyPluginConfig,
   Result,
   FxError,
+  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import {
   DotnetPluginInfo as PluginInfo,
@@ -40,6 +41,7 @@ import {
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,
+  isAadManifestEnabled,
 } from "../../../../common/tools";
 import { TemplateInfo } from "./resources/templateInfo";
 import { Bicep } from "../../../../common/constants";
@@ -49,7 +51,7 @@ import { ArmTemplateResult } from "../../../../common/armInterface";
 import { PluginImpl } from "../interface";
 import { ProgressHelper } from "../utils/progress-helper";
 import { WebappDeployProgress as DeployProgress } from "./resources/steps";
-import { BotOptionItem, TabOptionItem } from "../../../solution/fx-solution/question";
+import { BotOptionItem, TabOptionItem, TabSsoItem } from "../../../solution/fx-solution/question";
 import { PluginNames } from "../../../solution/fx-solution/constants";
 import { CoreQuestionNames } from "../../../../core/question";
 import { convertToAlphanumericOnly } from "../../../../common/utils";
@@ -117,9 +119,16 @@ export class DotnetPluginImpl implements PluginImpl {
     const projectName = ctx.projectSettings!.appName;
     const safeProjectName =
       ctx.answers?.[CoreQuestionNames.SafeProjectName] ?? convertToAlphanumericOnly(projectName);
+    const capabilities = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
+      ?.capabilities;
     await scaffoldFromZipPackage(
       ctx.root,
-      new TemplateInfo({ ProjectName: projectName, SafeProjectName: safeProjectName })
+      new TemplateInfo(
+        { ProjectName: projectName, SafeProjectName: safeProjectName },
+        isAadManifestEnabled() && !capabilities.includes(TabSsoItem.id)
+          ? TemplateInfo.NoneSsoScenario
+          : TemplateInfo.DefaultScenario
+      )
     );
     ctx.projectSettings.pluginSettings = {
       ...ctx.projectSettings?.pluginSettings,

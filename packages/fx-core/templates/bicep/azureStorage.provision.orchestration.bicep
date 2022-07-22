@@ -13,3 +13,9 @@ output azureStorage{{scenario}}Output object = {
   indexPath: azureStorage{{scenario}}Provision.outputs.indexPath
   storageResourceId: azureStorage{{scenario}}Provision.outputs.storageResourceId
 }
+
+
+output {{scenario}}Output object = {
+  domain: azureStorage{{scenario}}Provision.outputs.domain
+  endpoint: azureStorage{{scenario}}Provision.outputs.endpoint
+}

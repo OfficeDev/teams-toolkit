@@ -52,8 +52,8 @@
 /packages/fx-core/tests/common/deps-checker @meifans @qinezh @a1exwang @kimizhu @swatDong
 
 /packages/fx-core/src/plugins/solution/fx-solution @1yefuwang1 @jayzhang @LongOddCode @nliu-ms @xzf0587 @hund030
-/packages/fx-core/src/plugins/solution/fx-solution/utils/depsChecker @a1exwang @kimizhu @meifans @qinezh @xzf0587 @hund030
-/packages/fx-core/src/plugins/solution/fx-solution/debug @kimizhu @swatDong @kuojianlu @XiaofuHuang @xzf0587 @hund030
+/packages/fx-core/src/plugins/solution/fx-solution/utils/depsChecker @a1exwang @kimizhu @meifans @qinezh
+/packages/fx-core/src/plugins/solution/fx-solution/debug @kimizhu @swatDong @kuojianlu @XiaofuHuang
 
 /packages/fx-core/src/plugins/resource/aad @KennethBWSong @adashen @SLdragon
 /packages/fx-core/tests/plugins/resource/aad @KennethBWSong @adashen @SLdragon

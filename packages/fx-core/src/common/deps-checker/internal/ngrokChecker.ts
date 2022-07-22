@@ -4,7 +4,7 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as os from "os";
-import { ConfigFolderName, err, ok, Result } from "@microsoft/teamsfx-api";
+import { ConfigFolderName } from "@microsoft/teamsfx-api";
 
 import { ngrokInstallHelpLink } from "../constant/helpLink";
 import { DepsCheckerError } from "../depsError";
@@ -14,7 +14,7 @@ import { isWindows } from "../util/system";
 import { DepsCheckerEvent, TelemtryMessages } from "../constant/telemetry";
 import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
-import { DepsChecker, DepsInfo } from "../depsChecker";
+import { DependencyStatus, DepsChecker, DepsType } from "../depsChecker";
 import { Messages } from "../constant/message";
 
 const ngrokName = "ngrok";
@@ -39,18 +39,26 @@ export class NgrokChecker implements DepsChecker {
     return "ngrok";
   }
 
-  public getDepsInfo(): Promise<DepsInfo> {
+  private async getDepsInfo(
+    isInstalled: boolean,
+    error?: DepsCheckerError
+  ): Promise<DependencyStatus> {
     return Promise.resolve({
       name: ngrokName,
-      isLinuxSupported: true,
-      installVersion: installPackageVersion,
-      binFolders: [this.getNgrokBinFolder()],
-      supportedVersions: supportedPackageVersions,
-      details: new Map<string, string>(),
+      type: DepsType.Ngrok,
+      isInstalled: isInstalled,
+      command: await this.command(),
+      details: {
+        isLinuxSupported: true,
+        installVersion: installPackageVersion,
+        binFolders: [this.getNgrokBinFolder()],
+        supportedVersions: supportedPackageVersions,
+      },
+      error: error,
     });
   }
 
-  public async isInstalled(): Promise<boolean> {
+  public async getInstallationInfo(): Promise<DependencyStatus> {
     let isVersionSupported = false,
       hasSentinel = false;
     try {
@@ -60,9 +68,9 @@ export class NgrokChecker implements DepsChecker {
       hasSentinel = await fs.pathExists(this.getSentinelPath());
     } catch (error) {
       // do nothing
-      return false;
+      return await this.getDepsInfo(false);
     }
-    return isVersionSupported && hasSentinel;
+    return await this.getDepsInfo(isVersionSupported && hasSentinel);
   }
 
   public async install(): Promise<void> {
@@ -85,25 +93,29 @@ export class NgrokChecker implements DepsChecker {
     return path.join(this.getDefaultInstallPath(), "node_modules", "ngrok", "bin");
   }
 
-  public async resolve(): Promise<Result<boolean, DepsCheckerError>> {
+  public async resolve(): Promise<DependencyStatus> {
     try {
-      if (!(await this.isInstalled())) {
+      let installationInfo = await this.getInstallationInfo();
+      if (!installationInfo.isInstalled) {
         // TODO: show output in extension
         // this._adapter.showOutputChannel();
         await this.install();
+        installationInfo = await this.getInstallationInfo();
         this._logger.cleanup();
       }
+      return installationInfo;
     } catch (error) {
       await this._logger.printDetailLog();
       this._logger.cleanup();
       await this._logger.error(`Failed to install 'ngrok', error = '${error}'`);
       if (error instanceof DepsCheckerError) {
-        return err(error);
+        return await this.getDepsInfo(false, error);
       }
-      return err(new DepsCheckerError(error.message, ngrokInstallHelpLink));
+      return await this.getDepsInfo(
+        false,
+        new DepsCheckerError(error.message, ngrokInstallHelpLink)
+      );
     }
-
-    return ok(true);
   }
 
   private async handleInstallNgrokFailed(): Promise<void> {

@@ -5,7 +5,7 @@ import { ProjectSettings, ProjectSettingsV3 } from "@microsoft/teamsfx-api";
 import {
   hasAzureTab,
   hasBot,
-  hasFunction,
+  hasApi,
   hasSPFxTab,
 } from "../../../../common/projectSettingsHelperV3";
 import { isV3 } from "../../../../core/globalVars";
@@ -26,7 +26,7 @@ export function generateBuildScript(projectSettings: ProjectSettings): string {
       }
     }
 
-    if (hasFunction(settingsV3) && projectSettings.programmingLanguage === "typescript") {
+    if (hasApi(settingsV3) && projectSettings.programmingLanguage === "typescript") {
       parts.push("cd api; npm ci; npm run build; cd -;");
     }
   } else {

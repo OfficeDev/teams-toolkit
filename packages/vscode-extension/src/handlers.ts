@@ -68,6 +68,7 @@ import {
   FolderName,
   FxCore,
   getAppDirectory,
+  getFixedCommonProjectSettings,
   getHashedEnv,
   globalStateGet,
   globalStateUpdate,
@@ -157,8 +158,21 @@ export function activate(): Result<Void, FxError> {
   const result: Result<Void, FxError> = ok(Void);
   const validProject = isValidProject(globalVariables.workspaceUri?.fsPath);
   if (validProject) {
-    const projectId = getProjectId() || "unknown";
-    ExtTelemetry.addSharedProperty(TelemetryProperty.ProjectId, projectId);
+    const fixedProjectSettings = getFixedCommonProjectSettings(
+      globalVariables.workspaceUri?.fsPath
+    );
+    ExtTelemetry.addSharedProperty(TelemetryProperty.ProjectId, fixedProjectSettings?.projectId);
+    ExtTelemetry.addSharedProperty(
+      TelemetryProperty.IsFromSample,
+      fixedProjectSettings?.isFromSample
+    );
+    ExtTelemetry.addSharedProperty(
+      TelemetryProperty.ProgrammingLanguage,
+      fixedProjectSettings?.programmingLanguage
+    );
+    ExtTelemetry.addSharedProperty(TelemetryProperty.HostType, fixedProjectSettings?.hostType);
+    ExtTelemetry.addSharedProperty(TelemetryProperty.IsM365, fixedProjectSettings?.isM365);
+
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTeamsApp, {});
     AzureAccountManager.setStatusChangeMap(
       "successfully-sign-in-azure",
@@ -1156,8 +1170,8 @@ export async function validateAzureDependenciesHandler(): Promise<string | undef
   const deps = [nodeType, DepsType.Dotnet, DepsType.FuncCoreTools, DepsType.Ngrok];
 
   const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
-  const shouldContinue = await vscodeDepsChecker.resolve(deps);
-
+  let shouldContinue = await vscodeDepsChecker.resolve(deps);
+  shouldContinue = shouldContinue && (await validatePorts()).isOk();
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheck, {
     [TelemetryProperty.Success]: shouldContinue ? TelemetrySuccess.Yes : TelemetrySuccess.No,
   });
@@ -1168,6 +1182,34 @@ export async function validateAzureDependenciesHandler(): Promise<string | undef
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
   }
+}
+
+async function validatePorts(): Promise<Result<void, FxError>> {
+  const portsInUse = await commonUtils.getPortsInUse();
+  if (portsInUse.length > 0) {
+    let message: string;
+    if (portsInUse.length > 1) {
+      message = util.format(
+        localize("teamstoolkit.localDebug.portsAlreadyInUse"),
+        portsInUse.join(", ")
+      );
+    } else {
+      message = util.format(localize("teamstoolkit.localDebug.portAlreadyInUse"), portsInUse[0]);
+    }
+    const error = new UserError(ExtensionSource, ExtensionErrors.PortAlreadyInUse, message);
+    VS_CODE_UI.showMessage(
+      "error",
+      message,
+      false,
+      localize("teamstoolkit.localDebug.learnMore")
+    ).then(async (result) => {
+      if (result.isOk() && result.value === localize("teamstoolkit.localDebug.learnMore")) {
+        await VS_CODE_UI.openUrl(constants.portInUseHelpLink);
+      }
+    });
+    return err(error);
+  }
+  return ok(undefined);
 }
 
 /**
@@ -1342,38 +1384,13 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
     async (): Promise<Result<void, FxError>> => {
       const result = await localTelemetryReporter.runWithTelemetry(
         TelemetryEvent.DebugPreCheckCoreLocalDebug,
-        () => runCommand(Stage.debug)
+        () => {
+          VsCodeLogInstance.outputChannel.show();
+          return runCommand(Stage.debug);
+        }
       );
       if (result.isErr()) {
         return err(result.error);
-      }
-
-      const portsInUse = await commonUtils.getPortsInUse();
-      if (portsInUse.length > 0) {
-        let message: string;
-        if (portsInUse.length > 1) {
-          message = util.format(
-            localize("teamstoolkit.localDebug.portsAlreadyInUse"),
-            portsInUse.join(", ")
-          );
-        } else {
-          message = util.format(
-            localize("teamstoolkit.localDebug.portAlreadyInUse"),
-            portsInUse[0]
-          );
-        }
-        const error = new UserError(ExtensionSource, ExtensionErrors.PortAlreadyInUse, message);
-        VS_CODE_UI.showMessage(
-          "error",
-          message,
-          false,
-          localize("teamstoolkit.localDebug.learnMore")
-        ).then(async (result) => {
-          if (result.isOk() && result.value === localize("teamstoolkit.localDebug.learnMore")) {
-            await VS_CODE_UI.openUrl(constants.portInUseHelpLink);
-          }
-        });
-        return err(error);
       }
       return ok(undefined);
     }

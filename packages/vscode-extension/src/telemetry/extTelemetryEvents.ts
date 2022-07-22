@@ -191,6 +191,7 @@ export enum TelemetryEvent {
   // that prevents user performing concurrent operations.
   TreeViewCommandConcurrentExecution = "treeview-command-concurrent-execution",
 
+  Activate = "activate",
   Deactivate = "deactivate",
 }
 
@@ -263,6 +264,13 @@ export enum TelemetryProperty {
   DocumentationName = "documentation-name",
   // Used with Deactivate
   Timestamp = "timestamp",
+  ProgrammingLanguage = "programming-language",
+  HostType = "host-type",
+  // Used with Activate
+  IsTeamsFx = "is-teamsfx",
+  ActivationTime = "activation-time",
+  UIDisplayTime = "ui-display-time",
+  BackgroundTaskFinishTime = "background-task-finish-time",
 }
 
 export enum TelemetryMeasurements {

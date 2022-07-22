@@ -1,13 +1,15 @@
 import {
   AzureSolutionSettings,
-  Component,
   Json,
   ProjectSettings,
   ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
 import { cloneDeep } from "lodash";
 import { isVSProject } from "../common/projectSettingsHelper";
+import { hasAzureResourceV3 } from "../common/projectSettingsHelperV3";
+import { MessageExtensionNewUIItem } from "../plugins/solution/fx-solution/question";
 import { ComponentNames } from "./constants";
+import { ensureComponentConnections } from "./utils";
 import { getComponent } from "./workflow";
 
 export interface EnvStateV2 {
@@ -109,6 +111,14 @@ export function pluginName2ComponentName(pluginName: string): string {
   return map.get(pluginName) || pluginName;
 }
 
+export function ComponentName2pluginName(componentName: string): string {
+  const map = new Map<string, string>();
+  EnvStateMigrationComponentNames.forEach((e) => {
+    map.set(e[1], e[0]);
+  });
+  return map.get(componentName) || componentName;
+}
+
 /**
  * convert envState from V3 to V2
  */
@@ -151,6 +161,13 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
   if (solutionSettings && (!settingsV3.components || settingsV3.components.length === 0)) {
     settingsV3.components = [];
     const isVS = isVSProject(settingsV2);
+    const hasAAD = solutionSettings.activeResourcePlugins.includes("fx-resource-aad-app-for-teams");
+    if (hasAAD) {
+      settingsV3.components.push({
+        name: ComponentNames.AadApp,
+        provision: true,
+      });
+    }
     if (solutionSettings.activeResourcePlugins.includes("fx-resource-frontend-hosting")) {
       const hostingComponent = isVS ? ComponentNames.AzureWebApp : ComponentNames.AzureStorage;
       if (isVS) {
@@ -161,6 +178,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           provision: false,
           folder: "",
           artifactFolder: "bin\\Release\\net6.0\\win-x86\\publish",
+          sso: solutionSettings.capabilities.includes("TabSSO") || hasAAD,
         };
         settingsV3.components.push(teamsTab);
       } else {
@@ -170,6 +188,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           build: true,
           provision: true,
           folder: "tabs",
+          sso: solutionSettings.capabilities.includes("TabSSO") || hasAAD,
         };
         settingsV3.components.push(teamsTab);
       }
@@ -187,6 +206,14 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
     }
     if (solutionSettings.activeResourcePlugins.includes("fx-resource-bot")) {
       const hostType = settingsV2.pluginSettings?.["fx-resource-bot"]?.["host-type"];
+      let botCapabilities = settingsV2.pluginSettings?.["fx-resource-bot"]?.["capabilities"];
+      if (
+        solutionSettings.capabilities.includes(MessageExtensionNewUIItem.id) &&
+        !botCapabilities?.includes("message-extension")
+      ) {
+        botCapabilities = botCapabilities || [];
+        botCapabilities.push("message-extension");
+      }
       const isHostingFunction = hostType === "azure-functions";
       const hostingComponent = isHostingFunction
         ? ComponentNames.Function
@@ -198,6 +225,8 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           build: true,
           folder: "",
           artifactFolder: "bin\\Release\\net6.0\\win-x86\\publish",
+          capabilities: botCapabilities,
+          sso: solutionSettings.capabilities.includes("BotSSO"),
         };
         settingsV3.components.push(teamsBot);
       } else {
@@ -207,6 +236,8 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           build: true,
           provision: true,
           folder: "bot",
+          capabilities: botCapabilities,
+          sso: solutionSettings.capabilities.includes("BotSSO"),
         };
         settingsV3.components.push(teamsBot);
       }
@@ -219,7 +250,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           name: hostingComponent,
           connections: ["teams-bot"],
           provision: true,
-          scenario: "bot",
+          scenario: "Bot",
         });
       }
       settingsV3.components.push({
@@ -253,52 +284,106 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
       settingsV3.components.push({
         name: ComponentNames.TeamsApi,
         hosting: ComponentNames.Function,
-        functionNames: ["getUserProfile"],
+        functionNames: [settingsV2.defaultFunctionName || "getUserProfile"],
         build: true,
         folder: "api",
       });
       settingsV3.components.push({
         name: ComponentNames.Function,
-        scenario: "api",
+        scenario: "Api",
       });
     }
-    connectComponents(settingsV3);
+
+    ensureComponentConnections(settingsV3);
   }
   return settingsV3;
 }
 
-function connectResourceToComponent(
-  computeComponent: Component,
-  resource: Component,
-  settingsV3: ProjectSettingsV3
-) {
-  computeComponent.connections = computeComponent.connections || [];
-  if (!computeComponent.connections.includes(resource.name))
-    computeComponent.connections.push(resource.name);
-}
-
-function connectComponents(settingsV3: ProjectSettingsV3) {
-  const resources = [
-    ComponentNames.Identity,
-    ComponentNames.AzureSQL,
-    ComponentNames.KeyVault,
-    ComponentNames.TeamsTab,
-    ComponentNames.TeamsBot,
-  ];
-  const computingComponentNames = [ComponentNames.AzureWebApp, ComponentNames.Function];
-  for (const component1 of settingsV3.components) {
-    if (computingComponentNames.includes(component1.name)) {
-      for (const component2 of settingsV3.components) {
-        if (resources.includes(component2.name)) {
-          connectResourceToComponent(component1, component2, settingsV3);
+export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): ProjectSettings {
+  const settingsV2: ProjectSettings = cloneDeep(settingsV3) as ProjectSettings;
+  if (settingsV3.components?.length > 0) {
+    const hostType = hasAzureResourceV3(settingsV3) ? "Azure" : "SPFx";
+    settingsV2.solutionSettings = {
+      name: "fx-solution-azure",
+      version: "1.0.0",
+      hostType: hostType,
+      azureResources: [],
+      capabilities: [],
+      activeResourcePlugins: [
+        "fx-resource-local-debug",
+        "fx-resource-appstudio",
+        "fx-resource-cicd",
+        "fx-resource-api-connector",
+      ],
+    };
+    const aad = getComponent(settingsV3, ComponentNames.AadApp);
+    if (aad) {
+      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-aad-app-for-teams");
+    }
+    const teamsTab = getComponent(settingsV3, ComponentNames.TeamsTab);
+    const hasSSO = teamsTab?.sso || aad !== undefined;
+    if (teamsTab) {
+      settingsV2.solutionSettings.capabilities.push("Tab");
+      if (hasSSO) {
+        settingsV2.solutionSettings.capabilities.push("TabSSO");
+      }
+      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-frontend-hosting");
+    }
+    const teamsBot = getComponent(settingsV3, ComponentNames.TeamsBot);
+    if (teamsBot) {
+      const botCapabilities = teamsBot?.capabilities;
+      if (
+        botCapabilities?.includes("bot") ||
+        botCapabilities?.includes("notification") ||
+        botCapabilities?.includes("command-response")
+      ) {
+        settingsV2.solutionSettings.capabilities.push("Bot");
+        if (teamsBot.sso || hasSSO) {
+          settingsV2.solutionSettings.capabilities.push("BotSSO");
         }
       }
+      if (
+        botCapabilities?.includes("message-extension") &&
+        !settingsV2.solutionSettings.capabilities.includes(MessageExtensionNewUIItem.id)
+      ) {
+        settingsV2.solutionSettings.capabilities.push(MessageExtensionNewUIItem.id);
+      }
+      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-bot");
+      const hostType =
+        teamsBot.hosting === ComponentNames.AzureWebApp ? "app-service" : "azure-function";
+      settingsV2.pluginSettings = {
+        "fx-resource-bot": {
+          "host-type": hostType,
+          capabilities: botCapabilities,
+        },
+      };
+    }
+    if (getComponent(settingsV3, ComponentNames.Identity)) {
+      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-identity");
+    }
+    if (getComponent(settingsV3, ComponentNames.KeyVault)) {
+      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-key-vault");
+      settingsV2.solutionSettings.azureResources.push("keyvault");
+    }
+    if (getComponent(settingsV3, ComponentNames.AzureSQL)) {
+      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-azure-sql");
+      settingsV2.solutionSettings.azureResources.push("sql");
+    }
+    if (getComponent(settingsV3, ComponentNames.APIM)) {
+      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-apim");
+      settingsV2.solutionSettings.azureResources.push("apim");
+    }
+    const teamsApi = getComponent(settingsV3, ComponentNames.TeamsApi);
+    if (teamsApi) {
+      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-function");
+      settingsV2.defaultFunctionName =
+        teamsApi.functionNames && teamsApi.functionNames.length > 0
+          ? teamsApi.functionNames[0]
+          : "getUserProfile";
+      settingsV2.solutionSettings.azureResources.push("function");
     }
   }
-}
-
-export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3) {
-  return settingsV3;
+  return settingsV2;
 }
 
 export function convertManifestTemplateToV3(content: string): string {
@@ -307,6 +392,16 @@ export function convertManifestTemplateToV3(content: string): string {
     const componentName = pluginAndComponentArray[1];
     if (pluginName !== componentName)
       content = content.replace(new RegExp(pluginName, "g"), componentName);
+  }
+  return content;
+}
+
+export function convertManifestTemplateToV2(content: string): string {
+  for (const pluginAndComponentArray of EnvStateMigrationComponentNames) {
+    const pluginName = pluginAndComponentArray[0];
+    const componentName = pluginAndComponentArray[1];
+    if (pluginName !== componentName)
+      content = content.replace(new RegExp(componentName, "g"), pluginName);
   }
   return content;
 }

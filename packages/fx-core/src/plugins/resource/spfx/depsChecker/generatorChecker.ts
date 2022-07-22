@@ -19,11 +19,11 @@ import {
 import { DependencyChecker, DependencyInfo } from "./dependencyChecker";
 import { telemetryHelper } from "../utils/telemetry-helper";
 import { TelemetryEvents, TelemetryProperty } from "../utils/telemetryEvents";
-import { DependencyValidateError, NpmInstallError, NpmNotFoundError } from "../error";
+import { DependencyValidateError, NpmInstallError } from "../error";
 import { cpUtils } from "../../../../common/deps-checker/util/cpUtils";
 
 const name = "@microsoft/generator-sharepoint";
-const supportedVersion = "1.14.0";
+const supportedVersion = "1.15.0";
 const displayName = `${name}@${supportedVersion}`;
 const timeout = 6 * 60 * 1000;
 
@@ -108,11 +108,7 @@ export class GeneratorChecker implements DependencyChecker {
   }
 
   private getDefaultInstallPath(): string {
-    return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "spfx");
-  }
-
-  private getPackagePath(): string {
-    return path.join(this.getDefaultInstallPath(), "node_modules", "@microsoft");
+    return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "spGenerator");
   }
 
   private getSentinelPath(): string {
@@ -136,15 +132,24 @@ export class GeneratorChecker implements DependencyChecker {
 
   private async cleanup(): Promise<void> {
     try {
-      await fs.emptyDir(this.getPackagePath());
+      const legacyDirectory = path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "spfx");
+      if (fs.existsSync(legacyDirectory)) {
+        await fs.emptyDir(legacyDirectory);
+        await fs.rmdir(legacyDirectory);
+      }
+
+      await fs.emptyDir(this.getDefaultInstallPath());
       await fs.remove(this.getSentinelPath());
     } catch (err) {
-      await this._logger.error(`Failed to clean up path: ${this.getPackagePath()}, error: ${err}`);
+      await this._logger.error(
+        `Failed to clean up path: ${this.getDefaultInstallPath()}, error: ${err}`
+      );
     }
   }
 
   private async installGenerator(): Promise<void> {
     try {
+      await fs.ensureDir(path.join(this.getDefaultInstallPath(), "node_modules"));
       await cpUtils.executeCommand(
         undefined,
         this._logger,

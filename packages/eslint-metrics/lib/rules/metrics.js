@@ -35,7 +35,7 @@ module.exports = {
               fix: (fixer) =>
                 fixer.insertTextBefore(
                   node,
-                  `import { timer } from "@microsoft/metrics-ts"\n`
+                  `import { MSTimer } from "@microsoft/metrics-ts"\n`
                 ),
             });
           }
@@ -58,7 +58,7 @@ module.exports = {
           let exist = false;
           if (node.decorators) {
             for (const d of node.decorators) {
-              if (d.expression.callee.name === "timer") {
+              if (d.expression.callee.name === "MSTimer") {
                 exist = true;
                 break;
               }
@@ -69,7 +69,7 @@ module.exports = {
               node,
               message: "auto add timer",
               fix: (fixer) =>
-                fixer.insertTextBefore(node, "@timer(__filename)\n"),
+                fixer.insertTextBefore(node, "@MSTimer(__filename)\n"),
             });
           }
         },

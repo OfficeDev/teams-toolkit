@@ -5,6 +5,7 @@
 [![Function Extension CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/FunctionExtensionCI.yml/badge.svg)](https://github.com/OfficeDev/TeamsFx/actions/workflows/FunctionExtensionCI.yml)
 [![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/OfficeDev/TeamsFx.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/OfficeDev/TeamsFx/context:javascript)
 
+
 Teams Toolkit for Visual Studio, Visual Studio Code, and Command Line Interface (CLI) are tools for building Teams apps, fast. Whether you are new to Teams platform or a seasoned developer, Teams Toolkit is the best way to create, build, debug, test, and deploy apps.
 
 <img width="1350" alt="MicrosoftTeams-image" src="https://aka.ms/teamsfx-hero-image">

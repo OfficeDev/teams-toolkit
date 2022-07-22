@@ -5,7 +5,6 @@ import { IBot, IComposeExtension, IConfigurableTab, IStaticTab } from "@microsof
 export class Constants {
   public static readonly MANIFEST_FILE = "manifest.json";
   public static readonly PLUGIN_NAME = "AppStudioPlugin";
-  public static readonly PUBLISH_PATH_QUESTION = "manifest-folder";
   public static readonly BUILD_OR_PUBLISH_QUESTION = "build-or-publish";
   public static readonly INCLUDE_APP_MANIFEST = "include-app-manifest";
   public static readonly READ_MORE = "Read more";
@@ -32,7 +31,6 @@ export class Constants {
 export class ErrorMessages {
   static readonly GetConfigError = (configName: string, plugin: string) =>
     `Failed to get configuration value "${configName}" for ${plugin}.`;
-  static readonly ParseUserInfoError = "Failed to parse userInfo.";
   static readonly GrantPermissionFailed = "Response is empty or user is not added.";
   static readonly TeamsAppNotFound = (teamsAppId: string) =>
     `Cannot find Teams App with id: ${teamsAppId}. Maybe your current M365 account doesn't not have permission, or the Teams App has already been deleted.`;

@@ -9,13 +9,20 @@ import {
   Question,
   validate,
   OptionItem,
+  isAutoSkipSelect,
+  MultiSelectQuestion,
+  SingleSelectQuestion,
 } from "@microsoft/teamsfx-api";
+import { Options } from "yargs";
+import { EmptyQTreeNode } from "./constants";
+
+import { getSingleOptionString, toYargsOptions } from "./utils";
 
 export async function filterQTreeNode(
   root: QTreeNode,
   key: string,
   value: any
-): Promise<QTreeNode | undefined> {
+): Promise<QTreeNode> {
   /// finds the searched node
   let searchedNode: QTreeNode | undefined = undefined;
   const parentMap = new Map<QTreeNode, QTreeNode>();
@@ -33,12 +40,13 @@ export async function filterQTreeNode(
       });
     }
   }
-  if (!searchedNode || searchedNode.data.type === "group") return undefined;
+  if (!searchedNode || searchedNode.data.type === "group") return EmptyQTreeNode;
 
   /// checks the answer is valid
   const searchedNodeAns = await calculateByGivenAns(searchedNode.data, value);
-  if (searchedNodeAns === undefined) return undefined;
+  if (searchedNodeAns === undefined) return EmptyQTreeNode;
   searchedNode.data.value = searchedNodeAns;
+  (searchedNode.data as any).hide = true;
 
   /// gets its ancestors and calculate their answers
   const ancestorsWithAns: QTreeNode[] = [searchedNode];
@@ -85,7 +93,7 @@ async function calculateByGivenAns(ques: Question, ans: any, caseSensitive = fal
       let matchedOptions = ans
         .map((s) => getMatchedOption(ques.staticOptions, s, caseSensitive))
         .filter((op) => op) as StaticOptions;
-      let matchedIds = matchedOptions.map((op) => getOptionId(op, !caseSensitive));
+      let matchedIds = matchedOptions.map((op) => getOptionId(op, false));
       if (ques.onDidChangeSelection) {
         /// run onDidChangeSelection for changing the answer
         matchedIds = Array.from(
@@ -99,7 +107,9 @@ async function calculateByGivenAns(ques: Question, ans: any, caseSensitive = fal
     case "singleSelect":
       if (typeof ans !== "string") return undefined;
       const matchedOption = getMatchedOption(ques.staticOptions, ans, caseSensitive);
-      return ques.returnObject || !matchedOption ? matchedOption : getOptionId(matchedOption);
+      return ques.returnObject || !matchedOption
+        ? matchedOption
+        : getOptionId(matchedOption, false);
     case "text":
       return ans;
     default:
@@ -128,4 +138,20 @@ function getOptionId(option: string | OptionItem, toLocaleLowerCase = true) {
 function getOptionCliName(option: string | OptionItem, toLocaleLowerCase = true) {
   const cliName = typeof option === "string" ? option : option.cliName;
   return toLocaleLowerCase ? cliName?.toLocaleLowerCase() : cliName;
+}
+
+export function toYargsOptionsGroup(nodes: QTreeNode[]) {
+  const nodesWithoutGroup = nodes.filter((node) => node.data.type !== "group");
+  const params: { [_: string]: Options } = {};
+  nodesWithoutGroup.forEach((node) => {
+    const data = node.data as Question;
+    if (isAutoSkipSelect(data) && data.type != "func") {
+      // set the only option to default value so yargs will auto fill it.
+      data.default = getSingleOptionString(data as SingleSelectQuestion | MultiSelectQuestion);
+      (data as any).hide = true;
+    }
+    params[data.name] = toYargsOptions(data);
+  });
+
+  return params;
 }

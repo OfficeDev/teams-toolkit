@@ -24,6 +24,7 @@ import path from "path";
 import { TelemetryHelper } from "../utils/telemetry-helper";
 import { envFileName, envFileNamePrefix, envFilePath, loadEnvFile } from "../env";
 import * as v3error from "../v3/error";
+import { IProgressHandler } from "@microsoft/teamsfx-api";
 
 interface DeploymentInfo {
   lastBuildTime?: string;
@@ -203,9 +204,9 @@ export class FrontendDeployment {
   public static async doFrontendDeploymentV3(
     client: AzureStorageClient,
     componentPath: string,
-    envName: string
+    envName: string,
+    progress?: IProgressHandler
   ): Promise<void> {
-    const progress = ProgressHelper.progressHandler;
     const needDeploy = await FrontendDeployment.needDeploy(componentPath, envName);
     if (!needDeploy) {
       await progress?.next(DeployProgress.steps.getSrcAndDest);

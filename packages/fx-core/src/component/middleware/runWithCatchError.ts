@@ -4,9 +4,9 @@
 import { Middleware, HookContext, NextFunction } from "@feathersjs/hooks/lib";
 import { err, FxError, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { ErrorConstants } from "../constants";
-import { ActionContext, ErrorHandler } from "./types";
+import { ActionContext, AErrorHandler } from "./types";
 
-export function RunWithCatchErrorMW(source: string, errorHanlder: ErrorHandler): Middleware {
+export function RunWithCatchErrorMW(source: string, errorHanlder: AErrorHandler): Middleware {
   return async (ctx: HookContext, next: NextFunction) => {
     const actionContext = ctx.arguments[0] as ActionContext;
     actionContext.source = source;

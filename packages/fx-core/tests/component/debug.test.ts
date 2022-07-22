@@ -4,6 +4,7 @@ import chaiAsPromised from "chai-as-promised";
 import { Platform, ProjectSettingsV3 } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import * as path from "path";
+import * as fs from "fs-extra";
 import { createContextV3 } from "../../src/component/utils";
 import { configLocalEnvironment, setupLocalEnvironment } from "../../src/component/debug";
 import { MockTools } from "../core/utils";
@@ -16,6 +17,7 @@ describe("DebugComponent", () => {
   const tools = new MockTools();
   setTools(tools);
   describe("setup", () => {
+    afterEach(async () => await fs.remove(path.resolve(__dirname, "./data")));
     it("happy path", async () => {
       const projectSetting: ProjectSettingsV3 = {
         appName: "",
@@ -65,6 +67,7 @@ describe("DebugComponent", () => {
   });
 
   describe("config", () => {
+    afterEach(async () => await fs.remove(path.resolve(__dirname, "./data")));
     it("happy path", async () => {
       const projectSetting: ProjectSettingsV3 = {
         appName: "",

@@ -22,7 +22,6 @@ import {
   ActionNames,
   ActionTypeFunction,
   TelemetryConstants,
-  ComponentStateKeys,
 } from "../../../constants";
 import { ActionLogger, LoggerMW } from "../../../middleware/logger";
 import { ProgressBarMW } from "../../../middleware/progressbar";
@@ -72,7 +71,7 @@ export class ConfigureActionImplement {
     const ctx = context as ProvisionContextV3;
     const actionContext = context as ActionContext;
     const solutionConfig = ctx.envInfo.state.solution as v3.AzureSolutionConfig;
-    const state = ctx.envInfo.state[ComponentStateKeys[ComponentNames.AzureSQL]];
+    const state = ctx.envInfo.state[ComponentNames.AzureSQL];
     const sqlMgrConfig = LoadManagementConfig(state);
     const sqlMgrClient = await ManagementClient.create(
       ctx.tokenProvider.azureAccountProvider,
@@ -195,7 +194,7 @@ export class UtilFunctions {
   }
 
   static getIdentity(ctx: ProvisionContextV3): string {
-    const config = ctx.envInfo.state[ComponentStateKeys[ComponentNames.Identity]];
+    const config = ctx.envInfo.state[ComponentNames.Identity];
     const identity = config[Constants.identityName] as string;
     if (!identity) {
       const error = SqlResultFactory.SystemError(
@@ -243,7 +242,7 @@ export class UtilFunctions {
     }
   }
 
-  static buildQuestionNode() {
+  static buildQuestionNode(): QTreeNode {
     const sqlNode = new QTreeNode({
       type: "group",
     });

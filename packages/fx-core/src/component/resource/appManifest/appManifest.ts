@@ -8,10 +8,15 @@ import {
   FileEffect,
   FxError,
   InputsWithProjectPath,
+  IProgressHandler,
   MaybePromise,
   ok,
+  Platform,
   ProvisionContextV3,
+  QTreeNode,
   Result,
+  SystemError,
+  UserError,
   v3,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
@@ -19,9 +24,14 @@ import { cloneDeep } from "lodash";
 import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { isBotNotificationEnabled } from "../../../common/featureFlags";
+import { getLocalizedString } from "../../../common/localizeUtils";
 import { hasTab } from "../../../common/projectSettingsHelperV3";
+import { globalVars } from "../../../core/globalVars";
 import { getTemplatesFolder } from "../../../folder";
+import {
+  CommandAndResponseOptionItem,
+  NotificationOptionItem,
+} from "../../../plugins/solution/fx-solution/question";
 import {
   BOTS_TPL_EXISTING_APP,
   COLOR_TEMPLATE,
@@ -32,13 +42,17 @@ import {
   OUTLINE_TEMPLATE,
   STATIC_TABS_TPL_EXISTING_APP,
   DEFAULT_DEVELOPER,
+  Constants,
 } from "../../../plugins/resource/appstudio/constants";
+import { AppStudioError } from "../../../plugins/resource/appstudio/errors";
 import {
-  AzureSolutionQuestionNames,
-  BotScenario,
-} from "../../../plugins/solution/fx-solution/question";
+  autoPublishOption,
+  manuallySubmitOption,
+} from "../../../plugins/resource/appstudio/questions";
+import { AppStudioResultFactory } from "../../../plugins/resource/appstudio/results";
+import { TelemetryPropertyKey } from "../../../plugins/resource/appstudio/utils/telemetry";
 import { ComponentNames } from "../../constants";
-import { createOrUpdateTeamsApp, publishTeamsApp } from "./appStudio";
+import { createTeamsApp, updateTeamsApp, publishTeamsApp, buildTeamsAppPackage } from "./appStudio";
 import {
   BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3,
   BOTS_TPL_FOR_NOTIFICATION_V3,
@@ -67,21 +81,11 @@ export class AppManifest implements CloudResource {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const createFilePath = [
-      path.join(inputs.projectPath, "templates", "appPackage", "resources", "color.png"),
-      path.join(inputs.projectPath, "templates", "appPackage", "resources", "outline.png"),
-      path.join(inputs.projectPath, "templates", "appPackage", "manifest.template.json"),
-    ];
-    const effect: FileEffect = {
-      type: "file",
-      operate: "create",
-      filePath: createFilePath,
-    };
     const action: Action = {
       name: "app-manifest.init",
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok([effect]);
+        return ok(["init app manifest template"]);
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const existingApp = inputs.existingApp as boolean;
@@ -103,7 +107,7 @@ export class AppManifest implements CloudResource {
         const defaultOutlinePath = path.join(templatesFolder, OUTLINE_TEMPLATE);
         await fs.copy(defaultColorPath, path.join(resourcesFolder, DEFAULT_COLOR_PNG_FILENAME));
         await fs.copy(defaultOutlinePath, path.join(resourcesFolder, DEFAULT_OUTLINE_PNG_FILENAME));
-        return ok([effect]);
+        return ok(["init app manifest template"]);
       },
     };
     return ok(action);
@@ -112,24 +116,21 @@ export class AppManifest implements CloudResource {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const effect: FileEffect = {
-      type: "file",
-      operate: "replace",
-      filePath: path.join(inputs.projectPath, "templates", "appPackage", "manifest.template.json"),
-    };
     const action: Action = {
       name: "app-manifest.addCapability",
       type: "function",
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        effect.remarks = `add capabilities (${JSON.stringify(inputs.capabilities)}) in manifest`;
-        return ok([effect]);
+        return ok([
+          `add capabilities (${JSON.stringify(inputs.capabilities)}) in manifest template`,
+        ]);
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const capabilities = inputs.capabilities as v3.ManifestCapability[];
         const res = await addCapabilities(inputs, capabilities);
         if (res.isErr()) return err(res.error);
-        effect.remarks = `capabilities: ${capabilities.map((c) => c.name).join(",")}`;
-        return ok([effect]);
+        return ok([
+          `add capabilities (${JSON.stringify(inputs.capabilities)}) in manifest template`,
+        ]);
       },
     };
     return ok(action);
@@ -141,25 +142,36 @@ export class AppManifest implements CloudResource {
     const action: Action = {
       name: "app-manifest.provision",
       type: "function",
+      enableProgressBar: true,
+      progressTitle: getLocalizedString("plugins.appstudio.provisionTitle"),
+      progressSteps: 1,
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         return ok([
           {
             type: "service",
             name: "teams.microsoft.com",
-            remarks: "create or update teams app",
+            remarks: "create Teams app if not exists",
           },
         ]);
       },
-      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+      execute: async (
+        context: ContextV3,
+        inputs: InputsWithProjectPath,
+        progress?: IProgressHandler
+      ) => {
         const ctx = context as ProvisionContextV3;
-        const res = await createOrUpdateTeamsApp(ctx, inputs, ctx.envInfo, ctx.tokenProvider);
+        await progress?.next(
+          getLocalizedString("plugins.appstudio.provisionProgress", ctx.projectSetting.appName)
+        );
+        const res = await createTeamsApp(ctx, inputs, ctx.envInfo, ctx.tokenProvider);
         if (res.isErr()) return err(res.error);
         ctx.envInfo.state[ComponentNames.AppManifest].teamsAppId = res.value;
+        globalVars.teamsAppId = res.value;
         return ok([
           {
             type: "service",
             name: "teams.microsoft.com",
-            remarks: "create or update teams app",
+            remarks: "create Teams app if not exists",
           },
         ]);
       },
@@ -168,29 +180,36 @@ export class AppManifest implements CloudResource {
   }
   configure(
     context: ContextV3,
-    inputs: InputsWithProjectPath
+    inputs: InputsWithProjectPath,
+    progress?: IProgressHandler
   ): MaybePromise<Result<Action | undefined, FxError>> {
     const action: Action = {
       name: "app-manifest.configure",
       type: "function",
+      enableProgressBar: true,
+      progressTitle: getLocalizedString("plugins.appstudio.provisionTitle"),
+      progressSteps: 1,
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         return ok([
           {
             type: "service",
             name: "teams.microsoft.com",
-            remarks: "update teams app",
+            remarks: "update Teams app",
           },
         ]);
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const ctx = context as ProvisionContextV3;
-        const res = await createOrUpdateTeamsApp(ctx, inputs, ctx.envInfo, ctx.tokenProvider);
+        await progress?.next(
+          getLocalizedString("plugins.appstudio.postProvisionProgress", ctx.projectSetting.appName)
+        );
+        const res = await updateTeamsApp(ctx, inputs, ctx.envInfo, ctx.tokenProvider);
         if (res.isErr()) return err(res.error);
         return ok([
           {
             type: "service",
             name: "teams.microsoft.com",
-            remarks: "update teams app",
+            remarks: "update Teams app",
           },
         ]);
       },
@@ -204,6 +223,22 @@ export class AppManifest implements CloudResource {
     const action: Action = {
       name: "app-manifest.publish",
       type: "function",
+      enableTelemetry: true,
+      telemetryComponentName: "AppStudioPlugin",
+      telemetryEventName: "publish",
+      question: (context: ContextV3, inputs: InputsWithProjectPath) => {
+        if (inputs.platform === Platform.VSCode) {
+          const buildOrPublish = new QTreeNode({
+            name: Constants.BUILD_OR_PUBLISH_QUESTION,
+            type: "singleSelect",
+            staticOptions: [manuallySubmitOption, autoPublishOption],
+            title: getLocalizedString("plugins.appstudio.publishTip"),
+            default: autoPublishOption.id,
+          });
+          return ok(buildOrPublish);
+        }
+        return ok(undefined);
+      },
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
         return ok([
           {
@@ -213,15 +248,95 @@ export class AppManifest implements CloudResource {
           },
         ]);
       },
-      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+      execute: async (
+        context: ContextV3,
+        inputs: InputsWithProjectPath,
+        progress?: IProgressHandler,
+        telemetryProps?: Record<string, string>
+      ) => {
         const ctx = context as ProvisionContextV3;
-        const res = await publishTeamsApp(
-          ctx,
-          inputs,
-          ctx.envInfo,
-          ctx.tokenProvider.m365TokenProvider
-        );
-        if (res.isErr()) return err(res.error);
+        if (
+          inputs.platform === Platform.VSCode &&
+          inputs[Constants.BUILD_OR_PUBLISH_QUESTION] === manuallySubmitOption.id
+        ) {
+          if (telemetryProps) telemetryProps[TelemetryPropertyKey.manual] = String(true);
+          try {
+            const appPackagePath = await buildTeamsAppPackage(
+              inputs.projectPath,
+              ctx.envInfo,
+              false,
+              telemetryProps
+            );
+            const msg = getLocalizedString(
+              "plugins.appstudio.adminApprovalTip",
+              ctx.projectSetting.appName,
+              appPackagePath
+            );
+            ctx.userInteraction
+              .showMessage("info", msg, false, "OK", Constants.READ_MORE)
+              .then((value) => {
+                if (value.isOk() && value.value === Constants.READ_MORE) {
+                  ctx.userInteraction.openUrl(Constants.PUBLISH_GUIDE);
+                }
+              });
+            return ok(["build teams app package"]);
+          } catch (error: any) {
+            return err(
+              AppStudioResultFactory.UserError(
+                AppStudioError.TeamsPackageBuildError.name,
+                AppStudioError.TeamsPackageBuildError.message(error),
+                error.helpLink
+              )
+            );
+          }
+        }
+        try {
+          const res = await publishTeamsApp(
+            ctx,
+            inputs,
+            ctx.envInfo,
+            ctx.tokenProvider.m365TokenProvider
+          );
+          if (res.isErr()) return err(res.error);
+          ctx.logProvider.info(`Publish success!`);
+          if (inputs.platform === Platform.CLI) {
+            const msg = getLocalizedString(
+              "plugins.appstudio.publishSucceedNotice.cli",
+              res.value.appName,
+              Constants.TEAMS_ADMIN_PORTAL,
+              Constants.TEAMS_MANAGE_APP_DOC
+            );
+            ctx.userInteraction.showMessage("info", msg, false);
+          } else {
+            const msg = getLocalizedString(
+              "plugins.appstudio.publishSucceedNotice",
+              res.value.appName,
+              Constants.TEAMS_MANAGE_APP_DOC
+            );
+            const adminPortal = getLocalizedString("plugins.appstudio.adminPortal");
+            ctx.userInteraction.showMessage("info", msg, false, adminPortal).then((value) => {
+              if (value.isOk() && value.value === adminPortal) {
+                ctx.userInteraction.openUrl(Constants.TEAMS_ADMIN_PORTAL);
+              }
+            });
+          }
+          if (telemetryProps) {
+            telemetryProps[TelemetryPropertyKey.updateExistingApp] = String(res.value.update);
+            telemetryProps[TelemetryPropertyKey.publishedAppId] = String(res.value.publishedAppId);
+          }
+        } catch (error: any) {
+          if (error instanceof SystemError || error instanceof UserError) {
+            throw error;
+          } else {
+            const publishFailed = new SystemError({
+              name: AppStudioError.TeamsAppPublishFailedError.name,
+              message: error.message,
+              source: Constants.PLUGIN_NAME,
+              error: error,
+            });
+            return err(publishFailed);
+          }
+        }
         return ok([
           {
             type: "service",
@@ -289,21 +404,15 @@ export async function addCapabilities(
               appManifest.bots = [];
             }
 
-            if (isBotNotificationEnabled()) {
-              const scenariosRaw = inputs[AzureSolutionQuestionNames.Scenarios];
-              const scenarios = Array.isArray(scenariosRaw) ? scenariosRaw : [];
-
-              if (scenarios.includes(BotScenario.CommandAndResponseBot)) {
-                // command and response bot
-                appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3);
-              } else if (scenarios.includes(BotScenario.NotificationBot)) {
-                // notification
-                appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_NOTIFICATION_V3);
-              } else {
-                // legacy bot
-                appManifest.bots = appManifest.bots.concat(BOTS_TPL_V3);
-              }
+            const feature = inputs.feature;
+            if (feature === CommandAndResponseOptionItem.id) {
+              // command and response bot
+              appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3);
+            } else if (feature === NotificationOptionItem.id) {
+              // notification
+              appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_NOTIFICATION_V3);
             } else {
+              // legacy bot
               appManifest.bots = appManifest.bots.concat(BOTS_TPL_V3);
             }
           }

@@ -12,14 +12,14 @@ import {
   ok,
   Result,
 } from "@microsoft/teamsfx-api";
+import fs from "fs-extra";
+import * as path from "path";
 import "reflect-metadata";
 import { Container } from "typedi";
-import * as path from "path";
-import fs from "fs-extra";
-import { getTemplatesFolder } from "../../folder";
-import { getComponent } from "../workflow";
 import { compileHandlebarsTemplateString } from "../../common/tools";
 import { getProjectTemplatesFolderPath } from "../../common/utils";
+import { getTemplatesFolder } from "../../folder";
+import { getComponentByScenario } from "../workflow";
 
 export abstract class AzureResourceConfig {
   abstract readonly name: string;
@@ -46,23 +46,28 @@ export abstract class AzureResourceConfig {
       },
       execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         const update = inputs.update as boolean;
-        const requisiteComponent = getComponent(context.projectSetting, this.requisite);
+        const requisiteComponent = getComponentByScenario(
+          context.projectSetting,
+          this.requisite,
+          inputs.scenario
+        );
         if (!requisiteComponent) return ok([]);
         this.templateContext.connections = requisiteComponent.connections || [];
-        for (const ref of this.references) {
-          this.templateContext[ref] = { outputs: {} };
+        for (const refComponentName of this.references) {
+          this.templateContext[refComponentName] = { outputs: {} };
           try {
-            const refResource = Container.get(ref) as CloudResource;
+            const refResource = Container.get(refComponentName) as CloudResource;
             if (refResource.outputs) {
               for (const key of Object.keys(refResource.outputs)) {
                 const entry = refResource.outputs[key];
                 const value = compileHandlebarsTemplateString(entry.bicepVariable ?? "", inputs);
-                this.templateContext[ref].outputs[key] = value;
+                this.templateContext[refComponentName].outputs[entry.key] = value;
               }
             }
           } catch (e) {}
         }
-        this.templateContext.componentName = inputs.componentName || "";
+        this.templateContext.scenario = inputs.scenario || "";
+        this.templateContext.scenarioInLowerCase = (inputs.scenario || "").toLowerCase();
         const modulePath = path.join(
           getTemplatesFolder(),
           "bicep",
@@ -71,26 +76,26 @@ export abstract class AzureResourceConfig {
         let module = await fs.readFile(modulePath, "utf-8");
         module = compileHandlebarsTemplateString(module, this.templateContext);
         const templatesFolder = await getProjectTemplatesFolderPath(inputs.projectPath);
-        const moduleFilePath = path.join(
+        const targetModuleFilePath = path.join(
           templatesFolder,
           "azure",
           "teamsFx",
-          `${this.bicepModuleName}Config.bicep`
+          `${this.bicepModuleName}${inputs.scenario}Config.bicep`
         );
-        const moduleFilePathExists = await fs.pathExists(moduleFilePath);
-        const orchPath = path.join(
+        const targetModuleFilePathExists = await fs.pathExists(targetModuleFilePath);
+        const sourceOrchTemplatePath = path.join(
           getTemplatesFolder(),
           "bicep",
           `${this.bicepModuleName}.config.orchestration.bicep`
         );
         // orchestration part will be added only for first time
-        const orch = moduleFilePathExists
+        const orch = targetModuleFilePathExists
           ? undefined
           : compileHandlebarsTemplateString(
-              await fs.readFile(orchPath, "utf-8"),
+              await fs.readFile(sourceOrchTemplatePath, "utf-8"),
               this.templateContext
             );
-        const moduleName = this.bicepModuleName + (inputs.componentName || "");
+        const moduleName = this.bicepModuleName + (inputs.scenario || "");
         const bicep: Bicep = {
           type: "bicep",
           Configuration: {

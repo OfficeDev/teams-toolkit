@@ -1,7 +1,10 @@
 {
   "extends": "@istanbuljs/nyc-config-typescript",
   "all": true,
-  "include": ["src/**/*.ts", "src/**/*.js"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.js"
+  ],
   "exclude": [
     "src/core/pvm/type.ts",
     "src/common/deps-checker/**/*",
@@ -24,7 +27,13 @@
     "src/plugins/resource/appstudio/interfaces/**/*",
     "src/plugins/resource/function/v3/error.ts"
   ],
-  "reporter": ["text", "html", "json-summary", "cobertura"],
+  "reporter": [
+    "text",
+    "html",
+    "json-summary",
+    "cobertura",
+    "lcov"
+  ],
   "check-coverage": true,
-  "lines": 72.8
+  "lines": 72.7
 }

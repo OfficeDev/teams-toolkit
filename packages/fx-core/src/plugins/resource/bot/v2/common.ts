@@ -5,6 +5,7 @@ import { Inputs } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import {
   AzureSolutionQuestionNames,
+  BotOptionItem,
   BotScenario,
   M365SearchAppOptionItem,
   MessageExtensionNewUIItem,
@@ -91,13 +92,20 @@ export function resolveServiceType(ctx: Context): ServiceType {
 
 export function resolveBotCapabilities(inputs: Inputs): BotCapability[] {
   const capabilities = inputs?.[AzureSolutionQuestionNames.Capabilities];
-  if (Array.isArray(capabilities) && capabilities.includes(MessageExtensionNewUIItem.id)) {
-    return [BotCapabilities.MESSAGE_EXTENSION];
-  }
   const botScenarios = inputs?.[AzureSolutionQuestionNames.Scenarios];
   if (Array.isArray(botScenarios)) {
+    if (botScenarios.includes(M365SearchAppOptionItem.id)) {
+      return [BotCapabilities.M365_SEARCH_APP];
+    }
     return botScenarios.map((scenario) => QuestionBotScenarioToBotCapability.get(scenario)!);
-  } else {
-    return [];
   }
+  if (Array.isArray(capabilities)) {
+    if (capabilities.includes(MessageExtensionNewUIItem.id)) {
+      return [BotCapabilities.MESSAGE_EXTENSION];
+    }
+    if (capabilities.includes(BotOptionItem.id)) {
+      return [BotCapabilities.BOT];
+    }
+  }
+  return [];
 }

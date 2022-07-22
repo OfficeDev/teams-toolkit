@@ -9,7 +9,7 @@
         "dev": "func start --typescript --language-worker=\"--inspect=9239\" --port \"3978\" --cors \"*\"",
         "prepare-storage:teamsfx": "azurite --silent --location ./_storage_emulator --debug ./_storage_emulator/debug.log",
         "watch:teamsfx": "tsc --watch",
-        "build": "tsc && shx cp -r ./src/adaptiveCards ./dist",
+        "build": "tsc && shx cp -r ./src/adaptiveCards ./dist/src",
         "watch": "tsc -w",
         "prestart": "npm run build",
         "start": "npx func start",

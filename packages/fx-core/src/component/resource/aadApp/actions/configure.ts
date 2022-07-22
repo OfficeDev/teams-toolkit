@@ -8,14 +8,9 @@ import {
   FunctionAction,
   ProvisionContextV3,
 } from "@microsoft/teamsfx-api";
-import {
-  ComponentNames,
-  ActionTypeFunction,
-  ActionNames,
-  ComponentStateKeys,
-} from "../../../constants";
+import { ComponentNames, ActionTypeFunction, ActionNames } from "../../../constants";
 import { AadAppForTeamsImpl } from "../../../../plugins/resource/aad/plugin";
-import { convertContext } from "./provision";
+import { convertContext } from "./utils";
 
 export function GetActionConfigure(): FunctionAction {
   return {
@@ -37,7 +32,7 @@ export function GetActionConfigure(): FunctionAction {
       await aadAppImplement.postProvisionUsingManifest(convertCtx);
       const convertState = convertCtx.envInfo.state.get("fx-resource-aad-app-for-teams");
       convertState.forEach((v: any, k: string) => {
-        ctx.envInfo!.state[ComponentStateKeys[ComponentNames.AadApp]][k] = v;
+        ctx.envInfo!.state[ComponentNames.AadApp][k] = v;
       });
       return ok([
         {

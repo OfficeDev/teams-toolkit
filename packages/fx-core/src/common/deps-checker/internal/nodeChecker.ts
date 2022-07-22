@@ -6,9 +6,8 @@ import { cpUtils } from "../util/cpUtils";
 import { DepsCheckerEvent } from "../constant/telemetry";
 import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
-import { DepsInfo, DepsChecker } from "../depsChecker";
+import { DependencyStatus, DepsChecker, DepsType } from "../depsChecker";
 import { Messages } from "../constant/message";
-import { Result, ok, err } from "@microsoft/teamsfx-api";
 import {
   nodeNotFoundHelpLink,
   nodeNotSupportedForFunctionsHelpLink,
@@ -31,6 +30,7 @@ class NodeVersion {
 export abstract class NodeChecker implements DepsChecker {
   protected abstract readonly _nodeNotFoundHelpLink: string;
   protected abstract readonly _nodeNotSupportedEvent: DepsCheckerEvent;
+  protected abstract readonly _type: DepsType;
   protected abstract getSupportedVersions(): Promise<string[]>;
   protected abstract getNodeNotSupportedHelpLink(): Promise<string>;
 
@@ -42,84 +42,91 @@ export abstract class NodeChecker implements DepsChecker {
     this._telemetry = telemetry;
   }
 
-  public async isInstalled(): Promise<boolean> {
+  public async getInstallationInfo(): Promise<DependencyStatus> {
     try {
-      return await this.checkInstalled();
-    } catch (e) {
-      return false;
-    }
-  }
+      const supportedVersions = await this.getSupportedVersions();
 
-  public async checkInstalled(): Promise<boolean> {
-    const supportedVersions = await this.getSupportedVersions();
-
-    this._logger.debug(
-      `NodeChecker checking for supported versions: '${JSON.stringify(supportedVersions)}'`
-    );
-
-    const currentVersion = await getInstalledNodeVersion();
-    if (currentVersion === null) {
-      this._telemetry.sendUserErrorEvent(DepsCheckerEvent.nodeNotFound, "Node.js can't be found.");
-      throw new NodeNotFoundError(
-        Messages.NodeNotFound.split("@NodeVersion").join(
-          supportedVersions[supportedVersions.length - 1]
-        ),
-        this._nodeNotFoundHelpLink
+      this._logger.debug(
+        `NodeChecker checking for supported versions: '${JSON.stringify(supportedVersions)}'`
       );
-    }
-    this._telemetry.sendEvent(DepsCheckerEvent.nodeVersion, {
-      "global-version": `${currentVersion.version}`,
-      "global-major-version": `${currentVersion.majorVersion}`,
-    });
 
-    if (!NodeChecker.isVersionSupported(supportedVersions, currentVersion)) {
-      const supportedVersionsString = supportedVersions.map((v) => "v" + v).join(" ,");
-      this._telemetry.sendUserErrorEvent(
-        this._nodeNotSupportedEvent,
-        `Node.js ${currentVersion.version} is not supported.`
-      );
-      throw new NodeNotSupportedError(
-        Messages.NodeNotSupported.split("@CurrentVersion")
-          .join(currentVersion.version)
-          .split("@SupportedVersions")
-          .join(supportedVersionsString),
-        await this.getNodeNotSupportedHelpLink()
-      );
-    }
-
-    return true;
-  }
-
-  public async resolve(): Promise<Result<boolean, DepsCheckerError>> {
-    try {
-      if (!(await this.checkInstalled())) {
-        await this.install();
+      const currentVersion = await getInstalledNodeVersion();
+      if (currentVersion === null) {
+        this._telemetry.sendUserErrorEvent(
+          DepsCheckerEvent.nodeNotFound,
+          "Node.js can't be found."
+        );
+        const error = new NodeNotFoundError(
+          Messages.NodeNotFound.split("@NodeVersion").join(
+            supportedVersions[supportedVersions.length - 1]
+          ),
+          this._nodeNotFoundHelpLink
+        );
+        return await this.getDepsInfo(false, undefined, error);
       }
+      this._telemetry.sendEvent(DepsCheckerEvent.nodeVersion, {
+        "global-version": `${currentVersion.version}`,
+        "global-major-version": `${currentVersion.majorVersion}`,
+      });
+
+      if (!NodeChecker.isVersionSupported(supportedVersions, currentVersion)) {
+        const supportedVersionsString = supportedVersions.map((v) => "v" + v).join(" ,");
+        this._telemetry.sendUserErrorEvent(
+          this._nodeNotSupportedEvent,
+          `Node.js ${currentVersion.version} is not supported.`
+        );
+        const error = new NodeNotSupportedError(
+          Messages.NodeNotSupported.split("@CurrentVersion")
+            .join(currentVersion.version)
+            .split("@SupportedVersions")
+            .join(supportedVersionsString),
+          await this.getNodeNotSupportedHelpLink()
+        );
+        return await this.getDepsInfo(false, currentVersion.version, error);
+      }
+
+      return await this.getDepsInfo(true, currentVersion.version);
     } catch (error) {
-      await this._logger.printDetailLog();
-      await this._logger.error(`${error.message}, error = '${error}'`);
-      if (error instanceof DepsCheckerError) {
-        return err(error);
-      }
-      return err(new DepsCheckerError(error.message, nodeNotFoundHelpLink));
-    } finally {
-      this._logger.cleanup();
+      return await this.getDepsInfo(
+        false,
+        undefined,
+        new DepsCheckerError(error.message, nodeNotFoundHelpLink)
+      );
     }
+  }
 
-    return ok(true);
+  public async resolve(): Promise<DependencyStatus> {
+    const installationInfo = await this.getInstallationInfo();
+    if (installationInfo.error) {
+      await this._logger.printDetailLog();
+      await this._logger.error(
+        `${installationInfo.error.message}, error = '${installationInfo.error}'`
+      );
+    }
+    this._logger.cleanup();
+    return installationInfo;
   }
 
   public async install(): Promise<void> {
     return Promise.resolve();
   }
 
-  public async getDepsInfo(): Promise<DepsInfo> {
+  public async getDepsInfo(
+    isInstalled: boolean,
+    installVersion?: string,
+    error?: DepsCheckerError
+  ): Promise<DependencyStatus> {
     return {
       name: NodeName,
-      isLinuxSupported: true,
-      installVersion: (await getInstalledNodeVersion())?.version,
-      supportedVersions: await this.getSupportedVersions(),
-      details: new Map<string, string>(),
+      type: this._type,
+      isInstalled: isInstalled,
+      command: await this.command(),
+      details: {
+        isLinuxSupported: true,
+        supportedVersions: await this.getSupportedVersions(),
+        installVersion: installVersion,
+      },
+      error: error,
     };
   }
 
@@ -165,19 +172,21 @@ function getNodeVersion(output: string): NodeVersion | null {
 export class SPFxNodeChecker extends NodeChecker {
   protected readonly _nodeNotFoundHelpLink = nodeNotFoundHelpLink;
   protected readonly _nodeNotSupportedEvent = DepsCheckerEvent.nodeNotSupportedForSPFx;
+  protected readonly _type = DepsType.SpfxNode;
 
   protected async getNodeNotSupportedHelpLink(): Promise<string> {
     return nodeNotSupportedForSPFxHelpLink;
   }
 
   protected async getSupportedVersions(): Promise<string[]> {
-    return ["12", "14"];
+    return ["12", "14", "16"];
   }
 }
 
 export class AzureNodeChecker extends NodeChecker {
   protected readonly _nodeNotFoundHelpLink = nodeNotFoundHelpLink;
   protected readonly _nodeNotSupportedEvent = DepsCheckerEvent.nodeNotSupportedForAzure;
+  protected readonly _type = DepsType.AzureNode;
 
   protected async getNodeNotSupportedHelpLink(): Promise<string> {
     return nodeNotSupportedForAzureHelpLink;
@@ -191,6 +200,7 @@ export class AzureNodeChecker extends NodeChecker {
 export class FunctionNodeChecker extends NodeChecker {
   protected readonly _nodeNotFoundHelpLink = nodeNotFoundHelpLink;
   protected readonly _nodeNotSupportedEvent = DepsCheckerEvent.nodeNotSupportedForAzure;
+  protected readonly _type = DepsType.FunctionNode;
 
   protected async getNodeNotSupportedHelpLink(): Promise<string> {
     return nodeNotSupportedForFunctionsHelpLink;

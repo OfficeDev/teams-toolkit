@@ -13,6 +13,7 @@ import {
   ok,
   Platform,
   Result,
+  Stage,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
@@ -22,7 +23,10 @@ import { isVSProject } from "../../common/projectSettingsHelper";
 import { globalVars } from "../../core/globalVars";
 import { CoreQuestionNames } from "../../core/question";
 import { FrontendPathInfo } from "../../plugins/resource/frontend/constants";
-import { TabNonSsoItem } from "../../plugins/solution/fx-solution/question";
+import {
+  AzureSolutionQuestionNames,
+  TabNonSsoItem,
+} from "../../plugins/solution/fx-solution/question";
 import { ComponentNames, Scenarios } from "../constants";
 import { Plans } from "../messages";
 import { getComponent, getComponentByScenario, runActionByName } from "../workflow";
@@ -123,7 +127,10 @@ export class TeamsTab {
           }
 
           // 2.3 add sso
-          if (inputs[CoreQuestionNames.Features] !== TabNonSsoItem.id) {
+          if (
+            inputs.stage === Stage.create &&
+            inputs[AzureSolutionQuestionNames.Features] !== TabNonSsoItem.id
+          ) {
             const res = await runActionByName("sso.add", context, inputs);
             if (res.isErr()) return err(res.error);
           }

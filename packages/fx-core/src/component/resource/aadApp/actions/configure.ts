@@ -10,7 +10,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { ComponentNames, ActionTypeFunction, ActionNames } from "../../../constants";
 import { AadAppForTeamsImpl } from "../../../../plugins/resource/aad/plugin";
-import { convertContext } from "./provision";
+import { convertContext } from "./utils";
 
 export function GetActionConfigure(): FunctionAction {
   return {

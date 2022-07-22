@@ -10,13 +10,15 @@ import {
   InputsWithProjectPath,
   MaybePromise,
   ok,
+  Platform,
   ProjectSettingsV3,
   Result,
+  Stage,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
 import { getProjectSettingsPath } from "../../core/middleware/projectSettingsLoader";
-import { getComponent } from "../workflow";
+import { getComponent, getComponentByScenario } from "../workflow";
 import "../connection/azureWebAppConfig";
 import "../resource/azureSql";
 import "../resource/identity";
@@ -38,31 +40,11 @@ export class SSO {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    let needsBot = false;
-    let needsBotHostingConnection = false;
-    let needsTab = false;
-    let needsTabApiConnection = false;
-    const aadComponent = getComponent(context.projectSetting, ComponentNames.AadApp);
-    const teamsBotComponent = getComponent(context.projectSetting, ComponentNames.TeamsBot);
-    if (teamsBotComponent && !teamsBotComponent.sso) {
-      needsBot = teamsBotComponent.hosting !== ComponentNames.Function;
+    if (inputs.platform == Platform.CLI_HELP) {
+      return ok(undefined);
     }
-    if (needsBot) {
-      const botHosting = teamsBotComponent?.hosting;
-      if (botHosting) {
-        const botHostingComponent = getHostingComponent(teamsBotComponent!, context.projectSetting);
-        needsBotHostingConnection = !botHostingComponent?.connections?.includes(
-          ComponentNames.AadApp
-        );
-      }
-    }
-    const teamsTabComponent = getComponent(context.projectSetting, ComponentNames.TeamsTab);
-    if (teamsTabComponent && !teamsTabComponent.sso) {
-      needsTab = true;
-      const apiComponent = getTabApiComponent(teamsTabComponent, context.projectSetting);
-      needsTabApiConnection =
-        !!apiComponent && !apiComponent.connections?.includes(ComponentNames.AadApp);
-    }
+
+    const updates = getUpdateComponents(context, inputs);
 
     const actions: Action[] = [
       {
@@ -70,20 +52,18 @@ export class SSO {
         type: "function",
         plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
           const remarks: string[] = [];
-          if (!aadComponent) {
+          if (updates.aad) {
             remarks.push("add component 'aad-app' in projectSettings");
           }
-          if (needsBot) {
+          if (updates.bot) {
             remarks.push("add feature 'SSO' to component 'teams-bot' in projectSettings");
-            if (needsBotHostingConnection) {
-              remarks.push(
-                `connect 'aad-app' to component ${teamsBotComponent?.hosting} in projectSettings`
-              );
+            if (updates.botHostingConnectgion) {
+              remarks.push(`connect 'aad-app' to 'teams-bot' hosting in projectSettings`);
             }
           }
-          if (needsTab) {
+          if (updates.tab) {
             remarks.push("add feature 'SSO' to component 'teams-tab' in projectSettings");
-            if (needsTabApiConnection) {
+            if (updates.tabApiConnection) {
               remarks.push(
                 `connect 'aad-app' to component 'azure-function' of teams-api in projectSettings`
               );
@@ -101,32 +81,38 @@ export class SSO {
         execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
           const remarks: string[] = [];
           const projectSettings = context.projectSetting;
-          if (!aadComponent) {
+          if (updates.aad) {
             remarks.push("add component 'aad-app' in projectSettings");
           }
           projectSettings.components.push({
             name: "aad-app",
             provision: true,
+            deploy: true,
           });
-          if (needsBot && teamsBotComponent) {
-            teamsBotComponent.sso = true;
+          if (updates.bot) {
+            const teamsBotComponent = getComponent(context.projectSetting, ComponentNames.TeamsBot);
+            teamsBotComponent!.sso = true;
             remarks.push("add feature 'SSO' to component 'teams-bot' in projectSettings");
-            if (needsBotHostingConnection) {
+            if (updates.botHostingConnectgion) {
               const botHostingComponent = getHostingComponent(
-                teamsBotComponent,
+                teamsBotComponent!,
                 context.projectSetting
               );
               botHostingComponent?.connections?.push(ComponentNames.AadApp);
               remarks.push(
-                `connect 'aad-app' to component ${teamsBotComponent.hosting} in projectSettings`
+                `connect 'aad-app' to component ${teamsBotComponent!.hosting} in projectSettings`
               );
             }
           }
-          if (needsTab && teamsTabComponent) {
-            teamsTabComponent.sso = true;
+          if (updates.tab) {
+            const teamsTabComponent = getComponent(context.projectSetting, ComponentNames.TeamsTab);
+            teamsTabComponent!.sso = true;
             remarks.push("add feature 'SSO' to component 'teams-tab' in projectSettings");
-            if (needsTabApiConnection) {
-              const tabApiComponent = getTabApiComponent(teamsTabComponent, context.projectSetting);
+            if (updates.tabApiConnection) {
+              const tabApiComponent = getTabApiComponent(
+                teamsTabComponent!,
+                context.projectSetting
+              );
               tabApiComponent?.connections?.push(ComponentNames.AadApp);
               remarks.push(
                 `connect 'aad-app' to component 'azure-function' of teams-api in projectSettings`
@@ -157,16 +143,7 @@ export class SSO {
         targetAction: "aad-app.generateBicep",
         inputs: {},
       },
-      {
-        name: "call:aad-app.generateAuthFiles",
-        type: "call",
-        required: true,
-        targetAction: "aad-app.generateAuthFiles",
-        inputs: {
-          needsBot: needsBot,
-          needsTab: needsTab,
-        },
-      },
+      ...(inputs.stage === Stage.create ? [] : [generateAuthFilesAction(updates)]),
       {
         name: "call:app-manifest.addCapability",
         type: "call",
@@ -183,7 +160,8 @@ export class SSO {
         targetAction: "debug.generateLocalDebugSettings",
       },
     ];
-    if (needsBotHostingConnection) {
+    if (updates.botHostingConnectgion) {
+      const teamsBotComponent = getComponent(context.projectSetting, ComponentNames.TeamsBot);
       const botHosting = teamsBotComponent?.hosting;
       actions.push({
         name: `call:${botHosting}-config.generateBicep`,
@@ -196,7 +174,8 @@ export class SSO {
         },
       });
     }
-    if (needsTabApiConnection) {
+    if (updates.tabApiConnection) {
+      const teamsTabComponent = getComponent(context.projectSetting, ComponentNames.TeamsTab);
       const tabApi = getTabApiComponent(teamsTabComponent!, context.projectSetting);
       actions.push({
         name: `call:${tabApi?.name}-config.generateBicep`,
@@ -219,10 +198,71 @@ export class SSO {
   }
 }
 
-// TODO: replace it after tab component update
 function getTabApiComponent(
   tabComponent: Component,
   projectSettings: ProjectSettingsV3
 ): Component | undefined {
-  return getComponent(projectSettings, ComponentNames.Function);
+  return getComponentByScenario(projectSettings, ComponentNames.Function, Scenarios.Api);
+}
+
+export interface updateComponents {
+  bot?: boolean;
+  botHostingConnectgion?: boolean;
+  tab?: boolean;
+  tabApiConnection?: boolean;
+  aad?: boolean;
+}
+
+function generateAuthFilesAction(updates: updateComponents): Action {
+  return {
+    name: "call:aad-app.generateAuthFiles",
+    type: "call",
+    required: true,
+    targetAction: "aad-app.generateAuthFiles",
+    inputs: {
+      needsBot: updates.bot,
+      needsTab: updates.tab,
+    },
+  } as Action;
+}
+
+function getUpdateComponents(context: ContextV3, inputs: InputsWithProjectPath): updateComponents {
+  if (inputs.stage === Stage.create) {
+    return {
+      tab: true,
+      aad: true,
+    };
+  }
+  let needsBot = false;
+  let needsBotHostingConnection = false;
+  let needsTab = false;
+  let needsTabApiConnection = false;
+  const aadComponent = getComponent(context.projectSetting, ComponentNames.AadApp);
+  const teamsBotComponent = getComponent(context.projectSetting, ComponentNames.TeamsBot);
+  if (teamsBotComponent && !teamsBotComponent.sso) {
+    needsBot = teamsBotComponent.hosting !== ComponentNames.Function;
+  }
+  if (needsBot) {
+    const botHosting = teamsBotComponent?.hosting;
+    if (botHosting) {
+      const botHostingComponent = getHostingComponent(teamsBotComponent!, context.projectSetting);
+      needsBotHostingConnection = !botHostingComponent?.connections?.includes(
+        ComponentNames.AadApp
+      );
+    }
+  }
+  const teamsTabComponent = getComponent(context.projectSetting, ComponentNames.TeamsTab);
+  if (teamsTabComponent && !teamsTabComponent.sso) {
+    needsTab = true;
+    const apiComponent = getTabApiComponent(teamsTabComponent, context.projectSetting);
+    needsTabApiConnection =
+      !!apiComponent && !apiComponent.connections?.includes(ComponentNames.AadApp);
+  }
+  return {
+    bot: needsBot,
+    botHostingConnectgion: needsBotHostingConnection,
+    tab: needsTab,
+    tabApiConnection: needsTabApiConnection,
+    aad: !aadComponent,
+  };
 }

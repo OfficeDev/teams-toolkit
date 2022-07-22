@@ -90,13 +90,17 @@ public class TeamsBotSsoPromptTest
     [TestMethod]
     public void TeamsBotSsoPromptWithEmptyDialogIdShouldFail()
     {
-        Assert.ThrowsException<ArgumentNullException>(() => new TeamsBotSsoPrompt(string.Empty, teamsBotSsoPromptSettingsMock));
+        var ex = Assert.ThrowsException<ExceptionWithCode>(() => new TeamsBotSsoPrompt(string.Empty, teamsBotSsoPromptSettingsMock));
+        Assert.AreEqual(ExceptionCode.InvalidParameter, ex.Code);
+        Assert.AreEqual("Parameter dialogId is null or empty.", ex.Message);
     }
-    
+
     [TestMethod]
     public void TeamsBotSsoPromptWithEmptySettingShouldFail()
     {
-        Assert.ThrowsException<ArgumentNullException>(() => new TeamsBotSsoPrompt(testDialogId, null));
+        var ex = Assert.ThrowsException<ExceptionWithCode>(() => new TeamsBotSsoPrompt(testDialogId, null));
+        Assert.AreEqual(ExceptionCode.InvalidParameter, ex.Code);
+        Assert.AreEqual("Parameter settings is null or empty.", ex.Message);
     }
     #endregion
 
@@ -104,11 +108,13 @@ public class TeamsBotSsoPromptTest
     [TestMethod]
     public async Task TeamsBotSsoPromptBeginDialogWithNoDialogContextShouldFail()
     {
-        await Assert.ThrowsExceptionAsync<ArgumentNullException>(async () =>
+        var ex = await Assert.ThrowsExceptionAsync<ExceptionWithCode>(async () =>
         {
             var prompt = new TeamsBotSsoPrompt(testDialogId, teamsBotSsoPromptSettingsMock);
             await prompt.BeginDialogAsync(null);
         });
+        Assert.AreEqual(ExceptionCode.InvalidParameter, ex.Code);
+        Assert.AreEqual("Parameter dialogContext is null or empty.", ex.Message);
     }
 
     [TestMethod]

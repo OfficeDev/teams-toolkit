@@ -88,14 +88,14 @@ public class TeamsBotSsoPrompt : Dialog
     /// custom validation for this prompt.</param>
     /// <remarks>The value of <paramref name="dialogId"/> must be unique within the
     /// <see cref="DialogSet"/> or <see cref="ComponentDialog"/> to which the prompt is added.</remarks>
-    /// <exception cref="ArgumentNullException">When input parameters is null.</exception>
+    /// <exception cref="ExceptionCode.InvalidParameter">When input parameters is null.</exception>
     public TeamsBotSsoPrompt(string dialogId, TeamsBotSsoPromptSettings settings): base(dialogId)
     {
         if (string.IsNullOrWhiteSpace(dialogId))
         {
-            throw new ArgumentNullException(nameof(dialogId));
+            throw new ExceptionWithCode($"Parameter {nameof(dialogId)} is null or empty.", ExceptionCode.InvalidParameter);
         }
-        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        _settings = settings ?? throw new ExceptionWithCode($"Parameter {nameof(settings)} is null or empty.", ExceptionCode.InvalidParameter);
 
         var confidentialClientApplication = ConfidentialClientApplicationBuilder.Create(_settings.BotAuthOptions.ClientId)
             .WithClientSecret(_settings.BotAuthOptions.ClientSecret)
@@ -108,29 +108,28 @@ public class TeamsBotSsoPrompt : Dialog
     /// Called when the dialog is started and pushed onto the dialog stack.
     /// Developer need to configure TeamsFx service before using this class.
     /// </summary>
-    /// <param name="dc">The Microsoft.Bot.Builder.Dialogs.DialogContext for the current turn of conversation.</param>
+    /// <param name="dialogContext">The Microsoft.Bot.Builder.Dialogs.DialogContext for the current turn of conversation.</param>
     /// <param name="options">Optional, initial information to pass to the dialog.</param>
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns> A System.Threading.Tasks.Task representing the asynchronous operation.</returns>
-    /// <exception cref="ArgumentException">if dialog context argument is null</exception>
+    /// <exception cref="ExceptionCode.InvalidParameter">if dialog context argument is null</exception>
     /// <remarks>
     /// If the task is successful, the result indicates whether the dialog is still active after the turn has been processed by the dialog.
     /// </remarks>
-    /// <exception cref="ArgumentNullException">When dialog context is null.</exception>
-    public override async Task<DialogTurnResult> BeginDialogAsync(DialogContext dc, object options = null, CancellationToken cancellationToken = default)
+    public override async Task<DialogTurnResult> BeginDialogAsync(DialogContext dialogContext, object options = null, CancellationToken cancellationToken = default)
     {
-        if (dc == null)
+        if (dialogContext == null)
         {
-            throw new ArgumentNullException(nameof(dc));
+            throw new ExceptionWithCode($"Parameter {nameof(dialogContext)} is null or empty.", ExceptionCode.InvalidParameter);
         }
 
-        EnsureMsTeamsChannel(dc);
+        EnsureMsTeamsChannel(dialogContext);
 
-        var state = dc.ActiveDialog?.State;
+        var state = dialogContext.ActiveDialog?.State;
         state[PersistedExpires] = DateTime.UtcNow.AddMilliseconds(_settings.Timeout);
 
         // Send OAuthCard that tells Teams to obtain an authentication token for the bot application.
-        await SendOAuthCardToObtainTokenAsync(dc.Context, cancellationToken).ConfigureAwait(false);
+        await SendOAuthCardToObtainTokenAsync(dialogContext.Context, cancellationToken).ConfigureAwait(false);
         return EndOfTurn;
     }
 

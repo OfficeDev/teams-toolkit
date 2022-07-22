@@ -150,7 +150,6 @@ import {
   sendDebugAllEvent,
   sendDebugAllStartEvent,
 } from "./debug/localTelemetryReporter";
-import { validatePropertyDeps } from "ajv/dist/vocabularies/applicator/dependencies";
 
 export let core: FxCore;
 export let tools: Tools;

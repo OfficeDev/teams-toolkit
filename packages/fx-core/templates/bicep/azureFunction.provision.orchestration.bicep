@@ -16,3 +16,8 @@ output azureFunction{{scenario}}Output object = {
   functionAppResourceId: azureFunction{{scenario}}Provision.outputs.functionAppResourceId
   functionEndpoint: azureFunction{{scenario}}Provision.outputs.functionEndpoint
 }
+
+output {{scenario}}Output object = {
+  domain: azureFunction{{scenario}}Provision.outputs.domain
+  endpoint: azureFunction{{scenario}}Provision.outputs.functionEndpoint
+}

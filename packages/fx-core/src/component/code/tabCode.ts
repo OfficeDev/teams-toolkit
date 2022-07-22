@@ -91,10 +91,7 @@ export class TabCodeProvider implements SourceCodeProvider {
       ) => {
         const projectSettings = ctx.projectSetting as ProjectSettingsV3;
         const appName = projectSettings.appName;
-        const language =
-          inputs?.["programming-language"] ||
-          ctx.projectSetting.programmingLanguage ||
-          "javascript";
+        const language = inputs[CoreQuestionNames.ProgrammingLanguage];
         const folder = inputs.folder ?? (language === "csharp" ? "" : FrontendPathInfo.WorkingDir);
         const langKey = convertToLangKey(language);
         const workingDir = path.join(inputs.projectPath, folder);

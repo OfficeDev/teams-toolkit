@@ -17,3 +17,8 @@ output azureWebApp{{scenario}}Output object = {
   resourceId: azureWebApp{{scenario}}Provision.outputs.resourceId
   siteEndpoint: azureWebApp{{scenario}}Provision.outputs.siteEndpoint
 }
+
+output {{scenario}}Output object = {
+  domain: azureWebApp{{scenario}}Provision.outputs.validDomain
+  endpoint: azureWebApp{{scenario}}Provision.outputs.siteEndpoint
+}

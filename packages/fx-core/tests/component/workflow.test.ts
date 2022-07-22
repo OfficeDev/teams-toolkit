@@ -14,7 +14,7 @@ import "../../src/component/core";
 import "../../src/component/feature/bot";
 import "../../src/component/feature/sql";
 import { createContextV3 } from "../../src/component/utils";
-import { runAction } from "../../src/component/workflow";
+import { runActionByName } from "../../src/component/workflow";
 import { MockTools, randomAppName } from "../core/utils";
 import * as provisionV3 from "../../src/plugins/solution/fx-solution/v3/provision";
 import { AppStudioClient } from "../../src/plugins/resource/appstudio/appStudio";
@@ -64,7 +64,7 @@ describe("Workflow test for v3", () => {
       "app-name": appName,
       folder: path.join(os.homedir(), "TeamsApps"),
     };
-    const res = await runAction("fx.init", context, inputs);
+    const res = await runActionByName("fx.init", context, inputs);
     assert.isTrue(res.isOk());
     assert.equal(context.projectSetting!.appName, appName);
     assert.deepEqual(context.projectSetting.components, []);
@@ -78,7 +78,7 @@ describe("Workflow test for v3", () => {
       language: "typescript",
     };
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
-    const res = await runAction("teams-bot.add", context, inputs);
+    const res = await runActionByName("teams-bot.add", context, inputs);
     if (res.isErr()) {
       console.log(res.error);
     }
@@ -105,7 +105,7 @@ describe("Workflow test for v3", () => {
       [SPFXQuestionNames.webpart_name]: "hello",
       [SPFXQuestionNames.framework_type]: "none",
     };
-    const res = await runAction("spfx-tab.add", context, inputs);
+    const res = await runActionByName("spfx-tab.add", context, inputs);
     if (res.isErr()) {
       console.log(res.error);
     }
@@ -118,7 +118,7 @@ describe("Workflow test for v3", () => {
       platform: Platform.VSCode,
       ["function-name"]: "getUserProfile",
     };
-    const res = await runAction("sql.add", context, inputs);
+    const res = await runActionByName("sql.add", context, inputs);
     if (res.isErr()) {
       console.log(res.error);
     }
@@ -131,7 +131,7 @@ describe("Workflow test for v3", () => {
       platform: Platform.VSCode,
       ["function-name"]: "getUserProfile",
     };
-    const res = await runAction("apim-feature.add", context, inputs);
+    const res = await runActionByName("apim-feature.add", context, inputs);
     if (res.isErr()) {
       console.log(res.error);
     }
@@ -169,13 +169,13 @@ describe("Workflow test for v3", () => {
       "app-name": appName,
       folder: path.join(os.homedir(), "TeamsApps"),
     };
-    const initRes = await runAction("fx.init", context, inputs);
+    const initRes = await runActionByName("fx.init", context, inputs);
     if (initRes.isErr()) {
       console.log(initRes.error);
     }
     assert.isTrue(initRes.isOk());
 
-    const addBotRes = await runAction("teams-bot.add", context, inputs);
+    const addBotRes = await runActionByName("teams-bot.add", context, inputs);
     if (addBotRes.isErr()) {
       console.log(addBotRes.error);
     }
@@ -210,7 +210,7 @@ describe("Workflow test for v3", () => {
         clientId: "00000000-0000-0000-0000-000000000000",
       },
     };
-    const provisionRes = await runAction("fx.provision", context, inputs);
+    const provisionRes = await runActionByName("fx.provision", context, inputs);
     if (provisionRes.isErr()) {
       console.log(provisionRes.error);
     }
@@ -246,13 +246,13 @@ describe("Workflow test for v3", () => {
       "app-name": appName,
       folder: path.join(os.homedir(), "TeamsApps"),
     };
-    const initRes = await runAction("fx.init", context, inputs);
+    const initRes = await runActionByName("fx.init", context, inputs);
     if (initRes.isErr()) {
       console.log(initRes.error);
     }
     assert.isTrue(initRes.isOk());
 
-    const addBotRes = await runAction("teams-bot.add", context, inputs);
+    const addBotRes = await runActionByName("teams-bot.add", context, inputs);
     if (addBotRes.isErr()) {
       console.log(addBotRes.error);
     }
@@ -281,7 +281,7 @@ describe("Workflow test for v3", () => {
         endpoint: "https://testwebApp.azurewebsites.net",
       },
     };
-    const provisionRes = await runAction("fx.provision", context, inputs);
+    const provisionRes = await runActionByName("fx.provision", context, inputs);
     if (provisionRes.isErr()) {
       console.log(provisionRes.error);
     }
@@ -298,6 +298,7 @@ describe("Workflow test for v3", () => {
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
+      folder: path.join(projectPath, "tabs"),
     };
     context.envInfo = newEnvInfoV3();
     context.tokenProvider = tools.tokenProvider;
@@ -320,12 +321,12 @@ describe("Workflow test for v3", () => {
         endpoint: "https://testaccount.azurewebsites.net",
       },
     };
-    const addTabRes = await runAction("teams-tab.add", context, inputs);
+    const addTabRes = await runActionByName("teams-tab.add", context, inputs);
     if (addTabRes.isErr()) {
       console.log(addTabRes.error);
     }
     assert.isTrue(addTabRes.isOk());
-    const res = await runAction("azure-storage.deploy", context, inputs);
+    const res = await runActionByName("azure-storage.deploy", context, inputs);
     if (res.isErr()) {
       console.log(res.error);
     }

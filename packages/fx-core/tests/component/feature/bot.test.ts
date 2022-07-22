@@ -18,7 +18,7 @@ import * as path from "path";
 import fs from "fs-extra";
 import { createSandbox } from "sinon";
 import * as utils from "../../../src/component/utils";
-import { getComponent, runAction } from "../../../src/component/workflow";
+import { getComponent, runActionByName } from "../../../src/component/workflow";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools, randomAppName } from "../../core/utils";
 import "../../../src/component/core";
@@ -79,7 +79,7 @@ describe("Bot Feature", () => {
       "app-name": appName,
       [QuestionNames.BOT_HOST_TYPE_TRIGGER]: [AppServiceOptionItem.id],
     };
-    const addBotRes = await runAction(`${ComponentNames.TeamsBot}.add`, context, inputs);
+    const addBotRes = await runActionByName(`${ComponentNames.TeamsBot}.add`, context, inputs);
     if (addBotRes.isErr()) {
       console.log(addBotRes.error);
     }

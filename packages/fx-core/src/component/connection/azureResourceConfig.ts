@@ -76,23 +76,23 @@ export abstract class AzureResourceConfig {
         let module = await fs.readFile(modulePath, "utf-8");
         module = compileHandlebarsTemplateString(module, this.templateContext);
         const templatesFolder = await getProjectTemplatesFolderPath(inputs.projectPath);
-        const moduleFilePath = path.join(
+        const targetModuleFilePath = path.join(
           templatesFolder,
           "azure",
           "teamsFx",
-          `${this.bicepModuleName}Config.bicep`
+          `${this.bicepModuleName}${inputs.scenario}Config.bicep`
         );
-        const moduleFilePathExists = await fs.pathExists(moduleFilePath);
-        const orchPath = path.join(
+        const targetModuleFilePathExists = await fs.pathExists(targetModuleFilePath);
+        const sourceOrchTemplatePath = path.join(
           getTemplatesFolder(),
           "bicep",
           `${this.bicepModuleName}.config.orchestration.bicep`
         );
         // orchestration part will be added only for first time
-        const orch = moduleFilePathExists
+        const orch = targetModuleFilePathExists
           ? undefined
           : compileHandlebarsTemplateString(
-              await fs.readFile(orchPath, "utf-8"),
+              await fs.readFile(sourceOrchTemplatePath, "utf-8"),
               this.templateContext
             );
         const moduleName = this.bicepModuleName + (inputs.scenario || "");

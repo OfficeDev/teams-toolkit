@@ -65,7 +65,7 @@ export class TeamsApi {
             inputs[QuestionKey.functionName] || DefaultValues.functionName;
           const clonedInputs = cloneDeep(inputs);
           assign(clonedInputs, {
-            folder: "api",
+            folder: inputs.folder || FunctionPluginPathInfo.solutionFolderName,
           });
           const res = await runActionByName("api-code.generate", context, clonedInputs);
           if (res.isErr()) return err(res.error);
@@ -86,7 +86,8 @@ export class TeamsApi {
           functionNames: [inputs[QuestionKey.functionName]],
           deploy: true,
           build: true,
-          folder: "api",
+          folder: inputs.folder || FunctionPluginPathInfo.solutionFolderName,
+          artifactFolder: inputs.folder || FunctionPluginPathInfo.solutionFolderName,
         });
         effects.push("config teams-api");
 

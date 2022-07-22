@@ -5,33 +5,24 @@ import {
   Action,
   ContextV3,
   FxError,
-  Inputs,
   InputsWithProjectPath,
   IProgressHandler,
   MaybePromise,
   ok,
   ProjectSettingsV3,
-  QTreeNode,
   Result,
   SourceCodeProvider,
-  Stage,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
 import { getComponent } from "../workflow";
-import {
-  DefaultValues,
-  FunctionPluginPathInfo,
-  RegularExpr,
-} from "../../plugins/resource/function/constants";
+import { DefaultValues, FunctionPluginPathInfo } from "../../plugins/resource/function/constants";
 import { FunctionScaffold } from "../../plugins/resource/function/ops/scaffold";
 import { FunctionLanguage, QuestionKey } from "../../plugins/resource/function/enums";
 import { ComponentNames } from "../constants";
 import { FunctionDeploy } from "../../plugins/resource/function/ops/deploy";
-import { merge } from "lodash";
 import { Plans, ProgressMessages, ProgressTitles } from "../messages";
-import { ErrorMessages } from "../../plugins/resource/function/resources/message";
 import { CoreQuestionNames } from "../../core/question";
 /**
  * api scaffold
@@ -121,8 +112,6 @@ export class ApiCodeProvider implements SourceCodeProvider {
         progress?.next(ProgressMessages.buildingApi);
         const buildPath = path.resolve(inputs.projectPath, teamsApi.folder);
         await FunctionDeploy.build(buildPath, language as FunctionLanguage);
-        const artifactFolder = teamsApi.artifactFolder || teamsApi.folder;
-        merge(teamsApi, { build: true, artifactFolder: path.join(artifactFolder) });
         return ok([Plans.buildProject(buildPath)]);
       },
     };

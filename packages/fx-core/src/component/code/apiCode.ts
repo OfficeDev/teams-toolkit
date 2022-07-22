@@ -31,7 +31,6 @@ import { ComponentNames } from "../constants";
 import { FunctionDeploy } from "../../plugins/resource/function/ops/deploy";
 import { merge } from "lodash";
 import { Plans, ProgressMessages, ProgressTitles } from "../messages";
-import { functionNameQuestion } from "../../plugins/resource/function/question";
 import { ErrorMessages } from "../../plugins/resource/function/resources/message";
 import { CoreQuestionNames } from "../../core/question";
 /**
@@ -130,26 +129,3 @@ export class ApiCodeProvider implements SourceCodeProvider {
     return ok(action);
   }
 }
-
-const getFunctionNameQuestionValidation = (context: ContextV3, inputs: InputsWithProjectPath) => ({
-  validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
-    const workingPath: string = path.join(
-      inputs.projectPath,
-      FunctionPluginPathInfo.solutionFolderName
-    );
-    const name = input as string;
-    if (!name || !RegularExpr.validFunctionNamePattern.test(name)) {
-      return ErrorMessages.invalidFunctionName;
-    }
-    if (inputs.stage === Stage.create) {
-      return undefined;
-    }
-    const language: FunctionLanguage =
-      (inputs[QuestionKey.programmingLanguage] as FunctionLanguage) ??
-      (context.projectSetting.programmingLanguage as FunctionLanguage);
-    // If language is unknown, skip checking and let scaffold handle the error.
-    if (language && (await FunctionScaffold.doesFunctionPathExist(workingPath, language, name))) {
-      return ErrorMessages.functionAlreadyExists;
-    }
-  },
-});

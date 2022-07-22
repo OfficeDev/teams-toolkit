@@ -46,7 +46,7 @@
 /packages/sdk/test/unit/node/conversation @kimizhu @swatDong @a1exwang @XiaofuHuang @dooriya
 
 /packages/fx-core/src/core @jayzhang @LongOddCode @1yefuwang1 @nliu-ms @xzf0587 @hund030
-/packages/fx-core/src/core/middleware/projectMigrator.ts @dooriya @qinezh @a1exwang @meifans @blackchoey @wenytang-ms @xzf0587 @hund030
+/packages/fx-core/src/core/middleware/projectMigrator.ts @dooriya @qinezh @a1exwang @meifans @blackchoey @wenytang-ms
 
 /packages/fx-core/src/common/deps-checker @meifans @qinezh @a1exwang @kimizhu @swatDong
 /packages/fx-core/tests/common/deps-checker @meifans @qinezh @a1exwang @kimizhu @swatDong

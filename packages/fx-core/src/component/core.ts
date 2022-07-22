@@ -155,7 +155,6 @@ export class TeamsfxCore {
             context.projectSetting.isM365 = true;
             inputs.isM365 = true;
           }
-
           if (BotFeatureIds.includes(features)) {
             inputs[AzureSolutionQuestionNames.Features] = features;
             const res = await runActionByName("teams-bot.add", context, inputs);

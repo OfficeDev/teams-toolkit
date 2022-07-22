@@ -298,6 +298,7 @@ describe("Workflow test for v3", () => {
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
+      folder: path.join(projectPath, "tabs"),
     };
     context.envInfo = newEnvInfoV3();
     context.tokenProvider = tools.tokenProvider;

@@ -87,7 +87,6 @@ describe("Tab Feature", () => {
     assert.isTrue(teamsTab?.build);
     const storage = getComponent(context.projectSetting, ComponentNames.AzureStorage);
     assert.exists(storage);
-    assert.deepEqual(storage?.connections, [ComponentNames.TeamsTab]);
   });
 
   it("add react tab twice", async () => {

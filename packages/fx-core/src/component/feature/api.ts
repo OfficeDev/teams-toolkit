@@ -34,6 +34,7 @@ import { FunctionScaffold } from "../../plugins/resource/function/ops/scaffold";
 import { functionNameQuestion } from "../../plugins/resource/function/question";
 import { ErrorMessages } from "../../plugins/resource/function/resources/message";
 import { ComponentNames, Scenarios } from "../constants";
+import { generateConfigBiceps } from "../utils";
 import { getComponent, runActionByName } from "../workflow";
 
 @Service(ComponentNames.TeamsApi)
@@ -116,7 +117,14 @@ export class TeamsApi {
           });
         }
 
-        // 4. local debug settings
+        // 4. generate config bicep
+        {
+          const res = await generateConfigBiceps(context, inputs);
+          if (res.isErr()) return err(res.error);
+          effects.push("generate config biceps");
+        }
+
+        // 5. local debug settings
         {
           const res = await runActionByName("debug.generateLocalDebugSettings", context, inputs);
           if (res.isErr()) return err(res.error);

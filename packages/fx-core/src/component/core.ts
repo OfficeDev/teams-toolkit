@@ -99,6 +99,7 @@ import { executeConcurrently } from "../plugins/solution/fx-solution/v2/executor
 import arm from "../plugins/solution/fx-solution/arm";
 import { askForDeployConsent } from "../plugins/solution/fx-solution/v3/provision";
 import { checkDeployAzureSubscription } from "../plugins/solution/fx-solution/v3/deploy";
+import { cloneDeep } from "lodash";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -493,7 +494,10 @@ export class TeamsfxCore {
               pluginName: `${component.name}`,
               taskName: "deploy",
               thunk: () => {
-                return runAction(action!, ctx, inputs);
+                const clonedInputs = cloneDeep(inputs);
+                clonedInputs.folder = component.folder;
+                clonedInputs.artifactFolder = component.artifactFolder;
+                return runAction(action!, ctx, clonedInputs);
               },
             });
             if (AzureResources.includes(component.hosting)) {

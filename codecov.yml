@@ -11,32 +11,5 @@ coverage:
         
       # enable different path to sepearate code coverage
 
-
 comment:
   layout: "reach, diff, flags, files"  
-
-flags: 
-  api:
-    paths:
-      - packages/api/tests
-  cli:
-    paths:
-      - packages/cli/tests
-  failpoint-ts:
-    paths:
-      - packages/failpoint-ts/tests
-  fx-core:
-    paths:
-      - packages/fx-core/tests
-  sdk:
-    paths:
-      - packages/sdk/tests
-  server:
-    paths:
-      - packages/server/tests
-  vscode-extension:
-    paths:
-      - packages/vscode-extension/tests
-  manifest:
-    paths:
-      - packages/manifest/tests

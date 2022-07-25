@@ -1,14 +1,19 @@
 name: Unit Test
 
 on:
-  workflow_dispatch:
   pull_request:
     branches:
       - main
       - dev
       - ga
       - hotfix/**/*
- 
+  push:
+    branches:
+      - main
+      - dev
+      - ga
+      - hotfix/**/*
+
 jobs:
   unit-test-pr:
     if: ${{  github.event_name == 'pull_request' }}
@@ -19,16 +24,16 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.head_ref }}
-          repository: ${{ github.repository }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
 
       - name: Merge Branches
         run: |
           git config --global user.email "bot@user.noreply.github.com"
           git config --global user.name "bot"
 
-          git remote add ${{ github.repository_owner }} https://github.com/${{ github.repository }}.git
-          git fetch ${{ github.repository_owner }}
-          git merge ${{ github.repository_owner }}/${{ github.head_ref }}
+          git remote add ${{ github.event.pull_request.base.repo.owner.login }} ${{ github.event.pull_request.base.repo.clone_url }}
+          git fetch ${{ github.event.pull_request.base.repo.owner.login }}
+          git merge ${{ github.event.pull_request.base.repo.owner.login }}/${{ github.event.pull_request.base.ref }}
 
       - name: Setup node
         uses: actions/setup-node@v2.1.2
@@ -47,7 +52,7 @@ jobs:
       - name: Unit Test
         run: |
           xvfb-run -a npx lerna run test:unit --stream
-          npx codecov
+          npx codecov 
 
   unit-test:
     if: ${{  github.event_name != 'pull_request' }}

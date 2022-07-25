@@ -81,9 +81,11 @@ export class TabCodeProvider implements SourceCodeProvider {
     folder: string,
     language: string,
     safeProjectName?: string,
-    progress?: IProgressHandler,
-    telemetryProps?: Record<string, string>
-  ): Promise<Result<undefined, FxError>> {
+    actionContext?: {
+      progress?: IProgressHandler;
+      telemetryProps?: Record<string, string>;
+    }
+  ): Promise<Result<string, FxError>> {
     folder = folder ?? (language === "csharp" ? "" : FrontendPathInfo.WorkingDir);
     const langKey = convertToLangKey(language);
     const workingDir = path.join(projectPath, folder);
@@ -94,12 +96,13 @@ export class TabCodeProvider implements SourceCodeProvider {
       ProjectName: ctx.projectSetting.appName,
       SafeProjectName: safeProjectName,
     };
+
     const scenario = ctx.projectSetting.isM365
       ? Scenario.M365
       : isAadManifestEnabled() && !hasAAD(ctx.projectSetting)
       ? Scenario.NonSso
       : Scenario.Default;
-    await progress?.next(ProgressMessages.scaffoldTab);
+    await actionContext?.progress?.next(ProgressMessages.scaffoldTab);
     await scaffoldFromTemplates({
       group: TemplateInfo.TemplateGroupName,
       lang: langKey,
@@ -130,7 +133,7 @@ export class TabCodeProvider implements SourceCodeProvider {
       },
     });
 
-    return ok(undefined);
+    return ok(folder);
   }
   generate(
     context: ContextV3,

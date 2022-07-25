@@ -5,7 +5,7 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
-/* eslint-disable-next-line import/no-default-export */
+/* eslint-disable-next-line import/default */
 import TelemetryReporter from "@vscode/extension-telemetry";
 
 import { TelemetryCache } from "../../src/telemetry/cache";

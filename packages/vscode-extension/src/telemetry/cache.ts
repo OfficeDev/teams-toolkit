@@ -4,7 +4,7 @@
 import { Mutex } from "async-mutex";
 
 import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
-/* eslint-disable-next-line import/no-default-export */
+/* eslint-disable-next-line import/default */
 import TelemetryReporter from "@vscode/extension-telemetry";
 
 import { TelemetryEventCache, TelemetryProperty } from "./extTelemetryEvents";

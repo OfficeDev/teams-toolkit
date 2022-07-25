@@ -7,9 +7,7 @@ coverage:
     project:
       default:
         target: auto   # require coverage equal or more than current
-        if_ci_failed: error #success, failure, error, ignore
-        
-      # enable different path to sepearate code coverage
+        if_ci_failed: error #success, failure, error, ignore      
 
 comment:
   layout: "reach, diff, flags, files"  

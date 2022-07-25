@@ -8,7 +8,7 @@ param currentConfigs object
 @secure()
 param currentAppSettings object
 
-var functionAppName = split({{azure-function.outputs.functionAppResourceId}}, '/')[8]
+var functionAppName = split(provisionOutputs.azureFunction{{scenario}}Output.value.functionAppResourceId, '/')[8]
 {{#if (contains "aad-app" connections)}}
 var m365ClientId = provisionParameters['m365ClientId']
   {{#if (contains "key-vault" connections) }}
@@ -22,12 +22,12 @@ var oauthAuthority = uri(m365OauthAuthorityHost, m365TenantId)
   {{#if (contains "teams-bot" connections) }}
 var botId = provisionParameters['botAadAppClientId']
     {{#if (contains "teams-tab" connections)}}
-var m365ApplicationIdUri = 'api://${ {{tabDomainVarName}} }/botid-${botId}'
+var m365ApplicationIdUri = 'api://${ provisionOutputs.TabOutput.value.domain }/botid-${botId}'
     {{else}}
 var m365ApplicationIdUri = 'api://botid-${botId}'
     {{/if}}
   {{else}}
-var m365ApplicationIdUri = 'api://${ {{tabDomainVarName}} }'
+var m365ApplicationIdUri = 'api://${ provisionOutputs.TabOutput.value.domain }'
   {{/if}}
 {{/if}}
 {{#if (contains "teams-bot" connections)}}
@@ -40,7 +40,7 @@ var botAadAppClientSecret = provisionParameters['botAadAppClientSecret']
 {{/if}}
 
 {{#if (contains "teams-tab" connections) }}
-var tabEndpoint = {{tabEndpointVarName}}
+var tabEndpoint = provisionOutputs.TabOutput.value.endpoint
 var currentAllowedOrigins = empty(currentConfigs.cors) ? [] : currentConfigs.cors.allowedOrigins
 resource appConfig 'Microsoft.Web/sites/config@2021-02-01' = {
   name: '${functionAppName}/web'
@@ -71,6 +71,9 @@ resource functionAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
     {{#if (contains "teams-bot" connections)}}
     BOT_ID: botAadAppClientId // ID of your bot
     BOT_PASSWORD: botAadAppClientSecret // Secret of your bot
+    {{/if}}
+    {{#if (contains "teams-api" connections) }}
+    API_ENDPOINT: provisionOutputs.azureFunctionApiOutput.value.functionEndpoint // Azure Function API endpoint
     {{/if}}
     {{#if (contains "azure-sql" connections)}}
     SQL_DATABASE_NAME: {{azure-sql.outputs.sqlDatabaseName}} // SQL database name

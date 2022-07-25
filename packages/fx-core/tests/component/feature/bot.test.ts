@@ -18,7 +18,7 @@ import * as path from "path";
 import fs from "fs-extra";
 import { createSandbox } from "sinon";
 import * as utils from "../../../src/component/utils";
-import { getComponent, runAction } from "../../../src/component/workflow";
+import { getComponent, runActionByName } from "../../../src/component/workflow";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools, randomAppName } from "../../core/utils";
 import "../../../src/component/core";
@@ -28,10 +28,7 @@ import {
   AzureSolutionQuestionNames,
   NotificationOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
-import {
-  QuestionNames,
-  TemplateProjectsScenarios,
-} from "../../../src/plugins/resource/bot/constants";
+import { QuestionNames } from "../../../src/plugins/resource/bot/constants";
 import { AppServiceOptionItem } from "../../../src/plugins/resource/bot/question";
 describe("Bot Feature", () => {
   const sandbox = createSandbox();
@@ -82,7 +79,7 @@ describe("Bot Feature", () => {
       "app-name": appName,
       [QuestionNames.BOT_HOST_TYPE_TRIGGER]: [AppServiceOptionItem.id],
     };
-    const addBotRes = await runAction(`${ComponentNames.TeamsBot}.add`, context, inputs);
+    const addBotRes = await runActionByName(`${ComponentNames.TeamsBot}.add`, context, inputs);
     if (addBotRes.isErr()) {
       console.log(addBotRes.error);
     }
@@ -94,8 +91,12 @@ describe("Bot Feature", () => {
     assert.isTrue(teamsBot?.build);
     assert.deepEqual(teamsBot?.capabilities, ["notification"]);
     const webApp = getComponent(context.projectSetting, ComponentNames.AzureWebApp);
-    assert.exists(webApp);
-    assert.deepEqual(webApp?.connections, [ComponentNames.TeamsBot, ComponentNames.Identity]);
+    assert.exists(webApp?.connections);
+    if (webApp?.connections) {
+      assert.include(webApp.connections, ComponentNames.TeamsBot);
+      assert.include(webApp.connections, ComponentNames.Identity);
+      assert.equal(webApp.connections.length, 2);
+    }
     const botService = getComponent(context.projectSetting, ComponentNames.BotService);
     assert.exists(botService);
     assert.isTrue(botService?.provision);

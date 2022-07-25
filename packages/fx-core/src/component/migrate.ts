@@ -1,6 +1,5 @@
 import {
   AzureSolutionSettings,
-  Component,
   Json,
   ProjectSettings,
   ProjectSettingsV3,
@@ -10,6 +9,7 @@ import { isVSProject } from "../common/projectSettingsHelper";
 import { hasAzureResourceV3 } from "../common/projectSettingsHelperV3";
 import { MessageExtensionNewUIItem } from "../plugins/solution/fx-solution/question";
 import { ComponentNames } from "./constants";
+import { ensureComponentConnections } from "./utils";
 import { getComponent } from "./workflow";
 
 export interface EnvStateV2 {
@@ -297,40 +297,6 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
     ensureComponentConnections(settingsV3);
   }
   return settingsV3;
-}
-
-export const ComponentConnections = {
-  [ComponentNames.AzureWebApp]: [
-    ComponentNames.Identity,
-    ComponentNames.AzureSQL,
-    ComponentNames.KeyVault,
-    ComponentNames.AadApp,
-    ComponentNames.TeamsTab,
-    ComponentNames.TeamsBot,
-    ComponentNames.TeamsApi,
-  ],
-  [ComponentNames.Function]: [
-    ComponentNames.Identity,
-    ComponentNames.AzureSQL,
-    ComponentNames.KeyVault,
-    ComponentNames.AadApp,
-    ComponentNames.TeamsTab,
-    ComponentNames.TeamsBot,
-    ComponentNames.TeamsApi,
-  ],
-  [ComponentNames.APIM]: [ComponentNames.TeamsTab, ComponentNames.TeamsBot],
-};
-
-export function ensureComponentConnections(settingsV3: ProjectSettingsV3): void {
-  const exists = (c: string) => getComponent(settingsV3, c) !== undefined;
-  const existingConfigNames = Object.keys(ComponentConnections).filter(exists);
-  for (const configName of existingConfigNames) {
-    const existingResources = (ComponentConnections[configName] as string[]).filter(exists);
-    const configs = settingsV3.components.filter((c) => c.name === configName);
-    for (const config of configs) {
-      config.connections = existingResources;
-    }
-  }
 }
 
 export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): ProjectSettings {

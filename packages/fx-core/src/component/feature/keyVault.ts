@@ -4,8 +4,10 @@
 import {
   Action,
   ContextV3,
+  Effect,
+  err,
+  FunctionAction,
   FxError,
-  GroupAction,
   InputsWithProjectPath,
   MaybePromise,
   ok,
@@ -13,12 +15,13 @@ import {
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { getProjectSettingsPath } from "../../core/middleware/projectSettingsLoader";
-import { getComponent, getComponents } from "../workflow";
 import "../connection/azureWebAppConfig";
+import { ComponentNames } from "../constants";
+import { Plans } from "../messages";
 import "../resource/azureSql";
 import "../resource/identity";
-import { ComponentNames } from "../constants";
+import { generateConfigBiceps } from "../utils";
+import { getComponent, runActionByName } from "../workflow";
 
 @Service("key-vault-feature")
 export class KeyVaultFeature {
@@ -34,106 +37,40 @@ export class KeyVaultFeature {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const keyVaultComponent = getComponent(context.projectSetting, ComponentNames.KeyVault);
-    const webAppComponents = getComponents(context.projectSetting, ComponentNames.AzureWebApp);
-    const functionComponents = getComponents(context.projectSetting, ComponentNames.Function);
-    const actions: Action[] = [
-      {
-        name: "keyVault.configKeyVault",
-        type: "function",
-        plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-          if (keyVaultComponent) {
-            return ok([]);
-          }
-          const remarks: string[] = ["add component 'key-vault' in projectSettings"];
-          if (webAppComponents?.length) {
-            remarks.push("connect 'key-vault' to component 'azure-web-app' in projectSettings");
-          }
-          if (functionComponents?.length) {
-            remarks.push("connect 'key-vault' to component 'azure-function' in projectSettings");
-          }
-          return ok([
-            {
-              type: "file",
-              operate: "replace",
-              filePath: getProjectSettingsPath(inputs.projectPath),
-              remarks: remarks.join(";"),
-            },
-          ]);
-        },
-        execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-          if (keyVaultComponent) return ok([]);
-          const projectSettings = context.projectSetting;
-          const remarks: string[] = ["add component 'key-vault' in projectSettings"];
-          projectSettings.components.push({
-            name: ComponentNames.KeyVault,
-            connections: [ComponentNames.Identity],
-            provision: true,
-          });
-          if (webAppComponents) {
-            webAppComponents.forEach((component) => {
-              component.connections ??= [];
-              component.connections.push(ComponentNames.KeyVault);
-            });
-            remarks.push("connect 'key-vault' to component 'azure-web-app' in projectSettings");
-          }
-          if (functionComponents) {
-            functionComponents.forEach((component) => {
-              component.connections ??= [];
-              component.connections.push(ComponentNames.KeyVault);
-            });
-            remarks.push("connect 'key-vault' to component 'azure-function' in projectSettings");
-          }
-          return ok([
-            {
-              type: "file",
-              operate: "replace",
-              filePath: getProjectSettingsPath(inputs.projectPath),
-              remarks: remarks.join(";"),
-            },
-          ]);
-        },
+    const action: FunctionAction = {
+      name: "key-vault-feature.add",
+      type: "function",
+      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+        const projectSettings = context.projectSetting;
+        const keyVaultComponent = getComponent(projectSettings, ComponentNames.KeyVault);
+        if (keyVaultComponent) return ok([]);
+        const effects: Effect[] = [];
+
+        // config
+        projectSettings.components.push({
+          name: ComponentNames.KeyVault,
+          connections: [ComponentNames.Identity],
+          provision: true,
+        });
+        effects.push(Plans.addFeature("key-vault"));
+
+        // key-vault provision bicep
+        {
+          const res = await runActionByName("key-vault.generateBicep", context, inputs);
+          if (res.isErr()) return err(res.error);
+          effects.push("generate key-vault provision bicep");
+        }
+
+        // generate config bicep
+        {
+          const res = await generateConfigBiceps(context, inputs);
+          if (res.isErr()) return err(res.error);
+          effects.push("update config biceps");
+        }
+
+        return ok(effects);
       },
-      {
-        name: "call:key-vault.generateBicep",
-        type: "call",
-        required: true,
-        targetAction: "key-vault.generateBicep",
-        inputs: {
-          scenario: "",
-        },
-      },
-    ];
-    webAppComponents?.forEach((component) =>
-      actions.push({
-        name: "call:azure-web-app-config.generateBicep",
-        type: "call",
-        required: true,
-        targetAction: "azure-web-app-config.generateBicep",
-        inputs: {
-          update: true,
-          scenario: component.scenario,
-        },
-      })
-    );
-    functionComponents?.forEach((component) =>
-      actions.push({
-        name: "call:azure-function-config.generateBicep",
-        type: "call",
-        required: true,
-        targetAction: "azure-function-config.generateBicep",
-        inputs: {
-          update: true,
-          scenario: component.scenario,
-        },
-      })
-    );
-    const group: GroupAction = {
-      type: "group",
-      name: "key-vault.add",
-      mode: "sequential",
-      actions: actions,
     };
-    return ok(group);
+    return ok(action);
   }
 }

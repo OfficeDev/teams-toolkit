@@ -29,9 +29,8 @@ import { UnauthenticatedError } from "../../plugins/resource/frontend/v3/error";
 import { AzureStorageClient } from "../../plugins/resource/frontend/clients";
 import { FrontendDeployment } from "../../plugins/resource/frontend/ops/deploy";
 import { AzureResource } from "./azureResource";
-import { getHostingParentComponent } from "../workflow";
 import { FrontendPluginInfo } from "../../plugins/resource/frontend/constants";
-import { StorageOutputs } from "../constants";
+import { ComponentNames, StorageOutputs } from "../constants";
 import { Plans, ProgressMessages, ProgressTitles } from "../messages";
 @Service("azure-storage")
 export class AzureStorageResource extends AzureResource {
@@ -64,13 +63,9 @@ export class AzureStorageResource extends AzureResource {
         progress?: IProgressHandler
       ) => {
         const ctx = context as ProvisionContextV3;
-        const parent = getHostingParentComponent(ctx.projectSetting, this.name);
-        if (!parent) {
-          throw new Error("Hosting component no parent");
-        }
         const frontendConfigRes = await buildFrontendConfig(
           ctx.envInfo,
-          parent.name,
+          ComponentNames.TeamsTab,
           ctx.tokenProvider.azureAccountProvider
         );
         if (frontendConfigRes.isErr()) {
@@ -98,12 +93,7 @@ export class AzureStorageResource extends AzureResource {
       progressTitle: ProgressTitles.deployingStorage,
       progressSteps: 3,
       plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const parent = getHostingParentComponent(
-          context.projectSetting,
-          this.name,
-          inputs.scenario
-        );
-        const deployDir = path.resolve(inputs.projectPath, parent?.folder ?? "");
+        const deployDir = path.resolve(inputs.projectPath, inputs.folder);
         return ok([Plans.deploy("Azure Storage", deployDir)]);
       },
       execute: async (
@@ -112,14 +102,10 @@ export class AzureStorageResource extends AzureResource {
         progress?: IProgressHandler
       ) => {
         const ctx = context as ProvisionContextV3;
-        const parent = getHostingParentComponent(ctx.projectSetting, this.name);
-        if (!parent?.folder) {
-          throw new Error("parent component not found for azure-storage");
-        }
-        const deployDir = path.resolve(inputs.projectPath, parent.folder);
+        const deployDir = path.resolve(inputs.projectPath, inputs.folder);
         const frontendConfigRes = await buildFrontendConfig(
           ctx.envInfo,
-          parent.name,
+          ComponentNames.TeamsTab,
           ctx.tokenProvider.azureAccountProvider
         );
         if (frontendConfigRes.isErr()) {

@@ -56,20 +56,23 @@ describe("Backend extensions installer E2E test", async () => {
       logger,
       telemetry
     );
-    const dotnetCommand = await dotnetChecker.command();
-    chai.assert.isTrue(await dotnetChecker.isInstalled());
-    chai.assert.isNotNull(dotnetCommand);
+    const installationInfo = await dotnetChecker.getInstallationInfo();
+    chai.assert.isTrue(installationInfo.isInstalled);
+    chai.assert.isNotNull(installationInfo.command);
     chai.assert.isTrue(
-      await dotnetUtils.hasAnyDotnetVersions(dotnetCommand!, dotnetUtils.dotnetSupportedVersions)
+      await dotnetUtils.hasAnyDotnetVersions(
+        installationInfo.command,
+        dotnetUtils.dotnetSupportedVersions
+      )
     );
 
     // setup nuget config to prevent affecting the tester's local environment
-    await createDotnetNugetConfig(dotnetCommand, backendProjectDir);
+    await createDotnetNugetConfig(installationInfo.command, backendProjectDir);
 
     chai.assert.isFalse(await isNonEmptyDir(backendOutputPath));
     await installExtension(
       backendProjectDir,
-      dotnetCommand,
+      installationInfo.command,
       logger,
       testCsprojFileName,
       testOutputDirName
@@ -93,8 +96,10 @@ describe("Backend extensions installer E2E test", async () => {
       logger,
       telemetry
     );
-    chai.assert.isTrue(await dotnetChecker.isInstalled());
-    const dotnetCommand = await dotnetChecker.command();
+    const installationInfo = await dotnetChecker.getInstallationInfo();
+
+    chai.assert.isTrue(installationInfo.isInstalled);
+    const dotnetCommand = installationInfo.command;
     chai.assert.isNotNull(dotnetCommand);
     chai.assert.isTrue(
       await dotnetUtils.hasAnyDotnetVersions(dotnetCommand!, dotnetUtils.dotnetSupportedVersions)

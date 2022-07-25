@@ -9,6 +9,7 @@ import {
   InputsWithProjectPath,
   MaybePromise,
   ok,
+  Platform,
   Result,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
@@ -20,6 +21,7 @@ import "../resource/azureSql";
 import "../resource/identity";
 import { ComponentNames } from "../constants";
 import { hasApi } from "../../common/projectSettingsHelperV3";
+import { UtilFunctions } from "../resource/azureSql/actions/configure";
 
 @Service("sql")
 export class Sql {
@@ -35,6 +37,9 @@ export class Sql {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
+    if (inputs.platform == Platform.CLI_HELP) {
+      return ok(cliHelpAction);
+    }
     const sqlComponent = getComponent(context.projectSetting, ComponentNames.AzureSQL);
     const webAppComponent = getComponent(context.projectSetting, ComponentNames.AzureWebApp);
     const functionComponent = getComponent(context.projectSetting, ComponentNames.Function);
@@ -143,3 +148,14 @@ export class Sql {
     return ok(group);
   }
 }
+
+const cliHelpAction: Action = {
+  name: "fx.sqlCliHelp",
+  type: "function",
+  question: (context: ContextV3, inputs: InputsWithProjectPath) => {
+    return ok(UtilFunctions.buildQuestionNode());
+  },
+  execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+    return ok([]);
+  },
+};

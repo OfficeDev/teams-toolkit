@@ -22,8 +22,8 @@ import { FunctionScaffold } from "../../plugins/resource/function/ops/scaffold";
 import { FunctionLanguage, QuestionKey } from "../../plugins/resource/function/enums";
 import { ComponentNames } from "../constants";
 import { FunctionDeploy } from "../../plugins/resource/function/ops/deploy";
-import { merge } from "lodash";
 import { Plans, ProgressMessages, ProgressTitles } from "../messages";
+import { CoreQuestionNames } from "../../core/question";
 /**
  * api scaffold
  */
@@ -57,17 +57,10 @@ export class ApiCodeProvider implements SourceCodeProvider {
       ) => {
         const projectSettings = ctx.projectSetting as ProjectSettingsV3;
         const appName = projectSettings.appName;
-        const language =
-          inputs?.["programming-language"] ||
-          context.projectSetting.programmingLanguage ||
-          "javascript";
+        const language = inputs[CoreQuestionNames.ProgrammingLanguage];
         const folder = inputs.folder || FunctionPluginPathInfo.solutionFolderName;
-        const teamsApi = getComponent(projectSettings, ComponentNames.TeamsApi);
-        if (!teamsApi) return ok([]);
-        merge(teamsApi, { build: true, folder: folder });
         const workingDir = path.join(inputs.projectPath, folder);
-        const functionName =
-          (inputs?.[QuestionKey.functionName] as string) ?? DefaultValues.functionName;
+        const functionName = inputs[QuestionKey.functionName];
         const variables = {
           appName: appName,
           functionName: functionName,
@@ -119,8 +112,6 @@ export class ApiCodeProvider implements SourceCodeProvider {
         progress?.next(ProgressMessages.buildingApi);
         const buildPath = path.resolve(inputs.projectPath, teamsApi.folder);
         await FunctionDeploy.build(buildPath, language as FunctionLanguage);
-        const artifactFolder = teamsApi.artifactFolder || teamsApi.folder;
-        merge(teamsApi, { build: true, artifactFolder: path.join(artifactFolder) });
         return ok([Plans.buildProject(buildPath)]);
       },
     };

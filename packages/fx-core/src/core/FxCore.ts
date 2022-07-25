@@ -132,7 +132,7 @@ import {
 } from "./telemetry";
 import { CoreHookContext } from "./types";
 import { isPreviewFeaturesEnabled } from "../common";
-import { getQuestionsV3, runAction } from "../component/workflow";
+import { getQuestionsV3, runActionByName } from "../component/workflow";
 import { createContextV3 } from "../component/utils";
 import "../component/core";
 import {
@@ -348,66 +348,8 @@ export class FxCore implements v3.ICore {
     }
     setCurrentStage(Stage.create);
     inputs.stage = Stage.create;
-    // const folder = inputs[QuestionRootFolder.name] as string;
-    // if (!folder) {
-    //   return err(InvalidInputError("folder is undefined"));
-    // }
-    // inputs.folder = folder;
-    // const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
-    // let projectPath: string;
-    // const automaticNpmInstall = "automaticNpmInstall";
-    // if (scratch === ScratchOptionNo.id) {
-    //   // create from sample
-    //   const downloadRes = await downloadSample(inputs, ctx);
-    //   if (downloadRes.isErr()) {
-    //     return err(downloadRes.error);
-    //   }
-    //   projectPath = downloadRes.value;
-    // } else {
-    //   const context = createContextV3();
-    //   // create from new
-    //   const appName = inputs[CoreQuestionNames.AppName] as string;
-    //   if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
-    //   const validateResult = jsonschema.validate(appName, {
-    //     pattern: ProjectNamePattern,
-    //   });
-    //   if (validateResult.errors && validateResult.errors.length > 0) {
-    //     return err(InvalidInputError(`${validateResult.errors[0].message}`, inputs));
-    //   }
-    //   projectPath = path.join(folder, appName);
-    //   inputs.projectPath = projectPath;
-    //   const initRes = await runAction("fx.init", context, inputs as InputsWithProjectPath);
-    //   if (initRes.isErr()) return err(initRes.error);
-    //   const feature = inputs.capabilities;
-    //   delete inputs.folder;
-
-    //   if (feature === M365SsoLaunchPageOptionItem.id || feature === M365SearchAppOptionItem.id) {
-    //     context.projectSetting.isM365 = true;
-    //     inputs.isM365 = true;
-    //   }
-
-    //   if (BotFeatureIds.includes(feature)) {
-    //     inputs[AzureSolutionQuestionNames.Features] = feature;
-    //     const res = await runAction("teams-bot.add", context, inputs as InputsWithProjectPath);
-    //     if (res.isErr()) return err(res.error);
-    //   }
-    //   if (TabFeatureIds.includes(feature)) {
-    //     inputs[AzureSolutionQuestionNames.Features] = feature;
-    //     const res = await runAction("teams-tab.add", context, inputs as InputsWithProjectPath);
-    //     if (res.isErr()) return err(res.error);
-    //   }
-    //   if (feature === TabSPFxItem.id) {
-    //     inputs[AzureSolutionQuestionNames.Features] = feature;
-    //     const res = await runAction("spfx-tab.add", context, inputs as InputsWithProjectPath);
-    //     if (res.isErr()) return err(res.error);
-    //   }
-    //
-    // }
-    // if (inputs.platform === Platform.VSCode) {
-    //   await globalStateUpdate(automaticNpmInstall, true);
-    // }
     const context = createContextV3();
-    const res = await runAction("fx.create", context, inputs as InputsWithProjectPath);
+    const res = await runActionByName("fx.create", context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx.projectSettings = context.projectSetting;
     inputs.projectPath = context.projectPath;
@@ -477,7 +419,7 @@ export class FxCore implements v3.ICore {
     context.envInfo = ctx!.envInfoV3!;
     context.projectSetting = ctx!.projectSettings! as ProjectSettingsV3;
     context.tokenProvider = TOOLS.tokenProvider;
-    const res = await runAction("fx.provision", context, inputs as InputsWithProjectPath);
+    const res = await runActionByName("fx.provision", context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
     ctx!.envInfoV3 = context.envInfo;
@@ -577,7 +519,7 @@ export class FxCore implements v3.ICore {
     context.envInfo = ctx!.envInfoV3!;
     context.projectSetting = ctx!.projectSettings! as ProjectSettingsV3;
     context.tokenProvider = TOOLS.tokenProvider;
-    const res = await runAction("fx.deploy", context, inputs as InputsWithProjectPath);
+    const res = await runActionByName("fx.deploy", context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
     return ok(Void);
@@ -655,7 +597,7 @@ export class FxCore implements v3.ICore {
     context.envInfo = ctx!.envInfoV3!;
     context.projectSetting = ctx!.projectSettings! as ProjectSettingsV3;
     context.tokenProvider = TOOLS.tokenProvider;
-    const res = await runAction("fx.provision", context, inputs as InputsWithProjectPath);
+    const res = await runActionByName("fx.provision", context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
     return ok(Void);
@@ -728,7 +670,11 @@ export class FxCore implements v3.ICore {
     context.envInfo = ctx!.envInfoV3!;
     context.projectSetting = ctx!.projectSettings! as ProjectSettingsV3;
     context.tokenProvider = TOOLS.tokenProvider;
-    const res = await runAction("app-manifest.publish", context, inputs as InputsWithProjectPath);
+    const res = await runActionByName(
+      "app-manifest.publish",
+      context,
+      inputs as InputsWithProjectPath
+    );
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
     return ok(Void);
@@ -758,7 +704,7 @@ export class FxCore implements v3.ICore {
     ctx?: CoreHookContext
   ): Promise<Result<Void, FxError>> {
     const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-    const res = await runAction("fx.addFeature", context, inputs as InputsWithProjectPath);
+    const res = await runActionByName("fx.addFeature", context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
     return ok(Void);
@@ -881,11 +827,11 @@ export class FxCore implements v3.ICore {
     let res: Result<undefined, FxError> = ok(undefined);
     const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
     if (func.method === "addCICDWorkflows") {
-      res = await runAction("cicd.add", context, inputs as InputsWithProjectPath);
+      res = await runActionByName("cicd.add", context, inputs as InputsWithProjectPath);
     } else if (func.method === "connectExistingApi") {
-      res = await runAction("api-connector.add", context, inputs as InputsWithProjectPath);
+      res = await runActionByName("api-connector.add", context, inputs as InputsWithProjectPath);
     } else if (func.method === "addFeature") {
-      res = await runAction("fx.addFeature", context, inputs as InputsWithProjectPath);
+      res = await runActionByName("fx.addFeature", context, inputs as InputsWithProjectPath);
     }
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
@@ -939,14 +885,8 @@ export class FxCore implements v3.ICore {
     featureId: FeatureId,
     inputs: Inputs
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    if (featureId === FeatureId.Notification) {
-      //notification is a special case
-      const triggerNode = new QTreeNode(createHostTypeTriggerQuestion(inputs.platform));
-      return ok(triggerNode);
-    } else {
-      const res = await getQuestionsForAddFeatureSubCommand(featureId, inputs);
-      return res;
-    }
+    const res = await getQuestionsForAddFeatureSubCommand(featureId, inputs);
+    return res;
   }
 
   @hooks([

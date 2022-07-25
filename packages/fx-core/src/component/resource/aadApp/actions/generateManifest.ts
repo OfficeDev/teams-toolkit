@@ -12,6 +12,7 @@ import * as path from "path";
 import { ComponentNames, ActionTypeFunction } from "../../../constants";
 import { generateAadManifestTemplate } from "../../../../core/generateAadManifestTemplate";
 import { getProjectTemplatesFolderPath } from "../../../../common/utils";
+import { convertProjectSettingsV3ToV2 } from "../../../migrate";
 
 export function GetActionGenerateManifest(): FunctionAction {
   return {
@@ -36,7 +37,8 @@ export function GetActionGenerateManifest(): FunctionAction {
       return ok([effect]);
     },
     execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-      await generateAadManifestTemplate(inputs.projectPath, context.projectSetting);
+      const projectSetting = convertProjectSettingsV3ToV2(context.projectSetting);
+      await generateAadManifestTemplate(inputs.projectPath, projectSetting);
       const createFilePath = [
         path.join(
           await getProjectTemplatesFolderPath(inputs.projectPath),

@@ -30,6 +30,7 @@ import {
   FunctionsHttpTriggerOptionItem,
   FunctionsTimerTriggerOptionItem,
 } from "../../plugins/resource/bot/question";
+import { CommonStrings } from "../../plugins/resource/bot/resources/strings";
 import {
   BotOptionItem,
   CommandAndResponseOptionItem,
@@ -81,8 +82,13 @@ export class TeamsBot {
           const scenarios = featureToScenario.get(inputs[CoreQuestionNames.Features])?.(
             inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER]
           );
+          const language =
+            inputs?.["programming-language"] ||
+            context.projectSetting.programmingLanguage ||
+            "javascript";
+          const folder = language === "csharp" ? "" : CommonStrings.BOT_WORKING_DIR_NAME;
           assign(clonedInputs, {
-            folder: "bot",
+            folder: folder,
             scenarios: scenarios,
             language: inputs[CoreQuestionNames.ProgrammingLanguage],
           });
@@ -95,7 +101,7 @@ export class TeamsBot {
             deploy: true,
             capabilities: botCapability ? [botCapability] : [],
             build: true,
-            folder: "bot",
+            folder: folder,
           };
           projectSettings.components.push(botConfig);
           effects.push(Plans.generateSourceCodeAndConfig(ComponentNames.TeamsBot));

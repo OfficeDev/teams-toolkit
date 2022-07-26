@@ -1,8 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Action, err, FxError, InputsWithProjectPath, ok, Result } from "@microsoft/teamsfx-api";
-import { ProvisionContextV3 } from "@microsoft/teamsfx-api/build/types";
+import {
+  Action,
+  err,
+  FxError,
+  InputsWithProjectPath,
+  ok,
+  Result,
+  ProvisionContextV3,
+} from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service, Container } from "typedi";
 import { ApimPluginV3 } from "../../plugins/resource/apim/v3";

@@ -14,15 +14,17 @@ import {
   Result,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
-import Container, { Service } from "typedi";
+import { Container, Service } from "typedi";
+import { convertToAlphanumericOnly } from "../../common/utils";
 import { BicepComponent } from "../bicep";
 import "../connection/azureWebAppConfig";
 import { ComponentNames } from "../constants";
 import { Plans } from "../messages";
 import "../resource/azureSql";
 import "../resource/identity";
-import { generateConfigBiceps } from "../utils";
-import { getComponent, runActionByName } from "../workflow";
+import { KeyVaultResource } from "../resource/keyVault";
+import { generateConfigBiceps, persistBiceps } from "../utils";
+import { getComponent } from "../workflow";
 
 @Service("key-vault-feature")
 export class KeyVaultFeature {
@@ -62,10 +64,16 @@ export class KeyVaultFeature {
         }
         // key-vault provision bicep
         {
-          const keyVaultComponent = Container;
-          const res = await runActionByName("key-vault.generateBicep", context, inputs);
+          const keyVaultComponent = Container.get<KeyVaultResource>(ComponentNames.KeyVault);
+          const res = await keyVaultComponent.generateBicep(context, inputs);
           if (res.isErr()) return err(res.error);
           effects.push("generate key-vault provision bicep");
+          const persistRes = await persistBiceps(
+            inputs.projectPath,
+            convertToAlphanumericOnly(context.projectSetting.appName),
+            res.value
+          );
+          if (persistRes.isErr()) return persistRes;
         }
 
         // generate config bicep

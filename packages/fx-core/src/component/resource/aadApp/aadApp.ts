@@ -94,9 +94,11 @@ export class AadApp implements CloudResource {
   }
   async generateAuthFiles(
     context: ContextV3,
-    inputs: InputsWithProjectPath
+    inputs: InputsWithProjectPath,
+    needTab: boolean,
+    needBot: boolean
   ): Promise<Result<undefined, FxError>> {
-    const res = await createAuthFiles(inputs, context, inputs.needsTab, inputs.needsBot);
+    const res = await createAuthFiles(inputs, context, needTab, needBot);
     if (res.isErr()) return err(res.error);
     return ok(undefined);
   }

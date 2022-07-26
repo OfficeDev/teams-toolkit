@@ -22,7 +22,7 @@ import fs from "fs-extra";
 import { assign, cloneDeep } from "lodash";
 import os from "os";
 import * as path from "path";
-import Container from "typedi";
+import { Container } from "typedi";
 import * as uuid from "uuid";
 import { getProjectSettingsVersion } from "../common/projectSettingsHelper";
 import { convertToAlphanumericOnly, getProjectTemplatesFolderPath } from "../common/utils";
@@ -31,7 +31,7 @@ import { environmentManager } from "../core/environment";
 import { TOOLS } from "../core/globalVars";
 import { ComponentNames, scenarioToComponent } from "./constants";
 import { DefaultManifestProvider } from "./resource/appManifest/manifestProvider";
-import { getComponent, runActionByName } from "./workflow";
+import { getComponent } from "./workflow";
 
 export async function persistProvisionBicep(
   projectPath: string,

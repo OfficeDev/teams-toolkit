@@ -4,7 +4,6 @@
 import {
   Action,
   Bicep,
-  CallAction,
   CloudResource,
   ContextV3,
   err,
@@ -65,7 +64,7 @@ export class TeamsTab {
           inputs[CoreQuestionNames.ProgrammingLanguage] === "csharp"
             ? ComponentNames.AzureWebApp
             : ComponentNames.AzureStorage;
-        // 1. scaffold tab and add tab config
+        // scaffold and config tab
         let tabConfig = getComponent(projectSettings, ComponentNames.TeamsTab);
         if (!tabConfig) {
           const clonedInputs = cloneDeep(inputs);
@@ -90,7 +89,6 @@ export class TeamsTab {
           effects.push(Plans.generateSourceCodeAndConfig(ComponentNames.TeamsTab));
 
           // 2. generate provision bicep
-
           // 2.0 bicep.init
           {
             const bicepComponent = Container.get<BicepComponent>("bicep");
@@ -178,7 +176,7 @@ export class TeamsTab {
           }
           const clonedInputs = cloneDeep(inputs);
           const manifestComponent = Container.get<AppManifest>(ComponentNames.AppManifest);
-          const res = await manifestComponent.addCapability(inputs, capabilities);
+          const res = await manifestComponent.addCapability(clonedInputs, capabilities);
           if (res.isErr()) return err(res.error);
           effects.push("add tab capability in app manifest");
         }

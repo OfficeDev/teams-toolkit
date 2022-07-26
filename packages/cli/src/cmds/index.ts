@@ -23,6 +23,7 @@ import { isRemoteCollaborationEnabled } from "../utils";
 import Manifest from "./manifest";
 import Permission from "./permission";
 import Env from "./env";
+import M365 from "./m365";
 import { ManifestValidate } from "./validate";
 import { isDeployManifestEnabled } from "@microsoft/teamsfx-core";
 
@@ -40,6 +41,7 @@ export const commands: YargsCommand[] = [
   new Config(),
   new Preview(),
   new Env(),
+  new M365(),
 ];
 
 /**

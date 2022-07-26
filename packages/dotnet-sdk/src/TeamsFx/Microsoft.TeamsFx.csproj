@@ -38,14 +38,4 @@
     <PackageReference Include="Microsoft.Identity.Client" Version="4.40.0" />
   </ItemGroup>
   
-  <ItemGroup>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>DynamicProxyGenAssembly2</_Parameter1>
-    </AssemblyAttribute>
-  
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>Microsoft.TeamsFx.Fakes</_Parameter1>
-    </AssemblyAttribute>
-  </ItemGroup>
-  
 </Project>

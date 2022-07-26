@@ -51,7 +51,7 @@ public static class TeamsFxConfigurationMethods
             var identityClientAdapter = new IdentityClientAdapter(builder.Build());
             return identityClientAdapter;
         });
-        
+
         return services;
     }
 

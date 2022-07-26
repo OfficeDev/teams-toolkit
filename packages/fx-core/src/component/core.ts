@@ -320,7 +320,7 @@ export class TeamsfxCore {
                 pluginName: `${component.name}`,
                 taskName: "provision",
                 thunk: () => {
-                  ctx.envInfo.state[component.name] = ctx.envInfo.state[component.name] || [];
+                  ctx.envInfo.state[component.name] = ctx.envInfo.state[component.name] || {};
                   return runAction(action, context, inputs);
                 },
               });

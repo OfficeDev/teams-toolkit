@@ -43,9 +43,9 @@ export interface SourceCodeProvider {
   generate: (
     context: ContextV3,
     inputs: InputsWithProjectPath
-  ) => MaybePromise<Result<Action | undefined, FxError>>;
+  ) => MaybePromise<Result<Action | undefined, FxError>>; // MaybePromise<Result<undefined, FxError>>
   build?: (
     context: ContextV3,
     inputs: InputsWithProjectPath
-  ) => MaybePromise<Result<Action | undefined, FxError>>;
+  ) => MaybePromise<Result<Action | undefined, FxError>>; // MaybePromise<Result<undefined, FxError>>
 }

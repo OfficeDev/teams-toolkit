@@ -833,13 +833,18 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
         );
         progressBar.start();
       }
-      ctx.arguments.push(progressBar);
-      ctx.arguments.push(action.enableTelemetry ? telemetryProps : undefined);
-      const res = await next();
-      if (res.isErr()) throw res.error;
-      if (res.value) {
+      if (action.enableTelemetry || action.enableProgressBar) {
+        const actionContext = {
+          progress: progressBar,
+          telemetryProps: telemetryProps,
+        };
+        ctx.arguments.push(actionContext);
+      }
+      await next();
+      if (ctx.result.isErr()) throw ctx.result.error;
+      if (ctx.result.value) {
         //persist bicep files for bicep effects
-        for (const effect of res.value) {
+        for (const effect of ctx.result.value) {
           if (typeof effect !== "string" && effect.type === "bicep") {
             const bicep = effect as Bicep;
             if (bicep) {

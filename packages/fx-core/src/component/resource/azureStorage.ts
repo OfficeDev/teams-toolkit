@@ -2,14 +2,11 @@
 // Licensed under the MIT license.
 
 import {
-  Action,
+  ActionContext,
   AzureAccountProvider,
-  ContextV3,
   err,
   FxError,
   InputsWithProjectPath,
-  IProgressHandler,
-  MaybePromise,
   ok,
   ProvisionContextV3,
   Result,
@@ -31,20 +28,17 @@ import { FrontendDeployment } from "../../plugins/resource/frontend/ops/deploy";
 import { AzureResource } from "./azureResource";
 import { FrontendPluginInfo } from "../../plugins/resource/frontend/constants";
 import { ComponentNames, StorageOutputs } from "../constants";
-import { Plans, ProgressMessages, ProgressTitles } from "../messages";
+import { ProgressMessages, ProgressTitles } from "../messages";
+import { hooks } from "@feathersjs/hooks/lib";
+import { ActionExecutionMW } from "../workflow";
 @Service("azure-storage")
 export class AzureStorageResource extends AzureResource {
   readonly name = "azure-storage";
   readonly bicepModuleName = "azureStorage";
   readonly outputs = StorageOutputs;
   readonly finalOutputKeys = ["domain", "endpoint", "resourceId", "indexPath"];
-  configure(
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const action: Action = {
-      name: "azure-storage.configure",
-      type: "function",
+  @hooks([
+    ActionExecutionMW({
       enableTelemetry: true,
       telemetryComponentName: FrontendPluginInfo.PluginName,
       telemetryEventName: "deploy",
@@ -54,35 +48,29 @@ export class AzureStorageResource extends AzureResource {
       enableProgressBar: true,
       progressTitle: ProgressTitles.configureStorage,
       progressSteps: 1,
-      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok([Plans.enableStaticWebsite()]);
-      },
-      execute: async (
-        context: ContextV3,
-        inputs: InputsWithProjectPath,
-        progress?: IProgressHandler
-      ) => {
-        const ctx = context as ProvisionContextV3;
-        const frontendConfigRes = await buildFrontendConfig(
-          ctx.envInfo,
-          ComponentNames.TeamsTab,
-          ctx.tokenProvider.azureAccountProvider
-        );
-        if (frontendConfigRes.isErr()) {
-          return err(frontendConfigRes.error);
-        }
-        progress?.next(ProgressMessages.enableStaticWebsite);
-        const client = new AzureStorageClient(frontendConfigRes.value);
-        await client.enableStaticWebsite();
-        return ok([Plans.enableStaticWebsite()]);
-      },
-    };
-    return ok(action);
+    }),
+  ])
+  async configure(
+    context: ProvisionContextV3,
+    inputs: InputsWithProjectPath,
+    actionContext?: ActionContext
+  ): Promise<Result<undefined, FxError>> {
+    const ctx = context as ProvisionContextV3;
+    const frontendConfigRes = await buildFrontendConfig(
+      ctx.envInfo,
+      ComponentNames.TeamsTab,
+      ctx.tokenProvider.azureAccountProvider
+    );
+    if (frontendConfigRes.isErr()) {
+      return err(frontendConfigRes.error);
+    }
+    actionContext?.progressBar?.next(ProgressMessages.enableStaticWebsite);
+    const client = new AzureStorageClient(frontendConfigRes.value);
+    await client.enableStaticWebsite();
+    return ok(undefined);
   }
-  deploy(): MaybePromise<Result<Action | undefined, FxError>> {
-    const action: Action = {
-      name: "azure-storage.deploy",
-      type: "function",
+  @hooks([
+    ActionExecutionMW({
       enableTelemetry: true,
       telemetryComponentName: FrontendPluginInfo.PluginName,
       telemetryEventName: "deploy",
@@ -92,32 +80,32 @@ export class AzureStorageResource extends AzureResource {
       enableProgressBar: true,
       progressTitle: ProgressTitles.deployingStorage,
       progressSteps: 3,
-      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const deployDir = path.resolve(inputs.projectPath, inputs.folder);
-        return ok([Plans.deploy("Azure Storage", deployDir)]);
-      },
-      execute: async (
-        context: ContextV3,
-        inputs: InputsWithProjectPath,
-        progress?: IProgressHandler
-      ) => {
-        const ctx = context as ProvisionContextV3;
-        const deployDir = path.resolve(inputs.projectPath, inputs.folder);
-        const frontendConfigRes = await buildFrontendConfig(
-          ctx.envInfo,
-          ComponentNames.TeamsTab,
-          ctx.tokenProvider.azureAccountProvider
-        );
-        if (frontendConfigRes.isErr()) {
-          return err(frontendConfigRes.error);
-        }
-        const client = new AzureStorageClient(frontendConfigRes.value);
-        const envName = ctx.envInfo.envName;
-        await FrontendDeployment.doFrontendDeploymentV3(client, deployDir, envName, progress);
-        return ok([Plans.deploy("Azure Storage", deployDir)]);
-      },
-    };
-    return ok(action);
+    }),
+  ])
+  async deploy(
+    context: ProvisionContextV3,
+    inputs: InputsWithProjectPath,
+    actionContext?: ActionContext
+  ): Promise<Result<undefined, FxError>> {
+    const ctx = context as ProvisionContextV3;
+    const deployDir = path.resolve(inputs.projectPath, inputs.folder);
+    const frontendConfigRes = await buildFrontendConfig(
+      ctx.envInfo,
+      ComponentNames.TeamsTab,
+      ctx.tokenProvider.azureAccountProvider
+    );
+    if (frontendConfigRes.isErr()) {
+      return err(frontendConfigRes.error);
+    }
+    const client = new AzureStorageClient(frontendConfigRes.value);
+    const envName = ctx.envInfo.envName;
+    await FrontendDeployment.doFrontendDeploymentV3(
+      client,
+      deployDir,
+      envName,
+      actionContext?.progressBar
+    );
+    return ok(undefined);
   }
 }
 

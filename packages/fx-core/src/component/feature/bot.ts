@@ -3,6 +3,8 @@
 
 import {
   Action,
+  Bicep,
+  CloudResource,
   ContextV3,
   Effect,
   err,
@@ -17,10 +19,11 @@ import {
 } from "@microsoft/teamsfx-api";
 import { assign, cloneDeep } from "lodash";
 import "reflect-metadata";
-import { Service } from "typedi";
+import Container, { Service } from "typedi";
 import { format } from "util";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { isVSProject } from "../../common/projectSettingsHelper";
+import { convertToAlphanumericOnly } from "../../common/utils";
 import { globalVars } from "../../core/globalVars";
 import { CoreQuestionNames } from "../../core/question";
 import { QuestionNames, TemplateProjectsScenarios } from "../../plugins/resource/bot/constants";
@@ -37,14 +40,19 @@ import {
   MessageExtensionItem,
   NotificationOptionItem,
 } from "../../plugins/solution/fx-solution/question";
+import { BicepComponent } from "../bicep";
+import { BotCodeProvider } from "../code/botCode";
 import "../connection/azureWebAppConfig";
 import { ComponentNames, Scenarios } from "../constants";
+import { generateLocalDebugSettings } from "../debug";
 import { Plans } from "../messages";
 import "../resource/appManifest/appManifest";
+import { AppManifest } from "../resource/appManifest/appManifest";
 import "../resource/azureAppService/azureWebApp";
-import "../resource/botService";
-import { generateConfigBiceps } from "../utils";
-import { getComponent, getComponentByScenario, runActionByName } from "../workflow";
+import { BotService } from "../resource/botService";
+import { IdentityResource } from "../resource/identity";
+import { generateConfigBiceps, persistBiceps } from "../utils";
+import { getComponent, getComponentByScenario } from "../workflow";
 @Service("teams-bot")
 export class TeamsBot {
   name = "teams-bot";
@@ -69,7 +77,6 @@ export class TeamsBot {
           "javascript";
 
         let botConfig = getComponent(projectSettings, ComponentNames.TeamsBot);
-
         // bot can only add once
         if (botConfig) {
           return ok(effects);
@@ -86,7 +93,8 @@ export class TeamsBot {
             scenarios: scenarios,
             language: inputs[CoreQuestionNames.ProgrammingLanguage],
           });
-          const res = await runActionByName("bot-code.generate", context, clonedInputs);
+          const botCode = Container.get<BotCodeProvider>(ComponentNames.BotCode);
+          const res = await botCode.generate(context, clonedInputs);
           if (res.isErr()) return err(res.error);
           effects.push("generate bot code");
           botConfig = {
@@ -104,10 +112,12 @@ export class TeamsBot {
         // 2. generate provision bicep
         // 2.0 bicep.init
         {
-          const res = await runActionByName("bicep.init", context, inputs);
+          const bicepComponent = Container.get<BicepComponent>("bicep");
+          const res = await bicepComponent.init(inputs.projectPath);
           if (res.isErr()) return err(res.error);
         }
 
+        const biceps: Bicep[] = [];
         // 2.1 bot-service bicep
         if (!getComponent(projectSettings, ComponentNames.BotService)) {
           const clonedInputs = cloneDeep(inputs);
@@ -115,8 +125,10 @@ export class TeamsBot {
             hosting: inputs.hosting,
             scenario: Scenarios.Bot,
           });
-          const res = await runActionByName("bot-service.generateBicep", context, clonedInputs);
+          const botService = Container.get<BotService>(ComponentNames.BotService);
+          const res = await botService.generateBicep(context, clonedInputs);
           if (res.isErr()) return err(res.error);
+          res.value.forEach((b) => biceps.push(b));
           projectSettings.components.push({
             name: ComponentNames.BotService,
             provision: true,
@@ -136,12 +148,10 @@ export class TeamsBot {
             componentId: ComponentNames.TeamsBot,
             scenario: Scenarios.Bot,
           });
-          const res = await runActionByName(
-            inputs.hosting + ".generateBicep",
-            context,
-            clonedInputs
-          );
+          const hostingComponent = Container.get<CloudResource>(inputs.hosting);
+          const res = await hostingComponent.generateBicep!(context, clonedInputs);
           if (res.isErr()) return err(res.error);
+          res.value.forEach((b) => biceps.push(b));
           projectSettings.components.push({
             name: inputs.hosting,
             scenario: Scenarios.Bot,
@@ -156,7 +166,8 @@ export class TeamsBot {
             componentId: "",
             scenario: "",
           });
-          const res = await runActionByName("identity.generateBicep", context, clonedInputs);
+          const identityComponent = Container.get<IdentityResource>(ComponentNames.Identity);
+          const res = await identityComponent.generateBicep(context, clonedInputs);
           if (res.isErr()) return err(res.error);
           projectSettings.components.push({
             name: ComponentNames.Identity,
@@ -164,7 +175,13 @@ export class TeamsBot {
           });
           effects.push(Plans.generateBicepAndConfig(ComponentNames.Identity));
         }
-
+        //persist bicep
+        const bicepRes = await persistBiceps(
+          inputs.projectPath,
+          convertToAlphanumericOnly(context.projectSetting.appName),
+          biceps
+        );
+        if (bicepRes.isErr()) return bicepRes;
         // 3. generate config bicep
         {
           const res = await generateConfigBiceps(context, inputs);
@@ -174,7 +191,7 @@ export class TeamsBot {
 
         // 4. local debug settings
         {
-          const res = await runActionByName("debug.generateLocalDebugSettings", context, inputs);
+          const res = await generateLocalDebugSettings(context, inputs);
           if (res.isErr()) return err(res.error);
           effects.push("generate local debug configs");
         }
@@ -188,10 +205,8 @@ export class TeamsBot {
                 : "Bot",
           };
           const clonedInputs = cloneDeep(inputs);
-          assign(clonedInputs, {
-            capabilities: [manifestCapability],
-          });
-          const res = await runActionByName("app-manifest.addCapability", context, clonedInputs);
+          const appManifest = Container.get<AppManifest>(ComponentNames.AppManifest);
+          const res = await appManifest.addCapability(clonedInputs, [manifestCapability]);
           if (res.isErr()) return err(res.error);
           effects.push("add bot capability in app manifest");
         }
@@ -213,213 +228,19 @@ export class TeamsBot {
     return ok(this.buildBotAction());
   }
 
-  // /**
-  //  * 1. config bot in project settings
-  //  * 2. generate bot source code
-  //  * 3. generate bot-service and hosting bicep
-  //  * 3. overwrite hosting config bicep
-  //  * 4. persist bicep
-  //  * 5. add capability in teams manifest
-  //  */
-  // addBotAction(context: ContextV3, inputs: InputsWithProjectPath): Action {
-  //   const actions: Action[] = [];
-  //   this.setupCode(actions, context);
-  //   this.setupBicep(actions, context, inputs);
-  //   this.setupManifest(actions);
-  //   this.setupConfiguration(actions);
-  //   return {
-  //     type: "group",
-  //     name: "teams-bot.add",
-  //     mode: "sequential",
-  //     actions: actions,
-  //   };
-  // }
   buildBotAction(): Action {
     return {
       name: "teams-bot.build",
-      type: "call",
-      targetAction: "bot-code.build",
-      required: true,
+      type: "function",
+      execute: async (context, inputs) => {
+        const botCode = Container.get<BotCodeProvider>(ComponentNames.BotCode);
+        const res = await botCode.build(context, inputs);
+        if (res.isErr()) return err(res.error);
+        return ok([]);
+      },
     };
   }
-
-  // private setupConfiguration(actions: Action[]): Action[] {
-  //   actions.push(configBot);
-  //   return actions;
-  // }
-
-  // private setupCode(actions: Action[], context: ContextV3): Action[] {
-  //   if (hasBot(context.projectSetting)) {
-  //     return actions;
-  //   }
-  //   actions.push(generateBotCode);
-  //   actions.push(initLocalDebug);
-  //   return actions;
-  // }
-
-  // private setupBicep(
-  //   actions: Action[],
-  //   context: ContextV3,
-  //   inputs: InputsWithProjectPath
-  // ): Action[] {
-  //   if (hasBot(context.projectSetting)) {
-  //     return actions;
-  //   }
-  //   const hosting = resolveHosting(inputs);
-  //   actions.push(initBicep);
-  //   actions.push(generateBotService(hosting));
-  //   actions.push(generateHosting(hosting, this.name));
-  //   actions.push(configHosting(hosting, this.name));
-  //   // Configure apim if it exists, create identity if it does not exist
-  //   actions.push(configApim);
-  //   actions.push(identityAction);
-  //   return actions;
-  // }
-
-  // private setupManifest(actions: Action[]): Action[] {
-  //   actions.push(addCapabilities);
-  //   return actions;
-  // }
 }
-
-// function hasBot(projectSetting: ProjectSettingsV3): boolean {
-//   return getComponent(projectSetting, ComponentNames.TeamsBot) != undefined;
-// }
-
-// const addCapabilities: Action = {
-//   name: "call:app-manifest.addCapability",
-//   type: "call",
-//   required: true,
-//   targetAction: "app-manifest.addCapability",
-//   pre: (context: ContextV3, inputs: InputsWithProjectPath) => {
-//     const manifestCapability: v3.ManifestCapability = {
-//       name:
-//         inputs[CoreQuestionNames.Features] === MessageExtensionItem.id ? "MessageExtension" : "Bot",
-//     };
-//     inputs.capabilities = [manifestCapability];
-//     return ok(undefined);
-//   },
-// };
-
-// const initBicep: Action = {
-//   type: "call",
-//   targetAction: "bicep.init",
-//   required: true,
-// };
-
-// const generateBotService: (hosting: string) => Action = (hosting) => ({
-//   name: "call:bot-service.generateBicep",
-//   type: "call",
-//   required: true,
-//   targetAction: "bot-service.generateBicep",
-//   inputs: {
-//     hosting: hosting,
-//     scenario: "Bot",
-//   },
-//   post: (context) => {
-//     context.projectSetting.components.push({
-//       name: ComponentNames.BotService,
-//       provision: true,
-//     });
-//     return ok(undefined);
-//   },
-// });
-
-// const generateHosting: (hosting: string, componentId: string) => Action = (
-//   hosting,
-//   componentId
-// ) => ({
-//   name: `call:${hosting}.generateBicep`,
-//   type: "call",
-//   required: true,
-//   targetAction: `${hosting}.generateBicep`,
-//   inputs: {
-//     componentId: componentId,
-//     scenario: "Bot",
-//   },
-//   post: (context) => {
-//     context.projectSetting.components.push({
-//       name: hosting,
-//       connections: [ComponentNames.TeamsBot],
-//       scenario: Scenarios.Bot,
-//     });
-//     ensureComponentConnections(context.projectSetting);
-//     return ok(undefined);
-//   },
-// });
-
-// const configHosting: (hosting: string, componentId: string) => Action = (hosting, componentId) => ({
-//   name: `call:${hosting}-config.generateBicep`,
-//   type: "call",
-//   required: true,
-//   targetAction: `${hosting}-config.generateBicep`,
-//   inputs: {
-//     componentId: componentId,
-//     scenario: "Bot",
-//   },
-// });
-
-// const generateBotCode: Action = {
-//   name: "call:bot-code.generate",
-//   type: "call",
-//   required: true,
-//   targetAction: "bot-code.generate",
-//   inputs: {
-//     folder: "bot",
-//   },
-//   pre: (context: ContextV3, inputs: InputsWithProjectPath) => {
-//     const scenarios = featureToScenario.get(inputs[CoreQuestionNames.Features])?.(
-//       inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER]
-//     );
-//     inputs.scenarios = scenarios;
-//     return ok(undefined);
-//   },
-// };
-
-// const configApim: CallAction = {
-//   name: "call:apim-config.generateBicep",
-//   type: "call",
-//   required: true,
-//   targetAction: "apim-config.generateBicep",
-// };
-
-// const initLocalDebug: Action = {
-//   name: "call:debug.generateLocalDebugSettings",
-//   type: "call",
-//   required: true,
-//   targetAction: "debug.generateLocalDebugSettings",
-// };
-
-// const configBot: Action = {
-//   name: "fx.configBot",
-//   type: "function",
-//   plan: () => ok([Plans.addFeature("Bot")]),
-//   execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-//     const projectSettings = context.projectSetting;
-//     const botCapability = featureToCapability.get(inputs[CoreQuestionNames.Features] as string);
-//     // add teams-bot
-//     const botConfig = getComponent(projectSettings, ComponentNames.TeamsBot);
-//     if (botConfig) {
-//       if (botCapability && !botConfig.capabilities.includes(botCapability)) {
-//         botConfig.capabilities.push(botCapability);
-//       }
-//       return ok([Plans.addFeature("Bot")]);
-//     }
-
-//     projectSettings.components.push({
-//       name: ComponentNames.TeamsBot,
-//       hosting: inputs.hosting,
-//       deploy: true,
-//       capabilities: botCapability ? [botCapability] : [],
-//       build: true,
-//       folder: "bot",
-//     });
-//     ensureComponentConnections(projectSettings);
-//     projectSettings.programmingLanguage ||= inputs[CoreQuestionNames.ProgrammingLanguage];
-//     globalVars.isVS = isVSProject(projectSettings);
-//     return ok([Plans.addFeature("Bot")]);
-//   },
-// };
 
 /**
  *

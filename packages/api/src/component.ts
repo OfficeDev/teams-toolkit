@@ -1,8 +1,9 @@
 import { Result } from "neverthrow";
 import { FxError } from "./error";
 import { InputsWithProjectPath } from "./v2/types";
-import { Action } from "./action";
-import { ContextV3, MaybePromise } from "./types";
+import { ContextV3, MaybePromise, ProvisionContextV3 } from "./types";
+import { Bicep } from "./bicep";
+import { IProgressHandler } from "./qm";
 export { InputsWithProjectPath };
 export interface ResourceOutput {
   key: string;
@@ -21,31 +22,27 @@ export interface CloudResource {
   readonly secretKeys?: string[];
   generateBicep?: (
     context: ContextV3,
-    inputs: InputsWithProjectPath
-  ) => MaybePromise<Result<Action | undefined, FxError>>; // MaybePromise<Result<Bicep, FxError>>
+    inputs: InputsWithProjectPath,
+    actionContext?: ActionContext
+  ) => Promise<Result<Bicep[], FxError>>;
   provision?: (
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ) => MaybePromise<Result<Action | undefined, FxError>>; // MaybePromise<Result<undefined, FxError>>
+    context: ProvisionContextV3,
+    inputs: InputsWithProjectPath,
+    actionContext?: ActionContext
+  ) => Promise<Result<undefined, FxError>>;
   configure?: (
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ) => MaybePromise<Result<Action | undefined, FxError>>; // MaybePromise<Result<undefined, FxError>>
+    context: ProvisionContextV3,
+    inputs: InputsWithProjectPath,
+    actionContext?: ActionContext
+  ) => Promise<Result<undefined, FxError>>;
   deploy?: (
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ) => MaybePromise<Result<Action | undefined, FxError>>; // MaybePromise<Result<undefined, FxError>>
+    context: ProvisionContextV3,
+    inputs: InputsWithProjectPath,
+    actionContext?: ActionContext
+  ) => Promise<Result<undefined, FxError>>;
 }
 
-export interface SourceCodeProvider {
-  readonly name: string;
-  readonly description?: string;
-  generate: (
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ) => MaybePromise<Result<Action | undefined, FxError>>; // MaybePromise<Result<undefined, FxError>>
-  build?: (
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ) => MaybePromise<Result<Action | undefined, FxError>>; // MaybePromise<Result<undefined, FxError>>
+export interface ActionContext {
+  progressBar?: IProgressHandler;
+  telemetryProps?: Record<string, string>;
 }

@@ -57,10 +57,12 @@ export class SPFxTab {
             name: "teams-tab",
             hosting: ComponentNames.SPFx,
             deploy: true,
+            folder: inputs.folder || "SPFx",
+            build: true,
           });
           // add hosting component
           projectSettings.components.push({
-            name: inputs.hosting,
+            name: ComponentNames.SPFx,
             provision: true,
           });
           projectSettings.programmingLanguage =

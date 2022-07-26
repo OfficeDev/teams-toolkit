@@ -14,7 +14,8 @@ import {
   Result,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
-import { Service } from "typedi";
+import Container, { Service } from "typedi";
+import { BicepComponent } from "../bicep";
 import "../connection/azureWebAppConfig";
 import { ComponentNames } from "../constants";
 import { Plans } from "../messages";
@@ -53,9 +54,15 @@ export class KeyVaultFeature {
           provision: true,
         });
         effects.push(Plans.addFeature("key-vault"));
-
+        // bicep.init
+        {
+          const bicepComponent = Container.get<BicepComponent>("bicep");
+          const res = await bicepComponent.init(inputs.projectPath);
+          if (res.isErr()) return err(res.error);
+        }
         // key-vault provision bicep
         {
+          const keyVaultComponent = Container;
           const res = await runActionByName("key-vault.generateBicep", context, inputs);
           if (res.isErr()) return err(res.error);
           effects.push("generate key-vault provision bicep");

@@ -5,6 +5,7 @@
 import {
   Bicep,
   CallServiceEffect,
+  CloudResource,
   Component,
   ConfigurationBicep,
   ContextV3,
@@ -21,9 +22,10 @@ import fs from "fs-extra";
 import { assign, cloneDeep } from "lodash";
 import os from "os";
 import * as path from "path";
+import Container from "typedi";
 import * as uuid from "uuid";
 import { getProjectSettingsVersion } from "../common/projectSettingsHelper";
-import { getProjectTemplatesFolderPath } from "../common/utils";
+import { convertToAlphanumericOnly, getProjectTemplatesFolderPath } from "../common/utils";
 import { LocalCrypto } from "../core/crypto";
 import { environmentManager } from "../core/environment";
 import { TOOLS } from "../core/globalVars";
@@ -240,6 +242,18 @@ export async function persistParams(
       parameterFileContent = parameterFileContent.replace(/\r?\n/g, os.EOL);
       await fs.writeFile(parameterEnvFilePath, parameterFileContent);
     }
+  }
+  return ok(undefined);
+}
+
+export async function persistBiceps(
+  projectPath: string,
+  appName: string,
+  biceps: Bicep[]
+): Promise<Result<any, FxError>> {
+  for (const bicep of biceps) {
+    const res = await persistBicep(projectPath, appName, bicep);
+    if (res.isErr()) return res;
   }
   return ok(undefined);
 }
@@ -476,15 +490,21 @@ export async function generateConfigBiceps(
       config.name === ComponentNames.Function ||
       config.name === ComponentNames.APIM
     ) {
-      const configActionName = config.name + "-config.generateBicep";
       const scenario = config.scenario;
       const clonedInputs = cloneDeep(inputs);
       assign(clonedInputs, {
         componentId: config.name === ComponentNames.APIM ? "" : scenarioToComponent.get(scenario),
         scenario: config.name === ComponentNames.APIM ? "" : scenario,
       });
-      const res = await runActionByName(configActionName, context, clonedInputs);
+      const component = Container.get<CloudResource>(config.name + "-config");
+      const res = await component.generateBicep!(context, clonedInputs);
       if (res.isErr()) return err(res.error);
+      const persistRes = await persistBiceps(
+        inputs.projectPath,
+        convertToAlphanumericOnly(context.projectSetting.appName),
+        res.value
+      );
+      if (persistRes.isErr()) return persistRes;
     }
   }
   return ok(undefined);

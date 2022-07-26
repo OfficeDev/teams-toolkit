@@ -2,25 +2,27 @@
 // Licensed under the MIT license.
 
 import {
-  Action,
+  Bicep,
   CloudResource,
   ContextV3,
+  err,
   FxError,
   InputsWithProjectPath,
-  MaybePromise,
   ok,
+  ProvisionContextV3,
   Result,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
 import { ComponentNames } from "../../constants";
-import { GetActionConfigure } from "./actions/configure";
-import { GetActionGenerateAuthFiles } from "./actions/generateAuthFiles";
-import { GetActionGenerateBicep } from "./actions/generateBicep";
-import { GetActionGenerateManifest } from "./actions/generateManifest";
-import { GetActionProvision } from "./actions/provision";
-import { GetActionSetApplication } from "./actions/setApplication";
-
+import * as path from "path";
+import fs from "fs-extra";
+import { getTemplatesFolder } from "../../../folder";
+import { AadAppForTeamsImpl } from "../../../plugins/resource/aad/plugin";
+import { convertContext } from "./actions/utils";
+import { convertProjectSettingsV3ToV2 } from "../../migrate";
+import { generateAadManifestTemplate } from "../../../core/generateAadManifestTemplate";
+import { createAuthFiles } from "../../../plugins/solution/fx-solution/v2/executeUserTask";
 @Service(ComponentNames.AadApp)
 export class AadApp implements CloudResource {
   readonly type = "cloud";
@@ -82,40 +84,75 @@ export class AadApp implements CloudResource {
     "tenantId",
   ];
   secretFields = ["clientSecret"];
-  generateManifest(
+  async generateManifest(
     context: ContextV3,
     inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    return ok(GetActionGenerateManifest());
+  ): Promise<Result<undefined, FxError>> {
+    const projectSetting = convertProjectSettingsV3ToV2(context.projectSetting);
+    await generateAadManifestTemplate(inputs.projectPath, projectSetting);
+    return ok(undefined);
   }
-  generateAuthFiles(
+  async generateAuthFiles(
     context: ContextV3,
     inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    return ok(GetActionGenerateAuthFiles());
+  ): Promise<Result<undefined, FxError>> {
+    const res = await createAuthFiles(inputs, context, inputs.needsTab, inputs.needsBot);
+    if (res.isErr()) return err(res.error);
+    return ok(undefined);
   }
-  generateBicep(
+  async generateBicep(
     context: ContextV3,
     inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    return ok(GetActionGenerateBicep());
+  ): Promise<Result<Bicep[], FxError>> {
+    const bicep: Bicep = {
+      type: "bicep",
+      Parameters: await fs.readJson(
+        path.join(getTemplatesFolder(), "bicep", "aadApp.parameters.json")
+      ),
+    };
+    return ok([bicep]);
   }
-  provision(
-    context: ContextV3,
+  async provision(
+    context: ProvisionContextV3,
     inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    return ok(GetActionProvision());
+  ): Promise<Result<undefined, FxError>> {
+    const ctx = context as ProvisionContextV3;
+    ctx.envInfo!.state[ComponentNames.AadApp] ??= {};
+    const aadAppImplement = new AadAppForTeamsImpl();
+    const convertCtx = convertContext(ctx, inputs);
+    await aadAppImplement.provisionUsingManifest(convertCtx);
+    const convertState = convertCtx.envInfo.state.get("fx-resource-aad-app-for-teams");
+    convertState.forEach((v: any, k: string) => {
+      ctx.envInfo!.state[ComponentNames.AadApp][k] = v;
+    });
+    return ok(undefined);
   }
-  configure(
-    context: ContextV3,
+  async configure(
+    context: ProvisionContextV3,
     inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    return ok(GetActionConfigure());
+  ): Promise<Result<undefined, FxError>> {
+    const ctx = context as ProvisionContextV3;
+    const aadAppImplement = new AadAppForTeamsImpl();
+    const convertCtx = convertContext(ctx, inputs);
+    await aadAppImplement.postProvisionUsingManifest(convertCtx);
+    const convertState = convertCtx.envInfo.state.get("fx-resource-aad-app-for-teams");
+    convertState.forEach((v: any, k: string) => {
+      ctx.envInfo!.state[ComponentNames.AadApp][k] = v;
+    });
+    return ok(undefined);
   }
-  setApplicationInContext(
-    context: ContextV3,
+  async setApplicationInContext(
+    context: ProvisionContextV3,
     inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    return ok(GetActionSetApplication());
+  ): Promise<Result<undefined, FxError>> {
+    const ctx = context as ProvisionContextV3;
+    const aadAppImplement = new AadAppForTeamsImpl();
+    const convertCtx = convertContext(ctx, inputs);
+    await aadAppImplement.setApplicationInContext(convertCtx);
+    const convertState = convertCtx.envInfo.state.get("fx-resource-aad-app-for-teams");
+    convertState.forEach((v: any, k: string) => {
+      ctx.envInfo!.state[ComponentNames.AadApp][k] = v;
+    });
+    return ok(undefined);
   }
 }

@@ -3,6 +3,7 @@
 
 import {
   Action,
+  ActionContext,
   assembleError,
   Bicep,
   Component,
@@ -834,34 +835,14 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
         progressBar.start();
       }
       if (action.enableTelemetry || action.enableProgressBar) {
-        const actionContext = {
-          progress: progressBar,
+        const actionContext: ActionContext = {
+          progressBar: progressBar,
           telemetryProps: telemetryProps,
         };
         ctx.arguments.push(actionContext);
       }
       await next();
       if (ctx.result.isErr()) throw ctx.result.error;
-      if (ctx.result.value) {
-        //persist bicep files for bicep effects
-        for (const effect of ctx.result.value) {
-          if (typeof effect !== "string" && effect.type === "bicep") {
-            const bicep = effect as Bicep;
-            if (bicep) {
-              const context = ctx.arguments[0] as ContextV3;
-              const inputs = ctx.arguments[1] as InputsWithProjectPath;
-              await persistBicepPlans(inputs.projectPath, bicep);
-              // TODO: handle the returned error of bicep generation
-              const bicepRes = await persistBicep(
-                inputs.projectPath,
-                convertToAlphanumericOnly(context.projectSetting.appName),
-                bicep
-              );
-              if (bicepRes.isErr()) throw bicepRes.error;
-            }
-          }
-        }
-      }
       // send end telemetry
       if (action.enableTelemetry) {
         TOOLS.telemetryReporter?.sendTelemetryEvent(eventName, {
@@ -881,12 +862,12 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
         fxError = assembleError(e);
         if (fxError.source === "unknown") {
           fxError.source = action.errorSource || fxError.source;
-        }
-        if (fxError instanceof UserError) {
-          fxError.helpLink = fxError.helpLink || action.errorHelpLink;
-        }
-        if (fxError instanceof SystemError) {
-          fxError.issueLink = fxError.issueLink || action.errorIssueLink;
+          if (fxError instanceof UserError) {
+            fxError.helpLink = fxError.helpLink || action.errorHelpLink;
+          }
+          if (fxError instanceof SystemError) {
+            fxError.issueLink = fxError.issueLink || action.errorIssueLink;
+          }
         }
       }
       // send error telemetry

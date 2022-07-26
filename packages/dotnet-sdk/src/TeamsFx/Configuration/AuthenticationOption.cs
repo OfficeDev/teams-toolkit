@@ -28,12 +28,6 @@ public class AuthenticationOptions
     public string ClientSecret { get; set; }
 
     /// <summary>
-    /// AAD tenant id.
-    /// </summary>
-    [RegularExpression(@"^[0-9A-Fa-f\-]{36}$")]
-    public string TenantId { get; set; }
-
-    /// <summary>
     /// Application ID URI.
     /// </summary>
     public string ApplicationIdUri { get; set; }

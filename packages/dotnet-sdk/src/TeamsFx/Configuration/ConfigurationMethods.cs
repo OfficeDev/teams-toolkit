@@ -8,6 +8,7 @@ using Microsoft.TeamsFx;
 using Microsoft.TeamsFx.Configuration;
 using Microsoft.TeamsFx.Helper;
 using Microsoft.AspNetCore.Http;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -37,7 +38,7 @@ public static class TeamsFxConfigurationMethods
             botAuthOption.ClientId = authOptionsValue.ClientId;
             botAuthOption.ClientSecret = authOptionsValue.ClientSecret;
             botAuthOption.OAuthAuthority = authOptionsValue.OAuthAuthority;
-            botAuthOption.TenantId = authOptionsValue.TenantId;
+            botAuthOption.TenantId = (new Regex(@"[^\/]+$")).Match(authOptionsValue.OAuthAuthority).Value;
             botAuthOption.ApplicationIdUri = authOptionsValue.ApplicationIdUri;
             botAuthOption.LoginStartPageEndpoint = authOptionsValue.Bot.LoginStartPageEndpoint;
         }).ValidateDataAnnotations();
@@ -77,7 +78,7 @@ public static class TeamsFxConfigurationMethods
                 botAuthOption.ClientId = authOptionsValue.ClientId;
                 botAuthOption.ClientSecret = authOptionsValue.ClientSecret;
                 botAuthOption.OAuthAuthority = authOptionsValue.OAuthAuthority;
-                botAuthOption.TenantId = authOptionsValue.TenantId;
+                botAuthOption.TenantId = (new Regex(@"[^\/]+$")).Match(authOptionsValue.OAuthAuthority).Value;
                 botAuthOption.ApplicationIdUri = authOptionsValue.ApplicationIdUri;
                 botAuthOption.LoginStartPageEndpoint = authOptionsValue.Bot.LoginStartPageEndpoint;
             }).ValidateDataAnnotations();
@@ -121,7 +122,7 @@ public static class TeamsFxConfigurationMethods
             botAuthOption.ClientId = authOptionsValue.ClientId;
             botAuthOption.ClientSecret = authOptionsValue.ClientSecret;
             botAuthOption.OAuthAuthority = authOptionsValue.OAuthAuthority;
-            botAuthOption.TenantId = authOptionsValue.TenantId;
+            botAuthOption.TenantId = (new Regex(@"[^\/]+$")).Match(authOptionsValue.OAuthAuthority).Value;
             botAuthOption.ApplicationIdUri = authOptionsValue.ApplicationIdUri;
             botAuthOption.LoginStartPageEndpoint = authOptionsValue.Bot.LoginStartPageEndpoint;
         }).ValidateDataAnnotations();

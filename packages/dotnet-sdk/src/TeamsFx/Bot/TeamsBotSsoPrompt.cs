@@ -84,7 +84,7 @@ public class TeamsBotSsoPrompt : Dialog
     /// Initializes a new instance of the <see cref="TeamsBotSsoPrompt"/> class.
     /// </summary>
     /// <param name="dialogId">The ID to assign to this prompt.</param>
-    /// <param name="settings">Additional OAuth settings to use with this instance of the prompt.
+    /// <param name="settings">Additional OAuth settings to use with this instance of the prompt.</param>
     /// <remarks>The value of <paramref name="dialogId"/> must be unique within the
     /// <see cref="DialogSet"/> or <see cref="ComponentDialog"/> to which the prompt is added.</remarks>
     /// <exception cref="ExceptionCode.InvalidParameter">When input parameters is null.</exception>

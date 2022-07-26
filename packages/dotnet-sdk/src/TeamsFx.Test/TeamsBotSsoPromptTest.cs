@@ -206,9 +206,9 @@ public class TeamsBotSsoPromptTest
             OAuthCard card = ((Activity)activity).Attachments[0].Content as OAuthCard;
             Assert.IsNotNull(card);
             Assert.AreEqual(1, card!.Buttons.Count);
-            Assert.AreEqual(ActionTypes.Signin, card.Buttons[0].Type);
+            Assert.AreEqual(ActionTypes.Signin, card!.Buttons[0].Type);
             Assert.AreEqual($"{testLoginStartPageEndpoint}?scope=User.Read&clientId={testClientId}&tenantId={testTenantId}&loginHint={testUserPrincipalName}", card.Buttons[0].Value);
-            Assert.AreEqual($"{testApplicationIdUri}/access_as_user", card.TokenExchangeResource.Uri);
+            Assert.AreEqual($"{testApplicationIdUri}/access_as_user", card!.TokenExchangeResource.Uri);
         })
         .Send(new Activity()
         {

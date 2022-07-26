@@ -110,6 +110,7 @@ export class TeamsApi {
         {
           const clonedInputs = cloneDeep(inputs);
           assign(clonedInputs, {
+            componentId: ComponentNames.TeamsApi,
             hosting: inputs.hosting,
             scenario: Scenarios.Api,
           });

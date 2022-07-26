@@ -12,30 +12,25 @@ import {
   Platform,
   Result,
 } from "@microsoft/teamsfx-api";
-import { cloneDeep } from "lodash";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
+import { getComponent, runActionByName } from "../workflow";
+import "../connection/azureWebAppConfig";
+import "../resource/azureSql";
+import "../resource/identity";
+import { ComponentNames } from "../constants";
 import { hasApi } from "../../common/projectSettingsHelperV3";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { BicepComponent } from "../bicep";
-import "../connection/azureWebAppConfig";
-import { ComponentNames } from "../constants";
 import { AzureSqlResource } from "../resource/azureSql";
 import { UtilFunctions } from "../resource/azureSql/actions/configure";
-import "../resource/identity";
 import { generateConfigBiceps, persistBiceps } from "../utils";
-import { getComponent, runActionByName } from "../workflow";
+import { cloneDeep } from "lodash";
 
 @Service("sql")
 export class Sql {
   name = "sql";
 
-  /**
-   * 1. config sql
-   * 2. add sql provision bicep
-   * 3. re-generate resources that connect to sql
-   * 4. persist bicep
-   */
   add(
     context: ContextV3,
     inputs: InputsWithProjectPath
@@ -56,7 +51,6 @@ export class Sql {
           const res = await runActionByName("teams-api.add", context, inputs);
           if (res.isErr()) return err(res.error);
         }
-        if (sqlComponent) return ok([]);
         const projectSettings = context.projectSetting;
         const remarks: string[] = ["config 'azure-sql' in projectSettings"];
         projectSettings.components.push({

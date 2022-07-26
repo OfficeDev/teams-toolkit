@@ -3,7 +3,6 @@
 
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
-using Microsoft.Bot.Builder.Teams;
 using Microsoft.Bot.Schema.Teams;
 using Microsoft.Bot.Schema;
 using System.Text.RegularExpressions;
@@ -78,6 +77,7 @@ public class TeamsBotSsoPrompt : Dialog
     private readonly TeamsBotSsoPromptSettings _settings;
     private const string PersistedExpires = "expires";
     internal IIdentityClientAdapter _identityClientAdapter { private get; set; }
+    internal ITeamsInfo _teamsInfo { private get; set; }
 
 
     /// <summary>
@@ -85,7 +85,6 @@ public class TeamsBotSsoPrompt : Dialog
     /// </summary>
     /// <param name="dialogId">The ID to assign to this prompt.</param>
     /// <param name="settings">Additional OAuth settings to use with this instance of the prompt.
-    /// custom validation for this prompt.</param>
     /// <remarks>The value of <paramref name="dialogId"/> must be unique within the
     /// <see cref="DialogSet"/> or <see cref="ComponentDialog"/> to which the prompt is added.</remarks>
     /// <exception cref="ExceptionCode.InvalidParameter">When input parameters is null.</exception>
@@ -102,6 +101,7 @@ public class TeamsBotSsoPrompt : Dialog
             .WithAuthority(_settings.BotAuthOptions.OAuthAuthority)
             .Build();
         _identityClientAdapter = new IdentityClientAdapter(confidentialClientApplication);
+        _teamsInfo = new TeamsInfoWrapper();
     }
 
     /// <summary>
@@ -142,8 +142,7 @@ public class TeamsBotSsoPrompt : Dialog
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     /// <remarks>If the task is successful, the result indicates whether the dialog is still
     /// active after the turn has been processed by the dialog.
-    /// <para>The prompt generally continues to receive the user's replies until it accepts the
-    /// user's reply as valid input for the prompt.</para></remarks>
+    /// <para>The prompt generally ends on invalid message from user's reply.</para></remarks>
     /// <exception cref="ExceptionCode.InternalError">When failed to login with unknown error.</exception>
     /// <exception cref="ExceptionCode.ServiceError">When failed to get access token from identity server(AAD).</exception>
     public override async Task<DialogTurnResult> ContinueDialogAsync(DialogContext dc, CancellationToken cancellationToken = default(CancellationToken))
@@ -192,7 +191,6 @@ public class TeamsBotSsoPrompt : Dialog
     /// <param name="dc">DialogContext.</param>
     /// <param name="cancellationToken">CancellationToken.</param>
     /// <returns>PromptRecognizerResult.</returns>
-    /// 
     /// <exception cref="ExceptionCode.InternalError">When failed to login with unknown error.</exception>
     /// <exception cref="ExceptionCode.ServiceError">When failed to get access token from identity server(AAD).</exception>
     private async Task<PromptRecognizerResult<TeamsBotSsoPromptTokenResponse>> RecognizeTokenAsync(DialogContext dc, CancellationToken cancellationToken)
@@ -292,7 +290,7 @@ public class TeamsBotSsoPrompt : Dialog
     /// <returns>The task to await.</returns>
     private async Task SendOAuthCardToObtainTokenAsync(ITurnContext context, CancellationToken cancellationToken)
     {
-        TeamsChannelAccount account = await TeamsInfo.GetMemberAsync(context, context.Activity.From.Id, cancellationToken).ConfigureAwait(false);
+        TeamsChannelAccount account = await _teamsInfo.GetTeamsMemberAsync(context, context.Activity.From.Id, cancellationToken).ConfigureAwait(false);
 
         string loginHint = account.UserPrincipalName ?? "";
         SignInResource signInResource = GetSignInResource(loginHint);

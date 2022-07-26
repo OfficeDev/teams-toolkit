@@ -42,6 +42,7 @@ fakeCert
   const ssoTokenExp = now + timeInterval;
   const testDisplayName = "Teams Framework Unit Test";
   const testObjectId = "11111111-2222-3333-4444-555555555555";
+  const testTenantId = "11111111-2222-3333-4444-555555555555";
   const testPreferredUserName = "test@microsoft.com";
   const ssoToken = jwtBuilder({
     algorithm: "HS256",
@@ -58,7 +59,7 @@ fakeCert
     rh: "test_rh",
     scp: "access_as_user",
     sub: "test_sub",
-    tid: "test_tenant_id",
+    tid: testTenantId,
     uti: "test_uti",
     ver: "2.0",
   });
@@ -304,6 +305,7 @@ fakeCert
     const userinfo: UserInfo = oboCredential.getUserInfo();
     assert.strictEqual(userinfo.displayName, testDisplayName);
     assert.strictEqual(userinfo.objectId, testObjectId);
+    assert.strictEqual(userinfo.tenantId, testTenantId);
     assert.strictEqual(userinfo.preferredUserName, testPreferredUserName);
   });
 });

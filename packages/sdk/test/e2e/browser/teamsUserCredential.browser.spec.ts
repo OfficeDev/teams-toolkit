@@ -14,6 +14,7 @@ const env = (window as any).__env__;
 
 describe("TeamsUserCredential Tests - Browser", () => {
   const TEST_USER_OBJECT_ID = env.SDK_INTEGRATION_TEST_USER_OBJECT_ID;
+  const TEST_AAD_TENANT_ID = env.SDK_INTEGRATION_TEST_AAD_TENANT_ID;
   const UIREQUIREDERROR = "UiRequiredError";
   const FAKE_LOGIN_ENDPOINT = "FakeLoginEndpoint";
   let ssoToken: SSOToken;
@@ -43,6 +44,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
     assert.strictEqual(info.preferredUserName, env.SDK_INTEGRATION_TEST_ACCOUNT.split(";")[0]);
     assert.strictEqual(info.displayName, "Integration Test");
     assert.strictEqual(info.objectId, TEST_USER_OBJECT_ID);
+    assert.strictEqual(info.tenantId, TEST_AAD_TENANT_ID);
   });
 
   it("GetToken should success with consent scope", async function () {

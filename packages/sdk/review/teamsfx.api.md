@@ -370,6 +370,7 @@ export interface UserInfo {
     displayName: string;
     objectId: string;
     preferredUserName: string;
+    tenantId: string;
 }
 
 // (No @packageDocumentation comment for this package)

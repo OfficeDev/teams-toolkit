@@ -39,8 +39,9 @@ import { Utils } from "../../plugins/resource/spfx/utils/utils";
 import { convert2Context } from "../../plugins/resource/utils4v2";
 import { cpUtils } from "../../plugins/solution/fx-solution/utils/depsChecker/cpUtils";
 import { ComponentNames } from "../constants";
+import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { DefaultManifestProvider } from "../resource/appManifest/manifestProvider";
-import { ActionExecutionMW, getComponent } from "../workflow";
+import { getComponent } from "../workflow";
 /**
  * SPFx tab scaffold
  */

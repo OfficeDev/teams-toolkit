@@ -15,7 +15,7 @@ import "reflect-metadata";
 import { Service } from "typedi";
 import { SPFxPluginImpl } from "../../plugins/resource/spfx/v3/plugin";
 import { ComponentNames } from "../constants";
-import { ActionExecutionMW } from "../workflow";
+import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 
 @Service(ComponentNames.SPFx)
 export class SpfxResource implements CloudResource {

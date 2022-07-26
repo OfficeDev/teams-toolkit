@@ -32,12 +32,13 @@ import { IBotRegistration } from "../../plugins/resource/bot/appStudio/interface
 import { AppStudio } from "../../plugins/resource/bot/appStudio/appStudio";
 import { BotServiceOutputs, ComponentNames } from "../constants";
 import { normalizeName } from "../utils";
-import { ActionExecutionMW, getComponent } from "../workflow";
+import { getComponent } from "../workflow";
 import { AzureResource } from "./azureResource";
 import { telemetryHelper } from "../../plugins/resource/bot/utils/telemetry-helper";
 import { Plans, ProgressMessages, ProgressTitles } from "../messages";
 import { hooks } from "@feathersjs/hooks/lib";
 import { merge } from "lodash";
+import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 @Service("bot-service")
 export class BotService extends AzureResource {
   outputs = BotServiceOutputs;

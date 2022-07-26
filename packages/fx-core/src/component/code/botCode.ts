@@ -37,8 +37,9 @@ import { telemetryHelper } from "../../plugins/resource/bot/utils/telemetry-help
 import { TemplateZipFallbackError, UnzipError } from "../../plugins/resource/bot/v3/error";
 import { ComponentNames } from "../constants";
 import { ProgressMessages, ProgressTitles } from "../messages";
+import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { commonTelemetryPropsForBot } from "../resource/botService";
-import { ActionExecutionMW, getComponent } from "../workflow";
+import { getComponent } from "../workflow";
 /**
  * bot scaffold plugin
  */

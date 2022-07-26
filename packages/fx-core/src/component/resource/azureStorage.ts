@@ -30,7 +30,7 @@ import { FrontendPluginInfo } from "../../plugins/resource/frontend/constants";
 import { ComponentNames, StorageOutputs } from "../constants";
 import { ProgressMessages, ProgressTitles } from "../messages";
 import { hooks } from "@feathersjs/hooks/lib";
-import { ActionExecutionMW } from "../workflow";
+import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 @Service("azure-storage")
 export class AzureStorageResource extends AzureResource {
   readonly name = "azure-storage";

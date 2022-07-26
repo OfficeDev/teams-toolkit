@@ -21,7 +21,8 @@ import { FunctionDeploy } from "../../plugins/resource/function/ops/deploy";
 import { FunctionScaffold } from "../../plugins/resource/function/ops/scaffold";
 import { ComponentNames } from "../constants";
 import { ProgressMessages, ProgressTitles } from "../messages";
-import { ActionExecutionMW, getComponent } from "../workflow";
+import { ActionExecutionMW } from "../middleware/actionExecutionMW";
+import { getComponent } from "../workflow";
 /**
  * api scaffold
  */

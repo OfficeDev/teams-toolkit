@@ -38,7 +38,7 @@ import {
 import { Messages } from "../../plugins/resource/frontend/resources/messages";
 import { Scenario, TemplateInfo } from "../../plugins/resource/frontend/resources/templateInfo";
 import { ComponentNames } from "../constants";
-import { ActionExecutionMW, getComponent } from "../workflow";
+import { getComponent } from "../workflow";
 import { convertToLangKey } from "./botCode";
 import { envFilePath, EnvKeys, saveEnvFile } from "../../plugins/resource/frontend/env";
 import { isVSProject } from "../../common/projectSettingsHelper";
@@ -50,6 +50,7 @@ import { hasAAD, hasApi } from "../../common/projectSettingsHelperV3";
 import { ScaffoldProgress } from "../../plugins/resource/frontend/resources/steps";
 import { ProgressMessages, ProgressTitles } from "../messages";
 import { hooks } from "@feathersjs/hooks/lib";
+import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 /**
  * tab scaffold
  */

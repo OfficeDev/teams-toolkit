@@ -65,7 +65,7 @@ import {
 } from "./constants";
 import { readAppManifest, writeAppManifest } from "./utils";
 import { hooks } from "@feathersjs/hooks/lib";
-import { ActionExecutionMW } from "../../workflow";
+import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 
 @Service("app-manifest")
 export class AppManifest implements CloudResource {

@@ -23,7 +23,7 @@ import { Plans } from "../messages";
 import "../resource/azureSql";
 import "../resource/identity";
 import { KeyVaultResource } from "../resource/keyVault";
-import { generateConfigBiceps, persistBiceps } from "../utils";
+import { generateConfigBiceps, bicepUtils } from "../utils";
 import { getComponent } from "../workflow";
 
 @Service("key-vault-feature")
@@ -68,7 +68,7 @@ export class KeyVaultFeature {
           const res = await keyVaultComponent.generateBicep(context, inputs);
           if (res.isErr()) return err(res.error);
           effects.push("generate key-vault provision bicep");
-          const persistRes = await persistBiceps(
+          const persistRes = await bicepUtils.persistBiceps(
             inputs.projectPath,
             convertToAlphanumericOnly(context.projectSetting.appName),
             res.value

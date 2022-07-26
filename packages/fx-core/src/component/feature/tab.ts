@@ -35,7 +35,7 @@ import { Plans } from "../messages";
 import { getComponent, getComponentByScenario, runActionByName } from "../workflow";
 import { assign, cloneDeep } from "lodash";
 import { hasTab } from "../../common/projectSettingsHelperV3";
-import { generateConfigBiceps, persistBiceps } from "../utils";
+import { generateConfigBiceps, bicepUtils } from "../utils";
 import { TabCodeProvider } from "../code/tabCode";
 import { BicepComponent } from "../bicep";
 import { convertToAlphanumericOnly } from "../../common/utils";
@@ -138,7 +138,7 @@ export class TeamsTab {
           }
 
           //persist bicep
-          const bicepRes = await persistBiceps(
+          const bicepRes = await bicepUtils.persistBiceps(
             inputs.projectPath,
             convertToAlphanumericOnly(context.projectSetting.appName),
             biceps

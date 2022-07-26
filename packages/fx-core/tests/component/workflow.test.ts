@@ -20,6 +20,7 @@ import * as templateAction from "../../src/common/template-utils/templatesAction
 import "../../src/component/core";
 import "../../src/component/feature/bot";
 import "../../src/component/feature/sql";
+import "../../src/component/resource/botService";
 import { createContextV3 } from "../../src/component/utils";
 import { runActionByName } from "../../src/component/workflow";
 import { MockTools, randomAppName } from "../core/utils";

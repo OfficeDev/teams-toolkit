@@ -32,7 +32,7 @@ import { BicepComponent } from "../bicep";
 import { ComponentNames } from "../constants";
 import { Plans } from "../messages";
 import { APIMResource } from "../resource/apim";
-import { generateConfigBiceps, persistBiceps } from "../utils";
+import { generateConfigBiceps, bicepUtils } from "../utils";
 import { getComponent, runAction, runActionByName } from "../workflow";
 
 @Service(ComponentNames.APIMFeature)
@@ -91,7 +91,7 @@ export class ApimFeature {
           const apimResource = Container.get<APIMResource>(ComponentNames.APIM);
           const res = await apimResource.generateBicep(context, inputs);
           if (res.isErr()) return err(res.error);
-          const bicepRes = await persistBiceps(
+          const bicepRes = await bicepUtils.persistBiceps(
             inputs.projectPath,
             convertToAlphanumericOnly(context.projectSetting.appName),
             res.value

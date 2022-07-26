@@ -24,7 +24,7 @@ import { convertToAlphanumericOnly } from "../../common/utils";
 import { BicepComponent } from "../bicep";
 import { AzureSqlResource } from "../resource/azureSql";
 import { UtilFunctions } from "../resource/azureSql/actions/configure";
-import { generateConfigBiceps, persistBiceps } from "../utils";
+import { generateConfigBiceps, bicepUtils } from "../utils";
 import { cloneDeep } from "lodash";
 
 @Service("sql")
@@ -74,7 +74,7 @@ export class Sql {
           const sqlResource = Container.get<AzureSqlResource>(ComponentNames.AzureSQL);
           const res = await sqlResource.generateBicep(context, clonedInputs);
           if (res.isErr()) return err(res.error);
-          const bicepRes = await persistBiceps(
+          const bicepRes = await bicepUtils.persistBiceps(
             inputs.projectPath,
             convertToAlphanumericOnly(context.projectSetting.appName),
             res.value

@@ -52,7 +52,7 @@ import { AppManifest } from "../resource/appManifest/appManifest";
 import "../resource/azureAppService/azureWebApp";
 import { BotService } from "../resource/botService";
 import { IdentityResource } from "../resource/identity";
-import { generateConfigBiceps, persistBiceps } from "../utils";
+import { generateConfigBiceps, bicepUtils } from "../utils";
 import { getComponent, getComponentByScenario } from "../workflow";
 @Service("teams-bot")
 export class TeamsBot {
@@ -182,7 +182,7 @@ export class TeamsBot {
           effects.push(Plans.generateBicepAndConfig(ComponentNames.Identity));
         }
         //persist bicep
-        const bicepRes = await persistBiceps(
+        const bicepRes = await bicepUtils.persistBiceps(
           inputs.projectPath,
           convertToAlphanumericOnly(context.projectSetting.appName),
           biceps

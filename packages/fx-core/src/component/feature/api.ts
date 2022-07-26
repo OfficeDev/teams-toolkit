@@ -39,7 +39,7 @@ import { ApiCodeProvider } from "../code/apiCode";
 import { ComponentNames, Scenarios } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
 import { AzureFunctionResource } from "../resource/azureAppService/azureFunction";
-import { generateConfigBiceps, persistBiceps } from "../utils";
+import { generateConfigBiceps, bicepUtils } from "../utils";
 import { getComponent } from "../workflow";
 
 @Service(ComponentNames.TeamsApi)
@@ -124,7 +124,7 @@ export class TeamsApi {
           });
         }
 
-        const bicepRes = await persistBiceps(
+        const bicepRes = await bicepUtils.persistBiceps(
           inputs.projectPath,
           convertToAlphanumericOnly(context.projectSetting.appName),
           biceps

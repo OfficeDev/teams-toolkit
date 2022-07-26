@@ -25,7 +25,7 @@ import { AadApp } from "../resource/aadApp/aadApp";
 import { AppManifest } from "../resource/appManifest/appManifest";
 import "../resource/azureSql";
 import "../resource/identity";
-import { generateConfigBiceps, persistBiceps } from "../utils";
+import { generateConfigBiceps, bicepUtils } from "../utils";
 import { getComponent } from "../workflow";
 
 @Service("sso")
@@ -54,24 +54,35 @@ export class SSO {
           effects.push("generate aad manifest");
         }
 
+        // config sso
+        if (updates.aad) {
+          context.projectSetting.components.push({
+            name: ComponentNames.AadApp,
+            provision: true,
+            deploy: true,
+          });
+        }
+        if (updates.tab) {
+          const teamsTabComponent = getComponent(context.projectSetting, ComponentNames.TeamsTab);
+          teamsTabComponent!.sso = true;
+        }
+        if (updates.bot) {
+          const teamsBotComponent = getComponent(context.projectSetting, ComponentNames.TeamsBot);
+          teamsBotComponent!.sso = true;
+        }
+        effects.push("config sso");
+
         // generate bicep
         {
           const res = await aadApp.generateBicep(context, inputs);
           if (res.isErr()) return err(res.error);
-          const bicepRes = await persistBiceps(
+          const bicepRes = await bicepUtils.persistBiceps(
             inputs.projectPath,
             convertToAlphanumericOnly(context.projectSetting.appName),
             res.value
           );
           if (bicepRes.isErr()) return bicepRes;
           effects.push("generate aad bicep");
-        }
-
-        // generate config bicep
-        {
-          const res = await generateConfigBiceps(context, inputs);
-          if (res.isErr()) return err(res.error);
-          effects.push("generate config biceps");
         }
 
         // generate auth files
@@ -96,23 +107,13 @@ export class SSO {
           effects.push("generate local debug configs");
         }
 
-        // config sso
-        if (updates.aad) {
-          context.projectSetting.components.push({
-            name: ComponentNames.AadApp,
-            provision: true,
-            deploy: true,
-          });
+        // generate config bicep
+        {
+          const res = await generateConfigBiceps(context, inputs);
+          if (res.isErr()) return err(res.error);
+          effects.push("generate config biceps");
         }
-        if (updates.tab) {
-          const teamsTabComponent = getComponent(context.projectSetting, ComponentNames.TeamsTab);
-          teamsTabComponent!.sso = true;
-        }
-        if (updates.bot) {
-          const teamsBotComponent = getComponent(context.projectSetting, ComponentNames.TeamsBot);
-          teamsBotComponent!.sso = true;
-        }
-        effects.push("config sso");
+
         return ok(effects);
       },
     };

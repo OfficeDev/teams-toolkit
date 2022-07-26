@@ -71,6 +71,7 @@ describe("Bot Feature", () => {
   });
 
   it("add restify notification bot", async () => {
+    sandbox.stub(utils.bicepUtils, "persistBiceps").resolves(ok(undefined));
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,

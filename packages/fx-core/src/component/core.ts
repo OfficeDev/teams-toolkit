@@ -38,7 +38,7 @@ import "./connection/apimConfig";
 import "./connection/azureFunctionConfig";
 import "./connection/azureWebAppConfig";
 import { configLocalEnvironment, setupLocalEnvironment } from "./debug";
-import { EnvManager } from "./envManager";
+import { createNewEnv } from "./envManager";
 import "./feature/api";
 import "./feature/apiConnector";
 import "./feature/apim";
@@ -245,8 +245,7 @@ export class TeamsfxCore {
       if (res.isErr()) return res;
     }
     {
-      const envManager = Container.get<EnvManager>("env-manager");
-      const res = await envManager.create(context, inputs);
+      const res = await createNewEnv(context, inputs);
       if (res.isErr()) return res;
     }
     return ok(undefined);
@@ -282,16 +281,19 @@ export class TeamsfxCore {
         const componentsToProvision = ctx.projectSetting.components.filter((r) => r.provision);
         {
           const thunks = [];
-          for (const component of componentsToProvision) {
-            const componentObj = Container.get<CloudResource>(component);
-            thunks.push({
-              pluginName: `${component.name}`,
-              taskName: "provision",
-              thunk: () => {
-                ctx.envInfo.state[component.name] = ctx.envInfo.state[component.name] || [];
-                return componentObj.provision!(ctx, inputs);
-              },
-            });
+          for (const componentConfig of componentsToProvision) {
+            const componentInstance = Container.get<CloudResource>(componentConfig.name);
+            if (componentInstance.provision) {
+              thunks.push({
+                pluginName: `${componentConfig.name}`,
+                taskName: "provision",
+                thunk: () => {
+                  ctx.envInfo.state[componentConfig.name] =
+                    ctx.envInfo.state[componentConfig.name] || [];
+                  return componentInstance.provision!(ctx, inputs);
+                },
+              });
+            }
           }
           const provisionResult = await executeConcurrently(thunks, ctx.logProvider);
           if (provisionResult.kind !== "success") {
@@ -337,16 +339,19 @@ export class TeamsfxCore {
         // 5. call resources configure api
         {
           const thunks = [];
-          for (const component of componentsToProvision) {
-            const componentObj = Container.get<CloudResource>(component);
-            thunks.push({
-              pluginName: `${component.name}`,
-              taskName: "configure",
-              thunk: () => {
-                ctx.envInfo.state[component.name] = ctx.envInfo.state[component.name] || [];
-                return componentObj.configure!(ctx, inputs);
-              },
-            });
+          for (const componentConfig of componentsToProvision) {
+            const componentInstance = Container.get<CloudResource>(componentConfig.name);
+            if (componentInstance.configure) {
+              thunks.push({
+                pluginName: `${componentConfig.name}`,
+                taskName: "configure",
+                thunk: () => {
+                  ctx.envInfo.state[componentConfig.name] =
+                    ctx.envInfo.state[componentConfig.name] || [];
+                  return componentInstance.configure!(ctx, inputs);
+                },
+              });
+            }
           }
           const configResult = await executeConcurrently(thunks, ctx.logProvider);
           if (configResult.kind !== "success") {

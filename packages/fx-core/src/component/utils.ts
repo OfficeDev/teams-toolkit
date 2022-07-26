@@ -13,6 +13,7 @@ import {
   FileEffect,
   FxError,
   InputsWithProjectPath,
+  Json,
   ok,
   ProjectSettingsV3,
   ProvisionBicep,
@@ -177,6 +178,33 @@ export function persistParamsBicepPlans(
   return plans;
 }
 
+export async function readParametersJson(
+  projectPath: string,
+  env: string
+): Promise<Json | undefined> {
+  const parameterEnvFolderPath = path.join(projectPath, ".fx", "configs");
+  const parameterFileName = `azure.parameters.${env}.json`;
+  const parameterEnvFilePath = path.join(parameterEnvFolderPath, parameterFileName);
+  if (await fs.pathExists(parameterEnvFilePath)) {
+    const json = await fs.readJson(parameterEnvFilePath);
+    return json;
+  }
+  return undefined;
+}
+
+export async function writeParametersJson(
+  projectPath: string,
+  env: string,
+  json: Json
+): Promise<void> {
+  const parameterEnvFolderPath = path.join(projectPath, ".fx", "configs");
+  const parameterFileName = `azure.parameters.${env}.json`;
+  const parameterEnvFilePath = path.join(parameterEnvFolderPath, parameterFileName);
+  let parameterFileContent = JSON.stringify(json, undefined, 2);
+  parameterFileContent = parameterFileContent.replace(/\r?\n/g, os.EOL);
+  await fs.writeFile(parameterEnvFilePath, parameterFileContent);
+}
+
 export async function persistParams(
   projectPath: string,
   appName: string,
@@ -189,74 +217,49 @@ export async function persistParams(
   const parameterEnvFolderPath = path.join(projectPath, ".fx", "configs");
   await fs.ensureDir(parameterEnvFolderPath);
   for (const env of envListResult.value) {
-    const parameterFileName = `azure.parameters.${env}.json`;
-    const parameterEnvFilePath = path.join(parameterEnvFolderPath, parameterFileName);
-    let parameterFileContent = undefined;
-    if (await fs.pathExists(parameterEnvFilePath)) {
-      if (params) {
-        const json = await fs.readJson(parameterEnvFilePath);
-        const existingParams = json.parameters.provisionParameters.value;
-        // const dupParamKeys = Object.keys(params).filter((val) =>
-        //   Object.keys(existingParams).includes(val)
-        // );
-        // if (dupParamKeys && dupParamKeys.length != 0) {
-        //   return err(
-        //     new UserError({
-        //       name: SolutionError.FailedToUpdateArmParameters,
-        //       source: "bicep",
-        //       helpLink: HelpLinks.ArmHelpLink,
-        //       message: getDefaultString(
-        //         "core.generateArmTemplates.DuplicateParameter",
-        //         parameterEnvFilePath,
-        //         dupParamKeys
-        //       ),
-        //       displayMessage: getLocalizedString(
-        //         "core.generateArmTemplates.DuplicateParameter",
-        //         parameterEnvFilePath,
-        //         dupParamKeys
-        //       ),
-        //     })
-        //   );
-        // }
-        Object.assign(existingParams, params);
-        if (!existingParams.resourceBaseName) {
-          params.resourceBaseName = generateResourceBaseName(appName, "");
-        }
-        json.parameters.provisionParameters.value = existingParams;
-        parameterFileContent = JSON.stringify(json, undefined, 2);
+    let json = await readParametersJson(projectPath, env);
+    if (json) {
+      json.parameters = json.parameters || {};
+      json.parameters.provisionParameters = json.parameters.provisionParameters || {};
+      json.parameters.provisionParameters.value = json.parameters.provisionParameters.value || {};
+      const existingParams = json.parameters.provisionParameters.value;
+      Object.assign(existingParams, params);
+      if (!existingParams.resourceBaseName) {
+        existingParams.resourceBaseName = generateResourceBaseName(appName, "");
       }
+      json.parameters.provisionParameters.value = existingParams;
     } else {
       params = params || {};
       if (!params.resourceBaseName) {
         params.resourceBaseName = generateResourceBaseName(appName, "");
       }
-      const parameterObject = {
+      json = {
         $schema:
           "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
         contentVersion: "1.0.0.0",
         parameters: { provisionParameters: { value: params } },
       };
-      parameterFileContent = JSON.stringify(parameterObject, undefined, 2);
     }
-    if (parameterFileContent) {
-      parameterFileContent = parameterFileContent.replace(/\r?\n/g, os.EOL);
-      await fs.writeFile(parameterEnvFilePath, parameterFileContent);
-    }
+    await writeParametersJson(projectPath, env, json);
   }
   return ok(undefined);
 }
 
-export async function persistBiceps(
-  projectPath: string,
-  appName: string,
-  biceps: Bicep[]
-): Promise<Result<any, FxError>> {
-  for (const bicep of biceps) {
-    const res = await persistBicep(projectPath, appName, bicep);
-    if (res.isErr()) return res;
+export class BicepUtils {
+  async persistBiceps(
+    projectPath: string,
+    appName: string,
+    biceps: Bicep[]
+  ): Promise<Result<any, FxError>> {
+    for (const bicep of biceps) {
+      const res = await persistBicep(projectPath, appName, bicep);
+      if (res.isErr()) return res;
+    }
+    return ok(undefined);
   }
-  return ok(undefined);
 }
+
+export const bicepUtils = new BicepUtils();
 
 export async function persistBicep(
   projectPath: string,
@@ -499,7 +502,7 @@ export async function generateConfigBiceps(
       const component = Container.get<CloudResource>(config.name + "-config");
       const res = await component.generateBicep!(context, clonedInputs);
       if (res.isErr()) return err(res.error);
-      const persistRes = await persistBiceps(
+      const persistRes = await bicepUtils.persistBiceps(
         inputs.projectPath,
         convertToAlphanumericOnly(context.projectSetting.appName),
         res.value

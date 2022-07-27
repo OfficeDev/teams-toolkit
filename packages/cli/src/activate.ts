@@ -13,12 +13,21 @@ import CLILogProvider from "./commonlib/log";
 import { CliTelemetry } from "./telemetry/cliTelemetry";
 import CLIUIInstance from "./userInteraction";
 
-export default async function activate(rootPath?: string): Promise<Result<FxCore, FxError>> {
+export default async function activate(
+  rootPath?: string,
+  shouldIgnoreSubscriptionNotFoundError?: boolean
+): Promise<Result<FxCore, FxError>> {
   if (rootPath) {
     AzureAccountManager.setRootPath(rootPath);
     const subscriptionInfo = await AzureAccountManager.readSubscription();
     if (subscriptionInfo) {
-      await AzureAccountManager.setSubscription(subscriptionInfo.subscriptionId);
+      try {
+        await AzureAccountManager.setSubscription(subscriptionInfo.subscriptionId);
+      } catch (e) {
+        if (!shouldIgnoreSubscriptionNotFoundError) {
+          throw e;
+        }
+      }
     }
     CliTelemetry.setReporter(CliTelemetry.getReporter().withRootFolder(rootPath));
   }

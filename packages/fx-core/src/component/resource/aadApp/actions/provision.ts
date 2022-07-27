@@ -6,14 +6,10 @@ import {
   InputsWithProjectPath,
   ok,
   FunctionAction,
-  PluginContext,
-  EnvInfo,
-  ConfigMap,
   ProvisionContextV3,
 } from "@microsoft/teamsfx-api";
 import { ComponentNames, ActionTypeFunction, ActionNames } from "../../../constants";
 import { AadAppForTeamsImpl } from "../../../../plugins/resource/aad/plugin";
-import { convertEnvStateV3ToV2, convertProjectSettingsV3ToV2 } from "../../../migrate";
 import { convertContext } from "./utils";
 
 export function GetActionProvision(): FunctionAction {

@@ -5,15 +5,14 @@ import {
   FxError,
   ok,
   Result,
-  Action,
   ContextV3,
-  MaybePromise,
   InputsWithProjectPath,
   ProvisionContextV3,
   v3,
   err,
   Effect,
-  IProgressHandler,
+  Bicep,
+  ActionContext,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
@@ -37,6 +36,9 @@ import { getComponent } from "../workflow";
 import { AzureResource } from "./azureResource";
 import { telemetryHelper } from "../../plugins/resource/bot/utils/telemetry-helper";
 import { Plans, ProgressMessages, ProgressTitles } from "../messages";
+import { hooks } from "@feathersjs/hooks/lib";
+import { merge } from "lodash";
+import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 @Service("bot-service")
 export class BotService extends AzureResource {
   outputs = BotServiceOutputs;
@@ -44,10 +46,10 @@ export class BotService extends AzureResource {
   secretFields = ["botPassword"];
   readonly name = "bot-service";
   readonly bicepModuleName = "botService";
-  generateBicep(
+  async generateBicep(
     context: ContextV3,
     inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
+  ): Promise<Result<Bicep[], FxError>> {
     try {
       const resource = Container.get(inputs.hosting) as AzureResource;
       this.templateContext.endpointVarName = compileHandlebarsTemplateString(
@@ -59,105 +61,81 @@ export class BotService extends AzureResource {
     inputs.scenario = "";
     return super.generateBicep(context, inputs);
   }
-  provision(
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const action: Action = {
-      name: "bot-service.provision",
-      type: "function",
+  @hooks([
+    ActionExecutionMW({
       enableProgressBar: true,
       progressTitle: ProgressTitles.provisionBot,
       progressSteps: 1,
       enableTelemetry: true,
-      telemetryProps: commonTelemetryPropsForBot(context),
       telemetryComponentName: "fx-resource-bot",
       telemetryEventName: "provision",
       errorHandler: (e, t) => {
         telemetryHelper.fillAppStudioErrorProperty(e, t);
         return e as FxError;
       },
-      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const ctx = context as ProvisionContextV3;
-        const plans: Effect[] = [];
-        plans.push(Plans.createAADforBot());
-        if (ctx.envInfo.envName === "local") {
-          plans.push(Plans.registerBot());
-        }
-        return ok(plans);
-      },
-      execute: async (
-        context: ContextV3,
-        inputs: InputsWithProjectPath,
-        progress?: IProgressHandler
-      ) => {
-        // create bot aad app by API call
-        await progress?.next(ProgressMessages.provisionBot);
-        const ctx = context as ProvisionContextV3;
-        const plans: Effect[] = [];
-        const aadRes = await createBotAAD(ctx);
-        if (aadRes.isErr()) return err(aadRes.error);
-        plans.push(Plans.createAADforBot());
-        if (ctx.envInfo.envName === "local") {
-          const botConfig = aadRes.value;
-          const regRes = await createBotRegInAppStudio(botConfig, ctx);
-          if (regRes.isErr()) return err(regRes.error);
-          plans.push(Plans.registerBot());
-        }
-        return ok(plans);
-      },
-    };
-    return ok(action);
+    }),
+  ])
+  async provision(
+    context: ProvisionContextV3,
+    inputs: InputsWithProjectPath,
+    actionContext?: ActionContext
+  ): Promise<Result<undefined, FxError>> {
+    // create bot aad app by API call
+    if (actionContext?.telemetryProps) {
+      merge(actionContext.telemetryProps, commonTelemetryPropsForBot(context));
+    }
+    await actionContext?.progressBar?.next(ProgressMessages.provisionBot);
+    const ctx = context as ProvisionContextV3;
+    const aadRes = await createBotAAD(ctx);
+    if (aadRes.isErr()) return err(aadRes.error);
+    if (ctx.envInfo.envName === "local") {
+      const botConfig = aadRes.value;
+      const regRes = await createBotRegInAppStudio(botConfig, ctx);
+      if (regRes.isErr()) return err(regRes.error);
+    }
+    return ok(undefined);
   }
-  configure(
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const action: Action = {
-      name: "bot-service.configure",
-      type: "function",
+  @hooks([
+    ActionExecutionMW({
       enableTelemetry: true,
-      telemetryProps: commonTelemetryPropsForBot(context),
       telemetryComponentName: "fx-resource-bot",
       telemetryEventName: "post-local-debug",
       errorHandler: (e, t) => {
         telemetryHelper.fillAppStudioErrorProperty(e, t);
         return e as FxError;
       },
-      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const ctx = context as ProvisionContextV3;
-        const plans: Effect[] = [];
-        if (ctx.envInfo.envName === "local") {
-          plans.push(Plans.updateBotEndpoint());
-        }
-        return ok(plans);
-      },
-      execute: async (context: ContextV3) => {
-        // create bot aad app by API call
-        const ctx = context as ProvisionContextV3;
-        const teamsBot = getComponent(ctx.projectSetting, ComponentNames.TeamsBot);
-        if (!teamsBot) return ok([]);
-        const plans: Effect[] = [];
-        if (ctx.envInfo.envName === "local") {
-          plans.push(Plans.updateBotEndpoint());
-          const teamsBotState = ctx.envInfo.state[ComponentNames.TeamsBot];
-          const appStudioTokenRes = await ctx.tokenProvider.m365TokenProvider.getAccessToken({
-            scopes: AppStudioScopes,
-          });
-          const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
-          CheckThrowSomethingMissing(ConfigNames.LOCAL_ENDPOINT, teamsBotState.endpoint);
-          CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
-          CheckThrowSomethingMissing(ConfigNames.LOCAL_BOT_ID, teamsBotState.botId);
-          await AppStudio.updateMessageEndpoint(
-            appStudioToken!,
-            teamsBotState.botId,
-            `${teamsBotState.endpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`
-          );
-        }
-        return ok(plans);
-      },
-    };
-    return ok(action);
+    }),
+  ])
+  async configure(
+    context: ProvisionContextV3,
+    inputs: InputsWithProjectPath,
+    actionContext?: ActionContext
+  ): Promise<Result<undefined, FxError>> {
+    if (actionContext?.telemetryProps) {
+      merge(actionContext.telemetryProps, commonTelemetryPropsForBot(context));
+    }
+    // create bot aad app by API call
+    const ctx = context as ProvisionContextV3;
+    const teamsBot = getComponent(ctx.projectSetting, ComponentNames.TeamsBot);
+    if (!teamsBot) return ok(undefined);
+    const plans: Effect[] = [];
+    if (ctx.envInfo.envName === "local") {
+      plans.push(Plans.updateBotEndpoint());
+      const teamsBotState = ctx.envInfo.state[ComponentNames.TeamsBot];
+      const appStudioTokenRes = await ctx.tokenProvider.m365TokenProvider.getAccessToken({
+        scopes: AppStudioScopes,
+      });
+      const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
+      CheckThrowSomethingMissing(ConfigNames.LOCAL_ENDPOINT, teamsBotState.endpoint);
+      CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
+      CheckThrowSomethingMissing(ConfigNames.LOCAL_BOT_ID, teamsBotState.botId);
+      await AppStudio.updateMessageEndpoint(
+        appStudioToken!,
+        teamsBotState.botId,
+        `${teamsBotState.endpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`
+      );
+    }
+    return ok(undefined);
   }
 }
 

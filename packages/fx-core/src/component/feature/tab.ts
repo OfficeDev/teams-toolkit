@@ -3,7 +3,8 @@
 
 import {
   Action,
-  CallAction,
+  Bicep,
+  CloudResource,
   ContextV3,
   err,
   FunctionAction,
@@ -12,11 +13,13 @@ import {
   MaybePromise,
   ok,
   Platform,
+  ProvisionContextV3,
   Result,
   Stage,
+  v3,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
-import { Service } from "typedi";
+import Container, { Service } from "typedi";
 import { format } from "util";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { isVSProject } from "../../common/projectSettingsHelper";
@@ -32,7 +35,13 @@ import { Plans } from "../messages";
 import { getComponent, getComponentByScenario, runActionByName } from "../workflow";
 import { assign, cloneDeep } from "lodash";
 import { hasTab } from "../../common/projectSettingsHelperV3";
-import { generateConfigBiceps } from "../utils";
+import { generateConfigBiceps, bicepUtils } from "../utils";
+import { TabCodeProvider } from "../code/tabCode";
+import { BicepComponent } from "../bicep";
+import { convertToAlphanumericOnly } from "../../common/utils";
+import { IdentityResource } from "../resource/identity";
+import { generateLocalDebugSettings } from "../debug";
+import { AppManifest } from "../resource/appManifest/appManifest";
 
 @Service("teams-tab")
 export class TeamsTab {
@@ -55,7 +64,7 @@ export class TeamsTab {
           inputs[CoreQuestionNames.ProgrammingLanguage] === "csharp"
             ? ComponentNames.AzureWebApp
             : ComponentNames.AzureStorage;
-        // 1. scaffold tab and add tab config
+        // scaffold and config tab
         let tabConfig = getComponent(projectSettings, ComponentNames.TeamsTab);
         if (!tabConfig) {
           const clonedInputs = cloneDeep(inputs);
@@ -64,7 +73,8 @@ export class TeamsTab {
               ? ""
               : FrontendPathInfo.WorkingDir;
           clonedInputs.language = inputs[CoreQuestionNames.ProgrammingLanguage];
-          const res = await runActionByName("tab-code.generate", context, clonedInputs);
+          const tabCode = Container.get(ComponentNames.TabCode) as TabCodeProvider;
+          const res = await tabCode.generate(context, clonedInputs);
           if (res.isErr()) return err(res.error);
           effects.push("generate tab code");
           tabConfig = {
@@ -79,12 +89,13 @@ export class TeamsTab {
           effects.push(Plans.generateSourceCodeAndConfig(ComponentNames.TeamsTab));
 
           // 2. generate provision bicep
-
           // 2.0 bicep.init
           {
-            const res = await runActionByName("bicep.init", context, inputs);
+            const bicepComponent = Container.get<BicepComponent>("bicep");
+            const res = await bicepComponent.init(inputs.projectPath);
             if (res.isErr()) return err(res.error);
           }
+          const biceps: Bicep[] = [];
           // 2.1 hosting bicep
           const hostingConfig = getComponentByScenario(
             projectSettings,
@@ -97,12 +108,10 @@ export class TeamsTab {
               componentId: ComponentNames.TeamsTab,
               scenario: Scenarios.Tab,
             });
-            const res = await runActionByName(
-              inputs.hosting + ".generateBicep",
-              context,
-              clonedInputs
-            );
+            const hostingComponent = Container.get<CloudResource>(inputs.hosting);
+            const res = await hostingComponent.generateBicep!(context, clonedInputs);
             if (res.isErr()) return err(res.error);
+            res.value.forEach((b) => biceps.push(b));
             projectSettings.components.push({
               name: inputs.hosting,
               scenario: Scenarios.Tab,
@@ -117,8 +126,10 @@ export class TeamsTab {
               componentId: "",
               scenario: "",
             });
-            const res = await runActionByName("identity.generateBicep", context, clonedInputs);
+            const identityComponent = Container.get<IdentityResource>(ComponentNames.Identity);
+            const res = await identityComponent.generateBicep(context, clonedInputs);
             if (res.isErr()) return err(res.error);
+            res.value.forEach((b) => biceps.push(b));
             projectSettings.components.push({
               name: ComponentNames.Identity,
               provision: true,
@@ -126,6 +137,13 @@ export class TeamsTab {
             effects.push(Plans.generateBicepAndConfig(ComponentNames.Identity));
           }
 
+          //persist bicep
+          const bicepRes = await bicepUtils.persistBiceps(
+            inputs.projectPath,
+            convertToAlphanumericOnly(context.projectSetting.appName),
+            biceps
+          );
+          if (bicepRes.isErr()) return bicepRes;
           // 2.3 add sso
           if (
             inputs.stage === Stage.create &&
@@ -144,7 +162,7 @@ export class TeamsTab {
 
           // 4. local debug settings
           {
-            const res = await runActionByName("debug.generateLocalDebugSettings", context, inputs);
+            const res = await generateLocalDebugSettings(context, inputs);
             if (res.isErr()) return err(res.error);
             effects.push("generate local debug configs");
           }
@@ -152,21 +170,18 @@ export class TeamsTab {
 
         // 5. app-manifest.addCapability
         {
-          const capabilities = [{ name: "staticTab" }];
+          const capabilities: v3.ManifestCapability[] = [{ name: "staticTab" }];
           if (!hasTab(projectSettings)) {
             capabilities.push({ name: "configurableTab" });
           }
           const clonedInputs = cloneDeep(inputs);
-          assign(clonedInputs, {
-            capabilities: capabilities,
-          });
-          const res = await runActionByName("app-manifest.addCapability", context, clonedInputs);
+          const manifestComponent = Container.get<AppManifest>(ComponentNames.AppManifest);
+          const res = await manifestComponent.addCapability(clonedInputs, capabilities);
           if (res.isErr()) return err(res.error);
           effects.push("add tab capability in app manifest");
         }
         globalVars.isVS = isVSProject(projectSettings);
         projectSettings.programmingLanguage ||= inputs[CoreQuestionNames.ProgrammingLanguage];
-
         const msg =
           inputs.platform === Platform.CLI
             ? getLocalizedString("core.addCapability.addCapabilityNoticeForCli")
@@ -185,218 +200,23 @@ export class TeamsTab {
   }
 }
 
-//   private addTabAction(context: ContextV3, inputs: InputsWithProjectPath): Action {
-//     inputs.hosting = resolveHosting(context, inputs);
-//     const actions: Action[] = [];
-//     this.setupCode(actions, context);
-//     this.setupBicep(actions, context, inputs);
-//     this.setupCapabilities(actions);
-//     this.setupConfiguration(actions, context);
-//     actions.push(showTabAlreadyAddMessage);
-//     return {
-//       type: "group",
-//       name: "teams-tab.add",
-//       mode: "sequential",
-//       actions: actions,
-//     };
-//   }
-
-//   private setupConfiguration(actions: Action[], context: ContextV3): Action[] {
-//     if (hasTab(context)) {
-//       return actions;
-//     }
-//     actions.push(addSSO);
-//     actions.push(configTab);
-//     return actions;
-//   }
-
-//   private setupCode(actions: Action[], context: ContextV3): Action[] {
-//     if (hasTab(context)) {
-//       return actions;
-//     }
-//     actions.push(generateCode);
-//     actions.push(initLocalDebug);
-//     return actions;
-//   }
-
-//   private setupBicep(
-//     actions: Action[],
-//     context: ContextV3,
-//     inputs: InputsWithProjectPath
-//   ): Action[] {
-//     if (hasTab(context)) {
-//       return actions;
-//     }
-
-//     actions.push(initBicep);
-//     const hosting = resolveHosting(context, inputs);
-//     if (hosting) {
-//       actions.push(generateBicep(hosting, this.name));
-//     }
-//     // TODO: connect AAD for blazor web app
-//     actions.push(identityAction);
-//     actions.push(configureApim);
-//     return actions;
-//   }
-
-//   private setupCapabilities(actions: Action[]): Action[] {
-//     actions.push(addTabCapability);
-//     return actions;
-//   }
-// }
-
-// function hasTab(context: ContextV3): boolean {
-//   const tab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
-//   return tab != undefined; // using != to match both undefined and null
-// }
-
-// const addTabCapability: Action = {
-//   name: "call:app-manifest.addCapability",
-//   type: "call",
-//   required: true,
-//   targetAction: "app-manifest.addCapability",
-//   pre: (context: ContextV3, inputs: InputsWithProjectPath) => {
-//     const capabilities = [{ name: "staticTab" }];
-//     if (!hasTab(context)) {
-//       capabilities.push({ name: "configurableTab" });
-//     }
-//     inputs.capabilities = capabilities;
-//     return ok(undefined);
-//   },
-// };
-
-// const configTab: Action = {
-//   name: "fx.configTab",
-//   type: "function",
-//   plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-//     const tabConfig = getComponent(context.projectSetting, ComponentNames.TeamsTab);
-//     if (tabConfig) {
-//       return ok([]);
-//     }
-//     return ok([Plans.addFeature("Tab")]);
-//   },
-//   execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-//     const hosting = resolveHosting(context, inputs);
-//     const language =
-//       inputs?.[CoreQuestionNames.ProgrammingLanguage] ||
-//       context.projectSetting.programmingLanguage ||
-//       "javascript";
-//     const projectSettings = context.projectSetting as ProjectSettingsV3;
-//     const tabConfig = getComponent(projectSettings, ComponentNames.TeamsTab);
-//     if (tabConfig) {
-//       return ok([]);
-//     }
-//     // add teams-tab
-//     projectSettings.components.push({
-//       name: ComponentNames.TeamsTab,
-//       hosting: hosting,
-//       deploy: true,
-//       provision: language != "csharp",
-//       build: true,
-//       folder: inputs.folder || language === "csharp" ? "" : FrontendPathInfo.WorkingDir,
-//     });
-//     ensureComponentConnections(projectSettings);
-//     globalVars.isVS = isVSProject(projectSettings);
-//     projectSettings.programmingLanguage ||= inputs[CoreQuestionNames.ProgrammingLanguage];
-//     return ok([Plans.addFeature("Tab")]);
-//   },
-// };
-
-// const addSSO: CallAction = {
-//   type: "call",
-//   name: "call:sso.add",
-//   targetAction: "sso.add",
-//   required: true,
-//   condition: (context: ContextV3, inputs: InputsWithProjectPath) => {
-//     return ok(inputs[CoreQuestionNames.Features] !== TabNonSsoItem.id);
-//   },
-// };
-
-// const showTabAlreadyAddMessage: Action = {
-//   name: "teams-tab.showTabAlreadyAddMessage",
-//   type: "function",
-//   plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-//     return ok([]);
-//   },
-//   execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-//     const msg =
-//       inputs.platform === Platform.CLI
-//         ? getLocalizedString("core.addCapability.addCapabilityNoticeForCli")
-//         : getLocalizedString("core.addCapability.addCapabilitiesNoticeForCli");
-//     context.userInteraction.showMessage("info", format(msg, "Tab"), false);
-//     return ok([]);
-//   },
-// };
-
-// const generateCode: Action = {
-//   name: "call:tab-code.generate",
-//   type: "call",
-//   required: true,
-//   targetAction: "tab-code.generate",
-//   pre: (context: ContextV3, inputs: InputsWithProjectPath) => {
-//     const language =
-//       inputs?.[CoreQuestionNames.ProgrammingLanguage] ||
-//       context.projectSetting.programmingLanguage ||
-//       "javascript";
-//     inputs.folder ||= language === "csharp" ? "" : FrontendPathInfo.WorkingDir;
-//     inputs.language ||= language;
-//     return ok(undefined);
-//   },
-// };
-// const initLocalDebug: Action = {
-//   name: "call:debug.generateLocalDebugSettings",
-//   type: "call",
-//   required: true,
-//   targetAction: "debug.generateLocalDebugSettings",
-// };
-
-// const initBicep: Action = {
-//   type: "call",
-//   targetAction: "bicep.init",
-//   required: true,
-// };
-
-// const generateBicep: (hosting: string, componentId: string) => Action = (hosting, componentId) => ({
-//   name: `call:${hosting}.generateBicep`,
-//   type: "call",
-//   required: true,
-//   targetAction: `${hosting}.generateBicep`,
-//   inputs: {
-//     scenario: "Tab",
-//     componentId: componentId,
-//   },
-//   post: (context) => {
-//     // add hosting component
-//     context.projectSetting?.components?.push({
-//       name: hosting,
-//       connections: [ComponentNames.TeamsTab],
-//       provision: true,
-//       scenario: Scenarios.Tab,
-//     });
-//     ensureComponentConnections(context.projectSetting);
-//     return ok(undefined);
-//   },
-// });
-
-const configureApim: CallAction = {
-  name: "call:apim-config.generateBicep",
-  type: "call",
-  required: true,
-  targetAction: "apim-config.generateBicep",
-  condition: (context) => {
-    return ok(getComponent(context.projectSetting, ComponentNames.APIM) !== undefined);
+const configureTab: FunctionAction = {
+  name: "teams-tab.configure",
+  type: "function",
+  execute: async (context, inputs) => {
+    const tabCode = Container.get(ComponentNames.TabCode) as TabCodeProvider;
+    const res = await tabCode.configure(context as ProvisionContextV3, inputs);
+    if (res.isErr()) return err(res.error);
+    return ok([]);
   },
 };
-
-const configureTab: CallAction = {
-  name: "teams-tab.configure",
-  type: "call",
-  targetAction: "tab-code.configure",
-  required: true,
-};
-const buildTab: CallAction = {
+const buildTab: FunctionAction = {
   name: "teams-tab.build",
-  type: "call",
-  targetAction: "tab-code.build",
-  required: true,
+  type: "function",
+  execute: async (context, inputs) => {
+    const tabCode = Container.get(ComponentNames.TabCode) as TabCodeProvider;
+    const res = await tabCode.build(context as ProvisionContextV3, inputs);
+    if (res.isErr()) return err(res.error);
+    return ok([]);
+  },
 };

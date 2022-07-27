@@ -2,12 +2,10 @@
 // Licensed under the MIT license.
 
 import {
-  Action,
+  Bicep,
   ContextV3,
   FxError,
   InputsWithProjectPath,
-  IProgressHandler,
-  MaybePromise,
   ok,
   ProvisionContextV3,
   ResourceOutputs,
@@ -25,7 +23,8 @@ import {
 } from "./errors";
 import { AzureResource } from "./../azureResource";
 import { Messages } from "./messages";
-import { Plans, ProgressMessages, ProgressTitles } from "../../messages";
+import { ProgressMessages, ProgressTitles } from "../../messages";
+
 export abstract class AzureAppService extends AzureResource {
   abstract readonly name: string;
   abstract readonly alias: string;
@@ -33,10 +32,10 @@ export abstract class AzureAppService extends AzureResource {
   abstract readonly bicepModuleName: string;
   abstract readonly outputs: ResourceOutputs;
   abstract readonly finalOutputKeys: string[];
-  generateBicep(
+  async generateBicep(
     context: ContextV3,
     inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
+  ): Promise<Result<Bicep[], FxError>> {
     this.getTemplateContext = (context, inputs) => {
       const configs: string[] = [];
       configs.push(getRuntime(getLanguage(context.projectSetting.programmingLanguage)));
@@ -45,55 +44,46 @@ export abstract class AzureAppService extends AzureResource {
     };
     return super.generateBicep(context, inputs);
   }
-  deploy(
-    context: ContextV3,
+
+  async deploy(
+    context: ProvisionContextV3,
     inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const action: Action = {
-      name: `${this.name}.deploy`,
-      type: "function",
-      enableProgressBar: true,
-      progressTitle: ProgressTitles.deploying(this.displayName, inputs.scenario),
-      progressSteps: 2,
-      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const deployDir = path.resolve(inputs.projectPath, inputs.folder ?? "");
-        return ok([Plans.deploy(this.displayName, deployDir)]);
-      },
-      execute: async (
-        context: ContextV3,
-        inputs: InputsWithProjectPath,
-        progress?: IProgressHandler
-      ) => {
-        const ctx = context as ProvisionContextV3;
-        // Preconditions checking.
-        if (!inputs.projectPath || !inputs.artifactFolder) {
-          throw new PreconditionError(this.alias, Messages.WorkingDirIsMissing, []);
-        }
-        const publishDir = path.resolve(inputs.projectPath, inputs.artifactFolder);
-        const packDirExisted = await fs.pathExists(publishDir);
-        if (!packDirExisted) {
-          throw new PackDirectoryExistenceError(this.alias);
-        }
+  ): Promise<Result<undefined, FxError>> {
+    const progressBar = context.userInteraction.createProgressBar(
+      ProgressTitles.deploying(this.displayName, inputs.scenario),
+      2
+    );
+    try {
+      const ctx = context as ProvisionContextV3;
+      // Preconditions checking.
+      if (!inputs.projectPath || !inputs.artifactFolder) {
+        throw new PreconditionError(this.alias, Messages.WorkingDirIsMissing, []);
+      }
+      const publishDir = path.resolve(inputs.projectPath, inputs.artifactFolder);
+      const packDirExisted = await fs.pathExists(publishDir);
+      if (!packDirExisted) {
+        throw new PackDirectoryExistenceError(this.alias);
+      }
 
-        const state = ctx.envInfo.state[parent.name];
-        const resourceId = CheckThrowSomethingMissing(
-          this.alias,
-          this.outputs.resourceId.key,
-          state[this.outputs.resourceId.key]
-        );
-        await progress?.next(ProgressMessages.packingCode);
-        const zipBuffer = await utils.zipFolderAsync(publishDir, "");
+      const state = ctx.envInfo.state[parent.name];
+      const resourceId = CheckThrowSomethingMissing(
+        this.alias,
+        this.outputs.resourceId.key,
+        state[this.outputs.resourceId.key]
+      );
+      await progressBar.next(ProgressMessages.packingCode);
+      const zipBuffer = await utils.zipFolderAsync(publishDir, "");
 
-        await azureWebSiteDeploy(
-          resourceId,
-          ctx.tokenProvider,
-          zipBuffer,
-          context.logProvider,
-          progress
-        );
-        return ok([Plans.deploy(this.displayName, publishDir)]);
-      },
-    };
-    return ok(action);
+      await azureWebSiteDeploy(
+        resourceId,
+        ctx.tokenProvider,
+        zipBuffer,
+        context.logProvider,
+        progressBar
+      );
+    } finally {
+      progressBar.end(true);
+    }
+    return ok(undefined);
   }
 }

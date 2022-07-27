@@ -322,6 +322,7 @@ describe("Workflow test for v3", () => {
       projectPath: projectPath,
       platform: Platform.VSCode,
       folder: path.join(projectPath, "tabs"),
+      componentId: "teams-tab",
     };
     context.envInfo = newEnvInfoV3();
     context.tokenProvider = tools.tokenProvider;

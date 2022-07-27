@@ -4,7 +4,15 @@
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
 
-import { err, FxError, Inputs, ok, QTreeNode, UserError } from "@microsoft/teamsfx-api";
+import {
+  err,
+  FxError,
+  Inputs,
+  ok,
+  QTreeNode,
+  SubscriptionInfo,
+  UserError,
+} from "@microsoft/teamsfx-api";
 import { FxCore } from "@microsoft/teamsfx-core";
 
 import Provision, { ProvisionManifest } from "../../../src/cmds/provision";
@@ -17,6 +25,7 @@ import { expect } from "../utils";
 import { NotFoundSubscriptionId, NotSupportedProjectType } from "../../../src/error";
 import UI from "../../../src/userInteraction";
 import LogProvider from "../../../src/commonlib/log";
+import { AzureAccountManager } from "../../../src/commonlib/azureLoginCI";
 
 describe("Provision Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -114,6 +123,36 @@ describe("Provision Command Tests", function () {
       expect(e).instanceOf(UserError);
       expect(e.name).equals("NotSupportedProjectType");
     }
+  });
+
+  it("Provision Command Running -- provisionResources error", async () => {
+    const cmd = new Provision();
+    const args = {
+      [constants.RootFolderNode.data.name as string]: "real",
+    };
+
+    const subscriptionInfo: SubscriptionInfo = {
+      subscriptionId: "fake",
+      tenantId: "fakeTenantId",
+      subscriptionName: "fakeSubscriptionName",
+    };
+    const azureAccountManager = AzureAccountManager.getInstance();
+    sandbox.stub(azureAccountManager, "readSubscription").callsFake(async () => {
+      return Promise.resolve(subscriptionInfo);
+    });
+
+    sandbox
+      .stub(azureAccountManager, "setSubscription")
+      .callsFake(async (subscriptionId: string) => {
+        throw new UserError(
+          "CI",
+          "NotFoundSubscriptionId",
+          "Inputed subscription not found in your tenant"
+        );
+      });
+
+    await cmd.handler(args);
+    expect(telemetryEvents).deep.equals([TelemetryEvent.ProvisionStart, TelemetryEvent.Provision]);
   });
 });
 

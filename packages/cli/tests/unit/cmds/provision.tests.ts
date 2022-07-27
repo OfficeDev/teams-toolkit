@@ -125,7 +125,7 @@ describe("Provision Command Tests", function () {
     }
   });
 
-  it("Provision Command Running -- provisionResources error", async () => {
+  it("Provision Command Running -- provision with set subscription error", async () => {
     const cmd = new Provision();
     const args = {
       [constants.RootFolderNode.data.name as string]: "real",

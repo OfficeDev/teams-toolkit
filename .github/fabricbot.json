@@ -820,7 +820,7 @@
       "capabilityId": "ScheduledSearch",
       "subCapability": "ScheduledSearch",
       "version": "1.1",
-      "id": "nOx3d2VYtpDeaSLzU_Txu",
+      "id": "nOx5d9VYtpDeaSLzU_Txu",
       "config": {
         "frequency": [
           {
@@ -1030,7 +1030,7 @@
       "capabilityId": "ScheduledSearch",
       "subCapability": "ScheduledSearch",
       "version": "1.1",
-      "id": "nOx3d2VYtpDeaSLzU_Txu",
+      "id": "nOx1daVYtpDeaSLzU_Txu",
       "config": {
         "frequency": [
           {
@@ -1202,7 +1202,7 @@
           {
             "name": "hasLabel",
             "parameters": {
-              "label": "bug"
+              "label": "feature-request"
             }
           },
           {

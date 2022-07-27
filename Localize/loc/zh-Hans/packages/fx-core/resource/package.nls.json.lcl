@@ -2374,6 +2374,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.provision.confirmSubscription" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You are switching away from your previous subscription %s.]A;Do you want to provision resources in %s environment? Azure account (%s) with subscription (%s) will be used to provision the resources. Cost may incur according to the usage.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[你正在切换退出以前的订阅 %s。]A;是否要在 %s 环境中预配资源? 具有订阅(%s)的 Azure 帐户(%s)将用于预配资源。根据使用情况可能会产生成本。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.provision.failNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[fail to provision '%s' in the cloud!]]></Val>
@@ -2691,10 +2700,13 @@
       </Item>
       <Item ItemId=";error.ActionNotExist" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Action not exist: %s]]></Val>
+          <Val><![CDATA[Action not found: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[操作不存在: %s]]></Val>
+            <Val><![CDATA[找不到操作: %s]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Action not exist: %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2703,6 +2715,15 @@
           <Val><![CDATA[Failed to generate bicep file %s. Reason: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[无法生成 bicep 文件 %s。原因: %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.ComponentNotExist" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Component not found: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[找不到组件: %s]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3723,10 +3744,13 @@
       </Item>
       <Item ItemId=";error.apiConnector.SDKVersionImcompatibleError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[In %s project, @microsoft/teamsfx version %s is not compatible. Please upgrade your package version to %s]]></Val>
+          <Val><![CDATA[In %s project, @microsoft/teamsfx version %s is not compatible. Please upgrade the @microsoft/teamsfx version to %s and retry this feature.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[在 %s 项目中，@microsoft/teamsfx 版本 %s 不兼容。请将包版本升级到 %s]]></Val>
+            <Val><![CDATA[在 %s 项目中，@microsoft/teamsfx 版本 %s 不兼容。请将 @microsoft/teamsfx 版本升级到 %s，然后重试此功能。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[In %s project, @microsoft/teamsfx version %s is not compatible. Please upgrade your package version to %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3771,6 +3795,24 @@
           <Val><![CDATA[In %s project, there is no package.json exist]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[在 %s 项目中，不存在 package.json]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.appstudio.apiFailed" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[API call to Developer Portal failed: %s, %s, Request path: %s, X-Correlation-ID: %s. This may come from some intermittent service error. Please wait for a few minutes and retry the current step.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[对开发人员门户的 API 调用失败: %s，%s，请求路径: %s，X-Correlation-ID: %s。这可能来自一些间歇性服务错误。请等待几分钟，然后重试当前步骤。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.appstudio.apiFailed.telemetry" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[API call to Developer Portal failed: %s, %s, API name: %s, X-Correlation-ID: %s. This may come from some intermittent service error. Please wait for a few minutes and retry the current step.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[对开发人员门户的 API 调用失败: %s，%s，API 名称: %s，X-Correlation-ID: %s。这可能来自一些间歇性服务错误。请等待几分钟，然后重试当前步骤。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3894,19 +3936,25 @@
       </Item>
       <Item ItemId=";error.appstudio.localTeamsAppCreateFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to create local debug teams app in app studio, due to %s, %s]]></Val>
+          <Val><![CDATA[Failed to create local debug Teams app in Developer Portal, due to %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[由于 %s、%s，无法在 app Studio 中创建本地调试团队应用]]></Val>
+            <Val><![CDATA[由于 %s，无法在开发人员门户中创建本地调试 Teams 应用]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to create local debug teams app in app studio, due to %s, %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";error.appstudio.localTeamsAppUpdateFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to update local debug teams app in app studio, due to %s, %s]]></Val>
+          <Val><![CDATA[Failed to update local debug Teams app in Developer Portal, due to %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[由于 %s、%s，无法更新 App Studio 中的本地调试团队应用]]></Val>
+            <Val><![CDATA[由于 %s，无法在开发人员门户中更新本地调试 Teams 应用]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to update local debug teams app in app studio, due to %s, %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3957,19 +4005,25 @@
       </Item>
       <Item ItemId=";error.appstudio.remoteTeamsAppCreateFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to create remote teams app in app studio, due to %s, %s]]></Val>
+          <Val><![CDATA[Failed to create remote Teams app in Developer Portal, due to %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[由于 %s、%s，无法在 App Studio 中创建远程团队应用]]></Val>
+            <Val><![CDATA[由于 %s，无法在开发人员门户中创建远程 Teams 应用]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to create remote teams app in app studio, due to %s, %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";error.appstudio.remoteTeamsAppUpdateFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to update remote teams app in app studio, due to %s, %s]]></Val>
+          <Val><![CDATA[Failed to update remote Teams app in Developer Portal, due to %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[由于 %s、%s，无法更新 App Studio 中的远程团队应用]]></Val>
+            <Val><![CDATA[由于 %s，无法在开发人员门户中更新远程 Teams 应用]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to update remote teams app in app studio, due to %s, %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3993,10 +4047,13 @@
       </Item>
       <Item ItemId=";error.appstudio.teamsAppCreateFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to create teams app in app studio, due to %s, %s]]></Val>
+          <Val><![CDATA[Failed to create Teams app in Developer Portal, due to %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[由于 %s、%s，无法在 App Studio 中创建 Teams 应用]]></Val>
+            <Val><![CDATA[由于 %s，无法在开发人员门户中创建 Teams 应用]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to create teams app in app studio, due to %s, %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -5871,10 +5928,13 @@
       </Item>
       <Item ItemId=";plugins.appstudio.publishProgressUpdate" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Updating app definition for app %s in app studio]]></Val>
+          <Val><![CDATA[Updating app definition for app %s in Developer Portal]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[正在更新 App Studio 中应用 %s 的应用定义]]></Val>
+            <Val><![CDATA[正在更新开发人员门户中应用 %s 的应用定义]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Updating app definition for app %s in app studio]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -6048,10 +6108,13 @@
       </Item>
       <Item ItemId=";plugins.bot.AppStudioBotRegistration" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[App Studio bot registration]]></Val>
+          <Val><![CDATA[Developer Portal bot registration]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[App Studio 机器人注册]]></Val>
+            <Val><![CDATA[开发人员门户机器人注册]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[App Studio bot registration]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -6219,10 +6282,13 @@
       </Item>
       <Item ItemId=";plugins.bot.FailToCallAppStudioApi" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to call App Studio's api to check AAD application's existence.]]></Val>
+          <Val><![CDATA[Failed to call Developer Portal's api to check AAD application's existence.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[无法调用 App Studio 的 API 来检查 AAD 应用程序是否存在。]]></Val>
+            <Val><![CDATA[无法调用开发人员门户的 API 来检查 AAD 应用程序是否存在。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to call App Studio's api to check AAD application's existence.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

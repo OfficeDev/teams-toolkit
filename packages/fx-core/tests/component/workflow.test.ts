@@ -1,7 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FuncQuestion, InputsWithProjectPath, ok, Platform, Void } from "@microsoft/teamsfx-api";
+import {
+  FuncQuestion,
+  InputsWithProjectPath,
+  ok,
+  Platform,
+  ProvisionContextV3,
+  Void,
+} from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
@@ -13,6 +20,7 @@ import * as templateAction from "../../src/common/template-utils/templatesAction
 import "../../src/component/core";
 import "../../src/component/feature/bot";
 import "../../src/component/feature/sql";
+import "../../src/component/resource/botService";
 import { createContextV3 } from "../../src/component/utils";
 import { runActionByName } from "../../src/component/workflow";
 import { MockTools, randomAppName } from "../core/utils";
@@ -38,6 +46,9 @@ import { DefaultManifestProvider } from "../../src/component/resource/appManifes
 import { ComponentNames } from "../../src/component/constants";
 import { AzureSolutionQuestionNames } from "../../src";
 import { FunctionScaffold } from "../../src/plugins/resource/function/ops/scaffold";
+import { TeamsfxCore } from "../../src/component/core";
+import Container from "typedi";
+import { AzureStorageResource } from "../../src/component/resource/azureStorage";
 describe("Workflow test for v3", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -45,6 +56,7 @@ describe("Workflow test for v3", () => {
   const appName = `unittest${randomAppName()}`;
   const projectPath = path.join(os.homedir(), "TeamsApps", appName);
   const context = createContextV3();
+  const fx = Container.get<TeamsfxCore>("fx");
   beforeEach(() => {
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
   });
@@ -64,7 +76,7 @@ describe("Workflow test for v3", () => {
       "app-name": appName,
       folder: path.join(os.homedir(), "TeamsApps"),
     };
-    const res = await runActionByName("fx.init", context, inputs);
+    const res = await fx.init(context, inputs);
     assert.isTrue(res.isOk());
     assert.equal(context.projectSetting!.appName, appName);
     assert.deepEqual(context.projectSetting.components, []);
@@ -124,6 +136,17 @@ describe("Workflow test for v3", () => {
     }
     assert.isTrue(res.isOk());
   });
+  it("sso.add", async () => {
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+    };
+    const res = await runActionByName("sso.add", context, inputs);
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    assert.isTrue(res.isOk());
+  });
   it("apim-feature.add", async () => {
     sandbox.stub(FunctionScaffold, "scaffoldFunction").resolves();
     const inputs: InputsWithProjectPath = {
@@ -169,7 +192,7 @@ describe("Workflow test for v3", () => {
       "app-name": appName,
       folder: path.join(os.homedir(), "TeamsApps"),
     };
-    const initRes = await runActionByName("fx.init", context, inputs);
+    const initRes = await fx.init(context, inputs);
     if (initRes.isErr()) {
       console.log(initRes.error);
     }
@@ -246,7 +269,7 @@ describe("Workflow test for v3", () => {
       "app-name": appName,
       folder: path.join(os.homedir(), "TeamsApps"),
     };
-    const initRes = await runActionByName("fx.init", context, inputs);
+    const initRes = await fx.init(context, inputs);
     if (initRes.isErr()) {
       console.log(initRes.error);
     }
@@ -326,7 +349,8 @@ describe("Workflow test for v3", () => {
       console.log(addTabRes.error);
     }
     assert.isTrue(addTabRes.isOk());
-    const res = await runActionByName("azure-storage.deploy", context, inputs);
+    const azureStorage = Container.get<AzureStorageResource>(ComponentNames.AzureStorage);
+    const res = await azureStorage.deploy(context as ProvisionContextV3, inputs);
     if (res.isErr()) {
       console.log(res.error);
     }

@@ -8,7 +8,12 @@ import { createContextV3 } from "../../../../src/component/utils";
 import { MockTools, randomAppName } from "../../../core/utils";
 import { setTools } from "../../../../src/core/globalVars";
 import sinon from "sinon";
-import { ContextV3, FunctionAction, InputsWithProjectPath, Platform } from "@microsoft/teamsfx-api";
+import {
+  ContextV3,
+  InputsWithProjectPath,
+  Platform,
+  ProvisionContextV3,
+} from "@microsoft/teamsfx-api";
 import { newEnvInfoV3 } from "../../../../src";
 import path from "path";
 import * as os from "os";
@@ -39,18 +44,12 @@ describe("Azure-Function Component", () => {
   });
 
   it("configure happy path", async function () {
-    const configureAction = await component.configure(context, inputs);
+    const configureAction = await component.configure(context as ProvisionContextV3, inputs);
     chai.assert.isTrue(configureAction.isOk());
-    const action = configureAction._unsafeUnwrap() as FunctionAction;
-    const result = await action.execute(context, inputs);
-    chai.assert.isTrue(result.isOk());
   });
 
   it("generateBicep happy path", async function () {
     const generateBicepAction = await component.generateBicep(context, inputs);
     chai.assert.isTrue(generateBicepAction.isOk());
-    const action = generateBicepAction._unsafeUnwrap() as FunctionAction;
-    const result = await action.execute(context, inputs);
-    chai.assert.isTrue(result.isOk());
   });
 });

@@ -4,27 +4,28 @@
 import {
   Action,
   ContextV3,
-  Effect,
   err,
-  FunctionAction,
   FxError,
   InputsWithProjectPath,
   MaybePromise,
   ok,
+  Platform,
   Result,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
-import { Service } from "typedi";
+import { Container, Service } from "typedi";
 import { getComponent, runActionByName } from "../workflow";
 import "../connection/azureWebAppConfig";
 import "../resource/azureSql";
 import "../resource/identity";
 import { ComponentNames } from "../constants";
 import { hasApi } from "../../common/projectSettingsHelperV3";
+import { convertToAlphanumericOnly } from "../../common/utils";
+import { BicepComponent } from "../bicep";
+import { AzureSqlResource } from "../resource/azureSql";
 import { UtilFunctions } from "../resource/azureSql/actions/configure";
-import { cloneDeep, assign } from "lodash";
-import { Plans } from "../messages";
-import { generateConfigBiceps } from "../utils";
+import { generateConfigBiceps, bicepUtils } from "../utils";
+import { cloneDeep } from "lodash";
 
 @Service("sql")
 export class Sql {
@@ -34,60 +35,64 @@ export class Sql {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const action: FunctionAction = {
-      name: "sql.add",
+    const action: Action = {
       type: "function",
+      name: "sql.add",
+      question: (context, inputs) => {
+        if (inputs.platform == Platform.CLI_HELP) {
+          return ok(UtilFunctions.buildQuestionNode());
+        }
+        return ok(undefined);
+      },
       execute: async (context, inputs) => {
         const sqlComponent = getComponent(context.projectSetting, ComponentNames.AzureSQL);
-        const provisionType = sqlComponent ? "database" : "server";
-        const effects: Effect[] = [];
-
         const hasFunc = hasApi(context.projectSetting);
-        // 1. call teams-api.add if necessary
         if (!hasFunc) {
           const res = await runActionByName("teams-api.add", context, inputs);
           if (res.isErr()) return err(res.error);
-          effects.push("add teams-api");
         }
+        const projectSettings = context.projectSetting;
+        const remarks: string[] = ["config 'azure-sql' in projectSettings"];
+        projectSettings.components.push({
+          name: "azure-sql",
+          provision: true,
+        });
 
-        // 2. sql.generateBicep
+        // generate bicep
+        // bicep.init
         {
-          const clonedInputs = cloneDeep(inputs);
-          assign(clonedInputs, {
-            provisionType: provisionType,
-          });
-          const res = await runActionByName("azure-sql.generateBicep", context, clonedInputs);
+          const bicepComponent = Container.get<BicepComponent>("bicep");
+          const res = await bicepComponent.init(inputs.projectPath);
           if (res.isErr()) return err(res.error);
         }
 
-        // 3. sql config
-        context.projectSetting.components.push({
-          name: ComponentNames.AzureSQL,
-          provision: true,
-        });
-        effects.push(Plans.generateBicepAndConfig(ComponentNames.AzureSQL));
+        // sql bicep
+        {
+          const provisionType = sqlComponent ? "database" : "server";
+          const clonedInputs = cloneDeep(inputs);
+          clonedInputs.provisionType = provisionType;
+          const sqlResource = Container.get<AzureSqlResource>(ComponentNames.AzureSQL);
+          const res = await sqlResource.generateBicep(context, clonedInputs);
+          if (res.isErr()) return err(res.error);
+          const bicepRes = await bicepUtils.persistBiceps(
+            inputs.projectPath,
+            convertToAlphanumericOnly(context.projectSetting.appName),
+            res.value
+          );
+          if (bicepRes.isErr()) return bicepRes;
+          remarks.push("generate sql bicep");
+        }
 
-        // 4. update config bicep
+        // generate config bicep
         {
           const res = await generateConfigBiceps(context, inputs);
           if (res.isErr()) return err(res.error);
-          effects.push("generate config biceps");
+          remarks.push("generate config biceps");
         }
-        return ok(effects);
+
+        return ok(remarks);
       },
     };
     return ok(action);
   }
 }
-
-// TODO: move it to provision flow
-const cliHelpAction: Action = {
-  name: "fx.sqlCliHelp",
-  type: "function",
-  question: (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok(UtilFunctions.buildQuestionNode());
-  },
-  execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-    return ok([]);
-  },
-};

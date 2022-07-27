@@ -17,7 +17,7 @@ import {
   Result,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
-import { Service } from "typedi";
+import Container, { Service } from "typedi";
 import { hasApi } from "../../common/projectSettingsHelperV3";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { buildAnswer } from "../../plugins/resource/apim/answer";
@@ -28,9 +28,11 @@ import {
   ProgressStep,
 } from "../../plugins/resource/apim/constants";
 import { Factory } from "../../plugins/resource/apim/factory";
+import { BicepComponent } from "../bicep";
 import { ComponentNames } from "../constants";
 import { Plans } from "../messages";
-import { generateConfigBiceps } from "../utils";
+import { APIMResource } from "../resource/apim";
+import { generateConfigBiceps, bicepUtils } from "../utils";
 import { getComponent, runAction, runActionByName } from "../workflow";
 
 @Service(ComponentNames.APIMFeature)
@@ -79,14 +81,22 @@ export class ApimFeature {
         effects.push(Plans.addFeature("apim"));
         // 4. bicep.init
         {
-          const res = await runActionByName("bicep.init", context, inputs);
+          const bicepComponent = Container.get<BicepComponent>("bicep");
+          const res = await bicepComponent.init(inputs.projectPath);
           if (res.isErr()) return err(res.error);
         }
 
         // 5. apim.generateBicep
         {
-          const res = await runActionByName("apim.generateBicep", context, inputs);
+          const apimResource = Container.get<APIMResource>(ComponentNames.APIM);
+          const res = await apimResource.generateBicep(context, inputs);
           if (res.isErr()) return err(res.error);
+          const bicepRes = await bicepUtils.persistBiceps(
+            inputs.projectPath,
+            convertToAlphanumericOnly(context.projectSetting.appName),
+            res.value
+          );
+          if (bicepRes.isErr()) return err(bicepRes.error);
         }
 
         // 6. generate config bicep

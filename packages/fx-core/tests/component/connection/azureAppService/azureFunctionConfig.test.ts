@@ -45,10 +45,7 @@ describe("Azure-Function Connection", () => {
 
   it("generateBicep happy path", async function () {
     inputs.componentName = "Api";
-    const generateBicepAction = await component.generateBicep(context, inputs);
-    chai.assert.isTrue(generateBicepAction.isOk());
-    const action = generateBicepAction._unsafeUnwrap() as FunctionAction;
-    const result = await action.execute(context, inputs);
-    chai.assert.isTrue(result.isOk());
+    const res = await component.generateBicep(context, inputs);
+    chai.assert.isTrue(res.isOk());
   });
 });

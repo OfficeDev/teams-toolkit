@@ -1,21 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { hooks } from "@feathersjs/hooks/lib";
 import {
-  Action,
   ContextV3,
   err,
   FxError,
   IConfigurableTab,
   InputsWithProjectPath,
   IStaticTab,
-  MaybePromise,
   ok,
   Platform,
   PluginContext,
   ProjectSettingsV3,
   Result,
-  SourceCodeProvider,
   v3,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
@@ -41,44 +39,36 @@ import { Utils } from "../../plugins/resource/spfx/utils/utils";
 import { convert2Context } from "../../plugins/resource/utils4v2";
 import { cpUtils } from "../../plugins/solution/fx-solution/utils/depsChecker/cpUtils";
 import { ComponentNames } from "../constants";
+import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { DefaultManifestProvider } from "../resource/appManifest/manifestProvider";
 import { getComponent } from "../workflow";
 /**
  * SPFx tab scaffold
  */
 @Service(ComponentNames.SPFxTabCode)
-export class SPFxTabCodeProvider implements SourceCodeProvider {
+export class SPFxTabCodeProvider {
   name = ComponentNames.SPFxTabCode;
-  generate(
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const action: Action = {
-      name: `${this.name}.generate`,
-      type: "function",
+  @hooks([
+    ActionExecutionMW({
       enableTelemetry: true,
       telemetryComponentName: "fx-resource-spfx",
       telemetryEventName: "scaffold",
       errorSource: "SPFx",
-      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
-        if (!teamsTab) return ok([]);
-        const folder = inputs.folder || "SPFx";
-        return ok([`scaffold tab source code in folder: ${path.join(inputs.projectPath, folder)}`]);
-      },
-      execute: async (ctx: ContextV3, inputs: InputsWithProjectPath) => {
-        const projectSettings = ctx.projectSetting as ProjectSettingsV3;
-        const folder = inputs.folder || "SPFx";
-        const teamsTab = getComponent(projectSettings, ComponentNames.TeamsTab);
-        if (!teamsTab) return ok([]);
-        merge(teamsTab, { build: true, folder: folder });
-        const workingDir = path.resolve(inputs.projectPath, folder);
-        const scaffoldRes = await scaffoldSPFx(context, inputs, workingDir);
-        if (scaffoldRes.isErr()) return err(scaffoldRes.error);
-        return ok([`scaffold tab source code in folder: ${workingDir}`]);
-      },
-    };
-    return ok(action);
+    }),
+  ])
+  async generate(
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ): Promise<Result<undefined, FxError>> {
+    const projectSettings = context.projectSetting as ProjectSettingsV3;
+    const folder = inputs.folder || "SPFx";
+    const teamsTab = getComponent(projectSettings, ComponentNames.TeamsTab);
+    if (!teamsTab) return ok(undefined);
+    merge(teamsTab, { build: true, folder: folder });
+    const workingDir = path.resolve(inputs.projectPath, folder);
+    const scaffoldRes = await scaffoldSPFx(context, inputs, workingDir);
+    if (scaffoldRes.isErr()) return err(scaffoldRes.error);
+    return ok(undefined);
   }
 }
 

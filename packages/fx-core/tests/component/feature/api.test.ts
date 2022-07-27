@@ -18,14 +18,14 @@ import * as path from "path";
 import fs from "fs-extra";
 import { createSandbox } from "sinon";
 import * as utils from "../../../src/component/utils";
-import { getComponent, runAction, runActionByName } from "../../../src/component/workflow";
+import { getComponent, runActionByName } from "../../../src/component/workflow";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools, randomAppName } from "../../core/utils";
 import "../../../src/component/core";
 import { environmentManager } from "../../../src/core/environment";
 import { ComponentNames } from "../../../src/component/constants";
 import { FunctionScaffold } from "../../../src/plugins/resource/function/ops/scaffold";
-
+import { bicepUtils } from "../../../src/component/utils";
 describe("Api Feature", () => {
   const sandbox = createSandbox();
   const tools = new MockTools();
@@ -69,8 +69,7 @@ describe("Api Feature", () => {
   });
 
   it("add api", async () => {
-    sandbox.stub(utils, "persistBicep").resolves(ok(undefined));
-
+    sandbox.stub(bicepUtils, "persistBiceps").resolves(ok(undefined));
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
@@ -96,8 +95,7 @@ describe("Api Feature", () => {
   });
 
   it("add api twice", async () => {
-    sandbox.stub(utils, "persistBicep").rejects();
-
+    sandbox.stub(bicepUtils, "persistBiceps").rejects();
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,

@@ -53,8 +53,5 @@ describe("Identity Component", () => {
   it("generateBicep happy path", async function () {
     const generateBicepAction = await component.generateBicep(context, inputs);
     chai.assert.isTrue(generateBicepAction.isOk());
-    const action = generateBicepAction._unsafeUnwrap() as FunctionAction;
-    const result = await action.execute(context, inputs);
-    chai.assert.isTrue(result.isOk());
   });
 });

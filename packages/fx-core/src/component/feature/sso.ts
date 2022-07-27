@@ -6,23 +6,27 @@ import {
   ContextV3,
   Effect,
   err,
-  FunctionAction,
   FxError,
   InputsWithProjectPath,
   MaybePromise,
   ok,
+  Platform,
   Result,
   Stage,
+  v3,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
-import { Service } from "typedi";
-import { getComponent, runActionByName } from "../workflow";
+import { Container, Service } from "typedi";
+import { convertToAlphanumericOnly } from "../../common/utils";
 import "../connection/azureWebAppConfig";
+import { ComponentNames } from "../constants";
+import { generateLocalDebugSettings } from "../debug";
+import { AadApp } from "../resource/aadApp/aadApp";
+import { AppManifest } from "../resource/appManifest/appManifest";
 import "../resource/azureSql";
 import "../resource/identity";
-import { ComponentNames } from "../constants";
-import { generateConfigBiceps } from "../utils";
-import { cloneDeep, assign } from "lodash";
+import { generateConfigBiceps, bicepUtils } from "../utils";
+import { getComponent } from "../workflow";
 
 @Service("sso")
 export class SSO {
@@ -32,83 +36,84 @@ export class SSO {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const action: FunctionAction = {
-      name: "sso.add",
+    if (inputs.platform == Platform.CLI_HELP) {
+      return ok(undefined);
+    }
+    const action: Action = {
       type: "function",
+      name: "sso.add",
       execute: async (context, inputs) => {
+        const updates = getUpdateComponents(context, inputs);
         const effects: Effect[] = [];
 
-        const updates = getUpdateComponents(context, inputs);
-        // 1. aad-app.generateManifest
+        // generate manifest
+        const aadApp = Container.get<AadApp>(ComponentNames.AadApp);
         {
-          const res = await runActionByName("aad-app.generateManifest", context, inputs);
+          const res = await aadApp.generateManifest(context, inputs);
           if (res.isErr()) return err(res.error);
           effects.push("generate aad manifest");
         }
 
-        // 2. aad-app.generateBicep
-        {
-          const res = await runActionByName("aad-app.generateBicep", context, inputs);
-          if (res.isErr()) return err(res.error);
-          effects.push("generate aad bicep files");
-        }
-
-        // 3. aad-app.generateAuthFiles
-        if (inputs.stage === Stage.addFeature) {
-          const clonedInputs = cloneDeep(inputs);
-          assign(clonedInputs, {
-            needsBot: updates.bot,
-            needsTab: updates.tab,
-          });
-          const res = await runActionByName("aad-app.generateAuthFiles", context, clonedInputs);
-          if (res.isErr()) return err(res.error);
-          effects.push("add sso auth files");
-        }
-
-        // 4. app-manifest.addCapability
-        {
-          const clonedInputs = cloneDeep(inputs);
-          assign(clonedInputs, {
-            capabilities: [{ name: "WebApplicationInfo" }],
-          });
-          const res = await runActionByName("app-manifest.addCapability", context, clonedInputs);
-          if (res.isErr()) return err(res.error);
-          effects.push("add aad capability in app manifest");
-        }
-
-        // 5. local debug settings
-        {
-          const res = await runActionByName("debug.generateLocalDebugSettings", context, inputs);
-          if (res.isErr()) return err(res.error);
-          effects.push("generate local debug configs");
-        }
-
-        // 6. sso config
+        // config sso
         if (updates.aad) {
           context.projectSetting.components.push({
             name: ComponentNames.AadApp,
             provision: true,
             deploy: true,
           });
-          effects.push("add component 'aad-app' in projectSettings");
         }
         if (updates.tab) {
           const teamsTabComponent = getComponent(context.projectSetting, ComponentNames.TeamsTab);
           teamsTabComponent!.sso = true;
-          effects.push("add feature 'SSO' to component 'teams-tab' in projectSettings");
         }
         if (updates.bot) {
           const teamsBotComponent = getComponent(context.projectSetting, ComponentNames.TeamsBot);
           teamsBotComponent!.sso = true;
-          effects.push("add feature 'SSO' to component 'teams-bot' in projectSettings");
+        }
+        effects.push("config sso");
+
+        // generate bicep
+        {
+          const res = await aadApp.generateBicep(context, inputs);
+          if (res.isErr()) return err(res.error);
+          const bicepRes = await bicepUtils.persistBiceps(
+            inputs.projectPath,
+            convertToAlphanumericOnly(context.projectSetting.appName),
+            res.value
+          );
+          if (bicepRes.isErr()) return bicepRes;
+          effects.push("generate aad bicep");
         }
 
-        // 7. update config bicep
+        // generate auth files
+        {
+          const res = await aadApp.generateAuthFiles(context, inputs, updates.tab!, updates.bot!);
+          if (res.isErr()) return err(res.error);
+          effects.push("generate auth files");
+        }
+        // update app manifest
+        {
+          const capabilities: v3.ManifestCapability[] = [{ name: "WebApplicationInfo" }];
+          const appManifest = Container.get<AppManifest>(ComponentNames.AppManifest);
+          const res = await appManifest.addCapability(inputs, capabilities);
+          if (res.isErr()) return err(res.error);
+          effects.push("update app manifest");
+        }
+
+        // local debug settings
+        {
+          const res = await generateLocalDebugSettings(context, inputs);
+          if (res.isErr()) return err(res.error);
+          effects.push("generate local debug configs");
+        }
+
+        // generate config bicep
         {
           const res = await generateConfigBiceps(context, inputs);
           if (res.isErr()) return err(res.error);
           effects.push("generate config biceps");
         }
+
         return ok(effects);
       },
     };
@@ -121,7 +126,6 @@ export interface updateComponents {
   tab?: boolean;
   aad?: boolean;
 }
-
 function getUpdateComponents(context: ContextV3, inputs: InputsWithProjectPath): updateComponents {
   if (inputs.stage === Stage.create) {
     return {

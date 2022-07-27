@@ -469,6 +469,7 @@ export class TeamsfxCore {
                 const clonedInputs = cloneDeep(inputs);
                 clonedInputs.folder = component.folder;
                 clonedInputs.artifactFolder = component.artifactFolder;
+                clonedInputs.componentId = component.name;
                 return componentInstance.deploy!(ctx, clonedInputs);
               },
             });

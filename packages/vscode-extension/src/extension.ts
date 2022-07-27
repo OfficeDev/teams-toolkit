@@ -44,11 +44,7 @@ import * as handlers from "./handlers";
 import { ManifestTemplateHoverProvider } from "./hoverProvider";
 import { VsCodeUI } from "./qm/vsc_ui";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
-import {
-  TelemetryEvent,
-  TelemetryProperty,
-  TelemetryTriggerFrom,
-} from "./telemetry/extTelemetryEvents";
+import { TelemetryEvent, TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
 import {
   canUpgradeToArmAndMultiEnv,
@@ -63,13 +59,8 @@ import { ExtensionSurvey } from "./utils/survey";
 import { ExtensionUpgrade } from "./utils/upgrade";
 
 export let VS_CODE_UI: VsCodeUI;
-// activation performance telemetry
-let activationStartTime: number;
-let activationEndTime: number;
-let uiDisplayTime: number;
 
 export async function activate(context: vscode.ExtensionContext) {
-  activationStartTime = Date.now();
   // load the feature flags.
   syncFeatureFlags();
 
@@ -117,7 +108,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Call activate function of toolkit core.
   handlers.activate();
-  activationEndTime = Date.now();
 
   // Init VSC context key
   await initializeContextKey(isTeamsFxProject);
@@ -125,7 +115,6 @@ export async function activate(context: vscode.ExtensionContext) {
   // UI is ready to show & interact
   await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
   await vscode.commands.executeCommand("setContext", "fx-extension.initialized", true);
-  uiDisplayTime = Date.now();
 
   VsCodeLogInstance.info("Teams Toolkit extension is now active!");
 
@@ -848,18 +837,6 @@ async function runBackgroundAsyncTasks(
     survey.activate();
   }
   await showDebugChangesNotification();
-  const backgroundTasksEndTime = Date.now();
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.Activate,
-    {
-      [TelemetryProperty.IsTeamsFx]: isTeamsFxProject.toString(),
-    },
-    {
-      [TelemetryProperty.ActivationTime]: activationEndTime - activationStartTime,
-      [TelemetryProperty.UIDisplayTime]: uiDisplayTime - activationStartTime,
-      [TelemetryProperty.BackgroundTaskFinishTime]: backgroundTasksEndTime - activationStartTime,
-    }
-  );
 }
 
 function registerInCommandController(

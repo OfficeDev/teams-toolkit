@@ -6,27 +6,20 @@
  */
 
 import path from "path";
-import { environmentManager, getUuid } from "@microsoft/teamsfx-core";
 import {
-  getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
   cleanUp,
-  setBotSkuNameToB1Bicep,
-  setSimpleAuthSkuNameToB1Bicep,
-  validateTabAndBotProjectProvision,
-  execAsync,
-  getActivePluginsFromProjectSetting,
   getCapabilitiesFromProjectSetting,
 } from "../commonUtils";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { Capability, PluginId, ProjectSettingKey, TestFilePath } from "../../commonlib/constants";
+import { Capability } from "../../commonlib/constants";
 import fs from "fs-extra";
 import { expect } from "chai";
 import { SubscriptionInfo } from "@microsoft/teamsfx-api";
 import { FrontendValidator } from "../../commonlib";
 
-describe("Provision with invalid subscription info", () => {
+describe("Provision with subscriptionInfo.json that has logged out", () => {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);

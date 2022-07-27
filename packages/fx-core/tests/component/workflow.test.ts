@@ -136,6 +136,17 @@ describe("Workflow test for v3", () => {
     }
     assert.isTrue(res.isOk());
   });
+  it("sso.add", async () => {
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+    };
+    const res = await runActionByName("sso.add", context, inputs);
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    assert.isTrue(res.isOk());
+  });
   it("apim-feature.add", async () => {
     sandbox.stub(FunctionScaffold, "scaffoldFunction").resolves();
     const inputs: InputsWithProjectPath = {

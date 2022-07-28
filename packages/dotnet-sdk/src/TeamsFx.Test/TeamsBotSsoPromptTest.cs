@@ -256,7 +256,7 @@ public class TeamsBotSsoPromptTest
             Assert.IsNotNull(card);
             Assert.AreEqual(1, card!.Buttons.Count);
             Assert.AreEqual(ActionTypes.Signin, card!.Buttons[0].Type);
-            Assert.AreEqual($"{testInitiateLoginEndpoint }?scope=&clientId={testClientId}&tenantId={testTenantId}&loginHint={testUserPrincipalName}", card.Buttons[0].Value);
+            Assert.AreEqual($"{testInitiateLoginEndpoint }?scope=&clientId={testClientId}&tenantId={testTenantId}&loginHint={testUserPrincipalName}", card!.Buttons[0].Value);
             Assert.AreEqual($"{testApplicationIdUri}/access_as_user", card!.TokenExchangeResource.Uri);
         })
         .Send(new Activity()

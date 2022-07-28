@@ -18,7 +18,7 @@ namespace Microsoft.TeamsFx.Helper
         /// <param name="context"> Turn context. </param>
         /// <param name="userId"> ID of the user in question. </param>
         /// <param name="cancellationToken"> cancellation token. </param>
-        /// <returns>Team Details.</returns>
+        /// <returns>Team Account Details.</returns>
         Task<TeamsChannelAccount> GetTeamsMemberAsync(ITurnContext context, string userId, CancellationToken cancellationToken = default);
     }
 }

@@ -32,7 +32,7 @@ describe("Provision with subscriptionInfo.json that has logged out", () => {
 
   it("Provision non SSO Tab project", async () => {
     // Arrange
-    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.TabNonSso, env);
+    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab, env);
 
     // Assert
     const capabilities = await getCapabilitiesFromProjectSetting(projectPath);

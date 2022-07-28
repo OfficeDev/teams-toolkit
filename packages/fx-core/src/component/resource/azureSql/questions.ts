@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Inputs, TextInputQuestion } from "@microsoft/teamsfx-api";
+import { Inputs, QTreeNode, TextInputQuestion } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { Constants } from "./constants";
 import {
@@ -51,3 +51,13 @@ export const confirmPasswordQuestion: TextInputQuestion = {
     },
   },
 };
+
+export function buildQuestionNode(): QTreeNode {
+  const sqlNode = new QTreeNode({
+    type: "group",
+  });
+  sqlNode.addChild(new QTreeNode(adminNameQuestion));
+  sqlNode.addChild(new QTreeNode(adminPasswordQuestion));
+  sqlNode.addChild(new QTreeNode(confirmPasswordQuestion));
+  return sqlNode;
+}

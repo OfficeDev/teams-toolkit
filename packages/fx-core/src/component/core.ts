@@ -257,9 +257,9 @@ export class TeamsfxCore {
     const action: FunctionAction = {
       name: "fx.provision",
       type: "function",
-      question: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return await getQuestionsForDeployV3(context, context.envInfo!, inputs);
-      },
+      // question: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+      //   return await getQuestionsForDeployV3(context, context.envInfo!, inputs);
+      // },
       execute: async (context, inputs) => {
         const ctx = context as ProvisionContextV3;
         ctx.envInfo.state.solution = ctx.envInfo.state.solution || {};

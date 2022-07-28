@@ -56,17 +56,19 @@ export class AzureStorageResource extends AzureResource {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const ctx = context as ProvisionContextV3;
-    const frontendConfigRes = await buildFrontendConfig(
-      ctx.envInfo,
-      ComponentNames.TeamsTab,
-      ctx.tokenProvider.azureAccountProvider
-    );
-    if (frontendConfigRes.isErr()) {
-      return err(frontendConfigRes.error);
+    if (context.envInfo.envName !== "local") {
+      const frontendConfigRes = await buildFrontendConfig(
+        ctx.envInfo,
+        ComponentNames.TeamsTab,
+        ctx.tokenProvider.azureAccountProvider
+      );
+      if (frontendConfigRes.isErr()) {
+        return err(frontendConfigRes.error);
+      }
+      actionContext?.progressBar?.next(ProgressMessages.enableStaticWebsite);
+      const client = new AzureStorageClient(frontendConfigRes.value);
+      await client.enableStaticWebsite();
     }
-    actionContext?.progressBar?.next(ProgressMessages.enableStaticWebsite);
-    const client = new AzureStorageClient(frontendConfigRes.value);
-    await client.enableStaticWebsite();
     return ok(undefined);
   }
   @hooks([

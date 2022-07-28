@@ -35,7 +35,9 @@ describe("Provision with subscriptionInfo.json that has logged out", () => {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.TabNonSso, env);
 
     // Assert
-    await getCapabilitiesFromProjectSetting(projectPath);
+    const capabilities = await getCapabilitiesFromProjectSetting(projectPath);
+    expect(capabilities.includes(Capability.Tab)).to.be.true;
+
     const subscriptionInfoJsonFilePath = path.join(projectPath, ".fx/subscriptionInfo.json");
     expect(await fs.pathExists(subscriptionInfoJsonFilePath)).to.be.true;
 

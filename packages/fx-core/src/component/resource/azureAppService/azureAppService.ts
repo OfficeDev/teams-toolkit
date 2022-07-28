@@ -65,7 +65,7 @@ export abstract class AzureAppService extends AzureResource {
         throw new PackDirectoryExistenceError(this.alias);
       }
 
-      const state = ctx.envInfo.state[parent.name];
+      const state = ctx.envInfo.state[inputs.componentId];
       const resourceId = CheckThrowSomethingMissing(
         this.alias,
         this.outputs.resourceId.key,

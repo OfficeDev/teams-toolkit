@@ -25,7 +25,7 @@ import { getLocalizedString } from "../../common/localizeUtils";
 import { isVSProject } from "../../common/projectSettingsHelper";
 import { globalVars } from "../../core/globalVars";
 import { CoreQuestionNames } from "../../core/question";
-import { FrontendPathInfo } from "../../plugins/resource/frontend/constants";
+import { Constants, FrontendPathInfo } from "../../plugins/resource/frontend/constants";
 import {
   AzureSolutionQuestionNames,
   TabNonSsoItem,
@@ -42,6 +42,7 @@ import { convertToAlphanumericOnly } from "../../common/utils";
 import { IdentityResource } from "../resource/identity";
 import { generateLocalDebugSettings } from "../debug";
 import { AppManifest } from "../resource/appManifest/appManifest";
+import { FRONTEND_INDEX_PATH } from "../../plugins/resource/appstudio/constants";
 
 @Service("teams-tab")
 export class TeamsTab {
@@ -115,6 +116,7 @@ export class TeamsTab {
             projectSettings.components.push({
               name: inputs.hosting,
               scenario: Scenarios.Tab,
+              provision: true,
             });
             effects.push(Plans.generateBicepAndConfig(inputs.hosting));
           }
@@ -192,6 +194,9 @@ export class TeamsTab {
     };
     return ok(action);
   }
+  provision(): MaybePromise<Result<Action | undefined, FxError>> {
+    return ok(provisionTab);
+  }
   configure(): MaybePromise<Result<Action | undefined, FxError>> {
     return ok(configureTab);
   }
@@ -199,6 +204,20 @@ export class TeamsTab {
     return ok(buildTab);
   }
 }
+
+const provisionTab: FunctionAction = {
+  name: "teams-tab.provision",
+  type: "function",
+  execute: async (context, inputs) => {
+    if (context.envInfo?.envName === "local") {
+      context.envInfo.state[ComponentNames.TeamsTab]?.set(
+        FRONTEND_INDEX_PATH,
+        Constants.FrontendIndexPath
+      );
+    }
+    return ok([]);
+  },
+};
 
 const configureTab: FunctionAction = {
   name: "teams-tab.configure",

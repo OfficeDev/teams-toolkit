@@ -36,7 +36,6 @@ import {
   UnzipTemplateError,
 } from "../../plugins/resource/frontend/resources/errors";
 import { Messages } from "../../plugins/resource/frontend/resources/messages";
-import { Scenario, TemplateInfo } from "../../plugins/resource/frontend/resources/templateInfo";
 import { ComponentNames } from "../constants";
 import { getComponent } from "../workflow";
 import { convertToLangKey } from "./botCode";
@@ -45,12 +44,11 @@ import { isVSProject } from "../../common/projectSettingsHelper";
 import { DotnetCommands } from "../../plugins/resource/frontend/dotnet/constants";
 import { Utils } from "../../plugins/resource/frontend/utils";
 import { CommandExecutionError } from "../../plugins/resource/bot/errors";
-import { isAadManifestEnabled } from "../../common/tools";
-import { hasAAD, hasApi } from "../../common/projectSettingsHelperV3";
 import { ScaffoldProgress } from "../../plugins/resource/frontend/resources/steps";
 import { ProgressMessages, ProgressTitles } from "../messages";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
+import { M365SsoLaunchPageOptionItem, TabNonSsoItem, TabOptionItem } from "../../plugins";
 /**
  * tab scaffold
  */
@@ -83,23 +81,17 @@ export class TabCodeProvider {
         : FrontendPathInfo.WorkingDir);
     const langKey = convertToLangKey(inputs[CoreQuestionNames.ProgrammingLanguage]);
     const workingDir = path.join(inputs.projectPath, inputs.folder);
-    const hasFunction = hasApi(ctx.projectSetting);
     inputs.safeProjectName =
       inputs.safeProjectName ?? convertToAlphanumericOnly(ctx.projectSetting.appName);
     const variables = {
-      showFunction: hasFunction.toString(),
       ProjectName: ctx.projectSetting.appName,
       SafeProjectName: inputs.safeProjectName,
     };
 
-    const scenario = ctx.projectSetting.isM365
-      ? Scenario.M365
-      : isAadManifestEnabled() && !hasAAD(ctx.projectSetting)
-      ? Scenario.NonSso
-      : Scenario.Default;
+    const scenario = featureToScenario.get(inputs[CoreQuestionNames.Features]);
     await actionContext?.progressBar?.next(ProgressMessages.scaffoldTab);
     await scaffoldFromTemplates({
-      group: TemplateInfo.TemplateGroupName,
+      group: "tab",
       lang: langKey,
       scenario: scenario,
       dst: workingDir,
@@ -224,3 +216,15 @@ export class TabCodeProvider {
     return "build";
   }
 }
+
+enum Scenario {
+  default = "default",
+  nonSso = "non-sso",
+  m365 = "m365",
+}
+
+const featureToScenario = new Map<string, Scenario>([
+  [TabOptionItem.id, Scenario.default],
+  [TabNonSsoItem.id, Scenario.nonSso],
+  [M365SsoLaunchPageOptionItem.id, Scenario.m365],
+]);

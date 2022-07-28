@@ -12,10 +12,10 @@ public class TeamsBotSsoPromptTokenResponse: TokenResponse
     /// <summary>
     /// SSO token for user
     /// </summary>
-    public string SsoToken;
+    public string SsoToken { get; set; }
 
     /// <summary>
     /// Expiration time of SSO token
     /// </summary>
-    public string SsoTokenExpiration;
+    public string SsoTokenExpiration { get; set; }
 }

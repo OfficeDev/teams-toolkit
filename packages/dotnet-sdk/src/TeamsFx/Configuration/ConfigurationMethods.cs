@@ -40,7 +40,7 @@ public static class TeamsFxConfigurationMethods
             botAuthOption.OAuthAuthority = authOptionsValue.OAuthAuthority;
             botAuthOption.TenantId = (new Regex(@"[^\/]+$")).Match(authOptionsValue.OAuthAuthority).Value;
             botAuthOption.ApplicationIdUri = authOptionsValue.ApplicationIdUri;
-            botAuthOption.LoginStartPageEndpoint = authOptionsValue.Bot.LoginStartPageEndpoint;
+            botAuthOption.InitiateLoginEndpoint  = authOptionsValue.Bot.LoginStartPageEndpoint;
         }).ValidateDataAnnotations();
         
         services.AddSingleton<IIdentityClientAdapter>(sp => {
@@ -80,7 +80,7 @@ public static class TeamsFxConfigurationMethods
                 botAuthOption.OAuthAuthority = authOptionsValue.OAuthAuthority;
                 botAuthOption.TenantId = (new Regex(@"[^\/]+$")).Match(authOptionsValue.OAuthAuthority).Value;
                 botAuthOption.ApplicationIdUri = authOptionsValue.ApplicationIdUri;
-                botAuthOption.LoginStartPageEndpoint = authOptionsValue.Bot.LoginStartPageEndpoint;
+                botAuthOption.InitiateLoginEndpoint  = authOptionsValue.Bot.LoginStartPageEndpoint;
             }).ValidateDataAnnotations();
 
         services.AddSingleton<IIdentityClientAdapter>(sp => {
@@ -124,7 +124,7 @@ public static class TeamsFxConfigurationMethods
             botAuthOption.OAuthAuthority = authOptionsValue.OAuthAuthority;
             botAuthOption.TenantId = (new Regex(@"[^\/]+$")).Match(authOptionsValue.OAuthAuthority).Value;
             botAuthOption.ApplicationIdUri = authOptionsValue.ApplicationIdUri;
-            botAuthOption.LoginStartPageEndpoint = authOptionsValue.Bot.LoginStartPageEndpoint;
+            botAuthOption.InitiateLoginEndpoint  = authOptionsValue.Bot.LoginStartPageEndpoint;
         }).ValidateDataAnnotations();
 
         services.AddSingleton<IIdentityClientAdapter>(sp => {

@@ -11,6 +11,7 @@ using Newtonsoft.Json.Linq;
 using Microsoft.Bot.Connector;
 using Microsoft.TeamsFx.Helper;
 using Microsoft.Identity.Client;
+using Microsoft.TeamsFx.Model;
 
 namespace Microsoft.TeamsFx.Bot;
 
@@ -215,13 +216,15 @@ public class TeamsBotSsoPrompt : Dialog
             {
                 try
                 {
-                    var authenticationResult = await _identityClientAdapter.GetAccessToken(ssoToken, _settings.Scopes).ConfigureAwait(false);
+                    var exchangedToken = await GetToken(ssoToken, _settings.Scopes).ConfigureAwait(false);
+
                     var ssoTokenObj = Utils.ParseJwt(ssoToken);
+                    var ssoExpiration = DateTimeOffset.FromUnixTimeSeconds(long.Parse(ssoTokenObj.Payload["exp"].ToString()));
                     tokenResponse = new TeamsBotSsoPromptTokenResponse {
                         SsoToken = ssoToken,
-                        SsoTokenExpiration = ssoTokenObj.Payload["exp"].ToString(),
-                        Token = authenticationResult.AccessToken,
-                        Expiration = authenticationResult.ExpiresOn.ToString()
+                        SsoTokenExpiration = ssoExpiration.ToString(),
+                        Token = exchangedToken.Token,
+                        Expiration = exchangedToken.ExpiresOn.ToString()
                     };
 
                     await SendInvokeResponseAsync(context, HttpStatusCode.OK, null, cancellationToken).ConfigureAwait(false);
@@ -258,6 +261,29 @@ public class TeamsBotSsoPrompt : Dialog
         } else
         {
             result.Succeeded = false;
+        }
+        return result;
+    }
+
+    private async Task<AccessToken> GetToken(string ssoToken, string[] scopes)
+    {
+        AccessToken result;
+        var ssoTokenObj = Utils.ParseJwt(ssoToken);
+        var ssoTokenExpiration = DateTimeOffset.FromUnixTimeSeconds(long.Parse(ssoTokenObj.Payload["exp"].ToString())); 
+        
+        // Get sso token
+        if (scopes.Length == 0)
+        {
+            if (DateTimeOffset.Compare(DateTimeOffset.UtcNow, ssoTokenExpiration) > 0)
+            {
+                throw new ExceptionWithCode("SSO token has already expired.", ExceptionCode.TokenExpiredError);
+            }
+            result = new AccessToken(ssoToken, ssoTokenExpiration);
+        }
+        else
+        {
+            var authenticationResult = await _identityClientAdapter.GetAccessToken(ssoToken, scopes).ConfigureAwait(false);
+            result = new AccessToken(authenticationResult.AccessToken, authenticationResult.ExpiresOn);
         }
         return result;
     }
@@ -326,7 +352,7 @@ public class TeamsBotSsoPrompt : Dialog
     /// <returns>sign in resource</returns>
     private SignInResource GetSignInResource(string loginHint)
     {
-        string signInLink = $"{_settings.BotAuthOptions.LoginStartPageEndpoint}?scope={Uri.EscapeDataString(string.Join(" ", _settings.Scopes))}&clientId={_settings.BotAuthOptions.ClientId}&tenantId={_settings.BotAuthOptions.TenantId}&loginHint={loginHint}";
+        string signInLink = $"{_settings.BotAuthOptions.InitiateLoginEndpoint }?scope={Uri.EscapeDataString(string.Join(" ", _settings.Scopes))}&clientId={_settings.BotAuthOptions.ClientId}&tenantId={_settings.BotAuthOptions.TenantId}&loginHint={loginHint}";
 
         SignInResource signInResource = new SignInResource {
             SignInLink = signInLink,

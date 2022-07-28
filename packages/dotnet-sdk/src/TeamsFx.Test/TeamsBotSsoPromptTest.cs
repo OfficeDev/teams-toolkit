@@ -33,7 +33,7 @@ public class TeamsBotSsoPromptTest
     private static readonly string testTenantId = Guid.NewGuid().ToString();
     private static readonly string testApplicationIdUri = "fake_application_id_url";
     private static readonly string testOAuthAuthority = $"https://login.microsoftonline.com/{testTenantId}";
-    private static readonly string testLoginStartPageEndpoint = "https://fake_bot_domain/bot-auth-start";
+    private static readonly string testInitiateLoginEndpoint  = "https://fake_bot_domain/bot-auth-start";
     private static readonly string testDialogId = "TEST_TEAMS_BOT_SSO_PROMPT";
     private const string testName = "test_name";
     private const string testUserId = "test_user_id";
@@ -66,22 +66,21 @@ public class TeamsBotSsoPromptTest
     /// </summary>
     private readonly string fakeSsoToken = "eyJhbGciOiJIUzI1NiJ9.eyJvaWQiOiJmYWtlLW9pZCIsIm5hbWUiOiJmYWtlLW5hbWUiLCJ2ZXIiOiIxLjAiLCJleHAiOjE4OTM0NTYwMDAsInVwbiI6ImZha2UtdXBuIiwidGlkIjoiZmFrZS10aWQiLCJhdWQiOiJmYWtlLWF1ZCJ9.IpOpEOoAoqVShYafBEGPr9w8dxYPRU9aln5YRBvoajE";
     private readonly DateTime expiration = new DateTime(2030, 1, 1);
-
+    private static readonly BotAuthenticationOptions botAuthOptions = new BotAuthenticationOptions
+    {
+        ClientId = testClientId,
+        ClientSecret = testClientSecret,
+        TenantId = testTenantId,
+        ApplicationIdUri = testApplicationIdUri,
+        OAuthAuthority = testOAuthAuthority,
+        InitiateLoginEndpoint  = testInitiateLoginEndpoint 
+    };
+    private static readonly string[] scopes = new string[] { "User.Read" };
 
     [ClassInitialize]
     public static void TestFixtureSetup(TestContext _)
     {
         // Executes once for the test class. (Optional)
-        var botAuthOptions = new BotAuthenticationOptions
-        {
-            ClientId = testClientId,
-            ClientSecret = testClientSecret,
-            TenantId = testTenantId,
-            ApplicationIdUri = testApplicationIdUri,
-            OAuthAuthority = testOAuthAuthority,
-            LoginStartPageEndpoint = testLoginStartPageEndpoint
-        };
-        var scopes = new string[] { "User.Read" };
         teamsBotSsoPromptSettingsMock = new TeamsBotSsoPromptSettings(botAuthOptions, scopes);
     }
 
@@ -159,15 +158,141 @@ public class TeamsBotSsoPromptTest
         var convoState = new ConversationState(new MemoryStorage());
         var dialogState = convoState.CreateProperty<DialogState>("dialogState");
 
-        var adapter = new TestAdapter()
-            .Use(new AutoSaveStateMiddleware(convoState));
-
         // Create new DialogSet.
         var dialogs = new DialogSet(dialogState);
         var prompt = new TeamsBotSsoPrompt(testDialogId, teamsBotSsoPromptSettingsMock);
         prompt._identityClientAdapter = ccaMock.Object;
         prompt._teamsInfo = teamsInfoMock.Object;
         dialogs.Add(prompt);
+
+        var testFlow = InitTestFlow(convoState, dialogs);
+
+        await testFlow
+        .Send(new Activity()
+        {
+            ChannelId = Channels.Msteams,
+            Text = "hello",
+            Conversation = new ConversationAccount() { Id = testUserId }
+        })
+        .AssertReply(activity =>
+        {
+            Assert.AreEqual(1, ((Activity)activity).Attachments.Count);
+            Assert.AreEqual(OAuthCard.ContentType, ((Activity)activity).Attachments[0].ContentType);
+            OAuthCard card = ((Activity)activity).Attachments[0].Content as OAuthCard;
+            Assert.IsNotNull(card);
+            Assert.AreEqual(1, card!.Buttons.Count);
+            Assert.AreEqual(ActionTypes.Signin, card!.Buttons[0].Type);
+            Assert.AreEqual($"{testInitiateLoginEndpoint }?scope=User.Read&clientId={testClientId}&tenantId={testTenantId}&loginHint={testUserPrincipalName}", card.Buttons[0].Value);
+            Assert.AreEqual($"{testApplicationIdUri}/access_as_user", card!.TokenExchangeResource.Uri);
+        })
+        .Send(new Activity()
+        {
+            ChannelId = Channels.Msteams,
+            Type = ActivityTypes.Invoke,
+            Name = SignInConstants.TokenExchangeOperationName,
+            Value = JObject.FromObject(new TokenExchangeInvokeRequest()
+            {
+                Id = "fake_id",
+                Token = fakeSsoToken
+            })
+        })
+        .AssertReply(a =>
+        {
+            Assert.AreEqual(ActivityTypesEx.InvokeResponse, a.Type);
+            var response = ((Activity)a).Value as InvokeResponse;
+            Assert.IsNotNull(response);
+            Assert.AreEqual(200, response!.Status);
+        })
+        .AssertReply(SsoResult.Success)
+        .AssertReply(activity =>
+        {
+            var response = JsonSerializer.Deserialize<TeamsBotSsoPromptTokenResponse>(((Activity)activity).Text);
+            Assert.AreEqual(fakeSsoToken, response.SsoToken);
+            var expectedSsoExpiration = DateTimeOffset.FromUnixTimeSeconds(long.Parse("1893456000"));
+            Assert.AreEqual(expectedSsoExpiration.ToString(), response.SsoTokenExpiration);
+            Assert.AreEqual(fakeAccessToken, response.Token);
+            Assert.AreEqual(mockAuthenticationResult.ExpiresOn.ToString(), response.Expiration);
+        })
+        .StartTestAsync();
+    }
+
+    [TestMethod]
+    public async Task TeamsBotSsoPromptWithEmptyScopeShouldReturnSsoToken()
+    {
+        var teamsInfoMock = new Mock<ITeamsInfo>();
+        teamsInfoMock.Setup(_ => _.GetTeamsMemberAsync(It.IsAny<ITurnContext>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(new TeamsChannelAccount
+        {
+            Id = testUserId,
+            Name = testName,
+            UserPrincipalName = testUserPrincipalName
+        });
+
+        var convoState = new ConversationState(new MemoryStorage());
+        var dialogState = convoState.CreateProperty<DialogState>("dialogState");
+
+        // Create new DialogSet.
+        var dialogs = new DialogSet(dialogState);
+
+        // Create TeamsBotSsoPrompt with empty scope
+        var prompt = new TeamsBotSsoPrompt(testDialogId, new TeamsBotSsoPromptSettings(botAuthOptions, new string[] { }));
+        prompt._teamsInfo = teamsInfoMock.Object;
+        dialogs.Add(prompt);
+
+        var testFlow = InitTestFlow(convoState, dialogs);
+
+        await testFlow
+        .Send(new Activity()
+        {
+            ChannelId = Channels.Msteams,
+            Text = "hello",
+            Conversation = new ConversationAccount() { Id = testUserId }
+        })
+        .AssertReply(activity =>
+        {
+            Assert.AreEqual(1, ((Activity)activity).Attachments.Count);
+            Assert.AreEqual(OAuthCard.ContentType, ((Activity)activity).Attachments[0].ContentType);
+            OAuthCard card = ((Activity)activity).Attachments[0].Content as OAuthCard;
+            Assert.IsNotNull(card);
+            Assert.AreEqual(1, card!.Buttons.Count);
+            Assert.AreEqual(ActionTypes.Signin, card!.Buttons[0].Type);
+            Assert.AreEqual($"{testInitiateLoginEndpoint }?scope=&clientId={testClientId}&tenantId={testTenantId}&loginHint={testUserPrincipalName}", card.Buttons[0].Value);
+            Assert.AreEqual($"{testApplicationIdUri}/access_as_user", card!.TokenExchangeResource.Uri);
+        })
+        .Send(new Activity()
+        {
+            ChannelId = Channels.Msteams,
+            Type = ActivityTypes.Invoke,
+            Name = SignInConstants.TokenExchangeOperationName,
+            Value = JObject.FromObject(new TokenExchangeInvokeRequest()
+            {
+                Id = "fake_id",
+                Token = fakeSsoToken
+            })
+        })
+        .AssertReply(a =>
+        {
+            Assert.AreEqual(ActivityTypesEx.InvokeResponse, a.Type);
+            var response = ((Activity)a).Value as InvokeResponse;
+            Assert.IsNotNull(response);
+            Assert.AreEqual(200, response!.Status);
+        })
+        .AssertReply(SsoResult.Success)
+        .AssertReply(activity =>
+        {
+            var response = JsonSerializer.Deserialize<TeamsBotSsoPromptTokenResponse>(((Activity)activity).Text);
+            Assert.AreEqual(fakeSsoToken, response.SsoToken);
+            var expectedSsoExpiration = DateTimeOffset.FromUnixTimeSeconds(long.Parse("1893456000"));
+            Assert.AreEqual(expectedSsoExpiration.ToString(), response.SsoTokenExpiration);
+            Assert.AreEqual(fakeSsoToken, response.Token);
+            Assert.AreEqual(expectedSsoExpiration.ToString(), response.Expiration);
+        })
+        .StartTestAsync();
+    }
+
+    private TestFlow InitTestFlow(ConversationState convoState, DialogSet dialogs)
+    {
+        var adapter = new TestAdapter()
+            .Use(new AutoSaveStateMiddleware(convoState));
 
         BotCallbackHandler botCallbackHandler = async (turnContext, cancellationToken) =>
         {
@@ -192,51 +317,7 @@ public class TeamsBotSsoPromptTest
             }
         };
 
-        await new TestFlow(adapter, botCallbackHandler)
-        .Send(new Activity()
-        {
-            ChannelId = Channels.Msteams,
-            Text = "hello",
-            Conversation = new ConversationAccount() { Id = testUserId }
-        })
-        .AssertReply(activity =>
-        {
-            Assert.AreEqual(1, ((Activity)activity).Attachments.Count);
-            Assert.AreEqual(OAuthCard.ContentType, ((Activity)activity).Attachments[0].ContentType);
-            OAuthCard card = ((Activity)activity).Attachments[0].Content as OAuthCard;
-            Assert.IsNotNull(card);
-            Assert.AreEqual(1, card!.Buttons.Count);
-            Assert.AreEqual(ActionTypes.Signin, card!.Buttons[0].Type);
-            Assert.AreEqual($"{testLoginStartPageEndpoint}?scope=User.Read&clientId={testClientId}&tenantId={testTenantId}&loginHint={testUserPrincipalName}", card.Buttons[0].Value);
-            Assert.AreEqual($"{testApplicationIdUri}/access_as_user", card!.TokenExchangeResource.Uri);
-        })
-        .Send(new Activity()
-        {
-            ChannelId = Channels.Msteams,
-            Type = ActivityTypes.Invoke,
-            Name = SignInConstants.TokenExchangeOperationName,
-            Value = JObject.FromObject(new TokenExchangeInvokeRequest()
-            {
-                Id = "fake_id",
-                Token = fakeSsoToken
-            })
-        })
-        .AssertReply(a =>
-        {
-            Assert.AreEqual(ActivityTypesEx.InvokeResponse, a.Type);
-            var response = ((Activity)a).Value as InvokeResponse;
-            Assert.IsNotNull(response);
-            Assert.AreEqual(200, response!.Status);
-        })
-        .AssertReply(SsoResult.Success)
-        .AssertReply(activity =>
-        {
-            var response = JsonSerializer.Deserialize<TokenResponse>(((Activity)activity).Text);
-            Assert.AreEqual(fakeAccessToken, response.Token);
-            Assert.AreEqual(mockAuthenticationResult.ExpiresOn.ToString(), response.Expiration);
-        })
-        .StartTestAsync();
+        return new TestFlow(adapter, botCallbackHandler);
     }
-
     #endregion
 }

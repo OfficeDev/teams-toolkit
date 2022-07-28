@@ -47,5 +47,5 @@ public class BotAuthenticationOptions
     /// Login authentication start page endpoint.
     /// </summary>
     [Required(ErrorMessage = "Login authentication start page endpoint is required")]
-    public string LoginStartPageEndpoint { get; set; }
+    public string InitiateLoginEndpoint  { get; set; }
 }

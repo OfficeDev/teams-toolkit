@@ -289,7 +289,7 @@ export class TeamsfxCore {
                 taskName: "provision",
                 thunk: () => {
                   ctx.envInfo.state[componentConfig.name] =
-                    ctx.envInfo.state[componentConfig.name] || [];
+                    ctx.envInfo.state[componentConfig.name] || {};
                   return componentInstance.provision!(ctx, inputs);
                 },
               });
@@ -347,7 +347,7 @@ export class TeamsfxCore {
                 taskName: "configure",
                 thunk: () => {
                   ctx.envInfo.state[componentConfig.name] =
-                    ctx.envInfo.state[componentConfig.name] || [];
+                    ctx.envInfo.state[componentConfig.name] || {};
                   return componentInstance.configure!(ctx, inputs);
                 },
               });

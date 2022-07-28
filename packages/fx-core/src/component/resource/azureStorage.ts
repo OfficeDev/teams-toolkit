@@ -36,7 +36,7 @@ export class AzureStorageResource extends AzureResource {
   readonly name = "azure-storage";
   readonly bicepModuleName = "azureStorage";
   readonly outputs = StorageOutputs;
-  readonly finalOutputKeys = ["domain", "endpoint", "resourceId", "indexPath"];
+  readonly finalOutputKeys = ["domain", "endpoint", "storageResourceId", "indexPath"];
   @hooks([
     ActionExecutionMW({
       enableTelemetry: true,
@@ -68,6 +68,8 @@ export class AzureStorageResource extends AzureResource {
       actionContext?.progressBar?.next(ProgressMessages.enableStaticWebsite);
       const client = new AzureStorageClient(frontendConfigRes.value);
       await client.enableStaticWebsite();
+    } else {
+      actionContext?.progressBar?.next(ProgressMessages.enableStaticWebsite);
     }
     return ok(undefined);
   }

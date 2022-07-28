@@ -1634,7 +1634,7 @@ export async function promptSPFxUpgrade() {
           ),
           false
         );
-      } else {
+      } else if (cmp === -1) {
         VS_CODE_UI.showMessage(
           "warn",
           util.format(

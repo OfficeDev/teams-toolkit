@@ -38,16 +38,14 @@ describe("Provision with subscriptionInfo.json that has logged out", () => {
     const capabilities = await getCapabilitiesFromProjectSetting(projectPath);
     expect(capabilities.includes(Capability.Tab)).to.be.true;
 
-    const subscriptionInfoJsonFilePath = path.join(projectPath, ".fx/subscriptionInfo.json");
-    expect(await fs.pathExists(subscriptionInfoJsonFilePath)).to.be.true;
-
     // Arrange
     const subscriptionInfo: SubscriptionInfo = {
       subscriptionName: "test",
       subscriptionId: "b91424c7-bd0f-45a1-91e7-d8916efbbcdc",
       tenantId: "b91424c7-bd0f-45a1-91e7-d8916efbbcdc",
     };
-    fs.writeJSON(subscriptionInfoJsonFilePath, JSON.stringify(subscriptionInfo, null, 4));
+    const subscriptionInfoJsonFilePath = path.join(projectPath, "./.fx/subscriptionInfo.json");
+    await fs.writeJSON(subscriptionInfoJsonFilePath, JSON.stringify(subscriptionInfo, null, 4));
 
     await CliHelper.provisionProject(projectPath, "", env);
 

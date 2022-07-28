@@ -9,7 +9,7 @@ import {
   ProvisionContextV3,
   Void,
 } from "@microsoft/teamsfx-api";
-import { assert, expect } from "chai";
+import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
 import * as os from "os";

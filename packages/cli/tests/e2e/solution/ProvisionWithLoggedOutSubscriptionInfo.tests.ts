@@ -27,10 +27,10 @@ describe("Provision with subscriptionInfo.json that has logged out", () => {
   const env = Object.assign({}, process.env);
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, true, false);
+    await cleanUp(appName, projectPath, true, false, false);
   });
 
-  it("Provision non SSO Tab project", async () => {
+  it("Provision Tab project", async () => {
     // Arrange
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab, env);
 

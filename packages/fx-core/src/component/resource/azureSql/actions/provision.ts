@@ -21,8 +21,8 @@ import { ManagementClient } from "../clients/management";
 import { LoadManagementConfig, removeDatabases } from "../config";
 import { Constants } from "../constants";
 import { ErrorMessage } from "../errors";
+import { buildQuestionNode } from "../questions";
 import { SqlResultFactory } from "../results";
-import { UtilFunctions } from "./configure";
 
 export class ProvisionActionImplement {
   static readonly source = "SQL";
@@ -63,7 +63,7 @@ export class ProvisionActionImplement {
     }
 
     if (shouldAsk) {
-      const node = UtilFunctions.buildQuestionNode();
+      const node = buildQuestionNode();
       const res = await traverse(node, inputs, ctx.userInteraction);
       if (res.isErr()) {
         throw SqlResultFactory.UserError(

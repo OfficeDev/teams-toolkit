@@ -29,7 +29,6 @@ import { v4 as uuidv4 } from "uuid";
 import { hasAzureResource } from "../../../../common";
 import { PluginDisplayName } from "../../../../common/constants";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
-import { LocalStateAuthKeys, LocalStateBotKeys } from "../../../../common/localStateConstants";
 import {
   CustomizeResourceGroupType,
   TelemetryEvent,
@@ -37,6 +36,7 @@ import {
 } from "../../../../common/telemetry";
 import { AppStudioScopes, getHashedEnv, getResourceGroupInPortal } from "../../../../common/tools";
 import { convertToAlphanumericOnly } from "../../../../common/utils";
+import { ComponentNames } from "../../../../component/constants";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import arm, { updateResourceBaseName } from "../arm";
 import { ResourceGroupInfo } from "../commonQuestions";
@@ -444,17 +444,31 @@ function clearEnvInfoStateResource(envInfo: v3.EnvInfoV3): void {
   envInfo.state.solution.resourceGroupName = "";
   envInfo.state.solution.resourceNameSuffix = "";
 
-  // we need to have another bot id if provisioning a new azure bot service.
-  const botResource = envInfo.state[BuiltInFeaturePluginNames.bot] ?? envInfo.state["teams-bot"];
-  if (botResource) {
-    if (botResource[LocalStateBotKeys.BotId]) {
-      botResource[LocalStateBotKeys.BotId] = undefined;
+  const keysToClear = [
+    BuiltInFeaturePluginNames.bot,
+    BuiltInFeaturePluginNames.frontend,
+    BuiltInFeaturePluginNames.function,
+    BuiltInFeaturePluginNames.identity,
+    BuiltInFeaturePluginNames.keyVault,
+    BuiltInFeaturePluginNames.sql,
+    BuiltInFeaturePluginNames.simpleAuth,
+    ComponentNames.TeamsBot,
+    ComponentNames.TeamsTab,
+    ComponentNames.TeamsApi,
+    ComponentNames.Identity,
+    ComponentNames.KeyVault,
+    ComponentNames.AzureSQL,
+  ];
+
+  const keysToModify = [BuiltInFeaturePluginNames.apim, ComponentNames.APIM];
+  const keys = Object.keys(envInfo.state);
+  for (const key of keys) {
+    if (keysToClear.includes(key)) {
+      delete envInfo.state[key];
     }
-    if (botResource[LocalStateBotKeys.BotPassword]) {
-      botResource[LocalStateBotKeys.BotPassword] = undefined;
-    }
-    if (botResource[LocalStateAuthKeys.ObjectId]) {
-      botResource[LocalStateAuthKeys.ObjectId] = undefined;
+
+    if (keysToModify.includes(key)) {
+      delete envInfo.state[key]["serviceResourceId"];
     }
   }
 }

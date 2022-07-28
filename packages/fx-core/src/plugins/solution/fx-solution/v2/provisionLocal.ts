@@ -1,4 +1,4 @@
-import { FxError, Inputs, Json, SystemError, TokenProvider, v2 } from "@microsoft/teamsfx-api";
+import { FxError, Inputs, Json, SystemError, TokenProvider, v2, v3 } from "@microsoft/teamsfx-api";
 import { isUndefined } from "lodash";
 import { Container } from "typedi";
 import { isExistingTabApp } from "../../../../common/projectSettingsHelper";
@@ -63,6 +63,7 @@ export async function provisionLocalResource(
   localDebugTenantId = envInfo?.state.solution.teamsAppTenantId;
 
   const m365TenantMatches = await checkWhetherLocalDebugM365TenantMatches(
+    envInfo as v3.EnvInfoV3,
     localDebugTenantId,
     tokenProvider.m365TokenProvider,
     inputs.projectPath

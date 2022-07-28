@@ -9,7 +9,6 @@ import {
   InputsWithProjectPath,
   MaybePromise,
   ok,
-  Platform,
   Result,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
@@ -23,7 +22,6 @@ import { hasApi } from "../../common/projectSettingsHelperV3";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { BicepComponent } from "../bicep";
 import { AzureSqlResource } from "../resource/azureSql";
-import { UtilFunctions } from "../resource/azureSql/actions/configure";
 import { generateConfigBiceps, bicepUtils } from "../utils";
 import { cloneDeep } from "lodash";
 
@@ -38,12 +36,6 @@ export class Sql {
     const action: Action = {
       type: "function",
       name: "sql.add",
-      question: (context, inputs) => {
-        if (inputs.platform == Platform.CLI_HELP) {
-          return ok(UtilFunctions.buildQuestionNode());
-        }
-        return ok(undefined);
-      },
       execute: async (context, inputs) => {
         const sqlComponent = getComponent(context.projectSetting, ComponentNames.AzureSQL);
         const hasFunc = hasApi(context.projectSetting);

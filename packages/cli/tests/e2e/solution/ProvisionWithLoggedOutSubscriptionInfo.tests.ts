@@ -27,19 +27,15 @@ describe("Provision with subscriptionInfo.json that has logged out", () => {
   const env = Object.assign({}, process.env);
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, true, false);
+    await cleanUp(appName, projectPath, true, false, false);
   });
 
-  it("Provision non SSO Tab project", async () => {
+  it("Provision Tab project", async () => {
     // Arrange
-    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.TabNonSso, env);
+    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab, env);
 
     // Assert
-    const capabilities = await getCapabilitiesFromProjectSetting(projectPath);
-    expect(capabilities.includes(Capability.TabNonSso)).to.be.true;
-
-    const subscriptionInfoJsonFilePath = path.join(projectPath, ".fx/subscriptionInfo.json");
-    expect(await fs.pathExists(subscriptionInfoJsonFilePath)).to.be.true;
+    await FrontendValidator.validateScaffold(projectPath, "javascript");
 
     // Arrange
     const subscriptionInfo: SubscriptionInfo = {
@@ -47,7 +43,8 @@ describe("Provision with subscriptionInfo.json that has logged out", () => {
       subscriptionId: "b91424c7-bd0f-45a1-91e7-d8916efbbcdc",
       tenantId: "b91424c7-bd0f-45a1-91e7-d8916efbbcdc",
     };
-    fs.writeJSON(subscriptionInfoJsonFilePath, JSON.stringify(subscriptionInfo, null, 4));
+    const subscriptionInfoJsonFilePath = path.join(projectPath, "./.fx/subscriptionInfo.json");
+    await fs.writeJSON(subscriptionInfoJsonFilePath, JSON.stringify(subscriptionInfo, null, 4));
 
     await CliHelper.provisionProject(projectPath, "", env);
 

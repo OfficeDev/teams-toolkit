@@ -90,7 +90,10 @@ import {
 } from "../plugins/solution/fx-solution/question";
 import { resourceGroupHelper } from "../plugins/solution/fx-solution/utils/ResourceGroupHelper";
 import { executeConcurrently } from "../plugins/solution/fx-solution/v2/executor";
-import { getBotTroubleShootMessage } from "../plugins/solution/fx-solution/v2/utils";
+import {
+  checkWhetherLocalDebugM365TenantMatches,
+  getBotTroubleShootMessage,
+} from "../plugins/solution/fx-solution/v2/utils";
 import { checkDeployAzureSubscription } from "../plugins/solution/fx-solution/v3/deploy";
 import {
   askForDeployConsent,
@@ -100,7 +103,11 @@ import {
 } from "../plugins/solution/fx-solution/v3/provision";
 import { AzureResources, ComponentNames } from "./constants";
 import { pluginName2ComponentName } from "./migrate";
-import { getQuestionsForAddFeatureV3, getQuestionsForDeployV3 } from "./questionV3";
+import {
+  getQuestionsForAddFeatureV3,
+  getQuestionsForDeployV3,
+  getQuestionsForProvisionV3,
+} from "./questionV3";
 import { runActionByName } from "./workflow";
 @Service("fx")
 export class TeamsfxCore {
@@ -257,9 +264,9 @@ export class TeamsfxCore {
     const action: FunctionAction = {
       name: "fx.provision",
       type: "function",
-      // question: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-      //   return await getQuestionsForDeployV3(context, context.envInfo!, inputs);
-      // },
+      question: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+        return await getQuestionsForProvisionV3(context, context.envInfo!, inputs);
+      },
       execute: async (context, inputs) => {
         const ctx = context as ProvisionContextV3;
         ctx.envInfo.state.solution = ctx.envInfo.state.solution || {};
@@ -593,25 +600,45 @@ async function preProvision(
   const solutionConfig = envInfo.state.solution;
   solutionConfig.provisionSucceeded = false;
   const tenantIdInConfig = appManifest.tenantId;
+
+  const isLocalDebug = envInfo.envName === "local";
   const tenantIdInTokenRes = await getM365TenantId(ctx.tokenProvider.m365TokenProvider);
   if (tenantIdInTokenRes.isErr()) {
     return err(tenantIdInTokenRes.error);
   }
   const tenantIdInToken = tenantIdInTokenRes.value;
-  if (tenantIdInConfig && tenantIdInToken && tenantIdInToken !== tenantIdInConfig) {
-    return err(
-      new UserError(
-        "Solution",
-        "TeamsAppTenantIdNotRight",
-        getLocalizedString("error.M365AccountNotMatch", envInfo.envName)
-      )
+
+  if (!isLocalDebug) {
+    if (tenantIdInConfig && tenantIdInToken && tenantIdInToken !== tenantIdInConfig) {
+      return err(
+        new UserError(
+          "Solution",
+          "TeamsAppTenantIdNotRight",
+          getLocalizedString("error.M365AccountNotMatch", envInfo.envName)
+        )
+      );
+    }
+    if (!tenantIdInConfig) {
+      appManifest.tenantId = tenantIdInToken;
+      solutionConfig.teamsAppTenantId = tenantIdInToken;
+      globalVars.m365TenantId = tenantIdInToken;
+    }
+  } else {
+    const res = await checkWhetherLocalDebugM365TenantMatches(
+      envInfo,
+      tenantIdInConfig,
+      ctx.tokenProvider.m365TokenProvider,
+      inputs.projectPath
     );
-  }
-  if (!tenantIdInConfig) {
-    appManifest.tenantId = tenantIdInToken;
-    solutionConfig.teamsAppTenantId = tenantIdInToken;
+    if (res.isErr()) {
+      return err(res.error);
+    }
+    envInfo.state[ComponentNames.AppManifest] = envInfo.state[ComponentNames.AppManifest] || {};
+    envInfo.state[ComponentNames.AppManifest].tenantId = tenantIdInToken;
+    envInfo.state.solution.teamsAppTenantId = tenantIdInToken;
     globalVars.m365TenantId = tenantIdInToken;
   }
+
   // 3. check Azure configs
   if (hasAzureResourceV3(ctx.projectSetting) && envInfo.envName !== "local") {
     // ask common question and fill in solution config

@@ -29,7 +29,6 @@ import { v4 as uuidv4 } from "uuid";
 import { hasAzureResource } from "../../../../common";
 import { PluginDisplayName } from "../../../../common/constants";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
-import { LocalStateAuthKeys, LocalStateBotKeys } from "../../../../common/localStateConstants";
 import {
   CustomizeResourceGroupType,
   TelemetryEvent,

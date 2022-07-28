@@ -414,8 +414,8 @@ export class TeamsfxCore {
           );
           ctx.userInteraction.showMessage("info", msg, false);
           ctx.logProvider.info(msg);
-          ctx.envInfo.state.solution.provisionSucceeded = true;
         }
+        ctx.envInfo.state.solution.provisionSucceeded = true;
         return ok([]);
       },
     };

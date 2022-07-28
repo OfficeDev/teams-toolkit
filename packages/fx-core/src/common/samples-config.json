@@ -43,6 +43,16 @@
             "suggested": true
         },
         {
+            "id": "graph-toolkit-one-productivity-hub",
+            "title": "One Productivity Hub using Graph Toolkit",
+            "shortDescription": "One Productivity Hub app of Microsoft Teams Tab app.",
+            "fullDescription": "One Productivity Hub sample shows you how to build a tab for viewing your calendar events, to-do tasks and files by using Microsoft Graph Toolkit as UI component.",
+            "tags": ["Tab", "JS"],
+            "time": "5min to run",
+            "configuration": "Ready for local debug",
+            "suggested": true
+        },
+        {
             "id": "bot-sso",
             "title": "Hello World Bot with SSO",
             "shortDescription": "A Hello World app of Microsoft Teams Bot app with SSO",

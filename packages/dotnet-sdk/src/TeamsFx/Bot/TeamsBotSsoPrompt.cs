@@ -319,7 +319,12 @@ public class TeamsBotSsoPrompt : Dialog
         TeamsChannelAccount account = await _teamsInfo.GetTeamsMemberAsync(context, context.Activity.From.Id, cancellationToken).ConfigureAwait(false);
 
         string loginHint = account.UserPrincipalName ?? "";
-        SignInResource signInResource = GetSignInResource(loginHint);
+        if (String.IsNullOrEmpty(account.TenantId))
+        {
+            throw new ExceptionWithCode("Failed to get tenant id through bot framework.", ExceptionCode.ServiceError);
+        }
+        string tenantId = account.TenantId ?? "";
+        SignInResource signInResource = GetSignInResource(loginHint, tenantId);
 
         // Ensure prompt initialized
         IMessageActivity prompt = Activity.CreateMessageActivity();
@@ -349,10 +354,11 @@ public class TeamsBotSsoPrompt : Dialog
     /// Get sign in authentication configuration
     /// </summary>
     /// <param name="loginHint">login hint</param>
+    /// <param name="tenantId">tenant id</param>
     /// <returns>sign in resource</returns>
-    private SignInResource GetSignInResource(string loginHint)
+    private SignInResource GetSignInResource(string loginHint, string tenantId)
     {
-        string signInLink = $"{_settings.BotAuthOptions.InitiateLoginEndpoint }?scope={Uri.EscapeDataString(string.Join(" ", _settings.Scopes))}&clientId={_settings.BotAuthOptions.ClientId}&tenantId={_settings.BotAuthOptions.TenantId}&loginHint={loginHint}";
+        string signInLink = $"{_settings.BotAuthOptions.InitiateLoginEndpoint }?scope={Uri.EscapeDataString(string.Join(" ", _settings.Scopes))}&clientId={_settings.BotAuthOptions.ClientId}&tenantId={tenantId}&loginHint={loginHint}";
 
         SignInResource signInResource = new SignInResource {
             SignInLink = signInLink,

@@ -38,7 +38,6 @@ public static class TeamsFxConfigurationMethods
             botAuthOption.ClientId = authOptionsValue.ClientId;
             botAuthOption.ClientSecret = authOptionsValue.ClientSecret;
             botAuthOption.OAuthAuthority = authOptionsValue.OAuthAuthority;
-            botAuthOption.TenantId = (new Regex(@"[^\/]+$")).Match(authOptionsValue.OAuthAuthority).Value;
             botAuthOption.ApplicationIdUri = authOptionsValue.ApplicationIdUri;
             botAuthOption.InitiateLoginEndpoint  = authOptionsValue.Bot.LoginStartPageEndpoint;
         }).ValidateDataAnnotations();
@@ -78,7 +77,6 @@ public static class TeamsFxConfigurationMethods
                 botAuthOption.ClientId = authOptionsValue.ClientId;
                 botAuthOption.ClientSecret = authOptionsValue.ClientSecret;
                 botAuthOption.OAuthAuthority = authOptionsValue.OAuthAuthority;
-                botAuthOption.TenantId = (new Regex(@"[^\/]+$")).Match(authOptionsValue.OAuthAuthority).Value;
                 botAuthOption.ApplicationIdUri = authOptionsValue.ApplicationIdUri;
                 botAuthOption.InitiateLoginEndpoint  = authOptionsValue.Bot.LoginStartPageEndpoint;
             }).ValidateDataAnnotations();
@@ -122,7 +120,6 @@ public static class TeamsFxConfigurationMethods
             botAuthOption.ClientId = authOptionsValue.ClientId;
             botAuthOption.ClientSecret = authOptionsValue.ClientSecret;
             botAuthOption.OAuthAuthority = authOptionsValue.OAuthAuthority;
-            botAuthOption.TenantId = (new Regex(@"[^\/]+$")).Match(authOptionsValue.OAuthAuthority).Value;
             botAuthOption.ApplicationIdUri = authOptionsValue.ApplicationIdUri;
             botAuthOption.InitiateLoginEndpoint  = authOptionsValue.Bot.LoginStartPageEndpoint;
         }).ValidateDataAnnotations();

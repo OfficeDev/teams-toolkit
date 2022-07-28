@@ -70,7 +70,6 @@ public class TeamsBotSsoPromptTest
     {
         ClientId = testClientId,
         ClientSecret = testClientSecret,
-        TenantId = testTenantId,
         ApplicationIdUri = testApplicationIdUri,
         OAuthAuthority = testOAuthAuthority,
         InitiateLoginEndpoint  = testInitiateLoginEndpoint 
@@ -152,7 +151,8 @@ public class TeamsBotSsoPromptTest
         {
             Id = testUserId,
             Name = testName,
-            UserPrincipalName = testUserPrincipalName
+            UserPrincipalName = testUserPrincipalName,
+            TenantId = testTenantId
         });
         
         var convoState = new ConversationState(new MemoryStorage());
@@ -182,7 +182,7 @@ public class TeamsBotSsoPromptTest
             Assert.IsNotNull(card);
             Assert.AreEqual(1, card!.Buttons.Count);
             Assert.AreEqual(ActionTypes.Signin, card!.Buttons[0].Type);
-            Assert.AreEqual($"{testInitiateLoginEndpoint }?scope=User.Read&clientId={testClientId}&tenantId={testTenantId}&loginHint={testUserPrincipalName}", card.Buttons[0].Value);
+            Assert.AreEqual($"{testInitiateLoginEndpoint }?scope=User.Read&clientId={testClientId}&tenantId={testTenantId}&loginHint={testUserPrincipalName}", card!.Buttons[0].Value);
             Assert.AreEqual($"{testApplicationIdUri}/access_as_user", card!.TokenExchangeResource.Uri);
         })
         .Send(new Activity()
@@ -224,7 +224,8 @@ public class TeamsBotSsoPromptTest
         {
             Id = testUserId,
             Name = testName,
-            UserPrincipalName = testUserPrincipalName
+            UserPrincipalName = testUserPrincipalName,
+            TenantId = testTenantId
         });
 
         var convoState = new ConversationState(new MemoryStorage());

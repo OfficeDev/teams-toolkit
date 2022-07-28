@@ -35,8 +35,7 @@ describe("Provision with subscriptionInfo.json that has logged out", () => {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab, env);
 
     // Assert
-    const capabilities = await getCapabilitiesFromProjectSetting(projectPath);
-    expect(capabilities.includes(Capability.Tab)).to.be.true;
+    await FrontendValidator.validateScaffold(projectPath, "javascript");
 
     // Arrange
     const subscriptionInfo: SubscriptionInfo = {

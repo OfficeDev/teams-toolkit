@@ -103,7 +103,11 @@ import {
 } from "../plugins/solution/fx-solution/v3/provision";
 import { AzureResources, ComponentNames } from "./constants";
 import { pluginName2ComponentName } from "./migrate";
-import { getQuestionsForAddFeatureV3, getQuestionsForDeployV3 } from "./questionV3";
+import {
+  getQuestionsForAddFeatureV3,
+  getQuestionsForDeployV3,
+  getQuestionsForProvisionV3,
+} from "./questionV3";
 import { runActionByName } from "./workflow";
 @Service("fx")
 export class TeamsfxCore {
@@ -261,7 +265,7 @@ export class TeamsfxCore {
       name: "fx.provision",
       type: "function",
       question: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return await getQuestionsForDeployV3(context, context.envInfo!, inputs);
+        return await getQuestionsForProvisionV3(context, context.envInfo!, inputs);
       },
       execute: async (context, inputs) => {
         const ctx = context as ProvisionContextV3;

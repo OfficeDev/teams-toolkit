@@ -10,7 +10,6 @@ import {
   InputsWithProjectPath,
   MaybePromise,
   ok,
-  Platform,
   Result,
   Stage,
   v3,
@@ -36,9 +35,6 @@ export class SSO {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    if (inputs.platform == Platform.CLI_HELP) {
-      return ok(undefined);
-    }
     const action: Action = {
       type: "function",
       name: "sso.add",
@@ -86,11 +82,12 @@ export class SSO {
         }
 
         // generate auth files
-        {
+        if (inputs.stage === Stage.addFeature) {
           const res = await aadApp.generateAuthFiles(context, inputs, updates.tab!, updates.bot!);
           if (res.isErr()) return err(res.error);
           effects.push("generate auth files");
         }
+
         // update app manifest
         {
           const capabilities: v3.ManifestCapability[] = [{ name: "WebApplicationInfo" }];

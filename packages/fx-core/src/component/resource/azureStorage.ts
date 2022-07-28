@@ -91,7 +91,7 @@ export class AzureStorageResource extends AzureResource {
     const deployDir = path.resolve(inputs.projectPath, inputs.folder);
     const frontendConfigRes = await buildFrontendConfig(
       ctx.envInfo,
-      ComponentNames.TeamsTab,
+      inputs.componentId,
       ctx.tokenProvider.azureAccountProvider
     );
     if (frontendConfigRes.isErr()) {

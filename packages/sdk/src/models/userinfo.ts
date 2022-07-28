@@ -20,6 +20,13 @@ export interface UserInfo {
   objectId: string;
 
   /**
+   * User tenant ID.
+   *
+   * @readonly
+   */
+  tenantId: string;
+
+  /**
    * Usually be the email address.
    *
    * @readonly

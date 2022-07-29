@@ -36,7 +36,7 @@ export class AzureStorageResource extends AzureResource {
   readonly name = "azure-storage";
   readonly bicepModuleName = "azureStorage";
   readonly outputs = StorageOutputs;
-  readonly finalOutputKeys = ["domain", "endpoint", "resourceId", "indexPath"];
+  readonly finalOutputKeys = ["domain", "endpoint", "storageResourceId", "indexPath"];
   @hooks([
     ActionExecutionMW({
       enableTelemetry: true,
@@ -56,17 +56,21 @@ export class AzureStorageResource extends AzureResource {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const ctx = context as ProvisionContextV3;
-    const frontendConfigRes = await buildFrontendConfig(
-      ctx.envInfo,
-      ComponentNames.TeamsTab,
-      ctx.tokenProvider.azureAccountProvider
-    );
-    if (frontendConfigRes.isErr()) {
-      return err(frontendConfigRes.error);
+    if (context.envInfo.envName !== "local") {
+      const frontendConfigRes = await buildFrontendConfig(
+        ctx.envInfo,
+        ComponentNames.TeamsTab,
+        ctx.tokenProvider.azureAccountProvider
+      );
+      if (frontendConfigRes.isErr()) {
+        return err(frontendConfigRes.error);
+      }
+      actionContext?.progressBar?.next(ProgressMessages.enableStaticWebsite);
+      const client = new AzureStorageClient(frontendConfigRes.value);
+      await client.enableStaticWebsite();
+    } else {
+      actionContext?.progressBar?.next(ProgressMessages.enableStaticWebsite);
     }
-    actionContext?.progressBar?.next(ProgressMessages.enableStaticWebsite);
-    const client = new AzureStorageClient(frontendConfigRes.value);
-    await client.enableStaticWebsite();
     return ok(undefined);
   }
   @hooks([

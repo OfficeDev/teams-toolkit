@@ -195,16 +195,16 @@ export class TabCodeProvider {
       }
     };
 
-    const connections = getComponent(ctx.projectSetting, ComponentNames.TeamsTab)?.connections;
-    if (connections?.includes(ComponentNames.TeamsApi)) {
-      const teamsApi = getComponent(ctx.projectSetting, ComponentNames.TeamsApi);
-      addToEnvs(EnvKeys.FuncName, teamsApi?.functionNames[0]);
+    const teamsTab = getComponent(ctx.projectSetting, ComponentNames.TeamsTab);
+    const teamsApi = getComponent(ctx.projectSetting, ComponentNames.TeamsApi);
+    if (teamsApi) {
+      addToEnvs(EnvKeys.FuncName, teamsApi.functionNames[0]);
       addToEnvs(
         EnvKeys.FuncEndpoint,
         ctx.envInfo?.state?.[ComponentNames.TeamsApi]?.functionEndpoint as string
       );
     }
-    if (connections?.includes(ComponentNames.AadApp)) {
+    if (teamsTab?.sso) {
       addToEnvs(EnvKeys.ClientID, ctx.envInfo?.state?.[ComponentNames.AadApp]?.clientId as string);
       addToEnvs(EnvKeys.StartLoginPage, DependentPluginInfo.StartLoginPageURL);
     }

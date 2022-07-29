@@ -22,8 +22,7 @@ import {
   PreconditionError,
 } from "../../error";
 import { AzureResource } from "./../azureResource";
-import { ErrorMessage } from "../../messages";
-import { ProgressMessages, ProgressTitles } from "../../messages";
+import { ProgressMessages, ProgressTitles, ErrorMessage } from "../../messages";
 
 export abstract class AzureAppService extends AzureResource {
   abstract readonly name: string;
@@ -53,6 +52,7 @@ export abstract class AzureAppService extends AzureResource {
       ProgressTitles.deploying(this.displayName, inputs.scenario),
       2
     );
+    await progressBar.start();
     try {
       const ctx = context as ProvisionContextV3;
       // Preconditions checking.

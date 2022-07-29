@@ -75,7 +75,7 @@ describe("question for v3", () => {
     envInfo.state.solution = {
       provisionSucceeded: true,
     };
-    const res = await getQuestionsForDeployV3(context, envInfo, inputs);
+    const res = await getQuestionsForDeployV3(context, inputs);
     assert.isTrue(res.isOk());
   });
   it("getQuestionsForAddFeatureV3 - CLI_HELP", async () => {

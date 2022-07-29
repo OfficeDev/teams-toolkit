@@ -30,6 +30,9 @@ export interface ScaffoldContext {
   // Used by fallback zip.
   templatesFolderPath?: string;
 
+  // To identify if fallback is triggered.
+  fallback?: boolean;
+
   // Used by rendering template file.
   fileNameReplaceFn?: (name: string, data: Buffer) => string;
   fileDataReplaceFn?: (name: string, data: Buffer) => string | Buffer;
@@ -157,6 +160,8 @@ export const fetchTemplateZipFromLocalAction: ScaffoldAction = {
       return;
     }
 
+    context.fallback = true;
+
     if (!context.group) {
       throw new Error(missKeyErrorInfo("group"));
     }
@@ -240,6 +245,6 @@ export async function scaffoldFromTemplates(
     [TelemetryProperty.TemplateGroup]: context.group ?? "",
     [TelemetryProperty.TemplateLanguage]: context.lang ?? "",
     [TelemetryProperty.TemplateScenario]: context.scenario ?? "",
-    [TelemetryProperty.TemplateFallback]: context.zip ? "false" : "true", // Track fallback cases.
+    [TelemetryProperty.TemplateFallback]: context.fallback ? "true" : "false", // Track fallback cases.
   });
 }

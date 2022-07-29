@@ -20,9 +20,9 @@ import {
   CheckThrowSomethingMissing,
   PackDirectoryExistenceError,
   PreconditionError,
-} from "./errors";
+} from "../../error";
 import { AzureResource } from "./../azureResource";
-import { Messages } from "./messages";
+import { ErrorMessage } from "../../messages";
 import { ProgressMessages, ProgressTitles } from "../../messages";
 
 export abstract class AzureAppService extends AzureResource {
@@ -57,7 +57,7 @@ export abstract class AzureAppService extends AzureResource {
       const ctx = context as ProvisionContextV3;
       // Preconditions checking.
       if (!inputs.projectPath || !inputs.artifactFolder) {
-        throw new PreconditionError(this.alias, Messages.WorkingDirIsMissing, []);
+        throw new PreconditionError(this.alias, ErrorMessage.WorkingDirIsMissing, []);
       }
       const publishDir = path.resolve(inputs.projectPath, inputs.artifactFolder);
       const packDirExisted = await fs.pathExists(publishDir);
@@ -67,7 +67,7 @@ export abstract class AzureAppService extends AzureResource {
 
       const state = ctx.envInfo.state[inputs.componentId];
       const resourceId = CheckThrowSomethingMissing(
-        this.alias,
+        this.name,
         this.outputs.resourceId.key,
         state[this.outputs.resourceId.key]
       );

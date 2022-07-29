@@ -39,6 +39,7 @@ import { BicepComponent } from "../bicep";
 import { ApiCodeProvider } from "../code/apiCode";
 import { ComponentNames, Scenarios } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
+import { Plans } from "../messages";
 import { AzureFunctionResource } from "../resource/azureAppService/azureFunction";
 import { generateConfigBiceps, bicepUtils } from "../utils";
 import { getComponent } from "../workflow";
@@ -54,9 +55,19 @@ export class TeamsApi {
     const action: FunctionAction = {
       name: "teams-api.add",
       type: "function",
+      errorSource: "bot",
+      errorHandler: (error) => {
+        if (error && !error?.name) {
+          error.name = "addBotError";
+        }
+        return error as FxError;
+      },
       question: (context: ContextV3, inputs: InputsWithProjectPath) => {
         functionNameQuestion.validation = getFunctionNameQuestionValidation(context, inputs);
         return ok(new QTreeNode(functionNameQuestion));
+      },
+      plan: (context, inputs) => {
+        return ok([Plans.addFeature("Api")]);
       },
       execute: async (context, inputs) => {
         const projectSettings = context.projectSetting;

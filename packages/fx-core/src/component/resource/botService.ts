@@ -69,6 +69,7 @@ export class BotService extends AzureResource {
       enableTelemetry: true,
       telemetryComponentName: "fx-resource-bot",
       telemetryEventName: "provision",
+      errorSource: ComponentNames.BotService,
       errorHandler: (e, t) => {
         telemetryHelper.fillAppStudioErrorProperty(e, t);
         return e as FxError;
@@ -100,6 +101,7 @@ export class BotService extends AzureResource {
       enableTelemetry: true,
       telemetryComponentName: "fx-resource-bot",
       telemetryEventName: "post-local-debug",
+      errorSource: ComponentNames.BotService,
       errorHandler: (e, t) => {
         telemetryHelper.fillAppStudioErrorProperty(e, t);
         return e as FxError;

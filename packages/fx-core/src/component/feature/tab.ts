@@ -56,6 +56,16 @@ export class TeamsTab {
     const action: FunctionAction = {
       name: "teams-tab.add",
       type: "function",
+      errorSource: "tab",
+      errorHandler: (error) => {
+        if (error && !error?.name) {
+          error.name = "addTabError";
+        }
+        return error as FxError;
+      },
+      plan: (context, inputs) => {
+        return ok([Plans.addFeature("Tab")]);
+      },
       execute: async (context, inputs) => {
         const projectSettings = context.projectSetting;
         const effects = [];

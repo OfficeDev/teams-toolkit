@@ -9,9 +9,11 @@ import {
   ok,
   ProvisionContextV3,
   Result,
+  TelemetryReporter,
 } from "@microsoft/teamsfx-api";
 import { merge } from "lodash";
 import * as path from "path";
+import * as fs from "fs-extra";
 import "reflect-metadata";
 import { Service } from "typedi";
 import {
@@ -29,6 +31,8 @@ import {
   FrontendPathInfo,
   DependentPluginInfo,
   FrontendPluginInfo,
+  TelemetryEvent,
+  Commands,
 } from "../../plugins/resource/frontend/constants";
 import { FrontendDeployment } from "../../plugins/resource/frontend/ops/deploy";
 import {
@@ -38,8 +42,13 @@ import {
 import { Messages } from "../../plugins/resource/frontend/resources/messages";
 import { ComponentNames } from "../constants";
 import { getComponent } from "../workflow";
-import { convertToLangKey } from "./botCode";
-import { envFilePath, EnvKeys, saveEnvFile } from "../../plugins/resource/frontend/env";
+import { convertToLangKey } from "./utils";
+import {
+  envFilePath,
+  EnvKeys,
+  loadEnvFile,
+  saveEnvFile,
+} from "../../plugins/resource/frontend/env";
 import { isVSProject } from "../../common/projectSettingsHelper";
 import { DotnetCommands } from "../../plugins/resource/frontend/dotnet/constants";
 import { Utils } from "../../plugins/resource/frontend/utils";
@@ -48,7 +57,12 @@ import { ScaffoldProgress } from "../../plugins/resource/frontend/resources/step
 import { ProgressMessages, ProgressTitles } from "../messages";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
-import { M365SsoLaunchPageOptionItem, TabNonSsoItem, TabOptionItem } from "../../plugins";
+import {
+  M365SsoLaunchPageOptionItem,
+  TabNonSsoItem,
+  TabOptionItem,
+} from "../../plugins/solution/fx-solution/question";
+import { BadComponent } from "../error";
 /**
  * tab scaffold
  */
@@ -57,10 +71,6 @@ export class TabCodeProvider {
   name = "tab-code";
   @hooks([
     ActionExecutionMW({
-      componentName: "tab-code",
-      enableTelemetry: true,
-      telemetryComponentName: FrontendPluginInfo.PluginName,
-      telemetryEventName: "scaffold",
       errorSource: FrontendPluginInfo.ShortName,
       errorIssueLink: FrontendPluginInfo.IssueLink,
       errorHelpLink: FrontendPluginInfo.HelpLink,
@@ -127,12 +137,7 @@ export class TabCodeProvider {
       enableTelemetry: true,
       telemetryComponentName: FrontendPluginInfo.PluginName,
       telemetryEventName: "scaffold",
-      errorSource: FrontendPluginInfo.ShortName,
-      errorIssueLink: FrontendPluginInfo.IssueLink,
-      errorHelpLink: FrontendPluginInfo.HelpLink,
-      enableProgressBar: true,
-      progressTitle: ProgressTitles.scaffoldTab,
-      progressSteps: Object.keys(ScaffoldProgress.steps).length,
+      errorSource: "tab",
     }),
   ])
   async configure(
@@ -155,6 +160,7 @@ export class TabCodeProvider {
       enableTelemetry: true,
       telemetryComponentName: "fx-resource-frontend",
       telemetryEventName: "build",
+      errorSource: "tab",
     }),
   ])
   async build(
@@ -165,12 +171,12 @@ export class TabCodeProvider {
     const ctx = context as ProvisionContextV3;
     const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
     if (!teamsTab) return ok(undefined);
-    if (teamsTab.folder == undefined) throw new Error("path not found");
+    if (teamsTab.folder == undefined) throw new BadComponent("tab", this.name, "folder");
     actionContext?.progressBar?.next(ProgressMessages.buildingTab);
     const tabPath = path.resolve(inputs.projectPath, teamsTab.folder);
     const artifactFolder = isVSProject(context.projectSetting)
       ? await this.doBlazorBuild(tabPath)
-      : await this.doReactBuild(tabPath, ctx.envInfo.envName);
+      : await this.doReactBuild(tabPath, ctx.envInfo.envName, context.telemetryReporter);
     merge(teamsTab, {
       build: true,
       artifactFolder: path.join(teamsTab.folder, artifactFolder),
@@ -186,16 +192,16 @@ export class TabCodeProvider {
       }
     };
 
-    const connections = getComponent(ctx.projectSetting, ComponentNames.TeamsTab)?.connections;
-    if (connections?.includes(ComponentNames.TeamsApi)) {
-      const teamsApi = getComponent(ctx.projectSetting, ComponentNames.TeamsApi);
-      addToEnvs(EnvKeys.FuncName, teamsApi?.functionNames[0]);
+    const teamsTab = getComponent(ctx.projectSetting, ComponentNames.TeamsTab);
+    const teamsApi = getComponent(ctx.projectSetting, ComponentNames.TeamsApi);
+    if (teamsApi) {
+      addToEnvs(EnvKeys.FuncName, teamsApi.functionNames[0]);
       addToEnvs(
         EnvKeys.FuncEndpoint,
         ctx.envInfo?.state?.[ComponentNames.TeamsApi]?.functionEndpoint as string
       );
     }
-    if (connections?.includes(ComponentNames.AadApp)) {
+    if (teamsTab?.sso) {
       addToEnvs(EnvKeys.ClientID, ctx.envInfo?.state?.[ComponentNames.AadApp]?.clientId as string);
       addToEnvs(EnvKeys.StartLoginPage, DependentPluginInfo.StartLoginPageURL);
     }
@@ -211,8 +217,46 @@ export class TabCodeProvider {
     }
     return path.join("bin", "Release", "net6.0", "win-x86", "publish");
   }
-  private async doReactBuild(tabPath: string, envName: string): Promise<string> {
-    await FrontendDeployment.doFrontendBuildV3(tabPath, envName);
+  private async doReactBuild(
+    tabPath: string,
+    envName: string,
+    telemetryReporter?: TelemetryReporter
+  ): Promise<string> {
+    const needBuild = await FrontendDeployment.needBuild(tabPath, envName);
+    if (!needBuild) {
+      return "build";
+    }
+
+    const scripts = async () =>
+      (await fs.readJSON(path.join(tabPath, FrontendPathInfo.NodePackageFile))).scripts ?? [];
+
+    if (!("install:teamsfx" in scripts)) {
+      // * Track legacy projects
+      telemetryReporter?.sendTelemetryEvent(TelemetryEvent.InstallScriptNotFound);
+    }
+
+    await Utils.execute(
+      "install:teamsfx" in scripts
+        ? Commands.InstallNodePackages
+        : Commands.DefaultInstallNodePackages,
+      tabPath
+    );
+
+    if ("build:teamsfx" in scripts) {
+      await Utils.execute(Commands.BuildFrontend, tabPath, {
+        TEAMS_FX_ENV: envName,
+      });
+    } else {
+      const envs = await loadEnvFile(envFilePath(envName, tabPath));
+      await Utils.execute(Commands.DefaultBuildFrontend, tabPath, {
+        ...envs.customizedRemoteEnvs,
+        ...envs.teamsfxRemoteEnvs,
+      });
+    }
+
+    await FrontendDeployment.saveDeploymentInfo(tabPath, envName, {
+      lastBuildTime: new Date().toISOString(),
+    });
     return "build";
   }
 }

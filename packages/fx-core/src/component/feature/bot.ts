@@ -65,8 +65,15 @@ export class TeamsBot {
     const action: FunctionAction = {
       name: `${this.name}.add`,
       type: "function",
+      errorSource: "bot",
+      errorHandler: (error) => {
+        if (error && !error?.name) {
+          error.name = "addBotError";
+        }
+        return error as FxError;
+      },
       plan: (context, inputs) => {
-        return ok(["add Bot to project"]);
+        return ok([Plans.addFeature("Bot")]);
       },
       execute: async (context, inputs) => {
         const projectSettings = context.projectSetting;

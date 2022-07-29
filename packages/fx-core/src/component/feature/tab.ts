@@ -56,6 +56,16 @@ export class TeamsTab {
     const action: FunctionAction = {
       name: "teams-tab.add",
       type: "function",
+      errorSource: "tab",
+      errorHandler: (error) => {
+        if (error && !error?.name) {
+          error.name = "addTabError";
+        }
+        return error as FxError;
+      },
+      plan: (context, inputs) => {
+        return ok([Plans.addFeature("Tab")]);
+      },
       execute: async (context, inputs) => {
         const projectSettings = context.projectSetting;
         const effects = [];
@@ -223,7 +233,7 @@ export class TeamsTab {
     context: ProvisionContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
-    const tabCode = Container.get(ComponentNames.TabCode) as TabCodeProvider;
+    const tabCode = new TabCodeProvider();
     const res = await tabCode.configure(context as ProvisionContextV3, inputs);
     if (res.isErr()) return err(res.error);
     return ok(undefined);
@@ -237,7 +247,7 @@ export class TeamsTab {
     context: ProvisionContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
-    const tabCode = Container.get(ComponentNames.TabCode) as TabCodeProvider;
+    const tabCode = new TabCodeProvider();
     const res = await tabCode.build(context, inputs);
     if (res.isErr()) return err(res.error);
     return ok(undefined);

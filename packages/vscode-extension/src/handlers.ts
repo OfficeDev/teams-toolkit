@@ -1625,27 +1625,30 @@ export async function promptSPFxUpgrade() {
 
     if (projectSPFxVersion) {
       const cmp = compare(projectSPFxVersion, SUPPORTED_SPFX_VERSION);
-      if (cmp === 1) {
+      if (cmp === 1 || cmp === -1) {
         VS_CODE_UI.showMessage(
           "warn",
           util.format(
-            localize("teamstoolkit.handlers.promptSPFx.upgradeToolkit.description"),
-            SUPPORTED_SPFX_VERSION
-          ),
-          false
-        );
-      } else if (cmp === -1) {
-        VS_CODE_UI.showMessage(
-          "warn",
-          util.format(
-            localize("teamstoolkit.handlers.promptSPFx.upgradeProject.description"),
+            localize(
+              cmp === 1
+                ? "teamstoolkit.handlers.promptSPFx.upgradeToolkit.description"
+                : "teamstoolkit.handlers.promptSPFx.upgradeProject.description"
+            ),
             SUPPORTED_SPFX_VERSION
           ),
           false,
-          localize("teamstoolkit.handlers.promptSPFx.upgradeProject.title")
+          localize(
+            cmp === 1
+              ? "teamstoolkit.handlers.promptSPFx.upgradeToolkit.title"
+              : "teamstoolkit.handlers.promptSPFx.upgradeProject.title"
+          )
         ).then(async (result) => {
           if (result.isOk()) {
             if (
+              result.value === localize("teamstoolkit.handlers.promptSPFx.upgradeToolkit.title")
+            ) {
+              await vscode.commands.executeCommand("workbench.extensions.search", "Teams Toolkit");
+            } else if (
               result.value === localize("teamstoolkit.handlers.promptSPFx.upgradeProject.title")
             ) {
               await VS_CODE_UI.openUrl(CLI_FOR_M365);

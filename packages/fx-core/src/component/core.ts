@@ -106,6 +106,7 @@ import {
 } from "./questionV3";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "./middleware/actionExecutionMW";
+import { getQuestionsForCreateProjectV2 } from "../core/middleware";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -113,6 +114,13 @@ export class TeamsfxCore {
   /**
    * create project
    */
+  @hooks([
+    ActionExecutionMW({
+      question: (context, inputs) => {
+        return getQuestionsForCreateProjectV2(inputs);
+      },
+    }),
+  ])
   async create(
     context: ContextV3,
     inputs: InputsWithProjectPath
@@ -180,6 +188,13 @@ export class TeamsfxCore {
   /**
    * add feature
    */
+  @hooks([
+    ActionExecutionMW({
+      question: (context, inputs) => {
+        return getQuestionsForAddFeatureV3(context, inputs);
+      },
+    }),
+  ])
   async addFeature(
     context: ContextV3,
     inputs: InputsWithProjectPath

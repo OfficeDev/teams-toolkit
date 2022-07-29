@@ -132,7 +132,7 @@ import {
 } from "./telemetry";
 import { CoreHookContext } from "./types";
 import { isPreviewFeaturesEnabled } from "../common";
-import { getQuestionsV3, runActionByName } from "../component/workflow";
+import { getQuestionsV3 } from "../component/workflow";
 import { createContextV3 } from "../component/utils";
 import "../component/core";
 import {
@@ -142,8 +142,8 @@ import {
 } from "../component/questionV3";
 import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
 import { addCicdQuestion } from "../component/feature/cicd";
-import { AddApiConnectorAction } from "../component/feature/apiConnector";
-import { createHostTypeTriggerQuestion } from "../plugins/resource/bot/question";
+import { ComponentNames } from "../component/constants";
+import { ApiConnectorImpl } from "../plugins/resource/apiconnector/plugin";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -349,7 +349,8 @@ export class FxCore implements v3.ICore {
     setCurrentStage(Stage.create);
     inputs.stage = Stage.create;
     const context = createContextV3();
-    const res = await runActionByName("fx.create", context, inputs as InputsWithProjectPath);
+    const fx = Container.get("fx") as any;
+    const res = await fx.create(context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx.projectSettings = context.projectSetting;
     inputs.projectPath = context.projectPath;
@@ -419,7 +420,8 @@ export class FxCore implements v3.ICore {
     context.envInfo = ctx!.envInfoV3!;
     context.projectSetting = ctx!.projectSettings! as ProjectSettingsV3;
     context.tokenProvider = TOOLS.tokenProvider;
-    const res = await runActionByName("fx.provision", context, inputs as InputsWithProjectPath);
+    const fx = Container.get("fx") as any;
+    const res = await fx.provision(context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
     ctx!.envInfoV3 = context.envInfo;
@@ -519,7 +521,8 @@ export class FxCore implements v3.ICore {
     context.envInfo = ctx!.envInfoV3!;
     context.projectSetting = ctx!.projectSettings! as ProjectSettingsV3;
     context.tokenProvider = TOOLS.tokenProvider;
-    const res = await runActionByName("fx.deploy", context, inputs as InputsWithProjectPath);
+    const fx = Container.get("fx") as any;
+    const res = await fx.deploy(context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
     return ok(Void);
@@ -597,7 +600,8 @@ export class FxCore implements v3.ICore {
     context.envInfo = ctx!.envInfoV3!;
     context.projectSetting = ctx!.projectSettings! as ProjectSettingsV3;
     context.tokenProvider = TOOLS.tokenProvider;
-    const res = await runActionByName("fx.provision", context, inputs as InputsWithProjectPath);
+    const fx = Container.get("fx") as any;
+    const res = await fx.provision(context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
     ctx!.envInfoV3 = context.envInfo;
@@ -671,11 +675,8 @@ export class FxCore implements v3.ICore {
     context.envInfo = ctx!.envInfoV3!;
     context.projectSetting = ctx!.projectSettings! as ProjectSettingsV3;
     context.tokenProvider = TOOLS.tokenProvider;
-    const res = await runActionByName(
-      "app-manifest.publish",
-      context,
-      inputs as InputsWithProjectPath
-    );
+    const appManifest = Container.get(ComponentNames.AppManifest) as any;
+    const res = await appManifest.publish(context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
     return ok(Void);
@@ -705,7 +706,8 @@ export class FxCore implements v3.ICore {
     ctx?: CoreHookContext
   ): Promise<Result<Void, FxError>> {
     const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-    const res = await runActionByName("fx.addFeature", context, inputs as InputsWithProjectPath);
+    const fx = Container.get("fx") as any;
+    const res = await fx.addFeature(context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
     return ok(Void);
@@ -828,11 +830,14 @@ export class FxCore implements v3.ICore {
     let res: Result<undefined, FxError> = ok(undefined);
     const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
     if (func.method === "addCICDWorkflows") {
-      res = await runActionByName("cicd.add", context, inputs as InputsWithProjectPath);
+      const component = Container.get("cicd") as any;
+      res = await component.add(context, inputs as InputsWithProjectPath);
     } else if (func.method === "connectExistingApi") {
-      res = await runActionByName("api-connector.add", context, inputs as InputsWithProjectPath);
+      const component = Container.get("api-connector") as any;
+      res = await component.add(context, inputs as InputsWithProjectPath);
     } else if (func.method === "addFeature") {
-      res = await runActionByName("fx.addFeature", context, inputs as InputsWithProjectPath);
+      const fx = Container.get("fx") as any;
+      res = await fx.addFeature(context, inputs as InputsWithProjectPath);
     }
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
@@ -917,7 +922,8 @@ export class FxCore implements v3.ICore {
       } else if (func.method === "addCICDWorkflows") {
         return await addCicdQuestion(context, inputs as InputsWithProjectPath);
       } else if (func.method === "connectExistingApi") {
-        return await new AddApiConnectorAction().question(context, inputs as InputsWithProjectPath);
+        const apiConnectorImpl: ApiConnectorImpl = new ApiConnectorImpl();
+        return await apiConnectorImpl.generateQuestion(context, inputs as InputsWithProjectPath);
       }
       if (actionName) {
         const res = await getQuestionsV3(actionName, context, inputs as InputsWithProjectPath);

@@ -3,16 +3,13 @@
 
 import { hooks } from "@feathersjs/hooks/lib";
 import {
-  Action,
   Bicep,
   ContextV3,
   Effect,
   err,
-  FunctionAction,
   FxError,
   Inputs,
   InputsWithProjectPath,
-  MaybePromise,
   ok,
   ProvisionContextV3,
   QTreeNode,
@@ -42,7 +39,6 @@ import { ComponentNames, Scenarios } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { AzureFunctionResource } from "../resource/azureAppService/azureFunction";
-import { ActionGenerateBicep } from "../resource/azureSql/constants";
 import { generateConfigBiceps, bicepUtils } from "../utils";
 import { getComponent } from "../workflow";
 
@@ -86,7 +82,7 @@ export class TeamsApi {
     if (apiConfig) {
       apiConfig.functionNames = apiConfig.functionNames || [];
       apiConfig.functionNames.push(inputs[QuestionKey.functionName]);
-      return ok(effects);
+      return ok(undefined);
     }
 
     // 2. config teams-api

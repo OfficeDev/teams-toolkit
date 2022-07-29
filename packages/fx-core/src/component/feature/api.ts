@@ -13,6 +13,7 @@ import {
   InputsWithProjectPath,
   MaybePromise,
   ok,
+  ProvisionContextV3,
   QTreeNode,
   Result,
   Stage,
@@ -154,20 +155,13 @@ export class TeamsApi {
     return ok(action);
   }
   async build(
-    context: ContextV3,
+    context: ProvisionContextV3,
     inputs: InputsWithProjectPath
-  ): Promise<Result<Action | undefined, FxError>> {
-    const action: FunctionAction = {
-      name: "teams-api.build",
-      type: "function",
-      execute: async (context, inputs) => {
-        const apiCode = Container.get<ApiCodeProvider>(ComponentNames.ApiCode);
-        const res = await apiCode.build(context, inputs);
-        if (res.isErr()) return err(res.error);
-        return ok([]);
-      },
-    };
-    return ok(action);
+  ): Promise<Result<undefined, FxError>> {
+    const apiCode = Container.get<ApiCodeProvider>(ComponentNames.ApiCode);
+    const res = await apiCode.build(context, inputs);
+    if (res.isErr()) return err(res.error);
+    return ok(undefined);
   }
 }
 

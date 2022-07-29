@@ -53,5 +53,5 @@ public class BotAuthenticationConfigurations
     /// Initiate login start page endpoint.
     /// </summary>
     [Required(ErrorMessage = "login start page endpoint uri is required")]
-    public string LoginStartPageEndpoint { get; set; }
+    public string InitiateLoginEndpoint { get; set; }
 }

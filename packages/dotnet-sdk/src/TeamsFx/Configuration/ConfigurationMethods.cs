@@ -37,7 +37,7 @@ public static class TeamsFxConfigurationMethods
             botAuthOption.ClientSecret = authOptionsValue.ClientSecret;
             botAuthOption.OAuthAuthority = authOptionsValue.OAuthAuthority;
             botAuthOption.ApplicationIdUri = authOptionsValue.ApplicationIdUri;
-            botAuthOption.InitiateLoginEndpoint  = authOptionsValue.Bot.LoginStartPageEndpoint;
+            botAuthOption.InitiateLoginEndpoint  = authOptionsValue.Bot.InitiateLoginEndpoint;
         }).ValidateDataAnnotations();
         
         services.AddSingleton<IIdentityClientAdapter>(sp => {
@@ -76,7 +76,7 @@ public static class TeamsFxConfigurationMethods
                 botAuthOption.ClientSecret = authOptionsValue.ClientSecret;
                 botAuthOption.OAuthAuthority = authOptionsValue.OAuthAuthority;
                 botAuthOption.ApplicationIdUri = authOptionsValue.ApplicationIdUri;
-                botAuthOption.InitiateLoginEndpoint  = authOptionsValue.Bot.LoginStartPageEndpoint;
+                botAuthOption.InitiateLoginEndpoint  = authOptionsValue.Bot.InitiateLoginEndpoint;
             }).ValidateDataAnnotations();
 
         services.AddSingleton<IIdentityClientAdapter>(sp => {
@@ -119,7 +119,7 @@ public static class TeamsFxConfigurationMethods
             botAuthOption.ClientSecret = authOptionsValue.ClientSecret;
             botAuthOption.OAuthAuthority = authOptionsValue.OAuthAuthority;
             botAuthOption.ApplicationIdUri = authOptionsValue.ApplicationIdUri;
-            botAuthOption.InitiateLoginEndpoint  = authOptionsValue.Bot.LoginStartPageEndpoint;
+            botAuthOption.InitiateLoginEndpoint  = authOptionsValue.Bot.InitiateLoginEndpoint;
         }).ValidateDataAnnotations();
 
         services.AddSingleton<IIdentityClientAdapter>(sp => {

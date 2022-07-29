@@ -673,7 +673,7 @@ describe("handlers", () => {
           version: `1.${parseInt(SUPPORTED_SPFX_VERSION.split(".")[1]) + 1}.0`,
         },
       });
-      const stubShowMessage = sinon.stub();
+      const stubShowMessage = sinon.stub().resolves(ok({}));
       sinon.stub(extension, "VS_CODE_UI").value({
         showMessage: stubShowMessage,
       });
@@ -681,7 +681,7 @@ describe("handlers", () => {
       await handlers.promptSPFxUpgrade();
 
       chai.assert(stubShowMessage.calledOnce);
-      chai.assert.equal(stubShowMessage.args[0].length, 3);
+      chai.assert.equal(stubShowMessage.args[0].length, 4);
       sinon.restore();
     });
 

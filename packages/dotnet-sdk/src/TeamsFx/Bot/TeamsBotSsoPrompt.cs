@@ -107,16 +107,12 @@ public class TeamsBotSsoPrompt : Dialog
 
     /// <summary>
     /// Called when the dialog is started and pushed onto the dialog stack.
-    /// Developer need to configure TeamsFx service before using this class.
     /// </summary>
     /// <param name="dialogContext">The Microsoft.Bot.Builder.Dialogs.DialogContext for the current turn of conversation.</param>
     /// <param name="options">Optional, initial information to pass to the dialog.</param>
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     /// <returns> A System.Threading.Tasks.Task representing the asynchronous operation.</returns>
     /// <exception cref="ExceptionCode.InvalidParameter">if dialog context argument is null</exception>
-    /// <remarks>
-    /// If the task is successful, the result indicates whether the dialog is still active after the turn has been processed by the dialog.
-    /// </remarks>
     public override async Task<DialogTurnResult> BeginDialogAsync(DialogContext dialogContext, object options = null, CancellationToken cancellationToken = default)
     {
         if (dialogContext == null)

@@ -7,8 +7,6 @@ using Microsoft.Identity.Client;
 using Microsoft.TeamsFx;
 using Microsoft.TeamsFx.Configuration;
 using Microsoft.TeamsFx.Helper;
-using Microsoft.AspNetCore.Http;
-using System.Text.RegularExpressions;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -33,7 +31,7 @@ public static class TeamsFxConfigurationMethods
         services.AddScoped<TeamsUserCredential>();
 
         services.AddOptions<AuthenticationOptions>().Bind(namedConfigurationSection.GetSection(AuthenticationOptions.Authentication)).ValidateDataAnnotations();
-        services.AddOptions<BotAuthenticationOptions>().Configure<IOptions<AuthenticationOptions>, IHttpContextAccessor> ((botAuthOption, authOptions, contextAccessor) => {
+        services.AddOptions<BotAuthenticationOptions>().Configure<IOptions<AuthenticationOptions>> ((botAuthOption, authOptions) => {
             AuthenticationOptions authOptionsValue = authOptions.Value;
             botAuthOption.ClientId = authOptionsValue.ClientId;
             botAuthOption.ClientSecret = authOptionsValue.ClientSecret;
@@ -115,7 +113,7 @@ public static class TeamsFxConfigurationMethods
                 options.ClientSecret = userOptions.ClientSecret;
                 options.OAuthAuthority = userOptions.OAuthAuthority;
             }).ValidateDataAnnotations();
-        services.AddOptions<BotAuthenticationOptions>().Configure<IOptions<AuthenticationOptions>, IHttpContextAccessor>((botAuthOption, authOptions, contextAccessor) => {
+        services.AddOptions<BotAuthenticationOptions>().Configure<IOptions<AuthenticationOptions>>((botAuthOption, authOptions) => {
             AuthenticationOptions authOptionsValue = authOptions.Value;
             botAuthOption.ClientId = authOptionsValue.ClientId;
             botAuthOption.ClientSecret = authOptionsValue.ClientSecret;

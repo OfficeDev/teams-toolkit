@@ -194,10 +194,10 @@ export class TeamsTab {
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
     if (context.envInfo.envName === "local") {
-      context.envInfo.state[ComponentNames.TeamsTab]?.set(
-        FRONTEND_INDEX_PATH,
-        Constants.FrontendIndexPath
-      );
+      context.envInfo.state[ComponentNames.TeamsTab] =
+        context.envInfo.state[ComponentNames.TeamsTab] || {};
+      context.envInfo.state[ComponentNames.TeamsTab][FRONTEND_INDEX_PATH] =
+        Constants.FrontendIndexPath;
     }
     return ok(undefined);
   }

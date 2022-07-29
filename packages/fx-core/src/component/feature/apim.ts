@@ -116,7 +116,6 @@ export class ApimFeature {
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    const remarks: string[] = [ProgressStep.Scaffold];
     const apimConfig = new ApimPluginConfig({}, "");
     const answer = buildAnswer(inputs);
     const scaffoldManager = await Factory.buildScaffoldManager(

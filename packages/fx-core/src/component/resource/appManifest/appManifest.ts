@@ -159,7 +159,9 @@ export class AppManifest implements CloudResource {
       enableTelemetry: true,
       telemetryComponentName: "AppStudioPlugin",
       telemetryEventName: "publish",
-      question: publishQuestion,
+      question: async (context, inputs) => {
+        return await publishQuestion(inputs);
+      },
     }),
   ])
   async publish(

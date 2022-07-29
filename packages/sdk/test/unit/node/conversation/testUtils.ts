@@ -5,6 +5,7 @@ import { TurnContext } from "botbuilder-core";
 import { Activity } from "botframework-schema";
 import {
   CommandMessage,
+  MessageResponse,
   NotificationTarget,
   NotificationTargetStorage,
   NotificationTargetType,
@@ -43,16 +44,16 @@ export class TestStorage implements NotificationTargetStorage {
 export class TestTarget implements NotificationTarget {
   public content: any;
   public type?: NotificationTargetType | undefined;
-  public sendMessage(text: string): Promise<void> {
+  public sendMessage(text: string): Promise<MessageResponse> {
     return new Promise((resolve) => {
       this.content = text;
-      resolve();
+      resolve({});
     });
   }
-  public sendAdaptiveCard(card: unknown): Promise<void> {
+  public sendAdaptiveCard(card: unknown): Promise<MessageResponse> {
     return new Promise((resolve) => {
       this.content = card;
-      resolve();
+      resolve({});
     });
   }
 }

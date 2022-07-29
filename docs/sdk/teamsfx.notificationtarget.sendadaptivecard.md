@@ -9,7 +9,7 @@ Send an adaptive card message.
 <b>Signature:</b>
 
 ```typescript
-sendAdaptiveCard(card: unknown): Promise<void>;
+sendAdaptiveCard(card: unknown): Promise<MessageResponse>;
 ```
 
 ## Parameters
@@ -20,5 +20,7 @@ sendAdaptiveCard(card: unknown): Promise<void>;
 
 <b>Returns:</b>
 
-Promise&lt;void&gt;
+Promise&lt;MessageResponse&gt;
+
+the response of sending adaptive card message.
 

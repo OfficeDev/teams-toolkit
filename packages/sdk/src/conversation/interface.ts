@@ -5,6 +5,16 @@ import { BotFrameworkAdapter } from "botbuilder";
 import { Activity, TurnContext } from "botbuilder-core";
 
 /**
+ * The response of a message action, e.g., `sendMessage`, `sendAdaptiveCard`.
+ */
+export interface MessageResponse {
+  /**
+   * Id of the message.
+   */
+  id?: string;
+}
+
+/**
  * The target type where the notification will be sent to.
  *
  * @remarks
@@ -27,15 +37,19 @@ export interface NotificationTarget {
    * Send a plain text message.
    *
    * @param text - the plain text message.
+   *
+   * @returns the response of sending message.
    */
-  sendMessage(text: string): Promise<void>;
+  sendMessage(text: string): Promise<MessageResponse>;
 
   /**
    * Send an adaptive card message.
    *
    * @param card - the adaptive card raw JSON.
+   *
+   * @returns the response of sending adaptive card message.
    */
-  sendAdaptiveCard(card: unknown): Promise<void>;
+  sendAdaptiveCard(card: unknown): Promise<MessageResponse>;
 }
 
 /**

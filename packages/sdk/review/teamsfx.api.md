@@ -96,8 +96,9 @@ export class Channel implements NotificationTarget {
     constructor(parent: TeamsBotInstallation, info: ChannelInfo);
     readonly info: ChannelInfo;
     readonly parent: TeamsBotInstallation;
-    sendAdaptiveCard(card: unknown): Promise<void>;
-    sendMessage(text: string): Promise<void>;
+    sendAdaptiveCard(card: unknown): Promise<MessageResponse>;
+    // Warning: (ae-forgotten-export) The symbol "MessageResponse" needs to be exported by the entry point index.d.ts
+    sendMessage(text: string): Promise<MessageResponse>;
     readonly type: NotificationTargetType;
 }
 
@@ -221,8 +222,8 @@ export class Member implements NotificationTarget {
     constructor(parent: TeamsBotInstallation, account: TeamsChannelAccount);
     readonly account: TeamsChannelAccount;
     readonly parent: TeamsBotInstallation;
-    sendAdaptiveCard(card: unknown): Promise<void>;
-    sendMessage(text: string): Promise<void>;
+    sendAdaptiveCard(card: unknown): Promise<MessageResponse>;
+    sendMessage(text: string): Promise<MessageResponse>;
     readonly type: NotificationTargetType;
 }
 
@@ -259,8 +260,8 @@ export { NotificationOptions_2 as NotificationOptions }
 
 // @public
 export interface NotificationTarget {
-    sendAdaptiveCard(card: unknown): Promise<void>;
-    sendMessage(text: string): Promise<void>;
+    sendAdaptiveCard(card: unknown): Promise<MessageResponse>;
+    sendMessage(text: string): Promise<MessageResponse>;
     readonly type?: NotificationTargetType;
 }
 
@@ -289,10 +290,10 @@ export class OnBehalfOfUserCredential implements TokenCredential {
 }
 
 // @public
-export function sendAdaptiveCard(target: NotificationTarget, card: unknown): Promise<void>;
+export function sendAdaptiveCard(target: NotificationTarget, card: unknown): Promise<MessageResponse>;
 
 // @public
-export function sendMessage(target: NotificationTarget, text: string): Promise<void>;
+export function sendMessage(target: NotificationTarget, text: string): Promise<MessageResponse>;
 
 // @public
 export function setLogFunction(logFunction?: LogFunction): void;
@@ -310,8 +311,8 @@ export class TeamsBotInstallation implements NotificationTarget {
     channels(): Promise<Channel[]>;
     readonly conversationReference: Partial<ConversationReference>;
     members(): Promise<Member[]>;
-    sendAdaptiveCard(card: unknown): Promise<void>;
-    sendMessage(text: string): Promise<void>;
+    sendAdaptiveCard(card: unknown): Promise<MessageResponse>;
+    sendMessage(text: string): Promise<MessageResponse>;
     readonly type?: NotificationTargetType;
 }
 

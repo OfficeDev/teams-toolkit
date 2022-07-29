@@ -138,9 +138,6 @@ export class TabCodeProvider {
       telemetryComponentName: FrontendPluginInfo.PluginName,
       telemetryEventName: "scaffold",
       errorSource: "tab",
-      enableProgressBar: true,
-      progressTitle: ProgressTitles.scaffoldTab,
-      progressSteps: Object.keys(ScaffoldProgress.steps).length,
     }),
   ])
   async configure(

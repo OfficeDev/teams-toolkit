@@ -20,7 +20,8 @@ import { FunctionLanguage, QuestionKey } from "../../plugins/resource/function/e
 import { FunctionDeploy } from "../../plugins/resource/function/ops/deploy";
 import { FunctionScaffold } from "../../plugins/resource/function/ops/scaffold";
 import { ComponentNames } from "../constants";
-import { ProgressMessages, ProgressTitles } from "../messages";
+import { BadComponent, invalidProjectSettings } from "../error";
+import { ErrorMessage, ProgressMessages, ProgressTitles } from "../messages";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { getComponent } from "../workflow";
 /**
@@ -37,9 +38,7 @@ export class ApiCodeProvider {
       enableTelemetry: true,
       telemetryComponentName: "fx-resource-function",
       telemetryEventName: "scaffold",
-      errorSource: "BE",
-      errorIssueLink: DefaultValues.issueLink,
-      errorHelpLink: DefaultValues.helpLink,
+      errorSource: "api",
     }),
   ])
   async generate(
@@ -84,10 +83,10 @@ export class ApiCodeProvider {
   ): Promise<Result<undefined, FxError>> {
     const teamsApi = getComponent(context.projectSetting, ComponentNames.TeamsApi);
     if (!teamsApi) return ok(undefined);
-    if (teamsApi.folder == undefined) throw new Error("path not found");
+    if (teamsApi.folder == undefined) throw new BadComponent("api", this.name, "folder");
     const language = context.projectSetting.programmingLanguage;
     if (!language || !Object.values(FunctionLanguage).includes(language as FunctionLanguage))
-      throw new Error("Invalid programming language found in project settings.");
+      throw new invalidProjectSettings(ErrorMessage.programmingLanguageInvalid);
     actionContext?.progressBar?.next(ProgressMessages.buildingApi);
     const buildPath = path.resolve(inputs.projectPath, teamsApi.folder);
     await FunctionDeploy.build(buildPath, language as FunctionLanguage);

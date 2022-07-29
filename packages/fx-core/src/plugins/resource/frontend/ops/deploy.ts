@@ -298,7 +298,7 @@ export class FrontendDeployment {
       : undefined;
   }
 
-  private static async saveDeploymentInfo(
+  public static async saveDeploymentInfo(
     componentPath: string,
     envName: string,
     deploymentInfo: DeploymentInfo

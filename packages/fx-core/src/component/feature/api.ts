@@ -38,6 +38,7 @@ import { ApiCodeProvider } from "../code/apiCode";
 import { ComponentNames, Scenarios } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
+import { Plans } from "../messages";
 import { AzureFunctionResource } from "../resource/azureAppService/azureFunction";
 import { generateConfigBiceps, bicepUtils } from "../utils";
 import { getComponent } from "../workflow";
@@ -47,6 +48,13 @@ export class TeamsApi {
   name = ComponentNames.TeamsApi;
   @hooks([
     ActionExecutionMW({
+      errorSource: "bot",
+      errorHandler: (error) => {
+        if (error && !error?.name) {
+          error.name = "addBotError";
+        }
+        return error as FxError;
+      },
       question: (context: ContextV3, inputs: InputsWithProjectPath) => {
         functionNameQuestion.validation = getFunctionNameQuestionValidation(context, inputs);
         return ok(new QTreeNode(functionNameQuestion));

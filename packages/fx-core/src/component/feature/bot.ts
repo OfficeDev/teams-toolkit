@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { hooks } from "@feathersjs/hooks/lib";
 import {
   Bicep,
   CloudResource,
@@ -45,6 +46,7 @@ import "../connection/azureWebAppConfig";
 import { ComponentNames, Scenarios } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
 import { Plans } from "../messages";
+import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import "../resource/appManifest/appManifest";
 import { AppManifest } from "../resource/appManifest/appManifest";
 import "../resource/azureAppService/azureWebApp";
@@ -55,6 +57,17 @@ import { getComponent, getComponentByScenario } from "../workflow";
 @Service("teams-bot")
 export class TeamsBot {
   name = "teams-bot";
+  @hooks([
+    ActionExecutionMW({
+      errorSource: "bot",
+      errorHandler: (error) => {
+        if (error && !error?.name) {
+          error.name = "addBotError";
+        }
+        return error as FxError;
+      },
+    }),
+  ])
   async add(
     context: ContextV3,
     inputs: InputsWithProjectPath

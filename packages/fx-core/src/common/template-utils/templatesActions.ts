@@ -216,22 +216,11 @@ export async function scaffoldFromTemplates(
   context: ScaffoldContext,
   actions: ScaffoldAction[] = defaultActionSeq
 ): Promise<void> {
-  if (!context.group) {
-    throw new Error(missKeyErrorInfo("group"));
-  }
-
-  if (!context.lang) {
-    throw new Error(missKeyErrorInfo("lang"));
-  }
-
-  if (!context.scenario) {
-    throw new Error(missKeyErrorInfo("scenario"));
-  }
   // To track code templates usage.
   sendTelemetryEvent(Component.core, TelemetryEvent.ScaffoldFromTemplatesStart, {
-    [TelemetryProperty.TemplateGroup]: context.group,
-    [TelemetryProperty.TemplateLanguage]: context.lang,
-    [TelemetryProperty.TemplateScenario]: context.scenario,
+    [TelemetryProperty.TemplateGroup]: context.group ?? "",
+    [TelemetryProperty.TemplateLanguage]: context.lang ?? "",
+    [TelemetryProperty.TemplateScenario]: context.scenario ?? "",
   });
 
   for (const action of actions) {
@@ -248,9 +237,9 @@ export async function scaffoldFromTemplates(
   }
 
   sendTelemetryEvent(Component.core, TelemetryEvent.ScaffoldFromTemplates, {
-    [TelemetryProperty.TemplateGroup]: context.group,
-    [TelemetryProperty.TemplateLanguage]: context.lang,
-    [TelemetryProperty.TemplateScenario]: context.scenario,
+    [TelemetryProperty.TemplateGroup]: context.group ?? "",
+    [TelemetryProperty.TemplateLanguage]: context.lang ?? "",
+    [TelemetryProperty.TemplateScenario]: context.scenario ?? "",
     [TelemetryProperty.TemplateFallback]: context.zip ? "false" : "true", // Track fallback cases.
   });
 }

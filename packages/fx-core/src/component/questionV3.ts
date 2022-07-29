@@ -78,8 +78,6 @@ import { ApiConnectorImpl } from "../plugins/resource/apiconnector/plugin";
 import { addCicdQuestion } from "./feature/cicd";
 
 export async function getQuestionsForProvisionV3(
-  ctx: v2.Context,
-  envInfo: v3.EnvInfoV3,
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (inputs.platform === Platform.CLI_HELP) {
@@ -90,8 +88,8 @@ export async function getQuestionsForProvisionV3(
 
 export async function getQuestionsForDeployV3(
   ctx: v2.Context,
-  envInfo: v3.EnvInfoV3,
-  inputs: Inputs
+  inputs: Inputs,
+  envInfo?: v3.EnvInfoV3
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   //VS project has no selection interaction, and will deploy all selectable components by default.
   if (isVSProject(ctx.projectSetting)) {
@@ -116,7 +114,7 @@ export async function getQuestionsForDeployV3(
     selectableComponents = deployableComponents;
   } else {
     const hasAzureResource = hasAzureResourceV3(projectSetting);
-    const provisioned = checkWetherProvisionSucceeded(envInfo.state);
+    const provisioned = checkWetherProvisionSucceeded(envInfo!.state);
     if (hasAzureResource && !provisioned) {
       return err(
         new UserError({

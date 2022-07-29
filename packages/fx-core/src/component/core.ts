@@ -251,7 +251,7 @@ export class TeamsfxCore {
   @hooks([
     ActionExecutionMW({
       question: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return await getQuestionsForProvisionV3(context, context.envInfo!, inputs);
+        return await getQuestionsForProvisionV3(inputs);
       },
     }),
   ])
@@ -435,7 +435,7 @@ export class TeamsfxCore {
   @hooks([
     ActionExecutionMW({
       question: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return await getQuestionsForDeployV3(context, context.envInfo!, inputs);
+        return await getQuestionsForDeployV3(context, inputs, context.envInfo!);
       },
     }),
   ])

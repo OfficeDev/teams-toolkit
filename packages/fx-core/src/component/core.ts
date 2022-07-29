@@ -465,7 +465,7 @@ export class TeamsfxCore {
             clonedInputs.folder = component.folder;
             clonedInputs.artifactFolder = component.artifactFolder;
             clonedInputs.componentId = component.name;
-            return componentInstance.deploy!(ctx, clonedInputs);
+            return componentInstance.deploy!(context, clonedInputs);
           },
         });
         if (AzureResources.includes(component.hosting)) {

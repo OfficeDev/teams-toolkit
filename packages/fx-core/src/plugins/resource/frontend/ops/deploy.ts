@@ -109,42 +109,32 @@ export class FrontendDeployment {
       await progress?.next(DeployProgress.steps.Build);
       return;
     }
-
-    const scripts =
-      (await runWithErrorCatchAndWrap(
-        (error) => new FileIOError(error.message),
-        async () => (await fs.readJSON(path.join(componentPath, PathInfo.NodePackageFile))).scripts
-      )) ?? [];
-
+    const packageJson = await fs.readJSON(path.join(componentPath, PathInfo.NodePackageFile));
+    const scripts = packageJson ? packageJson.scripts || [] : [];
     if (!("install:teamsfx" in scripts)) {
       // * Track legacy projects
       TelemetryHelper.sendGeneralEvent(TelemetryEvent.InstallScriptNotFound);
     }
 
     await progress?.next(DeployProgress.steps.NPMInstall);
-    await runWithErrorCatchAndThrow(new v3error.NpmInstallError(), async () => {
-      await Utils.execute(
-        "install:teamsfx" in scripts
-          ? Commands.InstallNodePackages
-          : Commands.DefaultInstallNodePackages,
-        componentPath
-      );
-    });
+    const installCmd =
+      "install:teamsfx" in scripts
+        ? Commands.InstallNodePackages
+        : Commands.DefaultInstallNodePackages;
+    await Utils.execute(installCmd, componentPath);
 
     await progress?.next(DeployProgress.steps.Build);
-    await runWithErrorCatchAndThrow(new v3error.BuildError(), async () => {
-      if ("build:teamsfx" in scripts) {
-        await Utils.execute(Commands.BuildFrontend, componentPath, {
-          TEAMS_FX_ENV: envName,
-        });
-      } else {
-        const envs = await loadEnvFile(envFilePath(envName, componentPath));
-        await Utils.execute(Commands.DefaultBuildFrontend, componentPath, {
-          ...envs.customizedRemoteEnvs,
-          ...envs.teamsfxRemoteEnvs,
-        });
-      }
-    });
+    if ("build:teamsfx" in scripts) {
+      await Utils.execute(Commands.BuildFrontend, componentPath, {
+        TEAMS_FX_ENV: envName,
+      });
+    } else {
+      const envs = await loadEnvFile(envFilePath(envName, componentPath));
+      await Utils.execute(Commands.DefaultBuildFrontend, componentPath, {
+        ...envs.customizedRemoteEnvs,
+        ...envs.teamsfxRemoteEnvs,
+      });
+    }
 
     await FrontendDeployment.saveDeploymentInfo(componentPath, envName, {
       lastBuildTime: new Date().toISOString(),

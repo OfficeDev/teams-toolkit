@@ -422,26 +422,33 @@ export class TeamsfxCore {
     return ok(action);
   }
 
-  build(context: ContextV3, inputs: InputsWithProjectPath): Result<Action | undefined, FxError> {
+  async build(
+    context: ProvisionContextV3,
+    inputs: InputsWithProjectPath
+  ): Promise<Result<undefined, FxError>> {
     const projectSettings = context.projectSetting as ProjectSettingsV3;
-    const actions: Action[] = projectSettings.components
-      .filter((resource) => resource.build)
-      .map((resource) => {
-        const component = resource.code || resource.name;
-        return {
-          name: `call:${component}.build`,
-          type: "call",
-          targetAction: `${component}.build`,
-          required: true,
-        };
-      });
-    const group: Action = {
-      type: "group",
-      name: "fx.build",
-      mode: "parallel",
-      actions: actions,
-    };
-    return ok(group);
+    const thunks = [];
+    for (const component of projectSettings.components) {
+      const componentInstance = Container.get(component.name) as any;
+      if (component.build && componentInstance.build) {
+        thunks.push({
+          pluginName: `${component.name}`,
+          taskName: "build",
+          thunk: () => {
+            const clonedInputs = cloneDeep(inputs);
+            clonedInputs.folder = component.folder;
+            clonedInputs.artifactFolder = component.artifactFolder;
+            clonedInputs.componentId = component.name;
+            return componentInstance.build!(context, clonedInputs);
+          },
+        });
+      }
+    }
+    const result = await executeConcurrently(thunks, context.logProvider);
+    if (result.kind !== "success") {
+      return err(result.error);
+    }
+    return ok(undefined);
   }
 
   deploy(context: ContextV3, inputs: InputsWithProjectPath): Result<Action | undefined, FxError> {
@@ -467,8 +474,6 @@ export class TeamsfxCore {
             (isVS || inputComponentNames.includes(component.name))
           ) {
             const componentInstance = Container.get<CloudResource>(component.hosting);
-            // const actionName = `${component.hosting}.deploy`;
-            // const action = await getAction(actionName, ctx, inputs, true);
             thunks.push({
               pluginName: `${component.name}`,
               taskName: "deploy",
@@ -536,7 +541,7 @@ export class TeamsfxCore {
 
         // 3. build
         {
-          const res = await runActionByName("fx.build", context, inputs);
+          const res = await this.build(ctx, inputs);
           if (res.isErr()) return err(res.error);
         }
 

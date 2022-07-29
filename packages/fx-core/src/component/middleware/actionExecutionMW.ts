@@ -64,7 +64,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
         const startEvent = eventName + "-start";
         TOOLS.telemetryReporter?.sendTelemetryEvent(startEvent, telemetryProps);
       }
-      // validate inputs
+      // run question model
       if (action.question) {
         const context = ctx.arguments[0] as ContextV3;
         const inputs = ctx.arguments[1] as InputsWithProjectPath;
@@ -72,14 +72,13 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
         if (getQuestionRes.isErr()) throw getQuestionRes.error;
         const node = getQuestionRes.value;
         if (node) {
-          const validationRes = await traverse(
+          const askQuestionRes = await traverse(
             node,
             inputs,
             context.userInteraction,
-            context.telemetryReporter,
-            validateQuestion
+            context.telemetryReporter
           );
-          if (validationRes.isErr()) throw validationRes.error;
+          if (askQuestionRes.isErr()) throw askQuestionRes.error;
         }
       }
       // progress bar
@@ -108,7 +107,6 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
       }
       progressBar?.end(true);
       TOOLS.logProvider.info(`execute [${actionName}] success!`);
-      return ok(undefined);
     } catch (e) {
       progressBar?.end(false);
       let fxError;
@@ -142,7 +140,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
         });
       }
       TOOLS.logProvider.info(`execute [${actionName}] failed!`);
-      return err(fxError);
+      ctx.result = err(fxError);
     }
   };
 }

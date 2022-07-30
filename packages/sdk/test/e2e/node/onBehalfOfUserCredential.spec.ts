@@ -66,6 +66,7 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
     const userInfo = await credential.getUserInfo();
     const tokenObject = parseJwt(ssoToken) as SSOTokenV2Info;
     assert.strictEqual(userInfo.preferredUserName, tokenObject.preferred_username);
+    assert.strictEqual(userInfo.tenantId, tokenObject.tid);
     assert.strictEqual(userInfo.objectId, tokenObject.oid);
     assert.strictEqual(userInfo.displayName, tokenObject.name);
   });

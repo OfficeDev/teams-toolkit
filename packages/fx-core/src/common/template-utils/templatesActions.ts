@@ -3,6 +3,7 @@ import fs from "fs-extra";
 import path from "path";
 import { getTemplatesFolder } from "../../folder";
 import { FeatureFlagName } from "../constants";
+import { Component, sendTelemetryEvent, TelemetryEvent, TelemetryProperty } from "../telemetry";
 import { fetchTemplateUrl, fetchZipFromUrl, renderTemplateContent, unzip } from "./templatesUtils";
 
 // The entire progress has following actions:
@@ -28,6 +29,9 @@ export interface ScaffoldContext {
 
   // Used by fallback zip.
   templatesFolderPath?: string;
+
+  // To identify if fallback is triggered.
+  fallback?: boolean;
 
   // Used by rendering template file.
   fileNameReplaceFn?: (name: string, data: Buffer) => string;
@@ -156,6 +160,8 @@ export const fetchTemplateZipFromLocalAction: ScaffoldAction = {
       return;
     }
 
+    context.fallback = true;
+
     if (!context.group) {
       throw new Error(missKeyErrorInfo("group"));
     }
@@ -215,6 +221,13 @@ export async function scaffoldFromTemplates(
   context: ScaffoldContext,
   actions: ScaffoldAction[] = defaultActionSeq
 ): Promise<void> {
+  // To track code templates usage.
+  sendTelemetryEvent(Component.core, TelemetryEvent.ScaffoldFromTemplatesStart, {
+    [TelemetryProperty.TemplateGroup]: context.group ?? "",
+    [TelemetryProperty.TemplateLanguage]: context.lang ?? "",
+    [TelemetryProperty.TemplateScenario]: context.scenario ?? "",
+  });
+
   for (const action of actions) {
     try {
       await context.onActionStart?.(action, context);
@@ -227,4 +240,11 @@ export async function scaffoldFromTemplates(
       await context.onActionError(action, context, e);
     }
   }
+
+  sendTelemetryEvent(Component.core, TelemetryEvent.ScaffoldFromTemplates, {
+    [TelemetryProperty.TemplateGroup]: context.group ?? "",
+    [TelemetryProperty.TemplateLanguage]: context.lang ?? "",
+    [TelemetryProperty.TemplateScenario]: context.scenario ?? "",
+    [TelemetryProperty.TemplateFallback]: context.fallback ? "true" : "false", // Track fallback cases.
+  });
 }

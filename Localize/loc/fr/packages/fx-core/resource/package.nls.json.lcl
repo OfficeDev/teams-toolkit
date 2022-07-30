@@ -2374,6 +2374,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.provision.confirmSubscription" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You are switching away from your previous subscription %s.]A;Do you want to provision resources in %s environment? Azure account (%s) with subscription (%s) will be used to provision the resources. Cost may incur according to the usage.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Vous vous éloignez de votre abonnement précédent %s.]A;Voulez-vous provisionner des ressources dans l’environnement %s ? Le compte Azure (%s) avec abonnement (%s) sera utilisé pour provisionner les ressources. Le coût peut s’appliquer en fonction de l’utilisation.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.provision.failNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[fail to provision '%s' in the cloud!]]></Val>
@@ -2691,10 +2700,13 @@
       </Item>
       <Item ItemId=";error.ActionNotExist" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Action not exist: %s]]></Val>
+          <Val><![CDATA[Action not found: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[L’action n’existe pas : %s]]></Val>
+            <Val><![CDATA[Action introuvable : %s]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Action not exist: %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2703,6 +2715,15 @@
           <Val><![CDATA[Failed to generate bicep file %s. Reason: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Impossible de générer le fichier biceps %s. Les raisons]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.ComponentNotExist" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Component not found: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Composant introuvable : %s]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3723,10 +3744,13 @@
       </Item>
       <Item ItemId=";error.apiConnector.SDKVersionImcompatibleError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[In %s project, @microsoft/teamsfx version %s is not compatible. Please upgrade your package version to %s]]></Val>
+          <Val><![CDATA[In %s project, @microsoft/teamsfx version %s is not compatible. Please upgrade the @microsoft/teamsfx version to %s and retry this feature.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Dans %s projet, %s version @microsoft/teamsfx n’est pas compatible. Mettez à niveau la version de votre package vers %s.]]></Val>
+            <Val><![CDATA[Dans %s projet, %s version @microsoft/teamsfx n’est pas compatible. Mettez à niveau la version @microsoft/teamsfx vers %s et réessayez cette fonctionnalité.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[In %s project, @microsoft/teamsfx version %s is not compatible. Please upgrade your package version to %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3771,6 +3795,24 @@
           <Val><![CDATA[In %s project, there is no package.json exist]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Dans %s projet, il n’existe aucun package.json.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.appstudio.apiFailed" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[API call to Developer Portal failed: %s, %s, Request path: %s, X-Correlation-ID: %s. This may come from some intermittent service error. Please wait for a few minutes and retry the current step.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de l’appel d’API à Developer Portal : %s, %s, chemin de la demande : %s, X-Correlation-ID : %s. Cela peut provenir d’une erreur de service intermittente. Veuillez patienter quelques minutes et réessayer l’étape actuelle.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.appstudio.apiFailed.telemetry" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[API call to Developer Portal failed: %s, %s, API name: %s, X-Correlation-ID: %s. This may come from some intermittent service error. Please wait for a few minutes and retry the current step.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de l’appel d’API à Developer Portal : %s, %s, nom de l’API : %s, X-Correlation-ID : %s. Cela peut provenir d’une erreur intermittente de service. Veuillez patienter quelques minutes et réessayer l’étape actuelle.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3894,19 +3936,25 @@
       </Item>
       <Item ItemId=";error.appstudio.localTeamsAppCreateFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to create local debug teams app in app studio, due to %s, %s]]></Val>
+          <Val><![CDATA[Failed to create local debug Teams app in Developer Portal, due to %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Échec de la création de l’application des équipes de débogage locales dans App Studio, en raison de %s, %s]]></Val>
+            <Val><![CDATA[Échec de la création de l’application Teams de débogage local dans Developer Portal, en raison de %s]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to create local debug teams app in app studio, due to %s, %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";error.appstudio.localTeamsAppUpdateFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to update local debug teams app in app studio, due to %s, %s]]></Val>
+          <Val><![CDATA[Failed to update local debug Teams app in Developer Portal, due to %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Échec de la mise à jour de l’application teams de débogage locale dans App Studio en raison de %s, %s]]></Val>
+            <Val><![CDATA[Échec de la mise à jour de l’application Teams de débogage local dans Developer Portal, en raison de %s]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to update local debug teams app in app studio, due to %s, %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3957,19 +4005,25 @@
       </Item>
       <Item ItemId=";error.appstudio.remoteTeamsAppCreateFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to create remote teams app in app studio, due to %s, %s]]></Val>
+          <Val><![CDATA[Failed to create remote Teams app in Developer Portal, due to %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Échec de la création à distance de l’application teams dans App Studio en raison de %s, %s]]></Val>
+            <Val><![CDATA[Échec de la création de l’application Teams distante dans Developer Portal, en raison de %s]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to create remote teams app in app studio, due to %s, %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";error.appstudio.remoteTeamsAppUpdateFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to update remote teams app in app studio, due to %s, %s]]></Val>
+          <Val><![CDATA[Failed to update remote Teams app in Developer Portal, due to %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Échec de la mise à jour à distance de l’application teams dans App Studio en raison de %s, %s]]></Val>
+            <Val><![CDATA[Échec de la mise à jour de l’application Teams distante dans Developer Portal, en raison de %s]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to update remote teams app in app studio, due to %s, %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3993,10 +4047,13 @@
       </Item>
       <Item ItemId=";error.appstudio.teamsAppCreateFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to create teams app in app studio, due to %s, %s]]></Val>
+          <Val><![CDATA[Failed to create Teams app in Developer Portal, due to %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Échec de la création de l’application Teams dans App Studio en raison de %s, %s]]></Val>
+            <Val><![CDATA[Échec de la création de l’application Teams dans Developer Portal, en raison de %s]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to create teams app in app studio, due to %s, %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -5871,10 +5928,13 @@
       </Item>
       <Item ItemId=";plugins.appstudio.publishProgressUpdate" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Updating app definition for app %s in app studio]]></Val>
+          <Val><![CDATA[Updating app definition for app %s in Developer Portal]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Mise à jour de la définition d’application pour %s d’application dans App Studio]]></Val>
+            <Val><![CDATA[Mise à jour de la définition d’application pour l’application %s dans le portail des développeurs]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Updating app definition for app %s in app studio]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -6048,10 +6108,13 @@
       </Item>
       <Item ItemId=";plugins.bot.AppStudioBotRegistration" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[App Studio bot registration]]></Val>
+          <Val><![CDATA[Developer Portal bot registration]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Inscription du bot App Studio]]></Val>
+            <Val><![CDATA[Enregistrement du bot sur le portail des développeurs]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[App Studio bot registration]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -6219,10 +6282,13 @@
       </Item>
       <Item ItemId=";plugins.bot.FailToCallAppStudioApi" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to call App Studio's api to check AAD application's existence.]]></Val>
+          <Val><![CDATA[Failed to call Developer Portal's api to check AAD application's existence.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Échec de l’appel de l’API d’App Studio pour vérifier l’existence de l’application AAD]]></Val>
+            <Val><![CDATA[Échec de l’appel de l’API de Developer Portal pour vérifier l’existence de l’application AAD.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to call App Studio's api to check AAD application's existence.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

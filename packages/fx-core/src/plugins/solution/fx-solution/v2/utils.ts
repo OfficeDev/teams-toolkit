@@ -15,6 +15,8 @@ import {
   UserError,
   SystemError,
   M365TokenProvider,
+  v3,
+  EnvInfo,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
@@ -197,9 +199,11 @@ export function parseUserName(appStudioToken?: Record<string, unknown>): Result<
 }
 
 export async function checkWhetherLocalDebugM365TenantMatches(
+  envInfo: v3.EnvInfoV3 | EnvInfo | undefined,
   localDebugTenantId?: string,
   m365TokenProvider?: M365TokenProvider,
-  projectPath?: string
+  projectPath?: string,
+  isLegacyEnv?: boolean
 ): Promise<Result<Void, FxError>> {
   if (localDebugTenantId) {
     const appStudioTokenJsonRes = await m365TokenProvider?.getJsonObject({
@@ -219,25 +223,34 @@ export async function checkWhetherLocalDebugM365TenantMatches(
     }
 
     if (maybeM365TenantId.value !== localDebugTenantId) {
-      const localFiles = [".fx/states/state.local.json"];
-
-      // add notification local file if exist
       if (
         projectPath !== undefined &&
         (await fs.pathExists(`${projectPath}/bot/.notification.localstore.json`))
       ) {
-        localFiles.push("bot/.notification.localstore.json");
+        const errorMessage = getLocalizedString(
+          "core.localDebug.tenantConfirmNotice",
+          localDebugTenantId,
+          maybeM365UserAccount.value,
+          "bot/.notification.localstore.json"
+        );
+        return err(
+          new UserError("Solution", SolutionError.CannotLocalDebugInDifferentTenant, errorMessage)
+        );
+      } else if (envInfo) {
+        if (!isLegacyEnv) {
+          const keys = Object.keys(envInfo.state);
+          for (const key of keys) {
+            if (key !== "solution") {
+              delete (envInfo as v3.EnvInfoV3).state[key];
+            }
+          }
+        } else {
+          const keys = (envInfo as EnvInfo).state.keys();
+          for (const key of keys) {
+            (envInfo as EnvInfo).state.delete(key);
+          }
+        }
       }
-
-      const errorMessage = getLocalizedString(
-        "core.localDebug.tenantConfirmNotice",
-        localDebugTenantId,
-        maybeM365UserAccount.value,
-        localFiles.join(", ")
-      );
-      return err(
-        new UserError("Solution", SolutionError.CannotLocalDebugInDifferentTenant, errorMessage)
-      );
     }
   }
 

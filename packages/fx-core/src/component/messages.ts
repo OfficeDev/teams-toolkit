@@ -8,6 +8,7 @@ import {
   PostProvisionProgress,
   ScaffoldProgress,
 } from "../plugins/resource/frontend/resources/steps";
+import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 
 export class ProgressTitles {
   static readonly scaffoldTab = ScaffoldProgress.title;
@@ -34,6 +35,37 @@ export class ProgressMessages {
   static readonly packingCode = ProgressBarConstants.DEPLOY_STEP_ZIP_FOLDER;
   static readonly enableStaticWebsite = PostProvisionProgress.steps.EnableStaticWebsite;
   static readonly provisionBot = ProgressBarConstants.PROVISION_STEP_BOT_REG;
+}
+
+export class ErrorMessage {
+  static readonly programmingLanguageInvalid =
+    "Invalid programming language found in project settings.";
+  public static readonly SomethingIsMissing = (something: string): [string, string] => [
+    getDefaultString("plugins.bot.SomethingIsMissing", something),
+    getLocalizedString("plugins.bot.SomethingIsMissing", something),
+  ];
+  public static readonly SomethingIsNotExisting = (something: string): [string, string] => [
+    getDefaultString("plugins.bot.SomethingNotExisting", something),
+    getLocalizedString("plugins.bot.SomethingNotExisting", something),
+  ];
+  public static readonly WorkingDirIsMissing: [string, string] = [
+    getDefaultString("plugins.bot.WorkingDirMissing"),
+    getLocalizedString("plugins.bot.WorkingDirMissing"),
+  ];
+
+  // Suggestions
+  public static readonly RetryTheCurrentStep = getLocalizedString(
+    "suggestions.retryTheCurrentStep"
+  );
+  public static readonly RecreateTheProject: [string, string] = [
+    getDefaultString("plugins.bot.RecreateProject"),
+    getLocalizedString("plugins.bot.RecreateProject"),
+  ];
+  public static readonly CheckOutputLogAndTryToFix = getLocalizedString(
+    "plugins.bot.CheckLogAndFix"
+  );
+  public static readonly ReopenWorkingDir = (path = ""): string =>
+    getLocalizedString("plugins.bot.CheckPathWriteAccess", path);
 }
 
 export class Plans {
@@ -65,4 +97,9 @@ export class Plans {
     name: "graph.microsoft.com",
     remarks: "update message endpoint in AppStudio",
   });
+  static readonly generateSourceCodeAndConfig = (feature: string): Effect =>
+    `generate source code and config for ${feature} in project settings`;
+  static readonly generateBicepAndConfig = (feature: string): Effect =>
+    `generate bicep and config for ${feature} in project settings`;
+  static readonly addFeature = (feature: string): Effect => `config ${feature} in project settings`;
 }

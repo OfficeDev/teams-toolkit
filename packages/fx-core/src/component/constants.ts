@@ -50,6 +50,12 @@ export const componentToScenario = new Map([
   [ComponentNames.TeamsTab, Scenarios.Tab],
 ]);
 
+export const scenarioToComponent = new Map([
+  [Scenarios.Api, ComponentNames.TeamsApi],
+  [Scenarios.Bot, ComponentNames.TeamsBot],
+  [Scenarios.Tab, ComponentNames.TeamsTab],
+]);
+
 export const ActionNames = {
   provision: "provision",
   configure: "configure",

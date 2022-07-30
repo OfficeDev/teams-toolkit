@@ -3,12 +3,14 @@
 
 import {
   Action,
+  ActionContext,
   assembleError,
   Bicep,
   Component,
   ContextV3,
   Effect,
   err,
+  ErrorHandler,
   FunctionAction,
   FxError,
   getValidationFunction,
@@ -16,6 +18,7 @@ import {
   Inputs,
   InputsWithProjectPath,
   Json,
+  MaybePromise,
   ok,
   ProjectSettingsV3,
   QTreeNode,
@@ -39,8 +42,9 @@ import {
 } from "./utils";
 import { convertToAlphanumericOnly } from "../common/utils";
 import { ActionNotExist, ComponentNotExist } from "./error";
-import { globalVars } from "../core/globalVars";
+import { globalVars, TOOLS } from "../core/globalVars";
 import { TelemetryConstants, Scenarios } from "./constants";
+import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks";
 
 export async function getAction(
   name: string,
@@ -697,37 +701,55 @@ export function getHostingParentComponent(
 }
 
 export async function runAction(
-  actionName: string,
+  action: Action,
   context: ContextV3,
   inputs: InputsWithProjectPath
 ): Promise<Result<undefined, FxError>> {
+  const actionName = getActionName(action);
   context.logProvider.info(
     `------------------------run action: ${actionName} start!------------------------`
   );
   try {
+    // 1. run question model for the whole workflow rooted on action
+    const questionRes = await askActionQuestions(action, context, inputs);
+    if (questionRes.isErr()) return err(questionRes.error);
+
+    // 3. plan action
+    // const planEffects: Effect[] = [];
+    // await planAction(action, context, cloneDeep(inputs), planEffects);
+    // const confirm = await showPlanAndConfirm(
+    //   `action: ${actionName} will do the following changes:`,
+    //   planEffects,
+    //   context,
+    //   inputs
+    // );
+    // if (confirm) {
+    // 4. execute action
+    const execEffects: Effect[] = [];
+    const execRes = await executeAction(action, context, inputs, execEffects);
+    if (execRes.isErr()) return execRes;
+    await showSummary(`${actionName} summary:`, execEffects, context, inputs);
+    // }
+  } catch (e) {
+    return err(assembleError(e));
+  }
+  context.logProvider.info(
+    `------------------------run action: ${actionName} finish!------------------------`
+  );
+  return ok(undefined);
+}
+
+export async function runActionByName(
+  actionName: string,
+  context: ContextV3,
+  inputs: InputsWithProjectPath
+): Promise<Result<undefined, FxError>> {
+  let res: Result<undefined, FxError>;
+  try {
     // 1. find the action body
     const action = await getAction(actionName, context, inputs, true);
     if (action) {
-      // 2. run question model for the whole workflow rooted on action
-      const questionRes = await askActionQuestions(action, context, inputs);
-      if (questionRes.isErr()) return err(questionRes.error);
-
-      // 3. plan action
-      // const planEffects: Effect[] = [];
-      // await planAction(action, context, cloneDeep(inputs), planEffects);
-      // const confirm = await showPlanAndConfirm(
-      //   `action: ${actionName} will do the following changes:`,
-      //   planEffects,
-      //   context,
-      //   inputs
-      // );
-      // if (confirm) {
-      // 4. execute action
-      const execEffects: Effect[] = [];
-      const execRes = await executeAction(action, context, inputs, execEffects);
-      if (execRes.isErr()) return execRes;
-      await showSummary(`${actionName} summary:`, execEffects, context, inputs);
-      // }
+      res = await runAction(action, context, inputs);
     } else {
       return err(
         new SystemError({
@@ -738,10 +760,7 @@ export async function runAction(
       );
     }
   } catch (e) {
-    return err(assembleError(e));
+    res = err(assembleError(e));
   }
-  context.logProvider.info(
-    `------------------------run action: ${actionName} finish!------------------------`
-  );
-  return ok(undefined);
+  return res;
 }

@@ -15,6 +15,7 @@ import HelloWorldTabWithBackend from "../../img/webview/sample/helloWorld-tab-wi
 import HelloWorldBot from "../../img/webview/sample/helloWorld-bot.gif";
 import { Watch, Setting } from "./resources";
 import GraphToolkitContactExporter from "../../img/webview/sample/graph-toolkit-contact-exporter.gif";
+import GraphToolkitOneProductivityHub from "../../img/webview/sample/graph-toolkit-one-productivity-hub.gif";
 import BOTSSO from "../../img/webview/sample/bot-sso.gif";
 import { EventMessages } from "./messages";
 import SampleDetailPage from "./sampleDetailPage";
@@ -40,6 +41,7 @@ const imageMapping: { [p: string]: any } = {
   "graph-connector-app": GraphConnector,
   "adaptive-card-notification": AdaptiveCardNotification,
   "incoming-webhook-notification": IncomingWebhook,
+  "graph-toolkit-one-productivity-hub": GraphToolkitOneProductivityHub,
 };
 
 export default class SampleGallery extends React.Component<any, any> {

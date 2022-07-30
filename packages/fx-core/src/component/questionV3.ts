@@ -39,7 +39,11 @@ import { ComponentName2pluginName } from "./migrate";
 import { readAppManifest } from "./resource/appManifest/utils";
 import { getComponent, getQuestionsV3 } from "./workflow";
 import { STATIC_TABS_MAX_ITEMS } from "../plugins/resource/appstudio/constants";
-import { createHostTypeTriggerQuestion } from "../plugins/resource/bot/question";
+import {
+  createHostTypeTriggerQuestion,
+  getConditionOfNotificationTriggerQuestion,
+  showNotificationTriggerCondition,
+} from "../plugins/resource/bot/question";
 import {
   ApiConnectionOptionItem,
   AzureResourceApimNewUI,
@@ -63,6 +67,21 @@ import { checkWetherProvisionSucceeded } from "../plugins/solution/fx-solution/v
 import { NoCapabilityFoundError } from "../core/error";
 import { ProgrammingLanguageQuestion } from "../core/question";
 import { createContextV3 } from "./utils";
+import { isCLIDotNetEnabled } from "../common/featureFlags";
+import { Runtime } from "../plugins/resource/bot/v2/enum";
+import { getPlatformRuntime } from "../plugins/resource/bot/v2/mapping";
+import { buildQuestionNode } from "./resource/azureSql/questions";
+
+export async function getQuestionsForProvisionV3(
+  ctx: v2.Context,
+  envInfo: v3.EnvInfoV3,
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (inputs.platform === Platform.CLI_HELP) {
+    return ok(buildQuestionNode());
+  }
+  return ok(undefined);
+}
 
 export async function getQuestionsForDeployV3(
   ctx: v2.Context,
@@ -82,6 +101,11 @@ export async function getQuestionsForDeployV3(
     ComponentNames.APIM,
     ComponentNames.AppManifest,
   ];
+
+  if (CLIPlatforms.includes(inputs.platform)) {
+    deployableComponents.push(ComponentNames.AadApp);
+  }
+
   let selectableComponents: string[];
   if (!isDynamicQuestion) {
     selectableComponents = deployableComponents;
@@ -150,10 +174,12 @@ export async function getQuestionsForAddFeatureV3(
     options.push(SingleSignOnOptionItem);
     options.push(ApiConnectionOptionItem);
     options.push(CicdOptionItem);
-    const triggerNode = new QTreeNode(createHostTypeTriggerQuestion(inputs.platform));
-    triggerNode.condition = { equals: NotificationOptionItem.id };
     const addFeatureNode = new QTreeNode(question);
-    addFeatureNode.addChild(triggerNode);
+    const triggerNodeRes = await getNotificationTriggerQuestionNode(inputs);
+    if (triggerNodeRes.isErr()) return err(triggerNodeRes.error);
+    if (triggerNodeRes.value) {
+      addFeatureNode.addChild(triggerNodeRes.value);
+    }
     return ok(addFeatureNode);
   }
   // check capability options
@@ -204,9 +230,11 @@ export async function getQuestionsForAddFeatureV3(
     options.push(CicdOptionItem);
   }
   const addFeatureNode = new QTreeNode(question);
-  const triggerNode = new QTreeNode(createHostTypeTriggerQuestion(inputs.platform));
-  triggerNode.condition = { equals: NotificationOptionItem.id };
-  addFeatureNode.addChild(triggerNode);
+  const triggerNodeRes = await getNotificationTriggerQuestionNode(inputs);
+  if (triggerNodeRes.isErr()) return err(triggerNodeRes.error);
+  if (triggerNodeRes.value) {
+    addFeatureNode.addChild(triggerNodeRes.value);
+  }
   if (!ctx.projectSetting.programmingLanguage) {
     // Language
     const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
@@ -257,9 +285,11 @@ export async function getQuestionsForAddResourceV3(
   // function can always be added
   options.push(AzureResourceFunctionNewUI);
   const addFeatureNode = new QTreeNode(question);
-  const triggerNode = new QTreeNode(createHostTypeTriggerQuestion(inputs.platform));
-  triggerNode.condition = { equals: NotificationOptionItem.id };
-  addFeatureNode.addChild(triggerNode);
+  const triggerNodeRes = await getNotificationTriggerQuestionNode(inputs);
+  if (triggerNodeRes.isErr()) return err(triggerNodeRes.error);
+  if (triggerNodeRes.value) {
+    addFeatureNode.addChild(triggerNodeRes.value);
+  }
   if (!ctx.projectSetting.programmingLanguage) {
     // Language
     const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
@@ -333,4 +363,25 @@ export async function getQuestionsForAddFeatureSubCommand(
     return res;
   }
   return ok(undefined);
+}
+
+export async function getNotificationTriggerQuestionNode(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const res = new QTreeNode({
+    type: "group",
+  });
+  if (isCLIDotNetEnabled()) {
+    Object.values(Runtime).forEach((runtime) => {
+      const node = new QTreeNode(createHostTypeTriggerQuestion(inputs.platform, runtime));
+      node.condition = getConditionOfNotificationTriggerQuestion(runtime);
+      res.addChild(node);
+    });
+  } else {
+    const runtime = getPlatformRuntime(inputs.platform);
+    const node = new QTreeNode(createHostTypeTriggerQuestion(inputs.platform, runtime));
+    res.addChild(node);
+  }
+  res.condition = showNotificationTriggerCondition;
+  return ok(res);
 }

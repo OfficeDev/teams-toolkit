@@ -54,6 +54,7 @@ import {
 import { getAllSolutionPluginsV2 } from "../SolutionPluginContainer";
 import { CoreHookContext } from "../types";
 import { isPreviewFeaturesEnabled, isCLIDotNetEnabled } from "../../common";
+import { getNotificationTriggerQuestionNode } from "../../component/questionV3";
 
 /**
  * This middleware will help to collect input from question flow
@@ -439,6 +440,12 @@ async function getQuestionsForCreateProjectWithoutDotNet(
     if (solutionNodeResult.isErr()) {
       return err(solutionNodeResult.error);
     }
+  } else {
+    const triggerNodeRes = await getNotificationTriggerQuestionNode(inputs);
+    if (triggerNodeRes.isErr()) return err(triggerNodeRes.error);
+    if (triggerNodeRes.value) {
+      capNode.addChild(triggerNodeRes.value);
+    }
   }
   // Language
   const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
@@ -463,11 +470,8 @@ async function getQuestionsForCreateProjectWithoutDotNet(
     capNode.addChild(existingTabEndpoint);
   }
 
-  // for v3, the two questions are implemented in fx.init action's question
-  if (!isV3()) {
-    createNew.addChild(new QTreeNode(QuestionRootFolder));
-    createNew.addChild(new QTreeNode(createAppNameQuestion()));
-  }
+  createNew.addChild(new QTreeNode(QuestionRootFolder));
+  createNew.addChild(new QTreeNode(createAppNameQuestion()));
 
   // create from sample
   const sampleNode = new QTreeNode(SampleSelect);
@@ -511,6 +515,12 @@ async function getQuestionsForCreateProjectWithDotNet(
     );
     if (solutionNodeResult.isErr()) {
       return err(solutionNodeResult.error);
+    }
+  } else {
+    const triggerNodeRes = await getNotificationTriggerQuestionNode(inputs);
+    if (triggerNodeRes.isErr()) return err(triggerNodeRes.error);
+    if (triggerNodeRes.value) {
+      dotnetCapNode.addChild(triggerNodeRes.value);
     }
   }
 

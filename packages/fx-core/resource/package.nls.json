@@ -46,7 +46,7 @@
   "core.generateArmTemplate.failNotice": "'%s' Failed to create ARM template for required Azure services.",
   "core.updateArmTemplate.failNotice": "'%s' Failed to update ARM template for required Azure services.",
   "core.updateArmTemplate.successNotice": "The Azure resource template is updated based on your resource and capability selection.",
-  "core.localDebug.tenantConfirmNotice": "You already run local debug for the Teams app in another tenant '%s'. You can sign out %s and sign in with the matched M365 account to re-use the previous local debug resource. If you really want to switch tenant for local debug, you can delete the local file(s) (%s) and re-run local debug.",
+  "core.localDebug.tenantConfirmNotice": "You already run local debug for the Teams app in another tenant '%s'. If you really want to switch tenant for local debug, you can delete the local file(s) (%s) and re-run local debug.",
   "core.migrationToArmAndMultiEnv.Message": "Teams Toolkit will upgrade your project configuration files to support the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.\nNotice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version, please find Teams Toolkit in Extension and install the version <= 2.10.0",
   "core.migrationToArmAndMultiEnv.SuccessMessage": "Upgrade succeeded. Your project is upgraded to new configuration files.",
   "core.migrationToArmAndMultiEnv.ErrorMessage": "Upgrade Failed. Please check the error message in Output window to troubleshoot and fix. You can also click Learn More for the FAQ and how to upgrade manually.",
@@ -403,7 +403,9 @@
   "error.appstudio.teamsAppCreateFailed": "Failed to create Teams app in Developer Portal, due to %s",
   "error.appstudio.teamsAppUpdateFailed": "Failed to update Teams app with ID %s.",
   "error.appstudio.apiFailed": "API call to Developer Portal failed: %s, %s, Request path: %s, X-Correlation-ID: %s. This may come from some intermittent service error. Please wait for a few minutes and retry the current step.",
+  "_error.appstudio.apiFailed.comment": " This is to describe API call, not need to translate 'X-Correlation-ID'. ",
   "error.appstudio.apiFailed.telemetry": "API call to Developer Portal failed: %s, %s, API name: %s, X-Correlation-ID: %s. This may come from some intermittent service error. Please wait for a few minutes and retry the current step.",
+  "_error.appstudio.apiFailed.telemetry.comment": " This is to describe API call, not need to translate 'X-Correlation-ID'.",
   "error.appstudio.teamsAppNotFound": "Cannot found teams app with id %s",
   "error.appstudio.noAppStudioToken": "Failed to get app studio token.",
   "error.appstudio.invalidManifest": "Failed to parse manifest string, dut to error: %s. This might be caused by invalid configurations. %s",
@@ -885,5 +887,6 @@
   "depChecker.linuxDepsNotFound": "Cannot find @SupportedPackages. Install @SupportedPackages manually and restart Visual Studio Code.",
   "depChecker.linuxDepsNotFoundHelpLinkMessage": "Cannot find @SupportedPackages.\n\nTeams Toolkit requires these dependencies.",
   "error.ActionNotExist": "Action not found: %s",
-  "error.ComponentNotExist": "Component not found: %s"
+  "error.ComponentNotExist": "Component not found: %s",
+  "error.BadComponent": "Component '%s' lacks of property: %s"
 }

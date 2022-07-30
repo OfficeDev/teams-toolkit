@@ -14,7 +14,6 @@ import {
   Result,
   FxError,
   Effect,
-  QTreeNode,
 } from "@microsoft/teamsfx-api";
 import Container from "typedi";
 import {
@@ -33,7 +32,6 @@ import { SqlClient } from "../clients/sql";
 import { loadDatabases, LoadManagementConfig, LoadSqlConfig } from "../config";
 import { Constants, HelpLinks, Telemetry, Message } from "../constants";
 import { ErrorMessage } from "../errors";
-import { adminNameQuestion, adminPasswordQuestion, confirmPasswordQuestion } from "../questions";
 import { SqlResultFactory } from "../results";
 import { parseToken, TokenInfo, UserType } from "../utils/common";
 export class ConfigureActionImplement {
@@ -240,15 +238,5 @@ export class UtilFunctions {
         }
       }
     }
-  }
-
-  static buildQuestionNode() {
-    const sqlNode = new QTreeNode({
-      type: "group",
-    });
-    sqlNode.addChild(new QTreeNode(adminNameQuestion));
-    sqlNode.addChild(new QTreeNode(adminPasswordQuestion));
-    sqlNode.addChild(new QTreeNode(confirmPasswordQuestion));
-    return sqlNode;
   }
 }

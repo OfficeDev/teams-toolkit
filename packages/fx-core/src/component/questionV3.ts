@@ -20,7 +20,7 @@ import {
   v2,
   v3,
 } from "@microsoft/teamsfx-api";
-import Container from "typedi";
+import { Container } from "typedi";
 import { isVSProject } from "../common/projectSettingsHelper";
 import { HelpLinks } from "../common/constants";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
@@ -37,7 +37,7 @@ import { canAddCICDWorkflows } from "../common/tools";
 import { ComponentNames } from "./constants";
 import { ComponentName2pluginName } from "./migrate";
 import { readAppManifest } from "./resource/appManifest/utils";
-import { getComponent, getQuestionsV3 } from "./workflow";
+import { getComponent } from "./workflow";
 import { STATIC_TABS_MAX_ITEMS } from "../plugins/resource/appstudio/constants";
 import {
   createHostTypeTriggerQuestion,

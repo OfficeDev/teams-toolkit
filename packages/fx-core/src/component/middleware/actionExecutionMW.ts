@@ -9,7 +9,6 @@ import {
   FxError,
   InputsWithProjectPath,
   MaybePromise,
-  ok,
   QTreeNode,
   Result,
   SystemError,
@@ -19,7 +18,6 @@ import {
 import { assign } from "lodash";
 import { globalVars, TOOLS } from "../../core/globalVars";
 import { TelemetryConstants } from "../constants";
-import { validateQuestion } from "../workflow";
 
 export interface ActionOption {
   componentName?: string;

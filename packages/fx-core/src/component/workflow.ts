@@ -3,12 +3,14 @@
 
 import {
   Action,
+  ActionContext,
   assembleError,
   Bicep,
   Component,
   ContextV3,
   Effect,
   err,
+  ErrorHandler,
   FunctionAction,
   FxError,
   getValidationFunction,
@@ -16,6 +18,7 @@ import {
   Inputs,
   InputsWithProjectPath,
   Json,
+  MaybePromise,
   ok,
   ProjectSettingsV3,
   QTreeNode,
@@ -39,8 +42,9 @@ import {
 } from "./utils";
 import { convertToAlphanumericOnly } from "../common/utils";
 import { ActionNotExist, ComponentNotExist } from "./error";
-import { globalVars } from "../core/globalVars";
+import { globalVars, TOOLS } from "../core/globalVars";
 import { TelemetryConstants, Scenarios } from "./constants";
+import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks";
 
 export async function getAction(
   name: string,

@@ -600,6 +600,7 @@ export class FxCore implements v3.ICore {
     const res = await runActionByName("fx.provision", context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
+    ctx!.envInfoV3 = context.envInfo;
     return ok(Void);
   }
   _setEnvInfoV2(ctx?: CoreHookContext) {

@@ -3,82 +3,76 @@
 
 import {
   Action,
+  CloudResource,
   ConfigFolderName,
   ContextV3,
   err,
   FunctionAction,
   FxError,
-  GroupAction,
   InputsWithProjectPath,
   MaybePromise,
   ok,
   Platform,
   ProjectSettingsV3,
   ProvisionContextV3,
-  QTreeNode,
   Result,
-  TextInputQuestion,
   UserError,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import path from "path";
 import "reflect-metadata";
-import { Service } from "typedi";
-import { getProjectSettingsPath } from "../core/middleware/projectSettingsLoader";
+import { Container, Service } from "typedi";
 import {
   CoreQuestionNames,
-  createAppNameQuestion,
   ProjectNamePattern,
   QuestionRootFolder,
   ScratchOptionNo,
-  ScratchOptionYes,
 } from "../core/question";
 import { isVSProject, newProjectSettings } from "./../common/projectSettingsHelper";
 import "./bicep";
+import "./code/apiCode";
+import "./code/botCode";
+import "./code/spfxTabCode";
+import "./code/tabCode";
+import "./connection/apimConfig";
+import "./connection/azureFunctionConfig";
+import "./connection/azureWebAppConfig";
 import { configLocalEnvironment, setupLocalEnvironment } from "./debug";
-import "./envManager";
-import "./resource/appManifest/appManifest";
-import "./resource/azureSql";
-import "./resource/aadApp/aadApp";
-import "./resource/azureAppService/azureFunction";
-import "./resource/azureStorage";
-import "./resource/azureAppService/azureWebApp";
-import "./resource/botService";
-import "./resource/keyVault";
-import "./feature/apim";
-import "./resource/apim";
-import "./feature/spfx";
-import "./resource/spfx";
+import { createNewEnv } from "./envManager";
 import "./feature/api";
+import "./feature/apiConnector";
+import "./feature/apim";
 import "./feature/bot";
-import "./feature/sql";
-import "./feature/tab";
 import "./feature/cicd";
 import "./feature/keyVault";
+import "./feature/spfx";
+import "./feature/sql";
 import "./feature/sso";
-import "./feature/apiConnector";
-import "./code/botCode";
-import "./code/tabCode";
-import "./code/apiCode";
-import "./code/spfxTabCode";
-import "./connection/azureWebAppConfig";
-import "./connection/azureFunctionConfig";
-import "./connection/apimConfig";
+import "./feature/tab";
+import "./resource/aadApp/aadApp";
+import "./resource/apim";
+import { AppManifest } from "./resource/appManifest/appManifest";
+import "./resource/azureAppService/azureFunction";
+import "./resource/azureAppService/azureWebApp";
+import "./resource/azureSql";
+import "./resource/azureStorage";
+import "./resource/botService";
+import "./resource/keyVault";
+import "./resource/spfx";
 
-import { AzureResources, ComponentNames } from "./constants";
-import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
-import { getResourceGroupInPortal } from "../common/tools";
-import { getAction, runAction, runActionByName } from "./workflow";
-import { FxPreProvisionAction } from "./fx/preProvisionAction";
-import { pluginName2ComponentName } from "./migrate";
-import { PluginDisplayName } from "../common/constants";
-import { hasAAD, hasBot } from "../common/projectSettingsHelperV3";
-import { getBotTroubleShootMessage } from "../plugins/solution/fx-solution/v2/utils";
-import { getQuestionsForCreateProjectV2 } from "../core/middleware/questionModel";
-import { InvalidInputError } from "../core/error";
-import { globalStateUpdate } from "../common/globalState";
-import { downloadSample } from "../core/downloadSample";
+import { AADApp } from "@microsoft/teamsfx-api/build/v3";
 import * as jsonschema from "jsonschema";
+import { cloneDeep } from "lodash";
+import { PluginDisplayName } from "../common/constants";
+import { globalStateUpdate } from "../common/globalState";
+import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
+import { hasAAD, hasAzureResourceV3, hasBot } from "../common/projectSettingsHelperV3";
+import { getResourceGroupInPortal } from "../common/tools";
+import { downloadSample } from "../core/downloadSample";
+import { InvalidInputError } from "../core/error";
+import { globalVars } from "../core/globalVars";
+import { getQuestionsForCreateProjectV2 } from "../core/middleware/questionModel";
+import arm, { updateResourceBaseName } from "../plugins/solution/fx-solution/arm";
 import {
   ApiConnectionOptionItem,
   AzureResourceApim,
@@ -94,12 +88,27 @@ import {
   TabFeatureIds,
   TabSPFxItem,
 } from "../plugins/solution/fx-solution/question";
-import { getQuestionsForAddFeatureV3, getQuestionsForDeployV3 } from "./questionV3";
+import { resourceGroupHelper } from "../plugins/solution/fx-solution/utils/ResourceGroupHelper";
 import { executeConcurrently } from "../plugins/solution/fx-solution/v2/executor";
-import arm from "../plugins/solution/fx-solution/arm";
-import { askForDeployConsent } from "../plugins/solution/fx-solution/v3/provision";
+import {
+  checkWhetherLocalDebugM365TenantMatches,
+  getBotTroubleShootMessage,
+} from "../plugins/solution/fx-solution/v2/utils";
 import { checkDeployAzureSubscription } from "../plugins/solution/fx-solution/v3/deploy";
-import { cloneDeep } from "lodash";
+import {
+  askForDeployConsent,
+  askForProvisionConsent,
+  fillInAzureConfigs,
+  getM365TenantId,
+} from "../plugins/solution/fx-solution/v3/provision";
+import { AzureResources, ComponentNames } from "./constants";
+import { pluginName2ComponentName } from "./migrate";
+import {
+  getQuestionsForAddFeatureV3,
+  getQuestionsForDeployV3,
+  getQuestionsForProvisionV3,
+} from "./questionV3";
+import { runActionByName } from "./workflow";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -145,7 +154,7 @@ export class TeamsfxCore {
           }
           projectPath = path.join(folder, appName);
           inputs.projectPath = projectPath;
-          const initRes = await runActionByName("fx.init", context, inputs);
+          const initRes = await this.init(context, inputs);
           if (initRes.isErr()) return err(initRes.error);
           const features = inputs.capabilities;
           delete inputs.folder;
@@ -226,73 +235,38 @@ export class TeamsfxCore {
     };
     return ok(action);
   }
-  init(
+  async init(
     context: ContextV3,
+    inputs: InputsWithProjectPath
+  ): Promise<Result<undefined, FxError>> {
+    const projectSettings = newProjectSettings() as ProjectSettingsV3;
+    projectSettings.appName = inputs["app-name"];
+    projectSettings.components = [];
+    context.projectSetting = projectSettings;
+    await fs.ensureDir(inputs.projectPath);
+    await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
+    await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`, "configs"));
+    {
+      const appManifest = Container.get<AppManifest>(ComponentNames.AppManifest);
+      const res = await appManifest.init(context, inputs);
+      if (res.isErr()) return res;
+    }
+    {
+      const res = await createNewEnv(context, inputs);
+      if (res.isErr()) return res;
+    }
+    return ok(undefined);
+  }
+  provision(
+    ctx: ContextV3,
     inputs: InputsWithProjectPath
   ): MaybePromise<Result<Action | undefined, FxError>> {
-    const initProjectSettings: Action = {
-      type: "function",
-      name: "fx.initConfig",
-      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok([
-          {
-            type: "file",
-            operate: "create",
-            filePath: getProjectSettingsPath(inputs.projectPath),
-          },
-        ]);
-      },
-      question: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const root = new QTreeNode({ type: "group" });
-        root.addChild(new QTreeNode(QuestionRootFolder));
-        root.addChild(new QTreeNode(createAppNameQuestion()));
-        return ok(root);
-      },
-      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const projectSettings = newProjectSettings() as ProjectSettingsV3;
-        projectSettings.appName = inputs["app-name"];
-        projectSettings.components = [];
-        context.projectSetting = projectSettings;
-        await fs.ensureDir(inputs.projectPath);
-        await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
-        await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`, "configs"));
-        return ok([
-          {
-            type: "file",
-            operate: "create",
-            filePath: getProjectSettingsPath(inputs.projectPath),
-          },
-        ]);
-      },
-    };
-    const action: Action = {
-      type: "group",
-      name: "fx.init",
-      actions: [
-        initProjectSettings,
-        {
-          type: "call",
-          name: "call:app-manifest.init",
-          targetAction: "app-manifest.init",
-          required: true,
-        },
-        {
-          type: "call",
-          name: "call:env-manager.create",
-          targetAction: "env-manager.create",
-          required: true,
-        },
-      ],
-    };
-    return ok(action);
-  }
-  async provision(
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ): Promise<Result<Action | undefined, FxError>> {
-    const provisionAction: FunctionAction = {
+    const action: FunctionAction = {
       name: "fx.provision",
       type: "function",
+      question: async (context: ContextV3, inputs: InputsWithProjectPath) => {
+        return await getQuestionsForProvisionV3(context, context.envInfo!, inputs);
+      },
       execute: async (context, inputs) => {
         const ctx = context as ProvisionContextV3;
         ctx.envInfo.state.solution = ctx.envInfo.state.solution || {};
@@ -300,12 +274,13 @@ export class TeamsfxCore {
 
         // 1. pre provision
         {
-          const res = await runAction(new FxPreProvisionAction(), context, inputs);
+          const res = await preProvision(ctx, inputs);
           if (res.isErr()) return err(res.error);
         }
         // 2. create a teams app
+        const appManifest = Container.get<AppManifest>(ComponentNames.AppManifest);
         {
-          const res = await runActionByName("app-manifest.provision", context, inputs);
+          const res = await appManifest.provision(ctx, inputs);
           if (res.isErr()) return err(res.error);
         }
 
@@ -313,15 +288,16 @@ export class TeamsfxCore {
         const componentsToProvision = ctx.projectSetting.components.filter((r) => r.provision);
         {
           const thunks = [];
-          for (const component of componentsToProvision) {
-            const action = await getAction(component.name + ".provision", context, inputs, false);
-            if (action) {
+          for (const componentConfig of componentsToProvision) {
+            const componentInstance = Container.get<CloudResource>(componentConfig.name);
+            if (componentInstance.provision) {
               thunks.push({
-                pluginName: `${component.name}`,
+                pluginName: `${componentConfig.name}`,
                 taskName: "provision",
                 thunk: () => {
-                  ctx.envInfo.state[component.name] = ctx.envInfo.state[component.name] || [];
-                  return runAction(action, context, inputs);
+                  ctx.envInfo.state[componentConfig.name] =
+                    ctx.envInfo.state[componentConfig.name] || {};
+                  return componentInstance.provision!(ctx, inputs);
                 },
               });
             }
@@ -362,29 +338,31 @@ export class TeamsfxCore {
         }
 
         // 5.0 "aad-app.setApplicationInContext"
+        const aadApp = Container.get<AADApp>(ComponentNames.AadApp);
         if (hasAAD(ctx.projectSetting)) {
-          const res = await runActionByName("aad-app.setApplicationInContext", context, inputs);
+          const res = await aadApp.setApplicationInContext(ctx, inputs);
           if (res.isErr()) return err(res.error);
         }
         // 5. call resources configure api
         {
           const thunks = [];
-          for (const component of componentsToProvision) {
-            const action = await getAction(component.name + ".configure", context, inputs, false);
-            if (action) {
+          for (const componentConfig of componentsToProvision) {
+            const componentInstance = Container.get<CloudResource>(componentConfig.name);
+            if (componentInstance.configure) {
               thunks.push({
-                pluginName: `${component.name}`,
+                pluginName: `${componentConfig.name}`,
                 taskName: "configure",
                 thunk: () => {
-                  ctx.envInfo.state[component.name] = ctx.envInfo.state[component.name] || [];
-                  return runAction(action, context, inputs);
+                  ctx.envInfo.state[componentConfig.name] =
+                    ctx.envInfo.state[componentConfig.name] || {};
+                  return componentInstance.configure!(ctx, inputs);
                 },
               });
             }
           }
-          const provisionResult = await executeConcurrently(thunks, ctx.logProvider);
-          if (provisionResult.kind !== "success") {
-            return err(provisionResult.error);
+          const configResult = await executeConcurrently(thunks, ctx.logProvider);
+          if (configResult.kind !== "success") {
+            return err(configResult.error);
           }
           ctx.logProvider.info(
             getLocalizedString(
@@ -424,7 +402,7 @@ export class TeamsfxCore {
 
         // 7. update teams app
         {
-          const res = await runActionByName("app-manifest.configure", context, inputs);
+          const res = await appManifest.configure(ctx, inputs);
           if (res.isErr()) return err(res.error);
         }
 
@@ -441,33 +419,40 @@ export class TeamsfxCore {
         return ok([]);
       },
     };
-    return ok(provisionAction);
+    return ok(action);
   }
 
-  build(context: ContextV3, inputs: InputsWithProjectPath): Result<Action | undefined, FxError> {
+  async build(
+    context: ProvisionContextV3,
+    inputs: InputsWithProjectPath
+  ): Promise<Result<undefined, FxError>> {
     const projectSettings = context.projectSetting as ProjectSettingsV3;
-    const actions: Action[] = projectSettings.components
-      .filter((resource) => resource.build)
-      .map((resource) => {
-        const component = resource.code || resource.name;
-        return {
-          name: `call:${component}.build`,
-          type: "call",
-          targetAction: `${component}.build`,
-          required: true,
-        };
-      });
-    const group: Action = {
-      type: "group",
-      name: "fx.build",
-      mode: "parallel",
-      actions: actions,
-    };
-    return ok(group);
+    const thunks = [];
+    for (const component of projectSettings.components) {
+      const componentInstance = Container.get(component.name) as any;
+      if (component.build && componentInstance.build) {
+        thunks.push({
+          pluginName: `${component.name}`,
+          taskName: "build",
+          thunk: () => {
+            const clonedInputs = cloneDeep(inputs);
+            clonedInputs.folder = component.folder;
+            clonedInputs.artifactFolder = component.artifactFolder;
+            clonedInputs.componentId = component.name;
+            return componentInstance.build!(context, clonedInputs);
+          },
+        });
+      }
+    }
+    const result = await executeConcurrently(thunks, context.logProvider);
+    if (result.kind !== "success") {
+      return err(result.error);
+    }
+    return ok(undefined);
   }
 
   deploy(context: ContextV3, inputs: InputsWithProjectPath): Result<Action | undefined, FxError> {
-    const deployAction: FunctionAction = {
+    const action: FunctionAction = {
       name: "fx.deploy",
       type: "function",
       question: async (context: ContextV3, inputs: InputsWithProjectPath) => {
@@ -488,8 +473,7 @@ export class TeamsfxCore {
             component.hosting !== undefined &&
             (isVS || inputComponentNames.includes(component.name))
           ) {
-            const actionName = `${component.hosting}.deploy`;
-            const action = await getAction(actionName, ctx, inputs, true);
+            const componentInstance = Container.get<CloudResource>(component.hosting);
             thunks.push({
               pluginName: `${component.name}`,
               taskName: "deploy",
@@ -497,7 +481,8 @@ export class TeamsfxCore {
                 const clonedInputs = cloneDeep(inputs);
                 clonedInputs.folder = component.folder;
                 clonedInputs.artifactFolder = component.artifactFolder;
-                return runAction(action!, ctx, clonedInputs);
+                clonedInputs.componentId = component.name;
+                return componentInstance.deploy!(ctx, clonedInputs);
               },
             });
             if (AzureResources.includes(component.hosting)) {
@@ -506,11 +491,12 @@ export class TeamsfxCore {
           }
         }
         if (inputComponentNames.includes(ComponentNames.AppManifest)) {
+          const appManifest = Container.get<AppManifest>(ComponentNames.AppManifest);
           thunks.push({
             pluginName: ComponentNames.AppManifest,
             taskName: "deploy",
             thunk: () => {
-              return runActionByName(`${ComponentNames.AppManifest}.configure`, ctx, inputs);
+              return appManifest.configure(ctx, inputs);
             },
           });
         }
@@ -555,7 +541,7 @@ export class TeamsfxCore {
 
         // 3. build
         {
-          const res = await runActionByName("fx.build", context, inputs);
+          const res = await this.build(ctx, inputs);
           if (res.isErr()) return err(res.error);
         }
 
@@ -602,6 +588,98 @@ export class TeamsfxCore {
         }
       },
     };
-    return ok(deployAction);
+    return ok(action);
   }
+}
+
+async function preProvision(
+  context: ContextV3,
+  inputs: InputsWithProjectPath
+): Promise<Result<undefined, FxError>> {
+  const ctx = context as ProvisionContextV3;
+  const envInfo = ctx.envInfo;
+  // 1. check M365 tenant
+  envInfo.state[ComponentNames.AppManifest] = envInfo.state[ComponentNames.AppManifest] || {};
+  envInfo.state.solution = envInfo.state.solution || {};
+  const appManifest = envInfo.state[ComponentNames.AppManifest];
+  const solutionConfig = envInfo.state.solution;
+  solutionConfig.provisionSucceeded = false;
+  const tenantIdInConfig = appManifest.tenantId;
+
+  const isLocalDebug = envInfo.envName === "local";
+  const tenantIdInTokenRes = await getM365TenantId(ctx.tokenProvider.m365TokenProvider);
+  if (tenantIdInTokenRes.isErr()) {
+    return err(tenantIdInTokenRes.error);
+  }
+  const tenantIdInToken = tenantIdInTokenRes.value;
+
+  if (!isLocalDebug) {
+    if (tenantIdInConfig && tenantIdInToken && tenantIdInToken !== tenantIdInConfig) {
+      return err(
+        new UserError(
+          "Solution",
+          "TeamsAppTenantIdNotRight",
+          getLocalizedString("error.M365AccountNotMatch", envInfo.envName)
+        )
+      );
+    }
+    if (!tenantIdInConfig) {
+      appManifest.tenantId = tenantIdInToken;
+      solutionConfig.teamsAppTenantId = tenantIdInToken;
+      globalVars.m365TenantId = tenantIdInToken;
+    }
+  } else {
+    const res = await checkWhetherLocalDebugM365TenantMatches(
+      envInfo,
+      tenantIdInConfig,
+      ctx.tokenProvider.m365TokenProvider,
+      inputs.projectPath
+    );
+    if (res.isErr()) {
+      return err(res.error);
+    }
+    envInfo.state[ComponentNames.AppManifest] = envInfo.state[ComponentNames.AppManifest] || {};
+    envInfo.state[ComponentNames.AppManifest].tenantId = tenantIdInToken;
+    envInfo.state.solution.teamsAppTenantId = tenantIdInToken;
+    globalVars.m365TenantId = tenantIdInToken;
+  }
+
+  // 3. check Azure configs
+  if (hasAzureResourceV3(ctx.projectSetting) && envInfo.envName !== "local") {
+    // ask common question and fill in solution config
+    const solutionConfigRes = await fillInAzureConfigs(ctx, inputs, envInfo, ctx.tokenProvider);
+    if (solutionConfigRes.isErr()) {
+      return err(solutionConfigRes.error);
+    }
+
+    if (!solutionConfigRes.value.hasSwitchedSubscription) {
+      // ask for provision consent
+      const consentResult = await askForProvisionConsent(
+        ctx,
+        ctx.tokenProvider.azureAccountProvider,
+        envInfo
+      );
+      if (consentResult.isErr()) {
+        return err(consentResult.error);
+      }
+    }
+
+    // create resource group if needed
+    if (solutionConfig.needCreateResourceGroup) {
+      const createRgRes = await resourceGroupHelper.createNewResourceGroup(
+        solutionConfig.resourceGroupName,
+        ctx.tokenProvider.azureAccountProvider,
+        solutionConfig.subscriptionId,
+        solutionConfig.location
+      );
+      if (createRgRes.isErr()) {
+        return err(createRgRes.error);
+      }
+    }
+
+    if (solutionConfigRes.value.hasSwitchedSubscription) {
+      updateResourceBaseName(inputs.projectPath, ctx.projectSetting.appName, envInfo.envName);
+    }
+  }
+  return ok(undefined);
 }

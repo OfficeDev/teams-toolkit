@@ -60,6 +60,14 @@ export interface ActionBase {
 }
 
 // @public (undocumented)
+export interface ActionContext {
+    // (undocumented)
+    progressBar?: IProgressHandler;
+    // (undocumented)
+    telemetryProps?: Record<string, string>;
+}
+
+// @public (undocumented)
 export const AdaptiveCardsFolderName = "adaptiveCards";
 
 // @public (undocumented)
@@ -330,21 +338,21 @@ export const CLIPlatforms: Platform[];
 // @public (undocumented)
 export interface CloudResource {
     // (undocumented)
-    configure?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Action | undefined, FxError>>;
+    configure?: (context: ProvisionContextV3, inputs: InputsWithProjectPath, actionContext?: ActionContext) => Promise<Result<undefined, FxError>>;
     // (undocumented)
-    deploy?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Action | undefined, FxError>>;
+    deploy?: (context: ProvisionContextV3, inputs: InputsWithProjectPath, actionContext?: ActionContext) => Promise<Result<undefined, FxError>>;
     // (undocumented)
     readonly description?: string;
     // (undocumented)
     readonly finalOutputKeys: string[];
     // (undocumented)
-    generateBicep?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Action | undefined, FxError>>;
+    generateBicep?: (context: ContextV3, inputs: InputsWithProjectPath, actionContext?: ActionContext) => Promise<Result<Bicep[], FxError>>;
     // (undocumented)
     readonly name: string;
     // (undocumented)
     readonly outputs: ResourceOutputs;
     // (undocumented)
-    provision?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Action | undefined, FxError>>;
+    provision?: (context: ProvisionContextV3, inputs: InputsWithProjectPath, actionContext?: ActionContext) => Promise<Result<undefined, FxError>>;
     // (undocumented)
     readonly secretKeys?: string[];
 }
@@ -1689,18 +1697,6 @@ export interface SolutionSettings extends Json {
     // (undocumented)
     name: string;
     version?: string;
-}
-
-// @public (undocumented)
-export interface SourceCodeProvider {
-    // (undocumented)
-    build?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Action | undefined, FxError>>;
-    // (undocumented)
-    readonly description?: string;
-    // (undocumented)
-    generate: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Action | undefined, FxError>>;
-    // (undocumented)
-    readonly name: string;
 }
 
 // @public (undocumented)

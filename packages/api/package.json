@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-api",
-  "version": "0.20.2",
+  "version": "0.20.3",
   "description": "teamsfx framework api",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -22,7 +22,7 @@
     "postbuild": "npx copyfiles src/schemas/*.json build/schemas/",
     "lint:fix": "eslint \"src/**/*.ts\" \"tests/**/*.ts\" --fix",
     "doc": "typedoc",
-    "test:unit": "nyc --no-clean mocha --no-timeouts --require ts-node/register \"tests/**/*.ts\" && npx codecov",
+    "test:unit": "nyc --no-clean mocha --no-timeouts --require ts-node/register \"tests/**/*.ts\" ",
     "prepublishOnly": "npm run test:unit && npm run build",
     "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
     "precommit": "npm run check-sensitive && lint-staged"
@@ -60,7 +60,7 @@
   "dependencies": {
     "@azure/core-http": "^1.2.2",
     "@azure/ms-rest-nodeauth": "^3.1.1",
-    "@microsoft/teams-manifest": "^0.0.5",
+    "@microsoft/teams-manifest": "^0.0.6",
     "@types/fs-extra": "^9.0.10",
     "axios": "^0.21.2",
     "chai": "^4.3.4",

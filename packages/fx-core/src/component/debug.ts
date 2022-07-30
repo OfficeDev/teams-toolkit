@@ -2,15 +2,12 @@
 // Licensed under the MIT license.
 
 import {
-  Action,
   ContextV3,
   err,
   FxError,
   InputsWithProjectPath,
-  MaybePromise,
   ok,
   Platform,
-  ProvisionContextV3,
   Result,
   v3,
   VsCodeEnv,
@@ -63,78 +60,6 @@ import * as TasksNext from "../plugins/solution/fx-solution/debug/util/tasksNext
 import * as Settings from "../plugins/solution/fx-solution/debug/util/settings";
 import fs from "fs-extra";
 import { updateJson, useNewTasks } from "../plugins/solution/fx-solution/debug/scaffolding";
-import { createFilesEffects } from "./utils";
-@Service("debug")
-export class DebugComponent {
-  readonly name = "debug";
-  setupLocalEnvInfo(
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const action: Action = {
-      name: "debug.setupLocalEnvInfo",
-      type: "function",
-      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const ctx = context as ProvisionContextV3;
-        const localEnvSetupResult = await setupLocalEnvironment(ctx, inputs, ctx.envInfo);
-        if (localEnvSetupResult.isErr()) {
-          return err(localEnvSetupResult.error);
-        }
-        return ok([]);
-      },
-    };
-    return ok(action);
-  }
-  configLocalEnvInfo(
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const action: Action = {
-      type: "function",
-      name: "debug.configLocalEnvInfo",
-      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok([]);
-      },
-      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const ctx = context as ProvisionContextV3;
-        const localConfigResult = await configLocalEnvironment(ctx, inputs, ctx.envInfo);
-        if (localConfigResult.isErr()) {
-          return err(localConfigResult.error);
-        }
-        return ok([]);
-      },
-    };
-    return ok(action);
-  }
-  generateLocalDebugSettings(
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const action: Action = {
-      type: "function",
-      name: "debug.generateLocalDebugSettings",
-      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const files = [
-          `${inputs.projectPath}/.vscode/launch.json`,
-          `${inputs.projectPath}/.vscode/tasks.json`,
-        ];
-        return ok(createFilesEffects(files, "replace"));
-      },
-      execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const res = await generateLocalDebugSettings(context, inputs);
-        if (res.isErr()) {
-          return err(res.error);
-        }
-        const files = [
-          `${inputs.projectPath}/.vscode/launch.json`,
-          `${inputs.projectPath}/.vscode/tasks.json`,
-        ];
-        return ok(createFilesEffects(files, "replace"));
-      },
-    };
-    return ok(action);
-  }
-}
 
 export async function setupLocalEnvironment(
   ctx: ContextV3,

@@ -7,19 +7,35 @@ on:
       - dev
       - ga
       - hotfix/**/*
-
+  push:
+    branches:
+      - main
+      - dev
+      - ga
+      - hotfix/**/*
+ 
 jobs:
   unit-test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout-pr
+        if: ${{ github.event_name == 'pull_request' }}
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
           ref: ${{ github.head_ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
 
+      - name: Checkout
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref_name }}
+          repository: ${{ github.repository }}
+
       - name: Merge Branches
+        if: ${{ github.event_name == 'pull_request' }}
         run: |
           git config --global user.email "bot@user.noreply.github.com"
           git config --global user.name "bot"
@@ -36,7 +52,7 @@ jobs:
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.x
+          dotnet-version: 3.1.x 
 
       - name: Setup project
         run: |
@@ -45,3 +61,4 @@ jobs:
       - name: Unit Test
         run: |
           xvfb-run -a npx lerna run test:unit --stream
+          npx codecov

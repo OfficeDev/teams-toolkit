@@ -70,6 +70,18 @@ import { createContextV3 } from "./utils";
 import { isCLIDotNetEnabled } from "../common/featureFlags";
 import { Runtime } from "../plugins/resource/bot/v2/enum";
 import { getPlatformRuntime } from "../plugins/resource/bot/v2/mapping";
+import { buildQuestionNode } from "./resource/azureSql/questions";
+
+export async function getQuestionsForProvisionV3(
+  ctx: v2.Context,
+  envInfo: v3.EnvInfoV3,
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (inputs.platform === Platform.CLI_HELP) {
+    return ok(buildQuestionNode());
+  }
+  return ok(undefined);
+}
 
 export async function getQuestionsForDeployV3(
   ctx: v2.Context,
@@ -89,6 +101,11 @@ export async function getQuestionsForDeployV3(
     ComponentNames.APIM,
     ComponentNames.AppManifest,
   ];
+
+  if (CLIPlatforms.includes(inputs.platform)) {
+    deployableComponents.push(ComponentNames.AadApp);
+  }
+
   let selectableComponents: string[];
   if (!isDynamicQuestion) {
     selectableComponents = deployableComponents;

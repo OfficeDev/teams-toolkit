@@ -114,7 +114,7 @@ export default class Provision extends YargsCommand {
       inputs.targetResourceGroupName = args[this.resourceGroupParam];
     }
 
-    const result = await activate(rootFolder);
+    const result = await activate(rootFolder, true);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Provision, result.error);
       return err(result.error);

@@ -1089,9 +1089,11 @@ export class TeamsAppSolution implements Solution {
         LocalSettingsTeamsAppKeys.TenantId
       );
       const m365TenantMatches = await checkWhetherLocalDebugM365TenantMatches(
+        ctx.envInfo,
         localDebugTenantId,
         ctx.m365TokenProvider,
-        ctx.root
+        ctx.root,
+        true
       );
       if (m365TenantMatches.isErr()) {
         return m365TenantMatches;

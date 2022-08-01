@@ -40,7 +40,7 @@ import { Container } from "typedi";
 import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
 import { getTemplatesFolder } from "../../../../folder";
 import { getLocalizedString } from "../../../../common/localizeUtils";
-import { isAadManifestEnabled } from "./../../../../common/tools";
+import { isAadManifestEnabled, isSPFxProject } from "./../../../../common/tools";
 
 export async function scaffoldSourceCode(
   ctx: v2.Context,
@@ -107,7 +107,7 @@ export async function scaffoldSourceCode(
           ctx.projectSetting?.programmingLanguage ?? "",
         [SolutionTelemetryProperty.HostType]: "azure",
       });
-    } else {
+    } else if (isSPFxProject(ctx.projectSetting)) {
       //For SPFx plugin, execute it alone lastly
       if (SPFxPlugin.scaffoldSourceCode) {
         const spfxRes = await SPFxPlugin.scaffoldSourceCode(ctx, inputs);

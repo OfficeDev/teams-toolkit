@@ -11,6 +11,7 @@ import {
   Void,
   err,
   QTreeNode,
+  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
 import { isOfficeAddinEnabled } from "../../../common";
@@ -31,6 +32,7 @@ import * as childProcess from "child_process";
 import { promisify } from "util";
 import { CopyFileError } from "../../../core/error";
 import _ from "lodash";
+import { HostTypeOptionOfficeAddin } from "../../solution";
 
 const childProcessExec = promisify(childProcess.exec);
 
@@ -39,8 +41,9 @@ export class OfficeAddinPlugin implements v2.ResourcePlugin {
   name = "fx-resource-office-addin";
   displayName = "Office Addin";
 
-  activate(_projectSettings: ProjectSettings): boolean {
-    return isOfficeAddinEnabled();
+  activate(projectSettings: ProjectSettings): boolean {
+    const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
+    return isOfficeAddinEnabled() && solutionSettings.hostType === HostTypeOptionOfficeAddin.id;
   }
 
   async scaffoldSourceCode(ctx: v2.Context, inputs: Inputs): Promise<Result<Void, FxError>> {

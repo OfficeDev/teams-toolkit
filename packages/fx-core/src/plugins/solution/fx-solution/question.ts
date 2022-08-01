@@ -203,6 +203,12 @@ export const HostTypeOptionSPFx: OptionItem = {
   cliName: "spfx",
 };
 
+export const HostTypeOptionOfficeAddin: OptionItem = {
+  id: "OfficeAddin",
+  label: "Office Add-in",
+  cliName: "office-addin",
+};
+
 export const AzureResourceSQL: OptionItem = {
   id: "sql",
   label: getLocalizedString("core.AzureResourceSQL.label"),

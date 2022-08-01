@@ -7,6 +7,7 @@ import {
   AzureResourceFunction,
   BotOptionItem,
   HostTypeOptionAzure,
+  HostTypeOptionOfficeAddin,
   HostTypeOptionSPFx,
   MessageExtensionItem,
   OfficeAddinItem,
@@ -32,7 +33,8 @@ export class ProjectSettingsHelper {
     const solutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
     const cap = solutionSettings?.capabilities || [];
     return (
-      solutionSettings?.hostType === HostTypeOptionAzure.id && cap.includes(OfficeAddinItem.id)
+      solutionSettings?.hostType === HostTypeOptionOfficeAddin.id &&
+      cap.includes(OfficeAddinItem.id)
     );
   }
 

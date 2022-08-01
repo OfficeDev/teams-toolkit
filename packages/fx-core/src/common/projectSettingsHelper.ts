@@ -16,6 +16,7 @@ import {
   TabOptionItem,
   TabSPFxItem,
   OfficeAddinItem,
+  HostTypeOptionOfficeAddin,
 } from "../plugins/solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import * as uuid from "uuid";
@@ -149,4 +150,12 @@ export function newProjectSettings(): ProjectSettings {
 }
 export function isVSProject(projectSettings?: ProjectSettings): boolean {
   return projectSettings?.programmingLanguage === "csharp";
+}
+
+export function isOfficeAddinProject(projectSettings?: ProjectSettings): boolean {
+  if (!projectSettings) {
+    return false;
+  }
+  const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
+  return solutionSettings.hostType === HostTypeOptionOfficeAddin.id;
 }

@@ -35,6 +35,7 @@ import {
   BotScenario,
   CommandAndResponseOptionItem,
   HostTypeOptionAzure,
+  HostTypeOptionOfficeAddin,
   HostTypeOptionSPFx,
   M365SearchAppOptionItem,
   M365SsoLaunchPageOptionItem,
@@ -123,12 +124,7 @@ export function setActivatedResourcePluginsV2(projectSettings: ProjectSettings):
     // TODO: avoid hard coding activeResourcePlugins when we know how office addin co-exists
     // with existing resources.
     if (projectSettings.solutionSettings) {
-      projectSettings.solutionSettings.activeResourcePlugins = [
-        "fx-resource-office-addin",
-        "fx-resource-local-debug",
-        "fx-resource-frontend-hosting",
-        "fx-resource-appstudio",
-      ];
+      projectSettings.solutionSettings.activeResourcePlugins = ["fx-resource-office-addin"];
     }
     return;
   }
@@ -337,8 +333,8 @@ export function fillInSolutionSettings(
   } else if (isOfficeAddinEnabled() && capabilities.includes(OfficeAddinItem.id)) {
     // Hard code Tab here, so that createEnv can pass.
     // Needs to be changed once we figure out how office addin works with other resources.
-    capabilities = [OfficeAddinItem.id, TabOptionItem.id];
-    hostType = HostTypeOptionAzure.id;
+    capabilities = [OfficeAddinItem.id];
+    hostType = HostTypeOptionOfficeAddin.id;
   }
   if (!hostType) {
     return err(

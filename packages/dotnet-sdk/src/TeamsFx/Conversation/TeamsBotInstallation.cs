@@ -79,25 +79,32 @@ namespace Microsoft.TeamsFx.Conversation
         public NotificationTargetType Type { get; private set; }
 
         /// <inheritdoc/>
-        public Task SendMessage(string message, CancellationToken cancellationToken = default)
+        public async Task<MessageResponse> SendMessage(string message, CancellationToken cancellationToken = default)
         {
-            return Adapter.ContinueConversationAsync
+            var response = new MessageResponse();
+            await Adapter.ContinueConversationAsync
             (
                 BotAppId,
                 ConversationReference,
-                (context, ct) => context.SendActivityAsync(message, cancellationToken: ct),
+                async (context, ct) => {
+                    var res = await context.SendActivityAsync(message, cancellationToken: ct).ConfigureAwait(false);
+                    response.Id = res?.Id;
+                },
                 cancellationToken
-            );
+            ).ConfigureAwait(false);
+            return response;
         }
 
         /// <inheritdoc/>
-        public Task SendAdaptiveCard(object card, CancellationToken cancellationToken = default)
+        public async Task<MessageResponse> SendAdaptiveCard(object card, CancellationToken cancellationToken = default)
         {
-            return Adapter.ContinueConversationAsync
+            var response = new MessageResponse();
+            await Adapter.ContinueConversationAsync
             (
                 BotAppId,
                 ConversationReference,
-                (context, ct) => context.SendActivityAsync
+                async (context, ct) => {
+                    var res = await context.SendActivityAsync
                     (
                         MessageFactory.Attachment
                         (
@@ -107,9 +114,12 @@ namespace Microsoft.TeamsFx.Conversation
                             }
                         ),
                         cancellationToken: ct
-                    ),
+                    ).ConfigureAwait(false);
+                    response.Id = res?.Id;
+                },
                 cancellationToken
-            );
+            ).ConfigureAwait(false);
+            return response;
         }
 
         /// <summary>
@@ -124,8 +134,7 @@ namespace Microsoft.TeamsFx.Conversation
             (
                 BotAppId,
                 ConversationReference,
-                async (context, ct) =>
-                {
+                async (context, ct) => {
                     var teamId = context.GetTeamsBotInstallationId();
                     if (teamId != null)
                     {
@@ -159,8 +168,7 @@ namespace Microsoft.TeamsFx.Conversation
             (
                 BotAppId,
                 ConversationReference,
-                async (context, ct) =>
-                {
+                async (context, ct) => {
                     string continuationToken = null;
                     do
                     {

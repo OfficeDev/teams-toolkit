@@ -43,9 +43,10 @@
         public NotificationTargetType Type { get => NotificationTargetType.Channel; }
 
         /// <inheritdoc/>
-        public Task SendMessage(string message, CancellationToken cancellationToken = default)
+        public async Task<MessageResponse> SendMessage(string message, CancellationToken cancellationToken = default)
         {
-            return Parent.Adapter.ContinueConversationAsync
+            var response = new MessageResponse();
+            await Parent.Adapter.ContinueConversationAsync
             (
                 Parent.BotAppId,
                 Parent.ConversationReference,
@@ -55,18 +56,23 @@
                     (
                         Parent.BotAppId,
                         conversation,
-                        (context2, ct2) => context2.SendActivityAsync(message, cancellationToken: ct2),
+                        async (context2, ct2) => {
+                            var res = await context2.SendActivityAsync(message, cancellationToken: ct2).ConfigureAwait(false);
+                            response.Id = res?.Id;
+                        },
                         ct1
                     ).ConfigureAwait(false);
                 },
                 cancellationToken
-            );
+            ).ConfigureAwait(false);
+            return response;
         }
 
         /// <inheritdoc/>
-        public Task SendAdaptiveCard(object card, CancellationToken cancellationToken = default)
+        public async Task<MessageResponse> SendAdaptiveCard(object card, CancellationToken cancellationToken = default)
         {
-            return Parent.Adapter.ContinueConversationAsync
+            var response = new MessageResponse();
+            await Parent.Adapter.ContinueConversationAsync
             (
                 Parent.BotAppId,
                 Parent.ConversationReference,
@@ -76,21 +82,26 @@
                     (
                         Parent.BotAppId,
                         conversation,
-                        (context2, ct2) => context2.SendActivityAsync
-                        (
-                            MessageFactory.Attachment
+                        async (context2, ct2) => {
+                            var res = await context2.SendActivityAsync
                             (
-                                new Attachment {
-                                    ContentType = "application/vnd.microsoft.card.adaptive",
-                                    Content = card,
-                                }
-                            ),
-                            cancellationToken: ct2),
+                                MessageFactory.Attachment
+                                (
+                                    new Attachment {
+                                        ContentType = "application/vnd.microsoft.card.adaptive",
+                                        Content = card,
+                                    }
+                                ),
+                                cancellationToken: ct2
+                            ).ConfigureAwait(false);
+                            response.Id = res?.Id;
+                        },
                         ct1
                     ).ConfigureAwait(false);
                 },
                 cancellationToken
-            );
+            ).ConfigureAwait(false);
+            return response;
         }
 
         private ConversationReference NewConversation(ITurnContext context)

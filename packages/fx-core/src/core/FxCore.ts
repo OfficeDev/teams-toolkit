@@ -703,6 +703,7 @@ export class FxCore implements v3.ICore {
     inputs: v2.InputsWithProjectPath,
     ctx?: CoreHookContext
   ): Promise<Result<Void, FxError>> {
+    inputs.stage = Stage.addFeature;
     const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
     const fx = Container.get("fx") as TeamsfxCore;
     const res = await fx.addFeature(context, inputs as InputsWithProjectPath);
@@ -834,9 +835,11 @@ export class FxCore implements v3.ICore {
       const component = Container.get("api-connector") as any;
       res = await component.add(context, inputs as InputsWithProjectPath);
     } else if (func.method === "addSso") {
+      inputs.stage = Stage.addFeature;
       const component = Container.get("sso") as any;
       res = await component.add(context, inputs as InputsWithProjectPath);
     } else if (func.method === "addFeature") {
+      inputs.stage = Stage.addFeature;
       const fx = Container.get("fx") as TeamsfxCore;
       res = await fx.addFeature(context, inputs as InputsWithProjectPath);
     }

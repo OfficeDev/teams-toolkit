@@ -48,6 +48,7 @@ import { FunctionScaffold } from "../../src/plugins/resource/function/ops/scaffo
 import { TeamsfxCore } from "../../src/component/core";
 import Container from "typedi";
 import { AzureStorageResource } from "../../src/component/resource/azureStorage";
+import mockedEnv, { RestoreFn } from "mocked-env";
 describe("Workflow test for v3", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -56,12 +57,15 @@ describe("Workflow test for v3", () => {
   const projectPath = path.join(os.homedir(), "TeamsApps", appName);
   const context = createContextV3();
   const fx = Container.get<TeamsfxCore>("fx");
+  let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
+    mockedEnvRestore = mockedEnv({ SWITCH_ACCOUNT: "false" });
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
   });
 
   afterEach(() => {
     sandbox.restore();
+    mockedEnvRestore();
   });
 
   after(async () => {
@@ -246,6 +250,8 @@ describe("Workflow test for v3", () => {
   });
 
   it("fx.provision after switching subscription", async () => {
+    const newParam = { SWITCH_ACCOUNT: "true" };
+    mockedEnvRestore = mockedEnv(newParam);
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
     sandbox
@@ -314,9 +320,12 @@ describe("Workflow test for v3", () => {
       console.log(provisionRes.error);
     }
     assert.isTrue(provisionRes.isOk());
+    mockedEnvRestore();
   });
 
   it("fx.provision local debug after switching m365 tenant", async () => {
+    const newParam = { SWITCH_ACCOUNT: "true" };
+    mockedEnvRestore = mockedEnv(newParam);
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
     sandbox

@@ -31,7 +31,7 @@ import { TelemetryHelper } from "../../plugins/resource/function/utils/telemetry
 import { Logger } from "../../plugins/resource/function/utils/logger";
 import { funcDepsLogger } from "../../plugins/resource/function/utils/depsChecker/funcPluginLogger";
 import { funcDepsTelemetry } from "../../plugins/resource/function/utils/depsChecker/funcPluginTelemetry";
-import { LinuxNotSupportedError } from "../../common";
+import { LinuxNotSupportedError } from "../../common/deps-checker/depsError";
 import { InfoMessages } from "../../plugins/resource/function/resources/message";
 /**
  * api scaffold

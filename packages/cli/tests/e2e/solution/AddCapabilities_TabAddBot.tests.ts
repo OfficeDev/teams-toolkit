@@ -55,7 +55,7 @@ describe("Add capabilities", function () {
       await validateTabAndBotProjectProvision(projectPath, env);
     });
 
-    it("tab project can add message extension capability and provision", async () => {
+    it(`tab project can add message extension capability and provision (v3=${v3flag})`, async () => {
       mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: v3flag });
       appName = getUniqueAppName();
       projectPath = path.resolve(testFolder, appName);

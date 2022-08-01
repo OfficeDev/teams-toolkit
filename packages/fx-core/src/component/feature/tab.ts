@@ -43,6 +43,8 @@ import { IdentityResource } from "../resource/identity";
 import { generateLocalDebugSettings } from "../debug";
 import { AppManifest } from "../resource/appManifest/appManifest";
 import { FRONTEND_INDEX_PATH } from "../../plugins/resource/appstudio/constants";
+import { ActionExecutionMW } from "../middleware/actionExecutionMW";
+import { hooks } from "@feathersjs/hooks/lib";
 
 @Service("teams-tab")
 export class TeamsTab {
@@ -54,6 +56,16 @@ export class TeamsTab {
     const action: FunctionAction = {
       name: "teams-tab.add",
       type: "function",
+      errorSource: "tab",
+      errorHandler: (error) => {
+        if (error && !error?.name) {
+          error.name = "addTabError";
+        }
+        return error as FxError;
+      },
+      plan: (context, inputs) => {
+        return ok([Plans.addFeature("Tab")]);
+      },
       execute: async (context, inputs) => {
         const projectSettings = context.projectSetting;
         const effects = [];
@@ -194,48 +206,50 @@ export class TeamsTab {
     };
     return ok(action);
   }
-  provision(): MaybePromise<Result<Action | undefined, FxError>> {
-    return ok(provisionTab);
-  }
-  configure(): MaybePromise<Result<Action | undefined, FxError>> {
-    return ok(configureTab);
-  }
-  build(): MaybePromise<Result<Action | undefined, FxError>> {
-    return ok(buildTab);
-  }
-}
 
-const provisionTab: FunctionAction = {
-  name: "teams-tab.provision",
-  type: "function",
-  execute: async (context, inputs) => {
-    if (context.envInfo?.envName === "local") {
+  @hooks([
+    ActionExecutionMW({
+      errorSource: "FE",
+    }),
+  ])
+  async provision(
+    context: ProvisionContextV3,
+    inputs: InputsWithProjectPath
+  ): Promise<Result<undefined, FxError>> {
+    if (context.envInfo.envName === "local") {
       context.envInfo.state[ComponentNames.TeamsTab]?.set(
         FRONTEND_INDEX_PATH,
         Constants.FrontendIndexPath
       );
     }
-    return ok([]);
-  },
-};
-
-const configureTab: FunctionAction = {
-  name: "teams-tab.configure",
-  type: "function",
-  execute: async (context, inputs) => {
-    const tabCode = Container.get(ComponentNames.TabCode) as TabCodeProvider;
+    return ok(undefined);
+  }
+  @hooks([
+    ActionExecutionMW({
+      errorSource: "FE",
+    }),
+  ])
+  async configure(
+    context: ProvisionContextV3,
+    inputs: InputsWithProjectPath
+  ): Promise<Result<undefined, FxError>> {
+    const tabCode = new TabCodeProvider();
     const res = await tabCode.configure(context as ProvisionContextV3, inputs);
     if (res.isErr()) return err(res.error);
-    return ok([]);
-  },
-};
-const buildTab: FunctionAction = {
-  name: "teams-tab.build",
-  type: "function",
-  execute: async (context, inputs) => {
-    const tabCode = Container.get(ComponentNames.TabCode) as TabCodeProvider;
-    const res = await tabCode.build(context as ProvisionContextV3, inputs);
+    return ok(undefined);
+  }
+  @hooks([
+    ActionExecutionMW({
+      errorSource: "FE",
+    }),
+  ])
+  async build(
+    context: ProvisionContextV3,
+    inputs: InputsWithProjectPath
+  ): Promise<Result<undefined, FxError>> {
+    const tabCode = new TabCodeProvider();
+    const res = await tabCode.build(context, inputs);
     if (res.isErr()) return err(res.error);
-    return ok([]);
-  },
-};
+    return ok(undefined);
+  }
+}

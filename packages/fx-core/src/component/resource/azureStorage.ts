@@ -31,6 +31,7 @@ import { ComponentNames, StorageOutputs } from "../constants";
 import { ProgressMessages, ProgressTitles } from "../messages";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
+import { CheckThrowSomethingMissing } from "../error";
 @Service("azure-storage")
 export class AzureStorageResource extends AzureResource {
   readonly name = "azure-storage";
@@ -57,7 +58,7 @@ export class AzureStorageResource extends AzureResource {
   ): Promise<Result<undefined, FxError>> {
     const ctx = context as ProvisionContextV3;
     if (context.envInfo.envName !== "local") {
-      const frontendConfigRes = await buildFrontendConfig(
+      const frontendConfigRes = await this.buildFrontendConfig(
         ctx.envInfo,
         ComponentNames.TeamsTab,
         ctx.tokenProvider.azureAccountProvider
@@ -69,7 +70,7 @@ export class AzureStorageResource extends AzureResource {
       const client = new AzureStorageClient(frontendConfigRes.value);
       await client.enableStaticWebsite();
     } else {
-      actionContext?.progressBar?.next(ProgressMessages.enableStaticWebsite);
+      actionContext?.progressBar?.next("");
     }
     return ok(undefined);
   }
@@ -93,7 +94,7 @@ export class AzureStorageResource extends AzureResource {
   ): Promise<Result<undefined, FxError>> {
     const ctx = context as ProvisionContextV3;
     const deployDir = path.resolve(inputs.projectPath, inputs.folder);
-    const frontendConfigRes = await buildFrontendConfig(
+    const frontendConfigRes = await this.buildFrontendConfig(
       ctx.envInfo,
       inputs.componentId,
       ctx.tokenProvider.azureAccountProvider
@@ -111,34 +112,29 @@ export class AzureStorageResource extends AzureResource {
     );
     return ok(undefined);
   }
-}
 
-async function buildFrontendConfig(
-  envInfo: v3.EnvInfoV3,
-  scenario: string,
-  tokenProvider: AzureAccountProvider
-): Promise<Result<FrontendConfig, FxError>> {
-  const credentials = await tokenProvider.getAccountCredentialAsync();
-  if (!credentials) {
-    return err(new UnauthenticatedError());
-  }
-  const storage = envInfo.state[scenario];
-  const resourceId = storage?.storageResourceId;
-  if (!resourceId) {
-    return err(
-      new UserError({
-        source: "azure-storage",
-        name: "StateValueMissingError",
-        message: "Missing resourceId for storage",
-      })
+  private async buildFrontendConfig(
+    envInfo: v3.EnvInfoV3,
+    scenario: string,
+    tokenProvider: AzureAccountProvider
+  ): Promise<Result<FrontendConfig, FxError>> {
+    const credentials = await tokenProvider.getAccountCredentialAsync();
+    if (!credentials) {
+      return err(new UnauthenticatedError());
+    }
+    const storage = envInfo.state[scenario];
+    const resourceId = CheckThrowSomethingMissing<string>(
+      this.name,
+      "storageResourceId",
+      storage?.storageResourceId
     );
+    const frontendConfig = new FrontendConfig(
+      getSubscriptionIdFromResourceId(resourceId),
+      getResourceGroupNameFromResourceId(resourceId),
+      (envInfo.state.solution as v3.AzureSolutionConfig).location,
+      getStorageAccountNameFromResourceId(resourceId),
+      credentials
+    );
+    return ok(frontendConfig);
   }
-  const frontendConfig = new FrontendConfig(
-    getSubscriptionIdFromResourceId(resourceId),
-    getResourceGroupNameFromResourceId(resourceId),
-    (envInfo.state.solution as v3.AzureSolutionConfig).location,
-    getStorageAccountNameFromResourceId(resourceId),
-    credentials
-  );
-  return ok(frontendConfig);
 }

@@ -13,6 +13,7 @@ import {
   InputsWithProjectPath,
   MaybePromise,
   ok,
+  ProvisionContextV3,
   QTreeNode,
   Result,
   Stage,
@@ -38,6 +39,7 @@ import { BicepComponent } from "../bicep";
 import { ApiCodeProvider } from "../code/apiCode";
 import { ComponentNames, Scenarios } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
+import { Plans } from "../messages";
 import { AzureFunctionResource } from "../resource/azureAppService/azureFunction";
 import { generateConfigBiceps, bicepUtils } from "../utils";
 import { getComponent } from "../workflow";
@@ -53,9 +55,19 @@ export class TeamsApi {
     const action: FunctionAction = {
       name: "teams-api.add",
       type: "function",
+      errorSource: "bot",
+      errorHandler: (error) => {
+        if (error && !error?.name) {
+          error.name = "addBotError";
+        }
+        return error as FxError;
+      },
       question: (context: ContextV3, inputs: InputsWithProjectPath) => {
         functionNameQuestion.validation = getFunctionNameQuestionValidation(context, inputs);
         return ok(new QTreeNode(functionNameQuestion));
+      },
+      plan: (context, inputs) => {
+        return ok([Plans.addFeature("Api")]);
       },
       execute: async (context, inputs) => {
         const projectSettings = context.projectSetting;
@@ -154,20 +166,13 @@ export class TeamsApi {
     return ok(action);
   }
   async build(
-    context: ContextV3,
+    context: ProvisionContextV3,
     inputs: InputsWithProjectPath
-  ): Promise<Result<Action | undefined, FxError>> {
-    const action: FunctionAction = {
-      name: "teams-api.build",
-      type: "function",
-      execute: async (context, inputs) => {
-        const apiCode = Container.get<ApiCodeProvider>(ComponentNames.ApiCode);
-        const res = await apiCode.build(context, inputs);
-        if (res.isErr()) return err(res.error);
-        return ok([]);
-      },
-    };
-    return ok(action);
+  ): Promise<Result<undefined, FxError>> {
+    const apiCode = Container.get<ApiCodeProvider>(ComponentNames.ApiCode);
+    const res = await apiCode.build(context, inputs);
+    if (res.isErr()) return err(res.error);
+    return ok(undefined);
   }
 }
 

@@ -23,6 +23,7 @@ import {
   ScaffoldContext,
   scaffoldFromTemplates,
 } from "../../common/template-utils/templatesActions";
+import { convertToLangKey } from "./utils";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { CoreQuestionNames } from "../../core/question";
 import {
@@ -40,6 +41,7 @@ import { ProgressMessages, ProgressTitles } from "../messages";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { commonTelemetryPropsForBot } from "../resource/botService";
 import { getComponent } from "../workflow";
+import { BadComponent } from "../error";
 /**
  * bot scaffold plugin
  */
@@ -54,6 +56,7 @@ export class BotCodeProvider {
       enableTelemetry: true,
       telemetryComponentName: "fx-resource-bot",
       telemetryEventName: "scaffold",
+      errorSource: "bot",
       errorHandler: (e, t) => {
         telemetryHelper.fillAppStudioErrorProperty(e, t);
         return e as FxError;
@@ -120,6 +123,7 @@ export class BotCodeProvider {
       enableTelemetry: true,
       telemetryComponentName: "fx-resource-bot",
       telemetryEventName: "build",
+      errorSource: "bot",
     }),
   ])
   async build(
@@ -132,8 +136,10 @@ export class BotCodeProvider {
     }
     const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
     if (!teamsBot) return ok(undefined);
-    const packDir = path.join(inputs.projectPath, teamsBot.folder!);
+    if (!teamsBot.folder) throw new BadComponent("bot", this.name, "folder");
+    const packDir = path.join(inputs.projectPath, teamsBot.folder);
     const language = context.projectSetting.programmingLanguage || "javascript";
+
     await actionContext?.progressBar?.next(ProgressMessages.buildingBot);
     if (language === ProgrammingLanguage.TypeScript) {
       //Typescript needs tsc build before deploy because of windows app server. other languages don"t need it.
@@ -182,22 +188,5 @@ export class BotCodeProvider {
       }
     } catch {}
     return DEFAULT_DOTNET_FRAMEWORK;
-  }
-}
-
-export function convertToLangKey(programmingLanguage: string): string {
-  switch (programmingLanguage) {
-    case "javascript": {
-      return "js";
-    }
-    case "typescript": {
-      return "ts";
-    }
-    case "csharp": {
-      return "csharp";
-    }
-    default: {
-      return "js";
-    }
   }
 }

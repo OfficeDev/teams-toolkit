@@ -14,12 +14,13 @@ import {
   MaybePromise,
   ok,
   Platform,
+  ProvisionContextV3,
   Result,
   v3,
 } from "@microsoft/teamsfx-api";
 import { assign, cloneDeep } from "lodash";
 import "reflect-metadata";
-import Container, { Service } from "typedi";
+import { Container, Service } from "typedi";
 import { format } from "util";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { isVSProject } from "../../common/projectSettingsHelper";
@@ -64,8 +65,15 @@ export class TeamsBot {
     const action: FunctionAction = {
       name: `${this.name}.add`,
       type: "function",
+      errorSource: "bot",
+      errorHandler: (error) => {
+        if (error && !error?.name) {
+          error.name = "addBotError";
+        }
+        return error as FxError;
+      },
       plan: (context, inputs) => {
-        return ok(["add Bot to project"]);
+        return ok([Plans.addFeature("Bot")]);
       },
       execute: async (context, inputs) => {
         const projectSettings = context.projectSetting;
@@ -175,6 +183,7 @@ export class TeamsBot {
           const identityComponent = Container.get<IdentityResource>(ComponentNames.Identity);
           const res = await identityComponent.generateBicep(context, clonedInputs);
           if (res.isErr()) return err(res.error);
+          res.value.forEach((b) => biceps.push(b));
           projectSettings.components.push({
             name: ComponentNames.Identity,
             provision: true,
@@ -230,21 +239,14 @@ export class TeamsBot {
     };
     return ok(action);
   }
-  build(): MaybePromise<Result<Action | undefined, FxError>> {
-    return ok(this.buildBotAction());
-  }
-
-  buildBotAction(): Action {
-    return {
-      name: "teams-bot.build",
-      type: "function",
-      execute: async (context, inputs) => {
-        const botCode = Container.get<BotCodeProvider>(ComponentNames.BotCode);
-        const res = await botCode.build(context, inputs);
-        if (res.isErr()) return err(res.error);
-        return ok([]);
-      },
-    };
+  async build(
+    context: ProvisionContextV3,
+    inputs: InputsWithProjectPath
+  ): Promise<Result<undefined, FxError>> {
+    const botCode = Container.get<BotCodeProvider>(ComponentNames.BotCode);
+    const res = await botCode.build(context, inputs);
+    if (res.isErr()) return err(res.error);
+    return ok(undefined);
   }
 }
 

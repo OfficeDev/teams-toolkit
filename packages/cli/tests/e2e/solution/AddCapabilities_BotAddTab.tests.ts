@@ -36,7 +36,7 @@ describe("Add capabilities", function () {
     }
   });
   for (const v3flag of ["false", "true"]) {
-    it("bot project can add tab capability and provision", async () => {
+    it(`bot project can add tab capability and provision (v3=${v3flag})`, async () => {
       mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: v3flag });
       appName = getUniqueAppName();
       projectPath = path.resolve(testFolder, appName);
@@ -60,7 +60,7 @@ describe("Add capabilities", function () {
       await validateTabAndBotProjectProvision(projectPath, env);
     });
 
-    it("message extension project can add tab capability and provision", async () => {
+    it(`message extension project can add tab capability and provision (v3=${v3flag})`, async () => {
       mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: v3flag });
       appName = getUniqueAppName();
       projectPath = path.resolve(testFolder, appName);

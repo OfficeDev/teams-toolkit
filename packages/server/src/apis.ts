@@ -107,6 +107,7 @@ export interface IServerConnection {
     previousSelectedIds: Set<string>,
     token: CancellationToken
   ) => Promise<Result<Void, FxError>>;
+  addSsoRequest: (inputs: Inputs, token: CancellationToken) => Promise<Result<any, FxError>>;
 }
 
 /**

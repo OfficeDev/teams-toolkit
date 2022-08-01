@@ -111,7 +111,7 @@ import { getTeamsAppInternalId, showInstallAppInTeamsMessage } from "./debug/tea
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { ExtensionErrors, ExtensionSource } from "./error";
 import * as exp from "./exp/index";
-import { TreatmentVariables } from "./exp/treatmentVariables";
+import { TreatmentVariableValue } from "./exp/treatmentVariables";
 import { VS_CODE_UI } from "./extension";
 import * as globalVariables from "./globalVariables";
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
@@ -459,12 +459,39 @@ async function openFolder(
   args?: any[]
 ) {
   await updateAutoOpenGlobalKey(showLocalDebugMessage, showLocalPreviewMessage, folderPath, args);
-  await ExtTelemetry.dispose();
-  // after calling dispose(), let render process to wait for a while instead of directly call "open folder"
-  // otherwise, the flush operation in dispose() will be interrupted due to shut down the render process.
-  setTimeout(() => {
-    commands.executeCommand("vscode.openFolder", folderPath);
-  }, 2000);
+  if (!TreatmentVariableValue.openFolderInNewWindow) {
+    await ExtTelemetry.dispose();
+    // after calling dispose(), let render process to wait for a while instead of directly call "open folder"
+    // otherwise, the flush operation in dispose() will be interrupted due to shut down the render process.
+    setTimeout(() => {
+      commands.executeCommand("vscode.openFolder", folderPath);
+    }, 2000);
+  } else {
+    const autoOpenTimeout = setTimeout(() => {
+      commands.executeCommand("vscode.openFolder", folderPath, true);
+    }, 10000);
+    const selection = await VS_CODE_UI.showMessage(
+      "info",
+      localize("teamstoolkit.handlers.openProject.title"),
+      false,
+      localize("teamstoolkit.handlers.openInCurrentWindow"),
+      localize("teamstoolkit.handlers.openInNewWindow")
+    );
+    if (selection.isOk()) {
+      clearTimeout(autoOpenTimeout);
+      const openInNewWindow = selection.value === localize("teamstoolkit.handlers.openInNewWindow");
+      if (openInNewWindow) {
+        commands.executeCommand("vscode.openFolder", folderPath, true);
+      } else {
+        await ExtTelemetry.dispose();
+        // after calling dispose(), let render process to wait for a while instead of directly call "open folder"
+        // otherwise, the flush operation in dispose() will be interrupted due to shut down the render process.
+        setTimeout(() => {
+          commands.executeCommand("vscode.openFolder", folderPath);
+        }, 2000);
+      }
+    }
+  }
 }
 
 export async function updateAutoOpenGlobalKey(

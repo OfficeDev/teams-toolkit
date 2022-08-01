@@ -1209,7 +1209,7 @@ export function validateAndParseLanguage(language: string): Result<string, FxErr
     return ok("js");
   }
 
-  if (language.toLowerCase() == Language.JavaScript) {
+  if (language.toLowerCase() == Language.CSharp) {
     return ok("csharp");
   }
 

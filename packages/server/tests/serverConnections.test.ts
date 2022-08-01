@@ -223,4 +223,19 @@ describe("serverConnections", () => {
       assert.equal(data, ok("undefined"));
     });
   });
+
+  it("addSsoRequest", () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.returns("test");
+    sandbox.replace(connection["core"], "createProject", fake);
+
+    const inputs = {
+      platform: "vs",
+    };
+    const token = {};
+    const res = connection.addSsoRequest(inputs as Inputs, token as CancellationToken);
+    res.then((data) => {
+      assert.equal(data, ok("test"));
+    });
+  });
 });

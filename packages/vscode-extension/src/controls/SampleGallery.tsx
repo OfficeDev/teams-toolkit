@@ -23,6 +23,7 @@ import NoneSSOTab from "../../img/webview/sample/hello-world-tab-without-sso.gif
 import GraphConnector from "../../img/webview/sample/graph-connector-app.gif";
 import IncomingWebhook from "../../img/webview/sample/incoming-webhook.gif";
 import AdaptiveCardNotification from "../../img/webview/sample/adaptive-card-notification.gif";
+import SendProactiveMsg from "../../img/webview/sample/send-proactive-messages.gif";
 
 const imageMapping: { [p: string]: any } = {
   "todo-list-with-Azure-backend": ToDoList,
@@ -42,6 +43,7 @@ const imageMapping: { [p: string]: any } = {
   "adaptive-card-notification": AdaptiveCardNotification,
   "incoming-webhook-notification": IncomingWebhook,
   "graph-toolkit-one-productivity-hub": GraphToolkitOneProductivityHub,
+  "bot-proactive-messaging-teamsfx": SendProactiveMsg,
 };
 
 export default class SampleGallery extends React.Component<any, any> {

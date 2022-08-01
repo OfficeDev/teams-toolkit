@@ -685,13 +685,10 @@ export class FxCore implements v3.ICore {
 
   async executeUserTask(func: Func, inputs: Inputs): Promise<Result<unknown, FxError>> {
     if (isV3()) {
-      if (func.method === "addFeature") {
-        const res = await this.addFeature(inputs as v2.InputsWithProjectPath);
-        if (res.isErr()) return err(res.error);
-        return ok(undefined);
-      }
-      return err(new NotImplementedError(func.method));
-    } else return this.executeUserTaskV2(func, inputs);
+      return this.executeUserTaskV3(func, inputs);
+    } else {
+      return this.executeUserTaskV2(func, inputs);
+    }
   }
 
   @hooks([
@@ -836,13 +833,19 @@ export class FxCore implements v3.ICore {
     } else if (func.method === "connectExistingApi") {
       const component = Container.get("api-connector") as any;
       res = await component.add(context, inputs as InputsWithProjectPath);
+    } else if (func.method === "addSso") {
+      const component = Container.get("sso") as any;
+      res = await component.add(context, inputs as InputsWithProjectPath);
     } else if (func.method === "addFeature") {
-      const fx = Container.get("fx") as any;
+      const fx = Container.get("fx") as TeamsfxCore;
       res = await fx.addFeature(context, inputs as InputsWithProjectPath);
     }
-    if (res.isErr()) return err(res.error);
-    ctx!.projectSettings = context.projectSetting;
-    return res;
+    if (res) {
+      if (res.isErr()) return err(res.error);
+      ctx!.projectSettings = context.projectSetting;
+      return res;
+    }
+    return ok(undefined);
   }
   @hooks([
     ErrorHandlerMW,

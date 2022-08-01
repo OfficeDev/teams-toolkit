@@ -55,6 +55,7 @@ import {
   CicdOptionItem,
   CommandAndResponseOptionItem,
   DeployPluginSelectQuestion,
+  HostTypeOptionAzure,
   MessageExtensionItem,
   MessageExtensionNewUIItem,
   NotificationOptionItem,
@@ -183,48 +184,51 @@ export async function getQuestionsForAddFeatureV3(
     return ok(addFeatureNode);
   }
   // check capability options
-  const manifestRes = await readAppManifest(inputs.projectPath!);
-  if (manifestRes.isErr()) return err(manifestRes.error);
-  const manifest = manifestRes.value;
-  const canAddTab = manifest.staticTabs!.length < STATIC_TABS_MAX_ITEMS;
-  const botExceedLimit = manifest.bots!.length > 0;
-  const meExceedLimit = manifest.composeExtensions!.length > 0;
-  const projectSettingsV3 = ctx.projectSetting as ProjectSettingsV3;
-  const teamsBot = getComponent(ctx.projectSetting as ProjectSettingsV3, ComponentNames.TeamsBot);
-  const alreadyHasNewBot =
-    teamsBot?.capabilities?.includes("notification") ||
-    teamsBot?.capabilities?.includes("command-response");
-  if (!botExceedLimit && !alreadyHasNewBot) {
-    options.push(NotificationOptionItem);
-    options.push(CommandAndResponseOptionItem);
-    options.push(BotNewUIOptionItem);
-  }
-  if (canAddTab) {
-    if (!hasTab(projectSettingsV3)) {
-      options.push(TabNewUIOptionItem, TabNonSsoItem);
-    } else {
-      options.push(hasAAD(projectSettingsV3) ? TabNewUIOptionItem : TabNonSsoItem);
+  const azureHost = ctx.projectSetting.solutionSettings?.hostType === HostTypeOptionAzure.id;
+  if (azureHost) {
+    const manifestRes = await readAppManifest(inputs.projectPath!);
+    if (manifestRes.isErr()) return err(manifestRes.error);
+    const manifest = manifestRes.value;
+    const canAddTab = manifest.staticTabs!.length < STATIC_TABS_MAX_ITEMS;
+    const botExceedLimit = manifest.bots!.length > 0;
+    const meExceedLimit = manifest.composeExtensions!.length > 0;
+    const projectSettingsV3 = ctx.projectSetting as ProjectSettingsV3;
+    const teamsBot = getComponent(ctx.projectSetting as ProjectSettingsV3, ComponentNames.TeamsBot);
+    const alreadyHasNewBot =
+      teamsBot?.capabilities?.includes("notification") ||
+      teamsBot?.capabilities?.includes("command-response");
+    if (!botExceedLimit && !alreadyHasNewBot) {
+      options.push(NotificationOptionItem);
+      options.push(CommandAndResponseOptionItem);
+      options.push(BotNewUIOptionItem);
     }
+    if (canAddTab) {
+      if (!hasTab(projectSettingsV3)) {
+        options.push(TabNewUIOptionItem, TabNonSsoItem);
+      } else {
+        options.push(hasAAD(projectSettingsV3) ? TabNewUIOptionItem : TabNonSsoItem);
+      }
+    }
+    if (!meExceedLimit && !alreadyHasNewBot) {
+      options.push(MessageExtensionNewUIItem);
+    }
+    // check cloud resource options
+    if (!hasAPIM(projectSettingsV3)) {
+      options.push(AzureResourceApimNewUI);
+    }
+    options.push(AzureResourceSQLNewUI);
+    if (!hasKeyVault(projectSettingsV3)) {
+      options.push(AzureResourceKeyVaultNewUI);
+    }
+    if (!hasAAD(projectSettingsV3)) {
+      options.push(SingleSignOnOptionItem);
+    }
+    if (hasBot(projectSettingsV3) || hasApi(projectSettingsV3)) {
+      options.push(ApiConnectionOptionItem);
+    }
+    // function can always be added
+    options.push(AzureResourceFunctionNewUI);
   }
-  if (!meExceedLimit && !alreadyHasNewBot) {
-    options.push(MessageExtensionNewUIItem);
-  }
-  // check cloud resource options
-  if (!hasAPIM(projectSettingsV3)) {
-    options.push(AzureResourceApimNewUI);
-  }
-  options.push(AzureResourceSQLNewUI);
-  if (!hasKeyVault(projectSettingsV3)) {
-    options.push(AzureResourceKeyVaultNewUI);
-  }
-  if (!hasAAD(projectSettingsV3)) {
-    options.push(SingleSignOnOptionItem);
-  }
-  if (hasBot(projectSettingsV3) || hasApi(projectSettingsV3)) {
-    options.push(ApiConnectionOptionItem);
-  }
-  // function can always be added
-  options.push(AzureResourceFunctionNewUI);
   const isCicdAddable = await canAddCICDWorkflows(inputs, ctx);
   if (isCicdAddable) {
     options.push(CicdOptionItem);

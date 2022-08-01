@@ -12,12 +12,22 @@ import {
   canAddApiConnection,
   canAddSso,
   getFixedCommonProjectSettings,
+  canAddCICDWorkflows,
 } from "../../src/common/tools";
 import * as telemetry from "../../src/common/telemetry";
-import { AzureSolutionSettings, ProjectSettings } from "@microsoft/teamsfx-api";
+import {
+  AzureSolutionSettings,
+  InputsWithProjectPath,
+  ok,
+  Platform,
+  ProjectSettings,
+  v2,
+} from "@microsoft/teamsfx-api";
 import { TabSsoItem } from "../../src/plugins/solution/fx-solution/question";
 import * as featureFlags from "../../src/common/featureFlags";
 import fs from "fs-extra";
+import { environmentManager } from "../../src/core/environment";
+import { ExistingTemplatesStat } from "../../src/plugins/resource/cicd/utils/existingTemplatesStat";
 
 chai.use(chaiAsPromised);
 
@@ -292,6 +302,51 @@ describe("tools", () => {
     it("empty root path", async () => {
       const result = getFixedCommonProjectSettings("");
       chai.assert.isUndefined(result);
+    });
+  });
+
+  describe("canAddCICDWorkflows", () => {
+    beforeEach(() => {
+      sinon.stub<any, any>(featureFlags, "isFeatureFlagEnabled").returns(true);
+    });
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("returns true in SPFx project", async () => {
+      sinon.stub(environmentManager, "listRemoteEnvConfigs").returns(Promise.resolve(ok(["test"])));
+      sinon.stub(ExistingTemplatesStat.prototype, "notExisting").returns(true);
+
+      const projectSettings = {
+        appName: "test",
+        projectId: "projectId",
+        version: "2.1.0",
+        isFromSample: false,
+        components: [],
+        programmingLanguage: "javascript",
+        solutionSettings: {
+          name: "fx-solution-azure",
+          version: "1.0.0",
+          hostType: "SPFx",
+          azureResources: [],
+          capabilities: ["Tab"],
+          activeResourcePlugins: [
+            "fx-resource-spfx",
+            "fx-resource-local-debug",
+            "fx-resource-appstudio",
+          ],
+        },
+      };
+      const inputs: InputsWithProjectPath = {
+        platform: Platform.VSCode,
+        projectPath: ".",
+      };
+
+      const result = await canAddCICDWorkflows(inputs, {
+        projectSetting: projectSettings,
+      } as unknown as v2.Context);
+
+      chai.assert.isTrue(result);
     });
   });
 });

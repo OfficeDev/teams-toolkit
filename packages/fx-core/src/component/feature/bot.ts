@@ -12,7 +12,7 @@ import {
   InputsWithProjectPath,
   ok,
   Platform,
-  ProvisionContextV3,
+  ResourceContextV3,
   Result,
   v3,
 } from "@microsoft/teamsfx-api";
@@ -229,7 +229,7 @@ export class TeamsBot {
     return ok(undefined);
   }
   async build(
-    context: ProvisionContextV3,
+    context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
     const botCode = Container.get<BotCodeProvider>(ComponentNames.BotCode);

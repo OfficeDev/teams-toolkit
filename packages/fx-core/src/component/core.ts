@@ -11,7 +11,7 @@ import {
   ok,
   Platform,
   ProjectSettingsV3,
-  ProvisionContextV3,
+  ResourceContextV3,
   Result,
   UserError,
 } from "@microsoft/teamsfx-api";
@@ -256,7 +256,7 @@ export class TeamsfxCore {
     }),
   ])
   async provision(
-    ctx: ProvisionContextV3,
+    ctx: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
     ctx.envInfo.state.solution = ctx.envInfo.state.solution || {};
@@ -404,7 +404,7 @@ export class TeamsfxCore {
   }
 
   async build(
-    context: ProvisionContextV3,
+    context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
     const projectSettings = context.projectSetting as ProjectSettingsV3;
@@ -440,7 +440,7 @@ export class TeamsfxCore {
     }),
   ])
   async deploy(
-    context: ProvisionContextV3,
+    context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
     const projectSettings = context.projectSetting as ProjectSettingsV3;
@@ -575,7 +575,7 @@ async function preProvision(
   context: ContextV3,
   inputs: InputsWithProjectPath
 ): Promise<Result<undefined, FxError>> {
-  const ctx = context as ProvisionContextV3;
+  const ctx = context as ResourceContextV3;
   const envInfo = ctx.envInfo;
   // 1. check M365 tenant
   envInfo.state[ComponentNames.AppManifest] = envInfo.state[ComponentNames.AppManifest] || {};

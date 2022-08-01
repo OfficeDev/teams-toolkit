@@ -10,7 +10,7 @@ import {
   InputsWithProjectPath,
   ok,
   Platform,
-  ProvisionContextV3,
+  ResourceContextV3,
   Result,
   Stage,
   v3,
@@ -187,7 +187,7 @@ export class TeamsTab {
     }),
   ])
   async provision(
-    context: ProvisionContextV3,
+    context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
     if (context.envInfo.envName === "local") {
@@ -204,11 +204,11 @@ export class TeamsTab {
     }),
   ])
   async configure(
-    context: ProvisionContextV3,
+    context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
     const tabCode = new TabCodeProvider();
-    const res = await tabCode.configure(context as ProvisionContextV3, inputs);
+    const res = await tabCode.configure(context as ResourceContextV3, inputs);
     if (res.isErr()) return err(res.error);
     return ok(undefined);
   }
@@ -218,7 +218,7 @@ export class TeamsTab {
     }),
   ])
   async build(
-    context: ProvisionContextV3,
+    context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
     const tabCode = new TabCodeProvider();

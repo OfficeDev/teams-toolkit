@@ -6,7 +6,7 @@ import {
   InputsWithProjectPath,
   ok,
   Platform,
-  ProvisionContextV3,
+  ResourceContextV3,
   Void,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
@@ -238,7 +238,7 @@ describe("Workflow test for v3", () => {
       },
     };
 
-    const provisionRes = await fx.provision(context as ProvisionContextV3, inputs);
+    const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
     if (provisionRes.isErr()) {
       console.log(provisionRes.error);
     }
@@ -309,7 +309,7 @@ describe("Workflow test for v3", () => {
         endpoint: "https://testwebApp.azurewebsites.net",
       },
     };
-    const provisionRes = await fx.provision(context as ProvisionContextV3, inputs);
+    const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
     if (provisionRes.isErr()) {
       console.log(provisionRes.error);
     }
@@ -377,7 +377,7 @@ describe("Workflow test for v3", () => {
     context.envInfo.config.bot = {
       siteEndpoint: "https://localtest:3978",
     };
-    const provisionRes = await fx.provision(context as ProvisionContextV3, inputs);
+    const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
     if (provisionRes.isErr()) {
       console.log(provisionRes.error);
     }
@@ -428,7 +428,7 @@ describe("Workflow test for v3", () => {
     }
     assert.isTrue(addTabRes.isOk());
     const azureStorage = Container.get<AzureStorageResource>(ComponentNames.AzureStorage);
-    const res = await azureStorage.deploy(context as ProvisionContextV3, inputs);
+    const res = await azureStorage.deploy(context as ResourceContextV3, inputs);
     if (res.isErr()) {
       console.log(res.error);
     }

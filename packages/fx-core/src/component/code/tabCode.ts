@@ -7,7 +7,7 @@ import {
   FxError,
   InputsWithProjectPath,
   ok,
-  ProvisionContextV3,
+  ResourceContextV3,
   Result,
   TelemetryReporter,
 } from "@microsoft/teamsfx-api";
@@ -141,7 +141,7 @@ export class TabCodeProvider {
     }),
   ])
   async configure(
-    context: ProvisionContextV3,
+    context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
     const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
@@ -168,7 +168,7 @@ export class TabCodeProvider {
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    const ctx = context as ProvisionContextV3;
+    const ctx = context as ResourceContextV3;
     const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
     if (!teamsTab) return ok(undefined);
     if (teamsTab.folder == undefined) throw new BadComponent("tab", this.name, "folder");

@@ -138,10 +138,7 @@ export class TeamsTab {
       );
       if (bicepRes.isErr()) return bicepRes;
       // 2.3 add sso
-      if (
-        inputs.stage === Stage.create &&
-        inputs[AzureSolutionQuestionNames.Features] !== TabNonSsoItem.id
-      ) {
+      if (inputs[AzureSolutionQuestionNames.Features] !== TabNonSsoItem.id) {
         const ssoComponent = Container.get("sso") as any;
         const res = await ssoComponent.add(context, inputs);
         if (res.isErr()) return err(res.error);

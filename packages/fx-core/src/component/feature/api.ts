@@ -11,7 +11,7 @@ import {
   Inputs,
   InputsWithProjectPath,
   ok,
-  ProvisionContextV3,
+  ResourceContextV3,
   QTreeNode,
   Result,
   Stage,
@@ -157,7 +157,7 @@ export class TeamsApi {
     return ok(undefined);
   }
   async build(
-    context: ProvisionContextV3,
+    context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
     const apiCode = Container.get<ApiCodeProvider>(ComponentNames.ApiCode);

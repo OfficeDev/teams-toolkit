@@ -8,7 +8,6 @@
 import path from "path";
 import "mocha";
 import * as chai from "chai";
-import sinon from "sinon";
 import * as dotenv from "dotenv";
 import { getTestFolder, getUniqueAppName, cleanUp } from "../commonUtils";
 import { CliHelper } from "../../commonlib/cliHelper";
@@ -16,8 +15,7 @@ import { Capability } from "../../commonlib/constants";
 import * as fs from "fs-extra";
 import mockedEnv from "mocked-env";
 
-describe("Add Api Connection Tests", function () {
-  const sandbox = sinon.createSandbox();
+describe("Add Api Connection Tests V3", function () {
   let mockedEnvRestore: () => void;
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();

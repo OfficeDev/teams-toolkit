@@ -7,7 +7,6 @@
 
 import path from "path";
 import {
-  getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
   cleanUp,
@@ -23,31 +22,35 @@ import fs from "fs-extra";
 import { expect } from "chai";
 import { AadValidator } from "../../commonlib";
 import M365Login from "../../../src/commonlib/m365Login";
+import mockedEnv from "mocked-env";
 
-describe("Add SSO", () => {
+describe("Add SSO V3", () => {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
-
-  const env = Object.assign({}, process.env);
-  env["TEAMSFX_AAD_MANIFEST"] = "true";
-  env["TEAMSFX_CONFIG_UNIFY"] = "true";
-  env["TEAMSFX_INIT_APP"] = "true";
-  env["TEAMSFX_APIV3"] = "true";
-
-  after(async () => {
+  let mockedEnvRestore: () => void;
+  beforeEach(async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_AAD_MANIFEST: "true",
+      TEAMSFX_CONFIG_UNIFY: "true",
+      TEAMSFX_INIT_APP: "true",
+      TEAMSFX_APIV3: "true",
+    });
+    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
+  });
+  afterEach(async () => {
+    mockedEnvRestore();
     await cleanUp(appName, projectPath, true, false, false);
   });
 
   it("Add SSO to existing app", async () => {
     // Arrange
-    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.ExistingTab, env);
+    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.ExistingTab);
     await setFrontendDomainToConfig(projectPath, "dev");
 
     // Act
     await execAsync(`teamsfx add sso`, {
       cwd: projectPath,
-      env: env,
       timeout: 0,
     });
 
@@ -63,7 +66,7 @@ describe("Add SSO", () => {
       expect(readmeExists).to.be.true;
     }
 
-    await CliHelper.provisionProject(projectPath, "", env);
+    await CliHelper.provisionProject(projectPath, "");
 
     // Assert
     const context = await readContextMultiEnv(projectPath, "dev");

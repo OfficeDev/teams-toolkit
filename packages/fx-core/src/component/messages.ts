@@ -37,35 +37,44 @@ export class ProgressMessages {
   static readonly provisionBot = ProgressBarConstants.PROVISION_STEP_BOT_REG;
 }
 
+export interface LocalizedMessage {
+  default: string;
+  localized: string;
+}
+
 export class ErrorMessage {
   static readonly programmingLanguageInvalid =
     "Invalid programming language found in project settings.";
-  public static readonly SomethingIsMissing = (something: string): [string, string] => [
-    getDefaultString("plugins.bot.SomethingIsMissing", something),
-    getLocalizedString("plugins.bot.SomethingIsMissing", something),
-  ];
-  public static readonly SomethingIsNotExisting = (something: string): [string, string] => [
-    getDefaultString("plugins.bot.SomethingNotExisting", something),
-    getLocalizedString("plugins.bot.SomethingNotExisting", something),
-  ];
-  public static readonly WorkingDirIsMissing: [string, string] = [
-    getDefaultString("plugins.bot.WorkingDirMissing"),
-    getLocalizedString("plugins.bot.WorkingDirMissing"),
-  ];
+  public static readonly SomethingIsMissing = (something: string): LocalizedMessage => ({
+    default: getDefaultString("plugins.bot.SomethingIsMissing", something),
+    localized: getLocalizedString("plugins.bot.SomethingIsMissing", something),
+  });
+  public static readonly SomethingIsNotExisting = (something: string): LocalizedMessage => ({
+    default: getDefaultString("plugins.bot.SomethingNotExisting", something),
+    localized: getLocalizedString("plugins.bot.SomethingNotExisting", something),
+  });
+  public static readonly WorkingDirIsMissing: LocalizedMessage = {
+    default: getDefaultString("plugins.bot.WorkingDirMissing"),
+    localized: getLocalizedString("plugins.bot.WorkingDirMissing"),
+  };
 
   // Suggestions
-  public static readonly RetryTheCurrentStep = getLocalizedString(
-    "suggestions.retryTheCurrentStep"
-  );
-  public static readonly RecreateTheProject: [string, string] = [
-    getDefaultString("plugins.bot.RecreateProject"),
-    getLocalizedString("plugins.bot.RecreateProject"),
-  ];
-  public static readonly CheckOutputLogAndTryToFix = getLocalizedString(
-    "plugins.bot.CheckLogAndFix"
-  );
-  public static readonly ReopenWorkingDir = (path = ""): string =>
-    getLocalizedString("plugins.bot.CheckPathWriteAccess", path);
+  public static readonly RetryTheCurrentStep: LocalizedMessage = {
+    localized: getLocalizedString("suggestions.retryTheCurrentStep"),
+    default: getDefaultString("suggestions.retryTheCurrentStep"),
+  };
+  public static readonly RecreateTheProject: LocalizedMessage = {
+    default: getDefaultString("plugins.bot.RecreateProject"),
+    localized: getLocalizedString("plugins.bot.RecreateProject"),
+  };
+  public static readonly CheckOutputLogAndTryToFix = {
+    default: getDefaultString("plugins.bot.CheckLogAndFix"),
+    localized: getLocalizedString("plugins.bot.CheckLogAndFix"),
+  };
+  public static readonly ReopenWorkingDir = (path = ""): LocalizedMessage => ({
+    default: getDefaultString("plugins.bot.CheckPathWriteAccess", path),
+    localized: getLocalizedString("plugins.bot.CheckPathWriteAccess", path),
+  });
 }
 
 export class Plans {

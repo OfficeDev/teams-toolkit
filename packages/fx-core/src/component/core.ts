@@ -14,6 +14,7 @@ import {
   ResourceContextV3,
   Result,
   UserError,
+  v3,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import path from "path";
@@ -67,7 +68,7 @@ import { hasAAD, hasAzureResourceV3, hasBot } from "../common/projectSettingsHel
 import { getResourceGroupInPortal } from "../common/tools";
 import { downloadSample } from "../core/downloadSample";
 import { InvalidInputError } from "../core/error";
-import { globalVars } from "../core/globalVars";
+import { doesAllowSwitchAccount, globalVars } from "../core/globalVars";
 import arm, { updateResourceBaseName } from "../plugins/solution/fx-solution/arm";
 import {
   ApiConnectionOptionItem,
@@ -94,6 +95,7 @@ import { checkDeployAzureSubscription } from "../plugins/solution/fx-solution/v3
 import {
   askForDeployConsent,
   askForProvisionConsent,
+  askForProvisionConsentNew,
   fillInAzureConfigs,
   getM365TenantId,
 } from "../plugins/solution/fx-solution/v3/provision";
@@ -107,6 +109,7 @@ import {
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "./middleware/actionExecutionMW";
 import { getQuestionsForCreateProjectV2 } from "../core/middleware";
+import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -577,6 +580,7 @@ async function preProvision(
 ): Promise<Result<undefined, FxError>> {
   const ctx = context as ResourceContextV3;
   const envInfo = ctx.envInfo;
+  const isSwitchAccountEnabled = doesAllowSwitchAccount();
   // 1. check M365 tenant
   envInfo.state[ComponentNames.AppManifest] = envInfo.state[ComponentNames.AppManifest] || {};
   envInfo.state.solution = envInfo.state.solution || {};
@@ -586,14 +590,18 @@ async function preProvision(
   const tenantIdInConfig = appManifest.tenantId;
 
   const isLocalDebug = envInfo.envName === "local";
-  const tenantIdInTokenRes = await getM365TenantId(ctx.tokenProvider.m365TokenProvider);
-  if (tenantIdInTokenRes.isErr()) {
-    return err(tenantIdInTokenRes.error);
+  const tenantInfoInTokenRes = await getM365TenantId(ctx.tokenProvider.m365TokenProvider);
+  if (tenantInfoInTokenRes.isErr()) {
+    return err(tenantInfoInTokenRes.error);
   }
-  const tenantIdInToken = tenantIdInTokenRes.value;
+  const tenantIdInToken = tenantInfoInTokenRes.value.tenantIdInToken;
+  const hasSwitchedM365Tenant =
+    tenantIdInConfig && tenantIdInToken && tenantIdInToken !== tenantIdInConfig;
 
   if (!isLocalDebug) {
-    if (tenantIdInConfig && tenantIdInToken && tenantIdInToken !== tenantIdInConfig) {
+    if (isSwitchAccountEnabled && hasSwitchedM365Tenant) {
+      resetEnvInfoWhenSwitchM365(envInfo);
+    } else if (hasSwitchedM365Tenant && !isSwitchAccountEnabled) {
       return err(
         new UserError(
           "Solution",
@@ -602,12 +610,7 @@ async function preProvision(
         )
       );
     }
-    if (!tenantIdInConfig) {
-      appManifest.tenantId = tenantIdInToken;
-      solutionConfig.teamsAppTenantId = tenantIdInToken;
-      globalVars.m365TenantId = tenantIdInToken;
-    }
-  } else {
+  } else if (isLocalDebug) {
     const res = await checkWhetherLocalDebugM365TenantMatches(
       envInfo,
       tenantIdInConfig,
@@ -617,11 +620,12 @@ async function preProvision(
     if (res.isErr()) {
       return err(res.error);
     }
-    envInfo.state[ComponentNames.AppManifest] = envInfo.state[ComponentNames.AppManifest] || {};
-    envInfo.state[ComponentNames.AppManifest].tenantId = tenantIdInToken;
-    envInfo.state.solution.teamsAppTenantId = tenantIdInToken;
-    globalVars.m365TenantId = tenantIdInToken;
   }
+
+  envInfo.state[ComponentNames.AppManifest] = envInfo.state[ComponentNames.AppManifest] || {};
+  envInfo.state[ComponentNames.AppManifest].tenantId = tenantIdInToken;
+  envInfo.state.solution.teamsAppTenantId = tenantIdInToken;
+  globalVars.m365TenantId = tenantIdInToken;
 
   // 3. check Azure configs
   if (hasAzureResourceV3(ctx.projectSetting) && envInfo.envName !== "local") {
@@ -631,12 +635,25 @@ async function preProvision(
       return err(solutionConfigRes.error);
     }
 
-    if (!solutionConfigRes.value.hasSwitchedSubscription) {
+    if (!solutionConfigRes.value.hasSwitchedSubscription && !isSwitchAccountEnabled) {
       // ask for provision consent
       const consentResult = await askForProvisionConsent(
         ctx,
         ctx.tokenProvider.azureAccountProvider,
         envInfo
+      );
+      if (consentResult.isErr()) {
+        return err(consentResult.error);
+      }
+    } else if (isSwitchAccountEnabled) {
+      const consentResult = await askForProvisionConsentNew(
+        ctx,
+        ctx.tokenProvider.azureAccountProvider,
+        envInfo as v3.EnvInfoV3,
+        hasSwitchedM365Tenant,
+        solutionConfigRes.value.hasSwitchedSubscription,
+        tenantInfoInTokenRes.value.tenantUserName,
+        true
       );
       if (consentResult.isErr()) {
         return err(consentResult.error);
@@ -658,7 +675,49 @@ async function preProvision(
 
     if (solutionConfigRes.value.hasSwitchedSubscription) {
       updateResourceBaseName(inputs.projectPath, ctx.projectSetting.appName, envInfo.envName);
+      // todo: update bot name
+    }
+  } else if (hasSwitchedM365Tenant) {
+    const consentResult = await askForProvisionConsentNew(
+      ctx,
+      ctx.tokenProvider.azureAccountProvider,
+      envInfo as v3.EnvInfoV3,
+      hasSwitchedM365Tenant,
+      false,
+      tenantInfoInTokenRes.value.tenantUserName,
+      false
+    );
+    if (consentResult.isErr()) {
+      return err(consentResult.error);
     }
   }
   return ok(undefined);
+}
+
+// clear resources related info in envInfo so that we could provision successfully using new M365 tenant.
+export function resetEnvInfoWhenSwitchM365(envInfo: v3.EnvInfoV3): void {
+  envInfo.state.solution.resourceGroupName = "";
+  envInfo.state.solution.resourceNameSuffix = "";
+
+  const keysToClear = [BuiltInFeaturePluginNames.appStudio, ComponentNames.AppManifest];
+
+  const keysToModify = [BuiltInFeaturePluginNames.apim, ComponentNames.APIM];
+  const keys = Object.keys(envInfo.state);
+  const botResource =
+    envInfo.state[BuiltInFeaturePluginNames.bot] ?? envInfo.state[ComponentNames.TeamsBot];
+
+  for (const key of keys) {
+    if (keysToClear.includes(key)) {
+      delete envInfo.state[key];
+    }
+    if (keysToModify.includes(key)) {
+      delete envInfo.state[key]["apimClientAADObjectId"];
+      delete envInfo.state[key]["apimClientAADClientId"];
+      delete envInfo.state[key]["apimClientAADClientSecret"];
+    }
+  }
+
+  if (botResource) {
+    delete botResource["resourceId"];
+  }
 }

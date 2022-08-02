@@ -413,25 +413,14 @@ async function compareWithStateSubscription(
   subscriptionInStateName: string | undefined,
   azureAccountProvider: AzureAccountProvider
 ): Promise<Result<ProvisionSubscriptionCheckResult, FxError>> {
-  const shouldAskForSubscriptionConfirmation =
+  const hasSwitchedSubscription =
     !!subscriptionInStateId && targetSubscriptionInfo.subscriptionId !== subscriptionInStateId;
-  if (shouldAskForSubscriptionConfirmation) {
-    const confirmResult = await askForSubscriptionConfirm(
-      ctx,
-      subscriptionInStateName!,
-      targetSubscriptionInfo.subscriptionName || targetSubscriptionInfo.subscriptionId,
-      azureAccountProvider,
-      envInfo
-    );
-    if (confirmResult.isErr()) {
-      return err(confirmResult.error);
-    } else {
-      updateEnvInfoSubscription(envInfo, targetSubscriptionInfo);
-      clearEnvInfoStateResource(envInfo);
+  if (hasSwitchedSubscription) {
+    updateEnvInfoSubscription(envInfo, targetSubscriptionInfo);
+    clearEnvInfoStateResource(envInfo);
 
-      ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
-      return ok({ hasSwitchedSubscription: true });
-    }
+    ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
+    return ok({ hasSwitchedSubscription: true });
   } else {
     updateEnvInfoSubscription(envInfo, targetSubscriptionInfo);
     ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);

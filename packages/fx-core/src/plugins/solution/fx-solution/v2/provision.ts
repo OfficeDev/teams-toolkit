@@ -61,6 +61,7 @@ import {
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import { sendErrorTelemetryThenReturnError } from "../utils/util";
 import { doesAllowSwitchAccount } from "../../../../core";
+import { resetEnvInfoWhenSwitchM365 } from "../../../../component/core";
 
 function getSubscriptionId(state: Json): string {
   if (state && state[GLOBAL_CONFIG] && state[GLOBAL_CONFIG][SUBSCRIPTION_ID]) {
@@ -158,7 +159,7 @@ async function provisionResourceImpl(
       )
     );
   } else if (hasSwitchedM365Tenant && isSwitchAccountEnabled) {
-    //
+    resetEnvInfoWhenSwitchM365(envInfo as v3.EnvInfoV3);
   }
 
   if (!tenantIdInConfig) {
@@ -236,7 +237,7 @@ async function provisionResourceImpl(
       tokenProvider.azureAccountProvider,
       envInfo as v3.EnvInfoV3,
       hasSwitchedM365Tenant,
-      solutionConfigRes.value.hasSwitchedSubscription,
+      false,
       tenantIdInTokenRes.value.tenantUserName,
       false
     );

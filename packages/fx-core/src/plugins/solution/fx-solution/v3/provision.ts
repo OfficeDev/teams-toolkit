@@ -733,9 +733,96 @@ export async function askForProvisionConsent(
   return ok(Void);
 }
 
+export async function askForProvisionConsentNew(
+  ctx: v2.Context,
+  azureAccountProvider: AzureAccountProvider,
+  envInfo: v3.EnvInfoV3,
+  hasSwitchedM365Tenant: boolean,
+  hasSwitchedSubscription: boolean,
+  m365AccountName: string,
+  hasAzureResource: boolean
+): Promise<Result<Void, FxError>> {
+  const azureToken = await azureAccountProvider.getAccountCredentialAsync();
+
+  const username = (azureToken as any).username || "";
+  const subscriptionId = envInfo.state.solution?.subscriptionId || "";
+  const subscriptionName = envInfo.state.solution?.subscriptionName || "";
+  const m365TenantId = envInfo.state.solution?.teamsAppTenantId || "";
+
+  let switchedNotice = "";
+
+  if (hasSwitchedM365Tenant && hasSwitchedSubscription) {
+    switchedNotice = getLocalizedString(
+      "core.provision.switchedM365AccountAndAzureSubscriptionNotice"
+    );
+  } else if (hasSwitchedM365Tenant && !hasSwitchedSubscription) {
+    switchedNotice = getLocalizedString("switchedM365AccountNotice");
+  } else if (!hasSwitchedM365Tenant && hasSwitchedSubscription) {
+    switchedNotice = getLocalizedString("core.provision.switchedAzureSubscriptionNotice");
+
+    const botResource =
+      envInfo.state[BuiltInFeaturePluginNames.bot] ?? envInfo.state[ComponentNames.TeamsBot];
+    const newBotNotice = !botResource["resourceId"]
+      ? ""
+      : getLocalizedString("core.provision.createNewAzureBotNotice");
+
+    switchedNotice = switchedNotice + newBotNotice;
+  }
+
+  const azureAccountInfo = getLocalizedString("core.provision.azureAccount", username);
+  const azureSubscriptionInfo = getLocalizedString(
+    "core.provision.azureSubscription",
+    subscriptionName ? subscriptionName : subscriptionId
+  );
+  const m365AccountInfo = getLocalizedString(
+    "core.provision.m365Account",
+    m365AccountName ? m365AccountName : m365TenantId
+  );
+
+  const accountsInfo: string = hasAzureResource
+    ? [switchedNotice, azureAccountInfo, azureSubscriptionInfo, m365AccountInfo].join("\n")
+    : [switchedNotice, m365AccountInfo].join("\n");
+
+  const confirmMsg = hasAzureResource
+    ? getLocalizedString("core.provision.confirmEnvAndCostNotice", envInfo.envName)
+    : hasSwitchedM365Tenant
+    ? getLocalizedString("core.provision.confirmEnvOnlyNotice", envInfo.envName)
+    : "";
+
+  const provisionText = getLocalizedString("core.provision.provision");
+  const learnMoreText = getLocalizedString("core.provision.learnMore");
+
+  let confirm: string | undefined;
+  do {
+    const confirmRes = await ctx.userInteraction.showMessage(
+      "warn",
+      accountsInfo + "\n" + confirmMsg,
+      true,
+      provisionText,
+      learnMoreText
+    );
+    confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
+    if (confirm !== provisionText) {
+      if (confirm === learnMoreText) {
+        ctx.userInteraction.openUrl(
+          "https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/provision"
+        ); // TODO: update link to the doc
+      } else {
+        return err(new UserError(SolutionSource, "CancelProvision", "CancelProvision"));
+      }
+    }
+  } while (confirm === learnMoreText);
+
+  return ok(Void);
+}
+
+interface M365TenantRes {
+  tenantIdInToken: string;
+  tenantUserName: string;
+}
 export async function getM365TenantId(
   m365TokenProvider: M365TokenProvider
-): Promise<Result<string, FxError>> {
+): Promise<Result<M365TenantRes, FxError>> {
   // Just to trigger M365 login before the concurrent execution of localDebug.
   // Because concurrent execution of localDebug may getAccessToken() concurrently, which
   // causes 2 M365 logins before the token caching in common lib takes effect.
@@ -756,6 +843,7 @@ export async function getM365TenantId(
     );
   }
   const tenantIdInToken = (appStudioTokenJson as any).tid;
+  const tenantUserName = (appStudioTokenJson as any).upm;
   if (!tenantIdInToken || !(typeof tenantIdInToken === "string")) {
     return err(
       new SystemError(
@@ -766,5 +854,5 @@ export async function getM365TenantId(
       )
     );
   }
-  return ok(tenantIdInToken);
+  return ok({ tenantIdInToken, tenantUserName });
 }

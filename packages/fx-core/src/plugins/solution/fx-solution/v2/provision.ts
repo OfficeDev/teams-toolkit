@@ -45,7 +45,12 @@ import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
 import { Constants } from "../../../resource/appstudio/constants";
 import { BuiltInFeaturePluginNames } from "../v3/constants";
-import { askForProvisionConsent, fillInAzureConfigs, getM365TenantId } from "../v3/provision";
+import {
+  askForProvisionConsent,
+  askForProvisionConsentNew,
+  fillInAzureConfigs,
+  getM365TenantId,
+} from "../v3/provision";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { solutionGlobalVars } from "../v3/solutionGlobalVars";
 import {
@@ -55,6 +60,7 @@ import {
 } from "../../../../common/projectSettingsHelper";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import { sendErrorTelemetryThenReturnError } from "../utils/util";
+import { doesAllowSwitchAccount } from "../../../../core";
 
 function getSubscriptionId(state: Json): string {
   if (state && state[GLOBAL_CONFIG] && state[GLOBAL_CONFIG][SUBSCRIPTION_ID]) {
@@ -138,8 +144,12 @@ async function provisionResourceImpl(
   if (tenantIdInTokenRes.isErr()) {
     return err(tenantIdInTokenRes.error);
   }
-  const tenantIdInToken = tenantIdInTokenRes.value;
-  if (tenantIdInConfig && tenantIdInToken && tenantIdInToken !== tenantIdInConfig) {
+  const tenantIdInToken = tenantIdInTokenRes.value.tenantIdInToken;
+
+  const isSwitchAccountEnabled = doesAllowSwitchAccount();
+  const hasSwitchedM365Tenant =
+    tenantIdInConfig && tenantIdInToken && tenantIdInToken !== tenantIdInConfig;
+  if (hasSwitchedM365Tenant && !isSwitchAccountEnabled) {
     return err(
       new UserError(
         "Solution",
@@ -147,7 +157,10 @@ async function provisionResourceImpl(
         getLocalizedString("error.M365AccountNotMatch", envInfo.envName)
       )
     );
+  } else if (hasSwitchedM365Tenant && isSwitchAccountEnabled) {
+    //
   }
+
   if (!tenantIdInConfig) {
     teamsAppResource.tenantId = tenantIdInToken;
     solutionConfig.teamsAppTenantId = tenantIdInToken;
@@ -176,12 +189,25 @@ async function provisionResourceImpl(
       return err(solutionConfigRes.error);
     }
 
-    if (!solutionConfigRes.value.hasSwitchedSubscription) {
+    if (!solutionConfigRes.value.hasSwitchedSubscription && !isSwitchAccountEnabled) {
       // ask for provision consent
       const consentResult = await askForProvisionConsent(
         ctx,
         tokenProvider.azureAccountProvider,
         envInfo as v3.EnvInfoV3
+      );
+      if (consentResult.isErr()) {
+        return err(consentResult.error);
+      }
+    } else if (isSwitchAccountEnabled) {
+      const consentResult = await askForProvisionConsentNew(
+        ctx,
+        tokenProvider.azureAccountProvider,
+        envInfo as v3.EnvInfoV3,
+        hasSwitchedM365Tenant,
+        solutionConfigRes.value.hasSwitchedSubscription,
+        tenantIdInTokenRes.value.tenantUserName,
+        true
       );
       if (consentResult.isErr()) {
         return err(consentResult.error);
@@ -203,6 +229,19 @@ async function provisionResourceImpl(
 
     if (solutionConfigRes.value.hasSwitchedSubscription) {
       await updateResourceBaseName(inputs.projectPath, ctx.projectSetting.appName, envInfo.envName);
+    }
+  } else if (hasSwitchedM365Tenant && isSwitchAccountEnabled) {
+    const consentResult = await askForProvisionConsentNew(
+      ctx,
+      tokenProvider.azureAccountProvider,
+      envInfo as v3.EnvInfoV3,
+      hasSwitchedM365Tenant,
+      solutionConfigRes.value.hasSwitchedSubscription,
+      tenantIdInTokenRes.value.tenantUserName,
+      false
+    );
+    if (consentResult.isErr()) {
+      return err(consentResult.error);
     }
   }
 

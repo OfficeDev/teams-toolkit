@@ -9,7 +9,7 @@ Send a plain text message to a notification target.
 <b>Signature:</b>
 
 ```typescript
-export declare function sendMessage(target: NotificationTarget, text: string): Promise<void>;
+export declare function sendMessage(target: NotificationTarget, text: string): Promise<MessageResponse>;
 ```
 
 ## Parameters
@@ -21,7 +21,7 @@ export declare function sendMessage(target: NotificationTarget, text: string): P
 
 <b>Returns:</b>
 
-Promise&lt;void&gt;
+Promise&lt;MessageResponse&gt;
 
-A `Promise` representing the asynchronous operation.
+the response of sending message.
 

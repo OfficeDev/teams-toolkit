@@ -478,8 +478,8 @@ export async function openFolder(
       "info",
       localize("teamstoolkit.handlers.openProject.title"),
       false,
-      localize("teamstoolkit.handlers.openInCurrentWindow"),
-      localize("teamstoolkit.handlers.openInNewWindow")
+      localize("teamstoolkit.handlers.openInNewWindow"),
+      localize("teamstoolkit.handlers.openInCurrentWindow")
     );
     if (selection.isOk()) {
       clearTimeout(autoOpenTimeout);

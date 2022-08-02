@@ -94,4 +94,8 @@ export class MockCore implements Core {
   async listCollaborator(inputs: Inputs): Promise<Result<any, FxError>> {
     return ok("");
   }
+
+  async getProjectConfig(inputs: Inputs): Promise<Result<any, FxError>> {
+    return ok("");
+  }
 }

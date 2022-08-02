@@ -26,7 +26,6 @@ import M365Login from "../../../src/commonlib/m365Login";
 
 describe("Add SSO", () => {
   const testFolder = getTestFolder();
-  const subscription = getSubscriptionId();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
 
@@ -34,6 +33,7 @@ describe("Add SSO", () => {
   env["TEAMSFX_AAD_MANIFEST"] = "true";
   env["TEAMSFX_CONFIG_UNIFY"] = "true";
   env["TEAMSFX_INIT_APP"] = "true";
+  env["TEAMSFX_APIV3"] = "true";
 
   after(async () => {
     await cleanUp(appName, projectPath, true, false, false);

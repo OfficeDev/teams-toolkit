@@ -123,6 +123,7 @@ import {
   TelemetrySuccess,
   TelemetryTriggerFrom,
   TelemetryUpdateAppReason,
+  VSCodeWindowChoice,
 } from "./telemetry/extTelemetryEvents";
 import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewProvider";
 import { AzureAccountNode } from "./treeview/account/azureNode";
@@ -469,6 +470,9 @@ async function openFolder(
   } else {
     const autoOpenTimeout = setTimeout(() => {
       commands.executeCommand("vscode.openFolder", folderPath, true);
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenNewProject, {
+        [TelemetryProperty.VscWindow]: VSCodeWindowChoice.NewWindowByDefault,
+      });
     }, 10000);
     const selection = await VS_CODE_UI.showMessage(
       "info",
@@ -480,6 +484,11 @@ async function openFolder(
     if (selection.isOk()) {
       clearTimeout(autoOpenTimeout);
       const openInNewWindow = selection.value === localize("teamstoolkit.handlers.openInNewWindow");
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenNewProject, {
+        [TelemetryProperty.VscWindow]: openInNewWindow
+          ? VSCodeWindowChoice.NewWindow
+          : VSCodeWindowChoice.CurrentWindow,
+      });
       if (openInNewWindow) {
         commands.executeCommand("vscode.openFolder", folderPath, true);
       } else {

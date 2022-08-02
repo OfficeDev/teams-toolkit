@@ -453,7 +453,7 @@ export async function initProjectHandler(args?: any[]): Promise<Result<any, FxEr
   return result;
 }
 
-async function openFolder(
+export async function openFolder(
   folderPath: Uri,
   showLocalDebugMessage: boolean,
   showLocalPreviewMessage: boolean,
@@ -509,9 +509,13 @@ export async function updateAutoOpenGlobalKey(
   projectUri: Uri,
   args?: any[]
 ): Promise<void> {
-  if (isTriggerFromWalkThrough(args) && !(await getIsFromSample(projectUri.fsPath))) {
+  const isSample = await getIsFromSample(projectUri.fsPath);
+  if (isTriggerFromWalkThrough(args) && !isSample) {
     await globalStateUpdate(GlobalKey.OpenWalkThrough, true);
     await globalStateUpdate(GlobalKey.OpenReadMe, "");
+  } else if (isSample) {
+    await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
+    await globalStateUpdate(GlobalKey.OpenSampleReadMe, true);
   } else {
     await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
     await globalStateUpdate(GlobalKey.OpenReadMe, projectUri.fsPath);

@@ -7,7 +7,6 @@
 
 import path from "path";
 import {
-  getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
   cleanUp,
@@ -67,7 +66,7 @@ describe("Add SSO V3", () => {
       expect(readmeExists).to.be.true;
     }
 
-    await CliHelper.provisionProject(projectPath, "", env);
+    await CliHelper.provisionProject(projectPath, "");
 
     // Assert
     const context = await readContextMultiEnv(projectPath, "dev");

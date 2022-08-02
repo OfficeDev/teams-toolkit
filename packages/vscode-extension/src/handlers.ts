@@ -473,7 +473,7 @@ export async function openFolder(
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenNewProject, {
         [TelemetryProperty.VscWindow]: VSCodeWindowChoice.NewWindowByDefault,
       });
-    }, 10000);
+    }, 5000);
     const selection = await VS_CODE_UI.showMessage(
       "info",
       localize("teamstoolkit.handlers.openProject.title"),

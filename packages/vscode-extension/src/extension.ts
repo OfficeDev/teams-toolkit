@@ -50,7 +50,6 @@ import {
   canUpgradeToArmAndMultiEnv,
   delay,
   isM365Project,
-  isSupportAutoOpenAPI,
   isValidNode,
   syncFeatureFlags,
 } from "./utils/commonUtils";
@@ -156,17 +155,13 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
     "createProject"
   );
   context.subscriptions.push(
-    vscode.commands.registerCommand("fx-extension.getNewProjectPath", async (...args) => {
-      if (!isSupportAutoOpenAPI()) {
-        Correlator.run(handlers.createNewProjectHandler, args);
-      } else {
-        const targetUri = await Correlator.run(handlers.getNewProjectPathHandler, args);
-        if (targetUri.isOk()) {
-          await handlers.updateAutoOpenGlobalKey(true, false, targetUri.value, args);
-          await ExtTelemetry.dispose();
-          await delay(2000);
-          return { openFolder: targetUri.value };
-        }
+    vscode.commands.registerCommand("fx-extension.createFromWalkthrough", async (...args) => {
+      const targetUri = await Correlator.run(handlers.createProjectFromWalkthroughHandler, args);
+      if (targetUri.isOk()) {
+        await handlers.updateAutoOpenGlobalKey(true, false, targetUri.value, args);
+        await ExtTelemetry.dispose();
+        await delay(2000);
+        return { openFolder: targetUri.value };
       }
     })
   );
@@ -831,6 +826,13 @@ async function runBackgroundAsyncTasks(
     .getTreatmentVariableAsync(
       TreatmentVariables.VSCodeConfig,
       TreatmentVariables.EmbeddedSurvey,
+      true
+    )) as boolean | undefined;
+  TreatmentVariableValue.openFolderInNewWindow = (await exp
+    .getExpService()
+    .getTreatmentVariableAsync(
+      TreatmentVariables.VSCodeConfig,
+      TreatmentVariables.OpenFolderInNewWindow,
       true
     )) as boolean | undefined;
   if (!TreatmentVariableValue.isEmbeddedSurvey) {

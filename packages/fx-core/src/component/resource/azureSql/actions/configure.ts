@@ -80,7 +80,7 @@ export class ConfigureActionImplement {
     await sqlMgrClient.addLocalFirewallRule();
 
     const adminInfo = await UtilFunctions.parseLoginToken(ctx.tokenProvider.azureAccountProvider);
-    actionContext.progressBar?.next(ConfigureActionImplement.progressMessage.addAadmin);
+    await actionContext.progressBar?.next(ConfigureActionImplement.progressMessage.addAadmin);
     const existAdmin = await UtilFunctions.CheckAndSetAadAdmin(
       sqlMgrClient,
       adminInfo.name,
@@ -115,7 +115,7 @@ export class ConfigureActionImplement {
 
     if (!skipAddingUser) {
       if (adminInfo.userType === UserType.User) {
-        actionContext.progressBar?.next(ConfigureActionImplement.progressMessage.addUser);
+        await actionContext.progressBar?.next(ConfigureActionImplement.progressMessage.addUser);
         const sqlClient = await SqlClient.create(ctx.tokenProvider.azureAccountProvider, sqlConfig);
         actionContext.logger?.info(Message.addDatabaseUser(identity));
         await UtilFunctions.addDatabaseUser(ctx.logProvider, sqlClient, sqlMgrClient);

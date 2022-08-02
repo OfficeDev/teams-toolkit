@@ -65,7 +65,7 @@ export class ApiCodeProvider {
       appName: appName,
       functionName: functionName,
     };
-    actionContext?.progressBar?.next(ProgressMessages.scaffoldApi);
+    await actionContext?.progressBar?.next(ProgressMessages.scaffoldApi);
     await FunctionScaffold.scaffoldFunction(
       workingDir,
       language,
@@ -110,7 +110,7 @@ export class ApiCodeProvider {
       }
     }
 
-    actionContext?.progressBar?.next(ProgressMessages.buildingApi);
+    await actionContext?.progressBar?.next(ProgressMessages.buildingApi);
     await FunctionDeploy.build(buildPath, language as FunctionLanguage);
     return ok(undefined);
   }

@@ -46,6 +46,7 @@ import {
 import { Constants } from "../../plugins/resource/aad/constants";
 import { AADManifest } from "../../plugins/resource/aad/interfaces/AADManifest";
 import { generateAadManifestTemplate } from "../generateAadManifestTemplate";
+import { isOfficeAddinEnabled, isOfficeAddinProject } from "../../common";
 
 const upgradeButton = "Upgrade";
 const LearnMore = "Learn More";
@@ -155,6 +156,17 @@ export async function needConsolidateLocalRemote(ctx: CoreHookContext): Promise<
   const fxExist = await fs.pathExists(path.join(inputs.projectPath as string, ".fx"));
   if (!fxExist) {
     return false;
+  }
+  if (isOfficeAddinEnabled()) {
+    const loadRes = await loadProjectSettings(inputs, true);
+    if (loadRes.isErr()) {
+      ctx.result = err(loadRes.error);
+      return false;
+    }
+
+    if (isOfficeAddinProject(loadRes.value)) {
+      return false;
+    }
   }
 
   const consolidateManifestExist = await fs.pathExists(

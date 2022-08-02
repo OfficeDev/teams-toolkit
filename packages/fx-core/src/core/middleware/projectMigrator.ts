@@ -78,6 +78,7 @@ import { LocalEnvProvider } from "../../common/local/localEnvProvider";
 import { CoreHookContext } from "../types";
 import { TOOLS } from "../globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
+import { isOfficeAddinEnabled, isOfficeAddinProject } from "../../common";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
@@ -877,6 +878,9 @@ async function cleanup(projectPath: string, backupFolder: string | undefined): P
 
 export async function needMigrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<boolean> {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  if (isOfficeAddinEnabled() && isOfficeAddinProject(ctx.projectSettings)) {
+    return false;
+  }
   if (!inputs.projectPath) {
     return false;
   }

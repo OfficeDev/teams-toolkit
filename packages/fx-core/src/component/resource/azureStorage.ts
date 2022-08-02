@@ -66,11 +66,11 @@ export class AzureStorageResource extends AzureResource {
       if (frontendConfigRes.isErr()) {
         return err(frontendConfigRes.error);
       }
-      actionContext?.progressBar?.next(ProgressMessages.enableStaticWebsite);
+      await actionContext?.progressBar?.next(ProgressMessages.enableStaticWebsite);
       const client = new AzureStorageClient(frontendConfigRes.value);
       await client.enableStaticWebsite();
     } else {
-      actionContext?.progressBar?.next("");
+      await actionContext?.progressBar?.next("");
     }
     return ok(undefined);
   }

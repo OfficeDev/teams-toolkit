@@ -122,8 +122,8 @@ async function grantPermissionImpl(
       );
     }
 
-    progressBar?.start();
-    progressBar?.next(getLocalizedString("core.collaboration.GrantPermissionForUser", email));
+    await progressBar?.start();
+    await progressBar?.next(getLocalizedString("core.collaboration.GrantPermissionForUser", email));
 
     if (platform === Platform.CLI) {
       const aadAppTenantId = envState.get(PluginNames.SOLUTION)?.get(REMOTE_TEAMS_APP_TENANT_ID);

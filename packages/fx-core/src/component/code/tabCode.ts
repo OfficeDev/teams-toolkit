@@ -172,7 +172,7 @@ export class TabCodeProvider {
     const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
     if (!teamsTab) return ok(undefined);
     if (teamsTab.folder == undefined) throw new BadComponent("tab", this.name, "folder");
-    actionContext?.progressBar?.next(ProgressMessages.buildingTab);
+    await actionContext?.progressBar?.next(ProgressMessages.buildingTab);
     const tabPath = path.resolve(inputs.projectPath, teamsTab.folder);
     const artifactFolder = isVSProject(context.projectSetting)
       ? await this.doBlazorBuild(tabPath)

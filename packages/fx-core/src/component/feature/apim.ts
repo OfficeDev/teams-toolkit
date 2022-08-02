@@ -127,7 +127,7 @@ export class ApimFeature {
       await answer.validate(PluginLifeCycle.Scaffold, apimConfig, inputs.projectPath);
     }
     answer.save(PluginLifeCycle.Scaffold, apimConfig);
-    actionContext?.progressBar?.next(ProgressMessages[ProgressStep.Scaffold].Scaffold);
+    await actionContext?.progressBar?.next(ProgressMessages[ProgressStep.Scaffold].Scaffold);
     await scaffoldManager.scaffold(appName, inputs.projectPath);
     return ok(undefined);
   }

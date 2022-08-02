@@ -85,7 +85,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
           action.progressTitle || methodName,
           action.progressSteps || 1
         );
-        progressBar.start();
+        await progressBar.start();
       }
       if (action.enableTelemetry || action.enableProgressBar) {
         const actionContext: ActionContext = {
@@ -103,10 +103,10 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
           [TelemetryConstants.properties.success]: TelemetryConstants.values.yes,
         });
       }
-      progressBar?.end(true);
+      await progressBar?.end(true);
       TOOLS.logProvider.info(`execute [${actionName}] success!`);
     } catch (e) {
-      progressBar?.end(false);
+      await progressBar?.end(false);
       let fxError;
       if (action.errorHandler) {
         fxError = action.errorHandler(e, telemetryProps);

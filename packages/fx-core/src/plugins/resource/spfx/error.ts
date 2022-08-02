@@ -100,35 +100,50 @@ export function UploadAppPackageFailedError(error: Error): SystemError {
   );
 }
 
-export function NpmNotFoundError(): SystemError {
-  return new SystemError(
-    Constants.PLUGIN_NAME,
-    "NpmNotFound",
-    getDefaultString("plugins.spfx.error.npmNotFound"),
-    getLocalizedString("plugins.spfx.error.npmNotFound")
-  );
+export function NpmNotFoundError(): UserError {
+  return new UserError({
+    source: Constants.PLUGIN_NAME,
+    name: "NpmNotFound",
+    message: getDefaultString("plugins.spfx.error.npmNotFound"),
+    displayMessage: getLocalizedString("plugins.spfx.error.npmNotFound"),
+    helpLink: Constants.SPFX_HELP_LINK,
+  });
 }
 
-export function NpmVersionNotSupportedError(version: string): SystemError {
-  return new SystemError(
-    Constants.PLUGIN_NAME,
-    "NpmVersionNotSupported",
-    getDefaultString("plugins.spfx.error.npmVersionNotSupported", version, Constants.SPFX_VERSION),
-    getLocalizedString("plugins.spfx.error.npmVersionNotSupported", version, Constants.SPFX_VERSION)
-  );
+export function NpmVersionNotSupportedError(version: string): UserError {
+  return new UserError({
+    source: Constants.PLUGIN_NAME,
+    name: "NpmVersionNotSupported",
+    message: getDefaultString(
+      "plugins.spfx.error.npmVersionNotSupported",
+      version,
+      Constants.SPFX_VERSION
+    ),
+    displayMessage: getLocalizedString(
+      "plugins.spfx.error.npmVersionNotSupported",
+      version,
+      Constants.SPFX_VERSION
+    ),
+    helpLink: Constants.SPFX_HELP_LINK,
+  });
 }
 
-export function NodeVersionNotSupportedError(version: string): SystemError {
-  return new SystemError(
-    Constants.PLUGIN_NAME,
-    "NodeVersionNotSupported",
-    getDefaultString("plugins.spfx.error.nodeVersionNotSupported", version, Constants.SPFX_VERSION),
-    getLocalizedString(
+export function NodeVersionNotSupportedError(version: string): UserError {
+  return new UserError({
+    source: Constants.PLUGIN_NAME,
+    name: "NodeVersionNotSupported",
+    message: getDefaultString(
       "plugins.spfx.error.nodeVersionNotSupported",
       version,
       Constants.SPFX_VERSION
-    )
-  );
+    ),
+    displayMessage: getLocalizedString(
+      "plugins.spfx.error.nodeVersionNotSupported",
+      version,
+      Constants.SPFX_VERSION
+    ),
+    helpLink: Constants.SPFX_HELP_LINK,
+  });
 }
 
 export function NpmInstallError(error: Error): SystemError {

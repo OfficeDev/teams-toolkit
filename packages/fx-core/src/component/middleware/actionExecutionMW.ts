@@ -106,7 +106,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
       await progressBar?.end(true);
       TOOLS.logProvider.info(`execute [${actionName}] success!`);
     } catch (e) {
-      progressBar?.end(false);
+      await progressBar?.end(false);
       let fxError;
       if (action.errorHandler) {
         fxError = action.errorHandler(e, telemetryProps);

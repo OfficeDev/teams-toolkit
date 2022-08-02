@@ -321,10 +321,9 @@ export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): Pro
       settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-aad-app-for-teams");
     }
     const teamsTab = getComponent(settingsV3, ComponentNames.TeamsTab);
-    const hasSSO = teamsTab?.sso || aad !== undefined;
     if (teamsTab) {
       settingsV2.solutionSettings.capabilities.push("Tab");
-      if (hasSSO) {
+      if (teamsTab.sso) {
         settingsV2.solutionSettings.capabilities.push("TabSSO");
       }
       settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-frontend-hosting");
@@ -338,7 +337,7 @@ export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): Pro
         botCapabilities?.includes("command-response")
       ) {
         settingsV2.solutionSettings.capabilities.push("Bot");
-        if (teamsBot.sso || hasSSO) {
+        if (teamsBot.sso) {
           settingsV2.solutionSettings.capabilities.push("BotSSO");
         }
       }

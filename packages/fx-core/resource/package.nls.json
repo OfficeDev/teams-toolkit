@@ -887,7 +887,7 @@
   "depChecker.depsNotFound": "Cannot find @SupportedPackages.\n\nTeams Toolkit requires these dependencies.\n\nClick \"Install\" to install @InstallPackages.",
   "depChecker.linuxDepsNotFound": "Cannot find @SupportedPackages. Install @SupportedPackages manually and restart Visual Studio Code.",
   "depChecker.linuxDepsNotFoundHelpLinkMessage": "Cannot find @SupportedPackages.\n\nTeams Toolkit requires these dependencies.",
-  "error.ActionNotExist": "Action not found: %s",
-  "error.ComponentNotExist": "Component not found: %s",
-  "error.BadComponent": "Component '%s' lacks of property: %s"
+  "error.ActionNotExist": "Action not found: %s.",
+  "error.ComponentNotExist": "Component not found: %s.",
+  "error.BadComponent": "Component '%s' lacks of property: %s."
 }

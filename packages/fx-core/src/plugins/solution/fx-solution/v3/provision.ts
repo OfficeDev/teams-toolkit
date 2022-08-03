@@ -37,7 +37,6 @@ import {
 import { AppStudioScopes, getHashedEnv, getResourceGroupInPortal } from "../../../../common/tools";
 import { convertToAlphanumericOnly } from "../../../../common/utils";
 import { ComponentNames } from "../../../../component/constants";
-import { doesAllowSwitchAccount } from "../../../../core";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import arm, { updateResourceBaseName } from "../arm";
 import { ResourceGroupInfo } from "../commonQuestions";

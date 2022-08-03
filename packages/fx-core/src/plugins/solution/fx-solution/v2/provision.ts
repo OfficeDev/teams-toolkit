@@ -69,7 +69,7 @@ export async function provisionResource(
   envInfo: v2.EnvInfoV2,
   tokenProvider: TokenProvider
 ): Promise<Result<Void, FxError>> {
-  const env = !env ? "" : getHashedEnv(inputs.env);
+  const env = !inputs.env ? "" : getHashedEnv(inputs.env);
   ctx.telemetryReporter.sendTelemetryEvent(SolutionTelemetryEvent.ProvisionStart, {
     [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
     [SolutionTelemetryProperty.SubscriptionId]: getSubscriptionId(envInfo.state),

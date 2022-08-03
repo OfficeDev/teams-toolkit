@@ -1515,13 +1515,7 @@ export default class Preview extends YargsCommand {
         localEnv.state["solution"]["teamsAppTenantId"] &&
         localEnv.state["solution"]["teamsAppTenantId"] != tenantId
       ) {
-        const message = [
-          {
-            content: constants.m365SwitchedMessage,
-            color: Colors.WHITE,
-          },
-        ];
-        cliLogger.necessaryLog(LogLevel.Info, utils.getColorizedString(message));
+        cliLogger.necessaryLog(LogLevel.Warning, constants.m365SwitchedMessage);
       }
     }
 

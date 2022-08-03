@@ -26,7 +26,11 @@ import { Container } from "typedi";
 import { createV2Context, deepCopy, isExistingTabAppEnabled } from "../../common/tools";
 import { newProjectSettings } from "../../common/projectSettingsHelper";
 import { SPFxPluginV3 } from "../../plugins/resource/spfx/v3";
-import { ExistingTabOptionItem, TabSPFxItem } from "../../plugins/solution/fx-solution/question";
+import {
+  ExistingTabOptionItem,
+  TabSPFxItem,
+  TabSPFxNewUIItem,
+} from "../../plugins/solution/fx-solution/question";
 import {
   BuiltInFeaturePluginNames,
   BuiltInSolutionNames,
@@ -449,7 +453,9 @@ async function getQuestionsForCreateProjectWithoutDotNet(
     }
     const spfxNodeRes = await getSPFxScaffoldQuestion();
     if (spfxNodeRes.isOk()) {
-      capNode.addChild(spfxNodeRes.value);
+      const spfxNode = spfxNodeRes.value;
+      spfxNode.condition = { equals: TabSPFxNewUIItem.id };
+      capNode.addChild(spfxNode);
     }
   }
   // Language
@@ -529,7 +535,9 @@ async function getQuestionsForCreateProjectWithDotNet(
     }
     const spfxNodeRes = await getSPFxScaffoldQuestion();
     if (spfxNodeRes.isOk()) {
-      dotnetCapNode.addChild(spfxNodeRes.value);
+      const spfxNode = spfxNodeRes.value;
+      spfxNode.condition = { equals: TabSPFxNewUIItem.id };
+      dotnetCapNode.addChild(spfxNode);
     }
   }
 

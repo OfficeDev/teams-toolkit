@@ -178,7 +178,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           provision: false,
           folder: "",
           artifactFolder: "bin\\Release\\net6.0\\win-x86\\publish",
-          sso: solutionSettings.capabilities.includes("TabSSO") || hasAAD,
+          sso: solutionSettings.capabilities.includes("TabSSO"),
         };
         settingsV3.components.push(teamsTab);
       } else {
@@ -188,7 +188,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           build: true,
           provision: true,
           folder: "tabs",
-          sso: solutionSettings.capabilities.includes("TabSSO") || hasAAD,
+          sso: solutionSettings.capabilities.includes("TabSSO"),
         };
         settingsV3.components.push(teamsTab);
       }
@@ -203,6 +203,20 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           provision: true,
         });
       }
+    }
+    if (solutionSettings.activeResourcePlugins.includes("fx-resource-spfx")) {
+      const teamsTab: any = {
+        hosting: "spfx",
+        name: "teams-tab",
+        build: true,
+        provision: true,
+        folder: "SPFx",
+      };
+      settingsV3.components.push(teamsTab);
+      settingsV3.components.push({
+        name: "spfx",
+        provision: true,
+      });
     }
     if (solutionSettings.activeResourcePlugins.includes("fx-resource-bot")) {
       const hostType = settingsV2.pluginSettings?.["fx-resource-bot"]?.["host-type"];
@@ -313,9 +327,11 @@ export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): Pro
         "fx-resource-local-debug",
         "fx-resource-appstudio",
         "fx-resource-cicd",
-        "fx-resource-api-connector",
       ],
     };
+    if (hostType === "Azure") {
+      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-api-connector");
+    }
     const aad = getComponent(settingsV3, ComponentNames.AadApp);
     if (aad) {
       settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-aad-app-for-teams");
@@ -326,7 +342,11 @@ export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): Pro
       if (teamsTab.sso) {
         settingsV2.solutionSettings.capabilities.push("TabSSO");
       }
-      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-frontend-hosting");
+      if (teamsTab.hosting === "spfx") {
+        settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-spfx");
+      } else {
+        settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-frontend-hosting");
+      }
     }
     const teamsBot = getComponent(settingsV3, ComponentNames.TeamsBot);
     if (teamsBot) {

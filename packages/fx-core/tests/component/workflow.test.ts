@@ -1,7 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FuncQuestion, InputsWithProjectPath, ok, Platform, Void } from "@microsoft/teamsfx-api";
+import {
+  FuncQuestion,
+  InputsWithProjectPath,
+  ok,
+  Platform,
+  ResourceContextV3,
+  Void,
+} from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
@@ -13,8 +20,8 @@ import * as templateAction from "../../src/common/template-utils/templatesAction
 import "../../src/component/core";
 import "../../src/component/feature/bot";
 import "../../src/component/feature/sql";
+import "../../src/component/resource/botService";
 import { createContextV3 } from "../../src/component/utils";
-import { runAction } from "../../src/component/workflow";
 import { MockTools, randomAppName } from "../core/utils";
 import * as provisionV3 from "../../src/plugins/solution/fx-solution/v3/provision";
 import { AppStudioClient } from "../../src/plugins/resource/appstudio/appStudio";
@@ -38,6 +45,10 @@ import { DefaultManifestProvider } from "../../src/component/resource/appManifes
 import { ComponentNames } from "../../src/component/constants";
 import { AzureSolutionQuestionNames } from "../../src";
 import { FunctionScaffold } from "../../src/plugins/resource/function/ops/scaffold";
+import { TeamsfxCore } from "../../src/component/core";
+import Container from "typedi";
+import { AzureStorageResource } from "../../src/component/resource/azureStorage";
+import mockedEnv, { RestoreFn } from "mocked-env";
 describe("Workflow test for v3", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -45,12 +56,16 @@ describe("Workflow test for v3", () => {
   const appName = `unittest${randomAppName()}`;
   const projectPath = path.join(os.homedir(), "TeamsApps", appName);
   const context = createContextV3();
+  const fx = Container.get<TeamsfxCore>("fx");
+  let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
+    mockedEnvRestore = mockedEnv({ SWITCH_ACCOUNT: "false" });
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
   });
 
   afterEach(() => {
     sandbox.restore();
+    mockedEnvRestore();
   });
 
   after(async () => {
@@ -64,7 +79,7 @@ describe("Workflow test for v3", () => {
       "app-name": appName,
       folder: path.join(os.homedir(), "TeamsApps"),
     };
-    const res = await runAction("fx.init", context, inputs);
+    const res = await fx.init(context, inputs);
     assert.isTrue(res.isOk());
     assert.equal(context.projectSetting!.appName, appName);
     assert.deepEqual(context.projectSetting.components, []);
@@ -78,7 +93,8 @@ describe("Workflow test for v3", () => {
       language: "typescript",
     };
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
-    const res = await runAction("teams-bot.add", context, inputs);
+    const component = Container.get("teams-bot") as any;
+    const res = await component.add(context, inputs);
     if (res.isErr()) {
       console.log(res.error);
     }
@@ -105,7 +121,8 @@ describe("Workflow test for v3", () => {
       [SPFXQuestionNames.webpart_name]: "hello",
       [SPFXQuestionNames.framework_type]: "none",
     };
-    const res = await runAction("spfx-tab.add", context, inputs);
+    const component = Container.get("spfx-tab") as any;
+    const res = await component.add(context, inputs);
     if (res.isErr()) {
       console.log(res.error);
     }
@@ -118,7 +135,20 @@ describe("Workflow test for v3", () => {
       platform: Platform.VSCode,
       ["function-name"]: "getUserProfile",
     };
-    const res = await runAction("sql.add", context, inputs);
+    const component = Container.get("sql") as any;
+    const res = await component.add(context, inputs);
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    assert.isTrue(res.isOk());
+  });
+  it("sso.add", async () => {
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+    };
+    const component = Container.get("sso") as any;
+    const res = await component.add(context, inputs);
     if (res.isErr()) {
       console.log(res.error);
     }
@@ -131,7 +161,8 @@ describe("Workflow test for v3", () => {
       platform: Platform.VSCode,
       ["function-name"]: "getUserProfile",
     };
-    const res = await runAction("apim-feature.add", context, inputs);
+    const component = Container.get("apim-feature") as any;
+    const res = await component.add(context, inputs);
     if (res.isErr()) {
       console.log(res.error);
     }
@@ -169,13 +200,13 @@ describe("Workflow test for v3", () => {
       "app-name": appName,
       folder: path.join(os.homedir(), "TeamsApps"),
     };
-    const initRes = await runAction("fx.init", context, inputs);
+    const initRes = await fx.init(context, inputs);
     if (initRes.isErr()) {
       console.log(initRes.error);
     }
     assert.isTrue(initRes.isOk());
-
-    const addBotRes = await runAction("teams-bot.add", context, inputs);
+    const component = Container.get("teams-bot") as any;
+    const addBotRes = await component.add(context, inputs);
     if (addBotRes.isErr()) {
       console.log(addBotRes.error);
     }
@@ -210,7 +241,8 @@ describe("Workflow test for v3", () => {
         clientId: "00000000-0000-0000-0000-000000000000",
       },
     };
-    const provisionRes = await runAction("fx.provision", context, inputs);
+
+    const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
     if (provisionRes.isErr()) {
       console.log(provisionRes.error);
     }
@@ -246,13 +278,13 @@ describe("Workflow test for v3", () => {
       "app-name": appName,
       folder: path.join(os.homedir(), "TeamsApps"),
     };
-    const initRes = await runAction("fx.init", context, inputs);
+    const initRes = await fx.init(context, inputs);
     if (initRes.isErr()) {
       console.log(initRes.error);
     }
     assert.isTrue(initRes.isOk());
-
-    const addBotRes = await runAction("teams-bot.add", context, inputs);
+    const teamsBot = Container.get("teams-bot") as any;
+    const addBotRes = await teamsBot.add(context, inputs);
     if (addBotRes.isErr()) {
       console.log(addBotRes.error);
     }
@@ -281,11 +313,84 @@ describe("Workflow test for v3", () => {
         endpoint: "https://testwebApp.azurewebsites.net",
       },
     };
-    const provisionRes = await runAction("fx.provision", context, inputs);
+    const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
     if (provisionRes.isErr()) {
       console.log(provisionRes.error);
     }
     assert.isTrue(provisionRes.isOk());
+  });
+
+  it("fx.provision local debug after switching m365 tenant", async () => {
+    const newParam = { SWITCH_ACCOUNT: "true" };
+    mockedEnvRestore = mockedEnv(newParam);
+    sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
+    sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
+    sandbox
+      .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
+      .resolves(ok({ tid: "mockSwitchedTid", upn: "mockUpn" }));
+    sandbox
+      .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
+      .resolves(TestHelper.fakeCredential);
+    sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
+    sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
+    sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
+    sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
+    sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
+      clientId: "mockClientId",
+      clientSecret: "mockClientSecret",
+      objectId: "mockObjectId",
+    });
+    const appName = `unittest${randomAppName()}`;
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+      features: "Bot",
+      language: "typescript",
+      "app-name": appName,
+      folder: path.join(os.homedir(), "TeamsApps"),
+      checkerInfo: {
+        skipNgrok: true,
+      },
+    };
+    const initRes = await fx.init(context, inputs);
+    if (initRes.isErr()) {
+      console.log(initRes.error);
+    }
+    assert.isTrue(initRes.isOk());
+
+    context.projectSetting.components = [
+      {
+        name: "teams-bot",
+        build: true,
+        capabilities: ["bot"],
+        deploy: true,
+        folder: "bot",
+        hosting: "azure-web-app",
+      },
+    ];
+    context.envInfo = newEnvInfoV3("local");
+    context.tokenProvider = tools.tokenProvider;
+    context.envInfo.state = {
+      solution: {
+        provisionSucceeded: true,
+        teamsAppTenantId: "mockTid",
+      },
+      "app-manifest": {
+        tenantId: "mockTid",
+        teamsAppId: "mockTeamsAppId",
+      },
+    };
+    context.envInfo.config.bot = {
+      siteEndpoint: "https://localtest:3978",
+    };
+    const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
+    if (provisionRes.isErr()) {
+      console.log(provisionRes.error);
+    }
+    assert.isTrue(provisionRes.isOk());
+    assert.isTrue(context.envInfo.state.solution.teamsAppTenantId === "mockSwitchedTid");
+    assert.isTrue(context.envInfo.state.solution.provisionSucceeded);
+    assert.isTrue(context.envInfo.state["app-manifest"]["tenantId"] === "mockSwitchedTid");
   });
 
   it("azure-storage.deploy", async () => {
@@ -298,6 +403,8 @@ describe("Workflow test for v3", () => {
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
+      folder: path.join(projectPath, "tabs"),
+      componentId: "teams-tab",
     };
     context.envInfo = newEnvInfoV3();
     context.tokenProvider = tools.tokenProvider;
@@ -320,12 +427,14 @@ describe("Workflow test for v3", () => {
         endpoint: "https://testaccount.azurewebsites.net",
       },
     };
-    const addTabRes = await runAction("teams-tab.add", context, inputs);
+    const teamsTab = Container.get("teams-tab") as any;
+    const addTabRes = await teamsTab.add(context, inputs);
     if (addTabRes.isErr()) {
       console.log(addTabRes.error);
     }
     assert.isTrue(addTabRes.isOk());
-    const res = await runAction("azure-storage.deploy", context, inputs);
+    const azureStorage = Container.get<AzureStorageResource>(ComponentNames.AzureStorage);
+    const res = await azureStorage.deploy(context as ResourceContextV3, inputs);
     if (res.isErr()) {
       console.log(res.error);
     }

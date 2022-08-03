@@ -216,13 +216,25 @@
             }
           },
           {
+            "name": "noLabel",
+            "parameters": {
+              "label": "bug"
+            }
+          },
+          {
+            "name": "noLabel",
+            "parameters": {
+              "label": "feature-request"
+            }
+          },
+          {
             "name": "noActivitySince",
             "parameters": {
               "days": 7
             }
           }
         ],
-        "taskName": "[Idle Issue Management] Add no recent activity label to issues",
+        "taskName": "[Idle Issue Management] Add no recent activity label to issues without bug/feature-request label",
         "actions": [
           {
             "name": "addLabel",
@@ -798,6 +810,426 @@
             "name": "addLabel",
             "parameters": {
               "label": "needs attention"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "scheduled",
+      "capabilityId": "ScheduledSearch",
+      "subCapability": "ScheduledSearch",
+      "version": "1.1",
+      "id": "nOx5d9VYtpDeaSLzU_Txu",
+      "config": {
+        "frequency": [
+          {
+            "weekDay": 1,
+            "hours": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23
+            ],
+            "timezoneOffset": 8
+          },
+          {
+            "weekDay": 2,
+            "hours": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23
+            ],
+            "timezoneOffset": 8
+          },
+          {
+            "weekDay": 3,
+            "hours": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23
+            ],
+            "timezoneOffset": 8
+          },
+          {
+            "weekDay": 4,
+            "hours": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23
+            ],
+            "timezoneOffset": 8
+          },
+          {
+            "weekDay": 5,
+            "hours": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23
+            ],
+            "timezoneOffset": 8
+          }
+        ],
+        "searchTerms": [
+          {
+            "name": "isIssue",
+            "parameters": {}
+          },
+          {
+            "name": "isOpen",
+            "parameters": {}
+          },
+          {
+            "name": "hasLabel",
+            "parameters": {
+              "label": "needs more info"
+            }
+          },
+          {
+            "name": "hasLabel",
+            "parameters": {
+              "label": "bug"
+            }
+          },
+          {
+            "name": "noLabel",
+            "parameters": {
+              "label": "no recent activity"
+            }
+          },
+          {
+            "name": "noActivitySince",
+            "parameters": {
+              "days": 7
+            }
+          }
+        ],
+        "taskName": "[Idle Issue Management] Add no recent activity label to issues with bug lable",
+        "actions": [
+          {
+            "name": "addLabel",
+            "parameters": {
+              "label": "no recent activity"
+            }
+          },
+          {
+            "name": "addReply",
+            "parameters": {
+              "comment": "This issue has been automatically marked as stale because it has been marked as requiring author feedback but has not had any activity for **7 days**. As it is labeled with bug, it will be manually handled\n"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "scheduled",
+      "capabilityId": "ScheduledSearch",
+      "subCapability": "ScheduledSearch",
+      "version": "1.1",
+      "id": "nOx1daVYtpDeaSLzU_Txu",
+      "config": {
+        "frequency": [
+          {
+            "weekDay": 1,
+            "hours": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23
+            ],
+            "timezoneOffset": 8
+          },
+          {
+            "weekDay": 2,
+            "hours": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23
+            ],
+            "timezoneOffset": 8
+          },
+          {
+            "weekDay": 3,
+            "hours": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23
+            ],
+            "timezoneOffset": 8
+          },
+          {
+            "weekDay": 4,
+            "hours": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23
+            ],
+            "timezoneOffset": 8
+          },
+          {
+            "weekDay": 5,
+            "hours": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23
+            ],
+            "timezoneOffset": 8
+          }
+        ],
+        "searchTerms": [
+          {
+            "name": "isIssue",
+            "parameters": {}
+          },
+          {
+            "name": "isOpen",
+            "parameters": {}
+          },
+          {
+            "name": "hasLabel",
+            "parameters": {
+              "label": "needs more info"
+            }
+          },
+          {
+            "name": "hasLabel",
+            "parameters": {
+              "label": "feature-request"
+            }
+          },
+          {
+            "name": "noLabel",
+            "parameters": {
+              "label": "no recent activity"
+            }
+          },
+          {
+            "name": "noActivitySince",
+            "parameters": {
+              "days": 7
+            }
+          }
+        ],
+        "taskName": "[Idle Issue Management] Add no recent activity label to issues with feature-request lable",
+        "actions": [
+          {
+            "name": "addLabel",
+            "parameters": {
+              "label": "no recent activity"
+            }
+          },
+          {
+            "name": "addReply",
+            "parameters": {
+              "comment": "This issue has been automatically marked as stale because it has been marked as requiring author feedback but has not had any activity for **7 days**. As it is labeled with feature-request, it will be manually handled\n"
             }
           }
         ]

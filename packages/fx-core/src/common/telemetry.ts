@@ -29,6 +29,11 @@ export enum TelemetryProperty {
   IsSideloadingAllowed = "is-sideloading-allowed",
   NeedMigrateAadManifest = "need-migrate-aad-manifest",
   CheckSideloadingHttpStatus = "check-sideloading-http-status",
+  TemplateGroup = "template-group",
+  TemplateLanguage = "template-language",
+  TemplateScenario = "template-scenario",
+  TemplateFallback = "template-fallback",
+  HasSwitchedSubscription = "has-switched-subscription",
 }
 
 export enum TelemetryEvent {
@@ -40,6 +45,8 @@ export enum TelemetryEvent {
   DecryptUserdata = "decrypt-userdata",
   CheckResourceGroupStart = "check-resource-group-start",
   CheckResourceGroup = "check-resource-group",
+  CheckSubscriptionStart = "check-subscription-start",
+  CheckSubscription = "check-subscription",
   CheckSideloading = "check-sideloading",
   EnvConfig = "env-config",
   ProjectMigratorNotificationStart = "project-migrator-notification-start",
@@ -82,6 +89,8 @@ export enum TelemetryEvent {
   DetectPortStart = "detect-port-start",
   DetectPort = "detect-port",
   FillProjectId = "fill-project-id",
+  ScaffoldFromTemplatesStart = "scaffold-from-templates-start",
+  ScaffoldFromTemplates = "scaffold-from-templates",
 }
 
 export enum TelemetrySuccess {

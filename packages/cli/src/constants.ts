@@ -69,3 +69,7 @@ export const AddFeatureFunc = {
   namespace: "fx-solution-azure",
   method: Stage.addFeature,
 };
+
+export const EmptyQTreeNode = new QTreeNode({ type: "group" });
+
+export const SUPPORTED_SPFX_VERSION = "1.15.0";

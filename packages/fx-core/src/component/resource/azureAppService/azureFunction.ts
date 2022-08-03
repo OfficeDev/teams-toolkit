@@ -3,13 +3,10 @@
 
 import {
   FxError,
-  ok,
-  Result,
-  Action,
-  ContextV3,
-  MaybePromise,
   InputsWithProjectPath,
-  Effect,
+  ok,
+  ResourceContextV3,
+  Result,
 } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
 import { FunctionOutputs, IdentityOutputs } from "../../constants";
@@ -27,36 +24,10 @@ export class AzureFunctionResource extends AzureAppService {
       resourceId: IdentityOutputs.identityResourceId.bicepVariable,
     },
   };
-  configure(
-    context: ContextV3,
+  async configure(
+    context: ResourceContextV3,
     inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const action: Action = {
-      name: "azure-function.configure",
-      type: "function",
-      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok([
-          {
-            type: "service",
-            name: "azure",
-            remarks: "config azure function",
-          },
-        ]);
-      },
-      execute: async (
-        context: ContextV3,
-        inputs: InputsWithProjectPath
-      ): Promise<Result<Effect[], FxError>> => {
-        // Configure APIM
-        return ok([
-          {
-            type: "service",
-            name: "azure",
-            remarks: "config azure function",
-          },
-        ]);
-      },
-    };
-    return ok(action);
+  ): Promise<Result<undefined, FxError>> {
+    return ok(undefined);
   }
 }

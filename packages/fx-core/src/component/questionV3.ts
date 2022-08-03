@@ -20,7 +20,7 @@ import {
   v2,
   v3,
 } from "@microsoft/teamsfx-api";
-import Container from "typedi";
+import { Container } from "typedi";
 import { isVSProject } from "../common/projectSettingsHelper";
 import { HelpLinks } from "../common/constants";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
@@ -37,9 +37,13 @@ import { canAddCICDWorkflows } from "../common/tools";
 import { ComponentNames } from "./constants";
 import { ComponentName2pluginName } from "./migrate";
 import { readAppManifest } from "./resource/appManifest/utils";
-import { getComponent, getQuestionsV3 } from "./workflow";
+import { getComponent } from "./workflow";
 import { STATIC_TABS_MAX_ITEMS } from "../plugins/resource/appstudio/constants";
-import { createHostTypeTriggerQuestion } from "../plugins/resource/bot/question";
+import {
+  createHostTypeTriggerQuestion,
+  getConditionOfNotificationTriggerQuestion,
+  showNotificationTriggerCondition,
+} from "../plugins/resource/bot/question";
 import {
   ApiConnectionOptionItem,
   AzureResourceApimNewUI,
@@ -47,14 +51,17 @@ import {
   AzureResourceKeyVaultNewUI,
   AzureResourceSQLNewUI,
   AzureSolutionQuestionNames,
+  BotFeatureIds,
   BotNewUIOptionItem,
   CicdOptionItem,
   CommandAndResponseOptionItem,
   DeployPluginSelectQuestion,
+  HostTypeOptionAzure,
   MessageExtensionItem,
   MessageExtensionNewUIItem,
   NotificationOptionItem,
   SingleSignOnOptionItem,
+  TabFeatureIds,
   TabNewUIOptionItem,
   TabNonSsoItem,
 } from "../plugins/solution/fx-solution/question";
@@ -63,11 +70,27 @@ import { checkWetherProvisionSucceeded } from "../plugins/solution/fx-solution/v
 import { NoCapabilityFoundError } from "../core/error";
 import { ProgrammingLanguageQuestion } from "../core/question";
 import { createContextV3 } from "./utils";
+import { isCLIDotNetEnabled } from "../common/featureFlags";
+import { Runtime } from "../plugins/resource/bot/v2/enum";
+import { getPlatformRuntime } from "../plugins/resource/bot/v2/mapping";
+import { buildQuestionNode } from "./resource/azureSql/questions";
+import { functionNameQuestion } from "../plugins/resource/function/question";
+import { ApiConnectorImpl } from "../plugins/resource/apiconnector/plugin";
+import { addCicdQuestion } from "./feature/cicd";
+
+export async function getQuestionsForProvisionV3(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (inputs.platform === Platform.CLI_HELP) {
+    return ok(buildQuestionNode());
+  }
+  return ok(undefined);
+}
 
 export async function getQuestionsForDeployV3(
   ctx: v2.Context,
-  envInfo: v3.EnvInfoV3,
-  inputs: Inputs
+  inputs: Inputs,
+  envInfo?: v3.EnvInfoV3
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   //VS project has no selection interaction, and will deploy all selectable components by default.
   if (isVSProject(ctx.projectSetting)) {
@@ -82,12 +105,17 @@ export async function getQuestionsForDeployV3(
     ComponentNames.APIM,
     ComponentNames.AppManifest,
   ];
+
+  if (CLIPlatforms.includes(inputs.platform)) {
+    deployableComponents.push(ComponentNames.AadApp);
+  }
+
   let selectableComponents: string[];
   if (!isDynamicQuestion) {
     selectableComponents = deployableComponents;
   } else {
     const hasAzureResource = hasAzureResourceV3(projectSetting);
-    const provisioned = checkWetherProvisionSucceeded(envInfo.state);
+    const provisioned = checkWetherProvisionSucceeded(envInfo!.state);
     if (hasAzureResource && !provisioned) {
       return err(
         new UserError({
@@ -150,63 +178,70 @@ export async function getQuestionsForAddFeatureV3(
     options.push(SingleSignOnOptionItem);
     options.push(ApiConnectionOptionItem);
     options.push(CicdOptionItem);
-    const triggerNode = new QTreeNode(createHostTypeTriggerQuestion(inputs.platform));
-    triggerNode.condition = { equals: NotificationOptionItem.id };
     const addFeatureNode = new QTreeNode(question);
-    addFeatureNode.addChild(triggerNode);
+    const triggerNodeRes = await getNotificationTriggerQuestionNode(inputs);
+    if (triggerNodeRes.isErr()) return err(triggerNodeRes.error);
+    if (triggerNodeRes.value) {
+      addFeatureNode.addChild(triggerNodeRes.value);
+    }
     return ok(addFeatureNode);
   }
   // check capability options
-  const manifestRes = await readAppManifest(inputs.projectPath!);
-  if (manifestRes.isErr()) return err(manifestRes.error);
-  const manifest = manifestRes.value;
-  const canAddTab = manifest.staticTabs!.length < STATIC_TABS_MAX_ITEMS;
-  const botExceedLimit = manifest.bots!.length > 0;
-  const meExceedLimit = manifest.composeExtensions!.length > 0;
-  const projectSettingsV3 = ctx.projectSetting as ProjectSettingsV3;
-  const teamsBot = getComponent(ctx.projectSetting as ProjectSettingsV3, ComponentNames.TeamsBot);
-  const alreadyHasNewBot =
-    teamsBot?.capabilities?.includes("notification") ||
-    teamsBot?.capabilities?.includes("command-response");
-  if (!botExceedLimit && !alreadyHasNewBot) {
-    options.push(NotificationOptionItem);
-    options.push(CommandAndResponseOptionItem);
-    options.push(BotNewUIOptionItem);
-  }
-  if (canAddTab) {
-    if (!hasTab(projectSettingsV3)) {
-      options.push(TabNewUIOptionItem, TabNonSsoItem);
-    } else {
-      options.push(hasAAD(projectSettingsV3) ? TabNewUIOptionItem : TabNonSsoItem);
+  const azureHost = ctx.projectSetting.solutionSettings?.hostType === HostTypeOptionAzure.id;
+  if (azureHost) {
+    const manifestRes = await readAppManifest(inputs.projectPath!);
+    if (manifestRes.isErr()) return err(manifestRes.error);
+    const manifest = manifestRes.value;
+    const canAddTab = manifest.staticTabs!.length < STATIC_TABS_MAX_ITEMS;
+    const botExceedLimit = manifest.bots!.length > 0;
+    const meExceedLimit = manifest.composeExtensions!.length > 0;
+    const projectSettingsV3 = ctx.projectSetting as ProjectSettingsV3;
+    const teamsBot = getComponent(ctx.projectSetting as ProjectSettingsV3, ComponentNames.TeamsBot);
+    const alreadyHasNewBot =
+      teamsBot?.capabilities?.includes("notification") ||
+      teamsBot?.capabilities?.includes("command-response");
+    if (!botExceedLimit && !alreadyHasNewBot) {
+      options.push(NotificationOptionItem);
+      options.push(CommandAndResponseOptionItem);
+      options.push(BotNewUIOptionItem);
     }
+    if (canAddTab) {
+      if (!hasTab(projectSettingsV3)) {
+        options.push(TabNewUIOptionItem, TabNonSsoItem);
+      } else {
+        options.push(hasAAD(projectSettingsV3) ? TabNewUIOptionItem : TabNonSsoItem);
+      }
+    }
+    if (!meExceedLimit && !alreadyHasNewBot) {
+      options.push(MessageExtensionNewUIItem);
+    }
+    // check cloud resource options
+    if (!hasAPIM(projectSettingsV3)) {
+      options.push(AzureResourceApimNewUI);
+    }
+    options.push(AzureResourceSQLNewUI);
+    if (!hasKeyVault(projectSettingsV3)) {
+      options.push(AzureResourceKeyVaultNewUI);
+    }
+    if (!hasAAD(projectSettingsV3)) {
+      options.push(SingleSignOnOptionItem);
+    }
+    if (hasBot(projectSettingsV3) || hasApi(projectSettingsV3)) {
+      options.push(ApiConnectionOptionItem);
+    }
+    // function can always be added
+    options.push(AzureResourceFunctionNewUI);
   }
-  if (!meExceedLimit && !alreadyHasNewBot) {
-    options.push(MessageExtensionNewUIItem);
-  }
-  // check cloud resource options
-  if (!hasAPIM(projectSettingsV3)) {
-    options.push(AzureResourceApimNewUI);
-  }
-  options.push(AzureResourceSQLNewUI);
-  if (!hasKeyVault(projectSettingsV3)) {
-    options.push(AzureResourceKeyVaultNewUI);
-  }
-  if (!hasAAD(projectSettingsV3)) {
-    options.push(SingleSignOnOptionItem);
-  }
-  if (hasBot(projectSettingsV3) || hasApi(projectSettingsV3)) {
-    options.push(ApiConnectionOptionItem);
-  }
-  // function can always be added
-  options.push(AzureResourceFunctionNewUI);
   const isCicdAddable = await canAddCICDWorkflows(inputs, ctx);
   if (isCicdAddable) {
     options.push(CicdOptionItem);
   }
   const addFeatureNode = new QTreeNode(question);
-  const triggerNode = new QTreeNode(createHostTypeTriggerQuestion(inputs.platform));
-  triggerNode.condition = { equals: NotificationOptionItem.id };
-  addFeatureNode.addChild(triggerNode);
+  const triggerNodeRes = await getNotificationTriggerQuestionNode(inputs);
+  if (triggerNodeRes.isErr()) return err(triggerNodeRes.error);
+  if (triggerNodeRes.value) {
+    addFeatureNode.addChild(triggerNodeRes.value);
+  }
   if (!ctx.projectSetting.programmingLanguage) {
     // Language
     const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
@@ -257,9 +292,11 @@ export async function getQuestionsForAddResourceV3(
   // function can always be added
   options.push(AzureResourceFunctionNewUI);
   const addFeatureNode = new QTreeNode(question);
-  const triggerNode = new QTreeNode(createHostTypeTriggerQuestion(inputs.platform));
-  triggerNode.condition = { equals: NotificationOptionItem.id };
-  addFeatureNode.addChild(triggerNode);
+  const triggerNodeRes = await getNotificationTriggerQuestionNode(inputs);
+  if (triggerNodeRes.isErr()) return err(triggerNodeRes.error);
+  if (triggerNodeRes.value) {
+    addFeatureNode.addChild(triggerNodeRes.value);
+  }
   if (!ctx.projectSetting.programmingLanguage) {
     // Language
     const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
@@ -293,14 +330,18 @@ export enum FeatureId {
   sso = "sso",
   ApiConnector = "api-connection",
   cicd = "cicd",
+  M365SearchApp = "M365SearchApp",
+  M365SsoLaunchPage = "M365SsoLaunchPage",
 }
 
 export const FeatureIdToComponent = {
   [FeatureId.Tab]: ComponentNames.TeamsTab,
   [FeatureId.TabNonSso]: ComponentNames.TeamsTab,
+  [FeatureId.M365SsoLaunchPage]: ComponentNames.TeamsTab,
   [FeatureId.Notification]: ComponentNames.TeamsBot,
   [FeatureId.CommandAndResponse]: ComponentNames.TeamsBot,
   [FeatureId.Bot]: ComponentNames.TeamsBot,
+  [FeatureId.M365SearchApp]: ComponentNames.TeamsBot,
   [FeatureId.MessagingExtension]: ComponentNames.TeamsBot,
   [FeatureId.function]: ComponentNames.TeamsApi,
   [FeatureId.apim]: ComponentNames.APIMFeature,
@@ -322,15 +363,42 @@ export async function getQuestionsForAddFeatureSubCommand(
   featureId: FeatureId,
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  const actionName = getActionNameByFeatureId(featureId);
-  if (actionName) {
-    const res = await getQuestionsV3(
-      actionName,
-      createContextV3(),
-      inputs as InputsWithProjectPath,
-      false
-    );
-    return res;
+  if (BotFeatureIds.includes(featureId)) {
+    return await getNotificationTriggerQuestionNode(inputs);
+  } else if (TabFeatureIds.includes(featureId)) {
+  } else if (featureId === AzureResourceSQLNewUI.id) {
+  } else if (featureId === AzureResourceFunctionNewUI.id) {
+    functionNameQuestion.validation = undefined;
+    return ok(new QTreeNode(functionNameQuestion));
+  } else if (featureId === AzureResourceApimNewUI.id) {
+  } else if (featureId === AzureResourceKeyVaultNewUI.id) {
+  } else if (featureId === CicdOptionItem.id) {
+    return await addCicdQuestion(createContextV3(), inputs as InputsWithProjectPath);
+  } else if (featureId === ApiConnectionOptionItem.id) {
+    const apiConnectorImpl = new ApiConnectorImpl();
+    return apiConnectorImpl.generateQuestion(createContextV3(), inputs);
+  } else if (featureId === SingleSignOnOptionItem.id) {
   }
   return ok(undefined);
+}
+
+export async function getNotificationTriggerQuestionNode(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const res = new QTreeNode({
+    type: "group",
+  });
+  if (isCLIDotNetEnabled()) {
+    Object.values(Runtime).forEach((runtime) => {
+      const node = new QTreeNode(createHostTypeTriggerQuestion(inputs.platform, runtime));
+      node.condition = getConditionOfNotificationTriggerQuestion(runtime);
+      res.addChild(node);
+    });
+  } else {
+    const runtime = getPlatformRuntime(inputs.platform);
+    const node = new QTreeNode(createHostTypeTriggerQuestion(inputs.platform, runtime));
+    res.addChild(node);
+  }
+  res.condition = showNotificationTriggerCondition;
+  return ok(res);
 }

@@ -388,8 +388,8 @@ export async function grantPermission(
       );
     }
 
-    progressBar?.start();
-    progressBar?.next(getLocalizedString("core.collaboration.GrantPermissionForUser", email));
+    await progressBar?.start();
+    await progressBar?.next(getLocalizedString("core.collaboration.GrantPermissionForUser", email));
 
     if (inputs.platform === Platform.CLI) {
       const aadAppTenantId = envInfo.state[BuiltInFeaturePluginNames.appStudio]?.tenantId;

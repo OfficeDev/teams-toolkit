@@ -6,14 +6,11 @@ import {
   InputsWithProjectPath,
   ok,
   FunctionAction,
-  PluginContext,
-  EnvInfo,
-  ConfigMap,
-  ProvisionContextV3,
+  ResourceContextV3,
 } from "@microsoft/teamsfx-api";
 import { ComponentNames, ActionTypeFunction, ActionNames } from "../../../constants";
 import { AadAppForTeamsImpl } from "../../../../plugins/resource/aad/plugin";
-import { convertEnvStateV3ToV2, convertProjectSettingsV3ToV2 } from "../../../migrate";
+import { convertContext } from "./utils";
 
 export function GetActionProvision(): FunctionAction {
   return {
@@ -29,7 +26,7 @@ export function GetActionProvision(): FunctionAction {
       ]);
     },
     execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-      const ctx = context as ProvisionContextV3;
+      const ctx = context as ResourceContextV3;
       ctx.envInfo!.state[ComponentNames.AadApp] ??= {};
       const aadAppImplement = new AadAppForTeamsImpl();
       const convertCtx = convertContext(ctx, inputs);
@@ -49,34 +46,4 @@ export function GetActionProvision(): FunctionAction {
       ]);
     },
   };
-}
-
-export function convertContext(context: ContextV3, inputs: InputsWithProjectPath): PluginContext {
-  const projectSetting = convertProjectSettingsV3ToV2(context.projectSetting);
-  const stateV2 = convertEnvStateV3ToV2(context.envInfo!.state!);
-  stateV2["fx-resource-aad-app-for-teams"] ??= {};
-  const value = ConfigMap.fromJSON(stateV2);
-
-  const pluginCtx: PluginContext = {
-    cryptoProvider: context.cryptoProvider,
-    config: new ConfigMap(),
-    logProvider: context.logProvider,
-    m365TokenProvider: context.tokenProvider?.m365TokenProvider,
-    ui: context.userInteraction,
-    projectSettings: projectSetting,
-    permissionRequestProvider: context.permissionRequestProvider,
-    root: inputs.projectPath,
-    envInfo: {
-      config: {
-        manifest: {
-          appName: {
-            short: context.projectSetting.appName,
-          },
-        },
-      },
-      envName: inputs.env,
-      state: value,
-    } as EnvInfo,
-  };
-  return pluginCtx;
 }

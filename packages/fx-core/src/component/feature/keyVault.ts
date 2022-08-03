@@ -2,23 +2,26 @@
 // Licensed under the MIT license.
 
 import {
-  Action,
   ContextV3,
+  Effect,
+  err,
   FxError,
-  GroupAction,
   InputsWithProjectPath,
-  MaybePromise,
   ok,
   Result,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
-import { Service } from "typedi";
-import { getProjectSettingsPath } from "../../core/middleware/projectSettingsLoader";
-import { getComponent, getComponents } from "../workflow";
+import { Container, Service } from "typedi";
+import { convertToAlphanumericOnly } from "../../common/utils";
+import { BicepComponent } from "../bicep";
 import "../connection/azureWebAppConfig";
+import { ComponentNames } from "../constants";
+import { Plans } from "../messages";
 import "../resource/azureSql";
 import "../resource/identity";
-import { ComponentNames } from "../constants";
+import { KeyVaultResource } from "../resource/keyVault";
+import { generateConfigBiceps, bicepUtils } from "../utils";
+import { getComponent } from "../workflow";
 
 @Service("key-vault-feature")
 export class KeyVaultFeature {
@@ -30,110 +33,48 @@ export class KeyVaultFeature {
    * 3. re-generate resources that connect to key-vault
    * 4. persist bicep
    */
-  add(
+  async add(
     context: ContextV3,
     inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const keyVaultComponent = getComponent(context.projectSetting, ComponentNames.KeyVault);
-    const webAppComponents = getComponents(context.projectSetting, ComponentNames.AzureWebApp);
-    const functionComponents = getComponents(context.projectSetting, ComponentNames.Function);
-    const actions: Action[] = [
-      {
-        name: "keyVault.configKeyVault",
-        type: "function",
-        plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-          if (keyVaultComponent) {
-            return ok([]);
-          }
-          const remarks: string[] = ["add component 'key-vault' in projectSettings"];
-          if (webAppComponents?.length) {
-            remarks.push("connect 'key-vault' to component 'azure-web-app' in projectSettings");
-          }
-          if (functionComponents?.length) {
-            remarks.push("connect 'key-vault' to component 'azure-function' in projectSettings");
-          }
-          return ok([
-            {
-              type: "file",
-              operate: "replace",
-              filePath: getProjectSettingsPath(inputs.projectPath),
-              remarks: remarks.join(";"),
-            },
-          ]);
-        },
-        execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-          if (keyVaultComponent) return ok([]);
-          const projectSettings = context.projectSetting;
-          const remarks: string[] = ["add component 'key-vault' in projectSettings"];
-          projectSettings.components.push({
-            name: ComponentNames.KeyVault,
-            connections: [ComponentNames.Identity],
-            provision: true,
-          });
-          if (webAppComponents) {
-            webAppComponents.forEach((component) => {
-              component.connections ??= [];
-              component.connections.push(ComponentNames.KeyVault);
-            });
-            remarks.push("connect 'key-vault' to component 'azure-web-app' in projectSettings");
-          }
-          if (functionComponents) {
-            functionComponents.forEach((component) => {
-              component.connections ??= [];
-              component.connections.push(ComponentNames.KeyVault);
-            });
-            remarks.push("connect 'key-vault' to component 'azure-function' in projectSettings");
-          }
-          return ok([
-            {
-              type: "file",
-              operate: "replace",
-              filePath: getProjectSettingsPath(inputs.projectPath),
-              remarks: remarks.join(";"),
-            },
-          ]);
-        },
-      },
-      {
-        name: "call:key-vault.generateBicep",
-        type: "call",
-        required: true,
-        targetAction: "key-vault.generateBicep",
-        inputs: {
-          scenario: "",
-        },
-      },
-    ];
-    webAppComponents?.forEach((component) =>
-      actions.push({
-        name: "call:azure-web-app-config.generateBicep",
-        type: "call",
-        required: true,
-        targetAction: "azure-web-app-config.generateBicep",
-        inputs: {
-          update: true,
-          scenario: component.scenario,
-        },
-      })
-    );
-    functionComponents?.forEach((component) =>
-      actions.push({
-        name: "call:azure-function-config.generateBicep",
-        type: "call",
-        required: true,
-        targetAction: "azure-function-config.generateBicep",
-        inputs: {
-          update: true,
-          scenario: component.scenario,
-        },
-      })
-    );
-    const group: GroupAction = {
-      type: "group",
-      name: "key-vault.add",
-      mode: "sequential",
-      actions: actions,
-    };
-    return ok(group);
+  ): Promise<Result<undefined, FxError>> {
+    const projectSettings = context.projectSetting;
+    const keyVaultComponent = getComponent(projectSettings, ComponentNames.KeyVault);
+    if (keyVaultComponent) return ok(undefined);
+    const effects: Effect[] = [];
+
+    // config
+    projectSettings.components.push({
+      name: ComponentNames.KeyVault,
+      connections: [ComponentNames.Identity],
+      provision: true,
+    });
+    effects.push(Plans.addFeature("key-vault"));
+    // bicep.init
+    {
+      const bicepComponent = Container.get<BicepComponent>("bicep");
+      const res = await bicepComponent.init(inputs.projectPath);
+      if (res.isErr()) return err(res.error);
+    }
+    // key-vault provision bicep
+    {
+      const keyVaultComponent = Container.get<KeyVaultResource>(ComponentNames.KeyVault);
+      const res = await keyVaultComponent.generateBicep(context, inputs);
+      if (res.isErr()) return err(res.error);
+      effects.push("generate key-vault provision bicep");
+      const persistRes = await bicepUtils.persistBiceps(
+        inputs.projectPath,
+        convertToAlphanumericOnly(context.projectSetting.appName),
+        res.value
+      );
+      if (persistRes.isErr()) return persistRes;
+    }
+
+    // generate config bicep
+    {
+      const res = await generateConfigBiceps(context, inputs);
+      if (res.isErr()) return err(res.error);
+      effects.push("update config biceps");
+    }
+    return ok(undefined);
   }
 }

@@ -7,14 +7,13 @@ import {
   InputsWithProjectPath,
   ok,
   FunctionAction,
-  ProvisionContextV3,
+  ResourceContextV3,
   v3,
   AzureAccountProvider,
   LogProvider,
   Result,
   FxError,
   Effect,
-  QTreeNode,
 } from "@microsoft/teamsfx-api";
 import Container from "typedi";
 import {
@@ -33,7 +32,6 @@ import { SqlClient } from "../clients/sql";
 import { loadDatabases, LoadManagementConfig, LoadSqlConfig } from "../config";
 import { Constants, HelpLinks, Telemetry, Message } from "../constants";
 import { ErrorMessage } from "../errors";
-import { adminNameQuestion, adminPasswordQuestion, confirmPasswordQuestion } from "../questions";
 import { SqlResultFactory } from "../results";
 import { parseToken, TokenInfo, UserType } from "../utils/common";
 export class ConfigureActionImplement {
@@ -68,7 +66,7 @@ export class ConfigureActionImplement {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<Effect[], FxError>> {
-    const ctx = context as ProvisionContextV3;
+    const ctx = context as ResourceContextV3;
     const actionContext = context as ActionContext;
     const solutionConfig = ctx.envInfo.state.solution as v3.AzureSolutionConfig;
     const state = ctx.envInfo.state[ComponentNames.AzureSQL];
@@ -82,7 +80,7 @@ export class ConfigureActionImplement {
     await sqlMgrClient.addLocalFirewallRule();
 
     const adminInfo = await UtilFunctions.parseLoginToken(ctx.tokenProvider.azureAccountProvider);
-    actionContext.progressBar?.next(ConfigureActionImplement.progressMessage.addAadmin);
+    await actionContext.progressBar?.next(ConfigureActionImplement.progressMessage.addAadmin);
     const existAdmin = await UtilFunctions.CheckAndSetAadAdmin(
       sqlMgrClient,
       adminInfo.name,
@@ -117,7 +115,7 @@ export class ConfigureActionImplement {
 
     if (!skipAddingUser) {
       if (adminInfo.userType === UserType.User) {
-        actionContext.progressBar?.next(ConfigureActionImplement.progressMessage.addUser);
+        await actionContext.progressBar?.next(ConfigureActionImplement.progressMessage.addUser);
         const sqlClient = await SqlClient.create(ctx.tokenProvider.azureAccountProvider, sqlConfig);
         actionContext.logger?.info(Message.addDatabaseUser(identity));
         await UtilFunctions.addDatabaseUser(ctx.logProvider, sqlClient, sqlMgrClient);
@@ -193,7 +191,7 @@ export class UtilFunctions {
     }
   }
 
-  static getIdentity(ctx: ProvisionContextV3): string {
+  static getIdentity(ctx: ResourceContextV3): string {
     const config = ctx.envInfo.state[ComponentNames.Identity];
     const identity = config[Constants.identityName] as string;
     if (!identity) {
@@ -240,15 +238,5 @@ export class UtilFunctions {
         }
       }
     }
-  }
-
-  static buildQuestionNode() {
-    const sqlNode = new QTreeNode({
-      type: "group",
-    });
-    sqlNode.addChild(new QTreeNode(adminNameQuestion));
-    sqlNode.addChild(new QTreeNode(adminPasswordQuestion));
-    sqlNode.addChild(new QTreeNode(confirmPasswordQuestion));
-    return sqlNode;
   }
 }

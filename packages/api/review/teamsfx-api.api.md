@@ -60,6 +60,14 @@ export interface ActionBase {
 }
 
 // @public (undocumented)
+export interface ActionContext {
+    // (undocumented)
+    progressBar?: IProgressHandler;
+    // (undocumented)
+    telemetryProps?: Record<string, string>;
+}
+
+// @public (undocumented)
 export const AdaptiveCardsFolderName = "adaptiveCards";
 
 // @public (undocumented)
@@ -330,21 +338,21 @@ export const CLIPlatforms: Platform[];
 // @public (undocumented)
 export interface CloudResource {
     // (undocumented)
-    configure?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Action | undefined, FxError>>;
+    configure?: (context: ResourceContextV3, inputs: InputsWithProjectPath, actionContext?: ActionContext) => Promise<Result<undefined, FxError>>;
     // (undocumented)
-    deploy?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Action | undefined, FxError>>;
+    deploy?: (context: ResourceContextV3, inputs: InputsWithProjectPath, actionContext?: ActionContext) => Promise<Result<undefined, FxError>>;
     // (undocumented)
     readonly description?: string;
     // (undocumented)
     readonly finalOutputKeys: string[];
     // (undocumented)
-    generateBicep?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Action | undefined, FxError>>;
+    generateBicep?: (context: ContextV3, inputs: InputsWithProjectPath, actionContext?: ActionContext) => Promise<Result<Bicep[], FxError>>;
     // (undocumented)
     readonly name: string;
     // (undocumented)
     readonly outputs: ResourceOutputs;
     // (undocumented)
-    provision?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Action | undefined, FxError>>;
+    provision?: (context: ResourceContextV3, inputs: InputsWithProjectPath, actionContext?: ActionContext) => Promise<Result<undefined, FxError>>;
     // (undocumented)
     readonly secretKeys?: string[];
 }
@@ -378,6 +386,8 @@ export interface Component extends Json {
     code?: string;
     // (undocumented)
     connections?: string[];
+    // (undocumented)
+    deploy?: boolean;
     // (undocumented)
     deployType?: "folder" | "zip";
     // (undocumented)
@@ -1379,14 +1389,6 @@ export interface ProvisionBicep {
 }
 
 // @public (undocumented)
-export interface ProvisionContextV3 extends ContextV3 {
-    // (undocumented)
-    envInfo: EnvInfoV3;
-    // (undocumented)
-    tokenProvider: TokenProvider;
-}
-
-// @public (undocumented)
 type ProvisionInputs = InputsWithProjectPath & SolutionInputs;
 
 // @public
@@ -1434,6 +1436,14 @@ export type ResourceConfig = ResourceTemplate;
 
 // @public (undocumented)
 export type ResourceConfigs = ResourceTemplates;
+
+// @public (undocumented)
+export interface ResourceContextV3 extends ContextV3 {
+    // (undocumented)
+    envInfo: EnvInfoV3;
+    // (undocumented)
+    tokenProvider: TokenProvider;
+}
 
 // @public (undocumented)
 export interface ResourceOutput {
@@ -1687,18 +1697,6 @@ export interface SolutionSettings extends Json {
     // (undocumented)
     name: string;
     version?: string;
-}
-
-// @public (undocumented)
-export interface SourceCodeProvider {
-    // (undocumented)
-    build?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Action | undefined, FxError>>;
-    // (undocumented)
-    readonly description?: string;
-    // (undocumented)
-    generate: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Action | undefined, FxError>>;
-    // (undocumented)
-    readonly name: string;
 }
 
 // @public (undocumented)

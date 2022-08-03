@@ -41,7 +41,7 @@
         "prebuild": "npm run generate-manifest",
         "build": "rimraf build && npx tsc -p ./",
         "test": "npm run test:unit",
-        "test:unit": "npx nyc --reporter=lcov mocha --no-timeouts --require ts-node/register test/**/*.test.ts && npx codecov",
+        "test:unit": "npx nyc --reporter=lcov mocha --no-timeouts --require ts-node/register test/**/*.test.ts ",
         "lint": "eslint \"**/*.ts\"",
         "precommit": "lint-staged",
         "lint:staged": "lint-staged",

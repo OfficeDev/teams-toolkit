@@ -21,7 +21,7 @@ import M365TokenInstance from "../commonlib/m365Login";
 import AzureAccountManager from "../commonlib/azureLogin";
 import { GlobalKey } from "../constants";
 import * as globalVariables from "../globalVariables";
-import { downloadSample, getSystemInputs } from "../handlers";
+import { downloadSample, getSystemInputs, openFolder } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   AccountType,
@@ -173,12 +173,7 @@ export class WebviewPanel {
     if (res.isOk()) {
       props[TelemetryProperty.Success] = TelemetrySuccess.Yes;
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, props);
-      await globalStateUpdate(GlobalKey.OpenSampleReadMe, true);
-      await globalStateUpdate(GlobalKey.ShowLocalDebugMessage, true);
-      await ExtTelemetry.dispose();
-      setTimeout(() => {
-        vscode.commands.executeCommand("vscode.openFolder", res.value);
-      }, 2000);
+      openFolder(res.value, true, false);
     } else {
       props[TelemetryProperty.Success] = TelemetrySuccess.No;
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, res.error, props);

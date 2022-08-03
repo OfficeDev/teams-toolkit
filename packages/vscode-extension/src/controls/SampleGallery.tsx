@@ -15,6 +15,7 @@ import HelloWorldTabWithBackend from "../../img/webview/sample/helloWorld-tab-wi
 import HelloWorldBot from "../../img/webview/sample/helloWorld-bot.gif";
 import { Watch, Setting } from "./resources";
 import GraphToolkitContactExporter from "../../img/webview/sample/graph-toolkit-contact-exporter.gif";
+import GraphToolkitOneProductivityHub from "../../img/webview/sample/graph-toolkit-one-productivity-hub.gif";
 import BOTSSO from "../../img/webview/sample/bot-sso.gif";
 import { EventMessages } from "./messages";
 import SampleDetailPage from "./sampleDetailPage";
@@ -22,6 +23,7 @@ import NoneSSOTab from "../../img/webview/sample/hello-world-tab-without-sso.gif
 import GraphConnector from "../../img/webview/sample/graph-connector-app.gif";
 import IncomingWebhook from "../../img/webview/sample/incoming-webhook.gif";
 import AdaptiveCardNotification from "../../img/webview/sample/adaptive-card-notification.gif";
+import SendProactiveMsg from "../../img/webview/sample/send-proactive-messages.gif";
 
 const imageMapping: { [p: string]: any } = {
   "todo-list-with-Azure-backend": ToDoList,
@@ -40,6 +42,8 @@ const imageMapping: { [p: string]: any } = {
   "graph-connector-app": GraphConnector,
   "adaptive-card-notification": AdaptiveCardNotification,
   "incoming-webhook-notification": IncomingWebhook,
+  "graph-toolkit-one-productivity-hub": GraphToolkitOneProductivityHub,
+  "bot-proactive-messaging-teamsfx": SendProactiveMsg,
 };
 
 export default class SampleGallery extends React.Component<any, any> {
@@ -76,7 +80,7 @@ export default class SampleGallery extends React.Component<any, any> {
                 <Icon iconName="Library" className="logo" />
               </div>
               <div className="title">
-                <h2>Samples</h2>
+                <h1>Samples</h1>
                 <h3>
                   Explore our sample apps to quickly get started with concepts and code examples.
                 </h3>
@@ -223,7 +227,7 @@ class SampleCard extends React.Component<SampleCardProps, any> {
         >
           sample app title:
         </label>
-        <h2>{this.props.title}</h2>
+        <h3>{this.props.title}</h3>
         <div className="estimation-time">
           <div className="watch">
             <Watch></Watch>

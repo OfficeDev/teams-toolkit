@@ -8,6 +8,7 @@ import {
   PostProvisionProgress,
   ScaffoldProgress,
 } from "../plugins/resource/frontend/resources/steps";
+import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 
 export class ProgressTitles {
   static readonly scaffoldTab = ScaffoldProgress.title;
@@ -34,6 +35,46 @@ export class ProgressMessages {
   static readonly packingCode = ProgressBarConstants.DEPLOY_STEP_ZIP_FOLDER;
   static readonly enableStaticWebsite = PostProvisionProgress.steps.EnableStaticWebsite;
   static readonly provisionBot = ProgressBarConstants.PROVISION_STEP_BOT_REG;
+}
+
+export interface LocalizedMessage {
+  default: string;
+  localized: string;
+}
+
+export class ErrorMessage {
+  static readonly programmingLanguageInvalid =
+    "Invalid programming language found in project settings.";
+  public static readonly SomethingIsMissing = (something: string): LocalizedMessage => ({
+    default: getDefaultString("plugins.bot.SomethingIsMissing", something),
+    localized: getLocalizedString("plugins.bot.SomethingIsMissing", something),
+  });
+  public static readonly SomethingIsNotExisting = (something: string): LocalizedMessage => ({
+    default: getDefaultString("plugins.bot.SomethingNotExisting", something),
+    localized: getLocalizedString("plugins.bot.SomethingNotExisting", something),
+  });
+  public static readonly WorkingDirIsMissing: LocalizedMessage = {
+    default: getDefaultString("plugins.bot.WorkingDirMissing"),
+    localized: getLocalizedString("plugins.bot.WorkingDirMissing"),
+  };
+
+  // Suggestions
+  public static readonly RetryTheCurrentStep: LocalizedMessage = {
+    localized: getLocalizedString("suggestions.retryTheCurrentStep"),
+    default: getDefaultString("suggestions.retryTheCurrentStep"),
+  };
+  public static readonly RecreateTheProject: LocalizedMessage = {
+    default: getDefaultString("plugins.bot.RecreateProject"),
+    localized: getLocalizedString("plugins.bot.RecreateProject"),
+  };
+  public static readonly CheckOutputLogAndTryToFix = {
+    default: getDefaultString("plugins.bot.CheckLogAndFix"),
+    localized: getLocalizedString("plugins.bot.CheckLogAndFix"),
+  };
+  public static readonly ReopenWorkingDir = (path = ""): LocalizedMessage => ({
+    default: getDefaultString("plugins.bot.CheckPathWriteAccess", path),
+    localized: getLocalizedString("plugins.bot.CheckPathWriteAccess", path),
+  });
 }
 
 export class Plans {
@@ -65,4 +106,9 @@ export class Plans {
     name: "graph.microsoft.com",
     remarks: "update message endpoint in AppStudio",
   });
+  static readonly generateSourceCodeAndConfig = (feature: string): Effect =>
+    `generate source code and config for ${feature} in project settings`;
+  static readonly generateBicepAndConfig = (feature: string): Effect =>
+    `generate bicep and config for ${feature} in project settings`;
+  static readonly addFeature = (feature: string): Effect => `config ${feature} in project settings`;
 }

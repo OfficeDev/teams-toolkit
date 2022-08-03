@@ -43,6 +43,16 @@
             "suggested": true
         },
         {
+            "id": "graph-toolkit-one-productivity-hub",
+            "title": "One Productivity Hub using Graph Toolkit",
+            "shortDescription": "Microsoft Teams tab with SSO to view calendar events, to-do tasks and file folders.",
+            "fullDescription": "One Productivity Hub sample shows you how to build a tab for viewing your calendar events, to-do tasks and files by using Microsoft Graph Toolkit components and TeamsFx provider. You can run this app locally or deploy it to Microsoft Azure.",
+            "tags": ["Tab", "JS", "SSO"],
+            "time": "5min to run",
+            "configuration": "Ready for local debug",
+            "suggested": false
+        },
+        {
             "id": "bot-sso",
             "title": "Hello World Bot with SSO",
             "shortDescription": "A Hello World app of Microsoft Teams Bot app with SSO",
@@ -136,6 +146,21 @@
             "time": "5min to run",
             "configuration": "Ready for local debug",
             "suggested": false
+        },
+        {
+            "id": "bot-proactive-messaging-teamsfx",
+            "title": "Proactive Messaging",
+            "shortDescription": "Demonstrates how to send proactive messages to users.",
+            "fullDescription": "This is a sample which shows how to save user's conversation reference information to send proactive reminder message using Bots.",
+            "tags": [
+                "Bot",
+                "JS"
+            ],
+            "time": "5min to run",
+            "configuration": "Ready for local debug",
+            "suggested": false,
+            "url": "https://github.com/OfficeDev/Microsoft-Teams-Samples/tree/main/samples/",
+            "packageLink": "https://github.com/OfficeDev/Microsoft-Teams-Samples/archive/refs/heads/main.zip"
         },
         {
             "id": "adaptive-card-notification",

@@ -105,7 +105,7 @@ export async function downloadSample(
 ): Promise<Result<string, FxError>> {
   let fxError;
   const progress = TOOLS.ui.createProgressBar("Fetch sample app", 3);
-  progress.start();
+  await progress.start();
   const telemetryProperties: any = {
     [TelemetryProperty.Success]: TelemetrySuccess.Yes,
     module: "fx-core",
@@ -132,17 +132,17 @@ export async function downloadSample(
         sampleAppPath = `${folder}/${sampleId}_${suffix++}`;
       }
     }
-    progress.next(`Downloading from ${url}`);
+    await progress.next(`Downloading from ${url}`);
     const fetchRes = await fetchCodeZip(url, sample.id);
     if (fetchRes.isErr()) {
       throw fetchRes.error;
     } else if (!fetchRes.value) {
       throw new FetchSampleError(sample.id);
     }
-    progress.next("Unzipping the sample package");
+    await progress.next("Unzipping the sample package");
     await saveFilesRecursively(new AdmZip(fetchRes.value.data), sampleId, sampleAppPath);
     await downloadSampleHook(sampleId, sampleAppPath);
-    progress.next("Update project settings");
+    await progress.next("Update project settings");
     const loadInputs: Inputs = {
       ...inputs,
       projectPath: sampleAppPath,
@@ -160,12 +160,12 @@ export async function downloadSample(
       telemetryProperties[TelemetryProperty.ProjectId] =
         "unknown, failed to set projectId in projectSettings.json";
     }
-    progress.end(true);
+    await progress.end(true);
     sendTelemetryEvent(Component.core, TelemetryEvent.DownloadSample, telemetryProperties);
     return ok(sampleAppPath);
   } catch (e) {
     fxError = assembleError(e);
-    progress.end(false);
+    await progress.end(false);
     telemetryProperties[TelemetryProperty.Success] = TelemetrySuccess.No;
     sendTelemetryErrorEvent(
       Component.core,

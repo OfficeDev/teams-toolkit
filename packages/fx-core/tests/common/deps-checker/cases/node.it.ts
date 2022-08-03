@@ -26,8 +26,8 @@ describe("NodeChecker E2E Test", async () => {
 
     const res = await nodeChecker.resolve();
 
-    chai.assert.isTrue(res.isOk() && res.value);
-    chai.assert.isTrue(await nodeChecker.isInstalled());
+    chai.assert.isTrue(res.isInstalled);
+    chai.assert.isTrue((await nodeChecker.getInstallationInfo()).isInstalled);
   });
 
   it("Node supported version is installed for tab-only projects", async function () {
@@ -43,8 +43,8 @@ describe("NodeChecker E2E Test", async () => {
 
     const res = await nodeChecker.resolve();
 
-    chai.assert.isTrue(res.isOk() && res.value);
-    chai.assert.isTrue(await nodeChecker.isInstalled());
+    chai.assert.isTrue(res.isInstalled);
+    chai.assert.isTrue((await nodeChecker.getInstallationInfo()).isInstalled);
   });
 
   it("Node is not installed", async function (this: Mocha.Context) {
@@ -65,9 +65,9 @@ describe("NodeChecker E2E Test", async () => {
 
     const functionRes = await functionNodeChecker.resolve();
     const azureRes = await azureNodeChecker.resolve();
-    chai.assert.isFalse(functionRes.isOk() && functionRes.value);
-    chai.assert.isFalse(azureRes.isOk() && azureRes.value);
-    chai.assert.isFalse(await functionNodeChecker.isInstalled());
-    chai.assert.isFalse(await azureNodeChecker.isInstalled());
+    chai.assert.isFalse(functionRes.isInstalled);
+    chai.assert.isFalse(azureRes.isInstalled);
+    chai.assert.isFalse((await functionNodeChecker.getInstallationInfo()).isInstalled);
+    chai.assert.isFalse((await azureNodeChecker.getInstallationInfo()).isInstalled);
   });
 });

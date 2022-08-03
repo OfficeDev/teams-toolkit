@@ -89,8 +89,10 @@ import {
   AadManifestDeployConstants,
   AzureAssignRoleHelpUrl,
   AzurePortalUrl,
+  CLI_FOR_M365,
   GlobalKey,
   SpfxManageSiteAdminUrl,
+  SUPPORTED_SPFX_VERSION,
 } from "./constants";
 import { PanelType } from "./controls/PanelType";
 import { WebviewPanel } from "./controls/webviewPanel";
@@ -109,7 +111,7 @@ import { getTeamsAppInternalId, showInstallAppInTeamsMessage } from "./debug/tea
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { ExtensionErrors, ExtensionSource } from "./error";
 import * as exp from "./exp/index";
-import { TreatmentVariables } from "./exp/treatmentVariables";
+import { TreatmentVariableValue } from "./exp/treatmentVariables";
 import { VS_CODE_UI } from "./extension";
 import * as globalVariables from "./globalVariables";
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
@@ -121,6 +123,7 @@ import {
   TelemetrySuccess,
   TelemetryTriggerFrom,
   TelemetryUpdateAppReason,
+  VSCodeWindowChoice,
 } from "./telemetry/extTelemetryEvents";
 import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewProvider";
 import { AzureAccountNode } from "./treeview/account/azureNode";
@@ -150,6 +153,7 @@ import {
   sendDebugAllEvent,
   sendDebugAllStartEvent,
 } from "./debug/localTelemetryReporter";
+import { compare } from "./utils/versionUtil";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -449,19 +453,54 @@ export async function initProjectHandler(args?: any[]): Promise<Result<any, FxEr
   return result;
 }
 
-async function openFolder(
+export async function openFolder(
   folderPath: Uri,
   showLocalDebugMessage: boolean,
   showLocalPreviewMessage: boolean,
   args?: any[]
 ) {
   await updateAutoOpenGlobalKey(showLocalDebugMessage, showLocalPreviewMessage, folderPath, args);
-  await ExtTelemetry.dispose();
-  // after calling dispose(), let render process to wait for a while instead of directly call "open folder"
-  // otherwise, the flush operation in dispose() will be interrupted due to shut down the render process.
-  setTimeout(() => {
-    commands.executeCommand("vscode.openFolder", folderPath);
-  }, 2000);
+  if (!TreatmentVariableValue.openFolderInNewWindow) {
+    await ExtTelemetry.dispose();
+    // after calling dispose(), let render process to wait for a while instead of directly call "open folder"
+    // otherwise, the flush operation in dispose() will be interrupted due to shut down the render process.
+    setTimeout(() => {
+      commands.executeCommand("vscode.openFolder", folderPath);
+    }, 2000);
+  } else {
+    const autoOpenTimeout = setTimeout(() => {
+      commands.executeCommand("vscode.openFolder", folderPath, true);
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenNewProject, {
+        [TelemetryProperty.VscWindow]: VSCodeWindowChoice.NewWindowByDefault,
+      });
+    }, 5000);
+    const selection = await VS_CODE_UI.showMessage(
+      "info",
+      localize("teamstoolkit.handlers.openProject.title"),
+      false,
+      localize("teamstoolkit.handlers.openInNewWindow"),
+      localize("teamstoolkit.handlers.openInCurrentWindow")
+    );
+    if (selection.isOk()) {
+      clearTimeout(autoOpenTimeout);
+      const openInNewWindow = selection.value === localize("teamstoolkit.handlers.openInNewWindow");
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenNewProject, {
+        [TelemetryProperty.VscWindow]: openInNewWindow
+          ? VSCodeWindowChoice.NewWindow
+          : VSCodeWindowChoice.CurrentWindow,
+      });
+      if (openInNewWindow) {
+        commands.executeCommand("vscode.openFolder", folderPath, true);
+      } else {
+        await ExtTelemetry.dispose();
+        // after calling dispose(), let render process to wait for a while instead of directly call "open folder"
+        // otherwise, the flush operation in dispose() will be interrupted due to shut down the render process.
+        setTimeout(() => {
+          commands.executeCommand("vscode.openFolder", folderPath);
+        }, 2000);
+      }
+    }
+  }
 }
 
 export async function updateAutoOpenGlobalKey(
@@ -470,9 +509,13 @@ export async function updateAutoOpenGlobalKey(
   projectUri: Uri,
   args?: any[]
 ): Promise<void> {
-  if (isTriggerFromWalkThrough(args) && !(await getIsFromSample(projectUri.fsPath))) {
+  const isSample = await getIsFromSample(projectUri.fsPath);
+  if (isTriggerFromWalkThrough(args) && !isSample) {
     await globalStateUpdate(GlobalKey.OpenWalkThrough, true);
     await globalStateUpdate(GlobalKey.OpenReadMe, "");
+  } else if (isSample) {
+    await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
+    await globalStateUpdate(GlobalKey.OpenSampleReadMe, true);
   } else {
     await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
     await globalStateUpdate(GlobalKey.OpenReadMe, projectUri.fsPath);
@@ -487,7 +530,9 @@ export async function updateAutoOpenGlobalKey(
   }
 }
 
-export async function getNewProjectPathHandler(args?: any[]): Promise<Result<any, FxError>> {
+export async function createProjectFromWalkthroughHandler(
+  args?: any[]
+): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.create);
   return result;
@@ -1170,8 +1215,8 @@ export async function validateAzureDependenciesHandler(): Promise<string | undef
   const deps = [nodeType, DepsType.Dotnet, DepsType.FuncCoreTools, DepsType.Ngrok];
 
   const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
-  const shouldContinue = await vscodeDepsChecker.resolve(deps);
-
+  let shouldContinue = await vscodeDepsChecker.resolve(deps);
+  shouldContinue = shouldContinue && (await validatePorts()).isOk();
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugEnvCheck, {
     [TelemetryProperty.Success]: shouldContinue ? TelemetrySuccess.Yes : TelemetrySuccess.No,
   });
@@ -1182,6 +1227,34 @@ export async function validateAzureDependenciesHandler(): Promise<string | undef
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
   }
+}
+
+async function validatePorts(): Promise<Result<void, FxError>> {
+  const portsInUse = await commonUtils.getPortsInUse();
+  if (portsInUse.length > 0) {
+    let message: string;
+    if (portsInUse.length > 1) {
+      message = util.format(
+        localize("teamstoolkit.localDebug.portsAlreadyInUse"),
+        portsInUse.join(", ")
+      );
+    } else {
+      message = util.format(localize("teamstoolkit.localDebug.portAlreadyInUse"), portsInUse[0]);
+    }
+    const error = new UserError(ExtensionSource, ExtensionErrors.PortAlreadyInUse, message);
+    VS_CODE_UI.showMessage(
+      "error",
+      message,
+      false,
+      localize("teamstoolkit.localDebug.learnMore")
+    ).then(async (result) => {
+      if (result.isOk() && result.value === localize("teamstoolkit.localDebug.learnMore")) {
+        await VS_CODE_UI.openUrl(constants.portInUseHelpLink);
+      }
+    });
+    return err(error);
+  }
+  return ok(undefined);
 }
 
 /**
@@ -1356,38 +1429,13 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
     async (): Promise<Result<void, FxError>> => {
       const result = await localTelemetryReporter.runWithTelemetry(
         TelemetryEvent.DebugPreCheckCoreLocalDebug,
-        () => runCommand(Stage.debug)
+        () => {
+          VsCodeLogInstance.outputChannel.show();
+          return runCommand(Stage.debug);
+        }
       );
       if (result.isErr()) {
         return err(result.error);
-      }
-
-      const portsInUse = await commonUtils.getPortsInUse();
-      if (portsInUse.length > 0) {
-        let message: string;
-        if (portsInUse.length > 1) {
-          message = util.format(
-            localize("teamstoolkit.localDebug.portsAlreadyInUse"),
-            portsInUse.join(", ")
-          );
-        } else {
-          message = util.format(
-            localize("teamstoolkit.localDebug.portAlreadyInUse"),
-            portsInUse[0]
-          );
-        }
-        const error = new UserError(ExtensionSource, ExtensionErrors.PortAlreadyInUse, message);
-        VS_CODE_UI.showMessage(
-          "error",
-          message,
-          false,
-          localize("teamstoolkit.localDebug.learnMore")
-        ).then(async (result) => {
-          if (result.isOk() && result.value === localize("teamstoolkit.localDebug.learnMore")) {
-            await VS_CODE_UI.openUrl(constants.portInUseHelpLink);
-          }
-        });
-        return err(error);
       }
       return ok(undefined);
     }
@@ -1595,6 +1643,62 @@ export async function openReadMeHandler(args: any[]) {
       const PreviewMarkdownCommand = "markdown.showPreview";
       commands.executeCommand(PreviewMarkdownCommand, uri);
     });
+  }
+}
+
+export async function promptSPFxUpgrade() {
+  if (globalVariables.isSPFxProject) {
+    let projectSPFxVersion = null;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
+    const yoInfoPath = path.join(globalVariables.workspaceUri?.fsPath!, "SPFx", ".yo-rc.json");
+    if (await fs.pathExists(yoInfoPath)) {
+      const yoInfo = await fs.readJson(yoInfoPath);
+      projectSPFxVersion = yoInfo["@microsoft/generator-sharepoint"]?.version;
+    }
+
+    if (!projectSPFxVersion) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
+      const packagePath = path.join(globalVariables.workspaceUri?.fsPath!, "SPFx", "package.json");
+      if (await fs.pathExists(packagePath)) {
+        const packageInfo = await fs.readJSON(packagePath);
+        projectSPFxVersion = packageInfo.dependencies["@microsoft/sp-webpart-base"];
+      }
+    }
+
+    if (projectSPFxVersion) {
+      const cmp = compare(projectSPFxVersion, SUPPORTED_SPFX_VERSION);
+      if (cmp === 1 || cmp === -1) {
+        VS_CODE_UI.showMessage(
+          "warn",
+          util.format(
+            localize(
+              cmp === 1
+                ? "teamstoolkit.handlers.promptSPFx.upgradeToolkit.description"
+                : "teamstoolkit.handlers.promptSPFx.upgradeProject.description"
+            ),
+            SUPPORTED_SPFX_VERSION
+          ),
+          false,
+          localize(
+            cmp === 1
+              ? "teamstoolkit.handlers.promptSPFx.upgradeToolkit.title"
+              : "teamstoolkit.handlers.promptSPFx.upgradeProject.title"
+          )
+        ).then(async (result) => {
+          if (result.isOk()) {
+            if (
+              result.value === localize("teamstoolkit.handlers.promptSPFx.upgradeToolkit.title")
+            ) {
+              await vscode.commands.executeCommand("workbench.extensions.search", "Teams Toolkit");
+            } else if (
+              result.value === localize("teamstoolkit.handlers.promptSPFx.upgradeProject.title")
+            ) {
+              await VS_CODE_UI.openUrl(CLI_FOR_M365);
+            }
+          }
+        });
+      }
+    }
   }
 }
 

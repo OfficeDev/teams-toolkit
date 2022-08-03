@@ -1,6 +1,5 @@
 import {
   AzureSolutionSettings,
-  Component,
   Json,
   ProjectSettings,
   ProjectSettingsV3,
@@ -10,6 +9,7 @@ import { isVSProject } from "../common/projectSettingsHelper";
 import { hasAzureResourceV3 } from "../common/projectSettingsHelperV3";
 import { MessageExtensionNewUIItem } from "../plugins/solution/fx-solution/question";
 import { ComponentNames } from "./constants";
+import { ensureComponentConnections } from "./utils";
 import { getComponent } from "./workflow";
 
 export interface EnvStateV2 {
@@ -294,39 +294,9 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
       });
     }
 
-    connectComponents(settingsV3);
+    ensureComponentConnections(settingsV3);
   }
   return settingsV3;
-}
-
-function connectResourceToComponent(
-  computeComponent: Component,
-  resource: Component,
-  settingsV3: ProjectSettingsV3
-) {
-  computeComponent.connections = computeComponent.connections || [];
-  if (!computeComponent.connections.includes(resource.name))
-    computeComponent.connections.push(resource.name);
-}
-
-function connectComponents(settingsV3: ProjectSettingsV3) {
-  const resources = [
-    ComponentNames.Identity,
-    ComponentNames.AzureSQL,
-    ComponentNames.KeyVault,
-    ComponentNames.TeamsTab,
-    ComponentNames.TeamsBot,
-  ];
-  const computingComponentNames = [ComponentNames.AzureWebApp, ComponentNames.Function];
-  for (const component1 of settingsV3.components) {
-    if (computingComponentNames.includes(component1.name)) {
-      for (const component2 of settingsV3.components) {
-        if (resources.includes(component2.name)) {
-          connectResourceToComponent(component1, component2, settingsV3);
-        }
-      }
-    }
-  }
 }
 
 export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): ProjectSettings {
@@ -342,7 +312,6 @@ export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): Pro
       activeResourcePlugins: [
         "fx-resource-local-debug",
         "fx-resource-appstudio",
-        "fx-resource-key-vault",
         "fx-resource-cicd",
         "fx-resource-api-connector",
       ],
@@ -352,10 +321,9 @@ export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): Pro
       settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-aad-app-for-teams");
     }
     const teamsTab = getComponent(settingsV3, ComponentNames.TeamsTab);
-    const hasSSO = teamsTab?.sso || aad !== undefined;
     if (teamsTab) {
       settingsV2.solutionSettings.capabilities.push("Tab");
-      if (hasSSO) {
+      if (teamsTab.sso) {
         settingsV2.solutionSettings.capabilities.push("TabSSO");
       }
       settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-frontend-hosting");
@@ -369,7 +337,7 @@ export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): Pro
         botCapabilities?.includes("command-response")
       ) {
         settingsV2.solutionSettings.capabilities.push("Bot");
-        if (teamsBot.sso || hasSSO) {
+        if (teamsBot.sso) {
           settingsV2.solutionSettings.capabilities.push("BotSSO");
         }
       }

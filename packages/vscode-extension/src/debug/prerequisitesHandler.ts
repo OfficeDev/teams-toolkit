@@ -498,13 +498,13 @@ async function _checkAndInstall(ctx: TelemetryContext): Promise<Result<void, FxE
 
 async function ensureM365Account(
   showLoginPage: boolean
-): Promise<Result<{ token: string; loginHint?: string }, FxError>> {
+): Promise<Result<{ token: string; tenantId?: string; loginHint?: string }, FxError>> {
   // Check M365 account token
   const m365Result = await localTelemetryReporter.runWithTelemetry(
     TelemetryEvent.DebugPrereqsCheckM365AccountSignIn,
     async (
       ctx: TelemetryContext
-    ): Promise<Result<{ token: string; loginHint?: string }, FxError>> => {
+    ): Promise<Result<{ token: string; tenantId?: string; loginHint?: string }, FxError>> => {
       let loginStatusRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
       if (loginStatusRes.isErr()) {
         ctx.properties[TelemetryProperty.DebugM365AccountStatus] = "error";
@@ -514,6 +514,7 @@ async function ensureM365Account(
 
       let token = loginStatusRes.value.token;
       let upn = loginStatusRes.value.accountInfo?.upn;
+      let tid = loginStatusRes.value.accountInfo?.tid;
       if (loginStatusRes.value.status === signedOut && showLoginPage) {
         const tokenRes = await tools.tokenProvider.m365TokenProvider.getAccessToken({
           scopes: AppStudioScopes,
@@ -528,6 +529,7 @@ async function ensureM365Account(
         }
         token = loginStatusRes.value.token;
         upn = loginStatusRes.value.accountInfo?.upn;
+        tid = loginStatusRes.value.accountInfo?.tid;
       }
       if (token === undefined) {
         // corner case but need to handle
@@ -540,7 +542,8 @@ async function ensureM365Account(
         );
       }
       const loginHint = typeof upn === "string" ? upn : undefined;
-      return ok({ token, loginHint });
+      const tenantId = typeof tid === "string" ? tid : undefined;
+      return ok({ token, tenantId, loginHint });
     }
   );
   if (m365Result.isErr()) {
@@ -583,6 +586,7 @@ function checkM365Account(prefix: string, showLoginPage: boolean): Promise<Check
       let result = ResultStatus.success;
       let error = undefined;
       let loginHint = undefined;
+      let tenantId = undefined;
       const failureMsg = Checker.M365Account;
       try {
         VsCodeLogInstance.outputChannel.appendLine(
@@ -595,6 +599,7 @@ function checkM365Account(prefix: string, showLoginPage: boolean): Promise<Check
           error = accountResult.error;
         } else {
           loginHint = accountResult.value.loginHint;
+          tenantId = accountResult.value.tenantId;
         }
       } catch (err: unknown) {
         result = ResultStatus.failed;
@@ -602,12 +607,37 @@ function checkM365Account(prefix: string, showLoginPage: boolean): Promise<Check
           error = assembleError(err);
         }
       }
+
+      const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
+      const projectSettings = await localEnvManager.getProjectSettings(
+        globalVariables.workspaceUri!.fsPath
+      );
+      const localEnvInfo = await localEnvManager.getLocalEnvInfo(
+        globalVariables.workspaceUri!.fsPath,
+        {
+          projectId: projectSettings.projectId,
+        }
+      );
+
+      let hasSwitchedM365Tenant = false;
+      if (
+        localEnvInfo &&
+        localEnvInfo["state"] &&
+        localEnvInfo["state"]["solution"] &&
+        localEnvInfo["state"]["solution"]["teamsAppTenantId"] &&
+        !!tenantId &&
+        localEnvInfo["state"]["solution"]["teamsAppTenantId"] != tenantId
+      ) {
+        hasSwitchedM365Tenant = true;
+      }
       return {
         checker: Checker.M365Account,
         result: result,
         successMsg:
           result && loginHint
-            ? doctorConstant.SignInSuccess.split("@account").join(`${loginHint}`)
+            ? hasSwitchedM365Tenant
+              ? doctorConstant.SignInSuccessWithNewAccount.split("@account").join(`${loginHint}`)
+              : doctorConstant.SignInSuccess.split("@account").join(`${loginHint}`)
             : Checker.M365Account,
         failureMsg: failureMsg,
         error: error,

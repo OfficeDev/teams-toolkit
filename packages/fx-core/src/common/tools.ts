@@ -570,7 +570,8 @@ export async function canAddCICDWorkflows(inputs: Inputs, ctx: v2.Context): Prom
   // Not include `Add CICD Workflows` in minimal app case.
   const isExistingApp = !isV3()
     ? isExistingTabApp(ctx.projectSetting)
-    : isMiniApp(ctx.projectSetting as ProjectSettingsV3);
+    : ctx.projectSetting.solutionSettings?.hostType === HostTypeOptionAzure.id &&
+      isMiniApp(ctx.projectSetting as ProjectSettingsV3);
   if (isExistingApp) {
     return false;
   }

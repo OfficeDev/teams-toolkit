@@ -191,6 +191,9 @@ export enum TelemetryEvent {
   // that prevents user performing concurrent operations.
   TreeViewCommandConcurrentExecution = "treeview-command-concurrent-execution",
 
+  // To track the A/B test of opening in new window after creating a new project
+  OpenNewProject = "open-new-project",
+
   Deactivate = "deactivate",
 }
 
@@ -261,6 +264,8 @@ export enum TelemetryProperty {
   // Used with OpenTutorial
   TutorialName = "tutorial-name",
   DocumentationName = "documentation-name",
+  // Used with OpenNewProject
+  VscWindow = "vscode-window",
   // Used with Deactivate
   Timestamp = "timestamp",
   ProgrammingLanguage = "programming-language",
@@ -334,6 +339,12 @@ export enum TelemetryDebugDevCertStatus {
   AlreadyTrusted = "already-trusted",
   Trusted = "trusted",
   NotTrusted = "not-trusted",
+}
+
+export enum VSCodeWindowChoice {
+  CurrentWindow = "current-window",
+  NewWindow = "new-window",
+  NewWindowByDefault = "new-window-by-default",
 }
 
 export const TelemetryComponentType = "extension";

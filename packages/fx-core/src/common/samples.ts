@@ -31,9 +31,9 @@ class SampleProvider {
           tags: sample.tags,
           time: sample.time,
           configuration: sample.configuration,
-          link: sampleConfig.defaultPackageLink,
+          link: sample.packageLink ?? sampleConfig.defaultPackageLink,
           suggested: sample.suggested,
-          url: sampleConfig.baseUrl,
+          url: sample.url ?? sampleConfig.baseUrl,
         } as SampleInfo;
       });
 

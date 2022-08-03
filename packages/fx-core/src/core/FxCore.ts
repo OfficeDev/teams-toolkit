@@ -842,6 +842,8 @@ export class FxCore implements v3.ICore {
       inputs.stage = Stage.addFeature;
       const fx = Container.get("fx") as TeamsfxCore;
       res = await fx.addFeature(context, inputs as InputsWithProjectPath);
+    } else {
+      return err(new NotImplementedError(func.method));
     }
     if (res) {
       if (res.isErr()) return err(res.error);

@@ -15,7 +15,7 @@ import {
   Json,
   TelemetryReporter,
 } from "@microsoft/teamsfx-api";
-import { AppStudioScopes, getResourceGroupInPortal } from "../../../../common/tools";
+import { AppStudioScopes, getHashedEnv, getResourceGroupInPortal } from "../../../../common/tools";
 import { executeConcurrently } from "./executor";
 import {
   ensurePermissionRequest,
@@ -69,9 +69,11 @@ export async function provisionResource(
   envInfo: v2.EnvInfoV2,
   tokenProvider: TokenProvider
 ): Promise<Result<Void, FxError>> {
+  const env = !env ? "" : getHashedEnv(inputs.env);
   ctx.telemetryReporter.sendTelemetryEvent(SolutionTelemetryEvent.ProvisionStart, {
     [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
     [SolutionTelemetryProperty.SubscriptionId]: getSubscriptionId(envInfo.state),
+    [SolutionTelemetryProperty.Env]: env,
   });
 
   const result = await provisionResourceImpl(ctx, inputs, envInfo, tokenProvider);
@@ -80,6 +82,7 @@ export async function provisionResource(
     ctx.telemetryReporter.sendTelemetryEvent(SolutionTelemetryEvent.Provision, {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
       [SolutionTelemetryProperty.SubscriptionId]: getSubscriptionId(envInfo.state),
+      [SolutionTelemetryProperty.Env]: env,
       [SolutionTelemetryProperty.Success]: "yes",
     });
   } else {
@@ -90,6 +93,7 @@ export async function provisionResource(
       {
         [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
         [SolutionTelemetryProperty.SubscriptionId]: getSubscriptionId(envInfo.state),
+        [SolutionTelemetryProperty.Env]: env,
       }
     );
   }

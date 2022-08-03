@@ -33,6 +33,7 @@ export enum TelemetryProperty {
   TemplateLanguage = "template-language",
   TemplateScenario = "template-scenario",
   TemplateFallback = "template-fallback",
+  HasSwitchedSubscription = "has-switched-subscription",
 }
 
 export enum TelemetryEvent {
@@ -44,6 +45,8 @@ export enum TelemetryEvent {
   DecryptUserdata = "decrypt-userdata",
   CheckResourceGroupStart = "check-resource-group-start",
   CheckResourceGroup = "check-resource-group",
+  CheckSubscriptionStart = "check-subscription-start",
+  CheckSubscription = "check-subscription",
   CheckSideloading = "check-sideloading",
   EnvConfig = "env-config",
   ProjectMigratorNotificationStart = "project-migrator-notification-start",

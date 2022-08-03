@@ -689,7 +689,8 @@ export class FxCore implements v3.ICore {
         func.method === "addCICDWorkflows" ||
         func.method === "connectExistingApi" ||
         func.method === "addSso" ||
-        func.method === "addFeature"
+        func.method === "addFeature" ||
+        func.method === "addResource"
       )
         return this.executeUserTaskV3(func, inputs);
     }

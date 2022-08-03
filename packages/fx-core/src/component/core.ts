@@ -101,6 +101,7 @@ import { AzureResources, ComponentNames } from "./constants";
 import { pluginName2ComponentName } from "./migrate";
 import {
   getQuestionsForAddFeatureV3,
+  getQuestionsForAddResourceV3,
   getQuestionsForDeployV3,
   getQuestionsForProvisionV3,
 } from "./questionV3";
@@ -185,6 +186,37 @@ export class TeamsfxCore {
     context.projectPath = projectPath;
     return ok(projectPath);
   }
+  // /**
+  //  * add resource
+  //  */
+  //  @hooks([
+  //   ActionExecutionMW({
+  //     question: (context, inputs) => {
+  //       return getQuestionsForAddResourceV3(context, inputs);
+  //     },
+  //   }),
+  // ])
+  // async addResource(
+  //   context: ContextV3,
+  //   inputs: InputsWithProjectPath
+  // ): Promise<Result<undefined, FxError>> {
+  //   const resource = inputs[AzureSolutionQuestionNames.AddResources];
+  //   let component;
+  //   if (resource === AzureResourceSQLNewUI.id) {
+  //     component = Container.get("sql");
+  //   } else if (resource === AzureResourceFunctionNewUI.id) {
+  //     component = Container.get(ComponentNames.TeamsApi);
+  //   } else if (resource === AzureResourceApim.id) {
+  //     component = Container.get(ComponentNames.APIMFeature);
+  //   } else if (resource === AzureResourceKeyVaultNewUI.id) {
+  //     component = Container.get("key-vault-feature");
+  //   }
+  //   if (component) {
+  //     const res = await (component as any).add(context, inputs);
+  //     if (res.isErr()) return err(res.error);
+  //   }
+  //   return ok(undefined);
+  // }
   /**
    * add feature
    */

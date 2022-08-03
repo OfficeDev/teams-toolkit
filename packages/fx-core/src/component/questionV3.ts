@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 import {
   CLIPlatforms,
+  ContextV3,
   DynamicPlatforms,
   err,
   FxError,
@@ -78,6 +79,11 @@ import { sqlQuestionNode } from "./resource/azureSql/questions";
 import { functionNameQuestion } from "../plugins/resource/function/question";
 import { ApiConnectorImpl } from "../plugins/resource/apiconnector/plugin";
 import { addCicdQuestion } from "./feature/cicd";
+import * as path from "path";
+import { RegularExpr } from "../plugins/resource/function/constants";
+import { ErrorMessages } from "../plugins/resource/function/resources/message";
+import { FunctionLanguage, QuestionKey } from "../plugins/resource/function/enums";
+import { FunctionScaffold } from "../plugins/resource/function/ops/scaffold";
 
 export async function getQuestionsForProvisionV3(
   inputs: Inputs
@@ -188,6 +194,11 @@ export async function getQuestionsForAddFeatureV3(
     if (triggerNodeRes.value) {
       addFeatureNode.addChild(triggerNodeRes.value);
     }
+    const functionNameNode = getAzureFunctionQuestionNode(inputs, ctx as ContextV3);
+    functionNameNode.condition = {
+      equals: AzureResourceFunctionNewUI.id,
+    };
+    addFeatureNode.addChild(functionNameNode);
     return ok(addFeatureNode);
   }
   // check capability options
@@ -246,6 +257,11 @@ export async function getQuestionsForAddFeatureV3(
   if (triggerNodeRes.value) {
     addFeatureNode.addChild(triggerNodeRes.value);
   }
+  const functionNameNode = getAzureFunctionQuestionNode(inputs, ctx as ContextV3);
+  functionNameNode.condition = {
+    equals: AzureResourceFunctionNewUI.id,
+  };
+  addFeatureNode.addChild(functionNameNode);
   if (!ctx.projectSetting.programmingLanguage) {
     // Language
     const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
@@ -283,6 +299,11 @@ export async function getQuestionsForAddResourceV3(
     options.push(AzureResourceFunctionNewUI);
     options.push(AzureResourceKeyVaultNewUI);
     const addFeatureNode = new QTreeNode(question);
+    const functionNameNode = getAzureFunctionQuestionNode(inputs, ctx as ContextV3);
+    functionNameNode.condition = {
+      equals: AzureResourceFunctionNewUI.id,
+    };
+    addFeatureNode.addChild(functionNameNode);
     return ok(addFeatureNode);
   }
   const projectSettingsV3 = ctx.projectSetting as ProjectSettingsV3;
@@ -296,11 +317,11 @@ export async function getQuestionsForAddResourceV3(
   // function can always be added
   options.push(AzureResourceFunctionNewUI);
   const addFeatureNode = new QTreeNode(question);
-  const triggerNodeRes = await getNotificationTriggerQuestionNode(inputs);
-  if (triggerNodeRes.isErr()) return err(triggerNodeRes.error);
-  if (triggerNodeRes.value) {
-    addFeatureNode.addChild(triggerNodeRes.value);
-  }
+  const functionNameNode = getAzureFunctionQuestionNode(inputs, ctx as ContextV3);
+  functionNameNode.condition = {
+    equals: AzureResourceFunctionNewUI.id,
+  };
+  addFeatureNode.addChild(functionNameNode);
   if (!ctx.projectSetting.programmingLanguage) {
     // Language
     const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
@@ -405,4 +426,31 @@ export async function getNotificationTriggerQuestionNode(
   }
   res.condition = showNotificationTriggerCondition;
   return ok(res);
+}
+
+export function getAzureFunctionQuestionNode(inputs: Inputs, ctx: ContextV3): QTreeNode {
+  if (inputs.projectPath) {
+    functionNameQuestion.validation = {
+      validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
+        const workingPath: string = path.join(inputs.projectPath!, "api");
+        const name = input as string;
+        if (!name || !RegularExpr.validFunctionNamePattern.test(name)) {
+          return ErrorMessages.invalidFunctionName;
+        }
+        const language: FunctionLanguage =
+          (inputs[QuestionKey.programmingLanguage] as FunctionLanguage) ??
+          (ctx.projectSetting.programmingLanguage as FunctionLanguage);
+
+        // If language is unknown, skip checking and let scaffold handle the error.
+        if (
+          language &&
+          (await FunctionScaffold.doesFunctionPathExist(workingPath, language, name))
+        ) {
+          return ErrorMessages.functionAlreadyExists;
+        }
+      },
+    };
+  }
+  const node = new QTreeNode(functionNameQuestion);
+  return node;
 }

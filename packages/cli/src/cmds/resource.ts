@@ -11,6 +11,7 @@ import {
   PathNotExistError,
   environmentManager,
   ProjectSettingsHelper,
+  AzureSolutionQuestionNames,
 } from "@microsoft/teamsfx-core";
 import activate from "../activate";
 import { getSystemInputs, Json, setSubscriptionId } from "../utils";
@@ -126,7 +127,7 @@ export class ResourceAddSql extends YargsCommand {
 
     const func = {
       namespace: "fx-solution-azure",
-      method: "addResource",
+      method: "addFeature",
     };
 
     const core = result.value;
@@ -134,6 +135,7 @@ export class ResourceAddSql extends YargsCommand {
     {
       const inputs = getSystemInputs(rootFolder);
       inputs.ignoreEnvInfo = true;
+      inputs[AzureSolutionQuestionNames.Features] = "sql";
       const result = await core.executeUserTask(func, inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
@@ -203,13 +205,14 @@ export class ResourceAddApim extends YargsCommand {
 
     const func = {
       namespace: "fx-solution-azure",
-      method: "addResource",
+      method: "addFeature",
     };
 
     const core = result.value;
     {
       const inputs = getSystemInputs(rootFolder);
       inputs.ignoreEnvInfo = true;
+      inputs[AzureSolutionQuestionNames.Features] = "apim";
       const result = await core.executeUserTask(func, inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
@@ -260,7 +263,7 @@ export class ResourceAddFunction extends YargsCommand {
 
     const func = {
       namespace: "fx-solution-azure",
-      method: "addResource",
+      method: "addFeature",
     };
 
     const core = result.value;
@@ -279,6 +282,7 @@ export class ResourceAddFunction extends YargsCommand {
     {
       const inputs = getSystemInputs(rootFolder);
       inputs.ignoreEnvInfo = true;
+      inputs[AzureSolutionQuestionNames.Features] = "function";
       const result = await core.executeUserTask(func, inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
@@ -330,13 +334,14 @@ export class ResourceAddKeyVault extends YargsCommand {
 
     const func = {
       namespace: "fx-solution-azure",
-      method: "addResource",
+      method: "addFeature",
     };
 
     const core = result.value;
     {
       const inputs = getSystemInputs(rootFolder);
       inputs.ignoreEnvInfo = true;
+      inputs[AzureSolutionQuestionNames.Features] = "keyvault";
       const result = await core.executeUserTask(func, inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {

@@ -52,7 +52,7 @@ export const confirmPasswordQuestion: TextInputQuestion = {
   },
 };
 
-export function buildQuestionNode(): QTreeNode {
+export function sqlQuestionNode(): QTreeNode {
   const sqlNode = new QTreeNode({
     type: "group",
   });

@@ -46,6 +46,7 @@ import {
 } from "../plugins/resource/bot/question";
 import {
   ApiConnectionOptionItem,
+  AskSubscriptionQuestion,
   AzureResourceApimNewUI,
   AzureResourceFunctionNewUI,
   AzureResourceKeyVaultNewUI,
@@ -73,7 +74,7 @@ import { createContextV3 } from "./utils";
 import { isCLIDotNetEnabled } from "../common/featureFlags";
 import { Runtime } from "../plugins/resource/bot/v2/enum";
 import { getPlatformRuntime } from "../plugins/resource/bot/v2/mapping";
-import { buildQuestionNode } from "./resource/azureSql/questions";
+import { sqlQuestionNode } from "./resource/azureSql/questions";
 import { functionNameQuestion } from "../plugins/resource/function/question";
 import { ApiConnectorImpl } from "../plugins/resource/apiconnector/plugin";
 import { addCicdQuestion } from "./feature/cicd";
@@ -82,7 +83,10 @@ export async function getQuestionsForProvisionV3(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (inputs.platform === Platform.CLI_HELP) {
-    return ok(buildQuestionNode());
+    const node = new QTreeNode({ type: "group" });
+    node.addChild(new QTreeNode(AskSubscriptionQuestion));
+    node.addChild(sqlQuestionNode());
+    return ok(node);
   }
   return ok(undefined);
 }

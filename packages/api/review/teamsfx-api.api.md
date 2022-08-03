@@ -40,8 +40,9 @@ export type Action = GroupAction | ShellAction | CallAction | FunctionAction;
 
 // @public
 export interface ActionBase {
+    condition?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<boolean, FxError>>;
     // (undocumented)
-    exception?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+    exception?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<undefined, FxError>>;
     // (undocumented)
     inputs?: Json;
     // (undocumented)
@@ -49,13 +50,21 @@ export interface ActionBase {
     // (undocumented)
     plan?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Effect[], FxError>>;
     // (undocumented)
-    post?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+    post?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<undefined, FxError>>;
     // (undocumented)
-    pre?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+    pre?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<undefined, FxError>>;
     // (undocumented)
     question?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     type: "group" | "shell" | "call" | "function";
+}
+
+// @public (undocumented)
+export interface ActionContext {
+    // (undocumented)
+    progressBar?: IProgressHandler;
+    // (undocumented)
+    telemetryProps?: Record<string, string>;
 }
 
 // @public (undocumented)
@@ -329,21 +338,21 @@ export const CLIPlatforms: Platform[];
 // @public (undocumented)
 export interface CloudResource {
     // (undocumented)
-    configure?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Action | undefined, FxError>>;
+    configure?: (context: ResourceContextV3, inputs: InputsWithProjectPath, actionContext?: ActionContext) => Promise<Result<undefined, FxError>>;
     // (undocumented)
-    deploy?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Action | undefined, FxError>>;
+    deploy?: (context: ResourceContextV3, inputs: InputsWithProjectPath, actionContext?: ActionContext) => Promise<Result<undefined, FxError>>;
     // (undocumented)
     readonly description?: string;
     // (undocumented)
     readonly finalOutputKeys: string[];
     // (undocumented)
-    generateBicep?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Action | undefined, FxError>>;
+    generateBicep?: (context: ContextV3, inputs: InputsWithProjectPath, actionContext?: ActionContext) => Promise<Result<Bicep[], FxError>>;
     // (undocumented)
     readonly name: string;
     // (undocumented)
     readonly outputs: ResourceOutputs;
     // (undocumented)
-    provision?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Action | undefined, FxError>>;
+    provision?: (context: ResourceContextV3, inputs: InputsWithProjectPath, actionContext?: ActionContext) => Promise<Result<undefined, FxError>>;
     // (undocumented)
     readonly secretKeys?: string[];
 }
@@ -377,6 +386,8 @@ export interface Component extends Json {
     code?: string;
     // (undocumented)
     connections?: string[];
+    // (undocumented)
+    deploy?: boolean;
     // (undocumented)
     deployType?: "folder" | "zip";
     // (undocumented)
@@ -493,6 +504,8 @@ export interface ContextV3 extends Context_2 {
     envInfo?: EnvInfoV3;
     // (undocumented)
     manifestProvider: AppManifestProvider;
+    // (undocumented)
+    projectPath?: string;
     // (undocumented)
     projectSetting: ProjectSettingsV3;
     // (undocumented)
@@ -672,6 +685,9 @@ export const EnvNamePlaceholder = "@envName";
 export const EnvStateFileNameTemplate: string;
 
 // @public (undocumented)
+export type ErrorHandler = (error: any, telemetryProps: Record<string, string>) => FxError;
+
+// @public (undocumented)
 export interface ErrorOptionBase {
     // (undocumented)
     displayMessage?: string;
@@ -750,7 +766,31 @@ export interface FuncQuestion extends BaseQuestion {
 
 // @public
 export interface FunctionAction extends ActionBase {
-    execute: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Effect[], FxError>>;
+    // (undocumented)
+    enableProgressBar?: boolean;
+    // (undocumented)
+    enableTelemetry?: boolean;
+    // (undocumented)
+    errorHandler?: ErrorHandler;
+    // (undocumented)
+    errorHelpLink?: string;
+    // (undocumented)
+    errorIssueLink?: string;
+    // (undocumented)
+    errorSource?: string;
+    execute: (context: ContextV3, inputs: InputsWithProjectPath, progress?: IProgressHandler, telemetryProps?: Record<string, string>) => MaybePromise<Result<Effect[], FxError>>;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    progressSteps?: number;
+    // (undocumented)
+    progressTitle?: string;
+    // (undocumented)
+    telemetryComponentName?: string;
+    // (undocumented)
+    telemetryEventName?: string;
+    // (undocumented)
+    telemetryProps?: Record<string, string>;
     // (undocumented)
     type: "function";
 }
@@ -1349,14 +1389,6 @@ export interface ProvisionBicep {
 }
 
 // @public (undocumented)
-export interface ProvisionContextV3 extends ContextV3 {
-    // (undocumented)
-    envInfo: EnvInfoV3;
-    // (undocumented)
-    tokenProvider: TokenProvider;
-}
-
-// @public (undocumented)
 type ProvisionInputs = InputsWithProjectPath & SolutionInputs;
 
 // @public
@@ -1404,6 +1436,14 @@ export type ResourceConfig = ResourceTemplate;
 
 // @public (undocumented)
 export type ResourceConfigs = ResourceTemplates;
+
+// @public (undocumented)
+export interface ResourceContextV3 extends ContextV3 {
+    // (undocumented)
+    envInfo: EnvInfoV3;
+    // (undocumented)
+    tokenProvider: TokenProvider;
+}
 
 // @public (undocumented)
 export interface ResourceOutput {
@@ -1657,18 +1697,6 @@ export interface SolutionSettings extends Json {
     // (undocumented)
     name: string;
     version?: string;
-}
-
-// @public (undocumented)
-export interface SourceCodeProvider {
-    // (undocumented)
-    build?: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Action | undefined, FxError>>;
-    // (undocumented)
-    readonly description?: string;
-    // (undocumented)
-    generate: (context: ContextV3, inputs: InputsWithProjectPath) => MaybePromise<Result<Action | undefined, FxError>>;
-    // (undocumented)
-    readonly name: string;
 }
 
 // @public (undocumented)

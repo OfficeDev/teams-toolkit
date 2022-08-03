@@ -21,6 +21,10 @@ export function isVsCallingCli(): boolean {
   return featureFlagEnabled(FeatureFlagName.VSCallingCLI);
 }
 
+export function doesAllowSwitchAccount(): boolean {
+  return featureFlagEnabled(FeatureFlagName.SwitchAccount);
+}
+
 export let Logger: LogProvider;
 export let currentStage: Stage;
 export let TOOLS: Tools;
@@ -38,5 +42,7 @@ export function setCurrentStage(stage: Stage): void {
 }
 export class GlobalVars {
   isVS?: boolean = false;
+  teamsAppId = "";
+  m365TenantId = "";
 }
 export const globalVars = new GlobalVars();

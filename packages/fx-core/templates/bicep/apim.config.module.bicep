@@ -19,10 +19,10 @@ var botId = provisionParameters['botAadAppClientId']
 
 {{#if (contains "teams-tab" connections) }}
   {{#if (contains "teams-bot" connections)}}
-var m365ApplicationIdUri = 'api://${ {{tabDomainVarName}} }/botid-${botId}'
+var m365ApplicationIdUri = 'api://${ provisionOutputs.TabOutput.value.domain }/botid-${botId}'
   {{else}}
 var m365ClientId = provisionParameters['m365ClientId']
-var m365ApplicationIdUri = 'api://${ {{tabDomainVarName}} }/${m365ClientId}'
+var m365ApplicationIdUri = 'api://${ provisionOutputs.TabOutput.value.domain }/${m365ClientId}'
   {{/if}}
 {{else}}
   {{#if (contains "teams-bot" connections) }}

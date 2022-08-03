@@ -23,6 +23,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
   /** Fake sso token payload
    * {
    *  "oid": "fake-oid",
+   *  "tid": "fake-tid",
    *  "name": "fake-name",
    *  "ver": "1.0",
    *  "exp": 1537234948,
@@ -30,11 +31,12 @@ describe("TeamsUserCredential Tests - Browser", () => {
    *  }
    */
   const fakeSSOTokenV1 =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvaWQiOiJmYWtlLW9pZCIsIm5hbWUiOiJmYWtlLW5hbWUiLCJ2ZXIiOiIxLjAiLCJleHAiOjE1MzcyMzQ5NDgsInVwbiI6ImZha2UtdXBuIn0.0CpibI3xSKj6y7bLIT6LjESASq3J2_uRnkPT5eKvWc0";
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvaWQiOiJmYWtlLW9pZCIsInRpZCI6ImZha2UtdGlkIiwibmFtZSI6ImZha2UtbmFtZSIsInZlciI6IjEuMCIsImV4cCI6MTUzNzIzNDk0OCwidXBuIjoiZmFrZS11cG4ifQ.zPxn7kxIX2MpIiQZ2NMimrPMo7Laalzy8pzGzyyvxFY";
 
   /** Fake sso token v2 payload
    * {
    *  "oid": "fake-oid",
+   *  "tid": "fake-tid"
    *  "name": "fake-name",
    *  "ver": "2.0",
    *  "exp": 1537234948,
@@ -42,7 +44,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
    *  }
    */
   const fakeSSOTokenV2 =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvaWQiOiJmYWtlLW9pZCIsIm5hbWUiOiJmYWtlLW5hbWUiLCJ2ZXIiOiIyLjAiLCJleHAiOjE1MzcyMzQ5NDgsInByZWZlcnJlZF91c2VybmFtZSI6ImZha2UtcHJlZmVycmVkX3VzZXJuYW1lIn0.CJ_cSeXhNZeilPWJvznNlGULAkHpITfiPPeHgaPzfH4";
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvaWQiOiJmYWtlLW9pZCIsInRpZCI6ImZha2UtdGlkIiwibmFtZSI6ImZha2UtbmFtZSIsInZlciI6IjIuMCIsImV4cCI6MTUzNzIzNDk0OCwicHJlZmVycmVkX3VzZXJuYW1lIjoiZmFrZS1wcmVmZXJyZWRfdXNlcm5hbWUifQ.q7r1WcrWfYRNsz2gXj8-hiTKjZVOIw6eTnZxSzcH3lg";
 
   /**
    * {
@@ -199,11 +201,13 @@ describe("TeamsUserCredential Tests - Browser", () => {
     const userInfo1 = await credential.getUserInfo();
     assert.strictEqual(userInfo1.displayName, "fake-name");
     assert.strictEqual(userInfo1.objectId, "fake-oid");
+    assert.strictEqual(userInfo1.tenantId, "fake-tid");
     assert.strictEqual(userInfo1.preferredUserName, "fake-upn");
 
     const userInfo2 = await credential.getUserInfo();
     assert.strictEqual(userInfo2.displayName, "fake-name");
     assert.strictEqual(userInfo2.objectId, "fake-oid");
+    assert.strictEqual(userInfo2.tenantId, "fake-tid");
     assert.strictEqual(userInfo2.preferredUserName, "fake-preferred_username");
 
     sinon.restore();

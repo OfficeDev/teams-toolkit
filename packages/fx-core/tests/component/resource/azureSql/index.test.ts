@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import "mocha";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
@@ -9,12 +12,12 @@ import sinon from "sinon";
 import { AzureSqlResource } from "../../../../src/component/resource/azureSql";
 import {
   ContextV3,
-  FunctionAction,
   InputsWithProjectPath,
   ok,
   Platform,
+  ResourceContextV3,
 } from "@microsoft/teamsfx-api";
-import { ComponentNames, ComponentStateKeys } from "../../../../src/component/constants";
+import { ComponentNames } from "../../../../src/component/constants";
 import { Constants } from "../../../../src/component/resource/azureSql/constants";
 import { newEnvInfoV3 } from "../../../../src";
 import path from "path";
@@ -83,20 +86,17 @@ describe("Azure-SQL Component", () => {
   });
 
   it("configure happy path", async function () {
-    context.envInfo!.state[ComponentStateKeys[ComponentNames.AzureSQL]] = {
+    context.envInfo!.state[ComponentNames.AzureSQL] = {
       sqlResourceId:
         "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mock-rg/providers/Microsoft.Sql/servers/mock",
       sqlEndpoint: "mock.database.windows.net",
       databaseName: "mock",
     };
-    context.envInfo!.state[ComponentStateKeys[ComponentNames.Identity]] = {
+    context.envInfo!.state[ComponentNames.Identity] = {
       [Constants.identityName]: "mock-identity",
     };
-    const configureAction = await component.configure(context, inputs);
+    const configureAction = await component.configure(context as ResourceContextV3, inputs);
     chai.assert.isTrue(configureAction.isOk());
-    const action = configureAction._unsafeUnwrap() as FunctionAction;
-    const result = await action.execute(context, inputs);
-    chai.assert.isTrue(result.isOk());
   });
 
   it("provision happy path", async function () {
@@ -104,19 +104,12 @@ describe("Azure-SQL Component", () => {
     sandbox
       .stub(MockUserInteraction.prototype, "inputText")
       .resolves(ok({ type: "success", result: "" }));
-    const provisionAction = await component.provision(context, inputs);
+    const provisionAction = await component.provision(context as ResourceContextV3, inputs);
     chai.assert.isTrue(provisionAction.isOk());
-    const action = provisionAction._unsafeUnwrap() as FunctionAction;
-    const result = await action.execute(context, inputs);
-    console.log(result);
-    chai.assert.isTrue(result.isOk());
   });
 
   it("generateBicep happy path", async function () {
-    const generateBicepAction = await component.generateBicep(context, inputs);
+    const generateBicepAction = await component.generateBicep(context as ResourceContextV3, inputs);
     chai.assert.isTrue(generateBicepAction.isOk());
-    const action = generateBicepAction._unsafeUnwrap() as FunctionAction;
-    const result = await action.execute(context, inputs);
-    chai.assert.isTrue(result.isOk());
   });
 });

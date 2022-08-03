@@ -1,24 +1,28 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { hooks } from "@feathersjs/hooks/lib";
 import {
-  Action,
-  CallAction,
+  Bicep,
   ContextV3,
+  Effect,
+  err,
   FxError,
-  GroupAction,
   Inputs,
   InputsWithProjectPath,
-  MaybePromise,
   ok,
-  ProjectSettingsV3,
+  ResourceContextV3,
   QTreeNode,
   Result,
   Stage,
 } from "@microsoft/teamsfx-api";
-import { merge } from "lodash";
+import { assign, cloneDeep } from "lodash";
+import * as path from "path";
 import "reflect-metadata";
-import { Service } from "typedi";
+import Container, { Service } from "typedi";
+import { isVSProject } from "../../common/projectSettingsHelper";
+import { convertToAlphanumericOnly } from "../../common/utils";
+import { globalVars } from "../../core/globalVars";
 import { CoreQuestionNames } from "../../core/question";
 import {
   DefaultValues,
@@ -29,133 +33,161 @@ import { FunctionLanguage, QuestionKey } from "../../plugins/resource/function/e
 import { FunctionScaffold } from "../../plugins/resource/function/ops/scaffold";
 import { functionNameQuestion } from "../../plugins/resource/function/question";
 import { ErrorMessages } from "../../plugins/resource/function/resources/message";
-import { ComponentNames } from "../constants";
+import { BicepComponent } from "../bicep";
+import { ApiCodeProvider } from "../code/apiCode";
+import { ComponentNames, Scenarios } from "../constants";
+import { generateLocalDebugSettings } from "../debug";
+import { ActionExecutionMW } from "../middleware/actionExecutionMW";
+import { Plans } from "../messages";
+import { AzureFunctionResource } from "../resource/azureAppService/azureFunction";
+import { generateConfigBiceps, bicepUtils } from "../utils";
 import { getComponent } from "../workflow";
-import * as path from "path";
+import { SSO } from "./sso";
+
 @Service(ComponentNames.TeamsApi)
 export class TeamsApi {
   name = ComponentNames.TeamsApi;
-  add(
+  @hooks([
+    ActionExecutionMW({
+      errorSource: "BE",
+      question: (context: ContextV3, inputs: InputsWithProjectPath) => {
+        functionNameQuestion.validation = getFunctionNameQuestionValidation(context, inputs);
+        return ok(new QTreeNode(functionNameQuestion));
+      },
+    }),
+  ])
+  async add(
     context: ContextV3,
     inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    inputs.hosting = inputs.hosting || ComponentNames.Function;
-    const functionName: string =
-      (inputs?.[QuestionKey.functionName] as string) ?? DefaultValues.functionName;
-    const actions: Action[] = [
-      {
-        name: "fx.configApi",
-        type: "function",
-        plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-          return ok([`config '${this.name}' in projectSettings`]);
-        },
-        question: (context: ContextV3, inputs: InputsWithProjectPath) => {
-          functionNameQuestion.validation = {
-            validFunc: async (
-              input: string,
-              previousInputs?: Inputs
-            ): Promise<string | undefined> => {
-              const workingPath: string = path.join(
-                inputs.projectPath,
-                FunctionPluginPathInfo.solutionFolderName
-              );
-              const name = input as string;
-              if (!name || !RegularExpr.validFunctionNamePattern.test(name)) {
-                return ErrorMessages.invalidFunctionName;
-              }
-              if (inputs.stage === Stage.create) {
-                return undefined;
-              }
-              const language: FunctionLanguage =
-                (inputs[QuestionKey.programmingLanguage] as FunctionLanguage) ??
-                (context.projectSetting.programmingLanguage as FunctionLanguage);
-              // If language is unknown, skip checking and let scaffold handle the error.
-              if (
-                language &&
-                (await FunctionScaffold.doesFunctionPathExist(workingPath, language, name))
-              ) {
-                return ErrorMessages.functionAlreadyExists;
-              }
-            },
-          };
-          return ok(new QTreeNode(functionNameQuestion));
-        },
-        execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-          const projectSettings = context.projectSetting as ProjectSettingsV3;
-          // add teams-api
-          projectSettings.components.push({
-            name: this.name,
-            hosting: inputs.hosting,
-            functionNames: [functionName],
-          });
-          // add hosting component
-          projectSettings.components.push({
-            name: inputs.hosting,
-            connections: [this.name],
-          });
-          const teamsTab = getComponent(projectSettings, ComponentNames.TeamsTab);
-          if (!teamsTab?.connections) merge(teamsTab, { connections: [this.name] });
-          else teamsTab.connections.push(this.name);
-          projectSettings.programmingLanguage ??= inputs[CoreQuestionNames.ProgrammingLanguage];
-          return ok([`config '${this.name}' in projectSettings`]);
-        },
-      },
-      {
-        name: "call:api-code.generate",
-        type: "call",
-        required: true,
-        targetAction: "api-code.generate",
-      },
-      {
-        type: "call",
-        targetAction: "bicep.init",
-        required: true,
-      },
-      {
-        name: `call:${inputs.hosting}.generateBicep`,
-        type: "call",
-        required: true,
-        targetAction: `${inputs.hosting}.generateBicep`,
-        inputs: {
-          componentId: this.name,
-          componentName: "Api",
-        },
-      },
-      {
-        name: `call:${inputs.hosting}-config.generateBicep`,
-        type: "call",
-        required: true,
-        targetAction: `${inputs.hosting}-config.generateBicep`,
-        inputs: {
-          componentId: this.name,
-          componentName: "Api",
-        },
-      },
-      {
-        name: "call:debug.generateLocalDebugSettings",
-        type: "call",
-        required: true,
-        targetAction: "debug.generateLocalDebugSettings",
-      },
-    ];
-    const group: GroupAction = {
-      type: "group",
-      name: `${this.name}.add`,
-      mode: "sequential",
-      actions: actions,
-    };
-    return ok(group);
+  ): Promise<Result<undefined, FxError>> {
+    const projectSettings = context.projectSetting;
+    const effects: Effect[] = [];
+    inputs[CoreQuestionNames.ProgrammingLanguage] =
+      context.projectSetting.programmingLanguage ||
+      inputs[CoreQuestionNames.ProgrammingLanguage] ||
+      "javascript";
+
+    // check sso if not added
+    if (!getComponent(projectSettings, ComponentNames.AadApp)) {
+      const ssoComponent = Container.get("sso") as SSO;
+      const res = await ssoComponent.add(context, inputs);
+      if (res.isErr()) return err(res.error);
+    }
+
+    // 1. scaffold function
+    {
+      inputs[QuestionKey.functionName] =
+        inputs[QuestionKey.functionName] || DefaultValues.functionName;
+      const clonedInputs = cloneDeep(inputs);
+      assign(clonedInputs, {
+        folder: inputs.folder || FunctionPluginPathInfo.solutionFolderName,
+      });
+      const apiCodeComponent = Container.get<ApiCodeProvider>(ComponentNames.ApiCode);
+      const res = await apiCodeComponent.generate(context, clonedInputs);
+      if (res.isErr()) return err(res.error);
+      effects.push("generate api code");
+    }
+
+    const apiConfig = getComponent(projectSettings, ComponentNames.TeamsApi);
+    if (apiConfig) {
+      apiConfig.functionNames = apiConfig.functionNames || [];
+      apiConfig.functionNames.push(inputs[QuestionKey.functionName]);
+      return ok(undefined);
+    }
+
+    // 2. config teams-api
+    projectSettings.components.push({
+      name: ComponentNames.TeamsApi,
+      hosting: ComponentNames.Function,
+      functionNames: [inputs[QuestionKey.functionName]],
+      deploy: true,
+      build: true,
+      folder: inputs.folder || FunctionPluginPathInfo.solutionFolderName,
+      artifactFolder: inputs.folder || FunctionPluginPathInfo.solutionFolderName,
+    });
+    effects.push("config teams-api");
+
+    const biceps: Bicep[] = [];
+    // 3.1 bicep.init
+    {
+      const bicepComponent = Container.get<BicepComponent>("bicep");
+      const res = await bicepComponent.init(inputs.projectPath);
+      if (res.isErr()) return err(res.error);
+    }
+
+    // 3.2 azure-function.generateBicep
+    {
+      const clonedInputs = cloneDeep(inputs);
+      assign(clonedInputs, {
+        componentId: ComponentNames.TeamsApi,
+        hosting: inputs.hosting,
+        scenario: Scenarios.Api,
+      });
+      const functionComponent = Container.get<AzureFunctionResource>(ComponentNames.Function);
+      const res = await functionComponent.generateBicep(context, clonedInputs);
+      if (res.isErr()) return err(res.error);
+      res.value.forEach((b) => biceps.push(b));
+      context.projectSetting.components.push({
+        name: ComponentNames.Function,
+        scenario: Scenarios.Api,
+      });
+    }
+
+    const bicepRes = await bicepUtils.persistBiceps(
+      inputs.projectPath,
+      convertToAlphanumericOnly(context.projectSetting.appName),
+      biceps
+    );
+    if (bicepRes.isErr()) return bicepRes;
+
+    // 4. generate config bicep
+    {
+      const res = await generateConfigBiceps(context, inputs);
+      if (res.isErr()) return err(res.error);
+      effects.push("generate config biceps");
+    }
+
+    // 5. local debug settings
+    {
+      const res = await generateLocalDebugSettings(context, inputs);
+      if (res.isErr()) return err(res.error);
+      effects.push("generate local debug configs");
+    }
+
+    globalVars.isVS = isVSProject(projectSettings);
+    projectSettings.programmingLanguage ||= inputs[CoreQuestionNames.ProgrammingLanguage];
+    return ok(undefined);
   }
-  build(
-    context: ContextV3,
+  async build(
+    context: ResourceContextV3,
     inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const action: CallAction = {
-      name: `${this.name}.build`,
-      type: "call",
-      targetAction: "api-code.build",
-      required: true,
-    };
-    return ok(action);
+  ): Promise<Result<undefined, FxError>> {
+    const apiCode = Container.get<ApiCodeProvider>(ComponentNames.ApiCode);
+    const res = await apiCode.build(context, inputs);
+    if (res.isErr()) return err(res.error);
+    return ok(undefined);
   }
 }
+
+const getFunctionNameQuestionValidation = (context: ContextV3, inputs: InputsWithProjectPath) => ({
+  validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
+    const workingPath: string = path.join(
+      inputs.projectPath,
+      FunctionPluginPathInfo.solutionFolderName
+    );
+    const name = input as string;
+    if (!name || !RegularExpr.validFunctionNamePattern.test(name)) {
+      return ErrorMessages.invalidFunctionName;
+    }
+    if (inputs.stage === Stage.create) {
+      return undefined;
+    }
+    const language: FunctionLanguage =
+      (inputs[QuestionKey.programmingLanguage] as FunctionLanguage) ??
+      (context.projectSetting.programmingLanguage as FunctionLanguage);
+    // If language is unknown, skip checking and let scaffold handle the error.
+    if (language && (await FunctionScaffold.doesFunctionPathExist(workingPath, language, name))) {
+      return ErrorMessages.functionAlreadyExists;
+    }
+  },
+});

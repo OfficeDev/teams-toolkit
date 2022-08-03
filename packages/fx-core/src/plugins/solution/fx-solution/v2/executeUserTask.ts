@@ -666,7 +666,9 @@ export async function addResource(
   const addApim = addResourcesAnswer.includes(AzureResourceApim.id);
   const addKeyVault = addResourcesAnswer.includes(AzureResourceKeyVault.id);
   const addFunc =
-    addResourcesAnswer.includes(AzureResourceFunction.id) || (addApim && !alreadyHaveFunction);
+    addResourcesAnswer.includes(AzureResourceFunction.id) ||
+    (addApim && !alreadyHaveFunction) ||
+    (addSQL && !alreadyHaveFunction);
 
   // 3. check APIM and KeyVault addable
   if ((alreadyHaveApim && addApim) || (alreadyHaveKeyVault && addKeyVault)) {
@@ -1205,6 +1207,10 @@ export function validateAndParseLanguage(language: string): Result<string, FxErr
 
   if (language.toLowerCase() == Language.JavaScript) {
     return ok("js");
+  }
+
+  if (language.toLowerCase() == Language.CSharp) {
+    return ok("csharp");
   }
 
   const e = new SystemError(

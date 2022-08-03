@@ -24,6 +24,8 @@ import {
   Platform,
   M365TokenProvider,
   ProjectSettingsV3,
+  InputConfigsFolderName,
+  ProjectSettingsFileName,
 } from "@microsoft/teamsfx-api";
 import axios from "axios";
 import { exec, ExecOptions } from "child_process";
@@ -75,6 +77,7 @@ import { NoProjectOpenedError } from "../plugins/resource/cicd/errors";
 import { getProjectTemplatesFolderPath } from "./utils";
 import * as path from "path";
 import { isMiniApp } from "./projectSettingsHelperV3";
+import { getAppStudioEndpoint } from "../component/resource/appManifest/constants";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -567,7 +570,8 @@ export async function canAddCICDWorkflows(inputs: Inputs, ctx: v2.Context): Prom
   // Not include `Add CICD Workflows` in minimal app case.
   const isExistingApp = !isV3()
     ? isExistingTabApp(ctx.projectSetting)
-    : isMiniApp(ctx.projectSetting as ProjectSettingsV3);
+    : ctx.projectSetting.solutionSettings?.hostType === HostTypeOptionAzure.id &&
+      isMiniApp(ctx.projectSetting as ProjectSettingsV3);
   if (isExistingApp) {
     return false;
   }
@@ -647,17 +651,6 @@ export async function getAppDirectory(projectRoot: string): Promise<string> {
     return appDirNewLoc;
   } else {
     return appDirOldLoc;
-  }
-}
-
-/**
- * Get app studio endpoint for prod/int environment, mainly for ux e2e test
- */
-export function getAppStudioEndpoint(): string {
-  if (process.env.APP_STUDIO_ENV && process.env.APP_STUDIO_ENV === "int") {
-    return "https://dev-int.teams.microsoft.com";
-  } else {
-    return "https://dev.teams.microsoft.com";
   }
 }
 
@@ -944,4 +937,34 @@ export async function getSPFxToken(
     spoToken = spfxTokenRes.isOk() ? spfxTokenRes.value : undefined;
   }
   return spoToken;
+}
+
+export function getFixedCommonProjectSettings(rootPath: string | undefined) {
+  if (!rootPath) {
+    return undefined;
+  }
+
+  try {
+    const projectSettingsPath = path.join(
+      rootPath,
+      `.${ConfigFolderName}`,
+      InputConfigsFolderName,
+      ProjectSettingsFileName
+    );
+
+    if (!projectSettingsPath || !fs.pathExistsSync(projectSettingsPath)) {
+      return undefined;
+    }
+
+    const projectSettings = fs.readJsonSync(projectSettingsPath);
+    return {
+      projectId: projectSettings?.projectId ?? undefined,
+      isFromSample: projectSettings?.isFromSample ?? undefined,
+      programmingLanguage: projectSettings?.programmingLanguage ?? undefined,
+      hostType: projectSettings?.solutionSettings?.hostType ?? undefined,
+      isM365: projectSettings?.isM365 ?? false,
+    };
+  } catch {
+    return undefined;
+  }
 }

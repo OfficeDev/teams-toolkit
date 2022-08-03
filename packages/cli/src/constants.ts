@@ -3,7 +3,7 @@
 
 "use strict";
 
-import { QTreeNode } from "@microsoft/teamsfx-api";
+import { Inputs, Platform, QTreeNode, Stage } from "@microsoft/teamsfx-api";
 import { sampleProvider } from "@microsoft/teamsfx-core";
 
 export const cliSource = "TeamsfxCLI";
@@ -62,3 +62,14 @@ export const azureSolutionGroupNodeName = "azure-solution-group";
 export class FeatureFlags {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
 }
+
+export const CLIHelpInputs: Inputs = { platform: Platform.CLI_HELP };
+
+export const AddFeatureFunc = {
+  namespace: "fx-solution-azure",
+  method: Stage.addFeature,
+};
+
+export const EmptyQTreeNode = new QTreeNode({ type: "group" });
+
+export const SUPPORTED_SPFX_VERSION = "1.15.0";

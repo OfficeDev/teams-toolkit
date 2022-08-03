@@ -88,19 +88,6 @@ export class AppStudioPlugin implements Plugin {
   }
 
   /**
-   * Create or update teams app
-   * For cli: "teamsfx init" only
-   * @returns {string} - Remote teams app id
-   */
-  public async getAppDefinitionAndUpdate(
-    ctx: PluginContext,
-    isLocalDebug: boolean,
-    manifest: TeamsAppManifest
-  ): Promise<Result<string, FxError>> {
-    return await this.appStudioPluginImpl.getAppDefinitionAndUpdate(ctx, isLocalDebug, manifest);
-  }
-
-  /**
    * Create teams app
    * @returns {string} - Remote teams app id
    */
@@ -448,7 +435,6 @@ export class AppStudioPlugin implements Plugin {
     const localTeamsAppId = await this.appStudioPluginImpl.postLocalDebug(ctx);
     if (localTeamsAppId.isOk()) {
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.localDebug);
-      await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, true);
       return localTeamsAppId;
     } else {
       const error = localTeamsAppId.error;
@@ -560,23 +546,6 @@ export class AppStudioPlugin implements Plugin {
         return await this.buildTeamsPackage(ctx, isLocalDebug);
       }
       return await this.buildTeamsPackage(ctx, false);
-    } else if (func.method === "getAppDefinitionAndUpdate") {
-      if (func.params && func.params.type && func.params.manifest) {
-        const isLocalDebug = (func.params.type as string) === "localDebug";
-        return await this.getAppDefinitionAndUpdate(
-          ctx,
-          isLocalDebug,
-          func.params.manifest as TeamsAppManifest
-        );
-      }
-      return err(
-        new SystemError({
-          name: "InvalidParam",
-          message: `Invalid param:${JSON.stringify(func)}`,
-          source: Constants.PLUGIN_NAME,
-          issueLink: Links.ISSUE_LINK,
-        })
-      );
     } else if (func.method === "getManifestTemplatePath") {
       const filePath = await getManifestTemplatePath(ctx.root);
       return ok(filePath);

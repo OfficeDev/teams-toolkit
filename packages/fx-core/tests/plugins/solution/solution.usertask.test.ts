@@ -444,6 +444,7 @@ describe("V2 implementation", () => {
         capabilities: [TabOptionItem.id],
         azureResources: [AzureResourceSQL.id],
       },
+      programmingLanguage: "javascript",
     };
     const mockedCtx = new MockedV2Context(projectSettings);
     const mockedInputs: Inputs = {

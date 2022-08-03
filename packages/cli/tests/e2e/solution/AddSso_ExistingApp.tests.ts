@@ -6,15 +6,11 @@
  */
 
 import path from "path";
-import { environmentManager } from "@microsoft/teamsfx-core";
 import {
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
   cleanUp,
-  setBotSkuNameToB1Bicep,
-  setSimpleAuthSkuNameToB1Bicep,
-  validateTabAndBotProjectProvision,
   execAsync,
   getActivePluginsFromProjectSetting,
   getCapabilitiesFromProjectSetting,
@@ -22,7 +18,7 @@ import {
   setFrontendDomainToConfig,
 } from "../commonUtils";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { Capability, PluginId, ProjectSettingKey, TestFilePath } from "../../commonlib/constants";
+import { Capability, PluginId } from "../../commonlib/constants";
 import fs from "fs-extra";
 import { expect } from "chai";
 import { AadValidator } from "../../commonlib";

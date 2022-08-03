@@ -4,6 +4,7 @@
 import { Result } from "neverthrow";
 import { Bicep } from "./bicep";
 import { FxError } from "./error";
+import { IProgressHandler } from "./qm";
 import { QTreeNode } from "./qm/question";
 import { Json, ContextV3, MaybePromise } from "./types";
 import { InputsWithProjectPath } from "./v2/types";
@@ -21,6 +22,16 @@ export interface ActionBase {
   name?: string;
   type: "group" | "shell" | "call" | "function";
   inputs?: Json;
+  /**
+   * condition function to tell whether the action should be executed or not
+   * if return true: yes
+   * if return false: skip this node and all sub nodes
+   * if condition is undefined, default behavior is yes
+   */
+  condition?: (
+    context: ContextV3,
+    inputs: InputsWithProjectPath
+  ) => MaybePromise<Result<boolean, FxError>>;
   plan?: (
     context: ContextV3,
     inputs: InputsWithProjectPath
@@ -32,16 +43,15 @@ export interface ActionBase {
   pre?: (
     context: ContextV3,
     inputs: InputsWithProjectPath
-  ) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+  ) => MaybePromise<Result<undefined, FxError>>;
   post?: (
     context: ContextV3,
     inputs: InputsWithProjectPath
-  ) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
-
+  ) => MaybePromise<Result<undefined, FxError>>;
   exception?: (
     context: ContextV3,
     inputs: InputsWithProjectPath
-  ) => MaybePromise<Result<QTreeNode | undefined, FxError>>;
+  ) => MaybePromise<Result<undefined, FxError>>;
 }
 
 export type Action = GroupAction | ShellAction | CallAction | FunctionAction;
@@ -79,18 +89,32 @@ export interface CallAction extends ActionBase {
   required: boolean; // required=true, throw error of target action does not exist; required=false, ignore this step if target action does not exist.
   targetAction: string;
 }
-
+export type ErrorHandler = (error: any, telemetryProps: Record<string, string>) => FxError;
 /**
  * function action: run a javascript function call that can do any kinds of work
  */
 export interface FunctionAction extends ActionBase {
+  name: string;
   type: "function";
+  errorSource?: string;
+  errorHelpLink?: string;
+  errorIssueLink?: string;
+  errorHandler?: ErrorHandler;
+  enableTelemetry?: boolean;
+  telemetryComponentName?: string;
+  telemetryEventName?: string;
+  telemetryProps?: Record<string, string>;
+  enableProgressBar?: boolean;
+  progressTitle?: string;
+  progressSteps?: number;
   /**
    * function body is a function that takes some context and inputs as parameter
    */
   execute: (
     context: ContextV3,
-    inputs: InputsWithProjectPath
+    inputs: InputsWithProjectPath,
+    progress?: IProgressHandler,
+    telemetryProps?: Record<string, string>
   ) => MaybePromise<Result<Effect[], FxError>>;
 }
 

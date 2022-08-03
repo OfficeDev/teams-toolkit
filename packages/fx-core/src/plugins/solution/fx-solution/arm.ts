@@ -781,6 +781,29 @@ export async function copyParameterJson(
   );
 }
 
+export async function updateResourceBaseName(
+  projectPath: string,
+  appName: string,
+  envName: string
+) {
+  if (!envName || !appName || !projectPath) {
+    return;
+  }
+
+  const parameterFolderPath = path.join(projectPath, configsFolder);
+  const targetParameterFileName = parameterFileNameTemplate.replace(EnvNamePlaceholder, envName);
+
+  const targetParameterFilePath = path.join(parameterFolderPath, targetParameterFileName);
+  const targetParameterContent = await fs.readJson(targetParameterFilePath);
+  targetParameterContent[parameterName].provisionParameters.value!.resourceBaseName =
+    generateResourceBaseName(appName, envName);
+  await fs.ensureDir(parameterFolderPath);
+  await fs.writeFile(
+    targetParameterFilePath,
+    JSON.stringify(targetParameterContent, undefined, 2).replace(/\r?\n/g, os.EOL)
+  );
+}
+
 export async function getParameterJson(ctx: SolutionContext) {
   if (!ctx.envInfo.envName) {
     throw new SystemError(

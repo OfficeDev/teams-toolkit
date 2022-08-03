@@ -18,15 +18,15 @@ namespace Microsoft.TeamsFx.Conversation
         /// </summary>
         /// <param name="message">The plain text message.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>The task object representing the asynchronous operation.</returns>
-        Task SendMessage(string message, CancellationToken cancellationToken = default);
+        /// <returns>The response of sending message.</returns>
+        Task<MessageResponse> SendMessage(string message, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Send an adaptive card message.
         /// </summary>
         /// <param name="card">The adaptive card object.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>The task object representing the asynchronous operation.</returns>
-        Task SendAdaptiveCard(object card, CancellationToken cancellationToken = default);
+        /// <returns>The response of sending adaptive card message.</returns>
+        Task<MessageResponse> SendAdaptiveCard(object card, CancellationToken cancellationToken = default);
     }
 }

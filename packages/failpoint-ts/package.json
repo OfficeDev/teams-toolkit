@@ -17,7 +17,7 @@
   },
   "scripts": {
     "test": "npm run test:unit",
-    "test:unit": "npx nyc mocha --no-timeouts --require ts-node/register test/**/*.test.ts",
+    "test:unit": "npx nyc mocha --no-timeouts --require ts-node/register test/**/*.test.ts ",
     "build": "rimraf build && npx tsc -p ./",
     "format-check": "echo test",
     "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",

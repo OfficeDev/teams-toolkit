@@ -3,15 +3,13 @@
 
 import {
   FxError,
-  ok,
-  Result,
-  Action,
-  ContextV3,
-  MaybePromise,
   InputsWithProjectPath,
-  Effect,
+  ok,
+  ResourceContextV3,
+  Result,
 } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
+import { FunctionOutputs, IdentityOutputs } from "../../constants";
 import { AzureAppService } from "./azureAppService";
 @Service("azure-function")
 export class AzureFunctionResource extends AzureAppService {
@@ -19,48 +17,17 @@ export class AzureFunctionResource extends AzureAppService {
   readonly alias = "FT";
   readonly displayName = "Azure Functions";
   readonly bicepModuleName = "azureFunction";
-  outputs = {
-    functionAppResourceId: {
-      key: "functionAppResourceId",
-      bicepVariable:
-        "provisionOutputs.azureFunction{{componentName}}Output.value.functionAppResourceId",
-    },
-    functionEndpoint: {
-      key: "functionEndpoint",
-      bicepVariable: "azureFunction{{componentName}}Provision.outputs.functionEndpoint",
+  outputs = FunctionOutputs;
+  finalOutputKeys = ["resourceId", "endpoint"];
+  templateContext = {
+    identity: {
+      resourceId: IdentityOutputs.identityResourceId.bicepVariable,
     },
   };
-  finalOutputKeys = ["resourceId", "endpoint"];
-  configure(
-    context: ContextV3,
+  async configure(
+    context: ResourceContextV3,
     inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const action: Action = {
-      name: "azure-function.configure",
-      type: "function",
-      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok([
-          {
-            type: "service",
-            name: "azure",
-            remarks: "config azure function",
-          },
-        ]);
-      },
-      execute: async (
-        context: ContextV3,
-        inputs: InputsWithProjectPath
-      ): Promise<Result<Effect[], FxError>> => {
-        // Configure APIM
-        return ok([
-          {
-            type: "service",
-            name: "azure",
-            remarks: "config azure function",
-          },
-        ]);
-      },
-    };
-    return ok(action);
+  ): Promise<Result<undefined, FxError>> {
+    return ok(undefined);
   }
 }

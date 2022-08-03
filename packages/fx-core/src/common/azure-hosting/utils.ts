@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { ArmTemplateResult } from "../armInterface";
-import { TokenProvider } from "@microsoft/teamsfx-api";
+import { IProgressHandler, TokenProvider } from "@microsoft/teamsfx-api";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import * as appService from "@azure/arm-appservice";
 import {
@@ -22,6 +22,7 @@ import {
   getSubscriptionIdFromResourceId,
 } from "../tools";
 import { Messages } from "./messages";
+import { ProgressBarConstants } from "../../plugins/resource/bot/constants";
 
 export function getHandlebarContext(
   bicepContext: BicepContext,
@@ -124,7 +125,8 @@ export async function azureWebSiteDeploy(
   resourceId: string,
   tokenProvider: TokenProvider,
   buffer: Buffer,
-  logger?: Logger
+  logger?: Logger,
+  progress?: IProgressHandler
 ): Promise<appService.WebSiteManagementClient> {
   const subscriptionId = getSubscriptionIdFromResourceId(resourceId);
   const rgName = getResourceGroupNameFromResourceId(resourceId);
@@ -136,7 +138,7 @@ export async function azureWebSiteDeploy(
     tokenProvider
   );
   const zipDeployEndpoint: string = getZipDeployEndpoint(siteName);
-
+  await progress?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_DEPLOY);
   const statusUrl = await AzureOperations.zipDeployPackage(zipDeployEndpoint, buffer, config);
   await AzureOperations.checkDeployStatus(statusUrl, config);
 

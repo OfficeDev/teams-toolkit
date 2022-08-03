@@ -7,8 +7,8 @@ import * as dotnetUtils from "../utils/dotnet";
 import * as funcUtils from "../utils/funcTool";
 import * as nodeUtils from "../utils/node";
 import { isLinux } from "../../../../src/common/deps-checker/util/system";
-import { DepsType } from "../../../../src/common/deps-checker/depsChecker";
-import { DependencyStatus, DepsManager } from "../../../../src/common/deps-checker/depsManager";
+import { DependencyStatus, DepsType } from "../../../../src/common/deps-checker/depsChecker";
+import { DepsManager } from "../../../../src/common/deps-checker/depsManager";
 import { cpUtils } from "../../../../src/common/deps-checker/util/cpUtils";
 import { logger } from "../adapters/testLogger";
 import { TestTelemetry } from "../adapters/testTelemetry";
@@ -246,7 +246,7 @@ describe("All checkers E2E test", async () => {
     assert.equal(node.type, DepsType.AzureNode);
     assert.isTrue(node.isInstalled);
     assert.isNotNull(node.command);
-    assert.isNull(node.error);
+    assert.isUndefined(node.error);
 
     // verify dotnet
     const dotnet = depsStatus[1];
@@ -269,7 +269,7 @@ function verifyAllSuccess(depsStatus: DependencyStatus[]) {
   for (const dep of depsStatus) {
     assert.isTrue(dep.isInstalled);
     assert.isNotNull(dep.command);
-    assert.isNull(dep.error);
+    assert.isUndefined(dep.error);
     assert.isNotNull(dep.details.supportedVersions);
   }
 }

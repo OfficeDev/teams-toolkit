@@ -255,7 +255,7 @@ class BicepChecker {
 
   private async handleInstallFailed(): Promise<void> {
     await this.cleanup();
-    this._telemetry?.sendTelemetryEvent(DepsCheckerEvent.bicepInstallError);
+    this._telemetry?.sendTelemetryErrorEvent(DepsCheckerEvent.bicepInstallError);
     throw new SystemError(
       source,
       DepsCheckerEvent.bicepInstallError,

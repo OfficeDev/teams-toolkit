@@ -33,7 +33,7 @@ import {
 } from "../../plugins/solution/fx-solution/v3/constants";
 import { getQuestionsForGrantPermission } from "../collaborator";
 import { CoreSource, FunctionRouterError } from "../error";
-import { TOOLS } from "../globalVars";
+import { isV3, TOOLS } from "../globalVars";
 import {
   createAppNameQuestion,
   createCapabilityForDotNet,
@@ -54,6 +54,7 @@ import {
 import { getAllSolutionPluginsV2 } from "../SolutionPluginContainer";
 import { CoreHookContext } from "../types";
 import { isPreviewFeaturesEnabled, isCLIDotNetEnabled } from "../../common";
+import { getNotificationTriggerQuestionNode } from "../../component/questionV3";
 
 /**
  * This middleware will help to collect input from question flow
@@ -434,11 +435,18 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   }
   createNew.addChild(capNode);
 
-  const solutionNodeResult = await setSolutionScaffoldingQuestionNodeAsChild(inputs, capNode);
-  if (solutionNodeResult.isErr()) {
-    return err(solutionNodeResult.error);
+  if (!isV3()) {
+    const solutionNodeResult = await setSolutionScaffoldingQuestionNodeAsChild(inputs, capNode);
+    if (solutionNodeResult.isErr()) {
+      return err(solutionNodeResult.error);
+    }
+  } else {
+    const triggerNodeRes = await getNotificationTriggerQuestionNode(inputs);
+    if (triggerNodeRes.isErr()) return err(triggerNodeRes.error);
+    if (triggerNodeRes.value) {
+      capNode.addChild(triggerNodeRes.value);
+    }
   }
-
   // Language
   const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
   if (isPreviewFeaturesEnabled()) {
@@ -500,9 +508,20 @@ async function getQuestionsForCreateProjectWithDotNet(
   const dotnetCapNode = new QTreeNode(createCapabilityForDotNet());
   dotnetNode.addChild(dotnetCapNode);
 
-  const solutionNodeResult = await setSolutionScaffoldingQuestionNodeAsChild(inputs, dotnetCapNode);
-  if (solutionNodeResult.isErr()) {
-    return err(solutionNodeResult.error);
+  if (!isV3()) {
+    const solutionNodeResult = await setSolutionScaffoldingQuestionNodeAsChild(
+      inputs,
+      dotnetCapNode
+    );
+    if (solutionNodeResult.isErr()) {
+      return err(solutionNodeResult.error);
+    }
+  } else {
+    const triggerNodeRes = await getNotificationTriggerQuestionNode(inputs);
+    if (triggerNodeRes.isErr()) return err(triggerNodeRes.error);
+    if (triggerNodeRes.value) {
+      dotnetCapNode.addChild(triggerNodeRes.value);
+    }
   }
 
   dotnetCapNode.addChild(new QTreeNode(ProgrammingLanguageQuestionForDotNet));

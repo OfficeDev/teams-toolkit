@@ -315,6 +315,7 @@ export class FailedToCheckResourceGroupExistenceError extends UserError {
 export enum Language {
   JavaScript = "javascript",
   TypeScript = "typescript",
+  CSharp = "csharp",
 }
 
 export class AddSsoParameters {
@@ -330,3 +331,9 @@ export class AddSsoParameters {
 export class UserTaskFunctionName {
   static readonly ConnectExistingApi = "connectExistingApi";
 }
+
+export interface ProvisionSubscriptionCheckResult {
+  hasSwitchedSubscription: boolean;
+}
+
+export type FillInAzureConfigsResult = ProvisionSubscriptionCheckResult;

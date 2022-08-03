@@ -110,7 +110,9 @@ export class Commands {
 export const BotCapabilities = {
   NOTIFICATION: "notification",
   COMMAND_AND_RESPONSE: "command-response",
+  BOT: "bot",
   MESSAGE_EXTENSION: "message-extension",
+  M365_SEARCH_APP: "m365-search-app",
 } as const;
 
 export type BotCapability = typeof BotCapabilities[keyof typeof BotCapabilities];

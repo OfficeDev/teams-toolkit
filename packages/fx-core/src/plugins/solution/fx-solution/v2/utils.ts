@@ -15,6 +15,8 @@ import {
   UserError,
   SystemError,
   M365TokenProvider,
+  v3,
+  EnvInfo,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
@@ -49,6 +51,7 @@ import { getActivatedV2ResourcePlugins, getAllV2ResourcePlugins } from "../Resou
 import { getPluginContext } from "../utils/util";
 import { PluginsWithContext } from "../types";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
+import { doesAllowSwitchAccount } from "../../../../core";
 
 export function getSelectedPlugins(projectSettings: ProjectSettings): v2.ResourcePlugin[] {
   return getActivatedV2ResourcePlugins(projectSettings);
@@ -62,7 +65,7 @@ export function isAzureProject(azureSettings: AzureSolutionSettings | undefined)
   return azureSettings !== undefined && HostTypeOptionAzure.id === azureSettings.hostType;
 }
 
-function isBotProject(azureSettings: AzureSolutionSettings | undefined): boolean {
+export function isBotProject(azureSettings: AzureSolutionSettings | undefined): boolean {
   return (
     azureSettings !== undefined &&
     (azureSettings.capabilities?.includes(BotOptionItem.id) ||
@@ -77,9 +80,7 @@ export interface BotTroubleShootMessage {
   textForActionButton: string;
 }
 
-export function getBotTroubleShootMessage(
-  azureSettings: AzureSolutionSettings | undefined
-): BotTroubleShootMessage {
+export function getBotTroubleShootMessage(isBot: boolean): BotTroubleShootMessage {
   const botTroubleShootLink =
     "https://aka.ms/teamsfx-bot-help#how-can-i-troubleshoot-issues-when-teams-bot-isnt-responding-on-azure";
   const botTroubleShootDesc = getLocalizedString("core.deploy.botTroubleShoot");
@@ -88,7 +89,7 @@ export function getBotTroubleShootMessage(
 
   return {
     troubleShootLink: botTroubleShootLink,
-    textForLogging: isBotProject(azureSettings) ? botTroubleShootMsg : "",
+    textForLogging: isBot ? botTroubleShootMsg : "",
     textForMsgBox: botTroubleShootDesc,
     textForActionButton: botTroubleShootLearnMore,
   } as BotTroubleShootMessage;
@@ -199,9 +200,11 @@ export function parseUserName(appStudioToken?: Record<string, unknown>): Result<
 }
 
 export async function checkWhetherLocalDebugM365TenantMatches(
+  envInfo: v3.EnvInfoV3 | EnvInfo | undefined,
   localDebugTenantId?: string,
   m365TokenProvider?: M365TokenProvider,
-  projectPath?: string
+  projectPath?: string,
+  isLegacyEnv?: boolean
 ): Promise<Result<Void, FxError>> {
   if (localDebugTenantId) {
     const appStudioTokenJsonRes = await m365TokenProvider?.getJsonObject({
@@ -220,26 +223,58 @@ export async function checkWhetherLocalDebugM365TenantMatches(
       return maybeM365UserAccount;
     }
 
+    const isSwitchAccountEnabled = doesAllowSwitchAccount();
     if (maybeM365TenantId.value !== localDebugTenantId) {
-      const localFiles = [".fx/states/state.local.json"];
+      if (isSwitchAccountEnabled) {
+        if (
+          projectPath !== undefined &&
+          (await fs.pathExists(`${projectPath}/bot/.notification.localstore.json`))
+        ) {
+          const errorMessage = getLocalizedString(
+            "core.localDebug.tenantConfirmNoticeWhenAllowSwitchAccount",
+            localDebugTenantId,
+            maybeM365UserAccount.value,
+            "bot/.notification.localstore.json"
+          );
+          return err(
+            new UserError("Solution", SolutionError.CannotLocalDebugInDifferentTenant, errorMessage)
+          );
+        } else if (envInfo) {
+          if (!isLegacyEnv) {
+            const keys = Object.keys(envInfo.state);
+            for (const key of keys) {
+              if (key !== "solution") {
+                delete (envInfo as v3.EnvInfoV3).state[key];
+              }
+            }
+          } else {
+            const keys = (envInfo as EnvInfo).state.keys();
+            for (const key of keys) {
+              (envInfo as EnvInfo).state.delete(key);
+            }
+          }
+        }
+      } else {
+        const localFiles = [".fx/states/state.local.json"];
 
-      // add notification local file if exist
-      if (
-        projectPath !== undefined &&
-        (await fs.pathExists(`${projectPath}/bot/.notification.localstore.json`))
-      ) {
-        localFiles.push("bot/.notification.localstore.json");
+        // add notification local file if exist
+        if (
+          projectPath !== undefined &&
+          (await fs.pathExists(`${projectPath}/bot/.notification.localstore.json`))
+        ) {
+          localFiles.push("bot/.notification.localstore.json");
+        }
+
+        const errorMessage = getLocalizedString(
+          "core.localDebug.tenantConfirmNotice",
+          localDebugTenantId,
+          maybeM365UserAccount.value,
+          localFiles.join(", ")
+        );
+        return err(
+          new UserError("Solution", SolutionError.CannotLocalDebugInDifferentTenant, errorMessage)
+        );
       }
-
-      const errorMessage = getLocalizedString(
-        "core.localDebug.tenantConfirmNotice",
-        localDebugTenantId,
-        maybeM365UserAccount.value,
-        localFiles.join(", ")
-      );
-      return err(
-        new UserError("Solution", SolutionError.CannotLocalDebugInDifferentTenant, errorMessage)
-      );
     }
   }
 

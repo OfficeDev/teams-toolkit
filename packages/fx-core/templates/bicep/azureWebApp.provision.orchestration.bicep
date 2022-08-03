@@ -1,18 +1,24 @@
 // Resources web app
-module azureWebApp{{componentName}}Provision './provision/azureWebApp{{componentName}}.bicep' = {
-  name: 'azureWebApp{{componentName}}Provision'
+module azureWebApp{{scenario}}Provision './provision/azureWebApp{{scenario}}.bicep' = {
+  name: 'azureWebApp{{scenario}}Provision'
   params: {
     provisionParameters: provisionParameters
+    userAssignedIdentityId: {{identity.resourceId}}
   }
 }
 
 
-output azureWebApp{{componentName}}Output object = {
+output azureWebApp{{scenario}}Output object = {
   teamsFxPluginId: '{{componentId}}'
-  skuName: azureWebApp{{componentName}}Provision.outputs.skuName
-  siteName: azureWebApp{{componentName}}Provision.outputs.siteName
-  validDomain: azureWebApp{{componentName}}Provision.outputs.validDomain
-  appServicePlanName: azureWebApp{{componentName}}Provision.outputs.appServicePlanName
-  resourceId: azureWebApp{{componentName}}Provision.outputs.resourceId
-  siteEndpoint: azureWebApp{{componentName}}Provision.outputs.siteEndpoint
+  skuName: azureWebApp{{scenario}}Provision.outputs.skuName
+  siteName: azureWebApp{{scenario}}Provision.outputs.siteName
+  validDomain: azureWebApp{{scenario}}Provision.outputs.validDomain
+  appServicePlanName: azureWebApp{{scenario}}Provision.outputs.appServicePlanName
+  resourceId: azureWebApp{{scenario}}Provision.outputs.resourceId
+  siteEndpoint: azureWebApp{{scenario}}Provision.outputs.siteEndpoint
+}
+
+output {{scenario}}Output object = {
+  domain: azureWebApp{{scenario}}Provision.outputs.validDomain
+  endpoint: azureWebApp{{scenario}}Provision.outputs.siteEndpoint
 }

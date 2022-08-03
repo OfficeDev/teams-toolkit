@@ -180,7 +180,7 @@ export class CodeFlowLogin {
       redirectPromise.then(cancelCodeTimer, cancelCodeTimer);
       accessToken = await redirectPromise;
     } catch (e) {
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Login, {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Login, e, {
         [TelemetryProperty.AccountType]: this.accountName,
         [TelemetryProperty.Success]: TelemetrySuccess.No,
         [TelemetryProperty.UserId]: "",

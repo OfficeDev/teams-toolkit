@@ -1,3 +1,5 @@
+- [4.0.3 - Jul 26 2022](#403---jul-26-2022)
+- [4.0.2 - Jul 12 2022](#402---jul-12-2022)
 - [4.0.1 - Jun 16 2022](#401---jun-16-2022)
 - [4.0.0 - May 24 2022](#400---may-24-2022)
 - [3.8.0 - Apr 22 2022](#380---apr-22-2022)
@@ -16,6 +18,19 @@
 - [2.7.0 - Sep 17 2021](#270---sep-17-2021)
 
 # Changelog
+
+## 4.0.3 - Jul 26, 2022
+
+Incremental version for Teams Toolkit with multiple bugs fix and enhancements.
+
+Enhancement:
+
+- User can now switch Azure account or Azure subscription to provision cloud resource.
+- Now support SPFx version to v1.15.0.
+
+## 4.0.2 - Jul 12, 2022
+
+Incremental version for Teams Toolkit with multiple bugs fix and enhancements.
 
 ## 4.0.1 - Jun 16, 2022
 

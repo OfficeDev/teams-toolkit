@@ -49,6 +49,7 @@ export function getUserInfoFromSsoToken(ssoToken: string): UserInfo {
   const userInfo: UserInfo = {
     displayName: tokenObject.name,
     objectId: tokenObject.oid,
+    tenantId: tokenObject.tid,
     preferredUserName: "",
   };
 

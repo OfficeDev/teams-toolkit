@@ -1,159 +1,74 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  Action,
-  ContextV3,
-  FxError,
-  GroupAction,
-  InputsWithProjectPath,
-  MaybePromise,
-  ok,
-  Result,
-} from "@microsoft/teamsfx-api";
+import { ContextV3, err, FxError, InputsWithProjectPath, ok, Result } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
-import { Service } from "typedi";
-import { getProjectSettingsPath } from "../../core/middleware/projectSettingsLoader";
+import { Container, Service } from "typedi";
 import { getComponent } from "../workflow";
 import "../connection/azureWebAppConfig";
 import "../resource/azureSql";
 import "../resource/identity";
+import { ComponentNames } from "../constants";
+import { hasApi } from "../../common/projectSettingsHelperV3";
+import { convertToAlphanumericOnly } from "../../common/utils";
+import { BicepComponent } from "../bicep";
+import { AzureSqlResource } from "../resource/azureSql";
+import { generateConfigBiceps, bicepUtils } from "../utils";
+import { cloneDeep } from "lodash";
 
 @Service("sql")
 export class Sql {
   name = "sql";
 
-  /**
-   * 1. config sql
-   * 2. add sql provision bicep
-   * 3. add identity provision bicep
-   * 4. re-generate resources that connect to sql
-   * 5. persist bicep
-   */
-  add(
+  async add(
     context: ContextV3,
     inputs: InputsWithProjectPath
-  ): MaybePromise<Result<Action | undefined, FxError>> {
-    const sqlComponent = getComponent(context.projectSetting, "azure-sql");
-    const provisionType = sqlComponent ? "database" : "server";
-    const actions: Action[] = [
-      {
-        name: "sql.configSql",
-        type: "function",
-        plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-          const sqlComponent = getComponent(context.projectSetting, "azure-sql");
-          if (sqlComponent) {
-            return ok([]);
-          }
-          const remarks: string[] = ["add component 'azure-sql' in projectSettings"];
-          const identityComponent = getComponent(context.projectSetting, "identity");
-          if (!identityComponent) {
-            remarks.push("add component 'identity' in projectSettings");
-          }
-          const webAppComponent = getComponent(context.projectSetting, "azure-web-app");
-          if (webAppComponent) {
-            remarks.push("connect 'azure-sql' to component 'azure-web-app' in projectSettings");
-          }
-          const functionComponent = getComponent(context.projectSetting, "azure-function");
-          if (functionComponent) {
-            remarks.push("connect 'azure-sql' to component 'azure-function' in projectSettings");
-          }
-          return ok([
-            {
-              type: "file",
-              operate: "replace",
-              filePath: getProjectSettingsPath(inputs.projectPath),
-              remarks: remarks.join(";"),
-            },
-          ]);
-        },
-        execute: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-          const sqlComponent = getComponent(context.projectSetting, "azure-sql");
-          if (sqlComponent) return ok([]);
-          const projectSettings = context.projectSetting;
-          const remarks: string[] = ["add component 'azure-sql' in projectSettings"];
-          projectSettings.components.push({
-            name: "azure-sql",
-            provision: true,
-          });
-          const identityComponent = getComponent(context.projectSetting, "identity");
-          if (!identityComponent) {
-            projectSettings.components.push({
-              name: "identity",
-              provision: true,
-            });
-            remarks.push("add component 'identity' in projectSettings");
-          }
-          const webAppComponent = getComponent(context.projectSetting, "azure-web-app");
-          if (webAppComponent) {
-            if (!webAppComponent.connections) webAppComponent.connections = [];
-            webAppComponent.connections.push("azure-sql");
-            remarks.push("connect 'azure-sql' to component 'azure-web-app' in projectSettings");
-          }
-          const functionComponent = getComponent(context.projectSetting, "azure-function");
-          if (functionComponent) {
-            if (!functionComponent.connections) functionComponent.connections = [];
-            functionComponent.connections.push("azure-sql");
-            remarks.push("connect 'azure-sql' to component 'azure-function' in projectSettings");
-          }
-          return ok([
-            {
-              type: "file",
-              operate: "replace",
-              filePath: getProjectSettingsPath(inputs.projectPath),
-              remarks: remarks.join(";"),
-            },
-          ]);
-        },
-      },
-      {
-        type: "call",
-        targetAction: "bicep.init",
-        required: true,
-      },
-      {
-        name: "call:azure-sql.generateBicep",
-        type: "call",
-        required: true,
-        targetAction: "azure-sql.generateBicep",
-        inputs: {
-          provisionType: provisionType,
-        },
-      },
-    ];
-    const identityComponent = getComponent(context.projectSetting, "identity");
-    if (!identityComponent) {
-      actions.push({
-        name: "call:identity.generateBicep",
-        type: "call",
-        required: true,
-        targetAction: "identity.generateBicep",
-      });
+  ): Promise<Result<undefined, FxError>> {
+    const sqlComponent = getComponent(context.projectSetting, ComponentNames.AzureSQL);
+    const hasFunc = hasApi(context.projectSetting);
+    if (!hasFunc) {
+      const teamsApi = Container.get(ComponentNames.TeamsApi) as any;
+      const res = await teamsApi.add(context, inputs);
+      if (res.isErr()) return err(res.error);
     }
-    const webAppComponent = getComponent(context.projectSetting, "azure-web-app");
-    if (webAppComponent) {
-      actions.push({
-        name: "call:azure-web-app-config.generateBicep",
-        type: "call",
-        required: true,
-        targetAction: "azure-web-app-config.generateBicep",
-      });
+    const projectSettings = context.projectSetting;
+    const remarks: string[] = ["config 'azure-sql' in projectSettings"];
+    projectSettings.components.push({
+      name: "azure-sql",
+      provision: true,
+    });
+
+    // generate bicep
+    // bicep.init
+    {
+      const bicepComponent = Container.get<BicepComponent>("bicep");
+      const res = await bicepComponent.init(inputs.projectPath);
+      if (res.isErr()) return err(res.error);
     }
-    const functionComponent = getComponent(context.projectSetting, "azure-function");
-    if (functionComponent) {
-      actions.push({
-        name: "call:azure-function-config.generateBicep",
-        type: "call",
-        required: true,
-        targetAction: "azure-function-config.generateBicep",
-      });
+
+    // sql bicep
+    {
+      const provisionType = sqlComponent ? "database" : "server";
+      const clonedInputs = cloneDeep(inputs);
+      clonedInputs.provisionType = provisionType;
+      const sqlResource = Container.get<AzureSqlResource>(ComponentNames.AzureSQL);
+      const res = await sqlResource.generateBicep(context, clonedInputs);
+      if (res.isErr()) return err(res.error);
+      const bicepRes = await bicepUtils.persistBiceps(
+        inputs.projectPath,
+        convertToAlphanumericOnly(context.projectSetting.appName),
+        res.value
+      );
+      if (bicepRes.isErr()) return bicepRes;
+      remarks.push("generate sql bicep");
     }
-    const group: GroupAction = {
-      type: "group",
-      name: "sql.add",
-      mode: "sequential",
-      actions: actions,
-    };
-    return ok(group);
+
+    // generate config bicep
+    {
+      const res = await generateConfigBiceps(context, inputs);
+      if (res.isErr()) return err(res.error);
+      remarks.push("generate config biceps");
+    }
+    return ok(undefined);
   }
 }

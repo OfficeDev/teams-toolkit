@@ -1089,9 +1089,11 @@ export class TeamsAppSolution implements Solution {
         LocalSettingsTeamsAppKeys.TenantId
       );
       const m365TenantMatches = await checkWhetherLocalDebugM365TenantMatches(
+        ctx.envInfo,
         localDebugTenantId,
         ctx.m365TokenProvider,
-        ctx.root
+        ctx.root,
+        true
       );
       if (m365TenantMatches.isErr()) {
         return m365TenantMatches;
@@ -1928,7 +1930,7 @@ export class TeamsAppSolution implements Solution {
     const appStudioPlugin: AppStudioPlugin = this.AppStudioPlugin as any;
     const func: Func = {
       namespace: `${PluginNames.SOLUTION}/${PluginNames.APPST}`,
-      method: "getAppDefinitionAndUpdate",
+      method: "updateManifest",
       params: {
         type: "remote",
         manifest: manifest,

@@ -678,10 +678,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.environmentsLink.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Learn more about enviornments]]></Val>
+          <Val><![CDATA[Learn more about environments]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[環境に関する詳細情報]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Learn more about enviornments]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -754,6 +757,15 @@
           <Prev Cat="Text">
             <Val><![CDATA[Teams: Upgrade Teams manifest]]></Val>
           </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commands.openDocumentLink.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Learn more]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[詳細情報]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -856,15 +868,6 @@
           <Prev Cat="Text">
             <Val><![CDATA[Teams: View Guided Tutorials]]></Val>
           </Prev>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.commands.signInGuideline.title" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[Learn more about Teams development accounts]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams 開発アカウントに関する詳細情報]]></Val>
-          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

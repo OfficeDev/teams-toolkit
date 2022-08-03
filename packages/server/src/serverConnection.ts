@@ -2,7 +2,17 @@
 // Licensed under the MIT license.
 
 import { CancellationToken, MessageConnection } from "vscode-jsonrpc";
-import { FxError, Inputs, Void, Tools, Result, Func, ok } from "@microsoft/teamsfx-api";
+import {
+  FxError,
+  Inputs,
+  Void,
+  Tools,
+  Result,
+  Func,
+  ok,
+  Stage,
+  QTreeNode,
+} from "@microsoft/teamsfx-api";
 import { FxCore, Correlator, getSideloadingStatus } from "@microsoft/teamsfx-core";
 import { IServerConnection, Namespaces } from "./apis";
 import LogProvider from "./providers/logger";
@@ -30,6 +40,7 @@ export default class ServerConnection implements IServerConnection {
     this.core = new FxCore(this.tools);
 
     [
+      this.getQuestionsRequest.bind(this),
       this.createProjectRequest.bind(this),
       this.localDebugRequest.bind(this),
       this.provisionResourcesRequest.bind(this),
@@ -37,23 +48,35 @@ export default class ServerConnection implements IServerConnection {
       this.buildArtifactsRequest.bind(this),
       this.publishApplicationRequest.bind(this),
       this.deployTeamsAppManifestRequest.bind(this),
+      this.getSideloadingStatusRequest.bind(this),
 
       this.customizeLocalFuncRequest.bind(this),
       this.customizeValidateFuncRequest.bind(this),
       this.customizeOnSelectionChangeFuncRequest.bind(this),
+      this.addSsoRequest.bind(this),
     ].forEach((fn) => {
       /// fn.name = `bound ${functionName}`
       connection.onRequest(`${ServerConnection.namespace}/${fn.name.split(" ")[1]}`, fn);
     });
-
-    connection.onRequest(
-      `${ServerConnection.namespace}/getSideloadingStatusRequest`,
-      this.getSideloadingStatusRequest.bind(this)
-    );
   }
 
   public listen() {
     this.connection.listen();
+  }
+
+  public async getQuestionsRequest(
+    stage: Stage,
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const res = await Correlator.runWithId(
+      corrId,
+      (stage, inputs) => this.core.getQuestions(stage, inputs),
+      stage,
+      inputs
+    );
+    return standardizeResult(res);
   }
 
   public async createProjectRequest(
@@ -206,5 +229,23 @@ export default class ServerConnection implements IServerConnection {
   ): Promise<Result<string, FxError>> {
     const res = await getSideloadingStatus(accountToken.token);
     return ok(String(res));
+  }
+
+  public async addSsoRequest(inputs: Inputs, token: CancellationToken) {
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const func: Func = {
+      namespace: "fx-solution-azure",
+      method: "addSso",
+      params: {
+        envName: environmentManager.getDefaultEnvName(),
+      },
+    };
+    const res = await Correlator.runWithId(
+      corrId,
+      (func, inputs) => this.core.executeUserTask(func, inputs),
+      func,
+      inputs
+    );
+    return standardizeResult(res);
   }
 }

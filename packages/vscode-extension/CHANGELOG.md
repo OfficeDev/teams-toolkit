@@ -1,5 +1,18 @@
 # Changelog
 
+## 4.0.3 - Jul 26, 2022
+
+Incremental version for Teams Toolkit with multiple bugs fix and enhancements.
+
+Enhancement:
+
+- User can now switch Azure account or Azure subscription to provision cloud resource.
+- Now support SPFx version to v1.15.0.
+
+## 4.0.2 - Jul 12, 2022
+
+Incremental version for Teams Toolkit with multiple bugs fix and enhancements.
+
 ## 4.0.1 - Jun 16, 2022
 
 Incremental version for Teams Toolkit with multiple bugs fix and enhancements.

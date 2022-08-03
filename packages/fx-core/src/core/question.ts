@@ -332,6 +332,7 @@ export function createCapabilityQuestionPreview(): SingleSelectQuestion {
     type: "singleSelect",
     staticOptions: staticOptions,
     placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
+    forgetLastValue: true,
   };
 }
 

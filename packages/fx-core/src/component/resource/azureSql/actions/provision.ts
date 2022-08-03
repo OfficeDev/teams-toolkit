@@ -7,18 +7,13 @@ import {
   InputsWithProjectPath,
   ok,
   FunctionAction,
-  ProvisionContextV3,
+  ResourceContextV3,
   Effect,
   FxError,
   Result,
   traverse,
 } from "@microsoft/teamsfx-api";
-import {
-  ComponentNames,
-  ActionNames,
-  ActionTypeFunction,
-  ComponentStateKeys,
-} from "../../../constants";
+import { ComponentNames, ActionNames, ActionTypeFunction } from "../../../constants";
 import { LoggerMW, ActionLogger } from "../../../middleware/logger";
 import { RunWithCatchErrorMW, ActionErrorHandler } from "../../../middleware/runWithCatchError";
 import { TelemetryMW, ActionTelemetryImplement } from "../../../middleware/telemetry";
@@ -26,8 +21,8 @@ import { ManagementClient } from "../clients/management";
 import { LoadManagementConfig, removeDatabases } from "../config";
 import { Constants } from "../constants";
 import { ErrorMessage } from "../errors";
+import { buildQuestionNode } from "../questions";
 import { SqlResultFactory } from "../results";
-import { UtilFunctions } from "./configure";
 
 export class ProvisionActionImplement {
   static readonly source = "SQL";
@@ -52,8 +47,8 @@ export class ProvisionActionImplement {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<Effect[], FxError>> {
-    const ctx = context as ProvisionContextV3;
-    const state = (ctx.envInfo.state[ComponentStateKeys[ComponentNames.AzureSQL]] ??= {});
+    const ctx = context as ResourceContextV3;
+    const state = (ctx.envInfo.state[ComponentNames.AzureSQL] ??= {});
     removeDatabases(state);
     let shouldAsk;
     if (state.sqlResourceId) {
@@ -68,7 +63,7 @@ export class ProvisionActionImplement {
     }
 
     if (shouldAsk) {
-      const node = UtilFunctions.buildQuestionNode();
+      const node = buildQuestionNode();
       const res = await traverse(node, inputs, ctx.userInteraction);
       if (res.isErr()) {
         throw SqlResultFactory.UserError(

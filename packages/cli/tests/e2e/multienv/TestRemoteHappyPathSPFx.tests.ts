@@ -47,16 +47,20 @@ describe("Multi Env Happy Path for SPFx", function () {
       "config/serve.json",
       "config/write-manifests.json",
       "src/webparts/helloworld/HelloworldWebPart.manifest.json",
+      "src/webparts/helloworld/HelloworldWebPart.module.scss",
       "src/webparts/helloworld/HelloworldWebPart.ts",
       "src/webparts/helloworld/loc/en-us.js",
       "src/webparts/helloworld/loc/mystrings.d.ts",
+      "src/webparts/helloworld/assets/welcome-dark.png",
+      "src/webparts/helloworld/assets/welcome-light.png",
       "src/index.ts",
       ".gitignore",
+      ".npmignore",
+      ".yo-rc.json",
       "gulpfile.js",
       "package.json",
       "README.md",
       "tsconfig.json",
-      "tslint.json",
     ];
     for (const file of files) {
       const filePath = path.join(testFolder, appName, `SPFx`, file);

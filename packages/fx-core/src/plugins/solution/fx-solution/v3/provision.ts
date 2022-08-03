@@ -573,6 +573,11 @@ export async function fillInAzureConfigs(
   const isSwitchAccountEnabled = doesAllowSwitchAccount();
   let subscriptionResult;
 
+  ctx.telemetryReporter?.sendTelemetryEvent(
+    TelemetryEvent.CheckSubscriptionStart,
+    inputs.env ? { [TelemetryProperty.Env]: getHashedEnv(inputs.env) } : {}
+  );
+
   if (!isSwitchAccountEnabled) {
     subscriptionResult = await checkAzureSubscription(
       ctx,
@@ -590,6 +595,12 @@ export async function fillInAzureConfigs(
   if (subscriptionResult.isErr()) {
     return err(subscriptionResult.error);
   }
+
+  ctx.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckSubscription, {
+    [TelemetryProperty.Env]: !inputs.env ? "" : getHashedEnv(inputs.env),
+    [TelemetryProperty.HasSwitchedSubscription]:
+      subscriptionResult.value.hasSwitchedSubscription.toString(),
+  });
 
   // Note setSubscription here will change the token returned by getAccountCredentialAsync according to the subscription selected.
   // So getting azureToken needs to precede setSubscription.

@@ -32,18 +32,19 @@ export function generateTasks(
    *   - Watch Backend
    *   - Start Bot
    */
-  const tasks: Record<string, unknown>[] = [
-    preDebugCheckAndStartAll(includeBot),
-    validateLocalPrerequisites(),
-  ];
 
-  if (includeBot) {
-    tasks.push(startNgrok());
+  const tasks: Record<string, unknown>[] = [];
+  if (!isOfficeAddinEnabled() || !includeOfficeAddin) {
+    tasks.push(preDebugCheckAndStartAll(includeBot));
+    tasks.push(validateLocalPrerequisites());
+    if (includeBot) {
+      tasks.push(startNgrok());
+    }
+
+    tasks.push(prepareLocalEnvironment());
+
+    tasks.push(startAll(includeFrontend, includeBackend, includeBot));
   }
-
-  tasks.push(prepareLocalEnvironment());
-
-  tasks.push(startAll(includeFrontend, includeBackend, includeBot));
 
   if (includeFrontend) {
     tasks.push(startFrontend());

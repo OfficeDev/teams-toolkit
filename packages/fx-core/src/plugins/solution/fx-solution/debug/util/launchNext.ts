@@ -21,10 +21,11 @@ export function generateConfigurations(
     chromeOrder = 2;
   }
 
-  const launchConfigurations: Record<string, unknown>[] = [
-    launchRemote(LaunchBrowser.edge, "Edge", edgeOrder),
-    launchRemote(LaunchBrowser.chrome, "Chrome", chromeOrder),
-  ];
+  const launchConfigurations: Record<string, unknown>[] = [];
+  if (!isOfficeAddinEnabled() || !includeOfficeAddin) {
+    launchConfigurations.push(launchRemote(LaunchBrowser.edge, "Edge", edgeOrder));
+    launchConfigurations.push(launchRemote(LaunchBrowser.chrome, "Chrome", chromeOrder));
+  }
 
   if (includeFrontend) {
     launchConfigurations.push(

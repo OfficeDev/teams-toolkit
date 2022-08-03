@@ -53,8 +53,8 @@ describe("Deploy to customized resource group", function () {
     await customizeBicepFilesToCustomizedRg(
       customizedRgName,
       projectPath,
-      [`name: 'botProvision'`, `name: 'webAppProvision'`],
-      [`name: 'addTeamsFxBotConfiguration'`]
+      [`name: 'botProvision'`, `name: 'azureWebAppBotProvision'`],
+      [`name: 'teamsFxAzureWebAppBotConfig'`]
     );
 
     // Provision

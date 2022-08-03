@@ -63,6 +63,8 @@ describe("Api Feature", () => {
     sandbox.stub(fs, "writeFileSync").returns();
     sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev"]));
     sandbox.stub(FunctionScaffold, "doesFunctionPathExist").resolves(false);
+    const ssoComponent = Container.get("sso") as any;
+    sandbox.stub(ssoComponent, "add").resolves(ok(undefined));
   });
 
   afterEach(() => {

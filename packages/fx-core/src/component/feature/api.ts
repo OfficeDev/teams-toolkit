@@ -42,19 +42,14 @@ import { Plans } from "../messages";
 import { AzureFunctionResource } from "../resource/azureAppService/azureFunction";
 import { generateConfigBiceps, bicepUtils } from "../utils";
 import { getComponent } from "../workflow";
+import { SSO } from "./sso";
 
 @Service(ComponentNames.TeamsApi)
 export class TeamsApi {
   name = ComponentNames.TeamsApi;
   @hooks([
     ActionExecutionMW({
-      errorSource: "bot",
-      errorHandler: (error) => {
-        if (error && !error?.name) {
-          error.name = "addBotError";
-        }
-        return error as FxError;
-      },
+      errorSource: "BE",
       question: (context: ContextV3, inputs: InputsWithProjectPath) => {
         functionNameQuestion.validation = getFunctionNameQuestionValidation(context, inputs);
         return ok(new QTreeNode(functionNameQuestion));
@@ -71,6 +66,13 @@ export class TeamsApi {
       context.projectSetting.programmingLanguage ||
       inputs[CoreQuestionNames.ProgrammingLanguage] ||
       "javascript";
+
+    // check sso if not added
+    if (!getComponent(projectSettings, ComponentNames.AadApp)) {
+      const ssoComponent = Container.get("sso") as SSO;
+      const res = await ssoComponent.add(context, inputs);
+      if (res.isErr()) return err(res.error);
+    }
 
     // 1. scaffold function
     {

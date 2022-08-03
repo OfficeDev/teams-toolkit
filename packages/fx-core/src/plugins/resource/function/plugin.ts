@@ -3,6 +3,7 @@
 import * as path from "path";
 import {
   AzureSolutionSettings,
+  ContextV3,
   Func,
   FxError,
   Inputs,
@@ -650,4 +651,31 @@ export class FunctionPluginImpl {
         })
     );
   }
+}
+
+export function getAzureFunctionQuestionNode(inputs: Inputs, ctx: ContextV3): QTreeNode {
+  if (inputs.projectPath) {
+    functionNameQuestion.validation = {
+      validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
+        const workingPath: string = path.join(inputs.projectPath!, "api");
+        const name = input as string;
+        if (!name || !RegularExpr.validFunctionNamePattern.test(name)) {
+          return ErrorMessages.invalidFunctionName;
+        }
+        const language: FunctionLanguage =
+          (inputs[QuestionKey.programmingLanguage] as FunctionLanguage) ??
+          (ctx.projectSetting.programmingLanguage as FunctionLanguage);
+
+        // If language is unknown, skip checking and let scaffold handle the error.
+        if (
+          language &&
+          (await FunctionScaffold.doesFunctionPathExist(workingPath, language, name))
+        ) {
+          return ErrorMessages.functionAlreadyExists;
+        }
+      },
+    };
+  }
+  const node = new QTreeNode(functionNameQuestion);
+  return node;
 }

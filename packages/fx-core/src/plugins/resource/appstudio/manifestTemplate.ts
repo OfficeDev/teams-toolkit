@@ -319,8 +319,7 @@ export async function updateCapability(
     case "staticTab":
       // find the corresponding static Tab with entity id
       const entityId = (capability.snippet as IStaticTab).entityId;
-      let index = manifest.staticTabs?.map((x) => x.entityId).indexOf(entityId);
-      if (index === -1) index = manifest.staticTabs?.length;
+      const index = manifest.staticTabs?.map((x) => x.entityId).indexOf(entityId);
       if (index !== undefined && index !== -1) {
         manifest.staticTabs![index] = capability.snippet!;
       } else {
@@ -333,17 +332,16 @@ export async function updateCapability(
       }
       break;
     case "configurableTab":
-      manifest.configurableTabs![0] = capability.snippet!;
-      // if (manifest.configurableTabs && manifest.configurableTabs.length) {
-      //   manifest.configurableTabs[0] = capability.snippet!;
-      // } else {
-      //   return err(
-      //     AppStudioResultFactory.SystemError(
-      //       AppStudioError.CapabilityNotExistError.name,
-      //       AppStudioError.CapabilityNotExistError.message(capability.name)
-      //     )
-      //   );
-      // }
+      if (manifest.configurableTabs && manifest.configurableTabs.length) {
+        manifest.configurableTabs[0] = capability.snippet!;
+      } else {
+        return err(
+          AppStudioResultFactory.SystemError(
+            AppStudioError.CapabilityNotExistError.name,
+            AppStudioError.CapabilityNotExistError.message(capability.name)
+          )
+        );
+      }
       break;
     case "Bot":
       if (manifest.bots && manifest.bots.length > 0) {

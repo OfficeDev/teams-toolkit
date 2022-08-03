@@ -204,6 +204,20 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
         });
       }
     }
+    if (solutionSettings.activeResourcePlugins.includes("fx-resource-spfx")) {
+      const teamsTab: any = {
+        hosting: "spfx",
+        name: "teams-tab",
+        build: true,
+        provision: true,
+        folder: "SPFx",
+      };
+      settingsV3.components.push(teamsTab);
+      settingsV3.components.push({
+        name: "spfx",
+        provision: true,
+      });
+    }
     if (solutionSettings.activeResourcePlugins.includes("fx-resource-bot")) {
       const hostType = settingsV2.pluginSettings?.["fx-resource-bot"]?.["host-type"];
       let botCapabilities = settingsV2.pluginSettings?.["fx-resource-bot"]?.["capabilities"];
@@ -326,7 +340,11 @@ export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): Pro
       if (teamsTab.sso) {
         settingsV2.solutionSettings.capabilities.push("TabSSO");
       }
-      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-frontend-hosting");
+      if (teamsTab.hosting === "spfx") {
+        settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-spfx");
+      } else {
+        settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-frontend-hosting");
+      }
     }
     const teamsBot = getComponent(settingsV3, ComponentNames.TeamsBot);
     if (teamsBot) {

@@ -23,6 +23,7 @@ import "reflect-metadata";
 import { Service } from "typedi";
 import * as util from "util";
 import { getAppDirectory, isGeneratorCheckerEnabled, isYoCheckerEnabled } from "../../common/tools";
+import { isV3 } from "../../core";
 import { getTemplatesFolder } from "../../folder";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../plugins/resource/appstudio/constants";
 import { GeneratorChecker } from "../../plugins/resource/spfx/depsChecker/generatorChecker";
@@ -233,15 +234,23 @@ export async function scaffoldSPFx(
     );
     const manifestProvider =
       (context as ContextV3).manifestProvider || new DefaultManifestProvider();
-    for (const capability of capabilitiesToAddManifest) {
-      const addCapRes = await manifestProvider.updateCapability(
-        (context as ContextV3).manifestProvider
-          ? (context as ContextV3)
-          : convert2Context(context as PluginContext, true).context,
+    if (isV3()) {
+      const res = await manifestProvider.addCapabilities(
+        context as ContextV3,
         inputs,
-        capability
+        capabilitiesToAddManifest
       );
-      if (addCapRes.isErr()) return err(addCapRes.error);
+    } else {
+      for (const capability of capabilitiesToAddManifest) {
+        const addCapRes = await manifestProvider.updateCapability(
+          (context as ContextV3).manifestProvider
+            ? (context as ContextV3)
+            : convert2Context(context as PluginContext, true).context,
+          inputs,
+          capability
+        );
+        if (addCapRes.isErr()) return err(addCapRes.error);
+      }
     }
     await progressHandler?.end(true);
     return ok(undefined);

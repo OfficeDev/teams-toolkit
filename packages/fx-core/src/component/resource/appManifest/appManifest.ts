@@ -29,6 +29,7 @@ import { getTemplatesFolder } from "../../../folder";
 import {
   CommandAndResponseOptionItem,
   NotificationOptionItem,
+  TabSPFxNewUIItem,
 } from "../../../plugins/solution/fx-solution/question";
 import {
   BOTS_TPL_EXISTING_APP,
@@ -64,6 +65,8 @@ import {
 import { readAppManifest, writeAppManifest } from "./utils";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
+import { CoreQuestionNames } from "../../../core/question";
+import { getProjectTemplatesFolderPath } from "../../../common/utils";
 
 @Service("app-manifest")
 export class AppManifest implements CloudResource {
@@ -81,13 +84,24 @@ export class AppManifest implements CloudResource {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
-    const existingApp = inputs.existingApp as boolean;
-    const manifestString = TEAMS_APP_MANIFEST_TEMPLATE;
-    const manifest = JSON.parse(manifestString);
-    if (existingApp || !hasTab(context.projectSetting)) {
-      manifest.developer = DEFAULT_DEVELOPER;
+    let manifest;
+    if (inputs[CoreQuestionNames.Capabilities] === TabSPFxNewUIItem.id) {
+      const templateManifestFolder = path.join(getTemplatesFolder(), "plugins", "resource", "spfx");
+      const manifestFile = path.resolve(
+        templateManifestFolder,
+        "./solution/manifest_multi_env.json"
+      );
+      const manifestString = (await fs.readFile(manifestFile)).toString();
+      manifest = JSON.parse(manifestString);
+    } else {
+      const existingApp = inputs.existingApp as boolean;
+      const manifestString = TEAMS_APP_MANIFEST_TEMPLATE;
+      const manifest = JSON.parse(manifestString);
+      if (existingApp || !hasTab(context.projectSetting)) {
+        manifest.developer = DEFAULT_DEVELOPER;
+      }
     }
-    const templateFolder = path.join(inputs.projectPath, "templates");
+    const templateFolder = await getProjectTemplatesFolderPath(inputs.projectPath);
     await fs.ensureDir(templateFolder);
     const appPackageFolder = path.join(templateFolder, "appPackage");
     await fs.ensureDir(appPackageFolder);

@@ -178,7 +178,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           provision: false,
           folder: "",
           artifactFolder: "bin\\Release\\net6.0\\win-x86\\publish",
-          sso: solutionSettings.capabilities.includes("TabSSO") || hasAAD,
+          sso: solutionSettings.capabilities.includes("TabSSO"),
         };
         settingsV3.components.push(teamsTab);
       } else {
@@ -188,7 +188,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           build: true,
           provision: true,
           folder: "tabs",
-          sso: solutionSettings.capabilities.includes("TabSSO") || hasAAD,
+          sso: solutionSettings.capabilities.includes("TabSSO"),
         };
         settingsV3.components.push(teamsTab);
       }

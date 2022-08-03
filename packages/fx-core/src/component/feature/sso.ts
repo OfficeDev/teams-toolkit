@@ -34,12 +34,14 @@ export class SSO {
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
     const updates = getUpdateComponents(context, inputs);
+    const effects: Effect[] = [];
 
     // generate manifest
     const aadApp = Container.get<AadApp>(ComponentNames.AadApp);
     {
       const res = await aadApp.generateManifest(context, inputs);
       if (res.isErr()) return err(res.error);
+      effects.push("generate aad manifest");
     }
 
     // config sso
@@ -58,6 +60,7 @@ export class SSO {
       const teamsBotComponent = getComponent(context.projectSetting, ComponentNames.TeamsBot);
       teamsBotComponent!.sso = true;
     }
+    effects.push("config sso");
 
     // generate bicep
     {
@@ -69,12 +72,14 @@ export class SSO {
         res.value
       );
       if (bicepRes.isErr()) return bicepRes;
+      effects.push("generate aad bicep");
     }
 
     // generate auth files
     if (inputs.stage === Stage.addFeature) {
       const res = await aadApp.generateAuthFiles(context, inputs, updates.tab!, updates.bot!);
       if (res.isErr()) return err(res.error);
+      effects.push("generate auth files");
     }
 
     // update app manifest
@@ -83,18 +88,21 @@ export class SSO {
       const appManifest = Container.get<AppManifest>(ComponentNames.AppManifest);
       const res = await appManifest.addCapability(inputs, capabilities);
       if (res.isErr()) return err(res.error);
+      effects.push("update app manifest");
     }
 
     // local debug settings
     {
       const res = await generateLocalDebugSettings(context, inputs);
       if (res.isErr()) return err(res.error);
+      effects.push("generate local debug configs");
     }
 
     // generate config bicep
     {
       const res = await generateConfigBiceps(context, inputs);
       if (res.isErr()) return err(res.error);
+      effects.push("generate config biceps");
     }
     return ok(undefined);
   }

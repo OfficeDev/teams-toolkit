@@ -185,7 +185,7 @@ export class TeamsTab {
       ];
       const clonedInputs = {
         ...cloneDeep(inputs),
-        validDomain: `{{state.${inputs.hosting}.domain}}`,
+        validDomain: "{{state.fx-resource-frontend-hosting.domain}}", // TODO: replace fx-resource-frontend-hosting with inputs.hosting after updating state file
       };
       const manifestComponent = Container.get<AppManifest>(ComponentNames.AppManifest);
       const res = await manifestComponent.addCapability(clonedInputs, capabilities);

@@ -58,7 +58,7 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
 
 output skuName string = webAppSKU
 output siteName string = webAppName
-output validDomain string = webApp.properties.defaultHostName
+output domain string = webApp.properties.defaultHostName
 output appServicePlanName string = serverfarmsName
 output resourceId string = webApp.id
 output siteEndpoint string = 'https://${webApp.properties.defaultHostName}'

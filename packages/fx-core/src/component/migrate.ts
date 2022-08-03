@@ -327,9 +327,11 @@ export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): Pro
         "fx-resource-local-debug",
         "fx-resource-appstudio",
         "fx-resource-cicd",
-        "fx-resource-api-connector",
       ],
     };
+    if (hostType === "Azure") {
+      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-api-connector");
+    }
     const aad = getComponent(settingsV3, ComponentNames.AadApp);
     if (aad) {
       settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-aad-app-for-teams");

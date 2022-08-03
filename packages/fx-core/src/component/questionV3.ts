@@ -86,12 +86,22 @@ import { FunctionLanguage, QuestionKey } from "../plugins/resource/function/enum
 import { FunctionScaffold } from "../plugins/resource/function/ops/scaffold";
 
 export async function getQuestionsForProvisionV3(
-  inputs: Inputs
+  inputs: Inputs,
+  context: ContextV3
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (inputs.platform === Platform.CLI_HELP) {
     const node = new QTreeNode({ type: "group" });
     node.addChild(new QTreeNode(AskSubscriptionQuestion));
     node.addChild(sqlQuestionNode());
+    return ok(node);
+  } else {
+    const node = new QTreeNode({ type: "group" });
+    if (hasAzureResourceV3(context.projectSetting)) {
+      node.addChild(new QTreeNode(AskSubscriptionQuestion));
+    }
+    if (getComponent(context.projectSetting, ComponentNames.AzureSQL)) {
+      node.addChild(sqlQuestionNode());
+    }
     return ok(node);
   }
   return ok(undefined);

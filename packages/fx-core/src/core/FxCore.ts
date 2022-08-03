@@ -884,7 +884,7 @@ export class FxCore implements v3.ICore {
       } else if (stage === Stage.deploy) {
         return await getQuestionsForDeployV3(context, inputs);
       } else if (stage === Stage.provision) {
-        return await getQuestionsForProvisionV3(inputs);
+        return await getQuestionsForProvisionV3(inputs, context);
       }
       return ok(undefined);
     }

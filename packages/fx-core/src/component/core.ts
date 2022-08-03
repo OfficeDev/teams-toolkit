@@ -283,7 +283,7 @@ export class TeamsfxCore {
   @hooks([
     ActionExecutionMW({
       question: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return await getQuestionsForProvisionV3(inputs);
+        return await getQuestionsForProvisionV3(inputs, context);
       },
     }),
   ])

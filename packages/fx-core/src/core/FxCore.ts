@@ -130,7 +130,7 @@ import {
 import { CoreHookContext } from "./types";
 import { isPreviewFeaturesEnabled } from "../common";
 import { createContextV3 } from "../component/utils";
-import "../component/core";
+import { TeamsfxCore } from "../component/core";
 import {
   FeatureId,
   getQuestionsForAddFeatureSubCommand,
@@ -143,7 +143,6 @@ import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
 import { addCicdQuestion } from "../component/feature/cicd";
 import { ComponentNames } from "../component/constants";
 import { ApiConnectorImpl } from "../plugins/resource/apiconnector/plugin";
-import { TeamsfxCore } from "../component/core";
 import { publishQuestion } from "../component/resource/appManifest/appManifest";
 
 export class FxCore implements v3.ICore {
@@ -685,10 +684,15 @@ export class FxCore implements v3.ICore {
 
   async executeUserTask(func: Func, inputs: Inputs): Promise<Result<unknown, FxError>> {
     if (isV3()) {
-      return this.executeUserTaskV3(func, inputs);
-    } else {
-      return this.executeUserTaskV2(func, inputs);
+      if (
+        func.method === "addCICDWorkflows" ||
+        func.method === "connectExistingApi" ||
+        func.method === "addSso" ||
+        func.method === "addFeature"
+      )
+        return this.executeUserTaskV3(func, inputs);
     }
+    return this.executeUserTaskV2(func, inputs);
   }
 
   @hooks([

@@ -308,7 +308,7 @@ export class TeamsfxCore {
       if (localEnvSetupResult.isErr()) {
         return err(localEnvSetupResult.error);
       }
-    } else {
+    } else if (hasAzureResourceV3(ctx.projectSetting)) {
       //4.2 deploy arm templates for remote
       ctx.logProvider.info(
         getLocalizedString("core.deployArmTemplates.StartNotice", PluginDisplayName.Solution)

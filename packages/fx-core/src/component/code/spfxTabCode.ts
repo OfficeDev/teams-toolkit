@@ -23,7 +23,6 @@ import "reflect-metadata";
 import { Service } from "typedi";
 import * as util from "util";
 import { getAppDirectory, isGeneratorCheckerEnabled, isYoCheckerEnabled } from "../../common/tools";
-import { isV3 } from "../../core";
 import { getTemplatesFolder } from "../../folder";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../plugins/resource/appstudio/constants";
 import { GeneratorChecker } from "../../plugins/resource/spfx/depsChecker/generatorChecker";

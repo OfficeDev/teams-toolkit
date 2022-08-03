@@ -249,6 +249,32 @@ jobs:
           version=$(node -p -e "require('./packages/cli/package.json').version")
           npx ts-node .github/scripts/testPlan.ts sync ./packages/cli/tests/e2e/mochawesome-report/mochawesome.json cli $version
 
+  tear-down:
+    if: ${{ always() && github.event_name == 'schedule' }}
+    needs: execute-case
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: 14
+
+      - name: Setup project
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 5
+          command: |
+            npm run setup
+
+      - name: E2E Test clean
+        working-directory: packages/cli
+        run: |
+          npm run test:e2e:clean
+
   report:
     if: ${{ always() && github.event_name == 'schedule' }}
     needs: execute-case

@@ -44,13 +44,14 @@ export interface ActionOption {
 
 export function ActionExecutionMW(action: ActionOption): Middleware {
   return async (ctx: HookContext, next: NextFunction) => {
-    const componentName = ctx.self?.constructor.name || action?.componentName;
+    const componentName = ctx.self?.constructor.name || action.componentName;
+    const telemetryComponentName = action.telemetryComponentName || componentName;
     const methodName = ctx.method!;
     const actionName = `${componentName}.${methodName}`;
     TOOLS.logProvider.info(`execute [${actionName}] start!`);
     const eventName = action.telemetryEventName || methodName;
     const telemetryProps = {
-      [TelemetryConstants.properties.component]: componentName,
+      [TelemetryConstants.properties.component]: telemetryComponentName,
       [TelemetryConstants.properties.appId]: globalVars.teamsAppId,
       [TelemetryConstants.properties.tenantId]: globalVars.m365TenantId,
     };

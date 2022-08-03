@@ -55,7 +55,20 @@ describe("Utils Tests", function () {
   afterEach(() => {
     sandbox.restore();
   });
-
+  it("compare", () => {
+    {
+      const res = utils.compare("1.1.1", "1.1.1");
+      expect(res === 0).to.be.true;
+    }
+    {
+      const res = utils.compare("1.1.1", "1.1.2");
+      expect(res === -1).to.be.true;
+    }
+    {
+      const res = utils.compare("1.2.1", "1.1.2");
+      expect(res === 1).to.be.true;
+    }
+  });
   it("getChoicesFromQTNodeQuestion - string[]", () => {
     const question: apis.Question = {
       type: "singleSelect",

@@ -168,10 +168,6 @@ export class TeamsBot {
     // 2.3 identity bicep
     if (!getComponent(projectSettings, ComponentNames.Identity)) {
       const clonedInputs = cloneDeep(inputs);
-      assign(clonedInputs, {
-        componentId: "",
-        scenario: "",
-      });
       const identityComponent = Container.get<IdentityResource>(ComponentNames.Identity);
       const res = await identityComponent.generateBicep(context, clonedInputs);
       if (res.isErr()) return err(res.error);
@@ -211,7 +207,10 @@ export class TeamsBot {
             ? "MessageExtension"
             : "Bot",
       };
-      const clonedInputs = cloneDeep(inputs);
+      const clonedInputs = {
+        ...cloneDeep(inputs),
+        validDomain: `{{state.${inputs.hosting}.validDomain}}`,
+      };
       const appManifest = Container.get<AppManifest>(ComponentNames.AppManifest);
       const res = await appManifest.addCapability(clonedInputs, [manifestCapability]);
       if (res.isErr()) return err(res.error);
@@ -224,7 +223,7 @@ export class TeamsBot {
     const msg =
       inputs.platform === Platform.CLI
         ? getLocalizedString("core.addCapability.addCapabilityNoticeForCli")
-        : getLocalizedString("core.addCapability.addCapabilitiesNoticeForCli");
+        : getLocalizedString("core.addCapability.addCapabilitiesNotice");
     context.userInteraction.showMessage("info", format(msg, "Bot"), false);
     return ok(undefined);
   }

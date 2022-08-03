@@ -329,7 +329,9 @@ export async function addCapabilities(
               appManifest.bots = [];
             }
 
-            const feature = inputs.feature;
+            // import CoreQuestionNames introduces dependency cycle and breaks the whole program
+            // inputs[CoreQuestionNames.Features]
+            const feature = inputs.features;
             if (feature === CommandAndResponseOptionItem.id) {
               // command and response bot
               appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3);
@@ -366,6 +368,9 @@ export async function addCapabilities(
         }
         break;
     }
+  }
+  if (inputs.validDomain && !appManifest.validDomains?.includes(inputs.validDomain)) {
+    appManifest.validDomains?.push(inputs.validDomain);
   }
   await writeAppManifest(appManifest, inputs.projectPath);
   return ok(undefined);

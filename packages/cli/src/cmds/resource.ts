@@ -101,7 +101,7 @@ export class ResourceAddSql extends YargsCommand {
     "An always-up-to-date relational database service built for the cloud";
 
   public builder(yargs: Argv): Argv<any> {
-    this.params = HelpParamGenerator.getYargsParamForHelp("addResource-sql");
+    this.params = HelpParamGenerator.getYargsParamForHelp("addFeature-sql");
     return yargs.options(this.params);
   }
 
@@ -160,7 +160,7 @@ export class ResourceAddApim extends YargsCommand {
     "A hybrid, multicloud management platform for APIs across all environments";
 
   public builder(yargs: Argv): Argv<any> {
-    this.params = HelpParamGenerator.getYargsParamForHelp("addResource-apim");
+    this.params = HelpParamGenerator.getYargsParamForHelp("addFeature-apim");
     return yargs.options(this.params);
   }
 
@@ -237,7 +237,7 @@ export class ResourceAddFunction extends YargsCommand {
     "A serverless, event-driven compute solution that allows you to write less code";
 
   public builder(yargs: Argv): Argv<any> {
-    this.params = HelpParamGenerator.getYargsParamForHelp("addResource-function");
+    this.params = HelpParamGenerator.getYargsParamForHelp("addFeature-function");
     return yargs.options(this.params);
   }
 
@@ -308,7 +308,7 @@ export class ResourceAddKeyVault extends YargsCommand {
   public readonly description = "A cloud service for securely storing and accessing secrets";
 
   public builder(yargs: Argv): Argv<any> {
-    this.params = HelpParamGenerator.getYargsParamForHelp("addResource-keyvault");
+    this.params = HelpParamGenerator.getYargsParamForHelp("addFeature-keyvault");
     return yargs.options(this.params);
   }
 

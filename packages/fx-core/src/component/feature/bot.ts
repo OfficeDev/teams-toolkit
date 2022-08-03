@@ -209,7 +209,7 @@ export class TeamsBot {
       };
       const clonedInputs = {
         ...cloneDeep(inputs),
-        validDomain: `{{state.${inputs.hosting}.validDomain}}`,
+        validDomain: `{{state.${inputs.hosting}.domain}}`,
       };
       const appManifest = Container.get<AppManifest>(ComponentNames.AppManifest);
       const res = await appManifest.addCapability(clonedInputs, [manifestCapability]);

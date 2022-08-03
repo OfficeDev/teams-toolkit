@@ -67,13 +67,6 @@ export class TeamsApi {
       inputs[CoreQuestionNames.ProgrammingLanguage] ||
       "javascript";
 
-    // check sso if not added
-    if (!getComponent(projectSettings, ComponentNames.AadApp)) {
-      const ssoComponent = Container.get("sso") as SSO;
-      const res = await ssoComponent.add(context, inputs);
-      if (res.isErr()) return err(res.error);
-    }
-
     // 1. scaffold function
     {
       inputs[QuestionKey.functionName] =
@@ -106,6 +99,14 @@ export class TeamsApi {
       artifactFolder: inputs.folder || FunctionPluginPathInfo.solutionFolderName,
     });
     effects.push("config teams-api");
+
+    // 2.1 check sso if not added
+    const tabComponent = getComponent(projectSettings, ComponentNames.TeamsTab);
+    if (!tabComponent?.sso) {
+      const ssoComponent = Container.get(ComponentNames.SSO) as SSO;
+      const res = await ssoComponent.add(context, inputs);
+      if (res.isErr()) return err(res.error);
+    }
 
     const biceps: Bicep[] = [];
     // 3.1 bicep.init

@@ -15,7 +15,7 @@ import { it } from "../../commonlib/it";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
 import mockedEnv from "mocked-env";
-describe("Azure App Scaffold", function () {
+describe("Azure App Scaffold (V3)", function () {
   let testFolder: string;
   let appName: string;
   let projectPath: string;
@@ -38,7 +38,7 @@ describe("Azure App Scaffold", function () {
     mockedEnvRestore();
   });
 
-  it(`Tab + Bot + Function in TypeScript`, { testPlanCaseId: 9863654 }, async function () {
+  it(`Tab + Bot + Function in TypeScript (V3)`, { testPlanCaseId: 9863654 }, async function () {
     const lang = "typescript";
 
     await CliHelper.createProjectWithCapability(

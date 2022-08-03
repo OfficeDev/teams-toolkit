@@ -32,16 +32,7 @@ export class SPFxTab {
   @hooks([
     ActionExecutionMW({
       question: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const spfx_frontend_host = new QTreeNode({
-          type: "group",
-        });
-        const spfx_version_check = new QTreeNode(versionCheckQuestion);
-        spfx_frontend_host.addChild(spfx_version_check);
-        const spfx_framework_type = new QTreeNode(frameworkQuestion);
-        spfx_version_check.addChild(spfx_framework_type);
-        const spfx_webpart_name = new QTreeNode(webpartNameQuestion);
-        spfx_version_check.addChild(spfx_webpart_name);
-        return ok(spfx_frontend_host);
+        return getSPFxScaffoldQuestion();
       },
     }),
   ])
@@ -80,4 +71,17 @@ export class SPFxTab {
     }
     return ok(undefined);
   }
+}
+
+export function getSPFxScaffoldQuestion(): Result<QTreeNode, FxError> {
+  const spfx_frontend_host = new QTreeNode({
+    type: "group",
+  });
+  const spfx_version_check = new QTreeNode(versionCheckQuestion);
+  spfx_frontend_host.addChild(spfx_version_check);
+  const spfx_framework_type = new QTreeNode(frameworkQuestion);
+  spfx_version_check.addChild(spfx_framework_type);
+  const spfx_webpart_name = new QTreeNode(webpartNameQuestion);
+  spfx_version_check.addChild(spfx_webpart_name);
+  return ok(spfx_frontend_host);
 }

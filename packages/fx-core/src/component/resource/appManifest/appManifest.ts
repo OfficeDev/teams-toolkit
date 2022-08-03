@@ -100,7 +100,7 @@ export class AppManifest implements CloudResource {
     } else {
       const existingApp = inputs.existingApp as boolean;
       const manifestString = TEAMS_APP_MANIFEST_TEMPLATE;
-      const manifest = JSON.parse(manifestString);
+      manifest = JSON.parse(manifestString);
       if (existingApp || !hasTab(context.projectSetting)) {
         manifest.developer = DEFAULT_DEVELOPER;
       }

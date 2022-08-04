@@ -55,6 +55,27 @@ describe("Utils Tests", function () {
   afterEach(() => {
     sandbox.restore();
   });
+
+  it("readLocalStateJsonFile - success", () => {
+    sandbox.stub(fs, "existsSync").returns(true);
+    sandbox.stub(fs, "readJsonSync").returns({});
+    const res = utils.readLocalStateJsonFile("real");
+    expect((res as any).value).to.deep.equal({});
+  });
+
+  it("readLocalStateJsonFile - ConfigNotFoundError", () => {
+    sandbox.stub(fs, "existsSync").returns(false);
+    const res = utils.readLocalStateJsonFile("fake");
+    expect((res as any).error.name).to.equal("ConfigNotFound");
+  });
+
+  it("readLocalStateJsonFile - throw Error", () => {
+    sandbox.stub(fs, "existsSync").returns(true);
+    sandbox.stub(fs, "readJsonSync").throws(new Error());
+    const res = utils.readLocalStateJsonFile("fake");
+    expect((res as any).error.name).to.equal("ReadFileError");
+  });
+
   it("compare", () => {
     {
       const res = utils.compare("1.1.1", "1.1.1");
@@ -69,6 +90,7 @@ describe("Utils Tests", function () {
       expect(res === 1).to.be.true;
     }
   });
+
   it("getChoicesFromQTNodeQuestion - string[]", () => {
     const question: apis.Question = {
       type: "singleSelect",

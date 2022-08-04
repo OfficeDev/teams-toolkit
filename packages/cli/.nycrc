@@ -1,15 +1,11 @@
 {
   "extends": "@istanbuljs/nyc-config-typescript",
   "all": true,
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.js"
-  ],
+  "include": ["src/**/*.ts", "src/**/*.js"],
   "exclude": [
     "src/cmds/preview/depsChecker/**/*",
     "src/cmds/preview/preview.ts",
     "src/cmds/preview/npmInstallHandler.ts",
-    "src/cmds/preview/errors.ts",
     "src/commonlib/*Login.ts",
     "src/commonlib/*LoginCI.ts",
     "src/commonlib/*LoginUserPassword.ts",
@@ -19,13 +15,7 @@
     ".prettierrc.js",
     ".mocharc.js"
   ],
-  "reporter": [
-    "html",
-    "text",
-    "json-summary",
-    "cobertura",
-    "lcov"
-  ],
+  "reporter": ["html", "text", "json-summary", "cobertura", "lcov"],
   "check-coverage": true,
   "lines": 80
 }

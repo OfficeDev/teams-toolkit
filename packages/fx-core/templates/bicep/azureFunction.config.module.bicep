@@ -27,7 +27,7 @@ var m365ApplicationIdUri = 'api://${ provisionOutputs.TabOutput.value.domain }/b
 var m365ApplicationIdUri = 'api://botid-${botId}'
     {{/if}}
   {{else}}
-var m365ApplicationIdUri = 'api://${ provisionOutputs.TabOutput.value.domain }'
+var m365ApplicationIdUri = 'api://${ provisionOutputs.TabOutput.value.domain }/${m365ClientId}'
   {{/if}}
 {{/if}}
 {{#if (contains "teams-bot" connections)}}

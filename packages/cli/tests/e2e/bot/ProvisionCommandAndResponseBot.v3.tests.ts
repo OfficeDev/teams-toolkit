@@ -6,6 +6,6 @@
  */
 
 import { Runtime } from "../../commonlib/constants";
-import { happyPathTestV3 } from "./CommandBotHappyPathCommon_v3";
+import { happyPathTestV3 } from "./CommandBotHappyPathCommon.v3";
 
 happyPathTestV3(Runtime.Node);

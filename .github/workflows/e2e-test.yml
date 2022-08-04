@@ -205,7 +205,10 @@ jobs:
         working-directory: packages/cli/tests/e2e
         run: |
           file=`find . -wholename "${{ matrix.cases }}"`
-          if [ ! -z "$file" ]; then
+          if [ -z "$file" ]; then
+            echo "can't find target case in $file"
+            exit 1
+          else
             npx mocha --reporter mochawesome --timeout 900000 $file
           fi
 

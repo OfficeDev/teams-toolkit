@@ -23,7 +23,7 @@ export const ComponentNames = {
   ApiCode: "api-code",
   Function: "azure-function",
   SimpleAuth: "simple-auth",
-  SSO: "SSO",
+  SSO: "sso",
   ApiConnector: "api-connector",
   CICD: "cicd",
 };

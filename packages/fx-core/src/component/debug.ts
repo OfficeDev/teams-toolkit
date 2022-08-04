@@ -319,8 +319,8 @@ export async function configLocalEnvironment(
       }
 
       if (includeBot) {
-        const botId = envInfo.state[ComponentNames.BotService]?.botId as string;
-        const botPassword = envInfo.state[ComponentNames.BotService]?.botPassword as string;
+        const botId = envInfo.state[ComponentNames.TeamsBot]?.botId as string;
+        const botPassword = envInfo.state[ComponentNames.TeamsBot]?.botPassword as string;
 
         botEnvs!.teamsfxLocalEnvs[EnvKeysBot.BotId] = botId;
         botEnvs!.teamsfxLocalEnvs[EnvKeysBot.BotPassword] = botPassword;

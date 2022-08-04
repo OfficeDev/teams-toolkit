@@ -37,7 +37,6 @@ import {
 import { AppStudioScopes, getHashedEnv, getResourceGroupInPortal } from "../../../../common/tools";
 import { convertToAlphanumericOnly } from "../../../../common/utils";
 import { ComponentNames } from "../../../../component/constants";
-import { doesAllowSwitchAccount } from "../../../../core";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import arm, { updateResourceBaseName } from "../arm";
 import { ResourceGroupInfo } from "../commonQuestions";
@@ -400,65 +399,6 @@ export async function checkProvisionSubscriptionWhenSwitchAccountEnabled(
   }
 }
 
-/**
- * make sure subscription is correct
- *
- */
-export async function checkAzureSubscription(
-  ctx: v2.Context,
-  envInfo: v3.EnvInfoV3,
-  azureAccountProvider: AzureAccountProvider
-): Promise<Result<ProvisionSubscriptionCheckResult, FxError>> {
-  const subscriptionIdInConfig =
-    envInfo.config.azure?.subscriptionId || (envInfo.state.solution.subscriptionId as string);
-  const subscriptionInAccount = await azureAccountProvider.getSelectedSubscription(true);
-  if (!subscriptionIdInConfig) {
-    if (subscriptionInAccount) {
-      envInfo.state.solution.subscriptionId = subscriptionInAccount.subscriptionId;
-      envInfo.state.solution.subscriptionName = subscriptionInAccount.subscriptionName;
-      envInfo.state.solution.tenantId = subscriptionInAccount.tenantId;
-      ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
-      return ok({ hasSwitchedSubscription: false });
-    } else {
-      return err(
-        new UserError(
-          SolutionSource,
-          SolutionError.SubscriptionNotFound,
-          "Failed to select subscription"
-        )
-      );
-    }
-  }
-  // make sure the user is logged in
-  await azureAccountProvider.getAccountCredentialAsync(true);
-  // verify valid subscription (permission)
-  const subscriptions = await azureAccountProvider.listSubscriptions();
-  const targetSubInfo = subscriptions.find(
-    (item) => item.subscriptionId === subscriptionIdInConfig
-  );
-  if (!targetSubInfo) {
-    return err(
-      new UserError(
-        SolutionSource,
-        SolutionError.SubscriptionNotFound,
-        `The subscription '${subscriptionIdInConfig}'(${
-          envInfo.state.solution.subscriptionName
-        }) for '${
-          envInfo.envName
-        }' environment is not found in the current account, please use the right Azure account or check the '${EnvConfigFileNameTemplate.replace(
-          EnvNamePlaceholder,
-          envInfo.envName
-        )}' file.`
-      )
-    );
-  }
-  envInfo.state.solution.subscriptionId = targetSubInfo.subscriptionId;
-  envInfo.state.solution.subscriptionName = targetSubInfo.subscriptionName;
-  envInfo.state.solution.tenantId = targetSubInfo.tenantId;
-  ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
-  return ok({ hasSwitchedSubscription: false });
-}
-
 function updateEnvInfoSubscription(envInfo: v3.EnvInfoV3, subscriptionInfo: SubscriptionInfo) {
   envInfo.state.solution.subscriptionId = subscriptionInfo.subscriptionId;
   envInfo.state.solution.subscriptionName = subscriptionInfo.subscriptionName;
@@ -570,26 +510,26 @@ export async function fillInAzureConfigs(
   tokenProvider: TokenProvider
 ): Promise<Result<FillInAzureConfigsResult, FxError>> {
   //1. check subscriptionId
-  const isSwitchAccountEnabled = doesAllowSwitchAccount();
-  let subscriptionResult;
+  ctx.telemetryReporter?.sendTelemetryEvent(
+    TelemetryEvent.CheckSubscriptionStart,
+    inputs.env ? { [TelemetryProperty.Env]: getHashedEnv(inputs.env) } : {}
+  );
 
-  if (!isSwitchAccountEnabled) {
-    subscriptionResult = await checkAzureSubscription(
-      ctx,
-      envInfo,
-      tokenProvider.azureAccountProvider
-    );
-  } else {
-    subscriptionResult = await checkProvisionSubscriptionWhenSwitchAccountEnabled(
-      ctx,
-      envInfo,
-      tokenProvider.azureAccountProvider
-    );
-  }
+  const subscriptionResult = await checkProvisionSubscriptionWhenSwitchAccountEnabled(
+    ctx,
+    envInfo,
+    tokenProvider.azureAccountProvider
+  );
 
   if (subscriptionResult.isErr()) {
     return err(subscriptionResult.error);
   }
+
+  ctx.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckSubscription, {
+    [TelemetryProperty.Env]: !inputs.env ? "" : getHashedEnv(inputs.env),
+    [TelemetryProperty.HasSwitchedSubscription]:
+      subscriptionResult.value.hasSwitchedSubscription.toString(),
+  });
 
   // Note setSubscription here will change the token returned by getAccountCredentialAsync according to the subscription selected.
   // So getting azureToken needs to precede setSubscription.

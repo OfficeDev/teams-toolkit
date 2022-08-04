@@ -15,6 +15,7 @@ import {
 import "reflect-metadata";
 import { Container, Service } from "typedi";
 import { convertToAlphanumericOnly } from "../../common/utils";
+import { AzureSolutionQuestionNames, TabOptionItem } from "../../plugins";
 import "../connection/azureWebAppConfig";
 import { ComponentNames } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
@@ -76,7 +77,10 @@ export class SSO {
     }
 
     // generate auth files
-    if (inputs.stage === Stage.addFeature) {
+    if (
+      inputs.stage === Stage.addFeature &&
+      inputs[AzureSolutionQuestionNames.Features] !== TabOptionItem.id
+    ) {
       const res = await aadApp.generateAuthFiles(context, inputs, updates.tab!, updates.bot!);
       if (res.isErr()) return err(res.error);
       effects.push("generate auth files");

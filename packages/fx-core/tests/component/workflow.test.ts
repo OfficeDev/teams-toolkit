@@ -250,8 +250,6 @@ describe("Workflow test for v3", () => {
   });
 
   it("fx.provision after switching subscription", async () => {
-    const newParam = { SWITCH_ACCOUNT: "true" };
-    mockedEnvRestore = mockedEnv(newParam);
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
     sandbox
@@ -320,7 +318,6 @@ describe("Workflow test for v3", () => {
       console.log(provisionRes.error);
     }
     assert.isTrue(provisionRes.isOk());
-    mockedEnvRestore();
   });
 
   it("fx.provision local debug after switching m365 tenant", async () => {

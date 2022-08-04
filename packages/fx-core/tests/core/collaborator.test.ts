@@ -59,6 +59,7 @@ describe("Collaborator APIs for V3", () => {
     azureAccountProvider: new MockedAzureAccountProvider(),
     m365TokenProvider: new MockedM365Provider(),
   };
+  ctx.tokenProvider = tokenProvider;
   beforeEach(() => {});
   afterEach(() => {
     sandbox.restore();
@@ -158,7 +159,7 @@ describe("Collaborator APIs for V3", () => {
         envName: "dev",
         state: {
           solution: { provisionSucceeded: true },
-          "fx-resource-appstudio": { tenantId: "mock_project_tenant_id" },
+          "app-manifest": { tenantId: "mock_project_tenant_id" },
         },
         config: {},
       };
@@ -191,7 +192,7 @@ describe("Collaborator APIs for V3", () => {
         envName: "dev",
         state: {
           solution: { provisionSucceeded: true },
-          "fx-resource-appstudio": { tenantId: "mock_project_tenant_id" },
+          "app-manifest": { tenantId: "mock_project_tenant_id" },
         },
         config: {},
       };
@@ -201,17 +202,27 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("happy path", async () => {
-      ctx.projectSetting.solutionSettings!.activeResourcePlugins = [
-        "fx-resource-frontend-hosting",
-        "fx-resource-identity",
-        "fx-resource-aad-app-for-teams",
+      ctx.projectSetting.components = [
+        {
+          name: "teams-app",
+          hosting: "azure-storage",
+          sso: true,
+        },
+        {
+          name: "aad-app",
+          provision: true,
+        },
+        {
+          name: "identity",
+          provision: true,
+        },
       ];
 
       const envInfo: v3.EnvInfoV3 = {
         envName: "dev",
         state: {
           solution: { provisionSucceeded: true },
-          "fx-resource-appstudio": { tenantId: "mock_project_tenant_id" },
+          "app-manifest": { tenantId: "mock_project_tenant_id" },
         },
         config: {},
       };
@@ -251,16 +262,23 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("happy path without aad", async () => {
-      ctx.projectSetting.solutionSettings!.activeResourcePlugins = [
-        "fx-resource-frontend-hosting",
-        "fx-resource-identity",
+      ctx.projectSetting.components = [
+        {
+          name: "teams-app",
+          hosting: "azure-storage",
+          sso: true,
+        },
+        {
+          name: "identity",
+          provision: true,
+        },
       ];
 
       const envInfo: v3.EnvInfoV3 = {
         envName: "dev",
         state: {
           solution: { provisionSucceeded: true },
-          "fx-resource-appstudio": { tenantId: "mock_project_tenant_id" },
+          "app-manifest": { tenantId: "mock_project_tenant_id" },
         },
         config: {},
       };
@@ -333,7 +351,7 @@ describe("Collaborator APIs for V3", () => {
         envName: "dev",
         state: {
           solution: { provisionSucceeded: true },
-          "fx-resource-appstudio": { tenantId: "mock_project_tenant_id" },
+          "app-manifest": { tenantId: "mock_project_tenant_id" },
         },
         config: {},
       };
@@ -366,7 +384,7 @@ describe("Collaborator APIs for V3", () => {
         envName: "dev",
         state: {
           solution: { provisionSucceeded: true },
-          "fx-resource-appstudio": { tenantId: "mock_project_tenant_id" },
+          "app-manifest": { tenantId: "mock_project_tenant_id" },
         },
         config: {},
       };
@@ -374,17 +392,27 @@ describe("Collaborator APIs for V3", () => {
       assert.isTrue(result.isErr() && result.error.name === SolutionError.FailedToCheckPermission);
     });
     it("happy path", async () => {
-      ctx.projectSetting.solutionSettings!.activeResourcePlugins = [
-        "fx-resource-frontend-hosting",
-        "fx-resource-identity",
-        "fx-resource-aad-app-for-teams",
+      ctx.projectSetting.components = [
+        {
+          name: "teams-app",
+          hosting: "azure-storage",
+          sso: true,
+        },
+        {
+          name: "aad-app",
+          provision: true,
+        },
+        {
+          name: "identity",
+          provision: true,
+        },
       ];
 
       const envInfo: v3.EnvInfoV3 = {
         envName: "dev",
         state: {
           solution: { provisionSucceeded: true },
-          "fx-resource-appstudio": { tenantId: "mock_project_tenant_id" },
+          "app-manifest": { tenantId: "mock_project_tenant_id" },
         },
         config: {},
       };
@@ -466,7 +494,7 @@ describe("Collaborator APIs for V3", () => {
         envName: "dev",
         state: {
           solution: { provisionSucceeded: true },
-          "fx-resource-appstudio": { tenantId: "mock_project_tenant_id" },
+          "app-manifest": { tenantId: "mock_project_tenant_id" },
         },
         config: {},
       };
@@ -491,7 +519,7 @@ describe("Collaborator APIs for V3", () => {
         envName: "dev",
         state: {
           solution: { provisionSucceeded: true },
-          "fx-resource-appstudio": { tenantId: "mock_project_tenant_id" },
+          "app-manifest": { tenantId: "mock_project_tenant_id" },
         },
         config: {},
       };
@@ -516,7 +544,7 @@ describe("Collaborator APIs for V3", () => {
         envName: "dev",
         state: {
           solution: { provisionSucceeded: true },
-          "fx-resource-appstudio": { tenantId: "mock_project_tenant_id" },
+          "app-manifest": { tenantId: "mock_project_tenant_id" },
         },
         config: {},
       };
@@ -532,7 +560,7 @@ describe("Collaborator APIs for V3", () => {
         envName: "dev",
         state: {
           solution: { provisionSucceeded: true },
-          "fx-resource-appstudio": { tenantId: "mock_project_tenant_id" },
+          "app-manifest": { tenantId: "mock_project_tenant_id" },
         },
         config: {},
       };
@@ -593,17 +621,27 @@ describe("Collaborator APIs for V3", () => {
       assert.isTrue(result.isErr() && result.error.name === SolutionError.FailedToGrantPermission);
     });
     it("happy path", async () => {
-      ctx.projectSetting.solutionSettings!.activeResourcePlugins = [
-        "fx-resource-frontend-hosting",
-        "fx-resource-identity",
-        "fx-resource-aad-app-for-teams",
+      ctx.projectSetting.components = [
+        {
+          name: "teams-app",
+          hosting: "azure-storage",
+          sso: true,
+        },
+        {
+          name: "aad-app",
+          provision: true,
+        },
+        {
+          name: "identity",
+          provision: true,
+        },
       ];
 
       const envInfo: v3.EnvInfoV3 = {
         envName: "dev",
         state: {
           solution: { provisionSucceeded: true },
-          "fx-resource-appstudio": { tenantId: "mock_project_tenant_id" },
+          "app-manifest": { tenantId: "mock_project_tenant_id" },
         },
         config: {},
       };
@@ -655,15 +693,22 @@ describe("Collaborator APIs for V3", () => {
     });
 
     it("happy path without aad", async () => {
-      ctx.projectSetting.solutionSettings!.activeResourcePlugins = [
-        "fx-resource-frontend-hosting",
-        "fx-resource-identity",
+      ctx.projectSetting.components = [
+        {
+          name: "teams-app",
+          hosting: "azure-storage",
+          sso: true,
+        },
+        {
+          name: "identity",
+          provision: true,
+        },
       ];
       const envInfo: v3.EnvInfoV3 = {
         envName: "dev",
         state: {
           solution: { provisionSucceeded: true },
-          "fx-resource-appstudio": { tenantId: "mock_project_tenant_id" },
+          "app-manifest": { tenantId: "mock_project_tenant_id" },
         },
         config: {},
       };

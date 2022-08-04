@@ -90,7 +90,7 @@ export async function listCollaborator(
   const collaborators: Collaborator[] = [];
   const teamsAppId: string = teamsAppOwners[0]?.resourceId ?? "";
   const aadAppId: string = aadOwners[0]?.resourceId ?? "";
-  const aadAppTenantId = envInfo.state[BuiltInFeaturePluginNames.appStudio]?.tenantId;
+  const aadAppTenantId = envInfo.state[ComponentNames.AppManifest]?.tenantId;
 
   for (const teamsAppOwner of teamsAppOwners) {
     const aadOwner = aadOwners.find((owner) => owner.userObjectId === teamsAppOwner.userObjectId);
@@ -211,7 +211,7 @@ function getCurrentCollaborationState(
     };
   }
 
-  const aadAppTenantId = envInfo.state[BuiltInFeaturePluginNames.appStudio]?.tenantId;
+  const aadAppTenantId = envInfo.state[ComponentNames.AppManifest]?.tenantId;
   if (!aadAppTenantId || user.tenantId != (aadAppTenantId as string)) {
     const warningMsg =
       "Tenant id of your account and the provisioned Azure AD app does not match. Please check whether you logined with wrong account.";

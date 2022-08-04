@@ -19,6 +19,7 @@ import * as path from "path";
 import { Service } from "typedi";
 import { Bicep, ConstantString } from "../../../../common/constants";
 import { AadOwner, ResourcePermission } from "../../../../common/permissionInterface";
+import { ComponentNames } from "../../../../component/constants";
 import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
 import { getTemplatesFolder } from "../../../../folder";
 import { ensureSolutionSettings } from "../../../solution/fx-solution/utils/solutionSettingsHelper";
@@ -134,8 +135,8 @@ export class AadAppForTeamsPluginV3 implements v3.PluginV3 {
     });
 
     //init aad part in local settings or env state
-    if (!envInfo.state[BuiltInFeaturePluginNames.aad].secretFields) {
-      envInfo.state[BuiltInFeaturePluginNames.aad].secretFields = ["clientSecret"];
+    if (!envInfo.state[ComponentNames.AadApp].secretFields) {
+      envInfo.state[ComponentNames.AadApp].secretFields = ["clientSecret"];
     }
     // Move objectId etc. from input to output.
     const skip = Utils.skipCreateAadForProvision(envInfo);
@@ -267,8 +268,7 @@ export class AadAppForTeamsPluginV3 implements v3.PluginV3 {
     config.applicationIdUri = applicationIdUri;
 
     ctx.logProvider?.info(Messages.getLog(Messages.SetAppIdUriSuccess));
-    (envInfo.state[BuiltInFeaturePluginNames.aad] as v3.AADApp).applicationIdUris =
-      config.applicationIdUri;
+    (envInfo.state[ComponentNames.AadApp] as v3.AADApp).applicationIdUris = config.applicationIdUri;
     return ok(Void);
   }
 
@@ -284,7 +284,7 @@ export class AadAppForTeamsPluginV3 implements v3.PluginV3 {
   ): Promise<Result<AadOwner[], FxError>> {
     ctx.logProvider.info(Messages.StartListCollaborator.log);
     await TokenProvider.init({ m365: tokenProvider.m365TokenProvider }, TokenAudience.Graph);
-    const aadState = envInfo.state[this.name] as v3.AADApp;
+    const aadState = envInfo.state[ComponentNames.AadApp] as v3.AADApp;
     const objectId = aadState.objectId;
     if (!objectId) {
       const msgs = ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName);
@@ -312,7 +312,7 @@ export class AadAppForTeamsPluginV3 implements v3.PluginV3 {
   ): Promise<Result<ResourcePermission[], FxError>> {
     ctx.logProvider.info(Messages.StartCheckPermission.log);
     await TokenProvider.init({ m365: tokenProvider.m365TokenProvider }, TokenAudience.Graph);
-    const aadState = envInfo.state[this.name] as v3.AADApp;
+    const aadState = envInfo.state[ComponentNames.AadApp] as v3.AADApp;
     const objectId = aadState.objectId;
     if (!objectId) {
       const params = ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName);
@@ -348,7 +348,7 @@ export class AadAppForTeamsPluginV3 implements v3.PluginV3 {
   ): Promise<Result<ResourcePermission[], FxError>> {
     ctx.logProvider.info(Messages.StartGrantPermission.log);
     await TokenProvider.init({ m365: tokenProvider.m365TokenProvider }, TokenAudience.Graph);
-    const aadState = envInfo.state[this.name] as v3.AADApp;
+    const aadState = envInfo.state[ComponentNames.AadApp] as v3.AADApp;
     const objectId = aadState.objectId;
     if (!objectId) {
       const params = ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName);

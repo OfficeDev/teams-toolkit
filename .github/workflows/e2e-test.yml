@@ -249,6 +249,32 @@ jobs:
           version=$(node -p -e "require('./packages/cli/package.json').version")
           npx ts-node .github/scripts/testPlan.ts sync ./packages/cli/tests/e2e/mochawesome-report/mochawesome.json cli $version
 
+  tear-down:
+    if: ${{ always() && github.event_name == 'schedule' }}
+    needs: execute-case
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: 14
+
+      - name: Setup project
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 5
+          command: |
+            npm run setup
+
+      - name: E2E Test clean
+        working-directory: packages/cli
+        run: |
+          npm run test:e2e:clean
+
   report:
     if: ${{ always() && github.event_name == 'schedule' }}
     needs: execute-case
@@ -328,9 +354,19 @@ jobs:
             fi
 
             url=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .html_url'`
-            url="<a href=\\\"$url\\\">For Detail</a>"
+            url="<a href=\\\"$url\\\">$elegant_path</a>"
 
-            row="<tr> <td style=\\\"text-align: left;\\\">$elegant_path</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> <td style=\\\"text-align: center;\\\">$duration</td> <td style=\\\"text-align: center;\\\">$slow_count</td> <td style=\\\"text-align: center;\\\">$url</td> </tr>"
+            target_type="TS/JS"
+            if [[ $case == *".dotnet."* ]]; then
+              target_type=".NET"
+            fi
+
+            core_version="V1/V2"
+            if [[ $case == *".v3."* ]]; then
+              core_version="V3"
+            fi
+
+            row="<tr> <td style=\\\"text-align: left;\\\">$url</td> <td style=\\\"text-align: center;\\\">$target_type</td> <td style=\\\"text-align: center;\\\">$core_version</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> <td style=\\\"text-align: center;\\\">$duration</td> <td style=\\\"text-align: center;\\\">$slow_count</td> <td style=\\\"text-align: center;\\\">$url</td> </tr>"
 
             if [ "$status" == "success" ]; then
               lists="$lists $row"
@@ -340,7 +376,7 @@ jobs:
 
           done <<< $cases
 
-          body="<table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>CASE</th> <th>STATUS</th> <th>AUTHOR</th> <th>DURATION</th> <th>SLOW METHOD( > 20ms )</th> <th>URL</th> </tr> $lists </table> <br /> The detail can be found here: <a> https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }} </a>"
+          body="<table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>CASE</th> <th>TARGET TYPE</th> <th>CORE VERSION</th> <th>STATUS</th> <th>AUTHOR</th> <th>DURATION</th> <th>SLOW METHOD( > 20ms )</th> </tr> $lists </table> <br /> The detail can be found here: <a> https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }} </a>"
 
           total=$((passed+failed))
 

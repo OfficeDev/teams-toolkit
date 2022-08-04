@@ -172,7 +172,7 @@ describe("Workflow test for v3", () => {
       projectPath: projectPath,
       platform: Platform.VSCode,
       [questionNames.Provider]: githubOption.id,
-      [questionNames.Template]: ciOption.id,
+      [questionNames.Template]: [ciOption.id],
       [questionNames.Environment]: "dev",
     };
     const component = Container.get("cicd") as any;

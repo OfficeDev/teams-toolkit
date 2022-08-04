@@ -8,7 +8,7 @@ import {
   EnvInfo,
   ConfigMap,
 } from "@microsoft/teamsfx-api";
-import { convertEnvStateV3ToV2, convertProjectSettingsV3ToV2 } from "../../../migrate";
+import { convertEnvStateV3ToV2, convertProjectSettingsV3ToV2 } from "../../migrate";
 
 export function convertContext(context: ContextV3, inputs: InputsWithProjectPath): PluginContext {
   const projectSetting = convertProjectSettingsV3ToV2(context.projectSetting);

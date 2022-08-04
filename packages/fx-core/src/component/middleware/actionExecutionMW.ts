@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import {
   ActionContext,

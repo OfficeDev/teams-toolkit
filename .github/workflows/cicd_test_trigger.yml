@@ -22,7 +22,8 @@ jobs:
 
   DownloadAndOutput:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    #if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: false
     outputs:
       pre_id: ${{ steps.preid.outputs.result }}
       server_version: ${{ steps.version.outputs.result }}
@@ -84,7 +85,8 @@ jobs:
     needs: DownloadAndOutput
     steps:
       - name: Call Azure Pipeline
-        if: ${{needs.downloadAndOutput.outputs.server_version}}
+        #if: ${{needs.downloadAndOutput.outputs.server_version}}
+        if: false
         uses: Azure/pipelines@v1.2
         with:
           azure-devops-project-url: https://devdiv.visualstudio.com/InternalTools

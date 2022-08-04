@@ -1063,8 +1063,10 @@ export class FxCore implements v3.ICore {
       return err(new ObjectIsUndefinedError("projectPath"));
     }
     if (ctx && ctx.contextV2 && ctx.envInfoV3) {
+      const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+      context.envInfo = ctx.envInfoV3;
       const res = await grantPermission(
-        ctx.contextV2,
+        context,
         inputs as v2.InputsWithProjectPath,
         ctx.envInfoV3,
         TOOLS.tokenProvider
@@ -1126,8 +1128,10 @@ export class FxCore implements v3.ICore {
       return err(new ObjectIsUndefinedError("projectPath"));
     }
     if (ctx && ctx.contextV2 && ctx.envInfoV3) {
+      const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+      context.envInfo = ctx.envInfoV3;
       const res = await checkPermission(
-        ctx.contextV2,
+        context,
         inputs as v2.InputsWithProjectPath,
         ctx.envInfoV3,
         TOOLS.tokenProvider
@@ -1189,8 +1193,10 @@ export class FxCore implements v3.ICore {
       return err(new ObjectIsUndefinedError("projectPath"));
     }
     if (ctx && ctx.contextV2 && ctx.envInfoV3) {
+      const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+      context.envInfo = ctx.envInfoV3;
       const res = await listCollaborator(
-        ctx.contextV2,
+        context,
         inputs as v2.InputsWithProjectPath,
         ctx.envInfoV3,
         TOOLS.tokenProvider

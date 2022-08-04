@@ -4,7 +4,13 @@
 import "mocha";
 import * as chai from "chai";
 import * as dotenv from "dotenv";
-import { PluginContext, ProjectSettings, TokenProvider, v3 } from "@microsoft/teamsfx-api";
+import {
+  ContextV3,
+  PluginContext,
+  ProjectSettings,
+  TokenProvider,
+  v3,
+} from "@microsoft/teamsfx-api";
 import { AadAppForTeamsPlugin } from "../../../../../src/plugins/resource/aad/index";
 import { mockProvisionResult, TestHelper, mockSkipFlag, mockTokenProviderM365 } from "../helper";
 import sinon from "sinon";
@@ -29,7 +35,7 @@ import {
 import * as tool from "../../../../../src/common/tools";
 import fs from "fs-extra";
 import { AadAppManifestManager } from "../../../../../src/plugins/resource/aad/aadAppManifestManager";
-import { MockM365TokenProvider } from "../../../../core/utils";
+import { ComponentNames } from "../../../../../src/component/constants";
 
 dotenv.config();
 const testWithAzure: boolean = process.env.UT_TEST_ON_AZURE ? true : false;
@@ -53,7 +59,7 @@ const projectSettings: ProjectSettings = {
     activeResourcePlugins: [],
   },
 };
-const ctx = new MockedV2Context(projectSettings);
+const ctx = new MockedV2Context(projectSettings) as ContextV3;
 const tokenProvider: TokenProvider = {
   azureAccountProvider: new MockedAzureAccountProvider(),
   m365TokenProvider: new MockedM365Provider(),
@@ -232,17 +238,27 @@ describe("AadAppForTeamsPlugin: CI", () => {
   });
 
   it("check permission V3", async function () {
-    ctx.projectSetting.solutionSettings!.activeResourcePlugins = [
-      "fx-resource-frontend-hosting",
-      "fx-resource-identity",
-      "fx-resource-aad-app-for-teams",
+    ctx.projectSetting.components = [
+      {
+        name: "teams-app",
+        hosting: "azure-storage",
+        sso: true,
+      },
+      {
+        name: "aad-app",
+        provision: true,
+      },
+      {
+        name: "identity",
+        provision: true,
+      },
     ];
     const envInfo: v3.EnvInfoV3 = {
       envName: "dev",
       state: {
         solution: { provisionSucceeded: true },
-        [BuiltInFeaturePluginNames.appStudio]: { tenantId: "mock_project_tenant_id" },
-        [BuiltInFeaturePluginNames.aad]: { objectId: faker.datatype.uuid() },
+        [ComponentNames.AppManifest]: { tenantId: "mock_project_tenant_id" },
+        [ComponentNames.AadApp]: { objectId: faker.datatype.uuid() },
       },
       config: {},
     };
@@ -262,17 +278,27 @@ describe("AadAppForTeamsPlugin: CI", () => {
   });
 
   it("grant permission V3", async function () {
-    ctx.projectSetting.solutionSettings!.activeResourcePlugins = [
-      "fx-resource-frontend-hosting",
-      "fx-resource-identity",
-      "fx-resource-aad-app-for-teams",
+    ctx.projectSetting.components = [
+      {
+        name: "teams-app",
+        hosting: "azure-storage",
+        sso: true,
+      },
+      {
+        name: "aad-app",
+        provision: true,
+      },
+      {
+        name: "identity",
+        provision: true,
+      },
     ];
     const envInfo: v3.EnvInfoV3 = {
       envName: "dev",
       state: {
         solution: { provisionSucceeded: true },
-        [BuiltInFeaturePluginNames.appStudio]: { tenantId: "mock_project_tenant_id" },
-        [BuiltInFeaturePluginNames.aad]: { objectId: faker.datatype.uuid() },
+        [ComponentNames.AppManifest]: { tenantId: "mock_project_tenant_id" },
+        [ComponentNames.AadApp]: { objectId: faker.datatype.uuid() },
       },
       config: {},
     };
@@ -296,17 +322,27 @@ describe("AadAppForTeamsPlugin: CI", () => {
   });
 
   it("list collaborator V3", async function () {
-    ctx.projectSetting.solutionSettings!.activeResourcePlugins = [
-      "fx-resource-frontend-hosting",
-      "fx-resource-identity",
-      "fx-resource-aad-app-for-teams",
+    ctx.projectSetting.components = [
+      {
+        name: "teams-app",
+        hosting: "azure-storage",
+        sso: true,
+      },
+      {
+        name: "aad-app",
+        provision: true,
+      },
+      {
+        name: "identity",
+        provision: true,
+      },
     ];
     const envInfo: v3.EnvInfoV3 = {
       envName: "dev",
       state: {
         solution: { provisionSucceeded: true },
-        [BuiltInFeaturePluginNames.appStudio]: { tenantId: "mock_project_tenant_id" },
-        [BuiltInFeaturePluginNames.aad]: { objectId: faker.datatype.uuid() },
+        [ComponentNames.AppManifest]: { tenantId: "mock_project_tenant_id" },
+        [ComponentNames.AadApp]: { objectId: faker.datatype.uuid() },
       },
       config: {},
     };

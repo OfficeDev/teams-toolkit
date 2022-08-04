@@ -16,6 +16,7 @@ import {
   Inputs,
   DynamicPlatforms,
   QTreeNode,
+  ContextV3,
 } from "@microsoft/teamsfx-api";
 import { Container } from "typedi";
 import {
@@ -39,17 +40,17 @@ import {
 } from "../plugins/solution/fx-solution/constants";
 import { CollaborationUtil } from "../plugins/solution/fx-solution/v2/collaborationUtil";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
-import * as util from "util";
 import { AppUser } from "../plugins/resource/appstudio/interfaces/appUser";
 import { CoreSource } from "./error";
 import { TOOLS } from "./globalVars";
 import { getUserEmailQuestion } from "../plugins/solution/fx-solution/question";
-import { hasAAD, hasAzureResource, hasSPFx } from "../common/projectSettingsHelper";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { VSCodeExtensionCommand } from "../common/constants";
+import { ComponentNames } from "../component/constants";
+import { hasAAD, hasAzureResourceV3, hasSPFxTab } from "../common/projectSettingsHelperV3";
 
 export async function listCollaborator(
-  ctx: v2.Context,
+  ctx: ContextV3,
   inputs: v2.InputsWithProjectPath,
   envInfo: v3.EnvInfoV3,
   tokenProvider: TokenProvider,
@@ -89,7 +90,7 @@ export async function listCollaborator(
   const collaborators: Collaborator[] = [];
   const teamsAppId: string = teamsAppOwners[0]?.resourceId ?? "";
   const aadAppId: string = aadOwners[0]?.resourceId ?? "";
-  const aadAppTenantId = envInfo.state[BuiltInFeaturePluginNames.appStudio]?.tenantId;
+  const aadAppTenantId = envInfo.state[ComponentNames.AppManifest]?.tenantId;
 
   for (const teamsAppOwner of teamsAppOwners) {
     const aadOwner = aadOwners.find((owner) => owner.userObjectId === teamsAppOwner.userObjectId);
@@ -210,7 +211,7 @@ function getCurrentCollaborationState(
     };
   }
 
-  const aadAppTenantId = envInfo.state[BuiltInFeaturePluginNames.appStudio]?.tenantId;
+  const aadAppTenantId = envInfo.state[ComponentNames.AppManifest]?.tenantId;
   if (!aadAppTenantId || user.tenantId != (aadAppTenantId as string)) {
     const warningMsg =
       "Tenant id of your account and the provisioned Azure AD app does not match. Please check whether you logined with wrong account.";
@@ -226,7 +227,7 @@ function getCurrentCollaborationState(
 }
 
 export async function checkPermission(
-  ctx: v2.Context,
+  ctx: ContextV3,
   inputs: v2.InputsWithProjectPath,
   envInfo: v3.EnvInfoV3,
   tokenProvider: TokenProvider,
@@ -336,7 +337,7 @@ export async function checkPermission(
 }
 
 export async function grantPermission(
-  ctx: v2.Context,
+  ctx: ContextV3,
   inputs: v2.InputsWithProjectPath,
   envInfo: v3.EnvInfoV3,
   tokenProvider: TokenProvider,
@@ -392,7 +393,7 @@ export async function grantPermission(
     await progressBar?.next(getLocalizedString("core.collaboration.GrantPermissionForUser", email));
 
     if (inputs.platform === Platform.CLI) {
-      const aadAppTenantId = envInfo.state[BuiltInFeaturePluginNames.appStudio]?.tenantId;
+      const aadAppTenantId = envInfo.state[ComponentNames.AppManifest]?.tenantId;
       const message = [
         {
           content: getLocalizedString("core.collaboration.AccountToGrantPermission"),
@@ -403,7 +404,7 @@ export async function grantPermission(
           content: getLocalizedString("core.collaboration.StartingGrantPermission"),
           color: Colors.BRIGHT_WHITE,
         },
-        { content: `${inputs.envName}\n`, color: Colors.BRIGHT_MAGENTA },
+        { content: `${envInfo.envName}\n`, color: Colors.BRIGHT_MAGENTA },
         { content: getLocalizedString("core.collaboration.TenantId"), color: Colors.BRIGHT_WHITE },
         { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
       ];
@@ -448,7 +449,7 @@ export async function grantPermission(
         ];
         ctx.userInteraction.showMessage("info", message, false);
       }
-      if (hasSPFx(ctx.projectSetting)) {
+      if (hasSPFxTab(ctx.projectSetting)) {
         ctx.userInteraction.showMessage(
           "info",
           getLocalizedString("core.collaboration.SharePointTip") +
@@ -456,7 +457,7 @@ export async function grantPermission(
           false
         );
       }
-      if (hasAzureResource(ctx.projectSetting)) {
+      if (hasAzureResourceV3(ctx.projectSetting)) {
         ctx.userInteraction.showMessage(
           "info",
           getLocalizedString("core.collaboration.AzureTip") + AzureRoleAssignmentsHelpLink,

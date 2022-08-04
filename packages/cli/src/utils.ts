@@ -604,8 +604,8 @@ export async function promptSPFxUpgrade(rootFolder: string) {
         CLIUIInstance.showMessage(
           "warn",
           cmp === 1
-            ? `You are using a newer version of SPFx in your project while the current version of TeamsFx CLI supports SPFx v${SUPPORTED_SPFX_VERSION}. Please upgrade to the latest version of TeamsFx CLI.`
-            : `You are using a legacy version of SPFx in your project while the current version of TeamsFx CLI supports SPFx v${SUPPORTED_SPFX_VERSION}. Please upgrade your project using 'CLI for Microsoft 365'("https://pnp.github.io/cli-microsoft365/cmd/spfx/project/project-upgrade/") to continue.`,
+            ? `You are using a newer version of SPFx in your project while the current version of TeamsFx CLI supports SPFx v${SUPPORTED_SPFX_VERSION}. Please note that some of the newer SPFx features might not be supported. If you are not using the latest version of TeamsFx CLI, consider to upgrade.`
+            : `You are using a legacy version of SPFx in your project while the current version of TeamsFx CLI supports SPFx v${SUPPORTED_SPFX_VERSION}. If you want to use SPFx v${SUPPORTED_SPFX_VERSION}, follow "CLI for Microsoft 365"(https://pnp.github.io/cli-microsoft365/cmd/spfx/project/project-upgrade/) to upgrade.`,
           false
         );
       }

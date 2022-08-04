@@ -1513,7 +1513,7 @@ export default class Preview extends YargsCommand {
         localEnv &&
         localEnv.state["solution"] &&
         localEnv.state["solution"]["teamsAppTenantId"] &&
-        localEnv.state["solution"]["teamsAppTenantId"] != tenantId
+        localEnv.state["solution"]["teamsAppTenantId"] !== tenantId
       ) {
         cliLogger.necessaryLog(LogLevel.Warning, constants.m365SwitchedMessage);
       }

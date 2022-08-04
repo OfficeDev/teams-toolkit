@@ -12,6 +12,7 @@ import { SelectFolderConfig, UserCancelError } from "@microsoft/teamsfx-api";
 import { TreatmentVariableValue } from "../../src/exp/treatmentVariables";
 import { FxQuickPickItem, VsCodeUI } from "../../src/qm/vsc_ui";
 import { sleep } from "../../src/utils/commonUtils";
+import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 
 describe("UI Unit Tests", async () => {
   before(() => {
@@ -71,6 +72,7 @@ describe("UI Unit Tests", async () => {
       sinon.stub(window, "createQuickPick").callsFake(() => {
         return mockQuickPick;
       });
+      const telemetryStub = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
 
       const result = await ui.selectFolder(config);
 
@@ -78,6 +80,11 @@ describe("UI Unit Tests", async () => {
       if (result.isOk()) {
         expect(result.value.result).to.equal("default folder");
       }
+      expect(
+        telemetryStub.calledOnceWith("select-folder", {
+          option: "default",
+        })
+      ).is.true;
       sinon.restore();
     });
 

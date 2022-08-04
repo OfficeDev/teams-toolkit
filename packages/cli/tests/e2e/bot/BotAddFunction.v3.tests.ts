@@ -53,7 +53,7 @@ describe("Configuration successfully changed when with different plugins V3", fu
 
       // Validate Function App
       const bot = new BotValidator(context, projectPath, env);
-      await bot.validateProvision();
+      await bot.validateProvision(false);
     }
   });
 });

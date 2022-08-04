@@ -64,6 +64,7 @@ import {
 import { readAppManifest, writeAppManifest } from "./utils";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
+import { getProjectTemplatesFolderPath } from "../../../common/utils";
 
 @Service("app-manifest")
 export class AppManifest implements CloudResource {
@@ -81,23 +82,39 @@ export class AppManifest implements CloudResource {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
-    const existingApp = inputs.existingApp as boolean;
-    const manifestString = TEAMS_APP_MANIFEST_TEMPLATE;
-    const manifest = JSON.parse(manifestString);
-    if (existingApp || !hasTab(context.projectSetting)) {
-      manifest.developer = DEFAULT_DEVELOPER;
+    let manifest;
+    const sourceTemplatesFolder = getTemplatesFolder();
+    if (inputs.capabilities === "TabSPFx") {
+      const templateManifestFolder = path.join(
+        sourceTemplatesFolder,
+        "plugins",
+        "resource",
+        "spfx"
+      );
+      const manifestFile = path.resolve(
+        templateManifestFolder,
+        "./solution/manifest_multi_env.json"
+      );
+      const manifestString = (await fs.readFile(manifestFile)).toString();
+      manifest = JSON.parse(manifestString);
+    } else {
+      const existingApp = inputs.existingApp as boolean;
+      const manifestString = TEAMS_APP_MANIFEST_TEMPLATE;
+      manifest = JSON.parse(manifestString);
+      if (existingApp || !hasTab(context.projectSetting)) {
+        manifest.developer = DEFAULT_DEVELOPER;
+      }
     }
-    const templateFolder = path.join(inputs.projectPath, "templates");
-    await fs.ensureDir(templateFolder);
-    const appPackageFolder = path.join(templateFolder, "appPackage");
+    const targetTemplateFolder = await getProjectTemplatesFolderPath(inputs.projectPath);
+    await fs.ensureDir(targetTemplateFolder);
+    const appPackageFolder = path.join(targetTemplateFolder, "appPackage");
     await fs.ensureDir(appPackageFolder);
     const resourcesFolder = path.resolve(appPackageFolder, "resources");
     await fs.ensureDir(resourcesFolder);
     const targetManifestPath = path.join(appPackageFolder, "manifest.template.json");
     await fs.writeFile(targetManifestPath, JSON.stringify(manifest, null, 4));
-    const templatesFolder = getTemplatesFolder();
-    const defaultColorPath = path.join(templatesFolder, COLOR_TEMPLATE);
-    const defaultOutlinePath = path.join(templatesFolder, OUTLINE_TEMPLATE);
+    const defaultColorPath = path.join(sourceTemplatesFolder, COLOR_TEMPLATE);
+    const defaultOutlinePath = path.join(sourceTemplatesFolder, OUTLINE_TEMPLATE);
     await fs.copy(defaultColorPath, path.join(resourcesFolder, DEFAULT_COLOR_PNG_FILENAME));
     await fs.copy(defaultOutlinePath, path.join(resourcesFolder, DEFAULT_OUTLINE_PNG_FILENAME));
     return ok(undefined);

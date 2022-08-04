@@ -46,6 +46,7 @@ import {
 } from "../plugins/resource/bot/question";
 import {
   ApiConnectionOptionItem,
+  AskSubscriptionQuestion,
   AzureResourceApimNewUI,
   AzureResourceFunctionNewUI,
   AzureResourceKeyVaultNewUI,
@@ -79,12 +80,24 @@ import { ApiConnectorImpl } from "../plugins/resource/apiconnector/plugin";
 import { addCicdQuestion } from "./feature/cicd";
 
 export async function getQuestionsForProvisionV3(
+  context: v2.Context,
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (inputs.platform === Platform.CLI_HELP) {
-    return ok(buildQuestionNode());
+    const node = new QTreeNode({ type: "group" });
+    node.addChild(new QTreeNode(AskSubscriptionQuestion));
+    node.addChild(buildQuestionNode());
+    return ok(node);
+  } else {
+    const node = new QTreeNode({ type: "group" });
+    if (hasAzureResourceV3(context.projectSetting as ProjectSettingsV3)) {
+      node.addChild(new QTreeNode(AskSubscriptionQuestion));
+    }
+    if (getComponent(context.projectSetting as ProjectSettingsV3, ComponentNames.AzureSQL)) {
+      node.addChild(buildQuestionNode());
+    }
+    return ok(node);
   }
-  return ok(undefined);
 }
 
 export async function getQuestionsForDeployV3(
@@ -184,6 +197,9 @@ export async function getQuestionsForAddFeatureV3(
     if (triggerNodeRes.value) {
       addFeatureNode.addChild(triggerNodeRes.value);
     }
+    const functionNameNode = new QTreeNode(functionNameQuestion);
+    functionNameNode.condition = { equals: AzureResourceFunctionNewUI.id };
+    addFeatureNode.addChild(functionNameNode);
     return ok(addFeatureNode);
   }
   // check capability options
@@ -237,6 +253,9 @@ export async function getQuestionsForAddFeatureV3(
     options.push(CicdOptionItem);
   }
   const addFeatureNode = new QTreeNode(question);
+  const functionNameNode = new QTreeNode(functionNameQuestion);
+  functionNameNode.condition = { equals: AzureResourceFunctionNewUI.id };
+  addFeatureNode.addChild(functionNameNode);
   const triggerNodeRes = await getNotificationTriggerQuestionNode(inputs);
   if (triggerNodeRes.isErr()) return err(triggerNodeRes.error);
   if (triggerNodeRes.value) {
@@ -278,8 +297,11 @@ export async function getQuestionsForAddResourceV3(
     options.push(AzureResourceSQLNewUI);
     options.push(AzureResourceFunctionNewUI);
     options.push(AzureResourceKeyVaultNewUI);
-    const addFeatureNode = new QTreeNode(question);
-    return ok(addFeatureNode);
+    const addResourceNode = new QTreeNode(question);
+    const functionNameNode = new QTreeNode(functionNameQuestion);
+    functionNameNode.condition = { equals: AzureResourceFunctionNewUI.id };
+    addResourceNode.addChild(functionNameNode);
+    return ok(addResourceNode);
   }
   const projectSettingsV3 = ctx.projectSetting as ProjectSettingsV3;
   if (!hasAPIM(projectSettingsV3)) {
@@ -291,12 +313,10 @@ export async function getQuestionsForAddResourceV3(
   }
   // function can always be added
   options.push(AzureResourceFunctionNewUI);
-  const addFeatureNode = new QTreeNode(question);
-  const triggerNodeRes = await getNotificationTriggerQuestionNode(inputs);
-  if (triggerNodeRes.isErr()) return err(triggerNodeRes.error);
-  if (triggerNodeRes.value) {
-    addFeatureNode.addChild(triggerNodeRes.value);
-  }
+  const addResourceNode = new QTreeNode(question);
+  const functionNameNode = new QTreeNode(functionNameQuestion);
+  functionNameNode.condition = { equals: AzureResourceFunctionNewUI.id };
+  addResourceNode.addChild(functionNameNode);
   if (!ctx.projectSetting.programmingLanguage) {
     // Language
     const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
@@ -311,9 +331,9 @@ export async function getQuestionsForAddResourceV3(
         SingleSignOnOptionItem.id, // adding sso means adding sample codes
       ],
     };
-    addFeatureNode.addChild(programmingLanguage);
+    addResourceNode.addChild(programmingLanguage);
   }
-  return ok(addFeatureNode);
+  return ok(addResourceNode);
 }
 
 export enum FeatureId {

@@ -128,8 +128,9 @@ import {
   sendErrorTelemetryThenReturnError,
 } from "./telemetry";
 import { CoreHookContext } from "./types";
-import { isPreviewFeaturesEnabled } from "../common";
+import { isPreviewFeaturesEnabled } from "../common/featureFlags";
 import { createContextV3 } from "../component/utils";
+import { TeamsfxCore } from "../component/core";
 import "../component/core";
 import {
   FeatureId,
@@ -143,7 +144,6 @@ import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
 import { addCicdQuestion } from "../component/feature/cicd";
 import { ComponentNames } from "../component/constants";
 import { ApiConnectorImpl } from "../plugins/resource/apiconnector/plugin";
-import { TeamsfxCore } from "../component/core";
 import { publishQuestion } from "../component/resource/appManifest/appManifest";
 
 export class FxCore implements v3.ICore {
@@ -685,10 +685,16 @@ export class FxCore implements v3.ICore {
 
   async executeUserTask(func: Func, inputs: Inputs): Promise<Result<unknown, FxError>> {
     if (isV3()) {
-      return this.executeUserTaskV3(func, inputs);
-    } else {
-      return this.executeUserTaskV2(func, inputs);
+      if (
+        func.method === "addCICDWorkflows" ||
+        func.method === "connectExistingApi" ||
+        func.method === "addSso" ||
+        func.method === "addFeature" ||
+        func.method === "addResource"
+      )
+        return this.executeUserTaskV3(func, inputs);
     }
+    return this.executeUserTaskV2(func, inputs);
   }
 
   @hooks([
@@ -842,6 +848,8 @@ export class FxCore implements v3.ICore {
       inputs.stage = Stage.addFeature;
       const fx = Container.get("fx") as TeamsfxCore;
       res = await fx.addFeature(context, inputs as InputsWithProjectPath);
+    } else {
+      return err(new NotImplementedError(func.method));
     }
     if (res) {
       if (res.isErr()) return err(res.error);
@@ -876,7 +884,7 @@ export class FxCore implements v3.ICore {
       } else if (stage === Stage.deploy) {
         return await getQuestionsForDeployV3(context, inputs);
       } else if (stage === Stage.provision) {
-        return await getQuestionsForProvisionV3(inputs);
+        return await getQuestionsForProvisionV3(context, inputs);
       }
       return ok(undefined);
     }

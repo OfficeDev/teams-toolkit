@@ -251,7 +251,7 @@ export class TeamsfxCore {
   @hooks([
     ActionExecutionMW({
       question: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return await getQuestionsForProvisionV3(inputs);
+        return await getQuestionsForProvisionV3(context, inputs);
       },
     }),
   ])
@@ -308,7 +308,7 @@ export class TeamsfxCore {
       if (localEnvSetupResult.isErr()) {
         return err(localEnvSetupResult.error);
       }
-    } else {
+    } else if (hasAzureResourceV3(ctx.projectSetting)) {
       //4.2 deploy arm templates for remote
       ctx.logProvider.info(
         getLocalizedString("core.deployArmTemplates.StartNotice", PluginDisplayName.Solution)

@@ -48,7 +48,9 @@ export abstract class FeatureAddBase extends YargsCommand {
         throw result.error;
       }
       const node = result.value ?? EmptyQTreeNode;
-      const filteredNode = await filterQTreeNode(node, Names.Features, this.featureId);
+      const filteredNode = isV3()
+        ? node
+        : await filterQTreeNode(node, Names.Features, this.featureId);
       const nodes = flattenNodes(filteredNode).concat([RootFolderNode]);
       this.params = toYargsOptionsGroup(nodes);
     }

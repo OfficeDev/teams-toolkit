@@ -485,7 +485,7 @@ export class VsCodeUI implements UserInteraction {
               if (selectedItems && selectedItems.length > 0) {
                 const item = selectedItems[0];
                 ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SelectFolder, {
-                  [TelemetryProperty.Option]: item.id,
+                  [TelemetryProperty.SelectedOption]: item.id,
                 });
                 if (item.id === "default") {
                   resolve(ok({ type: "success", result: config.default }));

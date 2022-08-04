@@ -82,7 +82,7 @@ describe("UI Unit Tests", async () => {
       }
       expect(
         telemetryStub.calledOnceWith("select-folder", {
-          option: "default",
+          "selected-option": "default",
         })
       ).is.true;
       sinon.restore();

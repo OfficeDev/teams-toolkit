@@ -270,7 +270,7 @@ export enum TelemetryProperty {
   // Used with OpenNewProject
   VscWindow = "vscode-window",
   // Used with SelectFolder
-  Option = "option",
+  SelectedOption = "selected-option",
   // Used with Deactivate
   Timestamp = "timestamp",
   ProgrammingLanguage = "programming-language",

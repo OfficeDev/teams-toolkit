@@ -7,8 +7,7 @@ import yargs, { Options } from "yargs";
 import { err, Func, FxError, Inputs, ok, UserError } from "@microsoft/teamsfx-api";
 import { FxCore, ProjectSettingsHelper } from "@microsoft/teamsfx-core";
 
-import Capability, {
-  CapabilityAdd,
+import {
   CapabilityAddTab,
   CapabilityAddBot,
   CapabilityAddMessageExtension,
@@ -23,7 +22,6 @@ import {
   TelemetrySuccess,
 } from "../../../src/telemetry/cliTelemetryEvents";
 import * as constants from "../../../src/constants";
-import * as Utils from "../../../src/utils";
 import LogProvider from "../../../src/commonlib/log";
 import { expect } from "../utils";
 import { NotSupportedProjectType } from "../../../src/error";
@@ -99,28 +97,6 @@ describe("Capability Command Tests", function () {
 
   afterEach(() => {
     sandbox.restore();
-  });
-
-  it("Builder Check", () => {
-    const cmd = new Capability();
-    yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
-    expect(registeredCommands).deep.equals([
-      "capability [action]",
-      "add [capability]",
-      "tab",
-      "bot",
-      "message-extension",
-    ]);
-  });
-
-  it("Capability Command Running Check", async () => {
-    const cmd = new Capability();
-    await cmd.handler({});
-  });
-
-  it("Capability Add Command Running Check", async () => {
-    const cmd = new CapabilityAdd();
-    await cmd.handler({});
   });
 
   it("Capability Add Tab Command Running Check", async () => {

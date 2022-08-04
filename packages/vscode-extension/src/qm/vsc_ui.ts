@@ -57,6 +57,7 @@ import { ExtensionErrors, ExtensionSource } from "../error";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import { ProgressHandler } from "../progressHandler";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
+import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 import { sleep } from "../utils/commonUtils";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 
@@ -448,8 +449,10 @@ export class VsCodeUI implements UserInteraction {
 
   async selectFolder(config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> {
     if (!TreatmentVariableValue.useFolderSelection) {
+      // control group
       return this.selectFileInQuickPick(config, "folder", config.default);
     } else {
+      // treatment group
       const disposables: Disposable[] = [];
       try {
         const quickPick = window.createQuickPick<FxQuickPickItem>();
@@ -481,6 +484,9 @@ export class VsCodeUI implements UserInteraction {
               const selectedItems = quickPick.selectedItems;
               if (selectedItems && selectedItems.length > 0) {
                 const item = selectedItems[0];
+                ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SelectFolder, {
+                  [TelemetryProperty.Option]: item.id,
+                });
                 if (item.id === "default") {
                   resolve(ok({ type: "success", result: config.default }));
                 } else {
@@ -494,6 +500,8 @@ export class VsCodeUI implements UserInteraction {
                   if (uriList && uriList.length > 0) {
                     const result = uriList[0].fsPath;
                     resolve(ok({ type: "success", result: result }));
+                  } else {
+                    resolve(err(UserCancelError));
                   }
                 }
               }

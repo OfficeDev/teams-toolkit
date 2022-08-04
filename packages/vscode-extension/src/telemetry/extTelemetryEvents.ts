@@ -194,6 +194,9 @@ export enum TelemetryEvent {
   // To track the A/B test of opening in new window after creating a new project
   OpenNewProject = "open-new-project",
 
+  // To track the A/B test of choosing folder
+  SelectFolder = "select-folder",
+
   Deactivate = "deactivate",
 }
 
@@ -266,6 +269,8 @@ export enum TelemetryProperty {
   DocumentationName = "documentation-name",
   // Used with OpenNewProject
   VscWindow = "vscode-window",
+  // Used with SelectFolder
+  Option = "option",
   // Used with Deactivate
   Timestamp = "timestamp",
   ProgrammingLanguage = "programming-language",

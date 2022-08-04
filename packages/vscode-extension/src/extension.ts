@@ -832,7 +832,8 @@ async function runBackgroundAsyncTasks(
     .getExpService()
     .getTreatmentVariableAsync(
       TreatmentVariables.VSCodeConfig,
-      TreatmentVariables.UseFolderSelection
+      TreatmentVariables.UseFolderSelection,
+      true
     )) as boolean | undefined;
   TreatmentVariableValue.openFolderInNewWindow = (await exp
     .getExpService()

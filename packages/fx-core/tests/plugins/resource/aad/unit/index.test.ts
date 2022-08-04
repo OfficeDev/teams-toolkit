@@ -35,6 +35,7 @@ import {
 import * as tool from "../../../../../src/common/tools";
 import fs from "fs-extra";
 import { AadAppManifestManager } from "../../../../../src/plugins/resource/aad/aadAppManifestManager";
+import { ComponentNames } from "../../../../../src/component/constants";
 
 dotenv.config();
 const testWithAzure: boolean = process.env.UT_TEST_ON_AZURE ? true : false;
@@ -256,8 +257,8 @@ describe("AadAppForTeamsPlugin: CI", () => {
       envName: "dev",
       state: {
         solution: { provisionSucceeded: true },
-        [BuiltInFeaturePluginNames.appStudio]: { tenantId: "mock_project_tenant_id" },
-        [BuiltInFeaturePluginNames.aad]: { objectId: faker.datatype.uuid() },
+        [ComponentNames.AppManifest]: { tenantId: "mock_project_tenant_id" },
+        [ComponentNames.AadApp]: { objectId: faker.datatype.uuid() },
       },
       config: {},
     };
@@ -296,8 +297,8 @@ describe("AadAppForTeamsPlugin: CI", () => {
       envName: "dev",
       state: {
         solution: { provisionSucceeded: true },
-        [BuiltInFeaturePluginNames.appStudio]: { tenantId: "mock_project_tenant_id" },
-        [BuiltInFeaturePluginNames.aad]: { objectId: faker.datatype.uuid() },
+        [ComponentNames.AppManifest]: { tenantId: "mock_project_tenant_id" },
+        [ComponentNames.AadApp]: { objectId: faker.datatype.uuid() },
       },
       config: {},
     };
@@ -340,8 +341,8 @@ describe("AadAppForTeamsPlugin: CI", () => {
       envName: "dev",
       state: {
         solution: { provisionSucceeded: true },
-        [BuiltInFeaturePluginNames.appStudio]: { tenantId: "mock_project_tenant_id" },
-        [BuiltInFeaturePluginNames.aad]: { objectId: faker.datatype.uuid() },
+        [ComponentNames.AppManifest]: { tenantId: "mock_project_tenant_id" },
+        [ComponentNames.AadApp]: { objectId: faker.datatype.uuid() },
       },
       config: {},
     };

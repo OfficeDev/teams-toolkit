@@ -673,7 +673,7 @@
   "error.aad.manifest.AADManifestIssues": "AAD manifest has following issues that may potentially break the Teams App:\n",
   "error.aad.manifest.UnknownResourceAppId": "Unknown resourceAppId %s",
   "error.aad.manifest.UnknownResourceAccessType": "Unknown resourceAccess: %s",
-  "error.aad.manifest.UnknownResourceAccessId": "Unknown resourceAccess id: %s",
+  "error.aad.manifest.UnknownResourceAccessId": "Unknown resourceAccess id: %s, if your're using human-readable string as resourceAccess id, please try to use uuid instead.",
   "plugins.aad.NoSelection": "No Azure AD app found. Will not update permissions. You need to run provision or local debug first.",
   "plugins.aad.UserCancelled": "Selection is cancelled by user.",
   "plugins.aad.UpdatePermissionSuccessMessage": "Successfully updated permission for Azure AD app. You can go to Azure Portal to check the permission or grant admin consent.",

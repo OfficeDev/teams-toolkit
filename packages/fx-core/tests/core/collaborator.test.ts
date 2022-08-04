@@ -10,6 +10,8 @@ import {
   UserError,
   err,
   ok,
+  ProjectSettingsV3,
+  ContextV3,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
@@ -35,7 +37,7 @@ import { Container } from "typedi";
 import { AadAppForTeamsPluginV3 } from "../../src/plugins/resource/aad/v3";
 describe("Collaborator APIs for V3", () => {
   const sandbox = sinon.createSandbox();
-  const projectSettings: ProjectSettings = {
+  const projectSettings: ProjectSettingsV3 = {
     appName: "my app",
     projectId: uuid.v4(),
     solutionSettings: {
@@ -46,8 +48,9 @@ describe("Collaborator APIs for V3", () => {
       azureResources: [],
       activeResourcePlugins: [],
     },
+    components: [],
   };
-  const ctx = new MockedV2Context(projectSettings);
+  const ctx = new MockedV2Context(projectSettings) as ContextV3;
   const inputs: v2.InputsWithProjectPath = {
     platform: Platform.VSCode,
     projectPath: path.join(os.tmpdir(), randomAppName()),

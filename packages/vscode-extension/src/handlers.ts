@@ -1668,6 +1668,8 @@ export async function promptSPFxUpgrade() {
     if (projectSPFxVersion) {
       const cmp = compare(projectSPFxVersion, SUPPORTED_SPFX_VERSION);
       if (cmp === 1 || cmp === -1) {
+        const args: string[] =
+          cmp === 1 ? [SUPPORTED_SPFX_VERSION] : [SUPPORTED_SPFX_VERSION, SUPPORTED_SPFX_VERSION];
         VS_CODE_UI.showMessage(
           "warn",
           util.format(
@@ -1676,7 +1678,7 @@ export async function promptSPFxUpgrade() {
                 ? "teamstoolkit.handlers.promptSPFx.upgradeToolkit.description"
                 : "teamstoolkit.handlers.promptSPFx.upgradeProject.description"
             ),
-            SUPPORTED_SPFX_VERSION
+            ...args
           ),
           false,
           localize(

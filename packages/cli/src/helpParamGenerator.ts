@@ -160,7 +160,7 @@ export class HelpParamGenerator {
         this.setQuestionNodes(`${Stage.create}-m365`, result.value);
       }
     }
-    const userTasks = ["addResource", "addCICDWorkflows", "connectExistingApi"];
+    const userTasks = ["addFeature", "addCICDWorkflows", "connectExistingApi"];
     for (const userTask of userTasks) {
       const result = await this.getQuestionsForUserTask(userTask, systemInput, this.core);
       if (result.isErr()) {
@@ -183,9 +183,9 @@ export class HelpParamGenerator {
     }
     let resourceName: string | undefined;
     let authType: string | undefined;
-    if (stage.startsWith("addResource")) {
+    if (stage.startsWith("addFeature")) {
       resourceName = stage.split("-")[1];
-      stage = "addResource";
+      stage = "addFeature";
     } else if (stage.startsWith("connectExistingApi")) {
       authType = stage.split("-")[1];
       stage = "connectExistingApi";

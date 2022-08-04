@@ -116,7 +116,7 @@ describe("Resource Command Tests", function () {
       .callsFake(async (func: Func, inputs: Inputs) => {
         expect(func).deep.equals({
           namespace: "fx-solution-azure",
-          method: "addResource",
+          method: "addFeature",
         });
         if (inputs.projectPath?.includes("real")) return ok("");
         else return err(NotSupportedProjectType());

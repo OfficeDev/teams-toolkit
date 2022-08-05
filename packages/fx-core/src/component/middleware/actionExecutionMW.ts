@@ -21,7 +21,14 @@ import {
 import { assign } from "lodash";
 import { TOOLS } from "../../core/globalVars";
 import { TelemetryConstants } from "../constants";
-import { sendErrorEvent, sendStartEvent, sendSuccessEvent } from "../telemetry";
+import {
+  sendErrorEvent,
+  sendMigratedErrorEvent,
+  sendMigratedStartEvent,
+  sendMigratedSuccessEvent,
+  sendStartEvent,
+  sendSuccessEvent,
+} from "../telemetry";
 
 export interface ActionOption {
   componentName?: string;
@@ -63,6 +70,12 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
       if (action.enableTelemetry) {
         if (action.telemetryProps) assign(telemetryProps, action.telemetryProps);
         sendStartEvent(eventName, telemetryProps);
+        sendMigratedStartEvent(
+          eventName,
+          ctx.arguments[0] as ContextV3,
+          ctx.arguments[1] as InputsWithProjectPath,
+          telemetryProps
+        );
       }
       // run question model
       if (action.question) {
@@ -101,6 +114,12 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
       // send end telemetry
       if (action.enableTelemetry) {
         sendSuccessEvent(eventName, telemetryProps);
+        sendMigratedSuccessEvent(
+          eventName,
+          ctx.arguments[0] as ContextV3,
+          ctx.arguments[1] as InputsWithProjectPath,
+          telemetryProps
+        );
       }
       await progressBar?.end(true);
       TOOLS.logProvider.info(`execute [${actionName}] success!`);
@@ -124,6 +143,13 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
       // send error telemetry
       if (action.enableTelemetry) {
         sendErrorEvent(eventName, fxError, telemetryProps);
+        sendMigratedErrorEvent(
+          eventName,
+          fxError,
+          ctx.arguments[0] as ContextV3,
+          ctx.arguments[1] as InputsWithProjectPath,
+          telemetryProps
+        );
       }
       TOOLS.logProvider.info(`execute [${actionName}] failed!`);
       ctx.result = err(fxError);

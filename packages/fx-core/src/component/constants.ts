@@ -106,7 +106,7 @@ export const AzureSqlOutputs = {
   },
   sqlDatabaseName: {
     key: "sqlDatabaseName",
-    bicepVariable: "provisionOutputs.azureSqlOutput.value.sqlDatabaseName",
+    bicepVariable: "provisionOutputs.azureSqlOutput.value.databaseName",
   },
 };
 

@@ -60,7 +60,7 @@ describe("Deploy to customized resource group", function () {
       await customizeBicepFilesToCustomizedRg(
         customizedRgName,
         projectPath,
-        `name: 'frontendHostingProvision'`
+        `name: 'azureStorageTabProvision'`
       );
 
       // Provision

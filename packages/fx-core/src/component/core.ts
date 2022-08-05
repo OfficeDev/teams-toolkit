@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import {
+  ActionContext,
   CloudResource,
   ConfigFolderName,
   ContextV3,
@@ -60,7 +61,7 @@ import "./resource/spfx";
 
 import { AADApp } from "@microsoft/teamsfx-api/build/v3";
 import * as jsonschema from "jsonschema";
-import { cloneDeep } from "lodash";
+import { cloneDeep, merge } from "lodash";
 import { PluginDisplayName } from "../common/constants";
 import { globalStateUpdate } from "../common/globalState";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
@@ -97,7 +98,7 @@ import {
   fillInAzureConfigs,
   getM365TenantId,
 } from "../plugins/solution/fx-solution/v3/provision";
-import { AzureResources, ComponentNames, TelemetryConstants } from "./constants";
+import { AzureResources, ComponentNames } from "./constants";
 import { pluginName2ComponentName } from "./migrate";
 import {
   getQuestionsForAddFeatureV3,
@@ -111,6 +112,7 @@ import { askForProvisionConsentNew } from "../plugins/solution/fx-solution/v2/pr
 import { resetEnvInfoWhenSwitchM365 } from "./utils";
 import { sendStartEvent, sendSuccessEvent } from "./telemetry";
 import { TelemetryEvent, TelemetryProperty } from "../common/telemetry";
+import { getComponent } from "./workflow";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -124,11 +126,14 @@ export class TeamsfxCore {
         return getQuestionsForCreateProjectV2(inputs);
       },
       enableTelemetry: true,
+      telemetryEventName: TelemetryEvent.CreateProject,
+      telemetryComponentName: "core",
     }),
   ])
   async create(
     context: ContextV3,
-    inputs: InputsWithProjectPath
+    inputs: InputsWithProjectPath,
+    actionContext?: ActionContext
   ): Promise<Result<string, FxError>> {
     const folder = inputs[QuestionRootFolder.name] as string;
     if (!folder) {
@@ -147,9 +152,6 @@ export class TeamsfxCore {
       projectPath = downloadRes.value;
     } else {
       // create from new
-      sendStartEvent(TelemetryEvent.CreateProject, {
-        [TelemetryProperty.ProjectId]: context.projectSetting.projectId,
-      });
       const appName = inputs[CoreQuestionNames.AppName] as string;
       if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
       const validateResult = jsonschema.validate(appName, {
@@ -190,9 +192,8 @@ export class TeamsfxCore {
         if (res.isErr()) return err(res.error);
       }
 
-      sendSuccessEvent(TelemetryEvent.CreateProject, {
+      merge(actionContext?.telemetryProps, {
         [TelemetryProperty.Feature]: features,
-        [TelemetryProperty.ProjectId]: context.projectSetting.projectId,
       });
     }
     if (inputs.platform === Platform.VSCode) {
@@ -210,15 +211,16 @@ export class TeamsfxCore {
       question: (context, inputs) => {
         return getQuestionsForAddFeatureV3(context, inputs);
       },
+      enableTelemetry: true,
+      telemetryEventName: TelemetryEvent.AddFeature,
+      telemetryComponentName: "core",
     }),
   ])
   async addFeature(
     context: ContextV3,
-    inputs: InputsWithProjectPath
+    inputs: InputsWithProjectPath,
+    actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    sendStartEvent(TelemetryEvent.AddFeature, {
-      [TelemetryProperty.ProjectId]: context.projectSetting.projectId,
-    });
     const features = inputs[AzureSolutionQuestionNames.Features];
     let component;
     if (BotFeatureIds.includes(features)) {
@@ -244,9 +246,8 @@ export class TeamsfxCore {
       const res = await (component as any).add(context, inputs);
       if (res.isErr()) return err(res.error);
     }
-    sendSuccessEvent(TelemetryEvent.AddFeature, {
+    merge(actionContext?.telemetryProps, {
       [TelemetryProperty.Feature]: features,
-      [TelemetryProperty.ProjectId]: context.projectSetting.projectId,
     });
     return ok(undefined);
   }
@@ -277,20 +278,16 @@ export class TeamsfxCore {
       question: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         return await getQuestionsForProvisionV3(context, inputs);
       },
-      enableErrorTelemetry: true,
+      enableTelemetry: true,
+      telemetryEventName: TelemetryEvent.Provision,
+      telemetryComponentName: "core",
     }),
   ])
   async provision(
     ctx: ResourceContextV3,
-    inputs: InputsWithProjectPath
+    inputs: InputsWithProjectPath,
+    actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    sendStartEvent(
-      ctx.envInfo.envName === "local" ? TelemetryEvent.LocalDebug : TelemetryEvent.Provision,
-      {
-        [TelemetryProperty.ProjectId]: ctx.projectSetting.projectId,
-      }
-    );
-
     ctx.envInfo.state.solution = ctx.envInfo.state.solution || {};
     ctx.envInfo.state.solution.provisionSucceeded = false;
 
@@ -354,9 +351,6 @@ export class TeamsfxCore {
       if (armRes.isErr()) {
         return err(armRes.error);
       }
-      ctx.logProvider.info(
-        getLocalizedString("core.deployArmTemplates.SuccessNotice", PluginDisplayName.Solution)
-      );
     }
 
     // 5.0 "aad-app.setApplicationInContext"
@@ -431,15 +425,11 @@ export class TeamsfxCore {
       ctx.userInteraction.showMessage("info", msg, false);
       ctx.logProvider.info(msg);
     }
-    sendSuccessEvent(
-      ctx.envInfo.envName === "local" ? TelemetryEvent.LocalDebug : TelemetryEvent.Provision,
-      {
-        [TelemetryProperty.ProjectId]: ctx.projectSetting.projectId,
-        [TelemetryProperty.Components]: JSON.stringify(
-          componentsToProvision.map((component) => component.name)
-        ),
-      }
-    );
+    merge(actionContext?.telemetryProps, {
+      [TelemetryProperty.Components]: JSON.stringify(
+        componentsToProvision.map((component) => component.name)
+      ),
+    });
     ctx.envInfo.state.solution.provisionSucceeded = true;
     return ok(undefined);
   }
@@ -478,11 +468,15 @@ export class TeamsfxCore {
       question: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         return await getQuestionsForDeployV3(context, inputs, context.envInfo!);
       },
+      enableTelemetry: true,
+      telemetryEventName: TelemetryEvent.Deploy,
+      telemetryComponentName: "core",
     }),
   ])
   async deploy(
     context: ResourceContextV3,
-    inputs: InputsWithProjectPath
+    inputs: InputsWithProjectPath,
+    actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     context.logProvider.info(
       `inputs(${AzureSolutionQuestionNames.PluginSelectionDeploy}) = ${
@@ -610,9 +604,11 @@ export class TeamsfxCore {
           context.userInteraction.showMessage("info", msg, false);
         }
       }
-      sendSuccessEvent(TelemetryEvent.Deploy, {
-        [TelemetryProperty.ProjectId]: context.projectSetting.projectId,
+      merge(actionContext?.telemetryProps, {
         [TelemetryProperty.Components]: JSON.stringify(thunks.map((p) => p.pluginName)),
+        [TelemetryProperty.Hosting]: JSON.stringify(
+          thunks.map((p) => getComponent(projectSettings, p.pluginName)?.hosting)
+        ),
       });
       return ok(undefined);
     } else {

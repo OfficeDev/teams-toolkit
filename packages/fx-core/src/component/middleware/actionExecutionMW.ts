@@ -122,7 +122,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
         }
       }
       // send error telemetry
-      if (action.enableTelemetry || action.enableErrorTelemetry) {
+      if (action.enableTelemetry) {
         sendErrorEvent(eventName, fxError, telemetryProps);
       }
       TOOLS.logProvider.info(`execute [${actionName}] failed!`);

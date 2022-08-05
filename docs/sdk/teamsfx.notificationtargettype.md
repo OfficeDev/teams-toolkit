@@ -16,9 +16,9 @@ export declare enum NotificationTargetType
 
 |  Member | Value | Description |
 |  --- | --- | --- |
-|  Channel | <code>&quot;Channel&quot;</code> |  |
-|  Group | <code>&quot;Group&quot;</code> |  |
-|  Person | <code>&quot;Person&quot;</code> |  |
+|  Channel | <code>&quot;Channel&quot;</code> | The notification will be sent to a team channel. (By default, notification to a team will be sent to its "General" channel.) |
+|  Group | <code>&quot;Group&quot;</code> | The notification will be sent to a group chat. |
+|  Person | <code>&quot;Person&quot;</code> | The notification will be sent to a personal chat. |
 
 ## Remarks
 

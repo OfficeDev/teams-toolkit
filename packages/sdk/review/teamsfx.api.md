@@ -281,11 +281,8 @@ export interface NotificationTargetStorage {
 
 // @public
 export enum NotificationTargetType {
-    // (undocumented)
     Channel = "Channel",
-    // (undocumented)
     Group = "Group",
-    // (undocumented)
     Person = "Person"
 }
 

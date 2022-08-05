@@ -23,8 +23,18 @@ export interface MessageResponse {
  * - "Person" means to a personal chat.
  */
 export enum NotificationTargetType {
+  /**
+   * The notification will be sent to a team channel.
+   * (By default, notification to a team will be sent to its "General" channel.)
+   */
   Channel = "Channel",
+  /**
+   * The notification will be sent to a group chat.
+   */
   Group = "Group",
+  /**
+   * The notification will be sent to a personal chat.
+   */
   Person = "Person",
 }
 

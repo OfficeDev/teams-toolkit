@@ -53,7 +53,7 @@ resource webAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
     API_ENDPOINT: provisionOutputs.azureFunctionApiOutput.value.functionEndpoint // Azure Function API endpoint
     {{/if}}
     {{#if (contains "azure-sql" connections)}}
-    SQL_DATABASE_NAME: {{azure-sql.outputs.sqlDatabaseName}} // SQL database name
+    SQL_DATABASE_NAME: {{azure-sql.outputs.databaseName}} // SQL database name
     SQL_ENDPOINT: {{azure-sql.outputs.sqlEndpoint}} // SQL server endpoint
     {{/if}}
     {{#if (contains "identity" connections)}}

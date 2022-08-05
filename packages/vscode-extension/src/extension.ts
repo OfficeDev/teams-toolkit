@@ -828,6 +828,13 @@ async function runBackgroundAsyncTasks(
       TreatmentVariables.EmbeddedSurvey,
       true
     )) as boolean | undefined;
+  TreatmentVariableValue.useFolderSelection = (await exp
+    .getExpService()
+    .getTreatmentVariableAsync(
+      TreatmentVariables.VSCodeConfig,
+      TreatmentVariables.UseFolderSelection,
+      true
+    )) as boolean | undefined;
   TreatmentVariableValue.openFolderInNewWindow = (await exp
     .getExpService()
     .getTreatmentVariableAsync(

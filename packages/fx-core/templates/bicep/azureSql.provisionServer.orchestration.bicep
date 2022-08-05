@@ -10,5 +10,5 @@ output azureSqlOutput object = {
   teamsFxPluginId: 'azure-sql'
   sqlResourceId: azureSqlProvision.outputs.sqlResourceId
   sqlEndpoint: azureSqlProvision.outputs.sqlEndpoint
-  sqlDatabaseName: azureSqlProvision.outputs.sqlDatabaseName
+  databaseName: azureSqlProvision.outputs.sqlDatabaseName
 }

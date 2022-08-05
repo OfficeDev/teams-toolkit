@@ -46,9 +46,10 @@ import { ComponentNames } from "../../src/component/constants";
 import { AzureSolutionQuestionNames } from "../../src";
 import { FunctionScaffold } from "../../src/plugins/resource/function/ops/scaffold";
 import { TeamsfxCore } from "../../src/component/core";
-import Container from "typedi";
+import { Container } from "typedi";
 import { AzureStorageResource } from "../../src/component/resource/azureStorage";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import { ciOption, githubOption, questionNames } from "../../src/plugins/resource/cicd/questions";
 describe("Workflow test for v3", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -59,7 +60,7 @@ describe("Workflow test for v3", () => {
   const fx = Container.get<TeamsfxCore>("fx");
   let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
-    mockedEnvRestore = mockedEnv({ SWITCH_ACCOUNT: "false" });
+    mockedEnvRestore = mockedEnv({ SWITCH_ACCOUNT: "false", TEAMSFX_APIV3: "true" });
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
   });
 
@@ -160,6 +161,21 @@ describe("Workflow test for v3", () => {
       platform: Platform.VSCode,
     };
     const component = Container.get("key-vault-feature") as any;
+    const res = await component.add(context, inputs);
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    assert.isTrue(res.isOk());
+  });
+  it("cicd.add", async () => {
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+      [questionNames.Provider]: githubOption.id,
+      [questionNames.Template]: [ciOption.id],
+      [questionNames.Environment]: "dev",
+    };
+    const component = Container.get("cicd") as any;
     const res = await component.add(context, inputs);
     if (res.isErr()) {
       console.log(res.error);

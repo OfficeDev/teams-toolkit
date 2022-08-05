@@ -14,6 +14,7 @@ import {
   Colors,
   Json,
   TelemetryReporter,
+  AzureAccountProvider,
 } from "@microsoft/teamsfx-api";
 import { AppStudioScopes, getHashedEnv, getResourceGroupInPortal } from "../../../../common/tools";
 import { executeConcurrently } from "./executor";
@@ -45,7 +46,7 @@ import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
 import { Constants } from "../../../resource/appstudio/constants";
 import { BuiltInFeaturePluginNames } from "../v3/constants";
-import { askForProvisionConsent, fillInAzureConfigs, getM365TenantId } from "../v3/provision";
+import { fillInAzureConfigs, getM365TenantId } from "../v3/provision";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { solutionGlobalVars } from "../v3/solutionGlobalVars";
 import {
@@ -55,6 +56,9 @@ import {
 } from "../../../../common/projectSettingsHelper";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import { sendErrorTelemetryThenReturnError } from "../utils/util";
+import { doesAllowSwitchAccount } from "../../../../core";
+import { ComponentNames } from "../../../../component/constants";
+import { resetEnvInfoWhenSwitchM365 } from "../../../../component/utils";
 
 function getSubscriptionId(state: Json): string {
   if (state && state[GLOBAL_CONFIG] && state[GLOBAL_CONFIG][SUBSCRIPTION_ID]) {
@@ -138,8 +142,13 @@ async function provisionResourceImpl(
   if (tenantIdInTokenRes.isErr()) {
     return err(tenantIdInTokenRes.error);
   }
-  const tenantIdInToken = tenantIdInTokenRes.value;
-  if (tenantIdInConfig && tenantIdInToken && tenantIdInToken !== tenantIdInConfig) {
+  const tenantIdInToken = tenantIdInTokenRes.value.tenantIdInToken;
+
+  const isSwitchAccountEnabled = doesAllowSwitchAccount();
+  let hasSwitchedM365Tenant = false;
+  const isSwitchingM365Tenant =
+    tenantIdInConfig && tenantIdInToken && tenantIdInToken !== tenantIdInConfig;
+  if (isSwitchingM365Tenant && !isSwitchAccountEnabled) {
     return err(
       new UserError(
         "Solution",
@@ -147,11 +156,17 @@ async function provisionResourceImpl(
         getLocalizedString("error.M365AccountNotMatch", envInfo.envName)
       )
     );
+  } else if (isSwitchingM365Tenant && isSwitchAccountEnabled) {
+    hasSwitchedM365Tenant = true;
+    resetEnvInfoWhenSwitchM365(envInfo as v3.EnvInfoV3);
   }
-  if (!tenantIdInConfig) {
-    teamsAppResource.tenantId = tenantIdInToken;
-    solutionConfig.teamsAppTenantId = tenantIdInToken;
-  }
+
+  envInfo.state[BuiltInFeaturePluginNames.appStudio] =
+    envInfo.state[BuiltInFeaturePluginNames.appStudio] || {};
+  envInfo.state[BuiltInFeaturePluginNames.appStudio].tenantId = tenantIdInToken;
+  envInfo.state.solution.teamsAppTenantId = tenantIdInToken;
+  solutionConfig.teamsAppTenantId = tenantIdInToken;
+
   if (isAzureProject(azureSolutionSettings) && hasAzureResource(ctx.projectSetting, true)) {
     if (hasAAD(ctx.projectSetting)) {
       if (ctx.permissionRequestProvider === undefined) {
@@ -176,16 +191,17 @@ async function provisionResourceImpl(
       return err(solutionConfigRes.error);
     }
 
-    if (!solutionConfigRes.value.hasSwitchedSubscription) {
-      // ask for provision consent
-      const consentResult = await askForProvisionConsent(
-        ctx,
-        tokenProvider.azureAccountProvider,
-        envInfo as v3.EnvInfoV3
-      );
-      if (consentResult.isErr()) {
-        return err(consentResult.error);
-      }
+    const consentResult = await askForProvisionConsentNew(
+      ctx,
+      tokenProvider.azureAccountProvider,
+      envInfo as v3.EnvInfoV3,
+      hasSwitchedM365Tenant,
+      solutionConfigRes.value.hasSwitchedSubscription,
+      tenantIdInTokenRes.value.tenantUserName,
+      true
+    );
+    if (consentResult.isErr()) {
+      return err(consentResult.error);
     }
 
     // create resource group if needed
@@ -203,6 +219,19 @@ async function provisionResourceImpl(
 
     if (solutionConfigRes.value.hasSwitchedSubscription) {
       await updateResourceBaseName(inputs.projectPath, ctx.projectSetting.appName, envInfo.envName);
+    }
+  } else if (hasSwitchedM365Tenant) {
+    const consentResult = await askForProvisionConsentNew(
+      ctx,
+      tokenProvider.azureAccountProvider,
+      envInfo as v3.EnvInfoV3,
+      hasSwitchedM365Tenant,
+      false,
+      tenantIdInTokenRes.value.tenantUserName,
+      false
+    );
+    if (consentResult.isErr()) {
+      return err(consentResult.error);
     }
   }
 
@@ -369,4 +398,99 @@ async function provisionResourceImpl(
     envInfo.state[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] = true;
     return ok(Void);
   }
+}
+
+export async function askForProvisionConsentNew(
+  ctx: v2.Context,
+  azureAccountProvider: AzureAccountProvider,
+  envInfo: v3.EnvInfoV3,
+  hasSwitchedM365Tenant: boolean,
+  hasSwitchedSubscription: boolean,
+  m365AccountName: string,
+  hasAzureResource: boolean
+): Promise<Result<Void, FxError>> {
+  const azureToken = await azureAccountProvider.getAccountCredentialAsync();
+
+  const username = (azureToken as any).username || "";
+  const subscriptionId = envInfo.state.solution?.subscriptionId || "";
+  const subscriptionName = envInfo.state.solution?.subscriptionName || "";
+  const m365TenantId = envInfo.state.solution?.teamsAppTenantId || "";
+
+  let switchedNotice = "";
+
+  if (hasSwitchedM365Tenant && hasSwitchedSubscription) {
+    switchedNotice = getLocalizedString(
+      "core.provision.switchedM365AccountAndAzureSubscriptionNotice"
+    );
+  } else if (hasSwitchedM365Tenant && !hasSwitchedSubscription) {
+    switchedNotice = getLocalizedString("core.provision.switchedM365AccountNotice");
+  } else if (!hasSwitchedM365Tenant && hasSwitchedSubscription) {
+    switchedNotice = getLocalizedString("core.provision.switchedAzureSubscriptionNotice");
+
+    const botResource =
+      envInfo.state[BuiltInFeaturePluginNames.bot] ?? envInfo.state[ComponentNames.TeamsBot];
+    const newBotNotice =
+      !!botResource && !!botResource["resourceId"]
+        ? getLocalizedString("core.provision.createNewAzureBotNotice")
+        : "";
+
+    switchedNotice = switchedNotice + newBotNotice;
+  }
+
+  const azureAccountInfo = getLocalizedString("core.provision.azureAccount", username);
+  const azureSubscriptionInfo = getLocalizedString(
+    "core.provision.azureSubscription",
+    subscriptionName ? subscriptionName : subscriptionId
+  );
+  const m365AccountInfo = getLocalizedString(
+    "core.provision.m365Account",
+    m365AccountName ? m365AccountName : m365TenantId
+  );
+
+  let accountsInfo = "";
+  if (!switchedNotice && !hasAzureResource) {
+    return ok(Void);
+  } else if (!switchedNotice && hasAzureResource) {
+    accountsInfo = [azureAccountInfo, azureSubscriptionInfo, m365AccountInfo].join("\n");
+  } else {
+    // switchedNotice
+    accountsInfo = hasAzureResource
+      ? [switchedNotice, azureAccountInfo, azureSubscriptionInfo, m365AccountInfo].join("\n")
+      : [switchedNotice, m365AccountInfo].join("\n");
+  }
+
+  const confirmMsg = hasAzureResource
+    ? getLocalizedString("core.provision.confirmEnvAndCostNotice", envInfo.envName)
+    : hasSwitchedM365Tenant
+    ? getLocalizedString("core.provision.confirmEnvOnlyNotice", envInfo.envName)
+    : "";
+
+  const provisionText = getLocalizedString("core.provision.provision");
+  const learnMoreText = getLocalizedString("core.provision.learnMore");
+  const items =
+    hasSwitchedM365Tenant || hasSwitchedSubscription
+      ? [provisionText, learnMoreText]
+      : [provisionText];
+
+  let confirm: string | undefined;
+  do {
+    const confirmRes = await ctx.userInteraction.showMessage(
+      "warn",
+      accountsInfo + "\n\n" + confirmMsg,
+      true,
+      ...items
+    );
+    confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
+    if (confirm !== provisionText) {
+      if (confirm === learnMoreText) {
+        ctx.userInteraction.openUrl(
+          "https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/provision"
+        ); // TODO: update link to the doc
+      } else {
+        return err(new UserError(SolutionSource, "CancelProvision", "CancelProvision"));
+      }
+    }
+  } while (confirm === learnMoreText);
+
+  return ok(Void);
 }

@@ -18,6 +18,7 @@ import {
   ProjectSettingsV3,
   ProvisionBicep,
   Result,
+  v3,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { assign, cloneDeep } from "lodash";
@@ -30,6 +31,7 @@ import { convertToAlphanumericOnly, getProjectTemplatesFolderPath } from "../com
 import { LocalCrypto } from "../core/crypto";
 import { environmentManager } from "../core/environment";
 import { TOOLS } from "../core/globalVars";
+import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { ComponentNames, scenarioToComponent } from "./constants";
 import { DefaultManifestProvider } from "./resource/appManifest/manifestProvider";
 import { getComponent } from "./workflow";
@@ -543,6 +545,38 @@ export function ensureComponentConnections(settingsV3: ProjectSettingsV3): void 
     const configs = settingsV3.components.filter((c) => c.name === configName);
     for (const config of configs) {
       config.connections = existingResources;
+    }
+  }
+}
+
+// clear resources related info in envInfo so that we could provision successfully using new M365 tenant.
+export function resetEnvInfoWhenSwitchM365(envInfo: v3.EnvInfoV3): void {
+  const keysToClear = [
+    BuiltInFeaturePluginNames.appStudio,
+    BuiltInFeaturePluginNames.aad,
+    ComponentNames.AppManifest,
+    ComponentNames.AadApp,
+  ];
+
+  const apimKeys = [BuiltInFeaturePluginNames.apim, ComponentNames.APIM];
+  const botKeys = [BuiltInFeaturePluginNames.bot, ComponentNames.TeamsBot];
+  const keys = Object.keys(envInfo.state);
+
+  for (const key of keys) {
+    if (keysToClear.includes(key)) {
+      delete envInfo.state[key];
+    }
+    if (apimKeys.includes(key)) {
+      delete envInfo.state[key]["apimClientAADObjectId"];
+      delete envInfo.state[key]["apimClientAADClientId"];
+      delete envInfo.state[key]["apimClientAADClientSecret"];
+    }
+
+    if (botKeys.includes(key)) {
+      delete envInfo.state[key]["resourceId"];
+      delete envInfo.state[key]["botId"];
+      delete envInfo.state[key]["botPassword"];
+      delete envInfo.state[key]["objectId"];
     }
   }
 }

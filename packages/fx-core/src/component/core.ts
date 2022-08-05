@@ -14,6 +14,7 @@ import {
   ResourceContextV3,
   Result,
   UserError,
+  v3,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import path from "path";
@@ -93,7 +94,6 @@ import {
 import { checkDeployAzureSubscription } from "../plugins/solution/fx-solution/v3/deploy";
 import {
   askForDeployConsent,
-  askForProvisionConsent,
   fillInAzureConfigs,
   getM365TenantId,
 } from "../plugins/solution/fx-solution/v3/provision";
@@ -107,6 +107,8 @@ import {
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "./middleware/actionExecutionMW";
 import { getQuestionsForCreateProjectV2 } from "../core/middleware";
+import { askForProvisionConsentNew } from "../plugins/solution/fx-solution/v2/provision";
+import { resetEnvInfoWhenSwitchM365 } from "./utils";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -577,6 +579,7 @@ async function preProvision(
 ): Promise<Result<undefined, FxError>> {
   const ctx = context as ResourceContextV3;
   const envInfo = ctx.envInfo;
+
   // 1. check M365 tenant
   envInfo.state[ComponentNames.AppManifest] = envInfo.state[ComponentNames.AppManifest] || {};
   envInfo.state.solution = envInfo.state.solution || {};
@@ -586,26 +589,17 @@ async function preProvision(
   const tenantIdInConfig = appManifest.tenantId;
 
   const isLocalDebug = envInfo.envName === "local";
-  const tenantIdInTokenRes = await getM365TenantId(ctx.tokenProvider.m365TokenProvider);
-  if (tenantIdInTokenRes.isErr()) {
-    return err(tenantIdInTokenRes.error);
+  const tenantInfoInTokenRes = await getM365TenantId(ctx.tokenProvider.m365TokenProvider);
+  if (tenantInfoInTokenRes.isErr()) {
+    return err(tenantInfoInTokenRes.error);
   }
-  const tenantIdInToken = tenantIdInTokenRes.value;
+  const tenantIdInToken = tenantInfoInTokenRes.value.tenantIdInToken;
+  const hasSwitchedM365Tenant =
+    tenantIdInConfig && tenantIdInToken && tenantIdInToken !== tenantIdInConfig;
 
   if (!isLocalDebug) {
-    if (tenantIdInConfig && tenantIdInToken && tenantIdInToken !== tenantIdInConfig) {
-      return err(
-        new UserError(
-          "Solution",
-          "TeamsAppTenantIdNotRight",
-          getLocalizedString("error.M365AccountNotMatch", envInfo.envName)
-        )
-      );
-    }
-    if (!tenantIdInConfig) {
-      appManifest.tenantId = tenantIdInToken;
-      solutionConfig.teamsAppTenantId = tenantIdInToken;
-      globalVars.m365TenantId = tenantIdInToken;
+    if (hasSwitchedM365Tenant) {
+      resetEnvInfoWhenSwitchM365(envInfo);
     }
   } else {
     const res = await checkWhetherLocalDebugM365TenantMatches(
@@ -617,11 +611,12 @@ async function preProvision(
     if (res.isErr()) {
       return err(res.error);
     }
-    envInfo.state[ComponentNames.AppManifest] = envInfo.state[ComponentNames.AppManifest] || {};
-    envInfo.state[ComponentNames.AppManifest].tenantId = tenantIdInToken;
-    envInfo.state.solution.teamsAppTenantId = tenantIdInToken;
-    globalVars.m365TenantId = tenantIdInToken;
   }
+
+  envInfo.state[ComponentNames.AppManifest] = envInfo.state[ComponentNames.AppManifest] || {};
+  envInfo.state[ComponentNames.AppManifest].tenantId = tenantIdInToken;
+  envInfo.state.solution.teamsAppTenantId = tenantIdInToken;
+  globalVars.m365TenantId = tenantIdInToken;
 
   // 3. check Azure configs
   if (hasAzureResourceV3(ctx.projectSetting) && envInfo.envName !== "local") {
@@ -631,16 +626,17 @@ async function preProvision(
       return err(solutionConfigRes.error);
     }
 
-    if (!solutionConfigRes.value.hasSwitchedSubscription) {
-      // ask for provision consent
-      const consentResult = await askForProvisionConsent(
-        ctx,
-        ctx.tokenProvider.azureAccountProvider,
-        envInfo
-      );
-      if (consentResult.isErr()) {
-        return err(consentResult.error);
-      }
+    const consentResult = await askForProvisionConsentNew(
+      ctx,
+      ctx.tokenProvider.azureAccountProvider,
+      envInfo as v3.EnvInfoV3,
+      hasSwitchedM365Tenant,
+      solutionConfigRes.value.hasSwitchedSubscription,
+      tenantInfoInTokenRes.value.tenantUserName,
+      true
+    );
+    if (consentResult.isErr()) {
+      return err(consentResult.error);
     }
 
     // create resource group if needed
@@ -658,6 +654,19 @@ async function preProvision(
 
     if (solutionConfigRes.value.hasSwitchedSubscription) {
       updateResourceBaseName(inputs.projectPath, ctx.projectSetting.appName, envInfo.envName);
+    }
+  } else if (hasSwitchedM365Tenant && !isLocalDebug) {
+    const consentResult = await askForProvisionConsentNew(
+      ctx,
+      ctx.tokenProvider.azureAccountProvider,
+      envInfo as v3.EnvInfoV3,
+      hasSwitchedM365Tenant,
+      false,
+      tenantInfoInTokenRes.value.tenantUserName,
+      false
+    );
+    if (consentResult.isErr()) {
+      return err(consentResult.error);
     }
   }
   return ok(undefined);

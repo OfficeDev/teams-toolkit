@@ -56,6 +56,7 @@ describe("question for v3", () => {
           capabilities: ["notification"],
           build: true,
           deploy: true,
+          provision: true,
           folder: "bot",
         },
         {
@@ -64,6 +65,11 @@ describe("question for v3", () => {
         },
         {
           name: "bot-service",
+          provision: true,
+        },
+        {
+          name: "apim",
+          deploy: true,
           provision: true,
         },
       ],

@@ -883,6 +883,8 @@ export class FxCore implements v3.ICore {
     setCurrentStage(Stage.getQuestions);
     if (isV3()) {
       const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+      context.envInfo = ctx.envInfoV2 as v3.EnvInfoV3;
+      context.tokenProvider = TOOLS.tokenProvider;
       if (stage === Stage.publish) {
         return await publishQuestion(inputs);
       } else if (stage === Stage.create) {

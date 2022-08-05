@@ -97,7 +97,7 @@ export class TeamsBot {
         inputs?.["programming-language"] ||
         context.projectSetting.programmingLanguage ||
         "javascript";
-      const folder = language === "csharp" ? "" : CommonStrings.BOT_WORKING_DIR_NAME;
+      const folder = language === "csharp" ? "." : CommonStrings.BOT_WORKING_DIR_NAME;
       assign(clonedInputs, {
         folder: folder,
         scenarios: scenarios,

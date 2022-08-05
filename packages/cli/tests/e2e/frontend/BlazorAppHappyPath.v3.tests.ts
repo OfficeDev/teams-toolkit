@@ -65,7 +65,7 @@ describe("Blazor App", function () {
     chai.assert.exists(token);
 
     const context = await readContextMultiEnv(projectPath, envName);
-    const resourceId = context[PluginId.FrontendHosting][StateConfigKey.webAppResourceId];
+    const resourceId = context[PluginId.FrontendHosting][StateConfigKey.frontendResourceId];
     const activeResourcePlugins = await getActivePluginsFromProjectSetting(projectPath);
 
     chai.assert.isArray(activeResourcePlugins);

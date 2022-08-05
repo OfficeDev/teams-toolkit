@@ -53,7 +53,6 @@ export class ApimPluginV3 implements v3.PluginV3 {
     envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
     tokenProvider: TokenProvider
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const apimConfig = new ApimPluginConfig(envInfo.state[ComponentNames.APIM], envInfo.envName);
     const questionManager = await Factory.buildQuestionManager(
       inputs.platform,
       envInfo as v3.EnvInfoV3,
@@ -61,6 +60,11 @@ export class ApimPluginV3 implements v3.PluginV3 {
       ctx.telemetryReporter,
       ctx.logProvider
     );
+    const apimState =
+      envInfo && envInfo.state && envInfo.state[ComponentNames.APIM]
+        ? envInfo.state[ComponentNames.APIM]
+        : {};
+    const apimConfig = new ApimPluginConfig(apimState, envInfo.envName);
     const node = await questionManager.deploy(
       inputs.projectPath,
       envInfo as v3.EnvInfoV3,

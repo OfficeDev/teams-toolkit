@@ -16,13 +16,15 @@ var m365ClientSecret = provisionParameters['m365ClientSecret']
   {{/if}}
 var m365TenantId = provisionParameters['m365TenantId']
 var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
+  {{#if (contains "teams-bot" connections) }}
 var botId = provisionParameters['botAadAppClientId']
-  {{#if (contains "teams-tab" connections)}}
-    {{#if (contains "teams-bot" connections) }}
+    {{#if (contains "teams-tab" connections)}}
 var m365ApplicationIdUri = 'api://${ provisionOutputs.TabOutput.value.domain }/botid-${botId}'
+    {{else}}
+var m365ApplicationIdUri = 'api://botid-${botId}'
     {{/if}}
   {{else}}
-var m365ApplicationIdUri = 'api://botid-${botId}'
+var m365ApplicationIdUri = 'api://${ provisionOutputs.TabOutput.value.domain }/${m365ClientId}'
   {{/if}}
 {{/if}}
 {{#if (contains "teams-bot" connections)}}

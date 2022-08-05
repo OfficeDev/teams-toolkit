@@ -22,7 +22,11 @@ export interface MessageResponse {
  * - "Group" means to a group chat.
  * - "Person" means to a personal chat.
  */
-export type NotificationTargetType = "Channel" | "Group" | "Person";
+export enum NotificationTargetType {
+  Channel = "Channel",
+  Group = "Group",
+  Person = "Person",
+}
 
 /**
  * Represent a notification target.

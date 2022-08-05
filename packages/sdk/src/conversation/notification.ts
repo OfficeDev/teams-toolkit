@@ -68,7 +68,7 @@ export class Channel implements NotificationTarget {
   /**
    * Notification target type. For channel it's always "Channel".
    */
-  public readonly type: NotificationTargetType = "Channel";
+  public readonly type: NotificationTargetType = NotificationTargetType.Channel;
 
   /**
    * Constructor.
@@ -160,7 +160,7 @@ export class Member implements NotificationTarget {
   /**
    * Notification target type. For member it's always "Person".
    */
-  public readonly type: NotificationTargetType = "Person";
+  public readonly type: NotificationTargetType = NotificationTargetType.Person;
 
   /**
    * Constructor.

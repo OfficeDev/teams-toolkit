@@ -35,6 +35,7 @@
 |  [ErrorCode](./teamsfx.errorcode.md) | Error code to trace the error types. |
 |  [IdentityType](./teamsfx.identitytype.md) | Identity type to use in authentication. |
 |  [LogLevel](./teamsfx.loglevel.md) | Log level. |
+|  [NotificationTargetType](./teamsfx.notificationtargettype.md) | The target type where the notification will be sent to. |
 
 ## Functions
 
@@ -75,6 +76,5 @@
 |  Type Alias | Description |
 |  --- | --- |
 |  [LogFunction](./teamsfx.logfunction.md) | Log function for customized logging. |
-|  [NotificationTargetType](./teamsfx.notificationtargettype.md) | The target type where the notification will be sent to. |
 |  [TriggerPatterns](./teamsfx.triggerpatterns.md) | The trigger pattern used to trigger a [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) instance. |
 

@@ -167,7 +167,7 @@ export class ResourceGroupHelper {
     azureAccountProvider: AzureAccountProvider,
     rmClient: ResourceManagementClient
   ): Promise<Result<string[], FxError>> {
-    const azureToken = await azureAccountProvider.getAccountCredentialAsync();
+    const azureToken = await azureAccountProvider.getIdentityCredentialAsync();
     if (!azureToken)
       return err(
         new UserError(
@@ -178,10 +178,16 @@ export class ResourceGroupHelper {
       );
     const subscriptionClient = new SubscriptionClient(azureToken);
     const askSubRes = await azureAccountProvider.getSelectedSubscription(true);
-    const listLocations = await subscriptionClient.subscriptions.listLocations(
-      askSubRes!.subscriptionId
-    );
-    const locations = listLocations.map((item) => item.displayName);
+    const locations: string[] = [];
+    for await (const page of subscriptionClient.subscriptions
+      .listLocations(askSubRes!.subscriptionId)
+      .byPage({ maxPageSize: 100 })) {
+      for (const location of page) {
+        if (location.displayName) {
+          locations.push(location.displayName);
+        }
+      }
+    }
     const providerData = await rmClient.providers.get(MsResources);
     const resourceTypeData = providerData.resourceTypes?.find(
       (rt) => rt.resourceType?.toLowerCase() === ResourceGroups.toLowerCase()

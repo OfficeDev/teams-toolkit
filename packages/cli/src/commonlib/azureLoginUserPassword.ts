@@ -3,7 +3,7 @@
 
 "use strict";
 
-import { SubscriptionClient } from "@azure/arm-subscriptions";
+import { Subscription, SubscriptionClient, TenantIdDescription } from "@azure/arm-subscriptions";
 import { TokenCredential } from "@azure/core-http";
 import * as identity from "@azure/identity";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
@@ -104,18 +104,31 @@ export class AzureAccountProviderUserPassword implements AzureAccountProvider {
   }
 
   async listSubscriptions(): Promise<SubscriptionInfo[]> {
-    const credential = await this.getAccountCredentialAsync();
+    const credential = await this.getIdentityCredentialAsync();
     if (credential) {
       const client = new SubscriptionClient(credential);
-      const tenants = await listAll(client.tenants, client.tenants.list());
+      const tenants: TenantIdDescription[] = [];
+      for await (const page of client.tenants.list().byPage({ maxPageSize: 100 })) {
+        for (const tenant of page) {
+          tenants.push(tenant);
+        }
+      }
       let answers: SubscriptionInfo[] = [];
       for (const tenant of tenants) {
         if (tenant.tenantId) {
-          const cred = await msRestNodeAuth.loginWithUsernamePassword(user, password, {
-            domain: tenant.tenantId,
-          });
+          const cred = new identity.UsernamePasswordCredential(
+            tenant.tenantId,
+            "7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0",
+            user,
+            password
+          );
           const client = new SubscriptionClient(cred);
-          const subscriptions = await listAll(client.subscriptions, client.subscriptions.list());
+          const subscriptions: Subscription[] = [];
+          for await (const page of client.subscriptions.list().byPage({ maxPageSize: 100 })) {
+            for (const subscription of page) {
+              subscriptions.push(subscription);
+            }
+          }
           const filteredsubs = subscriptions.filter(
             (sub) => !!sub.displayName && !!sub.subscriptionId
           );
@@ -188,27 +201,6 @@ export class AzureAccountProviderUserPassword implements AzureAccountProvider {
   async getSubscriptionInfoFromEnv(): Promise<SubscriptionInfo | undefined> {
     return undefined;
   }
-}
-
-interface PartialList<T> extends Array<T> {
-  nextLink?: string;
-}
-
-// Copied from https://github.com/microsoft/vscode-azure-account/blob/2b3c1a8e81e237580465cc9a1f4da5caa34644a6/sample/src/extension.ts
-// to list all subscriptions
-async function listAll<T>(
-  client: { listNext(nextPageLink: string): Promise<PartialList<T>> },
-  first: Promise<PartialList<T>>
-): Promise<T[]> {
-  const all: T[] = [];
-  for (
-    let list = await first;
-    list.length || list.nextLink;
-    list = list.nextLink ? await client.listNext(list.nextLink) : []
-  ) {
-    all.push(...list);
-  }
-  return all;
 }
 
 export type AzureSubscription = {

@@ -3,7 +3,7 @@
 
 "use strict";
 
-import { TokenCredential } from "@azure/core-auth";
+import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase, DeviceTokenCredentials } from "@azure/ms-rest-nodeauth";
 import {
   AzureAccountProvider,
@@ -12,6 +12,8 @@ import {
   OptionItem,
   SingleSelectConfig,
   ConfigFolderName,
+  Result,
+  FxError,
 } from "@microsoft/teamsfx-api";
 import {
   CodeFlowLogin,
@@ -24,7 +26,7 @@ import CLILogProvider from "./log";
 import { AzureSpCrypto, CryptoCachePlugin } from "./cacheAccess";
 import { SubscriptionClient } from "@azure/arm-subscriptions";
 import { LogLevel } from "@azure/msal-node";
-import { NotFoundSubscriptionId, NotSupportedProjectType } from "../error";
+import { NotFoundSubscriptionId } from "../error";
 import {
   changeLoginTenantMessage,
   env,
@@ -87,6 +89,47 @@ function getConfig(tenantId?: string) {
 // @ts-ignore
 const memoryDictionary: { [tenantId: string]: MemoryCache } = {};
 
+class TeamsFxTokenCredential implements TokenCredential {
+  private codeFlowInstance: CodeFlowLogin;
+  private tenantId: string;
+
+  constructor(codeFlowInstance: CodeFlowLogin) {
+    this.codeFlowInstance = codeFlowInstance;
+    this.tenantId = "";
+  }
+
+  public setTenantId(tenantId: string) {
+    this.tenantId = tenantId;
+  }
+
+  async getToken(
+    scopes: string | string[],
+    options?: GetTokenOptions | undefined
+  ): Promise<AccessToken | null> {
+    let myScopes: string[] = [];
+    if (typeof scopes === "string") {
+      myScopes = [scopes];
+    } else {
+      myScopes = scopes;
+    }
+    let tokenRes: Result<string, FxError>;
+    if (this.tenantId.length > 0) {
+      tokenRes = await this.codeFlowInstance.getTenantTokenByScopes(this.tenantId, myScopes);
+    } else {
+      tokenRes = await this.codeFlowInstance.getTokenByScopes(myScopes);
+    }
+    if (tokenRes.isOk()) {
+      const tokenJson = ConvertTokenToJson(tokenRes.value);
+      return {
+        token: tokenRes.value,
+        expiresOnTimestamp: tokenJson.exp * 1000,
+      };
+    } else {
+      return null;
+    }
+  }
+}
+
 export class AzureAccountManager extends login implements AzureAccountProvider {
   private static instance: AzureAccountManager;
   private static codeFlowInstance: CodeFlowLogin;
@@ -99,6 +142,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   private static rootPath: string | undefined;
   //user set tenantId
   private static tenantId: string | undefined;
+  private static teamsFxTokenCredential: TeamsFxTokenCredential;
 
   private static statusChange?: (
     status: string,
@@ -113,6 +157,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       getConfig(),
       SERVER_PORT,
       accountName
+    );
+    AzureAccountManager.teamsFxTokenCredential = new TeamsFxTokenCredential(
+      AzureAccountManager.codeFlowInstance
     );
   }
 
@@ -197,7 +244,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
    * Async get identity [crendential](https://github.com/Azure/azure-sdk-for-js/blob/master/sdk/core/core-auth/src/tokenCredential.ts)
    */
   async getIdentityCredentialAsync(showDialog = true): Promise<TokenCredential | undefined> {
-    return undefined;
+    return AzureAccountManager.teamsFxTokenCredential;
   }
 
   private async updateLoginStatus(): Promise<void> {
@@ -299,10 +346,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     return Promise.reject(LoginFailureError());
   }
 
-  private doGetIdentityCredentialAsync(): Promise<TokenCredential | undefined> {
-    return Promise.resolve(undefined);
-  }
-
   async getJsonObject(showDialog = true): Promise<Record<string, unknown> | undefined> {
     let token;
     if (AzureAccountManager.codeFlowTenantInstance === undefined) {
@@ -378,82 +421,58 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   async listSubscriptions(): Promise<SubscriptionInfo[]> {
-    const credential = await this.getAccountCredentialAsync();
     const arr: SubscriptionInfo[] = [];
-    if (credential) {
+    if (AzureAccountManager.teamsFxTokenCredential) {
       let showMFA = true;
       if (!AzureAccountManager.tenantId) {
-        const subscriptionClient = new SubscriptionClient(credential);
-        const tenants = await listAll(
-          subscriptionClient.tenants,
-          subscriptionClient.tenants.list()
+        const tenantClient = new SubscriptionClient(AzureAccountManager.teamsFxTokenCredential);
+        const tenantTokenCredential: TeamsFxTokenCredential = new TeamsFxTokenCredential(
+          AzureAccountManager.codeFlowInstance
         );
-        for (let i = 0; i < tenants.length; ++i) {
-          try {
-            const token = await AzureAccountManager.codeFlowInstance.getTenantToken(
-              tenants[i].tenantId!
-            );
-            if (token) {
-              const tokenJson = ConvertTokenToJson(token!);
-              this.setMemoryCache(token, tokenJson);
-              const tenantCredential = new DeviceTokenCredentials(
-                getConfig().auth.clientId,
-                (tokenJson as any).tid,
-                (tokenJson as any).upn ?? (tokenJson as any).unique_name,
-                undefined,
-                env,
-                memoryDictionary[(tokenJson as any).tid]
-              );
-              const tenantClient = new SubscriptionClient(tenantCredential);
-              const subscriptions = await listAll(
-                tenantClient.subscriptions,
-                tenantClient.subscriptions.list()
-              );
-              for (let j = 0; j < subscriptions.length; ++j) {
-                const item = subscriptions[j];
-                arr.push({
-                  subscriptionId: item.subscriptionId!,
-                  subscriptionName: item.displayName!,
-                  tenantId: tenants[i].tenantId!,
-                });
+        for await (const page of tenantClient.tenants.list().byPage({ maxPageSize: 100 })) {
+          for (const tenant of page) {
+            if (tenant.tenantId) {
+              try {
+                tenantTokenCredential.setTenantId(tenant.tenantId);
+                const subscriptionClient = new SubscriptionClient(tenantTokenCredential);
+                for await (const subPage of subscriptionClient.subscriptions
+                  .list()
+                  .byPage({ maxPageSize: 100 })) {
+                  for (const item of subPage) {
+                    arr.push({
+                      subscriptionId: item.subscriptionId!,
+                      subscriptionName: item.displayName!,
+                      tenantId: tenant.tenantId,
+                    });
+                  }
+                }
+              } catch (error) {
+                if (error.message.indexOf(MFACode) >= 0) {
+                  if (showMFA) {
+                    CLILogProvider.necessaryLog(LLevel.Info, changeLoginTenantMessage);
+                    showMFA = false;
+                  }
+                  CLILogProvider.necessaryLog(LLevel.Info, tenant.tenantId);
+                }
               }
-            }
-          } catch (error) {
-            if (error.message.indexOf(MFACode) >= 0) {
-              if (showMFA) {
-                CLILogProvider.necessaryLog(LLevel.Info, changeLoginTenantMessage);
-                showMFA = false;
-              }
-              CLILogProvider.necessaryLog(LLevel.Info, tenants[i].tenantId!);
             }
           }
         }
       } else {
-        const token = await AzureAccountManager.codeFlowInstance.getTenantToken(
-          AzureAccountManager.tenantId
+        AzureAccountManager.teamsFxTokenCredential.setTenantId(AzureAccountManager.tenantId);
+        const subscriptionClient = new SubscriptionClient(
+          AzureAccountManager.teamsFxTokenCredential
         );
-        const tokenJson = ConvertTokenToJson(token!);
-        this.setMemoryCache(token, tokenJson);
-        const tenantCredential = new DeviceTokenCredentials(
-          getConfig().auth.clientId,
-          (tokenJson as any).tid,
-          (tokenJson as any).upn ?? (tokenJson as any).unique_name,
-          undefined,
-          env,
-          memoryDictionary[(tokenJson as any).tid]
-        );
-        const tenantClient = new SubscriptionClient(tenantCredential);
-        const subscriptions = await listAll(
-          tenantClient.subscriptions,
-          tenantClient.subscriptions.list()
-        );
-        for (let j = 0; j < subscriptions.length; ++j) {
-          const item = subscriptions[j];
-          arr.push({
-            subscriptionId: item.subscriptionId!,
-            subscriptionName: item.displayName!,
-            tenantId: AzureAccountManager.tenantId,
-          });
+        for await (const page of subscriptionClient.subscriptions
+          .list()
+          .byPage({ maxPageSize: 100 })) {
+          for (const item of page) {
+            arr.push({
+              subscriptionId: item.subscriptionId!,
+              subscriptionName: item.displayName!,
+              tenantId: AzureAccountManager.tenantId,
+            });
+          }
         }
       }
     }
@@ -471,6 +490,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
           tenantId: item.tenantId,
         });
         AzureAccountManager.tenantId = item.tenantId;
+        AzureAccountManager.teamsFxTokenCredential.setTenantId(item.tenantId);
         AzureAccountManager.subscriptionId = item.subscriptionId;
         AzureAccountManager.subscriptionName = item.subscriptionName;
         return;

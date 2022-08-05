@@ -108,6 +108,7 @@ export class StateConfigKey {
   // frontend hosting
   static readonly domain = "domain";
   static readonly frontendResourceId = "resourceId";
+  static readonly frontendEndpoint = "siteEndpoint";
   // identity
   static readonly identityClientId = "identityClientId";
   // key vault

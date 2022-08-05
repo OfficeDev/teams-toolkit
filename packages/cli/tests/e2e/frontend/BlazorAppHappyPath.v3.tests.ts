@@ -86,7 +86,7 @@ describe("Blazor App", function () {
     );
     chai.assert.include(
       response[FrontendWebAppConfig.authEndpoint],
-      context[PluginId.FrontendHosting][StateConfigKey.endpoint]
+      context[PluginId.FrontendHosting][StateConfigKey.frontendEndpoint]
     );
     chai.assert.equal(
       response[FrontendWebAppConfig.authority],

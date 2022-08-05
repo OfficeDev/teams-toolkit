@@ -410,7 +410,7 @@ export function convertManifestTemplateToV3(content: string): string {
     const pluginName = pluginAndComponentArray[0];
     const componentName = pluginAndComponentArray[1];
     if (pluginName !== componentName)
-      content = content.replace(new RegExp(`state\.${pluginName}`, "g"), `state.${componentName}`);
+      content = content.replace(new RegExp(`state.${pluginName}`, "g"), `state.${componentName}`);
   }
   return content;
 }
@@ -420,7 +420,7 @@ export function convertManifestTemplateToV2(content: string): string {
     const pluginName = pluginAndComponentArray[0];
     const componentName = pluginAndComponentArray[1];
     if (pluginName !== componentName)
-      content = content.replace(new RegExp(`state\.${componentName}`, "g"), `state.${pluginName}`);
+      content = content.replace(new RegExp(`state.${componentName}`, "g"), `state.${pluginName}`);
   }
   return content;
 }

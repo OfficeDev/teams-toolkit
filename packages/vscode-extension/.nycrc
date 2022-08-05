@@ -4,8 +4,10 @@
   "include": ["src/**/*.ts", "src/**/*.js"],
   "exclude": [
     "src/controls/webviewPanel.ts",
+    "src/commonlib/",
     "src/exp/",
     "src/qm/",
+    "src/treeview/webViewProvider/",
     "src/utils/survey.ts",
     "src/extension.ts",
     "src/folder.ts"

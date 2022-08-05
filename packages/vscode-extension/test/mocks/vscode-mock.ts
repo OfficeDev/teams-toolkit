@@ -158,6 +158,14 @@ mockedVSCode.commands = {
   },
 };
 
+// Setup textDocument APIs
+(mockedVSCode as any).TextDocument = {
+  fileName: "",
+  getText: () => {
+    return "";
+  },
+};
+
 function generateNotebookMocks() {
   const mockedObj = TypeMoq.Mock.ofType<Record<string, unknown>>();
   (mockedVSCode as any).notebook = mockedObj.object;

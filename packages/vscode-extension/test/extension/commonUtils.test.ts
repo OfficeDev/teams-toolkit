@@ -250,6 +250,7 @@ describe("CommonUtils", () => {
       TelemetryTriggerFrom.Auto,
       TelemetryTriggerFrom.CodeLens,
       TelemetryTriggerFrom.EditorTitle,
+      TelemetryTriggerFrom.Webview,
       TelemetryTriggerFrom.Notification,
       TelemetryTriggerFrom.Other,
       TelemetryTriggerFrom.QuickPick,

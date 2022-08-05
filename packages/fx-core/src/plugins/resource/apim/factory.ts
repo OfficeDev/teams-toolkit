@@ -93,9 +93,9 @@ export class Factory {
     telemetryReporter?: TelemetryReporter,
     logProvider?: LogProvider
   ): Promise<IQuestionManager> {
-    const solutionConfig = new SolutionConfig(envInfo);
     switch (platform) {
       case Platform.VSCode:
+        const solutionConfig = new SolutionConfig(envInfo);
         // Lazy init apim service to get the latest subscription id in configuration
         const lazyApimService = new Lazy<ApimService>(
           async () =>

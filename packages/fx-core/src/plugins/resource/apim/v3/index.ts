@@ -64,7 +64,7 @@ export class ApimPluginV3 implements v3.PluginV3 {
       envInfo && envInfo.state && envInfo.state[ComponentNames.APIM]
         ? envInfo.state[ComponentNames.APIM]
         : {};
-    const apimConfig = new ApimPluginConfig(apimState, envInfo.envName);
+    const apimConfig = envInfo ? new ApimPluginConfig(apimState, envInfo.envName) : undefined;
     const node = await questionManager.deploy(
       inputs.projectPath,
       envInfo as v3.EnvInfoV3,

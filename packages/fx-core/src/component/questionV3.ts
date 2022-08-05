@@ -167,18 +167,20 @@ export async function getQuestionsForDeployV3(
   selectQuestion.staticOptions = options;
   selectQuestion.default = options.map((i) => i.id);
   const node = new QTreeNode(selectQuestion);
-  const apimV3 = Container.get<ApimPluginV3>(BuiltInFeaturePluginNames.apim);
-  const apimDeployNodeRes = await apimV3.getQuestionsForDeploy(
-    ctx,
-    inputs,
-    ctx.envInfo!,
-    ctx.tokenProvider!
-  );
-  if (apimDeployNodeRes.isErr()) return err(apimDeployNodeRes.error);
-  if (apimDeployNodeRes.value) {
-    const apimNode = apimDeployNodeRes.value;
-    apimNode.condition = { contains: BuiltInFeaturePluginNames.apim };
-    node.addChild(apimNode);
+  if (selectableComponents.includes(ComponentNames.APIM)) {
+    const apimV3 = Container.get<ApimPluginV3>(BuiltInFeaturePluginNames.apim);
+    const apimDeployNodeRes = await apimV3.getQuestionsForDeploy(
+      ctx,
+      inputs,
+      envInfo!,
+      ctx.tokenProvider!
+    );
+    if (apimDeployNodeRes.isErr()) return err(apimDeployNodeRes.error);
+    if (apimDeployNodeRes.value) {
+      const apimNode = apimDeployNodeRes.value;
+      apimNode.condition = { contains: BuiltInFeaturePluginNames.apim };
+      node.addChild(apimNode);
+    }
   }
   return ok(node);
 }

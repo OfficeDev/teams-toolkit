@@ -41,6 +41,12 @@ import { ResultFactory } from "../results";
 import { getPermissionRequest } from "../permissions";
 import { GraphScopes, isAadManifestEnabled } from "../../../../common";
 import { convertToAlphanumericOnly } from "../../../../common/utils";
+import { ComponentNames } from "../../../../component/constants";
+import { isV3 } from "../../../../core/globalVars";
+
+const aadComponentKey = isV3() ? ComponentNames.AadApp : BuiltInFeaturePluginNames.aad;
+const tabComponentKey = isV3() ? ComponentNames.TeamsTab : BuiltInFeaturePluginNames.frontend;
+const botComponentKey = isV3() ? ComponentNames.TeamsBot : BuiltInFeaturePluginNames.bot;
 
 export class Utils {
   public static addLogAndTelemetryWithLocalDebug(
@@ -93,7 +99,7 @@ export class Utils {
 
   public static skipCreateAadForProvision(envInfo: v3.EnvInfoV3): boolean {
     const envConfig: EnvConfig = envInfo.config as EnvConfig;
-    const envState: v3.AADApp = envInfo.state[BuiltInFeaturePluginNames.aad] as v3.AADApp;
+    const envState: v3.AADApp = envInfo.state[aadComponentKey] as v3.AADApp;
     const objectId = envConfig.auth?.objectId;
     const clientId = envConfig.auth?.clientId;
     const clientSecret = envConfig.auth?.clientSecret;
@@ -295,7 +301,7 @@ export class ProvisionConfig {
       return err(permissionRes.error);
     }
     this.permissionRequest = permissionRes.value;
-    const aadResource = envInfo.state[BuiltInFeaturePluginNames.aad] as v3.AADApp;
+    const aadResource = envInfo.state[aadComponentKey] as v3.AADApp;
     const objectId = aadResource?.objectId;
     if (objectId) {
       this.objectId = objectId as string;
@@ -376,11 +382,11 @@ export class ProvisionConfig {
     }
   }
   public saveConfigIntoEnvInfo(envInfo: v3.EnvInfoV3, tenantId: string): void {
-    if (!envInfo.state[BuiltInFeaturePluginNames.aad]) {
-      envInfo.state[BuiltInFeaturePluginNames.aad] = {};
-      (envInfo.state[BuiltInFeaturePluginNames.aad] as v3.AADApp).secretFields = ["clientSecret"];
+    if (!envInfo.state[aadComponentKey]) {
+      envInfo.state[aadComponentKey] = {};
+      (envInfo.state[aadComponentKey] as v3.AADApp).secretFields = ["clientSecret"];
     }
-    const envState = envInfo.state[BuiltInFeaturePluginNames.aad] as v3.AADApp;
+    const envState = envInfo.state[aadComponentKey] as v3.AADApp;
     const oauthAuthority = ProvisionConfig.getOauthAuthority(tenantId);
     if (this.clientId) envState.clientId = this.clientId;
     if (this.password) envState.clientSecret = this.password;
@@ -491,17 +497,15 @@ export class SetApplicationInContextConfig {
     }
   }
   public restoreConfigFromEnvInfo(ctx: v2.Context, envInfo: v3.EnvInfoV3): void {
-    const aadResource = envInfo.state[BuiltInFeaturePluginNames.aad] as v3.AADApp;
+    const aadResource = envInfo.state[aadComponentKey] as v3.AADApp;
     let frontendDomain = aadResource?.domain;
     if (!frontendDomain) {
-      frontendDomain = (
-        envInfo.state[BuiltInFeaturePluginNames.frontend] as v3.FrontendHostingResource
-      )?.domain;
+      frontendDomain = (envInfo.state[tabComponentKey] as v3.FrontendHostingResource)?.domain;
     }
     if (frontendDomain) {
       this.frontendDomain = format(frontendDomain as string, Formats.Domain);
     }
-    const botId = (envInfo.state[BuiltInFeaturePluginNames.bot] as v3.AzureBot)?.botId;
+    const botId = (envInfo.state[botComponentKey] as v3.AzureBot)?.botId;
     if (botId) {
       this.botId = format(botId as string, Formats.UUID);
     }
@@ -600,12 +604,12 @@ export class PostProvisionConfig {
     const aadResource = envInfo.state[BuiltInFeaturePluginNames.aad] as v3.AADApp;
     let frontendEndpoint = aadResource?.endpoint;
     if (!frontendEndpoint) {
-      frontendEndpoint = envInfo.state[BuiltInFeaturePluginNames.frontend]?.endpoint;
+      frontendEndpoint = envInfo.state[tabComponentKey]?.endpoint;
     }
     if (frontendEndpoint) {
       this.frontendEndpoint = format(frontendEndpoint as string, Formats.Endpoint);
     }
-    const botEndpoint = (envInfo.state[BuiltInFeaturePluginNames.bot] as v3.AzureBot)?.siteEndpoint;
+    const botEndpoint = (envInfo.state[botComponentKey] as v3.AzureBot)?.siteEndpoint;
     if (botEndpoint) {
       this.botEndpoint = format(botEndpoint as string, Formats.Endpoint);
     }

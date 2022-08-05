@@ -154,6 +154,8 @@ export class TeamsfxCore {
       }
       projectPath = path.join(folder, appName);
       inputs.projectPath = projectPath;
+      // set isVS global var when creating project
+      globalVars.isVS = inputs[CoreQuestionNames.ProgrammingLanguage] === "csharp";
       const initRes = await this.init(context, inputs);
       if (initRes.isErr()) return err(initRes.error);
       const features = inputs.capabilities;

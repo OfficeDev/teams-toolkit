@@ -8,6 +8,7 @@ param currentAppSettings object
 
 var webAppName = split(provisionOutputs.azureWebApp{{scenario}}Output.value.resourceId , '/')[8]
 {{#if (contains "aad-app" connections)}}
+var webappEndpoint = provisionOutputs.azureWebApp{{scenario}}Output.value.siteEndpoint
 var m365ClientId = provisionParameters['m365ClientId']
   {{#if (contains "key-vault" connections) }}
 var m365ClientSecret = {{key-vault.outputs.m365ClientSecretReference}}
@@ -40,12 +41,20 @@ resource webAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   name: '${webAppName}/appsettings'
   properties: union({
     {{#if (contains "aad-app" connections)}}
-    INITIATE_LOGIN_ENDPOINT: uri(provisionOutputs.azureWebApp{{scenario}}Output.value.siteEndpoint, 'auth-start.html') // The page is used to let users consent required OAuth permissions during bot SSO process
+      {{#if (contains "teams-tab" connections)}}
+    TAB_APP_ENDPOINT: webappEndpoint
+    TeamsFx__Authentication__ClientId: m365ClientId // Client id of AAD application
+    TeamsFx__Authentication__ClientSecret: m365ClientSecret // Client secret of AAD application
+    TeamsFx__Authentication__InitiateLoginEndpoint: uri(webappEndpoint, 'auth-start.html') // The page is used to let users consent required OAuth permissions during bot SSO process
+    TeamsFx__Authentication__OAuthAuthority: m365OauthAuthorityHost // AAD authority host
+      {{else}}
+    INITIATE_LOGIN_ENDPOINT: uri(webappEndpoint, 'auth-start.html') // The page is used to let users consent required OAuth permissions during bot SSO process
     M365_AUTHORITY_HOST: m365OauthAuthorityHost // AAD authority host
     M365_CLIENT_ID: m365ClientId // Client id of AAD application
     M365_CLIENT_SECRET: m365ClientSecret // Client secret of AAD application
     M365_TENANT_ID: m365TenantId // Tenant id of AAD application
     M365_APPLICATION_ID_URI: m365ApplicationIdUri // Application ID URI of AAD application
+      {{/if}}
     {{/if}}
     {{#if (contains "teams-bot" connections)}}
     BOT_ID: botAadAppClientId // ID of your bot

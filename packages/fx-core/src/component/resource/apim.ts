@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { hooks } from "@feathersjs/hooks/lib";
 import {
   Action,
   err,
@@ -9,12 +10,14 @@ import {
   ok,
   Result,
   ResourceContextV3,
+  ContextV3,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service, Container } from "typedi";
 import { ApimPluginV3 } from "../../plugins/resource/apim/v3";
 import { BuiltInFeaturePluginNames } from "../../plugins/solution/fx-solution/v3/constants";
 import { APIMOutputs, ComponentNames } from "../constants";
+import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { AzureResource } from "./azureResource";
 @Service(ComponentNames.APIM)
 export class APIMResource extends AzureResource {
@@ -55,6 +58,19 @@ export class APIMResource extends AzureResource {
     }
     return ok(undefined);
   }
+  @hooks([
+    ActionExecutionMW({
+      question: (context: ContextV3, inputs: InputsWithProjectPath) => {
+        const apimV3 = Container.get<ApimPluginV3>(BuiltInFeaturePluginNames.apim);
+        return apimV3.getQuestionsForDeploy(
+          context,
+          inputs,
+          context.envInfo!,
+          context.tokenProvider!
+        );
+      },
+    }),
+  ])
   async deploy(
     context: ResourceContextV3,
     inputs: InputsWithProjectPath

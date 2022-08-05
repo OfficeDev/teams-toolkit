@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 import {
   CLIPlatforms,
+  ContextV3,
   DynamicPlatforms,
   err,
   FxError,
@@ -78,6 +79,8 @@ import { buildQuestionNode } from "./resource/azureSql/questions";
 import { functionNameQuestion } from "../plugins/resource/function/question";
 import { ApiConnectorImpl } from "../plugins/resource/apiconnector/plugin";
 import { addCicdQuestion } from "./feature/cicd";
+import { ApimPluginV3 } from "../plugins/resource/apim/v3";
+import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 
 export async function getQuestionsForProvisionV3(
   context: v2.Context,
@@ -101,7 +104,7 @@ export async function getQuestionsForProvisionV3(
 }
 
 export async function getQuestionsForDeployV3(
-  ctx: v2.Context,
+  ctx: ContextV3,
   inputs: Inputs,
   envInfo?: v3.EnvInfoV3
 ): Promise<Result<QTreeNode | undefined, FxError>> {
@@ -163,7 +166,21 @@ export async function getQuestionsForDeployV3(
   const selectQuestion = DeployPluginSelectQuestion;
   selectQuestion.staticOptions = options;
   selectQuestion.default = options.map((i) => i.id);
-  return ok(new QTreeNode(selectQuestion));
+  const node = new QTreeNode(selectQuestion);
+  const apimV3 = Container.get<ApimPluginV3>(BuiltInFeaturePluginNames.apim);
+  const apimDeployNodeRes = await apimV3.getQuestionsForDeploy(
+    ctx,
+    inputs,
+    ctx.envInfo!,
+    ctx.tokenProvider!
+  );
+  if (apimDeployNodeRes.isErr()) return err(apimDeployNodeRes.error);
+  if (apimDeployNodeRes.value) {
+    const apimNode = apimDeployNodeRes.value;
+    apimNode.condition = { contains: BuiltInFeaturePluginNames.apim };
+    node.addChild(apimNode);
+  }
+  return ok(node);
 }
 
 export async function getQuestionsForAddFeatureV3(

@@ -86,7 +86,9 @@ export class TeamsTab {
     // 1. scaffold and config tab
     const clonedInputs = cloneDeep(inputs);
     clonedInputs.folder ||=
-      inputs[CoreQuestionNames.ProgrammingLanguage] === "csharp" ? "" : FrontendPathInfo.WorkingDir;
+      inputs[CoreQuestionNames.ProgrammingLanguage] === "csharp"
+        ? "."
+        : FrontendPathInfo.WorkingDir;
     clonedInputs.language = inputs[CoreQuestionNames.ProgrammingLanguage];
     const tabCode = Container.get(ComponentNames.TabCode) as TabCodeProvider;
     const res = await tabCode.generate(context, clonedInputs);

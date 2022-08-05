@@ -1,3 +1,4 @@
+- [4.0.4 - Aug 08 2022](#404---aug-08-2022)
 - [4.0.3 - Jul 26 2022](#403---jul-26-2022)
 - [4.0.2 - Jul 12 2022](#402---jul-12-2022)
 - [4.0.1 - Jun 16 2022](#401---jun-16-2022)
@@ -18,6 +19,22 @@
 - [2.7.0 - Sep 17 2021](#270---sep-17-2021)
 
 # Changelog
+
+## 4.0.4 - Aug 08, 2022
+
+Incremental version for Teams Toolkit with multiple bugs fix, enhancements and new additions to sample application gallery.
+
+New samples:
+- Proactive Messaging: Save users' conversation reference to send proactive reminder messages using bots.
+
+    ![Proactive Messaging](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/proactive_messaging.png)
+
+- One Productivity Hub: View calendar events, to-do tasks and files in Teams tab.
+
+    ![One Productivity Hub](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/one_productivity_hub.png)
+
+Enhancement:
+- Enhanced experience of building Teams tab application with SharePoint Framework v1.15.0
 
 ## 4.0.3 - Jul 26, 2022
 

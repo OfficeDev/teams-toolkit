@@ -54,8 +54,8 @@ describe("Deploy to customized resource group", function () {
     await customizeBicepFilesToCustomizedRg(
       customizedRgName,
       projectPath,
-      `name: 'functionProvision'`,
-      `name: 'addTeamsFxFunctionConfiguration'`
+      `name: 'azureFunctionApiProvision'`,
+      `name: 'teamsFxAzureFunctionApiConfig'`
     );
 
     // Provision

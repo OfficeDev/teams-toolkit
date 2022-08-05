@@ -60,7 +60,7 @@ describe("Deploy to customized resource group", function () {
       customizedRgName,
       projectPath,
       `name: 'apimProvision'`,
-      `name: 'addTeamsFxApimConfiguration'`
+      `name: 'teamsFxApimConfig'`
     );
 
     // Provision

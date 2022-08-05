@@ -4,14 +4,15 @@
 import { IBot, IComposeExtension, IConfigurableTab, IStaticTab } from "@microsoft/teamsfx-api";
 
 export const TAB_COMPONENT_NAME = "teams-tab";
-
+export const App_MANIFEST_COMPONENT_NAME = "app-manifest";
 export const AAD_COMPONENT_NAME = "aad-app";
+export const BOT_COMPONENT_NAME = "teams-bot";
 
 export const TEAMS_APP_MANIFEST_TEMPLATE = `{
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.13/MicrosoftTeams.schema.json",
   "manifestVersion": "1.13",
   "version": "1.0.0",
-  "id": "{{state.app-manifest.teamsAppId}}",
+  "id": "{{state.${App_MANIFEST_COMPONENT_NAME}.teamsAppId}}",
   "packageName": "com.microsoft.teams.extension",
   "developer": {
       "name": "Teams App, Inc.",
@@ -61,7 +62,7 @@ export const CONFIGURABLE_TABS_TPL_V3: IConfigurableTab[] = [
   },
 ];
 
-export const BOT_ID_PLACEHOLDER = "{{state.teams-bot.botId}}";
+export const BOT_ID_PLACEHOLDER = `{{state.${BOT_COMPONENT_NAME}.botId}}`;
 
 export const BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3: IBot[] = [
   {

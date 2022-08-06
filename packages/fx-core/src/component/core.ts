@@ -447,6 +447,11 @@ export class TeamsfxCore {
     context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
+    context.logProvider.info(
+      `inputs(${AzureSolutionQuestionNames.PluginSelectionDeploy}) = ${
+        inputs[AzureSolutionQuestionNames.PluginSelectionDeploy]
+      }`
+    );
     const projectSettings = context.projectSetting as ProjectSettingsV3;
     const inputPlugins = inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] || [];
     const inputComponentNames = inputPlugins.map(pluginName2ComponentName) as string[];
@@ -455,12 +460,9 @@ export class TeamsfxCore {
     // 1. collect resources to deploy
     const isVS = isVSProject(projectSettings);
     for (const component of projectSettings.components) {
-      if (
-        component.deploy &&
-        component.hosting !== undefined &&
-        (isVS || inputComponentNames.includes(component.name))
-      ) {
-        const componentInstance = Container.get<CloudResource>(component.hosting);
+      if (component.deploy && (isVS || inputComponentNames.includes(component.name))) {
+        const deployComponentName = component.hosting || component.name;
+        const deployComponent = Container.get<CloudResource>(deployComponentName);
         thunks.push({
           pluginName: `${component.name}`,
           taskName: "deploy",
@@ -469,10 +471,10 @@ export class TeamsfxCore {
             clonedInputs.folder = component.folder;
             clonedInputs.artifactFolder = component.artifactFolder;
             clonedInputs.componentId = component.name;
-            return componentInstance.deploy!(context, clonedInputs);
+            return deployComponent.deploy!(context, clonedInputs);
           },
         });
-        if (AzureResources.includes(component.hosting)) {
+        if (AzureResources.includes(deployComponentName)) {
           hasAzureResource = true;
         }
       }

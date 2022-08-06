@@ -7,7 +7,9 @@ import {
 import { cloneDeep } from "lodash";
 import { isVSProject } from "../common/projectSettingsHelper";
 import { hasAzureResourceV3 } from "../common/projectSettingsHelperV3";
+import { isV3 } from "../core/globalVars";
 import { MessageExtensionNewUIItem } from "../plugins/solution/fx-solution/question";
+import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { ComponentNames } from "./constants";
 import { ensureComponentConnections } from "./utils";
 import { getComponent } from "./workflow";
@@ -102,6 +104,12 @@ export const EnvStateMigrationComponentNames = [
   ["fx-resource-bot", ComponentNames.TeamsBot],
   ["fx-resource-frontend-hosting", ComponentNames.TeamsTab],
 ];
+
+export const APIM_STATE_KEY = isV3() ? ComponentNames.APIM : BuiltInFeaturePluginNames.apim;
+export const API_STATE_KEY = isV3() ? ComponentNames.TeamsApi : BuiltInFeaturePluginNames.function;
+export const AAD_STATE_KEY = isV3() ? ComponentNames.AadApp : BuiltInFeaturePluginNames.aad;
+export const TAB_STATE_KEY = isV3() ? ComponentNames.TeamsTab : BuiltInFeaturePluginNames.frontend;
+export const BOT_STATE_KEY = isV3() ? ComponentNames.TeamsBot : BuiltInFeaturePluginNames.bot;
 
 export function pluginName2ComponentName(pluginName: string): string {
   const map = new Map<string, string>();

@@ -210,7 +210,6 @@ jobs:
 
       - name: Install CLI
         run: |
-          mv *.tgz teamsfx-cli.tgz
           npm install -g teamsfx-cli.tgz
 
       - name: print system info

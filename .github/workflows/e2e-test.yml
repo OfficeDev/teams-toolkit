@@ -209,7 +209,6 @@ jobs:
           name: Teamsfx-cli
 
       - name: Install CLI
-        working-directory: packages/cli
         run: |
           mv *.tgz teamsfx-cli.tgz
           npm install -g teamsfx-cli.tgz

@@ -98,7 +98,7 @@ describe("Blazor App", function () {
     await CliHelper.deployAll(projectPath, "");
 
     const context = await readContextMultiEnv(projectPath, envName);
-    const endpoint = context[PluginId.FrontendHosting][StateConfigKey.endpoint];
+    const endpoint = context[PluginId.FrontendHosting][StateConfigKey.frontendEndpoint];
     const axiosInstance = axios.create();
     try {
       const response = await axiosInstance.get(endpoint);

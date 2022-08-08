@@ -468,21 +468,19 @@ export async function openFolder(
       commands.executeCommand("vscode.openFolder", folderPath);
     }, 2000);
   } else {
-    const autoOpenTimeout = setTimeout(() => {
-      commands.executeCommand("vscode.openFolder", folderPath, true);
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenNewProject, {
-        [TelemetryProperty.VscWindow]: VSCodeWindowChoice.NewWindowByDefault,
-      });
-    }, 5000);
-    const selection = await VS_CODE_UI.showMessage(
-      "info",
-      localize("teamstoolkit.handlers.openProject.title"),
-      false,
-      localize("teamstoolkit.handlers.openInNewWindow"),
-      localize("teamstoolkit.handlers.openInCurrentWindow")
-    );
+    const selection = await Promise.race([
+      new Promise<Result<string | undefined, FxError>>((resolve, reject) => {
+        setTimeout(resolve, 10000, err("timeout"));
+      }),
+      VS_CODE_UI.showMessage(
+        "info",
+        localize("teamstoolkit.handlers.openProject.title"),
+        false,
+        localize("teamstoolkit.handlers.openInNewWindow"),
+        localize("teamstoolkit.handlers.openInCurrentWindow")
+      ),
+    ]);
     if (selection.isOk()) {
-      clearTimeout(autoOpenTimeout);
       const openInNewWindow = selection.value === localize("teamstoolkit.handlers.openInNewWindow");
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenNewProject, {
         [TelemetryProperty.VscWindow]: openInNewWindow
@@ -499,6 +497,12 @@ export async function openFolder(
           commands.executeCommand("vscode.openFolder", folderPath);
         }, 2000);
       }
+    } else {
+      // timeout
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenNewProject, {
+        [TelemetryProperty.VscWindow]: VSCodeWindowChoice.NewWindowByDefault,
+      });
+      commands.executeCommand("vscode.openFolder", folderPath, true);
     }
   }
 }

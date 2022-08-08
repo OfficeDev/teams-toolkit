@@ -4,6 +4,7 @@ import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { it } from "mocha";
 import { TeamsAppSolution } from " ../../../src/plugins/solution";
+import { PagedAsyncIterableIterator } from "@azure/core-paging";
 import {
   ConfigFolderName,
   FxError,
@@ -69,7 +70,7 @@ import {
 import { MockedM365Provider, MockedV2Context, validManifest } from "./util";
 import { AppDefinition } from "../../../src/plugins/resource/appstudio/interfaces/appDefinition";
 import _ from "lodash";
-import { TokenCredential } from "@azure/core-auth";
+import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase, UserTokenCredentials } from "@azure/ms-rest-nodeauth";
 import { Providers, ResourceGroups, ResourceManagementClient } from "@azure/arm-resources";
 import { AppStudioClient } from "../../../src/plugins/resource/appstudio/appStudio";
@@ -86,8 +87,16 @@ import {
 } from "../../../src/plugins/solution/fx-solution/commonQuestions";
 import { ResourceManagementModels } from "@azure/arm-resources";
 import { CoreQuestionNames } from "../../../src/core/question";
-import { Subscriptions } from "@azure/arm-subscriptions";
-import { SubscriptionsListLocationsResponse } from "@azure/arm-subscriptions/esm/models";
+import {
+  Subscription,
+  SubscriptionClient,
+  Subscriptions,
+  SubscriptionsGetOptionalParams,
+  SubscriptionsListLocationsOptionalParams,
+  SubscriptionsListOptionalParams,
+  Location as Location_2,
+  SubscriptionsGetResponse,
+} from "@azure/arm-subscriptions";
 import * as msRest from "@azure/ms-rest-js";
 import { ProvidersGetOptionalParams, ProvidersGetResponse } from "@azure/arm-resources/esm/models";
 import { TeamsAppSolutionV2 } from "../../../src/plugins/solution/fx-solution/v2/solution";
@@ -100,6 +109,7 @@ import { assert } from "sinon";
 import { resourceGroupHelper } from "../../../src/plugins/solution/fx-solution/utils/ResourceGroupHelper";
 import * as manifestTemplate from "../../../src/plugins/resource/appstudio/manifestTemplate";
 import { SolutionRunningState } from "../../../src/plugins/solution/fx-solution/types";
+import * as sub from "@azure/arm-subscriptions";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -178,6 +188,15 @@ const mockedSubscriptionName = "mocked subscription id";
 const mockedSubscriptionId = "mocked subscription id";
 const mockedTenantId = "mocked tenant id";
 
+class MyTokenCredential implements TokenCredential {
+  getToken(
+    scopes: string | string[],
+    options?: GetTokenOptions | undefined
+  ): Promise<AccessToken | null> {
+    throw new Error("Method not implemented.");
+  }
+}
+
 class MockedAzureTokenProvider implements AzureAccountProvider {
   getAccountCredential(showDialog?: boolean): TokenCredentialsBase {
     throw new Error("Method not implemented.");
@@ -192,7 +211,7 @@ class MockedAzureTokenProvider implements AzureAccountProvider {
     return new UserTokenCredentials("someClientId", "some.domain", "someUserName", "somePassword");
   }
   getIdentityCredentialAsync(showDialog?: boolean): Promise<TokenCredential> {
-    throw new Error("Method not implemented.");
+    return Promise.resolve(new MyTokenCredential());
   }
   signout(): Promise<boolean> {
     throw new Error("Method not implemented.");
@@ -706,25 +725,46 @@ function mockListResourceGroupResult(
     );
 }
 
-function mockListLocationResult(mocker: sinon.SinonSandbox, subscriptionId: string) {
-  mocker
-    .stub(Subscriptions.prototype, "listLocations")
-    .callsFake(
-      async (
-        subscriptionId: string,
-        options?: msRest.RequestOptionsBase
-      ): Promise<SubscriptionsListLocationsResponse> => {
-        return [
-          {
-            id: "location",
-            subscriptionId: subscriptionId,
-            name: "location",
-            displayName: "location",
-          },
-        ] as SubscriptionsListLocationsResponse;
-      }
-    );
-}
+const mockSubscriptions: Subscriptions = {
+  listLocations: function (
+    subscriptionId: string,
+    options?: SubscriptionsListLocationsOptionalParams
+  ): PagedAsyncIterableIterator<Location_2> {
+    return {
+      next() {
+        throw new Error("Function not implemented.");
+      },
+      [Symbol.asyncIterator]() {
+        throw new Error("Function not implemented.");
+      },
+      byPage: () => {
+        return generator() as any;
+      },
+    };
+
+    function* generator() {
+      yield [
+        {
+          id: "location",
+          subscriptionId: "3b8db46f-4298-458a-ac36-e04e7e66b68f",
+          name: "location",
+          displayName: "location",
+        },
+      ];
+    }
+  },
+  list: function (
+    options?: SubscriptionsListOptionalParams
+  ): PagedAsyncIterableIterator<Subscription> {
+    throw new Error("Function not implemented.");
+  },
+  get: function (
+    subscriptionId: string,
+    options?: SubscriptionsGetOptionalParams
+  ): Promise<SubscriptionsGetResponse> {
+    throw new Error("Function not implemented.");
+  },
+};
 
 function mockProviderGetResult(mocker: sinon.SinonSandbox) {
   mocker
@@ -750,6 +790,12 @@ function mockProviderGetResult(mocker: sinon.SinonSandbox) {
 describe("before provision() asking for resource group info", () => {
   const mocker = sinon.createSandbox();
   const resourceGroupsCreated = new Map<string, string>();
+
+  before(() => {
+    const mockSubscriptionClient = new SubscriptionClient(new MyTokenCredential());
+    mockSubscriptionClient.subscriptions = mockSubscriptions;
+    sinon.stub(sub, "SubscriptionClient").returns(mockSubscriptionClient);
+  });
   beforeEach(() => {
     mocker.stub(solutionUtil, "getSubsriptionDisplayName").resolves(mockedSubscriptionName);
     mocker.stub(process, "env").get(() => {
@@ -774,7 +820,6 @@ describe("before provision() asking for resource group info", () => {
       mockNewResourceGroupLocation
     );
     mockListResourceGroupResult(mocker, fakeSubscriptionId, []);
-    mockListLocationResult(mocker, fakeSubscriptionId);
     mockProviderGetResult(mocker);
 
     mockedCtx.projectSettings = {
@@ -823,7 +868,6 @@ describe("before provision() asking for resource group info", () => {
 
     const mockedCtx = mockCtxWithResourceGroupQuestions(false, mockResourceGroupName);
     mockListResourceGroupResult(mocker, fakeSubscriptionId, mockResourceGroupList);
-    mockListLocationResult(mocker, fakeSubscriptionId);
     mockProviderGetResult(mocker);
 
     mockedCtx.projectSettings = {

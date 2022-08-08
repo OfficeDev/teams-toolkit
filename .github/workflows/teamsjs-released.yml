@@ -27,17 +27,20 @@ jobs:
                 const response = await fetch('https://api.github.com/repos/OfficeDev/microsoft-teams-library-js/releases/tags/v'+'${{ github.event.client_payload.version }}');
                 const data = await response.json();
                 const note = await data.body;
+                const url = await data.html_url;
                 console.log(note);
-                note_html = md.render(note);
-                return note_html;
+                console.log("\nDetails can be found here: " + url);
+                const emailBody = note + "\n\nDetails can be found here: " + url;
+                emailBody_html = md.render(emailBody);
+                return emailBody_html;
             }
             return md_to_html();
 
       - name: Setup Email and Recipient 
         id: email
         run: |
-          emails = "yiqingzhao@microsoft.com"
-          subject = "Teams JS SDK v${{ github.event.client_payload.version }} Released"
+          emails="yiqingzhao@microsoft.com"
+          subject="Teams JS SDK v${{ github.event.client_payload.version }} Released"
 
           echo "::set-output name=to::$emails"
           echo "::set-output name=subject::$subject"

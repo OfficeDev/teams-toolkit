@@ -40,7 +40,7 @@ import {
 import _, { isUndefined } from "lodash";
 import { PluginDisplayName } from "../../../../common/constants";
 import { ProvisionContextAdapter } from "./adaptor";
-import { deployArmTemplates, updateAzureParameter } from "../arm";
+import { deployArmTemplates, updateAzureParameters } from "../arm";
 import { Container } from "typedi";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
@@ -56,7 +56,7 @@ import {
 } from "../../../../common/projectSettingsHelper";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import {
-  handleConfigFilesWhenSwitchAccounts,
+  handleConfigFilesWhenSwitchAccount,
   sendErrorTelemetryThenReturnError,
 } from "../utils/util";
 import { doesAllowSwitchAccount } from "../../../../core";
@@ -221,7 +221,7 @@ async function provisionResourceImpl(
     }
 
     if (solutionConfigRes.value.hasSwitchedSubscription || hasSwitchedM365Tenant) {
-      const handleConfigFilesWhenSwitchAccountsRes = await handleConfigFilesWhenSwitchAccounts(
+      const handleConfigFilesWhenSwitchAccountsRes = await handleConfigFilesWhenSwitchAccount(
         envInfo as v3.EnvInfoV3,
         ctx.projectSetting.appName,
         inputs.projectPath,

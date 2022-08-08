@@ -53,6 +53,7 @@ import { Container } from "typedi";
 import { AzureStorageResource } from "../../src/component/resource/azureStorage";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { ciOption, githubOption, questionNames } from "../../src/plugins/resource/cicd/questions";
+import * as armFunctions from "../../src/plugins/solution/fx-solution/arm";
 describe("Workflow test for v3", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -300,6 +301,7 @@ describe("Workflow test for v3", () => {
       clientSecret: "mockClientSecret",
       objectId: "mockObjectId",
     });
+    sandbox.stub(armFunctions, "updateAzureParameters").resolves(ok(undefined));
     sandbox.stub(arm, "deployArmTemplates").resolves(ok(undefined));
     const appName = `unittest${randomAppName()}`;
     const inputs: InputsWithProjectPath = {
@@ -445,6 +447,7 @@ describe("Workflow test for v3", () => {
       clientSecret: "mockClientSecret",
       objectId: "mockObjectId",
     });
+    sandbox.stub(armFunctions, "updateAzureParameters").resolves(ok(undefined));
     sandbox.stub(arm, "deployArmTemplates").resolves(ok(undefined));
     const appName = `unittest${randomAppName()}`;
     const inputs: InputsWithProjectPath = {
@@ -503,50 +506,7 @@ describe("Workflow test for v3", () => {
     assert.isTrue(context.envInfo.state["app-manifest"]["tenantId"] === "mockSwitchedTid");
   });
 
-  it("fx.provision could not get m365 token", async () => {
-    const newParam = { SWITCH_ACCOUNT: "true" };
-    mockedEnvRestore = mockedEnv(newParam);
-    sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
-    sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
-    sandbox.stub(tools.tokenProvider.m365TokenProvider, "getJsonObject").resolves(undefined);
-    sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-      .resolves(TestHelper.fakeCredential);
-    const appName = `unittest${randomAppName()}`;
-    const inputs: InputsWithProjectPath = {
-      projectPath: projectPath,
-      platform: Platform.VSCode,
-      features: "Bot",
-      language: "typescript",
-      "app-name": appName,
-      folder: path.join(os.homedir(), "TeamsApps"),
-      checkerInfo: {
-        skipNgrok: true,
-      },
-    };
-    const initRes = await fx.init(context, inputs);
-    if (initRes.isErr()) {
-      console.log(initRes.error);
-    }
-    assert.isTrue(initRes.isOk());
-
-    context.projectSetting.components = [
-      {
-        name: "teams-bot",
-        build: true,
-        capabilities: ["bot"],
-        deploy: true,
-        folder: "bot",
-        hosting: "azure-web-app",
-      },
-    ];
-    context.envInfo = newEnvInfoV3("local");
-    context.tokenProvider = tools.tokenProvider;
-    const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
-    assert.isTrue(provisionRes.isErr());
-  });
-
-  it("fx.provision", async () => {
+  it("fx.provision cancel when confirming", async () => {
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
     sandbox

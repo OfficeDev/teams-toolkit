@@ -19,7 +19,7 @@ import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { SolutionTelemetryComponentName, SolutionTelemetryProperty } from "../constants";
 import { BuiltInFeaturePluginNames } from "../v3/constants";
 import { ComponentNames } from "../../../../component/constants";
-import { updateAzureParameter } from "../arm";
+import { updateAzureParameters } from "../arm";
 
 /**
  * A helper function to construct a plugin's context.
@@ -108,7 +108,7 @@ function hasBotServiceCreated(envInfo: v3.EnvInfoV3): boolean {
   );
 }
 
-export async function handleConfigFilesWhenSwitchAccounts(
+export async function handleConfigFilesWhenSwitchAccount(
   envInfo: v3.EnvInfoV3,
   appName: string,
   projectPath: string,
@@ -117,7 +117,7 @@ export async function handleConfigFilesWhenSwitchAccounts(
 ): Promise<Result<undefined, FxError>> {
   const hasBotServiceCreatedBefore = hasBotServiceCreated(envInfo);
   // TODO: backup old files.
-  const updateAzureParametersRes = await updateAzureParameter(
+  const updateAzureParametersRes = await updateAzureParameters(
     projectPath,
     appName,
     envInfo.envName,

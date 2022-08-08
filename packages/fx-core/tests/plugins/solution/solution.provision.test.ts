@@ -1292,7 +1292,7 @@ describe("API v2 implementation", () => {
       mockProvisionV2ThatAlwaysSucceed(fehostPluginV2);
       mockProvisionV2ThatAlwaysSucceed(appStudioPluginV2);
       mockProvisionV2ThatAlwaysSucceed(aadPluginV2);
-      mocker.stub(arm, "updateResourceBaseName").resolves();
+      mocker.stub(arm, "updateAzureParameters").resolves(ok(undefined));
 
       const solution = new TeamsAppSolutionV2();
       const result = await solution.provisionResources(

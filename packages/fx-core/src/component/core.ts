@@ -112,7 +112,7 @@ import { askForProvisionConsentNew } from "../plugins/solution/fx-solution/v2/pr
 import { resetEnvInfoWhenSwitchM365 } from "./utils";
 import { TelemetryEvent, TelemetryProperty } from "../common/telemetry";
 import { getComponent } from "./workflow";
-import { handleConfigFilesWhenSwitchAccounts } from "../plugins/solution/fx-solution/utils/util";
+import { handleConfigFilesWhenSwitchAccount } from "../plugins/solution/fx-solution/utils/util";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -699,7 +699,7 @@ async function preProvision(
     }
 
     if (solutionConfigRes.value.hasSwitchedSubscription || hasSwitchedM365Tenant) {
-      const handleConfigFilesWhenSwitchAccountsRes = await handleConfigFilesWhenSwitchAccounts(
+      const handleConfigFilesWhenSwitchAccountsRes = await handleConfigFilesWhenSwitchAccount(
         envInfo as v3.EnvInfoV3,
         ctx.projectSetting.appName,
         inputs.projectPath,

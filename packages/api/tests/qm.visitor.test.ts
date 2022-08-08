@@ -527,6 +527,57 @@ describe("Question Model - Visitor Test", () => {
       assert.sameOrderedMembers(expectedSequence, actualSequence);
     });
 
+    it("success: node condition on OptionItem", async () => {
+      const actualSequence: string[] = [];
+      const inputs = createInputs();
+      sandbox
+        .stub(mockUI, "selectOption")
+        .callsFake(
+          async (config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> => {
+            actualSequence.push(config.name);
+            return ok({ type: "success", result: config.options[0] as OptionItem });
+          }
+        );
+      sandbox
+        .stub(mockUI, "selectOptions")
+        .callsFake(
+          async (config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> => {
+            actualSequence.push(config.name);
+            return ok({ type: "success", result: [config.options[0] as OptionItem] });
+          }
+        );
+
+      const expectedSequence: string[] = ["1"];
+
+      const question1 = createSingleSelectQuestion("1");
+      question1.staticOptions = [
+        { id: "2", label: "2" },
+        { id: "3", label: "3" },
+      ];
+      question1.returnObject = true;
+      const node1 = new QTreeNode(question1);
+
+      const question2 = createSingleSelectQuestion("2");
+      question2.staticOptions = [{ id: `mocked value of 2`, label: `mocked value of 2` }];
+      question2.skipSingleOption = true;
+      const node2 = new QTreeNode(question2);
+      node2.condition = { equals: "2" };
+      node1.addChild(node2);
+
+      const question3 = createMultiSelectQuestion("3");
+      question3.staticOptions = [{ id: `mocked value of 3`, label: `mocked value of 3` }];
+      question3.skipSingleOption = true;
+      const node3 = new QTreeNode(question3);
+      node3.condition = { equals: "3" };
+      node1.addChild(node3);
+
+      const res = await traverse(node1, inputs, mockUI);
+      assert.isTrue(res.isOk());
+      assert.isTrue(inputs["1"].id === "2");
+      assert.isTrue(typeof inputs["2"] === "string" && inputs["2"] === `mocked value of 2`);
+      assert.sameOrderedMembers(expectedSequence, actualSequence);
+    });
+
     it("pre-defined question will not be count as one step", async () => {
       const actualSequence: string[] = [];
       const inputs = createInputs();

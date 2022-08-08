@@ -7,6 +7,7 @@ import {
   Platform,
   ProjectSettings,
   UserError,
+  v2,
   v3,
 } from "@microsoft/teamsfx-api";
 import chai from "chai";
@@ -19,7 +20,10 @@ import { PluginNames } from "../../../src";
 import mockedEnv from "mocked-env";
 import * as arm from "../../../src/plugins/solution/fx-solution/arm";
 import { BuiltInFeaturePluginNames } from "../../../src/plugins/solution/fx-solution/v3/constants";
-import { handleConfigFilesWhenSwitchAccount } from "../../../src/plugins/solution/fx-solution/utils/util";
+import {
+  handleConfigFilesWhenSwitchAccount,
+  hasBotServiceCreated,
+} from "../../../src/plugins/solution/fx-solution/utils/util";
 import { ComponentNames } from "../../../src/component/constants";
 const tool = require("../../../src/common/tools");
 const expect = chai.expect;
@@ -96,7 +100,7 @@ describe("util: handleConfigFilesWhenSwitchAccount", async () => {
     mocker.restore();
   });
 
-  it("success with v2 bot service", async () => {
+  it("success", async () => {
     // Arrange
     const spy = mocker.stub(arm, "updateAzureParameters").resolves(ok(undefined));
     const envInfo: v3.EnvInfoV3 = {
@@ -108,67 +112,17 @@ describe("util: handleConfigFilesWhenSwitchAccount", async () => {
     const projectPath = "project-path";
 
     // Act
-    const res = await handleConfigFilesWhenSwitchAccount(envInfo, appName, projectPath, true, true);
+    const res = await handleConfigFilesWhenSwitchAccount(
+      envInfo,
+      appName,
+      projectPath,
+      true,
+      true,
+      true
+    );
 
     // Assert
     expect(spy.calledOnceWithExactly(projectPath, appName, "dev", true, true, true));
-    expect(res.isOk()).equal(true);
-  });
-
-  it("success with v3 bot service", async () => {
-    // Arrange
-    const spy = mocker.stub(arm, "updateAzureParameters").resolves(ok(undefined));
-    const envInfo: v3.EnvInfoV3 = {
-      envName: "dev",
-      state: { solution: {}, [ComponentNames.TeamsBot]: { resourceId: "mockResourceId" } },
-      config: {},
-    };
-    const appName = "app-name";
-    const projectPath = "project-path";
-
-    // Act
-    const res = await handleConfigFilesWhenSwitchAccount(envInfo, appName, projectPath, true, true);
-
-    // Assert
-    expect(spy.calledOnceWithExactly(projectPath, appName, "dev", true, true, true));
-    expect(res.isOk()).equal(true);
-  });
-
-  it("success without bot resource id", async () => {
-    // Arrange
-    const spy = mocker.stub(arm, "updateAzureParameters").resolves(ok(undefined));
-    const envInfo: v3.EnvInfoV3 = {
-      envName: "dev",
-      state: { solution: {}, [ComponentNames.TeamsBot]: { botId: "mockResourceId" } },
-      config: {},
-    };
-    const appName = "app-name";
-    const projectPath = "project-path";
-
-    // Act
-    const res = await handleConfigFilesWhenSwitchAccount(envInfo, appName, projectPath, true, true);
-
-    // Assert
-    expect(spy.calledOnceWithExactly(projectPath, appName, "dev", true, true, false));
-    expect(res.isOk()).equal(true);
-  });
-
-  it("success without bot key", async () => {
-    // Arrange
-    const spy = mocker.stub(arm, "updateAzureParameters").resolves(ok(undefined));
-    const envInfo: v3.EnvInfoV3 = {
-      envName: "dev",
-      state: { solution: {} },
-      config: {},
-    };
-    const appName = "app-name";
-    const projectPath = "project-path";
-
-    // Act
-    const res = await handleConfigFilesWhenSwitchAccount(envInfo, appName, projectPath, true, true);
-
-    // Assert
-    expect(spy.calledOnceWithExactly(projectPath, appName, "dev", true, true, false));
     expect(res.isOk()).equal(true);
   });
 
@@ -186,10 +140,110 @@ describe("util: handleConfigFilesWhenSwitchAccount", async () => {
     const projectPath = "project-path";
 
     // Act
-    const res = await handleConfigFilesWhenSwitchAccount(envInfo, appName, projectPath, true, true);
+    const res = await handleConfigFilesWhenSwitchAccount(
+      envInfo,
+      appName,
+      projectPath,
+      true,
+      true,
+      false
+    );
 
     // Assert
     expect(spy.calledOnceWithExactly(projectPath, appName, "dev", true, true, false));
     expect(res.isErr()).equal(true);
+  });
+});
+
+describe("util: hasBotServiceCreated", async () => {
+  const mocker = sinon.createSandbox();
+  afterEach(async () => {
+    mocker.restore();
+  });
+
+  it("v2 bot with resourceId", async () => {
+    // Arrange
+    const envInfo: v2.EnvInfoV2 = {
+      envName: "dev",
+      state: { solution: {}, [BuiltInFeaturePluginNames.bot]: { resourceId: "mockResourceId" } },
+      config: {},
+    };
+
+    // Act
+    const res = hasBotServiceCreated(envInfo as v3.EnvInfoV3);
+
+    // Assert
+    expect(res).equal(true);
+  });
+
+  it("v2 bot without resourceId", async () => {
+    // Arrange
+    const envInfo: v2.EnvInfoV2 = {
+      envName: "dev",
+      state: { solution: {}, [BuiltInFeaturePluginNames.bot]: { botId: "mockResourceId" } },
+      config: {},
+    };
+
+    // Act
+    const res = hasBotServiceCreated(envInfo as v3.EnvInfoV3);
+
+    // Assert
+    expect(res).equal(false);
+  });
+
+  it("v3 bot with resourceId", async () => {
+    // Arrange
+    const envInfo: v3.EnvInfoV3 = {
+      envName: "dev",
+      state: { solution: {}, [ComponentNames.TeamsBot]: { resourceId: "mockResourceId" } },
+      config: {},
+    };
+
+    // Act
+    const res = hasBotServiceCreated(envInfo);
+
+    // Assert
+    expect(res).equal(true);
+  });
+
+  it("v3 bot without resourceId", async () => {
+    // Arrange
+    const envInfo: v3.EnvInfoV3 = {
+      envName: "dev",
+      state: { solution: {}, [ComponentNames.TeamsBot]: { botId: "mockResourceId" } },
+      config: {},
+    };
+
+    // Act
+    const res = hasBotServiceCreated(envInfo);
+
+    // Assert
+    expect(res).equal(false);
+  });
+
+  it("empty state", async () => {
+    // Arrange
+    const envInfo: v3.EnvInfoV3 = {
+      envName: "dev",
+      state: { solution: {} },
+      config: {},
+    };
+
+    // Act
+    const res = hasBotServiceCreated(envInfo);
+
+    // Assert
+    expect(res).equal(false);
+  });
+
+  it("empty state", async () => {
+    // Arrange
+    const envInfo = {};
+
+    // Act
+    const res = hasBotServiceCreated({} as v3.EnvInfoV3);
+
+    // Assert
+    expect(res).equal(false);
   });
 });

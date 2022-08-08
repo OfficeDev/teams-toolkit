@@ -112,7 +112,10 @@ import { askForProvisionConsentNew } from "../plugins/solution/fx-solution/v2/pr
 import { resetEnvInfoWhenSwitchM365 } from "./utils";
 import { TelemetryEvent, TelemetryProperty } from "../common/telemetry";
 import { getComponent } from "./workflow";
-import { handleConfigFilesWhenSwitchAccount } from "../plugins/solution/fx-solution/utils/util";
+import {
+  handleConfigFilesWhenSwitchAccount,
+  hasBotServiceCreated,
+} from "../plugins/solution/fx-solution/utils/util";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -666,6 +669,7 @@ async function preProvision(
 
   // 3. check Azure configs
   if (hasAzureResourceV3(ctx.projectSetting) && envInfo.envName !== "local") {
+    const hasBotServiceCreatedBefore = hasBotServiceCreated(envInfo as v3.EnvInfoV3);
     // ask common question and fill in solution config
     const solutionConfigRes = await fillInAzureConfigs(ctx, inputs, envInfo, ctx.tokenProvider);
     if (solutionConfigRes.isErr()) {
@@ -704,7 +708,8 @@ async function preProvision(
         ctx.projectSetting.appName,
         inputs.projectPath,
         hasSwitchedM365Tenant,
-        solutionConfigRes.value.hasSwitchedSubscription
+        solutionConfigRes.value.hasSwitchedSubscription,
+        hasBotServiceCreatedBefore
       );
 
       if (handleConfigFilesWhenSwitchAccountsRes.isErr()) {

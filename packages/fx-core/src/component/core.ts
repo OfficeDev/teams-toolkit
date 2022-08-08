@@ -70,7 +70,7 @@ import { getResourceGroupInPortal } from "../common/tools";
 import { downloadSample } from "../core/downloadSample";
 import { InvalidInputError } from "../core/error";
 import { globalVars } from "../core/globalVars";
-import arm, { updateResourceBaseName } from "../plugins/solution/fx-solution/arm";
+import arm from "../plugins/solution/fx-solution/arm";
 import {
   ApiConnectionOptionItem,
   AzureResourceApim,
@@ -112,6 +112,7 @@ import { askForProvisionConsentNew } from "../plugins/solution/fx-solution/v2/pr
 import { resetEnvInfoWhenSwitchM365 } from "./utils";
 import { TelemetryEvent, TelemetryProperty } from "../common/telemetry";
 import { getComponent } from "./workflow";
+import { handleConfigFilesWhenSwitchAccounts } from "../plugins/solution/fx-solution/utils/util";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -697,8 +698,18 @@ async function preProvision(
       }
     }
 
-    if (solutionConfigRes.value.hasSwitchedSubscription) {
-      updateResourceBaseName(inputs.projectPath, ctx.projectSetting.appName, envInfo.envName);
+    if (solutionConfigRes.value.hasSwitchedSubscription || hasSwitchedM365Tenant) {
+      const handleConfigFilesWhenSwitchAccountsRes = await handleConfigFilesWhenSwitchAccounts(
+        envInfo as v3.EnvInfoV3,
+        ctx.projectSetting.appName,
+        inputs.projectPath,
+        hasSwitchedM365Tenant,
+        solutionConfigRes.value.hasSwitchedSubscription
+      );
+
+      if (handleConfigFilesWhenSwitchAccountsRes.isErr()) {
+        return err(handleConfigFilesWhenSwitchAccountsRes.error);
+      }
     }
   } else if (hasSwitchedM365Tenant && !isLocalDebug) {
     const consentResult = await askForProvisionConsentNew(

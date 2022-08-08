@@ -40,7 +40,7 @@ import {
 import _, { isUndefined } from "lodash";
 import { PluginDisplayName } from "../../../../common/constants";
 import { ProvisionContextAdapter } from "./adaptor";
-import { deployArmTemplates, updateResourceBaseName } from "../arm";
+import { deployArmTemplates, updateAzureParameter } from "../arm";
 import { Container } from "typedi";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
@@ -55,7 +55,10 @@ import {
   isExistingTabApp,
 } from "../../../../common/projectSettingsHelper";
 import { getLocalizedString } from "../../../../common/localizeUtils";
-import { sendErrorTelemetryThenReturnError } from "../utils/util";
+import {
+  handleConfigFilesWhenSwitchAccounts,
+  sendErrorTelemetryThenReturnError,
+} from "../utils/util";
 import { doesAllowSwitchAccount } from "../../../../core";
 import { ComponentNames } from "../../../../component/constants";
 import { resetEnvInfoWhenSwitchM365 } from "../../../../component/utils";
@@ -217,8 +220,18 @@ async function provisionResourceImpl(
       }
     }
 
-    if (solutionConfigRes.value.hasSwitchedSubscription) {
-      await updateResourceBaseName(inputs.projectPath, ctx.projectSetting.appName, envInfo.envName);
+    if (solutionConfigRes.value.hasSwitchedSubscription || hasSwitchedM365Tenant) {
+      const handleConfigFilesWhenSwitchAccountsRes = await handleConfigFilesWhenSwitchAccounts(
+        envInfo as v3.EnvInfoV3,
+        ctx.projectSetting.appName,
+        inputs.projectPath,
+        hasSwitchedM365Tenant,
+        solutionConfigRes.value.hasSwitchedSubscription
+      );
+
+      if (handleConfigFilesWhenSwitchAccountsRes.isErr()) {
+        return err(handleConfigFilesWhenSwitchAccountsRes.error);
+      }
     }
   } else if (hasSwitchedM365Tenant) {
     const consentResult = await askForProvisionConsentNew(

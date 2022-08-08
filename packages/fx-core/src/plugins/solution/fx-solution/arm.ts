@@ -804,6 +804,55 @@ export async function updateResourceBaseName(
   );
 }
 
+export async function updateAzureParameter(
+  projectPath: string,
+  appName: string,
+  envName: string,
+  hasSwitchedM365Tenant: boolean,
+  hasSwitchedSubscription: boolean,
+  hasBotServiceCreatedBefore: boolean
+): Promise<Result<undefined, FxError>> {
+  if (
+    !envName ||
+    !appName ||
+    !projectPath ||
+    (!hasSwitchedM365Tenant && !hasSwitchedSubscription)
+  ) {
+    return ok(undefined);
+  }
+
+  const parameterFolderPath = path.join(projectPath, configsFolder);
+  const targetParameterFileName = parameterFileNameTemplate.replace(EnvNamePlaceholder, envName);
+
+  const targetParameterFilePath = path.join(parameterFolderPath, targetParameterFileName);
+
+  try {
+    const targetParameterContent = await fs.readJson(targetParameterFilePath);
+
+    if (hasSwitchedSubscription) {
+      targetParameterContent[parameterName].provisionParameters.value!.resourceBaseName =
+        generateResourceBaseName(appName, envName);
+    } else if (hasSwitchedM365Tenant && hasBotServiceCreatedBefore) {
+      targetParameterContent[parameterName].provisionParameters.value!.botServiceName =
+        generateResourceBaseName(appName, envName);
+    }
+    await fs.ensureDir(parameterFolderPath);
+    await fs.writeFile(
+      targetParameterFilePath,
+      JSON.stringify(targetParameterContent, undefined, 2).replace(/\r?\n/g, os.EOL)
+    );
+    return ok(undefined);
+  } catch (exception) {
+    const error = new UserError(
+      SolutionSource,
+      SolutionError.FailedToUpdateAzureParameters,
+      getDefaultString("core.handleConfigFile.FailedToUpdateAzureParameters", envName),
+      getLocalizedString("core.handleConfigFile.FailedToUpdateAzureParameters", envName)
+    );
+    return err(error);
+  }
+}
+
 export async function getParameterJson(ctx: SolutionContext) {
   if (!ctx.envInfo.envName) {
     throw new SystemError(

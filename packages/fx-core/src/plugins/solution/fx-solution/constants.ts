@@ -159,6 +159,7 @@ export enum SolutionError {
   InvalidSsoProject = "InvalidSsoProject",
   InvalidProjectPath = "InvalidProjectPath",
   FailedToCreateAuthFiles = "FailedToCreateAuthFiles",
+  FailedToUpdateAzureParameters = "FailedToUpdateAzureParameters",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";

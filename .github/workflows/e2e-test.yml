@@ -103,6 +103,20 @@ jobs:
           max_attempts: 5
           command: |
             npm run setup
+            npm run setup-metrics
+
+      - name: Package CLI 
+        working-directory: packages/cli
+        run: |
+          rm -f *.tgz
+          npm pack
+          mv *.tgz teamsfx-cli.tgz
+
+      - name: Upload to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Teamsfx-cli
+          path: ./packages/cli/teamsfx-cli.tgz
 
       - name: List cases for schedule
         id: schedule-cases
@@ -187,14 +201,15 @@ jobs:
           timeout_minutes: 10
           max_attempts: 5
           command: |
-            npm run setup-metrics
+            npm run setup
 
-      - name: Package CLI and install
-        working-directory: packages/cli
+      - name:  Download CLI
+        uses: actions/download-artifact@v3
+        with:
+          name: Teamsfx-cli
+
+      - name: Install CLI
         run: |
-          rm -f *.tgz
-          npm pack
-          mv *.tgz teamsfx-cli.tgz
           npm install -g teamsfx-cli.tgz
 
       - name: print system info

@@ -240,7 +240,7 @@
     "teamstoolkit.handlers.m365SignOut": "Successfully signed out of M365 account.",
     "teamstoolkit.handlers.noOpenWorkspace": "No open workspace",
     "teamstoolkit.handlers.openFolderTitle": "Open folder",
-    "teamstoolkit.handlers.openProject.title": "Project will be opened in new window after 5 seconds.",
+    "teamstoolkit.handlers.openProject.title": "Project will be opened in new window after 10 seconds.",
     "teamstoolkit.handlers.openInNewWindow": "Open in new window",
     "teamstoolkit.handlers.openInCurrentWindow": "Open in current window",
     "teamstoolkit.handlers.operationNotSupport": "Operation not support: %s",

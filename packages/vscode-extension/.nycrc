@@ -14,5 +14,5 @@
   ],
   "reporter": ["text", "html", "json-summary", "cobertura", "lcov"],
   "check-coverage": true,
-  "lines": 40.54
+  "lines": 40.53
 }

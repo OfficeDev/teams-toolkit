@@ -628,6 +628,7 @@ async function preProvision(
 ): Promise<Result<undefined, FxError>> {
   const ctx = context as ResourceContextV3;
   const envInfo = ctx.envInfo;
+  const hasBotServiceCreatedBefore = hasBotServiceCreated(envInfo as v3.EnvInfoV3);
 
   // 1. check M365 tenant
   envInfo.state[ComponentNames.AppManifest] = envInfo.state[ComponentNames.AppManifest] || {};
@@ -669,7 +670,6 @@ async function preProvision(
 
   // 3. check Azure configs
   if (hasAzureResourceV3(ctx.projectSetting) && envInfo.envName !== "local") {
-    const hasBotServiceCreatedBefore = hasBotServiceCreated(envInfo as v3.EnvInfoV3);
     // ask common question and fill in solution config
     const solutionConfigRes = await fillInAzureConfigs(ctx, inputs, envInfo, ctx.tokenProvider);
     if (solutionConfigRes.isErr()) {

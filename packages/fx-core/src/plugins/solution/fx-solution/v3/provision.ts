@@ -86,6 +86,7 @@ export async function provisionResources(
   telemetryProps?: Json
 ): Promise<Result<v3.EnvInfoV3, FxError>> {
   const solutionSetting = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
+  const hasBotServiceCreatedBefore = hasBotServiceCreated(envInfo as v3.EnvInfoV3);
   // 1. check M365 tenant
   if (!envInfo.state[BuiltInFeaturePluginNames.appStudio])
     envInfo.state[BuiltInFeaturePluginNames.appStudio] = {};
@@ -132,7 +133,6 @@ export async function provisionResources(
   if (solutionSetting) {
     // 3. check Azure configs
     if (hasAzureResource(ctx.projectSetting) && envInfo.envName !== "local") {
-      const hasBotServiceCreatedBefore = hasBotServiceCreated(envInfo as v3.EnvInfoV3);
       // ask common question and fill in solution config
       const solutionConfigRes = await fillInAzureConfigs(
         ctx,

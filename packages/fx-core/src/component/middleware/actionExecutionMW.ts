@@ -19,8 +19,16 @@ import {
   UserError,
 } from "@microsoft/teamsfx-api";
 import { assign } from "lodash";
-import { globalVars, TOOLS } from "../../core/globalVars";
+import { TOOLS } from "../../core/globalVars";
 import { TelemetryConstants } from "../constants";
+import {
+  sendErrorEvent,
+  sendMigratedErrorEvent,
+  sendMigratedStartEvent,
+  sendMigratedSuccessEvent,
+  sendStartEvent,
+  sendSuccessEvent,
+} from "../telemetry";
 
 export interface ActionOption {
   componentName?: string;
@@ -55,16 +63,19 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
     const eventName = action.telemetryEventName || methodName;
     const telemetryProps = {
       [TelemetryConstants.properties.component]: telemetryComponentName,
-      [TelemetryConstants.properties.appId]: globalVars.teamsAppId,
-      [TelemetryConstants.properties.tenantId]: globalVars.m365TenantId,
     };
     let progressBar;
     try {
       // send start telemetry
       if (action.enableTelemetry) {
         if (action.telemetryProps) assign(telemetryProps, action.telemetryProps);
-        const startEvent = eventName + "-start";
-        TOOLS.telemetryReporter?.sendTelemetryEvent(startEvent, telemetryProps);
+        sendStartEvent(eventName, telemetryProps);
+        sendMigratedStartEvent(
+          eventName,
+          ctx.arguments[0] as ContextV3,
+          ctx.arguments[1] as InputsWithProjectPath,
+          telemetryProps
+        );
       }
       // run question model
       if (action.question) {
@@ -102,10 +113,13 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
       if (ctx.result.isErr()) throw ctx.result.error;
       // send end telemetry
       if (action.enableTelemetry) {
-        TOOLS.telemetryReporter?.sendTelemetryEvent(eventName, {
-          ...telemetryProps,
-          [TelemetryConstants.properties.success]: TelemetryConstants.values.yes,
-        });
+        sendSuccessEvent(eventName, telemetryProps);
+        sendMigratedSuccessEvent(
+          eventName,
+          ctx.arguments[0] as ContextV3,
+          ctx.arguments[1] as InputsWithProjectPath,
+          telemetryProps
+        );
       }
       await progressBar?.end(true);
       TOOLS.logProvider.info(`execute [${actionName}] success!`);
@@ -128,18 +142,14 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
       }
       // send error telemetry
       if (action.enableTelemetry) {
-        const errorCode = fxError.source + "." + fxError.name;
-        const errorType =
-          fxError instanceof SystemError
-            ? TelemetryConstants.values.systemError
-            : TelemetryConstants.values.userError;
-        TOOLS.telemetryReporter?.sendTelemetryErrorEvent(eventName, {
-          ...telemetryProps,
-          [TelemetryConstants.properties.success]: TelemetryConstants.values.no,
-          [TelemetryConstants.properties.errorCode]: errorCode,
-          [TelemetryConstants.properties.errorType]: errorType,
-          [TelemetryConstants.properties.errorMessage]: fxError.message,
-        });
+        sendErrorEvent(eventName, fxError, telemetryProps);
+        sendMigratedErrorEvent(
+          eventName,
+          fxError,
+          ctx.arguments[0] as ContextV3,
+          ctx.arguments[1] as InputsWithProjectPath,
+          telemetryProps
+        );
       }
       TOOLS.logProvider.info(`execute [${actionName}] failed!`);
       ctx.result = err(fxError);

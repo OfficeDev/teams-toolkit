@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import {
+  ActionContext,
   CloudResource,
   ConfigFolderName,
   ContextV3,
@@ -60,7 +61,7 @@ import "./resource/spfx";
 
 import { AADApp } from "@microsoft/teamsfx-api/build/v3";
 import * as jsonschema from "jsonschema";
-import { cloneDeep } from "lodash";
+import { cloneDeep, merge } from "lodash";
 import { PluginDisplayName } from "../common/constants";
 import { globalStateUpdate } from "../common/globalState";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
@@ -109,6 +110,8 @@ import { ActionExecutionMW } from "./middleware/actionExecutionMW";
 import { getQuestionsForCreateProjectV2 } from "../core/middleware";
 import { askForProvisionConsentNew } from "../plugins/solution/fx-solution/v2/provision";
 import { resetEnvInfoWhenSwitchM365 } from "./utils";
+import { TelemetryEvent, TelemetryProperty } from "../common/telemetry";
+import { getComponent } from "./workflow";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -121,11 +124,15 @@ export class TeamsfxCore {
       question: (context, inputs) => {
         return getQuestionsForCreateProjectV2(inputs);
       },
+      enableTelemetry: true,
+      telemetryEventName: TelemetryEvent.CreateProject,
+      telemetryComponentName: "core",
     }),
   ])
   async create(
     context: ContextV3,
-    inputs: InputsWithProjectPath
+    inputs: InputsWithProjectPath,
+    actionContext?: ActionContext
   ): Promise<Result<string, FxError>> {
     const folder = inputs[QuestionRootFolder.name] as string;
     if (!folder) {
@@ -158,8 +165,9 @@ export class TeamsfxCore {
       globalVars.isVS = inputs[CoreQuestionNames.ProgrammingLanguage] === "csharp";
       const initRes = await this.init(context, inputs);
       if (initRes.isErr()) return err(initRes.error);
-      const features = inputs.capabilities;
+      const features = inputs.capabilities as string;
       delete inputs.folder;
+
       if (features === M365SsoLaunchPageOptionItem.id || features === M365SearchAppOptionItem.id) {
         context.projectSetting.isM365 = true;
         inputs.isM365 = true;
@@ -182,11 +190,16 @@ export class TeamsfxCore {
         const res = await component.add(context, inputs);
         if (res.isErr()) return err(res.error);
       }
+
+      merge(actionContext?.telemetryProps, {
+        [TelemetryProperty.Feature]: features,
+      });
     }
     if (inputs.platform === Platform.VSCode) {
       await globalStateUpdate(automaticNpmInstall, true);
     }
     context.projectPath = projectPath;
+
     return ok(projectPath);
   }
   /**
@@ -197,11 +210,15 @@ export class TeamsfxCore {
       question: (context, inputs) => {
         return getQuestionsForAddFeatureV3(context, inputs);
       },
+      enableTelemetry: true,
+      telemetryEventName: TelemetryEvent.AddFeature,
+      telemetryComponentName: "core",
     }),
   ])
   async addFeature(
     context: ContextV3,
-    inputs: InputsWithProjectPath
+    inputs: InputsWithProjectPath,
+    actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const features = inputs[AzureSolutionQuestionNames.Features];
     let component;
@@ -228,6 +245,9 @@ export class TeamsfxCore {
       const res = await (component as any).add(context, inputs);
       if (res.isErr()) return err(res.error);
     }
+    merge(actionContext?.telemetryProps, {
+      [TelemetryProperty.Feature]: features,
+    });
     return ok(undefined);
   }
   async init(
@@ -257,11 +277,15 @@ export class TeamsfxCore {
       question: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         return await getQuestionsForProvisionV3(context, inputs);
       },
+      enableTelemetry: true,
+      telemetryEventName: TelemetryEvent.Provision,
+      telemetryComponentName: "core",
     }),
   ])
   async provision(
     ctx: ResourceContextV3,
-    inputs: InputsWithProjectPath
+    inputs: InputsWithProjectPath,
+    actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     ctx.envInfo.state.solution = ctx.envInfo.state.solution || {};
     ctx.envInfo.state.solution.provisionSucceeded = false;
@@ -326,9 +350,6 @@ export class TeamsfxCore {
       if (armRes.isErr()) {
         return err(armRes.error);
       }
-      ctx.logProvider.info(
-        getLocalizedString("core.deployArmTemplates.SuccessNotice", PluginDisplayName.Solution)
-      );
     }
 
     // 5.0 "aad-app.setApplicationInContext"
@@ -403,6 +424,11 @@ export class TeamsfxCore {
       ctx.userInteraction.showMessage("info", msg, false);
       ctx.logProvider.info(msg);
     }
+    merge(actionContext?.telemetryProps, {
+      [TelemetryProperty.Components]: JSON.stringify(
+        componentsToProvision.map((component) => component.name)
+      ),
+    });
     ctx.envInfo.state.solution.provisionSucceeded = true;
     return ok(undefined);
   }
@@ -441,11 +467,15 @@ export class TeamsfxCore {
       question: async (context: ContextV3, inputs: InputsWithProjectPath) => {
         return await getQuestionsForDeployV3(context, inputs, context.envInfo!);
       },
+      enableTelemetry: true,
+      telemetryEventName: TelemetryEvent.Deploy,
+      telemetryComponentName: "core",
     }),
   ])
   async deploy(
     context: ResourceContextV3,
-    inputs: InputsWithProjectPath
+    inputs: InputsWithProjectPath,
+    actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     context.logProvider.info(
       `inputs(${AzureSolutionQuestionNames.PluginSelectionDeploy}) = ${
@@ -573,6 +603,12 @@ export class TeamsfxCore {
           context.userInteraction.showMessage("info", msg, false);
         }
       }
+      merge(actionContext?.telemetryProps, {
+        [TelemetryProperty.Components]: JSON.stringify(thunks.map((p) => p.pluginName)),
+        [TelemetryProperty.Hosting]: JSON.stringify(
+          thunks.map((p) => getComponent(projectSettings, p.pluginName)?.hosting)
+        ),
+      });
       return ok(undefined);
     } else {
       const msg = getLocalizedString("core.deploy.failNotice", context.projectSetting.appName);

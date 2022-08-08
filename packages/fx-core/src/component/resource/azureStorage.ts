@@ -10,7 +10,6 @@ import {
   ok,
   ResourceContextV3,
   Result,
-  UserError,
   v3,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
@@ -32,6 +31,8 @@ import { ProgressMessages, ProgressTitles } from "../messages";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { CheckThrowSomethingMissing } from "../error";
+
+const ErrorSource = "Storage";
 @Service("azure-storage")
 export class AzureStorageResource extends AzureResource {
   readonly name = "azure-storage";
@@ -40,10 +41,7 @@ export class AzureStorageResource extends AzureResource {
   readonly finalOutputKeys = ["domain", "endpoint", "storageResourceId", "indexPath"];
   @hooks([
     ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryComponentName: FrontendPluginInfo.PluginName,
-      telemetryEventName: "deploy",
-      errorSource: FrontendPluginInfo.ShortName,
+      errorSource: ErrorSource,
       errorIssueLink: FrontendPluginInfo.IssueLink,
       errorHelpLink: FrontendPluginInfo.HelpLink,
       enableProgressBar: true,
@@ -76,10 +74,7 @@ export class AzureStorageResource extends AzureResource {
   }
   @hooks([
     ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryComponentName: FrontendPluginInfo.PluginName,
-      telemetryEventName: "deploy",
-      errorSource: FrontendPluginInfo.ShortName,
+      errorSource: ErrorSource,
       errorIssueLink: FrontendPluginInfo.IssueLink,
       errorHelpLink: FrontendPluginInfo.HelpLink,
       enableProgressBar: true,
@@ -124,7 +119,7 @@ export class AzureStorageResource extends AzureResource {
     }
     const storage = envInfo.state[scenario];
     const resourceId = CheckThrowSomethingMissing<string>(
-      this.name,
+      ErrorSource,
       "storageResourceId",
       storage?.storageResourceId
     );

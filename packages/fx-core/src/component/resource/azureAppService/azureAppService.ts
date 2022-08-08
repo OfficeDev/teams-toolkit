@@ -35,7 +35,7 @@ export abstract class AzureAppService extends AzureResource {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<Bicep[], FxError>> {
-    this.getTemplateContext = (context, inputs) => {
+    this.getTemplateContext = (context) => {
       const configs: string[] = [];
       configs.push(getRuntime(getLanguage(context.projectSetting.programmingLanguage)));
       this.templateContext.configs = configs;

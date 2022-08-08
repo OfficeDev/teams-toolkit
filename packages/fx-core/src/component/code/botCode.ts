@@ -117,9 +117,6 @@ export class BotCodeProvider {
       enableProgressBar: true,
       progressTitle: ProgressTitles.buildingBot,
       progressSteps: 1,
-      enableTelemetry: true,
-      telemetryComponentName: "fx-resource-bot",
-      telemetryEventName: "build",
       errorSource: "bot",
     }),
   ])

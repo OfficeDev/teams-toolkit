@@ -13,7 +13,8 @@ import { globalVars, TOOLS } from "../core/globalVars";
 import { AzureSolutionQuestionNames } from "../plugins/solution/fx-solution/question";
 import { TelemetryKeys } from "../plugins/resource/bot/constants";
 import { PluginNames } from "../plugins/solution/fx-solution/constants";
-import { ComponentNames, TelemetryConstants } from "./constants";
+import { ComponentNames, Scenarios, TelemetryConstants } from "./constants";
+import { merge } from "lodash";
 
 export type TelemetryProps = { [key: string]: string };
 export function getCommonProperties(): TelemetryProps {
@@ -41,6 +42,53 @@ export function sendStartEvent(
   TOOLS.telemetryReporter?.sendTelemetryEvent(eventName + "-start", props, measurements ?? {});
 }
 
+export function sendSuccessEvent(
+  eventName: string,
+  properties?: TelemetryProps,
+  measurements?: { [key: string]: number }
+): void {
+  const props = {
+    ...getCommonProperties(),
+    ...properties,
+    [TelemetryConstants.properties.success]: TelemetryConstants.values.yes,
+  };
+  TOOLS.logProvider.info(
+    `Send telemetry event ${eventName}, props: ${JSON.stringify(
+      props
+    )}, measurements: ${JSON.stringify(measurements ?? {})}`
+  );
+  TOOLS.telemetryReporter?.sendTelemetryEvent(eventName, props, measurements ?? {});
+}
+
+export function sendErrorEvent(
+  eventName: string,
+  error: FxError,
+  properties?: TelemetryProps,
+  measurements?: { [key: string]: number }
+): void {
+  const errorCode = error.source + "." + error.name;
+  const errorType =
+    error instanceof SystemError
+      ? TelemetryConstants.values.systemError
+      : TelemetryConstants.values.userError;
+  const props = {
+    ...getCommonProperties(),
+    ...properties,
+    [TelemetryConstants.properties.success]: TelemetryConstants.values.no,
+    [TelemetryConstants.properties.errorCode]: errorCode,
+    [TelemetryConstants.properties.errorType]: errorType,
+    [TelemetryConstants.properties.errorMessage]: error.message,
+  };
+  TOOLS.logProvider.info(
+    `Send telemetry event ${eventName}, props: ${JSON.stringify(
+      props
+    )}, measurements: ${JSON.stringify(measurements ?? {})}`
+  );
+  TOOLS.telemetryReporter?.sendTelemetryErrorEvent(eventName, props, measurements ?? {}, [
+    TelemetryConstants.properties.errorMessage,
+  ]);
+}
+
 export function sendMigratedStartEvent(
   eventName: string,
   context: ContextV3,
@@ -48,7 +96,7 @@ export function sendMigratedStartEvent(
   properties?: TelemetryProps,
   measurements?: { [key: string]: number }
 ): void {
-  if (!needMigrate(properties)) {
+  if (!needMigrate(eventName, properties)) {
     return;
   }
   if (eventName === TelemetryEvent.AddFeature) {
@@ -118,24 +166,6 @@ export function sendMigratedStartEvent(
   sendStartEvent(eventName, properties, measurements);
 }
 
-export function sendSuccessEvent(
-  eventName: string,
-  properties?: TelemetryProps,
-  measurements?: { [key: string]: number }
-): void {
-  const props = {
-    ...getCommonProperties(),
-    ...properties,
-    [TelemetryConstants.properties.success]: TelemetryConstants.values.yes,
-  };
-  TOOLS.logProvider.info(
-    `Send telemetry event ${eventName}, props: ${JSON.stringify(
-      props
-    )}, measurements: ${JSON.stringify(measurements ?? {})}`
-  );
-  TOOLS.telemetryReporter?.sendTelemetryEvent(eventName, props, measurements ?? {});
-}
-
 export function sendMigratedSuccessEvent(
   eventName: string,
   context: ContextV3,
@@ -143,7 +173,7 @@ export function sendMigratedSuccessEvent(
   properties?: TelemetryProps,
   measurements?: { [key: string]: number }
 ): void {
-  if (!needMigrate(properties)) {
+  if (!needMigrate(eventName, properties)) {
     return;
   }
   if (eventName === TelemetryEvent.AddFeature) {
@@ -222,35 +252,6 @@ export function sendMigratedSuccessEvent(
   sendSuccessEvent(eventName, properties, measurements);
 }
 
-export function sendErrorEvent(
-  eventName: string,
-  error: FxError,
-  properties?: TelemetryProps,
-  measurements?: { [key: string]: number }
-): void {
-  const errorCode = error.source + "." + error.name;
-  const errorType =
-    error instanceof SystemError
-      ? TelemetryConstants.values.systemError
-      : TelemetryConstants.values.userError;
-  const props = {
-    ...getCommonProperties(),
-    ...properties,
-    [TelemetryConstants.properties.success]: TelemetryConstants.values.no,
-    [TelemetryConstants.properties.errorCode]: errorCode,
-    [TelemetryConstants.properties.errorType]: errorType,
-    [TelemetryConstants.properties.errorMessage]: error.message,
-  };
-  TOOLS.logProvider.info(
-    `Send telemetry event ${eventName}, props: ${JSON.stringify(
-      props
-    )}, measurements: ${JSON.stringify(measurements ?? {})}`
-  );
-  TOOLS.telemetryReporter?.sendTelemetryErrorEvent(eventName, props, measurements ?? {}, [
-    TelemetryConstants.properties.errorMessage,
-  ]);
-}
-
 export function sendMigratedErrorEvent(
   eventName: string,
   error: FxError,
@@ -259,8 +260,26 @@ export function sendMigratedErrorEvent(
   properties?: TelemetryProps,
   measurements?: { [key: string]: number }
 ): void {
-  if (!needMigrate(properties)) {
+  if (!needMigrate(eventName, properties)) {
     return;
+  }
+  let componentName;
+  switch (error.source) {
+    case "Storage":
+      componentName = PluginNames.FE;
+      break;
+    case "WebApp":
+      componentName = inputs?.["Scenario"] === Scenarios.Tab ? PluginNames.FE : PluginNames.BOT;
+      break;
+    case "Functions":
+      componentName = inputs?.["Scenario"] === Scenarios.Api ? PluginNames.FUNC : PluginNames.BOT;
+      break;
+    case "BotService":
+      componentName = PluginNames.BOT;
+      break;
+  }
+  if (componentName) {
+    merge(properties, { [TelemetryProperty.Component]: componentName });
   }
   sendErrorEvent(migrateEventName(eventName, context), error, properties, measurements);
 }

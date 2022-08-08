@@ -44,9 +44,6 @@ export class ApiCodeProvider {
       enableProgressBar: true,
       progressTitle: ProgressTitles.scaffoldApi,
       progressSteps: 1,
-      enableTelemetry: true,
-      telemetryComponentName: "fx-resource-function",
-      telemetryEventName: "scaffold",
       errorSource: "api",
     }),
   ])
@@ -80,9 +77,6 @@ export class ApiCodeProvider {
       enableProgressBar: true,
       progressTitle: ProgressTitles.buildingApi,
       progressSteps: 1,
-      enableTelemetry: true,
-      telemetryComponentName: "fx-resource-function",
-      telemetryEventName: "build",
     }),
   ])
   async build(

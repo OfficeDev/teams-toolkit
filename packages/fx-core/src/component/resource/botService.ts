@@ -66,10 +66,7 @@ export class BotService extends AzureResource {
       enableProgressBar: true,
       progressTitle: ProgressTitles.provisionBot,
       progressSteps: 1,
-      enableTelemetry: true,
-      telemetryComponentName: "fx-resource-bot",
-      telemetryEventName: "provision",
-      errorSource: ComponentNames.BotService,
+      errorSource: "BotService",
       errorHandler: (e, t) => {
         telemetryHelper.fillAppStudioErrorProperty(e, t);
         return e as FxError;
@@ -98,10 +95,7 @@ export class BotService extends AzureResource {
   }
   @hooks([
     ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryComponentName: "fx-resource-bot",
-      telemetryEventName: "post-local-debug",
-      errorSource: ComponentNames.BotService,
+      errorSource: "BotService",
       errorHandler: (e, t) => {
         telemetryHelper.fillAppStudioErrorProperty(e, t);
         return e as FxError;

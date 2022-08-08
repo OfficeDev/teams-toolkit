@@ -1,4 +1,4 @@
-- [4.0.4 - Aug 08 2022](#404---aug-08-2022)
+- [4.0.4 - Aug 09 2022](#404---aug-09-2022)
 - [4.0.3 - Jul 26 2022](#403---jul-26-2022)
 - [4.0.2 - Jul 12 2022](#402---jul-12-2022)
 - [4.0.1 - Jun 16 2022](#401---jun-16-2022)
@@ -20,7 +20,7 @@
 
 # Changelog
 
-## 4.0.4 - Aug 08, 2022
+## 4.0.4 - Aug 09, 2022
 
 Incremental version for Teams Toolkit with multiple bugs fix, enhancements and new additions to sample application gallery.
 

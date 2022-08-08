@@ -39,10 +39,10 @@ export function Welcome(props: { showFunction?: boolean; environment?: string })
     };
   });
 
-  const { inTeams } = useTeamsFx();
+  const { isInTeams } = useTeamsFx();
   const userProfile = useData(async () => {
     const teamsfx = new TeamsFx();
-    return inTeams ? await teamsfx.getUserInfo() : undefined;
+    return isInTeams ? await teamsfx.getUserInfo() : undefined;
   })?.data;
   const userName = userProfile ? userProfile.displayName : "";
   const hubName = useData(async () => {
@@ -64,7 +64,7 @@ export function Welcome(props: { showFunction?: boolean; environment?: string })
           {selectedMenuItem === "local" && (
             <div>
               <EditCode showFunction={showFunction} />
-              {inTeams && <CurrentUser userName={userName} />}
+              {isInTeams && <CurrentUser userName={userName} />}
               <Graph />
               {showFunction && <AzureFunctions />}
             </div>

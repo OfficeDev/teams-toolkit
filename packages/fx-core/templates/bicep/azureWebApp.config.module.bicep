@@ -46,7 +46,7 @@ resource webAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
     TeamsFx__Authentication__ClientId: m365ClientId // Client id of AAD application
     TeamsFx__Authentication__ClientSecret: m365ClientSecret // Client secret of AAD application
     TeamsFx__Authentication__InitiateLoginEndpoint: uri(webappEndpoint, 'auth-start.html') // The page is used to let users consent required OAuth permissions during bot SSO process
-    TeamsFx__Authentication__OAuthAuthority: m365OauthAuthorityHost // AAD authority host
+    TeamsFx__Authentication__OAuthAuthority: uri(m365OauthAuthorityHost, m365TenantId) // AAD authority host
       {{else}}
     INITIATE_LOGIN_ENDPOINT: uri(webappEndpoint, 'auth-start.html') // The page is used to let users consent required OAuth permissions during bot SSO process
     M365_AUTHORITY_HOST: m365OauthAuthorityHost // AAD authority host

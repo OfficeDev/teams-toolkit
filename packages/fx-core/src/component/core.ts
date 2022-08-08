@@ -110,7 +110,6 @@ import { ActionExecutionMW } from "./middleware/actionExecutionMW";
 import { getQuestionsForCreateProjectV2 } from "../core/middleware";
 import { askForProvisionConsentNew } from "../plugins/solution/fx-solution/v2/provision";
 import { resetEnvInfoWhenSwitchM365 } from "./utils";
-import { sendStartEvent, sendSuccessEvent } from "./telemetry";
 import { TelemetryEvent, TelemetryProperty } from "../common/telemetry";
 import { getComponent } from "./workflow";
 @Service("fx")

@@ -1124,6 +1124,7 @@ describe("update Azure parameters", async () => {
       userParam2: "userParamValue2",
     }
   );
+  const mocker = sinon.createSandbox();
 
   beforeEach(async () => {
     await fs.ensureDir(configDir);
@@ -1136,6 +1137,7 @@ describe("update Azure parameters", async () => {
 
   afterEach(async () => {
     await fs.remove(TestHelper.rootDir);
+    mocker.restore();
   });
 
   it("should do nothing if project file path is empty", async () => {
@@ -1350,10 +1352,10 @@ describe("update Azure parameters", async () => {
 
   it("throw exception", async () => {
     // Act
-    const mocker = sinon.createSandbox();
+
     mocker.stub(fs, "writeFile").throwsException();
 
-    after(() => {
+    after(async () => {
       mocker.restore();
     });
 

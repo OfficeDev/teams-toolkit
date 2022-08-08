@@ -1083,7 +1083,7 @@ describe("API v2 implementation", () => {
       const newParam = { SWITCH_ACCOUNT: "true" };
       const mockedEnvRestore = mockedEnv(newParam);
 
-      after(() => {
+      after(async () => {
         mockedEnvRestore();
       });
       const projectSettings: ProjectSettings = {
@@ -1314,7 +1314,7 @@ describe("API v2 implementation", () => {
       const newParam = { SWITCH_ACCOUNT: "true" };
       const mockedEnvRestore = mockedEnv(newParam);
 
-      after(() => {
+      after(async () => {
         mockedEnvRestore();
         mocker.restore();
       });
@@ -1359,7 +1359,7 @@ describe("API v2 implementation", () => {
       mockProvisionV2ThatAlwaysSucceed(aadPluginV2);
       mocker
         .stub(arm, "updateAzureParameters")
-        .resolves(err(new UserError("solution", "error1", "error1")));
+        .resolves(err(new UserError("Solution", "error1", "error1")));
 
       const solution = new TeamsAppSolutionV2();
       const result = await solution.provisionResources(

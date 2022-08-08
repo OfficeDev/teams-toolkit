@@ -33,11 +33,6 @@ export function sendStartEvent(
     ...getCommonProperties(),
     ...properties,
   };
-  TOOLS.logProvider.info(
-    `Send telemetry event ${eventName}-start, props: ${JSON.stringify(
-      props
-    )}, measurements: ${JSON.stringify(measurements ?? {})}`
-  );
   TOOLS.telemetryReporter?.sendTelemetryEvent(eventName + "-start", props, measurements ?? {});
 }
 
@@ -51,11 +46,6 @@ export function sendSuccessEvent(
     ...properties,
     [TelemetryConstants.properties.success]: TelemetryConstants.values.yes,
   };
-  TOOLS.logProvider.info(
-    `Send telemetry event ${eventName}, props: ${JSON.stringify(
-      props
-    )}, measurements: ${JSON.stringify(measurements ?? {})}`
-  );
   TOOLS.telemetryReporter?.sendTelemetryEvent(eventName, props, measurements ?? {});
 }
 
@@ -78,11 +68,6 @@ export function sendErrorEvent(
     [TelemetryConstants.properties.errorType]: errorType,
     [TelemetryConstants.properties.errorMessage]: error.message,
   };
-  TOOLS.logProvider.info(
-    `Send telemetry event ${eventName}, props: ${JSON.stringify(
-      props
-    )}, measurements: ${JSON.stringify(measurements ?? {})}`
-  );
   TOOLS.telemetryReporter?.sendTelemetryErrorEvent(eventName, props, measurements ?? {}, [
     TelemetryConstants.properties.errorMessage,
   ]);

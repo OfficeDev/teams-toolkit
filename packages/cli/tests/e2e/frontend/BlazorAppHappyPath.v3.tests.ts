@@ -65,7 +65,7 @@ describe("Blazor App", function () {
     chai.assert.exists(token);
 
     const context = await readContextMultiEnv(projectPath, envName);
-    const resourceId = context[PluginId.FrontendHosting][StateConfigKey.webAppResourceId];
+    const resourceId = context[PluginId.FrontendHosting][StateConfigKey.frontendResourceId];
     const activeResourcePlugins = await getActivePluginsFromProjectSetting(projectPath);
 
     chai.assert.isArray(activeResourcePlugins);
@@ -86,7 +86,7 @@ describe("Blazor App", function () {
     );
     chai.assert.include(
       response[FrontendWebAppConfig.authEndpoint],
-      context[PluginId.FrontendHosting][StateConfigKey.endpoint]
+      context[PluginId.FrontendHosting][StateConfigKey.frontendEndpoint]
     );
     chai.assert.equal(
       response[FrontendWebAppConfig.authority],
@@ -98,7 +98,7 @@ describe("Blazor App", function () {
     await CliHelper.deployAll(projectPath, "");
 
     const context = await readContextMultiEnv(projectPath, envName);
-    const endpoint = context[PluginId.FrontendHosting][StateConfigKey.endpoint];
+    const endpoint = context[PluginId.FrontendHosting][StateConfigKey.frontendEndpoint];
     const axiosInstance = axios.create();
     try {
       const response = await axiosInstance.get(endpoint);

@@ -136,8 +136,8 @@ export class BotCodeProvider {
     }
     const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
     if (!teamsBot) return ok(undefined);
-    if (!teamsBot.folder) throw new BadComponent("bot", this.name, "folder");
-    const packDir = path.join(inputs.projectPath, teamsBot.folder);
+    if (teamsBot.folder == undefined) throw new BadComponent("bot", this.name, "folder");
+    const packDir = path.resolve(inputs.projectPath, teamsBot.folder);
     const language = context.projectSetting.programmingLanguage || "javascript";
 
     await actionContext?.progressBar?.next(ProgressMessages.buildingBot);

@@ -99,7 +99,7 @@ export async function provisionResources(
   if (tenantIdInTokenRes.isErr()) {
     return err(tenantIdInTokenRes.error);
   }
-  const tenantIdInToken = tenantIdInTokenRes.value;
+  const tenantIdInToken = tenantIdInTokenRes.value.tenantIdInToken;
   if (tenantIdInConfig && tenantIdInToken && tenantIdInToken !== tenantIdInConfig) {
     return err(
       new UserError(
@@ -413,25 +413,14 @@ async function compareWithStateSubscription(
   subscriptionInStateName: string | undefined,
   azureAccountProvider: AzureAccountProvider
 ): Promise<Result<ProvisionSubscriptionCheckResult, FxError>> {
-  const shouldAskForSubscriptionConfirmation =
+  const hasSwitchedSubscription =
     !!subscriptionInStateId && targetSubscriptionInfo.subscriptionId !== subscriptionInStateId;
-  if (shouldAskForSubscriptionConfirmation) {
-    const confirmResult = await askForSubscriptionConfirm(
-      ctx,
-      subscriptionInStateName!,
-      targetSubscriptionInfo.subscriptionName || targetSubscriptionInfo.subscriptionId,
-      azureAccountProvider,
-      envInfo
-    );
-    if (confirmResult.isErr()) {
-      return err(confirmResult.error);
-    } else {
-      updateEnvInfoSubscription(envInfo, targetSubscriptionInfo);
-      clearEnvInfoStateResource(envInfo);
+  if (hasSwitchedSubscription) {
+    updateEnvInfoSubscription(envInfo, targetSubscriptionInfo);
+    clearEnvInfoStateResource(envInfo);
 
-      ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
-      return ok({ hasSwitchedSubscription: true });
-    }
+    ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
+    return ok({ hasSwitchedSubscription: true });
   } else {
     updateEnvInfoSubscription(envInfo, targetSubscriptionInfo);
     ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
@@ -471,32 +460,6 @@ function clearEnvInfoStateResource(envInfo: v3.EnvInfoV3): void {
       delete envInfo.state[key]["serviceResourceId"];
     }
   }
-}
-
-async function askForSubscriptionConfirm(
-  ctx: v2.Context,
-  subscriptionInState: string,
-  subscriptionInAccount: string,
-  azureAccountProvider: AzureAccountProvider,
-  envInfo: v3.EnvInfoV3
-): Promise<Result<Void, FxError>> {
-  const azureToken = await azureAccountProvider.getAccountCredentialAsync();
-
-  const username = (azureToken as any).username || "";
-  const msgNew = getLocalizedString(
-    "core.provision.confirmSubscription",
-    subscriptionInState,
-    envInfo.envName,
-    username,
-    subscriptionInAccount
-  );
-  const confirmRes = await ctx.userInteraction.showMessage("warn", msgNew, true, "Provision");
-  const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
-
-  if (confirm !== "Provision") {
-    return err(new UserError(SolutionSource, "CancelProvision", "CancelProvision"));
-  }
-  return ok(Void);
 }
 
 /**
@@ -732,10 +695,14 @@ export async function askForProvisionConsent(
   }
   return ok(Void);
 }
+interface M365TenantRes {
+  tenantIdInToken: string;
+  tenantUserName: string;
+}
 
 export async function getM365TenantId(
   m365TokenProvider: M365TokenProvider
-): Promise<Result<string, FxError>> {
+): Promise<Result<M365TenantRes, FxError>> {
   // Just to trigger M365 login before the concurrent execution of localDebug.
   // Because concurrent execution of localDebug may getAccessToken() concurrently, which
   // causes 2 M365 logins before the token caching in common lib takes effect.
@@ -756,6 +723,7 @@ export async function getM365TenantId(
     );
   }
   const tenantIdInToken = (appStudioTokenJson as any).tid;
+  const tenantUserName = (appStudioTokenJson as any).upn;
   if (!tenantIdInToken || !(typeof tenantIdInToken === "string")) {
     return err(
       new SystemError(
@@ -766,5 +734,5 @@ export async function getM365TenantId(
       )
     );
   }
-  return ok(tenantIdInToken);
+  return ok({ tenantIdInToken, tenantUserName });
 }

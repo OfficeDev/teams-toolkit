@@ -35,7 +35,7 @@ describe("Add capabilities", function () {
       mockedEnvRestore();
     }
   });
-  for (const v3flag of ["false", "true"]) {
+  for (const v3flag of ["false"]) {
     it(`tab project can add bot capability and provision (v3=${v3flag})`, async () => {
       mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: v3flag });
       appName = getUniqueAppName();
@@ -51,7 +51,7 @@ describe("Add capabilities", function () {
       await CliHelper.setSubscription(subscription, projectPath);
       await CliHelper.provisionProject(projectPath);
 
-      // Assert
+      // Asserts
       await validateTabAndBotProjectProvision(projectPath, env);
     });
 

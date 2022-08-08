@@ -251,7 +251,7 @@ export async function checkPermission(
   const userInfo = result.value as AppUser;
 
   if (inputs.platform === Platform.CLI) {
-    const aadAppTenantId = envInfo.state[BuiltInFeaturePluginNames.appStudio]?.tenantId;
+    const aadAppTenantId = envInfo.state[ComponentNames.AppManifest]?.tenantId;
     const message = [
       {
         content: getLocalizedString("core.collaboration.AccountUsedToCheck"),

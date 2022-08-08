@@ -103,6 +103,20 @@ jobs:
           max_attempts: 5
           command: |
             npm run setup
+            npm run setup-metrics
+
+      - name: Package CLI 
+        working-directory: packages/cli
+        run: |
+          rm -f *.tgz
+          npm pack
+          mv *.tgz teamsfx-cli.tgz
+
+      - name: Upload to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Teamsfx-cli
+          path: ./packages/cli/teamsfx-cli.tgz
 
       - name: List cases for schedule
         id: schedule-cases
@@ -187,14 +201,15 @@ jobs:
           timeout_minutes: 10
           max_attempts: 5
           command: |
-            npm run setup-metrics
+            npm run setup
 
-      - name: Package CLI and install
-        working-directory: packages/cli
+      - name:  Download CLI
+        uses: actions/download-artifact@v3
+        with:
+          name: Teamsfx-cli
+
+      - name: Install CLI
         run: |
-          rm -f *.tgz
-          npm pack
-          mv *.tgz teamsfx-cli.tgz
           npm install -g teamsfx-cli.tgz
 
       - name: print system info
@@ -256,6 +271,18 @@ jobs:
     if: ${{ always() && github.event_name == 'schedule' }}
     needs: execute-case
     runs-on: ubuntu-latest
+    env:
+      AZURE_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
+      AZURE_ACCOUNT_OBJECT_ID: ${{ secrets.TEST_USER_OBJECT_ID }}
+      AZURE_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
+      AZURE_TENANT_ID: ${{ secrets.TEST_TENANT_ID }}
+      M365_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
+      M365_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+      M365_TENANT_ID: ${{ secrets.TEST_TENANT_ID_2 }}
+      CI_ENABLED: "true"
+      M365_ACCOUNT_COLLABORATOR: ${{ secrets.TEST_COLLABORATOR_USER_NAME }}
+      AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_PAT }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -369,7 +396,7 @@ jobs:
               core_version="V3"
             fi
 
-            row="<tr> <td style=\\\"text-align: left;\\\">$url</td> <td style=\\\"text-align: center;\\\">$target_type</td> <td style=\\\"text-align: center;\\\">$core_version</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> <td style=\\\"text-align: center;\\\">$duration</td> <td style=\\\"text-align: center;\\\">$slow_count</td> <td style=\\\"text-align: center;\\\">$url</td> </tr>"
+            row="<tr> <td style=\\\"text-align: left;\\\">$url</td> <td style=\\\"text-align: center;\\\">$target_type</td> <td style=\\\"text-align: center;\\\">$core_version</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> <td style=\\\"text-align: center;\\\">$duration</td> <td style=\\\"text-align: center;\\\">$slow_count</td> </tr>"
 
             if [ "$status" == "success" ]; then
               lists="$lists $row"

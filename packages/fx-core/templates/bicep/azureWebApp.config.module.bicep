@@ -16,13 +16,15 @@ var m365ClientSecret = provisionParameters['m365ClientSecret']
   {{/if}}
 var m365TenantId = provisionParameters['m365TenantId']
 var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
+  {{#if (contains "teams-bot" connections) }}
 var botId = provisionParameters['botAadAppClientId']
-  {{#if (contains "teams-tab" connections)}}
-    {{#if (contains "teams-bot" connections) }}
+    {{#if (contains "teams-tab" connections)}}
 var m365ApplicationIdUri = 'api://${ provisionOutputs.TabOutput.value.domain }/botid-${botId}'
+    {{else}}
+var m365ApplicationIdUri = 'api://botid-${botId}'
     {{/if}}
   {{else}}
-var m365ApplicationIdUri = 'api://botid-${botId}'
+var m365ApplicationIdUri = 'api://${ provisionOutputs.TabOutput.value.domain }/${m365ClientId}'
   {{/if}}
 {{/if}}
 {{#if (contains "teams-bot" connections)}}
@@ -53,7 +55,7 @@ resource webAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
     API_ENDPOINT: provisionOutputs.azureFunctionApiOutput.value.functionEndpoint // Azure Function API endpoint
     {{/if}}
     {{#if (contains "azure-sql" connections)}}
-    SQL_DATABASE_NAME: {{azure-sql.outputs.sqlDatabaseName}} // SQL database name
+    SQL_DATABASE_NAME: {{azure-sql.outputs.databaseName}} // SQL database name
     SQL_ENDPOINT: {{azure-sql.outputs.sqlEndpoint}} // SQL server endpoint
     {{/if}}
     {{#if (contains "identity" connections)}}

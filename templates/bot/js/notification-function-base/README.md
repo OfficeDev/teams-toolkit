@@ -30,6 +30,10 @@ If you selected `http` trigger, you can test it:
 > - `Node.js` installed locally (recommended version: 14)
 > - An [M365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
 >
+> **Note**
+>
+> Your app can be installed into a team, or a group chat, or as personal app. See [Installation and Uninstallation](https://aka.ms/teamsfx-notification#notify).
+>
 
 # Understanding the code
 

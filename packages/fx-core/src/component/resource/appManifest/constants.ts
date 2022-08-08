@@ -9,8 +9,8 @@ export const AAD_COMPONENT_NAME = "aad-app";
 export const BOT_COMPONENT_NAME = "teams-bot";
 
 export const TEAMS_APP_MANIFEST_TEMPLATE = `{
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.13/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.13",
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.14/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.14",
   "version": "1.0.0",
   "id": "{{state.${App_MANIFEST_COMPONENT_NAME}.teamsAppId}}",
   "packageName": "com.microsoft.teams.extension",

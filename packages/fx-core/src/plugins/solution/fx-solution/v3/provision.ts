@@ -48,7 +48,7 @@ import {
 } from "../constants";
 import { configLocalEnvironment, setupLocalEnvironment } from "../debug/provisionLocal";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
-import { handleConfigFilesWhenSwitchAccount } from "../utils/util";
+import { handleConfigFilesWhenSwitchAccount, hasBotServiceCreated } from "../utils/util";
 import { executeConcurrently } from "../v2/executor";
 import { BuiltInFeaturePluginNames } from "./constants";
 import { solutionGlobalVars } from "./solutionGlobalVars";
@@ -132,6 +132,7 @@ export async function provisionResources(
   if (solutionSetting) {
     // 3. check Azure configs
     if (hasAzureResource(ctx.projectSetting) && envInfo.envName !== "local") {
+      const hasBotServiceCreatedBefore = hasBotServiceCreated(envInfo as v3.EnvInfoV3);
       // ask common question and fill in solution config
       const solutionConfigRes = await fillInAzureConfigs(
         ctx,
@@ -174,7 +175,8 @@ export async function provisionResources(
           ctx.projectSetting.appName,
           inputs.projectPath,
           false,
-          solutionConfigRes.value.hasSwitchedSubscription
+          solutionConfigRes.value.hasSwitchedSubscription,
+          hasBotServiceCreatedBefore
         );
 
         if (handleConfigFilesWhenSwitchAccountsRes.isErr()) {

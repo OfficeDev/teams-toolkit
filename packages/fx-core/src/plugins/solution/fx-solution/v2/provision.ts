@@ -57,6 +57,7 @@ import {
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import {
   handleConfigFilesWhenSwitchAccount,
+  hasBotServiceCreated,
   sendErrorTelemetryThenReturnError,
 } from "../utils/util";
 import { doesAllowSwitchAccount } from "../../../../core";
@@ -171,6 +172,7 @@ async function provisionResourceImpl(
   solutionConfig.teamsAppTenantId = tenantIdInToken;
 
   if (isAzureProject(azureSolutionSettings) && hasAzureResource(ctx.projectSetting, true)) {
+    const hasBotServiceCreatedBefore = hasBotServiceCreated(envInfo as v3.EnvInfoV3);
     if (hasAAD(ctx.projectSetting)) {
       if (ctx.permissionRequestProvider === undefined) {
         ctx.permissionRequestProvider = new PermissionRequestFileProvider(inputs.projectPath);
@@ -226,7 +228,8 @@ async function provisionResourceImpl(
         ctx.projectSetting.appName,
         inputs.projectPath,
         hasSwitchedM365Tenant,
-        solutionConfigRes.value.hasSwitchedSubscription
+        solutionConfigRes.value.hasSwitchedSubscription,
+        hasBotServiceCreatedBefore
       );
 
       if (handleConfigFilesWhenSwitchAccountsRes.isErr()) {

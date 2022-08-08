@@ -95,7 +95,7 @@ export function sendErrorTelemetryThenReturnError(
   return error;
 }
 
-function hasBotServiceCreated(envInfo: v3.EnvInfoV3): boolean {
+export function hasBotServiceCreated(envInfo: v3.EnvInfoV3): boolean {
   if (!envInfo || !envInfo.state) {
     return false;
   }
@@ -113,9 +113,9 @@ export async function handleConfigFilesWhenSwitchAccount(
   appName: string,
   projectPath: string,
   hasSwitchedM365Tenant: boolean,
-  hasSwitchedSubscription: boolean
+  hasSwitchedSubscription: boolean,
+  hasBotServiceCreatedBefore: boolean
 ): Promise<Result<undefined, FxError>> {
-  const hasBotServiceCreatedBefore = hasBotServiceCreated(envInfo);
   // TODO: backup old files.
   const updateAzureParametersRes = await updateAzureParameters(
     projectPath,

@@ -27,11 +27,11 @@ Incremental version for Teams Toolkit with multiple bugs fix, enhancements and n
 New samples:
 - Proactive Messaging: Save users' conversation reference to send proactive reminder messages using bots.
 
-    ![Proactive Messaging](img/proactive_messaging.png) 
+    ![Proactive Messaging](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/proactive_messaging.png)
 
 - One Productivity Hub: View calendar events, to-do tasks and files in Teams tab.
 
-    ![One Productivity Hub](img/one_productivity_hub.png) 
+    ![One Productivity Hub](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/one_productivity_hub.png)
 
 Enhancement:
 - Enhanced experience of building Teams tab application with SharePoint Framework v1.15.0

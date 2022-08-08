@@ -123,6 +123,7 @@
         [DataRow("SampleTest extra-input")]
         [DataRow("Invalid input")]
         [DataRow("A Test !@#$%^")]
+        [DataRow(null)]
         public async Task OnTurnAsync_InputNotMatch_ShouldSkipped(string input)
         {
             // Arrange

@@ -407,34 +407,34 @@ export class TeamsfxCore {
     return ok(undefined);
   }
 
-  async build(
-    context: ResourceContextV3,
-    inputs: InputsWithProjectPath
-  ): Promise<Result<undefined, FxError>> {
-    const projectSettings = context.projectSetting as ProjectSettingsV3;
-    const thunks = [];
-    for (const component of projectSettings.components) {
-      const componentInstance = Container.get(component.name) as any;
-      if (component.build && componentInstance.build) {
-        thunks.push({
-          pluginName: `${component.name}`,
-          taskName: "build",
-          thunk: () => {
-            const clonedInputs = cloneDeep(inputs);
-            clonedInputs.folder = component.folder;
-            clonedInputs.artifactFolder = component.artifactFolder;
-            clonedInputs.componentId = component.name;
-            return componentInstance.build!(context, clonedInputs);
-          },
-        });
-      }
-    }
-    const result = await executeConcurrently(thunks, context.logProvider);
-    if (result.kind !== "success") {
-      return err(result.error);
-    }
-    return ok(undefined);
-  }
+  // async build(
+  //   context: ResourceContextV3,
+  //   inputs: InputsWithProjectPath
+  // ): Promise<Result<undefined, FxError>> {
+  //   const projectSettings = context.projectSetting as ProjectSettingsV3;
+  //   const thunks = [];
+  //   for (const component of projectSettings.components) {
+  //     const componentInstance = Container.get(component.name) as any;
+  //     if (component.build && componentInstance.build) {
+  //       thunks.push({
+  //         pluginName: `${component.name}`,
+  //         taskName: "build",
+  //         thunk: () => {
+  //           const clonedInputs = cloneDeep(inputs);
+  //           clonedInputs.folder = component.folder;
+  //           clonedInputs.artifactFolder = component.artifactFolder;
+  //           clonedInputs.componentId = component.name;
+  //           return componentInstance.build!(context, clonedInputs);
+  //         },
+  //       });
+  //     }
+  //   }
+  //   const result = await executeConcurrently(thunks, context.logProvider);
+  //   if (result.kind !== "success") {
+  //     return err(result.error);
+  //   }
+  //   return ok(undefined);
+  // }
 
   @hooks([
     ActionExecutionMW({
@@ -447,6 +447,11 @@ export class TeamsfxCore {
     context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
+    context.logProvider.info(
+      `inputs(${AzureSolutionQuestionNames.PluginSelectionDeploy}) = ${
+        inputs[AzureSolutionQuestionNames.PluginSelectionDeploy]
+      }`
+    );
     const projectSettings = context.projectSetting as ProjectSettingsV3;
     const inputPlugins = inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] || [];
     const inputComponentNames = inputPlugins.map(pluginName2ComponentName) as string[];
@@ -455,24 +460,26 @@ export class TeamsfxCore {
     // 1. collect resources to deploy
     const isVS = isVSProject(projectSettings);
     for (const component of projectSettings.components) {
-      if (
-        component.deploy &&
-        component.hosting !== undefined &&
-        (isVS || inputComponentNames.includes(component.name))
-      ) {
-        const componentInstance = Container.get<CloudResource>(component.hosting);
+      if (component.deploy && (isVS || inputComponentNames.includes(component.name))) {
+        const deployComponentName = component.hosting || component.name;
+        const featureComponent = Container.get(component.name) as any;
+        const deployComponent = Container.get(deployComponentName) as any;
         thunks.push({
           pluginName: `${component.name}`,
-          taskName: "deploy",
-          thunk: () => {
+          taskName: `${deployComponent.build ? "build & " : ""}deploy`,
+          thunk: async () => {
             const clonedInputs = cloneDeep(inputs);
             clonedInputs.folder = component.folder;
             clonedInputs.artifactFolder = component.artifactFolder;
             clonedInputs.componentId = component.name;
-            return componentInstance.deploy!(context, clonedInputs);
+            if (deployComponent.build) {
+              const buildRes = await featureComponent.build(context, clonedInputs);
+              if (buildRes.isErr()) return err(buildRes.error);
+            }
+            return await deployComponent.deploy!(context, clonedInputs);
           },
         });
-        if (AzureResources.includes(component.hosting)) {
+        if (AzureResources.includes(deployComponentName)) {
           hasAzureResource = true;
         }
       }
@@ -482,8 +489,8 @@ export class TeamsfxCore {
       thunks.push({
         pluginName: ComponentNames.AppManifest,
         taskName: "deploy",
-        thunk: () => {
-          return appManifest.configure(context, inputs);
+        thunk: async () => {
+          return await appManifest.configure(context, inputs);
         },
       });
     }
@@ -526,11 +533,11 @@ export class TeamsfxCore {
       }
     }
 
-    // 3. build
-    {
-      const res = await this.build(context, inputs);
-      if (res.isErr()) return err(res.error);
-    }
+    // // 3. build
+    // {
+    //   const res = await this.build(context, inputs);
+    //   if (res.isErr()) return err(res.error);
+    // }
 
     // 4. start deploy
     context.logProvider.info(

@@ -121,8 +121,8 @@ export async function handleConfigFilesWhenSwitchAccount(
     projectPath,
     appName,
     envInfo.envName,
-    hasSwitchedSubscription,
     hasSwitchedM365Tenant,
+    hasSwitchedSubscription,
     hasBotServiceCreatedBefore
   );
   if (updateAzureParametersRes.isErr()) {

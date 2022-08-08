@@ -4,7 +4,7 @@ on:
     types: [teamsjs-released]
 jobs:
   notification:
-    runs-on: ubuntu-latest      
+    runs-on: ubuntu-latest
     steps:
       - name: Setup node
         uses: actions/setup-node@v2.1.2

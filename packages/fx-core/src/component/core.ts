@@ -466,13 +466,13 @@ export class TeamsfxCore {
         const deployComponent = Container.get(deployComponentName) as any;
         thunks.push({
           pluginName: `${component.name}`,
-          taskName: `${deployComponent.build ? "build & " : ""}deploy`,
+          taskName: `${featureComponent.build ? "build & " : ""}deploy`,
           thunk: async () => {
             const clonedInputs = cloneDeep(inputs);
             clonedInputs.folder = component.folder;
             clonedInputs.artifactFolder = component.artifactFolder;
             clonedInputs.componentId = component.name;
-            if (deployComponent.build) {
+            if (featureComponent.build) {
               const buildRes = await featureComponent.build(context, clonedInputs);
               if (buildRes.isErr()) return err(buildRes.error);
             }

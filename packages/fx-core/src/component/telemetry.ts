@@ -14,7 +14,6 @@ import { AzureSolutionQuestionNames } from "../plugins/solution/fx-solution/ques
 import { TelemetryKeys } from "../plugins/resource/bot/constants";
 import { PluginNames } from "../plugins/solution/fx-solution/constants";
 import { ComponentNames, Scenarios, TelemetryConstants } from "./constants";
-import { merge } from "lodash";
 
 export type TelemetryProps = { [key: string]: string };
 export function getCommonProperties(): TelemetryProps {
@@ -110,60 +109,38 @@ export function sendMigratedStartEvent(
     return;
   }
   if (eventName === TelemetryEvent.Provision && context.envInfo?.envName === "local") {
-    const components = getMigrateComponents(context);
-    components.forEach((component) => {
-      let props: TelemetryProps = {
-        ...properties,
-        [TelemetryProperty.Component]: migrateComponentName(component.name),
-      };
-      props = fulfillCommonBotProperties(props, component);
-      sendStartEvent(TelemetryEvent.LocalDebug, props, measurements);
-    });
+    migrateProvision(
+      (props) => {
+        sendStartEvent(TelemetryEvent.LocalDebug, props, measurements);
+      },
+      context,
+      properties
+    );
     return;
   }
   if (eventName === TelemetryEvent.Provision && context.envInfo?.envName !== "local") {
-    const components = getMigrateComponents(context);
-    components.forEach((component) => {
-      let props: TelemetryProps = {
-        ...properties,
-        [TelemetryProperty.Component]: migrateComponentName(component.name),
-      };
-      props = fulfillCommonBotProperties(props, component);
-      sendStartEvent(TelemetryEvent.Provision, props, measurements);
-    });
+    migrateProvision(
+      (props) => {
+        sendStartEvent(TelemetryEvent.Provision, props, measurements);
+      },
+      context,
+      properties
+    );
     return;
   }
   if (eventName === TelemetryEvent.Deploy) {
-    let inputPlugins = inputs[AzureSolutionQuestionNames.PluginSelectionDeploy];
-    if (!Array.isArray(inputPlugins)) {
-      inputPlugins = context.projectSetting.components
-        .filter((component) => component.deploy && component.hosting != undefined)
-        .map((component) => migrateComponentName(component.name));
-    }
-
-    if (Array.isArray(inputPlugins)) {
-      inputPlugins.forEach((pluginName) => {
-        let props: TelemetryProps = {
-          ...properties,
-          [TelemetryProperty.Component]: migrateComponentName(pluginName),
-        };
-        if (pluginName === PluginNames.BOT) {
-          props = fulfillCommonBotProperties(
-            props,
-            context.projectSetting.components.find(
-              (component) => component.name === ComponentNames.TeamsBot
-            )
-          );
-        }
+    migrateDeploy(
+      (props) => {
         sendStartEvent(TelemetryEvent.PreDeploy, props, measurements);
         sendSuccessEvent(TelemetryEvent.PreDeploy, props, measurements);
         sendStartEvent(TelemetryEvent.Deploy, props, measurements);
-      });
-    }
-
+      },
+      context,
+      inputs,
+      properties
+    );
     return;
   }
-  sendStartEvent(eventName, properties, measurements);
 }
 
 export function sendMigratedSuccessEvent(
@@ -195,61 +172,38 @@ export function sendMigratedSuccessEvent(
     return;
   }
   if (eventName === TelemetryEvent.Provision && context.envInfo?.envName === "local") {
-    const components = getMigrateComponents(context);
-    components.forEach((component) => {
-      let props: TelemetryProps = {
-        ...properties,
-        [TelemetryProperty.Component]: migrateComponentName(component.name),
-      };
-      props = fulfillCommonBotProperties(props, component);
-      sendSuccessEvent(TelemetryEvent.LocalDebug, props, measurements);
-      sendStartEvent(TelemetryEvent.PostLocalDebug, props, measurements);
-      sendSuccessEvent(TelemetryEvent.PostLocalDebug, props, measurements);
-    });
+    migrateProvision(
+      (props) => {
+        sendSuccessEvent(TelemetryEvent.LocalDebug, props, measurements);
+        sendStartEvent(TelemetryEvent.PostLocalDebug, props, measurements);
+        sendSuccessEvent(TelemetryEvent.PostLocalDebug, props, measurements);
+      },
+      context,
+      properties
+    );
     return;
   }
   if (eventName === TelemetryEvent.Provision && context.envInfo?.envName !== "local") {
-    const components = getMigrateComponents(context);
-    components.forEach((component) => {
-      let props: TelemetryProps = {
-        ...properties,
-        [TelemetryProperty.Component]: migrateComponentName(component.name),
-      };
-      props = fulfillCommonBotProperties(props, component);
-      sendSuccessEvent(TelemetryEvent.Provision, props, measurements);
-      sendStartEvent(TelemetryEvent.PostProvision, props, measurements);
-      sendSuccessEvent(TelemetryEvent.PostProvision, props, measurements);
-    });
+    migrateProvision(
+      (props) => {
+        sendSuccessEvent(TelemetryEvent.Provision, props, measurements);
+        sendStartEvent(TelemetryEvent.PostProvision, props, measurements);
+        sendSuccessEvent(TelemetryEvent.PostProvision, props, measurements);
+      },
+      context,
+      properties
+    );
     return;
   }
   if (eventName === TelemetryEvent.Deploy) {
-    let inputPlugins = inputs[AzureSolutionQuestionNames.PluginSelectionDeploy];
-    if (!Array.isArray(inputPlugins)) {
-      inputPlugins = context.projectSetting.components
-        .filter((component) => component.deploy && component.hosting != undefined)
-        .map((component) => migrateComponentName(component.name));
-    }
-
-    if (Array.isArray(inputPlugins)) {
-      inputPlugins.forEach((pluginName) => {
-        let props: TelemetryProps = {
-          ...properties,
-          [TelemetryProperty.Component]: migrateComponentName(pluginName),
-        };
-        if (pluginName === PluginNames.BOT) {
-          props = fulfillCommonBotProperties(
-            props,
-            context.projectSetting.components.find(
-              (component) => component.name === ComponentNames.TeamsBot
-            )
-          );
-        }
-        sendSuccessEvent(eventName, props, measurements);
-      });
-    }
+    migrateDeploy(
+      (props) => sendSuccessEvent(eventName, props, measurements),
+      context,
+      inputs,
+      properties
+    );
     return;
   }
-  sendSuccessEvent(eventName, properties, measurements);
 }
 
 export function sendMigratedErrorEvent(
@@ -279,9 +233,9 @@ export function sendMigratedErrorEvent(
       break;
   }
   if (componentName) {
-    merge(properties, { [TelemetryProperty.Component]: componentName });
+    const props = { ...properties, [TelemetryProperty.Component]: componentName };
+    sendErrorEvent(migrateEventName(eventName, context), error, props, measurements);
   }
-  sendErrorEvent(migrateEventName(eventName, context), error, properties, measurements);
 }
 
 function needMigrate(eventName: string, properties?: TelemetryProps): boolean {
@@ -315,16 +269,64 @@ function getMigrateComponents(context: ContextV3): Component[] {
 }
 
 function migrateComponentName(componentName: string): string {
-  if (componentName === ComponentNames.TeamsApi) {
-    return PluginNames.FUNC;
+  switch (componentName) {
+    case ComponentNames.TeamsApi:
+      return PluginNames.FUNC;
+    case ComponentNames.TeamsBot:
+      return PluginNames.BOT;
+    case ComponentNames.TeamsTab:
+      return PluginNames.FE;
+    default:
+      return componentName;
   }
-  if (componentName === ComponentNames.TeamsBot) {
-    return PluginNames.BOT;
+}
+
+function migrateDeploy(
+  cb: (properties?: TelemetryProps) => void,
+  context: ContextV3,
+  inputs: InputsWithProjectPath,
+  properties?: TelemetryProps
+): void {
+  let inputPlugins = inputs[AzureSolutionQuestionNames.PluginSelectionDeploy];
+  if (!Array.isArray(inputPlugins)) {
+    inputPlugins = context.projectSetting.components
+      .filter((component) => component.deploy && component.hosting != undefined)
+      .map((component) => migrateComponentName(component.name));
   }
-  if (componentName === ComponentNames.TeamsTab) {
-    return PluginNames.FE;
+
+  if (Array.isArray(inputPlugins)) {
+    inputPlugins.forEach((pluginName) => {
+      let props: TelemetryProps = {
+        ...properties,
+        [TelemetryProperty.Component]: migrateComponentName(pluginName),
+      };
+      if (pluginName === PluginNames.BOT) {
+        props = fulfillCommonBotProperties(
+          props,
+          context.projectSetting.components.find(
+            (component) => component.name === ComponentNames.TeamsBot
+          )
+        );
+      }
+      cb(props);
+    });
   }
-  return componentName;
+}
+
+function migrateProvision(
+  cb: (properties?: TelemetryProps) => void,
+  context: ContextV3,
+  properties?: TelemetryProps
+): void {
+  const components = getMigrateComponents(context);
+  components.forEach((component) => {
+    let props: TelemetryProps = {
+      ...properties,
+      [TelemetryProperty.Component]: migrateComponentName(component.name),
+    };
+    props = fulfillCommonBotProperties(props, component);
+    cb(props);
+  });
 }
 
 function fulfillCommonBotProperties(props: TelemetryProps, component?: Component): TelemetryProps {

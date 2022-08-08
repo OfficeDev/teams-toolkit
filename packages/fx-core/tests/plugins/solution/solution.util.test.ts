@@ -90,7 +90,7 @@ describe("util: fillInSolutionSettings() with AAD manifest enabled", async () =>
   });
 });
 
-describe.only("util: handleConfigFilesWhenSwitchAccount", async () => {
+describe("util: handleConfigFilesWhenSwitchAccount", async () => {
   const mocker = sinon.createSandbox();
   afterEach(async () => {
     mocker.restore();

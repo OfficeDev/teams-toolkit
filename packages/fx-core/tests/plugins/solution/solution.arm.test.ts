@@ -55,6 +55,7 @@ import * as bicepChecker from "../../../src/plugins/solution/fx-solution/utils/d
 chai.use(chaiAsPromised);
 import { expect } from "chai";
 import { MockedLogProvider } from "./util";
+import { SolutionError } from "../../../src/plugins/solution/fx-solution/constants";
 
 describe("Generate ARM Template for project", () => {
   const mocker = sinon.createSandbox();
@@ -1104,5 +1105,280 @@ describe("Copy Parameter Json to New Env", () => {
         fileEncoding
       )
     ).equals(parameterContent);
+  });
+});
+
+describe.only("update Azure parameters", async () => {
+  const parameterFileNameTemplate = (env: string) => `azure.parameters.${env}.json`;
+  const configDir = path.join(TestHelper.rootDir, TestFilePath.configFolder);
+  const targetEnvName = "target";
+  const originalResourceBaseName = "originalResourceBaseName";
+  const paramContent = TestHelper.getParameterFileContent(
+    {
+      resourceBaseName: originalResourceBaseName,
+      param1: "value1",
+      param2: "value2",
+    },
+    {
+      userParam1: "userParamValue1",
+      userParam2: "userParamValue2",
+    }
+  );
+
+  beforeEach(async () => {
+    await fs.ensureDir(configDir);
+
+    await fs.writeFile(
+      path.join(configDir, parameterFileNameTemplate(targetEnvName)),
+      paramContent
+    );
+  });
+
+  afterEach(async () => {
+    await fs.remove(TestHelper.rootDir);
+  });
+
+  it("should do nothing if project file path is empty", async () => {
+    // Act
+    await arm.updateAzureParameters("", TestHelper.appName, targetEnvName, true, true, true);
+
+    // Assert
+    const targetParamObj = JSON.parse(
+      await fs.readFile(
+        path.join(configDir, parameterFileNameTemplate(targetEnvName)),
+        fileEncoding
+      )
+    );
+    expect(JSON.stringify(targetParamObj, undefined, 2).replace(/\r?\n/g, os.EOL)).equals(
+      paramContent
+    );
+  });
+
+  it("should do nothing if app name is empty", async () => {
+    // Act
+    await arm.updateAzureParameters(TestHelper.rootDir, "", targetEnvName, true, true, true);
+
+    // Assert
+    const targetParamObj = JSON.parse(
+      await fs.readFile(
+        path.join(configDir, parameterFileNameTemplate(targetEnvName)),
+        fileEncoding
+      )
+    );
+    expect(JSON.stringify(targetParamObj, undefined, 2).replace(/\r?\n/g, os.EOL)).equals(
+      paramContent
+    );
+  });
+
+  it("should do nothing if env name is empty", async () => {
+    // Act
+    await arm.updateAzureParameters(TestHelper.rootDir, TestHelper.appName, "", true, true, true);
+
+    // Assert
+    const targetParamObj = JSON.parse(
+      await fs.readFile(
+        path.join(configDir, parameterFileNameTemplate(targetEnvName)),
+        fileEncoding
+      )
+    );
+    expect(JSON.stringify(targetParamObj, undefined, 2).replace(/\r?\n/g, os.EOL)).equals(
+      paramContent
+    );
+  });
+
+  it("should do nothing if not switching accounts", async () => {
+    // Act
+    await arm.updateAzureParameters(
+      TestHelper.rootDir,
+      TestHelper.appName,
+      targetEnvName,
+      false,
+      false,
+      true
+    );
+
+    // Assert
+    const targetParamObj = JSON.parse(
+      await fs.readFile(
+        path.join(configDir, parameterFileNameTemplate(targetEnvName)),
+        fileEncoding
+      )
+    );
+    expect(JSON.stringify(targetParamObj, undefined, 2).replace(/\r?\n/g, os.EOL)).equals(
+      paramContent
+    );
+  });
+
+  it("should do nothing if switching M365 account only without bot", async () => {
+    // Act
+    await arm.updateAzureParameters(
+      TestHelper.rootDir,
+      TestHelper.appName,
+      targetEnvName,
+      true,
+      false,
+      false
+    );
+
+    // Assert
+    const targetParamObj = JSON.parse(
+      await fs.readFile(
+        path.join(configDir, parameterFileNameTemplate(targetEnvName)),
+        fileEncoding
+      )
+    );
+    expect(JSON.stringify(targetParamObj, undefined, 2).replace(/\r?\n/g, os.EOL)).equals(
+      paramContent
+    );
+  });
+
+  it("update resource base name if switching subscription", async () => {
+    // Act
+    const res = await arm.updateAzureParameters(
+      TestHelper.rootDir,
+      TestHelper.appName,
+      targetEnvName,
+      false,
+      true,
+      true
+    );
+
+    // Assert
+    const targetParamObj = JSON.parse(
+      await fs.readFile(
+        path.join(configDir, parameterFileNameTemplate(targetEnvName)),
+        fileEncoding
+      )
+    );
+    const targetResourceBaseName =
+      targetParamObj?.parameters?.provisionParameters?.value?.resourceBaseName;
+    assert.exists(targetResourceBaseName);
+    assert.notEqual(targetResourceBaseName, originalResourceBaseName);
+
+    // Assert other parameter content remains the same
+    targetParamObj.parameters.provisionParameters.value.resourceBaseName = originalResourceBaseName;
+    expect(JSON.stringify(targetParamObj, undefined, 2).replace(/\r?\n/g, os.EOL)).equals(
+      paramContent
+    );
+
+    expect(res.isOk()).equal(true);
+  });
+
+  it("update resource base name if switching both Azure and M365", async () => {
+    // Act
+    const res = await arm.updateAzureParameters(
+      TestHelper.rootDir,
+      TestHelper.appName,
+      targetEnvName,
+      true,
+      true,
+      true
+    );
+
+    // Assert
+    const targetParamObj = JSON.parse(
+      await fs.readFile(
+        path.join(configDir, parameterFileNameTemplate(targetEnvName)),
+        fileEncoding
+      )
+    );
+    const targetResourceBaseName =
+      targetParamObj?.parameters?.provisionParameters?.value?.resourceBaseName;
+    assert.exists(targetResourceBaseName);
+    assert.notEqual(targetResourceBaseName, originalResourceBaseName);
+
+    // Assert other parameter content remains the same
+    targetParamObj.parameters.provisionParameters.value.resourceBaseName = originalResourceBaseName;
+    expect(JSON.stringify(targetParamObj, undefined, 2).replace(/\r?\n/g, os.EOL)).equals(
+      paramContent
+    );
+
+    expect(res.isOk()).equal(true);
+  });
+
+  it("update bot service name if switching M365 with bot service", async () => {
+    // Act
+    const paramContent = TestHelper.getParameterFileContent(
+      {
+        resourceBaseName: originalResourceBaseName,
+        botServiceName: "oldBot",
+        param1: "value1",
+        param2: "value2",
+      },
+      {
+        userParam1: "userParamValue1",
+        userParam2: "userParamValue2",
+      }
+    );
+
+    await fs.ensureDir(configDir);
+
+    await fs.writeFile(
+      path.join(configDir, parameterFileNameTemplate(targetEnvName)),
+      paramContent
+    );
+
+    const res = await arm.updateAzureParameters(
+      TestHelper.rootDir,
+      TestHelper.appName,
+      targetEnvName,
+      true,
+      false,
+      true
+    );
+
+    // Assert
+    const targetParamObj = JSON.parse(
+      await fs.readFile(
+        path.join(configDir, parameterFileNameTemplate(targetEnvName)),
+        fileEncoding
+      )
+    );
+    const targetBotServiceName =
+      targetParamObj?.parameters?.provisionParameters?.value?.botServiceName;
+    assert.exists(targetBotServiceName);
+    assert.notEqual(targetBotServiceName, "oldBot");
+
+    // Assert other parameter content remains the same
+    targetParamObj.parameters.provisionParameters.value.botServiceName = "oldBot";
+    expect(JSON.stringify(targetParamObj, undefined, 2).replace(/\r?\n/g, os.EOL)).equals(
+      paramContent
+    );
+
+    expect(res.isOk()).equal(true);
+  });
+
+  it("throw exception", async () => {
+    // Act
+    const mocker = sinon.createSandbox();
+    mocker.stub(arm, "generateResourceBaseName").rejects();
+    after(async () => {
+      mocker.restore();
+    });
+
+    const res = await arm.updateAzureParameters(
+      TestHelper.rootDir,
+      TestHelper.appName,
+      targetEnvName,
+      true,
+      false,
+      true
+    );
+
+    // Assert
+    const targetParamObj = JSON.parse(
+      await fs.readFile(
+        path.join(configDir, parameterFileNameTemplate(targetEnvName)),
+        fileEncoding
+      )
+    );
+    expect(JSON.stringify(targetParamObj, undefined, 2).replace(/\r?\n/g, os.EOL)).equals(
+      paramContent
+    );
+
+    expect(res.isErr()).equal(true);
+    if (res.isErr()) {
+      expect(res.error.name).equal(SolutionError.FailedToUpdateAzureParameters);
+    }
   });
 });

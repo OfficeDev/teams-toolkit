@@ -39,7 +39,7 @@ jobs:
       - name: Setup Email and Recipient 
         id: email
         run: |
-          emails="yiqingzhao@microsoft.com"
+          emails="vsciotadt@microsoft.com;zhididr@microsoft.com;johmil@microsoft.com"
           subject="Teams JS SDK v${{ github.event.client_payload.version }} Released"
 
           echo "::set-output name=to::$emails"

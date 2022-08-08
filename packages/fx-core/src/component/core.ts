@@ -48,7 +48,7 @@ import "./feature/spfx";
 import "./feature/sql";
 import "./feature/sso";
 import "./feature/tab";
-import "./resource/aadApp/aadApp";
+import { AadApp } from "./resource/aadApp/aadApp";
 import "./resource/apim";
 import { AppManifest } from "./resource/appManifest/appManifest";
 import "./resource/azureAppService/azureFunction";
@@ -58,6 +58,7 @@ import "./resource/azureStorage";
 import "./resource/botService";
 import "./resource/keyVault";
 import "./resource/spfx";
+import "./resource/aadApp/aadApp";
 
 import { AADApp } from "@microsoft/teamsfx-api/build/v3";
 import * as jsonschema from "jsonschema";
@@ -117,6 +118,9 @@ import {
   hasBotServiceCreated,
 } from "../plugins/solution/fx-solution/utils/util";
 import { ensureBasicFolderStructure } from "../core";
+import { sendErrorTelemetryThenReturnError } from "../core/telemetry";
+import { ViewAadAppHelpLink, SolutionTelemetryEvent, PluginNames } from "../plugins";
+import { Constants } from "../plugins/resource/aad/constants";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -487,13 +491,25 @@ export class TeamsfxCore {
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
+    const isDeployAADManifestFromVSCode =
+      inputs[Constants.INCLUDE_AAD_MANIFEST] === "yes" && inputs.platform === Platform.VSCode;
+    if (isDeployAADManifestFromVSCode) {
+      return deployAadFromVscode(context, inputs);
+    }
     context.logProvider.info(
       `inputs(${AzureSolutionQuestionNames.PluginSelectionDeploy}) = ${
         inputs[AzureSolutionQuestionNames.PluginSelectionDeploy]
       }`
     );
     const projectSettings = context.projectSetting as ProjectSettingsV3;
-    const inputPlugins = inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] || [];
+    let inputPlugins = inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] || [];
+    if (
+      inputPlugins.includes(PluginNames.AAD) &&
+      (inputs.platform !== Platform.CLI || inputs[Constants.INCLUDE_AAD_MANIFEST] !== "yes")
+    ) {
+      inputPlugins = inputPlugins.filter((option: string) => option !== PluginNames.AAD);
+    }
+
     const inputComponentNames = inputPlugins.map(pluginName2ComponentName) as string[];
     const thunks = [];
     let hasAzureResource = false;
@@ -625,6 +641,82 @@ export class TeamsfxCore {
       context.logProvider.info(msg);
       return err(result.error);
     }
+  }
+}
+
+async function deployAadFromVscode(
+  context: ResourceContextV3,
+  inputs: InputsWithProjectPath
+): Promise<Result<undefined, FxError>> {
+  const thunks = [];
+  // 1. collect resources to deploy
+  const deployComponent = Container.get<AadApp>(ComponentNames.AadApp);
+  thunks.push({
+    pluginName: `${deployComponent.name}`,
+    taskName: `deploy`,
+    thunk: async () => {
+      const clonedInputs = cloneDeep(inputs);
+      clonedInputs.componentId = deployComponent.name;
+      return await deployComponent.deploy!(context, clonedInputs);
+    },
+  });
+  if (thunks.length === 0) {
+    return err(
+      new UserError(
+        "fx",
+        "NoResourcePluginSelected",
+        getDefaultString("core.NoPluginSelected"),
+        getLocalizedString("core.NoPluginSelected")
+      )
+    );
+  }
+
+  context.logProvider.info(
+    getLocalizedString(
+      "core.deploy.selectedPluginsToDeployNotice",
+      PluginDisplayName.Solution,
+      JSON.stringify(thunks.map((p) => p.pluginName))
+    )
+  );
+
+  // 2. check azure account
+  const subscriptionResult = await checkDeployAzureSubscription(
+    context,
+    context.envInfo,
+    context.tokenProvider.azureAccountProvider
+  );
+  if (subscriptionResult.isErr()) {
+    return err(subscriptionResult.error);
+  }
+
+  // 3. start deploy
+  context.logProvider.info(
+    getLocalizedString("core.deploy.startNotice", PluginDisplayName.Solution)
+  );
+  const result = await executeConcurrently(thunks, context.logProvider);
+
+  if (result.kind === "success") {
+    const msg = getLocalizedString("core.deploy.aadManifestSuccessNotice");
+    context.logProvider.info(msg);
+    context.userInteraction
+      .showMessage("info", msg, false, getLocalizedString("core.deploy.aadManifestLearnMore"))
+      .then((result) => {
+        const userSelected = result.isOk() ? result.value : undefined;
+        if (userSelected === getLocalizedString("core.deploy.aadManifestLearnMore")) {
+          context.userInteraction?.openUrl(ViewAadAppHelpLink);
+        }
+      });
+    return ok(undefined);
+  } else {
+    const msg = getLocalizedString("core.deploy.failNotice", context.projectSetting.appName);
+    context.logProvider.info(msg);
+    return err(
+      sendErrorTelemetryThenReturnError(
+        SolutionTelemetryEvent.Deploy,
+        result.error,
+        context.telemetryReporter
+      )
+    );
   }
 }
 

@@ -40,7 +40,7 @@ import {
 import _, { isUndefined } from "lodash";
 import { PluginDisplayName } from "../../../../common/constants";
 import { ProvisionContextAdapter } from "./adaptor";
-import { deployArmTemplates, updateAzureParameters } from "../arm";
+import { deployArmTemplates } from "../arm";
 import { Container } from "typedi";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";

@@ -618,6 +618,74 @@ describe("Workflow test for v3", () => {
     assert.isTrue(provisionRes.isErr());
   });
 
+  it("fx.provision error when update Azure parameters", async () => {
+    sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
+    sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
+    sandbox
+      .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
+      .resolves(ok({ tid: "mockTid" }));
+    sandbox
+      .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
+      .resolves(TestHelper.fakeCredential);
+    sandbox.stub(provisionV3, "fillInAzureConfigs").resolves(ok({ hasSwitchedSubscription: true }));
+    sandbox.stub(provisionV2, "askForProvisionConsentNew").resolves(ok(Void));
+    sandbox
+      .stub(armFunctions, "updateAzureParameters")
+      .resolves(err(new UserError("Solution", "error1", "error1")));
+    sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
+    sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
+    sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
+    sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
+    sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
+      clientId: "00000000-0000-0000-0000-000000000000",
+      clientSecret: "mockClientSecret",
+      objectId: "00000000-0000-0000-0000-000000000000",
+    });
+
+    const appName = `unittest${randomAppName()}`;
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+      [AzureSolutionQuestionNames.Features]: "Bot",
+      language: "typescript",
+      "app-name": appName,
+      folder: path.join(os.homedir(), "TeamsApps"),
+    };
+    const initRes = await fx.init(context, inputs);
+    if (initRes.isErr()) {
+      console.log(initRes.error);
+    }
+    assert.isTrue(initRes.isOk());
+    const component = Container.get("teams-bot") as any;
+    const addBotRes = await component.add(context, inputs);
+    if (addBotRes.isErr()) {
+      console.log(addBotRes.error);
+    }
+    assert.isTrue(addBotRes.isOk());
+    context.envInfo = newEnvInfoV3();
+    context.tokenProvider = tools.tokenProvider;
+    context.envInfo.state = {
+      solution: {
+        provisionSucceeded: true,
+        needCreateResourceGroup: false,
+        resourceGroupName: "mockRG",
+        location: "eastasia",
+        resourceNameSuffix: "3bf854123",
+        teamsAppTenantId: "mockTid",
+        subscriptionId: "mockSid",
+        subscriptionName: "mockSname",
+        tenantId: "mockAzureTid",
+      },
+    };
+
+    const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
+
+    assert.isTrue(provisionRes.isErr());
+    if (provisionRes.isErr()) {
+      assert.isTrue(provisionRes.error.name === "error1");
+    }
+  });
+
   it("azure-storage.deploy", async () => {
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(FrontendDeployment, "doFrontendDeploymentV3").resolves();

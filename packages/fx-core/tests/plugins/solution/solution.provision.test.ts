@@ -43,6 +43,7 @@ import {
   Ok,
   Err,
   AppPackageFolderName,
+  err,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
@@ -1307,6 +1308,71 @@ describe("API v2 implementation", () => {
       expect(mockedEnvInfo.state.solution.provisionSucceeded).equals(true);
       expect(mockedEnvInfo.state.solution.subscriptionId).equals("subscriptionId");
       expect(mockedEnvInfo.state.solution.subscriptionName).equals("subscriptionName");
+    });
+
+    it("provision after switch M365 and Azure subscription error when update Azure parameters", async () => {
+      const newParam = { SWITCH_ACCOUNT: "true" };
+      const mockedEnvRestore = mockedEnv(newParam);
+
+      after(() => {
+        mockedEnvRestore();
+        mocker.restore();
+      });
+      const projectSettings: ProjectSettings = {
+        appName: "my app",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          hostType: HostTypeOptionAzure.id,
+          name: "azure",
+          version: "1.0",
+          activeResourcePlugins: [fehostPluginV2.name, appStudioPluginV2.name, aadPluginV2.name],
+        },
+      };
+      const mockedCtx = new MockedV2Context(projectSettings);
+      mockedCtx.userInteraction = new MockUserInteraction();
+      const mockedInputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: "./",
+        isForUT: true,
+      };
+      const mockedTokenProvider: TokenProvider = {
+        azureAccountProvider: new MockedAzureTokenProvider(),
+        m365TokenProvider: new MockedM365Provider(),
+      };
+      const mockedEnvInfo: v2.EnvInfoV2 = {
+        envName: "default",
+        config: { manifest: { appName: { short: "test-app" } } },
+        state: {
+          "fx-resource-appstudio": { tenantId: "previousTenantId" },
+          solution: {
+            teamsAppTenantId: "previousTenantId",
+            provisionSucceeded: true,
+            subscriptionId: "previousSubscriptionId",
+            subscriptionName: "previousSubscriptionName",
+            tenantId: "tenantId",
+          },
+          "fx-resource-spfx": {},
+        },
+      };
+      mockProvisionV2ThatAlwaysSucceed(fehostPluginV2);
+      mockProvisionV2ThatAlwaysSucceed(appStudioPluginV2);
+      mockProvisionV2ThatAlwaysSucceed(aadPluginV2);
+      mocker
+        .stub(arm, "updateAzureParameters")
+        .resolves(err(new UserError("solution", "error1", "error1")));
+
+      const solution = new TeamsAppSolutionV2();
+      const result = await solution.provisionResources(
+        mockedCtx,
+        mockedInputs,
+        mockedEnvInfo,
+        mockedTokenProvider
+      );
+      expect(result.isErr()).equals(true);
+      if (result.isErr()) {
+        expect(result.error.source).equal("Solution");
+        expect(result.error.name).equal("error1");
+      }
     });
   });
 });

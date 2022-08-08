@@ -1108,7 +1108,7 @@ describe("Copy Parameter Json to New Env", () => {
   });
 });
 
-describe.only("update Azure parameters", async () => {
+describe("update Azure parameters", async () => {
   const parameterFileNameTemplate = (env: string) => `azure.parameters.${env}.json`;
   const configDir = path.join(TestHelper.rootDir, TestFilePath.configFolder);
   const targetEnvName = "target";
@@ -1351,8 +1351,9 @@ describe.only("update Azure parameters", async () => {
   it("throw exception", async () => {
     // Act
     const mocker = sinon.createSandbox();
-    mocker.stub(arm, "generateResourceBaseName").rejects();
-    after(async () => {
+    mocker.stub(fs, "writeFile").throwsException();
+
+    after(() => {
       mocker.restore();
     });
 

@@ -70,7 +70,7 @@ import { getResourceGroupInPortal } from "../common/tools";
 import { downloadSample } from "../core/downloadSample";
 import { InvalidInputError } from "../core/error";
 import { globalVars } from "../core/globalVars";
-import arm, { updateResourceBaseName } from "../plugins/solution/fx-solution/arm";
+import arm from "../plugins/solution/fx-solution/arm";
 import {
   ApiConnectionOptionItem,
   AzureResourceApim,
@@ -112,6 +112,10 @@ import { askForProvisionConsentNew } from "../plugins/solution/fx-solution/v2/pr
 import { resetEnvInfoWhenSwitchM365 } from "./utils";
 import { TelemetryEvent, TelemetryProperty } from "../common/telemetry";
 import { getComponent } from "./workflow";
+import {
+  handleConfigFilesWhenSwitchAccount,
+  hasBotServiceCreated,
+} from "../plugins/solution/fx-solution/utils/util";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -624,6 +628,7 @@ async function preProvision(
 ): Promise<Result<undefined, FxError>> {
   const ctx = context as ResourceContextV3;
   const envInfo = ctx.envInfo;
+  const hasBotServiceCreatedBefore = hasBotServiceCreated(envInfo as v3.EnvInfoV3);
 
   // 1. check M365 tenant
   envInfo.state[ComponentNames.AppManifest] = envInfo.state[ComponentNames.AppManifest] || {};
@@ -697,8 +702,19 @@ async function preProvision(
       }
     }
 
-    if (solutionConfigRes.value.hasSwitchedSubscription) {
-      updateResourceBaseName(inputs.projectPath, ctx.projectSetting.appName, envInfo.envName);
+    if (solutionConfigRes.value.hasSwitchedSubscription || hasSwitchedM365Tenant) {
+      const handleConfigFilesWhenSwitchAccountsRes = await handleConfigFilesWhenSwitchAccount(
+        envInfo as v3.EnvInfoV3,
+        ctx.projectSetting.appName,
+        inputs.projectPath,
+        hasSwitchedM365Tenant,
+        solutionConfigRes.value.hasSwitchedSubscription,
+        hasBotServiceCreatedBefore
+      );
+
+      if (handleConfigFilesWhenSwitchAccountsRes.isErr()) {
+        return err(handleConfigFilesWhenSwitchAccountsRes.error);
+      }
     }
   } else if (hasSwitchedM365Tenant && !isLocalDebug) {
     const consentResult = await askForProvisionConsentNew(

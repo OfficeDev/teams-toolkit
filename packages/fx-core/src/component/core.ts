@@ -223,7 +223,7 @@ export class TeamsfxCore {
     context: ContextV3,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>> {
+  ): Promise<Result<any, FxError>> {
     const features = inputs[AzureSolutionQuestionNames.Features];
     let component;
     if (BotFeatureIds.includes(features)) {
@@ -247,11 +247,12 @@ export class TeamsfxCore {
     }
     if (component) {
       const res = await (component as any).add(context, inputs);
+      merge(actionContext?.telemetryProps, {
+        [TelemetryProperty.Feature]: features,
+      });
       if (res.isErr()) return err(res.error);
+      return ok(res.value);
     }
-    merge(actionContext?.telemetryProps, {
-      [TelemetryProperty.Feature]: features,
-    });
     return ok(undefined);
   }
   async init(

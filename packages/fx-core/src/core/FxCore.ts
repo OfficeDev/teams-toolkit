@@ -714,14 +714,14 @@ export class FxCore implements v3.ICore {
   async addFeature(
     inputs: v2.InputsWithProjectPath,
     ctx?: CoreHookContext
-  ): Promise<Result<Void, FxError>> {
+  ): Promise<Result<any, FxError>> {
     inputs.stage = Stage.addFeature;
     const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
     const fx = Container.get("fx") as TeamsfxCore;
     const res = await fx.addFeature(context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
-    return ok(Void);
+    return ok(res.value);
   }
 
   @hooks([

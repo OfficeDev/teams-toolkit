@@ -25,8 +25,8 @@ export class ApiConnector {
   async add(
     context: ContextV3,
     inputs: InputsWithProjectPath
-  ): Promise<Result<undefined, FxError>> {
-    await apiConnectorImpl.scaffold(context, inputs);
-    return ok(undefined);
+  ): Promise<Result<Record<string, any>, FxError>> {
+    const res = await apiConnectorImpl.scaffold(context, inputs);
+    return ok(res);
   }
 }

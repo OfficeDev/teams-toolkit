@@ -298,35 +298,35 @@ export function wrapError(
   sendTelemetry: boolean,
   name: string
 ): FxResult {
-  let errorMsg = isErrorWithMessage(e) ? e.message : "";
+  let detailedErrorMsg = isErrorWithMessage(e) ? e.message : "";
   const innerError = isPluginError(e) ? e.innerError : undefined;
   if (innerError) {
-    errorMsg += getLocalizedString(
+    detailedErrorMsg += getLocalizedString(
       "plugins.bot.DetailedError",
       isErrorWithMessage(innerError) ? innerError.message : ""
     );
     if (isHttpError(innerError)) {
       if (innerError.response?.data?.errorMessage) {
-        errorMsg += getLocalizedString(
+        detailedErrorMsg += getLocalizedString(
           "plugins.bot.DetailedErrorReason",
           innerError.response?.data?.errorMessage
         );
       } else if (innerError.response?.data?.error?.message) {
         // For errors return from Graph API
-        errorMsg += getLocalizedString(
+        detailedErrorMsg += getLocalizedString(
           "plugins.bot.DetailedErrorReason",
           innerError.response?.data?.error?.message
         );
       } else if (innerError.response?.data?.errors) {
         // For errors return from App Studio API
-        errorMsg += getLocalizedString(
+        detailedErrorMsg += getLocalizedString(
           "plugins.bot.DetailedErrorReason",
           JSON.stringify(innerError.response?.data?.errors)
         );
       }
     }
   }
-  Logger.error(errorMsg);
+  Logger.error(detailedErrorMsg);
   if (e instanceof UserError || e instanceof SystemError) {
     const res = err(e);
     sendTelemetry && telemetryHelper.sendResultEvent(context, name, res);
@@ -334,14 +334,14 @@ export function wrapError(
   }
 
   if (e instanceof PluginError || e instanceof CommonHostingError) {
-    const genMessage = e.genMessage() + errorMsg;
-    const genDisplayMessage = e.genDisplayMessage() + errorMsg;
+    const errorMsg = e.genMessage() + detailedErrorMsg;
+    const errorDisplayMsg = e.genDisplayMessage() + detailedErrorMsg;
     const result =
       e instanceof PluginError && e.errorType === ErrorType.SYSTEM
-        ? ResultFactory.SystemError(e.name, [genMessage, genDisplayMessage], e.innerError)
+        ? ResultFactory.SystemError(e.name, [errorMsg, errorDisplayMsg], e.innerError)
         : ResultFactory.UserError(
             e.name,
-            [genMessage, genDisplayMessage],
+            [errorMsg, errorDisplayMsg],
             e.innerError,
             e instanceof PluginError ? e.helpLink : ""
           );
@@ -357,13 +357,17 @@ export function wrapError(
         ResultFactory.SystemError(
           UnhandledErrorCode,
           [
-            getDefaultString("plugins.bot.UnhandledError", errorMsg),
-            getLocalizedString("plugins.bot.UnhandledError", errorMsg),
+            getDefaultString("plugins.bot.UnhandledError", detailedErrorMsg),
+            getLocalizedString("plugins.bot.UnhandledError", detailedErrorMsg),
           ],
           isPluginError(e) ? e.innerError : undefined
         )
       );
-    return ResultFactory.SystemError(UnhandledErrorCode, [errorMsg, errorMsg], innerError);
+    return ResultFactory.SystemError(
+      UnhandledErrorCode,
+      [detailedErrorMsg, detailedErrorMsg],
+      innerError
+    );
   }
 }
 

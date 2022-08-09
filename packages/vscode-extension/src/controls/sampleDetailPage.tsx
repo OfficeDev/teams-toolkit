@@ -4,6 +4,11 @@ import "./sampleDetailPage.scss";
 import { VSCodeButton, VSCodeTag } from "@vscode/webview-ui-toolkit/react";
 import { Watch, Setting } from "./resources";
 import { Commands } from "./Commands";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetryTriggerFrom,
+} from "../telemetry/extTelemetryEvents";
 
 export default class SampleDetailPage extends React.Component<SampleDetailProps, any> {
   constructor(props: SampleDetailProps) {
@@ -66,6 +71,16 @@ export default class SampleDetailPage extends React.Component<SampleDetailProps,
   };
 
   onViewGithub = () => {
+    vscode.postMessage({
+      command: Commands.SendTelemetryEvent,
+      data: {
+        eventName: TelemetryEvent.ViewSampleInGitHub,
+        properties: {
+          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
+          [TelemetryProperty.SampleAppName]: this.props.sampleAppFolder,
+        },
+      },
+    });
     vscode.postMessage({
       command: Commands.OpenExternalLink,
       data: this.props.url + this.props.sampleAppFolder,

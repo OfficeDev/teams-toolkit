@@ -77,8 +77,12 @@ export enum TelemetryEvent {
 
   OpenAzurePortal = "open-azure-portal",
 
+  ClickSampleCard = "click-sample-card",
+
   DownloadSampleStart = "download-sample-start",
   DownloadSample = "download-sample",
+
+  ViewSampleInGitHub = "view-sample-in-github",
 
   WatchVideo = "watch-video",
   PauseVideo = "pause-video",

@@ -116,6 +116,7 @@ import {
   handleConfigFilesWhenSwitchAccount,
   hasBotServiceCreated,
 } from "../plugins/solution/fx-solution/utils/util";
+import { ensureBasicFolderStructure } from "../core";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -223,7 +224,7 @@ export class TeamsfxCore {
     context: ContextV3,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>> {
+  ): Promise<Result<any, FxError>> {
     const features = inputs[AzureSolutionQuestionNames.Features];
     let component;
     if (BotFeatureIds.includes(features)) {
@@ -247,11 +248,12 @@ export class TeamsfxCore {
     }
     if (component) {
       const res = await (component as any).add(context, inputs);
+      merge(actionContext?.telemetryProps, {
+        [TelemetryProperty.Feature]: features,
+      });
       if (res.isErr()) return err(res.error);
+      return ok(res.value);
     }
-    merge(actionContext?.telemetryProps, {
-      [TelemetryProperty.Feature]: features,
-    });
     return ok(undefined);
   }
   async init(
@@ -265,6 +267,10 @@ export class TeamsfxCore {
     await fs.ensureDir(inputs.projectPath);
     await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
     await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`, "configs"));
+    const basicFolderRes = await ensureBasicFolderStructure(inputs);
+    if (basicFolderRes.isErr()) {
+      return err(basicFolderRes.error);
+    }
     {
       const appManifest = Container.get<AppManifest>(ComponentNames.AppManifest);
       const res = await appManifest.init(context, inputs);

@@ -52,6 +52,7 @@ import { getPluginContext } from "../utils/util";
 import { PluginsWithContext } from "../types";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { doesAllowSwitchAccount } from "../../../../core";
+import { backupFiles } from "../utils/backupFiles";
 
 export function getSelectedPlugins(projectSettings: ProjectSettings): v2.ResourcePlugin[] {
   return getActivatedV2ResourcePlugins(projectSettings);
@@ -251,6 +252,13 @@ export async function checkWhetherLocalDebugM365TenantMatches(
             const keys = (envInfo as EnvInfo).state.keys();
             for (const key of keys) {
               (envInfo as EnvInfo).state.delete(key);
+            }
+          }
+
+          if (projectPath !== undefined) {
+            const backupFilesRes = await backupFiles(envInfo.envName, projectPath!);
+            if (backupFilesRes.isErr()) {
+              return err(backupFilesRes.error);
             }
           }
         }

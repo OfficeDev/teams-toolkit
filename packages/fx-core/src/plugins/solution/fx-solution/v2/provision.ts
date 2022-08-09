@@ -152,7 +152,7 @@ async function provisionResourceImpl(
   const isSwitchAccountEnabled = doesAllowSwitchAccount();
   let hasSwitchedM365Tenant = false;
   const isSwitchingM365Tenant =
-    tenantIdInConfig && tenantIdInToken && tenantIdInToken !== tenantIdInConfig;
+    !!tenantIdInConfig && !!tenantIdInToken && tenantIdInToken !== tenantIdInConfig;
   if (isSwitchingM365Tenant && !isSwitchAccountEnabled) {
     return err(
       new UserError(
@@ -248,6 +248,19 @@ async function provisionResourceImpl(
     );
     if (consentResult.isErr()) {
       return err(consentResult.error);
+    }
+
+    const handleConfigFilesWhenSwitchAccountsRes = await handleConfigFilesWhenSwitchAccount(
+      envInfo as v3.EnvInfoV3,
+      ctx.projectSetting.appName,
+      inputs.projectPath,
+      hasSwitchedM365Tenant,
+      false,
+      false
+    );
+
+    if (handleConfigFilesWhenSwitchAccountsRes.isErr()) {
+      return err(handleConfigFilesWhenSwitchAccountsRes.error);
     }
   }
 

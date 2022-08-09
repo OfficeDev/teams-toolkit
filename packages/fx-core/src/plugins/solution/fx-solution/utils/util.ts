@@ -20,6 +20,7 @@ import { SolutionTelemetryComponentName, SolutionTelemetryProperty } from "../co
 import { BuiltInFeaturePluginNames } from "../v3/constants";
 import { ComponentNames } from "../../../../component/constants";
 import { updateAzureParameters } from "../arm";
+import { backupFiles } from "./backupFiles";
 
 /**
  * A helper function to construct a plugin's context.
@@ -116,7 +117,15 @@ export async function handleConfigFilesWhenSwitchAccount(
   hasSwitchedSubscription: boolean,
   hasBotServiceCreatedBefore: boolean
 ): Promise<Result<undefined, FxError>> {
-  // TODO: backup old files.
+  if (!hasSwitchedM365Tenant && !hasSwitchedSubscription) {
+    return ok(undefined);
+  }
+
+  const backupFilesRes = await backupFiles(envInfo.envName, projectPath);
+  if (backupFilesRes.isErr()) {
+    return err(backupFilesRes.error);
+  }
+
   const updateAzureParametersRes = await updateAzureParameters(
     projectPath,
     appName,

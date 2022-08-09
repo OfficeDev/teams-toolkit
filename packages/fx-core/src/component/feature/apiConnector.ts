@@ -6,6 +6,8 @@ import { ContextV3, FxError, InputsWithProjectPath, ok, Result } from "@microsof
 import "reflect-metadata";
 import { Service } from "typedi";
 import { ApiConnectorImpl } from "../../plugins/resource/apiconnector/plugin";
+import { ResultFactory } from "../../plugins/resource/apiconnector/result";
+import { UserTaskFunctionName } from "../../plugins/solution/fx-solution/constants";
 import "../connection/azureWebAppConfig";
 import { ComponentNames } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
@@ -27,6 +29,6 @@ export class ApiConnector {
     inputs: InputsWithProjectPath
   ): Promise<Result<Record<string, any>, FxError>> {
     const res = await apiConnectorImpl.scaffold(context, inputs);
-    return ok(res);
+    return ResultFactory.Success({ func: UserTaskFunctionName.ConnectExistingApi, ...res });
   }
 }

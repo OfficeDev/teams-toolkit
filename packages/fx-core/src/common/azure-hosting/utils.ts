@@ -142,7 +142,7 @@ export async function azureWebSiteDeploy(
   const statusUrl = await AzureOperations.zipDeployPackage(zipDeployEndpoint, buffer, config);
   await AzureOperations.checkDeployStatus(statusUrl, config);
 
-  await AzureOperations.restartWebApp(client, rgName, siteName);
+  await AzureOperations.restartWebApp(client, rgName, siteName, logger);
 
   logger?.info?.(Messages.deploy(zipDeployEndpoint, buffer.byteLength));
   return client;

@@ -39,6 +39,7 @@ describe("hosting util test", () => {
       });
       sinon.stub(AzureOperations, "zipDeployPackage").resolves("url");
       sinon.stub(AzureOperations, "checkDeployStatus");
+      sinon.stub(AzureOperations, "restartWebApp");
       const res = await azureWebSiteDeploy(resourceId, provider, Buffer.alloc(1, ""));
       chai.assert.isTrue(!!res);
     });

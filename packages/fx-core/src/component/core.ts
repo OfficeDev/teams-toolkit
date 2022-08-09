@@ -638,7 +638,7 @@ export class TeamsfxCore {
   }
 }
 
-async function deployAadFromVscode(
+export async function deployAadFromVscode(
   context: ResourceContextV3,
   inputs: InputsWithProjectPath
 ): Promise<Result<undefined, FxError>> {

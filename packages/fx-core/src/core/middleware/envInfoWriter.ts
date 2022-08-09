@@ -3,7 +3,7 @@
 "use strict";
 
 import { NextFunction, Middleware } from "@feathersjs/hooks";
-import { FxError, Inputs, Result, Stage, StaticPlatforms } from "@microsoft/teamsfx-api";
+import { FxError, Inputs, Result, StaticPlatforms } from "@microsoft/teamsfx-api";
 import { PluginNames, SolutionError } from "../../plugins/solution/fx-solution/constants";
 import { environmentManager } from "../environment";
 import { TOOLS } from "../globalVars";

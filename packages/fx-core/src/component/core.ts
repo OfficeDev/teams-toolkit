@@ -116,6 +116,7 @@ import {
   handleConfigFilesWhenSwitchAccount,
   hasBotServiceCreated,
 } from "../plugins/solution/fx-solution/utils/util";
+import { ensureBasicFolderStructure } from "../core";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -266,6 +267,10 @@ export class TeamsfxCore {
     await fs.ensureDir(inputs.projectPath);
     await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
     await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`, "configs"));
+    const basicFolderRes = await ensureBasicFolderStructure(inputs);
+    if (basicFolderRes.isErr()) {
+      return err(basicFolderRes.error);
+    }
     {
       const appManifest = Container.get<AppManifest>(ComponentNames.AppManifest);
       const res = await appManifest.init(context, inputs);

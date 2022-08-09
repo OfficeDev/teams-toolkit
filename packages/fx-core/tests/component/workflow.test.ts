@@ -24,7 +24,7 @@ import "../../src/component/feature/bot";
 import "../../src/component/feature/sql";
 import "../../src/component/resource/botService";
 import { createContextV3 } from "../../src/component/utils";
-import { MockTools, randomAppName } from "../core/utils";
+import { deleteFolder, MockTools, randomAppName } from "../core/utils";
 import * as provisionV3 from "../../src/plugins/solution/fx-solution/v3/provision";
 import * as provisionV2 from "../../src/plugins/solution/fx-solution/v2/provision";
 import { AppStudioClient } from "../../src/plugins/resource/appstudio/appStudio";
@@ -54,6 +54,7 @@ import { AzureStorageResource } from "../../src/component/resource/azureStorage"
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { ciOption, githubOption, questionNames } from "../../src/plugins/resource/cicd/questions";
 import * as armFunctions from "../../src/plugins/solution/fx-solution/arm";
+import { apiConnectorImpl } from "../../src/component/feature/apiConnector";
 describe("Workflow test for v3", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -74,7 +75,7 @@ describe("Workflow test for v3", () => {
   });
 
   after(async () => {
-    await fs.remove(projectPath);
+    deleteFolder(projectPath);
   });
 
   it("fx.init", async () => {
@@ -180,6 +181,24 @@ describe("Workflow test for v3", () => {
       [questionNames.Environment]: "dev",
     };
     const component = Container.get("cicd") as any;
+    const res = await component.add(context, inputs);
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    assert.isTrue(res.isOk());
+  });
+  it("api-connector.add", async () => {
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+      endpoint: "https://test.com",
+      component: ["bot"],
+      alias: "test123",
+      "auth-type": "basic",
+      "user-name": "guest123",
+    };
+    const component = Container.get("api-connector") as any;
+    sandbox.stub(apiConnectorImpl, "scaffold").resolves({});
     const res = await component.add(context, inputs);
     if (res.isErr()) {
       console.log(res.error);

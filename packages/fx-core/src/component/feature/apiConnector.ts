@@ -13,7 +13,7 @@ import { ComponentNames } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import "../resource/azureSql";
 
-const apiConnectorImpl: ApiConnectorImpl = new ApiConnectorImpl();
+export const apiConnectorImpl: ApiConnectorImpl = new ApiConnectorImpl();
 @Service(ComponentNames.ApiConnector)
 export class ApiConnector {
   name = ComponentNames.ApiConnector;

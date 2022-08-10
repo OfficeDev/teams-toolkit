@@ -75,7 +75,7 @@ describe("LocalEnvManager", () => {
 
       chai.assert.isDefined(projectSettings);
       chai.assert.isUndefined(projectSettings.appName);
-      chai.assert.isUndefined(projectSettings.projectId);
+      chai.assert.isDefined(projectSettings.projectId);
     });
 
     it("missing file", async () => {

@@ -31,6 +31,7 @@ import { LocalCertificate, LocalCertificateManager } from "./localCertificateMan
 import { DepsManager } from "../deps-checker/depsManager";
 import { LocalStateProvider } from "../localStateProvider";
 import { getDefaultString, getLocalizedString } from "../localizeUtils";
+import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
 
 export class LocalEnvManager {
   private readonly logger: LogProvider | undefined;
@@ -143,9 +144,12 @@ export class LocalEnvManager {
           getLocalizedString("error.FileNotFoundError", projectSettingsPath)
         );
       }
-
       try {
-        return await fs.readJson(projectSettingsPath);
+        const res = await loadProjectSettingsByProjectPath(projectPath, true);
+        if (res.isErr()) {
+          throw res.error;
+        }
+        return res.value;
       } catch (error: any) {
         throw ReadFileError(error);
       }

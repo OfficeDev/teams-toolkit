@@ -11,10 +11,24 @@ import {
   configLocalEnvironment,
 } from "../../../../src/plugins/solution/fx-solution/debug/provisionLocal";
 import * as path from "path";
-
+import mockedEnv from "mocked-env";
+import { MockTools } from "../../../core/utils";
+import { setTools } from "../../../../src/core/globalVars";
 chai.use(chaiAsPromised);
 
 describe("solution.debug.provisionLocal", () => {
+  const tools = new MockTools();
+  setTools(tools);
+  let mockedEnvRestore: () => void;
+  before(() => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_APIV3: "false",
+    });
+  });
+
+  after(async () => {
+    mockedEnvRestore();
+  });
   describe("setupLocalDebugSettings", () => {
     it("happy path", async () => {
       const projectSetting = {

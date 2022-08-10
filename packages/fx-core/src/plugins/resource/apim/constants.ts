@@ -4,7 +4,6 @@
 import path from "path";
 import { IName } from "./interfaces/IName";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { ComponentNames } from "../../../component/constants";
 
 export class ProjectConstants {
   public static readonly pluginShortName: string = "APIM";
@@ -207,7 +206,7 @@ export enum TeamsToolkitComponent {
 }
 
 export enum TeamsToolkitComponentV3 {
-  FunctionPlugin = "azure-function",
+  FunctionPlugin = "teams-api",
   AadPlugin = "aad-app",
   Solution = "solution",
   ApimPlugin = "apim",

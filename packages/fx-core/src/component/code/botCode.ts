@@ -53,9 +53,6 @@ export class BotCodeProvider {
       enableProgressBar: true,
       progressTitle: ProgressTitles.scaffoldBot,
       progressSteps: 1,
-      enableTelemetry: true,
-      telemetryComponentName: "fx-resource-bot",
-      telemetryEventName: "scaffold",
       errorSource: "bot",
       errorHandler: (e, t) => {
         telemetryHelper.fillAppStudioErrorProperty(e, t);
@@ -120,9 +117,6 @@ export class BotCodeProvider {
       enableProgressBar: true,
       progressTitle: ProgressTitles.buildingBot,
       progressSteps: 1,
-      enableTelemetry: true,
-      telemetryComponentName: "fx-resource-bot",
-      telemetryEventName: "build",
       errorSource: "bot",
     }),
   ])

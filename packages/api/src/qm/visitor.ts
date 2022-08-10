@@ -320,19 +320,6 @@ export async function traverse(
         } else {
           ++step;
         }
-        // let valueInMap = question.value;
-        // if (question.type === "singleSelect") {
-        //   const sq: SingleSelectQuestion = question as SingleSelectQuestion;
-        //   if (sq.value && typeof sq.value !== "string") {
-        //     valueInMap = (sq.value as OptionItem).id;
-        //   }
-        // } else if (question.type === "multiSelect") {
-        //   const mq: MultiSelectQuestion = question as MultiSelectQuestion;
-        //   if (mq.value && typeof mq.value[0] !== "string") {
-        //     valueInMap = (mq.value as OptionItem[]).map((i) => i.id);
-        //   }
-        // }
-        // valueMap.set(curr, valueInMap);
       }
     }
 
@@ -366,7 +353,21 @@ export async function traverse(
 }
 
 function findValue(curr: QTreeNode, parentMap: Map<QTreeNode, QTreeNode>): any {
-  if (curr.data.type !== "group") return curr.data.value;
+  if (curr.data.type !== "group") {
+    // need to convert OptionItem value into id for validation
+    if (curr.data.type === "singleSelect") {
+      const sq: SingleSelectQuestion = curr.data as SingleSelectQuestion;
+      if (sq.value && typeof sq.value !== "string" && (sq.value as OptionItem).id) {
+        return (sq.value as OptionItem).id;
+      }
+    } else if (curr.data.type === "multiSelect") {
+      const mq: MultiSelectQuestion = curr.data as MultiSelectQuestion;
+      if (mq.value && typeof mq.value[0] !== "string") {
+        return (mq.value as OptionItem[]).map((i) => i.id);
+      }
+    }
+    return curr.data.value;
+  }
   const parent = parentMap.get(curr);
   if (parent) {
     return findValue(parent, parentMap);

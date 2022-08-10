@@ -44,6 +44,11 @@ namespace Microsoft.TeamsFx.Conversation
         /// <inheritdoc/>
         public bool ShouldTrigger(string input)
         {
+            if (string.IsNullOrEmpty(input))
+            {
+                return false;
+            }
+
             return Pattern.IsMatch(input);
         }
     }

@@ -77,7 +77,7 @@ export class Channel implements NotificationTarget {
    * @remarks
    * Only work on server side.
    */
-  public readonly type: NotificationTargetType = "Channel";
+  public readonly type: NotificationTargetType = NotificationTargetType.Channel;
 
   /**
    * Constructor.
@@ -161,7 +161,7 @@ export class Member implements NotificationTarget {
    * @remarks
    * Only work on server side.
    */
-  public readonly type: NotificationTargetType = "Person";
+  public readonly type: NotificationTargetType = NotificationTargetType.Person;
 
   /**
    * Constructor.

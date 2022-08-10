@@ -15,12 +15,14 @@ import {
   QTreeNode,
   Result,
   Stage,
+  ActionContext,
 } from "@microsoft/teamsfx-api";
-import { assign, cloneDeep } from "lodash";
+import { assign, cloneDeep, merge } from "lodash";
 import * as path from "path";
 import "reflect-metadata";
 import Container, { Service } from "typedi";
 import { isVSProject } from "../../common/projectSettingsHelper";
+import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { globalVars } from "../../core/globalVars";
 import { CoreQuestionNames } from "../../core/question";
@@ -38,7 +40,6 @@ import { ApiCodeProvider } from "../code/apiCode";
 import { ComponentNames, Scenarios } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
-import { Plans } from "../messages";
 import { AzureFunctionResource } from "../resource/azureAppService/azureFunction";
 import { generateConfigBiceps, bicepUtils } from "../utils";
 import { getComponent } from "../workflow";
@@ -50,15 +51,25 @@ export class TeamsApi {
   @hooks([
     ActionExecutionMW({
       errorSource: "BE",
+      enableTelemetry: true,
+      telemetryEventName: TelemetryEvent.AddFeature,
+      telemetryComponentName: ComponentNames.TeamsApi,
       question: (context: ContextV3, inputs: InputsWithProjectPath) => {
         functionNameQuestion.validation = getFunctionNameQuestionValidation(context, inputs);
         return ok(new QTreeNode(functionNameQuestion));
+      },
+      errorHandler: (error) => {
+        if (error && !error?.name) {
+          error.name = "addApiError";
+        }
+        return error as FxError;
       },
     }),
   ])
   async add(
     context: ContextV3,
-    inputs: InputsWithProjectPath
+    inputs: InputsWithProjectPath,
+    actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const projectSettings = context.projectSetting;
     const effects: Effect[] = [];
@@ -66,6 +77,7 @@ export class TeamsApi {
       context.projectSetting.programmingLanguage ||
       inputs[CoreQuestionNames.ProgrammingLanguage] ||
       "javascript";
+    const addedComponents: string[] = [];
 
     // 1. scaffold function
     {
@@ -98,6 +110,7 @@ export class TeamsApi {
       folder: inputs.folder || FunctionPluginPathInfo.solutionFolderName,
       artifactFolder: inputs.folder || FunctionPluginPathInfo.solutionFolderName,
     });
+    addedComponents.push(ComponentNames.TeamsApi);
     effects.push("config teams-api");
 
     // 2.1 check sso if not added
@@ -128,15 +141,16 @@ export class TeamsApi {
       const res = await functionComponent.generateBicep(context, clonedInputs);
       if (res.isErr()) return err(res.error);
       res.value.forEach((b) => biceps.push(b));
-      context.projectSetting.components.push({
+      projectSettings.components.push({
         name: ComponentNames.Function,
         scenario: Scenarios.Api,
       });
+      addedComponents.push(ComponentNames.Function);
     }
 
     const bicepRes = await bicepUtils.persistBiceps(
       inputs.projectPath,
-      convertToAlphanumericOnly(context.projectSetting.appName),
+      convertToAlphanumericOnly(projectSettings.appName),
       biceps
     );
     if (bicepRes.isErr()) return bicepRes;
@@ -157,6 +171,9 @@ export class TeamsApi {
 
     globalVars.isVS = isVSProject(projectSettings);
     projectSettings.programmingLanguage ||= inputs[CoreQuestionNames.ProgrammingLanguage];
+    merge(actionContext?.telemetryProps, {
+      [TelemetryProperty.Components]: JSON.stringify(addedComponents),
+    });
     return ok(undefined);
   }
   async build(

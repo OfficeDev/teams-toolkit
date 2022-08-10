@@ -18,6 +18,8 @@ import {
 import * as globalVariables from "../../src/globalVariables";
 import { Uri } from "vscode";
 import * as tmp from "tmp";
+import { TelemetryProperty, TelemetryTriggerFrom } from "../../src/telemetry/extTelemetryEvents";
+import { expect } from "chai";
 
 describe("CommonUtils", () => {
   describe("getPackageVersion", () => {
@@ -189,5 +191,82 @@ describe("CommonUtils", () => {
         chai.assert.isTrue(previewCommand?.when.includes("manifest.template.json"));
       });
     });
+  });
+
+  describe("isTriggerFromWalkThrough", () => {
+    it("Should return false with no args", () => {
+      const isFromWalkthrough = commonUtils.isTriggerFromWalkThrough();
+
+      chai.assert.equal(isFromWalkthrough, false);
+    });
+
+    it("Should return false with empty args", () => {
+      const isFromWalkthrough = commonUtils.isTriggerFromWalkThrough([]);
+
+      chai.assert.equal(isFromWalkthrough, false);
+    });
+
+    it("Should return true with walkthrough args", () => {
+      const isFromWalkthrough = commonUtils.isTriggerFromWalkThrough([
+        TelemetryTriggerFrom.WalkThrough,
+      ]);
+
+      chai.assert.equal(isFromWalkthrough, true);
+    });
+
+    it("Should return true with notification args", () => {
+      const isFromWalkthrough = commonUtils.isTriggerFromWalkThrough([
+        TelemetryTriggerFrom.Notification,
+      ]);
+
+      chai.assert.equal(isFromWalkthrough, true);
+    });
+
+    it("Should return false with other args", () => {
+      const isFromWalkthrough = commonUtils.isTriggerFromWalkThrough([TelemetryTriggerFrom.Other]);
+
+      chai.assert.equal(isFromWalkthrough, false);
+    });
+  });
+
+  describe("getTriggerFromProperty", () => {
+    it("Should return cmp with no args", () => {
+      const props = commonUtils.getTriggerFromProperty();
+
+      expect(props).to.deep.equal({
+        [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CommandPalette,
+      });
+    });
+
+    it("Should return cmp with empty args", () => {
+      const props = commonUtils.getTriggerFromProperty([]);
+
+      expect(props).to.deep.equal({
+        [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CommandPalette,
+      });
+    });
+
+    for (const triggerFrom of [
+      TelemetryTriggerFrom.Auto,
+      TelemetryTriggerFrom.CodeLens,
+      TelemetryTriggerFrom.EditorTitle,
+      TelemetryTriggerFrom.Webview,
+      TelemetryTriggerFrom.Notification,
+      TelemetryTriggerFrom.Other,
+      TelemetryTriggerFrom.QuickPick,
+      TelemetryTriggerFrom.SideBar,
+      TelemetryTriggerFrom.TreeView,
+      TelemetryTriggerFrom.Unknow,
+      TelemetryTriggerFrom.ViewTitleNavigation,
+      TelemetryTriggerFrom.WalkThrough,
+    ]) {
+      it(`Should return ${triggerFrom.toString()}`, () => {
+        const props = commonUtils.getTriggerFromProperty([triggerFrom]);
+
+        expect(props).to.deep.equal({
+          [TelemetryProperty.TriggerFrom]: triggerFrom,
+        });
+      });
+    }
   });
 });

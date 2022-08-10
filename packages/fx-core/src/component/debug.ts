@@ -56,16 +56,9 @@ import * as TasksNext from "../plugins/solution/fx-solution/debug/util/tasksNext
 import * as Settings from "../plugins/solution/fx-solution/debug/util/settings";
 import fs from "fs-extra";
 import { updateJson, useNewTasks } from "../plugins/solution/fx-solution/debug/scaffolding";
-import { TOOLS } from "../core";
-import {
-  AAD_STATE_KEY,
-  API_STATE_KEY,
-  APP_MANIFEST_KEY,
-  BOT_STATE_KEY,
-  SIMPLE_AUTH_STATE_KEY,
-  TAB_STATE_KEY,
-} from "./migrate";
+import { isV3, TOOLS } from "../core";
 import { getComponent } from "./workflow";
+import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 
 export interface LocalEnvConfig {
   vscodeEnv?: VsCodeEnv;
@@ -133,6 +126,13 @@ export async function setupLocalEnvironmentCommon(
   config: LocalEnvConfig,
   envInfo: v3.EnvInfoV3
 ): Promise<Result<undefined, FxError>> {
+  const API_STATE_KEY = isV3() ? ComponentNames.TeamsApi : BuiltInFeaturePluginNames.function;
+  const TAB_STATE_KEY = isV3() ? ComponentNames.TeamsTab : BuiltInFeaturePluginNames.frontend;
+  const BOT_STATE_KEY = isV3() ? ComponentNames.TeamsBot : BuiltInFeaturePluginNames.bot;
+  const SIMPLE_AUTH_STATE_KEY = isV3()
+    ? ComponentNames.SimpleAuth
+    : BuiltInFeaturePluginNames.simpleAuth;
+
   const vscEnv = inputs.vscodeEnv;
   const includeTab = config.hasAzureTab;
   const includeBackend = config.hasApi;
@@ -265,6 +265,16 @@ export async function configLocalEnvironmentCommon(
   config: LocalEnvConfig,
   envInfo: v3.EnvInfoV3
 ): Promise<Result<undefined, FxError>> {
+  const API_STATE_KEY = isV3() ? ComponentNames.TeamsApi : BuiltInFeaturePluginNames.function;
+  const AAD_STATE_KEY = isV3() ? ComponentNames.AadApp : BuiltInFeaturePluginNames.aad;
+  const TAB_STATE_KEY = isV3() ? ComponentNames.TeamsTab : BuiltInFeaturePluginNames.frontend;
+  const SIMPLE_AUTH_STATE_KEY = isV3()
+    ? ComponentNames.SimpleAuth
+    : BuiltInFeaturePluginNames.simpleAuth;
+  const APP_MANIFEST_KEY = isV3()
+    ? ComponentNames.AppManifest
+    : BuiltInFeaturePluginNames.appStudio;
+
   const includeTab = config.hasAzureTab;
   const includeBackend = config.hasApi;
   const includeBot = config.hasBot;
@@ -302,7 +312,8 @@ export async function configLocalEnvironmentCommon(
       const clientId = envInfo.state[AAD_STATE_KEY]?.clientId;
       const clientSecret = envInfo.state[AAD_STATE_KEY]?.clientSecret;
       const applicationIdUri = envInfo.state[AAD_STATE_KEY]?.applicationIdUris;
-      const teamsAppTenantId = envInfo.state[APP_MANIFEST_KEY].tenantId;
+      const appManifestKey = APP_MANIFEST_KEY;
+      const teamsAppTenantId = envInfo.state[appManifestKey].tenantId;
       const localTabEndpoint = envInfo.state[TAB_STATE_KEY]?.endpoint;
       const localFuncEndpoint = envInfo.state[API_STATE_KEY]?.functionEndpoint;
 

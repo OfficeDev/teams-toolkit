@@ -124,6 +124,14 @@ class EnvironmentManager {
           short: appName,
           full: `Full name for ${appName}`,
         },
+        description: {
+          short: `Short description of ${appName}`,
+          full: `Full description of ${appName}`,
+        },
+        icons: {
+          color: "resources/color.png",
+          outline: "resources/outline.png",
+        },
       },
     };
 

@@ -21,16 +21,16 @@ export const TEAMS_APP_MANIFEST_TEMPLATE = `{
       "termsOfUseUrl": "{{{state.${TAB_COMPONENT_NAME}.endpoint}}}{{{state.${TAB_COMPONENT_NAME}.indexPath}}}/termsofuse"
   },
   "icons": {
-      "color": "resources/color.png",
-      "outline": "resources/outline.png"
+      "color": "{{config.manifest.icons.color}}",
+      "outline": "{{config.manifest.icons.outline}}"
   },
   "name": {
       "short": "{{config.manifest.appName.short}}",
       "full": "{{config.manifest.appName.full}}"
   },
   "description": {
-      "short": "Short description of {{config.manifest.appName.short}}",
-      "full": "Full description of {{config.manifest.appName.short}}"
+      "short": "{{config.manifest.description.short}}",
+      "full": "{{config.manifest.description.full}}"
   },
   "accentColor": "#FFFFFF",
   "bots": [],

@@ -117,6 +117,36 @@
             }
           },
           "required": ["short"]
+        },
+        "description": {
+          "type": "object",
+          "description": "Description for Teams app.",
+          "properties": {
+            "short": {
+              "type": "string",
+              "description": "A short description of the app used when space is limited. Maximum length is 80 characters.",
+              "maxLength": 80
+            },
+            "full": {
+              "type": "string",
+              "description": "The full description of the app. Maximum length is 4000 characters.",
+              "maxLength": 4000
+            }
+          }
+        },
+        "icons": {
+          "type": "object",
+          "description": "Icons for Teams App.",
+          "properties": {
+            "color": {
+              "type": "string",
+              "description": "A relative file path to a full color PNG icon. Size 192x192."
+            },
+            "outline": {
+              "type": "string",
+              "description": "A relative file path to a transparent PNG outline icon. The border color needs to be white. Size 32x32."
+            }
+          }
         }
       },
       "required": ["appName"]

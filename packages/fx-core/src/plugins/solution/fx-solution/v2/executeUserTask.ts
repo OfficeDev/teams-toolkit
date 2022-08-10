@@ -1116,7 +1116,7 @@ export async function createAuthFiles(
     return err(e);
   }
 
-  const authFolder = path.join(projectPath!, "auth");
+  const authFolder = path.join(projectPath!, isVsProject ? "Auth" : "auth");
   const tabFolder = path.join(authFolder, AddSsoParameters.Tab);
   const botFolder = path.join(authFolder, AddSsoParameters.Bot);
   try {
@@ -1138,7 +1138,17 @@ export async function createAuthFiles(
         AddSsoParameters.Tab
       );
       if (isVsProject) {
-        // TODO: add steps for VS
+        // README.md
+        const readmeSourcePath = path.join(tabTemplateFolder, AddSsoParameters.ReadmeCSharp);
+        const readmeTargetPath = path.join(tabFolder, AddSsoParameters.ReadmeCSharp);
+        const readme = await fs.readFile(readmeSourcePath);
+        fs.writeFile(readmeTargetPath, readme);
+
+        // Sample Code
+        const sampleSourceFolder = path.join(tabTemplateFolder, languageFolderName);
+        const sampleZip = new AdmZip();
+        sampleZip.addLocalFolder(sampleSourceFolder);
+        await unzip(sampleZip, tabFolder);
       } else {
         // README.md
         const readmeSourcePath = path.join(tabTemplateFolder, AddSsoParameters.Readme);

@@ -728,6 +728,7 @@ describe("Workflow test for v3", () => {
       .resolves(TestHelper.fakeCredential);
     sandbox.stub(provisionV3, "fillInAzureConfigs").resolves(ok({ hasSwitchedSubscription: true }));
     sandbox.stub(provisionV2, "askForProvisionConsentNew").resolves(ok(Void));
+    sandbox.stub(backup, "backupFiles").resolves(ok(undefined));
     sandbox
       .stub(armFunctions, "updateAzureParameters")
       .resolves(err(new UserError("Solution", "error1", "error1")));

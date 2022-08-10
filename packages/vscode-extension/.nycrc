@@ -10,7 +10,8 @@
     "src/treeview/webViewProvider/",
     "src/utils/survey.ts",
     "src/extension.ts",
-    "src/folder.ts"
+    "src/folder.ts",
+    "src/debug/**/*.ts"
   ],
   "reporter": ["text", "html", "json-summary", "cobertura", "lcov"],
   "check-coverage": true,

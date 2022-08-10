@@ -33,7 +33,7 @@ describe("Help Parameter Tests", function () {
   it("Resource Add Parameter Hardcode Check", async () => {
     const resources = ["sql", "apim", "function", "keyvault"];
     resources.forEach((resourceName) => {
-      const result = HelpParamGenerator.getYargsParamForHelp("addResource-" + resourceName);
+      const result = HelpParamGenerator.getYargsParamForHelp("addFeature-" + resourceName);
       expect(result.folder.default).equals("./");
 
       // const nodes = Object.values(result);

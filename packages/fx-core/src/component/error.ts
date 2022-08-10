@@ -1,6 +1,6 @@
 import { SystemError, UserError } from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
-import { ErrorMessage } from "./messages";
+import { ErrorMessage, LocalizedMessage } from "./messages";
 
 export class ActionNotExist extends SystemError {
   constructor(action: string) {
@@ -43,40 +43,18 @@ export class invalidProjectSettings extends SystemError {
 }
 
 export class PreconditionError extends UserError {
-  constructor(source: string, messages: [string, string], suggestions: string[]) {
-    super(
-      source,
-      new.target.name,
-      `${messages[0]}. Suggestions: ${suggestions.join(" ")}`,
-      `${messages[1]}. Suggestions: ${suggestions.join(" ")}`
+  constructor(source: string, messages: LocalizedMessage, suggestions: LocalizedMessage[]) {
+    const msg0 = getDefaultString(
+      "plugins.baseErrorMessage",
+      messages.default,
+      suggestions.map((suggestion) => suggestion.default).join(" ")
     );
-  }
-}
-
-export class TemplateZipFallbackError extends UserError {
-  constructor(source: string) {
-    super(
-      source,
-      new.target.name,
-      `Failed to download zip package and open local zip package. Suggestions: ${[
-        ErrorMessage.CheckOutputLogAndTryToFix,
-        ErrorMessage.RetryTheCurrentStep,
-      ].join(" ")}`
+    const msg1 = getLocalizedString(
+      "plugins.baseErrorMessage",
+      messages.localized,
+      suggestions.map((suggestion) => suggestion.localized).join(" ")
     );
-  }
-}
-
-export class UnzipError extends UserError {
-  constructor(source: string, path?: string) {
-    super(
-      source,
-      new.target.name,
-      `Failed to unzip templates and write to disk. Suggestions: ${[
-        ErrorMessage.CheckOutputLogAndTryToFix,
-        ErrorMessage.ReopenWorkingDir(path),
-        ErrorMessage.RetryTheCurrentStep,
-      ].join(" ")}`
-    );
+    super(source, new.target.name, msg0, msg1);
   }
 }
 
@@ -95,12 +73,16 @@ export function CheckThrowSomethingMissing<T>(
 
 export class PackDirectoryExistenceError extends UserError {
   constructor(source: string) {
-    const msg0 = `${ErrorMessage.SomethingIsNotExisting("pack directory")[0]} Suggestions: ${[
-      ErrorMessage.RecreateTheProject[0],
-    ].join(" ")}`;
-    const msg1 = `${ErrorMessage.SomethingIsNotExisting("pack directory")[1]} Suggestions: ${[
-      ErrorMessage.RecreateTheProject[1],
-    ].join(" ")}`;
+    const msg0 = getDefaultString(
+      "plugins.baseErrorMessage",
+      ErrorMessage.SomethingIsNotExisting("pack directory").default,
+      ErrorMessage.RecreateTheProject.default
+    );
+    const msg1 = getLocalizedString(
+      "plugins.baseErrorMessage",
+      ErrorMessage.SomethingIsNotExisting("pack directory").localized,
+      ErrorMessage.RecreateTheProject.localized
+    );
     super(source, new.target.name, msg0, msg1);
   }
 }

@@ -53,8 +53,10 @@ import {
   createTeamsApp,
   updateTeamsApp,
   publishTeamsApp,
+  getManifest,
 } from "../../../../component/resource/appManifest/appStudio";
 import { getProjectTemplatesFolderPath } from "../../../../common/utils";
+import { ComponentNames } from "../../../../component/constants";
 
 @Service(BuiltInFeaturePluginNames.appStudio)
 export class AppStudioPluginV3 {
@@ -261,13 +263,12 @@ export class AppStudioPluginV3 {
     let teamsAppId = "";
     // User may manually update id in manifest template file, rather than configuration file
     // The id in manifest template file should override configurations
-    const pluginContext: PluginContext = convert2PluginContext(this.name, ctx, inputs);
-    const manifestResult = await loadManifest(pluginContext.root);
+    const manifestResult = await getManifest(inputs.projectPath, envInfo);
     if (manifestResult.isOk()) {
       teamsAppId = manifestResult.value.id;
     }
     if (!isUUID(teamsAppId)) {
-      teamsAppId = (envInfo.state[this.name] as v3.TeamsAppResource).teamsAppId;
+      teamsAppId = (envInfo.state[ComponentNames.AppManifest] as v3.TeamsAppResource).teamsAppId;
     }
     return teamsAppId;
   }

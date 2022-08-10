@@ -5,6 +5,16 @@ import { BotFrameworkAdapter } from "botbuilder";
 import { Activity, TurnContext } from "botbuilder-core";
 
 /**
+ * The response of a message action, e.g., `sendMessage`, `sendAdaptiveCard`.
+ */
+export interface MessageResponse {
+  /**
+   * Id of the message.
+   */
+  id?: string;
+}
+
+/**
  * The target type where the notification will be sent to.
  *
  * @remarks
@@ -12,7 +22,21 @@ import { Activity, TurnContext } from "botbuilder-core";
  * - "Group" means to a group chat.
  * - "Person" means to a personal chat.
  */
-export type NotificationTargetType = "Channel" | "Group" | "Person";
+export enum NotificationTargetType {
+  /**
+   * The notification will be sent to a team channel.
+   * (By default, notification to a team will be sent to its "General" channel.)
+   */
+  Channel = "Channel",
+  /**
+   * The notification will be sent to a group chat.
+   */
+  Group = "Group",
+  /**
+   * The notification will be sent to a personal chat.
+   */
+  Person = "Person",
+}
 
 /**
  * Represent a notification target.
@@ -27,15 +51,19 @@ export interface NotificationTarget {
    * Send a plain text message.
    *
    * @param text - the plain text message.
+   *
+   * @returns the response of sending message.
    */
-  sendMessage(text: string): Promise<void>;
+  sendMessage(text: string): Promise<MessageResponse>;
 
   /**
    * Send an adaptive card message.
    *
    * @param card - the adaptive card raw JSON.
+   *
+   * @returns the response of sending adaptive card message.
    */
-  sendAdaptiveCard(card: unknown): Promise<void>;
+  sendAdaptiveCard(card: unknown): Promise<MessageResponse>;
 }
 
 /**

@@ -4,11 +4,10 @@
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
 
-import { err, Func, FxError, Inputs, ok, UserError } from "@microsoft/teamsfx-api";
+import { err, Func, FxError, Inputs, ok, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { FxCore, ProjectSettingsHelper } from "@microsoft/teamsfx-core";
 
-import Capability, {
-  CapabilityAdd,
+import {
   CapabilityAddTab,
   CapabilityAddBot,
   CapabilityAddMessageExtension,
@@ -23,11 +22,11 @@ import {
   TelemetrySuccess,
 } from "../../../src/telemetry/cliTelemetryEvents";
 import * as constants from "../../../src/constants";
-import * as Utils from "../../../src/utils";
 import LogProvider from "../../../src/commonlib/log";
 import { expect } from "../utils";
 import { NotSupportedProjectType } from "../../../src/error";
 import * as npmInstallHandler from "../../../src/cmds/preview/npmInstallHandler";
+import AzureAccountManager from "../../../src/commonlib/azureLogin";
 
 describe("Capability Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -80,7 +79,7 @@ describe("Capability Command Tests", function () {
         else return err(NotSupportedProjectType());
       });
     sandbox.stub(FxCore.prototype, "getProjectConfigV3").callsFake(async (inputs: Inputs) => {
-      if (inputs.projectPath?.includes("real")) {
+      if (inputs.projectPath?.includes("real") || inputs.projectPath?.includes("fakeReal")) {
         return ok({ projectSettings: { appName: "test", projectId: "" }, envInfos: {} });
       } else {
         return err(NotSupportedProjectType());
@@ -99,28 +98,6 @@ describe("Capability Command Tests", function () {
 
   afterEach(() => {
     sandbox.restore();
-  });
-
-  it("Builder Check", () => {
-    const cmd = new Capability();
-    yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
-    expect(registeredCommands).deep.equals([
-      "capability [action]",
-      "add [capability]",
-      "tab",
-      "bot",
-      "message-extension",
-    ]);
-  });
-
-  it("Capability Command Running Check", async () => {
-    const cmd = new Capability();
-    await cmd.handler({});
-  });
-
-  it("Capability Add Command Running Check", async () => {
-    const cmd = new CapabilityAdd();
-    await cmd.handler({});
   });
 
   it("Capability Add Tab Command Running Check", async () => {
@@ -146,6 +123,39 @@ describe("Capability Command Tests", function () {
       expect(telemetryEventStatus).equals(TelemetrySuccess.No);
       expect(e).instanceOf(UserError);
       expect(e.name).equals("NotSupportedProjectType");
+    }
+  });
+
+  it("Capability Add Tab Command Running Check with Activate Error", async () => {
+    const cmd = new CapabilityAddTab();
+    const args = {
+      [constants.RootFolderNode.data.name as string]: "fakeReal",
+    };
+    try {
+      await cmd.handler(args);
+      throw new Error("Should throw an error.");
+    } catch (e) {
+      expect(telemetryEvents).deep.equals([TelemetryEvent.AddCapStart, TelemetryEvent.AddCap]);
+      expect(telemetryEventStatus).equals(TelemetrySuccess.No);
+      expect(e).instanceOf(UserError);
+      expect(e.name).equals("NotSupportedProjectType");
+    }
+  });
+
+  it("Capability Add Tab Command Running Check with Activate Error", async () => {
+    sandbox.stub(AzureAccountManager, "setRootPath").throws(NotSupportedProjectType());
+    const cmd = new CapabilityAddTab();
+    const args = {
+      [constants.RootFolderNode.data.name as string]: "fake",
+    };
+    try {
+      await cmd.handler(args);
+      throw new Error("Should throw an error.");
+    } catch (e) {
+      expect(telemetryEvents).deep.equals([TelemetryEvent.AddCapStart, TelemetryEvent.AddCap]);
+      expect(telemetryEventStatus).equals(TelemetrySuccess.No);
+      expect(e).instanceOf(SystemError);
+      expect(e.name).equals("UnknownError");
     }
   });
 

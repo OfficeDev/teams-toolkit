@@ -78,6 +78,8 @@ export const ProjectSettingsLoaderMW: Middleware = async (
     (ctx.self as any).settingsVersion = projectSettings.version;
     (ctx.self as any).tools.cryptoProvider = new LocalCrypto(projectSettings.projectId);
     ctx.contextV2 = createV2Context(projectSettings);
+    // set global variable once project settings is loaded
+    globalVars.isVS = isVSProject(projectSettings);
   }
 
   await next();

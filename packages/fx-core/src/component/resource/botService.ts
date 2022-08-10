@@ -7,7 +7,7 @@ import {
   Result,
   ContextV3,
   InputsWithProjectPath,
-  ProvisionContextV3,
+  ResourceContextV3,
   v3,
   err,
   Effect,
@@ -66,10 +66,7 @@ export class BotService extends AzureResource {
       enableProgressBar: true,
       progressTitle: ProgressTitles.provisionBot,
       progressSteps: 1,
-      enableTelemetry: true,
-      telemetryComponentName: "fx-resource-bot",
-      telemetryEventName: "provision",
-      errorSource: ComponentNames.BotService,
+      errorSource: "BotService",
       errorHandler: (e, t) => {
         telemetryHelper.fillAppStudioErrorProperty(e, t);
         return e as FxError;
@@ -77,7 +74,7 @@ export class BotService extends AzureResource {
     }),
   ])
   async provision(
-    context: ProvisionContextV3,
+    context: ResourceContextV3,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
@@ -86,7 +83,7 @@ export class BotService extends AzureResource {
       merge(actionContext.telemetryProps, commonTelemetryPropsForBot(context));
     }
     await actionContext?.progressBar?.next(ProgressMessages.provisionBot);
-    const ctx = context as ProvisionContextV3;
+    const ctx = context as ResourceContextV3;
     const aadRes = await createBotAAD(ctx);
     if (aadRes.isErr()) return err(aadRes.error);
     if (ctx.envInfo.envName === "local") {
@@ -98,10 +95,7 @@ export class BotService extends AzureResource {
   }
   @hooks([
     ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryComponentName: "fx-resource-bot",
-      telemetryEventName: "post-local-debug",
-      errorSource: ComponentNames.BotService,
+      errorSource: "BotService",
       errorHandler: (e, t) => {
         telemetryHelper.fillAppStudioErrorProperty(e, t);
         return e as FxError;
@@ -109,7 +103,7 @@ export class BotService extends AzureResource {
     }),
   ])
   async configure(
-    context: ProvisionContextV3,
+    context: ResourceContextV3,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
@@ -117,7 +111,7 @@ export class BotService extends AzureResource {
       merge(actionContext.telemetryProps, commonTelemetryPropsForBot(context));
     }
     // create bot aad app by API call
-    const ctx = context as ProvisionContextV3;
+    const ctx = context as ResourceContextV3;
     const teamsBot = getComponent(ctx.projectSetting, ComponentNames.TeamsBot);
     if (!teamsBot) return ok(undefined);
     const plans: Effect[] = [];
@@ -141,7 +135,7 @@ export class BotService extends AzureResource {
   }
 }
 
-export async function createBotAAD(ctx: ProvisionContextV3): Promise<Result<any, FxError>> {
+export async function createBotAAD(ctx: ResourceContextV3): Promise<Result<any, FxError>> {
   const graphTokenRes = await ctx.tokenProvider.m365TokenProvider.getAccessToken({
     scopes: GraphScopes,
   });
@@ -177,7 +171,7 @@ export async function createBotAAD(ctx: ProvisionContextV3): Promise<Result<any,
 
 export async function createBotRegInAppStudio(
   botConfig: any,
-  ctx: ProvisionContextV3
+  ctx: ResourceContextV3
 ): Promise<Result<undefined, FxError>> {
   // 2. Register bot by app studio.
   const botReg: IBotRegistration = {

@@ -43,6 +43,7 @@ import {
 } from "../../../src/plugins/solution/fx-solution/v3/publish";
 import { TestHelper } from "../solution/helper";
 import { TestFilePath } from "../../constants";
+import mockedEnv from "mocked-env";
 describe("SolutionV3 - provision", () => {
   const sandbox = sinon.createSandbox();
   beforeEach(async () => {
@@ -145,7 +146,7 @@ describe("SolutionV3 - provision", () => {
     }
   });
 
-  it("provision - has provisioned before in same account", async () => {
+  it("provision - has provisioned before in same account (allow switch account)", async () => {
     const parameterFileNameTemplate = (env: string) => `azure.parameters.${env}.json`;
     const configDir = path.join(TestHelper.rootDir, TestFilePath.configFolder);
     const targetEnvName = "dev";

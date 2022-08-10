@@ -79,6 +79,7 @@ import {
   ObjectIsUndefinedError,
   OperationNotPermittedError,
   ProjectFolderExistError,
+  ProjectFolderInvalidError,
   TaskNotSupportError,
   WriteFileError,
 } from "./error";
@@ -128,8 +129,9 @@ import {
   sendErrorTelemetryThenReturnError,
 } from "./telemetry";
 import { CoreHookContext } from "./types";
-import { isPreviewFeaturesEnabled } from "../common";
+import { isPreviewFeaturesEnabled } from "../common/featureFlags";
 import { createContextV3 } from "../component/utils";
+import { TeamsfxCore } from "../component/core";
 import "../component/core";
 import {
   FeatureId,
@@ -143,7 +145,6 @@ import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
 import { addCicdQuestion } from "../component/feature/cicd";
 import { ComponentNames } from "../component/constants";
 import { ApiConnectorImpl } from "../plugins/resource/apiconnector/plugin";
-import { TeamsfxCore } from "../component/core";
 import { publishQuestion } from "../component/resource/appManifest/appManifest";
 
 export class FxCore implements v3.ICore {
@@ -186,6 +187,11 @@ export class FxCore implements v3.ICore {
     setCurrentStage(Stage.create);
     inputs.stage = Stage.create;
     const folder = inputs[QuestionRootFolder.name] as string;
+    try {
+      await fs.ensureDir(folder);
+    } catch (e) {
+      throw new ProjectFolderInvalidError(folder);
+    }
 
     if (isPreviewFeaturesEnabled()) {
       const capability = inputs[CoreQuestionNames.Capabilities] as string;
@@ -685,13 +691,16 @@ export class FxCore implements v3.ICore {
 
   async executeUserTask(func: Func, inputs: Inputs): Promise<Result<unknown, FxError>> {
     if (isV3()) {
-      if (func.method === "addFeature") {
-        const res = await this.addFeature(inputs as v2.InputsWithProjectPath);
-        if (res.isErr()) return err(res.error);
-        return ok(undefined);
-      }
-      return err(new NotImplementedError(func.method));
-    } else return this.executeUserTaskV2(func, inputs);
+      if (
+        func.method === "addCICDWorkflows" ||
+        func.method === "connectExistingApi" ||
+        func.method === "addSso" ||
+        func.method === "addFeature" ||
+        func.method === "addResource"
+      )
+        return this.executeUserTaskV3(func, inputs);
+    }
+    return this.executeUserTaskV2(func, inputs);
   }
 
   @hooks([
@@ -705,13 +714,14 @@ export class FxCore implements v3.ICore {
   async addFeature(
     inputs: v2.InputsWithProjectPath,
     ctx?: CoreHookContext
-  ): Promise<Result<Void, FxError>> {
+  ): Promise<Result<any, FxError>> {
+    inputs.stage = Stage.addFeature;
     const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
     const fx = Container.get("fx") as TeamsfxCore;
     const res = await fx.addFeature(context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
-    return ok(Void);
+    return ok(res.value);
   }
 
   @hooks([
@@ -836,13 +846,23 @@ export class FxCore implements v3.ICore {
     } else if (func.method === "connectExistingApi") {
       const component = Container.get("api-connector") as any;
       res = await component.add(context, inputs as InputsWithProjectPath);
+    } else if (func.method === "addSso") {
+      inputs.stage = Stage.addFeature;
+      const component = Container.get("sso") as any;
+      res = await component.add(context, inputs as InputsWithProjectPath);
     } else if (func.method === "addFeature") {
-      const fx = Container.get("fx") as any;
+      inputs.stage = Stage.addFeature;
+      const fx = Container.get("fx") as TeamsfxCore;
       res = await fx.addFeature(context, inputs as InputsWithProjectPath);
+    } else {
+      return err(new NotImplementedError(func.method));
     }
-    if (res.isErr()) return err(res.error);
-    ctx!.projectSettings = context.projectSetting;
-    return res;
+    if (res) {
+      if (res.isErr()) return err(res.error);
+      ctx!.projectSettings = context.projectSetting;
+      return res;
+    }
+    return ok(undefined);
   }
   @hooks([
     ErrorHandlerMW,
@@ -863,6 +883,8 @@ export class FxCore implements v3.ICore {
     setCurrentStage(Stage.getQuestions);
     if (isV3()) {
       const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+      context.envInfo = ctx.envInfoV2 as v3.EnvInfoV3;
+      context.tokenProvider = TOOLS.tokenProvider;
       if (stage === Stage.publish) {
         return await publishQuestion(inputs);
       } else if (stage === Stage.create) {
@@ -870,7 +892,7 @@ export class FxCore implements v3.ICore {
       } else if (stage === Stage.deploy) {
         return await getQuestionsForDeployV3(context, inputs);
       } else if (stage === Stage.provision) {
-        return await getQuestionsForProvisionV3(inputs);
+        return await getQuestionsForProvisionV3(context, inputs);
       }
       return ok(undefined);
     }
@@ -1049,8 +1071,10 @@ export class FxCore implements v3.ICore {
       return err(new ObjectIsUndefinedError("projectPath"));
     }
     if (ctx && ctx.contextV2 && ctx.envInfoV3) {
+      const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+      context.envInfo = ctx.envInfoV3;
       const res = await grantPermission(
-        ctx.contextV2,
+        context,
         inputs as v2.InputsWithProjectPath,
         ctx.envInfoV3,
         TOOLS.tokenProvider
@@ -1112,8 +1136,10 @@ export class FxCore implements v3.ICore {
       return err(new ObjectIsUndefinedError("projectPath"));
     }
     if (ctx && ctx.contextV2 && ctx.envInfoV3) {
+      const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+      context.envInfo = ctx.envInfoV3;
       const res = await checkPermission(
-        ctx.contextV2,
+        context,
         inputs as v2.InputsWithProjectPath,
         ctx.envInfoV3,
         TOOLS.tokenProvider
@@ -1175,8 +1201,10 @@ export class FxCore implements v3.ICore {
       return err(new ObjectIsUndefinedError("projectPath"));
     }
     if (ctx && ctx.contextV2 && ctx.envInfoV3) {
+      const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+      context.envInfo = ctx.envInfoV3;
       const res = await listCollaborator(
-        ctx.contextV2,
+        context,
         inputs as v2.InputsWithProjectPath,
         ctx.envInfoV3,
         TOOLS.tokenProvider

@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import {
   ActionContext,
@@ -16,8 +19,16 @@ import {
   UserError,
 } from "@microsoft/teamsfx-api";
 import { assign } from "lodash";
-import { globalVars, TOOLS } from "../../core/globalVars";
+import { TOOLS } from "../../core/globalVars";
 import { TelemetryConstants } from "../constants";
+import {
+  sendErrorEvent,
+  sendMigratedErrorEvent,
+  sendMigratedStartEvent,
+  sendMigratedSuccessEvent,
+  sendStartEvent,
+  sendSuccessEvent,
+} from "../telemetry";
 
 export interface ActionOption {
   componentName?: string;
@@ -44,23 +55,27 @@ export interface ActionOption {
 
 export function ActionExecutionMW(action: ActionOption): Middleware {
   return async (ctx: HookContext, next: NextFunction) => {
-    const componentName = ctx.self?.constructor.name || action?.componentName;
+    const componentName = ctx.self?.constructor.name || action.componentName;
+    const telemetryComponentName = action.telemetryComponentName || componentName;
     const methodName = ctx.method!;
     const actionName = `${componentName}.${methodName}`;
     TOOLS.logProvider.info(`execute [${actionName}] start!`);
     const eventName = action.telemetryEventName || methodName;
     const telemetryProps = {
-      [TelemetryConstants.properties.component]: componentName,
-      [TelemetryConstants.properties.appId]: globalVars.teamsAppId,
-      [TelemetryConstants.properties.tenantId]: globalVars.m365TenantId,
+      [TelemetryConstants.properties.component]: telemetryComponentName,
     };
     let progressBar;
     try {
       // send start telemetry
       if (action.enableTelemetry) {
         if (action.telemetryProps) assign(telemetryProps, action.telemetryProps);
-        const startEvent = eventName + "-start";
-        TOOLS.telemetryReporter?.sendTelemetryEvent(startEvent, telemetryProps);
+        sendStartEvent(eventName, telemetryProps);
+        sendMigratedStartEvent(
+          eventName,
+          ctx.arguments[0] as ContextV3,
+          ctx.arguments[1] as InputsWithProjectPath,
+          telemetryProps
+        );
       }
       // run question model
       if (action.question) {
@@ -85,7 +100,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
           action.progressTitle || methodName,
           action.progressSteps || 1
         );
-        progressBar.start();
+        await progressBar.start();
       }
       if (action.enableTelemetry || action.enableProgressBar) {
         const actionContext: ActionContext = {
@@ -98,15 +113,18 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
       if (ctx.result.isErr()) throw ctx.result.error;
       // send end telemetry
       if (action.enableTelemetry) {
-        TOOLS.telemetryReporter?.sendTelemetryEvent(eventName, {
-          ...telemetryProps,
-          [TelemetryConstants.properties.success]: TelemetryConstants.values.yes,
-        });
+        sendSuccessEvent(eventName, telemetryProps);
+        sendMigratedSuccessEvent(
+          eventName,
+          ctx.arguments[0] as ContextV3,
+          ctx.arguments[1] as InputsWithProjectPath,
+          telemetryProps
+        );
       }
-      progressBar?.end(true);
+      await progressBar?.end(true);
       TOOLS.logProvider.info(`execute [${actionName}] success!`);
     } catch (e) {
-      progressBar?.end(false);
+      await progressBar?.end(false);
       let fxError;
       if (action.errorHandler) {
         fxError = action.errorHandler(e, telemetryProps);
@@ -124,18 +142,14 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
       }
       // send error telemetry
       if (action.enableTelemetry) {
-        const errorCode = fxError.source + "." + fxError.name;
-        const errorType =
-          fxError instanceof SystemError
-            ? TelemetryConstants.values.systemError
-            : TelemetryConstants.values.userError;
-        TOOLS.telemetryReporter?.sendTelemetryErrorEvent(eventName, {
-          ...telemetryProps,
-          [TelemetryConstants.properties.success]: TelemetryConstants.values.no,
-          [TelemetryConstants.properties.errorCode]: errorCode,
-          [TelemetryConstants.properties.errorType]: errorType,
-          [TelemetryConstants.properties.errorMessage]: fxError.message,
-        });
+        sendErrorEvent(eventName, fxError, telemetryProps);
+        sendMigratedErrorEvent(
+          eventName,
+          fxError,
+          ctx.arguments[0] as ContextV3,
+          ctx.arguments[1] as InputsWithProjectPath,
+          telemetryProps
+        );
       }
       TOOLS.logProvider.info(`execute [${actionName}] failed!`);
       ctx.result = err(fxError);

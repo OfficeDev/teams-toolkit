@@ -60,6 +60,7 @@ import * as TasksNext from "../plugins/solution/fx-solution/debug/util/tasksNext
 import * as Settings from "../plugins/solution/fx-solution/debug/util/settings";
 import fs from "fs-extra";
 import { updateJson, useNewTasks } from "../plugins/solution/fx-solution/debug/scaffolding";
+import { CoreQuestionNames } from "../core/question";
 
 export async function setupLocalEnvironment(
   ctx: ContextV3,
@@ -318,8 +319,8 @@ export async function configLocalEnvironment(
       }
 
       if (includeBot) {
-        const botId = envInfo.state[ComponentNames.BotService]?.botId as string;
-        const botPassword = envInfo.state[ComponentNames.BotService]?.botPassword as string;
+        const botId = envInfo.state[ComponentNames.TeamsBot]?.botId as string;
+        const botPassword = envInfo.state[ComponentNames.TeamsBot]?.botPassword as string;
 
         botEnvs!.teamsfxLocalEnvs[EnvKeysBot.BotId] = botId;
         botEnvs!.teamsfxLocalEnvs[EnvKeysBot.BotPassword] = botPassword;
@@ -366,7 +367,10 @@ export async function generateLocalDebugSettings(
   const includeSimpleAuth = hasSimpleAuth(context.projectSetting);
   const includeFuncHostedBot = hasFunctionBot(context.projectSetting);
   const botCapabilities = ProjectSettingsHelper.getBotCapabilities(context.projectSetting);
-  const programmingLanguage = context.projectSetting.programmingLanguage ?? "";
+  const programmingLanguage =
+    context.projectSetting.programmingLanguage ||
+    inputs?.[CoreQuestionNames.ProgrammingLanguage] ||
+    "";
   const isM365 = context.projectSetting.isM365;
   const telemetryProperties = {
     platform: inputs.platform as string,

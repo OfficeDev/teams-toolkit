@@ -10,7 +10,7 @@ import {
   InputsWithProjectPath,
   ok,
   Platform,
-  ProvisionContextV3,
+  ResourceContextV3,
   QTreeNode,
   Result,
   SystemError,
@@ -64,6 +64,7 @@ import {
 import { readAppManifest, writeAppManifest } from "./utils";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
+import { getProjectTemplatesFolderPath } from "../../../common/utils";
 
 @Service("app-manifest")
 export class AppManifest implements CloudResource {
@@ -81,23 +82,39 @@ export class AppManifest implements CloudResource {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
-    const existingApp = inputs.existingApp as boolean;
-    const manifestString = TEAMS_APP_MANIFEST_TEMPLATE;
-    const manifest = JSON.parse(manifestString);
-    if (existingApp || !hasTab(context.projectSetting)) {
-      manifest.developer = DEFAULT_DEVELOPER;
+    let manifest;
+    const sourceTemplatesFolder = getTemplatesFolder();
+    if (inputs.capabilities === "TabSPFx") {
+      const templateManifestFolder = path.join(
+        sourceTemplatesFolder,
+        "plugins",
+        "resource",
+        "spfx"
+      );
+      const manifestFile = path.resolve(
+        templateManifestFolder,
+        "./solution/manifest_multi_env.json"
+      );
+      const manifestString = (await fs.readFile(manifestFile)).toString();
+      manifest = JSON.parse(manifestString);
+    } else {
+      const existingApp = inputs.existingApp as boolean;
+      const manifestString = TEAMS_APP_MANIFEST_TEMPLATE;
+      manifest = JSON.parse(manifestString);
+      if (existingApp || !hasTab(context.projectSetting)) {
+        manifest.developer = DEFAULT_DEVELOPER;
+      }
     }
-    const templateFolder = path.join(inputs.projectPath, "templates");
-    await fs.ensureDir(templateFolder);
-    const appPackageFolder = path.join(templateFolder, "appPackage");
+    const targetTemplateFolder = await getProjectTemplatesFolderPath(inputs.projectPath);
+    await fs.ensureDir(targetTemplateFolder);
+    const appPackageFolder = path.join(targetTemplateFolder, "appPackage");
     await fs.ensureDir(appPackageFolder);
     const resourcesFolder = path.resolve(appPackageFolder, "resources");
     await fs.ensureDir(resourcesFolder);
     const targetManifestPath = path.join(appPackageFolder, "manifest.template.json");
     await fs.writeFile(targetManifestPath, JSON.stringify(manifest, null, 4));
-    const templatesFolder = getTemplatesFolder();
-    const defaultColorPath = path.join(templatesFolder, COLOR_TEMPLATE);
-    const defaultOutlinePath = path.join(templatesFolder, OUTLINE_TEMPLATE);
+    const defaultColorPath = path.join(sourceTemplatesFolder, COLOR_TEMPLATE);
+    const defaultOutlinePath = path.join(sourceTemplatesFolder, OUTLINE_TEMPLATE);
     await fs.copy(defaultColorPath, path.join(resourcesFolder, DEFAULT_COLOR_PNG_FILENAME));
     await fs.copy(defaultOutlinePath, path.join(resourcesFolder, DEFAULT_OUTLINE_PNG_FILENAME));
     return ok(undefined);
@@ -119,11 +136,11 @@ export class AppManifest implements CloudResource {
     }),
   ])
   async provision(
-    context: ProvisionContextV3,
+    context: ResourceContextV3,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    const ctx = context as ProvisionContextV3;
+    const ctx = context as ResourceContextV3;
     await actionContext?.progressBar?.next(
       getLocalizedString("plugins.appstudio.provisionProgress", ctx.projectSetting.appName)
     );
@@ -141,11 +158,11 @@ export class AppManifest implements CloudResource {
     }),
   ])
   async configure(
-    context: ProvisionContextV3,
+    context: ResourceContextV3,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    const ctx = context as ProvisionContextV3;
+    const ctx = context as ResourceContextV3;
     await actionContext?.progressBar?.next(
       getLocalizedString("plugins.appstudio.postProvisionProgress", ctx.projectSetting.appName)
     );
@@ -165,11 +182,11 @@ export class AppManifest implements CloudResource {
     }),
   ])
   async publish(
-    context: ProvisionContextV3,
+    context: ResourceContextV3,
     inputs: InputsWithProjectPath,
     actionCtx?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    const ctx = context as ProvisionContextV3;
+    const ctx = context as ResourceContextV3;
     if (
       inputs.platform === Platform.VSCode &&
       inputs[Constants.BUILD_OR_PUBLISH_QUESTION] === manuallySubmitOption.id
@@ -329,7 +346,9 @@ export async function addCapabilities(
               appManifest.bots = [];
             }
 
-            const feature = inputs.feature;
+            // import CoreQuestionNames introduces dependency cycle and breaks the whole program
+            // inputs[CoreQuestionNames.Features]
+            const feature = inputs.features;
             if (feature === CommandAndResponseOptionItem.id) {
               // command and response bot
               appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3);
@@ -366,6 +385,9 @@ export async function addCapabilities(
         }
         break;
     }
+  }
+  if (inputs.validDomain && !appManifest.validDomains?.includes(inputs.validDomain)) {
+    appManifest.validDomains?.push(inputs.validDomain);
   }
   await writeAppManifest(appManifest, inputs.projectPath);
   return ok(undefined);

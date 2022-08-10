@@ -38,7 +38,7 @@ import { AppStudioScopes, getHashedEnv, getResourceGroupInPortal } from "../../.
 import { convertToAlphanumericOnly } from "../../../../common/utils";
 import { ComponentNames } from "../../../../component/constants";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
-import arm, { updateResourceBaseName } from "../arm";
+import arm from "../arm";
 import { ResourceGroupInfo } from "../commonQuestions";
 import {
   FillInAzureConfigsResult,
@@ -48,6 +48,7 @@ import {
 } from "../constants";
 import { configLocalEnvironment, setupLocalEnvironment } from "../debug/provisionLocal";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
+import { handleConfigFilesWhenSwitchAccount, hasBotServiceCreated } from "../utils/util";
 import { executeConcurrently } from "../v2/executor";
 import { BuiltInFeaturePluginNames } from "./constants";
 import { solutionGlobalVars } from "./solutionGlobalVars";
@@ -85,6 +86,7 @@ export async function provisionResources(
   telemetryProps?: Json
 ): Promise<Result<v3.EnvInfoV3, FxError>> {
   const solutionSetting = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
+  const hasBotServiceCreatedBefore = hasBotServiceCreated(envInfo as v3.EnvInfoV3);
   // 1. check M365 tenant
   if (!envInfo.state[BuiltInFeaturePluginNames.appStudio])
     envInfo.state[BuiltInFeaturePluginNames.appStudio] = {};
@@ -99,7 +101,8 @@ export async function provisionResources(
   if (tenantIdInTokenRes.isErr()) {
     return err(tenantIdInTokenRes.error);
   }
-  const tenantIdInToken = tenantIdInTokenRes.value;
+  const tenantIdInToken = tenantIdInTokenRes.value.tenantIdInToken;
+  // We are not going to update this file since we won't use this file in production code.
   if (tenantIdInConfig && tenantIdInToken && tenantIdInToken !== tenantIdInConfig) {
     return err(
       new UserError(
@@ -167,11 +170,18 @@ export async function provisionResources(
       }
 
       if (solutionConfigRes.value.hasSwitchedSubscription) {
-        await updateResourceBaseName(
-          inputs.projectPath,
+        const handleConfigFilesWhenSwitchAccountsRes = await handleConfigFilesWhenSwitchAccount(
+          envInfo as v3.EnvInfoV3,
           ctx.projectSetting.appName,
-          envInfo.envName
+          inputs.projectPath,
+          false,
+          solutionConfigRes.value.hasSwitchedSubscription,
+          hasBotServiceCreatedBefore
         );
+
+        if (handleConfigFilesWhenSwitchAccountsRes.isErr()) {
+          return err(handleConfigFilesWhenSwitchAccountsRes.error);
+        }
       }
     }
 
@@ -304,7 +314,7 @@ export async function provisionResources(
  * make sure subscription is correct before provision
  *
  */
-export async function checkProvisionAzureSubscription(
+export async function checkProvisionSubscriptionWhenSwitchAccountEnabled(
   ctx: v2.Context,
   envInfo: v3.EnvInfoV3,
   azureAccountProvider: AzureAccountProvider
@@ -413,25 +423,14 @@ async function compareWithStateSubscription(
   subscriptionInStateName: string | undefined,
   azureAccountProvider: AzureAccountProvider
 ): Promise<Result<ProvisionSubscriptionCheckResult, FxError>> {
-  const shouldAskForSubscriptionConfirmation =
+  const hasSwitchedSubscription =
     !!subscriptionInStateId && targetSubscriptionInfo.subscriptionId !== subscriptionInStateId;
-  if (shouldAskForSubscriptionConfirmation) {
-    const confirmResult = await askForSubscriptionConfirm(
-      ctx,
-      subscriptionInStateName!,
-      targetSubscriptionInfo.subscriptionName || targetSubscriptionInfo.subscriptionId,
-      azureAccountProvider,
-      envInfo
-    );
-    if (confirmResult.isErr()) {
-      return err(confirmResult.error);
-    } else {
-      updateEnvInfoSubscription(envInfo, targetSubscriptionInfo);
-      clearEnvInfoStateResource(envInfo);
+  if (hasSwitchedSubscription) {
+    updateEnvInfoSubscription(envInfo, targetSubscriptionInfo);
+    clearEnvInfoStateResource(envInfo);
 
-      ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
-      return ok({ hasSwitchedSubscription: true });
-    }
+    ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
+    return ok({ hasSwitchedSubscription: true });
   } else {
     updateEnvInfoSubscription(envInfo, targetSubscriptionInfo);
     ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
@@ -473,32 +472,6 @@ function clearEnvInfoStateResource(envInfo: v3.EnvInfoV3): void {
   }
 }
 
-async function askForSubscriptionConfirm(
-  ctx: v2.Context,
-  subscriptionInState: string,
-  subscriptionInAccount: string,
-  azureAccountProvider: AzureAccountProvider,
-  envInfo: v3.EnvInfoV3
-): Promise<Result<Void, FxError>> {
-  const azureToken = await azureAccountProvider.getAccountCredentialAsync();
-
-  const username = (azureToken as any).username || "";
-  const msgNew = getLocalizedString(
-    "core.provision.confirmSubscription",
-    subscriptionInState,
-    envInfo.envName,
-    username,
-    subscriptionInAccount
-  );
-  const confirmRes = await ctx.userInteraction.showMessage("warn", msgNew, true, "Provision");
-  const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
-
-  if (confirm !== "Provision") {
-    return err(new UserError(SolutionSource, "CancelProvision", "CancelProvision"));
-  }
-  return ok(Void);
-}
-
 /**
  * Asks common questions and puts the answers in the global namespace of SolutionConfig
  *
@@ -510,14 +483,26 @@ export async function fillInAzureConfigs(
   tokenProvider: TokenProvider
 ): Promise<Result<FillInAzureConfigsResult, FxError>> {
   //1. check subscriptionId
-  const subscriptionResult = await checkProvisionAzureSubscription(
+  ctx.telemetryReporter?.sendTelemetryEvent(
+    TelemetryEvent.CheckSubscriptionStart,
+    inputs.env ? { [TelemetryProperty.Env]: getHashedEnv(inputs.env) } : {}
+  );
+
+  const subscriptionResult = await checkProvisionSubscriptionWhenSwitchAccountEnabled(
     ctx,
     envInfo,
     tokenProvider.azureAccountProvider
   );
+
   if (subscriptionResult.isErr()) {
     return err(subscriptionResult.error);
   }
+
+  ctx.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckSubscription, {
+    [TelemetryProperty.Env]: !inputs.env ? "" : getHashedEnv(inputs.env),
+    [TelemetryProperty.HasSwitchedSubscription]:
+      subscriptionResult.value.hasSwitchedSubscription.toString(),
+  });
 
   // Note setSubscription here will change the token returned by getAccountCredentialAsync according to the subscription selected.
   // So getting azureToken needs to precede setSubscription.
@@ -720,10 +705,14 @@ export async function askForProvisionConsent(
   }
   return ok(Void);
 }
+interface M365TenantRes {
+  tenantIdInToken: string;
+  tenantUserName: string;
+}
 
 export async function getM365TenantId(
   m365TokenProvider: M365TokenProvider
-): Promise<Result<string, FxError>> {
+): Promise<Result<M365TenantRes, FxError>> {
   // Just to trigger M365 login before the concurrent execution of localDebug.
   // Because concurrent execution of localDebug may getAccessToken() concurrently, which
   // causes 2 M365 logins before the token caching in common lib takes effect.
@@ -744,6 +733,7 @@ export async function getM365TenantId(
     );
   }
   const tenantIdInToken = (appStudioTokenJson as any).tid;
+  const tenantUserName = (appStudioTokenJson as any).upn;
   if (!tenantIdInToken || !(typeof tenantIdInToken === "string")) {
     return err(
       new SystemError(
@@ -754,5 +744,5 @@ export async function getM365TenantId(
       )
     );
   }
-  return ok(tenantIdInToken);
+  return ok({ tenantIdInToken, tenantUserName });
 }

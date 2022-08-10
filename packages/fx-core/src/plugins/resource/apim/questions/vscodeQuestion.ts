@@ -15,6 +15,7 @@ import {
   ValidationSchema,
 } from "@microsoft/teamsfx-api";
 import { getResourceGroupNameFromResourceId } from "../../../../common/tools";
+import { APIM_STATE_KEY } from "../../../../component/migrate";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { buildAnswer } from "../answer";
 import { ApimPluginConfig, SolutionConfig } from "../config";
@@ -163,7 +164,7 @@ export class ApiVersionQuestion extends BaseQuestionService {
     const apimService = await this.lazyApimService.getValue();
     const apimState = envInfo.state.get
       ? (envInfo.state as Map<string, any>).get(BuiltInFeaturePluginNames.apim)
-      : (envInfo.state as Json)[BuiltInFeaturePluginNames.apim];
+      : (envInfo.state as Json)[APIM_STATE_KEY];
     const apimConfig = new ApimPluginConfig(apimState, envInfo.envName);
     const solutionConfig = new SolutionConfig(envInfo);
     const answer = buildAnswer(inputs);

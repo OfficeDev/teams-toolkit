@@ -7,7 +7,7 @@ import {
   FxError,
   InputsWithProjectPath,
   ok,
-  ProvisionContextV3,
+  ResourceContextV3,
   ResourceOutputs,
   Result,
 } from "@microsoft/teamsfx-api";
@@ -35,7 +35,7 @@ export abstract class AzureAppService extends AzureResource {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<Bicep[], FxError>> {
-    this.getTemplateContext = (context, inputs) => {
+    this.getTemplateContext = (context) => {
       const configs: string[] = [];
       configs.push(getRuntime(getLanguage(context.projectSetting.programmingLanguage)));
       this.templateContext.configs = configs;
@@ -45,7 +45,7 @@ export abstract class AzureAppService extends AzureResource {
   }
 
   async deploy(
-    context: ProvisionContextV3,
+    context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
     const progressBar = context.userInteraction.createProgressBar(
@@ -54,7 +54,7 @@ export abstract class AzureAppService extends AzureResource {
     );
     await progressBar.start();
     try {
-      const ctx = context as ProvisionContextV3;
+      const ctx = context as ResourceContextV3;
       // Preconditions checking.
       if (!inputs.projectPath || !inputs.artifactFolder) {
         throw new PreconditionError(this.alias, ErrorMessage.WorkingDirIsMissing, []);

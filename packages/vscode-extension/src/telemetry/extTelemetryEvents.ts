@@ -77,8 +77,12 @@ export enum TelemetryEvent {
 
   OpenAzurePortal = "open-azure-portal",
 
+  ClickSampleCard = "click-sample-card",
+
   DownloadSampleStart = "download-sample-start",
   DownloadSample = "download-sample",
+
+  ViewSampleInGitHub = "view-sample-in-github",
 
   WatchVideo = "watch-video",
   PauseVideo = "pause-video",
@@ -191,6 +195,12 @@ export enum TelemetryEvent {
   // that prevents user performing concurrent operations.
   TreeViewCommandConcurrentExecution = "treeview-command-concurrent-execution",
 
+  // To track the A/B test of opening in new window after creating a new project
+  OpenNewProject = "open-new-project",
+
+  // To track the A/B test of choosing folder
+  SelectFolder = "select-folder",
+
   Deactivate = "deactivate",
 }
 
@@ -261,6 +271,10 @@ export enum TelemetryProperty {
   // Used with OpenTutorial
   TutorialName = "tutorial-name",
   DocumentationName = "documentation-name",
+  // Used with OpenNewProject
+  VscWindow = "vscode-window",
+  // Used with SelectFolder
+  SelectedOption = "selected-option",
   // Used with Deactivate
   Timestamp = "timestamp",
   ProgrammingLanguage = "programming-language",
@@ -334,6 +348,12 @@ export enum TelemetryDebugDevCertStatus {
   AlreadyTrusted = "already-trusted",
   Trusted = "trusted",
   NotTrusted = "not-trusted",
+}
+
+export enum VSCodeWindowChoice {
+  CurrentWindow = "current-window",
+  NewWindow = "new-window",
+  NewWindowByDefault = "new-window-by-default",
 }
 
 export const TelemetryComponentType = "extension";

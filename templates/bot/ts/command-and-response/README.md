@@ -22,6 +22,10 @@ Run your app with local debugging by pressing `F5` in VSCode. Select `Debug (Edg
 > - `Node.js` installed locally (recommended version: 14)
 > - An [M365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
 >
+> **Note**
+>
+> Your app can be installed into a team, or a group chat, or as personal app. See [Installation and Uninstallation](https://aka.ms/teamsfx-command-response#customize-installation).
+>
 
 # Understanding the code
 

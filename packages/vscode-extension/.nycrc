@@ -3,9 +3,16 @@
   "all": true,
   "include": ["src/**/*.ts", "src/**/*.js"],
   "exclude": [
-    "src/controls/webviewPanel.ts"
+    "src/controls/webviewPanel.ts",
+    "src/commonlib/",
+    "src/exp/",
+    "src/qm/",
+    "src/treeview/webViewProvider/",
+    "src/utils/survey.ts",
+    "src/extension.ts",
+    "src/folder.ts"
   ],
   "reporter": ["text", "html", "json-summary", "cobertura", "lcov"],
   "check-coverage": true,
-  "lines": 34.6
+  "lines": 40.53
 }

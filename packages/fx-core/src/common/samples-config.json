@@ -148,6 +148,21 @@
             "suggested": false
         },
         {
+            "id": "bot-proactive-messaging-teamsfx",
+            "title": "Proactive Messaging",
+            "shortDescription": "Demonstrates how to send proactive messages to users.",
+            "fullDescription": "This is a sample which shows how to save user's conversation reference information to send proactive reminder message using Bots.",
+            "tags": [
+                "Bot",
+                "JS"
+            ],
+            "time": "5min to run",
+            "configuration": "Ready for local debug",
+            "suggested": false,
+            "url": "https://github.com/OfficeDev/Microsoft-Teams-Samples/tree/main/samples/",
+            "packageLink": "https://github.com/OfficeDev/Microsoft-Teams-Samples/archive/refs/heads/main.zip"
+        },
+        {
             "id": "adaptive-card-notification",
             "title": "Adaptive Card Notification",
             "shortDescription": "Demonstrates how to send adaptive card notification to users.",

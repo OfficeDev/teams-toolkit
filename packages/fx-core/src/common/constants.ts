@@ -2,6 +2,7 @@ export class ConstantString {
   static readonly UTF8Encoding = "utf-8";
   static readonly DeploymentResourceType = "Microsoft.Resources/deployments";
   static readonly DeploymentNotFound = "DeploymentNotFound";
+  static readonly RootFolder = "TeamsApps";
 }
 
 export class HelpLinks {
@@ -81,6 +82,7 @@ export class FeatureFlagName {
   static readonly DeployManifest = "TEAMSFX_DEPLOY_MANIFEST";
   static readonly Preview = "TEAMSFX_PREVIEW";
   static readonly CLIDotNet = "TEAMSFX_CLI_DOTNET";
+  static readonly SwitchAccount = "SWITCH_ACCOUNT";
 }
 
 export class ManifestVariables {

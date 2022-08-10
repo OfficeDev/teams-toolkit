@@ -3,8 +3,8 @@
 "use strict";
 
 import { NextFunction, Middleware } from "@feathersjs/hooks";
-import { FxError, Inputs, Result, Stage, StaticPlatforms } from "@microsoft/teamsfx-api";
-import { PluginNames } from "../../plugins/solution/fx-solution/constants";
+import { FxError, Inputs, Result, StaticPlatforms } from "@microsoft/teamsfx-api";
+import { PluginNames, SolutionError } from "../../plugins/solution/fx-solution/constants";
 import { environmentManager } from "../environment";
 import { TOOLS } from "../globalVars";
 import { CoreHookContext } from "../types";
@@ -48,6 +48,7 @@ export function shouldSkipWriteEnvInfo(
   return (
     res.isErr() &&
     (res.error.name === "CancelProvision" ||
+      res.error.name === SolutionError.FailedToUpdateAzureParameters ||
       (res.error.name === "UserCancel" &&
         (method === "provisionResourcesV2" || method === "provisionResourcesV3")))
   );

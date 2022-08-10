@@ -3,6 +3,7 @@
 
 import { hooks } from "@feathersjs/hooks/lib";
 import {
+  ActionContext,
   Bicep,
   CloudResource,
   ContextV3,
@@ -12,16 +13,17 @@ import {
   InputsWithProjectPath,
   ok,
   Platform,
-  ProvisionContextV3,
+  ResourceContextV3,
   Result,
   v3,
 } from "@microsoft/teamsfx-api";
-import { assign, cloneDeep } from "lodash";
+import { assign, cloneDeep, merge } from "lodash";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
 import { format } from "util";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { isVSProject } from "../../common/projectSettingsHelper";
+import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { globalVars } from "../../core/globalVars";
 import { CoreQuestionNames } from "../../core/question";
@@ -54,12 +56,15 @@ import { BotService } from "../resource/botService";
 import { IdentityResource } from "../resource/identity";
 import { generateConfigBiceps, bicepUtils } from "../utils";
 import { getComponent, getComponentByScenario } from "../workflow";
-@Service("teams-bot")
+@Service(ComponentNames.TeamsBot)
 export class TeamsBot {
-  name = "teams-bot";
+  name = ComponentNames.TeamsBot;
   @hooks([
     ActionExecutionMW({
-      errorSource: "bot",
+      enableTelemetry: true,
+      telemetryEventName: TelemetryEvent.AddFeature,
+      telemetryComponentName: ComponentNames.TeamsBot,
+      errorSource: "BT",
       errorHandler: (error) => {
         if (error && !error?.name) {
           error.name = "addBotError";
@@ -70,7 +75,8 @@ export class TeamsBot {
   ])
   async add(
     context: ContextV3,
-    inputs: InputsWithProjectPath
+    inputs: InputsWithProjectPath,
+    actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const projectSettings = context.projectSetting;
     const effects: Effect[] = [];
@@ -86,6 +92,7 @@ export class TeamsBot {
     if (botConfig) {
       return ok(undefined);
     }
+    const addedComponents: string[] = [];
 
     // 1. scaffold bot and add bot config
     {
@@ -97,7 +104,7 @@ export class TeamsBot {
         inputs?.["programming-language"] ||
         context.projectSetting.programmingLanguage ||
         "javascript";
-      const folder = language === "csharp" ? "" : CommonStrings.BOT_WORKING_DIR_NAME;
+      const folder = language === "csharp" ? "." : CommonStrings.BOT_WORKING_DIR_NAME;
       assign(clonedInputs, {
         folder: folder,
         scenarios: scenarios,
@@ -116,6 +123,7 @@ export class TeamsBot {
         folder: folder,
       };
       projectSettings.components.push(botConfig);
+      addedComponents.push(botConfig.name);
       effects.push(Plans.generateSourceCodeAndConfig(ComponentNames.TeamsBot));
     }
 
@@ -143,6 +151,7 @@ export class TeamsBot {
         name: ComponentNames.BotService,
         provision: true,
       });
+      addedComponents.push(ComponentNames.BotService);
       effects.push(Plans.generateBicepAndConfig(ComponentNames.BotService));
     }
 
@@ -162,16 +171,13 @@ export class TeamsBot {
         name: inputs.hosting,
         scenario: Scenarios.Bot,
       });
+      addedComponents.push(inputs.hosting);
       effects.push(Plans.generateBicepAndConfig(inputs.hosting));
     }
 
     // 2.3 identity bicep
     if (!getComponent(projectSettings, ComponentNames.Identity)) {
       const clonedInputs = cloneDeep(inputs);
-      assign(clonedInputs, {
-        componentId: "",
-        scenario: "",
-      });
       const identityComponent = Container.get<IdentityResource>(ComponentNames.Identity);
       const res = await identityComponent.generateBicep(context, clonedInputs);
       if (res.isErr()) return err(res.error);
@@ -180,6 +186,7 @@ export class TeamsBot {
         name: ComponentNames.Identity,
         provision: true,
       });
+      addedComponents.push(ComponentNames.Identity);
       effects.push(Plans.generateBicepAndConfig(ComponentNames.Identity));
     }
     //persist bicep
@@ -211,7 +218,10 @@ export class TeamsBot {
             ? "MessageExtension"
             : "Bot",
       };
-      const clonedInputs = cloneDeep(inputs);
+      const clonedInputs = {
+        ...cloneDeep(inputs),
+        validDomain: "{{state.fx-resource-bot.domain}}", // TODO: replace fx-resource-bot with inputs.hosting after updating state file
+      };
       const appManifest = Container.get<AppManifest>(ComponentNames.AppManifest);
       const res = await appManifest.addCapability(clonedInputs, [manifestCapability]);
       if (res.isErr()) return err(res.error);
@@ -224,12 +234,15 @@ export class TeamsBot {
     const msg =
       inputs.platform === Platform.CLI
         ? getLocalizedString("core.addCapability.addCapabilityNoticeForCli")
-        : getLocalizedString("core.addCapability.addCapabilitiesNoticeForCli");
+        : getLocalizedString("core.addCapability.addCapabilitiesNotice");
     context.userInteraction.showMessage("info", format(msg, "Bot"), false);
+    merge(actionContext?.telemetryProps, {
+      [TelemetryProperty.Components]: JSON.stringify(addedComponents),
+    });
     return ok(undefined);
   }
   async build(
-    context: ProvisionContextV3,
+    context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
     const botCode = Container.get<BotCodeProvider>(ComponentNames.BotCode);

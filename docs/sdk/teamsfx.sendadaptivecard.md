@@ -9,7 +9,7 @@ Send an adaptive card message to a notification target.
 <b>Signature:</b>
 
 ```typescript
-export declare function sendAdaptiveCard(target: NotificationTarget, card: unknown): Promise<void>;
+export declare function sendAdaptiveCard(target: NotificationTarget, card: unknown): Promise<MessageResponse>;
 ```
 
 ## Parameters
@@ -21,7 +21,7 @@ export declare function sendAdaptiveCard(target: NotificationTarget, card: unkno
 
 <b>Returns:</b>
 
-Promise&lt;void&gt;
+Promise&lt;MessageResponse&gt;
 
-A `Promise` representing the asynchronous operation.
+the response of sending adaptive card message.
 

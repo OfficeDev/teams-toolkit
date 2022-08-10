@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { ContextV3, PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
 
 import { CommonConstants, DependentPluginInfo, FunctionPluginInfo } from "../constants";
 import { FxResult } from "../result";
@@ -9,18 +9,24 @@ import { FunctionEvent, TelemetryKey, TelemetryValue } from "../enums";
 import { DepsCheckerEvent } from "../../../../common/deps-checker/constant/telemetry";
 
 export class TelemetryHelper {
-  static ctx?: PluginContext;
+  static ctx?: PluginContext | ContextV3;
 
-  public static setContext(ctx: PluginContext): void {
+  public static setContext(ctx: PluginContext | ContextV3): void {
     this.ctx = ctx;
   }
 
   static fillCommonProperty(properties: { [key: string]: string }): void {
     properties[TelemetryKey.Component] = FunctionPluginInfo.pluginName;
-    properties[TelemetryKey.AppId] =
-      (this.ctx?.envInfo.state
-        .get(DependentPluginInfo.solutionPluginName)
-        ?.get(DependentPluginInfo.remoteTeamsAppId) as string) || CommonConstants.emptyString;
+    if (this.ctx?.envInfo?.state instanceof Map) {
+      properties[TelemetryKey.AppId] =
+        (this.ctx?.envInfo?.state
+          .get(DependentPluginInfo.solutionPluginName)
+          ?.get(DependentPluginInfo.remoteTeamsAppId) as string) || CommonConstants.emptyString;
+    } else {
+      properties[TelemetryKey.AppId] =
+        this.ctx?.envInfo?.state?.solution?.[DependentPluginInfo.remoteTeamsAppId] ||
+        CommonConstants.emptyString;
+    }
   }
 
   static sendStartEvent(

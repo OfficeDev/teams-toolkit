@@ -13,7 +13,12 @@ import {
 } from "botbuilder";
 import { ConnectorClient } from "botframework-connector";
 import * as path from "path";
-import { NotificationTarget, NotificationTargetType, NotificationOptions } from "./interface";
+import {
+  NotificationTarget,
+  NotificationTargetType,
+  NotificationOptions,
+  MessageResponse,
+} from "./interface";
 import { NotificationMiddleware } from "./middleware";
 import { ConversationReferenceStore, LocalFileStorage } from "./storage";
 import * as utils from "./utils";
@@ -23,9 +28,9 @@ import * as utils from "./utils";
  *
  * @param target - the notification target.
  * @param text - the plain text message.
- * @returns A `Promise` representing the asynchronous operation.
+ * @returns the response of sending message.
  */
-export function sendMessage(target: NotificationTarget, text: string): Promise<void> {
+export function sendMessage(target: NotificationTarget, text: string): Promise<MessageResponse> {
   return target.sendMessage(text);
 }
 
@@ -34,9 +39,12 @@ export function sendMessage(target: NotificationTarget, text: string): Promise<v
  *
  * @param target - the notification target.
  * @param card - the adaptive card raw JSON.
- * @returns A `Promise` representing the asynchronous operation.
+ * @returns the response of sending adaptive card message.
  */
-export function sendAdaptiveCard(target: NotificationTarget, card: unknown): Promise<void> {
+export function sendAdaptiveCard(
+  target: NotificationTarget,
+  card: unknown
+): Promise<MessageResponse> {
   return target.sendAdaptiveCard(card);
 }
 
@@ -60,7 +68,7 @@ export class Channel implements NotificationTarget {
   /**
    * Notification target type. For channel it's always "Channel".
    */
-  public readonly type: NotificationTargetType = "Channel";
+  public readonly type: NotificationTargetType = NotificationTargetType.Channel;
 
   /**
    * Constructor.
@@ -80,38 +88,44 @@ export class Channel implements NotificationTarget {
    * Send a plain text message.
    *
    * @param text - the plain text message.
-   * @returns A `Promise` representing the asynchronous operation.
+   * @returns the response of sending message.
    */
-  public sendMessage(text: string): Promise<void> {
-    return this.parent.adapter.continueConversation(
+  public async sendMessage(text: string): Promise<MessageResponse> {
+    const response: MessageResponse = {};
+    await this.parent.adapter.continueConversation(
       this.parent.conversationReference,
       async (context) => {
         const conversation = await this.newConversation(context);
         await this.parent.adapter.continueConversation(conversation, async (ctx: TurnContext) => {
-          await ctx.sendActivity(text);
+          const res = await ctx.sendActivity(text);
+          response.id = res?.id;
         });
       }
     );
+    return response;
   }
 
   /**
    * Send an adaptive card message.
    *
    * @param card - the adaptive card raw JSON.
-   * @returns A `Promise` representing the asynchronous operation.
+   * @returns the response of sending adaptive card message.
    */
-  public async sendAdaptiveCard(card: unknown): Promise<void> {
-    return this.parent.adapter.continueConversation(
+  public async sendAdaptiveCard(card: unknown): Promise<MessageResponse> {
+    const response: MessageResponse = {};
+    await this.parent.adapter.continueConversation(
       this.parent.conversationReference,
       async (context) => {
         const conversation = await this.newConversation(context);
         await this.parent.adapter.continueConversation(conversation, async (ctx: TurnContext) => {
-          await ctx.sendActivity({
+          const res = await ctx.sendActivity({
             attachments: [CardFactory.adaptiveCard(card)],
           });
+          response.id = res?.id;
         });
       }
     );
+    return response;
   }
 
   /**
@@ -146,7 +160,7 @@ export class Member implements NotificationTarget {
   /**
    * Notification target type. For member it's always "Person".
    */
-  public readonly type: NotificationTargetType = "Person";
+  public readonly type: NotificationTargetType = NotificationTargetType.Person;
 
   /**
    * Constructor.
@@ -166,38 +180,44 @@ export class Member implements NotificationTarget {
    * Send a plain text message.
    *
    * @param text - the plain text message.
-   * @returns A `Promise` representing the asynchronous operation.
+   * @returns the response of sending message.
    */
-  public sendMessage(text: string): Promise<void> {
-    return this.parent.adapter.continueConversation(
+  public async sendMessage(text: string): Promise<MessageResponse> {
+    const response: MessageResponse = {};
+    await this.parent.adapter.continueConversation(
       this.parent.conversationReference,
       async (context) => {
         const conversation = await this.newConversation(context);
         await this.parent.adapter.continueConversation(conversation, async (ctx: TurnContext) => {
-          await ctx.sendActivity(text);
+          const res = await ctx.sendActivity(text);
+          response.id = res?.id;
         });
       }
     );
+    return response;
   }
 
   /**
    * Send an adaptive card message.
    *
    * @param card - the adaptive card raw JSON.
-   * @returns A `Promise` representing the asynchronous operation.
+   * @returns the response of sending adaptive card message.
    */
-  public async sendAdaptiveCard(card: unknown): Promise<void> {
-    return this.parent.adapter.continueConversation(
+  public async sendAdaptiveCard(card: unknown): Promise<MessageResponse> {
+    const response: MessageResponse = {};
+    await this.parent.adapter.continueConversation(
       this.parent.conversationReference,
       async (context) => {
         const conversation = await this.newConversation(context);
         await this.parent.adapter.continueConversation(conversation, async (ctx: TurnContext) => {
-          await ctx.sendActivity({
+          const res = await ctx.sendActivity({
             attachments: [CardFactory.adaptiveCard(card)],
           });
+          response.id = res?.id;
         });
       }
     );
+    return response;
   }
 
   /**
@@ -272,26 +292,32 @@ export class TeamsBotInstallation implements NotificationTarget {
    * Send a plain text message.
    *
    * @param text - the plain text message.
-   * @returns A `Promise` representing the asynchronous operation.
+   * @returns the response of sending message.
    */
-  public sendMessage(text: string): Promise<void> {
-    return this.adapter.continueConversation(this.conversationReference, async (context) => {
-      await context.sendActivity(text);
+  public async sendMessage(text: string): Promise<MessageResponse> {
+    const response: MessageResponse = {};
+    await this.adapter.continueConversation(this.conversationReference, async (context) => {
+      const res = await context.sendActivity(text);
+      response.id = res?.id;
     });
+    return response;
   }
 
   /**
    * Send an adaptive card message.
    *
    * @param card - the adaptive card raw JSON.
-   * @returns A `Promise` representing the asynchronous operation.
+   * @returns the response of sending adaptive card message.
    */
-  public sendAdaptiveCard(card: unknown): Promise<void> {
-    return this.adapter.continueConversation(this.conversationReference, async (context) => {
-      await context.sendActivity({
+  public async sendAdaptiveCard(card: unknown): Promise<MessageResponse> {
+    const response: MessageResponse = {};
+    await this.adapter.continueConversation(this.conversationReference, async (context) => {
+      const res = await context.sendActivity({
         attachments: [CardFactory.adaptiveCard(card)],
       });
+      response.id = res?.id;
     });
+    return response;
   }
 
   /**

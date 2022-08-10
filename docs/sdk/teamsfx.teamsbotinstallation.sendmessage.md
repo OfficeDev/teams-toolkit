@@ -9,7 +9,7 @@ Send a plain text message.
 <b>Signature:</b>
 
 ```typescript
-sendMessage(text: string): Promise<void>;
+sendMessage(text: string): Promise<MessageResponse>;
 ```
 
 ## Parameters
@@ -20,7 +20,7 @@ sendMessage(text: string): Promise<void>;
 
 <b>Returns:</b>
 
-Promise&lt;void&gt;
+Promise&lt;MessageResponse&gt;
 
-A `Promise` representing the asynchronous operation.
+the response of sending message.
 

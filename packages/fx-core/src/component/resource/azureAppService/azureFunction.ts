@@ -5,7 +5,7 @@ import {
   FxError,
   InputsWithProjectPath,
   ok,
-  ProvisionContextV3,
+  ResourceContextV3,
   Result,
 } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
@@ -14,7 +14,7 @@ import { AzureAppService } from "./azureAppService";
 @Service("azure-function")
 export class AzureFunctionResource extends AzureAppService {
   readonly name = "azure-function";
-  readonly alias = "FT";
+  readonly alias = "Functions";
   readonly displayName = "Azure Functions";
   readonly bicepModuleName = "azureFunction";
   outputs = FunctionOutputs;
@@ -25,7 +25,7 @@ export class AzureFunctionResource extends AzureAppService {
     },
   };
   async configure(
-    context: ProvisionContextV3,
+    context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
     return ok(undefined);

@@ -16,6 +16,7 @@ import { Conversations } from "botframework-connector/lib/connectorApi/connector
 import { assert, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import * as sinon from "sinon";
+import { NotificationTargetType } from "../../../../src/conversation/interface";
 import { NotificationMiddleware } from "../../../../src/conversation/middleware";
 import {
   Channel,
@@ -47,14 +48,16 @@ describe("Notification Tests - Node", () => {
     const sandbox = sinon.createSandbox();
     let botInstallation: TeamsBotInstallation;
     let content: any;
+    let activityResponse: any;
 
     beforeEach(() => {
       content = "";
+      activityResponse = {};
       const stubContext = sandbox.createStubInstance(TurnContext);
       stubContext.sendActivity.callsFake((activityOrText, speak, inputHint) => {
         return new Promise((resolve) => {
           content = activityOrText;
-          resolve(undefined);
+          resolve(activityResponse);
         });
       });
       const stubAdapter = sandbox.createStubInstance(BotFrameworkAdapter);
@@ -82,8 +85,15 @@ describe("Notification Tests - Node", () => {
     it("sendMessage should send correct text", async () => {
       const channel = new Channel(botInstallation, { id: "1" } as ChannelInfo);
       assert.strictEqual(channel.type, "Channel");
-      await channel.sendMessage("text");
+      activityResponse = {
+        id: "message-x",
+      };
+      let res = await channel.sendMessage("text");
       assert.strictEqual(content, "text");
+      assert.deepStrictEqual(res, { id: "message-x" });
+      activityResponse = undefined;
+      res = await channel.sendMessage("text");
+      assert.deepStrictEqual(res, { id: undefined });
     });
 
     it("sendAdaptiveCard should send correct card", async () => {
@@ -92,7 +102,10 @@ describe("Notification Tests - Node", () => {
       });
       const channel = new Channel(botInstallation, { id: "1" } as ChannelInfo);
       assert.strictEqual(channel.type, "Channel");
-      await channel.sendAdaptiveCard({ foo: "bar" });
+      activityResponse = {
+        id: "message-x",
+      };
+      let res = await channel.sendAdaptiveCard({ foo: "bar" });
       assert.deepStrictEqual(content, {
         attachments: [
           {
@@ -102,6 +115,10 @@ describe("Notification Tests - Node", () => {
           },
         ],
       });
+      assert.deepStrictEqual(res, { id: "message-x" });
+      activityResponse = undefined;
+      res = await channel.sendAdaptiveCard({ foo: "bar" });
+      assert.deepStrictEqual(res, { id: undefined });
     });
   });
 
@@ -109,9 +126,11 @@ describe("Notification Tests - Node", () => {
     const sandbox = sinon.createSandbox();
     let botInstallation: TeamsBotInstallation;
     let content: any;
+    let activityResponse: any;
 
     beforeEach(() => {
       content = "";
+      activityResponse = {};
       const stubConversations = sandbox.createStubInstance(Conversations);
       stubConversations.createConversation.resolves({
         id: "1",
@@ -124,7 +143,7 @@ describe("Notification Tests - Node", () => {
       stubContext.sendActivity.callsFake((activityOrText, speak, inputHint) => {
         return new Promise((resolve) => {
           content = activityOrText;
-          resolve(undefined);
+          resolve(activityResponse);
         });
       });
       sandbox.stub(TurnContext.prototype, "turnState").get(() => stubTurnState);
@@ -161,8 +180,15 @@ describe("Notification Tests - Node", () => {
     it("sendMessage should send correct text", async () => {
       const member = new Member(botInstallation, { id: "1" } as TeamsChannelAccount);
       assert.strictEqual(member.type, "Person");
-      await member.sendMessage("text");
+      activityResponse = {
+        id: "message-y",
+      };
+      let res = await member.sendMessage("text");
       assert.strictEqual(content, "text");
+      assert.deepStrictEqual(res, { id: "message-y" });
+      activityResponse = undefined;
+      res = await member.sendMessage("text");
+      assert.deepStrictEqual(res, { id: undefined });
     });
 
     it("sendAdaptiveCard should send correct card", async () => {
@@ -171,7 +197,10 @@ describe("Notification Tests - Node", () => {
       });
       const member = new Member(botInstallation, { id: "1" } as TeamsChannelAccount);
       assert.strictEqual(member.type, "Person");
-      await member.sendAdaptiveCard({ foo: "bar" });
+      activityResponse = {
+        id: "message-y",
+      };
+      let res = await member.sendAdaptiveCard({ foo: "bar" });
       assert.deepStrictEqual(content, {
         attachments: [
           {
@@ -181,6 +210,10 @@ describe("Notification Tests - Node", () => {
           },
         ],
       });
+      assert.deepStrictEqual(res, { id: "message-y" });
+      activityResponse = undefined;
+      res = await member.sendAdaptiveCard({ foo: "bar" });
+      assert.deepStrictEqual(res, { id: undefined });
     });
   });
 
@@ -189,9 +222,11 @@ describe("Notification Tests - Node", () => {
     let adapter: BotFrameworkAdapter;
     let context: TurnContext;
     let content: any;
+    let activityResponse: any;
 
     beforeEach(() => {
       content = "";
+      activityResponse = {};
       const stubAdapter = sandbox.createStubInstance(BotFrameworkAdapter);
       (
         stubAdapter.continueConversation as unknown as sinon.SinonStub<
@@ -206,7 +241,7 @@ describe("Notification Tests - Node", () => {
       stubContext.sendActivity.callsFake((activityOrText, speak, inputHint) => {
         return new Promise((resolve) => {
           content = activityOrText;
-          resolve(undefined);
+          resolve(activityResponse);
         });
       });
       context = stubContext;
@@ -223,9 +258,17 @@ describe("Notification Tests - Node", () => {
         },
       };
       const installation = new TeamsBotInstallation(adapter, conversationRef as any);
-      assert.strictEqual(installation.type, "Channel");
-      await installation.sendMessage("text");
+      assert.strictEqual(installation.type, NotificationTargetType.Channel);
+      assert.isTrue(installation.type === "Channel");
+      activityResponse = {
+        id: "message-a",
+      };
+      let res = await installation.sendMessage("text");
       assert.strictEqual(content, "text");
+      assert.deepStrictEqual(res, { id: "message-a" });
+      activityResponse = undefined;
+      res = await installation.sendMessage("text");
+      assert.deepStrictEqual(res, { id: undefined });
     });
 
     it("sendAdaptiveCard should send correct card", async () => {
@@ -238,8 +281,12 @@ describe("Notification Tests - Node", () => {
         },
       };
       const installation = new TeamsBotInstallation(adapter, conversationRef as any);
-      assert.strictEqual(installation.type, "Channel");
-      await installation.sendAdaptiveCard({ foo: "bar" });
+      assert.strictEqual(installation.type, NotificationTargetType.Channel);
+      assert.isTrue(installation.type === "Channel");
+      activityResponse = {
+        id: "message-a",
+      };
+      let res = await installation.sendAdaptiveCard({ foo: "bar" });
       assert.deepStrictEqual(content, {
         attachments: [
           {
@@ -249,6 +296,10 @@ describe("Notification Tests - Node", () => {
           },
         ],
       });
+      assert.deepStrictEqual(res, { id: "message-a" });
+      activityResponse = undefined;
+      res = await installation.sendAdaptiveCard({ foo: "bar" });
+      assert.deepStrictEqual(res, { id: undefined });
     });
 
     it("channels should return correct channels", async () => {
@@ -260,7 +311,8 @@ describe("Notification Tests - Node", () => {
         },
       };
       const installation = new TeamsBotInstallation(adapter, conversationRef as any);
-      assert.strictEqual(installation.type, "Channel");
+      assert.strictEqual(installation.type, NotificationTargetType.Channel);
+      assert.isTrue(installation.type === "Channel");
       const channels = await installation.channels();
       assert.strictEqual(channels.length, 2);
     });
@@ -273,7 +325,8 @@ describe("Notification Tests - Node", () => {
         },
       };
       const installation = new TeamsBotInstallation(adapter, conversationRef as any);
-      assert.strictEqual(installation.type, "Channel");
+      assert.strictEqual(installation.type, NotificationTargetType.Channel);
+      assert.isTrue(installation.type === "Channel");
       const channels = await installation.channels();
       assert.strictEqual(channels.length, 0);
     });
@@ -289,7 +342,8 @@ describe("Notification Tests - Node", () => {
         },
       };
       const installation = new TeamsBotInstallation(adapter, conversationRef as any);
-      assert.strictEqual(installation.type, "Channel");
+      assert.strictEqual(installation.type, NotificationTargetType.Channel);
+      assert.isTrue(installation.type === "Channel");
       const members = await installation.members();
       assert.strictEqual(members.length, 2);
     });

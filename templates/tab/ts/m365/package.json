@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "private": true,
     "dependencies": {
-        "@fluentui/react-northstar": "^0.60.1",
+        "@fluentui/react-northstar": "^0.62.0",
         "@microsoft/mgt-element": "2.4.1-next.teamsfx.8d56785",
         "@microsoft/mgt-react": "2.4.1-next.teamsfx.8d56785",
         "@microsoft/mgt-teamsfx-provider": "2.4.1-next.teamsfx.8d56785",
@@ -11,6 +11,7 @@
         "@microsoft/teams-js": "^2.0.0",
         "@microsoft/teamsfx": "^2.0.0-beta.0",
         "axios": "^0.21.1",
+        "msteams-react-base-component": "^4.0.1",
         "react": "^16.14.0",
         "react-dom": "^16.14.0",
         "react-router-dom": "^5.1.2",

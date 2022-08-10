@@ -12,13 +12,13 @@ output azureWebApp{{scenario}}Output object = {
   teamsFxPluginId: '{{componentId}}'
   skuName: azureWebApp{{scenario}}Provision.outputs.skuName
   siteName: azureWebApp{{scenario}}Provision.outputs.siteName
-  validDomain: azureWebApp{{scenario}}Provision.outputs.validDomain
+  domain: azureWebApp{{scenario}}Provision.outputs.domain
   appServicePlanName: azureWebApp{{scenario}}Provision.outputs.appServicePlanName
   resourceId: azureWebApp{{scenario}}Provision.outputs.resourceId
   siteEndpoint: azureWebApp{{scenario}}Provision.outputs.siteEndpoint
 }
 
 output {{scenario}}Output object = {
-  domain: azureWebApp{{scenario}}Provision.outputs.validDomain
+  domain: azureWebApp{{scenario}}Provision.outputs.domain
   endpoint: azureWebApp{{scenario}}Provision.outputs.siteEndpoint
 }

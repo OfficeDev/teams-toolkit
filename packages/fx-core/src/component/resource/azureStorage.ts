@@ -8,9 +8,8 @@ import {
   FxError,
   InputsWithProjectPath,
   ok,
-  ProvisionContextV3,
+  ResourceContextV3,
   Result,
-  UserError,
   v3,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
@@ -32,6 +31,8 @@ import { ProgressMessages, ProgressTitles } from "../messages";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { CheckThrowSomethingMissing } from "../error";
+
+const ErrorSource = "Storage";
 @Service("azure-storage")
 export class AzureStorageResource extends AzureResource {
   readonly name = "azure-storage";
@@ -40,10 +41,7 @@ export class AzureStorageResource extends AzureResource {
   readonly finalOutputKeys = ["domain", "endpoint", "storageResourceId", "indexPath"];
   @hooks([
     ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryComponentName: FrontendPluginInfo.PluginName,
-      telemetryEventName: "deploy",
-      errorSource: FrontendPluginInfo.ShortName,
+      errorSource: ErrorSource,
       errorIssueLink: FrontendPluginInfo.IssueLink,
       errorHelpLink: FrontendPluginInfo.HelpLink,
       enableProgressBar: true,
@@ -52,11 +50,11 @@ export class AzureStorageResource extends AzureResource {
     }),
   ])
   async configure(
-    context: ProvisionContextV3,
+    context: ResourceContextV3,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    const ctx = context as ProvisionContextV3;
+    const ctx = context as ResourceContextV3;
     if (context.envInfo.envName !== "local") {
       const frontendConfigRes = await this.buildFrontendConfig(
         ctx.envInfo,
@@ -66,20 +64,17 @@ export class AzureStorageResource extends AzureResource {
       if (frontendConfigRes.isErr()) {
         return err(frontendConfigRes.error);
       }
-      actionContext?.progressBar?.next(ProgressMessages.enableStaticWebsite);
+      await actionContext?.progressBar?.next(ProgressMessages.enableStaticWebsite);
       const client = new AzureStorageClient(frontendConfigRes.value);
       await client.enableStaticWebsite();
     } else {
-      actionContext?.progressBar?.next("");
+      await actionContext?.progressBar?.next("");
     }
     return ok(undefined);
   }
   @hooks([
     ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryComponentName: FrontendPluginInfo.PluginName,
-      telemetryEventName: "deploy",
-      errorSource: FrontendPluginInfo.ShortName,
+      errorSource: ErrorSource,
       errorIssueLink: FrontendPluginInfo.IssueLink,
       errorHelpLink: FrontendPluginInfo.HelpLink,
       enableProgressBar: true,
@@ -88,11 +83,11 @@ export class AzureStorageResource extends AzureResource {
     }),
   ])
   async deploy(
-    context: ProvisionContextV3,
+    context: ResourceContextV3,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    const ctx = context as ProvisionContextV3;
+    const ctx = context as ResourceContextV3;
     const deployDir = path.resolve(inputs.projectPath, inputs.folder);
     const frontendConfigRes = await this.buildFrontendConfig(
       ctx.envInfo,
@@ -124,7 +119,7 @@ export class AzureStorageResource extends AzureResource {
     }
     const storage = envInfo.state[scenario];
     const resourceId = CheckThrowSomethingMissing<string>(
-      this.name,
+      ErrorSource,
       "storageResourceId",
       storage?.storageResourceId
     );

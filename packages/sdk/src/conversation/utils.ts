@@ -21,11 +21,11 @@ export function getTargetType(
 ): NotificationTargetType | undefined {
   const conversationType = conversationReference.conversation?.conversationType;
   if (conversationType === "personal") {
-    return "Person";
+    return NotificationTargetType.Person;
   } else if (conversationType === "groupChat") {
-    return "Group";
+    return NotificationTargetType.Group;
   } else if (conversationType === "channel") {
-    return "Channel";
+    return NotificationTargetType.Channel;
   } else {
     return undefined;
   }

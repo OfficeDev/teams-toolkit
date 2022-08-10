@@ -9,10 +9,17 @@ import {
   FxError,
   TelemetryReporter,
   UserError,
+  v3,
+  Result,
+  err,
+  ok,
 } from "@microsoft/teamsfx-api";
 import { SubscriptionClient } from "@azure/arm-subscriptions";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { SolutionTelemetryComponentName, SolutionTelemetryProperty } from "../constants";
+import { BuiltInFeaturePluginNames } from "../v3/constants";
+import { ComponentNames } from "../../../../component/constants";
+import { updateAzureParameters } from "../arm";
 
 /**
  * A helper function to construct a plugin's context.
@@ -86,4 +93,41 @@ export function sendErrorTelemetryThenReturnError(
 
   reporter?.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
   return error;
+}
+
+export function hasBotServiceCreated(envInfo: v3.EnvInfoV3): boolean {
+  if (!envInfo || !envInfo.state) {
+    return false;
+  }
+
+  return (
+    (!!envInfo.state[BuiltInFeaturePluginNames.bot] &&
+      !!envInfo.state[BuiltInFeaturePluginNames.bot]["resourceId"]) ||
+    (!!envInfo.state[ComponentNames.TeamsBot] &&
+      !!envInfo.state[ComponentNames.TeamsBot]["resourceId"])
+  );
+}
+
+export async function handleConfigFilesWhenSwitchAccount(
+  envInfo: v3.EnvInfoV3,
+  appName: string,
+  projectPath: string,
+  hasSwitchedM365Tenant: boolean,
+  hasSwitchedSubscription: boolean,
+  hasBotServiceCreatedBefore: boolean
+): Promise<Result<undefined, FxError>> {
+  // TODO: backup old files.
+  const updateAzureParametersRes = await updateAzureParameters(
+    projectPath,
+    appName,
+    envInfo.envName,
+    hasSwitchedM365Tenant,
+    hasSwitchedSubscription,
+    hasBotServiceCreatedBefore
+  );
+  if (updateAzureParametersRes.isErr()) {
+    return err(updateAzureParametersRes.error);
+  }
+
+  return ok(undefined);
 }

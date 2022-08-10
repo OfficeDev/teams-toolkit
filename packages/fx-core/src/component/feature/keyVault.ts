@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { hooks } from "@feathersjs/hooks/lib";
 import {
   ContextV3,
   Effect,
@@ -17,6 +18,7 @@ import { BicepComponent } from "../bicep";
 import "../connection/azureWebAppConfig";
 import { ComponentNames } from "../constants";
 import { Plans } from "../messages";
+import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import "../resource/azureSql";
 import "../resource/identity";
 import { KeyVaultResource } from "../resource/keyVault";
@@ -33,6 +35,14 @@ export class KeyVaultFeature {
    * 3. re-generate resources that connect to key-vault
    * 4. persist bicep
    */
+  @hooks([
+    ActionExecutionMW({
+      errorSource: "kv",
+      enableTelemetry: true,
+      telemetryComponentName: "fx-resource-key-vault",
+      telemetryEventName: "generate-arm-templates",
+    }),
+  ])
   async add(
     context: ContextV3,
     inputs: InputsWithProjectPath

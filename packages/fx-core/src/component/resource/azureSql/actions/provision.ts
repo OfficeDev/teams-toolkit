@@ -6,14 +6,13 @@ import {
   ContextV3,
   InputsWithProjectPath,
   ok,
-  FunctionAction,
-  ProvisionContextV3,
+  ResourceContextV3,
   Effect,
   FxError,
   Result,
   traverse,
 } from "@microsoft/teamsfx-api";
-import { ComponentNames, ActionNames, ActionTypeFunction } from "../../../constants";
+import { ComponentNames } from "../../../constants";
 import { LoggerMW, ActionLogger } from "../../../middleware/logger";
 import { RunWithCatchErrorMW, ActionErrorHandler } from "../../../middleware/runWithCatchError";
 import { TelemetryMW, ActionTelemetryImplement } from "../../../middleware/telemetry";
@@ -47,7 +46,7 @@ export class ProvisionActionImplement {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<Effect[], FxError>> {
-    const ctx = context as ProvisionContextV3;
+    const ctx = context as ResourceContextV3;
     const state = (ctx.envInfo.state[ComponentNames.AzureSQL] ??= {});
     removeDatabases(state);
     let shouldAsk;
@@ -76,19 +75,5 @@ export class ProvisionActionImplement {
       state.adminPassword = inputs[Constants.questionKey.adminPassword];
     }
     return ok([{ type: "service", name: "azure", remarks: "configure azure-sql" }]);
-  }
-
-  static get(): FunctionAction {
-    return {
-      name: `${ComponentNames.AzureSQL}.${ActionNames.provision}`,
-      type: ActionTypeFunction,
-      question: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok(undefined);
-      },
-      plan: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok(["collect user inputs for sql account"]);
-      },
-      execute: ProvisionActionImplement.execute,
-    };
   }
 }

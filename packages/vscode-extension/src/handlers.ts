@@ -111,7 +111,7 @@ import { getTeamsAppInternalId, showInstallAppInTeamsMessage } from "./debug/tea
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { ExtensionErrors, ExtensionSource } from "./error";
 import * as exp from "./exp/index";
-import { TreatmentVariables } from "./exp/treatmentVariables";
+import { TreatmentVariableValue } from "./exp/treatmentVariables";
 import { VS_CODE_UI } from "./extension";
 import * as globalVariables from "./globalVariables";
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
@@ -123,6 +123,7 @@ import {
   TelemetrySuccess,
   TelemetryTriggerFrom,
   TelemetryUpdateAppReason,
+  VSCodeWindowChoice,
 } from "./telemetry/extTelemetryEvents";
 import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewProvider";
 import { AzureAccountNode } from "./treeview/account/azureNode";
@@ -452,19 +453,54 @@ export async function initProjectHandler(args?: any[]): Promise<Result<any, FxEr
   return result;
 }
 
-async function openFolder(
+export async function openFolder(
   folderPath: Uri,
   showLocalDebugMessage: boolean,
   showLocalPreviewMessage: boolean,
   args?: any[]
 ) {
   await updateAutoOpenGlobalKey(showLocalDebugMessage, showLocalPreviewMessage, folderPath, args);
-  await ExtTelemetry.dispose();
-  // after calling dispose(), let render process to wait for a while instead of directly call "open folder"
-  // otherwise, the flush operation in dispose() will be interrupted due to shut down the render process.
-  setTimeout(() => {
-    commands.executeCommand("vscode.openFolder", folderPath);
-  }, 2000);
+  if (!TreatmentVariableValue.openFolderInNewWindow) {
+    await ExtTelemetry.dispose();
+    // after calling dispose(), let render process to wait for a while instead of directly call "open folder"
+    // otherwise, the flush operation in dispose() will be interrupted due to shut down the render process.
+    setTimeout(() => {
+      commands.executeCommand("vscode.openFolder", folderPath);
+    }, 2000);
+  } else {
+    const autoOpenTimeout = setTimeout(() => {
+      commands.executeCommand("vscode.openFolder", folderPath, true);
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenNewProject, {
+        [TelemetryProperty.VscWindow]: VSCodeWindowChoice.NewWindowByDefault,
+      });
+    }, 5000);
+    const selection = await VS_CODE_UI.showMessage(
+      "info",
+      localize("teamstoolkit.handlers.openProject.title"),
+      false,
+      localize("teamstoolkit.handlers.openInNewWindow"),
+      localize("teamstoolkit.handlers.openInCurrentWindow")
+    );
+    if (selection.isOk()) {
+      clearTimeout(autoOpenTimeout);
+      const openInNewWindow = selection.value === localize("teamstoolkit.handlers.openInNewWindow");
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenNewProject, {
+        [TelemetryProperty.VscWindow]: openInNewWindow
+          ? VSCodeWindowChoice.NewWindow
+          : VSCodeWindowChoice.CurrentWindow,
+      });
+      if (openInNewWindow) {
+        commands.executeCommand("vscode.openFolder", folderPath, true);
+      } else {
+        await ExtTelemetry.dispose();
+        // after calling dispose(), let render process to wait for a while instead of directly call "open folder"
+        // otherwise, the flush operation in dispose() will be interrupted due to shut down the render process.
+        setTimeout(() => {
+          commands.executeCommand("vscode.openFolder", folderPath);
+        }, 2000);
+      }
+    }
+  }
 }
 
 export async function updateAutoOpenGlobalKey(
@@ -473,9 +509,13 @@ export async function updateAutoOpenGlobalKey(
   projectUri: Uri,
   args?: any[]
 ): Promise<void> {
-  if (isTriggerFromWalkThrough(args) && !(await getIsFromSample(projectUri.fsPath))) {
+  const isSample = await getIsFromSample(projectUri.fsPath);
+  if (isTriggerFromWalkThrough(args) && !isSample) {
     await globalStateUpdate(GlobalKey.OpenWalkThrough, true);
     await globalStateUpdate(GlobalKey.OpenReadMe, "");
+  } else if (isSample) {
+    await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
+    await globalStateUpdate(GlobalKey.OpenSampleReadMe, true);
   } else {
     await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
     await globalStateUpdate(GlobalKey.OpenReadMe, projectUri.fsPath);
@@ -490,7 +530,9 @@ export async function updateAutoOpenGlobalKey(
   }
 }
 
-export async function getNewProjectPathHandler(args?: any[]): Promise<Result<any, FxError>> {
+export async function createProjectFromWalkthroughHandler(
+  args?: any[]
+): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.create);
   return result;

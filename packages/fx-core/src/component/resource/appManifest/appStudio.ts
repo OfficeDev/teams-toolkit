@@ -350,7 +350,7 @@ export async function validateManifest(
   return ok([]);
 }
 
-async function getManifest(
+export async function getManifest(
   projectPath: string,
   envInfo: v3.EnvInfoV3,
   telemetryProps?: Record<string, string>

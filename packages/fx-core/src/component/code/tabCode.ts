@@ -7,7 +7,7 @@ import {
   FxError,
   InputsWithProjectPath,
   ok,
-  ProvisionContextV3,
+  ResourceContextV3,
   Result,
   TelemetryReporter,
 } from "@microsoft/teamsfx-api";
@@ -133,15 +133,11 @@ export class TabCodeProvider {
   }
   @hooks([
     ActionExecutionMW({
-      componentName: "tab-code",
-      enableTelemetry: true,
-      telemetryComponentName: FrontendPluginInfo.PluginName,
-      telemetryEventName: "scaffold",
       errorSource: "tab",
     }),
   ])
   async configure(
-    context: ProvisionContextV3,
+    context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
     const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
@@ -157,9 +153,6 @@ export class TabCodeProvider {
       enableProgressBar: true,
       progressTitle: ProgressTitles.buildingTab,
       progressSteps: 1,
-      enableTelemetry: true,
-      telemetryComponentName: "fx-resource-frontend",
-      telemetryEventName: "build",
       errorSource: "tab",
     }),
   ])
@@ -168,11 +161,11 @@ export class TabCodeProvider {
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    const ctx = context as ProvisionContextV3;
+    const ctx = context as ResourceContextV3;
     const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
     if (!teamsTab) return ok(undefined);
     if (teamsTab.folder == undefined) throw new BadComponent("tab", this.name, "folder");
-    actionContext?.progressBar?.next(ProgressMessages.buildingTab);
+    await actionContext?.progressBar?.next(ProgressMessages.buildingTab);
     const tabPath = path.resolve(inputs.projectPath, teamsTab.folder);
     const artifactFolder = isVSProject(context.projectSetting)
       ? await this.doBlazorBuild(tabPath)

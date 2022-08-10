@@ -60,7 +60,8 @@ describe("DebugComponent", () => {
           },
         },
       };
-      const result = await setupLocalEnvironment(context, inputs, envInfo);
+      context.envInfo = envInfo;
+      const result = await setupLocalEnvironment(context, inputs);
       chai.assert.isTrue(result.isOk());
       console.log(envInfo.state);
     });
@@ -114,7 +115,8 @@ describe("DebugComponent", () => {
           },
         },
       };
-      const result = await configLocalEnvironment(context, inputs, envInfo);
+      context.envInfo = envInfo;
+      const result = await configLocalEnvironment(context, inputs);
       chai.assert.isTrue(result.isOk());
     });
   });

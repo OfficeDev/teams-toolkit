@@ -15,7 +15,7 @@
     ".prettierrc.js",
     ".mocharc.js"
   ],
-  "reporter": ["html", "text", "json-summary", "cobertura", "lcov"],
+  "reporter": ["html", "text", "json-summary", "lcov"],
   "check-coverage": true,
   "lines": 80
 }

@@ -124,6 +124,14 @@ class EnvironmentManager {
           short: appName,
           full: `Full name for ${appName}`,
         },
+        description: {
+          short: `Short description of ${appName}`,
+          full: `Full description of ${appName}`,
+        },
+        icons: {
+          color: "resources/color.png",
+          outline: "resources/outline.png",
+        },
       },
     };
 
@@ -511,6 +519,14 @@ export function newEnvInfo(
         appName: {
           short: "teamsfx_app",
         },
+        description: {
+          short: `Short description of teamsfx_app`,
+          full: `Full description of teamsfx_app`,
+        },
+        icons: {
+          color: "resources/color.png",
+          outline: "resources/outline.png",
+        },
       },
     },
     state: state ?? new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]),
@@ -528,6 +544,14 @@ export function newEnvInfoV3(
       manifest: {
         appName: {
           short: "teamsfx_app",
+        },
+        description: {
+          short: `Short description of teamsfx_app`,
+          full: `Full description of teamsfx_app`,
+        },
+        icons: {
+          color: "resources/color.png",
+          outline: "resources/outline.png",
         },
       },
     },

@@ -1124,6 +1124,50 @@ describe("V2 implementation", () => {
       expect(readmeExists).to.be.true;
     });
 
+    it("happy path: vs", async () => {
+      const projectSettings: ProjectSettings = {
+        appName: "my app",
+        projectId: uuid.v4(),
+        programmingLanguage: "csharp",
+        solutionSettings: {
+          hostType: HostTypeOptionAzure.id,
+          name: "test",
+          version: "1.0",
+          activeResourcePlugins: [appStudioPlugin.name, frontendPluginV2.name],
+          capabilities: [TabOptionItem.id],
+          azureResources: [],
+        },
+      };
+      const mockedCtx = new MockedV2Context(projectSettings);
+      const mockedInputs: Inputs = {
+        platform: Platform.VS,
+        projectPath: testFolder,
+      };
+      const result = await executeUserTask(
+        mockedCtx,
+        mockedInputs,
+        { namespace: "solution", method: "addSso" },
+        {},
+        { envName: "default", config: {}, state: {} },
+        mockedProvider
+      );
+
+      expect(result.isOk()).to.be.true;
+      expect(
+        (
+          mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings
+        ).activeResourcePlugins.includes(aadPluginV2.name)
+      ).to.be.true;
+      expect(
+        (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).capabilities.includes(
+          TabSsoItem.id
+        )
+      ).to.be.true;
+      const readmePath = path.join(testFolder, "Auth", "tab", "README.txt");
+      const readmeExists = await fs.pathExists(readmePath);
+      expect(readmeExists).to.be.true;
+    });
+
     it("happy path: bot", async () => {
       const projectSettings: ProjectSettings = {
         appName: "my app",

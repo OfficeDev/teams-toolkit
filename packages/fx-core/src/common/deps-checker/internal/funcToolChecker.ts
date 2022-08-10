@@ -101,7 +101,7 @@ export class FuncToolChecker implements DepsChecker {
 
     const error = await this.checkGlobalFuncAndNode(installationInfo.globalFuncVersion);
     if (error) {
-      return await this.getDepsInfo(false, false, error);
+      installationInfo.error = error;
     }
 
     return installationInfo;

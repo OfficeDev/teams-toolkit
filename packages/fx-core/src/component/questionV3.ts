@@ -59,6 +59,7 @@ import {
   CommandAndResponseOptionItem,
   DeployPluginSelectQuestion,
   HostTypeOptionAzure,
+  HostTypeOptionSPFx,
   MessageExtensionItem,
   MessageExtensionNewUIItem,
   NotificationOptionItem,
@@ -66,13 +67,14 @@ import {
   TabFeatureIds,
   TabNewUIOptionItem,
   TabNonSsoItem,
+  TabSPFxNewUIItem,
 } from "../plugins/solution/fx-solution/question";
 import { getPluginCLIName } from "../plugins/solution/fx-solution/v2/getQuestions";
 import { checkWetherProvisionSucceeded } from "../plugins/solution/fx-solution/v2/utils";
 import { NoCapabilityFoundError } from "../core/error";
 import { ProgrammingLanguageQuestion } from "../core/question";
 import { createContextV3 } from "./utils";
-import { isCLIDotNetEnabled } from "../common/featureFlags";
+import { isCLIDotNetEnabled, isSPFxMultiTabEnabled } from "../common/featureFlags";
 import { Runtime } from "../plugins/resource/bot/v2/enum";
 import { getPlatformRuntime } from "../plugins/resource/bot/v2/mapping";
 import { buildQuestionNode } from "./resource/azureSql/questions";
@@ -81,6 +83,10 @@ import { ApiConnectorImpl } from "../plugins/resource/apiconnector/plugin";
 import { addCicdQuestion } from "./feature/cicd";
 import { ApimPluginV3 } from "../plugins/resource/apim/v3";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
+import {
+  versionCheckQuestion,
+  webpartNameQuestion,
+} from "../plugins/resource/spfx/utils/questions";
 
 export async function getQuestionsForProvisionV3(
   context: v2.Context,
@@ -266,6 +272,11 @@ export async function getQuestionsForAddFeatureV3(
     }
     // function can always be added
     options.push(AzureResourceFunctionNewUI);
+  } else if (
+    isSPFxMultiTabEnabled() &&
+    ctx.projectSetting.solutionSettings?.hostType === HostTypeOptionSPFx.id
+  ) {
+    options.push(TabSPFxNewUIItem);
   }
   const isCicdAddable = await canAddCICDWorkflows(inputs, ctx);
   if (isCicdAddable) {
@@ -279,6 +290,11 @@ export async function getQuestionsForAddFeatureV3(
   if (triggerNodeRes.isErr()) return err(triggerNodeRes.error);
   if (triggerNodeRes.value) {
     addFeatureNode.addChild(triggerNodeRes.value);
+  }
+  const addSPFxNodeRes = getAddSPFxQuestionNode();
+  if (addSPFxNodeRes.isErr()) return err(addSPFxNodeRes.error);
+  if (addSPFxNodeRes.value) {
+    addFeatureNode.addChild(addSPFxNodeRes.value);
   }
   if (!ctx.projectSetting.programmingLanguage) {
     // Language
@@ -440,4 +456,18 @@ export async function getNotificationTriggerQuestionNode(
   }
   res.condition = showNotificationTriggerCondition;
   return ok(res);
+}
+
+export function getAddSPFxQuestionNode(): Result<QTreeNode | undefined, FxError> {
+  const spfx_add_feature = new QTreeNode({
+    type: "group",
+  });
+  spfx_add_feature.condition = { equals: TabSPFxNewUIItem.id };
+
+  const spfx_version_check = new QTreeNode(versionCheckQuestion);
+  spfx_add_feature.addChild(spfx_version_check);
+
+  const spfx_webpart_name = new QTreeNode(webpartNameQuestion);
+  spfx_version_check.addChild(spfx_webpart_name);
+  return ok(spfx_add_feature);
 }

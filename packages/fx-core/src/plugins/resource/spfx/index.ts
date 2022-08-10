@@ -4,6 +4,7 @@
 import {
   AzureSolutionSettings,
   err,
+  Func,
   FxError,
   ok,
   Plugin,
@@ -17,7 +18,7 @@ import { Service } from "typedi";
 import { HostTypeOptionSPFx } from "../../solution/fx-solution/question";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { SPFxPluginImpl } from "./plugin";
-import { TelemetryEvent } from "./utils/constants";
+import { TelemetryEvent, UserTasks } from "./utils/constants";
 import { ProgressHelper } from "./utils/progress-helper";
 import {
   frameworkQuestion,
@@ -58,6 +59,25 @@ export class SpfxPlugin implements Plugin {
     }
 
     return ok(spfx_frontend_host);
+  }
+
+  async getQuestionsForUserTask(
+    func: Func,
+    ctx: PluginContext
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    if (func.method === UserTasks.AddFeature) {
+      const spfx_add_feature = new QTreeNode({
+        type: "group",
+      });
+
+      const spfx_version_check = new QTreeNode(versionCheckQuestion);
+      spfx_add_feature.addChild(spfx_version_check);
+
+      const spfx_webpart_name = new QTreeNode(webpartNameQuestion);
+      spfx_version_check.addChild(spfx_webpart_name);
+      return ok(spfx_add_feature);
+    }
+    return ok(undefined);
   }
 
   public async postScaffold(ctx: PluginContext): Promise<Result<any, FxError>> {

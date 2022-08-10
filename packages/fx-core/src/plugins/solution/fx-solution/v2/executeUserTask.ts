@@ -33,6 +33,7 @@ import {
   canAddSso,
   isAADEnabled,
   isAadManifestEnabled,
+  isSPFxMultiTabEnabled,
 } from "../../../../common";
 import { ResourcePlugins } from "../../../../common/constants";
 import { isExistingTabApp, isVSProject } from "../../../../common/projectSettingsHelper";
@@ -217,7 +218,7 @@ export function canAddCapability(
   settings: AzureSolutionSettings | undefined,
   telemetryReporter: TelemetryReporter
 ): Result<Void, FxError> {
-  if (settings && !(settings.hostType === HostTypeOptionAzure.id)) {
+  if (settings && !(settings.hostType === HostTypeOptionAzure.id) && !isSPFxMultiTabEnabled()) {
     const e = new UserError(
       SolutionSource,
       SolutionError.AddCapabilityNotSupport,

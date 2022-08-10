@@ -7,7 +7,7 @@
     "src/constant.ts",
     "src/client.ts"
   ],
-  "reporter": ["text", "html", "json-summary", "cobertura", "lcov"],
+  "reporter": ["text", "html", "json-summary", "lcov"],
   "check-coverage": true,
   "lines": 94
 }

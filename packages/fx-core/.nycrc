@@ -31,7 +31,6 @@
     "text",
     "html",
     "json-summary",
-    "cobertura",
     "lcov"
   ],
   "check-coverage": true,

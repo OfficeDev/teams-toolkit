@@ -1,5 +1,16 @@
 # Changelog
 
+## 4.0.4 - Aug 09, 2022
+
+Incremental version for Teams Toolkit with multiple bugs fix, enhancements and new additions to sample application gallery.
+
+New samples:
+- Proactive Messaging: Save users' conversation reference to send proactive reminder messages using bots.
+- One Productivity Hub: View calendar events, to-do tasks and files in Teams tab.
+
+Enhancement:
+- Enhanced experience of building Teams tab application with SharePoint Framework v1.15.0
+
 ## 4.0.3 - Jul 26, 2022
 
 Incremental version for Teams Toolkit with multiple bugs fix and enhancements.

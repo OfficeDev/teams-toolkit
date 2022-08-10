@@ -280,16 +280,11 @@ export class TeamsfxCore {
       const res = await createNewEnv(context, inputs);
       if (res.isErr()) return res;
     }
-    // {
-    //   const createLocalEnvResult = await this.createEnvWithName(
-    //     environmentManager.getLocalEnvName(),
-    //     projectSettings,
-    //     inputs
-    //   );
-    //   if (createLocalEnvResult.isErr()) {
-    //     return err(createLocalEnvResult.error);
-    //   }
-    // }
+    {
+      inputs.envName = "local";
+      const res = await createNewEnv(context, inputs);
+      if (res.isErr()) return res;
+    }
     return ok(undefined);
   }
   @hooks([

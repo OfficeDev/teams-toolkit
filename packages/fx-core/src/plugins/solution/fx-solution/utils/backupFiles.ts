@@ -9,6 +9,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import path from "path";
 import fs from "fs-extra";
+import * as os from "os";
 import { SolutionError, SolutionSource } from "../constants";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 
@@ -17,13 +18,37 @@ const azureParameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.j
 const stateFolder = `.${ConfigFolderName}/states`;
 const stateFileNameTemplate = `state.${EnvNamePlaceholder}.json`;
 const userDateFileNameTemplate = `${EnvNamePlaceholder}.userdata`;
+const jsonSuffix = ".json";
+const userDataSuffix = ".userdata";
+
+async function doesBackupFolderCreatedByTTK(backupPath: string) {
+  return (
+    (await fs.readdir(backupPath)).length === 0 ||
+    (await fs.pathExists(path.join(backupPath, ".fx"))) ||
+    (await fs.pathExists(path.join(backupPath, "aad-manifest-change-logs.md"))) ||
+    (await fs.pathExists(path.join(backupPath, "upgrade-change-logs.md")))
+  );
+}
+
+async function getBackupFolder(projectPath: string): Promise<string> {
+  const backupName = ".backup";
+  const backupPath = path.join(projectPath, backupName);
+
+  const teamsfxBackupPath = path.join(projectPath, `.teamsfx${backupName}`);
+
+  if (!(await fs.pathExists(backupPath)) || (await doesBackupFolderCreatedByTTK(backupPath))) {
+    return backupPath;
+  }
+
+  return teamsfxBackupPath;
+}
 
 export async function backupFiles(
   env: string,
   projectPath: string
 ): Promise<Result<undefined, FxError>> {
   const time = formatDate();
-  const backupFolder = path.join(projectPath, path.join(`.${ConfigFolderName}/backup`, time));
+  const backupFolder = await getBackupFolder(projectPath);
 
   // state file
   const stateFileBackupRes = await backupFile(
@@ -31,7 +56,9 @@ export async function backupFiles(
     env,
     stateFileNameTemplate,
     stateFolder,
-    backupFolder
+    backupFolder,
+    time,
+    jsonSuffix
   );
   if (stateFileBackupRes.isErr()) {
     return err(stateFileBackupRes.error);
@@ -43,7 +70,9 @@ export async function backupFiles(
     env,
     userDateFileNameTemplate,
     stateFolder,
-    backupFolder
+    backupFolder,
+    time,
+    userDataSuffix
   );
   if (userDataFileBackupRes.isErr()) {
     return err(userDataFileBackupRes.error);
@@ -56,7 +85,9 @@ export async function backupFiles(
       env,
       azureParameterFileNameTemplate,
       configFolder,
-      backupFolder
+      backupFolder,
+      time,
+      jsonSuffix
     );
 
     if (azureParameterFileBackupRes.isErr()) {
@@ -72,13 +103,18 @@ async function backupFile(
   env: string,
   fileNameTemplate: string,
   folder: string,
-  backupFolder: string
+  backupFolder: string,
+  time: string,
+  suffix: string
 ): Promise<Result<undefined, FxError>> {
   const sourceFileName = fileNameTemplate.replace(EnvNamePlaceholder, env);
   const sourceFile = path.join(path.join(projectPath, folder), sourceFileName);
   try {
-    const backupFile = path.join(backupFolder, sourceFileName);
-    await copyFileToBackupFolderIfExists(sourceFile, backupFile, backupFolder);
+    const backupFileFolder = path.join(backupFolder, folder);
+    const backupFileName = generateBackupFileName(sourceFileName, backupFileFolder, suffix, time);
+
+    const backupFile = path.join(path.join(backupFolder, folder), backupFileName);
+    await copyFileToBackupFolderIfExists(sourceFile, backupFile, path.join(backupFolder, folder));
     return ok(undefined);
   } catch (exception) {
     const error = new UserError(
@@ -91,6 +127,26 @@ async function backupFile(
   }
 }
 
+function generateBackupFileName(
+  sourceFileName: string,
+  backupFileFolder: string,
+  suffix: string,
+  time: string
+): string {
+  let fileNamePrefix =
+    sourceFileName.substring(0, sourceFileName.length - suffix.length) + "." + time;
+
+  if (
+    os.type() === "Windows_NT" &&
+    backupFileFolder.length + suffix.length + fileNamePrefix.length > 260
+  ) {
+    fileNamePrefix = fileNamePrefix.substring(0, 260 - backupFileFolder.length - suffix.length);
+  } else if (fileNamePrefix.length + suffix.length > 255) {
+    fileNamePrefix = fileNamePrefix.substring(0, 255 - suffix.length);
+  }
+  return fileNamePrefix + suffix;
+}
+
 async function copyFileToBackupFolderIfExists(
   sourceFile: string,
   targetFile: string,
@@ -98,7 +154,7 @@ async function copyFileToBackupFolderIfExists(
 ) {
   if (await fs.pathExists(sourceFile)) {
     await fs.ensureDir(targetFolder);
-    await fs.copyFile(sourceFile, targetFile);
+    await fs.copyFile(sourceFile, targetFile, fs.constants.COPYFILE_EXCL);
   }
 }
 

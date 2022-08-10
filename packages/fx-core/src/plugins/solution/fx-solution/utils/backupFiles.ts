@@ -13,6 +13,8 @@ import * as os from "os";
 import { SolutionError, SolutionSource } from "../constants";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 
+const windowsPathLengthLimit = 260;
+const fileNameLengthLimit = 255;
 const configFolder = `.${ConfigFolderName}/configs`;
 const azureParameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
 const stateFolder = `.${ConfigFolderName}/states`;
@@ -138,11 +140,14 @@ function generateBackupFileName(
 
   if (
     os.type() === "Windows_NT" &&
-    backupFileFolder.length + suffix.length + fileNamePrefix.length > 260
+    backupFileFolder.length + suffix.length + fileNamePrefix.length + 1 > windowsPathLengthLimit
   ) {
-    fileNamePrefix = fileNamePrefix.substring(0, 260 - backupFileFolder.length - suffix.length);
-  } else if (fileNamePrefix.length + suffix.length > 255) {
-    fileNamePrefix = fileNamePrefix.substring(0, 255 - suffix.length);
+    fileNamePrefix = fileNamePrefix.substring(
+      0,
+      windowsPathLengthLimit - 1 - backupFileFolder.length - suffix.length
+    );
+  } else if (fileNamePrefix.length + suffix.length > fileNameLengthLimit) {
+    fileNamePrefix = fileNamePrefix.substring(0, fileNameLengthLimit - suffix.length);
   }
   return fileNamePrefix + suffix;
 }

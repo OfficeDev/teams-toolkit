@@ -1,13 +1,12 @@
 import { TestHelper } from "./helper";
-import * as sinon from "sinon";
-import { TestFilePath } from "../../constants";
+import { fileEncoding, TestFilePath } from "../../constants";
 import os from "os";
 import path from "path";
 import fs from "fs-extra";
 import { backupFiles } from "../../../src/plugins/solution/fx-solution/utils/backupFiles";
 import { expect } from "chai";
 
-describe.only("update Azure parameters", async () => {
+describe("update Azure parameters", async () => {
   const parameterFileNameTemplate = (env: string) => `azure.parameters.${env}.json`;
   const stateFileNameTemplate = (env: string) => `state.${env}.json`;
   const userDataFileNameTemplate = (env: string) => `${env}.userdata`;
@@ -65,6 +64,13 @@ describe.only("update Azure parameters", async () => {
     expect(files.length).equals(1);
     expect(files[0].includes("azure.parameters.target"));
     expect(res.isOk()).equal(true);
+
+    const targetParamObj = JSON.parse(
+      await fs.readFile(path.join(targetConfigDir, files[0]), fileEncoding)
+    );
+    expect(JSON.stringify(targetParamObj, undefined, 2).replace(/\r?\n/g, os.EOL)).equals(
+      paramContent
+    );
   });
 
   it("No files exist", async () => {
@@ -74,6 +80,7 @@ describe.only("update Azure parameters", async () => {
     // Assert
     const folderExist = await fs.pathExists(backupFolder);
     expect(folderExist).equal(false);
+    expect(res.isOk()).equal(true);
   });
 
   it("Backup state and Azure parameters files", async () => {
@@ -90,19 +97,28 @@ describe.only("update Azure parameters", async () => {
     const res = await backupFiles(targetEnvName, TestHelper.rootDir);
 
     // Assert
+    expect(res.isOk()).equal(true);
     expect(await fs.pathExists(backupFolder)).equal(true);
     expect(await fs.pathExists(targetConfigDir)).equal(true);
     const configFiles = await fs.readdir(targetConfigDir);
     expect(configFiles.length).equals(1);
     expect(configFiles[0].includes("azure.parameters.target"));
-    expect(res.isOk()).equal(true);
+    const targetParamObj = JSON.parse(
+      await fs.readFile(path.join(targetConfigDir, configFiles[0]), fileEncoding)
+    );
+    expect(JSON.stringify(targetParamObj, undefined, 2).replace(/\r?\n/g, os.EOL)).equals(
+      paramContent
+    );
 
     expect(await fs.pathExists(targetStateDir)).equal(true);
     const stateFiles = await fs.readdir(targetStateDir);
     expect(stateFiles.length).equals(1);
     expect(stateFiles[0].includes("state.target"));
     expect(stateFiles[0].includes("state.target.json")).equal(false);
-    expect(res.isOk()).equal(true);
+    const stateObj = JSON.parse(
+      await fs.readFile(path.join(targetStateDir, stateFiles[0]), fileEncoding)
+    );
+    expect(JSON.stringify(stateObj, undefined, 2).replace(/\r?\n/g, os.EOL)).equals(stateContent);
   });
 
   it("Backup state, Azure parameters and user data files", async () => {
@@ -123,38 +139,49 @@ describe.only("update Azure parameters", async () => {
     const res = await backupFiles(targetEnvName, TestHelper.rootDir);
 
     // Assert
+    expect(res.isOk()).equal(true);
     expect(await fs.pathExists(backupFolder)).equal(true);
     expect(await fs.pathExists(targetConfigDir)).equal(true);
     const configFiles = await fs.readdir(targetConfigDir);
     expect(configFiles.length).equals(1);
     expect(configFiles[0].includes("azure.parameters.target"));
-    expect(res.isOk()).equal(true);
+    const targetParamObj = JSON.parse(
+      await fs.readFile(path.join(targetConfigDir, configFiles[0]), fileEncoding)
+    );
+    expect(JSON.stringify(targetParamObj, undefined, 2).replace(/\r?\n/g, os.EOL)).equals(
+      paramContent
+    );
 
     expect(await fs.pathExists(targetStateDir)).equal(true);
     const stateFiles = await fs.readdir(targetStateDir);
     expect(stateFiles.length).equals(2);
     stateFiles.sort((a, b) => a.length - b.length);
 
-    expect(stateFiles[1].includes(".userdata"));
-    expect(stateFiles[1].includes("target.userdata")).equal(false);
+    expect(stateFiles[0].includes(".userdata"));
+    expect(stateFiles[0].includes("target.userdata")).equal(false);
     expect(stateFiles[1].includes("state.target"));
     expect(stateFiles[1].includes("state.target.json")).equal(false);
-    expect(res.isOk()).equal(true);
+
+    const stateObj = JSON.parse(
+      await fs.readFile(path.join(targetStateDir, stateFiles[1]), fileEncoding)
+    );
+    expect(JSON.stringify(stateObj, undefined, 2).replace(/\r?\n/g, os.EOL)).equals(stateContent);
+
+    const userData = await fs.readFile(path.join(targetStateDir, stateFiles[0]), fileEncoding);
+
+    expect(userData.replace(/\r?\n/g, os.EOL)).equals(userDataContent);
   });
 
-  it("Backup in previously created .backup folder by TTK", async () => {
+  it("Backup in previously created .backup folder", async () => {
     // Arrange
     await fs.ensureDir(configDir);
     await fs.ensureDir(stateDir);
-    await fs.writeFile(path.join(stateDir, stateFileNameTemplate(targetEnvName)), stateContent);
     await fs.writeFile(
       path.join(configDir, parameterFileNameTemplate(targetEnvName)),
       paramContent
     );
-    await fs.writeFile(
-      path.join(stateDir, userDataFileNameTemplate(targetEnvName)),
-      userDataContent
-    );
+    await fs.ensureDir(backupFolder);
+    await fs.ensureDir(path.join(backupFolder, ".fx"));
 
     // Act
     const res = await backupFiles(targetEnvName, TestHelper.rootDir);
@@ -166,16 +193,30 @@ describe.only("update Azure parameters", async () => {
     expect(configFiles.length).equals(1);
     expect(configFiles[0].includes("azure.parameters.target"));
     expect(res.isOk()).equal(true);
+  });
 
-    expect(await fs.pathExists(targetStateDir)).equal(true);
-    const stateFiles = await fs.readdir(targetStateDir);
-    expect(stateFiles.length).equals(2);
-    stateFiles.sort((a, b) => a.length - b.length);
+  it("Backup in .teamsfx.backup folder", async () => {
+    // Arrange
+    await fs.ensureDir(configDir);
+    await fs.ensureDir(stateDir);
+    await fs.writeFile(
+      path.join(configDir, parameterFileNameTemplate(targetEnvName)),
+      paramContent
+    );
+    await fs.ensureDir(backupFolder);
+    await fs.ensureDir(path.join(backupFolder, ".conflict"));
 
-    expect(stateFiles[1].includes(".userdata"));
-    expect(stateFiles[1].includes("target.userdata")).equal(false);
-    expect(stateFiles[1].includes("state.target"));
-    expect(stateFiles[1].includes("state.target.json")).equal(false);
+    // Act
+    const res = await backupFiles(targetEnvName, TestHelper.rootDir);
+
+    // Assert
+    const teamsfxBackupFolder = path.join(TestHelper.rootDir, ".teamsfx.backup");
+    const teamsfxTargetConfigDir = path.join(teamsfxBackupFolder, TestFilePath.configFolder);
+    expect(await fs.pathExists(teamsfxBackupFolder)).equal(true);
+    expect(await fs.pathExists(teamsfxTargetConfigDir)).equal(true);
+    const configFiles = await fs.readdir(teamsfxTargetConfigDir);
+    expect(configFiles.length).equals(1);
+    expect(configFiles[0].includes("azure.parameters.target"));
     expect(res.isOk()).equal(true);
   });
 });

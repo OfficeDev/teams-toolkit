@@ -37,7 +37,7 @@ import "./connection/apimConfig";
 import "./connection/azureFunctionConfig";
 import "./connection/azureWebAppConfig";
 import { configLocalEnvironment, setupLocalEnvironment } from "./debug";
-import { createNewEnv } from "./envManager";
+import { createEnvWithName } from "./envManager";
 import "./feature/api";
 import "./feature/apiConnector";
 import "./feature/apim";
@@ -117,6 +117,7 @@ import {
   hasBotServiceCreated,
 } from "../plugins/solution/fx-solution/utils/util";
 import { ensureBasicFolderStructure } from "../core";
+import { environmentManager } from "../core/environment";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -277,13 +278,23 @@ export class TeamsfxCore {
       if (res.isErr()) return res;
     }
     {
-      const res = await createNewEnv(context, inputs);
-      if (res.isErr()) return res;
-    }
-    {
-      inputs.envName = "local";
-      const res = await createNewEnv(context, inputs);
-      if (res.isErr()) return res;
+      const createEnvResult = await createEnvWithName(
+        environmentManager.getDefaultEnvName(),
+        projectSettings.appName,
+        inputs as InputsWithProjectPath
+      );
+      if (createEnvResult.isErr()) {
+        return err(createEnvResult.error);
+      }
+
+      const createLocalEnvResult = await createEnvWithName(
+        environmentManager.getLocalEnvName(),
+        projectSettings.appName,
+        inputs as InputsWithProjectPath
+      );
+      if (createLocalEnvResult.isErr()) {
+        return err(createLocalEnvResult.error);
+      }
     }
     return ok(undefined);
   }

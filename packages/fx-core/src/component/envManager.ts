@@ -1,20 +1,34 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ContextV3, FxError, InputsWithProjectPath, ok, Result } from "@microsoft/teamsfx-api";
-import fs from "fs-extra";
-import * as path from "path";
+import { err, FxError, InputsWithProjectPath, ok, Result } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { environmentManager } from "../core/environment";
+import { TOOLS } from "../core/globalVars";
+import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
 
-export async function createNewEnv(
-  context: ContextV3,
-  inputs: InputsWithProjectPath
+export async function createEnvWithName(
+  targetEnvName: string,
+  appName: string,
+  inputs: InputsWithProjectPath,
+  existingTabEndpoint?: string
 ): Promise<Result<undefined, FxError>> {
-  const envName = inputs.envName || environmentManager.getDefaultEnvName();
-  const envConfig = environmentManager.newEnvConfigData(context.projectSetting.appName, undefined);
-  const envConfigPath = path.join(inputs.projectPath, ".fx", "configs", `config.${envName}.json`);
-  await fs.ensureDir(path.join(inputs.projectPath, ".fx", "configs"));
-  await fs.writeFile(envConfigPath, JSON.stringify(envConfig, null, 4));
+  if (targetEnvName === environmentManager.getLocalEnvName()) {
+    appName = getLocalAppName(appName);
+  }
+  const newEnvConfig = environmentManager.newEnvConfigData(appName, existingTabEndpoint);
+  const writeEnvResult = await environmentManager.writeEnvConfig(
+    inputs.projectPath,
+    newEnvConfig,
+    targetEnvName
+  );
+  if (writeEnvResult.isErr()) {
+    return err(writeEnvResult.error);
+  }
+  TOOLS.logProvider?.debug(
+    `[core] persist ${targetEnvName} env state to path ${writeEnvResult.value}: ${JSON.stringify(
+      newEnvConfig
+    )}`
+  );
   return ok(undefined);
 }

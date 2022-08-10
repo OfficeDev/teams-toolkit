@@ -140,11 +140,13 @@
           "properties": {
             "color": {
               "type": "string",
-              "description": "A relative file path to a full color PNG icon. Size 192x192."
+              "description": "A relative file path to a full color PNG icon. Size 192x192.",
+              "minLength": 1
             },
             "outline": {
               "type": "string",
-              "description": "A relative file path to a transparent PNG outline icon. The border color needs to be white. Size 32x32."
+              "description": "A relative file path to a transparent PNG outline icon. The border color needs to be white. Size 32x32.",
+              "minLength": 1
             }
           }
         }

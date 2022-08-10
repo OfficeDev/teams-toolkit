@@ -358,7 +358,7 @@ export class TeamsfxCore {
     // 4
     if (ctx.envInfo.envName === "local") {
       //4.1 setup local env
-      const localEnvSetupResult = await setupLocalEnvironment(ctx, inputs, ctx.envInfo);
+      const localEnvSetupResult = await setupLocalEnvironment(ctx, inputs);
       if (localEnvSetupResult.isErr()) {
         return err(localEnvSetupResult.error);
       }
@@ -413,7 +413,7 @@ export class TeamsfxCore {
     // 6.
     if (ctx.envInfo.envName === "local") {
       // 6.1 config local env
-      const localConfigResult = await configLocalEnvironment(ctx, inputs, ctx.envInfo);
+      const localConfigResult = await configLocalEnvironment(ctx, inputs);
       if (localConfigResult.isErr()) {
         return err(localConfigResult.error);
       }

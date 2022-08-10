@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 "use strict";
 
+import { DevPreviewSchema, ElementExtensions } from "./devPreviewManifest";
+
 export interface IDeveloper {
   /**
    * The display name for the developer.
@@ -518,4 +520,179 @@ export class TeamsAppManifest implements AppManifest {
       resourceSpecific?: IAppPermission[];
     };
   };
+}
+
+export class DevPreviewManifest implements DevPreviewSchema {
+  $schema?: string =
+    "https://raw.githubusercontent.com/OfficeDev/microsoft-teams-app-schema/op/extensions/MicrosoftTeams.schema.json";
+  /**
+   * The version of the schema this manifest is using.
+   */
+  manifestVersion: "devPreview" | "m365DevPreview" = "devPreview";
+  /**
+   * The version of the app. Changes to your manifest should cause a version change. This version string must follow the semver standard (http://semver.org).
+   */
+  version = "1.0.0";
+  /**
+   * A unique identifier for this app. This id must be a GUID.
+   */
+  id = "{{AppId}}";
+  /**
+   * A unique identifier for this app in reverse domain notation. E.g: com.example.myapp
+   */
+  packageName?: string = "com.example.myapp";
+
+  localizationInfo?: ILocalizationInfo;
+
+  developer: IDeveloper = {
+    name: "Teams App, Inc.",
+    mpnId: "",
+    websiteUrl: "https://localhost:3000",
+    privacyUrl: "https://localhost:3000/privacy",
+    termsOfUseUrl: "https://localhost:3000/termsofuse",
+  };
+
+  name = {
+    short: "{{AppName}}",
+    full: "This field is not used",
+  };
+
+  description = {
+    short: "Short description for {{AppName}}.",
+    full: "Full description of {{AppName}}.",
+  };
+
+  icons: IIcons = { outline: "outline.png", color: "color.png" };
+  /**
+   * A color to use in conjunction with the icon. The value must be a valid HTML color code starting with '#', for example `#4464ee`.
+   */
+  accentColor = "#FFFFFF";
+  /**
+   * These are tabs users can optionally add to their channels and 1:1 or group chats and require extra configuration before they are added. Configurable tabs are not supported in the personal scope. Currently only one configurable tab per app is supported.
+   */
+  configurableTabs?: IConfigurableTab[];
+  /**
+   * A set of tabs that may be 'pinned' by default, without the user adding them manually. Static tabs declared in personal scope are always pinned to the app's personal experience. Static tabs do not currently support the 'teams' scope.
+   */
+  staticTabs?: IStaticTab[];
+  /**
+   * The set of bots for this app. Currently only one bot per app is supported.
+   */
+  bots?: IBot[];
+  /**
+   * The set of Office365 connectors for this app. Currently only one connector per app is supported.
+   */
+  connectors?: IConnector[];
+  /**
+   * Subscription offer associated with this app.
+   */
+  subscriptionOffer?: {
+    /**
+     * A unique identifier for the Commercial Marketplace Software as a Service Offer.
+     */
+    offerId: string;
+  };
+  /**
+   * Specify the app's Graph connector configuration. If this is present then webApplicationInfo.id must also be specified.
+   */
+  graphConnector?: {
+    notificationUrl: string;
+  };
+  /**
+   * The set of compose extensions for this app. Currently only one compose extension per app is supported.
+   */
+  composeExtensions?: IComposeExtension[];
+  /**
+   * Specifies the permissions the app requests from users.
+   */
+  permissions?: ("identity" | "messageTeamMembers")[] = ["identity", "messageTeamMembers"];
+  /**
+   * Specify the native features on a user's device that your app may request access to.
+   */
+  devicePermissions?: ("geolocation" | "media" | "notifications" | "midi" | "openExternal")[];
+  /**
+   * A list of valid domains from which the tabs expect to load any content. Domain listings can include wildcards, for example `*.example.com`. If your tab configuration or content UI needs to navigate to any other domain besides the one use for tab configuration, that domain must be specified here.
+   */
+  validDomains?: string[] = ["localhost:3000"];
+  /**
+   * Specify your AAD App ID and Graph information to help users seamlessly sign into your AAD app.
+   */
+  webApplicationInfo?: IWebApplicationInfo;
+  /**
+   * A value indicating whether or not show loading indicator when app/tab is loading
+   */
+  showLoadingIndicator?: boolean;
+  /**
+   * A value indicating whether a personal app is rendered without a tab header-bar
+   */
+  isFullScreen?: boolean;
+
+  activities?: {
+    /**
+     * Specify the types of activites that your app can post to a users activity feed
+     */
+    activityTypes?: IActivityType[];
+  };
+  /**
+   * A list of tenant configured properties for an app
+   */
+  configurableProperties?: (
+    | "name"
+    | "shortDescription"
+    | "longDescription"
+    | "smallImageUrl"
+    | "largeImageUrl"
+    | "accentColor"
+    | "developerUrl"
+    | "privacyUrl"
+    | "termsOfUseUrl"
+  )[];
+  /**
+   * A value indicating whether an app is blocked by default until admin allows it
+   */
+  defaultBlockUntilAdminAction?: boolean;
+  /**
+   * The install scope defined for this app by default. This will be the option displayed on the button when a user tries to add the app
+   */
+  defaultInstallScope?: "personal" | "team" | "groupchat" | "meetings";
+  /**
+   * When a group install scope is selected, this will define the default capability when the user installs the app
+   */
+  defaultGroupCapability?: {
+    team: "tab" | "bot" | "connector";
+    groupchat: "tab" | "bot" | "connector";
+    meetings: "tab" | "bot" | "connector";
+  };
+  /**
+   * Specify meeting extension definition
+   */
+  meetingExtensionDefinition?: {
+    /**
+     * Meeting supported scenes.
+     */
+    scenes?: ITogetherModeScene[];
+    /**
+     * Meeting supported A/V filters.
+     */
+    filters?: {
+      id: string;
+      name: string;
+      thumbnail: string;
+    }[];
+    videoAppContentUrl?: string;
+  };
+  /**
+   * The url to the page that provides additional app information for the admins
+   */
+  publisherDocsUrl?: string;
+  /**
+   * Specify and consolidates authorization related information for the App.
+   */
+  authorization?: {
+    permissions?: {
+      resourceSpecific?: IAppPermission[];
+    };
+  };
+
+  extensions?: ElementExtensions = [];
 }

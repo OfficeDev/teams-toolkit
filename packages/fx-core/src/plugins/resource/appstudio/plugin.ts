@@ -16,6 +16,7 @@ import {
   ManifestUtil,
   SystemError,
   UserError,
+  DevPreviewManifest,
 } from "@microsoft/teamsfx-api";
 import { AppStudioClient } from "./appStudio";
 import { AppDefinition } from "./interfaces/appDefinition";
@@ -84,6 +85,8 @@ import {
   getAppDirectory,
   isAADEnabled,
   isConfigUnifyEnabled,
+  isOfficeAddinEnabled,
+  isOfficeAddinProject,
   isSPFxProject,
   isVSProject,
 } from "../../../common";
@@ -590,6 +593,8 @@ export class AppStudioPluginImpl {
         );
         await fs.writeFile(`${appDir}/${MANIFEST_LOCAL}`, JSON.stringify(localManifest, null, 4));
       }
+    } else if (isOfficeAddinEnabled() && isOfficeAddinProject(ctx.projectSettings)) {
+      manifest = new DevPreviewManifest();
     } else {
       const solutionSettings: AzureSolutionSettings = ctx.projectSettings
         ?.solutionSettings as AzureSolutionSettings;

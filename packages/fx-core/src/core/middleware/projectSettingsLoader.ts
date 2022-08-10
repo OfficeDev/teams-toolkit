@@ -65,14 +65,13 @@ export const ProjectSettingsLoaderMW: Middleware = async (
       return;
     }
 
-    let projectSettings = loadRes.value;
+    const projectSettings = loadRes.value;
 
     const validRes = validateProjectSettings(projectSettings);
     if (validRes) {
       ctx.result = err(new InvalidProjectSettingsFileError(validRes));
       return;
     }
-    if (isV3()) projectSettings = convertProjectSettingsV2ToV3(projectSettings);
     ctx.projectSettings = projectSettings;
     (ctx.self as any).isFromSample = projectSettings.isFromSample === true;
     (ctx.self as any).settingsVersion = projectSettings.version;
@@ -89,12 +88,18 @@ export async function loadProjectSettings(
   inputs: Inputs,
   isMultiEnvEnabled = false
 ): Promise<Result<ProjectSettings, FxError>> {
-  try {
-    if (!inputs.projectPath) {
-      return err(new NoProjectOpenedError());
-    }
+  if (!inputs.projectPath) {
+    return err(new NoProjectOpenedError());
+  }
+  return await loadProjectSettingsByProjectPath(inputs.projectPath, isMultiEnvEnabled);
+}
 
-    const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
+export async function loadProjectSettingsByProjectPath(
+  projectPath: string,
+  isMultiEnvEnabled = false
+): Promise<Result<ProjectSettings, FxError>> {
+  try {
+    const confFolderPath = path.resolve(projectPath, `.${ConfigFolderName}`);
     const settingsFile = isMultiEnvEnabled
       ? path.resolve(confFolderPath, InputConfigsFolderName, ProjectSettingsFileName)
       : path.resolve(confFolderPath, "settings.json");
@@ -114,6 +119,7 @@ export async function loadProjectSettings(
       projectSettings.solutionSettings.activeResourcePlugins.push(PluginNames.APPST);
     }
     globalVars.isVS = isVSProject(projectSettings);
+    if (isV3()) return ok(convertProjectSettingsV2ToV3(projectSettings));
     return ok(projectSettings);
   } catch (e) {
     return err(ReadFileError(e));

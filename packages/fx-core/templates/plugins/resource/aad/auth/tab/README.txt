@@ -14,6 +14,8 @@ After you successfully added SSO into your project, Teams Toolkit will create an
    - An 'webApplicationInfo' object will be added into your Teams app manifest template. This field is required by Teams when enabling SSO.
 3. Create: 'Auth/tab'
    - Reference code and a 'README.txt' file. These files are provided for reference. See below for more information.
+4. Modify: 'appsettings.json' and 'appsettings.Development.json'
+   - Configs that will be used by TeamsFx SDK will be added into your app settings. Please update add the 'TeamsFx' object if you have other appsettings files.
 
 Update your code to add SSO
 -------------------------
@@ -21,7 +23,7 @@ As described above, the Teams Toolkit generated some configuration to set up you
 
 1. Move 'GetUserProfile.razor' file under 'Auth/tab' to 'Components/'.
    - 'GetUserProfile': This file implements a function that uses TeamsFx SDK to call Microsoft Graph API to get user info.
-2. Replace the following line: '<AddSSO />' with '<GetUserProfile />' to replace the 'AddSSO' component with 'GetUserProfile' component.
+2. Replace the following line: '<AddSSO />' with '<GetUserProfile />' to replace the 'AddSSO' component with 'GetUserProfile' component in 'Components/Welcome.razor'.
 
 Debug your application
 -------------------------

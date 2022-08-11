@@ -1149,6 +1149,25 @@ export async function createAuthFiles(
         const sampleZip = new AdmZip();
         sampleZip.addLocalFolder(sampleSourceFolder);
         await unzip(sampleZip, tabFolder);
+
+        // Update appsettings
+        const appSettingsPath = path.join(projectPath!, AddSsoParameters.AppSettings);
+        const appSettingsDevPath = path.join(projectPath!, AddSsoParameters.AppSettingsDev);
+
+        if (await fs.pathExists(appSettingsPath)) {
+          const appSettings = await fs.readJson(appSettingsPath);
+          if (!appSettings.TeamsFx) {
+            appSettings.TeamsFx = AddSsoParameters.AppSettingsToAdd;
+          }
+          await fs.writeFile(appSettingsPath, JSON.stringify(appSettings, null, "\t"), "utf-8");
+        }
+        if (await fs.pathExists(appSettingsDevPath)) {
+          const appSettings = await fs.readJson(appSettingsDevPath);
+          if (!appSettings.TeamsFx) {
+            appSettings.TeamsFx = AddSsoParameters.AppSettingsToAdd;
+          }
+          await fs.writeFile(appSettingsDevPath, JSON.stringify(appSettings, null, "\t"), "utf-8");
+        }
       } else {
         // README.md
         const readmeSourcePath = path.join(tabTemplateFolder, AddSsoParameters.Readme);

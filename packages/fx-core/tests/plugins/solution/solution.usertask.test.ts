@@ -24,7 +24,11 @@ import {
   AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
-import { GLOBAL_CONFIG, SolutionError } from "../../../src/plugins/solution/fx-solution/constants";
+import {
+  AddSsoParameters,
+  GLOBAL_CONFIG,
+  SolutionError,
+} from "../../../src/plugins/solution/fx-solution/constants";
 import {
   MockedM365Provider,
   MockedV2Context,
@@ -64,7 +68,7 @@ import "../../../src/plugins/resource/appstudio/v2";
 import "../../../src/plugins/resource/frontend/v2";
 import "../../../src/plugins/resource/bot/v2";
 import { newEnvInfo } from "../../../src";
-import fs from "fs-extra";
+import fs, { ensureDir } from "fs-extra";
 import { ProgrammingLanguage } from "../../../src/plugins/resource/bot/enums/programmingLanguage";
 import { randomAppName } from "../../core/utils";
 import { createEnv } from "../../../src/plugins/solution/fx-solution/v2/createEnv";
@@ -1143,6 +1147,11 @@ describe("V2 implementation", () => {
         platform: Platform.VS,
         projectPath: testFolder,
       };
+      const appSettingsPath = path.join(testFolder, AddSsoParameters.AppSettings);
+      const appSettingsDevPath = path.join(testFolder, AddSsoParameters.AppSettingsDev);
+      await fs.writeJSON(appSettingsPath, {});
+      await fs.writeJSON(appSettingsDevPath, {});
+
       const result = await executeUserTask(
         mockedCtx,
         mockedInputs,
@@ -1163,8 +1172,30 @@ describe("V2 implementation", () => {
         )
       ).to.be.true;
       const readmePath = path.join(testFolder, "Auth", "tab", "README.txt");
+      const getUserProfilePath = path.join(testFolder, "Auth", "tab", "GetUserProfile.razor");
       const readmeExists = await fs.pathExists(readmePath);
+      const getUserProfileExists = await fs.pathExists(getUserProfilePath);
       expect(readmeExists).to.be.true;
+      expect(getUserProfileExists).to.be.true;
+
+      const appSettingsRes = {
+        TeamsFx: {
+          Authentication: {
+            ClientId: "$clientId$",
+            ClientSecret: "$client-secret$",
+            OAuthAuthority: "$oauthAuthority$",
+            TenantId: "$tenantId$",
+            ApplicationIdUri: "$applicationIdUri$",
+            Bot: {
+              InitiateLoginEndpoint: "$initiateLoginEndpoint$",
+            },
+          },
+        },
+      };
+      const appSettings = await fs.readJSON(appSettingsPath);
+      expect(JSON.stringify(appSettings)).equals(JSON.stringify(appSettingsRes));
+      const appSettingsDev = await fs.readJSON(appSettingsPath);
+      expect(JSON.stringify(appSettingsDev)).equals(JSON.stringify(appSettingsRes));
     });
 
     it("happy path: bot", async () => {

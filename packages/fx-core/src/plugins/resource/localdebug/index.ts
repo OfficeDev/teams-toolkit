@@ -11,9 +11,12 @@ import {
   ok,
   AzureSolutionSettings,
   Void,
+  ProjectSettings,
 } from "@microsoft/teamsfx-api";
 
 import { Service } from "typedi";
+import { isOfficeAddinEnabled, isOfficeAddinProject } from "../../../common";
+import { HostTypeOptionOfficeAddin } from "../../solution";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import "./v2";
 
@@ -23,6 +26,9 @@ export class LocalDebugPlugin implements Plugin {
   displayName = "LocalDebug";
 
   activate(solutionSettings: AzureSolutionSettings): boolean {
+    if (isOfficeAddinEnabled()) {
+      return solutionSettings.hostType !== HostTypeOptionOfficeAddin.id;
+    }
     return true;
   }
 

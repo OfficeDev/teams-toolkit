@@ -49,7 +49,10 @@ import {
   manuallySubmitOption,
 } from "../../../plugins/resource/appstudio/questions";
 import { AppStudioResultFactory } from "../../../plugins/resource/appstudio/results";
-import { TelemetryPropertyKey } from "../../../plugins/resource/appstudio/utils/telemetry";
+import {
+  TelemetryPropertyKey,
+  TelemetryEventName,
+} from "../../../plugins/resource/appstudio/utils/telemetry";
 import { ComponentNames } from "../../constants";
 import {
   createTeamsApp,
@@ -87,6 +90,13 @@ export class AppManifest implements CloudResource {
     },
   };
   finalOutputKeys = ["teamsAppId", "tenantId"];
+  @hooks([
+    ActionExecutionMW({
+      enableTelemetry: true,
+      telemetryComponentName: "AppStudioPlugin",
+      telemetryEventName: TelemetryEventName.init,
+    }),
+  ])
   async init(
     context: ContextV3,
     inputs: InputsWithProjectPath
@@ -129,6 +139,13 @@ export class AppManifest implements CloudResource {
     return ok(undefined);
   }
 
+  @hooks([
+    ActionExecutionMW({
+      enableTelemetry: true,
+      telemetryComponentName: "AppStudioPlugin",
+      telemetryEventName: TelemetryEventName.addCapability,
+    }),
+  ])
   async addCapability(
     inputs: InputsWithProjectPath,
     capabilities: v3.ManifestCapability[]
@@ -142,6 +159,9 @@ export class AppManifest implements CloudResource {
       enableProgressBar: true,
       progressTitle: getLocalizedString("plugins.appstudio.provisionTitle"),
       progressSteps: 1,
+      enableTelemetry: true,
+      telemetryComponentName: "AppStudioPlugin",
+      telemetryEventName: TelemetryEventName.provision,
     }),
   ])
   async provision(
@@ -164,6 +184,9 @@ export class AppManifest implements CloudResource {
       enableProgressBar: true,
       progressTitle: getLocalizedString("plugins.appstudio.provisionTitle"),
       progressSteps: 1,
+      enableTelemetry: true,
+      telemetryComponentName: "AppStudioPlugin",
+      telemetryEventName: TelemetryEventName.localDebug,
     }),
   ])
   async configure(
@@ -184,7 +207,7 @@ export class AppManifest implements CloudResource {
     ActionExecutionMW({
       enableTelemetry: true,
       telemetryComponentName: "AppStudioPlugin",
-      telemetryEventName: "publish",
+      telemetryEventName: TelemetryEventName.publish,
       question: async (context, inputs) => {
         return await publishQuestion(inputs);
       },
@@ -283,6 +306,13 @@ export class AppManifest implements CloudResource {
     }
     return ok(undefined);
   }
+  @hooks([
+    ActionExecutionMW({
+      enableTelemetry: true,
+      telemetryComponentName: "AppStudioPlugin",
+      telemetryEventName: TelemetryEventName.validateManifest,
+    }),
+  ])
   async validate(
     context: ResourceContextV3,
     inputs: InputsWithProjectPath
@@ -292,18 +322,46 @@ export class AppManifest implements CloudResource {
       return err(manifestRes.error);
     }
     const manifest: TeamsAppManifest = manifestRes.value;
-    return await validateManifest(manifest);
+    const validationResult = await validateManifest(manifest);
+    if (validationResult.isErr()) {
+      return err(validationResult.error);
+    }
+    if (validationResult.value.length > 0) {
+      const errMessage = AppStudioError.ValidationFailedError.message(validationResult.value);
+      context.logProvider?.error(getLocalizedString("plugins.appstudio.validationFailedNotice"));
+      const validationFailed = AppStudioResultFactory.UserError(
+        AppStudioError.ValidationFailedError.name,
+        errMessage
+      );
+      return err(validationFailed);
+    }
+    const validationSuccess = getLocalizedString("plugins.appstudio.validationSucceedNotice");
+    context.userInteraction.showMessage("info", validationSuccess, false);
+    return validationResult;
   }
+  @hooks([
+    ActionExecutionMW({
+      enableTelemetry: true,
+      telemetryComponentName: "AppStudioPlugin",
+      telemetryEventName: TelemetryEventName.buildTeamsPackage,
+    }),
+  ])
   async build(
     context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<string, FxError>> {
     return await buildTeamsAppPackage(inputs.projectPath, context.envInfo);
   }
+  @hooks([
+    ActionExecutionMW({
+      enableTelemetry: true,
+      telemetryComponentName: "AppStudioPlugin",
+      telemetryEventName: TelemetryEventName.deploy,
+    }),
+  ])
   async deploy(
     context: ResourceContextV3,
-    inputs: InputsWithProjectPath,
-    actionCtx?: ActionContext
+    inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
     return await updateManifest(context, inputs);
   }

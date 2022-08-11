@@ -7,6 +7,7 @@ import {
   FxError,
   InputsWithProjectPath,
   M365TokenProvider,
+  ManifestUtil,
   ok,
   Result,
   ResourceContextV3,
@@ -350,8 +351,41 @@ export async function buildTeamsAppPackage(
 export async function validateManifest(
   manifest: TeamsAppManifest
 ): Promise<Result<string[], FxError>> {
-  // TODO: import teamsfx-manifest package
-  return ok([]);
+  // Corner case: SPFx project validate without provision
+  if (!isUUID(manifest.id)) {
+    manifest.id = v4();
+  }
+
+  if (manifest.$schema) {
+    try {
+      const result = await ManifestUtil.validateManifest(manifest);
+      return ok(result);
+    } catch (e: any) {
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.ValidationFailedError.name,
+          AppStudioError.ValidationFailedError.message([
+            getLocalizedString(
+              "error.appstudio.validateFetchSchemaFailed",
+              manifest.$schema,
+              e.message
+            ),
+          ]),
+          HelpLinks.WhyNeedProvision
+        )
+      );
+    }
+  } else {
+    return err(
+      AppStudioResultFactory.UserError(
+        AppStudioError.ValidationFailedError.name,
+        AppStudioError.ValidationFailedError.message([
+          getLocalizedString("error.appstudio.validateSchemaNotDefined"),
+        ]),
+        HelpLinks.WhyNeedProvision
+      )
+    );
+  }
 }
 
 export async function getManifest(

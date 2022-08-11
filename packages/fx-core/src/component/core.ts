@@ -693,6 +693,7 @@ async function preProvision(
   // 3. check Azure configs
   if (hasAzureResourceV3(ctx.projectSetting) && envInfo.envName !== "local") {
     // ask common question and fill in solution config
+    const subscriptionIdInState = envInfo.state.solution.subscriptionId;
     const solutionConfigRes = await fillInAzureConfigs(ctx, inputs, envInfo, ctx.tokenProvider);
     if (solutionConfigRes.isErr()) {
       return err(solutionConfigRes.error);
@@ -705,7 +706,9 @@ async function preProvision(
       hasSwitchedM365Tenant,
       solutionConfigRes.value.hasSwitchedSubscription,
       tenantInfoInTokenRes.value.tenantUserName,
-      true
+      true,
+      hasSwitchedM365Tenant ? tenantIdInConfig : "",
+      solutionConfigRes.value.hasSwitchedSubscription ? subscriptionIdInState : ""
     );
     if (consentResult.isErr()) {
       return err(consentResult.error);
@@ -746,7 +749,8 @@ async function preProvision(
       hasSwitchedM365Tenant,
       false,
       tenantInfoInTokenRes.value.tenantUserName,
-      false
+      false,
+      tenantIdInConfig
     );
     if (consentResult.isErr()) {
       return err(consentResult.error);

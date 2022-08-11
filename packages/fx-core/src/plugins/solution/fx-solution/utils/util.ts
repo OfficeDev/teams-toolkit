@@ -13,6 +13,8 @@ import {
   Result,
   err,
   ok,
+  v2,
+  ResourceContextV3,
 } from "@microsoft/teamsfx-api";
 import { SubscriptionClient } from "@azure/arm-subscriptions";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";

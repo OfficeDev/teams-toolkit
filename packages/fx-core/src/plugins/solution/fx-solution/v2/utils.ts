@@ -17,6 +17,7 @@ import {
   M365TokenProvider,
   v3,
   EnvInfo,
+  ResourceContextV3,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
@@ -27,6 +28,7 @@ import {
   SOLUTION_PROVISION_SUCCEEDED,
   SolutionSource,
   PluginNames,
+  SolutionTelemetryProperty,
 } from "../constants";
 import {
   AzureResourceApim,
@@ -53,6 +55,7 @@ import { PluginsWithContext } from "../types";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { doesAllowSwitchAccount } from "../../../../core";
 import { backupFiles } from "../utils/backupFiles";
+import { TelemetryEvent, TelemetryProperty } from "../../../../common/telemetry";
 
 export function getSelectedPlugins(projectSettings: ProjectSettings): v2.ResourcePlugin[] {
   return getActivatedV2ResourcePlugins(projectSettings);
@@ -202,6 +205,7 @@ export function parseUserName(appStudioToken?: Record<string, unknown>): Result<
 
 export async function checkWhetherLocalDebugM365TenantMatches(
   envInfo: v3.EnvInfoV3 | EnvInfo | undefined,
+  ctx: v2.Context | ResourceContextV3,
   localDebugTenantId?: string,
   m365TokenProvider?: M365TokenProvider,
   projectPath?: string,
@@ -241,6 +245,11 @@ export async function checkWhetherLocalDebugM365TenantMatches(
             new UserError("Solution", SolutionError.CannotLocalDebugInDifferentTenant, errorMessage)
           );
         } else if (envInfo) {
+          ctx.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckLocalDebugTenant, {
+            [TelemetryProperty.HasSwitchedM365Tenant]: "true",
+            [SolutionTelemetryProperty.M365TenantId]: maybeM365TenantId.value,
+            [SolutionTelemetryProperty.PreviousM365TenantId]: localDebugTenantId,
+          });
           if (!isLegacyEnv) {
             const keys = Object.keys(envInfo.state);
             for (const key of keys) {

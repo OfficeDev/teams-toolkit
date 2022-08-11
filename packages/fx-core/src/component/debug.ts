@@ -28,6 +28,7 @@ import {
   hasApi,
   hasFunctionBot,
   hasSimpleAuth,
+  hasSPFxTab,
 } from "../common/projectSettingsHelperV3";
 import { getAllowedAppIds } from "../common/tools";
 import {
@@ -83,7 +84,7 @@ function convertToConfig(context: ContextV3, inputs: InputsWithProjectPath): Loc
   const botCapabilities = bot?.capabilities || [];
   const config: LocalEnvConfig = {
     hasAzureTab: hasAzureTab(settings),
-    hasSPFxTab: hasAzureTab(settings),
+    hasSPFxTab: hasSPFxTab(settings),
     hasApi: hasApi(settings),
     hasBot: hasBot(settings),
     hasAAD: hasAAD(settings),

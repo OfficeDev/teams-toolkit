@@ -537,7 +537,13 @@ export async function askForProvisionConsentNew(
             [SolutionTelemetryProperty.PreviousSubsriptionId]: !previousSubscriptionId
               ? ""
               : previousSubscriptionId,
-            [SolutionTelemetryProperty.ConfirmRes]: !confirm ? "Err" : confirm,
+            [SolutionTelemetryProperty.ConfirmRes]: !confirm
+              ? "Error"
+              : confirm === learnMoreText
+              ? "Learn more"
+              : confirm === provisionText
+              ? "Provision"
+              : "",
           }
         : {}
     );

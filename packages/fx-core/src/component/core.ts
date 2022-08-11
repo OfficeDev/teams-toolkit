@@ -667,7 +667,7 @@ async function preProvision(
   }
   const tenantIdInToken = tenantInfoInTokenRes.value.tenantIdInToken;
   const hasSwitchedM365Tenant =
-    tenantIdInConfig && tenantIdInToken && tenantIdInToken !== tenantIdInConfig;
+    !!tenantIdInConfig && !!tenantIdInToken && tenantIdInToken !== tenantIdInConfig;
 
   if (!isLocalDebug) {
     if (hasSwitchedM365Tenant) {
@@ -750,6 +750,18 @@ async function preProvision(
     );
     if (consentResult.isErr()) {
       return err(consentResult.error);
+    }
+    const handleConfigFilesWhenSwitchAccountsRes = await handleConfigFilesWhenSwitchAccount(
+      envInfo as v3.EnvInfoV3,
+      ctx.projectSetting.appName,
+      inputs.projectPath,
+      hasSwitchedM365Tenant,
+      false,
+      false
+    );
+
+    if (handleConfigFilesWhenSwitchAccountsRes.isErr()) {
+      return err(handleConfigFilesWhenSwitchAccountsRes.error);
     }
   }
   return ok(undefined);

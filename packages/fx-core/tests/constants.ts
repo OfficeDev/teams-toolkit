@@ -36,6 +36,7 @@ export const apimPlugin = Container.get<Plugin>(ResourcePlugins.ApimPlugin) as P
 export class TestFilePath {
   static readonly armTemplateBaseFolder = "./templates/azure";
   static readonly configFolder = "./.fx/configs";
+  static readonly stateFolder = "./.fx/states";
 
   static readonly mainFileName = "main.bicep";
   static readonly provisionFileName = "provision.bicep";

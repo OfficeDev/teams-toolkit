@@ -214,8 +214,8 @@ async function provisionResourceImpl(
       solutionConfigRes.value.hasSwitchedSubscription,
       tenantIdInTokenRes.value.tenantUserName,
       true,
-      hasSwitchedM365Tenant ? tenantIdInConfig : "",
-      solutionConfigRes.value.hasSwitchedSubscription ? subscriptionIdInState : ""
+      tenantIdInConfig,
+      subscriptionIdInState
     );
     if (consentResult.isErr()) {
       return err(consentResult.error);

@@ -1090,6 +1090,7 @@ export class TeamsAppSolution implements Solution {
       );
       const m365TenantMatches = await checkWhetherLocalDebugM365TenantMatches(
         ctx.envInfo,
+        ctx.telemetryReporter,
         localDebugTenantId,
         ctx.m365TokenProvider,
         ctx.root,

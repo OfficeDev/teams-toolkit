@@ -676,6 +676,7 @@ async function preProvision(
   } else {
     const res = await checkWhetherLocalDebugM365TenantMatches(
       envInfo,
+      ctx.telemetryReporter,
       tenantIdInConfig,
       ctx.tokenProvider.m365TokenProvider,
       inputs.projectPath
@@ -707,8 +708,8 @@ async function preProvision(
       solutionConfigRes.value.hasSwitchedSubscription,
       tenantInfoInTokenRes.value.tenantUserName,
       true,
-      hasSwitchedM365Tenant ? tenantIdInConfig : "",
-      solutionConfigRes.value.hasSwitchedSubscription ? subscriptionIdInState : ""
+      tenantIdInConfig,
+      subscriptionIdInState
     );
     if (consentResult.isErr()) {
       return err(consentResult.error);

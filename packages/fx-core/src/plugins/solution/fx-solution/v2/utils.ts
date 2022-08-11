@@ -18,6 +18,7 @@ import {
   v3,
   EnvInfo,
   ResourceContextV3,
+  TelemetryReporter,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
@@ -205,7 +206,7 @@ export function parseUserName(appStudioToken?: Record<string, unknown>): Result<
 
 export async function checkWhetherLocalDebugM365TenantMatches(
   envInfo: v3.EnvInfoV3 | EnvInfo | undefined,
-  ctx: v2.Context | ResourceContextV3,
+  telemetryReporter: TelemetryReporter | undefined,
   localDebugTenantId?: string,
   m365TokenProvider?: M365TokenProvider,
   projectPath?: string,
@@ -245,7 +246,7 @@ export async function checkWhetherLocalDebugM365TenantMatches(
             new UserError("Solution", SolutionError.CannotLocalDebugInDifferentTenant, errorMessage)
           );
         } else if (envInfo) {
-          ctx.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckLocalDebugTenant, {
+          telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckLocalDebugTenant, {
             [TelemetryProperty.HasSwitchedM365Tenant]: "true",
             [SolutionTelemetryProperty.M365TenantId]: maybeM365TenantId.value,
             [SolutionTelemetryProperty.PreviousM365TenantId]: localDebugTenantId,
@@ -292,6 +293,12 @@ export async function checkWhetherLocalDebugM365TenantMatches(
           new UserError("Solution", SolutionError.CannotLocalDebugInDifferentTenant, errorMessage)
         );
       }
+    } else {
+      telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckLocalDebugTenant, {
+        [TelemetryProperty.HasSwitchedM365Tenant]: "false",
+        [SolutionTelemetryProperty.M365TenantId]: maybeM365TenantId.value,
+        [SolutionTelemetryProperty.PreviousM365TenantId]: localDebugTenantId,
+      });
     }
   }
 

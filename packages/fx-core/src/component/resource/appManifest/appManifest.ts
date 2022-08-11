@@ -14,6 +14,7 @@ import {
   QTreeNode,
   Result,
   SystemError,
+  TeamsAppManifest,
   UserError,
   v3,
 } from "@microsoft/teamsfx-api";
@@ -50,7 +51,15 @@ import {
 import { AppStudioResultFactory } from "../../../plugins/resource/appstudio/results";
 import { TelemetryPropertyKey } from "../../../plugins/resource/appstudio/utils/telemetry";
 import { ComponentNames } from "../../constants";
-import { createTeamsApp, updateTeamsApp, publishTeamsApp, buildTeamsAppPackage } from "./appStudio";
+import {
+  createTeamsApp,
+  updateTeamsApp,
+  publishTeamsApp,
+  buildTeamsAppPackage,
+  validateManifest,
+  getManifest,
+  updateManifest,
+} from "./appStudio";
 import {
   BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3,
   BOTS_TPL_FOR_NOTIFICATION_V3,
@@ -273,6 +282,30 @@ export class AppManifest implements CloudResource {
       }
     }
     return ok(undefined);
+  }
+  async validate(
+    context: ResourceContextV3,
+    inputs: InputsWithProjectPath
+  ): Promise<Result<string[], FxError>> {
+    const manifestRes = await getManifest(inputs.projectPath, context.envInfo);
+    if (manifestRes.isErr()) {
+      return err(manifestRes.error);
+    }
+    const manifest: TeamsAppManifest = manifestRes.value;
+    return await validateManifest(manifest);
+  }
+  async build(
+    context: ResourceContextV3,
+    inputs: InputsWithProjectPath
+  ): Promise<Result<string, FxError>> {
+    return await buildTeamsAppPackage(inputs.projectPath, context.envInfo);
+  }
+  async deploy(
+    context: ResourceContextV3,
+    inputs: InputsWithProjectPath,
+    actionCtx?: ActionContext
+  ): Promise<Result<undefined, FxError>> {
+    return await updateManifest(context, inputs);
   }
 }
 

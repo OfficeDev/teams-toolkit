@@ -1160,6 +1160,7 @@ describe("V2 implementation", () => {
         { envName: "default", config: {}, state: {} },
         mockedProvider
       );
+
       expect(result.isOk()).to.be.true;
       expect(
         (

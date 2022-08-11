@@ -544,7 +544,7 @@ export function ensureComponentConnections(settingsV3: ProjectSettingsV3): void 
     const existingResources = (ComponentConnections[configName] as string[]).filter(exists);
     const configs = settingsV3.components.filter((c) => c.name === configName);
     for (const config of configs) {
-      config.connections = existingResources;
+      config.connections = cloneDeep(existingResources);
     }
   }
   if (

@@ -21,6 +21,13 @@ import { BuiltInFeaturePluginNames } from "../v3/constants";
 import { ComponentNames } from "../../../../component/constants";
 import { updateAzureParameters } from "../arm";
 import { backupFiles } from "./backupFiles";
+import fs from "fs-extra";
+import path from "path";
+import { CommonStrings } from "../../../resource/bot/resources/strings";
+import { DeployConfigs } from "../../../resource/bot/constants";
+import { DeployConfigsConstants } from "../../../../common/azure-hosting/hostingConstant";
+import { FrontendPathInfo } from "../../../resource/frontend/constants";
+import { FrontendDeployment } from "../../../resource/frontend/ops/deploy";
 
 /**
  * A helper function to construct a plugin's context.
@@ -136,6 +143,47 @@ export async function handleConfigFilesWhenSwitchAccount(
   );
   if (updateAzureParametersRes.isErr()) {
     return err(updateAzureParametersRes.error);
+  }
+
+  if (hasSwitchedSubscription) {
+    const envName = envInfo.envName;
+    const maybeBotFolder = path.join(projectPath, CommonStrings.BOT_WORKING_DIR_NAME);
+    const maybeBotDeploymentFile = path.join(
+      maybeBotFolder,
+      path.join(DeployConfigs.DEPLOYMENT_FOLDER, DeployConfigsConstants.DEPLOYMENT_INFO_FILE)
+    );
+    if (await fs.pathExists(maybeBotDeploymentFile)) {
+      try {
+        const botDeployJson = await fs.readJSON(maybeBotDeploymentFile);
+        const lastTime = Math.max(botDeployJson[envInfo.envName]?.time ?? 0, 0);
+        if (lastTime !== 0) {
+          botDeployJson[envName] = {
+            time: 0,
+          };
+
+          await fs.writeJSON(maybeBotDeploymentFile, botDeployJson);
+        }
+      } catch (exception) {
+        // do nothing
+      }
+    }
+
+    const maybeTabFolder = path.join(projectPath, FrontendPathInfo.WorkingDir);
+    const maybeTabDeploymentFile = path.join(
+      maybeTabFolder,
+      path.join(DeployConfigs.DEPLOYMENT_FOLDER, DeployConfigsConstants.DEPLOYMENT_INFO_FILE)
+    );
+    if (await fs.pathExists(maybeTabDeploymentFile)) {
+      try {
+        const deploymentInfoJson = await fs.readJSON(maybeTabDeploymentFile);
+        if (!!deploymentInfoJson[envName] && !!deploymentInfoJson[envName].lastDeployTime) {
+          delete deploymentInfoJson[envName].lastDeployTime;
+          await fs.writeJSON(maybeTabDeploymentFile, deploymentInfoJson);
+        }
+      } catch (exception) {
+        // do nothing
+      }
+    }
   }
 
   return ok(undefined);

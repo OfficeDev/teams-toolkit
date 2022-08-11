@@ -48,12 +48,12 @@ resource webAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
     TeamsFx__Authentication__InitiateLoginEndpoint: uri(webappEndpoint, 'auth-start.html') // The page is used to let users consent required OAuth permissions during bot SSO process
     TeamsFx__Authentication__OAuthAuthority: uri(m365OauthAuthorityHost, m365TenantId) // AAD authority host
       {{else}}
-    INITIATE_LOGIN_ENDPOINT: uri(webappEndpoint, 'auth-start.html') // The page is used to let users consent required OAuth permissions during bot SSO process
-    M365_AUTHORITY_HOST: m365OauthAuthorityHost // AAD authority host
-    M365_CLIENT_ID: m365ClientId // Client id of AAD application
-    M365_CLIENT_SECRET: m365ClientSecret // Client secret of AAD application
-    M365_TENANT_ID: m365TenantId // Tenant id of AAD application
-    M365_APPLICATION_ID_URI: m365ApplicationIdUri // Application ID URI of AAD application
+    TeamsFx__Authentication__Bot__InitiateLoginEndpoint: uri(webappEndpoint, 'bot-auth-start') // The page is used to let users consent required OAuth permissions during bot SSO process
+    TeamsFx__Authentication__OAuthAuthority: uri(m365OauthAuthorityHost, m365TenantId) // AAD authority host
+    TeamsFx__Authentication__ClientId: m365ClientId // Client id of AAD application
+    TeamsFx__Authentication__ClientSecret: m365ClientSecret // Client secret of AAD application
+    TeamsFx__Authentication__TenantId: m365TenantId // Tenant id of AAD application
+    TeamsFx__Authentication__ApplicationIdUri: m365ApplicationIdUri // Application ID URI of AAD application
       {{/if}}
     {{/if}}
     {{#if (contains "teams-bot" connections)}}

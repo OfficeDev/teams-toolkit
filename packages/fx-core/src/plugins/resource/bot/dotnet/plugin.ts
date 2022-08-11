@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { PluginContext } from "@microsoft/teamsfx-api";
+import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
 import path from "path";
 import { getTemplatesFolder } from "../../../../folder";
 import { Bicep, ConstantString } from "../../../../common/constants";
@@ -10,14 +10,14 @@ import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/
 import { Logger } from "../logger";
 import { Messages } from "../resources/messages";
 import { FxResult, FxBotPluginResultFactory as ResultFactory } from "../result";
-import { generateBicepFromFile } from "../../../../common/tools";
+import { generateBicepFromFile, isAADEnabled } from "../../../../common/tools";
 import { ArmTemplateResult } from "../../../../common/armInterface";
 import fs from "fs-extra";
 import { PathInfo, RegularExpr } from "./constants";
 import { TeamsBotImpl } from "../plugin";
 import { FileIOError } from "./errors";
 import { PluginNames } from "../../../solution/fx-solution/constants";
-import { PluginBot } from "../resources/strings";
+import { PluginAAD, PluginBot } from "../resources/strings";
 
 // Extends TeamsBotImpl to reuse provision method
 export class DotnetBotImpl extends TeamsBotImpl {
@@ -59,13 +59,41 @@ export class DotnetBotImpl extends TeamsBotImpl {
     const appSettingsPath = path.join(context.root, PathInfo.appSettingDevelopment);
     try {
       let appSettings: string;
+      const includeAad = isAADEnabled(
+        context.projectSettings!.solutionSettings as AzureSolutionSettings
+      );
       if (await fs.pathExists(appSettingsPath)) {
         appSettings = await fs.readFile(appSettingsPath, "utf-8");
       } else {
         // if appsetting file not exist, generate a new one
         // TODO(qidon): load content from resource file or template
-        appSettings =
-          '\
+        appSettings = includeAad
+          ? '\
+        {\r\n\
+          "Logging": {\r\n\
+            "LogLevel": {\r\n\
+              "Default": "Information",\r\n\
+              "Microsoft": "Warning",\r\n\
+              "Microsoft.Hosting.Lifetime": "Information"\r\n\
+            }\r\n\
+          },\r\n\
+          "AllowedHosts": "*",\r\n\
+          "BOT_ID": "$botId$",\r\n\
+          "BOT_PASSWORD": "$bot-password$",\r\n\
+          "TeamsFx": {\r\n\
+            "Authentication": {\r\n\
+              "ClientId": "$clientId$",\r\n\
+              "ClientSecret": "$client-secret$",\r\n\
+              "OAuthAuthority": "$oauthAuthority$",\r\n\
+              "TenantId": "$tenantId$",\r\n\
+              "ApplicationIdUri": "$applicationIdUri$",\r\n\
+              "Bot": {\r\n\
+                "InitiateLoginEndpoint": "$initiateLoginEndpoint$"\r\n\
+              }\r\n\
+            }\r\n\
+          }\r\n\
+        }\r\n'
+          : '\
 {\r\n\
   "Logging": {\r\n\
     "LogLevel": {\r\n\
@@ -91,6 +119,44 @@ export class DotnetBotImpl extends TeamsBotImpl {
       }
       if (botPassword) {
         appSettings = appSettings.replace(RegularExpr.botPassword, botPassword);
+      }
+      if (includeAad) {
+        const clientId = context.envInfo.state.get(PluginNames.AAD)?.get(PluginAAD.CLIENT_ID);
+        const clientSecret = context.envInfo.state
+          .get(PluginNames.AAD)
+          ?.get(PluginAAD.CLIENT_SECRET);
+        const tenantId = context.envInfo.state.get(PluginNames.AAD)?.get(PluginAAD.TENANT_ID);
+        const oauthAuthority = `${context.envInfo.state
+          .get(PluginNames.AAD)
+          ?.get(PluginAAD.OAUTH_AUTHORITY)}/${tenantId}`;
+        const applicationIdUri = context.envInfo.state
+          .get(PluginNames.AAD)
+          ?.get(PluginAAD.APPLICATION_ID_URIS);
+        const initiateLoginEndpoint = `${context.envInfo.state
+          .get(PluginNames.BOT)
+          ?.get(PluginBot.SITE_ENDPOINT)}/bot-auth-start`;
+
+        if (clientId) {
+          appSettings = appSettings.replace(RegularExpr.clientId, clientId);
+        }
+        if (clientSecret) {
+          appSettings = appSettings.replace(RegularExpr.clientSecret, clientSecret);
+        }
+        if (tenantId) {
+          appSettings = appSettings.replace(RegularExpr.tenantId, tenantId);
+        }
+        if (oauthAuthority) {
+          appSettings = appSettings.replace(RegularExpr.oauthAuthority, oauthAuthority);
+        }
+        if (applicationIdUri) {
+          appSettings = appSettings.replace(RegularExpr.applicationIdUri, applicationIdUri);
+        }
+        if (initiateLoginEndpoint) {
+          appSettings = appSettings.replace(
+            RegularExpr.initiateLoginEndpoint,
+            initiateLoginEndpoint
+          );
+        }
       }
       await fs.writeFile(appSettingsPath, appSettings, "utf-8");
     } catch (error) {

@@ -335,11 +335,6 @@ export class AddSsoParameters {
       ClientId: "$clientId$",
       ClientSecret: "$client-secret$",
       OAuthAuthority: "$oauthAuthority$",
-      TenantId: "$tenantId$",
-      ApplicationIdUri: "$applicationIdUri$",
-      Bot: {
-        InitiateLoginEndpoint: "$initiateLoginEndpoint$",
-      },
     },
   };
 }

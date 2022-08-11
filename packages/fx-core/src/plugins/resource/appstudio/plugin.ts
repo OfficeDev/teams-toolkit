@@ -975,12 +975,20 @@ export class AppStudioPluginImpl {
     if (manifestResult.isErr()) {
       return err(manifestResult.error);
     }
-    const manifest: TeamsAppManifest = manifestResult.value;
+    let manifest: TeamsAppManifest = manifestResult.value;
     manifest.bots = undefined;
     manifest.composeExtensions = undefined;
     if (isLocalDebug || !isUUID(manifest.id)) {
       manifest.id = v4();
     }
+
+    // Corner case: icons path defined in config file
+    let manifestString = JSON.stringify(manifestResult.value);
+    const view = {
+      config: ctx.envInfo.config,
+    };
+    manifestString = renderTemplate(manifestString, view);
+    manifest = JSON.parse(manifestString) as TeamsAppManifest;
 
     const colorFile = `${appDirectory}/${manifest.icons.color}`;
     if (!(await fs.pathExists(colorFile))) {

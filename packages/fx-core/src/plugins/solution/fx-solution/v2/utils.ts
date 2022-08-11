@@ -17,7 +17,6 @@ import {
   M365TokenProvider,
   v3,
   EnvInfo,
-  ResourceContextV3,
   TelemetryReporter,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
@@ -28,7 +27,6 @@ import {
   SolutionError,
   SOLUTION_PROVISION_SUCCEEDED,
   SolutionSource,
-  PluginNames,
   SolutionTelemetryProperty,
 } from "../constants";
 import {

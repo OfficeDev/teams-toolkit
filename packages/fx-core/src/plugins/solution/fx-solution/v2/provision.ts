@@ -257,7 +257,7 @@ async function provisionResourceImpl(
       false,
       tenantIdInTokenRes.value.tenantUserName,
       false,
-      hasSwitchedM365Tenant ? tenantIdInConfig : ""
+      tenantIdInConfig
     );
     if (consentResult.isErr()) {
       return err(consentResult.error);

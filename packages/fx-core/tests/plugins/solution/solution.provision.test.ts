@@ -1502,7 +1502,8 @@ describe("askForProvisionConsentNew", () => {
       false,
       false,
       m365AccountName,
-      true
+      true,
+      "tenantId"
     );
 
     // Assert
@@ -1569,7 +1570,9 @@ describe("askForProvisionConsentNew", () => {
       true,
       false,
       m365AccountName,
-      true
+      true,
+      "tenantId",
+      "subId"
     );
 
     // Assert
@@ -1637,7 +1640,9 @@ describe("askForProvisionConsentNew", () => {
       false,
       true,
       m365AccountName,
-      true
+      true,
+      "tenantId",
+      "subId"
     );
 
     // Assert
@@ -1705,7 +1710,9 @@ describe("askForProvisionConsentNew", () => {
       true,
       true,
       m365AccountName,
-      true
+      true,
+      "tenantId",
+      "subId"
     );
 
     // Assert
@@ -1773,7 +1780,9 @@ describe("askForProvisionConsentNew", () => {
       true,
       false,
       m365AccountName,
-      false
+      false,
+      "tenantId",
+      "subId"
     );
 
     // Assert
@@ -1823,7 +1832,9 @@ describe("askForProvisionConsentNew", () => {
       false,
       false,
       m365AccountName,
-      false
+      false,
+      "tenantId",
+      "subId"
     );
 
     // Assert
@@ -1867,7 +1878,9 @@ describe("askForProvisionConsentNew", () => {
       false,
       false,
       m365AccountName,
-      false
+      false,
+      "tenantId",
+      "subId"
     );
 
     // Assert
@@ -1929,7 +1942,9 @@ describe("askForProvisionConsentNew", () => {
       true,
       false,
       m365AccountName,
-      false
+      false,
+      "tenantId",
+      "subId"
     );
 
     // Assert
@@ -1988,7 +2003,9 @@ describe("askForProvisionConsentNew", () => {
       true,
       false,
       m365AccountName,
-      false
+      false,
+      "tenantId",
+      "subId"
     );
 
     // Assert

@@ -9,7 +9,9 @@ import * as os from "os";
 import * as path from "path";
 import "reflect-metadata";
 import sinon from "sinon";
-import { createV2Context, newProjectSettings, setTools } from "../../../../../src";
+import { createV2Context } from "../../../../../src/common/tools";
+import { newProjectSettings } from "../../../../../src/common/projectSettingsHelper";
+import { setTools } from "../../../../../src/core/globalVars";
 import {
   GetConfigError,
   GetSkipAppConfigError,

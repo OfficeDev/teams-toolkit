@@ -1197,6 +1197,18 @@ export async function createAuthFiles(
         AddSsoParameters.Bot
       );
       if (isVsProject) {
+        // README.md
+        const readmeSourcePath = path.join(botTemplateFolder, AddSsoParameters.ReadmeCSharp);
+        const readmeTargetPath = path.join(botFolder, AddSsoParameters.ReadmeCSharp);
+        const readme = await fs.readFile(readmeSourcePath);
+        fs.writeFile(readmeTargetPath, readme);
+
+        // Sample Code
+        const sampleSourceFolder = path.join(botTemplateFolder, languageFolderName);
+        const sampleZip = new AdmZip();
+        sampleZip.addLocalFolder(sampleSourceFolder);
+        await unzip(sampleZip, botFolder);
+
         // Update appsettings
         const appSettingsPath = path.join(projectPath!, AddSsoParameters.AppSettings);
         const appSettingsDevPath = path.join(projectPath!, AddSsoParameters.AppSettingsDev);
@@ -1208,7 +1220,7 @@ export async function createAuthFiles(
             !appSettings.TeamsFx.Authentication ||
             !appSettings.TeamsFx.Authentication.Bot
           ) {
-            appSettings.TeamsFx = AddSsoParameters.AppSettingsToAdd;
+            appSettings.TeamsFx = AddSsoParameters.AppSettingsToAddForBot;
           }
           await fs.writeFile(appSettingsPath, JSON.stringify(appSettings, null, "\t"), "utf-8");
         }
@@ -1219,7 +1231,7 @@ export async function createAuthFiles(
             !appSettings.TeamsFx.Authentication ||
             !appSettings.TeamsFx.Authentication.Bot
           ) {
-            appSettings.TeamsFx = AddSsoParameters.AppSettingsToAdd;
+            appSettings.TeamsFx = AddSsoParameters.AppSettingsToAddForBot;
           }
           await fs.writeFile(appSettingsDevPath, JSON.stringify(appSettings, null, "\t"), "utf-8");
         }

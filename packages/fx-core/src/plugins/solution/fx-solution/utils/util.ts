@@ -27,7 +27,6 @@ import { CommonStrings } from "../../../resource/bot/resources/strings";
 import { DeployConfigs } from "../../../resource/bot/constants";
 import { DeployConfigsConstants } from "../../../../common/azure-hosting/hostingConstant";
 import { FrontendPathInfo } from "../../../resource/frontend/constants";
-import { FrontendDeployment } from "../../../resource/frontend/ops/deploy";
 
 /**
  * A helper function to construct a plugin's context.

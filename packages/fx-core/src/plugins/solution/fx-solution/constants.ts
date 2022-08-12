@@ -256,6 +256,10 @@ export enum SolutionTelemetryProperty {
   SubscriptionId = "subscription-id",
   AddTabSso = "tab-sso",
   AddBotSso = "bot-sso",
+  M365TenantId = "m365-tenant-id",
+  PreviousSubsriptionId = "previous-subscription-id",
+  PreviousM365TenantId = "previous-m365-tenant-id",
+  ConfirmRes = "confirm-res",
 }
 
 export enum SolutionTelemetrySuccess {

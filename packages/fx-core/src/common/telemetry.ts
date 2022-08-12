@@ -37,6 +37,7 @@ export enum TelemetryProperty {
   TemplateScenario = "template-scenario",
   TemplateFallback = "template-fallback",
   HasSwitchedSubscription = "has-switched-subscription",
+  HasSwitchedM365Tenant = "has-switched-m365",
 }
 
 export enum TelemetryEvent {
@@ -104,6 +105,8 @@ export enum TelemetryEvent {
   FillProjectId = "fill-project-id",
   ScaffoldFromTemplatesStart = "scaffold-from-templates-start",
   ScaffoldFromTemplates = "scaffold-from-templates",
+  ConfirmProvision = "confirm-provision",
+  CheckLocalDebugTenant = "check-local-debug-tenant",
 }
 
 export enum TelemetrySuccess {

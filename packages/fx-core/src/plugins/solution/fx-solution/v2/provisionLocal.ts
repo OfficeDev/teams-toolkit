@@ -64,6 +64,7 @@ export async function provisionLocalResource(
 
   const m365TenantMatches = await checkWhetherLocalDebugM365TenantMatches(
     envInfo as v3.EnvInfoV3,
+    ctx.telemetryReporter,
     localDebugTenantId,
     tokenProvider.m365TokenProvider,
     inputs.projectPath

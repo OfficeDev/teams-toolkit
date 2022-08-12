@@ -15,7 +15,7 @@ import {
 import "reflect-metadata";
 import { Container, Service } from "typedi";
 import { convertToAlphanumericOnly } from "../../common/utils";
-import { AzureSolutionQuestionNames, TabOptionItem } from "../../plugins";
+import { AddSsoParameters, AzureSolutionQuestionNames, TabOptionItem } from "../../plugins";
 import "../connection/azureWebAppConfig";
 import { ComponentNames } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
@@ -30,10 +30,7 @@ import { getComponent } from "../workflow";
 export class SSO {
   name = "sso";
 
-  async add(
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ): Promise<Result<undefined, FxError>> {
+  async add(context: ContextV3, inputs: InputsWithProjectPath): Promise<Result<any, FxError>> {
     const updates = getUpdateComponents(context, inputs);
     const effects: Effect[] = [];
 
@@ -108,7 +105,14 @@ export class SSO {
       if (res.isErr()) return err(res.error);
       effects.push("generate config biceps");
     }
-    return ok(undefined);
+
+    return ok({
+      func: AddSsoParameters.AddSso,
+      capabilities: [
+        ...(updates.tab ? [AddSsoParameters.Tab] : []),
+        ...(updates.bot ? [AddSsoParameters.Bot] : []),
+      ],
+    });
   }
 }
 

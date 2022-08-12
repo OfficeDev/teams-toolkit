@@ -36,3 +36,7 @@ export function isPreviewFeaturesEnabled(): boolean {
 export function isCLIDotNetEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.CLIDotNet, false);
 }
+
+export function isSPFxMultiTabEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.SPFxMultiTab, false);
+}

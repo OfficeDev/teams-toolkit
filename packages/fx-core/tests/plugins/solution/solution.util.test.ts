@@ -19,6 +19,7 @@ import { fillInSolutionSettings } from "../../../src/plugins/solution/fx-solutio
 import { PluginNames } from "../../../src";
 import mockedEnv from "mocked-env";
 import * as arm from "../../../src/plugins/solution/fx-solution/arm";
+import * as backup from "../../../src/plugins/solution/fx-solution/utils/backupFiles";
 import { BuiltInFeaturePluginNames } from "../../../src/plugins/solution/fx-solution/v3/constants";
 import {
   handleConfigFilesWhenSwitchAccount,
@@ -100,9 +101,34 @@ describe("util: handleConfigFilesWhenSwitchAccount", async () => {
     mocker.restore();
   });
 
+  it("return if not switch accounts", async () => {
+    // Arrange
+    const envInfo: v3.EnvInfoV3 = {
+      envName: "dev",
+      state: { solution: {}, [BuiltInFeaturePluginNames.bot]: { resourceId: "mockResourceId" } },
+      config: {},
+    };
+    const appName = "app-name";
+    const projectPath = "project-path";
+
+    // Act
+    const res = await handleConfigFilesWhenSwitchAccount(
+      envInfo,
+      appName,
+      projectPath,
+      false,
+      false,
+      true
+    );
+
+    // Assert
+    expect(res.isOk()).equal(true);
+  });
+
   it("success", async () => {
     // Arrange
     const spy = mocker.stub(arm, "updateAzureParameters").resolves(ok(undefined));
+    mocker.stub(backup, "backupFiles").resolves(ok(undefined));
     const envInfo: v3.EnvInfoV3 = {
       envName: "dev",
       state: { solution: {}, [BuiltInFeaturePluginNames.bot]: { resourceId: "mockResourceId" } },
@@ -128,6 +154,7 @@ describe("util: handleConfigFilesWhenSwitchAccount", async () => {
 
   it("error when updating parameters", async () => {
     // Arrange
+    mocker.stub(backup, "backupFiles").resolves(ok(undefined));
     const spy = mocker
       .stub(arm, "updateAzureParameters")
       .resolves(err(new UserError("solution", "error", "error")));
@@ -152,6 +179,34 @@ describe("util: handleConfigFilesWhenSwitchAccount", async () => {
     // Assert
     expect(spy.calledOnceWithExactly(projectPath, appName, "dev", true, true, false));
     expect(res.isErr()).equal(true);
+  });
+
+  it("error when backup files", async () => {
+    // Arrange
+    mocker.stub(backup, "backupFiles").resolves(err(new UserError("solution", "error", "error")));
+    const envInfo: v3.EnvInfoV3 = {
+      envName: "dev",
+      state: { solution: {} },
+      config: {},
+    };
+    const appName = "app-name";
+    const projectPath = "project-path";
+
+    // Act
+    const res = await handleConfigFilesWhenSwitchAccount(
+      envInfo,
+      appName,
+      projectPath,
+      true,
+      true,
+      false
+    );
+
+    // Assert
+    expect(res.isErr()).equal(true);
+    if (res.isErr()) {
+      expect(res.error.name).equal("error");
+    }
   });
 });
 

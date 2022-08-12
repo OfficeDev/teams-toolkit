@@ -73,11 +73,11 @@ export class FeatureFlagName {
   static readonly ExistingTabApp = "TEAMSFX_INIT_APP";
   static readonly AadManifest = "TEAMSFX_AAD_MANIFEST";
   static readonly DebugTemplate = "TEAMSFX_DEBUG_TEMPLATE";
-  static readonly YeomanScaffold = "YEOMAN_SCAFFOLD";
   static readonly BotNotification = "BOT_NOTIFICATION_ENABLED";
   static readonly M365App = "TEAMSFX_M365_APP";
   static readonly YoCheckerEnable = "TEAMSFX_YO_ENV_CHECKER_ENABLE";
   static readonly GeneratorCheckerEnable = "TEAMSFX_GENERATOR_ENV_CHECKER_ENABLE";
+  static readonly SPFxMultiTab = "TEAMSFX_SPFX_MULTI_TAB";
   static readonly ApiConnect = "TEAMSFX_API_CONNECT_ENABLE";
   static readonly DeployManifest = "TEAMSFX_DEPLOY_MANIFEST";
   static readonly Preview = "TEAMSFX_PREVIEW";

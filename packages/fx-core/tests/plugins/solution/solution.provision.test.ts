@@ -98,7 +98,7 @@ import * as arm from "../../../src/plugins/solution/fx-solution/arm";
 import * as armResources from "@azure/arm-resources";
 import { aadPlugin, appStudioPlugin, spfxPlugin, fehostPlugin } from "../../constants";
 import { AadAppForTeamsPlugin } from "../../../src";
-import { assert } from "sinon";
+import * as backup from "../../../src/plugins/solution/fx-solution/utils/backupFiles";
 import { resourceGroupHelper } from "../../../src/plugins/solution/fx-solution/utils/ResourceGroupHelper";
 import * as manifestTemplate from "../../../src/plugins/resource/appstudio/manifestTemplate";
 import { SolutionRunningState } from "../../../src/plugins/solution/fx-solution/types";
@@ -1038,6 +1038,11 @@ describe("before provision() asking for resource group info", () => {
 
 describe("API v2 implementation", () => {
   describe("SPFx projects", () => {
+    const mocker = sinon.createSandbox();
+
+    afterEach(() => {
+      mocker.restore();
+    });
     it("should work on happy path", async () => {
       const projectSettings: ProjectSettings = {
         appName: "my app",
@@ -1117,6 +1122,8 @@ describe("API v2 implementation", () => {
       };
       mockProvisionV2ThatAlwaysSucceed(spfxPluginV2);
       mockProvisionV2ThatAlwaysSucceed(appStudioPluginV2);
+      mocker.stub(backup, "backupFiles").resolves(ok(undefined));
+      mocker.stub(arm, "updateAzureParameters").resolves(ok(undefined));
 
       const solution = new TeamsAppSolutionV2();
       const result = await solution.provisionResources(
@@ -1130,6 +1137,62 @@ describe("API v2 implementation", () => {
       expect(mockedEnvInfo.state.solution.teamsAppTenantId).equals("tenantId");
       expect(mockedEnvInfo.state["fx-resource-appstudio"].tenantId).equals("tenantId");
       expect(mockedEnvInfo.state.solution.provisionSucceeded).equals(true);
+    });
+
+    it("provision after switch M365 account error when backup", async () => {
+      const newParam = { SWITCH_ACCOUNT: "true" };
+      const mockedEnvRestore = mockedEnv(newParam);
+
+      after(async () => {
+        mockedEnvRestore();
+      });
+      const projectSettings: ProjectSettings = {
+        appName: "my app",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          hostType: HostTypeOptionSPFx.id,
+          name: "azure",
+          version: "1.0",
+          activeResourcePlugins: [spfxPluginV2.name],
+        },
+      };
+      const mockedCtx = new MockedV2Context(projectSettings);
+      mockedCtx.userInteraction = new MockUserInteraction();
+      const mockedInputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: "./",
+      };
+      const mockedTokenProvider: TokenProvider = {
+        azureAccountProvider: new MockedAzureTokenProvider(),
+        m365TokenProvider: new MockedM365Provider(),
+      };
+      const mockedEnvInfo: v2.EnvInfoV2 = {
+        envName: "default",
+        config: { manifest: { appName: { short: "test-app" } } },
+        state: {
+          "fx-resource-appstudio": { tenantId: "previousTenantId" },
+          solution: { teamsAppTenantId: "previousTenantId", provisionSucceeded: true },
+          "fx-resource-spfx": {},
+        },
+      };
+      mockProvisionV2ThatAlwaysSucceed(spfxPluginV2);
+      mockProvisionV2ThatAlwaysSucceed(appStudioPluginV2);
+      mocker
+        .stub(backup, "backupFiles")
+        .resolves(err(new UserError("solution", "error1", "error1")));
+
+      const solution = new TeamsAppSolutionV2();
+      const result = await solution.provisionResources(
+        mockedCtx,
+        mockedInputs,
+        mockedEnvInfo,
+        mockedTokenProvider
+      );
+
+      expect(result.isErr()).equals(true);
+      if (result.isErr()) {
+        expect(result.error.name).equal("error1");
+      }
     });
   });
 
@@ -1293,6 +1356,7 @@ describe("API v2 implementation", () => {
       mockProvisionV2ThatAlwaysSucceed(fehostPluginV2);
       mockProvisionV2ThatAlwaysSucceed(appStudioPluginV2);
       mockProvisionV2ThatAlwaysSucceed(aadPluginV2);
+      mocker.stub(backup, "backupFiles").resolves(ok(undefined));
       mocker.stub(arm, "updateAzureParameters").resolves(ok(undefined));
 
       const solution = new TeamsAppSolutionV2();
@@ -1357,6 +1421,7 @@ describe("API v2 implementation", () => {
       mockProvisionV2ThatAlwaysSucceed(fehostPluginV2);
       mockProvisionV2ThatAlwaysSucceed(appStudioPluginV2);
       mockProvisionV2ThatAlwaysSucceed(aadPluginV2);
+      mocker.stub(backup, "backupFiles").resolves(ok(undefined));
       mocker
         .stub(arm, "updateAzureParameters")
         .resolves(err(new UserError("Solution", "error1", "error1")));
@@ -1437,7 +1502,8 @@ describe("askForProvisionConsentNew", () => {
       false,
       false,
       m365AccountName,
-      true
+      true,
+      "tenantId"
     );
 
     // Assert
@@ -1504,7 +1570,9 @@ describe("askForProvisionConsentNew", () => {
       true,
       false,
       m365AccountName,
-      true
+      true,
+      "tenantId",
+      "subId"
     );
 
     // Assert
@@ -1572,7 +1640,9 @@ describe("askForProvisionConsentNew", () => {
       false,
       true,
       m365AccountName,
-      true
+      true,
+      "tenantId",
+      "subId"
     );
 
     // Assert
@@ -1640,7 +1710,9 @@ describe("askForProvisionConsentNew", () => {
       true,
       true,
       m365AccountName,
-      true
+      true,
+      "tenantId",
+      "subId"
     );
 
     // Assert
@@ -1708,7 +1780,9 @@ describe("askForProvisionConsentNew", () => {
       true,
       false,
       m365AccountName,
-      false
+      false,
+      "tenantId",
+      "subId"
     );
 
     // Assert
@@ -1758,7 +1832,9 @@ describe("askForProvisionConsentNew", () => {
       false,
       false,
       m365AccountName,
-      false
+      false,
+      "tenantId",
+      "subId"
     );
 
     // Assert
@@ -1802,7 +1878,9 @@ describe("askForProvisionConsentNew", () => {
       false,
       false,
       m365AccountName,
-      false
+      false,
+      "tenantId",
+      "subId"
     );
 
     // Assert
@@ -1864,7 +1942,9 @@ describe("askForProvisionConsentNew", () => {
       true,
       false,
       m365AccountName,
-      false
+      false,
+      "tenantId",
+      "subId"
     );
 
     // Assert
@@ -1923,7 +2003,9 @@ describe("askForProvisionConsentNew", () => {
       true,
       false,
       m365AccountName,
-      false
+      false,
+      "tenantId",
+      "subId"
     );
 
     // Assert

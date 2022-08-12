@@ -1085,12 +1085,6 @@ describe("API v2 implementation", () => {
     });
 
     it("provision after switch M365 account", async () => {
-      const newParam = { SWITCH_ACCOUNT: "true" };
-      const mockedEnvRestore = mockedEnv(newParam);
-
-      after(async () => {
-        mockedEnvRestore();
-      });
       const projectSettings: ProjectSettings = {
         appName: "my app",
         projectId: uuid.v4(),
@@ -1140,12 +1134,6 @@ describe("API v2 implementation", () => {
     });
 
     it("provision after switch M365 account error when backup", async () => {
-      const newParam = { SWITCH_ACCOUNT: "true" };
-      const mockedEnvRestore = mockedEnv(newParam);
-
-      after(async () => {
-        mockedEnvRestore();
-      });
       const projectSettings: ProjectSettings = {
         appName: "my app",
         projectId: uuid.v4(),
@@ -1311,12 +1299,6 @@ describe("API v2 implementation", () => {
     });
 
     it("provision after switch M365 and Azure subscription", async () => {
-      const newParam = { SWITCH_ACCOUNT: "true" };
-      const mockedEnvRestore = mockedEnv(newParam);
-
-      after(() => {
-        mockedEnvRestore();
-      });
       const projectSettings: ProjectSettings = {
         appName: "my app",
         projectId: uuid.v4(),
@@ -1375,13 +1357,6 @@ describe("API v2 implementation", () => {
     });
 
     it("provision after switch M365 and Azure subscription error when update Azure parameters", async () => {
-      const newParam = { SWITCH_ACCOUNT: "true" };
-      const mockedEnvRestore = mockedEnv(newParam);
-
-      after(async () => {
-        mockedEnvRestore();
-        mocker.restore();
-      });
       const projectSettings: ProjectSettings = {
         appName: "my app",
         projectId: uuid.v4(),

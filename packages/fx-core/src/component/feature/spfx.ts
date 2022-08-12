@@ -29,13 +29,13 @@ import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 @Service(ComponentNames.SPFxTab)
 export class SPFxTab {
   name = ComponentNames.SPFxTab;
-  @hooks([
-    ActionExecutionMW({
-      question: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return ok(getSPFxScaffoldQuestion());
-      },
-    }),
-  ])
+  // @hooks([
+  //   ActionExecutionMW({
+  //     question: (context: ContextV3, inputs: InputsWithProjectPath) => {
+  //       return ok(getSPFxScaffoldQuestion());
+  //     },
+  //   }),
+  // ])
   async add(
     context: ContextV3,
     inputs: InputsWithProjectPath

@@ -619,6 +619,7 @@ function checkM365Account(prefix: string, showLoginPage: boolean): Promise<Check
         }
       );
 
+      let hasSwitchedM365Tenant = false;
       if (
         localEnvInfo &&
         localEnvInfo["state"] &&
@@ -627,6 +628,7 @@ function checkM365Account(prefix: string, showLoginPage: boolean): Promise<Check
         !!tenantId &&
         localEnvInfo["state"]["solution"]["teamsAppTenantId"] != tenantId
       ) {
+        hasSwitchedM365Tenant = true;
         showNotification(
           localize("teamstoolkit.localDebug.switchM365AccountWarning"),
           "https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/provision" // todo: update doc link
@@ -637,7 +639,9 @@ function checkM365Account(prefix: string, showLoginPage: boolean): Promise<Check
         result: result,
         successMsg:
           result && loginHint
-            ? doctorConstant.SignInSuccess.split("@account").join(`${loginHint}`)
+            ? hasSwitchedM365Tenant
+              ? doctorConstant.SignInSuccessWithNewAccount.split("@account").join(`${loginHint}`)
+              : doctorConstant.SignInSuccess.split("@account").join(`${loginHint}`)
             : Checker.M365Account,
         failureMsg: failureMsg,
         error: error,

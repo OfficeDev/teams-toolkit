@@ -24,7 +24,7 @@ export const doctorConstant = {
   Node12MatchFunction:
     "If you have your own Azure Functions Core Tools installed, make sure it works with new Node.js version. See (https://docs.microsoft.com/azure/azure-functions/functions-versions#languages) for Azure Functions supported Node versions.",
   SignInSuccess: `M365 Account (@account) is logged in and sideloading enabled`,
-  SignInSuccessWithNewAccount: `M365 Account (@account) is logged in and sideloading enabled. Please note that you are now using a different Microsoft 365 account from what you previously used.`,
+  SignInSuccessWithNewAccount: `You are now using a different Microsoft 365 account. M365 Account (@account) is logged in and sideloading enabled.`,
   Cert: "Development certificate for localhost",
   CertSuccess: "Development certificate for localhost is installed",
   NpmInstallSuccess: "NPM packages for @app are installed",

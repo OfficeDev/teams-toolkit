@@ -619,7 +619,6 @@ function checkM365Account(prefix: string, showLoginPage: boolean): Promise<Check
         }
       );
 
-      let hasSwitchedM365Tenant = false;
       if (
         localEnvInfo &&
         localEnvInfo["state"] &&
@@ -628,22 +627,41 @@ function checkM365Account(prefix: string, showLoginPage: boolean): Promise<Check
         !!tenantId &&
         localEnvInfo["state"]["solution"]["teamsAppTenantId"] != tenantId
       ) {
-        hasSwitchedM365Tenant = true;
+        showNotification(
+          localize("teamstoolkit.localDebug.switchM365AccountWarning"),
+          "https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/provision" // todo: update doc link
+        );
       }
       return {
         checker: Checker.M365Account,
         result: result,
         successMsg:
           result && loginHint
-            ? hasSwitchedM365Tenant
-              ? doctorConstant.SignInSuccessWithNewAccount.split("@account").join(`${loginHint}`)
-              : doctorConstant.SignInSuccess.split("@account").join(`${loginHint}`)
+            ? doctorConstant.SignInSuccess.split("@account").join(`${loginHint}`)
             : Checker.M365Account,
         failureMsg: failureMsg,
         error: error,
       };
     }
   );
+}
+
+function showNotification(message: string, url: string): void {
+  VS_CODE_UI.showMessage(
+    "warn",
+    message,
+    false,
+    localize("teamstoolkit.localDebug.learnMore")
+  ).then(async (result) => {
+    if (result.isOk()) {
+      if (result.value === localize("teamstoolkit.localDebug.learnMore")) {
+        ExtTelemetry.sendTelemetryEvent(
+          TelemetryEvent.ClickLearnMoreWhenSwitchAccountForLocalDebug
+        );
+        await VS_CODE_UI.openUrl(url);
+      }
+    }
+  });
 }
 
 async function checkNode(

@@ -793,7 +793,8 @@ export async function updateAzureParameters(
     !envName ||
     !appName ||
     !projectPath ||
-    (!hasSwitchedM365Tenant && !hasSwitchedSubscription)
+    (!hasSwitchedM365Tenant && !hasSwitchedSubscription) ||
+    (hasSwitchedM365Tenant && !hasBotServiceCreatedBefore)
   ) {
     return ok(undefined);
   }

@@ -667,7 +667,7 @@ async function preProvision(
   }
   const tenantIdInToken = tenantInfoInTokenRes.value.tenantIdInToken;
   const hasSwitchedM365Tenant =
-    tenantIdInConfig && tenantIdInToken && tenantIdInToken !== tenantIdInConfig;
+    !!tenantIdInConfig && !!tenantIdInToken && tenantIdInToken !== tenantIdInConfig;
 
   if (!isLocalDebug) {
     if (hasSwitchedM365Tenant) {
@@ -676,6 +676,7 @@ async function preProvision(
   } else {
     const res = await checkWhetherLocalDebugM365TenantMatches(
       envInfo,
+      ctx.telemetryReporter,
       tenantIdInConfig,
       ctx.tokenProvider.m365TokenProvider,
       inputs.projectPath
@@ -693,6 +694,7 @@ async function preProvision(
   // 3. check Azure configs
   if (hasAzureResourceV3(ctx.projectSetting) && envInfo.envName !== "local") {
     // ask common question and fill in solution config
+    const subscriptionIdInState = envInfo.state.solution.subscriptionId;
     const solutionConfigRes = await fillInAzureConfigs(ctx, inputs, envInfo, ctx.tokenProvider);
     if (solutionConfigRes.isErr()) {
       return err(solutionConfigRes.error);
@@ -705,7 +707,9 @@ async function preProvision(
       hasSwitchedM365Tenant,
       solutionConfigRes.value.hasSwitchedSubscription,
       tenantInfoInTokenRes.value.tenantUserName,
-      true
+      true,
+      tenantIdInConfig,
+      subscriptionIdInState
     );
     if (consentResult.isErr()) {
       return err(consentResult.error);
@@ -746,10 +750,23 @@ async function preProvision(
       hasSwitchedM365Tenant,
       false,
       tenantInfoInTokenRes.value.tenantUserName,
-      false
+      false,
+      tenantIdInConfig
     );
     if (consentResult.isErr()) {
       return err(consentResult.error);
+    }
+    const handleConfigFilesWhenSwitchAccountsRes = await handleConfigFilesWhenSwitchAccount(
+      envInfo as v3.EnvInfoV3,
+      ctx.projectSetting.appName,
+      inputs.projectPath,
+      hasSwitchedM365Tenant,
+      false,
+      false
+    );
+
+    if (handleConfigFilesWhenSwitchAccountsRes.isErr()) {
+      return err(handleConfigFilesWhenSwitchAccountsRes.error);
     }
   }
   return ok(undefined);

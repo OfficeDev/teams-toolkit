@@ -434,6 +434,9 @@ export class FxCore implements v3.ICore {
     context.envInfo = ctx!.envInfoV3!;
     context.projectSetting = ctx!.projectSettings! as ProjectSettingsV3;
     context.tokenProvider = TOOLS.tokenProvider;
+    if (context.envInfo.envName === "local") {
+      context.envInfo.config.isLocalDebug = true;
+    }
     const fx = Container.get("fx") as any;
     const res = await fx.provision(context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
@@ -625,6 +628,7 @@ export class FxCore implements v3.ICore {
     context.projectSetting = ctx!.projectSettings! as ProjectSettingsV3;
     context.tokenProvider = TOOLS.tokenProvider;
     const fx = Container.get("fx") as any;
+    context.envInfo.config.isLocalDebug = true;
     const res = await fx.provision(context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
@@ -877,7 +881,12 @@ export class FxCore implements v3.ICore {
     if (!ctx) return err(new ObjectIsUndefinedError("executeUserTask context"));
     let res: Result<any, FxError> = ok(undefined);
     const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-    context.envInfo = ctx.envInfoV3;
+    if (ctx?.envInfoV3) {
+      context.envInfo = ctx.envInfoV3;
+      if (context.envInfo.envName === "local") {
+        context.envInfo.config.isLocalDebug = true;
+      }
+    }
     if (func.method === "addCICDWorkflows") {
       const component = Container.get("cicd") as any;
       res = await component.add(context, inputs as InputsWithProjectPath);

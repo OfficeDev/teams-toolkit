@@ -14,6 +14,7 @@ import { getAppDirectory } from "../common/tools";
 import { ComponentNames } from "../component/constants";
 import { getComponent } from "../component/workflow";
 import { ProjectSettingsHelper } from "../common/local/projectSettingsHelper";
+import { isVSProject } from "../common";
 
 interface Permission {
   resource: string;
@@ -33,6 +34,7 @@ export async function generateAadManifestTemplate(
   await fs.ensureDir(appDir);
 
   const azureSolutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
+  const isVs = isVSProject(projectSettings);
 
   const aadManifestPath = `${appDir}/${Constants.aadManifestTemplateName}`;
 
@@ -89,7 +91,9 @@ export async function generateAadManifestTemplate(
   }
   const hasBot = ProjectSettingsHelper.includeBot(projectSettings);
   if (hasBot) {
-    const botRedirectUrl = "{{state.fx-resource-aad-app-for-teams.botEndpoint}}/auth-end.html";
+    const botRedirectUrl = isVs
+      ? "{{state.fx-resource-aad-app-for-teams.botEndpoint}}/bot-auth-end.html"
+      : "{{state.fx-resource-aad-app-for-teams.botEndpoint}}/auth-end.html";
 
     if (!isRedirectUrlExist(aadJson.replyUrlsWithType, botRedirectUrl, "Web")) {
       aadJson.replyUrlsWithType.push({

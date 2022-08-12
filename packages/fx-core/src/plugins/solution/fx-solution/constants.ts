@@ -325,9 +325,19 @@ export class AddSsoParameters {
   static readonly Bot = "bot";
   static readonly Tab = "tab";
   static readonly Readme = "README.md";
+  static readonly ReadmeCSharp = "README.txt";
   static readonly LearnMore = "Learn More";
   static readonly LearnMoreUrl = "https://aka.ms/teamsfx-add-sso-readme";
   static readonly AddSso = "addSso";
+  static readonly AppSettings = "appsettings.json";
+  static readonly AppSettingsDev = "appsettings.Development.json";
+  static readonly AppSettingsToAdd = {
+    Authentication: {
+      ClientId: "$clientId$",
+      ClientSecret: "$client-secret$",
+      OAuthAuthority: "$oauthAuthority$",
+    },
+  };
 }
 
 export class UserTaskFunctionName {

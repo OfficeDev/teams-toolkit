@@ -24,7 +24,11 @@ import {
   AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
-import { GLOBAL_CONFIG, SolutionError } from "../../../src/plugins/solution/fx-solution/constants";
+import {
+  AddSsoParameters,
+  GLOBAL_CONFIG,
+  SolutionError,
+} from "../../../src/plugins/solution/fx-solution/constants";
 import {
   MockedM365Provider,
   MockedV2Context,
@@ -64,7 +68,7 @@ import "../../../src/plugins/resource/appstudio/v2";
 import "../../../src/plugins/resource/frontend/v2";
 import "../../../src/plugins/resource/bot/v2";
 import { newEnvInfo } from "../../../src";
-import fs from "fs-extra";
+import fs, { ensureDir } from "fs-extra";
 import { ProgrammingLanguage } from "../../../src/plugins/resource/bot/enums/programmingLanguage";
 import { randomAppName } from "../../core/utils";
 import { createEnv } from "../../../src/plugins/solution/fx-solution/v2/createEnv";
@@ -1122,6 +1126,72 @@ describe("V2 implementation", () => {
       const readmePath = path.join(testFolder, "auth", "tab", "README.md");
       const readmeExists = await fs.pathExists(readmePath);
       expect(readmeExists).to.be.true;
+    });
+
+    it("happy path: vs", async () => {
+      const projectSettings: ProjectSettings = {
+        appName: "my app",
+        projectId: uuid.v4(),
+        programmingLanguage: "csharp",
+        solutionSettings: {
+          hostType: HostTypeOptionAzure.id,
+          name: "test",
+          version: "1.0",
+          activeResourcePlugins: [appStudioPlugin.name, frontendPluginV2.name],
+          capabilities: [TabOptionItem.id],
+          azureResources: [],
+        },
+      };
+      const mockedCtx = new MockedV2Context(projectSettings);
+      const mockedInputs: Inputs = {
+        platform: Platform.VS,
+        projectPath: testFolder,
+      };
+      const appSettingsPath = path.join(testFolder, AddSsoParameters.AppSettings);
+      const appSettingsDevPath = path.join(testFolder, AddSsoParameters.AppSettingsDev);
+      await fs.writeJSON(appSettingsPath, {});
+      await fs.writeJSON(appSettingsDevPath, {});
+
+      const result = await executeUserTask(
+        mockedCtx,
+        mockedInputs,
+        { namespace: "solution", method: "addSso" },
+        {},
+        { envName: "default", config: {}, state: {} },
+        mockedProvider
+      );
+
+      expect(result.isOk()).to.be.true;
+      expect(
+        (
+          mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings
+        ).activeResourcePlugins.includes(aadPluginV2.name)
+      ).to.be.true;
+      expect(
+        (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).capabilities.includes(
+          TabSsoItem.id
+        )
+      ).to.be.true;
+      const readmePath = path.join(testFolder, "Auth", "tab", "README.txt");
+      const getUserProfilePath = path.join(testFolder, "Auth", "tab", "GetUserProfile.razor");
+      const readmeExists = await fs.pathExists(readmePath);
+      const getUserProfileExists = await fs.pathExists(getUserProfilePath);
+      expect(readmeExists).to.be.true;
+      expect(getUserProfileExists).to.be.true;
+
+      const appSettingsRes = {
+        TeamsFx: {
+          Authentication: {
+            ClientId: "$clientId$",
+            ClientSecret: "$client-secret$",
+            OAuthAuthority: "$oauthAuthority$",
+          },
+        },
+      };
+      const appSettings = await fs.readJSON(appSettingsPath);
+      expect(JSON.stringify(appSettings)).equals(JSON.stringify(appSettingsRes));
+      const appSettingsDev = await fs.readJSON(appSettingsPath);
+      expect(JSON.stringify(appSettingsDev)).equals(JSON.stringify(appSettingsRes));
     });
 
     it("happy path: bot", async () => {

@@ -6,6 +6,7 @@ import * as chai from "chai";
 import sinon from "sinon";
 import path from "path";
 import * as os from "os";
+import fs from "fs-extra";
 import {
   ContextV3,
   InputsWithProjectPath,
@@ -18,9 +19,11 @@ import { randomAppName, MockLogProvider, MockTools } from "../../../core/utils";
 import { createContextV3 } from "../../../../src/component/utils";
 import { setTools } from "../../../../src/core/globalVars";
 import { AppManifest } from "../../../../src/component/resource/appManifest/appManifest";
-import * as AppStudio from "../../../../src/component/resource/appManifest/appStudio";
 import { AppStudioError } from "../../../../src/plugins/resource/appstudio/errors";
 import { newEnvInfoV3 } from "../../../../src";
+import { ComponentNames } from "../../../../src/component/constants";
+import * as appstudio from "../../../../src/component/resource/appManifest/appStudio";
+import * as utils from "../../../../src/component/resource/appManifest/utils";
 
 describe("App-manifest Component", () => {
   const sandbox = sinon.createSandbox();
@@ -42,6 +45,10 @@ describe("App-manifest Component", () => {
     context.envInfo!.state["solution"] = {
       ["provisionSucceed"]: true,
     };
+    context.envInfo!.state[ComponentNames.AppManifest] = {
+      ["teamsAppUpdatedAt"]: undefined,
+    };
+    sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
     context.logProvider = new MockLogProvider();
   });
 
@@ -50,17 +57,32 @@ describe("App-manifest Component", () => {
   });
 
   it("validate manifest", async function () {
-    sandbox.stub(AppStudio, "getManifest").resolves(ok(new TeamsAppManifest()));
+    sandbox.stub(appstudio, "getManifest").resolves(ok(new TeamsAppManifest()));
     const validationAction = await component.validate(context as ResourceContextV3, inputs);
     chai.assert.isTrue(validationAction.isOk());
   });
 
   it("deploy - filenotfound", async function () {
-    sandbox.stub(AppStudio, "getManifest").resolves(ok(new TeamsAppManifest()));
+    sandbox.stub(appstudio, "getManifest").resolves(ok(new TeamsAppManifest()));
     const deployAction = await component.deploy(context as ResourceContextV3, inputs);
     chai.assert.isTrue(deployAction.isErr());
     if (deployAction.isErr()) {
       chai.assert.equal(deployAction.error.name, AppStudioError.FileNotFoundError.name);
+    }
+  });
+
+  it("deploy - preivew only", async function () {
+    const manifest = new TeamsAppManifest();
+    sandbox.stub(utils, "readAppManifest").resolves(ok(manifest));
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "readJSON").resolves(manifest);
+    sandbox.stub(fs, "readFile").resolves(new Buffer(JSON.stringify(manifest)));
+    sandbox.stub(context.userInteraction, "showMessage").resolves(ok("Preview only"));
+
+    const deployAction = await component.deploy(context as ResourceContextV3, inputs);
+    chai.assert.isTrue(deployAction.isErr());
+    if (deployAction.isErr()) {
+      chai.assert.equal(deployAction.error.name, AppStudioError.UpdateManifestCancelError.name);
     }
   });
 });

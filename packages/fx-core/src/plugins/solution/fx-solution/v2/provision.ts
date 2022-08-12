@@ -534,9 +534,7 @@ export async function askForProvisionConsentNew(
             [SolutionTelemetryProperty.SubscriptionId]: getSubscriptionId(envInfo.state),
             [SolutionTelemetryProperty.M365TenantId]: getTeamsAppTenantId(envInfo.state),
             [SolutionTelemetryProperty.PreviousM365TenantId]: previousM365TenantId,
-            [SolutionTelemetryProperty.PreviousSubsriptionId]: !previousSubscriptionId
-              ? ""
-              : previousSubscriptionId,
+            [SolutionTelemetryProperty.PreviousSubsriptionId]: previousSubscriptionId ?? "",
             [SolutionTelemetryProperty.ConfirmRes]: !confirm
               ? "Error"
               : confirm === learnMoreText

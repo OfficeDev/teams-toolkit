@@ -449,7 +449,7 @@ describe("AadAppForTeamsPlugin: CI", () => {
     sinon.stub(fs, "writeJSON").callsFake((file, data, options) => {
       chai.assert.equal(data.replyUrlsWithType.length, 1);
       chai.assert.deepEqual(
-        "{{state.fx-resource-aad-app-for-teams.frontendEndpoint}}/bot-auth-end.html",
+        "{{state.fx-resource-aad-app-for-teams.botEndpoint}}/bot-auth-end.html",
         data.replyUrlsWithType[0].url
       );
     });

@@ -19,6 +19,7 @@ export type Question = inquirer.ListQuestionOptions<inquirer.Answers>;
 export default class CustomizedListPrompt extends ListPrompt {
   constructor(questions: Question, rl: ReadlineInterface, answers: inquirer.Answers) {
     super(questions, rl, answers);
+    (this.paginator as any).isInfinite = false;
   }
 
   /**
@@ -37,7 +38,7 @@ export default class CustomizedListPrompt extends ListPrompt {
     if (this.status === "answered") {
       message += chalk.cyan(this.opt.choices.getChoice(this.selected).extra.title);
     } else {
-      const choicesStr = listRender(this.opt.choices, this.selected);
+      const [choicesStr, choicesStrs] = listRender(this.opt.choices, this.selected);
       const indexPosition = this.opt.choices.indexOf(
         this.opt.choices.getChoice(this.selected) as any
       );
@@ -52,15 +53,14 @@ export default class CustomizedListPrompt extends ListPrompt {
             return acc + 1;
           }
 
-          let l = value.name;
+          const l = choicesStrs[i];
           // Non-strings take up one line
           if (typeof l !== "string") {
             return acc + 1;
           }
 
           // Calculate lines taken up by string
-          l = l.split("\n");
-          return acc + l.length;
+          return acc + l.split("\n").length;
         }, 0) - 1;
       message += "\n" + this.paginator.paginate(choicesStr, realIndexPosition);
     }
@@ -77,7 +77,7 @@ export default class CustomizedListPrompt extends ListPrompt {
  * @param  {Number} pointer Position of the pointer
  * @return {String}         Rendered content
  */
-function listRender(choices: any, pointer: number): string {
+function listRender(choices: any, pointer: number): [string, string[]] {
   let output = "";
   let separatorOffset = 0;
   let prefixWidth = 1;
@@ -88,7 +88,9 @@ function listRender(choices: any, pointer: number): string {
     );
   });
 
+  const outputs: string[] = [];
   choices.forEach((choice: any, i: number) => {
+    output = "";
     if (choice.type === "separator") {
       separatorOffset++;
       output += "  " + choice + "\n";
@@ -115,7 +117,8 @@ function listRender(choices: any, pointer: number): string {
     }
 
     output += "\n";
+    outputs.push(output.replace(/\n$/, ""));
   });
 
-  return output.replace(/\n$/, "");
+  return [outputs.join("\n"), outputs];
 }

@@ -6,7 +6,7 @@ using Microsoft.Identity.Client;
 using Microsoft.TeamsFx.Bot;
 using Microsoft.TeamsFx.Configuration;
 
-namespace bowsong0812test02.SSO;
+namespace {Your_NameSpace}.SSO;
 
 public class MainDialog: ComponentDialog
 {

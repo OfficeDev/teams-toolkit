@@ -34,11 +34,9 @@ Note: The following part is for `command and response bot`.
    This folder contains two files as reference for sso implementation:
    2.1 MainDialog.cs: This creates a ComponentDialog that used for SSO.
    2.2 TeamsSsoBot.cs: This create a TeamsActivityHandler with `MainDialog` as a command that can be triggered.
+   Note: Remember to replace '{Your_NameSpace}' with your project namespace.
 
-4. Move the two files under 'Auth/bot/Resources' to 'Resources'
-   This folder contains two CardTemplate that will be used in TeamsSsoBot.
-
-5. Update 'Program.cs'
+4. Update 'Program.cs'
     5.1 Find code: 'builder.Services.AddSingleton<BotFrameworkAuthentication, ConfigurationBotFrameworkAuthentication>();'
         and add the following code below:
         '''
@@ -57,7 +55,14 @@ Note: The following part is for `command and response bot`.
         // Create the bot as a transient. In this case the ASP Controller is expecting an IBot.
         builder.Services.AddTransient<IBot, TeamsSsoBot<MainDialog>>();
 
-        builder.Services.AddTeamsFx(builder.Configuration.GetSection("TeamsFx"));
+        builder.Services.AddOptions<BotAuthenticationOptions>().Configure<IOptions<AuthenticationOptions>>((botAuthOption, authOptions) => {
+          AuthenticationOptions authOptionsValue = authOptions.Value;
+          botAuthOption.ClientId = authOptionsValue.ClientId;
+          botAuthOption.ClientSecret = authOptionsValue.ClientSecret;
+          botAuthOption.OAuthAuthority = authOptionsValue.OAuthAuthority;
+          botAuthOption.ApplicationIdUri = authOptionsValue.ApplicationIdUri;
+          botAuthOption.InitiateLoginEndpoint = authOptionsValue.Bot.InitiateLoginEndpoint;
+        }).ValidateDataAnnotations();
         '''
     5.2 Find and delete the following code:
         '''
@@ -80,19 +85,11 @@ Note: The following part is for `command and response bot`.
         });
         '''
 
-6. Register your command in the Teams app manifest. Open 'Templates/appPackage/manifest.template.json', and add following lines under `command` in `commandLists` of your bot:
+5. Register your command in the Teams app manifest. Open 'Templates/appPackage/manifest.template.json', and add following lines under `command` in `commandLists` of your bot:
     '''
     {
-      "title": "welcome",
-      "description": "Resend welcome card of this Bot"
-    },
-    {
-      "title": "learn",
-      "description": "Learn about Adaptive Card and Bot Command"
-    },
-    {
-      "title": "login",
-      "description": "Use TeamsSsoBotPrompt to login"
+      "title": "show",
+      "description": "Show user profile using Single Sign On feature"
     }
     '''
 

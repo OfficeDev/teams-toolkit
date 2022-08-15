@@ -36,8 +36,6 @@ import * as tool from "../../../../../src/common/tools";
 import fs from "fs-extra";
 import { AadAppManifestManager } from "../../../../../src/plugins/resource/aad/aadAppManifestManager";
 import { ComponentNames } from "../../../../../src/component/constants";
-import { setTools } from "../../../../../src/core/globalVars";
-import { MockTools } from "../../../../core/utils";
 
 dotenv.config();
 const testWithAzure: boolean = process.env.UT_TEST_ON_AZURE ? true : false;
@@ -71,7 +69,6 @@ describe("AadAppForTeamsPlugin: CI", () => {
   let context: PluginContext;
 
   beforeEach(async () => {
-    setTools(new MockTools());
     plugin = new AadAppForTeamsPlugin();
     sinon.stub(AadAppClient, "createAadApp").resolves();
     sinon.stub(AadAppClient, "createAadAppSecret").resolves();

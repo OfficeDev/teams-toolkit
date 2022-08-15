@@ -1315,8 +1315,6 @@ describe("V2 implementation", () => {
       expect(await fs.pathExists(readmePath)).to.be.true;
       expect(await fs.pathExists(authStartPagePath)).to.be.true;
       expect(await fs.pathExists(authEndPagePath)).to.be.true;
-      expect(await fs.pathExists(learnCardPath)).to.be.true;
-      expect(await fs.pathExists(welcomeCardPath)).to.be.true;
       expect(await fs.pathExists(mainDialogPath)).to.be.true;
       expect(await fs.pathExists(teamsSsoBotPath)).to.be.true;
 

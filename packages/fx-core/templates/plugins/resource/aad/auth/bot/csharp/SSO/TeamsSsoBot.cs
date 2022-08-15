@@ -24,7 +24,7 @@ public class TeamsSsoBot<T> : TeamsActivityHandler where T : Dialog
         var removedMentionText = turnContext.Activity.RemoveRecipientMention();
         if (!string.IsNullOrEmpty(removedMentionText))
         {
-            text = turnContext.Activity.Text.Trim().ToLower();
+            text = removedMentionText.Trim().ToLower();
         }
 
         // Trigger command by text

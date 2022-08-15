@@ -37,7 +37,7 @@ Note: The following part is for `command and response bot`.
    Note: Remember to replace '{Your_NameSpace}' with your project namespace.
 
 4. Update 'Program.cs'
-    5.1 Find code: 'builder.Services.AddSingleton<BotFrameworkAuthentication, ConfigurationBotFrameworkAuthentication>();'
+    4.1 Find code: 'builder.Services.AddSingleton<BotFrameworkAuthentication, ConfigurationBotFrameworkAuthentication>();'
         and add the following code below:
         '''
         builder.Services.AddRazorPages();
@@ -55,21 +55,22 @@ Note: The following part is for `command and response bot`.
         // Create the bot as a transient. In this case the ASP Controller is expecting an IBot.
         builder.Services.AddTransient<IBot, TeamsSsoBot<MainDialog>>();
 
+        builder.Services.AddOptions<AuthenticationOptions>().Bind(builder.Configuration.GetSection("TeamsFx").GetSection(AuthenticationOptions.Authentication)).ValidateDataAnnotations();
         builder.Services.AddOptions<BotAuthenticationOptions>().Configure<IOptions<AuthenticationOptions>>((botAuthOption, authOptions) => {
-          AuthenticationOptions authOptionsValue = authOptions.Value;
-          botAuthOption.ClientId = authOptionsValue.ClientId;
-          botAuthOption.ClientSecret = authOptionsValue.ClientSecret;
-          botAuthOption.OAuthAuthority = authOptionsValue.OAuthAuthority;
-          botAuthOption.ApplicationIdUri = authOptionsValue.ApplicationIdUri;
-          botAuthOption.InitiateLoginEndpoint = authOptionsValue.Bot.InitiateLoginEndpoint;
+            AuthenticationOptions authOptionsValue = authOptions.Value;
+            botAuthOption.ClientId = authOptionsValue.ClientId;
+            botAuthOption.ClientSecret = authOptionsValue.ClientSecret;
+            botAuthOption.OAuthAuthority = authOptionsValue.OAuthAuthority;
+            botAuthOption.ApplicationIdUri = authOptionsValue.ApplicationIdUri;
+            botAuthOption.InitiateLoginEndpoint = authOptionsValue.Bot.InitiateLoginEndpoint;
         }).ValidateDataAnnotations();
         '''
-    5.2 Find and delete the following code:
+    4.2 Find and delete the following code:
         '''
         // Create the bot as a transient. In this case the ASP Controller is expecting an IBot.
         builder.Services.AddTransient<IBot, TeamsBot>();
         '''
-    5.3 Find the following code:
+    4.3 Find the following code:
         '''
         app.UseEndpoints(endpoints =>
         {
@@ -84,6 +85,11 @@ Note: The following part is for `command and response bot`.
           endpoints.MapRazorPages();
         });
         '''
+    4.4 Add following code to use necessary namespaces
+      '''
+      using {Your_NameSpace}.SSO
+      using Microsoft.TeamsFx.Configuration;
+      '''
 
 5. Register your command in the Teams app manifest. Open 'Templates/appPackage/manifest.template.json', and add following lines under `command` in `commandLists` of your bot:
     '''

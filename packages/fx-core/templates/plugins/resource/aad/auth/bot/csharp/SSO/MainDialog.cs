@@ -71,7 +71,7 @@ public class MainDialog: ComponentDialog
             });
             var graphClient = new GraphServiceClient(authProvider);
             var profile = await graphClient.Me.Request().GetAsync();
-            await stepContext.Context.SendActivityAsync($"You're logged in as {profile.DisplayName} ({profile.UserPrincipalName}); you job title is: {profile.JobTitle}");
+            await stepContext.Context.SendActivityAsync($"You're logged in as {profile.DisplayName}");
         } 
         else
         {

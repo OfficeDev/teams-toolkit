@@ -70,10 +70,7 @@ describe("Workflow test for v3", () => {
   const fx = Container.get<TeamsfxCore>("fx");
   let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
-    mockedEnvRestore = mockedEnv({
-      SWITCH_ACCOUNT: "false",
-      TEAMSFX_APIV3: "true",
-    });
+    mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "true" });
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
   });
 
@@ -382,8 +379,6 @@ describe("Workflow test for v3", () => {
   });
 
   it("fx.provision local debug after switching m365 tenant", async () => {
-    const newParam = { SWITCH_ACCOUNT: "true" };
-    mockedEnvRestore = mockedEnv(newParam);
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
     sandbox.stub(armFunctions, "updateAzureParameters").resolves(ok(undefined));
@@ -457,8 +452,6 @@ describe("Workflow test for v3", () => {
   });
 
   it("fx.provision local debug after switching m365 tenant: backup error", async () => {
-    const newParam = { SWITCH_ACCOUNT: "true" };
-    mockedEnvRestore = mockedEnv(newParam);
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox
       .stub(backup, "backupFiles")
@@ -682,8 +675,6 @@ describe("Workflow test for v3", () => {
   });
 
   it("fx.provision could not get m365 token", async () => {
-    const newParam = { SWITCH_ACCOUNT: "true" };
-    mockedEnvRestore = mockedEnv(newParam);
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getJsonObject").resolves(undefined);

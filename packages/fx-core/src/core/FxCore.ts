@@ -147,6 +147,7 @@ import { ComponentNames } from "../component/constants";
 import { ApiConnectorImpl } from "../plugins/resource/apiconnector/plugin";
 import { publishQuestion } from "../component/resource/appManifest/appManifest";
 import { createEnvWithName } from "../component/envManager";
+import { getProjectTemplatesFolderPath } from "../common/utils";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -1515,7 +1516,9 @@ export class FxCore implements v3.ICore {
 
     // create folder structure
     await fs.ensureDir(path.join(projectPath, `.${ConfigFolderName}`));
-    await fs.ensureDir(path.join(projectPath, "templates", `${AppPackageFolderName}`));
+    await fs.ensureDir(
+      path.join(await getProjectTemplatesFolderPath(projectPath), `${AppPackageFolderName}`)
+    );
     const basicFolderRes = await ensureBasicFolderStructure(inputs, false);
     if (basicFolderRes.isErr()) {
       return err(basicFolderRes.error);

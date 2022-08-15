@@ -455,7 +455,6 @@ describe("Workflow test for v3", () => {
   });
 
   it("fx.provision local debug after switching m365 tenant: backup error", async () => {
-    mockedEnvRestore = mockedEnv(newParam);
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox
       .stub(backup, "backupFiles")

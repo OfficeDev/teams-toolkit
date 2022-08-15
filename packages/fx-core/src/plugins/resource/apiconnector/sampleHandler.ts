@@ -52,7 +52,13 @@ export class SampleHandler {
         languageExt: this.languageExt,
       };
       const codeFileName: string = config.APIName + "." + fileSuffix;
-      const codeFilePath = path.join(this.projectRoot, this.component, codeFileName);
+      let codePath = path.join(this.projectRoot, this.component);
+      if (await fs.pathExists(path.join(codePath, "src"))) {
+        codePath = path.join(codePath, "src");
+      }
+      codePath = path.join(codePath, Constants.sampleCodeDir);
+      fs.ensureDir(codePath);
+      const codeFilePath = path.join(codePath, codeFileName);
       if (await fs.pathExists(codeFilePath)) {
         await fs.remove(codeFilePath);
       }

@@ -178,7 +178,7 @@ describe("App-manifest Component", () => {
     );
     chai.assert.isTrue(publishAction.isErr());
     if (publishAction.isErr()) {
-      chai.assert.equal(publishAction.error.name, AppStudioError.TeamsAppPublishCancelError.name);
+      chai.assert.equal(publishAction.error.name, AppStudioError.TeamsAppPublishFailedError.name);
     }
   });
 });

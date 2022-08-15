@@ -507,11 +507,11 @@ export class TeamsfxCore {
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    // const isDeployAADManifestFromVSCode =
-    //   inputs[Constants.INCLUDE_AAD_MANIFEST] === "yes" && inputs.platform === Platform.VSCode;
-    // if (isDeployAADManifestFromVSCode) {
-    //   return deployAadFromVscode(context, inputs);
-    // }
+    const isDeployAADManifestFromVSCode =
+      inputs[Constants.INCLUDE_AAD_MANIFEST] === "yes" && inputs.platform === Platform.VSCode;
+    if (isDeployAADManifestFromVSCode) {
+      return deployAadFromVscode(context, inputs);
+    }
     context.logProvider.info(
       `inputs(${AzureSolutionQuestionNames.PluginSelectionDeploy}) = ${
         inputs[AzureSolutionQuestionNames.PluginSelectionDeploy]

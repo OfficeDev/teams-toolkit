@@ -319,20 +319,20 @@ export async function checkAndInstall(): Promise<Result<void, FxError>> {
   );
 }
 
-export async function checkAndInstallV2(
-  orderedCheckers: PrerequisiteOrderedChecker[],
-  ports: number[]
-): Promise<Result<void, FxError>> {
-  const projectComponents = await commonUtils.getProjectComponents();
-  const debugSession = commonUtils.getLocalDebugSession();
-  return await localTelemetryReporter.runWithTelemetryProperties(
-    TelemetryEvent.DebugPrerequisites,
-    // projectComponents is already serialized JSON string
-    { [TelemetryProperty.DebugProjectComponents]: `${projectComponents}` },
-    (ctx: TelemetryContext) =>
-      _checkAndInstall("LocalDebug Prerequisite Check", orderedCheckers, ports, ctx, debugSession)
-  );
-}
+// TODO: use _checkAndInstall for new prerequisite task
+// export async function checkAndInstallV2(
+//   orderedCheckers: PrerequisiteOrderedChecker[],
+//   ports: number[]
+// ): Promise<Result<void, FxError>> {
+//   const projectComponents = await commonUtils.getProjectComponents();
+//   const debugSession = commonUtils.getLocalDebugSession();
+//   return await localTelemetryReporter.runWithTelemetryProperties(
+//     TelemetryEvent.DebugPrerequisites,
+//     { [TelemetryProperty.DebugProjectComponents]: `${projectComponents}` },
+//     (ctx: TelemetryContext) =>
+//       _checkAndInstall("LocalDebug Prerequisite Check", orderedCheckers, ports, ctx, debugSession)
+//   );
+// }
 
 async function _checkAndInstall(
   logLabel: string,

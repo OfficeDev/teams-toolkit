@@ -77,7 +77,7 @@ import {
   SingleSignOnOptionItem,
   TabNonSsoItem,
   TabOptionItem,
-  TabSPFxItem,
+  TabSPFxNewUIItem,
   TabSsoItem,
 } from "../question";
 import { getAllV2ResourcePluginMap, ResourcePluginsV2 } from "../ResourcePluginContainer";
@@ -332,7 +332,7 @@ export async function addCapability(
     return err(InvalidInputError(validateRes));
   }
 
-  if (!isMiniApp && capabilitiesAnswer.includes(TabSPFxItem.id) && !isSPFxMultiTabEnabled()) {
+  if (!isMiniApp && capabilitiesAnswer.includes(TabSPFxNewUIItem.id) && !isSPFxMultiTabEnabled()) {
     return err(InvalidInputError(getLocalizedString("core.capability.validation.spfx")));
   }
 
@@ -361,7 +361,7 @@ export async function addCapability(
   const toAddBot = capabilitiesAnswer.includes(BotOptionItem.id);
   const toAddME = capabilitiesAnswer.includes(MessageExtensionItem.id);
   const toAddTabNonSso = isAadManifestEnabled() && capabilitiesAnswer.includes(TabNonSsoItem.id);
-  const toAddSpfx = capabilitiesAnswer.includes(TabSPFxItem.id);
+  const toAddSpfx = capabilitiesAnswer.includes(TabSPFxNewUIItem.id);
   if (isAadManifestEnabled()) {
     if (alreadyHasTabSso && toAddTabNonSso) {
       const e = new SystemError(
@@ -444,7 +444,7 @@ export async function addCapability(
   if (toAddSpfx) {
     pluginNamesToScaffold.add(ResourcePluginsV2.SpfxPlugin);
     capabilitiesToAddManifest.push({ name: "staticTab" });
-    newCapabilitySet.add(TabSPFxItem.id);
+    newCapabilitySet.add(TabSPFxNewUIItem.id);
     solutionSettings.hostType = HostTypeOptionSPFx.id;
   } else {
     if (!originalSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.identity)) {
@@ -836,7 +836,7 @@ export async function addFeature(
     NotificationOptionItem.id,
     TabNonSsoItem.id,
     MessageExtensionItem.id,
-    TabSPFxItem.id,
+    TabSPFxNewUIItem.id,
   ]);
   const resourceAnswers = new Set([
     AzureResourceFunction.id,

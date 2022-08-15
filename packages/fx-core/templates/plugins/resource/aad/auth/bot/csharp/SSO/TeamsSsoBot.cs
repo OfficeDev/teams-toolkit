@@ -10,31 +10,22 @@ public class TeamsSsoBot<T> : TeamsActivityHandler where T : Dialog
     private readonly ILogger<TeamsSsoBot<T>> _logger;
     private readonly BotState _conversationState;
     private readonly Dialog _dialog;
+    private readonly IStatePropertyAccessor<DialogState> _dialogState;
+    private readonly IStorage _dedupStorage;
     public TeamsSsoBot(ConversationState conversationState, T dialog, ILogger<TeamsSsoBot<T>> logger)
     {
         _conversationState = conversationState;
         _dialog = dialog;
         _logger = logger;
+        _dialogState = _conversationState.CreateProperty<DialogState>("DialogState");
+
+        ((SsoDialog)_dialog).addCommand("showUserInfo", "show", SsoOperations.ShowUserInfo);
     }
 
     protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Receive message activity");
-        var text = turnContext.Activity.Text;
-        var removedMentionText = turnContext.Activity.RemoveRecipientMention();
-        if (!string.IsNullOrEmpty(removedMentionText))
-        {
-            text = removedMentionText.Trim().ToLower();
-        }
-
-        // Trigger command by text
-        if (text == "show")
-        {
-            await _dialog.RunAsync(turnContext, _conversationState.CreateProperty<DialogState>(nameof(DialogState)), cancellationToken);
-        } else
-        {
-            await turnContext.SendActivityAsync(String.Format("Cannot find command: {0}", text));
-        }
+        await ((SsoDialog)_dialog).RunAsync(turnContext, _dialogState);
     }
 
     protected override async Task OnTeamsSigninVerifyStateAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)

@@ -30,7 +30,6 @@ resource botWebAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
     TeamsFx__Authentication__OAuthAuthority: uri(m365OauthAuthorityHost, m365TenantId) // AAD authority host
     TeamsFx__Authentication__ClientId: m365ClientId // Client id of AAD application
     TeamsFx__Authentication__ClientSecret: m365ClientSecret // Client secret of AAD application
-    TeamsFx__Authentication__TenantId: m365TenantId // Tenant id of AAD application
     TeamsFx__Authentication__ApplicationIdUri: m365ApplicationIdUri // Application ID URI of AAD application
     BOT_ID: botAadAppClientId // ID of your bot
     BOT_PASSWORD: botAadAppClientSecret // Secret of your bot

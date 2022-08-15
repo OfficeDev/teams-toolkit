@@ -114,7 +114,7 @@ const NpmInstallDisplayName = Object.freeze({
   [Checker.Backend]: "function app",
 });
 
-const CheckerFolderName = Object.freeze({
+const ProjectFolderName = Object.freeze({
   [Checker.SPFx]: FolderName.SPFx,
   [Checker.Frontend]: FolderName.Frontend,
   [Checker.Bot]: FolderName.Bot,
@@ -147,7 +147,7 @@ type PrerequisiteOrderedChecker = {
   fastFail: boolean;
 };
 
-class ProgressStep {
+class Step {
   private currentStep: number;
   public readonly totalSteps: number;
   constructor(totalSteps: number) {
@@ -315,7 +315,7 @@ export async function checkAndInstall(): Promise<Result<void, FxError>> {
     // projectComponents is already serialized JSON string
     { [TelemetryProperty.DebugProjectComponents]: `${projectComponents}` },
     (ctx: TelemetryContext) =>
-      _checkAndInstall("Local Prerequisite Check", orderedCheckers, ports, ctx, debugSession)
+      _checkAndInstall("LocalDebug Prerequisite Check", orderedCheckers, ports, ctx, debugSession)
   );
 }
 
@@ -324,69 +324,14 @@ export async function checkAndInstallV2(
   ports: number[]
 ): Promise<Result<void, FxError>> {
   const projectComponents = await commonUtils.getProjectComponents();
-  // also add checkResult to the debug-all event
   const debugSession = commonUtils.getLocalDebugSession();
   return await localTelemetryReporter.runWithTelemetryProperties(
     TelemetryEvent.DebugPrerequisites,
     // projectComponents is already serialized JSON string
     { [TelemetryProperty.DebugProjectComponents]: `${projectComponents}` },
     (ctx: TelemetryContext) =>
-      _checkAndInstall("Local Prerequisite Check", orderedCheckers, ports, ctx, debugSession)
+      _checkAndInstall("LocalDebug Prerequisite Check", orderedCheckers, ports, ctx, debugSession)
   );
-}
-
-function getCheckPromise(
-  checker: DepsType | Checker,
-  enabledCheckers: (DepsType | Checker)[],
-  depsManager: DepsManager,
-  localEnvManager: LocalEnvManager,
-  ports: number[],
-  step: ProgressStep
-): Promise<CheckResult> {
-  switch (checker) {
-    case DepsType.AzureNode:
-    case DepsType.FunctionNode:
-    case DepsType.SpfxNode:
-      return checkNode(checker, enabledCheckers, depsManager, step.getPrefix());
-    case Checker.M365Account:
-      return checkM365Account(step.getPrefix(), true);
-    case Checker.LocalCertificate:
-      return resolveLocalCertificate(localEnvManager, step.getPrefix());
-    case DepsType.Dotnet:
-    case DepsType.FuncCoreTools:
-    case DepsType.Ngrok:
-      return checkDependency(checker, depsManager, step.getPrefix());
-    case Checker.AzureFunctionsExtension:
-      return resolveBackendExtension(depsManager, step.getPrefix());
-    case Checker.SPFx:
-    case Checker.Backend:
-    case Checker.Bot:
-    case Checker.Frontend:
-      return checkNpmInstall(
-        checker,
-        path.join(globalVariables.workspaceUri!.fsPath, CheckerFolderName[checker]),
-        NpmInstallDisplayName[checker],
-        `${step.getPrefix()} ${ProgressMessage[checker]} ...`
-      );
-    case Checker.Ports:
-      return checkPort(
-        localEnvManager,
-        ports,
-        `${step.getPrefix()} ${ProgressMessage[Checker.Ports]} ...`
-      );
-  }
-}
-
-function parseCheckers(enabledCheckers: PrerequisiteOrderedChecker[]): (Checker | DepsType)[] {
-  const parsedCheckers: (Checker | DepsType)[] = [];
-  for (const checkerInfo of enabledCheckers) {
-    if (Array.isArray(checkerInfo.checker)) {
-      parsedCheckers.push(...checkerInfo.checker);
-    } else {
-      parsedCheckers.push(checkerInfo.checker);
-    }
-  }
-  return parsedCheckers;
 }
 
 async function _checkAndInstall(
@@ -407,8 +352,6 @@ async function _checkAndInstall(
 
     const enabledCheckers = parseCheckers(orderedCheckers);
 
-    // Get deps
-    const depsManager = new DepsManager(vscodeLogger, vscodeTelemetry);
     const localEnvManager = new LocalEnvManager(
       VsCodeLogInstance,
       ExtTelemetry.reporter,
@@ -419,7 +362,10 @@ async function _checkAndInstall(
     VsCodeLogInstance.info(logLabel);
     VsCodeLogInstance.outputChannel.appendLine(doctorConstant.Check);
 
-    const step = new ProgressStep(enabledCheckers.length);
+    // Get deps
+    const depsManager = new DepsManager(vscodeLogger, vscodeTelemetry);
+
+    const step = new Step(enabledCheckers.length);
 
     VsCodeLogInstance.outputChannel.appendLine(
       doctorConstant.CheckNumber.split("@number").join(`${step.totalSteps}`)
@@ -443,7 +389,7 @@ async function _checkAndInstall(
           ExtensionErrors.PrerequisitesInstallPackagesError,
           async () => {
             const checkPromises = [];
-            for (const checker of orderedCheckerSet)
+            for (const checker of orderedCheckerSet) {
               checkPromises.push(
                 getCheckPromise(
                   checker,
@@ -454,6 +400,7 @@ async function _checkAndInstall(
                   step
                 ).finally(() => progressHelper?.end(checker))
               );
+            }
 
             const promiseResults = await Promise.all(checkPromises);
             for (const r of promiseResults) {
@@ -497,6 +444,60 @@ async function _checkAndInstall(
     return err(fxError);
   }
   return ok(undefined);
+}
+
+function getCheckPromise(
+  checker: DepsType | Checker,
+  enabledCheckers: (DepsType | Checker)[],
+  depsManager: DepsManager,
+  localEnvManager: LocalEnvManager,
+  ports: number[],
+  step: Step
+): Promise<CheckResult> {
+  switch (checker) {
+    case DepsType.AzureNode:
+    case DepsType.FunctionNode:
+    case DepsType.SpfxNode:
+      return checkNode(checker, enabledCheckers, depsManager, step.getPrefix());
+    case Checker.M365Account:
+      return checkM365Account(step.getPrefix(), true);
+    case Checker.LocalCertificate:
+      return resolveLocalCertificate(localEnvManager, step.getPrefix());
+    case DepsType.Dotnet:
+    case DepsType.FuncCoreTools:
+    case DepsType.Ngrok:
+      return checkDependency(checker, depsManager, step.getPrefix());
+    case Checker.AzureFunctionsExtension:
+      return resolveBackendExtension(depsManager, step.getPrefix());
+    case Checker.SPFx:
+    case Checker.Backend:
+    case Checker.Bot:
+    case Checker.Frontend:
+      return checkNpmInstall(
+        checker,
+        path.join(globalVariables.workspaceUri!.fsPath, ProjectFolderName[checker]),
+        NpmInstallDisplayName[checker],
+        `${step.getPrefix()} ${ProgressMessage[checker]} ...`
+      );
+    case Checker.Ports:
+      return checkPort(
+        localEnvManager,
+        ports,
+        `${step.getPrefix()} ${ProgressMessage[Checker.Ports]} ...`
+      );
+  }
+}
+
+function parseCheckers(enabledCheckers: PrerequisiteOrderedChecker[]): (Checker | DepsType)[] {
+  const parsedCheckers: (Checker | DepsType)[] = [];
+  for (const checkerInfo of enabledCheckers) {
+    if (Array.isArray(checkerInfo.checker)) {
+      parsedCheckers.push(...checkerInfo.checker);
+    } else {
+      parsedCheckers.push(checkerInfo.checker);
+    }
+  }
+  return parsedCheckers;
 }
 
 async function ensureM365Account(
@@ -1085,7 +1086,6 @@ async function checkFailure(checkResults: CheckResult[], progressHelper?: Progre
   }
 }
 
-// TODO Add fast fail flag
 async function getOrderedCheckers(
   projectSettings: ProjectSettings,
   localEnvManager: LocalEnvManager

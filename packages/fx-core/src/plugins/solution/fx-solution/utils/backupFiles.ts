@@ -189,7 +189,7 @@ async function generateReport(backupFolder: string) {
   try {
     const target = path.join(backupFolder, reportName);
     const source = path.resolve(path.join(getResourceFolder(), reportName));
-    if (!fs.pathExists(target)) {
+    if (!(await fs.pathExists(target))) {
       await fs.copyFile(source, target);
     }
   } catch (error) {

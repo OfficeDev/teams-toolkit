@@ -11,6 +11,7 @@ import {
   Void,
   TokenProvider,
   ProjectSettings,
+  Func,
 } from "@microsoft/teamsfx-api";
 import {
   Context,
@@ -28,6 +29,7 @@ import {
 import {
   deployAdapter,
   getQuestionsForScaffoldingAdapter,
+  getQuestionsForUserTaskAdapter,
   scaffoldSourceCodeAdapter,
 } from "../../utils4v2";
 
@@ -48,6 +50,23 @@ export class SpfxPluginV2 implements ResourcePlugin {
     inputs: Inputs
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     return await getQuestionsForScaffoldingAdapter(ctx, inputs, this.plugin);
+  }
+
+  async getQuestionsForUserTask(
+    ctx: Context,
+    inputs: Inputs,
+    func: Func,
+    envInfo: DeepReadonly<EnvInfoV2>,
+    tokenProvider: TokenProvider
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    return await getQuestionsForUserTaskAdapter(
+      ctx,
+      inputs,
+      func,
+      envInfo,
+      tokenProvider,
+      this.plugin
+    );
   }
 
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {

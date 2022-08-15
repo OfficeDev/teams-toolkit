@@ -238,6 +238,7 @@ export class ResourceGroupHelper {
     const selectLocation = QuestionNewResourceGroupLocation;
     // TODO: maybe lazily load locations
     selectLocation.staticOptions = availableLocations;
+    selectLocation.default = "East US";
     const newResourceGroupLocationNode = new QTreeNode(selectLocation);
     newResourceGroupNameNode.addChild(newResourceGroupLocationNode);
 

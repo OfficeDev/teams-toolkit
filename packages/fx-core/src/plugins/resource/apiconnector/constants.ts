@@ -36,6 +36,7 @@ export class Constants {
   public static readonly footerCommentTemplate = "footerComment.template";
   public static readonly templateEx = ".template";
   public static readonly envPrefix = "TEAMSFX_API_";
+  public static readonly sampleCodeDir = "apiConnections";
 
   public static readonly envFileName = ".env.teamsfx.local";
   public static readonly pkgJsonFile = "package.json";

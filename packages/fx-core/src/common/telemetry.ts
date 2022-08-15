@@ -10,6 +10,9 @@ export class TelemetryReporterInstance {
 export enum TelemetryProperty {
   TriggerFrom = "trigger-from",
   Component = "component",
+  Components = "components",
+  Feature = "feature",
+  Hosting = "hosting",
   AppId = "appid",
   Success = "success",
   ErrorType = "error-type",
@@ -34,11 +37,22 @@ export enum TelemetryProperty {
   TemplateScenario = "template-scenario",
   TemplateFallback = "template-fallback",
   HasSwitchedSubscription = "has-switched-subscription",
+  HasSwitchedM365Tenant = "has-switched-m365",
 }
 
 export enum TelemetryEvent {
+  Scaffold = "scaffold",
+  GenerateBicep = "generate-arm-template",
+  LocalDebug = "local-debug",
+  PostLocalDebug = "post-local-debug",
+  Provision = "provision",
+  PostProvision = "post-provision",
+  PreDeploy = "pre-deploy",
+  Deploy = "deploy",
   DownloadSampleStart = "download-sample-start",
   DownloadSample = "download-sample",
+  CreateProject = "create-new-project",
+  AddFeature = "add-feature",
   ProjectUpgrade = "project-upgrade",
   ProjectUpgradeStart = "project-upgrade-start",
   ReadJson = "read-json",
@@ -91,6 +105,8 @@ export enum TelemetryEvent {
   FillProjectId = "fill-project-id",
   ScaffoldFromTemplatesStart = "scaffold-from-templates-start",
   ScaffoldFromTemplates = "scaffold-from-templates",
+  ConfirmProvision = "confirm-provision",
+  CheckLocalDebugTenant = "check-local-debug-tenant",
 }
 
 export enum TelemetrySuccess {

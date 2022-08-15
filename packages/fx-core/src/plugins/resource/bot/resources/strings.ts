@@ -22,6 +22,8 @@ export class PluginAAD {
   public static readonly CLIENT_ID = "clientId";
   public static readonly CLIENT_SECRET = "clientSecret";
   public static readonly APPLICATION_ID_URIS = "applicationIdUris";
+  public static readonly OAUTH_AUTHORITY = "oauthAuthority";
+  public static readonly TENANT_ID = "tenantId";
 }
 
 export class PluginLocalDebug {

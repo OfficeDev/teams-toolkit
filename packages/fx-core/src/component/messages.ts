@@ -17,7 +17,7 @@ export class ProgressTitles {
   static readonly buildingTab = "Building Tab";
   static readonly buildingBot = "Building Bot";
   static readonly buildingApi = "Building Api";
-  static readonly provisionBot = "Provision Azure Bot Service";
+  static readonly provisionBot = "Registering Bot";
   static readonly configureStorage = PostProvisionProgress.title;
   // Deploying Azure Functions [Bot]
   static readonly deploying = (component: string, scenario?: string): string =>

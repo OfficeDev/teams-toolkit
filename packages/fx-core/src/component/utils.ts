@@ -32,15 +32,16 @@ import { LocalCrypto } from "../core/crypto";
 import { environmentManager } from "../core/environment";
 import { TOOLS } from "../core/globalVars";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
-import { ComponentNames, scenarioToComponent } from "./constants";
+import { ComponentNames, Scenarios, scenarioToComponent } from "./constants";
 import { DefaultManifestProvider } from "./resource/appManifest/manifestProvider";
-import { getComponent } from "./workflow";
+import { getComponent, getComponentByScenario } from "./workflow";
 
 export async function persistProvisionBicep(
   projectPath: string,
   provisionBicep: ProvisionBicep
 ): Promise<Result<any, FxError>> {
-  const templateFolder = path.join(projectPath, "templates", "azure");
+  const templateRoot = await getProjectTemplatesFolderPath(projectPath);
+  const templateFolder = path.join(templateRoot, "azure");
   if (provisionBicep.Modules) {
     for (const module of Object.keys(provisionBicep.Modules)) {
       const value = provisionBicep.Modules[module];
@@ -544,8 +545,19 @@ export function ensureComponentConnections(settingsV3: ProjectSettingsV3): void 
     const existingResources = (ComponentConnections[configName] as string[]).filter(exists);
     const configs = settingsV3.components.filter((c) => c.name === configName);
     for (const config of configs) {
-      config.connections = existingResources;
+      config.connections = cloneDeep(existingResources);
     }
+  }
+  if (
+    getComponent(settingsV3, ComponentNames.TeamsApi) &&
+    getComponent(settingsV3, ComponentNames.APIM)
+  ) {
+    const functionConfig = getComponentByScenario(
+      settingsV3,
+      ComponentNames.Function,
+      Scenarios.Api
+    );
+    functionConfig?.connections?.push(ComponentNames.APIM);
   }
 }
 

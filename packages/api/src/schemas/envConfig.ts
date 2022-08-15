@@ -91,6 +91,34 @@ export interface EnvConfig {
       full?: string;
       [k: string]: unknown;
     };
+    /**
+     * Description for Teams app.
+     */
+    description?: {
+      /**
+       * A short description of the app used when space is limited. Maximum length is 80 characters.
+       */
+      short?: string;
+      /**
+       * The full description of the app. Maximum length is 4000 characters.
+       */
+      full?: string;
+      [k: string]: unknown;
+    };
+    /**
+     * Icons for Teams App.
+     */
+    icons?: {
+      /**
+       * A relative file path to a full color PNG icon. Size 192x192.
+       */
+      color?: string;
+      /**
+       * A relative file path to a transparent PNG outline icon. The border color needs to be white. Size 32x32.
+       */
+      outline?: string;
+      [k: string]: unknown;
+    };
     [k: string]: unknown;
   };
   /**

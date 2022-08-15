@@ -38,7 +38,7 @@ import { AppStudioScopes, getHashedEnv, getResourceGroupInPortal } from "../../.
 import { convertToAlphanumericOnly } from "../../../../common/utils";
 import { ComponentNames } from "../../../../component/constants";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
-import arm, { updateResourceBaseName } from "../arm";
+import arm from "../arm";
 import { ResourceGroupInfo } from "../commonQuestions";
 import {
   FillInAzureConfigsResult,
@@ -48,6 +48,7 @@ import {
 } from "../constants";
 import { configLocalEnvironment, setupLocalEnvironment } from "../debug/provisionLocal";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
+import { handleConfigFilesWhenSwitchAccount, hasBotServiceCreated } from "../utils/util";
 import { executeConcurrently } from "../v2/executor";
 import { BuiltInFeaturePluginNames } from "./constants";
 import { solutionGlobalVars } from "./solutionGlobalVars";
@@ -85,6 +86,7 @@ export async function provisionResources(
   telemetryProps?: Json
 ): Promise<Result<v3.EnvInfoV3, FxError>> {
   const solutionSetting = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
+  const hasBotServiceCreatedBefore = hasBotServiceCreated(envInfo as v3.EnvInfoV3);
   // 1. check M365 tenant
   if (!envInfo.state[BuiltInFeaturePluginNames.appStudio])
     envInfo.state[BuiltInFeaturePluginNames.appStudio] = {};
@@ -100,6 +102,7 @@ export async function provisionResources(
     return err(tenantIdInTokenRes.error);
   }
   const tenantIdInToken = tenantIdInTokenRes.value.tenantIdInToken;
+  // We are not going to update this file since we won't use this file in production code.
   if (tenantIdInConfig && tenantIdInToken && tenantIdInToken !== tenantIdInConfig) {
     return err(
       new UserError(
@@ -167,11 +170,18 @@ export async function provisionResources(
       }
 
       if (solutionConfigRes.value.hasSwitchedSubscription) {
-        await updateResourceBaseName(
-          inputs.projectPath,
+        const handleConfigFilesWhenSwitchAccountsRes = await handleConfigFilesWhenSwitchAccount(
+          envInfo as v3.EnvInfoV3,
           ctx.projectSetting.appName,
-          envInfo.envName
+          inputs.projectPath,
+          false,
+          solutionConfigRes.value.hasSwitchedSubscription,
+          hasBotServiceCreatedBefore
         );
+
+        if (handleConfigFilesWhenSwitchAccountsRes.isErr()) {
+          return err(handleConfigFilesWhenSwitchAccountsRes.error);
+        }
       }
     }
 

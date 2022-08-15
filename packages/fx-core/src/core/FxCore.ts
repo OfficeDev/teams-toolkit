@@ -146,6 +146,8 @@ import { addCicdQuestion } from "../component/feature/cicd";
 import { ComponentNames } from "../component/constants";
 import { ApiConnectorImpl } from "../plugins/resource/apiconnector/plugin";
 import { publishQuestion } from "../component/resource/appManifest/appManifest";
+import { createEnvWithName } from "../component/envManager";
+import { getProjectTemplatesFolderPath } from "../common/utils";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -260,19 +262,19 @@ export class FxCore implements v3.ICore {
       projectSettings.programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage];
       globalVars.isVS = isVSProject(projectSettings);
       ctx.projectSettings = projectSettings;
-      const createEnvResult = await this.createEnvWithName(
+      const createEnvResult = await createEnvWithName(
         environmentManager.getDefaultEnvName(),
-        projectSettings,
-        inputs
+        projectSettings.appName,
+        inputs as InputsWithProjectPath
       );
       if (createEnvResult.isErr()) {
         return err(createEnvResult.error);
       }
 
-      const createLocalEnvResult = await this.createEnvWithName(
+      const createLocalEnvResult = await createEnvWithName(
         environmentManager.getLocalEnvName(),
-        projectSettings,
-        inputs
+        projectSettings.appName,
+        inputs as InputsWithProjectPath
       );
       if (createLocalEnvResult.isErr()) {
         return err(createLocalEnvResult.error);
@@ -411,6 +413,11 @@ export class FxCore implements v3.ICore {
 
   @hooks([
     ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ProjectMigratorMW,
+    ProjectConsolidateMW,
+    AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
@@ -427,6 +434,9 @@ export class FxCore implements v3.ICore {
     context.envInfo = ctx!.envInfoV3!;
     context.projectSetting = ctx!.projectSettings! as ProjectSettingsV3;
     context.tokenProvider = TOOLS.tokenProvider;
+    if (context.envInfo.envName === "local") {
+      context.envInfo.config.isLocalDebug = true;
+    }
     const fx = Container.get("fx") as any;
     const res = await fx.provision(context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
@@ -515,6 +525,11 @@ export class FxCore implements v3.ICore {
 
   @hooks([
     ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ProjectMigratorMW,
+    ProjectConsolidateMW,
+    AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
@@ -594,6 +609,11 @@ export class FxCore implements v3.ICore {
   }
   @hooks([
     ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ProjectMigratorMW,
+    ProjectConsolidateMW,
+    AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
@@ -608,6 +628,7 @@ export class FxCore implements v3.ICore {
     context.projectSetting = ctx!.projectSettings! as ProjectSettingsV3;
     context.tokenProvider = TOOLS.tokenProvider;
     const fx = Container.get("fx") as any;
+    context.envInfo.config.isLocalDebug = true;
     const res = await fx.provision(context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
@@ -666,6 +687,11 @@ export class FxCore implements v3.ICore {
   }
   @hooks([
     ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ProjectMigratorMW,
+    ProjectConsolidateMW,
+    AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
@@ -705,6 +731,11 @@ export class FxCore implements v3.ICore {
 
   @hooks([
     ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ProjectMigratorMW,
+    ProjectConsolidateMW,
+    AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
@@ -714,14 +745,14 @@ export class FxCore implements v3.ICore {
   async addFeature(
     inputs: v2.InputsWithProjectPath,
     ctx?: CoreHookContext
-  ): Promise<Result<Void, FxError>> {
+  ): Promise<Result<any, FxError>> {
     inputs.stage = Stage.addFeature;
     const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
     const fx = Container.get("fx") as TeamsfxCore;
     const res = await fx.addFeature(context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
-    return ok(Void);
+    return ok(res.value);
   }
 
   @hooks([
@@ -827,6 +858,11 @@ export class FxCore implements v3.ICore {
   }
   @hooks([
     ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ProjectMigratorMW,
+    ProjectConsolidateMW,
+    AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
@@ -840,6 +876,12 @@ export class FxCore implements v3.ICore {
   ): Promise<Result<unknown, FxError>> {
     let res: Result<undefined, FxError> = ok(undefined);
     const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+    if (ctx?.envInfoV3) {
+      context.envInfo = ctx.envInfoV3;
+      if (context.envInfo.envName === "local") {
+        context.envInfo.config.isLocalDebug = true;
+      }
+    }
     if (func.method === "addCICDWorkflows") {
       const component = Container.get("cicd") as any;
       res = await component.add(context, inputs as InputsWithProjectPath);
@@ -987,7 +1029,16 @@ export class FxCore implements v3.ICore {
     });
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ProjectSettingsLoaderMW, ContextInjectorMW])
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ProjectMigratorMW,
+    ProjectConsolidateMW,
+    AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
+    ProjectSettingsLoaderMW,
+    ContextInjectorMW,
+  ])
   async getProjectConfigV3(
     inputs: Inputs,
     ctx?: CoreHookContext
@@ -1315,32 +1366,32 @@ export class FxCore implements v3.ICore {
     return ok(Void);
   }
 
-  async createEnvWithName(
-    targetEnvName: string,
-    projectSettings: ProjectSettings,
-    inputs: Inputs,
-    existingTabEndpoint?: string
-  ): Promise<Result<Void, FxError>> {
-    let appName = projectSettings.appName;
-    if (targetEnvName === environmentManager.getLocalEnvName()) {
-      appName = getLocalAppName(appName);
-    }
-    const newEnvConfig = environmentManager.newEnvConfigData(appName, existingTabEndpoint);
-    const writeEnvResult = await environmentManager.writeEnvConfig(
-      inputs.projectPath!,
-      newEnvConfig,
-      targetEnvName
-    );
-    if (writeEnvResult.isErr()) {
-      return err(writeEnvResult.error);
-    }
-    this.tools.logProvider.debug(
-      `[core] persist ${targetEnvName} env state to path ${writeEnvResult.value}: ${JSON.stringify(
-        newEnvConfig
-      )}`
-    );
-    return ok(Void);
-  }
+  // async createEnvWithName(
+  //   targetEnvName: string,
+  //   projectSettings: ProjectSettings,
+  //   inputs: Inputs,
+  //   existingTabEndpoint?: string
+  // ): Promise<Result<Void, FxError>> {
+  //   let appName = projectSettings.appName;
+  //   if (targetEnvName === environmentManager.getLocalEnvName()) {
+  //     appName = getLocalAppName(appName);
+  //   }
+  //   const newEnvConfig = environmentManager.newEnvConfigData(appName, existingTabEndpoint);
+  //   const writeEnvResult = await environmentManager.writeEnvConfig(
+  //     inputs.projectPath!,
+  //     newEnvConfig,
+  //     targetEnvName
+  //   );
+  //   if (writeEnvResult.isErr()) {
+  //     return err(writeEnvResult.error);
+  //   }
+  //   this.tools.logProvider.debug(
+  //     `[core] persist ${targetEnvName} env state to path ${writeEnvResult.value}: ${JSON.stringify(
+  //       newEnvConfig
+  //     )}`
+  //   );
+  //   return ok(Void);
+  // }
 
   async createEnvCopy(
     targetEnvName: string,
@@ -1465,7 +1516,9 @@ export class FxCore implements v3.ICore {
 
     // create folder structure
     await fs.ensureDir(path.join(projectPath, `.${ConfigFolderName}`));
-    await fs.ensureDir(path.join(projectPath, "templates", `${AppPackageFolderName}`));
+    await fs.ensureDir(
+      path.join(await getProjectTemplatesFolderPath(projectPath), `${AppPackageFolderName}`)
+    );
     const basicFolderRes = await ensureBasicFolderStructure(inputs, false);
     if (basicFolderRes.isErr()) {
       return err(basicFolderRes.error);
@@ -1496,19 +1549,19 @@ export class FxCore implements v3.ICore {
 
     // create env config with existing tab's endpoint
     const endpoint = inputs[CoreQuestionNames.ExistingTabEndpoint] as string;
-    const createEnvResult = await this.createEnvWithName(
+    const createEnvResult = await createEnvWithName(
       environmentManager.getDefaultEnvName(),
-      projectSettings,
-      inputs,
+      projectSettings.appName,
+      inputs as InputsWithProjectPath,
       isInitExistingApp ? endpoint : undefined
     );
     if (createEnvResult.isErr()) {
       return err(createEnvResult.error);
     }
-    const createLocalEnvResult = await this.createEnvWithName(
+    const createLocalEnvResult = await createEnvWithName(
       environmentManager.getLocalEnvName(),
-      projectSettings,
-      inputs,
+      projectSettings.appName,
+      inputs as InputsWithProjectPath,
       isInitExistingApp ? endpoint : undefined
     );
     if (createLocalEnvResult.isErr()) {

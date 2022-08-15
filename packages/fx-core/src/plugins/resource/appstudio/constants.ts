@@ -60,8 +60,8 @@ export const SOLUTION = "solution";
 export const SOLUTION_USERINFO = "userinfo";
 
 export const TEAMS_APP_MANIFEST_TEMPLATE_V3 = `{
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.13/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.13",
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.14/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.14",
   "version": "1.0.0",
   "id": "{{state.fx-resource-appstudio.teamsAppId}}",
   "packageName": "com.microsoft.teams.extension",
@@ -72,16 +72,16 @@ export const TEAMS_APP_MANIFEST_TEMPLATE_V3 = `{
       "termsOfUseUrl": "{{state.fx-resource-frontend-hosting.endpoint}}{{state.fx-resource-frontend-hosting.indexPath}}/termsofuse"
   },
   "icons": {
-      "color": "resources/color.png",
-      "outline": "resources/outline.png"
+      "color": "{{config.manifest.icons.color}}",
+      "outline": "{{config.manifest.icons.outline}}"
   },
   "name": {
       "short": "{{config.manifest.appName.short}}",
       "full": "{{config.manifest.appName.full}}"
   },
   "description": {
-      "short": "Short description of {{config.manifest.appName.short}}",
-      "full": "Full description of {{config.manifest.appName.short}}"
+      "short": "{{config.manifest.description.short}}",
+      "full": "{{config.manifest.description.full}}"
   },
   "accentColor": "#FFFFFF",
   "bots": [],
@@ -330,5 +330,5 @@ export const TEAMS_APP_SHORT_NAME_MAX_LENGTH = 30;
 export const STATIC_TABS_MAX_ITEMS = 16;
 
 export const M365_SCHEMA =
-  "https://developer.microsoft.com/en-us/json-schemas/teams/v1.13/MicrosoftTeams.schema.json";
-export const M365_MANIFEST_VERSION = "1.13";
+  "https://developer.microsoft.com/en-us/json-schemas/teams/v1.14/MicrosoftTeams.schema.json";
+export const M365_MANIFEST_VERSION = "1.14";

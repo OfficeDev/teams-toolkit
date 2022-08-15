@@ -430,33 +430,8 @@ export async function canUpgradeToArmAndMultiEnv(workspacePath?: string): Promis
   }
 }
 
-export function isValidNode(): boolean {
-  try {
-    const supportedVersions = ["10", "12", "14"];
-    const output = execSync("node --version");
-    const regex = /v(?<major_version>\d+)\.(?<minor_version>\d+)\.(?<patch_version>\d+)/gm;
-
-    const match = regex.exec(output.toString());
-    if (!match) {
-      return false;
-    }
-
-    const majorVersion = match.groups?.major_version;
-    if (!majorVersion) {
-      return false;
-    }
-
-    return supportedVersions.includes(majorVersion);
-  } catch (e) {}
-  return false;
-}
-
 export function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-export function isSupportAutoOpenAPI(): boolean {
-  return versionUtil.compare(vscode.version, "1.64.2") > 0;
 }
 
 export function isTriggerFromWalkThrough(args?: any[]): boolean {

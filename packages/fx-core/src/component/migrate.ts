@@ -110,6 +110,12 @@ export const API_STATE_KEY = isV3() ? ComponentNames.TeamsApi : BuiltInFeaturePl
 export const AAD_STATE_KEY = isV3() ? ComponentNames.AadApp : BuiltInFeaturePluginNames.aad;
 export const TAB_STATE_KEY = isV3() ? ComponentNames.TeamsTab : BuiltInFeaturePluginNames.frontend;
 export const BOT_STATE_KEY = isV3() ? ComponentNames.TeamsBot : BuiltInFeaturePluginNames.bot;
+export const SIMPLE_AUTH_STATE_KEY = isV3()
+  ? ComponentNames.SimpleAuth
+  : BuiltInFeaturePluginNames.simpleAuth;
+export const APP_MANIFEST_KEY = isV3()
+  ? ComponentNames.AppManifest
+  : BuiltInFeaturePluginNames.appStudio;
 
 export function pluginName2ComponentName(pluginName: string): string {
   const map = new Map<string, string>();

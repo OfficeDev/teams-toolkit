@@ -5,6 +5,7 @@ import "mocha";
 import * as chai from "chai";
 import * as dotenv from "dotenv";
 import {
+  AzureSolutionSettings,
   ContextV3,
   PluginContext,
   ProjectSettings,
@@ -424,6 +425,32 @@ describe("AadAppForTeamsPlugin: CI", () => {
       chai.assert.equal(
         data.replyUrlsWithType[3].url,
         "{{state.fx-resource-aad-app-for-teams.botEndpoint}}/auth-end.html"
+      );
+    });
+    const result = await plugin.scaffold(context);
+    chai.assert.equal(result.isOk(), true);
+  });
+
+  it("scaffold with bot for vs", async function () {
+    sinon.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
+    sinon.stub(fs, "ensureDir").resolves();
+    const config = new Map();
+    const context = await TestHelper.pluginContext(config, true, false, false);
+    context.root = "./";
+    context.projectSettings!.programmingLanguage = "csharp";
+    (context.projectSettings!.solutionSettings as AzureSolutionSettings).capabilities = ["Bot"];
+    sinon.stub(fs, "pathExists").resolves(true);
+
+    const fakeManifest = {
+      id: "{{state.fx-resource-aad-app-for-teams.objectId}}",
+      appId: "{{state.fx-resource-aad-app-for-teams.clientId}}",
+    };
+    sinon.stub(fs, "readJSON").resolves(fakeManifest);
+    sinon.stub(fs, "writeJSON").callsFake((file, data, options) => {
+      chai.assert.equal(data.replyUrlsWithType.length, 1);
+      chai.assert.deepEqual(
+        "{{state.fx-resource-aad-app-for-teams.botEndpoint}}/bot-auth-end.html",
+        data.replyUrlsWithType[0].url
       );
     });
     const result = await plugin.scaffold(context);

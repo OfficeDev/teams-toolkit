@@ -77,8 +77,12 @@ export enum TelemetryEvent {
 
   OpenAzurePortal = "open-azure-portal",
 
+  ClickSampleCard = "click-sample-card",
+
   DownloadSampleStart = "download-sample-start",
   DownloadSample = "download-sample",
+
+  ViewSampleInGitHub = "view-sample-in-github",
 
   WatchVideo = "watch-video",
   PauseVideo = "pause-video",
@@ -160,6 +164,7 @@ export enum TelemetryEvent {
   CheckPermission = "check-permission",
   OpenSideloadingJoinM365 = "open-sideloading-joinm365",
   OpenSideloadingReadmore = "open-sideloading-readmore",
+  OpenSignInJoinM365 = "open-sign-in-joinm365",
 
   ShowWhatIsNewNotification = "show-what-is-new-notification",
   ShowWhatIsNewContext = "show-what-is-new-context",
@@ -167,6 +172,7 @@ export enum TelemetryEvent {
   ShowLocalDebugNotification = "show-local-debug-notification",
   ShowLocalPreviewNotification = "show-local-preview-notification",
   ClickLocalDebug = "click-local-debug",
+  ClickLearnMoreWhenSwitchAccountForLocalDebug = "local-debug-switch-account-click-learn-more",
   ClickLocalPreview = "click-local-preview",
   PreviewAdaptiveCard = "open-adaptivecard-preview",
 

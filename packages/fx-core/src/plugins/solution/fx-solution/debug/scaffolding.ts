@@ -2,32 +2,25 @@
 // Licensed under the MIT license.
 "use strict";
 
-import * as fs from "fs-extra";
-import * as os from "os";
 import {
   CryptoProvider,
   err,
   FxError,
   Inputs,
+  InputsWithProjectPath,
   Json,
   LogProvider,
   ok,
-  Platform,
+  ProjectSettings,
   Result,
   TelemetryReporter,
   v2,
-  ProjectSettings,
 } from "@microsoft/teamsfx-api";
-import { LocalSettingsProvider } from "../../../../common/localSettingsProvider";
+import * as fs from "fs-extra";
+import * as os from "os";
 import { ProjectSettingsHelper } from "../../../../common/local/projectSettingsHelper";
-import * as Launch from "./util/launch";
-import * as LaunchNext from "./util/launchNext";
-import * as Tasks from "./util/tasks";
-import * as TasksNext from "./util/tasksNext";
-import * as Settings from "./util/settings";
-import { TelemetryEventName, TelemetryUtils } from "./util/telemetry";
-import { ScaffoldLocalDebugSettingsError } from "./error";
-import { BotHostTypes } from "../../../../common";
+import { LocalSettingsProvider } from "../../../../common/localSettingsProvider";
+import { generateLocalDebugSettingsCommon, LocalEnvConfig } from "../../../../component/debug";
 
 export async function scaffoldLocalDebugSettings(
   ctx: v2.Context,
@@ -65,124 +58,23 @@ export async function _scaffoldLocalDebugSettings(
   const botCapabilities = ProjectSettingsHelper.getBotCapabilities(projectSetting);
   const programmingLanguage = projectSetting.programmingLanguage ?? "";
   const isM365 = projectSetting.isM365;
-
-  const telemetryProperties = {
-    platform: inputs.platform as string,
-    spfx: isSpfx ? "true" : "false",
-    frontend: includeFrontend ? "true" : "false",
-    function: includeBackend ? "true" : "false",
-    bot: includeBot ? "true" : "false",
-    auth: includeAAD && includeSimpleAuth ? "true" : "false",
-    "bot-host-type": includeFuncHostedBot ? BotHostTypes.AzureFunctions : BotHostTypes.AppService,
-    "bot-capabilities": JSON.stringify(botCapabilities),
-    "programming-language": programmingLanguage,
+  const config: LocalEnvConfig = {
+    hasAzureTab: includeFrontend,
+    hasSPFxTab: isSpfx,
+    hasApi: includeBackend,
+    hasBot: includeBot,
+    hasAAD: includeAAD,
+    hasSimpleAuth: includeSimpleAuth,
+    hasFunctionBot: includeFuncHostedBot,
+    botCapabilities: botCapabilities,
+    defaultFunctionName: projectSetting.defaultFunctionName!,
+    programmingLanguage: programmingLanguage,
+    isM365: isM365,
   };
-  TelemetryUtils.init(telemetryReporter);
-  TelemetryUtils.sendStartEvent(TelemetryEventName.scaffoldLocalDebugSettings, telemetryProperties);
-  try {
-    // scaffold for both vscode and cli
-    if (inputs.platform === Platform.VSCode || inputs.platform === Platform.CLI) {
-      if (isSpfx) {
-        // Only generate launch.json and tasks.json for SPFX
-        const launchConfigurations = Launch.generateSpfxConfigurations();
-        const launchCompounds = Launch.generateSpfxCompounds();
-        const tasks = Tasks.generateSpfxTasks();
-        const tasksInputs = Tasks.generateInputs();
-
-        //TODO: save files via context api
-        await fs.ensureDir(`${inputs.projectPath}/.vscode/`);
-        await updateJson(
-          `${inputs.projectPath}/.vscode/launch.json`,
-          {
-            version: "0.2.0",
-            configurations: launchConfigurations,
-            compounds: launchCompounds,
-          },
-          LaunchNext.mergeLaunches
-        );
-
-        await updateJson(
-          `${inputs.projectPath}/.vscode/tasks.json`,
-          {
-            version: "2.0.0",
-            tasks: tasks,
-            inputs: tasksInputs,
-          },
-          TasksNext.mergeTasks
-        );
-      } else {
-        const launchConfigurations = isM365
-          ? LaunchNext.generateM365Configurations(includeFrontend, includeBackend, includeBot)
-          : (await useNewTasks(inputs.projectPath))
-          ? LaunchNext.generateConfigurations(includeFrontend, includeBackend, includeBot)
-          : Launch.generateConfigurations(includeFrontend, includeBackend, includeBot);
-        const launchCompounds = isM365
-          ? LaunchNext.generateM365Compounds(includeFrontend, includeBackend, includeBot)
-          : (await useNewTasks(inputs.projectPath))
-          ? LaunchNext.generateCompounds(includeFrontend, includeBackend, includeBot)
-          : Launch.generateCompounds(includeFrontend, includeBackend, includeBot);
-
-        const tasks = isM365
-          ? TasksNext.generateM365Tasks(
-              includeFrontend,
-              includeBackend,
-              includeBot,
-              programmingLanguage
-            )
-          : (await useNewTasks(inputs.projectPath))
-          ? TasksNext.generateTasks(
-              includeFrontend,
-              includeBackend,
-              includeBot,
-              includeFuncHostedBot,
-              programmingLanguage
-            )
-          : Tasks.generateTasks(
-              includeFrontend,
-              includeBackend,
-              includeBot,
-              includeSimpleAuth,
-              programmingLanguage
-            );
-
-        //TODO: save files via context api
-        await fs.ensureDir(`${inputs.projectPath}/.vscode/`);
-        await updateJson(
-          `${inputs.projectPath}/.vscode/launch.json`,
-          {
-            version: "0.2.0",
-            configurations: launchConfigurations,
-            compounds: launchCompounds,
-          },
-          LaunchNext.mergeLaunches
-        );
-
-        await updateJson(
-          `${inputs.projectPath}/.vscode/tasks.json`,
-          {
-            version: "2.0.0",
-            tasks: tasks,
-          },
-          TasksNext.mergeTasks
-        );
-      }
-
-      await updateJson(
-        `${inputs.projectPath}/.vscode/settings.json`,
-        Settings.generateSettings(includeBackend || includeFuncHostedBot, isSpfx),
-        Settings.mergeSettings
-      );
-    }
-  } catch (error: any) {
-    const systemError = ScaffoldLocalDebugSettingsError(error);
-    TelemetryUtils.sendErrorEvent(TelemetryEventName.scaffoldLocalDebugSettings, systemError);
-    return err(systemError);
+  const res = await generateLocalDebugSettingsCommon(inputs as InputsWithProjectPath, config);
+  if (res.isErr()) {
+    return err(res.error);
   }
-
-  TelemetryUtils.sendSuccessEvent(
-    TelemetryEventName.scaffoldLocalDebugSettings,
-    telemetryProperties
-  );
   return ok(localSettings as Json);
 }
 

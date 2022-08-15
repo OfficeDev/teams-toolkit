@@ -9,8 +9,8 @@ export const AAD_COMPONENT_NAME = "aad-app";
 export const BOT_COMPONENT_NAME = "teams-bot";
 
 export const TEAMS_APP_MANIFEST_TEMPLATE = `{
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.13/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.13",
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.14/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.14",
   "version": "1.0.0",
   "id": "{{state.${App_MANIFEST_COMPONENT_NAME}.teamsAppId}}",
   "packageName": "com.microsoft.teams.extension",
@@ -21,16 +21,16 @@ export const TEAMS_APP_MANIFEST_TEMPLATE = `{
       "termsOfUseUrl": "{{{state.${TAB_COMPONENT_NAME}.endpoint}}}{{{state.${TAB_COMPONENT_NAME}.indexPath}}}/termsofuse"
   },
   "icons": {
-      "color": "resources/color.png",
-      "outline": "resources/outline.png"
+      "color": "{{config.manifest.icons.color}}",
+      "outline": "{{config.manifest.icons.outline}}"
   },
   "name": {
       "short": "{{config.manifest.appName.short}}",
       "full": "{{config.manifest.appName.full}}"
   },
   "description": {
-      "short": "Short description of {{config.manifest.appName.short}}",
-      "full": "Full description of {{config.manifest.appName.short}}"
+      "short": "{{config.manifest.description.short}}",
+      "full": "{{config.manifest.description.full}}"
   },
   "accentColor": "#FFFFFF",
   "bots": [],

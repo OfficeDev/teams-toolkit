@@ -159,6 +159,8 @@ export enum SolutionError {
   InvalidSsoProject = "InvalidSsoProject",
   InvalidProjectPath = "InvalidProjectPath",
   FailedToCreateAuthFiles = "FailedToCreateAuthFiles",
+  FailedToUpdateAzureParameters = "FailedToUpdateAzureParameters",
+  FailedToBackupFiles = "FailedToBackupFiles",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";
@@ -254,6 +256,10 @@ export enum SolutionTelemetryProperty {
   SubscriptionId = "subscription-id",
   AddTabSso = "tab-sso",
   AddBotSso = "bot-sso",
+  M365TenantId = "m365-tenant-id",
+  PreviousSubsriptionId = "previous-subscription-id",
+  PreviousM365TenantId = "previous-m365-tenant-id",
+  ConfirmRes = "confirm-res",
 }
 
 export enum SolutionTelemetrySuccess {
@@ -323,9 +329,31 @@ export class AddSsoParameters {
   static readonly Bot = "bot";
   static readonly Tab = "tab";
   static readonly Readme = "README.md";
+  static readonly ReadmeCSharp = "README.txt";
   static readonly LearnMore = "Learn More";
   static readonly LearnMoreUrl = "https://aka.ms/teamsfx-add-sso-readme";
   static readonly AddSso = "addSso";
+  static readonly AppSettings = "appsettings.json";
+  static readonly AppSettingsDev = "appsettings.Development.json";
+  static readonly AppSettingsToAdd = {
+    Authentication: {
+      ClientId: "$clientId$",
+      ClientSecret: "$client-secret$",
+      OAuthAuthority: "$oauthAuthority$",
+    },
+  };
+  static readonly AppSettingsToAddForBot = {
+    Authentication: {
+      ClientId: "$clientId$",
+      ClientSecret: "$client-secret$",
+      OAuthAuthority: "$oauthAuthority$",
+      TenantId: "$tenantId$",
+      ApplicationIdUri: "$applicationIdUri$",
+      Bot: {
+        InitiateLoginEndpoint: "$initiateLoginEndpoint$",
+      },
+    },
+  };
 }
 
 export class UserTaskFunctionName {

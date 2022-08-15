@@ -31,6 +31,7 @@ export type HttpError = {
         code?: string;
         message?: string;
       };
+      errors?: any;
     };
   };
 };
@@ -316,6 +317,12 @@ export function wrapError(
           "plugins.bot.DetailedErrorReason",
           innerError.response?.data?.error?.message
         );
+      } else if (innerError.response?.data?.errors) {
+        // For errors return from App Studio API
+        errorMsg += getLocalizedString(
+          "plugins.bot.DetailedErrorReason",
+          JSON.stringify(innerError.response?.data?.errors)
+        );
       }
     }
   }
@@ -327,12 +334,14 @@ export function wrapError(
   }
 
   if (e instanceof PluginError || e instanceof CommonHostingError) {
+    const message = e.genMessage() + errorMsg;
+    const displayMessage = e.genDisplayMessage() + errorMsg;
     const result =
       e instanceof PluginError && e.errorType === ErrorType.SYSTEM
-        ? ResultFactory.SystemError(e.name, [e.genMessage(), e.genDisplayMessage()], e.innerError)
+        ? ResultFactory.SystemError(e.name, [message, displayMessage], e.innerError)
         : ResultFactory.UserError(
             e.name,
-            [e.genMessage(), e.genDisplayMessage()],
+            [message, displayMessage],
             e.innerError,
             e instanceof PluginError ? e.helpLink : ""
           );

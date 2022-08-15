@@ -630,6 +630,16 @@ export interface EnvConfig {
             full?: string;
             [k: string]: unknown;
         };
+        description?: {
+            short?: string;
+            full?: string;
+            [k: string]: unknown;
+        };
+        icons?: {
+            color?: string;
+            outline?: string;
+            [k: string]: unknown;
+        };
         [k: string]: unknown;
     };
     skipAddingSqlUser?: boolean;

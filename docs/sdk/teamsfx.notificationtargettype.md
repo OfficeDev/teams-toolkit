@@ -2,15 +2,23 @@
 
 [Home](./index.md) &gt; [@microsoft/teamsfx](./teamsfx.md) &gt; [NotificationTargetType](./teamsfx.notificationtargettype.md)
 
-## NotificationTargetType type
+## NotificationTargetType enum
 
 The target type where the notification will be sent to.
 
 <b>Signature:</b>
 
 ```typescript
-export declare type NotificationTargetType = "Channel" | "Group" | "Person";
+export declare enum NotificationTargetType 
 ```
+
+## Enumeration Members
+
+|  Member | Value | Description |
+|  --- | --- | --- |
+|  Channel | <code>&quot;Channel&quot;</code> | The notification will be sent to a team channel. (By default, notification to a team will be sent to its "General" channel.) |
+|  Group | <code>&quot;Group&quot;</code> | The notification will be sent to a group chat. |
+|  Person | <code>&quot;Person&quot;</code> | The notification will be sent to a personal chat. |
 
 ## Remarks
 

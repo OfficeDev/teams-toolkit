@@ -33,6 +33,7 @@ import {
   canAddSso,
   isAADEnabled,
   isAadManifestEnabled,
+  isSPFxMultiTabEnabled,
 } from "../../../../common";
 import { ResourcePlugins } from "../../../../common/constants";
 import { isExistingTabApp, isVSProject } from "../../../../common/projectSettingsHelper";
@@ -217,7 +218,7 @@ export function canAddCapability(
   settings: AzureSolutionSettings | undefined,
   telemetryReporter: TelemetryReporter
 ): Result<Void, FxError> {
-  if (settings && !(settings.hostType === HostTypeOptionAzure.id)) {
+  if (settings && !(settings.hostType === HostTypeOptionAzure.id) && !isSPFxMultiTabEnabled()) {
     const e = new UserError(
       SolutionSource,
       SolutionError.AddCapabilityNotSupport,
@@ -1116,7 +1117,7 @@ export async function createAuthFiles(
     return err(e);
   }
 
-  const authFolder = path.join(projectPath!, "auth");
+  const authFolder = path.join(projectPath!, isVsProject ? "Auth" : "auth");
   const tabFolder = path.join(authFolder, AddSsoParameters.Tab);
   const botFolder = path.join(authFolder, AddSsoParameters.Bot);
   try {
@@ -1138,7 +1139,36 @@ export async function createAuthFiles(
         AddSsoParameters.Tab
       );
       if (isVsProject) {
-        // TODO: add steps for VS
+        // README.md
+        const readmeSourcePath = path.join(tabTemplateFolder, AddSsoParameters.ReadmeCSharp);
+        const readmeTargetPath = path.join(tabFolder, AddSsoParameters.ReadmeCSharp);
+        const readme = await fs.readFile(readmeSourcePath);
+        fs.writeFile(readmeTargetPath, readme);
+
+        // Sample Code
+        const sampleSourceFolder = path.join(tabTemplateFolder, languageFolderName);
+        const sampleZip = new AdmZip();
+        sampleZip.addLocalFolder(sampleSourceFolder);
+        await unzip(sampleZip, tabFolder);
+
+        // Update appsettings
+        const appSettingsPath = path.join(projectPath!, AddSsoParameters.AppSettings);
+        const appSettingsDevPath = path.join(projectPath!, AddSsoParameters.AppSettingsDev);
+
+        if (await fs.pathExists(appSettingsPath)) {
+          const appSettings = await fs.readJson(appSettingsPath);
+          if (!appSettings.TeamsFx) {
+            appSettings.TeamsFx = AddSsoParameters.AppSettingsToAdd;
+          }
+          await fs.writeFile(appSettingsPath, JSON.stringify(appSettings, null, "\t"), "utf-8");
+        }
+        if (await fs.pathExists(appSettingsDevPath)) {
+          const appSettings = await fs.readJson(appSettingsDevPath);
+          if (!appSettings.TeamsFx) {
+            appSettings.TeamsFx = AddSsoParameters.AppSettingsToAdd;
+          }
+          await fs.writeFile(appSettingsDevPath, JSON.stringify(appSettings, null, "\t"), "utf-8");
+        }
       } else {
         // README.md
         const readmeSourcePath = path.join(tabTemplateFolder, AddSsoParameters.Readme);
@@ -1167,7 +1197,44 @@ export async function createAuthFiles(
         AddSsoParameters.Bot
       );
       if (isVsProject) {
-        // TODO: add steps for VS
+        // README.md
+        const readmeSourcePath = path.join(botTemplateFolder, AddSsoParameters.ReadmeCSharp);
+        const readmeTargetPath = path.join(botFolder, AddSsoParameters.ReadmeCSharp);
+        const readme = await fs.readFile(readmeSourcePath);
+        fs.writeFile(readmeTargetPath, readme);
+
+        // Sample Code
+        const sampleSourceFolder = path.join(botTemplateFolder, languageFolderName);
+        const sampleZip = new AdmZip();
+        sampleZip.addLocalFolder(sampleSourceFolder);
+        await unzip(sampleZip, botFolder);
+
+        // Update appsettings
+        const appSettingsPath = path.join(projectPath!, AddSsoParameters.AppSettings);
+        const appSettingsDevPath = path.join(projectPath!, AddSsoParameters.AppSettingsDev);
+
+        if (await fs.pathExists(appSettingsPath)) {
+          const appSettings = await fs.readJson(appSettingsPath);
+          if (
+            !appSettings.TeamsFx ||
+            !appSettings.TeamsFx.Authentication ||
+            !appSettings.TeamsFx.Authentication.Bot
+          ) {
+            appSettings.TeamsFx = AddSsoParameters.AppSettingsToAddForBot;
+          }
+          await fs.writeFile(appSettingsPath, JSON.stringify(appSettings, null, "\t"), "utf-8");
+        }
+        if (await fs.pathExists(appSettingsDevPath)) {
+          const appSettings = await fs.readJson(appSettingsDevPath);
+          if (
+            !appSettings.TeamsFx ||
+            !appSettings.TeamsFx.Authentication ||
+            !appSettings.TeamsFx.Authentication.Bot
+          ) {
+            appSettings.TeamsFx = AddSsoParameters.AppSettingsToAddForBot;
+          }
+          await fs.writeFile(appSettingsDevPath, JSON.stringify(appSettings, null, "\t"), "utf-8");
+        }
       } else {
         // README.md
         const readmeSourcePath = path.join(botTemplateFolder, AddSsoParameters.Readme);

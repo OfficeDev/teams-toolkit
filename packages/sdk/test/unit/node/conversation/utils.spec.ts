@@ -4,6 +4,7 @@
 import { ConversationReference } from "botframework-schema";
 import { assert, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
+import { NotificationTargetType } from "../../../../src/conversation/interface";
 import {
   cloneConversation,
   getTargetType,
@@ -46,10 +47,15 @@ describe("Notification.Utils Tests - Node", () => {
     const type2 = getTargetType(ref2 as any);
     const type3 = getTargetType(ref3 as any);
     const type4 = getTargetType(ref4 as any);
-    assert.strictEqual(type1, "Person");
-    assert.strictEqual(type2, "Group");
-    assert.strictEqual(type3, "Channel");
+    assert.strictEqual(type1, NotificationTargetType.Person);
+    assert.strictEqual(type2, NotificationTargetType.Group);
+    assert.strictEqual(type3, NotificationTargetType.Channel);
     assert.isUndefined(type4);
+
+    // backward compatibility
+    assert.isTrue(NotificationTargetType.Channel === "Channel");
+    assert.isTrue(NotificationTargetType.Group === "Group");
+    assert.isTrue(NotificationTargetType.Person === "Person");
   });
 
   it("getTeamsBotInstallationId should return correct id", () => {

@@ -16,6 +16,7 @@ import { Conversations } from "botframework-connector/lib/connectorApi/connector
 import { assert, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import * as sinon from "sinon";
+import { NotificationTargetType } from "../../../../src/conversation/interface";
 import { NotificationMiddleware } from "../../../../src/conversation/middleware";
 import {
   Channel,
@@ -257,7 +258,8 @@ describe("Notification Tests - Node", () => {
         },
       };
       const installation = new TeamsBotInstallation(adapter, conversationRef as any);
-      assert.strictEqual(installation.type, "Channel");
+      assert.strictEqual(installation.type, NotificationTargetType.Channel);
+      assert.isTrue(installation.type === "Channel");
       activityResponse = {
         id: "message-a",
       };
@@ -279,7 +281,8 @@ describe("Notification Tests - Node", () => {
         },
       };
       const installation = new TeamsBotInstallation(adapter, conversationRef as any);
-      assert.strictEqual(installation.type, "Channel");
+      assert.strictEqual(installation.type, NotificationTargetType.Channel);
+      assert.isTrue(installation.type === "Channel");
       activityResponse = {
         id: "message-a",
       };
@@ -308,7 +311,8 @@ describe("Notification Tests - Node", () => {
         },
       };
       const installation = new TeamsBotInstallation(adapter, conversationRef as any);
-      assert.strictEqual(installation.type, "Channel");
+      assert.strictEqual(installation.type, NotificationTargetType.Channel);
+      assert.isTrue(installation.type === "Channel");
       const channels = await installation.channels();
       assert.strictEqual(channels.length, 2);
     });
@@ -321,7 +325,8 @@ describe("Notification Tests - Node", () => {
         },
       };
       const installation = new TeamsBotInstallation(adapter, conversationRef as any);
-      assert.strictEqual(installation.type, "Channel");
+      assert.strictEqual(installation.type, NotificationTargetType.Channel);
+      assert.isTrue(installation.type === "Channel");
       const channels = await installation.channels();
       assert.strictEqual(channels.length, 0);
     });
@@ -337,7 +342,8 @@ describe("Notification Tests - Node", () => {
         },
       };
       const installation = new TeamsBotInstallation(adapter, conversationRef as any);
-      assert.strictEqual(installation.type, "Channel");
+      assert.strictEqual(installation.type, NotificationTargetType.Channel);
+      assert.isTrue(installation.type === "Channel");
       const members = await installation.members();
       assert.strictEqual(members.length, 2);
     });

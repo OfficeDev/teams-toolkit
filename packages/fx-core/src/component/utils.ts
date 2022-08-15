@@ -40,7 +40,8 @@ export async function persistProvisionBicep(
   projectPath: string,
   provisionBicep: ProvisionBicep
 ): Promise<Result<any, FxError>> {
-  const templateFolder = path.join(projectPath, "templates", "azure");
+  const templateRoot = await getProjectTemplatesFolderPath(projectPath);
+  const templateFolder = path.join(templateRoot, "azure");
   if (provisionBicep.Modules) {
     for (const module of Object.keys(provisionBicep.Modules)) {
       const value = provisionBicep.Modules[module];

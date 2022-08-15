@@ -68,7 +68,6 @@ describe("Workflow test for v3", () => {
   const projectPath = path.join(os.homedir(), "TeamsApps", appName);
   const context = createContextV3();
   const fx = Container.get<TeamsfxCore>("fx");
-  let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
     mockedEnvRestore = mockedEnv({
       SWITCH_ACCOUNT: "false",
@@ -79,7 +78,6 @@ describe("Workflow test for v3", () => {
 
   afterEach(() => {
     sandbox.restore();
-    mockedEnvRestore();
   });
 
   after(async () => {

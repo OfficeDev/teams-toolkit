@@ -22,6 +22,7 @@ import { AppManifest } from "../../../../src/component/resource/appManifest/appM
 import { AppStudioError } from "../../../../src/plugins/resource/appstudio/errors";
 import { newEnvInfoV3 } from "../../../../src";
 import { ComponentNames } from "../../../../src/component/constants";
+import { AppStudioClient } from "../../../../src/plugins/resource/appstudio/appStudio";
 import * as appstudio from "../../../../src/component/resource/appManifest/appStudio";
 import * as utils from "../../../../src/component/resource/appManifest/utils";
 
@@ -35,6 +36,7 @@ describe("App-manifest Component", () => {
     projectPath: projectPath,
     platform: Platform.VSCode,
     "app-name": appName,
+    appPackagePath: "fakePath",
   };
   let context: ContextV3;
   setTools(tools);
@@ -63,7 +65,6 @@ describe("App-manifest Component", () => {
   });
 
   it("deploy - filenotfound", async function () {
-    sandbox.stub(appstudio, "getManifest").resolves(ok(new TeamsAppManifest()));
     const deployAction = await component.deploy(context as ResourceContextV3, inputs);
     chai.assert.isTrue(deployAction.isErr());
     if (deployAction.isErr()) {
@@ -84,5 +85,18 @@ describe("App-manifest Component", () => {
     if (deployAction.isErr()) {
       chai.assert.equal(deployAction.error.name, AppStudioError.UpdateManifestCancelError.name);
     }
+  });
+
+  it("deploy - succeed", async function () {
+    const manifest = new TeamsAppManifest();
+    sandbox.stub(utils, "readAppManifest").resolves(ok(manifest));
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "readJSON").resolves(manifest);
+    sandbox.stub(fs, "readFile").resolves(new Buffer(JSON.stringify(manifest)));
+    sandbox.stub(context.userInteraction, "showMessage").resolves(ok("Preview and update"));
+    sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
+
+    const deployAction = await component.deploy(context as ResourceContextV3, inputs);
+    chai.assert.isTrue(deployAction.isOk());
   });
 });

@@ -7,7 +7,8 @@ import sinon from "sinon";
 import path from "path";
 import * as os from "os";
 import fs from "fs-extra";
-import _ from "lodash";
+import _, { findLastKey } from "lodash";
+import AdmZip from "adm-zip";
 import {
   ContextV3,
   InputsWithProjectPath,
@@ -15,6 +16,8 @@ import {
   ResourceContextV3,
   TeamsAppManifest,
   ok,
+  InputResult,
+  SingleSelectResult,
 } from "@microsoft/teamsfx-api";
 import { randomAppName, MockLogProvider, MockTools } from "../../../core/utils";
 import { createContextV3 } from "../../../../src/component/utils";
@@ -24,6 +27,9 @@ import { AppStudioError } from "../../../../src/plugins/resource/appstudio/error
 import { newEnvInfoV3 } from "../../../../src";
 import { ComponentNames } from "../../../../src/component/constants";
 import { AppStudioClient } from "../../../../src/plugins/resource/appstudio/appStudio";
+import { Constants } from "../../../../src/plugins/resource/appstudio/constants";
+import { autoPublishOption } from "../../../../src/plugins/resource/appstudio/questions";
+import { PublishingState } from "../../../../src/plugins/resource/appstudio/interfaces/IPublishingAppDefinition";
 import * as appstudio from "../../../../src/component/resource/appManifest/appStudio";
 import * as utils from "../../../../src/component/resource/appManifest/utils";
 import { getAzureProjectRoot } from "../../../plugins/resource/appstudio/helper";
@@ -39,6 +45,11 @@ describe("App-manifest Component", () => {
     "app-name": appName,
     appPackagePath: "fakePath",
   };
+  const inputsWithoutUserProvidedZip: InputsWithProjectPath = {
+    projectPath: getAzureProjectRoot(),
+    platform: Platform.VSCode,
+    "app-name": appName,
+  };
   let context: ContextV3;
   setTools(tools);
 
@@ -52,6 +63,13 @@ describe("App-manifest Component", () => {
       ["teamsAppUpdatedAt"]: undefined,
     };
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
+
+    const res: SingleSelectResult = {
+      type: "success",
+      result: autoPublishOption,
+    };
+    sandbox.stub(context.userInteraction, "selectOption").resolves(ok(res));
+
     context.logProvider = new MockLogProvider();
   });
 
@@ -116,5 +134,51 @@ describe("App-manifest Component", () => {
       console.log(`Error response: ${JSON.stringify(deployAction.error)}`);
     }
     chai.assert.isTrue(deployAction.isOk());
+  });
+
+  it("publish - filenotfound", async function () {
+    const publishAction = await component.publish(context as ResourceContextV3, inputs);
+    chai.assert.isTrue(publishAction.isErr());
+    if (publishAction.isErr()) {
+      chai.assert.equal(publishAction.error.name, AppStudioError.FileNotFoundError.name);
+    }
+  });
+
+  it("publish - user cancel", async function () {
+    const manifest = new TeamsAppManifest();
+    manifest.id = "";
+    manifest.icons.color = "resources/color.png";
+    manifest.icons.outline = "resources/outline.png";
+
+    sandbox.stub(utils, "readAppManifest").resolves(ok(manifest));
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "writeFile").resolves();
+    sandbox.stub(fs, "chmod").resolves();
+    sandbox.stub(fs, "readFile").callsFake(async () => {
+      const zip = new AdmZip();
+      zip.addFile(Constants.MANIFEST_FILE, Buffer.from(JSON.stringify(new TeamsAppManifest())));
+      zip.addFile("color.png", new Buffer(""));
+      zip.addFile("outlie.png", new Buffer(""));
+
+      const archivedFile = zip.toBuffer();
+      return archivedFile;
+    });
+    const state = {
+      lastModifiedDateTime: new Date(),
+      teamsAppId: "",
+      displayName: appName,
+      publishingState: PublishingState.submitted,
+    };
+    sandbox.stub(AppStudioClient, "getAppByTeamsAppId").resolves(state);
+    sandbox.stub(context.userInteraction, "showMessage").resolves(ok("Cancel"));
+
+    const publishAction = await component.publish(
+      context as ResourceContextV3,
+      inputsWithoutUserProvidedZip
+    );
+    chai.assert.isTrue(publishAction.isErr());
+    if (publishAction.isErr()) {
+      chai.assert.equal(publishAction.error.name, AppStudioError.TeamsAppPublishCancelError.name);
+    }
   });
 });

@@ -22,6 +22,7 @@ import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
 import * as util from "util";
+import { isSPFxMultiTabEnabled } from "../../common";
 import { getAppDirectory, isGeneratorCheckerEnabled, isYoCheckerEnabled } from "../../common/tools";
 import { getTemplatesFolder } from "../../folder";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../plugins/resource/appstudio/constants";
@@ -81,6 +82,17 @@ export async function scaffoldSPFx(
   const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ui);
   try {
     const webpartName = inputs[SPFXQuestionNames.webpart_name] as string;
+    let framework,
+      solutionName: string | undefined = undefined;
+    const isAddSpfx =
+      inputs[SPFXQuestionNames.framework_type] === undefined && isSPFxMultiTabEnabled();
+    if (!isAddSpfx) {
+      framework = inputs[SPFXQuestionNames.framework_type] as string;
+      solutionName =
+        ((context as ContextV3).projectSetting?.appName as string) ||
+        ((context as PluginContext).projectSettings?.appName as string);
+    }
+
     const componentName = Utils.normalizeComponentName(webpartName);
     const componentNameCamelCase = camelCase(componentName);
     const templateFolder = path.join(getTemplatesFolder(), "plugins", "resource", "spfx");
@@ -113,10 +125,6 @@ export async function scaffoldSPFx(
     }
 
     await progressHandler?.next(ScaffoldProgressMessage.ScaffoldProject);
-    const framework = inputs[SPFXQuestionNames.framework_type] as string;
-    const solutionName =
-      ((context as ContextV3).projectSetting?.appName as string) ||
-      ((context as PluginContext).projectSettings?.appName as string);
     if (inputs.platform === Platform.VSCode) {
       (context.logProvider as any).outputChannel.show();
     }
@@ -127,14 +135,8 @@ export async function scaffoldSPFx(
           process.env.PATH ?? ""
         }`
       : process.env.PATH;
-    await cpUtils.executeCommand(
-      inputs.projectPath,
-      context.logProvider,
-      {
-        timeout: 2 * 60 * 1000,
-        env: yoEnv,
-      },
-      "yo",
+
+    const args = [
       isGeneratorCheckerEnabled()
         ? spGeneratorChecker.getSpGeneratorPath()
         : "@microsoft/sharepoint",
@@ -144,21 +146,35 @@ export async function scaffoldSPFx(
       "webpart",
       "--component-name",
       webpartName,
-      "--framework",
-      framework,
-      "--solution-name",
-      solutionName,
       "--environment",
       "spo",
       "--skip-feature-deployment",
       "true",
       "--is-domain-isolated",
-      "false"
+      "false",
+    ];
+    if (framework) {
+      args.push("--framework", framework);
+    }
+    if (solutionName) {
+      args.push("--solution-name", solutionName);
+    }
+    await cpUtils.executeCommand(
+      isAddSpfx ? path.join(inputs.projectPath, "SPFx") : inputs.projectPath,
+      context.logProvider,
+      {
+        timeout: 2 * 60 * 1000,
+        env: yoEnv,
+      },
+      "yo",
+      ...args
     );
 
-    const currentPath = path.join(inputs.projectPath, solutionName);
     const newPath = path.join(inputs.projectPath, "SPFx");
-    await fs.rename(currentPath, newPath);
+    if (!isAddSpfx) {
+      const currentPath = path.join(inputs.projectPath, solutionName!);
+      await fs.rename(currentPath, newPath);
+    }
 
     await progressHandler?.next(ScaffoldProgressMessage.UpdateManifest);
     const manifestPath = `${newPath}/src/webparts/${componentNameCamelCase}/${componentName}WebPart.manifest.json`;
@@ -192,57 +208,63 @@ export async function scaffoldSPFx(
 
     // remove .vscode
     const debugPath = `${newPath}/.vscode`;
-    await fs.remove(debugPath);
+    if (await fs.pathExists(debugPath)) {
+      await fs.remove(debugPath);
+    }
 
     // update readme
-    await fs.copyFile(
-      path.resolve(templateFolder, "./solution/README.md"),
-      `${outputFolderPath}/README.md`
-    );
-
-    const appDirectory = await getAppDirectory(inputs.projectPath);
-
-    await Utils.configure(path.join(appDirectory, MANIFEST_TEMPLATE_CONSOLIDATE), replaceMap);
-
-    const capabilitiesToAddManifest: v3.ManifestCapability[] = [];
-    const remoteStaticSnippet: IStaticTab = {
-      entityId: componentId,
-      name: webpartName,
-      contentUrl: util.format(ManifestTemplate.REMOTE_CONTENT_URL, componentId, componentId),
-      websiteUrl: ManifestTemplate.WEBSITE_URL,
-      scopes: ["personal"],
-    };
-    const remoteConfigurableSnippet: IConfigurableTab = {
-      configurationUrl: util.format(
-        ManifestTemplate.REMOTE_CONFIGURATION_URL,
-        componentId,
-        componentId
-      ),
-      canUpdateConfiguration: true,
-      scopes: ["team"],
-    };
-    capabilitiesToAddManifest.push(
-      {
-        name: "staticTab",
-        snippet: remoteStaticSnippet,
-      },
-      {
-        name: "configurableTab",
-        snippet: remoteConfigurableSnippet,
-      }
-    );
-    const manifestProvider =
-      (context as ContextV3).manifestProvider || new DefaultManifestProvider();
-    for (const capability of capabilitiesToAddManifest) {
-      const addCapRes = await manifestProvider.updateCapability(
-        (context as ContextV3).manifestProvider
-          ? (context as ContextV3)
-          : convert2Context(context as PluginContext, true).context,
-        inputs,
-        capability
+    if (!(await fs.pathExists(`${outputFolderPath}/README.md`))) {
+      await fs.copyFile(
+        path.resolve(templateFolder, "./solution/README.md"),
+        `${outputFolderPath}/README.md`
       );
-      if (addCapRes.isErr()) return err(addCapRes.error);
     }
+
+    if (!isAddSpfx) {
+      const appDirectory = await getAppDirectory(inputs.projectPath);
+      await Utils.configure(path.join(appDirectory, MANIFEST_TEMPLATE_CONSOLIDATE), replaceMap);
+
+      const capabilitiesToAddManifest: v3.ManifestCapability[] = [];
+      const remoteStaticSnippet: IStaticTab = {
+        entityId: componentId,
+        name: webpartName,
+        contentUrl: util.format(ManifestTemplate.REMOTE_CONTENT_URL, componentId, componentId),
+        websiteUrl: ManifestTemplate.WEBSITE_URL,
+        scopes: ["personal"],
+      };
+      const remoteConfigurableSnippet: IConfigurableTab = {
+        configurationUrl: util.format(
+          ManifestTemplate.REMOTE_CONFIGURATION_URL,
+          componentId,
+          componentId
+        ),
+        canUpdateConfiguration: true,
+        scopes: ["team"],
+      };
+      capabilitiesToAddManifest.push(
+        {
+          name: "staticTab",
+          snippet: remoteStaticSnippet,
+        },
+        {
+          name: "configurableTab",
+          snippet: remoteConfigurableSnippet,
+        }
+      );
+      const manifestProvider =
+        (context as ContextV3).manifestProvider || new DefaultManifestProvider();
+      for (const capability of capabilitiesToAddManifest) {
+        const addCapRes = await manifestProvider.updateCapability(
+          (context as ContextV3).manifestProvider
+            ? (context as ContextV3)
+            : convert2Context(context as PluginContext, true).context,
+          inputs,
+          capability
+        );
+        if (addCapRes.isErr()) return err(addCapRes.error);
+      }
+    }
+
     await progressHandler?.end(true);
     return ok(undefined);
   } catch (error) {

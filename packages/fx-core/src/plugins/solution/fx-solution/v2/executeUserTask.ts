@@ -331,8 +331,8 @@ export async function addCapability(
   if (validateRes) {
     return err(InvalidInputError(validateRes));
   }
-  // add spfx tab is not permitted for non-mini app
-  if (!isMiniApp && capabilitiesAnswer.includes(TabSPFxItem.id)) {
+
+  if (!isMiniApp && capabilitiesAnswer.includes(TabSPFxItem.id) && !isSPFxMultiTabEnabled()) {
     return err(InvalidInputError(getLocalizedString("core.capability.validation.spfx")));
   }
 
@@ -361,7 +361,7 @@ export async function addCapability(
   const toAddBot = capabilitiesAnswer.includes(BotOptionItem.id);
   const toAddME = capabilitiesAnswer.includes(MessageExtensionItem.id);
   const toAddTabNonSso = isAadManifestEnabled() && capabilitiesAnswer.includes(TabNonSsoItem.id);
-  const toAddSpfx = false; //capabilitiesAnswer.includes(TabSPFxItem.id);
+  const toAddSpfx = capabilitiesAnswer.includes(TabSPFxItem.id);
   if (isAadManifestEnabled()) {
     if (alreadyHasTabSso && toAddTabNonSso) {
       const e = new SystemError(
@@ -393,6 +393,7 @@ export async function addCapability(
     return err(tabExceedRes.error);
   }
   const isTabAddable = !tabExceedRes.value;
+  const isTabSPFxAddable = !tabExceedRes.value;
   const botExceedRes = await appStudioPlugin.capabilityExceedLimit(
     ctx,
     inputs as v2.InputsWithProjectPath,
@@ -414,7 +415,8 @@ export async function addCapability(
   if (
     ((toAddTab || toAddTabNonSso) && !isTabAddable) ||
     (toAddBot && !isBotAddable) ||
-    (toAddME && !isMEAddable)
+    (toAddME && !isMEAddable) ||
+    (toAddSpfx && !isTabSPFxAddable)
   ) {
     const error = new UserError(
       SolutionSource,
@@ -442,7 +444,6 @@ export async function addCapability(
   if (toAddSpfx) {
     pluginNamesToScaffold.add(ResourcePluginsV2.SpfxPlugin);
     capabilitiesToAddManifest.push({ name: "staticTab" });
-    capabilitiesToAddManifest.push({ name: "configurableTab" });
     newCapabilitySet.add(TabSPFxItem.id);
     solutionSettings.hostType = HostTypeOptionSPFx.id;
   } else {
@@ -835,6 +836,7 @@ export async function addFeature(
     NotificationOptionItem.id,
     TabNonSsoItem.id,
     MessageExtensionItem.id,
+    TabSPFxItem.id,
   ]);
   const resourceAnswers = new Set([
     AzureResourceFunction.id,

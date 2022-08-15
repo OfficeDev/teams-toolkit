@@ -30,4 +30,11 @@ export class AzureFunctionResource extends AzureAppService {
   ): Promise<Result<undefined, FxError>> {
     return ok(undefined);
   }
+
+  async deploy(
+    context: ResourceContextV3,
+    inputs: InputsWithProjectPath
+  ): Promise<Result<undefined, FxError>> {
+    return await super.deploy(context, inputs, true);
+  }
 }

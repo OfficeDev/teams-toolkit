@@ -78,6 +78,7 @@ import {
 import { format, Formats } from "./utils/format";
 import { PluginNames, REMOTE_AAD_ID, SOLUTION_PROVISION_SUCCEEDED } from "../../solution";
 import { generateAadManifestTemplate } from "../../../core/generateAadManifestTemplate";
+import { isVSProject } from "../../../common";
 
 export class AadAppForTeamsImpl {
   public async provision(ctx: PluginContext, isLocalDebug = false): Promise<AadResult> {
@@ -319,10 +320,12 @@ export class AadAppForTeamsImpl {
     await DialogUtils.progress?.start(ProgressDetail.Starting);
     await DialogUtils.progress?.next(ProgressDetail.UpdateRedirectUri);
 
+    const isVs = isVSProject(ctx.projectSettings);
     const redirectUris: IAADDefinition = AadAppForTeamsImpl.getRedirectUris(
       config.frontendEndpoint,
       config.botEndpoint,
-      config.clientId!
+      config.clientId!,
+      isVs
     );
     await AadAppClient.updateAadAppRedirectUri(
       isLocalDebug ? Messages.EndPostLocalDebug.telemetry : Messages.EndPostProvision.telemetry,
@@ -550,7 +553,8 @@ export class AadAppForTeamsImpl {
   public static getRedirectUris(
     frontendEndpoint: string | undefined,
     botEndpoint: string | undefined,
-    clientId: string
+    clientId: string,
+    isVs = false
   ) {
     const redirectUris: IAADDefinition = {
       web: {
@@ -569,7 +573,9 @@ export class AadAppForTeamsImpl {
     }
 
     if (botEndpoint) {
-      redirectUris.web?.redirectUris?.push(`${botEndpoint}/auth-end.html`);
+      redirectUris.web?.redirectUris?.push(
+        isVs ? `${botEndpoint}/bot-auth-end.html` : `${botEndpoint}/auth-end.html`
+      );
     }
 
     return redirectUris;

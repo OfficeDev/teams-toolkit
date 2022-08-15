@@ -164,6 +164,7 @@ export enum TelemetryEvent {
   CheckPermission = "check-permission",
   OpenSideloadingJoinM365 = "open-sideloading-joinm365",
   OpenSideloadingReadmore = "open-sideloading-readmore",
+  OpenSignInJoinM365 = "open-sign-in-joinm365",
 
   ShowWhatIsNewNotification = "show-what-is-new-notification",
   ShowWhatIsNewContext = "show-what-is-new-context",

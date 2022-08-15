@@ -38,13 +38,17 @@ import {
   SolutionPluginsV2,
 } from "../../src/core/SolutionPluginContainer";
 import { parseTeamsAppTenantId } from "../../src/plugins/solution/fx-solution/v2/utils";
-import { randomAppName } from "./utils";
+import { MockAzureAccountProvider, MockTools, randomAppName } from "./utils";
 import { executeCommand, tryExecuteCommand } from "../../src/common/cpUtils";
 import { TaskDefinition } from "../../src/common/local/taskDefinition";
 import { execPowerShell, execShell } from "../../src/common/local/process";
 import { isValidProject } from "../../src/common/projectSettingsHelper";
 import "../../src/plugins/solution/fx-solution/v2/solution";
 import { getLocalizedString } from "../../src/common/localizeUtils";
+import { ResourceManagementClient } from "@azure/arm-resources";
+import { resourceGroupHelper } from "../../src/plugins/solution/fx-solution/utils/ResourceGroupHelper";
+import { MockedAzureAccountProvider } from "../plugins/solution/util";
+import { MockedAzureTokenProvider } from "../plugins/solution/solution.provision.test";
 describe("Other test case", () => {
   const sandbox = sinon.createSandbox();
 
@@ -290,5 +294,18 @@ describe("Other test case", () => {
     sandbox.stub(fs, "readJsonSync").resolves(projectSettings);
     const isValid = isValidProject("aaa");
     assert.isTrue(isValid);
+  });
+  it("getQuestionsForResourceGroup", async () => {
+    const mockSubscriptionId = "mockSub";
+    const accountProvider = new MockedAzureTokenProvider();
+    const mockToken = await accountProvider.getAccountCredentialAsync();
+    const mockRmClient = new ResourceManagementClient(mockToken, mockSubscriptionId);
+    const node = await resourceGroupHelper.getQuestionsForResourceGroup(
+      "defaultRG",
+      [["g1", "East US"]],
+      ["East US", "Center US"],
+      mockRmClient
+    );
+    assert.isTrue(node !== undefined);
   });
 });

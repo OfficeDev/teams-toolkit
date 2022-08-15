@@ -17,10 +17,10 @@ export class PathInfo {
 export class RegularExpr {
   static readonly botId = /\$botId\$/g;
   static readonly botPassword = /\$bot-password\$/g;
-  static readonly clientId = /\$clientId\$/g;
-  static readonly clientSecret = /\$client-secret\$/g;
-  static readonly tenantId = /\$tenantId\$/g;
-  static readonly oauthAuthority = /\$oauthAuthority\$/g;
-  static readonly applicationIdUri = /\$applicationIdUri\$/g;
-  static readonly initiateLoginEndpoint = /\$initiateLoginEndpoint\$/g;
+  static readonly clientId = "$clientId";
+  static readonly clientSecret = "$client-secret";
+  static readonly tenantId = "$tenantId";
+  static readonly oauthAuthority = "$oauthAuthority";
+  static readonly applicationIdUri = "$applicationIdUri";
+  static readonly initiateLoginEndpoint = "$initiateLoginEndpoint";
 }

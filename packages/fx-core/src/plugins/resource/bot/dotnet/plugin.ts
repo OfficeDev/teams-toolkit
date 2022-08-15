@@ -18,6 +18,7 @@ import { TeamsBotImpl } from "../plugin";
 import { FileIOError } from "./errors";
 import { PluginNames } from "../../../solution/fx-solution/constants";
 import { PluginAAD, PluginBot } from "../resources/strings";
+import appSettingsWithSSO from "./appSettings/appSettingsWithSSO.json";
 
 // Extends TeamsBotImpl to reuse provision method
 export class DotnetBotImpl extends TeamsBotImpl {
@@ -68,31 +69,7 @@ export class DotnetBotImpl extends TeamsBotImpl {
         // if appsetting file not exist, generate a new one
         // TODO(qidon): load content from resource file or template
         appSettings = includeAad
-          ? '\
-        {\r\n\
-          "Logging": {\r\n\
-            "LogLevel": {\r\n\
-              "Default": "Information",\r\n\
-              "Microsoft": "Warning",\r\n\
-              "Microsoft.Hosting.Lifetime": "Information"\r\n\
-            }\r\n\
-          },\r\n\
-          "AllowedHosts": "*",\r\n\
-          "BOT_ID": "$botId$",\r\n\
-          "BOT_PASSWORD": "$bot-password$",\r\n\
-          "TeamsFx": {\r\n\
-            "Authentication": {\r\n\
-              "ClientId": "$clientId$",\r\n\
-              "ClientSecret": "$client-secret$",\r\n\
-              "OAuthAuthority": "$oauthAuthority$",\r\n\
-              "TenantId": "$tenantId$",\r\n\
-              "ApplicationIdUri": "$applicationIdUri$",\r\n\
-              "Bot": {\r\n\
-                "InitiateLoginEndpoint": "$initiateLoginEndpoint$"\r\n\
-              }\r\n\
-            }\r\n\
-          }\r\n\
-        }\r\n'
+          ? JSON.stringify(appSettingsWithSSO, null, "\t")
           : '\
 {\r\n\
   "Logging": {\r\n\

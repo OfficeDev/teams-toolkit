@@ -57,7 +57,7 @@ E2E tests need environment variables that are configured in GitHub Action.
     # Generate certs to for test server that supports certificate auth
     openssl req -x509 -newkey rsa:4096 -nodes -days 365 -keyout server_key.pem -out server_cert.pem  -subj "/CN=localhost"
 
-    # Generate client cert (both PEM and PFX) to test certificate auth support
+    # Generate client cert (both PEM and PFX) to test certificate auth support. Press "ENTER" when asked for "Export Password".
     openssl req -newkey rsa:4096 -keyout client_key.pem -out client_csr.pem -nodes -days 365 -subj "/CN=test client"
 
     openssl x509 -req -in client_csr.pem -CA server_cert.pem -CAkey server_key.pem -out client_cert.pem -set_serial 01 -days 365
@@ -67,7 +67,7 @@ E2E tests need environment variables that are configured in GitHub Action.
     # Create password protected private key file
     openssl rsa -aes256 -in client_key.pem -out client_key_encrypted.pem
 
-    # Create password protected pfx file
+    # Create password protected pfx file. Record the cert password for use in step 2.
     openssl pkcs12 -inkey client_key.pem -in client_cert.pem -certfile server_cert.pem -export -out client_pfx_encrypted.pfx
     ```
 

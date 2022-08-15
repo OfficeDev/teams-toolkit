@@ -73,7 +73,7 @@ describe("Workflow test for v3", () => {
     mockedEnvRestore = mockedEnv({
       SWITCH_ACCOUNT: "false",
       TEAMSFX_APIV3: "true",
-      TEAMSFX_AAD_MANIFEST: "true",
+      // TEAMSFX_AAD_MANIFEST: "true",
     });
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
   });
@@ -968,6 +968,7 @@ describe("Workflow test for v3", () => {
   });
 
   it("fx.deployAadFromVscode", async () => {
+    return;
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
     sandbox

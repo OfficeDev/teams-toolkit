@@ -197,6 +197,7 @@ export const apiEndpointQuestion: TextInputQuestion = {
   validation: {
     validFunc: checkHttp,
   },
+  forgetLastValue: true,
 };
 
 export const basicAuthUsernameQuestion: TextInputQuestion = {

@@ -83,6 +83,17 @@ describe("App-manifest Component", () => {
     chai.assert.isTrue(validationAction.isOk());
   });
 
+  it("validation manifest - without schema", async function () {
+    const manifest = new TeamsAppManifest();
+    manifest.$schema = undefined;
+    sandbox.stub(appstudio, "getManifest").resolves(ok(manifest));
+    const validationAction = await component.validate(context as ResourceContextV3, inputs);
+    chai.assert.isTrue(validationAction.isErr());
+    if (validationAction.isErr()) {
+      chai.assert.equal(validationAction.error.name, AppStudioError.ValidationFailedError.name);
+    }
+  });
+
   it("build", async function () {
     const manifest = new TeamsAppManifest();
     manifest.id = "";

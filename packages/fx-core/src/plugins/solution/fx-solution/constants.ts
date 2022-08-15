@@ -342,6 +342,18 @@ export class AddSsoParameters {
       OAuthAuthority: "$oauthAuthority$",
     },
   };
+  static readonly AppSettingsToAddForBot = {
+    Authentication: {
+      ClientId: "$clientId$",
+      ClientSecret: "$client-secret$",
+      OAuthAuthority: "$oauthAuthority$",
+      TenantId: "$tenantId$",
+      ApplicationIdUri: "$applicationIdUri$",
+      Bot: {
+        InitiateLoginEndpoint: "$initiateLoginEndpoint$",
+      },
+    },
+  };
 }
 
 export class UserTaskFunctionName {

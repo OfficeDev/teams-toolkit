@@ -52,7 +52,6 @@ import { getActivatedV2ResourcePlugins, getAllV2ResourcePlugins } from "../Resou
 import { getPluginContext } from "../utils/util";
 import { PluginsWithContext } from "../types";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
-import { doesAllowSwitchAccount } from "../../../../core";
 import { backupFiles } from "../utils/backupFiles";
 import { TelemetryEvent, TelemetryProperty } from "../../../../common/telemetry";
 
@@ -227,69 +226,46 @@ export async function checkWhetherLocalDebugM365TenantMatches(
       return maybeM365UserAccount;
     }
 
-    const isSwitchAccountEnabled = doesAllowSwitchAccount();
     if (maybeM365TenantId.value !== localDebugTenantId) {
-      if (isSwitchAccountEnabled) {
-        if (
-          projectPath !== undefined &&
-          (await fs.pathExists(`${projectPath}/bot/.notification.localstore.json`))
-        ) {
-          const errorMessage = getLocalizedString(
-            "core.localDebug.tenantConfirmNoticeWhenAllowSwitchAccount",
-            localDebugTenantId,
-            maybeM365UserAccount.value,
-            "bot/.notification.localstore.json"
-          );
-          return err(
-            new UserError("Solution", SolutionError.CannotLocalDebugInDifferentTenant, errorMessage)
-          );
-        } else if (envInfo) {
-          telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckLocalDebugTenant, {
-            [TelemetryProperty.HasSwitchedM365Tenant]: "true",
-            [SolutionTelemetryProperty.M365TenantId]: maybeM365TenantId.value,
-            [SolutionTelemetryProperty.PreviousM365TenantId]: localDebugTenantId,
-          });
-          if (!isLegacyEnv) {
-            const keys = Object.keys(envInfo.state);
-            for (const key of keys) {
-              if (key !== "solution") {
-                delete (envInfo as v3.EnvInfoV3).state[key];
-              }
-            }
-          } else {
-            const keys = (envInfo as EnvInfo).state.keys();
-            for (const key of keys) {
-              (envInfo as EnvInfo).state.delete(key);
-            }
-          }
-
-          if (projectPath !== undefined) {
-            const backupFilesRes = await backupFiles(envInfo.envName, projectPath!);
-            if (backupFilesRes.isErr()) {
-              return err(backupFilesRes.error);
-            }
-          }
-        }
-      } else {
-        const localFiles = [".fx/states/state.local.json"];
-
-        // add notification local file if exist
-        if (
-          projectPath !== undefined &&
-          (await fs.pathExists(`${projectPath}/bot/.notification.localstore.json`))
-        ) {
-          localFiles.push("bot/.notification.localstore.json");
-        }
-
+      if (
+        projectPath !== undefined &&
+        (await fs.pathExists(`${projectPath}/bot/.notification.localstore.json`))
+      ) {
         const errorMessage = getLocalizedString(
-          "core.localDebug.tenantConfirmNotice",
+          "core.localDebug.tenantConfirmNoticeWhenAllowSwitchAccount",
           localDebugTenantId,
           maybeM365UserAccount.value,
-          localFiles.join(", ")
+          "bot/.notification.localstore.json"
         );
         return err(
           new UserError("Solution", SolutionError.CannotLocalDebugInDifferentTenant, errorMessage)
         );
+      } else if (envInfo) {
+        telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckLocalDebugTenant, {
+          [TelemetryProperty.HasSwitchedM365Tenant]: "true",
+          [SolutionTelemetryProperty.M365TenantId]: maybeM365TenantId.value,
+          [SolutionTelemetryProperty.PreviousM365TenantId]: localDebugTenantId,
+        });
+        if (!isLegacyEnv) {
+          const keys = Object.keys(envInfo.state);
+          for (const key of keys) {
+            if (key !== "solution") {
+              delete (envInfo as v3.EnvInfoV3).state[key];
+            }
+          }
+        } else {
+          const keys = (envInfo as EnvInfo).state.keys();
+          for (const key of keys) {
+            (envInfo as EnvInfo).state.delete(key);
+          }
+        }
+
+        if (projectPath !== undefined) {
+          const backupFilesRes = await backupFiles(envInfo.envName, projectPath!);
+          if (backupFilesRes.isErr()) {
+            return err(backupFilesRes.error);
+          }
+        }
       }
     } else {
       telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckLocalDebugTenant, {

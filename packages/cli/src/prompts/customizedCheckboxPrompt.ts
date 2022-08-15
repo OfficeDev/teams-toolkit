@@ -22,6 +22,7 @@ export default class CustomizedCheckboxPrompt extends CheckboxPrompt {
 
   constructor(questions: Question, rl: ReadlineInterface, answers: inquirer.Answers) {
     super(questions, rl, answers);
+    (this.paginator as any).isInfinite = false;
   }
 
   /**
@@ -51,7 +52,7 @@ export default class CustomizedCheckboxPrompt extends CheckboxPrompt {
         .map((ch) => (ch as Choice).extra.title);
       message += chalk.cyan(selection.join(", "));
     } else {
-      const choicesStr = renderChoices(this.opt.choices, this.pointer);
+      const [choicesStr, choicesStrs] = renderChoices(this.opt.choices, this.pointer);
       const indexPosition = this.opt.choices.indexOf(
         this.opt.choices.getChoice(this.pointer) as any
       );
@@ -66,15 +67,14 @@ export default class CustomizedCheckboxPrompt extends CheckboxPrompt {
             return acc + 1;
           }
 
-          let l = value.name;
+          const l = choicesStrs[i];
           // Non-strings take up one line
           if (typeof l !== "string") {
             return acc + 1;
           }
 
           // Calculate lines taken up by string
-          l = l.split("\n");
-          return acc + l.length;
+          return acc + l.split("\n").length;
         }, 0) - 1;
       message += "\n" + this.paginator.paginate(choicesStr, realIndexPosition);
     }
@@ -93,7 +93,7 @@ export default class CustomizedCheckboxPrompt extends CheckboxPrompt {
  * @param  {Number} pointer Position of the pointer
  * @return {String}         Rendered content
  */
-function renderChoices(choices: any, pointer: number): string {
+function renderChoices(choices: any, pointer: number): [string, string[]] {
   let output = "";
   let separatorOffset = 0;
   let prefixWidth = 1;
@@ -104,7 +104,9 @@ function renderChoices(choices: any, pointer: number): string {
     );
   });
 
+  const outputs: string[] = [];
   choices.forEach((choice: any, i: number) => {
+    output = "";
     if (choice.type === "separator") {
       separatorOffset++;
       output += " " + choice + "\n";
@@ -133,9 +135,10 @@ function renderChoices(choices: any, pointer: number): string {
     }
 
     output += "\n";
+    outputs.push(output.replace(/\n$/, ""));
   });
 
-  return output.replace(/\n$/, "");
+  return [outputs.join("\n"), outputs];
 }
 
 /**

@@ -12,17 +12,16 @@ import { ConstantString } from "../util";
 import { SampleHandler } from "../../../../src/plugins/resource/apiconnector/sampleHandler";
 import { ApiConnectorConfiguration } from "../../../../src/plugins/resource/apiconnector/config";
 import { SampleCodeCases } from "./utils";
+import { Constants } from "../../../../src/plugins/resource/apiconnector/constants";
 
 describe("Api Connector scaffold sample code", async () => {
   const sandbox = sinon.createSandbox();
   const testpath = path.join(__dirname, "api-connect-generate");
   const botPath = path.join(testpath, "bot");
-  const apiPath = path.join(testpath, "api");
 
   beforeEach(async () => {
     await fs.ensureDir(testpath);
     await fs.ensureDir(botPath);
-    await fs.ensureDir(apiPath);
   });
 
   afterEach(async () => {
@@ -43,11 +42,9 @@ describe("Api Connector scaffold sample code", async () => {
         AuthConfig: item.AuthConfig,
       };
       await sampleHandler.generateSampleCode(fakeConfig);
-      expect(await fs.pathExists(path.join(botPath, "fake.js"))).to.be.true;
-      const actualFile = await fs.readFile(
-        path.join(botPath, "fake.js"),
-        ConstantString.UTF8Encoding
-      );
+      const expectedFile = path.join(botPath, Constants.sampleCodeDir, "fake.js");
+      expect(await fs.pathExists(expectedFile)).to.be.true;
+      const actualFile = await fs.readFile(expectedFile, ConstantString.UTF8Encoding);
       const expectedContent = await fs.readFile(
         path.join(__dirname, "expectedFiles", "js", item.FileName),
         ConstantString.UTF8Encoding
@@ -60,6 +57,7 @@ describe("Api Connector scaffold sample code", async () => {
   });
 
   it("generate ts sample code files", async () => {
+    await fs.ensureDir(path.join(botPath, "src"));
     const languageType = "typescript";
     const componet = "bot";
     const sampleHandler: SampleHandler = new SampleHandler(testpath, languageType, componet);
@@ -71,11 +69,9 @@ describe("Api Connector scaffold sample code", async () => {
         AuthConfig: item.AuthConfig,
       };
       await sampleHandler.generateSampleCode(fakeConfig);
-      expect(await fs.pathExists(path.join(botPath, "fake.ts"))).to.be.true;
-      const actualFile = await fs.readFile(
-        path.join(botPath, "fake.ts"),
-        ConstantString.UTF8Encoding
-      );
+      const expectedFile = path.join(botPath, "src", Constants.sampleCodeDir, "fake.ts");
+      expect(await fs.pathExists(expectedFile)).to.be.true;
+      const actualFile = await fs.readFile(expectedFile, ConstantString.UTF8Encoding);
       const expectedContent = await fs.readFile(
         path.join(__dirname, "expectedFiles", "ts", item.FileName),
         ConstantString.UTF8Encoding

@@ -13,7 +13,7 @@ import { ApiConnectorImpl } from "../../../../src/plugins/resource/apiconnector/
 import { SampleHandler } from "../../../../src/plugins/resource/apiconnector/sampleHandler";
 import { Inputs, Platform, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { MockContext } from "./utils";
-import { ErrorMessage } from "../../../../src/plugins/resource/apiconnector/errors";
+import { Constants as Constants1 } from "../../../../src/plugins/resource/apiconnector/constants";
 
 class Constants {
   public static readonly envFileName = ".env.teamsfx.local";
@@ -79,9 +79,9 @@ describe("Api Connector scaffold sample code", async () => {
     const apiConnector: ApiConnectorImpl = new ApiConnectorImpl();
     const result = await apiConnector.scaffold(context, fakeInputs);
     expect(await fs.pathExists(path.join(botPath, Constants.envFileName))).to.be.true;
-    expect(await fs.pathExists(path.join(botPath, "test.js"))).to.be.true;
+    expect(await fs.pathExists(path.join(botPath, Constants1.sampleCodeDir, "test.js"))).to.be.true;
     expect(await fs.pathExists(path.join(apiPath, Constants.envFileName))).to.be.true;
-    expect(await fs.pathExists(path.join(apiPath, "test.js"))).to.be.true;
+    expect(await fs.pathExists(path.join(apiPath, Constants1.sampleCodeDir, "test.js"))).to.be.true;
     const expectResult = ["api", "bot"].map((item) => {
       return path.join(testpath, item, "test.js");
     });

@@ -123,7 +123,7 @@ describe("Workflow test for v3", () => {
     sandbox.stub(fs, "rename").resolves();
     sandbox.stub(fs, "copyFile").resolves();
     sandbox.stub(versionCheckQuestion as FuncQuestion, "func").resolves(undefined);
-    sinon.stub(DefaultManifestProvider.prototype, "updateCapability").resolves(ok(Void));
+    sandbox.stub(DefaultManifestProvider.prototype, "updateCapability").resolves(ok(Void));
 
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,

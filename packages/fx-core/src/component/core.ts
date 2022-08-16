@@ -112,7 +112,7 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "./middleware/actionExecutionMW";
 import { getQuestionsForCreateProjectV2 } from "../core/middleware";
 import { askForProvisionConsentNew } from "../plugins/solution/fx-solution/v2/provision";
-import { resetEnvInfoWhenSwitchM365, resetProvisionState } from "./utils";
+import { resetEnvInfoWhenSwitchM365 } from "./utils";
 import { TelemetryEvent, TelemetryProperty } from "../common/telemetry";
 import { getComponent } from "./workflow";
 import {
@@ -125,6 +125,7 @@ import { sendErrorTelemetryThenReturnError } from "../core/telemetry";
 import { ViewAadAppHelpLink, SolutionTelemetryEvent } from "../plugins";
 import { Constants } from "../plugins/resource/aad/constants";
 import { loadEnvInfoV3 } from "../core/middleware/envInfoLoaderV3";
+import { resetProvisionState } from "../common/utils";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";

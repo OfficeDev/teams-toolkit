@@ -595,33 +595,3 @@ export function resetEnvInfoWhenSwitchM365(envInfo: v3.EnvInfoV3): void {
     }
   }
 }
-
-export async function resetProvisionState(inputs: Inputs, ctx: v2.Context) {
-  const allEnvRes = await environmentManager.listRemoteEnvConfigs(inputs.projectPath!);
-  if (allEnvRes.isOk()) {
-    for (const env of allEnvRes.value) {
-      const loadEnvRes = await loadEnvInfoV3(
-        inputs as v2.InputsWithProjectPath,
-        ctx.projectSetting,
-        env,
-        false
-      );
-      if (loadEnvRes.isOk()) {
-        const envInfo = loadEnvRes.value;
-        if (
-          envInfo.state?.solution?.provisionSucceeded === true ||
-          envInfo.state?.solution?.provisionSucceeded === "true"
-        ) {
-          envInfo.state.solution.provisionSucceeded = false;
-          await environmentManager.writeEnvState(
-            envInfo.state,
-            inputs.projectPath!,
-            ctx.cryptoProvider,
-            env,
-            true
-          );
-        }
-      }
-    }
-  }
-}

@@ -133,7 +133,7 @@ import {
 } from "./telemetry";
 import { CoreHookContext } from "./types";
 import { isPreviewFeaturesEnabled } from "../common/featureFlags";
-import { createContextV3, resetProvisionState } from "../component/utils";
+import { createContextV3 } from "../component/utils";
 import { TeamsfxCore } from "../component/core";
 import {
   FeatureId,
@@ -150,7 +150,7 @@ import { ApiConnectorImpl } from "../plugins/resource/apiconnector/plugin";
 import { publishQuestion } from "../component/resource/appManifest/appManifest";
 import { createEnvWithName } from "../component/envManager";
 import { getTeamsAppManifestPath } from "../component/resource/appManifest/utils";
-import { getProjectTemplatesFolderPath } from "../common/utils";
+import { getProjectTemplatesFolderPath, resetProvisionState } from "../common/utils";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -826,7 +826,7 @@ export class FxCore implements v3.ICore {
               inputs[AzureSolutionQuestionNames.Features] !== ApiConnectionOptionItem.id &&
               inputs[AzureSolutionQuestionNames.Features] !== CicdOptionItem.id))
         ) {
-          await resetProvisionState(inputs, ctx.contextV2);
+          await resetProvisionState(inputs as InputsWithProjectPath, ctx.contextV2);
         }
         return res;
       } else return err(FunctionRouterError(func));

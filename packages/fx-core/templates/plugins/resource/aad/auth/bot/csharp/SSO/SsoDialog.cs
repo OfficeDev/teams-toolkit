@@ -2,11 +2,8 @@
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Options;
-using Microsoft.Graph;
-using Microsoft.Identity.Client;
 using Microsoft.TeamsFx.Bot;
 using Microsoft.TeamsFx.Configuration;
-using System.Threading;
 
 namespace {Your_NameSpace}.SSO;
 
@@ -16,11 +13,18 @@ public class DialogConstants
     internal static readonly string TEAMS_SSO_PROMPT = "TeamsFxSsoPrompt";
 }
 
+public class StoreItem
+{
+    public string eTag;
+}
+
 public class SsoDialog : ComponentDialog
 {
     ILogger<SsoDialog> _logger;
     BotAuthenticationOptions _botAuthOptions;
     Dictionary<string, string> _commandMapping = new Dictionary<string, string>();
+    IStorage _dedupStorage = new MemoryStorage();
+    List<string> _dedupStorageKeys = new List<string>() {};
 
     public SsoDialog(IOptions<BotAuthenticationOptions> botAuthenticationOptions, ILogger<SsoDialog> logger)
     {
@@ -49,6 +53,11 @@ public class SsoDialog : ComponentDialog
         AddDialog(commandRouteDialog);
 
         _logger.LogInformation("Construct Main Dialog");
+    }
+
+    public void SetStorage(IStorage storage)
+    {
+        _dedupStorage = storage;
     }
 
     public async Task RunAsync(ITurnContext context, IStatePropertyAccessor<DialogState> accessor)
@@ -80,6 +89,7 @@ public class SsoDialog : ComponentDialog
             new WaterfallStep[]
             {
             PromptStepAsync,
+            DedupStepAsync,
             async (WaterfallStepContext stepContext, CancellationToken cancellationToken) => {
                 TeamsBotSsoPromptTokenResponse tokenResponce = (TeamsBotSsoPromptTokenResponse)stepContext.Result;
                 var turnContext = stepContext.Context;
@@ -102,6 +112,14 @@ public class SsoDialog : ComponentDialog
             }
         });
         AddDialog(dialog);
+    }
+
+    protected override async Task OnEndDialogAsync(ITurnContext context, DialogInstance instance, DialogReason reason, CancellationToken cancellationToken = default(CancellationToken))
+    {
+        var conversationId = context.Activity.Conversation.Id;
+        var currentDedupKeys = _dedupStorageKeys.Where((key) => key.IndexOf(conversationId) > 0).ToArray();
+        await _dedupStorage.DeleteAsync(currentDedupKeys);
+        _dedupStorageKeys = _dedupStorageKeys.Where((key) => key.IndexOf(conversationId) < 0).ToList<string>();
     }
 
     private async Task<DialogTurnResult> PromptStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
@@ -137,6 +155,72 @@ public class SsoDialog : ComponentDialog
 
         await stepContext.Context.SendActivityAsync(String.Format("Cannot find command: {0}", text));
         return await stepContext.EndDialogAsync();
+    }
+
+    private async Task<DialogTurnResult> DedupStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var tokenResponse = stepContext.Result;
+            if (tokenResponse != null && (await ShouldDedup(stepContext.Context)))
+            {
+                return EndOfTurn;
+            }
+            return await stepContext.NextAsync(tokenResponse);
+        }
+        catch (Exception error)
+        {
+            await stepContext.Context.SendActivityAsync("Failed to run dedup step");
+            await stepContext.Context.SendActivityAsync(error.Message);
+            return await stepContext.EndDialogAsync();
+        }
+    }
+
+    private async Task<bool> ShouldDedup(ITurnContext context)
+    {
+        var storeItem = new StoreItem()
+        {
+            eTag = (context.Activity.Value as dynamic).id,
+        };
+        var key = GetStorageKey(context);
+        var storeItems = new Dictionary<string, object>()
+        {
+            {key, storeItem}
+        };
+
+        var res = await _dedupStorage.ReadAsync(new string[] { key });
+        if (res.Count != 0)
+        {
+            return true;
+        }
+
+        await _dedupStorage.WriteAsync(storeItems);
+        _dedupStorageKeys.Add(key);
+        return false;
+    }
+
+    private string GetStorageKey(ITurnContext context)
+    {
+        if (context == null || context.Activity == null || context.Activity.Conversation == null)
+        {
+            throw new Exception("Invalid context, can not get storage key!");
+        }
+
+        var activity = context.Activity;
+        var channelId = activity.ChannelId;
+        var conversationId = activity.Conversation.Id;
+        if (activity.Type != ActivityTypes.Invoke || activity.Name != SignInConstants.TokenExchangeOperationName)
+        {
+            throw new Exception("TokenExchangeState can only be used with Invokes of signin/tokenExchange.");
+        }
+
+        var value = activity.Value;
+        if (value == null || (value as dynamic).id == null)
+        {
+            throw new Exception("Invalid signin/tokenExchange. Missing activity.value.id.");
+        }
+
+        return $"{channelId}/{conversationId}/{(value as dynamic).id}";
     }
 
     private string MatchCommands(string text)

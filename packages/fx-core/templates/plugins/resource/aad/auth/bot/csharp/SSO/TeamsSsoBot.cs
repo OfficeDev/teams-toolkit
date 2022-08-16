@@ -11,6 +11,8 @@ public class TeamsSsoBot<T> : TeamsActivityHandler where T : Dialog
     private readonly BotState _conversationState;
     private readonly Dialog _dialog;
     private readonly IStatePropertyAccessor<DialogState> _dialogState;
+    private readonly IStorage _dedupStorage = new MemoryStorage();
+    
     public TeamsSsoBot(ConversationState conversationState, T dialog, ILogger<TeamsSsoBot<T>> logger)
     {
         _conversationState = conversationState;
@@ -24,6 +26,7 @@ public class TeamsSsoBot<T> : TeamsActivityHandler where T : Dialog
     protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Receive message activity");
+        ((SsoDialog)_dialog).SetStorage(_dedupStorage);
         await ((SsoDialog)_dialog).RunAsync(turnContext, _dialogState);
     }
 

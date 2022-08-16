@@ -32,7 +32,7 @@ Note: The following part is for `command and response bot`.
 
 3. Move the 'Auth/bot/SSO' folder to 'SSO'
    This folder contains two files as reference for sso implementation:
-   2.1 MainDialog.cs: This creates a ComponentDialog that used for SSO.
+   2.1 SsoDialog.cs: This creates a ComponentDialog that used for SSO.
    2.2 TeamsSsoBot.cs: This create a TeamsActivityHandler with `SsoDialog` and add 'showUserInfo' as a command that can be triggered.
    2.3 SsoOperations.cs: This implements class with a function to get user info with SSO token. You can follow this method and create your own method that requires SSO token.
    Note: Remember to replace '{Your_NameSpace}' with your project namespace.
@@ -86,11 +86,6 @@ Note: The following part is for `command and response bot`.
           endpoints.MapRazorPages();
         });
         '''
-    4.4 Add following code to use necessary namespaces
-      '''
-      using {Your_NameSpace}.SSO
-      using Microsoft.TeamsFx.Configuration;
-      '''
 
 5. Register your command in the Teams app manifest. Open 'Templates/appPackage/manifest.template.json', and add following lines under `command` in `commandLists` of your bot:
     '''

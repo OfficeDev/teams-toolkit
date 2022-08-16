@@ -193,6 +193,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           folder: "",
           artifactFolder: "bin\\Release\\net6.0\\win-x86\\publish",
           sso: solutionSettings.capabilities.includes("TabSSO"),
+          deploy: true,
         };
         settingsV3.components.push(teamsTab);
       } else {
@@ -203,6 +204,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           provision: true,
           folder: "tabs",
           sso: solutionSettings.capabilities.includes("TabSSO"),
+          deploy: true,
         };
         settingsV3.components.push(teamsTab);
       }
@@ -225,6 +227,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
         build: true,
         provision: true,
         folder: "SPFx",
+        deploy: true,
       };
       settingsV3.components.push(teamsTab);
       settingsV3.components.push({
@@ -255,6 +258,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           artifactFolder: "bin\\Release\\net6.0\\win-x86\\publish",
           capabilities: botCapabilities,
           sso: solutionSettings.capabilities.includes("BotSSO"),
+          deploy: true,
         };
         settingsV3.components.push(teamsBot);
       } else {
@@ -266,6 +270,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           folder: "bot",
           capabilities: botCapabilities,
           sso: solutionSettings.capabilities.includes("BotSSO"),
+          deploy: true,
         };
         settingsV3.components.push(teamsBot);
       }
@@ -315,6 +320,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
         functionNames: [settingsV2.defaultFunctionName || "getUserProfile"],
         build: true,
         folder: "api",
+        deploy: true,
       });
       settingsV3.components.push({
         name: ComponentNames.Function,

@@ -1,6 +1,6 @@
 # Congratulations! You are now switching to another tenant or subscription. Configuration files for last provision/local debug are saved successfully.
 
-You are now using a Microsoft 365 account or a Azure subscription (applies only when provisioning in a remote environment of a project requiring cloud resources) that is different from what you used previously in the selected environment for provision or local debugging. We have backed up the configuration files which are used for or generated from previous provision or local debug. For more information, you can check this [doc](https://aka.ms).
+You are now using a Microsoft 365 account or an Azure subscription (applies only when provisioning in a remote environment of a project requiring cloud resources) that is different from what you used previously in the selected environment for provision or local debugging. We have backed up the configuration files which are used for or generated from previous provision or local debug. For more information, you can check this [doc](https://aka.ms).
 
 ## Why backup
 Configuration files will be overwritten by Teams Toolkit when provisioning in an already-provisioned environment but with different account or Azure subscription or local debugging again with another Microsoft 365 account. We will back up those files so that you could continue using the resources created before easily when you decide to switch back to the accounts or the subscription that you selected before. Otherwise, new resources will be created, and you have to delete the old resources manully to avoid costs.
@@ -21,4 +21,4 @@ Note: if you want to recover for a remote environment and you have added new fea
 * If `{env}.{time}.userdata` exists in the backup folder, replace the content of `{env}.userdata` with the content of `{env}.{time}.userdata`. 
 * If you want to recover for a remote environment and your project previously contains Azure sources, update the value of "resourceBaseName" and "botServiceName"(delete this key if not exists) to the value defined in `azure.parameters.{env}.{time}.json`.
 * Run provision and deploy again.    
-* Delete the backup files when you think there is no need to keep them.
+* Delete the backups when you think there is no need to keep them.

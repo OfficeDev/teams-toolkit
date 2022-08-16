@@ -1,6 +1,6 @@
-This doc is to help you understand what will happen when provisioning for an already-provisioned environment but with different account or Azure subscription or local debugging again with another Microsoft 365(M365) account. We will also explain how to recover from the backups 
+This doc is to help you understand what will happen when provisioning in an already-provisioned environment but with different account or Azure subscription or local debugging again with another Microsoft 365(M365) account. We will also explain how to recover from the backups in this doc.
 
-> Important Notes: After switching accounts and run provision or local debugging again, all resources have been created before in the old M365 tenant or Azure subscription won't be deleted by default, and you have to manully delete them to avoid further costs if any. 
+> Important Notes: After switching accounts and provisioning or local debugging again, resources have been created before in the old M365 tenant or Azure subscription won't be deleted by default, and you have to manully delete them to avoid further costs if any. 
 
 ## Switch Microsoft 365 account
 ### Local debug
@@ -10,7 +10,7 @@ You could run local debugging for a Teams project with one M365 account and then
 3. Start local debugging.
 
 After that, we will 
-1. Back up configuration files for local environment ([learn more about backup & recover](#backup--recover)).
+1. Back up configuration files for local environment. [Learn more about backup & recover](#backup--recover).
 2. Create all resources required for the local environment in the new M365 tenant.
 3. `state.local.json` file in .fx/states folder will be overwritten with the information of new resources in the new M365 tenant. If the project requires AAD, `local.userdata` will be overwritten with the new client secret.
 
@@ -21,14 +21,24 @@ You could provision resources in a remote environment with one M365 account and 
 3. Start provision in the selected environment.
 
 After that, we will 
-1. Back up configuration files for the selected environment ([learn more about backup & recover](#backup--recover)).
+1. Back up configuration files for the selected environment. [Learn more about backup & recover](#backup--recover).
 2. Create a new Teams app and a new AAD app (if needed) in the new M365 tenant. 
-3. If the project requires Azure bot service, we will generate a new bot service name and save it as the value of "botServiceName" in `azure.parameters.{env}.json`. And then we will use this new name to provision a new Azure bot service in the selected resource group and the subscription since it is not allowed to edit the MicrosoftAppId of an existing Azure bot service. 
+3. If the project requires Azure bot service, we will generate a new bot service name and save it as the value of "botServiceName" in `azure.parameters.{env}.json`. We will use this new name to provision a new Azure bot service in the selected resource group and the subscription since it is not allowed to edit the value of Microsoft App ID of an existing Azure bot service. 
 4. If the project requires AAD, `{env}.userdata` will be overwritten with the new client secret.
 
 
 ## Switch Azure subscription
 ### Provision in a remote environment
+You could provision Azure resources of a remote environment in one Azure subscription and then switch to another Azure subscription for this environment. To do this, you only need to:
+1. Sign out of the current Azure account if the subscription you are going to use is in another Azure account.
+2. Select the correct subscription.
+3. Start provision in the selected environment.
+
+After that, we will
+1. Back up configuration files for the selected environment. [Learn more about backup & recover](#backup--recover).
+2. Update the value of "resourceBaseName" in `azure.parameters.{env}.json`.
+3. If the project contains Azure bot service, we will create a new AAD app since a Microsoft App ID is required to create an Azure Bot resourc and one Microsoft App Id can only be registered to one bot application. 
+4. Start provision in the selected environment.
 
 ## Backup & Recover
 ### Backup
@@ -47,6 +57,6 @@ Note: if you want to recover for a remote environment and you have added new fea
 * If `{env}.{time}.userdata` exists in the backup folder, replace the content of `{env}.userdata` with the content of `{env}.{time}.userdata`. 
 * If you want to recover for a remote environment and your project previously contains Azure sources, update the value of "resourceBaseName" and "botServiceName"(delete this key if not exists) to the value defined in `azure.parameters.{env}.{time}.json`.
 * Run provision and deploy again.    
-* Delete the backup files when you think there is no need to keep them.
+* Delete the backups when you think there is no need to keep them.
 
 ## Error

@@ -826,6 +826,12 @@ export class FxCore implements v3.ICore {
               inputs[AzureSolutionQuestionNames.Features] !== ApiConnectionOptionItem.id &&
               inputs[AzureSolutionQuestionNames.Features] !== CicdOptionItem.id))
         ) {
+          if (
+            ctx.envInfoV2?.state?.solution?.provisionSucceeded === true ||
+            ctx.envInfoV2?.state?.solution?.provisionSucceeded === "true"
+          ) {
+            ctx.envInfoV2.state.solution.provisionSucceeded = false;
+          }
           await environmentManager.resetProvisionState(
             inputs as InputsWithProjectPath,
             ctx.contextV2

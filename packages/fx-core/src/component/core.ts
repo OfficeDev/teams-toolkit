@@ -262,6 +262,12 @@ export class TeamsfxCore {
       });
       if (res.isErr()) return err(res.error);
       if (features !== ApiConnectionOptionItem.id && features !== CicdOptionItem.id) {
+        if (
+          context.envInfo?.state?.solution?.provisionSucceeded === true ||
+          context.envInfo?.state?.solution?.provisionSucceeded === "true"
+        ) {
+          context.envInfo.state.solution.provisionSucceeded = false;
+        }
         await environmentManager.resetProvisionState(inputs, context);
       }
       return ok(res.value);

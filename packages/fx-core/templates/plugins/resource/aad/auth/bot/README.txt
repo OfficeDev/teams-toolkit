@@ -33,7 +33,8 @@ Note: The following part is for `command and response bot`.
 3. Move the 'Auth/bot/SSO' folder to 'SSO'
    This folder contains two files as reference for sso implementation:
    2.1 MainDialog.cs: This creates a ComponentDialog that used for SSO.
-   2.2 TeamsSsoBot.cs: This create a TeamsActivityHandler with `MainDialog` as a command that can be triggered.
+   2.2 TeamsSsoBot.cs: This create a TeamsActivityHandler with `SsoDialog` and add 'showUserInfo' as a command that can be triggered.
+   2.3 SsoOperations.cs: This implements class with a function to get user info with SSO token. You can follow this method and create your own method that requires SSO token.
    Note: Remember to replace '{Your_NameSpace}' with your project namespace.
 
 4. Update 'Program.cs'
@@ -50,10 +51,10 @@ Note: The following part is for `command and response bot`.
         builder.Services.AddSingleton<ConversationState>();
 
         // The Dialog that will be run by the bot.
-        builder.Services.AddSingleton<MainDialog>();
+        builder.Services.AddSingleton<SsoDialog>();
 
         // Create the bot as a transient. In this case the ASP Controller is expecting an IBot.
-        builder.Services.AddTransient<IBot, TeamsSsoBot<MainDialog>>();
+        builder.Services.AddTransient<IBot, TeamsSsoBot<SsoDialog>>();
 
         builder.Services.AddOptions<AuthenticationOptions>().Bind(builder.Configuration.GetSection("TeamsFx").GetSection(AuthenticationOptions.Authentication)).ValidateDataAnnotations();
         builder.Services.AddOptions<BotAuthenticationOptions>().Configure<IOptions<AuthenticationOptions>>((botAuthOption, authOptions) => {
@@ -96,6 +97,46 @@ Note: The following part is for `command and response bot`.
     {
       "title": "show",
       "description": "Show user profile using Single Sign On feature"
+    }
+    '''
+
+(Optional) Add a new command to the bot
+-------------------------
+After successfully add SSO in your project, you can also add a new command.
+1. Create a new method in class SsoOperations in 'SSO/SsoOperations' and add your own business logic to call Graph API:
+  '''
+  public static async Task GetUserImageInfo(ITurnContext stepContext, string token, BotAuthenticationOptions botAuthOptions)
+  {
+      await stepContext.SendActivityAsync("Retrieving user information from Microsoft Graph ...");
+      var authProvider = new DelegateAuthenticationProvider((request) =>
+      {
+          request.Headers.Authorization =
+              new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+          return Task.CompletedTask;
+      });
+      var graphClient = new GraphServiceClient(authProvider);
+
+      // You can add following code to get your photo size:
+      // var photo = await graphClient.Me.Photo.Request().GetAsync();
+      // await stepContext.SendActivityAsync($"Size of your photo is: {photo.Width} * {photo.Height}");
+  }
+  '''
+
+2. Register a new command using 'addCommand' in 'TeamsSsoBot':
+  Find the following line:
+  '''
+  ((SsoDialog)_dialog).addCommand("showUserInfo", "show", SsoOperations.ShowUserInfo);
+  '''
+  and add following lines after the above line to register a new command 'photo' and hook up with method 'GetUserImageInfo' added above:
+  '''
+  ((SsoDialog)_dialog).addCommand("getUserImageInfo", "photo", SsoOperations.GetUserImageInfo);
+  '''
+
+3. Register your command in the Teams app manifest. Open 'Templates/appPackage/manifest.template.json', and add following lines under `command` in `commandLists` of your bot:
+    '''
+    {
+      "title": "photo",
+      "description": "Show user photo size using Single Sign On feature"
     }
     '''
 

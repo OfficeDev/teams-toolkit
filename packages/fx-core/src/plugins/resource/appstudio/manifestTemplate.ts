@@ -27,7 +27,6 @@ import {
   BOTS_TPL_EXISTING_APP,
   COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV,
   COMPOSE_EXTENSIONS_TPL_EXISTING_APP,
-  MANIFEST_TEMPLATE_CONSOLIDATE,
   WEB_APPLICATION_INFO_MULTI_ENV,
   DEFAULT_DEVELOPER,
   BOTS_TPL_FOR_COMMAND_AND_RESPONSE,
@@ -35,10 +34,12 @@ import {
 } from "./constants";
 import { AzureSolutionQuestionNames, BotScenario } from "../../solution/fx-solution/question";
 import { isBotNotificationEnabled } from "../../../common/featureFlags";
+import path from "path";
+import { getProjectTemplatesFolderPath } from "../../../common/utils";
+import { getTeamsAppManifestPath } from "../../../component/resource/appManifest/utils";
 
 export async function getManifestTemplatePath(projectRoot: string): Promise<string> {
-  const appDir = await getAppDirectory(projectRoot);
-  return `${appDir}/${MANIFEST_TEMPLATE_CONSOLIDATE}`;
+  return await getTeamsAppManifestPath(projectRoot);
 }
 
 export async function init(
@@ -46,7 +47,10 @@ export async function init(
   appName: string,
   existingApp: boolean
 ): Promise<Result<any, FxError>> {
-  const newAppPackageFolder = `${projectRoot}/templates/${AppPackageFolderName}`;
+  const newAppPackageFolder = path.join(
+    await getProjectTemplatesFolderPath(projectRoot),
+    AppPackageFolderName
+  );
   await fs.ensureDir(newAppPackageFolder);
 
   const manifestString = TEAMS_APP_MANIFEST_TEMPLATE_V3;

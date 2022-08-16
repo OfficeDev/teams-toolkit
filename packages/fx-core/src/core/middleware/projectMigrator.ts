@@ -1004,7 +1004,10 @@ async function generateArmTemplatesFiles(ctx: CoreHookContext) {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   const fx = path.join(inputs.projectPath as string, `.${ConfigFolderName}`);
   const fxConfig = path.join(fx, InputConfigsFolderName);
-  const templateAzure = path.join(inputs.projectPath as string, "templates", "azure");
+  const templateAzure = path.join(
+    await getProjectTemplatesFolderPath(inputs.projectPath as string),
+    "azure"
+  );
   await fs.ensureDir(fxConfig);
   await fs.ensureDir(templateAzure);
   // load local settings.json

@@ -11,6 +11,7 @@ import { RequiredResourceAccess } from "../../plugins/resource/aad/interfaces/AA
 import { getLocalizedString } from "../../common/localizeUtils";
 import { TOOLS } from "../globalVars";
 import { generateAadManifestTemplate } from "../generateAadManifestTemplate";
+import { getProjectTemplatesFolderPath } from "../../common/utils";
 
 export interface Permission {
   resource: string;
@@ -80,7 +81,11 @@ export async function needMigrateToAadManifest(ctx: CoreHookContext): Promise<bo
     }
 
     const aadManifestTemplateExist = await fs.pathExists(
-      path.join(inputs.projectPath as string, "templates", "appPackage", "aad.template.json")
+      path.join(
+        await getProjectTemplatesFolderPath(inputs.projectPath as string),
+        "appPackage",
+        "aad.template.json"
+      )
     );
 
     if (aadManifestTemplateExist) {

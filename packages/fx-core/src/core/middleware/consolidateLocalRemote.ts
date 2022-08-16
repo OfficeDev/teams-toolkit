@@ -38,6 +38,7 @@ import { addPathToGitignore, needMigrateToArmAndMultiEnv } from "./projectMigrat
 import * as util from "util";
 import { ManifestTemplate } from "../../plugins/resource/spfx/utils/constants";
 import { generateAadManifest, needMigrateToAadManifest } from "./MigrationUtils";
+import { getProjectTemplatesFolderPath } from "../../common/utils";
 
 const upgradeButton = "Upgrade";
 const LearnMore = "Learn More";
@@ -275,7 +276,11 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
       }
     }
     fileList.push(
-      path.join(inputs.projectPath as string, "templates", "appPackage", "template.manifest.json")
+      path.join(
+        await getProjectTemplatesFolderPath(inputs.projectPath as string),
+        "appPackage",
+        "template.manifest.json"
+      )
     );
 
     // copy and remove old configs
@@ -344,8 +349,7 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
 
       await generateAadManifest(inputs.projectPath!, projectSettingsJson);
       const aadManifestPath = path.join(
-        inputs.projectPath as string,
-        "templates",
+        await getProjectTemplatesFolderPath(inputs.projectPath as string),
         "appPackage",
         "aad.template.json"
       );

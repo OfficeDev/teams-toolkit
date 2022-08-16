@@ -44,6 +44,7 @@ import {
 } from "../../src";
 import { ConstantString } from "../../src/common/constants";
 import * as featureFlags from "../../src/common/featureFlags";
+import { getProjectTemplatesFolderPath } from "../../src/common/utils";
 import { loadProjectSettings } from "../../src/core/middleware/projectSettingsLoader";
 import {
   CoreQuestionNames,
@@ -225,7 +226,11 @@ describe("Core basic APIs", () => {
     assert.isTrue(createRes.isOk() && createRes.value === projectPath);
 
     await fs.writeFile(
-      path.resolve(projectPath, "templates", "appPackage", "manifest.template.json"),
+      path.resolve(
+        await getProjectTemplatesFolderPath(projectPath),
+        "appPackage",
+        "manifest.template.json"
+      ),
       "{}"
     );
     let res = await core.provisionResources(inputs);
@@ -438,7 +443,11 @@ describe("Core basic APIs", () => {
     assert.isTrue(createRes.isOk());
     projectPath = path.resolve(os.tmpdir(), appName);
     await fs.writeFile(
-      path.resolve(projectPath, "templates", "appPackage", "manifest.template.json"),
+      path.resolve(
+        await getProjectTemplatesFolderPath(projectPath),
+        "appPackage",
+        "manifest.template.json"
+      ),
       "{}"
     );
 

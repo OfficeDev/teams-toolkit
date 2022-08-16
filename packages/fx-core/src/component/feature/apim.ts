@@ -6,17 +6,19 @@ import {
   ActionContext,
   Component,
   ContextV3,
-  Effect,
   err,
   FxError,
   InputsWithProjectPath,
   ok,
+  Platform,
   Result,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
-import Container, { Service } from "typedi";
+import { Container, Service } from "typedi";
+import { getLocalizedString } from "../../common/localizeUtils";
 import { hasApi } from "../../common/projectSettingsHelperV3";
 import { convertToAlphanumericOnly } from "../../common/utils";
+import { AzureResourceApim, AzureResourceFunction } from "../../plugins";
 import { buildAnswer } from "../../plugins/resource/apim/answer";
 import { ApimPluginConfig } from "../../plugins/resource/apim/config";
 import {
@@ -27,12 +29,11 @@ import {
 import { Factory } from "../../plugins/resource/apim/factory";
 import { BicepComponent } from "../bicep";
 import { ComponentNames } from "../constants";
-import { Plans } from "../messages";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { APIMResource } from "../resource/apim";
 import { generateConfigBiceps, bicepUtils } from "../utils";
 import { getComponent } from "../workflow";
-
+import * as util from "util";
 @Service(ComponentNames.APIMFeature)
 export class ApimFeature {
   name = ComponentNames.APIMFeature;
@@ -40,26 +41,22 @@ export class ApimFeature {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
+    const addedResources: string[] = [];
     const component = getComponent(context.projectSetting, ComponentNames.APIM);
     if (component) return ok(undefined);
-
-    const effects: Effect[] = [];
-
     const hasFunc = hasApi(context.projectSetting);
-
     // 1. call teams-api.add if necessary
     if (!hasFunc) {
       const teamsApi = Container.get(ComponentNames.TeamsApi) as any;
       const res = await teamsApi.add(context, inputs);
       if (res.isErr()) return err(res.error);
-      effects.push("add teams-api");
+      addedResources.push(AzureResourceFunction.id);
     }
 
     // 2. scaffold
     {
       const codeRes = await this.generateCode(context, inputs);
       if (codeRes.isErr()) return err(codeRes.error);
-      effects.push("scaffold api doc");
     }
 
     // 3. config
@@ -70,7 +67,6 @@ export class ApimFeature {
       connections: [],
     };
     context.projectSetting.components.push(apimConfig);
-    effects.push(Plans.addFeature("apim"));
     // 4. bicep.init
     {
       const bicepComponent = Container.get<BicepComponent>("bicep");
@@ -95,9 +91,22 @@ export class ApimFeature {
     {
       const res = await generateConfigBiceps(context, inputs);
       if (res.isErr()) return err(res.error);
-      effects.push("generate config biceps");
     }
-    effects.push("generate bicep");
+    addedResources.push(AzureResourceApim.id);
+
+    // notification
+    const addNames = addedResources.map((c) => `'${c}'`).join(" and ");
+    const single = addedResources.length === 1;
+    const template =
+      inputs.platform === Platform.CLI
+        ? single
+          ? getLocalizedString("core.addResource.addResourceNoticeForCli")
+          : getLocalizedString("core.addResource.addResourcesNoticeForCli")
+        : single
+        ? getLocalizedString("core.addResource.addResourceNotice")
+        : getLocalizedString("core.addResource.addResourcesNotice");
+    context.userInteraction.showMessage("info", util.format(template, addNames), false);
+
     return ok(undefined);
   }
   @hooks([

@@ -1,20 +1,21 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { hooks } from "@feathersjs/hooks/lib";
 import {
   ContextV3,
   err,
   FxError,
   InputsWithProjectPath,
   ok,
+  Platform,
   ProjectSettingsV3,
   QTreeNode,
   Result,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
-import { isVSProject } from "../../common/projectSettingsHelper";
+import { format } from "util";
+import { getLocalizedString } from "../../common/localizeUtils";
 import { globalVars } from "../../core/globalVars";
 import { CoreQuestionNames } from "../../core/question";
 import {
@@ -25,17 +26,10 @@ import {
 import { SPFxTabCodeProvider } from "../code/spfxTabCode";
 import { ComponentNames } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
-import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 @Service(ComponentNames.SPFxTab)
 export class SPFxTab {
   name = ComponentNames.SPFxTab;
-  // @hooks([
-  //   ActionExecutionMW({
-  //     question: (context: ContextV3, inputs: InputsWithProjectPath) => {
-  //       return ok(getSPFxScaffoldQuestion());
-  //     },
-  //   }),
-  // ])
+
   async add(
     context: ContextV3,
     inputs: InputsWithProjectPath
@@ -56,19 +50,26 @@ export class SPFxTab {
     });
     projectSettings.programmingLanguage =
       projectSettings.programmingLanguage || inputs[CoreQuestionNames.ProgrammingLanguage];
-    globalVars.isVS = inputs[CoreQuestionNames.ProgrammingLanguage] === "csharp";
-    const effects = ["config 'teams-tab' in projectSettings"];
+    globalVars.isVS = projectSettings.programmingLanguage === "csharp";
     {
       const spfxCode = Container.get<SPFxTabCodeProvider>(ComponentNames.SPFxTabCode);
       const res = await spfxCode.generate(context, inputs);
       if (res.isErr()) return err(res.error);
-      effects.push("scaffold spfx code");
     }
     {
       const res = await generateLocalDebugSettings(context, inputs);
       if (res.isErr()) return err(res.error);
-      effects.push("generate local debug settings");
     }
+    // notification
+    const msg =
+      inputs.platform === Platform.CLI
+        ? getLocalizedString("core.addCapability.addCapabilityNoticeForCli")
+        : getLocalizedString("core.addCapability.addCapabilitiesNotice");
+    context.userInteraction.showMessage(
+      "info",
+      format(msg, inputs[CoreQuestionNames.Features]),
+      false
+    );
     return ok(undefined);
   }
 }

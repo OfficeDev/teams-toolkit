@@ -3,19 +3,27 @@
 
 import {
   ContextV3,
-  Effect,
   err,
   FxError,
   InputsWithProjectPath,
   ok,
+  Platform,
   Result,
   Stage,
   v3,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
+import { getLocalizedString } from "../../common/localizeUtils";
 import { convertToAlphanumericOnly } from "../../common/utils";
-import { AddSsoParameters, AzureSolutionQuestionNames, TabOptionItem } from "../../plugins";
+import {
+  AddSsoParameters,
+  AzureSolutionQuestionNames,
+  SolutionTelemetryComponentName,
+  SolutionTelemetryEvent,
+  SolutionTelemetryProperty,
+  TabOptionItem,
+} from "../../plugins";
 import "../connection/azureWebAppConfig";
 import { ComponentNames } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
@@ -32,14 +40,11 @@ export class SSO {
 
   async add(context: ContextV3, inputs: InputsWithProjectPath): Promise<Result<any, FxError>> {
     const updates = getUpdateComponents(context, inputs);
-    const effects: Effect[] = [];
-
     // generate manifest
     const aadApp = Container.get<AadApp>(ComponentNames.AadApp);
     {
       const res = await aadApp.generateManifest(context, inputs);
       if (res.isErr()) return err(res.error);
-      effects.push("generate aad manifest");
     }
 
     // config sso
@@ -58,7 +63,6 @@ export class SSO {
       const teamsBotComponent = getComponent(context.projectSetting, ComponentNames.TeamsBot);
       teamsBotComponent!.sso = true;
     }
-    effects.push("config sso");
 
     // generate bicep
     {
@@ -70,7 +74,6 @@ export class SSO {
         res.value
       );
       if (bicepRes.isErr()) return bicepRes;
-      effects.push("generate aad bicep");
     }
 
     // generate auth files
@@ -80,7 +83,6 @@ export class SSO {
     ) {
       const res = await aadApp.generateAuthFiles(context, inputs, updates.tab!, updates.bot!);
       if (res.isErr()) return err(res.error);
-      effects.push("generate auth files");
     }
 
     // update app manifest
@@ -89,21 +91,44 @@ export class SSO {
       const appManifest = Container.get<AppManifest>(ComponentNames.AppManifest);
       const res = await appManifest.addCapability(inputs, capabilities);
       if (res.isErr()) return err(res.error);
-      effects.push("update app manifest");
     }
 
     // local debug settings
     {
       const res = await generateLocalDebugSettings(context, inputs);
       if (res.isErr()) return err(res.error);
-      effects.push("generate local debug configs");
     }
 
     // generate config bicep
     {
       const res = await generateConfigBiceps(context, inputs);
       if (res.isErr()) return err(res.error);
-      effects.push("generate config biceps");
+    }
+
+    // show notification
+    if (inputs.platform == Platform.VSCode) {
+      context.userInteraction
+        .showMessage(
+          "info",
+          getLocalizedString("core.addSso.learnMore", AddSsoParameters.LearnMore),
+          false,
+          AddSsoParameters.LearnMore
+        )
+        .then((result) => {
+          const userSelected = result.isOk() ? result.value : undefined;
+          if (userSelected === AddSsoParameters.LearnMore) {
+            context.userInteraction?.openUrl(AddSsoParameters.LearnMoreUrl);
+            context.telemetryReporter.sendTelemetryEvent(SolutionTelemetryEvent.AddSsoReadme, {
+              [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+            });
+          }
+        });
+    } else if (inputs.platform == Platform.CLI) {
+      await context.userInteraction.showMessage(
+        "info",
+        getLocalizedString("core.addSso.learnMore", AddSsoParameters.LearnMoreUrl),
+        false
+      );
     }
 
     return ok({

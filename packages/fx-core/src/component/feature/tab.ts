@@ -19,7 +19,6 @@ import "reflect-metadata";
 import { Container, Service } from "typedi";
 import { format } from "util";
 import { getLocalizedString } from "../../common/localizeUtils";
-import { isVSProject } from "../../common/projectSettingsHelper";
 import { globalVars } from "../../core/globalVars";
 import { CoreQuestionNames } from "../../core/question";
 import { Constants, FrontendPathInfo } from "../../plugins/resource/frontend/constants";
@@ -28,7 +27,6 @@ import {
   TabNonSsoItem,
 } from "../../plugins/solution/fx-solution/question";
 import { ComponentNames, Scenarios } from "../constants";
-import { Plans } from "../messages";
 import { getComponent, getComponentByScenario } from "../workflow";
 import { assign, cloneDeep, merge } from "lodash";
 import { generateConfigBiceps, bicepUtils } from "../utils";
@@ -66,7 +64,6 @@ export class TeamsTab {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const projectSettings = context.projectSetting;
-    const effects = [];
     inputs[CoreQuestionNames.ProgrammingLanguage] =
       context.projectSetting.programmingLanguage ||
       inputs[CoreQuestionNames.ProgrammingLanguage] ||
@@ -89,13 +86,15 @@ export class TeamsTab {
         const manifestComponent = Container.get<AppManifest>(ComponentNames.AppManifest);
         const res = await manifestComponent.addCapability(clonedInputs, capabilities);
         if (res.isErr()) return err(res.error);
-        effects.push("add tab capability in app manifest");
-
         const msg =
           inputs.platform === Platform.CLI
             ? getLocalizedString("core.addCapability.addCapabilityNoticeForCli")
             : getLocalizedString("core.addCapability.addCapabilitiesNotice");
-        context.userInteraction.showMessage("info", format(msg, "Tab"), false);
+        context.userInteraction.showMessage(
+          "info",
+          format(msg, inputs[CoreQuestionNames.Features]),
+          false
+        );
         return ok(undefined);
       }
     }
@@ -110,7 +109,6 @@ export class TeamsTab {
     const tabCode = Container.get(ComponentNames.TabCode) as TabCodeProvider;
     const res = await tabCode.generate(context, clonedInputs);
     if (res.isErr()) return err(res.error);
-    effects.push("generate tab code");
     tabConfig = {
       name: ComponentNames.TeamsTab,
       hosting: inputs.hosting,
@@ -121,7 +119,6 @@ export class TeamsTab {
     };
     projectSettings.components.push(tabConfig);
     addedComponents.push(tabConfig.name);
-    effects.push(Plans.generateSourceCodeAndConfig(ComponentNames.TeamsTab));
 
     // 2. generate provision bicep
     // 2.0 bicep.init
@@ -149,7 +146,6 @@ export class TeamsTab {
         provision: true,
       });
       addedComponents.push(inputs.hosting);
-      effects.push(Plans.generateBicepAndConfig(inputs.hosting));
     }
 
     // 2.2 identity bicep
@@ -168,7 +164,6 @@ export class TeamsTab {
         provision: true,
       });
       addedComponents.push(ComponentNames.Identity);
-      effects.push(Plans.generateBicepAndConfig(ComponentNames.Identity));
     }
 
     //persist bicep
@@ -189,14 +184,12 @@ export class TeamsTab {
     {
       const res = await generateConfigBiceps(context, inputs);
       if (res.isErr()) return err(res.error);
-      effects.push("generate config biceps");
     }
 
     // 4. local debug settings
     {
       const res = await generateLocalDebugSettings(context, inputs);
       if (res.isErr()) return err(res.error);
-      effects.push("generate local debug configs");
     }
 
     // 5. app-manifest.addCapability
@@ -212,11 +205,22 @@ export class TeamsTab {
       const manifestComponent = Container.get<AppManifest>(ComponentNames.AppManifest);
       const res = await manifestComponent.addCapability(clonedInputs, capabilities);
       if (res.isErr()) return err(res.error);
-      effects.push("add tab capability in app manifest");
     }
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.Components]: JSON.stringify(addedComponents),
     });
+
+    // notification
+    const msg =
+      inputs.platform === Platform.CLI
+        ? getLocalizedString("core.addCapability.addCapabilityNoticeForCli")
+        : getLocalizedString("core.addCapability.addCapabilitiesNotice");
+    context.userInteraction.showMessage(
+      "info",
+      format(msg, inputs[CoreQuestionNames.Features]),
+      false
+    );
+
     return ok(undefined);
   }
 

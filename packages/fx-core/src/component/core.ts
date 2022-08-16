@@ -256,10 +256,10 @@ export class TeamsfxCore {
     }
     if (component) {
       const res = await (component as any).add(context, inputs);
+      if (res.isErr()) return err(res.error);
       merge(actionContext?.telemetryProps, {
         [TelemetryProperty.Feature]: features,
       });
-      if (res.isErr()) return err(res.error);
       return ok(res.value);
     }
     return ok(undefined);

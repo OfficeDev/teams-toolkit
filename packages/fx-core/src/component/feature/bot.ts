@@ -7,7 +7,6 @@ import {
   Bicep,
   CloudResource,
   ContextV3,
-  Effect,
   err,
   FxError,
   InputsWithProjectPath,
@@ -22,7 +21,6 @@ import "reflect-metadata";
 import { Container, Service } from "typedi";
 import { format } from "util";
 import { getLocalizedString } from "../../common/localizeUtils";
-import { isVSProject } from "../../common/projectSettingsHelper";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { globalVars } from "../../core/globalVars";
@@ -47,7 +45,6 @@ import { BotCodeProvider } from "../code/botCode";
 import "../connection/azureWebAppConfig";
 import { ComponentNames, Scenarios } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
-import { Plans } from "../messages";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import "../resource/appManifest/appManifest";
 import { AppManifest } from "../resource/appManifest/appManifest";
@@ -79,7 +76,6 @@ export class TeamsBot {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const projectSettings = context.projectSetting;
-    const effects: Effect[] = [];
     const botCapability = featureToCapability.get(inputs[CoreQuestionNames.Features] as string);
     inputs.hosting = resolveHosting(inputs);
     inputs[CoreQuestionNames.ProgrammingLanguage] =
@@ -113,7 +109,6 @@ export class TeamsBot {
       const botCode = Container.get<BotCodeProvider>(ComponentNames.BotCode);
       const res = await botCode.generate(context, clonedInputs);
       if (res.isErr()) return err(res.error);
-      effects.push("generate bot code");
       botConfig = {
         name: ComponentNames.TeamsBot,
         hosting: inputs.hosting,
@@ -124,7 +119,6 @@ export class TeamsBot {
       };
       projectSettings.components.push(botConfig);
       addedComponents.push(botConfig.name);
-      effects.push(Plans.generateSourceCodeAndConfig(ComponentNames.TeamsBot));
     }
 
     // 2. generate provision bicep
@@ -152,7 +146,6 @@ export class TeamsBot {
         provision: true,
       });
       addedComponents.push(ComponentNames.BotService);
-      effects.push(Plans.generateBicepAndConfig(ComponentNames.BotService));
     }
 
     // 2.2 hosting bicep
@@ -172,7 +165,6 @@ export class TeamsBot {
         scenario: Scenarios.Bot,
       });
       addedComponents.push(inputs.hosting);
-      effects.push(Plans.generateBicepAndConfig(inputs.hosting));
     }
 
     // 2.3 identity bicep
@@ -187,7 +179,6 @@ export class TeamsBot {
         provision: true,
       });
       addedComponents.push(ComponentNames.Identity);
-      effects.push(Plans.generateBicepAndConfig(ComponentNames.Identity));
     }
     //persist bicep
     const bicepRes = await bicepUtils.persistBiceps(
@@ -200,14 +191,12 @@ export class TeamsBot {
     {
       const res = await generateConfigBiceps(context, inputs);
       if (res.isErr()) return err(res.error);
-      effects.push("generate config biceps");
     }
 
     // 4. local debug settings
     {
       const res = await generateLocalDebugSettings(context, inputs);
       if (res.isErr()) return err(res.error);
-      effects.push("generate local debug configs");
     }
 
     // 5. app-manifest.addCapability
@@ -225,19 +214,25 @@ export class TeamsBot {
       const appManifest = Container.get<AppManifest>(ComponentNames.AppManifest);
       const res = await appManifest.addCapability(clonedInputs, [manifestCapability]);
       if (res.isErr()) return err(res.error);
-      effects.push("add bot capability in app manifest");
     }
 
     projectSettings.programmingLanguage ||= inputs[CoreQuestionNames.ProgrammingLanguage];
 
+    // notification
     const msg =
       inputs.platform === Platform.CLI
         ? getLocalizedString("core.addCapability.addCapabilityNoticeForCli")
         : getLocalizedString("core.addCapability.addCapabilitiesNotice");
-    context.userInteraction.showMessage("info", format(msg, "Bot"), false);
+    context.userInteraction.showMessage(
+      "info",
+      format(msg, inputs[CoreQuestionNames.Features]),
+      false
+    );
+
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.Components]: JSON.stringify(addedComponents),
     });
+
     return ok(undefined);
   }
   async build(

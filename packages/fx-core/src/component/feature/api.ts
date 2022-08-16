@@ -5,7 +5,6 @@ import { hooks } from "@feathersjs/hooks/lib";
 import {
   Bicep,
   ContextV3,
-  Effect,
   err,
   FxError,
   Inputs,
@@ -16,16 +15,18 @@ import {
   Result,
   Stage,
   ActionContext,
+  Platform,
 } from "@microsoft/teamsfx-api";
 import { assign, cloneDeep, merge } from "lodash";
 import * as path from "path";
 import "reflect-metadata";
-import Container, { Service } from "typedi";
+import { Container, Service } from "typedi";
 import { isVSProject } from "../../common/projectSettingsHelper";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { globalVars } from "../../core/globalVars";
 import { CoreQuestionNames } from "../../core/question";
+import { AzureResourceFunction } from "../../plugins";
 import {
   DefaultValues,
   FunctionPluginPathInfo,
@@ -44,7 +45,8 @@ import { AzureFunctionResource } from "../resource/azureAppService/azureFunction
 import { generateConfigBiceps, bicepUtils } from "../utils";
 import { getComponent } from "../workflow";
 import { SSO } from "./sso";
-
+import * as util from "util";
+import { getLocalizedString } from "../../common/localizeUtils";
 @Service(ComponentNames.TeamsApi)
 export class TeamsApi {
   name = ComponentNames.TeamsApi;
@@ -72,7 +74,6 @@ export class TeamsApi {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const projectSettings = context.projectSetting;
-    const effects: Effect[] = [];
     inputs[CoreQuestionNames.ProgrammingLanguage] =
       context.projectSetting.programmingLanguage ||
       inputs[CoreQuestionNames.ProgrammingLanguage] ||
@@ -90,90 +91,97 @@ export class TeamsApi {
       const apiCodeComponent = Container.get<ApiCodeProvider>(ComponentNames.ApiCode);
       const res = await apiCodeComponent.generate(context, clonedInputs);
       if (res.isErr()) return err(res.error);
-      effects.push("generate api code");
     }
 
     const apiConfig = getComponent(projectSettings, ComponentNames.TeamsApi);
     if (apiConfig) {
       apiConfig.functionNames = apiConfig.functionNames || [];
       apiConfig.functionNames.push(inputs[QuestionKey.functionName]);
-      return ok(undefined);
-    }
-
-    // 2. config teams-api
-    projectSettings.components.push({
-      name: ComponentNames.TeamsApi,
-      hosting: ComponentNames.Function,
-      functionNames: [inputs[QuestionKey.functionName]],
-      deploy: true,
-      build: true,
-      folder: inputs.folder || FunctionPluginPathInfo.solutionFolderName,
-      artifactFolder: inputs.folder || FunctionPluginPathInfo.solutionFolderName,
-    });
-    addedComponents.push(ComponentNames.TeamsApi);
-    effects.push("config teams-api");
-
-    // 2.1 check sso if not added
-    const tabComponent = getComponent(projectSettings, ComponentNames.TeamsTab);
-    if (!tabComponent?.sso) {
-      const ssoComponent = Container.get(ComponentNames.SSO) as SSO;
-      const res = await ssoComponent.add(context, inputs);
-      if (res.isErr()) return err(res.error);
-    }
-
-    const biceps: Bicep[] = [];
-    // 3.1 bicep.init
-    {
-      const bicepComponent = Container.get<BicepComponent>("bicep");
-      const res = await bicepComponent.init(inputs.projectPath);
-      if (res.isErr()) return err(res.error);
-    }
-
-    // 3.2 azure-function.generateBicep
-    {
-      const clonedInputs = cloneDeep(inputs);
-      assign(clonedInputs, {
-        componentId: ComponentNames.TeamsApi,
-        hosting: inputs.hosting,
-        scenario: Scenarios.Api,
-      });
-      const functionComponent = Container.get<AzureFunctionResource>(ComponentNames.Function);
-      const res = await functionComponent.generateBicep(context, clonedInputs);
-      if (res.isErr()) return err(res.error);
-      res.value.forEach((b) => biceps.push(b));
+    } else {
+      // 2. config teams-api
       projectSettings.components.push({
-        name: ComponentNames.Function,
-        scenario: Scenarios.Api,
+        name: ComponentNames.TeamsApi,
+        hosting: ComponentNames.Function,
+        functionNames: [inputs[QuestionKey.functionName]],
+        deploy: true,
+        build: true,
+        folder: inputs.folder || FunctionPluginPathInfo.solutionFolderName,
+        artifactFolder: inputs.folder || FunctionPluginPathInfo.solutionFolderName,
       });
-      addedComponents.push(ComponentNames.Function);
+      addedComponents.push(ComponentNames.TeamsApi);
+
+      // 2.1 check sso if not added
+      const tabComponent = getComponent(projectSettings, ComponentNames.TeamsTab);
+      if (!tabComponent?.sso) {
+        const ssoComponent = Container.get(ComponentNames.SSO) as SSO;
+        const res = await ssoComponent.add(context, inputs);
+        if (res.isErr()) return err(res.error);
+      }
+
+      const biceps: Bicep[] = [];
+      // 3.1 bicep.init
+      {
+        const bicepComponent = Container.get<BicepComponent>("bicep");
+        const res = await bicepComponent.init(inputs.projectPath);
+        if (res.isErr()) return err(res.error);
+      }
+
+      // 3.2 azure-function.generateBicep
+      {
+        const clonedInputs = cloneDeep(inputs);
+        assign(clonedInputs, {
+          componentId: ComponentNames.TeamsApi,
+          hosting: inputs.hosting,
+          scenario: Scenarios.Api,
+        });
+        const functionComponent = Container.get<AzureFunctionResource>(ComponentNames.Function);
+        const res = await functionComponent.generateBicep(context, clonedInputs);
+        if (res.isErr()) return err(res.error);
+        res.value.forEach((b) => biceps.push(b));
+        projectSettings.components.push({
+          name: ComponentNames.Function,
+          scenario: Scenarios.Api,
+        });
+        addedComponents.push(ComponentNames.Function);
+      }
+
+      const bicepRes = await bicepUtils.persistBiceps(
+        inputs.projectPath,
+        convertToAlphanumericOnly(projectSettings.appName),
+        biceps
+      );
+      if (bicepRes.isErr()) return bicepRes;
+
+      // 4. generate config bicep
+      {
+        const res = await generateConfigBiceps(context, inputs);
+        if (res.isErr()) return err(res.error);
+      }
+
+      // 5. local debug settings
+      {
+        const res = await generateLocalDebugSettings(context, inputs);
+        if (res.isErr()) return err(res.error);
+      }
+
+      globalVars.isVS = isVSProject(projectSettings);
+      projectSettings.programmingLanguage ||= inputs[CoreQuestionNames.ProgrammingLanguage];
+      merge(actionContext?.telemetryProps, {
+        [TelemetryProperty.Components]: JSON.stringify(addedComponents),
+      });
     }
 
-    const bicepRes = await bicepUtils.persistBiceps(
-      inputs.projectPath,
-      convertToAlphanumericOnly(projectSettings.appName),
-      biceps
+    // notification
+    const template =
+      inputs.platform === Platform.CLI
+        ? getLocalizedString("core.addResource.addResourceNoticeForCli")
+        : getLocalizedString("core.addResource.addResourceNotice");
+    context.userInteraction.showMessage(
+      "info",
+      util.format(template, AzureResourceFunction.id),
+      false
     );
-    if (bicepRes.isErr()) return bicepRes;
 
-    // 4. generate config bicep
-    {
-      const res = await generateConfigBiceps(context, inputs);
-      if (res.isErr()) return err(res.error);
-      effects.push("generate config biceps");
-    }
-
-    // 5. local debug settings
-    {
-      const res = await generateLocalDebugSettings(context, inputs);
-      if (res.isErr()) return err(res.error);
-      effects.push("generate local debug configs");
-    }
-
-    globalVars.isVS = isVSProject(projectSettings);
-    projectSettings.programmingLanguage ||= inputs[CoreQuestionNames.ProgrammingLanguage];
-    merge(actionContext?.telemetryProps, {
-      [TelemetryProperty.Components]: JSON.stringify(addedComponents),
-    });
     return ok(undefined);
   }
   async build(

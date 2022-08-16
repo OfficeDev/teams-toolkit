@@ -4,27 +4,28 @@
 import { hooks } from "@feathersjs/hooks/lib";
 import {
   ContextV3,
-  Effect,
   err,
   FxError,
   InputsWithProjectPath,
   ok,
+  Platform,
   Result,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
+import { getLocalizedString } from "../../common/localizeUtils";
 import { convertToAlphanumericOnly } from "../../common/utils";
+import { AzureResourceKeyVault } from "../../plugins";
 import { BicepComponent } from "../bicep";
 import "../connection/azureWebAppConfig";
 import { ComponentNames } from "../constants";
-import { Plans } from "../messages";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import "../resource/azureSql";
 import "../resource/identity";
 import { KeyVaultResource } from "../resource/keyVault";
 import { generateConfigBiceps, bicepUtils } from "../utils";
 import { getComponent } from "../workflow";
-
+import * as util from "util";
 @Service("key-vault-feature")
 export class KeyVaultFeature {
   name = "key-vault-feature";
@@ -50,15 +51,12 @@ export class KeyVaultFeature {
     const projectSettings = context.projectSetting;
     const keyVaultComponent = getComponent(projectSettings, ComponentNames.KeyVault);
     if (keyVaultComponent) return ok(undefined);
-    const effects: Effect[] = [];
-
     // config
     projectSettings.components.push({
       name: ComponentNames.KeyVault,
       connections: [ComponentNames.Identity],
       provision: true,
     });
-    effects.push(Plans.addFeature("key-vault"));
     // bicep.init
     {
       const bicepComponent = Container.get<BicepComponent>("bicep");
@@ -70,7 +68,6 @@ export class KeyVaultFeature {
       const keyVaultComponent = Container.get<KeyVaultResource>(ComponentNames.KeyVault);
       const res = await keyVaultComponent.generateBicep(context, inputs);
       if (res.isErr()) return err(res.error);
-      effects.push("generate key-vault provision bicep");
       const persistRes = await bicepUtils.persistBiceps(
         inputs.projectPath,
         convertToAlphanumericOnly(context.projectSetting.appName),
@@ -83,8 +80,16 @@ export class KeyVaultFeature {
     {
       const res = await generateConfigBiceps(context, inputs);
       if (res.isErr()) return err(res.error);
-      effects.push("update config biceps");
     }
+
+    // notification
+    const addNames = AzureResourceKeyVault.id;
+    const template =
+      inputs.platform === Platform.CLI
+        ? getLocalizedString("core.addResource.addResourceNoticeForCli")
+        : getLocalizedString("core.addResource.addResourceNotice");
+    context.userInteraction.showMessage("info", util.format(template, addNames), false);
+
     return ok(undefined);
   }
 }

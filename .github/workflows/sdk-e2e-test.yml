@@ -116,6 +116,8 @@ jobs:
           else
             subject="[PASSED] $subject"
           fi
+          
+          echo $body
 
           echo "::set-output name=body::$body"
           echo "::set-output name=to::$emails"

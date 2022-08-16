@@ -28,6 +28,7 @@ import {
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
 } from "../../../common/tools";
+import { CoreQuestionNames } from "../../../core/question";
 
 export abstract class AzureAppService extends AzureResource {
   abstract readonly name: string;
@@ -40,9 +41,16 @@ export abstract class AzureAppService extends AzureResource {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<Bicep[], FxError>> {
-    this.getTemplateContext = (context) => {
+    this.getTemplateContext = (context, inputs) => {
       const configs: string[] = [];
-      configs.push(getRuntime(getLanguage(context.projectSetting.programmingLanguage)));
+      configs.push(
+        getRuntime(
+          getLanguage(
+            context.projectSetting.programmingLanguage ||
+              inputs?.[CoreQuestionNames.ProgrammingLanguage]
+          )
+        )
+      );
       this.templateContext.configs = configs;
       return this.templateContext;
     };
@@ -87,7 +95,7 @@ export abstract class AzureAppService extends AzureResource {
         progressBar
       );
       if (restart) {
-        AzureOperations.restartWebApp(
+        await AzureOperations.restartWebApp(
           client,
           getResourceGroupNameFromResourceId(resourceId),
           getSiteNameFromResourceId(resourceId),

@@ -57,6 +57,9 @@ import { getTemplatesFolder } from "../folder";
 import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
 import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
 import {
+  ApiConnectionOptionItem,
+  AzureSolutionQuestionNames,
+  CicdOptionItem,
   ExistingTabOptionItem,
   M365SearchAppOptionItem,
   M365SsoLaunchPageOptionItem,
@@ -132,7 +135,6 @@ import { CoreHookContext } from "./types";
 import { isPreviewFeaturesEnabled } from "../common/featureFlags";
 import { createContextV3 } from "../component/utils";
 import { TeamsfxCore } from "../component/core";
-import "../component/core";
 import {
   FeatureId,
   getQuestionsForAddFeatureSubCommand,
@@ -820,7 +822,9 @@ export class FxCore implements v3.ICore {
           res.isOk() &&
           (func.method === "addCapability" ||
             func.method === "addResource" ||
-            func.method === "addFeature")
+            (func.method === "addFeature" &&
+              inputs[AzureSolutionQuestionNames.Features] !== ApiConnectionOptionItem.id &&
+              inputs[AzureSolutionQuestionNames.Features] !== CicdOptionItem.id))
         ) {
           if (
             ctx.envInfoV2?.state?.solution?.provisionSucceeded === true ||

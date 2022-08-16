@@ -15,6 +15,7 @@ import {
   ResourceContextV3,
   Result,
   UserError,
+  v2,
   v3,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
@@ -123,6 +124,7 @@ import { environmentManager } from "../core/environment";
 import { sendErrorTelemetryThenReturnError } from "../core/telemetry";
 import { ViewAadAppHelpLink, SolutionTelemetryEvent } from "../plugins";
 import { Constants } from "../plugins/resource/aad/constants";
+import { loadEnvInfoV3 } from "../core/middleware/envInfoLoaderV3";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -260,6 +262,35 @@ export class TeamsfxCore {
         [TelemetryProperty.Feature]: features,
       });
       if (res.isErr()) return err(res.error);
+      if (features !== ApiConnectionOptionItem.id && features !== CicdOptionItem.id) {
+        const allEnvRes = await environmentManager.listRemoteEnvConfigs(inputs.projectPath!);
+        if (allEnvRes.isOk()) {
+          for (const env of allEnvRes.value) {
+            const loadEnvRes = await loadEnvInfoV3(
+              inputs as v2.InputsWithProjectPath,
+              context.projectSetting,
+              env,
+              false
+            );
+            if (loadEnvRes.isOk()) {
+              const envInfo = loadEnvRes.value;
+              if (
+                envInfo.state?.solution?.provisionSucceeded === true ||
+                envInfo.state?.solution?.provisionSucceeded === "true"
+              ) {
+                envInfo.state.solution.provisionSucceeded = false;
+                await environmentManager.writeEnvState(
+                  envInfo.state,
+                  inputs.projectPath!,
+                  context.cryptoProvider,
+                  env,
+                  true
+                );
+              }
+            }
+          }
+        }
+      }
       return ok(res.value);
     }
     return ok(undefined);

@@ -9,7 +9,6 @@ import {
   FxError,
   InputsWithProjectPath,
   ok,
-  Platform,
   ResourceContextV3,
   Result,
 } from "@microsoft/teamsfx-api";
@@ -24,9 +23,6 @@ import { convertContext } from "./utils";
 import { convertProjectSettingsV3ToV2 } from "../../migrate";
 import { generateAadManifestTemplate } from "../../../core/generateAadManifestTemplate";
 import { createAuthFiles } from "../../../plugins/solution/fx-solution/v2/executeUserTask";
-import { Constants } from "../../../plugins/resource/aad/constants";
-import { AzureSolutionQuestionNames } from "../../../plugins";
-
 @Service(ComponentNames.AadApp)
 export class AadApp implements CloudResource {
   readonly type = "cloud";
@@ -162,18 +158,13 @@ export class AadApp implements CloudResource {
     context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
-    if (
-      (inputs.platform === Platform.CLI && inputs[Constants.INCLUDE_AAD_MANIFEST] === "yes") ||
-      inputs[AzureSolutionQuestionNames.Features] !== "TabNonSsoItem.id"
-    ) {
-      const aadAppImplement = new AadAppForTeamsImpl();
-      const convertCtx = convertContext(context, inputs);
-      await aadAppImplement.deploy(convertCtx);
-      const convertState = convertCtx.envInfo.state.get("fx-resource-aad-app-for-teams");
-      convertState.forEach((v: any, k: string) => {
-        context.envInfo.state[ComponentNames.AadApp][k] = v;
-      });
-    }
+    const aadAppImplement = new AadAppForTeamsImpl();
+    const convertCtx = convertContext(context, inputs);
+    await aadAppImplement.deploy(convertCtx);
+    const convertState = convertCtx.envInfo.state.get("fx-resource-aad-app-for-teams");
+    convertState.forEach((v: any, k: string) => {
+      context.envInfo.state[ComponentNames.AadApp][k] = v;
+    });
     return ok(undefined);
   }
 }

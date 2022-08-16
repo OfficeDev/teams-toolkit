@@ -186,6 +186,7 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
         createTestingTenant
       );
       if (userSelected === createTestingTenant) {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenSignInJoinM365);
         vscode.env.openExternal(
           vscode.Uri.parse("https://developer.microsoft.com/en-us/microsoft-365/dev-program")
         );

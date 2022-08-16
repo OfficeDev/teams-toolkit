@@ -21,10 +21,6 @@ export function isVsCallingCli(): boolean {
   return featureFlagEnabled(FeatureFlagName.VSCallingCLI);
 }
 
-export function doesAllowSwitchAccount(): boolean {
-  return featureFlagEnabled(FeatureFlagName.SwitchAccount);
-}
-
 export let Logger: LogProvider;
 export let currentStage: Stage;
 export let TOOLS: Tools;

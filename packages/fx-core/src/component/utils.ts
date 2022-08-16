@@ -12,12 +12,14 @@ import {
   err,
   FileEffect,
   FxError,
+  Inputs,
   InputsWithProjectPath,
   Json,
   ok,
   ProjectSettingsV3,
   ProvisionBicep,
   Result,
+  v2,
   v3,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
@@ -31,6 +33,7 @@ import { convertToAlphanumericOnly, getProjectTemplatesFolderPath } from "../com
 import { LocalCrypto } from "../core/crypto";
 import { environmentManager } from "../core/environment";
 import { TOOLS } from "../core/globalVars";
+import { loadEnvInfoV3 } from "../core/middleware/envInfoLoaderV3";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { ComponentNames, Scenarios, scenarioToComponent } from "./constants";
 import { DefaultManifestProvider } from "./resource/appManifest/manifestProvider";
@@ -589,6 +592,36 @@ export function resetEnvInfoWhenSwitchM365(envInfo: v3.EnvInfoV3): void {
       delete envInfo.state[key]["botId"];
       delete envInfo.state[key]["botPassword"];
       delete envInfo.state[key]["objectId"];
+    }
+  }
+}
+
+export async function resetProvisionState(inputs: Inputs, ctx: v2.Context) {
+  const allEnvRes = await environmentManager.listRemoteEnvConfigs(inputs.projectPath!);
+  if (allEnvRes.isOk()) {
+    for (const env of allEnvRes.value) {
+      const loadEnvRes = await loadEnvInfoV3(
+        inputs as v2.InputsWithProjectPath,
+        ctx.projectSetting,
+        env,
+        false
+      );
+      if (loadEnvRes.isOk()) {
+        const envInfo = loadEnvRes.value;
+        if (
+          envInfo.state?.solution?.provisionSucceeded === true ||
+          envInfo.state?.solution?.provisionSucceeded === "true"
+        ) {
+          envInfo.state.solution.provisionSucceeded = false;
+          await environmentManager.writeEnvState(
+            envInfo.state,
+            inputs.projectPath!,
+            ctx.cryptoProvider,
+            env,
+            true
+          );
+        }
+      }
     }
   }
 }

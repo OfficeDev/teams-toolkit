@@ -112,7 +112,7 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "./middleware/actionExecutionMW";
 import { getQuestionsForCreateProjectV2 } from "../core/middleware";
 import { askForProvisionConsentNew } from "../plugins/solution/fx-solution/v2/provision";
-import { resetEnvInfoWhenSwitchM365 } from "./utils";
+import { resetEnvInfoWhenSwitchM365, resetProvisionState } from "./utils";
 import { TelemetryEvent, TelemetryProperty } from "../common/telemetry";
 import { getComponent } from "./workflow";
 import {
@@ -263,33 +263,7 @@ export class TeamsfxCore {
       });
       if (res.isErr()) return err(res.error);
       if (features !== ApiConnectionOptionItem.id && features !== CicdOptionItem.id) {
-        const allEnvRes = await environmentManager.listRemoteEnvConfigs(inputs.projectPath!);
-        if (allEnvRes.isOk()) {
-          for (const env of allEnvRes.value) {
-            const loadEnvRes = await loadEnvInfoV3(
-              inputs as v2.InputsWithProjectPath,
-              context.projectSetting,
-              env,
-              false
-            );
-            if (loadEnvRes.isOk()) {
-              const envInfo = loadEnvRes.value;
-              if (
-                envInfo.state?.solution?.provisionSucceeded === true ||
-                envInfo.state?.solution?.provisionSucceeded === "true"
-              ) {
-                envInfo.state.solution.provisionSucceeded = false;
-                await environmentManager.writeEnvState(
-                  envInfo.state,
-                  inputs.projectPath!,
-                  context.cryptoProvider,
-                  env,
-                  true
-                );
-              }
-            }
-          }
-        }
+        await resetProvisionState(inputs, context);
       }
       return ok(res.value);
     }

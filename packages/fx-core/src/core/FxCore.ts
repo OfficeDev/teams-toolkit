@@ -133,7 +133,7 @@ import {
 } from "./telemetry";
 import { CoreHookContext } from "./types";
 import { isPreviewFeaturesEnabled } from "../common/featureFlags";
-import { createContextV3 } from "../component/utils";
+import { createContextV3, resetProvisionState } from "../component/utils";
 import { TeamsfxCore } from "../component/core";
 import {
   FeatureId,
@@ -826,39 +826,7 @@ export class FxCore implements v3.ICore {
               inputs[AzureSolutionQuestionNames.Features] !== ApiConnectionOptionItem.id &&
               inputs[AzureSolutionQuestionNames.Features] !== CicdOptionItem.id))
         ) {
-          if (
-            ctx.envInfoV2?.state?.solution?.provisionSucceeded === true ||
-            ctx.envInfoV2?.state?.solution?.provisionSucceeded === "true"
-          ) {
-            ctx.envInfoV2.state.solution.provisionSucceeded = false;
-          }
-          const allEnvRes = await environmentManager.listRemoteEnvConfigs(inputs.projectPath!);
-          if (allEnvRes.isOk()) {
-            for (const env of allEnvRes.value) {
-              const loadEnvRes = await loadEnvInfoV3(
-                inputs as v2.InputsWithProjectPath,
-                ctx.projectSettings!,
-                env,
-                false
-              );
-              if (loadEnvRes.isOk()) {
-                const envInfo = loadEnvRes.value;
-                if (
-                  envInfo.state?.solution?.provisionSucceeded === true ||
-                  envInfo.state?.solution?.provisionSucceeded === "true"
-                ) {
-                  envInfo.state.solution.provisionSucceeded = false;
-                  await environmentManager.writeEnvState(
-                    envInfo.state,
-                    inputs.projectPath!,
-                    ctx.contextV2.cryptoProvider,
-                    env,
-                    true
-                  );
-                }
-              }
-            }
-          }
+          await resetProvisionState(inputs, ctx.contextV2);
         }
         return res;
       } else return err(FunctionRouterError(func));

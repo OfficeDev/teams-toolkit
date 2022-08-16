@@ -1324,7 +1324,6 @@ describe("V2 implementation", () => {
             ClientId: "$clientId$",
             ClientSecret: "$client-secret$",
             OAuthAuthority: "$oauthAuthority$",
-            TenantId: "$tenantId$",
             ApplicationIdUri: "$applicationIdUri$",
             Bot: {
               InitiateLoginEndpoint: "$initiateLoginEndpoint$",

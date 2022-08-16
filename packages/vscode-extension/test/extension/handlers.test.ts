@@ -224,7 +224,7 @@ describe("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const createProject = sinon.spy(handlers.core, "createProject");
       sinon.stub(vscode.commands, "executeCommand");
-      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
+      sinon.stub(vscodeHelper, "checkerEnabled").returns(true);
 
       await handlers.runCommand(Stage.create);
 

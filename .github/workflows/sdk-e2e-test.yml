@@ -59,7 +59,7 @@ jobs:
           error_node=`cat test-results.node.xml | xq '.testsuite| ."@errors"' | sed -e 's/"//g'`
           #error_browser=`cat test-results.browser.xml | xq '.testsuite| ."@errors"' | sed -e 's/"//g'`
           #failed=$((error_node+error_browser))
-          failed=error_node
+          failed=$error_node
 
           passed=$((total-failed))
 
@@ -78,10 +78,10 @@ jobs:
               continue
             fi
 
-            suite=$(_jq '."@classname"')
-            name=$(_jq '."@name"')
-            duration=$(_jq '."@time"')
-            failure=$(_jq '.failure')
+            suite=$(_jq '."@classname"' | sed -e 's/"/\\"/g')
+            name=$(_jq '."@name"' | sed -e 's/"/\\"/g')
+            duration=$(_jq '."@time"'| sed -e 's/"/\\"/g')
+            failure=$(_jq '.failure'| sed -e 's/"/\\"/g')
             email="ning.tang@microsoft.com"
 
             author="<a href=\\\"mailto:$email\\\"><span>$email</span></a>"

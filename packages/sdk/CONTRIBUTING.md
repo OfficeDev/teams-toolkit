@@ -56,7 +56,10 @@ All the environment variables are extracted by the function `extractIntegrationE
 
 ### SDK_INTEGRATION_TEST_SQL
 
-```shell
+1. [Create an Azure SQL database](https://docs.microsoft.com/en-us/azure/azure-sql/database/single-database-create-quickstart?tabs=azure-portal&view=azuresql).
+2. Set the environment variable `SDK_INTEGRATION_TEST_SQL` with the Azure SQL Database you just created, and the configs are separated by semicolons.
+
+```
 # SQL related (NodeJS)
 SDK_INTEGRATION_TEST_SQL = {SQL_ENDPOINT};{SQL_DATABASE_NAME};{SQL_USER_NAME};{SQL_PASSWORD}
 ```
@@ -67,7 +70,7 @@ SDK_INTEGRATION_TEST_SQL = {SQL_ENDPOINT};{SQL_DATABASE_NAME};{SQL_USER_NAME};{S
 
 2. Set the environment variable `SDK_INTEGRATION_TEST_ACCOUNT` with the test account name and password, separated by semicolons.
 
-	```shell
+	```
 	# AAD Account (NodeJS & browser)
 	SDK_INTEGRATION_TEST_ACCOUNT = {TEST_ACCOUNT_NAME};{TEST_ACCOUNT_PASSWORD}
 	```
@@ -114,7 +117,7 @@ SDK_INTEGRATION_TEST_SQL = {SQL_ENDPOINT};{SQL_DATABASE_NAME};{SQL_USER_NAME};{S
 
 12. Set the environment variable `SDK_INTEGRATION_TEST_AAD` with the following sequence, separated by semicolons.
 
-    ```shell
+    ```
     # AAD Application (NodeJS & browser)
     SDK_INTEGRATION_TEST_AAD = {AAD_AUTHORITY_HOST};{AAD_TENANT_ID};{USER_OBJECT_ID};{AAD_CLIENT_ID};{AAD_CLIENT_SECRET};{AAD_CERTIFICATE_CONTENT}
     ```

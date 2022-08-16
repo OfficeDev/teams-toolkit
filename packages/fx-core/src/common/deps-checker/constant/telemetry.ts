@@ -49,6 +49,13 @@ export enum TelemtryMessages {
   failedToValidateNgrok = "failed to validate ngrok.",
 }
 
+export enum TelemetryProperties {
+  NgrokNpmInstallNodeVersion = "ngrok-npm-install-node-version",
+  NgrokNpmInstallNpmVersion = "ngrok-npm-install-npm-version",
+  NgrokNpmInstallExitCode = "ngrok-npm-install-exit-code",
+  NgrokNpmInstallErrorMessage = "ngrok-npm-install-error-message",
+}
+
 export enum TelemetryMessurement {
   completionTime = "completion-time",
 }

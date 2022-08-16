@@ -37,15 +37,23 @@ export class CLITelemetry implements DepsTelemetry {
     this.sendEvent(eventName, {}, timecost);
   }
 
-  public sendUserErrorEvent(eventName: DepsCheckerEvent, errorMessage: string): void {
+  public sendUserErrorEvent(
+    eventName: DepsCheckerEvent,
+    errorMessage: string,
+    properties?: { [key: string]: string }
+  ): void {
     const error = new UserError(this._telemetryComponentType, eventName, errorMessage);
-    cliTelemetryInstance.sendTelemetryErrorEvent(eventName, error, this.addCommonProps());
+    cliTelemetryInstance.sendTelemetryErrorEvent(eventName, error, {
+      ...this.addCommonProps(),
+      ...properties,
+    });
   }
 
   public sendSystemErrorEvent(
     eventName: DepsCheckerEvent,
     errorMessage: string,
-    errorStack: string
+    errorStack: string,
+    properties?: { [key: string]: string }
   ): void {
     const error = new SystemError(
       this._telemetryComponentType,
@@ -53,7 +61,10 @@ export class CLITelemetry implements DepsTelemetry {
       `errorMsg=${errorMessage},errorStack=${errorStack}`
     );
     error.stack = errorStack;
-    cliTelemetryInstance.sendTelemetryErrorEvent(eventName, error, this.addCommonProps());
+    cliTelemetryInstance.sendTelemetryErrorEvent(eventName, error, {
+      ...this.addCommonProps(),
+      ...properties,
+    });
   }
 
   private addCommonProps(properties: { [key: string]: string } = {}): { [key: string]: string } {

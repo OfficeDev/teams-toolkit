@@ -3,6 +3,10 @@
 
 import { DepsCheckerEvent } from "./constant/telemetry";
 
+export interface DepsTelemetryContext {
+  properties: { [key: string]: string };
+}
+
 export interface DepsTelemetry {
   sendEvent(
     eventName: DepsCheckerEvent,
@@ -10,9 +14,21 @@ export interface DepsTelemetry {
     timecost?: number
   ): void;
 
-  sendEventWithDuration(eventName: DepsCheckerEvent, action: () => Promise<void>): Promise<void>;
+  sendEventWithDuration(
+    eventName: DepsCheckerEvent,
+    action: (ctx: DepsTelemetryContext) => Promise<void>
+  ): Promise<void>;
 
-  sendUserErrorEvent(eventName: DepsCheckerEvent, errorMessage: string): void;
+  sendUserErrorEvent(
+    eventName: DepsCheckerEvent,
+    errorMessage: string,
+    properties?: { [key: string]: string }
+  ): void;
 
-  sendSystemErrorEvent(eventName: DepsCheckerEvent, errorMessage: string, errorStack: string): void;
+  sendSystemErrorEvent(
+    eventName: DepsCheckerEvent,
+    errorMessage: string,
+    errorStack: string,
+    properties?: { [key: string]: string }
+  ): void;
 }

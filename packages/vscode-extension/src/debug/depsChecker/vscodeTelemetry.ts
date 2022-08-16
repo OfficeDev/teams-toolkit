@@ -6,7 +6,12 @@ import { performance } from "perf_hooks";
 import { SystemError, UserError } from "@microsoft/teamsfx-api";
 import { TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import { ExtTelemetry } from "../../telemetry/extTelemetry";
-import { DepsTelemetry, DepsCheckerEvent, TelemetryMessurement } from "@microsoft/teamsfx-core";
+import {
+  DepsTelemetry,
+  DepsCheckerEvent,
+  TelemetryMessurement,
+  DepsTelemetryContext,
+} from "@microsoft/teamsfx-core";
 
 export class VSCodeTelemetry implements DepsTelemetry {
   private readonly _telemetryComponentType = "extension:debug:envchecker";
@@ -28,24 +33,33 @@ export class VSCodeTelemetry implements DepsTelemetry {
 
   public async sendEventWithDuration(
     eventName: DepsCheckerEvent,
-    action: () => Promise<void>
+    action: (ctx: DepsTelemetryContext) => Promise<void>
   ): Promise<void> {
     const start = performance.now();
-    await action();
+    const ctx = { properties: {} };
+    await action(ctx);
     // use seconds instead of milliseconds
     const timecost = Number(((performance.now() - start) / 1000).toFixed(2));
-    this.sendEvent(eventName, {}, timecost);
+    this.sendEvent(eventName, ctx.properties, timecost);
   }
 
-  public sendUserErrorEvent(eventName: DepsCheckerEvent, errorMessage: string): void {
+  public sendUserErrorEvent(
+    eventName: DepsCheckerEvent,
+    errorMessage: string,
+    properties?: { [key: string]: string }
+  ): void {
     const error = new UserError(this._telemetryComponentType, eventName, errorMessage);
-    ExtTelemetry.sendTelemetryErrorEvent(eventName, error, this.addCommonProps());
+    ExtTelemetry.sendTelemetryErrorEvent(eventName, error, {
+      ...this.addCommonProps(),
+      ...properties,
+    });
   }
 
   public sendSystemErrorEvent(
     eventName: DepsCheckerEvent,
     errorMessage: string,
-    errorStack: string
+    errorStack: string,
+    properties?: { [key: string]: string }
   ): void {
     const error = new SystemError(
       this._telemetryComponentType,
@@ -53,7 +67,10 @@ export class VSCodeTelemetry implements DepsTelemetry {
       `errorMsg=${errorMessage},errorStack=${errorStack}`
     );
     error.stack = errorStack;
-    ExtTelemetry.sendTelemetryErrorEvent(eventName, error, this.addCommonProps());
+    ExtTelemetry.sendTelemetryErrorEvent(eventName, error, {
+      ...this.addCommonProps(),
+      ...properties,
+    });
   }
 
   private addCommonProps(properties: { [key: string]: string } = {}): { [key: string]: string } {

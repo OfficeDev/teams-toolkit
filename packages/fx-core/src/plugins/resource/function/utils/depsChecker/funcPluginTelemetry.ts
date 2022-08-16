@@ -11,7 +11,10 @@ import {
 } from "../../../../../common/deps-checker/constant/telemetry";
 import { TelemetryHelper } from "../telemetry-helper";
 import { TelemetryKey } from "../../enums";
-import { DepsTelemetry } from "../../../../../common/deps-checker/depsTelemetry";
+import {
+  DepsTelemetry,
+  DepsTelemetryContext,
+} from "../../../../../common/deps-checker/depsTelemetry";
 
 export class FuncPluginTelemetry implements DepsTelemetry {
   private readonly _source = "func-envchecker";
@@ -41,10 +44,11 @@ export class FuncPluginTelemetry implements DepsTelemetry {
 
   public async sendEventWithDuration(
     eventName: DepsCheckerEvent,
-    action: () => Promise<void>
+    action: (telemetryCtx: DepsTelemetryContext) => Promise<void>
   ): Promise<void> {
     const start = performance.now();
-    await action();
+    const ctx = { properties: {} };
+    await action(ctx);
 
     // use seconds instead of milliseconds
     const timecost = Number(((performance.now() - start) / 1000).toFixed(2));
@@ -53,18 +57,30 @@ export class FuncPluginTelemetry implements DepsTelemetry {
       measurements[TelemetryMessurement.completionTime] = timecost;
     }
 
-    TelemetryHelper.sendSuccessEvent(eventName, FuncPluginTelemetry.getCommonProps(), measurements);
+    TelemetryHelper.sendSuccessEvent(
+      eventName,
+      { ...FuncPluginTelemetry.getCommonProps(), ...ctx.properties },
+      measurements
+    );
   }
 
-  public sendUserErrorEvent(eventName: DepsCheckerEvent, errorMessage: string): void {
+  public sendUserErrorEvent(
+    eventName: DepsCheckerEvent,
+    errorMessage: string,
+    properties?: { [key: string]: string }
+  ): void {
     const error = new UserError(this._source, eventName, errorMessage);
-    TelemetryHelper.sendErrorEvent(eventName, error, FuncPluginTelemetry.getCommonProps());
+    TelemetryHelper.sendErrorEvent(eventName, error, {
+      ...FuncPluginTelemetry.getCommonProps(),
+      ...properties,
+    });
   }
 
   public sendSystemErrorEvent(
     eventName: DepsCheckerEvent,
     errorMessage: string,
-    errorStack: string
+    errorStack: string,
+    properties?: { [key: string]: string }
   ): void {
     const error = new SystemError(
       this._source,
@@ -72,7 +88,10 @@ export class FuncPluginTelemetry implements DepsTelemetry {
       `errorMsg=${errorMessage},errorStack=${errorStack}`
     );
     error.stack = errorStack;
-    TelemetryHelper.sendErrorEvent(eventName, error, FuncPluginTelemetry.getCommonProps());
+    TelemetryHelper.sendErrorEvent(eventName, error, {
+      ...FuncPluginTelemetry.getCommonProps(),
+      ...properties,
+    });
   }
 }
 

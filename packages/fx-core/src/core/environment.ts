@@ -56,7 +56,6 @@ import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
 import { Container } from "typedi";
 import { pick } from "lodash";
 import { convertEnvStateV2ToV3, convertEnvStateV3ToV2 } from "../component/migrate";
-import { loadEnvInfoV3 } from "./middleware/envInfoLoaderV3";
 import { LocalCrypto } from "./crypto";
 
 export interface EnvStateFiles {

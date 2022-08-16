@@ -86,7 +86,7 @@ export class TeamsBot {
       context.projectSetting.programmingLanguage ||
       inputs[CoreQuestionNames.ProgrammingLanguage] ||
       "javascript";
-
+    globalVars.isVS = inputs[CoreQuestionNames.ProgrammingLanguage] === "csharp";
     let botConfig = getComponent(projectSettings, ComponentNames.TeamsBot);
     // bot can only add once
     if (botConfig) {
@@ -228,7 +228,6 @@ export class TeamsBot {
       effects.push("add bot capability in app manifest");
     }
 
-    globalVars.isVS = isVSProject(projectSettings);
     projectSettings.programmingLanguage ||= inputs[CoreQuestionNames.ProgrammingLanguage];
 
     const msg =

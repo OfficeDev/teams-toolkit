@@ -75,7 +75,7 @@ export class TeamsTab {
       inputs[CoreQuestionNames.ProgrammingLanguage] === "csharp"
         ? ComponentNames.AzureWebApp
         : ComponentNames.AzureStorage;
-    globalVars.isVS = isVSProject(projectSettings);
+    globalVars.isVS = inputs[CoreQuestionNames.ProgrammingLanguage] === "csharp";
     projectSettings.programmingLanguage ||= inputs[CoreQuestionNames.ProgrammingLanguage];
     const addedComponents: string[] = [];
 

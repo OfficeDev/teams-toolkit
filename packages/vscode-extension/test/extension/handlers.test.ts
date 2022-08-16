@@ -209,6 +209,7 @@ describe("handlers", () => {
       const createProject = sinon.spy(handlers.core, "createProject");
       sinon.stub(vscode.commands, "executeCommand");
       const inputs = { projectId: uuid.v4(), platform: Platform.VSCode };
+      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
 
       await handlers.runCommand(Stage.create, inputs);
 
@@ -426,7 +427,7 @@ describe("handlers", () => {
       const decrypt = sinon.spy(handlers.core, "decrypt");
       const encrypt = sinon.spy(handlers.core, "encrypt");
       sinon.stub(vscode.commands, "executeCommand");
-      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
+      sinon.stub(vscodeHelper, "checkerEnabled").returns(true);
       const editBuilder = sinon.spy();
       sinon.stub(vscode.window, "activeTextEditor").value({
         edit: function (callback: (eb: any) => void) {
@@ -459,7 +460,7 @@ describe("handlers", () => {
       decrypt.returns(Promise.resolve(err(new UserError("", "fake error", ""))));
       const encrypt = sinon.spy(handlers.core, "encrypt");
       sinon.stub(vscode.commands, "executeCommand");
-      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
+      sinon.stub(vscodeHelper, "checkerEnabled").returns(true);
       const editBuilder = sinon.spy();
       sinon.stub(vscode.window, "activeTextEditor").value({
         edit: function (callback: (eb: any) => void) {

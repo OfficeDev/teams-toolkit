@@ -2,8 +2,8 @@ This doc is to help you understand what will happen when provisioning in an alre
 
 > Important Notes: After switching accounts and provisioning or local debugging again, resources have been created before in the old M365 tenant or Azure subscription won't be deleted by default, and you have to manully delete them to avoid further costs if any. 
 
-## Switch Microsoft 365 account
-### Local debug
+## Switch Microsoft 365 Account
+### Local Debug
 You could run local debugging for a Teams project with one M365 account and then easily switch to another account for further local debugging. To do this, you only need to:
 1. Sign out of the current M365 account.
 2. Sign in to the new account.
@@ -14,7 +14,7 @@ After that, we will
 2. Create all resources required for the local environment in the new M365 tenant.
 3. `state.local.json` file in .fx/states folder will be overwritten with the information of new resources in the new M365 tenant. If the project requires AAD, `local.userdata` will be overwritten with the new client secret.
 
-### Provision in a remote environment
+### Provision in a Remote Environment
 You could provision resources in a remote environment with one M365 account and then re-provision in the same environment but with another M365 account. To do this, you only need to:
 1. Sign out of the current M365 account.
 2. Sign in to the new account.
@@ -27,8 +27,8 @@ After that, we will
 4. If the project requires AAD, `{env}.userdata` will be overwritten with the new client secret.
 
 
-## Switch Azure subscription
-### Provision in a remote environment
+## Switch Azure Subscription
+### Provision in a Remote Environment
 You could provision Azure resources of a remote environment in one Azure subscription and then switch to another Azure subscription for this environment. To do this, you only need to:
 1. Sign out of the current Azure account if the subscription you are going to use is in another Azure account.
 2. Select the correct subscription.
@@ -41,7 +41,7 @@ After that, we will
 4. Start provision in the selected environment.
 
 ## Backup & Recover
-### Why backup
+### Why Backup
 Configuration files will be overwritten by Teams Toolkit when provisioning in an already-provisioned environment but with different account or Azure subscription or local debugging again with another Microsoft 365 account. We will back up those files so that you could use the backups to locate the resources created using the previous account and then delete what you no longer need. Also with the help of backups, you could continue using the resources created before easily when you decide to switch back to the accounts or the subscription that you selected before. Otherwise, new resources will be created, and you have to delete the old resources manully to avoid costs.
 ### Backup
 We will keep all backups in the .backup/.fx folder and name those backups with the current date and time in the format of YYYYMMDDHHMMSS (which is the value of "time" mentioned below) when a backup happens. "env" below indicates the environment you select, which could be local or any remote environment.
@@ -62,14 +62,14 @@ Note: if you want to recover for a remote environment and you have added new fea
 * Delete the backups when you think there is no need to keep them.
 
 ## Error
-### Could not be redirected to the teams web page correctly
+### Could not be Redirected to the Expected Teams Web Page
 If you have previewed (local or remote) your Teams app in one M365 tenant and then switch to another M365 account, you may encounter error as shown below 
 ![image](../images/fx-core/preview/teams-signin-error.png)
 once the browser is launched when previewing in the new M365 tenant. If clicking "try again" or waiting for a few seconds to let Teams bring you to the sign in page, you may notice that the page won't be redirected correctly to the page of adding the Teams app. This happens due to the previous account info saved in the browser storage.
 
 #### Mitigation
 * Launch browser with usrData
-By default, the browser is launched with a separate user profile in a temp folder. You could override the value of "usrDataDir" to "true" and then specify the path of user data folder in runtimeArgs.
+By default, the browser is launched with a separate user profile in a temp folder. You could override the value of "userDataDir" to "true" and then specify the path of user data folder in runtimeArgs.
 For example, when you sign in with another M365 account for local debugging, you could replace 
     ```
     {

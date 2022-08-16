@@ -1312,7 +1312,7 @@ describe("V2 implementation", () => {
         "Resources",
         "WelcomeCardTemplate.json"
       );
-      const mainDialogPath = path.join(testFolder, "Auth", "bot", "SSO", "MainDialog.cs");
+      const mainDialogPath = path.join(testFolder, "Auth", "bot", "SSO", "SsoDialog.cs");
       const teamsSsoBotPath = path.join(testFolder, "Auth", "bot", "SSO", "TeamsSsoBot.cs");
       expect(await fs.pathExists(readmePath)).to.be.true;
       expect(await fs.pathExists(authStartPagePath)).to.be.true;

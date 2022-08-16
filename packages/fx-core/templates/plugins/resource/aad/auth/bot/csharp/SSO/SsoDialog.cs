@@ -55,11 +55,6 @@ public class SsoDialog : ComponentDialog
         _logger.LogInformation("Construct Main Dialog");
     }
 
-    public void SetStorage(IStorage storage)
-    {
-        _dedupStorage = storage;
-    }
-
     public async Task RunAsync(ITurnContext context, IStatePropertyAccessor<DialogState> accessor)
     {
         DialogSet dialogSet = new DialogSet(accessor);

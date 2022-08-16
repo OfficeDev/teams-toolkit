@@ -11,7 +11,6 @@ public class TeamsSsoBot<T> : TeamsActivityHandler where T : Dialog
     private readonly BotState _conversationState;
     private readonly Dialog _dialog;
     private readonly IStatePropertyAccessor<DialogState> _dialogState;
-    private readonly IStorage _dedupStorage;
     public TeamsSsoBot(ConversationState conversationState, T dialog, ILogger<TeamsSsoBot<T>> logger)
     {
         _conversationState = conversationState;

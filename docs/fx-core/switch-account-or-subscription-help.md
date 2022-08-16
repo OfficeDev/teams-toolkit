@@ -37,7 +37,7 @@ You could provision Azure resources of a remote environment in one Azure subscri
 After that, we will
 1. Back up configuration files for the selected environment. [Learn more about backup & recover](#backup--recover).
 2. Update the value of "resourceBaseName" in `azure.parameters.{env}.json`.
-3. If the project contains Azure bot service, we will create a new AAD app since a Microsoft App ID is required to create an Azure Bot resourc and one Microsoft App Id can only be registered to one bot application. 
+3. If the project contains Azure bot service, we will create a new AAD app since a Microsoft App ID is required to create an Azure Bot resourc and one Microsoft App Id can only be registered to one bot application. We will replace the value of "fx-resource-bot.botPassword" in `{env.userdata}` with the new secret.
 4. Start provision in the selected environment.
 
 ## Backup & Recover
@@ -60,3 +60,9 @@ Note: if you want to recover for a remote environment and you have added new fea
 * Delete the backups when you think there is no need to keep them.
 
 ## Error
+### Could not be redirected to the teams web page correctly
+If you have previewed (local or remote) your Teams app in one M365 tenant and then switch to another M365 account, you may encounter errors once the browser is launched when previewing in the new M365 tenant. This happens due to the account info saved in the browser storage.
+
+#### Mitigation
+* Launch browser in incognito mode    
+runtimeArgs are the arguments passed to the runtime executable. It is possible to start the browser in private mode. You could edit the launch configuration by adding `"runtimeArgs": ["--inprivate"]` (for Edge) or `"runtimeArgs": ["--incognito"]` (for Chrome).

@@ -42,7 +42,7 @@ jobs:
         if: ${{ always() }}
         working-directory: packages/sdk
         run: |
-          npm run test:e2e:node
+          npm run test:e2e
 
       - name: List jobs
         if: ${{ always() }}

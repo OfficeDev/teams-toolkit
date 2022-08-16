@@ -293,13 +293,17 @@ async function checkPort(
 
 export async function checkPrerequisitesForGetStarted(): Promise<Result<void, FxError>> {
   const node: DepsType = await detectNodeDepsType();
-  return await localTelemetryReporter.runWithTelemetryProperties(
-    TelemetryEvent.GetStartedPrerequisites,
-    // projectComponents is already serialized JSON string
-    {},
-    (ctx: TelemetryContext) =>
-      _checkAndInstall("Prerequisite Check", [{ checker: node, fastFail: false }], [], ctx)
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GetStartedPrerequisitesStart);
+  const res = await _checkAndInstall(
+    "Prerequisite Check",
+    [{ checker: node, fastFail: false }],
+    []
   );
+  if (res.error) {
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.GetStartedPrerequisites, res.error);
+    return err(res.error);
+  }
+  return ok(undefined);
 }
 
 export async function checkAndInstall(): Promise<Result<void, FxError>> {
@@ -309,13 +313,25 @@ export async function checkAndInstall(): Promise<Result<void, FxError>> {
   const projectSettings = await localEnvManager.getProjectSettings(workspacePath);
   const ports = await localEnvManager.getPortsFromProject(workspacePath, projectSettings);
   const orderedCheckers = await getOrderedCheckers(projectSettings, localEnvManager);
-  const debugSession = commonUtils.getLocalDebugSession();
+
   return await localTelemetryReporter.runWithTelemetryProperties(
     TelemetryEvent.DebugPrerequisites,
     // projectComponents is already serialized JSON string
     { [TelemetryProperty.DebugProjectComponents]: `${projectComponents}` },
-    (ctx: TelemetryContext) =>
-      _checkAndInstall("LocalDebug Prerequisite Check", orderedCheckers, ports, ctx, debugSession)
+    async (ctx: TelemetryContext) => {
+      const res = await _checkAndInstall("LocalDebug Prerequisite Check", orderedCheckers, ports);
+      if (res.error) {
+        const debugSession = commonUtils.getLocalDebugSession();
+        addCheckResultsForTelemetry(
+          res.checkResults,
+          debugSession.properties,
+          debugSession.errorProps
+        );
+        addCheckResultsForTelemetry(res.checkResults, ctx.properties, ctx.errorProps);
+        return err(res.error);
+      }
+      return ok(undefined);
+    }
   );
 }
 
@@ -337,10 +353,8 @@ export async function checkAndInstall(): Promise<Result<void, FxError>> {
 async function _checkAndInstall(
   logLabel: string,
   orderedCheckers: PrerequisiteOrderedChecker[],
-  ports: number[],
-  ctx?: TelemetryContext,
-  debugSession?: commonUtils.LocalDebugSession
-): Promise<Result<void, FxError>> {
+  ports: number[]
+): Promise<{ checkResults: CheckResult[]; error?: FxError }> {
   let progressHelper: ProgressHelper | undefined;
   const checkResults: CheckResult[] = [];
   try {
@@ -435,15 +449,9 @@ async function _checkAndInstall(
     const fxError = assembleError(error);
     showError(fxError);
     await progressHelper?.stop(false);
-    if (debugSession) {
-      addCheckResultsForTelemetry(checkResults, debugSession.properties, debugSession.errorProps);
-    }
-    if (ctx) {
-      addCheckResultsForTelemetry(checkResults, ctx.properties, ctx.errorProps);
-    }
-    return err(fxError);
+    return { checkResults: checkResults, error: fxError };
   }
-  return ok(undefined);
+  return { checkResults: checkResults };
 }
 
 function getCheckPromise(

@@ -86,6 +86,7 @@ import {
   SingleSignOnOptionItem,
   TabFeatureIds,
   TabSPFxItem,
+  TabSPFxNewUIItem,
 } from "../plugins/solution/fx-solution/question";
 import { resourceGroupHelper } from "../plugins/solution/fx-solution/utils/ResourceGroupHelper";
 import { executeConcurrently } from "../plugins/solution/fx-solution/v2/executor";
@@ -250,6 +251,8 @@ export class TeamsfxCore {
       component = Container.get("api-connector");
     } else if (features === SingleSignOnOptionItem.id) {
       component = Container.get("sso");
+    } else if (features === TabSPFxNewUIItem.id) {
+      component = Container.get(ComponentNames.SPFxTab);
     }
     if (component) {
       const res = await (component as any).add(context, inputs);

@@ -147,6 +147,7 @@ import { ComponentNames } from "../component/constants";
 import { ApiConnectorImpl } from "../plugins/resource/apiconnector/plugin";
 import { publishQuestion } from "../component/resource/appManifest/appManifest";
 import { createEnvWithName } from "../component/envManager";
+import { getTeamsAppManifestPath } from "../component/resource/appManifest/utils";
 import { getProjectTemplatesFolderPath } from "../common/utils";
 
 export class FxCore implements v3.ICore {
@@ -722,7 +723,11 @@ export class FxCore implements v3.ICore {
         func.method === "connectExistingApi" ||
         func.method === "addSso" ||
         func.method === "addFeature" ||
-        func.method === "addResource"
+        func.method === "addResource" ||
+        func.method === "getManifestTemplatePath" ||
+        func.method === "validateManifest" ||
+        func.method === "buildPackage" ||
+        func.method === "updateManifest"
       )
         return this.executeUserTaskV3(func, inputs);
     }
@@ -873,8 +878,9 @@ export class FxCore implements v3.ICore {
     func: Func,
     inputs: Inputs,
     ctx?: CoreHookContext
-  ): Promise<Result<unknown, FxError>> {
-    let res: Result<undefined, FxError> = ok(undefined);
+  ): Promise<Result<any, FxError>> {
+    if (!ctx) return err(new ObjectIsUndefinedError("executeUserTask context"));
+    let res: Result<any, FxError> = ok(undefined);
     const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
     if (ctx?.envInfoV3) {
       context.envInfo = ctx.envInfoV3;
@@ -896,6 +902,18 @@ export class FxCore implements v3.ICore {
       inputs.stage = Stage.addFeature;
       const fx = Container.get("fx") as TeamsfxCore;
       res = await fx.addFeature(context, inputs as InputsWithProjectPath);
+    } else if (func.method === "getManifestTemplatePath") {
+      const path = await getTeamsAppManifestPath((inputs as InputsWithProjectPath).projectPath);
+      res = ok(path);
+    } else if (func.method === "validateManifest") {
+      const component = Container.get("app-manifest") as any;
+      res = await component.validate(context, inputs as InputsWithProjectPath);
+    } else if (func.method === "buildPackage") {
+      const component = Container.get("app-manifest") as any;
+      res = await component.build(context, inputs as InputsWithProjectPath);
+    } else if (func.method === "updateManifest") {
+      const component = Container.get("app-manifest") as any;
+      res = await component.deploy(context, inputs as InputsWithProjectPath);
     } else {
       return err(new NotImplementedError(func.method));
     }
@@ -904,7 +922,7 @@ export class FxCore implements v3.ICore {
       ctx!.projectSettings = context.projectSetting;
       return res;
     }
-    return ok(undefined);
+    return res;
   }
   @hooks([
     ErrorHandlerMW,

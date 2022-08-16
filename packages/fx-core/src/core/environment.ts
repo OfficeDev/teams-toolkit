@@ -24,6 +24,8 @@ import {
   Void,
   CloudResource,
   ProjectSettingsV3,
+  InputsWithProjectPath,
+  v2,
 } from "@microsoft/teamsfx-api";
 import path, { basename } from "path";
 import fs from "fs-extra";
@@ -54,6 +56,8 @@ import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
 import { Container } from "typedi";
 import { pick } from "lodash";
 import { convertEnvStateV2ToV3, convertEnvStateV3ToV2 } from "../component/migrate";
+import { loadEnvInfoV3 } from "./middleware/envInfoLoaderV3";
+import { LocalCrypto } from "./crypto";
 
 export interface EnvStateFiles {
   envState: string;
@@ -482,6 +486,36 @@ class EnvironmentManager {
 
   public getLocalEnvName() {
     return this.localEnvName;
+  }
+
+  public async resetProvisionState(inputs: InputsWithProjectPath, ctx: v2.Context): Promise<void> {
+    const allEnvRes = await environmentManager.listRemoteEnvConfigs(inputs.projectPath!);
+    if (allEnvRes.isOk()) {
+      for (const env of allEnvRes.value) {
+        const loadEnvRes = await this.loadEnvInfo(
+          inputs.projectPath,
+          new LocalCrypto(ctx.projectSetting.projectId),
+          env,
+          true
+        );
+        if (loadEnvRes.isOk()) {
+          const envInfo = loadEnvRes.value as v3.EnvInfoV3;
+          if (
+            envInfo.state?.solution?.provisionSucceeded === true ||
+            envInfo.state?.solution?.provisionSucceeded === "true"
+          ) {
+            envInfo.state.solution.provisionSucceeded = false;
+            await environmentManager.writeEnvState(
+              envInfo.state,
+              inputs.projectPath,
+              ctx.cryptoProvider,
+              env,
+              true
+            );
+          }
+        }
+      }
+    }
   }
 }
 

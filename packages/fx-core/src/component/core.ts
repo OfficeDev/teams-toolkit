@@ -124,8 +124,6 @@ import { environmentManager } from "../core/environment";
 import { sendErrorTelemetryThenReturnError } from "../core/telemetry";
 import { ViewAadAppHelpLink, SolutionTelemetryEvent } from "../plugins";
 import { Constants } from "../plugins/resource/aad/constants";
-import { loadEnvInfoV3 } from "../core/middleware/envInfoLoaderV3";
-import { resetProvisionState } from "../common/utils";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -264,7 +262,7 @@ export class TeamsfxCore {
       });
       if (res.isErr()) return err(res.error);
       if (features !== ApiConnectionOptionItem.id && features !== CicdOptionItem.id) {
-        await resetProvisionState(inputs, context);
+        await environmentManager.resetProvisionState(inputs, context);
       }
       return ok(res.value);
     }

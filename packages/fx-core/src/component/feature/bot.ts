@@ -51,7 +51,7 @@ import { AppManifest } from "../resource/appManifest/appManifest";
 import "../resource/azureAppService/azureWebApp";
 import { BotService } from "../resource/botService";
 import { IdentityResource } from "../resource/identity";
-import { generateConfigBiceps, bicepUtils } from "../utils";
+import { generateConfigBiceps, bicepUtils, addFeatureNotify } from "../utils";
 import { getComponent, getComponentByScenario } from "../workflow";
 @Service(ComponentNames.TeamsBot)
 export class TeamsBot {
@@ -219,16 +219,9 @@ export class TeamsBot {
     projectSettings.programmingLanguage ||= inputs[CoreQuestionNames.ProgrammingLanguage];
 
     // notification
-    const msg =
-      inputs.platform === Platform.CLI
-        ? getLocalizedString("core.addCapability.addCapabilityNoticeForCli")
-        : getLocalizedString("core.addCapability.addCapabilitiesNotice");
-    context.userInteraction.showMessage(
-      "info",
-      format(msg, inputs[CoreQuestionNames.Features]),
-      false
-    );
-
+    addFeatureNotify(inputs, context.userInteraction, "Capability", [
+      inputs[CoreQuestionNames.Features],
+    ]);
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.Components]: JSON.stringify(addedComponents),
     });

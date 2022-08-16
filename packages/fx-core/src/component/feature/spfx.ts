@@ -26,6 +26,7 @@ import {
 import { SPFxTabCodeProvider } from "../code/spfxTabCode";
 import { ComponentNames } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
+import { addFeatureNotify } from "../utils";
 @Service(ComponentNames.SPFxTab)
 export class SPFxTab {
   name = ComponentNames.SPFxTab;
@@ -61,14 +62,11 @@ export class SPFxTab {
       if (res.isErr()) return err(res.error);
     }
     // notification
-    const msg =
-      inputs.platform === Platform.CLI
-        ? getLocalizedString("core.addCapability.addCapabilityNoticeForCli")
-        : getLocalizedString("core.addCapability.addCapabilitiesNotice");
-    context.userInteraction.showMessage(
-      "info",
-      format(msg, inputs[CoreQuestionNames.Features]),
-      false
+    addFeatureNotify(
+      inputs,
+      context.userInteraction,
+      "Capability",
+      inputs[CoreQuestionNames.Features]
     );
     return ok(undefined);
   }

@@ -42,7 +42,7 @@ import { ComponentNames, Scenarios } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { AzureFunctionResource } from "../resource/azureAppService/azureFunction";
-import { generateConfigBiceps, bicepUtils } from "../utils";
+import { generateConfigBiceps, bicepUtils, addFeatureNotify } from "../utils";
 import { getComponent } from "../workflow";
 import { SSO } from "./sso";
 import * as util from "util";
@@ -172,16 +172,7 @@ export class TeamsApi {
     }
 
     // notification
-    const template =
-      inputs.platform === Platform.CLI
-        ? getLocalizedString("core.addResource.addResourceNoticeForCli")
-        : getLocalizedString("core.addResource.addResourceNotice");
-    context.userInteraction.showMessage(
-      "info",
-      util.format(template, AzureResourceFunction.id),
-      false
-    );
-
+    addFeatureNotify(inputs, context.userInteraction, "Resource", [AzureResourceFunction.id]);
     return ok(undefined);
   }
   async build(

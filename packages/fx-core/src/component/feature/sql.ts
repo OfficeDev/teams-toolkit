@@ -20,7 +20,7 @@ import { ComponentNames } from "../constants";
 import { hasApi } from "../../common/projectSettingsHelperV3";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { BicepComponent } from "../bicep";
-import { generateConfigBiceps, bicepUtils } from "../utils";
+import { generateConfigBiceps, bicepUtils, addFeatureNotify } from "../utils";
 import { cloneDeep } from "lodash";
 import {
   AzureResourceFunction,
@@ -83,17 +83,7 @@ export class Sql {
     }
     addedResources.push(AzureResourceSQL.id);
     // notification
-    const addNames = addedResources.map((c) => `'${c}'`).join(" and ");
-    const single = addedResources.length === 1;
-    const template =
-      inputs.platform === Platform.CLI
-        ? single
-          ? getLocalizedString("core.addResource.addResourceNoticeForCli")
-          : getLocalizedString("core.addResource.addResourcesNoticeForCli")
-        : single
-        ? getLocalizedString("core.addResource.addResourceNotice")
-        : getLocalizedString("core.addResource.addResourcesNotice");
-    context.userInteraction.showMessage("info", format(template, addNames), false);
+    addFeatureNotify(inputs, context.userInteraction, "Resource", addedResources);
     return ok(undefined);
   }
 }

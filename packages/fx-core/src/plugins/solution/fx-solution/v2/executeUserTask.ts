@@ -94,6 +94,8 @@ import { getTemplatesFolder } from "../../../../folder";
 import AdmZip from "adm-zip";
 import { unzip } from "../../../../common/template-utils/templatesUtils";
 import { InputsWithProjectPath } from "@microsoft/teamsfx-api/build/v2";
+import { addFeatureNotify } from "../../../../component/utils";
+import { Context } from "mustache";
 export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,
@@ -566,18 +568,7 @@ export async function addCapability(
     await appStudioPlugin.addCapabilities(ctx, inputsNew, capabilitiesToAddManifest);
   }
   if (capabilitiesAnswer.length > 0) {
-    const addNames = capabilitiesAnswer.map((c) => `'${c}'`).join(" and ");
-    const single = capabilitiesAnswer.length === 1;
-    const template =
-      inputs.platform === Platform.CLI
-        ? single
-          ? getLocalizedString("core.addCapability.addCapabilityNoticeForCli")
-          : getLocalizedString("core.addCapability.addCapabilitiesNoticeForCli")
-        : single
-        ? getLocalizedString("core.addCapability.addCapabilityNotice")
-        : getLocalizedString("core.addCapability.addCapabilitiesNotice");
-    const msg = util.format(template, addNames);
-    ctx.userInteraction.showMessage("info", msg, false);
+    addFeatureNotify(inputs, ctx.userInteraction, "Capability", capabilitiesAnswer);
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddCapability, {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
       [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
@@ -791,17 +782,7 @@ export async function addResource(
         )
       );
     }
-    const addNames = addedResources.map((c) => `'${c}'`).join(" and ");
-    const single = addedResources.length === 1;
-    const template =
-      inputs.platform === Platform.CLI
-        ? single
-          ? getLocalizedString("core.addResource.addResourceNoticeForCli")
-          : getLocalizedString("core.addResource.addResourcesNoticeForCli")
-        : single
-        ? getLocalizedString("core.addResource.addResourceNotice")
-        : getLocalizedString("core.addResource.addResourcesNotice");
-    ctx.userInteraction.showMessage("info", util.format(template, addNames), false);
+    addFeatureNotify(inputs, ctx.userInteraction, "Resource", addedResources);
   }
 
   ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddResource, {

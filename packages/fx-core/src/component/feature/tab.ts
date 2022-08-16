@@ -29,7 +29,7 @@ import {
 import { ComponentNames, Scenarios } from "../constants";
 import { getComponent, getComponentByScenario } from "../workflow";
 import { assign, cloneDeep, merge } from "lodash";
-import { generateConfigBiceps, bicepUtils } from "../utils";
+import { generateConfigBiceps, bicepUtils, addFeatureNotify } from "../utils";
 import { TabCodeProvider } from "../code/tabCode";
 import { BicepComponent } from "../bicep";
 import { convertToAlphanumericOnly } from "../../common/utils";
@@ -211,16 +211,9 @@ export class TeamsTab {
     });
 
     // notification
-    const msg =
-      inputs.platform === Platform.CLI
-        ? getLocalizedString("core.addCapability.addCapabilityNoticeForCli")
-        : getLocalizedString("core.addCapability.addCapabilitiesNotice");
-    context.userInteraction.showMessage(
-      "info",
-      format(msg, inputs[CoreQuestionNames.Features]),
-      false
-    );
-
+    addFeatureNotify(inputs, context.userInteraction, "Capability", [
+      inputs[CoreQuestionNames.Features],
+    ]);
     return ok(undefined);
   }
 

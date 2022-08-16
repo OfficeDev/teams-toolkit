@@ -23,7 +23,7 @@ import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import "../resource/azureSql";
 import "../resource/identity";
 import { KeyVaultResource } from "../resource/keyVault";
-import { generateConfigBiceps, bicepUtils } from "../utils";
+import { generateConfigBiceps, bicepUtils, addFeatureNotify } from "../utils";
 import { getComponent } from "../workflow";
 import * as util from "util";
 @Service("key-vault-feature")
@@ -83,13 +83,7 @@ export class KeyVaultFeature {
     }
 
     // notification
-    const addNames = AzureResourceKeyVault.id;
-    const template =
-      inputs.platform === Platform.CLI
-        ? getLocalizedString("core.addResource.addResourceNoticeForCli")
-        : getLocalizedString("core.addResource.addResourceNotice");
-    context.userInteraction.showMessage("info", util.format(template, addNames), false);
-
+    addFeatureNotify(inputs, context.userInteraction, "Resource", [AzureResourceKeyVault.id]);
     return ok(undefined);
   }
 }

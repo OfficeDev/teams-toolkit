@@ -42,7 +42,7 @@ After that, we will
 
 ## Backup & Recover
 ### Why backup
-Configuration files will be overwritten by Teams Toolkit when provisioning in an already-provisioned environment but with different account or Azure subscription or local debugging again with another Microsoft 365 account. We will back up those files so that you could use the backups to locate the resources created using the previous account that you no longer need and then delete them. Also with the help of backups, you could continue using the resources created before easily when you decide to switch back to the accounts or the subscription that you selected before. Otherwise, new resources will be created, and you have to delete the old resources manully to avoid costs.
+Configuration files will be overwritten by Teams Toolkit when provisioning in an already-provisioned environment but with different account or Azure subscription or local debugging again with another Microsoft 365 account. We will back up those files so that you could use the backups to locate the resources created using the previous account and then delete what you no longer need. Also with the help of backups, you could continue using the resources created before easily when you decide to switch back to the accounts or the subscription that you selected before. Otherwise, new resources will be created, and you have to delete the old resources manully to avoid costs.
 ### Backup
 We will keep all backups in the .backup/.fx folder and name those backups with the current date and time in the format of YYYYMMDDHHMMSS (which is the value of "time" mentioned below) when a backup happens. "env" below indicates the environment you select, which could be local or any remote environment.
 * The backup of `state.{env}.json` will be `state.{env}.{time}.json` in the .backup/.fx/states folder which contains generated resources information of the local or remote environment.
@@ -101,7 +101,7 @@ For example, when you sign in with another M365 account for local debugging, you
     }
     ```
   If you want to switch back to the previous M365 account for local debugging, please remove the lines about userDataDir and runtimeArgs that you just added before start local debugging again.
-  
+
   You could also specify the path of user data folder for each account, and edit the value of "user-data-dir" in runtimeArgs whenever you switch account for previewing.
 
 * Launch browser in incognito mode    
@@ -133,5 +133,5 @@ This may not work for you if your org enables condition access. runtimeArgs are 
     }
     ```
 
-to always start Edge in InPrivate browsing mode when local debugging.
+  to always start Edge in InPrivate browsing mode when local debugging.
 

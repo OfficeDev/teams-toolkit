@@ -910,6 +910,7 @@ export const AppStudioScopes = [`${getAppStudioEndpoint()}/AppDefinitions.ReadWr
 export const GraphScopes = ["Application.ReadWrite.All", "TeamsAppInstallation.ReadForUser"];
 export const GraphReadUserScopes = ["https://graph.microsoft.com/User.ReadBasic.All"];
 export const SPFxScopes = (tenant: string) => [`${tenant}/Sites.FullControl.All`];
+export const AzureScopes = ["https://management.core.windows.net/user_impersonation"];
 
 export async function getSPFxTenant(graphToken: string): Promise<string> {
   const GRAPH_TENANT_ENDPT = "https://graph.microsoft.com/v1.0/sites/root?$select=webUrl";

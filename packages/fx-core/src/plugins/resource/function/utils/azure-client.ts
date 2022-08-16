@@ -3,16 +3,27 @@
 import {
   Providers,
   ResourceManagementClient,
-  ResourceManagementClientContext,
-  ResourceManagementModels,
+  ResourceGroupsCheckExistenceResponse,
 } from "@azure/arm-resources";
-import { StorageManagementClient, StorageManagementModels } from "@azure/arm-storage";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import { WebSiteManagementClient, WebSiteManagementModels } from "@azure/arm-appservice";
+import {
+  StorageManagementClient,
+  StorageAccount,
+  StorageAccountListResult,
+  StorageAccountListKeysResult,
+  StorageAccountCreateParameters,
+} from "@azure/arm-storage";
+import { TokenCredential } from "@azure/core-http";
+import {
+  WebSiteManagementClient,
+  Site,
+  AppServicePlan,
+  AppServicePlanCollection,
+  WebAppCollection,
+} from "@azure/arm-appservice";
 
 import { InfoMessages } from "../resources/message";
 import { Logger } from "./logger";
-import { Provider } from "@azure/arm-resources/esm/models";
+import { Provider } from "@azure/arm-resources";
 
 export class AzureClientFactory {
   /* TODO: we wrap the constructor to function and further discuss whether we should make it singleton.
@@ -20,45 +31,33 @@ export class AzureClientFactory {
    * It has security issue to put sensitive data in static memory address for long time.
    */
   public static getStorageManagementClient(
-    credentials: TokenCredentialsBase,
+    credentials: TokenCredential,
     subscriptionId: string
   ): StorageManagementClient {
     return new StorageManagementClient(credentials, subscriptionId);
   }
 
   public static getWebSiteManagementClient(
-    credentials: TokenCredentialsBase,
+    credentials: TokenCredential,
     subscriptionId: string
   ): WebSiteManagementClient {
     return new WebSiteManagementClient(credentials, subscriptionId);
   }
 
   public static getResourceManagementClient(
-    credentials: TokenCredentialsBase,
+    credentials: TokenCredential,
     subscriptionId: string
   ): ResourceManagementClient {
     return new ResourceManagementClient(credentials, subscriptionId);
   }
 
   public static getResourceProviderClient(
-    credentials: TokenCredentialsBase,
+    credentials: TokenCredential,
     subscriptionId: string
   ): Providers {
-    return new Providers(new ResourceManagementClientContext(credentials, subscriptionId));
+    return new ResourceManagementClient(credentials, subscriptionId).providers;
   }
 }
-
-type Site = WebSiteManagementModels.Site;
-type AppServicePlan = WebSiteManagementModels.AppServicePlan;
-type AppServicePlanCollection = WebSiteManagementModels.AppServicePlanCollection;
-
-type StorageAccount = StorageManagementModels.StorageAccount;
-type StorageAccountListResult = StorageManagementModels.StorageAccountListResult;
-type StorageAccountListKeysResult = StorageManagementModels.StorageAccountListKeysResult;
-type StorageAccountCreateParameters = StorageManagementModels.StorageAccountCreateParameters;
-
-type ResourceGroupsCheckExistenceResponse =
-  ResourceManagementModels.ResourceGroupsCheckExistenceResponse;
 
 export class AzureLib {
   public static async doesResourceGroupExist(
@@ -112,9 +111,16 @@ export class AzureLib {
     resourceGroupName: string,
     appServicePlanName: string
   ): Promise<AppServicePlan | undefined> {
-    const appServicePlansRes: AppServicePlanCollection =
-      await client.appServicePlans.listByResourceGroup(resourceGroupName);
-    return appServicePlansRes.find((plan) => plan.name === appServicePlanName);
+    for await (const page of client.appServicePlans
+      .listByResourceGroup(resourceGroupName)
+      .byPage({ maxPageSize: 100 })) {
+      for (const appServicePlan of page) {
+        if (appServicePlan.name === appServicePlanName) {
+          return appServicePlan;
+        }
+      }
+    }
+    return undefined;
   }
 
   public static async ensureAppServicePlans(
@@ -124,7 +130,12 @@ export class AzureLib {
     options: AppServicePlan
   ): Promise<AppServicePlan> {
     return this.ensureResource<AppServicePlan>(
-      () => client.appServicePlans.createOrUpdate(resourceGroupName, appServicePlanName, options),
+      () =>
+        client.appServicePlans.beginCreateOrUpdateAndWait(
+          resourceGroupName,
+          appServicePlanName,
+          options
+        ),
       () => this.findAppServicePlans(client, resourceGroupName, appServicePlanName)
     );
   }
@@ -134,9 +145,16 @@ export class AzureLib {
     resourceGroupName: string,
     storageName: string
   ): Promise<StorageAccount | undefined> {
-    const storageAccountListResult: StorageAccountListResult =
-      await client.storageAccounts.listByResourceGroup(resourceGroupName);
-    return storageAccountListResult.find((storageAccount) => storageAccount.name === storageName);
+    for await (const page of client.storageAccounts
+      .listByResourceGroup(resourceGroupName)
+      .byPage({ maxPageSize: 100 })) {
+      for (const appServicePlan of page) {
+        if (appServicePlan.name === storageName) {
+          return appServicePlan;
+        }
+      }
+    }
+    return undefined;
   }
 
   public static async ensureStorageAccount(
@@ -146,7 +164,7 @@ export class AzureLib {
     params: StorageAccountCreateParameters
   ): Promise<StorageAccount> {
     return this.ensureResource<StorageAccount>(() =>
-      client.storageAccounts.create(resourceGroupName, storageName, params)
+      client.storageAccounts.beginCreateAndWait(resourceGroupName, storageName, params)
     );
   }
 
@@ -173,10 +191,16 @@ export class AzureLib {
     resourceGroupName: string,
     functionAppName: string
   ): Promise<Site | undefined> {
-    const webAppCollection: WebSiteManagementModels.WebAppCollection =
-      await client.webApps.listByResourceGroup(resourceGroupName);
-
-    return webAppCollection.find((webApp) => webApp.name === functionAppName);
+    for await (const page of client.webApps
+      .listByResourceGroup(resourceGroupName)
+      .byPage({ maxPageSize: 100 })) {
+      for (const appServicePlan of page) {
+        if (appServicePlan.name === functionAppName) {
+          return appServicePlan;
+        }
+      }
+    }
+    return undefined;
   }
 
   public static async ensureFunctionApp(
@@ -186,7 +210,8 @@ export class AzureLib {
     siteEnvelope: Site
   ): Promise<Site> {
     return this.ensureResource<Site>(
-      () => client.webApps.createOrUpdate(resourceGroupName, functionAppName, siteEnvelope),
+      () =>
+        client.webApps.beginCreateOrUpdateAndWait(resourceGroupName, functionAppName, siteEnvelope),
       () => this.findFunctionApp(client, resourceGroupName, functionAppName)
     );
   }

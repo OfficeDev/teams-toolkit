@@ -95,7 +95,7 @@ export class ResourceGroupHelper {
     subscriptionId: string,
     location: string
   ): Promise<Result<string, FxError>> {
-    const azureToken = await azureAccountProvider.getAccountCredentialAsync();
+    const azureToken = await azureAccountProvider.getIdentityCredentialAsync();
     if (!azureToken)
       return err(
         new UserError(
@@ -156,7 +156,12 @@ export class ResourceGroupHelper {
   async listResourceGroups(
     rmClient: ResourceManagementClient
   ): Promise<Result<[string, string][], FxError>> {
-    const resourceGroupResults = await rmClient.resourceGroups.list();
+    const resourceGroupResults = [];
+    for await (const page of rmClient.resourceGroups.list().byPage({ maxPageSize: 100 })) {
+      for (const resourceGroup of page) {
+        resourceGroupResults.push(resourceGroup);
+      }
+    }
     const resourceGroupNameLocations = resourceGroupResults
       .filter((item) => item.name)
       .map((item) => [item.name, item.location] as [string, string]);

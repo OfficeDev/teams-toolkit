@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { WebSiteManagementClient } from "@azure/arm-appservice";
-import { Site, StringDictionary } from "@azure/arm-appservice/esm/models";
+import { Site, StringDictionary } from "@azure/arm-appservice";
 import { hooks } from "@feathersjs/hooks/lib";
 import {
   AzureSolutionSettings,
@@ -410,7 +410,7 @@ export class FunctionPluginV3 implements v3.PluginV3 {
     const resourceGroupName = this.getFunctionAppResourceGroupName();
     const subscriptionId = this.getFunctionAppSubscriptionId();
     const credential = this.checkAndGet(
-      await tokenProvider.azureAccountProvider.getAccountCredentialAsync(),
+      await tokenProvider.azureAccountProvider.getIdentityCredentialAsync(),
       FunctionConfigKey.credential
     );
 
@@ -566,7 +566,7 @@ export class FunctionPluginV3 implements v3.PluginV3 {
         FunctionConfigKey.functionLanguage
       );
       const credential = this.checkAndGet(
-        await tokenProvider.azureAccountProvider.getAccountCredentialAsync(),
+        await tokenProvider.azureAccountProvider.getIdentityCredentialAsync(),
         FunctionConfigKey.credential
       );
 

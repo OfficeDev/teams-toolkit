@@ -106,7 +106,7 @@
   },
   "dependencies": {
     "@azure/arm-apimanagement": "^6.0.0",
-    "@azure/arm-resources": "^4.0.0",
+    "@azure/arm-resources": "5.0.1",
     "@azure/arm-sql": "^7.0.2",
     "@azure/arm-subscriptions": "^5.0.0",
     "@azure/core-http": "^1.2.0",

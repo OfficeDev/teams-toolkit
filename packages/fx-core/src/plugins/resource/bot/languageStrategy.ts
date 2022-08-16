@@ -5,7 +5,7 @@ import { ProgrammingLanguage } from "./enums/programmingLanguage";
 import { TemplateProjectsScenarios, TriggerTemplateScenarioMappings } from "./constants";
 import { Commands } from "./resources/strings";
 import * as appService from "@azure/arm-appservice";
-import { NameValuePair } from "@azure/arm-appservice/esm/models";
+import { NameValuePair } from "@azure/arm-appservice";
 import { CommandExecutionError, TemplateZipFallbackError, UnzipError } from "./errors";
 import { Logger } from "./logger";
 import { Messages } from "./resources/messages";
@@ -93,8 +93,8 @@ export class LanguageStrategy {
     appServicePlanName: string,
     location: string,
     appSettings?: NameValuePair[]
-  ): appService.WebSiteManagementModels.Site {
-    const siteEnvelope: appService.WebSiteManagementModels.Site = {
+  ): appService.Site {
+    const siteEnvelope: appService.Site = {
       location: location,
       serverFarmId: appServicePlanName,
       siteConfig: {

@@ -187,7 +187,7 @@ export class NodeJSTabFrontendPlugin implements v3.PluginV3 {
     envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
     tokenProvider: AzureAccountProvider
   ): Promise<Result<FrontendConfig, FxError>> {
-    const credentials = await tokenProvider.getAccountCredentialAsync();
+    const credentials = await tokenProvider.getIdentityCredentialAsync();
     if (!credentials) {
       return err(new UnauthenticatedError());
     }

@@ -1,18 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { RegisterResourceProviderError } from "./errors";
-import { Provider } from "@azure/arm-resources/esm/models";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
+import { Provider, ResourceManagementClient } from "@azure/arm-resources";
+import { TokenCredential } from "@azure/core-http";
 import { Messages } from "./resources/messages";
 
-import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
+import { Providers } from "@azure/arm-resources";
 import { Logger } from "./logger";
 
 export function createResourceProviderClient(
-  credentials: TokenCredentialsBase,
+  credentials: TokenCredential,
   subscriptionId: string
 ): Providers {
-  return new Providers(new ResourceManagementClientContext(credentials, subscriptionId));
+  const resourceProviderClient = new ResourceManagementClient(credentials, subscriptionId);
+  return resourceProviderClient.providers;
 }
 
 export async function findResourceProvider(

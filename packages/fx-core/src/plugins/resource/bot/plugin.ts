@@ -36,7 +36,7 @@ import { IBotRegistration } from "./appStudio/interfaces/IBotRegistration";
 import { Logger } from "./logger";
 import { DeployMgr } from "./deployMgr";
 import { BotAuthCredential } from "./botAuthCredential";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
+import { TokenCredential } from "@azure/core-http";
 import path from "path";
 import { getTemplatesFolder } from "../../../folder";
 import { ArmTemplateResult } from "../../../common/armInterface";
@@ -64,9 +64,9 @@ export class TeamsBotImpl implements PluginImpl {
   public config: TeamsBotConfig = new TeamsBotConfig();
   protected ctx?: PluginContext;
 
-  protected async getAzureAccountCredential(): Promise<TokenCredentialsBase> {
+  protected async getAzureAccountCredential(): Promise<TokenCredential> {
     const serviceClientCredentials =
-      await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
+      await this.ctx?.azureAccountProvider?.getIdentityCredentialAsync();
     if (!serviceClientCredentials) {
       throw new PreconditionError(Messages.FailToGetAzureCreds, [Messages.TryLoginAzure]);
     }

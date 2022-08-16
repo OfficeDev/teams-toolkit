@@ -193,7 +193,7 @@ export class SimpleAuthPluginImpl {
   }
 
   private async initWebAppClient(ctx: PluginContext) {
-    const credentials = await ctx.azureAccountProvider!.getAccountCredentialAsync();
+    const credentials = await ctx.azureAccountProvider!.getIdentityCredentialAsync();
 
     if (!credentials) {
       throw ResultFactory.SystemError(UnauthenticatedError.name, UnauthenticatedError.message());

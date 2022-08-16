@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { WebSiteManagementClient } from "@azure/arm-appservice";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
+import { TokenCredential } from "@azure/core-http";
 import axios from "axios";
 import * as fs from "fs-extra";
 import { PluginContext } from "@microsoft/teamsfx-api";
@@ -16,11 +16,12 @@ import {
 } from "./errors";
 import { ResultFactory } from "./result";
 import { DialogUtils } from "./utils/dialog";
-import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
+import { Providers, ResourceManagementClient } from "@azure/arm-resources";
 import { Utils } from "./utils/common";
+import { AzureScopes } from "../../../common";
 
 export class WebAppClient {
-  private credentials: TokenCredentialsBase;
+  private credentials: TokenCredential;
   private subscriptionId: string;
   private resourceGroupName: string;
   private appServicePlanName: string;
@@ -31,7 +32,7 @@ export class WebAppClient {
   private ctx: PluginContext;
 
   constructor(
-    credentials: TokenCredentialsBase,
+    credentials: TokenCredential,
     subscriptionId: string,
     resourceGroupName: string,
     appServicePlanName: string,
@@ -49,9 +50,10 @@ export class WebAppClient {
       this.credentials,
       this.subscriptionId
     );
-    this.resourceManagementClient = new Providers(
-      new ResourceManagementClientContext(this.credentials, this.subscriptionId)
-    );
+    this.resourceManagementClient = new ResourceManagementClient(
+      this.credentials,
+      this.subscriptionId
+    ).providers;
     this.ctx = ctx;
   }
 
@@ -75,16 +77,17 @@ export class WebAppClient {
 
       DialogUtils.progressBar?.next(Constants.ProgressBar.provision.createAppServicePlan);
       skuName = this.getSkuName();
-      const appServicePlan = await this.webSiteManagementClient.appServicePlans.createOrUpdate(
-        this.resourceGroupName,
-        this.appServicePlanName,
-        {
-          location: this.location,
-          sku: {
-            name: skuName,
-          },
-        }
-      );
+      const appServicePlan =
+        await this.webSiteManagementClient.appServicePlans.beginCreateOrUpdateAndWait(
+          this.resourceGroupName,
+          this.appServicePlanName,
+          {
+            location: this.location,
+            sku: {
+              name: skuName,
+            },
+          }
+        );
       this.ctx.logProvider?.info(
         Messages.getLog("appServicePlan is created: " + appServicePlan.name)
       );
@@ -124,7 +127,7 @@ export class WebAppClient {
 
     try {
       DialogUtils.progressBar?.next(Constants.ProgressBar.provision.createWebApp);
-      const webApp = await this.webSiteManagementClient.webApps.createOrUpdate(
+      const webApp = await this.webSiteManagementClient.webApps.beginCreateOrUpdateAndWait(
         this.resourceGroupName,
         this.webAppName,
         { location: this.location, serverFarmId: this.appServicePlanName }
@@ -153,14 +156,14 @@ export class WebAppClient {
   }
 
   public async zipDeploy(filePath: string) {
-    const token = await this.credentials.getToken();
+    const token = await this.credentials.getToken(AzureScopes);
 
     try {
       const zipdeployResult = await axios({
         method: "POST",
         url: `https://${this.webAppName}.scm.azurewebsites.net/api/zipdeploy`,
         headers: {
-          Authorization: `Bearer ${token.accessToken}`,
+          Authorization: `Bearer ${token?.token}`,
         },
         data: await fs.readFile(filePath),
         maxContentLength: Infinity,

@@ -506,7 +506,7 @@ export async function fillInAzureConfigs(
 
   // Note setSubscription here will change the token returned by getAccountCredentialAsync according to the subscription selected.
   // So getting azureToken needs to precede setSubscription.
-  const azureToken = await tokenProvider.azureAccountProvider.getAccountCredentialAsync();
+  const azureToken = await tokenProvider.azureAccountProvider.getIdentityCredentialAsync();
   if (azureToken === undefined) {
     return err(
       new UserError(

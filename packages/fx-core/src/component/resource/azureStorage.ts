@@ -113,7 +113,7 @@ export class AzureStorageResource extends AzureResource {
     scenario: string,
     tokenProvider: AzureAccountProvider
   ): Promise<Result<FrontendConfig, FxError>> {
-    const credentials = await tokenProvider.getAccountCredentialAsync();
+    const credentials = await tokenProvider.getIdentityCredentialAsync();
     if (!credentials) {
       return err(new UnauthenticatedError());
     }

@@ -53,7 +53,7 @@ import { ProgressBarFactory } from "../progressBars";
 import { Messages } from "../resources/messages";
 import fs from "fs-extra";
 import { CommonStrings, ConfigNames, PluginLocalDebug } from "../resources/strings";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
+import { TokenCredential } from "@azure/core-http";
 import * as factory from "../clientFactory";
 import { ResourceNameFactory } from "../utils/resourceNameFactory";
 import { AADRegistration } from "../aadRegistration";
@@ -281,8 +281,8 @@ export class NodeJSBotPluginV3 implements v3.PluginV3 {
   }
   private async getAzureAccountCredential(
     tokenProvider: AzureAccountProvider
-  ): Promise<TokenCredentialsBase> {
-    const serviceClientCredentials = await tokenProvider.getAccountCredentialAsync();
+  ): Promise<TokenCredential> {
+    const serviceClientCredentials = await tokenProvider.getIdentityCredentialAsync();
     if (!serviceClientCredentials) {
       throw new PreconditionError(Messages.FailToGetAzureCreds, [Messages.TryLoginAzure]);
     }

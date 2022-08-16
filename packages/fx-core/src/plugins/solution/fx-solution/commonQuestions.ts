@@ -49,7 +49,7 @@ import {
 } from "../../../core/question";
 import { getHashedEnv } from "../../../common/tools";
 import { desensitize } from "../../../core/middleware/questionModel";
-import { ResourceGroupsCreateOrUpdateResponse } from "@azure/arm-resources/esm/models";
+import { ResourceGroupsCreateOrUpdateResponse } from "@azure/arm-resources";
 import { SolutionPlugin } from "../../resource/localdebug/constants";
 import {
   CustomizeResourceGroupType,
@@ -213,9 +213,13 @@ export async function askResourceGroupInfo(
   defaultResourceGroupName: string
 ): Promise<Result<ResourceGroupInfo, FxError>> {
   // TODO: support pagination
-  let resourceGroupResults;
+  const resourceGroupResults = [];
   try {
-    resourceGroupResults = await rmClient.resourceGroups.list();
+    for await (const page of rmClient.resourceGroups.list().byPage({ maxPageSize: 100 })) {
+      for (const resourceGroup of page) {
+        resourceGroupResults.push(resourceGroup);
+      }
+    }
   } catch (error) {
     ctx.logProvider?.error(`Failed to list resource group: error '${error}'`);
     return err(
@@ -391,7 +395,7 @@ async function askCommonQuestions(
 
   // Note setSubscription here will change the token returned by getAccountCredentialAsync according to the subscription selected.
   // So getting azureToken needs to precede setSubscription.
-  const azureToken = await azureAccountProvider?.getAccountCredentialAsync();
+  const azureToken = await azureAccountProvider?.getIdentityCredentialAsync();
   if (azureToken === undefined) {
     return err(
       new UserError(
@@ -609,7 +613,7 @@ export async function createNewResourceGroup(
   location: string,
   logProvider?: LogProvider
 ): Promise<Result<string, FxError>> {
-  const azureToken = await azureAccountProvider.getAccountCredentialAsync();
+  const azureToken = await azureAccountProvider.getIdentityCredentialAsync();
   const rmClient = new ResourceManagementClient(azureToken!, subscriptionId);
 
   const maybeExist = await checkResourceGroupExistence(

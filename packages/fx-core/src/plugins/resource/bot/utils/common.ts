@@ -269,7 +269,7 @@ export function convertToTelemetryName(raw: string): string {
 export function generateAppServicePlanConfig(
   location: string,
   skuName: string
-): appService.WebSiteManagementModels.AppServicePlan {
+): appService.AppServicePlan {
   return {
     location: location,
     kind: "app",

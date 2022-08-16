@@ -62,12 +62,9 @@ export class SPFxTab {
       if (res.isErr()) return err(res.error);
     }
     // notification
-    addFeatureNotify(
-      inputs,
-      context.userInteraction,
-      "Capability",
-      inputs[CoreQuestionNames.Features]
-    );
+    addFeatureNotify(inputs, context.userInteraction, "Capability", [
+      inputs[CoreQuestionNames.Features] as string,
+    ]);
     return ok(undefined);
   }
 }

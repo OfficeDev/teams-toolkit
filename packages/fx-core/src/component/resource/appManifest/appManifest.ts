@@ -3,6 +3,7 @@
 import {
   ActionContext,
   CloudResource,
+  Colors,
   ContextV3,
   err,
   FxError,
@@ -23,7 +24,9 @@ import { cloneDeep } from "lodash";
 import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
+import { pathToFileURL } from "url";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { VSCodeExtensionCommand } from "../../../common/constants";
 import { hasTab } from "../../../common/projectSettingsHelperV3";
 import { globalVars } from "../../../core/globalVars";
 import { getTemplatesFolder } from "../../../folder";
@@ -350,7 +353,35 @@ export class AppManifest implements CloudResource {
     context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<string, FxError>> {
-    return await buildTeamsAppPackage(inputs.projectPath, context.envInfo);
+    const res = await buildTeamsAppPackage(inputs.projectPath, context.envInfo);
+    if (res.isOk()) {
+      if (inputs.platform === Platform.CLI || inputs.platform === Platform.VS) {
+        const builtSuccess = [
+          { content: "(√)Done: ", color: Colors.BRIGHT_GREEN },
+          { content: "Teams Package ", color: Colors.BRIGHT_WHITE },
+          { content: res.value, color: Colors.BRIGHT_MAGENTA },
+          { content: " built successfully!", color: Colors.BRIGHT_WHITE },
+        ];
+        if (inputs.platform === Platform.VS) {
+          context.logProvider?.info(builtSuccess);
+        } else {
+          context.userInteraction.showMessage("info", builtSuccess, false);
+        }
+      } else if (inputs.platform === Platform.VSCode) {
+        const isWindows = process.platform === "win32";
+        let builtSuccess = getLocalizedString(
+          "plugins.appstudio.buildSucceedNotice.fallback",
+          res.value
+        );
+        if (isWindows) {
+          const folderLink = pathToFileURL(path.dirname(res.value));
+          const appPackageLink = `${VSCodeExtensionCommand.openFolder}?%5B%22${folderLink}%22%5D`;
+          builtSuccess = getLocalizedString("plugins.appstudio.buildSucceedNotice", appPackageLink);
+        }
+        context.userInteraction.showMessage("info", builtSuccess, false);
+      }
+    }
+    return res;
   }
   @hooks([
     ActionExecutionMW({

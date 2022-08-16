@@ -56,7 +56,7 @@ export class SPFxTab {
     });
     projectSettings.programmingLanguage =
       projectSettings.programmingLanguage || inputs[CoreQuestionNames.ProgrammingLanguage];
-    globalVars.isVS = isVSProject(projectSettings);
+    globalVars.isVS = inputs[CoreQuestionNames.ProgrammingLanguage] === "csharp";
     const effects = ["config 'teams-tab' in projectSettings"];
     {
       const spfxCode = Container.get<SPFxTabCodeProvider>(ComponentNames.SPFxTabCode);

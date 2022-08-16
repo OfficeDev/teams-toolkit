@@ -112,7 +112,7 @@ Update the code to:
 // list all installation targets
 for (const target of await bot.notification.installations()) {
     // "Channel" means this bot is installed to a Team (default to notify General channel)
-    if (target.type === "Channel") {
+    if (target.type === NotificationTargetType.Channel) {
         // Directly notify the Team (to the default General channel)
         await target.sendAdaptiveCard(...);
 
@@ -139,7 +139,7 @@ Update the code to:
 // list all installation targets
 for (const target of await bot.notification.installations()) {
     // "Group" means this bot is installed to a Group Chat
-    if (target.type === "Group") {
+    if (target.type === NotificationTargetType.Group) {
         // Directly notify the Group Chat
         await target.sendAdaptiveCard(...);
 
@@ -160,7 +160,7 @@ Update the code to:
 // list all installation targets
 for (const target of await bot.notification.installations()) {
     // "Person" means this bot is installed as Personal app
-    if (target.type === "Person") {
+    if (target.type === NotificationTargetType.Person) {
         // Directly notify the individual person
         await target.sendAdaptiveCard(...);
     }

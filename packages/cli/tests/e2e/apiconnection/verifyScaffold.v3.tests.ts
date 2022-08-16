@@ -40,7 +40,8 @@ describe("Add Api Connection Tests V3", function () {
     // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "basic", basicInputs);
     // assert
-    chai.expect(await fs.pathExists(path.join(projectPath, "bot", "test.js"))).to.be.true;
+    chai.expect(await fs.pathExists(path.join(projectPath, "bot", "apiConnections", "test.js"))).to
+      .be.true;
     chai.expect(await fs.pathExists(path.join(projectPath, "bot", ".env.teamsfx.local"))).to.be
       .true;
     chai.expect(await fs.pathExists(path.join(projectPath, "bot", "package.json"))).to.be.true;
@@ -63,7 +64,8 @@ describe("Add Api Connection Tests V3", function () {
     // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "aad", aadInputs);
     // assert
-    chai.expect(await fs.pathExists(path.join(projectPath, "bot", "test.js"))).to.be.true;
+    chai.expect(await fs.pathExists(path.join(projectPath, "bot", "apiConnections", "test.js"))).to
+      .be.true;
     chai.expect(await fs.pathExists(path.join(projectPath, "bot", ".env.teamsfx.local"))).to.be
       .true;
     chai.expect(await fs.pathExists(path.join(projectPath, "bot", "package.json"))).to.be.true;
@@ -92,7 +94,8 @@ describe("Add Api Connection Tests V3", function () {
     // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "apikey", apiKeyInputs);
     // assert
-    chai.expect(await fs.pathExists(path.join(projectPath, "bot", "test.js"))).to.be.true;
+    chai.expect(await fs.pathExists(path.join(projectPath, "bot", "apiConnections", "test.js"))).to
+      .be.true;
     chai.expect(await fs.pathExists(path.join(projectPath, "bot", ".env.teamsfx.local"))).to.be
       .true;
     chai.expect(await fs.pathExists(path.join(projectPath, "bot", "package.json"))).to.be.true;
@@ -111,7 +114,8 @@ describe("Add Api Connection Tests V3", function () {
     // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "cert");
     // assert
-    chai.expect(await fs.pathExists(path.join(projectPath, "bot", "test.js"))).to.be.true;
+    chai.expect(await fs.pathExists(path.join(projectPath, "bot", "apiConnections", "test.js"))).to
+      .be.true;
     chai.expect(await fs.pathExists(path.join(projectPath, "bot", ".env.teamsfx.local"))).to.be
       .true;
     chai.expect(await fs.pathExists(path.join(projectPath, "bot", "package.json"))).to.be.true;
@@ -130,7 +134,8 @@ describe("Add Api Connection Tests V3", function () {
     // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "custom");
     // assert
-    chai.expect(await fs.pathExists(path.join(projectPath, "bot", "test.js"))).to.be.true;
+    chai.expect(await fs.pathExists(path.join(projectPath, "bot", "apiConnections", "test.js"))).to
+      .be.true;
     chai.expect(await fs.pathExists(path.join(projectPath, "bot", ".env.teamsfx.local"))).to.be
       .true;
     chai.expect(await fs.pathExists(path.join(projectPath, "bot", "package.json"))).to.be.true;

@@ -78,6 +78,7 @@ import { LocalEnvProvider } from "../../common/local/localEnvProvider";
 import { CoreHookContext } from "../types";
 import { TOOLS } from "../globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
+import { getProjectTemplatesFolderPath } from "../../common/utils";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
@@ -752,7 +753,10 @@ async function queryProjectStatus(fx: string): Promise<any> {
 async function getMultiEnvFolders(projectPath: string): Promise<any> {
   const fx = path.join(projectPath, `.${ConfigFolderName}`);
   const fxConfig = path.join(fx, InputConfigsFolderName);
-  const templateAppPackage = path.join(projectPath, "templates", AppPackageFolderName);
+  const templateAppPackage = path.join(
+    await getProjectTemplatesFolderPath(projectPath),
+    AppPackageFolderName
+  );
   const fxState = path.join(fx, StatesFolderName);
   await fs.ensureDir(fxConfig);
   await fs.ensureDir(templateAppPackage);

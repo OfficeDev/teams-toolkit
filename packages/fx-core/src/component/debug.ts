@@ -218,8 +218,8 @@ export async function setupLocalEnvironmentCommon(
             return err(error);
           }
 
-          envInfo.state[BOT_STATE_KEY].endpoint = localBotEndpoint;
-          envInfo.state[BOT_STATE_KEY].domain = localBotEndpoint.slice(8);
+          envInfo.state[BOT_STATE_KEY].siteEndpoint = localBotEndpoint;
+          envInfo.state[BOT_STATE_KEY].validDomain = localBotEndpoint.slice(8);
         } else {
           const ngrokHttpUrl = await getNgrokHttpUrl(3978);
           if (!ngrokHttpUrl) {
@@ -227,8 +227,8 @@ export async function setupLocalEnvironmentCommon(
             TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);
             return err(error);
           } else {
-            envInfo.state[BOT_STATE_KEY].endpoint = ngrokHttpUrl;
-            envInfo.state[BOT_STATE_KEY].domain = ngrokHttpUrl.slice(8);
+            envInfo.state[BOT_STATE_KEY].siteEndpoint = ngrokHttpUrl;
+            envInfo.state[BOT_STATE_KEY].validDomain = ngrokHttpUrl.slice(8);
           }
         }
       }
@@ -247,8 +247,8 @@ export async function setupLocalEnvironmentCommon(
           TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);
           return err(error);
         } else {
-          envInfo.state[BOT_STATE_KEY].endpoint = ngrokHttpUrl;
-          envInfo.state[BOT_STATE_KEY].domain = ngrokHttpUrl.slice(8);
+          envInfo.state[BOT_STATE_KEY].siteEndpoint = ngrokHttpUrl;
+          envInfo.state[BOT_STATE_KEY].validDomain = ngrokHttpUrl.slice(8);
         }
       }
     }

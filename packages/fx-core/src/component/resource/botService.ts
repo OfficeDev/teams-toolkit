@@ -10,7 +10,6 @@ import {
   ResourceContextV3,
   v3,
   err,
-  Effect,
   Bicep,
   ActionContext,
 } from "@microsoft/teamsfx-api";
@@ -35,7 +34,7 @@ import { normalizeName } from "../utils";
 import { getComponent } from "../workflow";
 import { AzureResource } from "./azureResource";
 import { telemetryHelper } from "../../plugins/resource/bot/utils/telemetry-helper";
-import { Plans, ProgressMessages, ProgressTitles } from "../messages";
+import { ProgressMessages, ProgressTitles } from "../messages";
 import { hooks } from "@feathersjs/hooks/lib";
 import { merge } from "lodash";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
@@ -112,9 +111,7 @@ export class BotService extends AzureResource {
     // create bot aad app by API call
     const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
     if (!teamsBot) return ok(undefined);
-    const plans: Effect[] = [];
     if (context.envInfo.envName === "local") {
-      plans.push(Plans.updateBotEndpoint());
       const teamsBotState = context.envInfo.state[ComponentNames.TeamsBot];
       const appStudioTokenRes = await context.tokenProvider.m365TokenProvider.getAccessToken({
         scopes: AppStudioScopes,

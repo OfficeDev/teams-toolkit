@@ -1,7 +1,5 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-
-import { Effect } from "@microsoft/teamsfx-api";
 import { ProgressBarConstants } from "../plugins/resource/bot/constants";
 import {
   DeployProgress,
@@ -77,38 +75,38 @@ export class ErrorMessage {
   });
 }
 
-export class Plans {
-  static readonly scaffold = (scenario: string, folder: string): Effect =>
-    `scaffold ${scenario} source code in folder: ${folder}`;
-  static readonly buildProject = (folder: string): Effect => `build project: ${folder}`;
-  static readonly deploy = (component: string, folder: string): Effect => ({
-    type: "service",
-    name: "azure",
-    remarks: `deploy ${component} in folder: ${folder}`,
-  });
-  static readonly enableStaticWebsite = (): Effect => ({
-    type: "service",
-    name: "azure",
-    remarks: "configure azure storage (enable static web site)",
-  });
-  static readonly createAADforBot = (): Effect => ({
-    type: "service",
-    name: "graph.microsoft.com",
-    remarks: "create AAD app for bot service (botId, botPassword)",
-  });
-  static readonly registerBot = (): Effect => ({
-    type: "service",
-    name: "teams.microsoft.com",
-    remarks: "create bot registration",
-  });
-  static readonly updateBotEndpoint = (): Effect => ({
-    type: "service",
-    name: "graph.microsoft.com",
-    remarks: "update message endpoint in AppStudio",
-  });
-  static readonly generateSourceCodeAndConfig = (feature: string): Effect =>
-    `generate source code and config for ${feature} in project settings`;
-  static readonly generateBicepAndConfig = (feature: string): Effect =>
-    `generate bicep and config for ${feature} in project settings`;
-  static readonly addFeature = (feature: string): Effect => `config ${feature} in project settings`;
-}
+// export class Plans {
+//   static readonly scaffold = (scenario: string, folder: string): Effect =>
+//     `scaffold ${scenario} source code in folder: ${folder}`;
+//   static readonly buildProject = (folder: string): Effect => `build project: ${folder}`;
+//   static readonly deploy = (component: string, folder: string): Effect => ({
+//     type: "service",
+//     name: "azure",
+//     remarks: `deploy ${component} in folder: ${folder}`,
+//   });
+//   static readonly enableStaticWebsite = (): Effect => ({
+//     type: "service",
+//     name: "azure",
+//     remarks: "configure azure storage (enable static web site)",
+//   });
+//   static readonly createAADforBot = (): Effect => ({
+//     type: "service",
+//     name: "graph.microsoft.com",
+//     remarks: "create AAD app for bot service (botId, botPassword)",
+//   });
+//   static readonly registerBot = (): Effect => ({
+//     type: "service",
+//     name: "teams.microsoft.com",
+//     remarks: "create bot registration",
+//   });
+//   static readonly updateBotEndpoint = (): Effect => ({
+//     type: "service",
+//     name: "graph.microsoft.com",
+//     remarks: "update message endpoint in AppStudio",
+//   });
+//   static readonly generateSourceCodeAndConfig = (feature: string): Effect =>
+//     `generate source code and config for ${feature} in project settings`;
+//   static readonly generateBicepAndConfig = (feature: string): Effect =>
+//     `generate bicep and config for ${feature} in project settings`;
+//   static readonly addFeature = (feature: string): Effect => `config ${feature} in project settings`;
+// }

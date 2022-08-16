@@ -220,18 +220,34 @@ export async function scaffoldSPFx(
       );
     }
 
-    if (!isAddSpfx) {
+    const manifestProvider =
+      (context as ContextV3).manifestProvider || new DefaultManifestProvider();
+    const capabilitiesToAddManifest: v3.ManifestCapability[] = [];
+    const remoteStaticSnippet: IStaticTab = {
+      entityId: componentId,
+      name: webpartName,
+      contentUrl: util.format(ManifestTemplate.REMOTE_CONTENT_URL, componentId, componentId),
+      websiteUrl: ManifestTemplate.WEBSITE_URL,
+      scopes: ["personal"],
+    };
+    if (isAddSpfx) {
+      capabilitiesToAddManifest.push({
+        name: "staticTab",
+        snippet: remoteStaticSnippet,
+      });
+
+      const addCapRes = await manifestProvider.addCapabilities(
+        (context as ContextV3).manifestProvider
+          ? (context as ContextV3)
+          : convert2Context(context as PluginContext, true).context,
+        inputs,
+        capabilitiesToAddManifest
+      );
+      if (addCapRes.isErr()) return err(addCapRes.error);
+    } else {
       const appDirectory = await getAppDirectory(inputs.projectPath);
       await Utils.configure(path.join(appDirectory, MANIFEST_TEMPLATE_CONSOLIDATE), replaceMap);
 
-      const capabilitiesToAddManifest: v3.ManifestCapability[] = [];
-      const remoteStaticSnippet: IStaticTab = {
-        entityId: componentId,
-        name: webpartName,
-        contentUrl: util.format(ManifestTemplate.REMOTE_CONTENT_URL, componentId, componentId),
-        websiteUrl: ManifestTemplate.WEBSITE_URL,
-        scopes: ["personal"],
-      };
       const remoteConfigurableSnippet: IConfigurableTab = {
         configurationUrl: util.format(
           ManifestTemplate.REMOTE_CONFIGURATION_URL,
@@ -251,8 +267,7 @@ export async function scaffoldSPFx(
           snippet: remoteConfigurableSnippet,
         }
       );
-      const manifestProvider =
-        (context as ContextV3).manifestProvider || new DefaultManifestProvider();
+
       for (const capability of capabilitiesToAddManifest) {
         const addCapRes = await manifestProvider.updateCapability(
           (context as ContextV3).manifestProvider

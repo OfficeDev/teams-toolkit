@@ -24,7 +24,7 @@ export class Constants {
   public static readonly SPFX_VERSION = "1.15.0";
   public static readonly SUPPORTED_NODE_VERSION = ["14", "16"];
   public static readonly SUPPORTED_NPM_VERSION = ["6", "7", "8"];
-  public static readonly SPFX_HELP_LINK = "aka.ms/teamsfx-spfx-help";
+  public static readonly SPFX_HELP_LINK = "https://aka.ms/teamsfx-spfx-help";
 }
 
 export class PlaceHolders {

@@ -59,7 +59,7 @@ import { NamedArmResourcePluginAdaptor } from "./v2/adaptor";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { convertToAlphanumericOnly, getProjectTemplatesFolderPath } from "../../../common/utils";
 import { isV3 } from "../../../core";
-import { pluginName2ComponentName } from "../../../component/migrate";
+import { convertManifestTemplateToV3, pluginName2ComponentName } from "../../../component/migrate";
 
 const bicepOrchestrationFileName = "main.bicep";
 const bicepOrchestrationProvisionMainFileName = "mainProvision.bicep";
@@ -1563,6 +1563,8 @@ function expandParameterPlaceholdersV3(
   );
 
   availableVariables["$env"] = processVariables;
+
+  parameterContent = convertManifestTemplateToV3(parameterContent);
 
   return compileHandlebarsTemplateString(parameterContent, availableVariables);
 }

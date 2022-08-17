@@ -46,7 +46,7 @@ import {
 } from "../../src/plugins/resource/spfx/utils/questions";
 import { DefaultManifestProvider } from "../../src/component/resource/appManifest/manifestProvider";
 import { ComponentNames } from "../../src/component/constants";
-import { AzureSolutionQuestionNames } from "../../src";
+import { AzureResourceApim, AzureSolutionQuestionNames } from "../../src";
 import { FunctionScaffold } from "../../src/plugins/resource/function/ops/scaffold";
 import { TeamsfxCore } from "../../src/component/core";
 import { Container } from "typedi";
@@ -59,6 +59,7 @@ import * as backup from "../../src/plugins/solution/fx-solution/utils/backupFile
 import { AadApp } from "../../src/component/resource/aadApp/aadApp";
 import { Constants } from "../../src/plugins/resource/aad/constants";
 import * as deployV3 from "../../src/plugins/solution/fx-solution/v3/deploy";
+import { CoreQuestionNames } from "../../src/core/question";
 
 describe("Workflow test for v3", () => {
   const sandbox = sinon.createSandbox();
@@ -241,6 +242,21 @@ describe("Workflow test for v3", () => {
     };
     const component = Container.get("apim-feature") as any;
     const res = await component.add(context, inputs);
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    assert.isTrue(res.isOk());
+  });
+  it("fx.addFeature(apim-feature)", async () => {
+    sandbox.stub(FunctionScaffold, "scaffoldFunction").resolves();
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+      ["function-name"]: "getUserProfile",
+      [CoreQuestionNames.Features]: AzureResourceApim.id,
+    };
+    const component = Container.get("fx") as any;
+    const res = await component.addFeature(context, inputs);
     if (res.isErr()) {
       console.log(res.error);
     }

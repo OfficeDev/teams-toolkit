@@ -340,14 +340,6 @@ export async function checkAndInstall(): Promise<Result<void, FxError>> {
 //   orderedCheckers: PrerequisiteOrderedChecker[],
 //   ports: number[]
 // ): Promise<Result<void, FxError>> {
-//   const projectComponents = await commonUtils.getProjectComponents();
-//   const debugSession = commonUtils.getLocalDebugSession();
-//   return await localTelemetryReporter.runWithTelemetryProperties(
-//     TelemetryEvent.DebugPrerequisites,
-//     { [TelemetryProperty.DebugProjectComponents]: `${projectComponents}` },
-//     (ctx: TelemetryContext) =>
-//       _checkAndInstall("LocalDebug Prerequisite Check", orderedCheckers, ports, ctx, debugSession)
-//   );
 // }
 
 async function _checkAndInstall(

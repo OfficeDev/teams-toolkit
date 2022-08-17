@@ -1077,4 +1077,34 @@ describe("Workflow test for v3", () => {
     }
     assert.isTrue(deployRes.isOk());
   });
+
+  it("getParameterJsonV3", async () => {
+    const str = `{
+      "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "provisionParameters": {
+          "value": {
+            "botAadAppClientId": "{{state.fx-resource-bot.botId}}",
+            "resourceBaseName": "hjv3bot081017c1b"
+          }
+        }
+      }
+    }`;
+    sandbox.stub(fs, "readFile").resolves(str as any);
+    sandbox.stub(fs, "stat").resolves();
+    const envInfo = newEnvInfoV3();
+    envInfo.state[ComponentNames.TeamsBot] = {
+      botId: "MockID",
+    };
+    const context = createContextV3();
+    context.projectSetting.components = [
+      {
+        name: ComponentNames.TeamsBot,
+      },
+    ];
+    context.envInfo = envInfo;
+    const json = await armFunctions.getParameterJsonV3(context, "", envInfo);
+    assert.isTrue(json.parameters.provisionParameters.value.botAadAppClientId === "MockID");
+  });
 });

@@ -23,6 +23,7 @@
 /packages/cli/src/commonlib/azureLoginUserPassword.ts @chagong @Alive-Fish
 /packages/cli/src/commonlib/graphLoginUserPassword.ts @chagong @Alive-Fish
 /packages/cli/src/commonlib/common/userPasswordConfig.ts @chagong @Alive-Fish
+/packages/cli/src/cmds/m365 @swatDong @kuojianlu @kimizhu
 /packages/cli/src/cmds/preview @swatDong @kuojianlu @qinezh @a1exwang @meifans
 /packages/cli/tests/e2e/aad @KennethBWSong @adashen @SLdragon
 /packages/cli/tests/e2e/collaboration @KennethBWSong @adashen @SLdragon

@@ -1,0 +1,41 @@
+name: TEST
+
+jobs:
+  cd:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v2
+
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: 14
+
+      - name: Setup project
+        run: |
+          npm run setup
+
+      - name: replace sideloading placeholders
+        run: bash .github/scripts/sideloading-replace.sh
+        env:
+          SERVICE_ENDPOINT_PLACEHOLDER: ${{ secrets.SERVICE_ENDPOINT_PLACEHOLDER }}
+          SERVICE_SCOPE_PLACEHOLDER: ${{ secrets.SERVICE_SCOPE_PLACEHOLDER }}
+
+      - name: commit change on local
+        run: |
+          git add .
+          git commit -m "chore: replace sideloading placeholders"
+
+      - name: pack cli
+        run: |
+          cd package/cli/
+          npm pack
+
+      - name: upload release info to artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: clizip
+          path: |
+            packages/cli/*.tgz

@@ -24,6 +24,11 @@ jobs:
         run: |
           npm run setup
 
+      - name: Setup git
+        run: |
+          git config --global user.name 'qidon'
+          git config --global user.email 'qidon@qidon.onmicrosoft.com'
+
       - name: replace sideloading placeholders
         run: bash .github/scripts/sideloading-replace.sh
         env:

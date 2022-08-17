@@ -135,6 +135,7 @@ import { CoreHookContext } from "./types";
 import { isPreviewFeaturesEnabled } from "../common/featureFlags";
 import { createContextV3 } from "../component/utils";
 import { TeamsfxCore } from "../component/core";
+import "../component/core";
 import {
   FeatureId,
   getQuestionsForAddFeatureSubCommand,

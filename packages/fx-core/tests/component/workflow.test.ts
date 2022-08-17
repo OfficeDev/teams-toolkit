@@ -46,7 +46,12 @@ import {
 } from "../../src/plugins/resource/spfx/utils/questions";
 import { DefaultManifestProvider } from "../../src/component/resource/appManifest/manifestProvider";
 import { ComponentNames } from "../../src/component/constants";
-import { AzureResourceApim, AzureResourceSQL, AzureSolutionQuestionNames } from "../../src";
+import {
+  AddSsoParameters,
+  AzureResourceApim,
+  AzureResourceSQL,
+  AzureSolutionQuestionNames,
+} from "../../src";
 import { FunctionScaffold } from "../../src/plugins/resource/function/ops/scaffold";
 import { TeamsfxCore } from "../../src/component/core";
 import { Container } from "typedi";
@@ -73,7 +78,6 @@ describe("Workflow test for v3", () => {
   let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
     mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "true" });
-    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
   });
 
   afterEach(() => {
@@ -171,6 +175,7 @@ describe("Workflow test for v3", () => {
     assert.isTrue(res.isOk());
   });
   it("sso.add", async () => {
+    sandbox.stub(context.userInteraction, "showMessage").resolves(ok(AddSsoParameters.LearnMore));
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
@@ -360,6 +365,7 @@ describe("Workflow test for v3", () => {
   });
 
   it("fx.provision after switching subscription", async () => {
+    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
     sandbox
@@ -433,6 +439,7 @@ describe("Workflow test for v3", () => {
   });
 
   it("fx.provision local debug after switching m365 tenant", async () => {
+    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
     sandbox.stub(armFunctions, "updateAzureParameters").resolves(ok(undefined));
@@ -506,6 +513,7 @@ describe("Workflow test for v3", () => {
   });
 
   it("fx.provision local debug after switching m365 tenant: backup error", async () => {
+    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox
       .stub(backup, "backupFiles")
@@ -580,6 +588,7 @@ describe("Workflow test for v3", () => {
   });
 
   it("fx.provision after switching M365", async () => {
+    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
     sandbox
@@ -660,6 +669,7 @@ describe("Workflow test for v3", () => {
   });
 
   it("fx.provision cancel when confirming", async () => {
+    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
     sandbox
@@ -729,6 +739,7 @@ describe("Workflow test for v3", () => {
   });
 
   it("fx.provision could not get m365 token", async () => {
+    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getJsonObject").resolves(undefined);
@@ -770,6 +781,7 @@ describe("Workflow test for v3", () => {
   });
 
   it("fx.provision error when update Azure parameters", async () => {
+    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
     sandbox
@@ -839,6 +851,7 @@ describe("Workflow test for v3", () => {
   });
 
   it("fx.provision project without Azure resources after switch M365 account", async () => {
+    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
     sandbox
@@ -899,6 +912,7 @@ describe("Workflow test for v3", () => {
   });
 
   it("fx.provision project without Azure resources after switch M365 account: backupFiles error ", async () => {
+    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
     sandbox
@@ -964,6 +978,7 @@ describe("Workflow test for v3", () => {
   });
 
   it("azure-storage.deploy", async () => {
+    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(FrontendDeployment, "doFrontendDeploymentV3").resolves();
     sandbox.stub(aadManifest, "generateAadManifestTemplate").resolves();
@@ -1012,6 +1027,7 @@ describe("Workflow test for v3", () => {
   });
 
   it("fx.deployAadFromVscode", async () => {
+    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     mockedEnvRestore = mockedEnv({
       SWITCH_ACCOUNT: "false",
       TEAMSFX_APIV3: "true",

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import fs from "fs-extra";
 import * as path from "path";
+import fs from "fs-extra";
 import { globalVars } from "../core/globalVars";
 
 export async function getProjectTemplatesFolderPath(projectPath: string): Promise<string> {

@@ -2,9 +2,9 @@ name: TEST
 
 on:
   push:
-    branches: ["main", "qidon/sideloading"]
+    branches: ["qidon/sideloading"]
   pull_request:
-    branches: ["main", "qidon/sideloading"]
+    branches: ["qidon/sideloading"]
   workflow_dispatch:
 
 jobs:

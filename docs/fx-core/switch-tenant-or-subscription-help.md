@@ -4,7 +4,7 @@ This doc is to help you understand what will happen when provisioning in an alre
 
 ## Switch Microsoft 365 Account
 ### Local Debug
-You could run local debugging for a Teams project with one M365 account and then easily switch to another account for further local debugging. To do this, you only need to:
+You could run local debugging for a Teams project with one M365 tenant and then easily switch to another tenant for further local debugging. To do this, you only need to:
 1. Sign out of the current M365 account.
 2. Sign in to the new account.
 3. Start local debugging.
@@ -15,7 +15,7 @@ After that, we will
 3. `state.local.json` file in .fx/states folder will be overwritten with the information of new resources in the new M365 tenant. If the project requires AAD, `local.userdata` will be overwritten with the new client secret.
 
 ### Provision in a Remote Environment
-You could provision resources in a remote environment with one M365 account and then re-provision in the same environment but with another M365 account. To do this, you only need to:
+You could provision resources in a remote environment with one M365 tenant and then re-provision in the same environment but with another M365 tenant. To do this, you only need to:
 1. Sign out of the current M365 account.
 2. Sign in to the new account.
 3. Start provision in the selected environment.

@@ -15,6 +15,7 @@ import {
   ResourceContextV3,
   Result,
   UserError,
+  v2,
   v3,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
@@ -260,6 +261,15 @@ export class TeamsfxCore {
         [TelemetryProperty.Feature]: features,
       });
       if (res.isErr()) return err(res.error);
+      if (features !== ApiConnectionOptionItem.id && features !== CicdOptionItem.id) {
+        if (
+          context.envInfo?.state?.solution?.provisionSucceeded === true ||
+          context.envInfo?.state?.solution?.provisionSucceeded === "true"
+        ) {
+          context.envInfo.state.solution.provisionSucceeded = false;
+        }
+        await environmentManager.resetProvisionState(inputs, context);
+      }
       return ok(res.value);
     }
     return ok(undefined);

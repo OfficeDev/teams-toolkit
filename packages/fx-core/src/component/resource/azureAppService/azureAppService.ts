@@ -23,6 +23,12 @@ import {
 } from "../../error";
 import { AzureResource } from "./../azureResource";
 import { ProgressMessages, ProgressTitles, ErrorMessage } from "../../messages";
+import { AzureOperations } from "../../../common/azure-hosting/azureOps";
+import {
+  getResourceGroupNameFromResourceId,
+  getSiteNameFromResourceId,
+} from "../../../common/tools";
+import { CoreQuestionNames } from "../../../core/question";
 
 export abstract class AzureAppService extends AzureResource {
   abstract readonly name: string;
@@ -35,9 +41,16 @@ export abstract class AzureAppService extends AzureResource {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<Bicep[], FxError>> {
-    this.getTemplateContext = (context) => {
+    this.getTemplateContext = (context, inputs) => {
       const configs: string[] = [];
-      configs.push(getRuntime(getLanguage(context.projectSetting.programmingLanguage)));
+      configs.push(
+        getRuntime(
+          getLanguage(
+            context.projectSetting.programmingLanguage ||
+              inputs?.[CoreQuestionNames.ProgrammingLanguage]
+          )
+        )
+      );
       this.templateContext.configs = configs;
       return this.templateContext;
     };
@@ -46,7 +59,8 @@ export abstract class AzureAppService extends AzureResource {
 
   async deploy(
     context: ResourceContextV3,
-    inputs: InputsWithProjectPath
+    inputs: InputsWithProjectPath,
+    restart = false
   ): Promise<Result<undefined, FxError>> {
     const progressBar = context.userInteraction.createProgressBar(
       ProgressTitles.deploying(this.displayName, inputs.scenario),
@@ -54,7 +68,6 @@ export abstract class AzureAppService extends AzureResource {
     );
     await progressBar.start();
     try {
-      const ctx = context as ResourceContextV3;
       // Preconditions checking.
       if (!inputs.projectPath || !inputs.artifactFolder) {
         throw new PreconditionError(this.alias, ErrorMessage.WorkingDirIsMissing, []);
@@ -65,7 +78,7 @@ export abstract class AzureAppService extends AzureResource {
         throw new PackDirectoryExistenceError(this.alias);
       }
 
-      const state = ctx.envInfo.state[inputs.componentId];
+      const state = context.envInfo.state[inputs.componentId];
       const resourceId = CheckThrowSomethingMissing(
         this.name,
         this.outputs.resourceId.key,
@@ -74,13 +87,21 @@ export abstract class AzureAppService extends AzureResource {
       await progressBar.next(ProgressMessages.packingCode);
       const zipBuffer = await utils.zipFolderAsync(publishDir, "");
 
-      await azureWebSiteDeploy(
+      const client = await azureWebSiteDeploy(
         resourceId,
-        ctx.tokenProvider,
+        context.tokenProvider,
         zipBuffer,
         context.logProvider,
         progressBar
       );
+      if (restart) {
+        await AzureOperations.restartWebApp(
+          client,
+          getResourceGroupNameFromResourceId(resourceId),
+          getSiteNameFromResourceId(resourceId),
+          context.logProvider
+        );
+      }
     } finally {
       progressBar.end(true);
     }

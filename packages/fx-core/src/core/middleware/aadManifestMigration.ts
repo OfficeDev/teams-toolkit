@@ -89,6 +89,7 @@ async function migrate(ctx: CoreHookContext): Promise<boolean> {
     );
     const projectSettingsJsonOld = await fs.readJson(projectSettingsPath);
 
+    // make sure this function use upgraded version of projectsettings for V3
     await generateAadManifest(inputs.projectPath!, projectSettings);
 
     const aadManifestPath = path.join(

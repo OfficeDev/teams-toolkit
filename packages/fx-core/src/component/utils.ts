@@ -12,14 +12,12 @@ import {
   err,
   FileEffect,
   FxError,
-  Inputs,
   InputsWithProjectPath,
   Json,
   ok,
   ProjectSettingsV3,
   ProvisionBicep,
   Result,
-  v2,
   v3,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
@@ -33,7 +31,6 @@ import { convertToAlphanumericOnly, getProjectTemplatesFolderPath } from "../com
 import { LocalCrypto } from "../core/crypto";
 import { environmentManager } from "../core/environment";
 import { TOOLS } from "../core/globalVars";
-import { loadEnvInfoV3 } from "../core/middleware/envInfoLoaderV3";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { ComponentNames, Scenarios, scenarioToComponent } from "./constants";
 import { DefaultManifestProvider } from "./resource/appManifest/manifestProvider";

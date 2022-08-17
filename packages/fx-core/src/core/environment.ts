@@ -23,7 +23,6 @@ import {
   Platform,
   Void,
   CloudResource,
-  ProjectSettingsV3,
   InputsWithProjectPath,
   v2,
 } from "@microsoft/teamsfx-api";

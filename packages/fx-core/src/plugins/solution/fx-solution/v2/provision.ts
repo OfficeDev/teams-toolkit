@@ -537,7 +537,7 @@ export async function askForProvisionConsentNew(
     );
     if (confirm !== provisionText) {
       if (confirm === learnMoreText) {
-        ctx.userInteraction.openUrl("https://aka.ms/teamsfx-switch-account-or-subscription-help");
+        ctx.userInteraction.openUrl("https://aka.ms/teamsfx-switch-tenant-or-subscription-help");
       } else {
         return err(new UserError(SolutionSource, "CancelProvision", "CancelProvision"));
       }

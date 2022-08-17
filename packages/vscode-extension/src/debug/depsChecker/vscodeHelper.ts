@@ -18,7 +18,11 @@ class VSCodeHelper {
   }
 
   public isDotnetCheckerEnabled(): boolean {
-    return this.checkerEnabled("prerequisiteCheck.dotnetSdk");
+    const isDotnetCheckerEnabled = this.checkerEnabled("prerequisiteCheck.dotnetSdk");
+    if (!isDotnetCheckerEnabled) {
+      vscodeTelemetry.sendEvent(DepsCheckerEvent.dotnetCheckSkipped);
+    }
+    return isDotnetCheckerEnabled;
   }
 
   public isFuncCoreToolsEnabled(): boolean {
@@ -38,11 +42,19 @@ class VSCodeHelper {
   }
 
   public isNgrokCheckerEnabled(): boolean {
-    return this.checkerEnabled("prerequisiteCheck.ngrok");
+    const isNgrokCheckerEnabled = this.checkerEnabled("prerequisiteCheck.ngrok");
+    if (!isNgrokCheckerEnabled) {
+      vscodeTelemetry.sendEvent(DepsCheckerEvent.ngrokCheckSkipped);
+    }
+    return isNgrokCheckerEnabled;
   }
 
   public isTrustDevCertEnabled(): boolean {
-    return this.checkerEnabled("prerequisiteCheck.devCert");
+    const isTrustDevCertEnabled = this.checkerEnabled("prerequisiteCheck.devCert");
+    if (!isTrustDevCertEnabled) {
+      vscodeTelemetry.sendEvent(DepsCheckerEvent.trustCertSkipped);
+    }
+    return isTrustDevCertEnabled;
   }
 
   public async hasFunction(): Promise<boolean> {

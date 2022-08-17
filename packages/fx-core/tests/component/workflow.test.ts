@@ -164,6 +164,28 @@ describe("Workflow test for v3", () => {
       console.log(res.error);
     }
     assert.isTrue(res.isOk());
+    const res2 = await component.add(context, inputs);
+    if (res2.isErr()) {
+      console.log(res2.error);
+    }
+    assert.isTrue(res2.isOk());
+  });
+  it("sso.add CLI", async () => {
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.CLI,
+    };
+    const component = Container.get("sso") as any;
+    const res = await component.add(context, inputs);
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    assert.isTrue(res.isOk());
+    const res2 = await component.add(context, inputs);
+    if (res2.isErr()) {
+      console.log(res2.error);
+    }
+    assert.isTrue(res2.isOk());
   });
   it("keyvault.add", async () => {
     const inputs: InputsWithProjectPath = {

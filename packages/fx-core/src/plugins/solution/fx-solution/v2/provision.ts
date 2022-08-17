@@ -537,9 +537,7 @@ export async function askForProvisionConsentNew(
     );
     if (confirm !== provisionText) {
       if (confirm === learnMoreText) {
-        ctx.userInteraction.openUrl(
-          "https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/provision"
-        ); // TODO: update link to the doc
+        ctx.userInteraction.openUrl("https://aka.ms/teamsfx-switch-account-or-subscription-help");
       } else {
         return err(new UserError(SolutionSource, "CancelProvision", "CancelProvision"));
       }

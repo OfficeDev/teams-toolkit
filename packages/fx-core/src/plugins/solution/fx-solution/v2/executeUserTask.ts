@@ -445,7 +445,6 @@ export async function addCapability(
   // check SPFx
   if (toAddSpfx) {
     pluginNamesToScaffold.add(ResourcePluginsV2.SpfxPlugin);
-    capabilitiesToAddManifest.push({ name: "staticTab" });
     newCapabilitySet.add(TabSPFxNewUIItem.id);
     solutionSettings.hostType = HostTypeOptionSPFx.id;
   } else {

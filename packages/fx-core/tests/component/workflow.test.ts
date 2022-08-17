@@ -46,7 +46,7 @@ import {
 } from "../../src/plugins/resource/spfx/utils/questions";
 import { DefaultManifestProvider } from "../../src/component/resource/appManifest/manifestProvider";
 import { ComponentNames } from "../../src/component/constants";
-import { AzureResourceApim, AzureSolutionQuestionNames } from "../../src";
+import { AzureResourceApim, AzureResourceSQL, AzureSolutionQuestionNames } from "../../src";
 import { FunctionScaffold } from "../../src/plugins/resource/function/ops/scaffold";
 import { TeamsfxCore } from "../../src/component/core";
 import { Container } from "typedi";
@@ -149,6 +149,21 @@ describe("Workflow test for v3", () => {
     };
     const component = Container.get("sql") as any;
     const res = await component.add(context, inputs);
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    assert.isTrue(res.isOk());
+  });
+  it("fx.addFeature(sql)", async () => {
+    sandbox.stub(FunctionScaffold, "scaffoldFunction").resolves();
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+      ["function-name"]: "getUserProfile",
+      [CoreQuestionNames.Features]: AzureResourceSQL.id,
+    };
+    const component = Container.get("fx") as any;
+    const res = await component.addFeature(context, inputs);
     if (res.isErr()) {
       console.log(res.error);
     }

@@ -33,7 +33,7 @@ export class TestHelper {
   static getFakePluginContext(
     appName: string,
     testFolder: string,
-    framework: string,
+    framework: string | undefined,
     webpartName?: string
   ): PluginContext {
     const pluginContext = {

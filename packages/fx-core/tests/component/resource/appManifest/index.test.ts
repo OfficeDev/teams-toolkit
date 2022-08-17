@@ -246,6 +246,7 @@ describe("App-manifest Component", () => {
     sandbox.stub(fs, "readFile").resolves(manifestString as any);
     sandbox.stub(fs, "pathExists").resolves(true);
     const envInfo = newEnvInfoV3();
+    envInfo.envName = "local";
     context.tokenProvider = tools.tokenProvider;
     envInfo.state = {
       solution: {

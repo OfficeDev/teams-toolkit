@@ -51,6 +51,7 @@ import {
   TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
+  TabSPFxNewUIItem,
   TabSsoItem,
 } from "../question";
 import {
@@ -73,10 +74,12 @@ import {
   isAadManifestEnabled,
   isDeployManifestEnabled,
   AppStudioScopes,
+  isSPFxProject,
 } from "../../../../common/tools";
 import {
   isBotNotificationEnabled,
   isPreviewFeaturesEnabled,
+  isSPFxMultiTabEnabled,
 } from "../../../../common/featureFlags";
 import {
   ProgrammingLanguageQuestion,
@@ -834,6 +837,13 @@ async function getStaticOptionsForAddCapability(
   if (tabExceedRes.isErr()) {
     return err(tabExceedRes.error);
   }
+
+  const isTabSPFxAddable =
+    !tabExceedRes.value && isSPFxProject(ctx.projectSetting) && isSPFxMultiTabEnabled();
+  if (isTabSPFxAddable) {
+    return ok([TabSPFxNewUIItem]);
+  }
+
   const isTabAddable = !tabExceedRes.value;
   const botExceedRes = await appStudioPlugin.capabilityExceedLimit(
     ctx,
@@ -988,6 +998,10 @@ export async function getQuestionsForAddFeature(
   if (inputs.platform === Platform.CLI_HELP || isApiConnectionAddable) {
     pluginsWithResources.push([ResourcePluginsV2.ApiConnectorPlugin, ApiConnectionOptionItem.id]);
   }
+  if (isSPFxMultiTabEnabled()) {
+    pluginsWithResources.push([ResourcePluginsV2.SpfxPlugin, TabSPFxNewUIItem.id]);
+  }
+
   const alreadyHaveFunction = settings?.azureResources.includes(AzureResourceFunction.id);
   for (const pair of pluginsWithResources) {
     const pluginName = pair[0];

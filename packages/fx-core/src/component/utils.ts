@@ -12,33 +12,41 @@ import {
   err,
   FileEffect,
   FxError,
+  Inputs,
   InputsWithProjectPath,
   Json,
   ok,
+  Platform,
   ProjectSettingsV3,
   ProvisionBicep,
   Result,
+  UserInteraction,
+  v3,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { assign, cloneDeep } from "lodash";
 import os from "os";
 import * as path from "path";
 import { Container } from "typedi";
+import { format } from "util";
 import * as uuid from "uuid";
+import { getLocalizedString } from "../common/localizeUtils";
 import { getProjectSettingsVersion } from "../common/projectSettingsHelper";
 import { convertToAlphanumericOnly, getProjectTemplatesFolderPath } from "../common/utils";
 import { LocalCrypto } from "../core/crypto";
 import { environmentManager } from "../core/environment";
 import { TOOLS } from "../core/globalVars";
-import { ComponentNames, scenarioToComponent } from "./constants";
+import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
+import { ComponentNames, Scenarios, scenarioToComponent } from "./constants";
 import { DefaultManifestProvider } from "./resource/appManifest/manifestProvider";
-import { getComponent } from "./workflow";
+import { getComponent, getComponentByScenario } from "./workflow";
 
 export async function persistProvisionBicep(
   projectPath: string,
   provisionBicep: ProvisionBicep
 ): Promise<Result<any, FxError>> {
-  const templateFolder = path.join(projectPath, "templates", "azure");
+  const templateRoot = await getProjectTemplatesFolderPath(projectPath);
+  const templateFolder = path.join(templateRoot, "azure");
   if (provisionBicep.Modules) {
     for (const module of Object.keys(provisionBicep.Modules)) {
       const value = provisionBicep.Modules[module];
@@ -542,7 +550,78 @@ export function ensureComponentConnections(settingsV3: ProjectSettingsV3): void 
     const existingResources = (ComponentConnections[configName] as string[]).filter(exists);
     const configs = settingsV3.components.filter((c) => c.name === configName);
     for (const config of configs) {
-      config.connections = existingResources;
+      config.connections = cloneDeep(existingResources);
     }
   }
+  if (
+    getComponent(settingsV3, ComponentNames.TeamsApi) &&
+    getComponent(settingsV3, ComponentNames.APIM)
+  ) {
+    const functionConfig = getComponentByScenario(
+      settingsV3,
+      ComponentNames.Function,
+      Scenarios.Api
+    );
+    functionConfig?.connections?.push(ComponentNames.APIM);
+  }
+}
+
+// clear resources related info in envInfo so that we could provision successfully using new M365 tenant.
+export function resetEnvInfoWhenSwitchM365(envInfo: v3.EnvInfoV3): void {
+  const keysToClear = [
+    BuiltInFeaturePluginNames.appStudio,
+    BuiltInFeaturePluginNames.aad,
+    ComponentNames.AppManifest,
+    ComponentNames.AadApp,
+  ];
+
+  const apimKeys = [BuiltInFeaturePluginNames.apim, ComponentNames.APIM];
+  const botKeys = [BuiltInFeaturePluginNames.bot, ComponentNames.TeamsBot];
+  const keys = Object.keys(envInfo.state);
+
+  for (const key of keys) {
+    if (keysToClear.includes(key)) {
+      delete envInfo.state[key];
+    }
+    if (apimKeys.includes(key)) {
+      delete envInfo.state[key]["apimClientAADObjectId"];
+      delete envInfo.state[key]["apimClientAADClientId"];
+      delete envInfo.state[key]["apimClientAADClientSecret"];
+    }
+
+    if (botKeys.includes(key)) {
+      delete envInfo.state[key]["resourceId"];
+      delete envInfo.state[key]["botId"];
+      delete envInfo.state[key]["botPassword"];
+      delete envInfo.state[key]["objectId"];
+    }
+  }
+}
+
+export function addFeatureNotify(
+  inputs: Inputs,
+  ui: UserInteraction,
+  type: "Capability" | "Resource",
+  features: string[]
+) {
+  const addNames = features.map((c) => `'${c}'`).join(" and ");
+  const single = features.length === 1;
+  const template =
+    inputs.platform === Platform.CLI
+      ? single
+        ? type === "Capability"
+          ? getLocalizedString("core.addCapability.addCapabilityNoticeForCli")
+          : getLocalizedString("core.addResource.addResourceNoticeForCli")
+        : type === "Capability"
+        ? getLocalizedString("core.addCapability.addCapabilitiesNoticeForCli")
+        : getLocalizedString("core.addResource.addResourcesNoticeForCli")
+      : single
+      ? type === "Capability"
+        ? getLocalizedString("core.addCapability.addCapabilityNotice")
+        : getLocalizedString("core.addResource.addResourceNotice")
+      : type === "Capability"
+      ? getLocalizedString("core.addCapability.addCapabilitiesNotice")
+      : getLocalizedString("core.addResource.addResourcesNotice");
+  const msg = format(template, addNames);
+  ui.showMessage("info", msg, false);
 }

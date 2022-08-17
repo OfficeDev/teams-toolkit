@@ -210,24 +210,6 @@ export function readEnvJsonFileSync(
   }
 }
 
-export function readLocalSettingsJsonFile(projectFolder: string): Result<Json, FxError> {
-  const localSettingsPath = path.join(
-    projectFolder,
-    `.${ConfigFolderName}`,
-    `${InputConfigsFolderName}`,
-    localSettingsFileName
-  );
-  if (!fs.existsSync(localSettingsPath)) {
-    return err(ConfigNotFoundError(localSettingsPath));
-  }
-  try {
-    const config = fs.readJsonSync(localSettingsPath);
-    return ok(config);
-  } catch (e) {
-    return err(ReadFileError(e));
-  }
-}
-
 export function readLocalStateJsonFile(projectFolder: string): Result<Json, FxError> {
   const localStatePath = path.join(
     projectFolder,

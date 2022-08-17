@@ -25,6 +25,8 @@ import {
   hasTab,
   hasSPFxTab,
 } from "../projectSettingsHelperV3";
+import { ComponentNames } from "../../component/constants";
+import { getComponent } from "../../component/workflow";
 
 export class ProjectSettingsHelper {
   // keep the same logic as plugin.activate()
@@ -76,6 +78,10 @@ export class ProjectSettingsHelper {
       : !!IsSimpleAuthEnabled(projectSettings);
 
   public static getBotCapabilities(projectSettings: ProjectSettings | undefined): string[] {
+    if (isV3()) {
+      const bot = getComponent(projectSettings as ProjectSettingsV3, ComponentNames.TeamsBot);
+      return bot?.capabilities || [];
+    }
     return (projectSettings?.pluginSettings?.[ResourcePlugins.Bot]?.[BotCapabilities] ||
       []) as string[];
   }

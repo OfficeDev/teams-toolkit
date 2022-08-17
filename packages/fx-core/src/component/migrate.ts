@@ -7,7 +7,9 @@ import {
 import { cloneDeep } from "lodash";
 import { isVSProject } from "../common/projectSettingsHelper";
 import { hasAzureResourceV3 } from "../common/projectSettingsHelperV3";
+import { isV3 } from "../core/globalVars";
 import { MessageExtensionNewUIItem } from "../plugins/solution/fx-solution/question";
+import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { ComponentNames } from "./constants";
 import { ensureComponentConnections } from "./utils";
 import { getComponent } from "./workflow";
@@ -103,6 +105,18 @@ export const EnvStateMigrationComponentNames = [
   ["fx-resource-frontend-hosting", ComponentNames.TeamsTab],
 ];
 
+export const APIM_STATE_KEY = isV3() ? ComponentNames.APIM : BuiltInFeaturePluginNames.apim;
+export const API_STATE_KEY = isV3() ? ComponentNames.TeamsApi : BuiltInFeaturePluginNames.function;
+export const AAD_STATE_KEY = isV3() ? ComponentNames.AadApp : BuiltInFeaturePluginNames.aad;
+export const TAB_STATE_KEY = isV3() ? ComponentNames.TeamsTab : BuiltInFeaturePluginNames.frontend;
+export const BOT_STATE_KEY = isV3() ? ComponentNames.TeamsBot : BuiltInFeaturePluginNames.bot;
+export const SIMPLE_AUTH_STATE_KEY = isV3()
+  ? ComponentNames.SimpleAuth
+  : BuiltInFeaturePluginNames.simpleAuth;
+export const APP_MANIFEST_KEY = isV3()
+  ? ComponentNames.AppManifest
+  : BuiltInFeaturePluginNames.appStudio;
+
 export function pluginName2ComponentName(pluginName: string): string {
   const map = new Map<string, string>();
   EnvStateMigrationComponentNames.forEach((e) => {
@@ -178,7 +192,8 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           provision: false,
           folder: "",
           artifactFolder: "bin\\Release\\net6.0\\win-x86\\publish",
-          sso: solutionSettings.capabilities.includes("TabSSO") || hasAAD,
+          sso: solutionSettings.capabilities.includes("TabSSO"),
+          deploy: true,
         };
         settingsV3.components.push(teamsTab);
       } else {
@@ -188,7 +203,8 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           build: true,
           provision: true,
           folder: "tabs",
-          sso: solutionSettings.capabilities.includes("TabSSO") || hasAAD,
+          sso: solutionSettings.capabilities.includes("TabSSO"),
+          deploy: true,
         };
         settingsV3.components.push(teamsTab);
       }
@@ -203,6 +219,21 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           provision: true,
         });
       }
+    }
+    if (solutionSettings.activeResourcePlugins.includes("fx-resource-spfx")) {
+      const teamsTab: any = {
+        hosting: "spfx",
+        name: "teams-tab",
+        build: true,
+        provision: true,
+        folder: "SPFx",
+        deploy: true,
+      };
+      settingsV3.components.push(teamsTab);
+      settingsV3.components.push({
+        name: "spfx",
+        provision: true,
+      });
     }
     if (solutionSettings.activeResourcePlugins.includes("fx-resource-bot")) {
       const hostType = settingsV2.pluginSettings?.["fx-resource-bot"]?.["host-type"];
@@ -227,6 +258,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           artifactFolder: "bin\\Release\\net6.0\\win-x86\\publish",
           capabilities: botCapabilities,
           sso: solutionSettings.capabilities.includes("BotSSO"),
+          deploy: true,
         };
         settingsV3.components.push(teamsBot);
       } else {
@@ -238,6 +270,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           folder: "bot",
           capabilities: botCapabilities,
           sso: solutionSettings.capabilities.includes("BotSSO"),
+          deploy: true,
         };
         settingsV3.components.push(teamsBot);
       }
@@ -287,6 +320,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
         functionNames: [settingsV2.defaultFunctionName || "getUserProfile"],
         build: true,
         folder: "api",
+        deploy: true,
       });
       settingsV3.components.push({
         name: ComponentNames.Function,
@@ -313,9 +347,11 @@ export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): Pro
         "fx-resource-local-debug",
         "fx-resource-appstudio",
         "fx-resource-cicd",
-        "fx-resource-api-connector",
       ],
     };
+    if (hostType === "Azure") {
+      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-api-connector");
+    }
     const aad = getComponent(settingsV3, ComponentNames.AadApp);
     if (aad) {
       settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-aad-app-for-teams");
@@ -326,7 +362,11 @@ export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): Pro
       if (teamsTab.sso) {
         settingsV2.solutionSettings.capabilities.push("TabSSO");
       }
-      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-frontend-hosting");
+      if (teamsTab.hosting === "spfx") {
+        settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-spfx");
+      } else {
+        settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-frontend-hosting");
+      }
     }
     const teamsBot = getComponent(settingsV3, ComponentNames.TeamsBot);
     if (teamsBot) {
@@ -390,7 +430,7 @@ export function convertManifestTemplateToV3(content: string): string {
     const pluginName = pluginAndComponentArray[0];
     const componentName = pluginAndComponentArray[1];
     if (pluginName !== componentName)
-      content = content.replace(new RegExp(pluginName, "g"), componentName);
+      content = content.replace(new RegExp(`state.${pluginName}`, "g"), `state.${componentName}`);
   }
   return content;
 }
@@ -400,7 +440,7 @@ export function convertManifestTemplateToV2(content: string): string {
     const pluginName = pluginAndComponentArray[0];
     const componentName = pluginAndComponentArray[1];
     if (pluginName !== componentName)
-      content = content.replace(new RegExp(componentName, "g"), pluginName);
+      content = content.replace(new RegExp(`state.${componentName}`, "g"), `state.${pluginName}`);
   }
   return content;
 }

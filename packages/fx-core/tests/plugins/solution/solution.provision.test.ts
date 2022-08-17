@@ -39,9 +39,11 @@ import {
   Inputs,
   TokenProvider,
   v2,
+  v3,
   Ok,
   Err,
   AppPackageFolderName,
+  err,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
@@ -96,10 +98,12 @@ import * as arm from "../../../src/plugins/solution/fx-solution/arm";
 import * as armResources from "@azure/arm-resources";
 import { aadPlugin, appStudioPlugin, spfxPlugin, fehostPlugin } from "../../constants";
 import { AadAppForTeamsPlugin } from "../../../src";
-import { assert } from "sinon";
+import * as backup from "../../../src/plugins/solution/fx-solution/utils/backupFiles";
 import { resourceGroupHelper } from "../../../src/plugins/solution/fx-solution/utils/ResourceGroupHelper";
 import * as manifestTemplate from "../../../src/plugins/resource/appstudio/manifestTemplate";
 import { SolutionRunningState } from "../../../src/plugins/solution/fx-solution/types";
+import mockedEnv from "mocked-env";
+import { askForProvisionConsentNew } from "../../../src/plugins/solution/fx-solution/v2/provision";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -178,7 +182,7 @@ const mockedSubscriptionName = "mocked subscription id";
 const mockedSubscriptionId = "mocked subscription id";
 const mockedTenantId = "mocked tenant id";
 
-class MockedAzureTokenProvider implements AzureAccountProvider {
+export class MockedAzureTokenProvider implements AzureAccountProvider {
   getAccountCredential(showDialog?: boolean): TokenCredentialsBase {
     throw new Error("Method not implemented.");
   }
@@ -1034,6 +1038,11 @@ describe("before provision() asking for resource group info", () => {
 
 describe("API v2 implementation", () => {
   describe("SPFx projects", () => {
+    const mocker = sinon.createSandbox();
+
+    afterEach(() => {
+      mocker.restore();
+    });
     it("should work on happy path", async () => {
       const projectSettings: ProjectSettings = {
         appName: "my app",
@@ -1070,6 +1079,108 @@ describe("API v2 implementation", () => {
         mockedTokenProvider
       );
       expect(result.isOk()).equals(true);
+      expect(mockedEnvInfo.state.solution.teamsAppTenantId === "tenantId");
+      expect(mockedEnvInfo.state["fx-resource-appstudio"].tenantId === "tenantId");
+      expect(mockedEnvInfo.state.solution.provisionSucceeded === true);
+    });
+
+    it("provision after switch M365 account", async () => {
+      const projectSettings: ProjectSettings = {
+        appName: "my app",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          hostType: HostTypeOptionSPFx.id,
+          name: "azure",
+          version: "1.0",
+          activeResourcePlugins: [spfxPluginV2.name],
+        },
+      };
+      const mockedCtx = new MockedV2Context(projectSettings);
+      mockedCtx.userInteraction = new MockUserInteraction();
+      const mockedInputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: "./",
+      };
+      const mockedTokenProvider: TokenProvider = {
+        azureAccountProvider: new MockedAzureTokenProvider(),
+        m365TokenProvider: new MockedM365Provider(),
+      };
+      const mockedEnvInfo: v2.EnvInfoV2 = {
+        envName: "default",
+        config: { manifest: { appName: { short: "test-app" } } },
+        state: {
+          "fx-resource-appstudio": { tenantId: "previousTenantId" },
+          solution: { teamsAppTenantId: "previousTenantId", provisionSucceeded: true },
+          "fx-resource-spfx": {},
+        },
+      };
+      mockProvisionV2ThatAlwaysSucceed(spfxPluginV2);
+      mockProvisionV2ThatAlwaysSucceed(appStudioPluginV2);
+      mocker.stub(backup, "backupFiles").resolves(ok(undefined));
+      mocker.stub(arm, "updateAzureParameters").resolves(ok(undefined));
+
+      const solution = new TeamsAppSolutionV2();
+      const result = await solution.provisionResources(
+        mockedCtx,
+        mockedInputs,
+        mockedEnvInfo,
+        mockedTokenProvider
+      );
+
+      expect(result.isOk()).equals(true);
+      expect(mockedEnvInfo.state.solution.teamsAppTenantId).equals("tenantId");
+      expect(mockedEnvInfo.state["fx-resource-appstudio"].tenantId).equals("tenantId");
+      expect(mockedEnvInfo.state.solution.provisionSucceeded).equals(true);
+    });
+
+    it("provision after switch M365 account error when backup", async () => {
+      const projectSettings: ProjectSettings = {
+        appName: "my app",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          hostType: HostTypeOptionSPFx.id,
+          name: "azure",
+          version: "1.0",
+          activeResourcePlugins: [spfxPluginV2.name],
+        },
+      };
+      const mockedCtx = new MockedV2Context(projectSettings);
+      mockedCtx.userInteraction = new MockUserInteraction();
+      const mockedInputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: "./",
+      };
+      const mockedTokenProvider: TokenProvider = {
+        azureAccountProvider: new MockedAzureTokenProvider(),
+        m365TokenProvider: new MockedM365Provider(),
+      };
+      const mockedEnvInfo: v2.EnvInfoV2 = {
+        envName: "default",
+        config: { manifest: { appName: { short: "test-app" } } },
+        state: {
+          "fx-resource-appstudio": { tenantId: "previousTenantId" },
+          solution: { teamsAppTenantId: "previousTenantId", provisionSucceeded: true },
+          "fx-resource-spfx": {},
+        },
+      };
+      mockProvisionV2ThatAlwaysSucceed(spfxPluginV2);
+      mockProvisionV2ThatAlwaysSucceed(appStudioPluginV2);
+      mocker
+        .stub(backup, "backupFiles")
+        .resolves(err(new UserError("solution", "error1", "error1")));
+
+      const solution = new TeamsAppSolutionV2();
+      const result = await solution.provisionResources(
+        mockedCtx,
+        mockedInputs,
+        mockedEnvInfo,
+        mockedTokenProvider
+      );
+
+      expect(result.isErr()).equals(true);
+      if (result.isErr()) {
+        expect(result.error.name).equal("error1");
+      }
     });
   });
 
@@ -1186,5 +1297,694 @@ describe("API v2 implementation", () => {
       chai.assert.equal(armSpy.callCount, 0);
       expect(result.isOk()).equals(true);
     });
+
+    it("provision after switch M365 and Azure subscription", async () => {
+      const projectSettings: ProjectSettings = {
+        appName: "my app",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          hostType: HostTypeOptionAzure.id,
+          name: "azure",
+          version: "1.0",
+          activeResourcePlugins: [fehostPluginV2.name, appStudioPluginV2.name, aadPluginV2.name],
+        },
+      };
+      const mockedCtx = new MockedV2Context(projectSettings);
+      mockedCtx.userInteraction = new MockUserInteraction();
+      const mockedInputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: "./",
+        isForUT: true,
+      };
+      const mockedTokenProvider: TokenProvider = {
+        azureAccountProvider: new MockedAzureTokenProvider(),
+        m365TokenProvider: new MockedM365Provider(),
+      };
+      const mockedEnvInfo: v2.EnvInfoV2 = {
+        envName: "default",
+        config: { manifest: { appName: { short: "test-app" } } },
+        state: {
+          "fx-resource-appstudio": { tenantId: "previousTenantId" },
+          solution: {
+            teamsAppTenantId: "previousTenantId",
+            provisionSucceeded: true,
+            subscriptionId: "previousSubscriptionId",
+            subscriptionName: "previousSubscriptionName",
+            tenantId: "tenantId",
+          },
+          "fx-resource-spfx": {},
+        },
+      };
+      mockProvisionV2ThatAlwaysSucceed(fehostPluginV2);
+      mockProvisionV2ThatAlwaysSucceed(appStudioPluginV2);
+      mockProvisionV2ThatAlwaysSucceed(aadPluginV2);
+      mocker.stub(backup, "backupFiles").resolves(ok(undefined));
+      mocker.stub(arm, "updateAzureParameters").resolves(ok(undefined));
+
+      const solution = new TeamsAppSolutionV2();
+      const result = await solution.provisionResources(
+        mockedCtx,
+        mockedInputs,
+        mockedEnvInfo,
+        mockedTokenProvider
+      );
+      expect(result.isOk()).equals(true);
+      expect(mockedEnvInfo.state.solution.teamsAppTenantId).equals("tenantId");
+      expect(mockedEnvInfo.state["fx-resource-appstudio"].tenantId).equals("tenantId");
+      expect(mockedEnvInfo.state.solution.provisionSucceeded).equals(true);
+      expect(mockedEnvInfo.state.solution.subscriptionId).equals("subscriptionId");
+      expect(mockedEnvInfo.state.solution.subscriptionName).equals("subscriptionName");
+    });
+
+    it("provision after switch M365 and Azure subscription error when update Azure parameters", async () => {
+      const projectSettings: ProjectSettings = {
+        appName: "my app",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          hostType: HostTypeOptionAzure.id,
+          name: "azure",
+          version: "1.0",
+          activeResourcePlugins: [fehostPluginV2.name, appStudioPluginV2.name, aadPluginV2.name],
+        },
+      };
+      const mockedCtx = new MockedV2Context(projectSettings);
+      mockedCtx.userInteraction = new MockUserInteraction();
+      const mockedInputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: "./",
+        isForUT: true,
+      };
+      const mockedTokenProvider: TokenProvider = {
+        azureAccountProvider: new MockedAzureTokenProvider(),
+        m365TokenProvider: new MockedM365Provider(),
+      };
+      const mockedEnvInfo: v2.EnvInfoV2 = {
+        envName: "default",
+        config: { manifest: { appName: { short: "test-app" } } },
+        state: {
+          "fx-resource-appstudio": { tenantId: "previousTenantId" },
+          solution: {
+            teamsAppTenantId: "previousTenantId",
+            provisionSucceeded: true,
+            subscriptionId: "previousSubscriptionId",
+            subscriptionName: "previousSubscriptionName",
+            tenantId: "tenantId",
+          },
+          "fx-resource-spfx": {},
+        },
+      };
+      mockProvisionV2ThatAlwaysSucceed(fehostPluginV2);
+      mockProvisionV2ThatAlwaysSucceed(appStudioPluginV2);
+      mockProvisionV2ThatAlwaysSucceed(aadPluginV2);
+      mocker.stub(backup, "backupFiles").resolves(ok(undefined));
+      mocker
+        .stub(arm, "updateAzureParameters")
+        .resolves(err(new UserError("Solution", "error1", "error1")));
+
+      const solution = new TeamsAppSolutionV2();
+      const result = await solution.provisionResources(
+        mockedCtx,
+        mockedInputs,
+        mockedEnvInfo,
+        mockedTokenProvider
+      );
+      expect(result.isErr()).equals(true);
+      if (result.isErr()) {
+        expect(result.error.source).equal("Solution");
+        expect(result.error.name).equal("error1");
+      }
+    });
+  });
+});
+
+describe("askForProvisionConsentNew", () => {
+  const mocker = sinon.createSandbox();
+  afterEach(() => {
+    mocker.restore();
+  });
+  it("not switch M365 or Azure", async () => {
+    // Arrange
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [fehostPluginV2.name, appStudioPluginV2.name, aadPluginV2.name],
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettings);
+    mockedCtx.userInteraction = new MockUserInteraction();
+
+    const showMessageSpy = mocker
+      .stub<any, any>(mockedCtx.userInteraction, "showMessage")
+      .callsFake(
+        async (
+          level: "info" | "warn" | "error",
+          message: string,
+          modal: boolean,
+          ...items: string[]
+        ): Promise<Result<string | undefined, FxError>> => {
+          return ok("Provision");
+        }
+      );
+
+    const mockedAzureTokenProvider = new MockedAzureTokenProvider();
+
+    const mockedEnvInfo: v2.EnvInfoV2 = {
+      envName: "dev",
+      config: { manifest: { appName: { short: "test-app" } } },
+      state: {
+        "fx-resource-appstudio": { tenantId: "tenantId" },
+        solution: {
+          teamsAppTenantId: "tenantId",
+          provisionSucceeded: true,
+          subscriptionId: "subscriptionId",
+          subscriptionName: "subscriptionName",
+          tenantId: "tenantId",
+        },
+        "fx-resource-spfx": {},
+      },
+    };
+    const m365AccountName = "m365Name";
+
+    // Act
+    await askForProvisionConsentNew(
+      mockedCtx,
+      mockedAzureTokenProvider,
+      mockedEnvInfo as v3.EnvInfoV3,
+      false,
+      false,
+      m365AccountName,
+      true,
+      "tenantId"
+    );
+
+    // Assert
+    const expectedAccountsInfo =
+      "Azure account: someUserName\nAzure subscription: subscriptionName\nM365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
+    expect(showMessageSpy.calledOnce).equal(true);
+    expect(showMessageSpy.calledWithMatch("warn", expectedAccountsInfo, true, "Provision")).equal(
+      true
+    );
+  });
+
+  it("switch M365 only with Azure resources", async () => {
+    // Arrange
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [fehostPluginV2.name, appStudioPluginV2.name, aadPluginV2.name],
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettings);
+    mockedCtx.userInteraction = new MockUserInteraction();
+
+    const showMessageSpy = mocker
+      .stub<any, any>(mockedCtx.userInteraction, "showMessage")
+      .callsFake(
+        async (
+          level: "info" | "warn" | "error",
+          message: string,
+          modal: boolean,
+          ...items: string[]
+        ): Promise<Result<string | undefined, FxError>> => {
+          return ok("Provision");
+        }
+      );
+
+    const mockedAzureTokenProvider = new MockedAzureTokenProvider();
+
+    const mockedEnvInfo: v2.EnvInfoV2 = {
+      envName: "dev",
+      config: { manifest: { appName: { short: "test-app" } } },
+      state: {
+        "fx-resource-appstudio": { tenantId: "tenantId" },
+        solution: {
+          teamsAppTenantId: "tenantId",
+          provisionSucceeded: true,
+          subscriptionId: "subscriptionId",
+          subscriptionName: "subscriptionName",
+          tenantId: "tenantId",
+        },
+        "fx-resource-spfx": {},
+      },
+    };
+    const m365AccountName = "m365Name";
+
+    // Act
+    const res = await askForProvisionConsentNew(
+      mockedCtx,
+      mockedAzureTokenProvider,
+      mockedEnvInfo as v3.EnvInfoV3,
+      true,
+      false,
+      m365AccountName,
+      true,
+      "tenantId",
+      "subId"
+    );
+
+    // Assert
+    const expectedAccountsInfo =
+      "You are now using a different Microsoft 365 tenant from what you previously used.\nAzure account: someUserName\nAzure subscription: subscriptionName\nM365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
+    expect(showMessageSpy.calledOnce).equal(true);
+    expect(
+      showMessageSpy.calledWithMatch("warn", expectedAccountsInfo, true, "Provision", "Learn more")
+    ).equal(true);
+    expect(res.isOk()).equal(true);
+  });
+
+  it("switch Azure only", async () => {
+    // Arrange
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [fehostPluginV2.name, appStudioPluginV2.name, aadPluginV2.name],
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettings);
+    mockedCtx.userInteraction = new MockUserInteraction();
+
+    const showMessageSpy = mocker
+      .stub<any, any>(mockedCtx.userInteraction, "showMessage")
+      .callsFake(
+        async (
+          level: "info" | "warn" | "error",
+          message: string,
+          modal: boolean,
+          ...items: string[]
+        ): Promise<Result<string | undefined, FxError>> => {
+          return ok("Provision");
+        }
+      );
+
+    const mockedAzureTokenProvider = new MockedAzureTokenProvider();
+
+    const mockedEnvInfo: v2.EnvInfoV2 = {
+      envName: "dev",
+      config: { manifest: { appName: { short: "test-app" } } },
+      state: {
+        "fx-resource-appstudio": { tenantId: "tenantId" },
+        solution: {
+          teamsAppTenantId: "tenantId",
+          provisionSucceeded: true,
+          subscriptionId: "subscriptionId",
+          subscriptionName: "subscriptionName",
+          tenantId: "tenantId",
+        },
+        "fx-resource-spfx": {},
+      },
+    };
+    const m365AccountName = "m365Name";
+
+    // Act
+    const res = await askForProvisionConsentNew(
+      mockedCtx,
+      mockedAzureTokenProvider,
+      mockedEnvInfo as v3.EnvInfoV3,
+      false,
+      true,
+      m365AccountName,
+      true,
+      "tenantId",
+      "subId"
+    );
+
+    // Assert
+    const expectedAccountsInfo =
+      "You are now using a different Azure subscription from what you previously used.\nAzure account: someUserName\nAzure subscription: subscriptionName\nM365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
+    expect(showMessageSpy.calledOnce).equal(true);
+    expect(
+      showMessageSpy.calledWithMatch("warn", expectedAccountsInfo, true, "Provision", "Learn more")
+    ).equal(true);
+    expect(res.isOk()).equal(true);
+  });
+
+  it("switch Azure and M365", async () => {
+    // Arrange
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [fehostPluginV2.name, appStudioPluginV2.name, aadPluginV2.name],
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettings);
+    mockedCtx.userInteraction = new MockUserInteraction();
+
+    const showMessageSpy = mocker
+      .stub<any, any>(mockedCtx.userInteraction, "showMessage")
+      .callsFake(
+        async (
+          level: "info" | "warn" | "error",
+          message: string,
+          modal: boolean,
+          ...items: string[]
+        ): Promise<Result<string | undefined, FxError>> => {
+          return ok("Provision");
+        }
+      );
+
+    const mockedAzureTokenProvider = new MockedAzureTokenProvider();
+
+    const mockedEnvInfo: v2.EnvInfoV2 = {
+      envName: "dev",
+      config: { manifest: { appName: { short: "test-app" } } },
+      state: {
+        "fx-resource-appstudio": { tenantId: "tenantId" },
+        solution: {
+          teamsAppTenantId: "tenantId",
+          provisionSucceeded: true,
+          subscriptionId: "subscriptionId",
+          subscriptionName: "subscriptionName",
+          tenantId: "tenantId",
+        },
+        "fx-resource-spfx": {},
+      },
+    };
+    const m365AccountName = "m365Name";
+
+    // Act
+    const res = await askForProvisionConsentNew(
+      mockedCtx,
+      mockedAzureTokenProvider,
+      mockedEnvInfo as v3.EnvInfoV3,
+      true,
+      true,
+      m365AccountName,
+      true,
+      "tenantId",
+      "subId"
+    );
+
+    // Assert
+    const expectedAccountsInfo =
+      "You are now using a different Microsoft 365 tenant and a differnt Azure subscription from what you previously used.\nAzure account: someUserName\nAzure subscription: subscriptionName\nM365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
+    expect(showMessageSpy.calledOnce).equal(true);
+    expect(
+      showMessageSpy.calledWithMatch("warn", expectedAccountsInfo, true, "Provision", "Learn more")
+    ).equal(true);
+    expect(res.isOk()).equal(true);
+  });
+
+  it("switch M365 without Azure resources", async () => {
+    // Arrange
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [fehostPluginV2.name, appStudioPluginV2.name, aadPluginV2.name],
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettings);
+    mockedCtx.userInteraction = new MockUserInteraction();
+
+    const showMessageSpy = mocker
+      .stub<any, any>(mockedCtx.userInteraction, "showMessage")
+      .callsFake(
+        async (
+          level: "info" | "warn" | "error",
+          message: string,
+          modal: boolean,
+          ...items: string[]
+        ): Promise<Result<string | undefined, FxError>> => {
+          return ok("Provision");
+        }
+      );
+
+    const mockedAzureTokenProvider = new MockedAzureTokenProvider();
+
+    const mockedEnvInfo: v2.EnvInfoV2 = {
+      envName: "dev",
+      config: { manifest: { appName: { short: "test-app" } } },
+      state: {
+        "fx-resource-appstudio": { tenantId: "tenantId" },
+        solution: {
+          teamsAppTenantId: "tenantId",
+          provisionSucceeded: true,
+          subscriptionId: "subscriptionId",
+          subscriptionName: "subscriptionName",
+          tenantId: "tenantId",
+        },
+        "fx-resource-spfx": {},
+      },
+    };
+    const m365AccountName = "m365Name";
+
+    // Act
+    const res = await askForProvisionConsentNew(
+      mockedCtx,
+      mockedAzureTokenProvider,
+      mockedEnvInfo as v3.EnvInfoV3,
+      true,
+      false,
+      m365AccountName,
+      false,
+      "tenantId",
+      "subId"
+    );
+
+    // Assert
+    const expectedAccountsInfo =
+      "You are now using a different Microsoft 365 tenant from what you previously used.\nM365 account: m365Name\n\nDo you want to provision resources in dev environment using the account listed above?";
+    expect(showMessageSpy.calledOnce).equal(true);
+    expect(
+      showMessageSpy.calledWithMatch("warn", expectedAccountsInfo, true, "Provision", "Learn more")
+    ).equal(true);
+    expect(res.isOk()).equal(true);
+  });
+
+  it("not switch M365 when spfx", async () => {
+    // Arrange
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [appStudioPluginV2.name],
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettings);
+    const mockedAzureTokenProvider = new MockedAzureTokenProvider();
+
+    const mockedEnvInfo: v2.EnvInfoV2 = {
+      envName: "dev",
+      config: { manifest: { appName: { short: "test-app" } } },
+      state: {
+        "fx-resource-appstudio": { tenantId: "tenantId" },
+        solution: {
+          teamsAppTenantId: "tenantId",
+          provisionSucceeded: true,
+        },
+        "fx-resource-spfx": {},
+      },
+    };
+    const m365AccountName = "m365Name";
+
+    // Act
+    const res = await askForProvisionConsentNew(
+      mockedCtx,
+      mockedAzureTokenProvider,
+      mockedEnvInfo as v3.EnvInfoV3,
+      false,
+      false,
+      m365AccountName,
+      false,
+      "tenantId",
+      "subId"
+    );
+
+    // Assert
+    expect(res.isOk()).equal(true);
+  });
+
+  it("not switch M365 when spfx", async () => {
+    // Arrange
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [appStudioPluginV2.name],
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettings);
+    const mockedAzureTokenProvider = new MockedAzureTokenProvider();
+
+    const mockedEnvInfo: v2.EnvInfoV2 = {
+      envName: "dev",
+      config: { manifest: { appName: { short: "test-app" } } },
+      state: {
+        "fx-resource-appstudio": { tenantId: "tenantId" },
+        solution: {
+          teamsAppTenantId: "tenantId",
+          provisionSucceeded: true,
+        },
+        "fx-resource-spfx": {},
+      },
+    };
+    const m365AccountName = "m365Name";
+
+    // Act
+    const res = await askForProvisionConsentNew(
+      mockedCtx,
+      mockedAzureTokenProvider,
+      mockedEnvInfo as v3.EnvInfoV3,
+      false,
+      false,
+      m365AccountName,
+      false,
+      "tenantId",
+      "subId"
+    );
+
+    // Assert
+    expect(res.isOk()).equal(true);
+  });
+
+  it("cancel", async () => {
+    // Arrange
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [fehostPluginV2.name, appStudioPluginV2.name, aadPluginV2.name],
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettings);
+    mockedCtx.userInteraction = new MockUserInteraction();
+
+    const showMessageSpy = mocker
+      .stub<any, any>(mockedCtx.userInteraction, "showMessage")
+      .callsFake(
+        async (
+          level: "info" | "warn" | "error",
+          message: string,
+          modal: boolean,
+          ...items: string[]
+        ): Promise<Result<string | undefined, FxError>> => {
+          return ok("Cancel");
+        }
+      );
+
+    const mockedAzureTokenProvider = new MockedAzureTokenProvider();
+
+    const mockedEnvInfo: v2.EnvInfoV2 = {
+      envName: "dev",
+      config: { manifest: { appName: { short: "test-app" } } },
+      state: {
+        "fx-resource-appstudio": { tenantId: "tenantId" },
+        solution: {
+          teamsAppTenantId: "tenantId",
+          provisionSucceeded: true,
+          subscriptionId: "subscriptionId",
+          subscriptionName: "subscriptionName",
+          tenantId: "tenantId",
+        },
+        "fx-resource-spfx": {},
+      },
+    };
+    const m365AccountName = "m365Name";
+
+    // Act
+    const res = await askForProvisionConsentNew(
+      mockedCtx,
+      mockedAzureTokenProvider,
+      mockedEnvInfo as v3.EnvInfoV3,
+      true,
+      false,
+      m365AccountName,
+      false,
+      "tenantId",
+      "subId"
+    );
+
+    // Assert
+    expect(showMessageSpy.calledOnce).equal(true);
+    expect(res.isErr()).equal(true);
+  });
+
+  it("learn more and then provision", async () => {
+    // Arrange
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [fehostPluginV2.name, appStudioPluginV2.name, aadPluginV2.name],
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettings);
+    mockedCtx.userInteraction = new MockUserInteraction();
+
+    const showMessageSpy = mocker
+      .stub<any, any>(mockedCtx.userInteraction, "showMessage")
+      .onFirstCall()
+      .returns(ok("Learn more"))
+      .onSecondCall()
+      .returns(ok("Provision"));
+
+    mocker.stub<any, any>(mockedCtx.userInteraction, "openUrl").returns(ok(true));
+
+    const mockedAzureTokenProvider = new MockedAzureTokenProvider();
+
+    const mockedEnvInfo: v2.EnvInfoV2 = {
+      envName: "dev",
+      config: { manifest: { appName: { short: "test-app" } } },
+      state: {
+        "fx-resource-appstudio": { tenantId: "tenantId" },
+        solution: {
+          teamsAppTenantId: "tenantId",
+          provisionSucceeded: true,
+          subscriptionId: "subscriptionId",
+          subscriptionName: "subscriptionName",
+          tenantId: "tenantId",
+        },
+        "fx-resource-spfx": {},
+      },
+    };
+    const m365AccountName = "m365Name";
+
+    // Act
+    const res = await askForProvisionConsentNew(
+      mockedCtx,
+      mockedAzureTokenProvider,
+      mockedEnvInfo as v3.EnvInfoV3,
+      true,
+      false,
+      m365AccountName,
+      false,
+      "tenantId",
+      "subId"
+    );
+
+    // Assert
+    expect(showMessageSpy.calledTwice).equal(true);
+    expect(res.isOk()).equal(true);
   });
 });

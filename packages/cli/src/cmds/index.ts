@@ -5,14 +5,12 @@
 
 import { Argv } from "yargs";
 
-import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core";
+import { isDeployManifestEnabled } from "@microsoft/teamsfx-core";
 
 import { YargsCommand } from "../yargsCommand";
 import Account from "./account";
 import New from "./new";
 import Add from "./add";
-import Capability from "./capability";
-import Resource from "./resource";
 import Provision from "./provision";
 import Deploy from "./deploy";
 import Publish from "./publish";
@@ -24,13 +22,11 @@ import Manifest from "./manifest";
 import Permission from "./permission";
 import Env from "./env";
 import { ManifestValidate } from "./validate";
-import { isDeployManifestEnabled } from "@microsoft/teamsfx-core";
 
 export const commands: YargsCommand[] = [
   new Account(),
   new New(),
   new Add(),
-  ...(isPreviewFeaturesEnabled() ? [] : [new Capability(), new Resource()]),
   new Provision(),
   new Deploy(),
   new Package(),

@@ -3,6 +3,7 @@
 import {
   ActionContext,
   CloudResource,
+  Colors,
   ContextV3,
   err,
   FxError,
@@ -14,6 +15,7 @@ import {
   QTreeNode,
   Result,
   SystemError,
+  TeamsAppManifest,
   UserError,
   v3,
 } from "@microsoft/teamsfx-api";
@@ -22,7 +24,9 @@ import { cloneDeep } from "lodash";
 import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
+import { pathToFileURL } from "url";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { VSCodeExtensionCommand } from "../../../common/constants";
 import { hasTab } from "../../../common/projectSettingsHelperV3";
 import { globalVars } from "../../../core/globalVars";
 import { getTemplatesFolder } from "../../../folder";
@@ -48,9 +52,20 @@ import {
   manuallySubmitOption,
 } from "../../../plugins/resource/appstudio/questions";
 import { AppStudioResultFactory } from "../../../plugins/resource/appstudio/results";
-import { TelemetryPropertyKey } from "../../../plugins/resource/appstudio/utils/telemetry";
+import {
+  TelemetryPropertyKey,
+  TelemetryEventName,
+} from "../../../plugins/resource/appstudio/utils/telemetry";
 import { ComponentNames } from "../../constants";
-import { createTeamsApp, updateTeamsApp, publishTeamsApp, buildTeamsAppPackage } from "./appStudio";
+import {
+  createTeamsApp,
+  updateTeamsApp,
+  publishTeamsApp,
+  buildTeamsAppPackage,
+  validateManifest,
+  getManifest,
+  updateManifest,
+} from "./appStudio";
 import {
   BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3,
   BOTS_TPL_FOR_NOTIFICATION_V3,
@@ -64,6 +79,7 @@ import {
 import { readAppManifest, writeAppManifest } from "./utils";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
+import { getProjectTemplatesFolderPath } from "../../../common/utils";
 
 @Service("app-manifest")
 export class AppManifest implements CloudResource {
@@ -77,32 +93,62 @@ export class AppManifest implements CloudResource {
     },
   };
   finalOutputKeys = ["teamsAppId", "tenantId"];
+  @hooks([
+    ActionExecutionMW({
+      enableTelemetry: true,
+      telemetryComponentName: "AppStudioPlugin",
+      telemetryEventName: TelemetryEventName.init,
+    }),
+  ])
   async init(
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
-    const existingApp = inputs.existingApp as boolean;
-    const manifestString = TEAMS_APP_MANIFEST_TEMPLATE;
-    const manifest = JSON.parse(manifestString);
-    if (existingApp || !hasTab(context.projectSetting)) {
-      manifest.developer = DEFAULT_DEVELOPER;
+    let manifest;
+    const sourceTemplatesFolder = getTemplatesFolder();
+    if (inputs.capabilities === "TabSPFx") {
+      const templateManifestFolder = path.join(
+        sourceTemplatesFolder,
+        "plugins",
+        "resource",
+        "spfx"
+      );
+      const manifestFile = path.resolve(
+        templateManifestFolder,
+        "./solution/manifest_multi_env.json"
+      );
+      const manifestString = (await fs.readFile(manifestFile)).toString();
+      manifest = JSON.parse(manifestString);
+    } else {
+      const existingApp = inputs.existingApp as boolean;
+      const manifestString = TEAMS_APP_MANIFEST_TEMPLATE;
+      manifest = JSON.parse(manifestString);
+      if (existingApp || !hasTab(context.projectSetting)) {
+        manifest.developer = DEFAULT_DEVELOPER;
+      }
     }
-    const templateFolder = path.join(inputs.projectPath, "templates");
-    await fs.ensureDir(templateFolder);
-    const appPackageFolder = path.join(templateFolder, "appPackage");
+    const targetTemplateFolder = await getProjectTemplatesFolderPath(inputs.projectPath);
+    await fs.ensureDir(targetTemplateFolder);
+    const appPackageFolder = path.join(targetTemplateFolder, "appPackage");
     await fs.ensureDir(appPackageFolder);
     const resourcesFolder = path.resolve(appPackageFolder, "resources");
     await fs.ensureDir(resourcesFolder);
     const targetManifestPath = path.join(appPackageFolder, "manifest.template.json");
     await fs.writeFile(targetManifestPath, JSON.stringify(manifest, null, 4));
-    const templatesFolder = getTemplatesFolder();
-    const defaultColorPath = path.join(templatesFolder, COLOR_TEMPLATE);
-    const defaultOutlinePath = path.join(templatesFolder, OUTLINE_TEMPLATE);
+    const defaultColorPath = path.join(sourceTemplatesFolder, COLOR_TEMPLATE);
+    const defaultOutlinePath = path.join(sourceTemplatesFolder, OUTLINE_TEMPLATE);
     await fs.copy(defaultColorPath, path.join(resourcesFolder, DEFAULT_COLOR_PNG_FILENAME));
     await fs.copy(defaultOutlinePath, path.join(resourcesFolder, DEFAULT_OUTLINE_PNG_FILENAME));
     return ok(undefined);
   }
 
+  @hooks([
+    ActionExecutionMW({
+      enableTelemetry: true,
+      telemetryComponentName: "AppStudioPlugin",
+      telemetryEventName: TelemetryEventName.addCapability,
+    }),
+  ])
   async addCapability(
     inputs: InputsWithProjectPath,
     capabilities: v3.ManifestCapability[]
@@ -116,6 +162,9 @@ export class AppManifest implements CloudResource {
       enableProgressBar: true,
       progressTitle: getLocalizedString("plugins.appstudio.provisionTitle"),
       progressSteps: 1,
+      enableTelemetry: true,
+      telemetryComponentName: "AppStudioPlugin",
+      telemetryEventName: TelemetryEventName.provision,
     }),
   ])
   async provision(
@@ -138,6 +187,9 @@ export class AppManifest implements CloudResource {
       enableProgressBar: true,
       progressTitle: getLocalizedString("plugins.appstudio.provisionTitle"),
       progressSteps: 1,
+      enableTelemetry: true,
+      telemetryComponentName: "AppStudioPlugin",
+      telemetryEventName: TelemetryEventName.localDebug,
     }),
   ])
   async configure(
@@ -158,7 +210,7 @@ export class AppManifest implements CloudResource {
     ActionExecutionMW({
       enableTelemetry: true,
       telemetryComponentName: "AppStudioPlugin",
-      telemetryEventName: "publish",
+      telemetryEventName: TelemetryEventName.publish,
       question: async (context, inputs) => {
         return await publishQuestion(inputs);
       },
@@ -256,6 +308,93 @@ export class AppManifest implements CloudResource {
       }
     }
     return ok(undefined);
+  }
+  @hooks([
+    ActionExecutionMW({
+      enableTelemetry: true,
+      telemetryComponentName: "AppStudioPlugin",
+      telemetryEventName: TelemetryEventName.validateManifest,
+    }),
+  ])
+  async validate(
+    context: ResourceContextV3,
+    inputs: InputsWithProjectPath
+  ): Promise<Result<string[], FxError>> {
+    const manifestRes = await getManifest(inputs.projectPath, context.envInfo);
+    if (manifestRes.isErr()) {
+      return err(manifestRes.error);
+    }
+    const manifest: TeamsAppManifest = manifestRes.value;
+    const validationResult = await validateManifest(manifest);
+    if (validationResult.isErr()) {
+      return err(validationResult.error);
+    }
+    if (validationResult.value.length > 0) {
+      const errMessage = AppStudioError.ValidationFailedError.message(validationResult.value);
+      context.logProvider?.error(getLocalizedString("plugins.appstudio.validationFailedNotice"));
+      const validationFailed = AppStudioResultFactory.UserError(
+        AppStudioError.ValidationFailedError.name,
+        errMessage
+      );
+      return err(validationFailed);
+    }
+    const validationSuccess = getLocalizedString("plugins.appstudio.validationSucceedNotice");
+    context.userInteraction.showMessage("info", validationSuccess, false);
+    return validationResult;
+  }
+  @hooks([
+    ActionExecutionMW({
+      enableTelemetry: true,
+      telemetryComponentName: "AppStudioPlugin",
+      telemetryEventName: TelemetryEventName.buildTeamsPackage,
+    }),
+  ])
+  async build(
+    context: ResourceContextV3,
+    inputs: InputsWithProjectPath
+  ): Promise<Result<string, FxError>> {
+    const res = await buildTeamsAppPackage(inputs.projectPath, context.envInfo);
+    if (res.isOk()) {
+      if (inputs.platform === Platform.CLI || inputs.platform === Platform.VS) {
+        const builtSuccess = [
+          { content: "(√)Done: ", color: Colors.BRIGHT_GREEN },
+          { content: "Teams Package ", color: Colors.BRIGHT_WHITE },
+          { content: res.value, color: Colors.BRIGHT_MAGENTA },
+          { content: " built successfully!", color: Colors.BRIGHT_WHITE },
+        ];
+        if (inputs.platform === Platform.VS) {
+          context.logProvider?.info(builtSuccess);
+        } else {
+          context.userInteraction.showMessage("info", builtSuccess, false);
+        }
+      } else if (inputs.platform === Platform.VSCode) {
+        const isWindows = process.platform === "win32";
+        let builtSuccess = getLocalizedString(
+          "plugins.appstudio.buildSucceedNotice.fallback",
+          res.value
+        );
+        if (isWindows) {
+          const folderLink = pathToFileURL(path.dirname(res.value));
+          const appPackageLink = `${VSCodeExtensionCommand.openFolder}?%5B%22${folderLink}%22%5D`;
+          builtSuccess = getLocalizedString("plugins.appstudio.buildSucceedNotice", appPackageLink);
+        }
+        context.userInteraction.showMessage("info", builtSuccess, false);
+      }
+    }
+    return res;
+  }
+  @hooks([
+    ActionExecutionMW({
+      enableTelemetry: true,
+      telemetryComponentName: "AppStudioPlugin",
+      telemetryEventName: TelemetryEventName.deploy,
+    }),
+  ])
+  async deploy(
+    context: ResourceContextV3,
+    inputs: InputsWithProjectPath
+  ): Promise<Result<undefined, FxError>> {
+    return await updateManifest(context, inputs);
   }
 }
 

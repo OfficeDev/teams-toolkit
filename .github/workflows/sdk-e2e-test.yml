@@ -43,6 +43,12 @@ jobs:
         working-directory: packages/sdk
         run: |
           npm run test:e2e:node
+      
+      - name: run test - browser
+        if: ${{ always() }}
+        working-directory: packages/sdk
+        run: |
+          npm run test:e2e:browser
 
       - name: List jobs
         if: ${{ always() }}
@@ -52,24 +58,21 @@ jobs:
           lists=""
 
           total_node=`cat test-results.node.xml | xq '.testsuite| ."@tests"' | sed -e 's/"//g'`
-          #total_browser=`cat test-results.browser.xml | xq '.testsuite| ."@tests"' | sed -e 's/"//g'`
-          #total=$((total_node+total_browser))
-          total=$total_node
+          total_browser=`cat test-results.browser.xml | xq '.testsuite| ."@tests"' | sed -e 's/"//g'`
+          total=$((total_node+total_browser))
 
           error_node=`cat test-results.node.xml | xq '.testsuite| ."@errors"' | sed -e 's/"//g'`
-          #error_browser=`cat test-results.browser.xml | xq '.testsuite| ."@errors"' | sed -e 's/"//g'`
-          #failed=$((error_node+error_browser))
-          failed=error_node
+          error_browser=`cat test-results.browser.xml | xq '.testsuite| ."@errors"' | sed -e 's/"//g'`
+          failed=$((error_node+error_browser))
 
           passed=$((total-failed))
 
           emails="vsciotadt@microsoft.com"
 
           case_node=`cat test-results.node.xml | xq '.testsuite | .testcase'`
-          #case_browser=`cat test-results.browser.xml | xq '.testsuite | .testcase'`
+          case_browser=`cat test-results.browser.xml | xq '.testsuite | .testcase'`
 
-          #for case in $(jq --slurp 'add' <(echo "$case_node ") <(echo "$case_browser") | jq -r '.[] | @base64'); do
-          for case in $(echo "$case_node" | jq -r '.[] | @base64'); do
+          for case in $(jq --slurp 'add' <(echo "$case_node ") <(echo "$case_browser") | jq -r '.[] | @base64'); do
             _jq() {
                 echo "${case}" | base64 --decode | jq -r "${1}"
             }
@@ -78,10 +81,10 @@ jobs:
               continue
             fi
 
-            suite=$(_jq '."@classname"')
-            name=$(_jq '."@name"')
-            duration=$(_jq '."@time"')
-            failure=$(_jq '.failure')
+            suite=$(_jq '."@classname"' | sed -e 's/"/\\"/g')
+            name=$(_jq '."@name"' | sed -e 's/"/\\"/g')
+            duration=$(_jq '."@time"'| sed -e 's/"/\\"/g')
+            failure=$(_jq '.failure'| sed -e 's/"/\\"/g')
             email="ning.tang@microsoft.com"
 
             author="<a href=\\\"mailto:$email\\\"><span>$email</span></a>"
@@ -116,6 +119,7 @@ jobs:
           else
             subject="[PASSED] $subject"
           fi
+          
 
           echo "::set-output name=body::$body"
           echo "::set-output name=to::$emails"

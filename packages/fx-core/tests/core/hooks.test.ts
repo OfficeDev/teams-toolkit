@@ -42,6 +42,7 @@ import { SolutionPlugins } from "../../src/core/SolutionPluginContainer";
 import { MockSolution, MockTools, MockUserInteraction, randomAppName } from "./utils";
 import { ConstantString } from "../../src/common/constants";
 import { CoreHookContext } from "../../src/core/types";
+import { getProjectTemplatesFolderPath } from "../../src/common/utils";
 let mockedEnvRestore: () => void;
 describe("Middleware - others", () => {
   const sandbox = sinon.createSandbox();
@@ -102,9 +103,13 @@ describe("Middleware - others", () => {
       assert.isTrue(
         await fs.pathExists(path.join(projectPath, ".fx", "configs", "azure.parameters.dev.json"))
       );
-      assert.isTrue(await fs.pathExists(path.join(projectPath, "templates", "azure")));
       assert.isTrue(
-        await fs.pathExists(path.join(projectPath, "templates", "azure", "main.bicep"))
+        await fs.pathExists(path.join(await getProjectTemplatesFolderPath(projectPath), "azure"))
+      );
+      assert.isTrue(
+        await fs.pathExists(
+          path.join(await getProjectTemplatesFolderPath(projectPath), "azure", "main.bicep")
+        )
       );
       const identityBicepFilePath = path.join(
         __dirname,
@@ -112,12 +117,22 @@ describe("Middleware - others", () => {
       );
       assert.isTrue(
         await fs.pathExists(
-          path.join(projectPath, "templates", "azure", "provision", "identity.bicep")
+          path.join(
+            await getProjectTemplatesFolderPath(projectPath),
+            "azure",
+            "provision",
+            "identity.bicep"
+          )
         )
       );
       assert.strictEqual(
         await fs.readFile(
-          path.join(projectPath, "templates", "azure", "provision", "identity.bicep"),
+          path.join(
+            await getProjectTemplatesFolderPath(projectPath),
+            "azure",
+            "provision",
+            "identity.bicep"
+          ),
           ConstantString.UTF8Encoding
         ),
         (
@@ -133,12 +148,22 @@ describe("Middleware - others", () => {
       );
       assert.isTrue(
         await fs.pathExists(
-          path.join(projectPath, "templates", "azure", "provision", "frontendHosting.bicep")
+          path.join(
+            await getProjectTemplatesFolderPath(projectPath),
+            "azure",
+            "provision",
+            "frontendHosting.bicep"
+          )
         )
       );
       assert.strictEqual(
         await fs.readFile(
-          path.join(projectPath, "templates", "azure", "provision", "frontendHosting.bicep"),
+          path.join(
+            await getProjectTemplatesFolderPath(projectPath),
+            "azure",
+            "provision",
+            "frontendHosting.bicep"
+          ),
           ConstantString.UTF8Encoding
         ),
         (
@@ -179,12 +204,24 @@ describe("Middleware - others", () => {
       assert.isTrue(
         await fs.pathExists(path.join(projectPath, ".fx", "configs", "azure.parameters.dev.json"))
       );
-      assert.isTrue(await fs.pathExists(path.join(projectPath, "templates", "azure")));
       assert.isTrue(
-        await fs.pathExists(path.join(projectPath, "templates", "azure", "main.bicep"))
+        await fs.pathExists(path.join(await getProjectTemplatesFolderPath(projectPath), "azure"))
       );
-      assert.isTrue(await fs.pathExists(path.join(projectPath, "templates", "azure", "provision")));
-      assert.isTrue(await fs.pathExists(path.join(projectPath, "templates", "azure", "teamsFx")));
+      assert.isTrue(
+        await fs.pathExists(
+          path.join(await getProjectTemplatesFolderPath(projectPath), "azure", "main.bicep")
+        )
+      );
+      assert.isTrue(
+        await fs.pathExists(
+          path.join(await getProjectTemplatesFolderPath(projectPath), "azure", "provision")
+        )
+      );
+      assert.isTrue(
+        await fs.pathExists(
+          path.join(await getProjectTemplatesFolderPath(projectPath), "azure", "teamsFx")
+        )
+      );
       const armParam = await fs.readJson(
         path.join(projectPath, ".fx", "configs", "azure.parameters.dev.json")
       );

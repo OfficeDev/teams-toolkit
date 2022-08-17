@@ -55,6 +55,7 @@ import { getAllSolutionPluginsV2 } from "../SolutionPluginContainer";
 import { CoreHookContext } from "../types";
 import { isPreviewFeaturesEnabled, isCLIDotNetEnabled } from "../../common";
 import { getNotificationTriggerQuestionNode } from "../../component/questionV3";
+import { getSPFxScaffoldQuestion } from "../../component/feature/spfx";
 
 /**
  * This middleware will help to collect input from question flow
@@ -446,6 +447,11 @@ async function getQuestionsForCreateProjectWithoutDotNet(
     if (triggerNodeRes.value) {
       capNode.addChild(triggerNodeRes.value);
     }
+    const spfxNode = await getSPFxScaffoldQuestion();
+    if (spfxNode) {
+      spfxNode.condition = { equals: TabSPFxItem.id };
+      capNode.addChild(spfxNode);
+    }
   }
   // Language
   const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
@@ -521,6 +527,11 @@ async function getQuestionsForCreateProjectWithDotNet(
     if (triggerNodeRes.isErr()) return err(triggerNodeRes.error);
     if (triggerNodeRes.value) {
       dotnetCapNode.addChild(triggerNodeRes.value);
+    }
+    const spfxNode = await getSPFxScaffoldQuestion();
+    if (spfxNode) {
+      spfxNode.condition = { equals: TabSPFxItem.id };
+      dotnetCapNode.addChild(spfxNode);
     }
   }
 

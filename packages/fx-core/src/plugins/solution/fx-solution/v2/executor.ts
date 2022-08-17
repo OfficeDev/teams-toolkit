@@ -102,7 +102,7 @@ export async function executeConcurrently<R>(
   const ret: { name: string; result: R }[] = [];
   const errors: FxError[] = [];
   for (let i = 0; i < results.length; ++i) {
-    const name = `${namedThunks[i].pluginName}-${namedThunks[i].taskName}`;
+    const name = `${namedThunks[i].pluginName}:${namedThunks[i].taskName}`;
     const result = results[i];
     logger.info(`${name.padEnd(60, ".")} ${result.isOk() ? "[ok]" : "[failed]"}`);
     if (result.isErr()) {

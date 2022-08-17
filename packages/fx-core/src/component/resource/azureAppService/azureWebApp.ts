@@ -7,7 +7,7 @@ import { AzureAppService } from "./azureAppService";
 @Service("azure-web-app")
 export class AzureWebAppResource extends AzureAppService {
   readonly name = "azure-web-app";
-  readonly alias = "WA";
+  readonly alias = "WebApp";
   readonly displayName = "Azure Web App";
   readonly bicepModuleName = "azureWebApp";
   readonly outputs = WebAppOutputs;

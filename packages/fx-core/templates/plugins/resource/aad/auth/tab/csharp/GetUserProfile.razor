@@ -1,0 +1,98 @@
+﻿@using System.IO
+@using Azure.Core
+@using Microsoft.Graph
+@inject TeamsFx teamsfx
+@inject TeamsUserCredential teamsUserCredential
+
+<div>
+    <h2>Get the user's profile</h2>
+    @if (NeedConsent)
+    {
+        <p>Click below to authorize this app to read your profile photo using Microsoft Graph.</p>
+        <FluentButton Appearance="Appearance.Accent" Disabled="@IsLoading" @onclick="ConsentAndShow">Authorize</FluentButton>
+    }
+    else if (!string.IsNullOrEmpty(@ErrorMessage))
+    {
+        <div class="error">@ErrorMessage</div>
+    }
+    else if (Profile != null)
+    {
+        <div>Hello @Profile.DisplayName</div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string ErrorMessage { get; set; }
+
+    public bool IsLoading { get; set; }
+    public bool NeedConsent { get; set; }
+    public User Profile { get; set; }
+
+    private readonly string _scope = "User.Read";
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsLoading = true;
+        if (await HasPermission(_scope))
+        {
+            await ShowProfile();
+        }
+    }
+
+    private async Task ShowProfile()
+    {
+        IsLoading = true;
+        var graph = GetGraphServiceClient();
+
+        Profile = await graph.Me.Request().GetAsync();
+
+        IsLoading = false;
+        ErrorMessage = string.Empty;
+    }
+
+    private async Task ConsentAndShow()
+    {
+        try
+        {
+            await teamsUserCredential.LoginAsync(_scope);
+            NeedConsent = false;
+            await ShowProfile();
+        }
+        catch (ExceptionWithCode e)
+        {
+            ErrorMessage = e.Message;
+        }
+    }
+
+    private async Task<bool> HasPermission(string scope)
+    {
+        IsLoading = true;
+        try
+        {
+            await teamsUserCredential.GetTokenAsync(new TokenRequestContext(new string[] { _scope }), new System.Threading.CancellationToken());
+            return true;
+        }
+        catch (ExceptionWithCode e)
+        {
+            if (e.Code == ExceptionCode.UiRequiredError)
+            {
+                NeedConsent = true;
+            }
+            else
+            {
+                ErrorMessage = e.Message;
+            }
+
+        }
+        IsLoading = false;
+        return false;
+    }
+    
+    private GraphServiceClient GetGraphServiceClient()
+    {
+        var msGraphAuthProvider = new MsGraphAuthProvider(teamsUserCredential, _scope);
+        var client = new GraphServiceClient(msGraphAuthProvider);
+        return client;
+    }
+}

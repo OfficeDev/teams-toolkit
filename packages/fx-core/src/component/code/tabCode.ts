@@ -133,10 +133,6 @@ export class TabCodeProvider {
   }
   @hooks([
     ActionExecutionMW({
-      componentName: "tab-code",
-      enableTelemetry: true,
-      telemetryComponentName: FrontendPluginInfo.PluginName,
-      telemetryEventName: "scaffold",
       errorSource: "tab",
     }),
   ])
@@ -157,9 +153,6 @@ export class TabCodeProvider {
       enableProgressBar: true,
       progressTitle: ProgressTitles.buildingTab,
       progressSteps: 1,
-      enableTelemetry: true,
-      telemetryComponentName: "fx-resource-frontend",
-      telemetryEventName: "build",
       errorSource: "tab",
     }),
   ])

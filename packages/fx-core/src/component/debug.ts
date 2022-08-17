@@ -13,7 +13,6 @@ import {
   VsCodeEnv,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
-import { Service } from "typedi";
 import { BotHostTypes } from "../common/local/constants";
 import { LocalCertificateManager } from "../common/local/localCertificateManager";
 import {
@@ -22,7 +21,6 @@ import {
   EnvKeysFrontend,
   LocalEnvProvider,
 } from "../common/local/localEnvProvider";
-import { ProjectSettingsHelper } from "../common/local/projectSettingsHelper";
 import {
   hasAAD,
   hasAzureTab,
@@ -30,7 +28,6 @@ import {
   hasApi,
   hasFunctionBot,
   hasSimpleAuth,
-  hasTab,
   hasSPFxTab,
 } from "../common/projectSettingsHelperV3";
 import { getAllowedAppIds } from "../common/tools";
@@ -60,22 +57,92 @@ import * as TasksNext from "../plugins/solution/fx-solution/debug/util/tasksNext
 import * as Settings from "../plugins/solution/fx-solution/debug/util/settings";
 import fs from "fs-extra";
 import { updateJson, useNewTasks } from "../plugins/solution/fx-solution/debug/scaffolding";
-import { CoreQuestionNames } from "../core/question";
+import { isV3, TOOLS } from "../core";
+import { getComponent } from "./workflow";
+import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 
+export interface LocalEnvConfig {
+  vscodeEnv?: VsCodeEnv;
+  trustDevCert?: boolean;
+  hasAzureTab: boolean;
+  hasSPFxTab?: boolean;
+  hasApi: boolean;
+  hasBot: boolean;
+  hasAAD: boolean;
+  hasSimpleAuth: boolean;
+  skipNgrok?: boolean;
+  hasFunctionBot: boolean;
+  botCapabilities: string[];
+  defaultFunctionName: string;
+  programmingLanguage: string;
+  isM365?: boolean;
+}
+
+function convertToConfig(context: ContextV3, inputs: InputsWithProjectPath): LocalEnvConfig {
+  const settings = context.projectSetting;
+  const bot = getComponent(settings, ComponentNames.TeamsBot);
+  const botCapabilities = bot?.capabilities || [];
+  const config: LocalEnvConfig = {
+    hasAzureTab: hasAzureTab(settings),
+    hasSPFxTab: hasSPFxTab(settings),
+    hasApi: hasApi(settings),
+    hasBot: hasBot(settings),
+    hasAAD: hasAAD(settings),
+    hasSimpleAuth: hasSimpleAuth(settings),
+    hasFunctionBot: hasFunctionBot(settings),
+    botCapabilities: botCapabilities,
+    defaultFunctionName: settings.defaultFunctionName!,
+    programmingLanguage: settings.programmingLanguage! || "",
+    isM365: settings.isM365,
+    skipNgrok: inputs.checkerInfo?.skipNgrok as boolean,
+    vscodeEnv: inputs.vscodeEnv,
+    trustDevCert: inputs.checkerInfo?.trustDevCert as boolean | undefined,
+  };
+  return config;
+}
 export async function setupLocalEnvironment(
-  ctx: ContextV3,
+  context: ContextV3,
+  inputs: InputsWithProjectPath
+): Promise<Result<undefined, FxError>> {
+  const config: LocalEnvConfig = convertToConfig(context, inputs);
+  return await setupLocalEnvironmentCommon(inputs, config, context.envInfo!);
+}
+export async function configLocalEnvironment(
+  context: ContextV3,
+  inputs: InputsWithProjectPath
+): Promise<Result<undefined, FxError>> {
+  const config: LocalEnvConfig = convertToConfig(context, inputs);
+  return await configLocalEnvironmentCommon(inputs, config, context.envInfo!);
+}
+export async function generateLocalDebugSettings(
+  context: ContextV3,
+  inputs: InputsWithProjectPath
+): Promise<Result<undefined, FxError>> {
+  const config: LocalEnvConfig = convertToConfig(context, inputs);
+  return await generateLocalDebugSettingsCommon(inputs, config);
+}
+
+export async function setupLocalEnvironmentCommon(
   inputs: InputsWithProjectPath,
+  config: LocalEnvConfig,
   envInfo: v3.EnvInfoV3
 ): Promise<Result<undefined, FxError>> {
+  const API_STATE_KEY = isV3() ? ComponentNames.TeamsApi : BuiltInFeaturePluginNames.function;
+  const TAB_STATE_KEY = isV3() ? ComponentNames.TeamsTab : BuiltInFeaturePluginNames.frontend;
+  const BOT_STATE_KEY = isV3() ? ComponentNames.TeamsBot : BuiltInFeaturePluginNames.bot;
+  const SIMPLE_AUTH_STATE_KEY = isV3()
+    ? ComponentNames.SimpleAuth
+    : BuiltInFeaturePluginNames.simpleAuth;
+
   const vscEnv = inputs.vscodeEnv;
-  const includeTab = hasAzureTab(ctx.projectSetting);
-  const includeBackend = hasApi(ctx.projectSetting);
-  const includeBot = hasBot(ctx.projectSetting);
-  const includeAAD = hasAAD(ctx.projectSetting);
-  const includeSimpleAuth = hasSimpleAuth(ctx.projectSetting);
-  const skipNgrok = inputs.checkerInfo?.skipNgrok as boolean;
-  const includeFuncHostedBot = hasFunctionBot(ctx.projectSetting);
-  const botCapabilities = ProjectSettingsHelper.getBotCapabilities(ctx.projectSetting);
+  const includeTab = config.hasAzureTab;
+  const includeBackend = config.hasApi;
+  const includeBot = config.hasBot;
+  const includeAAD = config.hasAAD;
+  const includeSimpleAuth = config.hasSimpleAuth;
+  const skipNgrok = config.skipNgrok;
+  const includeFuncHostedBot = config.hasFunctionBot;
+  const botCapabilities = config.botCapabilities;
 
   const telemetryProperties = {
     platform: inputs.platform as string,
@@ -88,7 +155,7 @@ export async function setupLocalEnvironment(
     "bot-host-type": includeFuncHostedBot ? BotHostTypes.AzureFunctions : BotHostTypes.AppService,
     "bot-capabilities": JSON.stringify(botCapabilities),
   };
-  TelemetryUtils.init(ctx.telemetryReporter);
+  TelemetryUtils.init(TOOLS.telemetryReporter!);
   TelemetryUtils.sendStartEvent(TelemetryEventName.setupLocalDebugSettings, telemetryProperties);
 
   try {
@@ -117,35 +184,25 @@ export async function setupLocalEnvironment(
       }
 
       if (includeAAD) {
-        if (!envInfo.state[ComponentNames.SimpleAuth]) {
-          envInfo.state[ComponentNames.SimpleAuth] = {};
-        }
-
+        envInfo.state[SIMPLE_AUTH_STATE_KEY] = envInfo.state[SIMPLE_AUTH_STATE_KEY] || {};
         if (includeSimpleAuth) {
-          envInfo.state[ComponentNames.SimpleAuth].endpoint = localAuthEndpoint;
+          envInfo.state[SIMPLE_AUTH_STATE_KEY].endpoint = localAuthEndpoint;
         }
       }
 
       if (includeTab) {
-        if (!envInfo.state[ComponentNames.TeamsTab]) {
-          envInfo.state[ComponentNames.TeamsTab] = {};
-        }
-        envInfo.state[ComponentNames.TeamsTab].endpoint = localTabEndpoint;
-        envInfo.state[ComponentNames.TeamsTab].domain = localTabDomain;
+        envInfo.state[TAB_STATE_KEY] = envInfo.state[TAB_STATE_KEY] || {};
+        envInfo.state[TAB_STATE_KEY].endpoint = localTabEndpoint;
+        envInfo.state[TAB_STATE_KEY].domain = localTabDomain;
       }
 
       if (includeBackend) {
-        if (!envInfo.state[ComponentNames.Function]) {
-          envInfo.state[ComponentNames.Function] = {};
-        }
-        envInfo.state[ComponentNames.Function].functionEndpoint = localFuncEndpoint;
+        envInfo.state[API_STATE_KEY] = envInfo.state[API_STATE_KEY] || {};
+        envInfo.state[API_STATE_KEY].functionEndpoint = localFuncEndpoint;
       }
 
       if (includeBot) {
-        if (!envInfo.state[ComponentNames.TeamsBot]) {
-          envInfo.state[ComponentNames.TeamsBot] = {};
-        }
-
+        envInfo.state[BOT_STATE_KEY] = envInfo.state[BOT_STATE_KEY] || {};
         if (skipNgrok) {
           const localBotEndpoint = envInfo.config.bot?.siteEndpoint as string;
           if (localBotEndpoint === undefined) {
@@ -161,8 +218,8 @@ export async function setupLocalEnvironment(
             return err(error);
           }
 
-          envInfo.state[ComponentNames.TeamsBot].endpoint = localBotEndpoint;
-          envInfo.state[ComponentNames.TeamsBot].domain = localBotEndpoint.slice(8);
+          envInfo.state[BOT_STATE_KEY].siteEndpoint = localBotEndpoint;
+          envInfo.state[BOT_STATE_KEY].validDomain = localBotEndpoint.slice(8);
         } else {
           const ngrokHttpUrl = await getNgrokHttpUrl(3978);
           if (!ngrokHttpUrl) {
@@ -170,28 +227,28 @@ export async function setupLocalEnvironment(
             TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);
             return err(error);
           } else {
-            envInfo.state[ComponentNames.TeamsBot].endpoint = ngrokHttpUrl;
-            envInfo.state[ComponentNames.TeamsBot].domain = ngrokHttpUrl.slice(8);
+            envInfo.state[BOT_STATE_KEY].siteEndpoint = ngrokHttpUrl;
+            envInfo.state[BOT_STATE_KEY].validDomain = ngrokHttpUrl.slice(8);
           }
         }
       }
     } else if (inputs.platform === Platform.VS) {
       if (includeTab) {
-        envInfo.state[ComponentNames.TeamsTab] ??= {};
-        envInfo.state[ComponentNames.TeamsTab].endpoint = "https://localhost:44302";
-        envInfo.state[ComponentNames.TeamsTab].domain = "localhost";
+        envInfo.state[TAB_STATE_KEY] ??= {};
+        envInfo.state[TAB_STATE_KEY].endpoint = "https://localhost:44302";
+        envInfo.state[TAB_STATE_KEY].domain = "localhost";
       }
 
       if (includeBot) {
-        envInfo.state[ComponentNames.TeamsBot] ??= {};
+        envInfo.state[BOT_STATE_KEY] ??= {};
         const ngrokHttpUrl = await getNgrokHttpUrl(5130);
         if (!ngrokHttpUrl) {
           const error = NgrokTunnelNotConnected();
           TelemetryUtils.sendErrorEvent(TelemetryEventName.setupLocalDebugSettings, error);
           return err(error);
         } else {
-          envInfo.state[ComponentNames.TeamsBot].endpoint = ngrokHttpUrl;
-          envInfo.state[ComponentNames.TeamsBot].domain = ngrokHttpUrl.slice(8);
+          envInfo.state[BOT_STATE_KEY].siteEndpoint = ngrokHttpUrl;
+          envInfo.state[BOT_STATE_KEY].validDomain = ngrokHttpUrl.slice(8);
         }
       }
     }
@@ -204,19 +261,29 @@ export async function setupLocalEnvironment(
   return ok(undefined);
 }
 
-export async function configLocalEnvironment(
-  ctx: ContextV3,
+export async function configLocalEnvironmentCommon(
   inputs: InputsWithProjectPath,
+  config: LocalEnvConfig,
   envInfo: v3.EnvInfoV3
 ): Promise<Result<undefined, FxError>> {
-  const includeTab = hasAzureTab(ctx.projectSetting);
-  const includeBackend = hasApi(ctx.projectSetting);
-  const includeBot = hasBot(ctx.projectSetting);
-  const includeAAD = hasAAD(ctx.projectSetting);
-  const includeSimpleAuth = hasSimpleAuth(ctx.projectSetting);
-  const includeFuncHostedBot = hasFunctionBot(ctx.projectSetting);
-  const botCapabilities = ProjectSettingsHelper.getBotCapabilities(ctx.projectSetting);
-  let trustDevCert = inputs.checkerInfo?.trustDevCert as boolean | undefined;
+  const API_STATE_KEY = isV3() ? ComponentNames.TeamsApi : BuiltInFeaturePluginNames.function;
+  const AAD_STATE_KEY = isV3() ? ComponentNames.AadApp : BuiltInFeaturePluginNames.aad;
+  const TAB_STATE_KEY = isV3() ? ComponentNames.TeamsTab : BuiltInFeaturePluginNames.frontend;
+  const SIMPLE_AUTH_STATE_KEY = isV3()
+    ? ComponentNames.SimpleAuth
+    : BuiltInFeaturePluginNames.simpleAuth;
+  const APP_MANIFEST_KEY = isV3()
+    ? ComponentNames.AppManifest
+    : BuiltInFeaturePluginNames.appStudio;
+
+  const includeTab = config.hasAzureTab;
+  const includeBackend = config.hasApi;
+  const includeBot = config.hasBot;
+  const includeAAD = config.hasAAD;
+  const includeSimpleAuth = config.hasSimpleAuth;
+  const includeFuncHostedBot = config.hasFunctionBot;
+  const botCapabilities = config.botCapabilities;
+  let trustDevCert = config.trustDevCert as boolean | undefined;
 
   const telemetryProperties = {
     platform: inputs.platform as string,
@@ -228,7 +295,7 @@ export async function configLocalEnvironment(
     "bot-capabilities": JSON.stringify(botCapabilities),
     "trust-development-certificate": trustDevCert + "",
   };
-  TelemetryUtils.init(ctx.telemetryReporter);
+  TelemetryUtils.init(TOOLS.telemetryReporter!);
   TelemetryUtils.sendStartEvent(TelemetryEventName.configLocalDebugSettings, telemetryProperties);
 
   try {
@@ -243,15 +310,15 @@ export async function configLocalEnvironment(
       const botEnvs = includeBot ? await localEnvProvider.loadBotLocalEnvs() : undefined;
 
       // get config for local debug
-      const clientId = envInfo.state[ComponentNames.AadApp]?.clientId;
-      const clientSecret = envInfo.state[ComponentNames.AadApp]?.clientSecret;
-      const applicationIdUri = envInfo.state[ComponentNames.AadApp]?.applicationIdUris;
-      const teamsAppTenantId = envInfo.state[ComponentNames.AppManifest].tenantId;
-      const localTabEndpoint = envInfo.state[ComponentNames.TeamsTab]?.endpoint;
-      const localFuncEndpoint = envInfo.state[ComponentNames.Function]?.functionEndpoint;
+      const clientId = envInfo.state[AAD_STATE_KEY]?.clientId;
+      const clientSecret = envInfo.state[AAD_STATE_KEY]?.clientSecret;
+      const applicationIdUri = envInfo.state[AAD_STATE_KEY]?.applicationIdUris;
+      const teamsAppTenantId = envInfo.state[APP_MANIFEST_KEY]?.tenantId;
+      const localTabEndpoint = envInfo.state[TAB_STATE_KEY]?.endpoint;
+      const localFuncEndpoint = envInfo.state[API_STATE_KEY]?.functionEndpoint;
 
-      const localAuthEndpoint = envInfo.state[ComponentNames.SimpleAuth]?.endpoint as string;
-      const localAuthPackagePath = envInfo.state[ComponentNames.SimpleAuth]
+      const localAuthEndpoint = envInfo.state[SIMPLE_AUTH_STATE_KEY]?.endpoint as string;
+      const localAuthPackagePath = envInfo.state[SIMPLE_AUTH_STATE_KEY]
         ?.simpleAuthFilePath as string;
 
       if (includeTab) {
@@ -271,8 +338,7 @@ export async function configLocalEnvironment(
 
         if (includeBackend) {
           frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.FuncEndpoint] = localFuncEndpoint;
-          frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.FuncName] = ctx.projectSetting
-            .defaultFunctionName as string;
+          frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.FuncName] = config.defaultFunctionName;
 
           backendEnvs!.teamsfxLocalEnvs[EnvKeysBackend.FuncWorkerRuntime] = "node";
           backendEnvs!.teamsfxLocalEnvs[EnvKeysBackend.ClientId] = clientId;
@@ -292,7 +358,7 @@ export async function configLocalEnvironment(
             trustDevCert = true;
           }
 
-          const certManager = new LocalCertificateManager(ctx.userInteraction, ctx.logProvider);
+          const certManager = new LocalCertificateManager(TOOLS.ui, TOOLS.logProvider);
 
           const localCert = await certManager.setupCertificate(trustDevCert);
           if (
@@ -355,23 +421,20 @@ export async function configLocalEnvironment(
   return ok(undefined);
 }
 
-export async function generateLocalDebugSettings(
-  context: ContextV3,
-  inputs: InputsWithProjectPath
+export async function generateLocalDebugSettingsCommon(
+  inputs: InputsWithProjectPath,
+  config: LocalEnvConfig
 ): Promise<Result<undefined, FxError>> {
-  const isSpfx = hasSPFxTab(context.projectSetting);
-  const includeFrontend = hasTab(context.projectSetting);
-  const includeBackend = hasApi(context.projectSetting);
-  const includeBot = hasBot(context.projectSetting);
-  const includeAAD = hasAAD(context.projectSetting);
-  const includeSimpleAuth = hasSimpleAuth(context.projectSetting);
-  const includeFuncHostedBot = hasFunctionBot(context.projectSetting);
-  const botCapabilities = ProjectSettingsHelper.getBotCapabilities(context.projectSetting);
-  const programmingLanguage =
-    context.projectSetting.programmingLanguage ||
-    inputs?.[CoreQuestionNames.ProgrammingLanguage] ||
-    "";
-  const isM365 = context.projectSetting.isM365;
+  const isSpfx = config.hasSPFxTab === true;
+  const includeFrontend = config.hasAzureTab;
+  const includeBackend = config.hasApi;
+  const includeBot = config.hasBot;
+  const includeAAD = config.hasAAD;
+  const includeSimpleAuth = config.hasSimpleAuth;
+  const includeFuncHostedBot = config.hasFunctionBot;
+  const botCapabilities = config.botCapabilities;
+  const programmingLanguage = config.programmingLanguage;
+  const isM365 = config.isM365;
   const telemetryProperties = {
     platform: inputs.platform as string,
     spfx: isSpfx ? "true" : "false",
@@ -383,7 +446,7 @@ export async function generateLocalDebugSettings(
     "bot-capabilities": JSON.stringify(botCapabilities),
     "programming-language": programmingLanguage,
   };
-  TelemetryUtils.init(context.telemetryReporter);
+  TelemetryUtils.init(TOOLS.telemetryReporter!);
   TelemetryUtils.sendStartEvent(TelemetryEventName.scaffoldLocalDebugSettings, telemetryProperties);
   try {
     // scaffold for both vscode and cli

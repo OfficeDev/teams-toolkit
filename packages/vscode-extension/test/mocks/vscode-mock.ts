@@ -118,6 +118,7 @@ mockedVSCode.Task = vscodeMocks.vscMockExtHostedTypes.Task;
   withProgress: async (options: any, task: (progress: any, token: any) => Promise<any>) => {
     return await task({ report: () => {} }, new vscodeMocks.CancellationToken());
   },
+  createQuickPick: () => {},
 };
 (mockedVSCode as any).workspace = {
   workspaceFolders: undefined,
@@ -155,6 +156,14 @@ mockedVSCode.commands = {
     return new Disposable(() => {
       return;
     });
+  },
+};
+
+// Setup textDocument APIs
+(mockedVSCode as any).TextDocument = {
+  fileName: "",
+  getText: () => {
+    return "";
   },
 };
 

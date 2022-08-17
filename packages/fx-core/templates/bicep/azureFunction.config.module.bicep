@@ -27,7 +27,7 @@ var m365ApplicationIdUri = 'api://${ provisionOutputs.TabOutput.value.domain }/b
 var m365ApplicationIdUri = 'api://botid-${botId}'
     {{/if}}
   {{else}}
-var m365ApplicationIdUri = 'api://${ provisionOutputs.TabOutput.value.domain }'
+var m365ApplicationIdUri = 'api://${ provisionOutputs.TabOutput.value.domain }/${m365ClientId}'
   {{/if}}
 {{/if}}
 {{#if (contains "teams-bot" connections)}}
@@ -48,8 +48,11 @@ var officeDesktopAppClientId = '0ec893e0-5785-4de6-99da-4ed124e5296c'
 var outlookDesktopAppClientId = 'd3590ed6-52b3-4102-aeff-aad2292ab01c'
 var outlookWebAppClientId1 = '00000002-0000-0ff1-ce00-000000000000'
 var outlookWebAppClientId2 = 'bc59ab01-8403-45c6-8796-ac3ef710b3e3'
+  {{#if (contains "apim" connections)}}
+var authorizedClientApplicationIds = '${provisionParameters['apimClientId']};${teamsMobileOrDesktopAppClientId};${teamsWebAppClientId};${officeWebAppClientId1};${officeWebAppClientId2};${officeDesktopAppClientId};${outlookDesktopAppClientId};${outlookWebAppClientId1};${outlookWebAppClientId2}'
+  {{else}}
 var authorizedClientApplicationIds = '${teamsMobileOrDesktopAppClientId};${teamsWebAppClientId};${officeWebAppClientId1};${officeWebAppClientId2};${officeDesktopAppClientId};${outlookDesktopAppClientId};${outlookWebAppClientId1};${outlookWebAppClientId2}'
-
+  {{/if}}  
 {{/if}}
 {{#if (contains "teams-tab" connections) }}
 var tabEndpoint = provisionOutputs.TabOutput.value.endpoint
@@ -89,7 +92,7 @@ resource functionAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
     API_ENDPOINT: provisionOutputs.azureFunctionApiOutput.value.functionEndpoint // Azure Function API endpoint
     {{/if}}
     {{#if (contains "azure-sql" connections)}}
-    SQL_DATABASE_NAME: {{azure-sql.outputs.sqlDatabaseName}} // SQL database name
+    SQL_DATABASE_NAME: {{azure-sql.outputs.databaseName}} // SQL database name
     SQL_ENDPOINT: {{azure-sql.outputs.sqlEndpoint}} // SQL server endpoint
     {{/if}}
     {{#if (contains "identity" connections)}}

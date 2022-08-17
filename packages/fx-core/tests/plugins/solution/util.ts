@@ -42,8 +42,8 @@ import { MockPermissionRequestProvider } from "../../core/utils";
 
 export const validManifest = {
   $schema:
-    "https://developer.microsoft.com/en-us/json-schemas/teams/v1.13/MicrosoftTeams.schema.json",
-  manifestVersion: "1.13",
+    "https://developer.microsoft.com/en-us/json-schemas/teams/v1.14/MicrosoftTeams.schema.json",
+  manifestVersion: "1.14",
   version: "1.0.0",
   id: "{appid}",
   packageName: "com.microsoft.teams.extension",

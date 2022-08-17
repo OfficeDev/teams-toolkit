@@ -30,7 +30,7 @@ const timerTrigger: AzureFunction = async function (context: Context, myTimer: a
 
     /** For example, if the current target is a "Group" this means that the notification application is
      *  installed in a Group Chat.
-    if (target.type === "Group") {
+    if (target.type === NotificationTargetType.Group) {
       // You can send the Adaptive Card to the Group Chat
       await target.sendAdaptiveCard(...);
 
@@ -45,7 +45,7 @@ const timerTrigger: AzureFunction = async function (context: Context, myTimer: a
 
     /** If the current target is "Channel" this means that the notification application is installed
      *  in a Team.
-    if (target.type === "Channel") {
+    if (target.type === NotificationTargetType.Channel) {
       // If you send an Adaptive Card to the Team (the target), it sends it to the `General` channel of the Team
       await target.sendAdaptiveCard(...);
 
@@ -65,7 +65,7 @@ const timerTrigger: AzureFunction = async function (context: Context, myTimer: a
 
     /** If the current target is "Person" this means that the notification application is installed in a
      *  personal chat.
-    if (target.type === "Person") {
+    if (target.type === NotificationTargetType.Person) {
       // Directly notify the individual person
       await target.sendAdaptiveCard(...);
     }

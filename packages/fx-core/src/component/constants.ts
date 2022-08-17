@@ -23,7 +23,7 @@ export const ComponentNames = {
   ApiCode: "api-code",
   Function: "azure-function",
   SimpleAuth: "simple-auth",
-  SSO: "SSO",
+  SSO: "sso",
   ApiConnector: "api-connector",
   CICD: "cicd",
 };
@@ -104,9 +104,9 @@ export const AzureSqlOutputs = {
     key: "sqlEndpoint",
     bicepVariable: "provisionOutputs.azureSqlOutput.value.sqlEndpoint",
   },
-  sqlDatabaseName: {
-    key: "sqlDatabaseName",
-    bicepVariable: "provisionOutputs.azureSqlOutput.value.sqlDatabaseName",
+  databaseName: {
+    key: "databaseName",
+    bicepVariable: "provisionOutputs.azureSqlOutput.value.databaseName",
   },
 };
 

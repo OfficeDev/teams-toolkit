@@ -59,7 +59,7 @@ import { NamedArmResourcePluginAdaptor } from "./v2/adaptor";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { convertToAlphanumericOnly, getProjectTemplatesFolderPath } from "../../../common/utils";
 import { isV3 } from "../../../core";
-import { pluginName2ComponentName } from "../../../component/migrate";
+import { convertManifestTemplateToV3, pluginName2ComponentName } from "../../../component/migrate";
 
 const bicepOrchestrationFileName = "main.bicep";
 const bicepOrchestrationProvisionMainFileName = "mainProvision.bicep";
@@ -580,7 +580,10 @@ export async function doDeployArmTemplatesV3(
         helpLink: HelpLinks.ArmHelpLink,
         displayMessage: notificationMessage,
       });
-      returnError.innerError = JSON.stringify(deploymentErrorObj);
+      returnError.innerError = {
+        value: JSON.stringify(deploymentErrorObj),
+      } as DeploymentErrorMessage;
+
       return err(returnError);
     } else {
       return result;
@@ -707,8 +710,10 @@ export async function deployArmTemplatesV3(
       });
     } else {
       const errorProperties: { [key: string]: string } = {};
-      if (result.error.innerError) {
-        errorProperties[SolutionTelemetryProperty.ArmDeploymentError] = result.error.innerError;
+      // If the innerError is a DeploymentErrorMessage value, we will set it in telemetry.
+      if (result.error.innerError && result.error.innerError instanceof DeploymentErrorMessage) {
+        errorProperties[SolutionTelemetryProperty.ArmDeploymentError] =
+          result.error.innerError.value;
       }
       sendErrorTelemetryThenReturnError(
         SolutionTelemetryEvent.ArmDeployment,
@@ -781,27 +786,54 @@ export async function copyParameterJson(
   );
 }
 
-export async function updateResourceBaseName(
+export async function updateAzureParameters(
   projectPath: string,
   appName: string,
-  envName: string
-) {
-  if (!envName || !appName || !projectPath) {
-    return;
+  envName: string,
+  hasSwitchedM365Tenant: boolean,
+  hasSwitchedSubscription: boolean,
+  hasBotServiceCreatedBefore: boolean
+): Promise<Result<undefined, FxError>> {
+  if (
+    !envName ||
+    !appName ||
+    !projectPath ||
+    (!hasSwitchedM365Tenant && !hasSwitchedSubscription) ||
+    (hasSwitchedM365Tenant && !hasBotServiceCreatedBefore)
+  ) {
+    return ok(undefined);
   }
 
   const parameterFolderPath = path.join(projectPath, configsFolder);
   const targetParameterFileName = parameterFileNameTemplate.replace(EnvNamePlaceholder, envName);
 
   const targetParameterFilePath = path.join(parameterFolderPath, targetParameterFileName);
-  const targetParameterContent = await fs.readJson(targetParameterFilePath);
-  targetParameterContent[parameterName].provisionParameters.value!.resourceBaseName =
-    generateResourceBaseName(appName, envName);
-  await fs.ensureDir(parameterFolderPath);
-  await fs.writeFile(
-    targetParameterFilePath,
-    JSON.stringify(targetParameterContent, undefined, 2).replace(/\r?\n/g, os.EOL)
-  );
+
+  try {
+    const targetParameterContent = await fs.readJson(targetParameterFilePath);
+
+    if (hasSwitchedSubscription) {
+      targetParameterContent[parameterName].provisionParameters.value!.resourceBaseName =
+        generateResourceBaseName(appName, envName);
+    } else if (hasSwitchedM365Tenant && hasBotServiceCreatedBefore) {
+      targetParameterContent[parameterName].provisionParameters.value!.botServiceName =
+        generateResourceBaseName(appName, envName);
+    }
+    await fs.ensureDir(parameterFolderPath);
+    await fs.writeFile(
+      targetParameterFilePath,
+      JSON.stringify(targetParameterContent, undefined, 2).replace(/\r?\n/g, os.EOL)
+    );
+    return ok(undefined);
+  } catch (exception) {
+    const error = new UserError(
+      SolutionSource,
+      SolutionError.FailedToUpdateAzureParameters,
+      getDefaultString("core.handleConfigFile.FailedToUpdateAzureParameters", envName),
+      getLocalizedString("core.handleConfigFile.FailedToUpdateAzureParameters", envName)
+    );
+    return err(error);
+  }
 }
 
 export async function getParameterJson(ctx: SolutionContext) {
@@ -1536,6 +1568,8 @@ function expandParameterPlaceholdersV3(
   );
 
   availableVariables["$env"] = processVariables;
+
+  parameterContent = convertManifestTemplateToV3(parameterContent);
 
   return compileHandlebarsTemplateString(parameterContent, availableVariables);
 }

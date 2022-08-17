@@ -23,7 +23,8 @@ import {
   Platform,
   Void,
   CloudResource,
-  ProjectSettingsV3,
+  InputsWithProjectPath,
+  v2,
 } from "@microsoft/teamsfx-api";
 import path, { basename } from "path";
 import fs from "fs-extra";
@@ -54,6 +55,7 @@ import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
 import { Container } from "typedi";
 import { pick } from "lodash";
 import { convertEnvStateV2ToV3, convertEnvStateV3ToV2 } from "../component/migrate";
+import { LocalCrypto } from "./crypto";
 
 export interface EnvStateFiles {
   envState: string;
@@ -123,6 +125,14 @@ class EnvironmentManager {
         appName: {
           short: appName,
           full: `Full name for ${appName}`,
+        },
+        description: {
+          short: `Short description of ${appName}`,
+          full: `Full description of ${appName}`,
+        },
+        icons: {
+          color: "resources/color.png",
+          outline: "resources/outline.png",
         },
       },
     };
@@ -475,6 +485,36 @@ class EnvironmentManager {
   public getLocalEnvName() {
     return this.localEnvName;
   }
+
+  public async resetProvisionState(inputs: InputsWithProjectPath, ctx: v2.Context): Promise<void> {
+    const allEnvRes = await environmentManager.listRemoteEnvConfigs(inputs.projectPath!);
+    if (allEnvRes.isOk()) {
+      for (const env of allEnvRes.value) {
+        const loadEnvRes = await this.loadEnvInfo(
+          inputs.projectPath,
+          new LocalCrypto(ctx.projectSetting.projectId),
+          env,
+          true
+        );
+        if (loadEnvRes.isOk()) {
+          const envInfo = loadEnvRes.value as v3.EnvInfoV3;
+          if (
+            envInfo.state?.solution?.provisionSucceeded === true ||
+            envInfo.state?.solution?.provisionSucceeded === "true"
+          ) {
+            envInfo.state.solution.provisionSucceeded = false;
+            await environmentManager.writeEnvState(
+              envInfo.state,
+              inputs.projectPath,
+              ctx.cryptoProvider,
+              env,
+              true
+            );
+          }
+        }
+      }
+    }
+  }
 }
 
 export function separateSecretDataV3(envState: any): Record<string, string> {
@@ -511,6 +551,14 @@ export function newEnvInfo(
         appName: {
           short: "teamsfx_app",
         },
+        description: {
+          short: `Short description of teamsfx_app`,
+          full: `Full description of teamsfx_app`,
+        },
+        icons: {
+          color: "resources/color.png",
+          outline: "resources/outline.png",
+        },
       },
     },
     state: state ?? new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]),
@@ -528,6 +576,14 @@ export function newEnvInfoV3(
       manifest: {
         appName: {
           short: "teamsfx_app",
+        },
+        description: {
+          short: `Short description of teamsfx_app`,
+          full: `Full description of teamsfx_app`,
+        },
+        icons: {
+          color: "resources/color.png",
+          outline: "resources/outline.png",
         },
       },
     },

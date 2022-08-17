@@ -14,6 +14,7 @@ import { cpUtils } from "../../../../../src/plugins/solution/fx-solution/utils/d
 import * as uuid from "uuid";
 import { ok, Void } from "@microsoft/teamsfx-api";
 import { DefaultManifestProvider } from "../../../../../src/component/resource/appManifest/manifestProvider";
+import mockedEnv from "mocked-env";
 
 describe("SPFxScaffold", function () {
   const testFolder = path.resolve("./tmp");
@@ -53,6 +54,13 @@ describe("SPFxScaffold", function () {
     expect(result.isOk()).to.eq(true);
   });
 
+  it("scaffold SPFx project with minimal framework", async function () {
+    const pluginContext = TestHelper.getFakePluginContext(appName, testFolder, "minimal");
+    const result = await plugin.postScaffold(pluginContext);
+    if (result.isErr()) console.log(result.error);
+    expect(result.isOk()).to.eq(true);
+  });
+
   it("scaffold SPFx project with extremely long webpart name", async function () {
     const pluginContext = TestHelper.getFakePluginContext(
       appName,
@@ -63,6 +71,19 @@ describe("SPFxScaffold", function () {
     const result = await plugin.postScaffold(pluginContext);
     if (result.isErr()) console.log(result.error);
     expect(result.isOk()).to.eq(true);
+  });
+
+  it("add webpart to SPFx project framework", async function () {
+    const mockedEnvRestore = mockedEnv({ TEAMSFX_SPFX_MULTI_TAB: "true" });
+    const fakedAddCapability = sinon
+      .stub(DefaultManifestProvider.prototype, "addCapabilities")
+      .resolves(ok(Void));
+    const pluginContext = TestHelper.getFakePluginContext(appName, testFolder, undefined);
+    const result = await plugin.postScaffold(pluginContext);
+    if (result.isErr()) console.log(result.error);
+    expect(result.isOk()).to.eq(true);
+    expect(fakedAddCapability.calledOnce).to.eq(true);
+    mockedEnvRestore();
   });
 
   afterEach(async () => {

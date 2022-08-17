@@ -13,7 +13,7 @@ import {
   Result,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
-import Container, { Service } from "typedi";
+import { Container, Service } from "typedi";
 import { isVSProject } from "../../common/projectSettingsHelper";
 import { globalVars } from "../../core/globalVars";
 import { CoreQuestionNames } from "../../core/question";
@@ -26,25 +26,17 @@ import { SPFxTabCodeProvider } from "../code/spfxTabCode";
 import { ComponentNames } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
+import { addFeatureNotify } from "../utils";
 @Service(ComponentNames.SPFxTab)
 export class SPFxTab {
   name = ComponentNames.SPFxTab;
-  @hooks([
-    ActionExecutionMW({
-      question: (context: ContextV3, inputs: InputsWithProjectPath) => {
-        const spfx_frontend_host = new QTreeNode({
-          type: "group",
-        });
-        const spfx_version_check = new QTreeNode(versionCheckQuestion);
-        spfx_frontend_host.addChild(spfx_version_check);
-        const spfx_framework_type = new QTreeNode(frameworkQuestion);
-        spfx_version_check.addChild(spfx_framework_type);
-        const spfx_webpart_name = new QTreeNode(webpartNameQuestion);
-        spfx_version_check.addChild(spfx_webpart_name);
-        return ok(spfx_frontend_host);
-      },
-    }),
-  ])
+  // @hooks([
+  //   ActionExecutionMW({
+  //     question: (context: ContextV3, inputs: InputsWithProjectPath) => {
+  //       return ok(getSPFxScaffoldQuestion());
+  //     },
+  //   }),
+  // ])
   async add(
     context: ContextV3,
     inputs: InputsWithProjectPath
@@ -65,7 +57,7 @@ export class SPFxTab {
     });
     projectSettings.programmingLanguage =
       projectSettings.programmingLanguage || inputs[CoreQuestionNames.ProgrammingLanguage];
-    globalVars.isVS = isVSProject(projectSettings);
+    globalVars.isVS = inputs[CoreQuestionNames.ProgrammingLanguage] === "csharp";
     const effects = ["config 'teams-tab' in projectSettings"];
     {
       const spfxCode = Container.get<SPFxTabCodeProvider>(ComponentNames.SPFxTabCode);
@@ -78,6 +70,20 @@ export class SPFxTab {
       if (res.isErr()) return err(res.error);
       effects.push("generate local debug settings");
     }
+    addFeatureNotify(inputs, context.userInteraction, "Capability", [inputs.features]);
     return ok(undefined);
   }
+}
+
+export function getSPFxScaffoldQuestion(): QTreeNode {
+  const spfx_frontend_host = new QTreeNode({
+    type: "group",
+  });
+  const spfx_version_check = new QTreeNode(versionCheckQuestion);
+  spfx_frontend_host.addChild(spfx_version_check);
+  const spfx_framework_type = new QTreeNode(frameworkQuestion);
+  spfx_version_check.addChild(spfx_framework_type);
+  const spfx_webpart_name = new QTreeNode(webpartNameQuestion);
+  spfx_version_check.addChild(spfx_webpart_name);
+  return spfx_frontend_host;
 }

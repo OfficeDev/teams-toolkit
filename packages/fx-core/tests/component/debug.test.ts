@@ -10,12 +10,22 @@ import { configLocalEnvironment, setupLocalEnvironment } from "../../src/compone
 import { MockTools } from "../core/utils";
 import { setTools } from "../../src/core/globalVars";
 import { ComponentNames } from "../../src/component/constants";
-
+import mockedEnv from "mocked-env";
 chai.use(chaiAsPromised);
 
 describe("DebugComponent", () => {
   const tools = new MockTools();
+  let mockedEnvRestore: () => void;
   setTools(tools);
+  before(() => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_APIV3: "true",
+    });
+  });
+
+  after(async () => {
+    mockedEnvRestore();
+  });
   describe("setup", () => {
     afterEach(async () => await fs.remove(path.resolve(__dirname, "./data")));
     it("happy path", async () => {
@@ -60,7 +70,8 @@ describe("DebugComponent", () => {
           },
         },
       };
-      const result = await setupLocalEnvironment(context, inputs, envInfo);
+      context.envInfo = envInfo;
+      const result = await setupLocalEnvironment(context, inputs);
       chai.assert.isTrue(result.isOk());
       console.log(envInfo.state);
     });
@@ -101,20 +112,21 @@ describe("DebugComponent", () => {
         config: {},
         state: {
           solution: {},
-          "teams-bot": {
+          [ComponentNames.TeamsBot]: {
             siteEndPoint: "https://www.test.com",
             siteEndpoint: "https://endpoint.com/",
             validDomain: "endpoint.com/",
           },
-          "simple-auth": {},
-          "teams-tab": { endpoint: "https://localhost:53000", domain: "localhost" },
-          function: { functionEndpoint: "http://localhost:7071" },
+          [ComponentNames.SimpleAuth]: {},
+          [ComponentNames.TeamsTab]: { endpoint: "https://localhost:53000", domain: "localhost" },
+          [ComponentNames.TeamsApi]: { functionEndpoint: "http://localhost:7071" },
           [ComponentNames.AppManifest]: {
             tenantId: "mockTenantId",
           },
         },
       };
-      const result = await configLocalEnvironment(context, inputs, envInfo);
+      context.envInfo = envInfo;
+      const result = await configLocalEnvironment(context, inputs);
       chai.assert.isTrue(result.isOk());
     });
   });

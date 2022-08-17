@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 import {
   CLIPlatforms,
+  ContextV3,
   DynamicPlatforms,
   err,
   FxError,
@@ -46,6 +47,7 @@ import {
 } from "../plugins/resource/bot/question";
 import {
   ApiConnectionOptionItem,
+  AskSubscriptionQuestion,
   AzureResourceApimNewUI,
   AzureResourceFunctionNewUI,
   AzureResourceKeyVaultNewUI,
@@ -57,6 +59,7 @@ import {
   CommandAndResponseOptionItem,
   DeployPluginSelectQuestion,
   HostTypeOptionAzure,
+  HostTypeOptionSPFx,
   MessageExtensionItem,
   MessageExtensionNewUIItem,
   NotificationOptionItem,
@@ -64,31 +67,50 @@ import {
   TabFeatureIds,
   TabNewUIOptionItem,
   TabNonSsoItem,
+  TabSPFxNewUIItem,
 } from "../plugins/solution/fx-solution/question";
 import { getPluginCLIName } from "../plugins/solution/fx-solution/v2/getQuestions";
 import { checkWetherProvisionSucceeded } from "../plugins/solution/fx-solution/v2/utils";
 import { NoCapabilityFoundError } from "../core/error";
 import { ProgrammingLanguageQuestion } from "../core/question";
 import { createContextV3 } from "./utils";
-import { isCLIDotNetEnabled } from "../common/featureFlags";
+import { isCLIDotNetEnabled, isSPFxMultiTabEnabled } from "../common/featureFlags";
 import { Runtime } from "../plugins/resource/bot/v2/enum";
 import { getPlatformRuntime } from "../plugins/resource/bot/v2/mapping";
 import { buildQuestionNode } from "./resource/azureSql/questions";
 import { functionNameQuestion } from "../plugins/resource/function/question";
 import { ApiConnectorImpl } from "../plugins/resource/apiconnector/plugin";
 import { addCicdQuestion } from "./feature/cicd";
+import { ApimPluginV3 } from "../plugins/resource/apim/v3";
+import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
+import {
+  versionCheckQuestion,
+  webpartNameQuestion,
+} from "../plugins/resource/spfx/utils/questions";
 
 export async function getQuestionsForProvisionV3(
+  context: v2.Context,
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (inputs.platform === Platform.CLI_HELP) {
-    return ok(buildQuestionNode());
+    const node = new QTreeNode({ type: "group" });
+    node.addChild(new QTreeNode(AskSubscriptionQuestion));
+    node.addChild(buildQuestionNode());
+    return ok(node);
+  } else {
+    const node = new QTreeNode({ type: "group" });
+    if (hasAzureResourceV3(context.projectSetting as ProjectSettingsV3)) {
+      node.addChild(new QTreeNode(AskSubscriptionQuestion));
+    }
+    if (getComponent(context.projectSetting as ProjectSettingsV3, ComponentNames.AzureSQL)) {
+      node.addChild(buildQuestionNode());
+    }
+    return ok(node);
   }
-  return ok(undefined);
 }
 
 export async function getQuestionsForDeployV3(
-  ctx: v2.Context,
+  ctx: ContextV3,
   inputs: Inputs,
   envInfo?: v3.EnvInfoV3
 ): Promise<Result<QTreeNode | undefined, FxError>> {
@@ -150,7 +172,23 @@ export async function getQuestionsForDeployV3(
   const selectQuestion = DeployPluginSelectQuestion;
   selectQuestion.staticOptions = options;
   selectQuestion.default = options.map((i) => i.id);
-  return ok(new QTreeNode(selectQuestion));
+  const node = new QTreeNode(selectQuestion);
+  if (selectableComponents.includes(ComponentNames.APIM)) {
+    const apimV3 = Container.get<ApimPluginV3>(BuiltInFeaturePluginNames.apim);
+    const apimDeployNodeRes = await apimV3.getQuestionsForDeploy(
+      ctx,
+      inputs,
+      envInfo!,
+      ctx.tokenProvider!
+    );
+    if (apimDeployNodeRes.isErr()) return err(apimDeployNodeRes.error);
+    if (apimDeployNodeRes.value) {
+      const apimNode = apimDeployNodeRes.value;
+      apimNode.condition = { contains: BuiltInFeaturePluginNames.apim };
+      node.addChild(apimNode);
+    }
+  }
+  return ok(node);
 }
 
 export async function getQuestionsForAddFeatureV3(
@@ -184,6 +222,9 @@ export async function getQuestionsForAddFeatureV3(
     if (triggerNodeRes.value) {
       addFeatureNode.addChild(triggerNodeRes.value);
     }
+    const functionNameNode = new QTreeNode(functionNameQuestion);
+    functionNameNode.condition = { equals: AzureResourceFunctionNewUI.id };
+    addFeatureNode.addChild(functionNameNode);
     return ok(addFeatureNode);
   }
   // check capability options
@@ -231,16 +272,29 @@ export async function getQuestionsForAddFeatureV3(
     }
     // function can always be added
     options.push(AzureResourceFunctionNewUI);
+  } else if (
+    isSPFxMultiTabEnabled() &&
+    ctx.projectSetting.solutionSettings?.hostType === HostTypeOptionSPFx.id
+  ) {
+    options.push(TabSPFxNewUIItem);
   }
   const isCicdAddable = await canAddCICDWorkflows(inputs, ctx);
   if (isCicdAddable) {
     options.push(CicdOptionItem);
   }
   const addFeatureNode = new QTreeNode(question);
+  const functionNameNode = new QTreeNode(functionNameQuestion);
+  functionNameNode.condition = { equals: AzureResourceFunctionNewUI.id };
+  addFeatureNode.addChild(functionNameNode);
   const triggerNodeRes = await getNotificationTriggerQuestionNode(inputs);
   if (triggerNodeRes.isErr()) return err(triggerNodeRes.error);
   if (triggerNodeRes.value) {
     addFeatureNode.addChild(triggerNodeRes.value);
+  }
+  const addSPFxNodeRes = getAddSPFxQuestionNode();
+  if (addSPFxNodeRes.isErr()) return err(addSPFxNodeRes.error);
+  if (addSPFxNodeRes.value) {
+    addFeatureNode.addChild(addSPFxNodeRes.value);
   }
   if (!ctx.projectSetting.programmingLanguage) {
     // Language
@@ -278,8 +332,11 @@ export async function getQuestionsForAddResourceV3(
     options.push(AzureResourceSQLNewUI);
     options.push(AzureResourceFunctionNewUI);
     options.push(AzureResourceKeyVaultNewUI);
-    const addFeatureNode = new QTreeNode(question);
-    return ok(addFeatureNode);
+    const addResourceNode = new QTreeNode(question);
+    const functionNameNode = new QTreeNode(functionNameQuestion);
+    functionNameNode.condition = { equals: AzureResourceFunctionNewUI.id };
+    addResourceNode.addChild(functionNameNode);
+    return ok(addResourceNode);
   }
   const projectSettingsV3 = ctx.projectSetting as ProjectSettingsV3;
   if (!hasAPIM(projectSettingsV3)) {
@@ -291,12 +348,10 @@ export async function getQuestionsForAddResourceV3(
   }
   // function can always be added
   options.push(AzureResourceFunctionNewUI);
-  const addFeatureNode = new QTreeNode(question);
-  const triggerNodeRes = await getNotificationTriggerQuestionNode(inputs);
-  if (triggerNodeRes.isErr()) return err(triggerNodeRes.error);
-  if (triggerNodeRes.value) {
-    addFeatureNode.addChild(triggerNodeRes.value);
-  }
+  const addResourceNode = new QTreeNode(question);
+  const functionNameNode = new QTreeNode(functionNameQuestion);
+  functionNameNode.condition = { equals: AzureResourceFunctionNewUI.id };
+  addResourceNode.addChild(functionNameNode);
   if (!ctx.projectSetting.programmingLanguage) {
     // Language
     const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
@@ -311,9 +366,9 @@ export async function getQuestionsForAddResourceV3(
         SingleSignOnOptionItem.id, // adding sso means adding sample codes
       ],
     };
-    addFeatureNode.addChild(programmingLanguage);
+    addResourceNode.addChild(programmingLanguage);
   }
-  return ok(addFeatureNode);
+  return ok(addResourceNode);
 }
 
 export enum FeatureId {
@@ -401,4 +456,18 @@ export async function getNotificationTriggerQuestionNode(
   }
   res.condition = showNotificationTriggerCondition;
   return ok(res);
+}
+
+export function getAddSPFxQuestionNode(): Result<QTreeNode | undefined, FxError> {
+  const spfx_add_feature = new QTreeNode({
+    type: "group",
+  });
+  spfx_add_feature.condition = { equals: TabSPFxNewUIItem.id };
+
+  const spfx_version_check = new QTreeNode(versionCheckQuestion);
+  spfx_add_feature.addChild(spfx_version_check);
+
+  const spfx_webpart_name = new QTreeNode(webpartNameQuestion);
+  spfx_version_check.addChild(spfx_webpart_name);
+  return ok(spfx_add_feature);
 }

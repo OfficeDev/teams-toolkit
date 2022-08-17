@@ -629,6 +629,10 @@ function checkM365Account(prefix: string, showLoginPage: boolean): Promise<Check
         localEnvInfo["state"]["solution"]["teamsAppTenantId"] != tenantId
       ) {
         hasSwitchedM365Tenant = true;
+        showNotification(
+          localize("teamstoolkit.localDebug.switchM365AccountWarning"),
+          "https://aka.ms/teamsfx-switch-tenant-or-subscription-help"
+        );
       }
       return {
         checker: Checker.M365Account,
@@ -644,6 +648,24 @@ function checkM365Account(prefix: string, showLoginPage: boolean): Promise<Check
       };
     }
   );
+}
+
+function showNotification(message: string, url: string): void {
+  VS_CODE_UI.showMessage(
+    "warn",
+    message,
+    false,
+    localize("teamstoolkit.localDebug.learnMore")
+  ).then(async (result) => {
+    if (result.isOk()) {
+      if (result.value === localize("teamstoolkit.localDebug.learnMore")) {
+        ExtTelemetry.sendTelemetryEvent(
+          TelemetryEvent.ClickLearnMoreWhenSwitchAccountForLocalDebug
+        );
+        await VS_CODE_UI.openUrl(url);
+      }
+    }
+  });
 }
 
 async function checkNode(

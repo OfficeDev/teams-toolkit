@@ -24,6 +24,11 @@ import GraphConnector from "../../img/webview/sample/graph-connector-app.gif";
 import IncomingWebhook from "../../img/webview/sample/incoming-webhook.gif";
 import AdaptiveCardNotification from "../../img/webview/sample/adaptive-card-notification.gif";
 import SendProactiveMsg from "../../img/webview/sample/send-proactive-messages.gif";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetryTriggerFrom,
+} from "../telemetry/extTelemetryEvents";
 
 const imageMapping: { [p: string]: any } = {
   "todo-list-with-Azure-backend": ToDoList,
@@ -174,6 +179,16 @@ class SampleCard extends React.Component<SampleCardProps, any> {
         className={`sample-card box${this.props.order}`}
         tabIndex={0}
         onClick={() => {
+          vscode.postMessage({
+            command: Commands.SendTelemetryEvent,
+            data: {
+              eventName: TelemetryEvent.ClickSampleCard,
+              properties: {
+                [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
+                [TelemetryProperty.SampleAppName]: this.props.sampleAppFolder,
+              },
+            },
+          });
           this.props.highlightSample(this.props.sampleAppFolder);
         }}
       >
@@ -243,22 +258,4 @@ class SampleCard extends React.Component<SampleCardProps, any> {
       </div>
     );
   }
-
-  cloneSampleApp = (sampleAppName: string, sampleAppUrl: string, sampleAppFolder: string) => {
-    vscode.postMessage({
-      command: Commands.CloneSampleApp,
-      data: {
-        appName: sampleAppName,
-        appUrl: sampleAppUrl,
-        appFolder: sampleAppFolder,
-      },
-    });
-  };
-
-  viewSampleApp = (sampleAppFolder: string, sampleBaseUrl: string) => {
-    vscode.postMessage({
-      command: Commands.OpenExternalLink,
-      data: sampleBaseUrl + sampleAppFolder,
-    });
-  };
 }

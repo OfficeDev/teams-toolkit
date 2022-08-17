@@ -50,7 +50,6 @@ import {
   canUpgradeToArmAndMultiEnv,
   delay,
   isM365Project,
-  isValidNode,
   syncFeatureFlags,
 } from "./utils/commonUtils";
 import { loadLocalizedStrings } from "./utils/localizeUtils";
@@ -623,8 +622,6 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
 }
 
 async function initializeContextKey(isTeamsFxProject: boolean) {
-  await vscode.commands.executeCommand("setContext", "fx-extension.isNotValidNode", !isValidNode());
-
   await vscode.commands.executeCommand("setContext", "fx-extension.isSPFx", isSPFxProject);
 
   await vscode.commands.executeCommand(
@@ -826,6 +823,13 @@ async function runBackgroundAsyncTasks(
     .getTreatmentVariableAsync(
       TreatmentVariables.VSCodeConfig,
       TreatmentVariables.EmbeddedSurvey,
+      true
+    )) as boolean | undefined;
+  TreatmentVariableValue.useFolderSelection = (await exp
+    .getExpService()
+    .getTreatmentVariableAsync(
+      TreatmentVariables.VSCodeConfig,
+      TreatmentVariables.UseFolderSelection,
       true
     )) as boolean | undefined;
   TreatmentVariableValue.openFolderInNewWindow = (await exp

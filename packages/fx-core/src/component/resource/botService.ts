@@ -66,10 +66,7 @@ export class BotService extends AzureResource {
       enableProgressBar: true,
       progressTitle: ProgressTitles.provisionBot,
       progressSteps: 1,
-      enableTelemetry: true,
-      telemetryComponentName: "fx-resource-bot",
-      telemetryEventName: "provision",
-      errorSource: ComponentNames.BotService,
+      errorSource: "BotService",
       errorHandler: (e, t) => {
         telemetryHelper.fillAppStudioErrorProperty(e, t);
         return e as FxError;
@@ -86,22 +83,18 @@ export class BotService extends AzureResource {
       merge(actionContext.telemetryProps, commonTelemetryPropsForBot(context));
     }
     await actionContext?.progressBar?.next(ProgressMessages.provisionBot);
-    const ctx = context as ResourceContextV3;
-    const aadRes = await createBotAAD(ctx);
+    const aadRes = await createBotAAD(context);
     if (aadRes.isErr()) return err(aadRes.error);
-    if (ctx.envInfo.envName === "local") {
+    if (context.envInfo.envName === "local") {
       const botConfig = aadRes.value;
-      const regRes = await createBotRegInAppStudio(botConfig, ctx);
+      const regRes = await createBotRegInAppStudio(botConfig, context);
       if (regRes.isErr()) return err(regRes.error);
     }
     return ok(undefined);
   }
   @hooks([
     ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryComponentName: "fx-resource-bot",
-      telemetryEventName: "post-local-debug",
-      errorSource: ComponentNames.BotService,
+      errorSource: "BotService",
       errorHandler: (e, t) => {
         telemetryHelper.fillAppStudioErrorProperty(e, t);
         return e as FxError;
@@ -117,14 +110,13 @@ export class BotService extends AzureResource {
       merge(actionContext.telemetryProps, commonTelemetryPropsForBot(context));
     }
     // create bot aad app by API call
-    const ctx = context as ResourceContextV3;
-    const teamsBot = getComponent(ctx.projectSetting, ComponentNames.TeamsBot);
+    const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
     if (!teamsBot) return ok(undefined);
     const plans: Effect[] = [];
-    if (ctx.envInfo.envName === "local") {
+    if (context.envInfo.envName === "local") {
       plans.push(Plans.updateBotEndpoint());
-      const teamsBotState = ctx.envInfo.state[ComponentNames.TeamsBot];
-      const appStudioTokenRes = await ctx.tokenProvider.m365TokenProvider.getAccessToken({
+      const teamsBotState = context.envInfo.state[ComponentNames.TeamsBot];
+      const appStudioTokenRes = await context.tokenProvider.m365TokenProvider.getAccessToken({
         scopes: AppStudioScopes,
       });
       const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;

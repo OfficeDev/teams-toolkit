@@ -280,7 +280,11 @@ export interface NotificationTargetStorage {
 }
 
 // @public
-export type NotificationTargetType = "Channel" | "Group" | "Person";
+export enum NotificationTargetType {
+    Channel = "Channel",
+    Group = "Group",
+    Person = "Person"
+}
 
 // @public
 export class OnBehalfOfUserCredential implements TokenCredential {

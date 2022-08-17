@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { hooks } from "@feathersjs/hooks/lib";
 import {
   ContextV3,
   Effect,
@@ -13,14 +14,16 @@ import {
 import "reflect-metadata";
 import { Container, Service } from "typedi";
 import { convertToAlphanumericOnly } from "../../common/utils";
+import { AzureResourceKeyVault } from "../../plugins";
 import { BicepComponent } from "../bicep";
 import "../connection/azureWebAppConfig";
 import { ComponentNames } from "../constants";
 import { Plans } from "../messages";
+import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import "../resource/azureSql";
 import "../resource/identity";
 import { KeyVaultResource } from "../resource/keyVault";
-import { generateConfigBiceps, bicepUtils } from "../utils";
+import { generateConfigBiceps, bicepUtils, addFeatureNotify } from "../utils";
 import { getComponent } from "../workflow";
 
 @Service("key-vault-feature")
@@ -33,6 +36,14 @@ export class KeyVaultFeature {
    * 3. re-generate resources that connect to key-vault
    * 4. persist bicep
    */
+  @hooks([
+    ActionExecutionMW({
+      errorSource: "kv",
+      enableTelemetry: true,
+      telemetryComponentName: "fx-resource-key-vault",
+      telemetryEventName: "generate-arm-templates",
+    }),
+  ])
   async add(
     context: ContextV3,
     inputs: InputsWithProjectPath
@@ -75,6 +86,7 @@ export class KeyVaultFeature {
       if (res.isErr()) return err(res.error);
       effects.push("update config biceps");
     }
+    addFeatureNotify(inputs, context.userInteraction, "Resource", [AzureResourceKeyVault.id]);
     return ok(undefined);
   }
 }

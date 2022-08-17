@@ -19,7 +19,7 @@ import * as path from "path";
 import fs from "fs-extra";
 import { getTemplatesFolder } from "../../../folder";
 import { AadAppForTeamsImpl } from "../../../plugins/resource/aad/plugin";
-import { convertContext } from "./actions/utils";
+import { convertContext } from "./utils";
 import { convertProjectSettingsV3ToV2 } from "../../migrate";
 import { generateAadManifestTemplate } from "../../../core/generateAadManifestTemplate";
 import { createAuthFiles } from "../../../plugins/solution/fx-solution/v2/executeUserTask";
@@ -118,14 +118,13 @@ export class AadApp implements CloudResource {
     context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
-    const ctx = context as ResourceContextV3;
-    ctx.envInfo!.state[ComponentNames.AadApp] ??= {};
+    context.envInfo.state[ComponentNames.AadApp] ??= {};
     const aadAppImplement = new AadAppForTeamsImpl();
-    const convertCtx = convertContext(ctx, inputs);
+    const convertCtx = convertContext(context, inputs);
     await aadAppImplement.provisionUsingManifest(convertCtx);
     const convertState = convertCtx.envInfo.state.get("fx-resource-aad-app-for-teams");
     convertState.forEach((v: any, k: string) => {
-      ctx.envInfo!.state[ComponentNames.AadApp][k] = v;
+      context.envInfo.state[ComponentNames.AadApp][k] = v;
     });
     return ok(undefined);
   }
@@ -133,13 +132,12 @@ export class AadApp implements CloudResource {
     context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
-    const ctx = context as ResourceContextV3;
     const aadAppImplement = new AadAppForTeamsImpl();
-    const convertCtx = convertContext(ctx, inputs);
+    const convertCtx = convertContext(context, inputs);
     await aadAppImplement.postProvisionUsingManifest(convertCtx);
     const convertState = convertCtx.envInfo.state.get("fx-resource-aad-app-for-teams");
     convertState.forEach((v: any, k: string) => {
-      ctx.envInfo!.state[ComponentNames.AadApp][k] = v;
+      context.envInfo.state[ComponentNames.AadApp][k] = v;
     });
     return ok(undefined);
   }
@@ -147,13 +145,25 @@ export class AadApp implements CloudResource {
     context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
-    const ctx = context as ResourceContextV3;
     const aadAppImplement = new AadAppForTeamsImpl();
-    const convertCtx = convertContext(ctx, inputs);
+    const convertCtx = convertContext(context, inputs);
     await aadAppImplement.setApplicationInContext(convertCtx);
     const convertState = convertCtx.envInfo.state.get("fx-resource-aad-app-for-teams");
     convertState.forEach((v: any, k: string) => {
-      ctx.envInfo!.state[ComponentNames.AadApp][k] = v;
+      context.envInfo.state[ComponentNames.AadApp][k] = v;
+    });
+    return ok(undefined);
+  }
+  async deploy(
+    context: ResourceContextV3,
+    inputs: InputsWithProjectPath
+  ): Promise<Result<undefined, FxError>> {
+    const aadAppImplement = new AadAppForTeamsImpl();
+    const convertCtx = convertContext(context, inputs);
+    await aadAppImplement.deploy(convertCtx);
+    const convertState = convertCtx.envInfo.state.get("fx-resource-aad-app-for-teams");
+    convertState.forEach((v: any, k: string) => {
+      context.envInfo.state[ComponentNames.AadApp][k] = v;
     });
     return ok(undefined);
   }

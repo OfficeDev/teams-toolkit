@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import {
+  ActionContext,
   Bicep,
   CloudResource,
   ContextV3,
@@ -12,7 +13,6 @@ import {
   Platform,
   ResourceContextV3,
   Result,
-  Stage,
   v3,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
@@ -30,8 +30,8 @@ import {
 import { ComponentNames, Scenarios } from "../constants";
 import { Plans } from "../messages";
 import { getComponent, getComponentByScenario } from "../workflow";
-import { assign, cloneDeep } from "lodash";
-import { generateConfigBiceps, bicepUtils } from "../utils";
+import { assign, cloneDeep, merge } from "lodash";
+import { generateConfigBiceps, bicepUtils, addFeatureNotify } from "../utils";
 import { TabCodeProvider } from "../code/tabCode";
 import { BicepComponent } from "../bicep";
 import { convertToAlphanumericOnly } from "../../common/utils";
@@ -41,13 +41,29 @@ import { AppManifest } from "../resource/appManifest/appManifest";
 import { FRONTEND_INDEX_PATH } from "../../plugins/resource/appstudio/constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { hooks } from "@feathersjs/hooks/lib";
+import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 
 @Service("teams-tab")
 export class TeamsTab {
   name = "teams-tab";
+  @hooks([
+    ActionExecutionMW({
+      enableTelemetry: true,
+      telemetryEventName: TelemetryEvent.AddFeature,
+      telemetryComponentName: ComponentNames.TeamsTab,
+      errorSource: "FE",
+      errorHandler: (error) => {
+        if (error && !error?.name) {
+          error.name = "addTabError";
+        }
+        return error as FxError;
+      },
+    }),
+  ])
   async add(
     context: ContextV3,
-    inputs: InputsWithProjectPath
+    inputs: InputsWithProjectPath,
+    actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const projectSettings = context.projectSetting;
     const effects = [];
@@ -59,8 +75,9 @@ export class TeamsTab {
       inputs[CoreQuestionNames.ProgrammingLanguage] === "csharp"
         ? ComponentNames.AzureWebApp
         : ComponentNames.AzureStorage;
-    globalVars.isVS = isVSProject(projectSettings);
+    globalVars.isVS = inputs[CoreQuestionNames.ProgrammingLanguage] === "csharp";
     projectSettings.programmingLanguage ||= inputs[CoreQuestionNames.ProgrammingLanguage];
+    const addedComponents: string[] = [];
 
     // Add static tab to app-manifest if teams-tab already exists
     let tabConfig = getComponent(projectSettings, ComponentNames.TeamsTab);
@@ -73,12 +90,7 @@ export class TeamsTab {
         const res = await manifestComponent.addCapability(clonedInputs, capabilities);
         if (res.isErr()) return err(res.error);
         effects.push("add tab capability in app manifest");
-
-        const msg =
-          inputs.platform === Platform.CLI
-            ? getLocalizedString("core.addCapability.addCapabilityNoticeForCli")
-            : getLocalizedString("core.addCapability.addCapabilitiesNotice");
-        context.userInteraction.showMessage("info", format(msg, "Tab"), false);
+        addFeatureNotify(inputs, context.userInteraction, "Capability", [inputs.features]);
         return ok(undefined);
       }
     }
@@ -86,7 +98,9 @@ export class TeamsTab {
     // 1. scaffold and config tab
     const clonedInputs = cloneDeep(inputs);
     clonedInputs.folder ||=
-      inputs[CoreQuestionNames.ProgrammingLanguage] === "csharp" ? "" : FrontendPathInfo.WorkingDir;
+      inputs[CoreQuestionNames.ProgrammingLanguage] === "csharp"
+        ? "."
+        : FrontendPathInfo.WorkingDir;
     clonedInputs.language = inputs[CoreQuestionNames.ProgrammingLanguage];
     const tabCode = Container.get(ComponentNames.TabCode) as TabCodeProvider;
     const res = await tabCode.generate(context, clonedInputs);
@@ -101,6 +115,7 @@ export class TeamsTab {
       folder: clonedInputs.folder,
     };
     projectSettings.components.push(tabConfig);
+    addedComponents.push(tabConfig.name);
     effects.push(Plans.generateSourceCodeAndConfig(ComponentNames.TeamsTab));
 
     // 2. generate provision bicep
@@ -128,6 +143,7 @@ export class TeamsTab {
         scenario: Scenarios.Tab,
         provision: true,
       });
+      addedComponents.push(inputs.hosting);
       effects.push(Plans.generateBicepAndConfig(inputs.hosting));
     }
 
@@ -146,6 +162,7 @@ export class TeamsTab {
         name: ComponentNames.Identity,
         provision: true,
       });
+      addedComponents.push(ComponentNames.Identity);
       effects.push(Plans.generateBicepAndConfig(ComponentNames.Identity));
     }
 
@@ -192,6 +209,10 @@ export class TeamsTab {
       if (res.isErr()) return err(res.error);
       effects.push("add tab capability in app manifest");
     }
+    merge(actionContext?.telemetryProps, {
+      [TelemetryProperty.Components]: JSON.stringify(addedComponents),
+    });
+    addFeatureNotify(inputs, context.userInteraction, "Capability", [inputs.features]);
     return ok(undefined);
   }
 

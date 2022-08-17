@@ -13,8 +13,9 @@ import { hasApi } from "../../common/projectSettingsHelperV3";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { BicepComponent } from "../bicep";
 import { AzureSqlResource } from "../resource/azureSql";
-import { generateConfigBiceps, bicepUtils } from "../utils";
+import { generateConfigBiceps, bicepUtils, addFeatureNotify } from "../utils";
 import { cloneDeep } from "lodash";
+import { AzureResourceFunction, AzureResourceSQL } from "../../plugins";
 
 @Service("sql")
 export class Sql {
@@ -24,12 +25,14 @@ export class Sql {
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
+    const addedResources: string[] = [];
     const sqlComponent = getComponent(context.projectSetting, ComponentNames.AzureSQL);
     const hasFunc = hasApi(context.projectSetting);
     if (!hasFunc) {
       const teamsApi = Container.get(ComponentNames.TeamsApi) as any;
       const res = await teamsApi.add(context, inputs);
       if (res.isErr()) return err(res.error);
+      addedResources.push(AzureResourceFunction.id);
     }
     const projectSettings = context.projectSetting;
     const remarks: string[] = ["config 'azure-sql' in projectSettings"];
@@ -69,6 +72,8 @@ export class Sql {
       if (res.isErr()) return err(res.error);
       remarks.push("generate config biceps");
     }
+    addedResources.push(AzureResourceSQL.id);
+    addFeatureNotify(inputs, context.userInteraction, "Resource", addedResources);
     return ok(undefined);
   }
 }

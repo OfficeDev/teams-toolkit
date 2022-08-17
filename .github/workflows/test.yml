@@ -20,9 +20,9 @@ jobs:
         with:
           node-version: 14
 
-      - name: Setup project
-        run: |
-          npm run setup
+#      - name: Setup project
+#        run: |
+#          npm run setup
 
       - name: Setup git
         run: |

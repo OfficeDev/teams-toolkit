@@ -580,7 +580,10 @@ export async function doDeployArmTemplatesV3(
         helpLink: HelpLinks.ArmHelpLink,
         displayMessage: notificationMessage,
       });
-      returnError.innerError = JSON.stringify(deploymentErrorObj);
+      returnError.innerError = {
+        value: JSON.stringify(deploymentErrorObj),
+      } as DeploymentErrorMessage;
+
       return err(returnError);
     } else {
       return result;
@@ -707,8 +710,10 @@ export async function deployArmTemplatesV3(
       });
     } else {
       const errorProperties: { [key: string]: string } = {};
-      if (result.error.innerError) {
-        errorProperties[SolutionTelemetryProperty.ArmDeploymentError] = result.error.innerError;
+      // If the innerError is a DeploymentErrorMessage value, we will set it in telemetry.
+      if (result.error.innerError && result.error.innerError instanceof DeploymentErrorMessage) {
+        errorProperties[SolutionTelemetryProperty.ArmDeploymentError] =
+          result.error.innerError.value;
       }
       sendErrorTelemetryThenReturnError(
         SolutionTelemetryEvent.ArmDeployment,

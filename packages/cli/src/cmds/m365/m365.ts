@@ -17,6 +17,8 @@ import { YargsCommand } from "../../yargsCommand";
 /*
  * This command is in preview.
  * TODO:
+ *   - sideloading
+ *   - e2e test
  *   - telemetry
  *   - make all wordings constants
  */

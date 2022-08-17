@@ -22,6 +22,7 @@ import { AzureFunctionResource } from "../../../../src/component/resource/azureA
 import { assign } from "lodash";
 import * as hostingUtils from "../../../../src/common/azure-hosting/utils";
 import { AzureOperations } from "../../../../src/common/azure-hosting/azureOps";
+import * as botUtils from "../../../../src/plugins/resource/bot/utils/common";
 
 chai.use(chaiAsPromised);
 
@@ -59,7 +60,7 @@ describe("Azure-Function Component", () => {
   it("deploy happy path", async function () {
     sandbox.stub(fs, "pathExists").resolves(true);
     const restartWebAppStub = sandbox.stub(AzureOperations, "restartWebApp").resolves();
-    sandbox.stub(utils, "zipFolderAsync").resolves({} as any);
+    sandbox.stub(botUtils, "zipFolderAsync").resolves({} as any);
     sandbox.stub(hostingUtils, "azureWebSiteDeploy").resolves({} as any);
     context.projectSetting.components.push({
       name: "function",

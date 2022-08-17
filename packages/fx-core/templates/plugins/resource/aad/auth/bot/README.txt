@@ -23,7 +23,7 @@ Note: This part is for `command and response bot`.
    TeamsFx: >= 1.1.0
    Microsoft.Bot.Builder >= 4.17.1
 
-2. Create "Pages" folder and move fils in `Auth/bot/Pages` folder to `Pages`
+2. Create "Pages" folder and move files in `Auth/bot/Pages` folder to `Pages`
    `Auth/bot/Pages` folder contains HTML pages that hosted by bot application. When single sign-on flows are initiated with AAD, AAD will redirect the user to these pages.
 
 3. Create "SSO" folder and move files in 'Auth/bot/SSO' folder to 'SSO'

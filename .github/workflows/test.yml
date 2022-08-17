@@ -32,8 +32,8 @@ jobs:
       - name: replace sideloading placeholders
         run: bash .github/scripts/sideloading-replace.sh
         env:
-          SERVICE_ENDPOINT_PLACEHOLDER: ${{ secrets.SERVICE_ENDPOINT_PLACEHOLDER }}
-          SERVICE_SCOPE_PLACEHOLDER: ${{ secrets.SERVICE_SCOPE_PLACEHOLDER }}
+          SIDELOADING_SERVICE_ENDPOINT: ${{ secrets.SIDELOADING_SERVICE_ENDPOINT }}
+          SIDELOADING_SERVICE_SCOPE: ${{ secrets.SIDELOADING_SERVICE_SCOPE }}
 
       - name: commit change on local
         run: |

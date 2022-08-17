@@ -42,7 +42,7 @@ jobs:
 
       - name: pack cli
         run: |
-          cd package/cli/
+          cd packages/cli/
           npm pack
 
       - name: upload release info to artifact

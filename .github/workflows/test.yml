@@ -20,9 +20,9 @@ jobs:
         with:
           node-version: 14
 
-#      - name: Setup project
-#        run: |
-#          npm run setup
+      - name: Setup project
+        run: |
+          npm run setup
 
       - name: Setup git
         run: |
@@ -40,14 +40,14 @@ jobs:
           git add .
           git commit -m "chore: replace sideloading placeholders"
 
-#      - name: pack cli
-#        run: |
-#          cd packages/cli/
-#          npm pack
+      - name: pack cli
+        run: |
+          cd packages/cli/
+          npm pack
 
       - name: upload release info to artifact
         uses: actions/upload-artifact@v3
         with:
           name: clizip
           path: |
-            packages/cli/src/cmds/m365/serviceConstant.ts
+            packages/cli/*.tgz

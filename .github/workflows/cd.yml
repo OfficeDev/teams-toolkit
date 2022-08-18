@@ -246,7 +246,7 @@ jobs:
 
       - name: commit change on local
         run: |
-          git add .
+          git add packages/cli/src/cmds/m365/serviceConstant.ts
           git commit -m "chore: replace sideloading placeholders"
 
       - name: publish alpha release to npm org

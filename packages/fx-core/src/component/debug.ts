@@ -269,6 +269,7 @@ export async function configLocalEnvironmentCommon(
   const API_STATE_KEY = isV3() ? ComponentNames.TeamsApi : BuiltInFeaturePluginNames.function;
   const AAD_STATE_KEY = isV3() ? ComponentNames.AadApp : BuiltInFeaturePluginNames.aad;
   const TAB_STATE_KEY = isV3() ? ComponentNames.TeamsTab : BuiltInFeaturePluginNames.frontend;
+  const BOT_STATE_KEY = isV3() ? ComponentNames.TeamsBot : BuiltInFeaturePluginNames.bot;
   const SIMPLE_AUTH_STATE_KEY = isV3()
     ? ComponentNames.SimpleAuth
     : BuiltInFeaturePluginNames.simpleAuth;
@@ -366,16 +367,15 @@ export async function configLocalEnvironmentCommon(
             envInfo.config.frontend.sslCertFile &&
             envInfo.config.frontend.sslKeyFile
           ) {
-            envInfo.state[ComponentNames.TeamsTab].sslCertFile =
-              envInfo.config.frontend.sslCertFile;
-            envInfo.state[ComponentNames.TeamsTab].sslKeyFile = envInfo.config.frontend.sslKeyFile;
+            envInfo.state[TAB_STATE_KEY].sslCertFile = envInfo.config.frontend.sslCertFile;
+            envInfo.state[TAB_STATE_KEY].sslKeyFile = envInfo.config.frontend.sslKeyFile;
             frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.SslCrtFile] =
               envInfo.config.frontend.sslCertFile;
             frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.SslKeyFile] =
               envInfo.config.frontend.sslKeyFile;
           } else if (localCert) {
-            envInfo.state[ComponentNames.TeamsTab].sslCertFile = localCert.certPath;
-            envInfo.state[ComponentNames.TeamsTab].sslKeyFile = localCert.keyPath;
+            envInfo.state[TAB_STATE_KEY].sslCertFile = localCert.certPath;
+            envInfo.state[TAB_STATE_KEY].sslKeyFile = localCert.keyPath;
             frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.SslCrtFile] = localCert.certPath;
             frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.SslKeyFile] = localCert.keyPath;
           }
@@ -385,8 +385,8 @@ export async function configLocalEnvironmentCommon(
       }
 
       if (includeBot) {
-        const botId = envInfo.state[ComponentNames.TeamsBot]?.botId as string;
-        const botPassword = envInfo.state[ComponentNames.TeamsBot]?.botPassword as string;
+        const botId = envInfo.state[BOT_STATE_KEY]?.botId as string;
+        const botPassword = envInfo.state[BOT_STATE_KEY]?.botPassword as string;
 
         botEnvs!.teamsfxLocalEnvs[EnvKeysBot.BotId] = botId;
         botEnvs!.teamsfxLocalEnvs[EnvKeysBot.BotPassword] = botPassword;
@@ -398,7 +398,7 @@ export async function configLocalEnvironmentCommon(
           botEnvs!.teamsfxLocalEnvs[EnvKeysBot.OauthAuthority] =
             "https://login.microsoftonline.com";
           botEnvs!.teamsfxLocalEnvs[EnvKeysBot.LoginEndpoint] = `${
-            envInfo.state[ComponentNames.TeamsBot]?.siteEndpoint as string
+            envInfo.state[BOT_STATE_KEY]?.siteEndpoint as string
           }/auth-start.html`;
           botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ApplicationIdUri] = applicationIdUri;
         }

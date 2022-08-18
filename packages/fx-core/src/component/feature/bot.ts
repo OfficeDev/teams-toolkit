@@ -229,12 +229,6 @@ export class TeamsBot {
     }
 
     projectSettings.programmingLanguage ||= inputs[CoreQuestionNames.ProgrammingLanguage];
-
-    const msg =
-      inputs.platform === Platform.CLI
-        ? getLocalizedString("core.addCapability.addCapabilityNoticeForCli")
-        : getLocalizedString("core.addCapability.addCapabilitiesNotice");
-    context.userInteraction.showMessage("info", format(msg, "Bot"), false);
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.Components]: JSON.stringify(addedComponents),
     });

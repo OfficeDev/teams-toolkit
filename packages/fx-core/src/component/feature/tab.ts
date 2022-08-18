@@ -31,7 +31,7 @@ import { ComponentNames, Scenarios } from "../constants";
 import { Plans } from "../messages";
 import { getComponent, getComponentByScenario } from "../workflow";
 import { assign, cloneDeep, merge } from "lodash";
-import { generateConfigBiceps, bicepUtils } from "../utils";
+import { generateConfigBiceps, bicepUtils, addFeatureNotify } from "../utils";
 import { TabCodeProvider } from "../code/tabCode";
 import { BicepComponent } from "../bicep";
 import { convertToAlphanumericOnly } from "../../common/utils";
@@ -90,12 +90,7 @@ export class TeamsTab {
         const res = await manifestComponent.addCapability(clonedInputs, capabilities);
         if (res.isErr()) return err(res.error);
         effects.push("add tab capability in app manifest");
-
-        const msg =
-          inputs.platform === Platform.CLI
-            ? getLocalizedString("core.addCapability.addCapabilityNoticeForCli")
-            : getLocalizedString("core.addCapability.addCapabilitiesNotice");
-        context.userInteraction.showMessage("info", format(msg, "Tab"), false);
+        addFeatureNotify(inputs, context.userInteraction, "Capability", [inputs.features]);
         return ok(undefined);
       }
     }
@@ -201,10 +196,11 @@ export class TeamsTab {
 
     // 5. app-manifest.addCapability
     {
-      const capabilities: v3.ManifestCapability[] = [
-        { name: "staticTab" },
-        { name: "configurableTab" },
-      ];
+      const capabilities: v3.ManifestCapability[] = [{ name: "staticTab" }];
+      // M365 app does not support configurationTab
+      if (!context.projectSetting.isM365) {
+        capabilities.push({ name: "configurableTab" });
+      }
       const clonedInputs = {
         ...cloneDeep(inputs),
         validDomain: "{{state.fx-resource-frontend-hosting.domain}}", // TODO: replace fx-resource-frontend-hosting with inputs.hosting after updating state file
@@ -217,6 +213,7 @@ export class TeamsTab {
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.Components]: JSON.stringify(addedComponents),
     });
+    addFeatureNotify(inputs, context.userInteraction, "Capability", [inputs.features]);
     return ok(undefined);
   }
 

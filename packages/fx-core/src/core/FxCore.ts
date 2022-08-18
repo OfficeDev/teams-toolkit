@@ -57,6 +57,9 @@ import { getTemplatesFolder } from "../folder";
 import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
 import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
 import {
+  ApiConnectionOptionItem,
+  AzureSolutionQuestionNames,
+  CicdOptionItem,
   ExistingTabOptionItem,
   M365SearchAppOptionItem,
   M365SsoLaunchPageOptionItem,
@@ -820,7 +823,9 @@ export class FxCore implements v3.ICore {
           res.isOk() &&
           (func.method === "addCapability" ||
             func.method === "addResource" ||
-            func.method === "addFeature")
+            (func.method === "addFeature" &&
+              inputs[AzureSolutionQuestionNames.Features] !== ApiConnectionOptionItem.id &&
+              inputs[AzureSolutionQuestionNames.Features] !== CicdOptionItem.id))
         ) {
           if (
             ctx.envInfoV2?.state?.solution?.provisionSucceeded === true ||
@@ -828,33 +833,10 @@ export class FxCore implements v3.ICore {
           ) {
             ctx.envInfoV2.state.solution.provisionSucceeded = false;
           }
-          const allEnvRes = await environmentManager.listRemoteEnvConfigs(inputs.projectPath!);
-          if (allEnvRes.isOk()) {
-            for (const env of allEnvRes.value) {
-              const loadEnvRes = await loadEnvInfoV3(
-                inputs as v2.InputsWithProjectPath,
-                ctx.projectSettings!,
-                env,
-                false
-              );
-              if (loadEnvRes.isOk()) {
-                const envInfo = loadEnvRes.value;
-                if (
-                  envInfo.state?.solution?.provisionSucceeded === true ||
-                  envInfo.state?.solution?.provisionSucceeded === "true"
-                ) {
-                  envInfo.state.solution.provisionSucceeded = false;
-                  await environmentManager.writeEnvState(
-                    envInfo.state,
-                    inputs.projectPath!,
-                    ctx.contextV2.cryptoProvider,
-                    env,
-                    true
-                  );
-                }
-              }
-            }
-          }
+          await environmentManager.resetProvisionState(
+            inputs as InputsWithProjectPath,
+            ctx.contextV2
+          );
         }
         return res;
       } else return err(FunctionRouterError(func));

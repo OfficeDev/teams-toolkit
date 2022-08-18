@@ -74,6 +74,8 @@ export class BotService extends AzureResource {
   ): Promise<Result<undefined, FxError>> {
     // create bot aad app by API call
     await actionContext?.progressBar?.next(ProgressMessages.provisionBot);
+    // init bot state
+    context.envInfo.state[ComponentNames.TeamsBot] ||= {};
     const aadRes = await createBotAAD(context);
     if (aadRes.isErr()) return err(aadRes.error);
     if (context.envInfo.envName === "local") {

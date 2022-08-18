@@ -38,7 +38,8 @@ export class SimpleAuth {
   ): Promise<Result<undefined, FxError>> {
     if (context.envInfo.envName === "local") {
       context.logProvider.info(Messages.StartLocalDebug.log);
-      context.envInfo.state[ComponentNames.SimpleAuth] ||= {};
+      context.envInfo.state[ComponentNames.SimpleAuth] =
+        context.envInfo.state[ComponentNames.SimpleAuth] || {};
       const simpleAuthFilePath = Utils.getSimpleAuthFilePath();
       context.envInfo.state[ComponentNames.SimpleAuth][
         LocalSettingsSimpleAuthKeys.SimpleAuthFilePath
@@ -62,6 +63,8 @@ export class SimpleAuth {
   ): Promise<Result<undefined, FxError>> {
     if (context.envInfo.envName === "local") {
       context.logProvider.info(Messages.StartPostLocalDebug.log);
+      context.envInfo.state[ComponentNames.SimpleAuth] =
+        context.envInfo.state[ComponentNames.SimpleAuth] || {};
       const configs = this.getWebAppConfig(context.envInfo); //
       const configArray = [];
       for (const [key, value] of Object.entries(configs)) {

@@ -14,6 +14,7 @@ import { AzureSolutionQuestionNames } from "../plugins/solution/fx-solution/ques
 import { TelemetryKeys } from "../plugins/resource/bot/constants";
 import { PluginNames } from "../plugins/solution/fx-solution/constants";
 import { ComponentNames, Scenarios, TelemetryConstants } from "./constants";
+import { telemetryHelper } from "../plugins/resource/bot/utils/telemetry-helper";
 
 export type TelemetryProps = { [key: string]: string };
 export function getCommonProperties(): TelemetryProps {
@@ -202,6 +203,7 @@ export function sendMigratedErrorEvent(
   if (!needMigrate(eventName, properties)) {
     return;
   }
+  let props = { ...properties };
   let componentName;
   switch (error.source) {
     case "Storage":
@@ -215,10 +217,11 @@ export function sendMigratedErrorEvent(
       break;
     case "BotService":
       componentName = PluginNames.BOT;
+      telemetryHelper.fillAppStudioErrorProperty(error.innerError, props);
       break;
   }
   if (componentName) {
-    const props = { ...properties, [TelemetryProperty.Component]: componentName };
+    props = { ...props, [TelemetryProperty.Component]: componentName };
     sendErrorEvent(migrateEventName(eventName, context), error, props, measurements);
   }
 }

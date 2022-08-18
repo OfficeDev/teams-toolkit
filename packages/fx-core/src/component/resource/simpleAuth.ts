@@ -35,11 +35,11 @@ export class SimpleAuth {
   ])
   async provision(
     context: ResourceContextV3,
-    inputs: InputsWithProjectPath,
-    actionContext?: ActionContext
+    inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
     if (context.envInfo.envName === "local") {
       context.logProvider.info(Messages.StartLocalDebug.log);
+      context.envInfo.state[ComponentNames.SimpleAuth] ||= {};
       const simpleAuthFilePath = Utils.getSimpleAuthFilePath();
       context.envInfo.state[ComponentNames.SimpleAuth][
         LocalSettingsSimpleAuthKeys.SimpleAuthFilePath
@@ -59,8 +59,7 @@ export class SimpleAuth {
   ])
   async configure(
     context: ResourceContextV3,
-    inputs: InputsWithProjectPath,
-    actionContext?: ActionContext
+    inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
     if (context.envInfo.envName === "local") {
       context.logProvider.info(Messages.StartPostLocalDebug.log);

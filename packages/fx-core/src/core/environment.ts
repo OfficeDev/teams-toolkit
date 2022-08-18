@@ -35,7 +35,6 @@ import {
   serializeDict,
   separateSecretData,
   mapToJson,
-  objectToMap,
   compileHandlebarsTemplateString,
 } from "../common/tools";
 import { GLOBAL_CONFIG } from "../plugins/solution/fx-solution/constants";
@@ -56,7 +55,6 @@ import { Container } from "typedi";
 import { pick } from "lodash";
 import { convertEnvStateV2ToV3, convertEnvStateV3ToV2 } from "../component/migrate";
 import { LocalCrypto } from "./crypto";
-import { isVSProject } from "../common";
 import { isV3 } from "./globalVars";
 
 export interface EnvStateFiles {
@@ -90,7 +88,7 @@ class EnvironmentManager {
     cryptoProvider: CryptoProvider,
     envName?: string,
     v3 = false
-  ): Promise<Result<EnvInfo | v3.EnvInfoV3, FxError>> {
+  ): Promise<Result<v3.EnvInfoV3, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
       return err(new PathNotExistError(projectPath));
     }

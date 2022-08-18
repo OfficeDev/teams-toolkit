@@ -99,6 +99,8 @@ describe("azure app service hosting", () => {
 
   describe("update bicep", () => {
     it("update bicep", async () => {
+      context.configs = ["node", "running-on-azure"];
+
       const hosting = AzureHostingFactory.createHosting(ServiceType.AppService);
       const template = await hosting.updateBicep(context);
 

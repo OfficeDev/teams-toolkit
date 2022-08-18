@@ -411,7 +411,13 @@ export async function getManifest(
   manifestString = compileHandlebarsTemplateString(manifestString, view);
 
   const manifest: TeamsAppManifest = JSON.parse(manifestString);
-
+  if (envInfo.envName === "local" && envInfo.state[ComponentNames.TeamsTab]) {
+    const tabEndpoint = envInfo.state[ComponentNames.TeamsTab].endpoint as string;
+    const tabDomain = envInfo.state[ComponentNames.TeamsTab].domain as string;
+    if (tabDomain && tabEndpoint) {
+      manifest.validDomains!.push(tabEndpoint.slice(8));
+    }
+  }
   return ok(manifest);
 }
 

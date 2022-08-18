@@ -31,7 +31,6 @@ export class Constants {
 export class ErrorMessages {
   static readonly GetConfigError = (configName: string, plugin: string) =>
     `Failed to get configuration value "${configName}" for ${plugin}.`;
-  static readonly GrantPermissionFailed = "Response is empty or user is not added.";
   static readonly TeamsAppNotFound = (teamsAppId: string) =>
     `Cannot find Teams App with id: ${teamsAppId}. Maybe your current M365 account doesn't not have permission, or the Teams App has already been deleted.`;
 }

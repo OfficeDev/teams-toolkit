@@ -346,10 +346,7 @@ export namespace AppStudioClient {
 
     app.userList?.push(newUser);
     const requester = createRequesterWithToken(appStudioToken);
-    const response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
-    if (!response || !response.data || !checkUser(response.data as AppDefinition, newUser)) {
-      throw new Error(ErrorMessages.GrantPermissionFailed);
-    }
+    await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app.userList);
   }
 
   function checkUser(app: AppDefinition, newUser: AppUser): boolean {

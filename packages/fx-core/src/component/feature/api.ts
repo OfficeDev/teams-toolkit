@@ -38,7 +38,7 @@ import { functionNameQuestion } from "../../plugins/resource/function/question";
 import { ErrorMessages } from "../../plugins/resource/function/resources/message";
 import { BicepComponent } from "../bicep";
 import { ApiCodeProvider } from "../code/apiCode";
-import { ComponentNames, Scenarios } from "../constants";
+import { ComponentNames, ProgrammingLanguage, Scenarios } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { AzureFunctionResource } from "../resource/azureAppService/azureFunction";
@@ -77,7 +77,7 @@ export class TeamsApi {
     inputs[CoreQuestionNames.ProgrammingLanguage] =
       context.projectSetting.programmingLanguage ||
       inputs[CoreQuestionNames.ProgrammingLanguage] ||
-      "javascript";
+      ProgrammingLanguage.JS;
     const addedComponents: string[] = [];
 
     // 1. scaffold function

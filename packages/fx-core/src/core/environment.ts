@@ -94,7 +94,6 @@ class EnvironmentManager {
     if (!(await fs.pathExists(projectPath))) {
       return err(new PathNotExistError(projectPath));
     }
-
     envName = envName ?? this.getDefaultEnvName();
     const configResult = await this.loadEnvConfig(projectPath, envName);
     if (configResult.isErr()) {
@@ -104,18 +103,11 @@ class EnvironmentManager {
     if (stateResult.isErr()) {
       return err(stateResult.error);
     }
-    if (isV3()) {
-      return ok({
-        envName,
-        config: configResult.value as Json,
-        state: stateResult.value as v3.ResourceStates,
-      });
-    } else
-      return ok({
-        envName,
-        config: configResult.value,
-        state: stateResult.value as Map<string, any>,
-      });
+    return ok({
+      envName,
+      config: configResult.value as Json,
+      state: stateResult.value as v3.ResourceStates,
+    });
   }
 
   public newEnvConfigData(appName: string, existingTabEndpoint?: string): EnvConfig {
@@ -350,8 +342,7 @@ class EnvironmentManager {
   private async loadEnvState(
     projectPath: string,
     envName: string,
-    cryptoProvider: CryptoProvider,
-    v3 = false
+    cryptoProvider: CryptoProvider
   ): Promise<Result<Map<string, any> | v3.ResourceStates, FxError>> {
     const envFiles = this.getEnvStateFilesPath(envName, projectPath);
     const userDataResult = await this.loadUserData(envFiles.userDataFile, cryptoProvider);
@@ -361,20 +352,15 @@ class EnvironmentManager {
     const userData = userDataResult.value;
     const isv3 = isV3();
     if (!(await fs.pathExists(envFiles.envState))) {
-      if (isv3) return ok({ solution: {} });
-      return ok(new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]));
+      return ok({ solution: {} });
     }
-
     const template = await fs.readFile(envFiles.envState, { encoding: "utf-8" });
     const result = replaceTemplateWithUserData(template, userData);
     let resultJson: Json = JSON.parse(result);
     if (isv3) {
       resultJson = convertEnvStateV2ToV3(resultJson);
-      return ok(resultJson as v3.ResourceStates);
     }
-    const data = objectToMap(resultJson);
-
-    return ok(data as Map<string, any>);
+    return ok(resultJson as v3.ResourceStates);
   }
 
   private expandEnvironmentVariables(templateContent: string): string {

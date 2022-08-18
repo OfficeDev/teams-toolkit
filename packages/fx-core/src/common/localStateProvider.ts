@@ -24,7 +24,6 @@ export class LocalStateProvider {
         environmentManager.getLocalEnvName(),
         isV3()
       );
-
       if (envDataResult.isOk()) {
         const envData = envDataResult.value as v3.EnvInfoV3;
         return envData;

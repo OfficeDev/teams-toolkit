@@ -70,7 +70,7 @@ once the browser is launched when previewing in the new M365 tenant. If clicking
 #### Mitigation
 * Launch browser with usrData
 By default, the browser is launched with a separate user profile in a temp folder. You could override the value of "userDataDir" to "true" and then specify the path of user data folder in runtimeArgs.
-For example, when you sign in with another M365 account for local debugging, you could replace 
+  * For example, when you sign in with another M365 account for local debugging, you could replace 
     ```
     {
        "name": "Attach to Frontend (Edge)",
@@ -100,9 +100,15 @@ For example, when you sign in with another M365 account for local debugging, you
         ]
     }
     ```
-  If you want to switch back to the previous M365 account for local debugging, please remove the lines about userDataDir and runtimeArgs that you just added before start local debugging again.
+    If you want to switch back to the previous M365 account for local debugging, please remove the lines about userDataDir and runtimeArgs that you just added before start local debugging again.
 
-  You could also specify the path of user data folder for each account, and edit the value of "user-data-dir" in runtimeArgs whenever you switch account for previewing.
+    You could also specify the path of user data folder for each account, and edit the value of "user-data-dir" in runtimeArgs whenever you switch account for previewing.
+
+  * Similarly, for a Teams project launched in Visual Studio, you could edit browser settings in Visual Studio, you could create a new browser configuration.    
+    1. Open the dropdown and select "Browser with".
+    2. Select "Ädd" to add a new profile
+    3. Find the path of the program, type `-user-data-dir=C:\\Users\\{username}\\temp\\edge\\tenantb` in the field of "Arguments", and give it a friendly name.
+    4. Select the newly added broswer configuration and then Visual Studio will launch browser with the selected configuration.
 
 * Launch browser in incognito mode    
 This may not work for you if your org enables condition access. runtimeArgs are the arguments passed to the runtime executable. You could edit the launch configuration by adding `"runtimeArgs": ["--inprivate"]` (for Edge) or `"runtimeArgs": ["--incognito"]` (for Chrome) to launch the browser in incognito mode. For example, you could replace 

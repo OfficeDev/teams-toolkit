@@ -13,6 +13,8 @@ import * as os from "os";
 import { SolutionError, SolutionSource } from "../constants";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { getResourceFolder } from "../../../../folder";
+import { addPathToGitignore } from "../../../../core/middleware/projectMigrator";
+import { TOOLS } from "../../../../core";
 
 const windowsPathLengthLimit = 260;
 const fileNameLengthLimit = 255;
@@ -102,6 +104,11 @@ export async function backupFiles(
 
   // generate readme.
   await generateReport(backupFolder);
+
+  // update .gitignore
+  if (await fs.pathExists(backupFolder)) {
+    await addPathToGitignore(projectPath, backupFolder, TOOLS.logProvider);
+  }
 
   return ok(undefined);
 }

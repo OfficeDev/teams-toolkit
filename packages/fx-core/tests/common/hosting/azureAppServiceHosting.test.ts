@@ -70,7 +70,7 @@ describe("azure app service hosting", () => {
     });
 
     it("create bicep for vs", async () => {
-      context.configs = ["csharp", "running-on-azure"];
+      context.configs = ["dotnet", "running-on-azure"];
       const hosting = AzureHostingFactory.createHosting(ServiceType.AppService);
       const template = await hosting.generateBicep(context);
 

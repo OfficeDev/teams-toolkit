@@ -42,9 +42,9 @@ describe("Simple auth component V3", () => {
     deleteFolder(projectPath);
   });
 
-  it("simple-auth.provision", async () => {
+  it("simple-auth.provision(local)", async () => {
     sandbox.stub(Utils, "downloadZip").resolves();
-    context.envInfo = newEnvInfoV3();
+    context.envInfo = newEnvInfoV3("local");
     context.tokenProvider = tools.tokenProvider;
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
@@ -58,8 +58,8 @@ describe("Simple auth component V3", () => {
     assert.isTrue(res.isOk());
   });
 
-  it("simple-auth.configure", async () => {
-    context.envInfo = newEnvInfoV3();
+  it("simple-auth.configure(local)", async () => {
+    context.envInfo = newEnvInfoV3("local");
     context.tokenProvider = tools.tokenProvider;
     context.envInfo.state = {
       solution: {},

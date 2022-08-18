@@ -3,6 +3,7 @@
 
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import {
+  EnvConfig,
   EnvInfo,
   err,
   FxError,
@@ -14,10 +15,10 @@ import {
   Result,
   SolutionConfig,
   SolutionContext,
-  Stage,
   Tools,
   traverse,
   UserCancelError,
+  v3,
 } from "@microsoft/teamsfx-api";
 import { TOOLS } from "../globalVars";
 import {
@@ -42,7 +43,7 @@ import { shouldIgnored } from "./projectSettingsLoader";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 import { legacyConfig2EnvState } from "../../plugins/resource/utils4v2";
 import { CoreHookContext } from "../types";
-import { getLocalAppName } from "../../plugins/resource/appstudio/utils/utils";
+import { objectToMap } from "../../common/tools";
 
 const newTargetEnvNameOption = "+ new environment";
 const lastUsedMark = " (last used)";
@@ -189,7 +190,12 @@ export async function loadSolutionContext(
     if (envDataResult.isErr()) {
       return err(envDataResult.error);
     }
-    envInfo = envDataResult.value as EnvInfo;
+    const envInfoV3 = envDataResult.value as v3.EnvInfoV3;
+    envInfo = {
+      envName: envInfoV3.envName,
+      config: envInfoV3.config as EnvConfig,
+      state: objectToMap(envInfoV3.state),
+    };
   }
 
   // migrate programmingLanguage and defaultFunctionName to project settings if exists in previous env config

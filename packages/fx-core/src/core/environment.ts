@@ -56,6 +56,8 @@ import { Container } from "typedi";
 import { pick } from "lodash";
 import { convertEnvStateV2ToV3, convertEnvStateV3ToV2 } from "../component/migrate";
 import { LocalCrypto } from "./crypto";
+import { isVSProject } from "../common";
+import { isV3 } from "./globalVars";
 
 export interface EnvStateFiles {
   envState: string;
@@ -87,34 +89,25 @@ class EnvironmentManager {
     projectPath: string,
     cryptoProvider: CryptoProvider,
     envName?: string,
-    isV3 = false
+    v3 = false
   ): Promise<Result<EnvInfo | v3.EnvInfoV3, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
       return err(new PathNotExistError(projectPath));
     }
-
     envName = envName ?? this.getDefaultEnvName();
     const configResult = await this.loadEnvConfig(projectPath, envName);
     if (configResult.isErr()) {
       return err(configResult.error);
     }
-
-    const stateResult = await this.loadEnvState(projectPath, envName, cryptoProvider, isV3);
+    const stateResult = await this.loadEnvState(projectPath, envName, cryptoProvider);
     if (stateResult.isErr()) {
       return err(stateResult.error);
     }
-    if (isV3) {
-      return ok({
-        envName,
-        config: configResult.value as Json,
-        state: stateResult.value as v3.ResourceStates,
-      });
-    } else
-      return ok({
-        envName,
-        config: configResult.value,
-        state: stateResult.value as Map<string, any>,
-      });
+    return ok({
+      envName,
+      config: configResult.value as Json,
+      state: stateResult.value as v3.ResourceStates,
+    });
   }
 
   public newEnvConfigData(appName: string, existingTabEndpoint?: string): EnvConfig {
@@ -349,8 +342,7 @@ class EnvironmentManager {
   private async loadEnvState(
     projectPath: string,
     envName: string,
-    cryptoProvider: CryptoProvider,
-    isV3 = false
+    cryptoProvider: CryptoProvider
   ): Promise<Result<Map<string, any> | v3.ResourceStates, FxError>> {
     const envFiles = this.getEnvStateFilesPath(envName, projectPath);
     const userDataResult = await this.loadUserData(envFiles.userDataFile, cryptoProvider);
@@ -358,22 +350,17 @@ class EnvironmentManager {
       return err(userDataResult.error);
     }
     const userData = userDataResult.value;
-
+    const isv3 = isV3();
     if (!(await fs.pathExists(envFiles.envState))) {
-      if (isV3) return ok({ solution: {} });
-      return ok(new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]));
+      return ok({ solution: {} });
     }
-
     const template = await fs.readFile(envFiles.envState, { encoding: "utf-8" });
     const result = replaceTemplateWithUserData(template, userData);
     let resultJson: Json = JSON.parse(result);
-    if (isV3) {
+    if (isv3) {
       resultJson = convertEnvStateV2ToV3(resultJson);
-      return ok(resultJson as v3.ResourceStates);
     }
-    const data = objectToMap(resultJson);
-
-    return ok(data as Map<string, any>);
+    return ok(resultJson as v3.ResourceStates);
   }
 
   private expandEnvironmentVariables(templateContent: string): string {

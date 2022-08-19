@@ -246,12 +246,12 @@ export class NgrokChecker implements DepsChecker {
 
     // Save all error log and lines that contain "ngrok"
     const errorPattern = /(npm\s+ERR+.*)|(.*ngrok.*)/gi;
+    const preventEmailRedactedRegex = /[^\s]*@[^\s]*/;
     const errorResults = log.match(errorPattern);
-    const errorMessage = errorResults
-      ? errorResults.map((value, index, array) => {
-          return value.trim();
-        })
-      : undefined;
+    const errorMessage = errorResults?.map((value) => {
+      // redact strings that contain "@" to prevent telemetry reporter from redacting the whole property
+      return value.trim().replace(preventEmailRedactedRegex, "<redacted: email>");
+    });
 
     const properties: { [key: string]: string } = {};
     properties[TelemetryProperties.NgrokNpmInstallExitCode] = `${exitCode}`;

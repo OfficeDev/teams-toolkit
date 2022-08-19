@@ -3,6 +3,7 @@
 
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import {
+  EnvConfig,
   EnvInfo,
   err,
   FxError,
@@ -14,12 +15,12 @@ import {
   Result,
   SolutionConfig,
   SolutionContext,
-  Stage,
   Tools,
   traverse,
   UserCancelError,
+  v3,
 } from "@microsoft/teamsfx-api";
-import { TOOLS } from "../globalVars";
+import { globalVars, isV3, TOOLS } from "../globalVars";
 import {
   NoProjectOpenedError,
   ProjectEnvNotExistError,
@@ -42,7 +43,9 @@ import { shouldIgnored } from "./projectSettingsLoader";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 import { legacyConfig2EnvState } from "../../plugins/resource/utils4v2";
 import { CoreHookContext } from "../types";
-import { getLocalAppName } from "../../plugins/resource/appstudio/utils/utils";
+import { objectToMap } from "../../common/tools";
+import { ComponentNames } from "../../component/constants";
+import { BuiltInFeaturePluginNames } from "../../plugins/solution/fx-solution/v3/constants";
 
 const newTargetEnvNameOption = "+ new environment";
 const lastUsedMark = " (last used)";
@@ -99,6 +102,13 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
     const envInfo = result.value.envInfo;
     const state: Json = legacySolutionConfig2EnvState(envInfo.state);
     ctx.envInfoV2 = { envName: envInfo.envName, config: envInfo.config, state };
+
+    // set globalVars for teamsAppId and m365TenantId
+    const appManifestKey = isV3()
+      ? ComponentNames.AppManifest
+      : BuiltInFeaturePluginNames.appStudio;
+    globalVars.teamsAppId = ctx.envInfoV2.state?.[appManifestKey]?.teamsAppId;
+    globalVars.m365TenantId = ctx.envInfoV2.state?.[appManifestKey]?.m365TenantId;
     await next();
   };
 }
@@ -189,7 +199,12 @@ export async function loadSolutionContext(
     if (envDataResult.isErr()) {
       return err(envDataResult.error);
     }
-    envInfo = envDataResult.value as EnvInfo;
+    const envInfoV3 = envDataResult.value as v3.EnvInfoV3;
+    envInfo = {
+      envName: envInfoV3.envName,
+      config: envInfoV3.config as EnvConfig,
+      state: objectToMap(envInfoV3.state),
+    };
   }
 
   // migrate programmingLanguage and defaultFunctionName to project settings if exists in previous env config
@@ -212,31 +227,39 @@ export async function loadSolutionContext(
 }
 
 export function upgradeProgrammingLanguage(
-  solutionConfig: SolutionConfig,
+  solutionConfig: SolutionConfig | Json,
   projectSettings: ProjectSettings
 ) {
-  const programmingLanguage = solutionConfig.get(GLOBAL_CONFIG)?.get(PROGRAMMING_LANGUAGE);
+  const programmingLanguage = solutionConfig.get
+    ? solutionConfig.get(GLOBAL_CONFIG)?.get(PROGRAMMING_LANGUAGE)
+    : (solutionConfig as Json).solution?.programmingLanguage;
   if (programmingLanguage) {
     // add programmingLanguage in project settings
     projectSettings.programmingLanguage = programmingLanguage;
 
     // remove programmingLanguage in solution config
-    solutionConfig.get(GLOBAL_CONFIG)?.delete(PROGRAMMING_LANGUAGE);
+    solutionConfig.get
+      ? solutionConfig.get(GLOBAL_CONFIG)?.delete(PROGRAMMING_LANGUAGE)
+      : ((solutionConfig as Json).solution.programmingLanguage = undefined);
   }
 }
 
 export function upgradeDefaultFunctionName(
-  solutionConfig: SolutionConfig,
+  solutionConfig: SolutionConfig | Json,
   projectSettings: ProjectSettings
 ) {
   // upgrade defaultFunctionName if exists.
-  const defaultFunctionName = solutionConfig.get(PluginNames.FUNC)?.get(DEFAULT_FUNC_NAME);
+  const defaultFunctionName = solutionConfig.get
+    ? solutionConfig.get(PluginNames.FUNC)?.get(DEFAULT_FUNC_NAME)
+    : (solutionConfig as Json).solution?.defaultFunctionName;
   if (defaultFunctionName) {
     // add defaultFunctionName in project settings
     projectSettings.defaultFunctionName = defaultFunctionName;
 
     // remove defaultFunctionName in function plugin's config
-    solutionConfig.get(PluginNames.FUNC)?.delete(DEFAULT_FUNC_NAME);
+    solutionConfig.get
+      ? solutionConfig.get(PluginNames.FUNC)?.delete(DEFAULT_FUNC_NAME)
+      : ((solutionConfig as Json).solution.defaultFunctionName = undefined);
   }
 }
 

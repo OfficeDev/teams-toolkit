@@ -20,7 +20,11 @@ import { environmentManager, newEnvInfoV3 } from "../environment";
 import { NoProjectOpenedError, ProjectSettingsUndefinedError } from "../error";
 import { globalVars, isV3 } from "../globalVars";
 import { CoreHookContext } from "../types";
-import { getTargetEnvName } from "./envInfoLoader";
+import {
+  getTargetEnvName,
+  upgradeDefaultFunctionName,
+  upgradeProgrammingLanguage,
+} from "./envInfoLoader";
 import { shouldIgnored } from "./projectSettingsLoader";
 
 export function EnvInfoLoaderMW_V3(skip: boolean): Middleware {
@@ -62,6 +66,9 @@ export function EnvInfoLoaderMW_V3(skip: boolean): Middleware {
     }
 
     ctx.envInfoV3 = result.value;
+
+    upgradeProgrammingLanguage(ctx.envInfoV3.state, ctx.projectSettings);
+    upgradeDefaultFunctionName(ctx.envInfoV3.state, ctx.projectSettings);
 
     // set globalVars for teamsAppId and m365TenantId
     const appManifestKey = isV3()

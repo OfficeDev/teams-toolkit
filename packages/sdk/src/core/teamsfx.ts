@@ -89,7 +89,9 @@ export class TeamsFx implements TeamsFxConfiguration {
           throw new Error("Bad identity type!");
       } 
     }
-    else {}
+    else {
+      // TODO: 
+    }
   }
 
   /**

@@ -25,11 +25,11 @@ import {
   getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,
 } from "../../../common/tools";
-import { WebSiteManagementClient } from "@azure/arm-appservice";
 import { NameValuePair, Site } from "@azure/arm-appservice/esm/models";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { LogMessages } from "../../messages";
+import { AzureClientFactory } from "./azureLibs";
 
 const ErrorSource = "Functions";
 @Service("azure-function")
@@ -72,25 +72,23 @@ export class AzureFunctionResource extends AzureAppService {
     const functionAppName = getSiteNameFromResourceId(resourceId);
     const subscriptionId = getSubscriptionIdFromResourceId(resourceId);
 
-    const webSiteManagementClient = new WebSiteManagementClient(credentials, subscriptionId);
-    const webAppCollection = await webSiteManagementClient.webApps.listByResourceGroup(
-      resourceGroupName
-    );
+    const client = AzureClientFactory.getWebSiteManagementClient(credentials, subscriptionId);
+    const webAppCollection = await client.webApps.listByResourceGroup(resourceGroupName);
     const site = webAppCollection.find((webApp) => webApp.name === functionAppName);
     if (!site) {
       throw new FindFunctionAppError(this.alias);
     }
-    const settings = await webSiteManagementClient.webApps.listApplicationSettings(
+    const settings = await client.webApps.listApplicationSettings(
       resourceGroupName,
       functionAppName
     );
-    if (settings.properties) {
+    if (settings?.properties) {
       Object.entries(settings.properties).forEach((kv: [string, string]) => {
         this.pushAppSettings(site, kv[0], kv[1], false);
       });
     }
     this.collectFunctionAppSettings(context, site);
-    await webSiteManagementClient.webApps.update(resourceGroupName, functionAppName, site);
+    await client.webApps.update(resourceGroupName, functionAppName, site);
 
     return ok(undefined);
   }
@@ -108,7 +106,9 @@ export class AzureFunctionResource extends AzureAppService {
       ComponentNames.Function,
       Scenarios.Api
     );
-    return !!func?.connections?.includes(ComponentNames.APIM);
+    return (
+      context.envInfo.envName !== "local" && !!func?.connections?.includes(ComponentNames.APIM)
+    );
   }
 
   private collectFunctionAppSettings(ctx: ResourceContextV3, site: Site): void {

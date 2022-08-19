@@ -434,5 +434,9 @@ describe("App-manifest Component", () => {
     };
     const getManifestRes = await appstudio.getManifest("", envInfo);
     chai.assert(getManifestRes.isOk());
+    if (getManifestRes.isOk()) {
+      const finalManifest = getManifestRes.value;
+      chai.assert(finalManifest.validDomains?.includes("abc.com"));
+    }
   });
 });

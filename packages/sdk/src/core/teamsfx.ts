@@ -10,6 +10,7 @@ import { formatString } from "../util/utils";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { internalLogger } from "../util/logger";
 import { TeamsFxConfiguration } from "../models/teamsfxConfiguration";
+import { config } from "process";
 
 // Following keys are used by SDK internally
 const ReservedKey: Set<string> = new Set<string>([
@@ -57,6 +58,38 @@ export class TeamsFx implements TeamsFxConfiguration {
         }
       }
     }
+    // Frank edit. 
+    try {
+      if (identityType && customConfig)
+        this.identityTypeAndConfigMatchCheck(identityType, this.configuration);
+      else if (customConfig)
+        this.identityTypeAndConfigMatchCheck(undefined, this.configuration);
+    } catch (e) {
+
+    }
+  }
+
+  /**
+   * Frank edit
+   * Check if customConfig matchs identityType 
+   * 
+   */
+  identityTypeAndConfigMatchCheck(identityType?: IdentityType | undefined, config?: Map<string, string | undefined>): void {
+    if (identityType) {
+      switch(identityType) {
+        case IdentityType.User: 
+          if (config&&(!config.has("initiateLoginEndpoint")||!(config.has("clientId"))))
+            throw new Error("Config missing: clientId or initiateLoginEndpoint");
+          break;
+        case IdentityType.App:
+          if (config&&(!config.has("clientId")||!(config.has("clientSecret"))))
+            throw new Error("Config missing error: clientId or clientSecret");
+          break;
+        default:
+          throw new Error("Bad identity type!");
+      } 
+    }
+    else {}
   }
 
   /**

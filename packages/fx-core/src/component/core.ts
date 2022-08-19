@@ -60,7 +60,7 @@ import "./resource/botService";
 import "./resource/keyVault";
 import "./resource/spfx";
 import "./resource/aadApp/aadApp";
-
+import "./resource/simpleAuth";
 import { AADApp } from "@microsoft/teamsfx-api/build/v3";
 import * as jsonschema from "jsonschema";
 import { cloneDeep, merge } from "lodash";

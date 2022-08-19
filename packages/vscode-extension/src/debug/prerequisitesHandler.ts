@@ -314,6 +314,12 @@ export async function checkAndInstall(): Promise<Result<void, FxError>> {
     // projectComponents is already serialized JSON string
     { [TelemetryProperty.DebugProjectComponents]: `${projectComponents}` },
     async (ctx: TelemetryContext) => {
+      // terminate all running teamsfx tasks
+      if (allRunningTeamsfxTasks.size > 0) {
+        VsCodeLogInstance.info("Terminate all running teamsfx tasks.");
+        terminateAllRunningTeamsfxTasks();
+      }
+
       const res = await _checkAndInstall("LocalDebug Prerequisite Check", orderedCheckers);
       if (res.error) {
         const debugSession = commonUtils.getLocalDebugSession();
@@ -344,12 +350,6 @@ async function _checkAndInstall(
   let progressHelper: ProgressHelper | undefined;
   const checkResults: CheckResult[] = [];
   try {
-    // terminate all running teamsfx tasks
-    if (allRunningTeamsfxTasks.size > 0) {
-      VsCodeLogInstance.info("Terminate all running teamsfx tasks.");
-      terminateAllRunningTeamsfxTasks();
-    }
-
     const enabledCheckers = parseCheckers(orderedCheckers);
 
     const localEnvManager = new LocalEnvManager(

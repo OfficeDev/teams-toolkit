@@ -96,7 +96,9 @@ describe("Azure-Function Component", () => {
     } as any;
     sandbox.stub(AzureClientFactory, "getWebSiteManagementClient").returns({
       webApps: {
-        listApplicationSettings: (rgName: string, siteName: string) => ({}),
+        listApplicationSettings: (rgName: string, siteName: string) => ({
+          properties: [{ name: "", value: "" }],
+        }),
         listByResourceGroup: (rgName: string) => [{ name: "siteName" }],
         update: (rgName: string, siteName: string, site: any) => ({}),
       } as any,

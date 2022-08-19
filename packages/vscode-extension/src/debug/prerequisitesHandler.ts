@@ -143,7 +143,7 @@ const ProgressMessage: { [key: string]: string } = Object.freeze({
 });
 
 type PortCheckerInfo = { checker: Checker.Ports; ports: number[] };
-type PrerequisiteCheckerInfo = { checker: Checker | DepsType } | PortCheckerInfo;
+type PrerequisiteCheckerInfo = { checker: Checker | DepsType; [key: string]: any };
 
 type PrerequisiteOrderedChecker = {
   info: PrerequisiteCheckerInfo | PrerequisiteCheckerInfo[];

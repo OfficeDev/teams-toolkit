@@ -58,6 +58,7 @@ import {
 } from "../../src/plugins/solution/fx-solution/constants";
 import { TeamsAppSolutionNameV2 } from "../../src/plugins/solution/fx-solution/v2/constants";
 import sinon from "sinon";
+import { MyTokenCredential } from "../plugins/resource/bot/unit/utils";
 
 function solutionSettings(): AzureSolutionSettings {
   return {
@@ -215,8 +216,8 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
     throw new Error("getAccountCredentialAsync Method not implemented.");
   }
 
-  getIdentityCredentialAsync(): Promise<TokenCredential | undefined> {
-    throw new Error("getIdentityCredentialAsync Method not implemented.");
+  async getIdentityCredentialAsync(): Promise<TokenCredential | undefined> {
+    return new MyTokenCredential();
   }
 
   signout(): Promise<boolean> {

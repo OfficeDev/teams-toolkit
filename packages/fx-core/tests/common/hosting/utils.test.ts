@@ -12,7 +12,20 @@ import * as sinon from "sinon";
 // @ts-ignore
 import chaiAsPromised from "chai-as-promised";
 import { PreconditionError } from "../../../src/common/azure-hosting/hostingError";
+import { TokenCredential, AccessToken, GetTokenOptions } from "@azure/core-http";
 chai.use(chaiAsPromised);
+
+class MyTokenCredential implements TokenCredential {
+  async getToken(
+    scopes: string | string[],
+    options?: GetTokenOptions | undefined
+  ): Promise<AccessToken | null> {
+    return {
+      token: "abc",
+      expiresOnTimestamp: 12345,
+    };
+  }
+}
 
 describe("hosting util test", () => {
   describe("azureWebSiteDeploy", () => {
@@ -22,6 +35,9 @@ describe("hosting util test", () => {
     const resourceId = `/subscriptions/${subscriptionId}/resourceGroups/${rgName}/providers/Microsoft.Web/sites/${siteName}`;
 
     class FakeAzureAccountProvider extends MockedAzureAccountProvider {
+      async getIdentityCredentialAsync(showDialog?: boolean): Promise<TokenCredential> {
+        return new MyTokenCredential();
+      }
       async listSubscriptions(): Promise<SubscriptionInfo[]> {
         return [{ subscriptionId: subscriptionId, subscriptionName: "sub1", tenantId: "222" }];
       }
@@ -31,9 +47,6 @@ describe("hosting util test", () => {
     } as TokenProvider;
     it("Happy Path for azureWebSiteDeploy", async () => {
       sinon.stub(AzureOperations, "listPublishingCredentials").resolves({
-        _response: {
-          status: 200,
-        },
         publishingUserName: "user",
         publishingPassword: "pass",
       });
@@ -44,7 +57,7 @@ describe("hosting util test", () => {
     });
 
     it("Cannot get Credential azureWebSiteDeploy", async () => {
-      sinon.stub(provider.azureAccountProvider, "getAccountCredentialAsync").resolves(undefined);
+      sinon.stub(provider.azureAccountProvider, "getIdentityCredentialAsync").resolves(undefined);
       sinon.stub(AzureOperations, "zipDeployPackage").resolves("url");
       sinon.stub(AzureOperations, "checkDeployStatus");
       await chai

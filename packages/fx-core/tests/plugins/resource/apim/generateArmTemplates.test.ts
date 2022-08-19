@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import "mocha";
 import chai from "chai";
-import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
+import { ResourceManagementClient } from "@azure/arm-resources";
 import { Lazy } from "../../../../src/plugins/resource/apim/utils/commonUtils";
 import { ApimManager } from "../../../../src/plugins/resource/apim/managers/apimManager";
 import { OpenApiProcessor } from "../../../../src/plugins/resource/apim/utils/openApiProcessor";
@@ -17,7 +17,7 @@ import {
 } from "../util";
 import { ConstantString } from "../../../../src/common/constants";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import { generateFakeServiceClientCredentials } from "../bot/unit/utils";
+import { generateFakeServiceClientCredentials, MyTokenCredential } from "../bot/unit/utils";
 import { ApimOutputBicepSnippet } from "../../../../src/plugins/resource/apim/constants";
 import { ArmTemplateResult } from "../../../../src/common/armInterface";
 import {
@@ -213,11 +213,11 @@ describe("apimManager.generateArmTemplates", () => {
   async function mockApimManager(): Promise<ApimManager> {
     const openApiProcessor = new OpenApiProcessor();
     const credential = generateFakeServiceClientCredentials();
+    const identityCredential = new MyTokenCredential();
     const subscriptionId = "test-subscription-id";
     const apimManagementClient = new ApiManagementClient(credential, subscriptionId);
-    const resourceProviderClient = new Providers(
-      new ResourceManagementClientContext(credential, subscriptionId)
-    );
+    const resourceProviderClient = new ResourceManagementClient(identityCredential, subscriptionId)
+      .providers;
     const lazyApimService = new Lazy<ApimService>(() =>
       Promise.resolve(
         new ApimService(

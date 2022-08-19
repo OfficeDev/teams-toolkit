@@ -12,7 +12,7 @@ import {
   CryptoProvider,
   TokenRequest,
 } from "@microsoft/teamsfx-api";
-import { ResourceGroups, ResourceManagementClientContext } from "@azure/arm-resources";
+import { ResourceGroups } from "@azure/arm-resources";
 import { ServiceClientCredentials } from "@azure/ms-rest-js";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { TokenResponse } from "adal-node";
@@ -59,6 +59,7 @@ import {
   BotScenario,
 } from "../../../../../src/plugins/solution/fx-solution/question";
 import { ResourcePlugins } from "../../../../../src/common/constants";
+import { TokenCredential, AccessToken, GetTokenOptions } from "@azure/core-http";
 
 export class MockUserInteraction implements UserInteraction {
   selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
@@ -133,6 +134,18 @@ export function generateFakeServiceClientCredentials(): ServiceClientCredentials
   };
 }
 
+export class MyTokenCredential implements TokenCredential {
+  async getToken(
+    scopes: string | string[],
+    options?: GetTokenOptions | undefined
+  ): Promise<AccessToken | null> {
+    return {
+      token: "abc",
+      expiresOnTimestamp: 1234,
+    };
+  }
+}
+
 export function generateFakeLogProvider(): LogProvider {
   return {
     info: (message: string | Array<any>) => {
@@ -172,20 +185,6 @@ class FakeTokenCredentials extends TokenCredentialsBase {
 }
 export function generateFakeTokenCredentialsBase(): TokenCredentialsBase {
   return new FakeTokenCredentials("anything", "anything");
-}
-
-export async function ensureResourceGroup(
-  rgName: string,
-  creds: ServiceClientCredentials,
-  subs: string
-): Promise<void> {
-  const client = new ResourceGroups(new ResourceManagementClientContext(creds, subs));
-  const res = await client.createOrUpdate(rgName, {
-    location: "Central US",
-  });
-  if (!res || (res._response.status !== 201 && res._response.status !== 200)) {
-    throw new Error(`Fail to ensure resource group with name: ${rgName}`);
-  }
 }
 
 export function newPluginContext(): PluginContext {

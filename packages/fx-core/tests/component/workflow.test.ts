@@ -59,7 +59,19 @@ import * as backup from "../../src/plugins/solution/fx-solution/utils/backupFile
 import { AadApp } from "../../src/component/resource/aadApp/aadApp";
 import { Constants } from "../../src/plugins/resource/aad/constants";
 import * as deployV3 from "../../src/plugins/solution/fx-solution/v3/deploy";
+import { TokenCredential, AccessToken, GetTokenOptions } from "@azure/core-http";
 
+class MyTokenCredential implements TokenCredential {
+  async getToken(
+    scopes: string | string[],
+    options?: GetTokenOptions | undefined
+  ): Promise<AccessToken | null> {
+    return {
+      token: "abc",
+      expiresOnTimestamp: 12345,
+    };
+  }
+}
 describe("Workflow test for v3", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -971,6 +983,9 @@ describe("Workflow test for v3", () => {
     sandbox
       .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
       .resolves(TestHelper.fakeCredential);
+    sandbox
+      .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+      .resolves(new MyTokenCredential());
     sandbox
       .stub(provisionV3, "fillInAzureConfigs")
       .resolves(ok({ hasSwitchedSubscription: false }));

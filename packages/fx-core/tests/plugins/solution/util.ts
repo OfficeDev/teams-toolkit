@@ -39,6 +39,7 @@ import {
   LoginStatus,
 } from "@microsoft/teamsfx-api";
 import { MockPermissionRequestProvider } from "../../core/utils";
+import { MyTokenCredential } from "../resource/bot/unit/utils";
 
 export const validManifest = {
   $schema:
@@ -301,7 +302,7 @@ export class MockedAzureAccountProvider implements AzureAccountProvider {
   }
 
   async getIdentityCredentialAsync(showDialog?: boolean): Promise<TokenCredential | undefined> {
-    return undefined;
+    return new MyTokenCredential();
   }
 
   async signout(): Promise<boolean> {

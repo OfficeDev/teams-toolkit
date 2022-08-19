@@ -13,6 +13,7 @@ import { DependentPluginInfo } from "../../../../src/plugins/resource/frontend/d
 import { newEnvInfo } from "../../../../src";
 import { LocalCrypto } from "../../../../src/core/crypto";
 import { DotnetPluginInfo as PluginInfo } from "../../../../src/plugins/resource/frontend/dotnet/constants";
+import { MyTokenCredential } from "../bot/unit/utils";
 
 export class TestHelper {
   static appName = "ut";
@@ -38,6 +39,9 @@ export class TestHelper {
   static azureAccountProvider: AzureAccountProvider = {
     getAccountCredentialAsync: async () => {
       return TestHelper.credential;
+    },
+    getIdentityCredentialAsync: async () => {
+      return new MyTokenCredential();
     },
     getSelectedSubscription: async () => {
       return {

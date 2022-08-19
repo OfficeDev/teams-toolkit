@@ -74,7 +74,38 @@ import { AppDefinition } from "../../../src/plugins/resource/appstudio/interface
 import _ from "lodash";
 import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase, UserTokenCredentials } from "@azure/ms-rest-nodeauth";
-import { Providers, ResourceGroups, ResourceManagementClient } from "@azure/arm-resources";
+import {
+  ExportTemplateRequest,
+  Provider,
+  Providers,
+  ProvidersGetAtTenantScopeOptionalParams,
+  ProvidersGetAtTenantScopeResponse,
+  ProvidersListAtTenantScopeOptionalParams,
+  ProvidersListOptionalParams,
+  ProvidersProviderPermissionsOptionalParams,
+  ProvidersProviderPermissionsResponse,
+  ProvidersRegisterAtManagementGroupScopeOptionalParams,
+  ProvidersRegisterOptionalParams,
+  ProvidersRegisterResponse,
+  ProvidersUnregisterOptionalParams,
+  ProvidersUnregisterResponse,
+  ResourceGroup,
+  ResourceGroupPatchable,
+  ResourceGroups,
+  ResourceGroupsCheckExistenceOptionalParams,
+  ResourceGroupsCheckExistenceResponse,
+  ResourceGroupsCreateOrUpdateOptionalParams,
+  ResourceGroupsCreateOrUpdateResponse,
+  ResourceGroupsDeleteOptionalParams,
+  ResourceGroupsExportTemplateOptionalParams,
+  ResourceGroupsExportTemplateResponse,
+  ResourceGroupsGetOptionalParams,
+  ResourceGroupsGetResponse,
+  ResourceGroupsListOptionalParams,
+  ResourceGroupsUpdateOptionalParams,
+  ResourceGroupsUpdateResponse,
+  ResourceManagementClient,
+} from "@azure/arm-resources";
 import { AppStudioClient } from "../../../src/plugins/resource/appstudio/appStudio";
 import { AppStudioPluginImpl } from "../../../src/plugins/resource/appstudio/plugin";
 import * as solutionUtil from "../../../src/plugins/solution/fx-solution/utils/util";
@@ -87,7 +118,6 @@ import {
   askResourceGroupInfo,
   checkResourceGroupExistence,
 } from "../../../src/plugins/solution/fx-solution/commonQuestions";
-import { ResourceManagementModels } from "@azure/arm-resources";
 import { CoreQuestionNames } from "../../../src/core/question";
 import {
   Subscription,
@@ -100,7 +130,7 @@ import {
   SubscriptionsGetResponse,
 } from "@azure/arm-subscriptions";
 import * as msRest from "@azure/ms-rest-js";
-import { ProvidersGetOptionalParams, ProvidersGetResponse } from "@azure/arm-resources/esm/models";
+import { ProvidersGetOptionalParams, ProvidersGetResponse } from "@azure/arm-resources";
 import { TeamsAppSolutionV2 } from "../../../src/plugins/solution/fx-solution/v2/solution";
 import { LocalCrypto } from "../../../src/core/crypto";
 import * as arm from "../../../src/plugins/solution/fx-solution/arm";
@@ -114,6 +144,8 @@ import { SolutionRunningState } from "../../../src/plugins/solution/fx-solution/
 import * as sub from "@azure/arm-subscriptions";
 import mockedEnv from "mocked-env";
 import { askForProvisionConsentNew } from "../../../src/plugins/solution/fx-solution/v2/provision";
+import { PollerLike } from "@azure/core-lro";
+import { PollOperationState } from "@azure/core-lro";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -206,7 +238,7 @@ export class MockedAzureTokenProvider implements AzureAccountProvider {
     throw new Error("Method not implemented.");
   }
   getIdentityCredential(showDialog?: boolean): TokenCredential {
-    throw new Error("Method not implemented.");
+    return new MyTokenCredential();
   }
   async getAccountCredentialAsync(
     showDialog?: boolean,
@@ -556,6 +588,27 @@ function mockAzureProjectDeps(
   mocker.stub(solutionUtil, "getSubsriptionDisplayName").resolves(mockedSubscriptionName);
 }
 
+const mockResourceGroups1 = {
+  checkExistence: async function (
+    resourceGroupName: string,
+    options?: ResourceGroupsCheckExistenceOptionalParams
+  ): Promise<ResourceGroupsCheckExistenceResponse> {
+    return {
+      body: false,
+    };
+  },
+  createOrUpdate: async function (
+    resourceGroupName: string,
+    parameters: ResourceGroup,
+    options?: ResourceGroupsCreateOrUpdateOptionalParams
+  ): Promise<ResourceGroupsCreateOrUpdateResponse> {
+    return {
+      name: "my_app-rg",
+      location: "location",
+    };
+  },
+};
+
 describe("Resource group creation failed for provision() in Azure projects", () => {
   const mocker = sinon.createSandbox();
   const permissionsJsonPath = "./permissions.json";
@@ -567,12 +620,17 @@ describe("Resource group creation failed for provision() in Azure projects", () 
   // ignore icons for simplicity
   mockedManifest.icons.color = "";
   mockedManifest.icons.outline = "";
+  before(() => {
+    const mockResourceManagementClient = new ResourceManagementClient(
+      new MyTokenCredential(),
+      "id"
+    );
+    mockResourceManagementClient.resourceGroups = mockResourceGroups1 as any;
+    mocker.stub(armResources, "ResourceManagementClient").returns(mockResourceManagementClient);
+  });
+
   beforeEach(() => {
     mockAzureProjectDeps(mocker, permissionsJsonPath, mockedManifest, mockedAppDef);
-    mocker.stub(ResourceGroups.prototype, "createOrUpdate").throws("some error");
-    mocker.stub(ResourceGroups.prototype, "checkExistence").resolves({
-      body: false,
-    } as armResources.ResourceManagementModels.ResourcesCheckExistenceResponse);
   });
 
   afterEach(() => {
@@ -604,6 +662,25 @@ describe("Resource group creation failed for provision() in Azure projects", () 
   });
 });
 
+const mockResourceGroups2 = {
+  createOrUpdate: async function (
+    resourceGroupName: string,
+    parameters: ResourceGroup,
+    options?: ResourceGroupsCreateOrUpdateOptionalParams
+  ): Promise<ResourceGroupsCreateOrUpdateResponse> {
+    return {
+      name: "test-rg",
+      location: "location",
+    };
+  },
+  get: async function (
+    resourceGroupName: string,
+    options?: ResourceGroupsGetOptionalParams
+  ): Promise<ResourceGroupsGetResponse> {
+    return { name: "my_app-rg", location: "West US" };
+  },
+};
+
 describe("provision() happy path for Azure projects", () => {
   const mocker = sinon.createSandbox();
   const permissionsJsonPath = "./permissions.json";
@@ -617,12 +694,16 @@ describe("provision() happy path for Azure projects", () => {
   // ignore icons for simplicity
   mockedManifest.icons.color = "";
   mockedManifest.icons.outline = "";
+  before(() => {
+    const mockResourceManagementClient = new ResourceManagementClient(
+      new MyTokenCredential(),
+      "id"
+    );
+    mockResourceManagementClient.resourceGroups = mockResourceGroups2 as any;
+    mocker.stub(armResources, "ResourceManagementClient").returns(mockResourceManagementClient);
+  });
   beforeEach(() => {
     mockAzureProjectDeps(mocker, permissionsJsonPath, mockedManifest, mockedAppDef);
-    mocker.stub(ResourceGroups.prototype, "createOrUpdate").resolves({ name: resourceGroupName });
-    mocker
-      .stub(ResourceGroups.prototype, "get")
-      .resolves({ name: "my_app-rg", location: "West US" });
     mocker.stub(tools, "getSPFxTenant").returns(Promise.resolve("tenant"));
   });
 
@@ -703,18 +784,25 @@ describe("provision() happy path for Azure projects", () => {
   });
 });
 
-function mockListResourceGroupResult(
-  mocker: sinon.SinonSandbox,
-  subscriptionId: string,
-  resourceGroups: string[]
-) {
-  mocker
-    .stub(ResourceGroups.prototype, "list")
-    .callsFake(
-      async (
-        options?: ResourceManagementModels.ResourceGroupsListOptionalParams
-      ): Promise<ResourceManagementModels.ResourceGroupsListResponse> => {
-        return resourceGroups.map((name) => {
+function getMockResourceGroups(subscriptionId: string, resourceGroups: string[]) {
+  return {
+    list: function (
+      options?: ResourceGroupsListOptionalParams
+    ): PagedAsyncIterableIterator<ResourceGroup> {
+      return {
+        next() {
+          throw new Error("Function not implemented.");
+        },
+        [Symbol.asyncIterator]() {
+          throw new Error("Function not implemented.");
+        },
+        byPage: () => {
+          return generator() as any;
+        },
+      };
+
+      function* generator() {
+        yield resourceGroups.map((name) => {
           return {
             id: `/subscriptions/${subscriptionId}/resourceGroups/${name}`,
             name: name,
@@ -724,9 +812,26 @@ function mockListResourceGroupResult(
               provisioningState: "Succeeded",
             },
           };
-        }) as ResourceManagementModels.ResourceGroupsListResponse;
+        });
       }
-    );
+    },
+    createOrUpdate: async function (
+      resourceGroupName: string,
+      parameters: ResourceGroup,
+      options?: ResourceGroupsCreateOrUpdateOptionalParams
+    ): Promise<ResourceGroupsCreateOrUpdateResponse> {
+      return {
+        name: "test-rg",
+        location: "location",
+      };
+    },
+    get: async function (
+      resourceGroupName: string,
+      options?: ResourceGroupsGetOptionalParams
+    ): Promise<ResourceGroupsGetResponse> {
+      return { name: "my_app-rg", location: "West US" };
+    },
+  };
 }
 
 const mockSubscriptions: Subscriptions = {
@@ -770,15 +875,23 @@ const mockSubscriptions: Subscriptions = {
   },
 };
 
-function mockProviderGetResult(mocker: sinon.SinonSandbox) {
-  mocker
-    .stub(Providers.prototype, "get")
-    .callsFake(
-      async (
-        resourceProviderNamespace: string,
-        options?: ProvidersGetOptionalParams
-      ): Promise<ProvidersGetResponse> => {
-        return {
+const mockProviders = {
+  list: function (options?: ProvidersListOptionalParams): PagedAsyncIterableIterator<Provider> {
+    return {
+      next() {
+        throw new Error("Function not implemented.");
+      },
+      [Symbol.asyncIterator]() {
+        throw new Error("Function not implemented.");
+      },
+      byPage: () => {
+        return generator() as any;
+      },
+    };
+
+    function* generator() {
+      yield [
+        {
           id: "location",
           resourceTypes: [
             {
@@ -786,10 +899,25 @@ function mockProviderGetResult(mocker: sinon.SinonSandbox) {
               locations: ["location"],
             },
           ],
-        } as ProvidersGetResponse;
-      }
-    );
-}
+        },
+      ];
+    }
+  },
+  get: async function (
+    resourceProviderNamespace: string,
+    options?: ProvidersGetOptionalParams
+  ): Promise<ProvidersGetResponse> {
+    return {
+      id: "location",
+      resourceTypes: [
+        {
+          resourceType: "resourceGroups",
+          locations: ["location"],
+        },
+      ],
+    };
+  },
+};
 
 describe("before provision() asking for resource group info", () => {
   const mocker = sinon.createSandbox();
@@ -823,9 +951,16 @@ describe("before provision() asking for resource group info", () => {
       mockNewResourceGroupName,
       mockNewResourceGroupLocation
     );
-    mockListResourceGroupResult(mocker, fakeSubscriptionId, []);
-    mockProviderGetResult(mocker);
-
+    const mockResourceManagementClient = new ResourceManagementClient(
+      new MyTokenCredential(),
+      "id"
+    );
+    mockResourceManagementClient.resourceGroups = getMockResourceGroups(
+      fakeSubscriptionId,
+      []
+    ) as any;
+    mockResourceManagementClient.providers = mockProviders as any;
+    mocker.stub(armResources, "ResourceManagementClient").returns(mockResourceManagementClient);
     mockedCtx.projectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -837,7 +972,7 @@ describe("before provision() asking for resource group info", () => {
       },
     };
 
-    const token = await mockedCtx.azureAccountProvider?.getAccountCredentialAsync();
+    const token = await mockedCtx.azureAccountProvider?.getIdentityCredentialAsync();
     expect(token).to.exist;
     const mockRmClient = new ResourceManagementClient(token!, fakeSubscriptionId);
 
@@ -871,8 +1006,16 @@ describe("before provision() asking for resource group info", () => {
     const appName = "testapp";
 
     const mockedCtx = mockCtxWithResourceGroupQuestions(false, mockResourceGroupName);
-    mockListResourceGroupResult(mocker, fakeSubscriptionId, mockResourceGroupList);
-    mockProviderGetResult(mocker);
+    const mockResourceManagementClient = new ResourceManagementClient(
+      new MyTokenCredential(),
+      "id"
+    );
+    mockResourceManagementClient.resourceGroups = getMockResourceGroups(
+      fakeSubscriptionId,
+      mockResourceGroupList
+    ) as any;
+    mockResourceManagementClient.providers = mockProviders as any;
+    mocker.stub(armResources, "ResourceManagementClient").returns(mockResourceManagementClient);
 
     mockedCtx.projectSettings = {
       appName: "my app",
@@ -885,7 +1028,7 @@ describe("before provision() asking for resource group info", () => {
       },
     };
 
-    const token = await mockedCtx.azureAccountProvider?.getAccountCredentialAsync();
+    const token = await mockedCtx.azureAccountProvider?.getIdentityCredentialAsync();
     expect(token).to.exist;
     const mockRmClient = new ResourceManagementClient(token!, fakeSubscriptionId);
 
@@ -916,15 +1059,12 @@ describe("before provision() asking for resource group info", () => {
 
     const mockedCtx = mockCtxWithResourceGroupQuestions(false, mockResourceGroupName);
 
-    mocker
-      .stub(ResourceGroups.prototype, "list")
-      .callsFake(
-        async (
-          options?: ResourceManagementModels.ResourceGroupsListOptionalParams
-        ): Promise<ResourceManagementModels.ResourceGroupsListResponse> => {
-          throw new Error("mock failure to list resource groups");
-        }
-      );
+    const mockResourceManagementClient = new ResourceManagementClient(
+      new MyTokenCredential(),
+      "id"
+    );
+    mockResourceManagementClient.resourceGroups = mockResourceGroups1 as any;
+    mocker.stub(armResources, "ResourceManagementClient").returns(mockResourceManagementClient);
 
     mockedCtx.projectSettings = {
       appName: "my app",
@@ -937,7 +1077,7 @@ describe("before provision() asking for resource group info", () => {
       },
     };
 
-    const token = await mockedCtx.azureAccountProvider?.getAccountCredentialAsync();
+    const token = await mockedCtx.azureAccountProvider?.getIdentityCredentialAsync();
     expect(token).to.exist;
     const mockRmClient = new ResourceManagementClient(token!, fakeSubscriptionId);
 
@@ -965,25 +1105,38 @@ describe("before provision() asking for resource group info", () => {
     let upstreamResult: Result<boolean, Error> = new Ok<boolean, Error>(true);
     let mockRmClient: ResourceManagementClient;
 
+    function getMockResourceGroupsByUpstreamResult(upstreamResult: Result<boolean, Error>) {
+      return {
+        checkExistence: async function (
+          resourceGroupName: string,
+          options?: ResourceGroupsCheckExistenceOptionalParams
+        ): Promise<ResourceGroupsCheckExistenceResponse> {
+          if (upstreamResult.isOk()) {
+            return {
+              body: upstreamResult.value,
+            } as armResources.ResourceGroupsCheckExistenceResponse;
+          } else {
+            throw upstreamResult.error;
+          }
+        },
+        get: async function (
+          resourceGroupName: string,
+          options?: ResourceGroupsGetOptionalParams
+        ): Promise<ResourceGroupsGetResponse> {
+          return { name: "my_app-rg", location: "West US" };
+        },
+      };
+    }
     beforeEach(async () => {
       const mockedCtx = mockCtxWithResourceGroupQuestions(false, mockResourceGroupName);
-      mocker
-        .stub(ResourceGroups.prototype, "checkExistence")
-        .callsFake(
-          async (
-            resourceGroupName: string,
-            options?: msRest.RequestOptionsBase
-          ): Promise<armResources.ResourceManagementModels.ResourceGroupsCheckExistenceResponse> => {
-            if (upstreamResult.isOk()) {
-              return {
-                body: upstreamResult.value,
-              } as armResources.ResourceManagementModels.ResourceGroupsCheckExistenceResponse;
-            } else {
-              throw upstreamResult.error;
-            }
-          }
-        );
-
+      const mockResourceManagementClient = new ResourceManagementClient(
+        new MyTokenCredential(),
+        "id"
+      );
+      mockResourceManagementClient.resourceGroups = getMockResourceGroupsByUpstreamResult(
+        upstreamResult
+      ) as any;
+      mocker.stub(armResources, "ResourceManagementClient").returns(mockResourceManagementClient);
       mockedCtx.projectSettings = {
         appName: "my app",
         projectId: uuid.v4(),
@@ -994,7 +1147,7 @@ describe("before provision() asking for resource group info", () => {
           activeResourcePlugins: [],
         },
       };
-      const token = await mockedCtx.azureAccountProvider?.getAccountCredentialAsync();
+      const token = await mockedCtx.azureAccountProvider?.getIdentityCredentialAsync();
       expect(token).to.exist;
       mockRmClient = new ResourceManagementClient(token!, mockSubscriptionId);
     });
@@ -1231,12 +1384,15 @@ describe("API v2 implementation", () => {
   describe("Azure projects", () => {
     const mocker = sinon.createSandbox();
 
+    before(() => {
+      const mockResourceManagementClient = new ResourceManagementClient(
+        new MyTokenCredential(),
+        "id"
+      );
+      mockResourceManagementClient.resourceGroups = mockResourceGroups1 as any;
+      mocker.stub(armResources, "ResourceManagementClient").returns(mockResourceManagementClient);
+    });
     beforeEach(() => {
-      mocker.stub(ResourceGroups.prototype, "createOrUpdate").resolves({ name: "my_app-rg" });
-      mocker.stub(ResourceGroups.prototype, "checkExistence").resolves({
-        body: false,
-      } as armResources.ResourceManagementModels.ResourcesCheckExistenceResponse);
-
       mocker
         .stub<any, any>(resourceGroupHelper, "askResourceGroupInfo")
         .callsFake(

@@ -18,7 +18,7 @@ import {
   ApiVersionSet,
   ProductApi,
 } from "@azure/arm-apimanagement";
-import { Providers } from "@azure/arm-resources";
+import { ResourceManagementClient } from "@azure/arm-resources";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import {
   ApiCreateOrUpdateParameter,
@@ -113,11 +113,11 @@ export function mockApimService(sandbox: SinonSandbox): {
   credential: StubbedClass<MockTokenCredentials>;
 } {
   const apiManagementClient = createSinonStubInstance(sandbox, ApiManagementClient);
-  const resourceProviderClient = createSinonStubInstance(sandbox, Providers);
+  const resourceProviderClient = createSinonStubInstance(sandbox, ResourceManagementClient);
   const credential = createSinonStubInstance(sandbox, MockTokenCredentials);
   const apimService = new ApimService(
     apiManagementClient,
-    resourceProviderClient,
+    resourceProviderClient.providers,
     credential,
     DefaultTestInput.subscriptionId
   );

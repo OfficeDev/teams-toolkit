@@ -16,9 +16,10 @@ import {
   FrontendConfigInfo,
 } from "../../../../src/plugins/resource/frontend/constants";
 import { FrontendConfig } from "../../../../src/plugins/resource/frontend/configs";
-import { StorageAccountsCreateResponse } from "@azure/arm-storage/esm/models";
+import { StorageAccountsCreateResponse } from "@azure/arm-storage";
 import { ARM_TEMPLATE_OUTPUT, newEnvInfo } from "../../../../src";
 import { LocalCrypto } from "../../../../src/core/crypto";
+import { MyTokenCredential } from "../bot/unit/utils";
 
 export class TestHelper {
   static appName = "app-test";
@@ -51,6 +52,9 @@ export class TestHelper {
   static fakeAzureAccountProvider: AzureAccountProvider = {
     getAccountCredentialAsync: async () => {
       return TestHelper.fakeCredential;
+    },
+    getIdentityCredentialAsync: async () => {
+      return new MyTokenCredential();
     },
     getSelectedSubscription: async () => {
       return {

@@ -11,6 +11,7 @@ import {
   FxError,
   Void,
   Inputs,
+  TokenProvider,
 } from "@microsoft/teamsfx-api";
 import path from "path";
 import { environmentManager } from "../../../src";
@@ -28,12 +29,22 @@ import {
   SOLUTION_CONFIG_NAME,
   TestFileContent,
 } from "../../constants";
-import { MockedLogProvider, MockedTelemetryReporter, MockedUserInteraction } from "./util";
+import {
+  MockedAzureAccountProvider,
+  MockedLogProvider,
+  MockedM365Provider,
+  MockedTelemetryReporter,
+  MockedUserInteraction,
+} from "./util";
 import { UserTokenCredentials } from "@azure/ms-rest-nodeauth";
 import os from "os";
 import * as cpUtils from "../../../src/common/cpUtils";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 
+const mockedTokenProvider: TokenProvider = {
+  azureAccountProvider: new MockedAzureAccountProvider(),
+  m365TokenProvider: new MockedM365Provider(),
+};
 export class TestHelper {
   static appName = "ut_app_name";
   static rootDir = path.join(__dirname, "ut");
@@ -83,7 +94,7 @@ export class TestHelper {
         },
       },
       answers: { platform: Platform.VSCode },
-      azureAccountProvider: Object as any & AzureAccountProvider,
+      azureAccountProvider: mockedTokenProvider.azureAccountProvider,
       ui: new MockedUserInteraction(),
       logProvider: new MockedLogProvider(),
       telemetryReporter: new MockedTelemetryReporter(),

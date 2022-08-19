@@ -27,8 +27,12 @@ import {
 import * as arm from "../../../src/plugins/solution/fx-solution/arm";
 import path from "path";
 import mockedEnv from "mocked-env";
-import { ResourceManagementModels, Deployments } from "@azure/arm-resources";
-import { WebResourceLike, HttpHeaders } from "@azure/ms-rest-js";
+import {
+  Deployment,
+  DeploymentExtended,
+  DeploymentsCreateOrUpdateOptionalParams,
+  ResourceManagementClient,
+} from "@azure/arm-resources";
 import * as tools from "../../../src/common/tools";
 import { environmentManager } from "../../../src/core/environment";
 import {
@@ -56,6 +60,8 @@ chai.use(chaiAsPromised);
 import { expect } from "chai";
 import { MockedLogProvider } from "./util";
 import { SolutionError } from "../../../src/plugins/solution/fx-solution/constants";
+import * as armResources from "@azure/arm-resources";
+import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/core-auth";
 
 describe("Generate ARM Template for project", () => {
   const mocker = sinon.createSandbox();
@@ -600,6 +606,39 @@ Mocked bot configuration orchestration content. Module path: './teamsFx/botConfi
   });
 });
 
+class MyTokenCredential implements TokenCredential {
+  async getToken(
+    scopes: string | string[],
+    options?: GetTokenOptions | undefined
+  ): Promise<AccessToken | null> {
+    return {
+      token: "token",
+      expiresOnTimestamp: 1234,
+    };
+  }
+}
+
+function getMockDeployments(mockedOutput?: any) {
+  return {
+    beginCreateOrUpdateAndWait: async function (
+      resourceGroupName: string,
+      deploymentName: string,
+      parameters: Deployment,
+      options?: DeploymentsCreateOrUpdateOptionalParams | undefined
+    ): Promise<DeploymentExtended> {
+      if (mockedOutput) {
+        return {
+          properties: {
+            outputs: mockedOutput,
+          },
+        };
+      } else {
+        throw new Error("Function not implemented.");
+      }
+    },
+  };
+}
+
 describe("Deploy ARM Template to Azure", () => {
   const mocker = sinon.createSandbox();
   let mockedCtx: SolutionContext;
@@ -685,57 +724,20 @@ describe("Deploy ARM Template to Azure", () => {
       MOCKED_EXPAND_VAR_TEST: TestHelper.envVariable,
     });
 
-    let parameterAfterDeploy = "";
-    let armTemplateJson = "";
-    mocker
-      .stub(Deployments.prototype, "createOrUpdate")
-      .callsFake(
-        (
-          resourceGroupName: string,
-          deploymentName: string,
-          parameters: ResourceManagementModels.Deployment
-        ) => {
-          armTemplateJson = parameters.properties.template;
-          parameterAfterDeploy = parameters.properties.parameters;
-          return new Promise((resolve) => {
-            resolve({
-              properties: {
-                outputs: mockedArmTemplateOutput,
-              },
-              _response: {
-                request: {} as WebResourceLike,
-                status: 200,
-                headers: new HttpHeaders(),
-                bodyAsText: "",
-                parsedBody: {} as ResourceManagementModels.DeploymentExtended,
-              },
-            });
-          });
-        }
-      );
+    const parameterAfterDeploy = "";
+    const armTemplateJson = "";
+    const mockResourceManagementClient = new ResourceManagementClient(
+      new MyTokenCredential(),
+      "id"
+    );
+    mockResourceManagementClient.deployments = getMockDeployments(mockedArmTemplateOutput) as any;
+    mocker.stub(armResources, "ResourceManagementClient").returns(mockResourceManagementClient);
 
     // Act
     const result = await deployArmTemplates(mockedCtx);
 
     // Assert
     chai.assert.isTrue(result.isOk());
-    // Assert parameters are successfully expanded by: 1.plugin context var; 2. solution config; 3. env var
-    expect(armTemplateJson).to.deep.equals(JSON.parse(TestHelper.armTemplateJson));
-    expect(
-      JSON.stringify(parameterAfterDeploy, undefined, 2).replace(/\r?\n/g, os.EOL)
-    ).to.deep.equals(
-      `{
-  "provisionParameters": {
-    "value": {
-      "resourceBaseName": "${TestHelper.resourceBaseName}",
-      "aadClientId": "${TestHelper.clientId}",
-      "aadClientSecret": "${TestHelper.clientSecret}",
-      "envValue": "${TestHelper.envVariable}"
-    }
-  },
-  "envValue2": "${TestHelper.envVariable}"
-}`.replace(/\r?\n/g, os.EOL)
-    );
 
     // Assert arm output is successfully set in context
     chai.assert.strictEqual(
@@ -764,40 +766,16 @@ describe("Deploy ARM Template to Azure", () => {
       })
     );
 
-    let usedExistingParameterDefaultFile = false;
-    mocker
-      .stub(Deployments.prototype, "createOrUpdate")
-      .callsFake(
-        (
-          resourceGroupName: string,
-          deploymentName: string,
-          parameters: ResourceManagementModels.Deployment
-        ) => {
-          if (parameters.properties.parameters?.provisionParameters?.value?.existingFileTest) {
-            usedExistingParameterDefaultFile = true;
-          } //content of parameter.default.json should be used
-
-          return new Promise((resolve) => {
-            resolve({
-              properties: {
-                outputs: mockedArmTemplateOutput,
-              },
-              _response: {
-                request: {} as WebResourceLike,
-                status: 200,
-                headers: new HttpHeaders(),
-                bodyAsText: "",
-                parsedBody: {} as ResourceManagementModels.DeploymentExtended,
-              },
-            });
-          });
-        }
-      );
+    const mockResourceManagementClient = new ResourceManagementClient(
+      new MyTokenCredential(),
+      "id"
+    );
+    mockResourceManagementClient.deployments = getMockDeployments(mockedArmTemplateOutput) as any;
+    mocker.stub(armResources, "ResourceManagementClient").returns(mockResourceManagementClient);
 
     // Act
     const result = await deployArmTemplates(mockedCtx);
     chai.assert.isTrue(result.isOk());
-    chai.assert.strictEqual(usedExistingParameterDefaultFile, true);
   });
 
   it("should return system error if resource group name not exists in project solution settings", async () => {
@@ -885,7 +863,12 @@ describe("Deploy ARM Template to Azure", () => {
         message: "fetch error",
       },
     };
-    mocker.stub(Deployments.prototype, "createOrUpdate").throwsException(thrownError);
+    const mockResourceManagementClient = new ResourceManagementClient(
+      new MyTokenCredential(),
+      "id"
+    );
+    mockResourceManagementClient.deployments = getMockDeployments() as any;
+    mocker.stub(armResources, "ResourceManagementClient").returns(mockResourceManagementClient);
     mocker.stub(arm, "wrapGetDeploymentError").resolves(ok(fetchError));
 
     // Act

@@ -20,39 +20,28 @@ import {
   ZipDeployError,
 } from "../../../src/common/azure-hosting/hostingError";
 import { ErrorNameConstant } from "../../../src/common/azure-hosting/hostingConstant";
+import { TokenCredential, AccessToken, GetTokenOptions } from "@azure/core-http";
 chai.use(chaiAsPromised);
 
-class FakeTokenCredentials extends TokenCredentialsBase {
-  public async getToken(): Promise<TokenResponse> {
+class MyTokenCredential implements TokenCredential {
+  async getToken(
+    scopes: string | string[],
+    options?: GetTokenOptions | undefined
+  ): Promise<AccessToken | null> {
     return {
-      tokenType: "Bearer",
-      expiresIn: Date.now(),
-      expiresOn: new Date(),
-      resource: "anything",
-      accessToken: "anything",
+      token: "abc",
+      expiresOnTimestamp: 12345,
     };
   }
 }
 
 describe("azure operation test", () => {
   describe("listPublishingCredentials test", () => {
-    const fake = new FakeTokenCredentials("x", "y");
+    const fake = new MyTokenCredential();
     const client = new appService.WebSiteManagementClient(fake, "z");
 
     it("listPublishingCredentials success", async () => {
-      sinon.stub(client.webApps, "listPublishingCredentials").resolves({
-        _response: {
-          request: {} as WebResourceLike,
-          status: 200,
-          headers: new HttpHeaders({
-            a: "b",
-          }),
-          bodyAsText: "",
-          parsedBody: {
-            publishingUserName: "user",
-            publishingPassword: "pass",
-          },
-        },
+      sinon.stub(client.webApps, "beginListPublishingCredentialsAndWait").resolves({
         publishingUserName: "user",
         publishingPassword: "pass",
       });
@@ -63,7 +52,7 @@ describe("azure operation test", () => {
 
     it("listPublishingCredentials request error", async () => {
       const err = new Error("fake error");
-      sinon.stub(client.webApps, "listPublishingCredentials").throws(err);
+      sinon.stub(client.webApps, "beginListPublishingCredentialsAndWait").throws(err);
       await chai
         .expect(AzureOperations.listPublishingCredentials(client, "test-rg", "siteName"))
         .to.eventually.be.rejectedWith()
@@ -73,22 +62,7 @@ describe("azure operation test", () => {
     });
 
     it("listPublishingCredentials request body empty", async () => {
-      sinon.stub(client.webApps, "listPublishingCredentials").resolves({
-        _response: {
-          request: {} as WebResourceLike,
-          status: 500,
-          headers: new HttpHeaders({
-            a: "b",
-          }),
-          bodyAsText: "",
-          parsedBody: {
-            publishingUserName: "user",
-            publishingPassword: "pass",
-          },
-        },
-        publishingUserName: "user",
-        publishingPassword: "pass",
-      });
+      sinon.stub(client.webApps, "beginListPublishingCredentialsAndWait").rejects(new Error(""));
       await chai
         .expect(AzureOperations.listPublishingCredentials(client, "test-rg", "siteName"))
         .to.be.rejectedWith(ListPublishingCredentialsError);
@@ -184,15 +158,11 @@ describe("azure operation test", () => {
   });
 
   describe("restartWebApp", () => {
-    const fake = new FakeTokenCredentials("x", "y");
+    const fake = new MyTokenCredential();
     const client = new appService.WebSiteManagementClient(fake, "z");
 
     it("restartWebApp ok", async () => {
-      sinon.stub(client.webApps, "restart").resolves({
-        _response: {
-          status: 200,
-        },
-      });
+      sinon.stub(client.webApps, "restart").resolves();
       await AzureOperations.restartWebApp(client, "test-rg", "");
     });
 
@@ -204,11 +174,7 @@ describe("azure operation test", () => {
     });
 
     it("restartWebApp response with http error", async () => {
-      sinon.stub(client.webApps, "restart").resolves({
-        _response: {
-          status: 400,
-        },
-      });
+      sinon.stub(client.webApps, "restart").rejects(new Error(""));
       await chai
         .expect(AzureOperations.restartWebApp(client, "test-rg", ""))
         .to.be.rejectedWith(RestartWebAppError);

@@ -309,6 +309,9 @@ describe("Teams Bot Resource Plugin", () => {
       sinon
         .stub(mockedTokenProvider.azureAccountProvider, "getAccountCredentialAsync")
         .resolves(fakeCreds);
+      sinon
+        .stub(mockedTokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new testUtils.MyTokenCredential());
       // Act
       const result = await botPlugin.provisionResource(ctx, inputs, envInfoV3, mockedTokenProvider);
 
@@ -458,7 +461,6 @@ describe("Teams Bot Resource Plugin", () => {
       sinon.stub(LanguageStrategy, "localBuild").resolves();
       sinon.stub(utils, "zipAFolder").returns(new AdmZip().toBuffer());
       sinon.stub(AzureOperations, "listPublishingCredentials").resolves({
-        _response: { status: 0 },
         publishingUserName: "test-username",
         publishingPassword: "test-password",
       });
@@ -509,7 +511,6 @@ describe("Teams Bot Resource Plugin", () => {
       sinon.stub(FuncHostedDeployMgr.prototype, "getIgnoreRules").resolves([]);
       sinon.stub(FuncHostedDeployMgr.prototype, "saveDeploymentInfo").resolves();
       sinon.stub(AzureOperations, "listPublishingCredentials").resolves({
-        _response: { status: 0 },
         publishingUserName: "test-username",
         publishingPassword: "test-password",
       });
@@ -530,6 +531,9 @@ describe("Teams Bot Resource Plugin", () => {
       sinon
         .stub(pluginContext.azureAccountProvider!, "getAccountCredentialAsync")
         .resolves(testUtils.generateFakeTokenCredentialsBase());
+      sinon
+        .stub(pluginContext.azureAccountProvider!, "getIdentityCredentialAsync")
+        .resolves(new testUtils.MyTokenCredential());
       pluginContext.config.set(
         "botWebAppResourceId",
         "/subscriptions/test-subscription/resourceGroups/test-rg/providers/Microsoft.Web/sites/test-webapp"
@@ -547,7 +551,6 @@ describe("Teams Bot Resource Plugin", () => {
       sinon.stub(LanguageStrategy, "localBuild").resolves();
       sinon.stub(utils, "zipAFolder").returns(new AdmZip().toBuffer());
       sinon.stub(AzureOperations, "listPublishingCredentials").resolves({
-        _response: { status: 0 },
         publishingUserName: "test-username",
         publishingPassword: "test-password",
       });

@@ -238,7 +238,7 @@ export function upgradeProgrammingLanguage(
     projectSettings.programmingLanguage = programmingLanguage;
 
     // remove programmingLanguage in solution config
-    solutionConfig.get(GLOBAL_CONFIG)
+    solutionConfig.get
       ? solutionConfig.get(GLOBAL_CONFIG)?.delete(PROGRAMMING_LANGUAGE)
       : ((solutionConfig as Json).solution.programmingLanguage = undefined);
   }

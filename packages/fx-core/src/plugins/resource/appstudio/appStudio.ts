@@ -346,7 +346,19 @@ export namespace AppStudioClient {
 
     app.userList?.push(newUser);
     const requester = createRequesterWithToken(appStudioToken);
-    await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app.userList);
+
+    try {
+      const response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
+      if (!response || !response.data || !checkUser(response.data as AppDefinition, newUser)) {
+        throw new Error(ErrorMessages.GrantPermissionFailed);
+      }
+    } catch (err) {
+      if (err?.message?.indexOf("Request failed with status code 400") >= 0) {
+        await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app.userList);
+      } else {
+        throw err;
+      }
+    }
   }
 
   function checkUser(app: AppDefinition, newUser: AppUser): boolean {

@@ -8,7 +8,14 @@ import * as sinon from "sinon";
 import { NotificationMiddleware } from "../../../../src/conversation/middlewares/notificationMiddleware";
 import { CommandResponseMiddleware } from "../../../../src/conversation/middlewares/commandMiddleware";
 import { ConversationReferenceStore } from "../../../../src/conversation/storage";
-import { MockContext, TestCommandHandler, TestStorage } from "./testUtils";
+import {
+  MockActionInvokeContext,
+  MockContext,
+  TestCardActionHandler,
+  TestCommandHandler,
+  TestStorage,
+} from "./testUtils";
+import { CardActionMiddleware } from "../../../../src/conversation/middlewares/cardActionMiddleware";
 
 chaiUse(chaiPromises);
 
@@ -83,6 +90,30 @@ describe("CommandResponse Middleware Tests - Node", () => {
 
     // Assert the test command handler is invoked
     assert.isFalse(testCommandHandler.isInvoked);
+  });
+});
+
+describe("CardAction Middleware Tests - Node", () => {
+  it("onTurn should invoke card action handler if verb is matched", async () => {
+    const doStuffAction = new TestCardActionHandler("doStuff", "myResponseMessage");
+    const middleware = new CardActionMiddleware([doStuffAction]);
+
+    const testContext = new MockActionInvokeContext("doStuff");
+    await middleware.onTurn(testContext as any, async () => {});
+
+    // Assert the card action handler is invoked
+    assert.isTrue(doStuffAction.isInvoked);
+  });
+
+  it("onTurn shouldn't invoke card action handler if verb is not matched", async () => {
+    const doStuffAction = new TestCardActionHandler("doStuff", "myResponseMessage");
+    const middleware = new CardActionMiddleware([doStuffAction]);
+
+    const testContext = new MockActionInvokeContext("inconsistent-verb");
+    await middleware.onTurn(testContext as any, async () => {});
+
+    // Assert the card action handler is not invoked
+    assert.isFalse(doStuffAction.isInvoked);
   });
 });
 

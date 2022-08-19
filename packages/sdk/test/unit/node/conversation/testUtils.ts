@@ -1,14 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { IAdaptiveCard } from "adaptivecards";
 import { TurnContext } from "botbuilder-core";
 import { Activity } from "botframework-schema";
 import {
+  AdaptiveCardResponse,
+  CardPromptMessage,
+  CardPromptMessageType,
   CommandMessage,
   MessageResponse,
   NotificationTarget,
   NotificationTargetStorage,
   NotificationTargetType,
+  TeamsFxAdaptiveCardActionHandler,
   TeamsFxBotCommandHandler,
   TriggerPatterns,
 } from "../../../../src/conversation/interface";
@@ -78,6 +83,42 @@ export class TestCommandHandler implements TeamsFxBotCommandHandler {
   }
 }
 
+export class TestCardActionHandler implements TeamsFxAdaptiveCardActionHandler {
+  isInvoked: boolean = false;
+  triggerVerb: string;
+  adaptiveCardResponse: AdaptiveCardResponse = AdaptiveCardResponse.ReplaceForInteractor;
+  responseMessage: any = undefined;
+  actionData: any;
+
+  constructor(verb: string, responseMessage?: any) {
+    this.triggerVerb = verb;
+    if (responseMessage) {
+      this.responseMessage = responseMessage;
+    }
+  }
+
+  async handleActionInvoked(
+    context: TurnContext,
+    actionData: any
+  ): Promise<void | CardPromptMessage | IAdaptiveCard> {
+    this.isInvoked = true;
+    this.actionData = actionData;
+
+    if (this.responseMessage) {
+      if (typeof this.responseMessage === "string") {
+        return {
+          text: this.responseMessage,
+          type: CardPromptMessageType.Info,
+        };
+      } else {
+        {
+          return this.responseMessage as IAdaptiveCard;
+        }
+      }
+    }
+  }
+}
+
 export class MockContext {
   private activity: any;
   constructor(text: string) {
@@ -93,7 +134,33 @@ export class MockContext {
 
   public sendActivity(activity: any): Promise<void> {
     return new Promise((resolve) => {
-      console.log("Send activity successfully.");
+      resolve();
+    });
+  }
+}
+
+export class MockActionInvokeContext {
+  private activity: any;
+  message: any;
+
+  constructor(verb: string, data?: any) {
+    this.activity = {
+      type: "invoke",
+      name: "adaptiveCard/action",
+      value: {
+        action: {
+          type: "Action.Execute",
+          verb: verb,
+          data: data,
+        },
+      },
+      trigger: "manual",
+    };
+  }
+
+  public sendActivity(activity: any): Promise<void> {
+    this.message = activity.value.body.value;
+    return new Promise((resolve) => {
       resolve();
     });
   }

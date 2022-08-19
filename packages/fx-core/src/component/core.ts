@@ -554,6 +554,8 @@ export class TeamsfxCore {
               const buildRes = await featureComponent.build(context, clonedInputs);
               if (buildRes.isErr()) return err(buildRes.error);
             }
+            // build process may change the artifact folder, so we need reassign the value
+            clonedInputs.artifactFolder = component.artifactFolder;
             return await deployComponent.deploy!(context, clonedInputs);
           },
         });

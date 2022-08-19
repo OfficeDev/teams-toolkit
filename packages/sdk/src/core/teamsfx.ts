@@ -86,11 +86,15 @@ export class TeamsFx implements TeamsFxConfiguration {
             throw new Error("Config missing error: clientId or clientSecret");
           break;
         default:
-          throw new Error("Bad identity type!");
+          throw new Error("identity type error: Bad identity type!");
       } 
     }
     else {
-      // TODO: 
+      // TODO:
+      // legalConfigList 
+      if (config) {
+
+      }
     }
   }
 

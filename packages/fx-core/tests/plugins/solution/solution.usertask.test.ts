@@ -58,6 +58,7 @@ import {
   BotSsoItem,
   MessageExtensionItem,
   SingleSignOnOptionItem,
+  TabSPFxNewUIItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import { executeUserTask } from "../../../src/plugins/solution/fx-solution/v2/executeUserTask";
 import "../../../src/plugins/resource/function/v2";
@@ -100,6 +101,7 @@ const cicdPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.CICDPlug
 const apiConnectionPluginV2 = Container.get<v2.ResourcePlugin>(
   ResourcePluginsV2.ApiConnectorPlugin
 );
+const spfxPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SpfxPlugin);
 const mockedProvider: TokenProvider = {
   azureAccountProvider: new MockedAzureAccountProvider(),
   m365TokenProvider: new MockedM365Provider(),
@@ -1237,6 +1239,106 @@ describe("V2 implementation", () => {
       expect(readmeExists).to.be.true;
     });
 
+    it("happy path: vs bot", async () => {
+      const projectSettings: ProjectSettings = {
+        appName: "my app",
+        projectId: uuid.v4(),
+        programmingLanguage: "csharp",
+        solutionSettings: {
+          hostType: HostTypeOptionAzure.id,
+          name: "test",
+          version: "1.0",
+          activeResourcePlugins: [appStudioPlugin.name, botPluginV2.name],
+          capabilities: [BotOptionItem.id],
+          azureResources: [],
+        },
+      };
+      const mockedCtx = new MockedV2Context(projectSettings);
+      const mockedInputs: Inputs = {
+        platform: Platform.VS,
+        projectPath: testFolder,
+      };
+      const appSettingsPath = path.join(testFolder, AddSsoParameters.AppSettings);
+      const appSettingsDevPath = path.join(testFolder, AddSsoParameters.AppSettingsDev);
+      await fs.writeJSON(appSettingsPath, {});
+      await fs.writeJSON(appSettingsDevPath, {});
+
+      const result = await executeUserTask(
+        mockedCtx,
+        mockedInputs,
+        { namespace: "solution", method: "addSso" },
+        {},
+        { envName: "default", config: {}, state: {} },
+        mockedProvider
+      );
+
+      expect(result.isOk()).to.be.true;
+      expect(
+        (
+          mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings
+        ).activeResourcePlugins.includes(aadPluginV2.name)
+      ).to.be.true;
+      expect(
+        (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).capabilities.includes(
+          BotSsoItem.id
+        )
+      ).to.be.true;
+      const readmePath = path.join(testFolder, "Auth", "bot", "README.txt");
+      const authStartPagePath = path.join(
+        testFolder,
+        "Auth",
+        "bot",
+        "Pages",
+        "BotAuthorizeStartPage.cshtml"
+      );
+      const authEndPagePath = path.join(
+        testFolder,
+        "Auth",
+        "bot",
+        "Pages",
+        "BotAuthorizeEndPage.cshtml"
+      );
+      const learnCardPath = path.join(
+        testFolder,
+        "Auth",
+        "bot",
+        "Resources",
+        "LearnCardTemplate.json"
+      );
+      const welcomeCardPath = path.join(
+        testFolder,
+        "Auth",
+        "bot",
+        "Resources",
+        "WelcomeCardTemplate.json"
+      );
+      const mainDialogPath = path.join(testFolder, "Auth", "bot", "SSO", "SsoDialog.cs");
+      const teamsSsoBotPath = path.join(testFolder, "Auth", "bot", "SSO", "TeamsSsoBot.cs");
+      expect(await fs.pathExists(readmePath)).to.be.true;
+      expect(await fs.pathExists(authStartPagePath)).to.be.true;
+      expect(await fs.pathExists(authEndPagePath)).to.be.true;
+      expect(await fs.pathExists(mainDialogPath)).to.be.true;
+      expect(await fs.pathExists(teamsSsoBotPath)).to.be.true;
+
+      const appSettingsRes = {
+        TeamsFx: {
+          Authentication: {
+            ClientId: "$clientId$",
+            ClientSecret: "$client-secret$",
+            OAuthAuthority: "$oauthAuthority$",
+            ApplicationIdUri: "$applicationIdUri$",
+            Bot: {
+              InitiateLoginEndpoint: "$initiateLoginEndpoint$",
+            },
+          },
+        },
+      };
+      const appSettings = await fs.readJSON(appSettingsPath);
+      expect(JSON.stringify(appSettings)).equals(JSON.stringify(appSettingsRes));
+      const appSettingsDev = await fs.readJSON(appSettingsPath);
+      expect(JSON.stringify(appSettingsDev)).equals(JSON.stringify(appSettingsRes));
+    });
+
     it("happy path: addFeature", async () => {
       const projectSettings: ProjectSettings = {
         appName: "my app",
@@ -1631,6 +1733,45 @@ describe("V2 implementation", () => {
       );
 
       expect(result.isOk()).to.be.true;
+    });
+
+    it("should call spfx plugin when choose spfx option", async () => {
+      const mockedEnvRestore = mockedEnv({ TEAMSFX_SPFX_MULTI_TAB: "true" });
+      mocker
+        .stub<any, any>(spfxPluginV2, "scaffoldSourceCode")
+        .returns(Promise.resolve(ok(undefined)));
+      mocker.stub(AppStudioPluginV3.prototype, "capabilityExceedLimit").resolves(ok(false));
+      const projectSettings: ProjectSettings = {
+        appName: "my app",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          hostType: HostTypeOptionSPFx.id,
+          name: "test",
+          version: "1.0",
+          activeResourcePlugins: [spfxPluginV2.name],
+          capabilities: [TabSPFxNewUIItem.id],
+          azureResources: [],
+        },
+      };
+
+      const mockedCtx = new MockedV2Context(projectSettings);
+      const mockedInputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: testFolder,
+      };
+      mockedInputs[AzureSolutionQuestionNames.Features] = TabSPFxNewUIItem.id;
+
+      const result = await executeUserTask(
+        mockedCtx,
+        mockedInputs,
+        { namespace: "solution", method: "addFeature" },
+        {},
+        { envName: "default", config: {}, state: {} },
+        mockedProvider
+      );
+
+      expect(result.isOk()).to.be.true;
+      mockedEnvRestore();
     });
   });
 });

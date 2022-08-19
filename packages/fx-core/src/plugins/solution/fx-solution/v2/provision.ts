@@ -61,7 +61,6 @@ import {
   hasBotServiceCreated,
   sendErrorTelemetryThenReturnError,
 } from "../utils/util";
-import { doesAllowSwitchAccount } from "../../../../core";
 import { ComponentNames } from "../../../../component/constants";
 import { resetEnvInfoWhenSwitchM365 } from "../../../../component/utils";
 import { TelemetryEvent, TelemetryProperty } from "../../../../common/telemetry";
@@ -158,19 +157,10 @@ async function provisionResourceImpl(
   }
   const tenantIdInToken = tenantIdInTokenRes.value.tenantIdInToken;
 
-  const isSwitchAccountEnabled = doesAllowSwitchAccount();
   let hasSwitchedM365Tenant = false;
   const isSwitchingM365Tenant =
     !!tenantIdInConfig && !!tenantIdInToken && tenantIdInToken !== tenantIdInConfig;
-  if (isSwitchingM365Tenant && !isSwitchAccountEnabled) {
-    return err(
-      new UserError(
-        "Solution",
-        SolutionError.TeamsAppTenantIdNotRight,
-        getLocalizedString("error.M365AccountNotMatch", envInfo.envName)
-      )
-    );
-  } else if (isSwitchingM365Tenant && isSwitchAccountEnabled) {
+  if (isSwitchingM365Tenant) {
     hasSwitchedM365Tenant = true;
     resetEnvInfoWhenSwitchM365(envInfo as v3.EnvInfoV3);
   }
@@ -547,9 +537,7 @@ export async function askForProvisionConsentNew(
     );
     if (confirm !== provisionText) {
       if (confirm === learnMoreText) {
-        ctx.userInteraction.openUrl(
-          "https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/provision"
-        ); // TODO: update link to the doc
+        ctx.userInteraction.openUrl("https://aka.ms/teamsfx-switch-tenant-or-subscription-help");
       } else {
         return err(new UserError(SolutionSource, "CancelProvision", "CancelProvision"));
       }

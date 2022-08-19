@@ -31,11 +31,14 @@ export enum DepsCheckerEvent {
   dotnetValidationError = "dotnet-validation-error",
   dotnetSearchDotnetSdks = "dotnet-search-dotnet-sdks",
 
+  ngrokCheckSkipped = "ngrok-check-skipped",
   ngrokInstallCompleted = "ngrok-install-completed",
   ngrokInstallError = "ngrok-install-error",
   ngrokInstallScriptCompleted = "ngrok-install-script-completed",
   ngrokInstallScriptError = "ngrok-install-script-error",
   ngrokValidationError = "ngrok-validation-error",
+
+  trustCertSkipped = "trust-cert-skipped",
 }
 
 export enum TelemtryMessages {

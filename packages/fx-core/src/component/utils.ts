@@ -12,12 +12,15 @@ import {
   err,
   FileEffect,
   FxError,
+  Inputs,
   InputsWithProjectPath,
   Json,
   ok,
+  Platform,
   ProjectSettingsV3,
   ProvisionBicep,
   Result,
+  UserInteraction,
   v3,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
@@ -25,7 +28,9 @@ import { assign, cloneDeep } from "lodash";
 import os from "os";
 import * as path from "path";
 import { Container } from "typedi";
+import { format } from "util";
 import * as uuid from "uuid";
+import { getLocalizedString } from "../common/localizeUtils";
 import { getProjectSettingsVersion } from "../common/projectSettingsHelper";
 import { convertToAlphanumericOnly, getProjectTemplatesFolderPath } from "../common/utils";
 import { LocalCrypto } from "../core/crypto";
@@ -40,7 +45,8 @@ export async function persistProvisionBicep(
   projectPath: string,
   provisionBicep: ProvisionBicep
 ): Promise<Result<any, FxError>> {
-  const templateFolder = path.join(projectPath, "templates", "azure");
+  const templateRoot = await getProjectTemplatesFolderPath(projectPath);
+  const templateFolder = path.join(templateRoot, "azure");
   if (provisionBicep.Modules) {
     for (const module of Object.keys(provisionBicep.Modules)) {
       const value = provisionBicep.Modules[module];
@@ -590,4 +596,32 @@ export function resetEnvInfoWhenSwitchM365(envInfo: v3.EnvInfoV3): void {
       delete envInfo.state[key]["objectId"];
     }
   }
+}
+
+export function addFeatureNotify(
+  inputs: Inputs,
+  ui: UserInteraction,
+  type: "Capability" | "Resource",
+  features: string[]
+) {
+  const addNames = features.map((c) => `'${c}'`).join(" and ");
+  const single = features.length === 1;
+  const template =
+    inputs.platform === Platform.CLI
+      ? single
+        ? type === "Capability"
+          ? getLocalizedString("core.addCapability.addCapabilityNoticeForCli")
+          : getLocalizedString("core.addResource.addResourceNoticeForCli")
+        : type === "Capability"
+        ? getLocalizedString("core.addCapability.addCapabilitiesNoticeForCli")
+        : getLocalizedString("core.addResource.addResourcesNoticeForCli")
+      : single
+      ? type === "Capability"
+        ? getLocalizedString("core.addCapability.addCapabilityNotice")
+        : getLocalizedString("core.addResource.addResourceNotice")
+      : type === "Capability"
+      ? getLocalizedString("core.addCapability.addCapabilitiesNotice")
+      : getLocalizedString("core.addResource.addResourcesNotice");
+  const msg = format(template, addNames);
+  ui.showMessage("info", msg, false);
 }

@@ -12,6 +12,7 @@ import fs from "fs-extra";
 import * as os from "os";
 import { SolutionError, SolutionSource } from "../constants";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
+import { getResourceFolder } from "../../../../folder";
 
 const windowsPathLengthLimit = 260;
 const fileNameLengthLimit = 255;
@@ -22,6 +23,8 @@ const stateFileNameTemplate = `state.${EnvNamePlaceholder}.json`;
 const userDateFileNameTemplate = `${EnvNamePlaceholder}.userdata`;
 const jsonSuffix = ".json";
 const userDataSuffix = ".userdata";
+
+const reportName = "backup-config-and-state-change-logs.md";
 
 async function doesBackupFolderCreatedByTTK(backupPath: string) {
   return (
@@ -96,6 +99,9 @@ export async function backupFiles(
       return err(azureParameterFileBackupRes.error);
     }
   }
+
+  // generate readme.
+  await generateReport(backupFolder);
 
   return ok(undefined);
 }
@@ -177,4 +183,16 @@ function formatDate() {
 
 function convertTo2Digits(num: number) {
   return num.toString().padStart(2, "0");
+}
+
+async function generateReport(backupFolder: string) {
+  try {
+    const target = path.join(backupFolder, reportName);
+    const source = path.resolve(path.join(getResourceFolder(), reportName));
+    if (!(await fs.pathExists(target))) {
+      await fs.copyFile(source, target);
+    }
+  } catch (error) {
+    // do nothing
+  }
 }

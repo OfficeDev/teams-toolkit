@@ -14,6 +14,7 @@ import {
 import "reflect-metadata";
 import { Container, Service } from "typedi";
 import { convertToAlphanumericOnly } from "../../common/utils";
+import { AzureResourceKeyVault } from "../../plugins";
 import { BicepComponent } from "../bicep";
 import "../connection/azureWebAppConfig";
 import { ComponentNames } from "../constants";
@@ -22,7 +23,7 @@ import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import "../resource/azureSql";
 import "../resource/identity";
 import { KeyVaultResource } from "../resource/keyVault";
-import { generateConfigBiceps, bicepUtils } from "../utils";
+import { generateConfigBiceps, bicepUtils, addFeatureNotify } from "../utils";
 import { getComponent } from "../workflow";
 
 @Service("key-vault-feature")
@@ -85,6 +86,7 @@ export class KeyVaultFeature {
       if (res.isErr()) return err(res.error);
       effects.push("update config biceps");
     }
+    addFeatureNotify(inputs, context.userInteraction, "Resource", [AzureResourceKeyVault.id]);
     return ok(undefined);
   }
 }

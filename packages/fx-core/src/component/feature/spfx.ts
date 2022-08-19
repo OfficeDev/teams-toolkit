@@ -26,6 +26,7 @@ import { SPFxTabCodeProvider } from "../code/spfxTabCode";
 import { ComponentNames } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
+import { addFeatureNotify } from "../utils";
 @Service(ComponentNames.SPFxTab)
 export class SPFxTab {
   name = ComponentNames.SPFxTab;
@@ -56,7 +57,7 @@ export class SPFxTab {
     });
     projectSettings.programmingLanguage =
       projectSettings.programmingLanguage || inputs[CoreQuestionNames.ProgrammingLanguage];
-    globalVars.isVS = isVSProject(projectSettings);
+    globalVars.isVS = inputs[CoreQuestionNames.ProgrammingLanguage] === "csharp";
     const effects = ["config 'teams-tab' in projectSettings"];
     {
       const spfxCode = Container.get<SPFxTabCodeProvider>(ComponentNames.SPFxTabCode);
@@ -69,6 +70,7 @@ export class SPFxTab {
       if (res.isErr()) return err(res.error);
       effects.push("generate local debug settings");
     }
+    addFeatureNotify(inputs, context.userInteraction, "Capability", [inputs.features]);
     return ok(undefined);
   }
 }

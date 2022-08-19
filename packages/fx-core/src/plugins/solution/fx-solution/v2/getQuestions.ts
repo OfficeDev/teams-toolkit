@@ -999,7 +999,7 @@ export async function getQuestionsForAddFeature(
     pluginsWithResources.push([ResourcePluginsV2.ApiConnectorPlugin, ApiConnectionOptionItem.id]);
   }
   if (isSPFxMultiTabEnabled()) {
-    pluginsWithResources.push([ResourcePluginsV2.SpfxPlugin, TabSPFxItem.id]);
+    pluginsWithResources.push([ResourcePluginsV2.SpfxPlugin, TabSPFxNewUIItem.id]);
   }
 
   const alreadyHaveFunction = settings?.azureResources.includes(AzureResourceFunction.id);

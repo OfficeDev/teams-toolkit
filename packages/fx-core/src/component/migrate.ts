@@ -103,6 +103,7 @@ export const EnvStateMigrationComponentNames = [
   ["fx-resource-key-vault", ComponentNames.KeyVault],
   ["fx-resource-bot", ComponentNames.TeamsBot],
   ["fx-resource-frontend-hosting", ComponentNames.TeamsTab],
+  ["fx-resource-simple-auth", ComponentNames.SimpleAuth],
 ];
 
 export const APIM_STATE_KEY = isV3() ? ComponentNames.APIM : BuiltInFeaturePluginNames.apim;
@@ -193,6 +194,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           folder: "",
           artifactFolder: "bin\\Release\\net6.0\\win-x86\\publish",
           sso: solutionSettings.capabilities.includes("TabSSO"),
+          deploy: true,
         };
         settingsV3.components.push(teamsTab);
       } else {
@@ -203,6 +205,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           provision: true,
           folder: "tabs",
           sso: solutionSettings.capabilities.includes("TabSSO"),
+          deploy: true,
         };
         settingsV3.components.push(teamsTab);
       }
@@ -225,6 +228,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
         build: true,
         provision: true,
         folder: "SPFx",
+        deploy: true,
       };
       settingsV3.components.push(teamsTab);
       settingsV3.components.push({
@@ -255,6 +259,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           artifactFolder: "bin\\Release\\net6.0\\win-x86\\publish",
           capabilities: botCapabilities,
           sso: solutionSettings.capabilities.includes("BotSSO"),
+          deploy: true,
         };
         settingsV3.components.push(teamsBot);
       } else {
@@ -266,6 +271,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           folder: "bot",
           capabilities: botCapabilities,
           sso: solutionSettings.capabilities.includes("BotSSO"),
+          deploy: true,
         };
         settingsV3.components.push(teamsBot);
       }
@@ -308,6 +314,12 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
         provision: true,
       });
     }
+    if (solutionSettings.activeResourcePlugins.includes("fx-resource-simple-auth")) {
+      settingsV3.components.push({
+        name: ComponentNames.SimpleAuth,
+        provision: true,
+      });
+    }
     if (solutionSettings.activeResourcePlugins.includes("fx-resource-function")) {
       settingsV3.components.push({
         name: ComponentNames.TeamsApi,
@@ -315,6 +327,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
         functionNames: [settingsV2.defaultFunctionName || "getUserProfile"],
         build: true,
         folder: "api",
+        deploy: true,
       });
       settingsV3.components.push({
         name: ComponentNames.Function,
@@ -393,6 +406,9 @@ export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): Pro
     }
     if (getComponent(settingsV3, ComponentNames.Identity)) {
       settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-identity");
+    }
+    if (getComponent(settingsV3, ComponentNames.SimpleAuth)) {
+      settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-simple-auth");
     }
     if (getComponent(settingsV3, ComponentNames.KeyVault)) {
       settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-key-vault");

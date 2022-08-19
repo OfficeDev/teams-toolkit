@@ -40,7 +40,7 @@ import {
   UnzipTemplateError,
 } from "../../plugins/resource/frontend/resources/errors";
 import { Messages } from "../../plugins/resource/frontend/resources/messages";
-import { ComponentNames } from "../constants";
+import { ComponentNames, ProgrammingLanguage } from "../constants";
 import { getComponent } from "../workflow";
 import { convertToLangKey } from "./utils";
 import {
@@ -86,7 +86,7 @@ export class TabCodeProvider {
   ): Promise<Result<string, FxError>> {
     inputs.folder =
       inputs.folder ||
-      (inputs[CoreQuestionNames.ProgrammingLanguage] === "csharp"
+      (inputs[CoreQuestionNames.ProgrammingLanguage] === ProgrammingLanguage.CSharp
         ? ""
         : FrontendPathInfo.WorkingDir);
     const langKey = convertToLangKey(inputs[CoreQuestionNames.ProgrammingLanguage]);

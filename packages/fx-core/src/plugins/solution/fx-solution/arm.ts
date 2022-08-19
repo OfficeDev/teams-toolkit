@@ -63,7 +63,7 @@ import { NamedArmResourcePluginAdaptor } from "./v2/adaptor";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { convertToAlphanumericOnly, getProjectTemplatesFolderPath } from "../../../common/utils";
 import { isV3 } from "../../../core";
-import { pluginName2ComponentName } from "../../../component/migrate";
+import { convertManifestTemplateToV3, pluginName2ComponentName } from "../../../component/migrate";
 
 const bicepOrchestrationFileName = "main.bicep";
 const bicepOrchestrationProvisionMainFileName = "mainProvision.bicep";
@@ -592,7 +592,10 @@ export async function doDeployArmTemplatesV3(
         helpLink: HelpLinks.ArmHelpLink,
         displayMessage: notificationMessage,
       });
-      returnError.innerError = JSON.stringify(deploymentErrorObj);
+      returnError.innerError = {
+        value: JSON.stringify(deploymentErrorObj),
+      } as DeploymentErrorMessage;
+
       return err(returnError);
     } else {
       return result;
@@ -719,8 +722,10 @@ export async function deployArmTemplatesV3(
       });
     } else {
       const errorProperties: { [key: string]: string } = {};
-      if (result.error.innerError) {
-        errorProperties[SolutionTelemetryProperty.ArmDeploymentError] = result.error.innerError;
+      // If the innerError is a DeploymentErrorMessage value, we will set it in telemetry.
+      if (result.error.innerError && result.error.innerError instanceof DeploymentErrorMessage) {
+        errorProperties[SolutionTelemetryProperty.ArmDeploymentError] =
+          result.error.innerError.value;
       }
       sendErrorTelemetryThenReturnError(
         SolutionTelemetryEvent.ArmDeployment,
@@ -1575,6 +1580,8 @@ function expandParameterPlaceholdersV3(
   );
 
   availableVariables["$env"] = processVariables;
+
+  parameterContent = convertManifestTemplateToV3(parameterContent);
 
   return compileHandlebarsTemplateString(parameterContent, availableVariables);
 }

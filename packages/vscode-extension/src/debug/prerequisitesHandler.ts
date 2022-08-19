@@ -631,7 +631,7 @@ function checkM365Account(prefix: string, showLoginPage: boolean): Promise<Check
         hasSwitchedM365Tenant = true;
         showNotification(
           localize("teamstoolkit.localDebug.switchM365AccountWarning"),
-          "https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/provision" // todo: update doc link
+          "https://aka.ms/teamsfx-switch-tenant-or-subscription-help"
         );
       }
       return {

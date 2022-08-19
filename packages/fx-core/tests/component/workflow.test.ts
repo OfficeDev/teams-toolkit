@@ -46,7 +46,12 @@ import {
 } from "../../src/plugins/resource/spfx/utils/questions";
 import { DefaultManifestProvider } from "../../src/component/resource/appManifest/manifestProvider";
 import { ComponentNames } from "../../src/component/constants";
-import { AzureSolutionQuestionNames } from "../../src";
+import {
+  AddSsoParameters,
+  AzureResourceApim,
+  AzureResourceSQL,
+  AzureSolutionQuestionNames,
+} from "../../src";
 import { FunctionScaffold } from "../../src/plugins/resource/function/ops/scaffold";
 import { TeamsfxCore } from "../../src/component/core";
 import { Container } from "typedi";
@@ -60,6 +65,8 @@ import { AadApp } from "../../src/component/resource/aadApp/aadApp";
 import { Constants } from "../../src/plugins/resource/aad/constants";
 import * as deployV3 from "../../src/plugins/solution/fx-solution/v3/deploy";
 import { TokenCredential, AccessToken, GetTokenOptions } from "@azure/core-http";
+import { CoreQuestionNames } from "../../src/core/question";
+import { FunctionDeploy } from "../../src/plugins/resource/function/ops/deploy";
 
 class MyTokenCredential implements TokenCredential {
   async getToken(
@@ -83,7 +90,6 @@ describe("Workflow test for v3", () => {
   let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
     mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "true" });
-    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
   });
 
   afterEach(() => {
@@ -135,7 +141,7 @@ describe("Workflow test for v3", () => {
     sandbox.stub(fs, "rename").resolves();
     sandbox.stub(fs, "copyFile").resolves();
     sandbox.stub(versionCheckQuestion as FuncQuestion, "func").resolves(undefined);
-    sinon.stub(DefaultManifestProvider.prototype, "updateCapability").resolves(ok(Void));
+    sandbox.stub(DefaultManifestProvider.prototype, "updateCapability").resolves(ok(Void));
 
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
@@ -165,7 +171,23 @@ describe("Workflow test for v3", () => {
     }
     assert.isTrue(res.isOk());
   });
+  it("fx.addFeature(sql)", async () => {
+    sandbox.stub(FunctionScaffold, "scaffoldFunction").resolves();
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+      ["function-name"]: "getUserProfile",
+      [CoreQuestionNames.Features]: AzureResourceSQL.id,
+    };
+    const component = Container.get("fx") as any;
+    const res = await component.addFeature(context, inputs);
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    assert.isTrue(res.isOk());
+  });
   it("sso.add", async () => {
+    sandbox.stub(context.userInteraction, "showMessage").resolves(ok(AddSsoParameters.LearnMore));
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
@@ -176,6 +198,28 @@ describe("Workflow test for v3", () => {
       console.log(res.error);
     }
     assert.isTrue(res.isOk());
+    const res2 = await component.add(context, inputs);
+    if (res2.isErr()) {
+      console.log(res2.error);
+    }
+    assert.isTrue(res2.isOk());
+  });
+  it("sso.add CLI", async () => {
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.CLI,
+    };
+    const component = Container.get("sso") as any;
+    const res = await component.add(context, inputs);
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    assert.isTrue(res.isOk());
+    const res2 = await component.add(context, inputs);
+    if (res2.isErr()) {
+      console.log(res2.error);
+    }
+    assert.isTrue(res2.isOk());
   });
   it("keyvault.add", async () => {
     const inputs: InputsWithProjectPath = {
@@ -231,6 +275,21 @@ describe("Workflow test for v3", () => {
     };
     const component = Container.get("apim-feature") as any;
     const res = await component.add(context, inputs);
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    assert.isTrue(res.isOk());
+  });
+  it("fx.addFeature(apim-feature)", async () => {
+    sandbox.stub(FunctionScaffold, "scaffoldFunction").resolves();
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+      ["function-name"]: "getUserProfile",
+      [CoreQuestionNames.Features]: AzureResourceApim.id,
+    };
+    const component = Container.get("fx") as any;
+    const res = await component.addFeature(context, inputs);
     if (res.isErr()) {
       console.log(res.error);
     }
@@ -318,6 +377,7 @@ describe("Workflow test for v3", () => {
   });
 
   it("fx.provision after switching subscription", async () => {
+    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
     sandbox
@@ -391,6 +451,7 @@ describe("Workflow test for v3", () => {
   });
 
   it("fx.provision local debug after switching m365 tenant", async () => {
+    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
     sandbox.stub(armFunctions, "updateAzureParameters").resolves(ok(undefined));
@@ -464,6 +525,7 @@ describe("Workflow test for v3", () => {
   });
 
   it("fx.provision local debug after switching m365 tenant: backup error", async () => {
+    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox
       .stub(backup, "backupFiles")
@@ -538,6 +600,7 @@ describe("Workflow test for v3", () => {
   });
 
   it("fx.provision after switching M365", async () => {
+    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
     sandbox
@@ -618,6 +681,7 @@ describe("Workflow test for v3", () => {
   });
 
   it("fx.provision cancel when confirming", async () => {
+    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
     sandbox
@@ -687,6 +751,7 @@ describe("Workflow test for v3", () => {
   });
 
   it("fx.provision could not get m365 token", async () => {
+    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getJsonObject").resolves(undefined);
@@ -728,6 +793,7 @@ describe("Workflow test for v3", () => {
   });
 
   it("fx.provision error when update Azure parameters", async () => {
+    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
     sandbox
@@ -797,6 +863,7 @@ describe("Workflow test for v3", () => {
   });
 
   it("fx.provision project without Azure resources after switch M365 account", async () => {
+    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
     sandbox
@@ -857,6 +924,7 @@ describe("Workflow test for v3", () => {
   });
 
   it("fx.provision project without Azure resources after switch M365 account: backupFiles error ", async () => {
+    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
     sandbox
@@ -922,6 +990,7 @@ describe("Workflow test for v3", () => {
   });
 
   it("azure-storage.deploy", async () => {
+    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(FrontendDeployment, "doFrontendDeploymentV3").resolves();
     sandbox.stub(aadManifest, "generateAadManifestTemplate").resolves();
@@ -970,6 +1039,7 @@ describe("Workflow test for v3", () => {
   });
 
   it("fx.deployAadFromVscode", async () => {
+    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     mockedEnvRestore = mockedEnv({
       SWITCH_ACCOUNT: "false",
       TEAMSFX_APIV3: "true",
@@ -1075,5 +1145,46 @@ describe("Workflow test for v3", () => {
       console.log(deployRes.error);
     }
     assert.isTrue(deployRes.isOk());
+  });
+  it("api-code.build", async () => {
+    const apiCode = Container.get("api-code") as any;
+    sandbox.stub(FunctionDeploy, "installFuncExtensions").resolves();
+    sandbox.stub(FunctionDeploy, "build").resolves();
+    sandbox.stub(apiCode, "handleDotnetChecker").resolves();
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+    };
+    const res = await apiCode.build(context, inputs);
+    assert.isTrue(res.isOk());
+  });
+  it("getParameterJsonV3", async () => {
+    const str = `{
+      "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "provisionParameters": {
+          "value": {
+            "botAadAppClientId": "{{state.fx-resource-bot.botId}}",
+            "resourceBaseName": "hjv3bot081017c1b"
+          }
+        }
+      }
+    }`;
+    sandbox.stub(fs, "readFile").resolves(str as any);
+    sandbox.stub(fs, "stat").resolves();
+    const envInfo = newEnvInfoV3();
+    envInfo.state[ComponentNames.TeamsBot] = {
+      botId: "MockID",
+    };
+    const context = createContextV3();
+    context.projectSetting.components = [
+      {
+        name: ComponentNames.TeamsBot,
+      },
+    ];
+    context.envInfo = envInfo;
+    const json = await armFunctions.getParameterJsonV3(context, "", envInfo);
+    assert.isTrue(json.parameters.provisionParameters.value.botAadAppClientId === "MockID");
   });
 });

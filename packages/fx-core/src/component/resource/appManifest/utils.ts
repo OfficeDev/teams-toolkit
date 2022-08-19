@@ -1,17 +1,27 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FxError, ok, Result, TeamsAppManifest } from "@microsoft/teamsfx-api";
+import { FxError, ok, Result, TeamsAppManifest, err } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
 import "reflect-metadata";
 import { getProjectTemplatesFolderPath } from "../../../common/utils";
 import { isV3 } from "../../../core/globalVars";
 import { convertManifestTemplateToV2, convertManifestTemplateToV3 } from "../../migrate";
+import { AppStudioError } from "../../../plugins/resource/appstudio/errors";
+import { AppStudioResultFactory } from "../../../plugins/resource/appstudio/results";
 
 export async function readAppManifest(
   projectPath: string
 ): Promise<Result<TeamsAppManifest, FxError>> {
   const filePath = await getTeamsAppManifestPath(projectPath);
+  if (!(await fs.pathExists(filePath))) {
+    return err(
+      AppStudioResultFactory.UserError(
+        AppStudioError.FileNotFoundError.name,
+        AppStudioError.FileNotFoundError.message(filePath)
+      )
+    );
+  }
   const content = await fs.readFile(filePath, { encoding: "utf-8" });
   const contentV3 = isV3() ? convertManifestTemplateToV3(content) : content;
   const manifest = JSON.parse(contentV3) as TeamsAppManifest;

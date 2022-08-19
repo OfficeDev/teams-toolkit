@@ -15,6 +15,7 @@ import {
   ResourceContextV3,
   Result,
   UserError,
+  v2,
   v3,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
@@ -59,7 +60,7 @@ import "./resource/botService";
 import "./resource/keyVault";
 import "./resource/spfx";
 import "./resource/aadApp/aadApp";
-
+import "./resource/simpleAuth";
 import { AADApp } from "@microsoft/teamsfx-api/build/v3";
 import * as jsonschema from "jsonschema";
 import { cloneDeep, merge } from "lodash";
@@ -86,6 +87,7 @@ import {
   SingleSignOnOptionItem,
   TabFeatureIds,
   TabSPFxItem,
+  TabSPFxNewUIItem,
 } from "../plugins/solution/fx-solution/question";
 import { resourceGroupHelper } from "../plugins/solution/fx-solution/utils/ResourceGroupHelper";
 import { executeConcurrently } from "../plugins/solution/fx-solution/v2/executor";
@@ -250,6 +252,8 @@ export class TeamsfxCore {
       component = Container.get("api-connector");
     } else if (features === SingleSignOnOptionItem.id) {
       component = Container.get("sso");
+    } else if (features === TabSPFxNewUIItem.id) {
+      component = Container.get(ComponentNames.SPFxTab);
     }
     if (component) {
       const res = await (component as any).add(context, inputs);
@@ -257,6 +261,15 @@ export class TeamsfxCore {
         [TelemetryProperty.Feature]: features,
       });
       if (res.isErr()) return err(res.error);
+      if (features !== ApiConnectionOptionItem.id && features !== CicdOptionItem.id) {
+        if (
+          context.envInfo?.state?.solution?.provisionSucceeded === true ||
+          context.envInfo?.state?.solution?.provisionSucceeded === "true"
+        ) {
+          context.envInfo.state.solution.provisionSucceeded = false;
+        }
+        await environmentManager.resetProvisionState(inputs, context);
+      }
       return ok(res.value);
     }
     return ok(undefined);

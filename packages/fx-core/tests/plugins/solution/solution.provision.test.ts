@@ -1752,7 +1752,7 @@ describe("askForProvisionConsentNew", () => {
 
     // Assert
     const expectedAccountsInfo =
-      "You are now using a different Microsoft 365 account from what you previously used.\nAzure account: someUserName\nAzure subscription: subscriptionName\nM365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
+      "You are now using a different Microsoft 365 tenant from what you previously used.\nAzure account: someUserName\nAzure subscription: subscriptionName\nM365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
     expect(showMessageSpy.calledOnce).equal(true);
     expect(
       showMessageSpy.calledWithMatch("warn", expectedAccountsInfo, true, "Provision", "Learn more")
@@ -1892,7 +1892,7 @@ describe("askForProvisionConsentNew", () => {
 
     // Assert
     const expectedAccountsInfo =
-      "You are now using a different Microsoft 365 account and a differnt Azure subscription from what you previously used.\nAzure account: someUserName\nAzure subscription: subscriptionName\nM365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
+      "You are now using a different Microsoft 365 tenant and a differnt Azure subscription from what you previously used.\nAzure account: someUserName\nAzure subscription: subscriptionName\nM365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
     expect(showMessageSpy.calledOnce).equal(true);
     expect(
       showMessageSpy.calledWithMatch("warn", expectedAccountsInfo, true, "Provision", "Learn more")
@@ -1962,7 +1962,7 @@ describe("askForProvisionConsentNew", () => {
 
     // Assert
     const expectedAccountsInfo =
-      "You are now using a different Microsoft 365 account from what you previously used.\nM365 account: m365Name\n\nDo you want to provision resources in dev environment using the account listed above?";
+      "You are now using a different Microsoft 365 tenant from what you previously used.\nM365 account: m365Name\n\nDo you want to provision resources in dev environment using the account listed above?";
     expect(showMessageSpy.calledOnce).equal(true);
     expect(
       showMessageSpy.calledWithMatch("warn", expectedAccountsInfo, true, "Provision", "Learn more")

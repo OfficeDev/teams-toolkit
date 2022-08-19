@@ -16,7 +16,9 @@ import "reflect-metadata";
 import { Container } from "typedi";
 import { compileHandlebarsTemplateString } from "../../common/tools";
 import { getProjectTemplatesFolderPath } from "../../common/utils";
+import { CoreQuestionNames } from "../../core/question";
 import { getTemplatesFolder } from "../../folder";
+import { languageToRuntime } from "../constants";
 import { getComponentByScenario } from "../workflow";
 
 export abstract class AzureResourceConfig {
@@ -52,6 +54,14 @@ export abstract class AzureResourceConfig {
     }
     this.templateContext.scenario = inputs.scenario || "";
     this.templateContext.scenarioInLowerCase = (inputs.scenario || "").toLowerCase();
+    const configs: string[] = [];
+    configs.push(
+      languageToRuntime.get(
+        context.projectSetting.programmingLanguage ||
+          inputs?.[CoreQuestionNames.ProgrammingLanguage]
+      ) ?? ""
+    );
+    this.templateContext.configs = configs;
     const modulePath = path.join(
       getTemplatesFolder(),
       "bicep",

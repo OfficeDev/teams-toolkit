@@ -19,7 +19,7 @@ import {
   Scenarios,
 } from "../../constants";
 import { AzureAppService } from "./azureAppService";
-import { CheckThrowSomethingMissing } from "../../error";
+import { CheckThrowSomethingMissing, FindFunctionAppError } from "../../error";
 import {
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
@@ -27,10 +27,15 @@ import {
 } from "../../../common/tools";
 import { WebSiteManagementClient } from "@azure/arm-appservice";
 import { NameValuePair, Site } from "@azure/arm-appservice/esm/models";
+import { hooks } from "@feathersjs/hooks/lib";
+import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
+import { LogMessages } from "../../messages";
+
+const ErrorSource = "Functions";
 @Service("azure-function")
 export class AzureFunctionResource extends AzureAppService {
   readonly name = "azure-function";
-  readonly alias = "Functions";
+  readonly alias = ErrorSource;
   readonly displayName = "Azure Functions";
   readonly bicepModuleName = "azureFunction";
   outputs = FunctionOutputs;
@@ -40,6 +45,11 @@ export class AzureFunctionResource extends AzureAppService {
       resourceId: IdentityOutputs.identityResourceId.bicepVariable,
     },
   };
+  @hooks([
+    ActionExecutionMW({
+      errorSource: ErrorSource,
+    }),
+  ])
   async configure(
     context: ResourceContextV3,
     inputs: InputsWithProjectPath
@@ -47,6 +57,7 @@ export class AzureFunctionResource extends AzureAppService {
     if (!this.needConfigure(context)) {
       return ok(undefined);
     }
+    context.logProvider.info(LogMessages.updateFunctionAppSettings);
     const resourceId = CheckThrowSomethingMissing(
       this.alias,
       "resourceId",
@@ -67,7 +78,7 @@ export class AzureFunctionResource extends AzureAppService {
     );
     const site = webAppCollection.find((webApp) => webApp.name === functionAppName);
     if (!site) {
-      throw new Error("Function App not found.");
+      throw new FindFunctionAppError(this.alias);
     }
     const settings = await webSiteManagementClient.webApps.listApplicationSettings(
       resourceGroupName,

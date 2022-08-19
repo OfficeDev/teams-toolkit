@@ -5,10 +5,8 @@ import { ConversationReference, TurnContext } from "botbuilder";
 import { assert, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import * as sinon from "sinon";
-import {
-  CommandResponseMiddleware,
-  NotificationMiddleware,
-} from "../../../../src/conversation/middleware";
+import { NotificationMiddleware } from "../../../../src/conversation/middlewares/notificationMiddleware";
+import { CommandResponseMiddleware } from "../../../../src/conversation/middlewares/commandMiddleware";
 import { ConversationReferenceStore } from "../../../../src/conversation/storage";
 import { MockContext, TestCommandHandler, TestStorage } from "./testUtils";
 

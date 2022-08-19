@@ -63,3 +63,4 @@ export {
   TeamsBotInstallation,
 } from "./conversation/notification.browser";
 export { CommandBot } from "./conversation/command.browser";
+export { CardActionBot } from "./conversation/cardAction.browser";

@@ -25,6 +25,7 @@ import { DialogContext } from 'botbuilder-dialogs';
 import { DialogTurnResult } from 'botbuilder-dialogs';
 import { GetTokenOptions } from '@azure/identity';
 import { HeroCard } from 'botbuilder';
+import { IAdaptiveCard } from 'adaptivecards';
 import { O365ConnectorCard } from 'botbuilder';
 import { ReceiptCard } from 'botbuilder';
 import { SecureContextOptions } from 'tls';
@@ -36,6 +37,13 @@ import { TurnContext } from 'botbuilder-core';
 import { TurnContext as TurnContext_2 } from 'botbuilder';
 import { WebRequest } from 'botbuilder';
 import { WebResponse } from 'botbuilder';
+
+// @public
+export enum AdaptiveCardResponse {
+    NewForAll = 2,
+    ReplaceForAll = 1,
+    ReplaceForInteractor = 0
+}
 
 // @public
 export enum ApiKeyLocation {
@@ -86,6 +94,30 @@ export class BearerTokenAuthProvider implements AuthProvider {
 }
 
 // @public
+export class CardActionBot {
+    constructor(adapter: BotFrameworkAdapter, options?: CardActionOptions);
+    registerHandler(actionHandler: TeamsFxAdaptiveCardActionHandler): void;
+    registerHandlers(actionHandlers: TeamsFxAdaptiveCardActionHandler[]): void;
+}
+
+// @public
+export interface CardActionOptions {
+    actions?: TeamsFxAdaptiveCardActionHandler[];
+}
+
+// @public
+export interface CardPromptMessage {
+    text: string;
+    type?: CardPromptMessageType;
+}
+
+// @public
+export enum CardPromptMessageType {
+    Error = 1,
+    Info = 0
+}
+
+// @public
 export class CertificateAuthProvider implements AuthProvider {
     constructor(certOption: SecureContextOptions);
     AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig>;
@@ -124,6 +156,7 @@ export interface CommandOptions {
 export class ConversationBot {
     constructor(options: ConversationOptions);
     readonly adapter: BotFrameworkAdapter;
+    readonly cardAction?: CardActionBot;
     readonly command?: CommandBot;
     readonly notification?: NotificationBot;
     requestHandler(req: WebRequest, res: WebResponse, logic?: (context: TurnContext_2) => Promise<any>): Promise<void>;
@@ -134,6 +167,9 @@ export interface ConversationOptions {
     adapter?: BotFrameworkAdapter;
     adapterConfig?: {
         [key: string]: unknown;
+    };
+    cardAction?: CardActionOptions & {
+        enabled?: boolean;
     };
     command?: CommandOptions & {
         enabled?: boolean;
@@ -351,6 +387,13 @@ export class TeamsFx implements TeamsFxConfiguration {
     hasConfig(key: string): boolean;
     login(scopes: string | string[]): Promise<void>;
     setSsoToken(ssoToken: string): TeamsFx;
+}
+
+// @public
+export interface TeamsFxAdaptiveCardActionHandler {
+    adaptiveCardResponse?: AdaptiveCardResponse;
+    handleActionInvoked(context: TurnContext, actionData: any): Promise<IAdaptiveCard | CardPromptMessage | void>;
+    triggerVerb: string;
 }
 
 // @public

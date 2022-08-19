@@ -3,6 +3,7 @@
 
 import { BotFrameworkAdapter } from "botbuilder";
 import { Activity, TurnContext } from "botbuilder-core";
+import { IAdaptiveCard } from "adaptivecards";
 
 /**
  * The response of a message action, e.g., `sendMessage`, `sendAdaptiveCard`.
@@ -174,6 +175,93 @@ export interface CommandOptions {
 }
 
 /**
+ * Options to initialize {@link CardActionBot}.
+ */
+export interface CardActionOptions {
+  /**
+   * The action handlers to registered with the action bot. Each command should implement the interface {@link TeamsFxAdaptiveCardActionHandler} so that it can be correctly handled by this bot.
+   */
+  actions?: TeamsFxAdaptiveCardActionHandler[];
+}
+
+/**
+ * Options used to control how the response card will be sent to users.
+ */
+export enum AdaptiveCardResponse {
+  /**
+   * The response card will be replaced the current one for the interactor who trigger the action.
+   */
+  ReplaceForInteractor,
+
+  /**
+   * The response card will be replaced the current one for all users in the chat.
+   */
+  ReplaceForAll,
+
+  /**
+   * The response card will be sent as a new message for all users in the chat.
+   */
+  NewForAll,
+}
+
+/**
+ * A message to respond to adaptive card action invoke.
+ */
+export interface CardPromptMessage {
+  /**
+   * A string message to display in the client.
+   */
+  text: string;
+
+  /**
+   * The type of the message.
+   */
+  type?: CardPromptMessageType;
+}
+
+/**
+ * The message type of a {@link CardPromptMessage}.
+ */
+export enum CardPromptMessageType {
+  /**
+   * Indicates the card action is processed successfully.
+   */
+  Info,
+
+  /**
+   * Indicates errors occurred when processed the card action.
+   */
+  Error,
+}
+
+/**
+ * Interface for adaptive card action handler that can process card action invoke and return a response.
+ */
+export interface TeamsFxAdaptiveCardActionHandler {
+  /**
+   * The verb defined in adaptive card action that can trigger this handler.
+   */
+  triggerVerb: string;
+
+  /**
+   * Specify the behavior for how the card response will be sent in Teams conversation.
+   * The default value is `AdaptiveCardResponse.ReplaceForInteractor`, which means the card
+   * response will replace the current one only for the interactor.
+   */
+  adaptiveCardResponse?: AdaptiveCardResponse;
+
+  /**
+   * The handler function that will be invoked when the action is fired.
+   * @param context The turn context.
+   * @param actionData The contextual data that associated with the action.
+   */
+  handleActionInvoked(
+    context: TurnContext,
+    actionData: any
+  ): Promise<IAdaptiveCard | CardPromptMessage | void>;
+}
+
+/**
  * Options to initialize {@link ConversationBot}
  */
 export interface ConversationOptions {
@@ -211,6 +299,16 @@ export interface ConversationOptions {
   notification?: NotificationOptions & {
     /**
      * Whether to enable notification or not.
+     */
+    enabled?: boolean;
+  };
+
+  /**
+   * The adaptive card action handler part.
+   */
+  cardAction?: CardActionOptions & {
+    /**
+     * Whether to enable adaptive card actions or not.
      */
     enabled?: boolean;
   };

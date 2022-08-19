@@ -12,6 +12,7 @@
 |  [AppCredential](./teamsfx.appcredential.md) | Represent Microsoft 365 tenant identity, and it is usually used when user is not involved like time-triggered automation job. |
 |  [BasicAuthProvider](./teamsfx.basicauthprovider.md) | Provider that handles Basic authentication |
 |  [BearerTokenAuthProvider](./teamsfx.bearertokenauthprovider.md) | Provider that handles Bearer Token authentication |
+|  [CardActionBot](./teamsfx.cardactionbot.md) | A card action bot to respond to adaptive card universal actions. |
 |  [CertificateAuthProvider](./teamsfx.certificateauthprovider.md) | Provider that handles Certificate authentication |
 |  [Channel](./teamsfx.channel.md) | A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team channel. |
 |  [CommandBot](./teamsfx.commandbot.md) | A command bot for receiving commands and sending responses in Teams. |
@@ -31,7 +32,9 @@
 
 |  Enumeration | Description |
 |  --- | --- |
+|  [AdaptiveCardResponse](./teamsfx.adaptivecardresponse.md) | Options used to control how the response card will be sent to users. |
 |  [ApiKeyLocation](./teamsfx.apikeylocation.md) | Define available location for API Key location |
+|  [CardPromptMessageType](./teamsfx.cardpromptmessagetype.md) | The message type of a [CardPromptMessage](./teamsfx.cardpromptmessage.md)<!-- -->. |
 |  [ErrorCode](./teamsfx.errorcode.md) | Error code to trace the error types. |
 |  [IdentityType](./teamsfx.identitytype.md) | Identity type to use in authentication. |
 |  [LogLevel](./teamsfx.loglevel.md) | Log level. |
@@ -59,6 +62,8 @@
 |  --- | --- |
 |  [AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md) | Authentication related configuration. |
 |  [AuthProvider](./teamsfx.authprovider.md) | Defines method that injects authentication info to http requests |
+|  [CardActionOptions](./teamsfx.cardactionoptions.md) | Options to initialize [CardActionBot](./teamsfx.cardactionbot.md)<!-- -->. |
+|  [CardPromptMessage](./teamsfx.cardpromptmessage.md) | A message to respond to adaptive card action invoke. |
 |  [CommandMessage](./teamsfx.commandmessage.md) | Interface for a command message that can handled in a command handler. |
 |  [CommandOptions](./teamsfx.commandoptions.md) | Options to initialize [CommandBot](./teamsfx.commandbot.md)<!-- -->. |
 |  [ConversationOptions](./teamsfx.conversationoptions.md) | Options to initialize [ConversationBot](./teamsfx.conversationbot.md) |
@@ -68,6 +73,7 @@
 |  [NotificationTargetStorage](./teamsfx.notificationtargetstorage.md) | Interface for a storage provider that stores and retrieves notification target references. |
 |  [TeamsBotSsoPromptSettings](./teamsfx.teamsbotssopromptsettings.md) | Settings used to configure an TeamsBotSsoPrompt instance. |
 |  [TeamsBotSsoPromptTokenResponse](./teamsfx.teamsbotssoprompttokenresponse.md) | Token response provided by Teams Bot SSO prompt |
+|  [TeamsFxAdaptiveCardActionHandler](./teamsfx.teamsfxadaptivecardactionhandler.md) | Interface for adaptive card action handler that can process card action invoke and return a response. |
 |  [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) | Interface for a command handler that can process command to a TeamsFx bot and return a response. |
 |  [UserInfo](./teamsfx.userinfo.md) | UserInfo with user displayName, objectId and preferredUserName. |
 

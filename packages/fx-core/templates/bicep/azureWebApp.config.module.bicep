@@ -6,7 +6,7 @@ param provisionOutputs object
 @secure()
 param currentAppSettings object
 
-var webAppName = split(provisionOutputs.azureWebApp{{scenario}}Output.value.resourceId , '/')[8]
+var webAppName = split(provisionOutputs.azureWebApp{{scenario}}Output.value.resourceId, '/')[8]
 {{#if (contains "aad-app" connections)}}
 var webappEndpoint = provisionOutputs.azureWebApp{{scenario}}Output.value.siteEndpoint
 var m365ClientId = provisionParameters['m365ClientId']

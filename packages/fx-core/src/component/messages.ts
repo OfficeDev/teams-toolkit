@@ -37,6 +37,11 @@ export class ProgressMessages {
   static readonly provisionBot = ProgressBarConstants.PROVISION_STEP_BOT_REG;
 }
 
+export class LogMessages {
+  static readonly updateFunctionAppSettings = "Updating Azure Function app settings.";
+  static readonly enableStaticWebsite = "Enabling static website feature for Azure Storage.";
+}
+
 export interface LocalizedMessage {
   default: string;
   localized: string;

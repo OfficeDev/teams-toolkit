@@ -52,7 +52,8 @@ var outlookWebAppClientId2 = 'bc59ab01-8403-45c6-8796-ac3ef710b3e3'
 var authorizedClientApplicationIds = '${provisionParameters['apimClientId']};${teamsMobileOrDesktopAppClientId};${teamsWebAppClientId};${officeWebAppClientId1};${officeWebAppClientId2};${officeDesktopAppClientId};${outlookDesktopAppClientId};${outlookWebAppClientId1};${outlookWebAppClientId2}'
   {{else}}
 var authorizedClientApplicationIds = '${teamsMobileOrDesktopAppClientId};${teamsWebAppClientId};${officeWebAppClientId1};${officeWebAppClientId2};${officeDesktopAppClientId};${outlookDesktopAppClientId};${outlookWebAppClientId1};${outlookWebAppClientId2}'
-  {{/if}}  
+  {{/if}}
+
 {{/if}}
 {{#if (contains "teams-tab" connections) }}
 var tabEndpoint = provisionOutputs.TabOutput.value.endpoint

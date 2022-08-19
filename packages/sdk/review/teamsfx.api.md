@@ -109,6 +109,33 @@ export interface CardActionOptions {
 }
 
 // @public
+export class CardActionBot {
+    constructor(adapter: BotFrameworkAdapter, options?: CardActionOptions);
+    registerHandler(actionHandler: TeamsFxAdaptiveCardActionHandler): void;
+    registerHandlers(actionHandlers: TeamsFxAdaptiveCardActionHandler[]): void;
+}
+
+// @public
+export interface CardActionOptions {
+    actions?: TeamsFxAdaptiveCardActionHandler[];
+}
+
+// @public
+<<<<<<< HEAD
+=======
+export interface CardPromptMessage {
+    text: string;
+    type?: CardPromptMessageType;
+}
+
+// @public
+export enum CardPromptMessageType {
+    Error = 1,
+    Info = 0
+}
+
+// @public
+>>>>>>> 8343ffa02 (feat(sdk): add card action handler in conversation SDK)
 export class CertificateAuthProvider implements AuthProvider {
     constructor(certOption: SecureContextOptions);
     AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig>;

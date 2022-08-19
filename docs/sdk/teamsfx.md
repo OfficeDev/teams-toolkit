@@ -35,6 +35,7 @@
 |  --- | --- |
 |  [AdaptiveCardResponse](./teamsfx.adaptivecardresponse.md) | Options used to control how the response card will be sent to users. |
 |  [ApiKeyLocation](./teamsfx.apikeylocation.md) | Define available location for API Key location |
+|  [CardPromptMessageType](./teamsfx.cardpromptmessagetype.md) | The message type of a [CardPromptMessage](./teamsfx.cardpromptmessage.md)<!-- -->. |
 |  [ErrorCode](./teamsfx.errorcode.md) | Error code to trace the error types. |
 |  [IdentityType](./teamsfx.identitytype.md) | Identity type to use in authentication. |
 |  [LogLevel](./teamsfx.loglevel.md) | Log level. |

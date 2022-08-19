@@ -54,18 +54,18 @@ export class SimpleAuth {
       errorSource: "sa",
       enableTelemetry: true,
       telemetryComponentName: "fx-resource-simple-auth",
-      telemetryEventName: "local-debug",
+      telemetryEventName: "provision",
     }),
   ])
   async configure(
     context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
+    context.logProvider.info(Messages.StartPostLocalDebug.log);
+    context.envInfo.state[ComponentNames.SimpleAuth] =
+      context.envInfo.state[ComponentNames.SimpleAuth] || {};
+    const configs = this.getWebAppConfig(context.envInfo); //
     if (context.envInfo.envName === "local") {
-      context.logProvider.info(Messages.StartPostLocalDebug.log);
-      context.envInfo.state[ComponentNames.SimpleAuth] =
-        context.envInfo.state[ComponentNames.SimpleAuth] || {};
-      const configs = this.getWebAppConfig(context.envInfo); //
       const configArray = [];
       for (const [key, value] of Object.entries(configs)) {
         configArray.push(`${key}="${value}"`);

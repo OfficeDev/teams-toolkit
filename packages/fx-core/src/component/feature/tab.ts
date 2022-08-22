@@ -196,10 +196,11 @@ export class TeamsTab {
 
     // 5. app-manifest.addCapability
     {
-      const capabilities: v3.ManifestCapability[] = [
-        { name: "staticTab" },
-        { name: "configurableTab" },
-      ];
+      const capabilities: v3.ManifestCapability[] = [{ name: "staticTab" }];
+      // M365 app does not support configurationTab
+      if (!context.projectSetting.isM365) {
+        capabilities.push({ name: "configurableTab" });
+      }
       const clonedInputs = {
         ...cloneDeep(inputs),
         validDomain: "{{state.fx-resource-frontend-hosting.domain}}", // TODO: replace fx-resource-frontend-hosting with inputs.hosting after updating state file

@@ -412,6 +412,45 @@ export async function getManifest(
 
   const manifest: TeamsAppManifest = JSON.parse(manifestString);
 
+  // dynamically set validDomains for manifest, which can be refactored by static manifest templates
+  const isLocalDebug = envInfo.envName === "local";
+  const isProvisionSucceeded =
+    envInfo.state.solution.provisionSucceeded === "true" ||
+    envInfo.state.solution.provisionSucceeded === true;
+  if (isLocalDebug || manifest.validDomains?.length === 0) {
+    const validDomains: string[] = [];
+    const tabEndpoint = envInfo.state[ComponentNames.TeamsTab]?.endpoint as string;
+    const tabDomain = envInfo.state[ComponentNames.TeamsTab]?.domain as string;
+    if (tabDomain) {
+      validDomains.push(tabDomain);
+    }
+    if (tabEndpoint && isLocalDebug) {
+      validDomains.push(tabEndpoint.slice(8));
+    }
+    const botId = envInfo.state[ComponentNames.TeamsBot]?.botId;
+    const botDomain = envInfo.state[ComponentNames.TeamsBot]?.validDomain;
+    if (botId) {
+      if (!botDomain) {
+        return err(
+          AppStudioResultFactory.UserError(
+            AppStudioError.GetRemoteConfigFailedError.name,
+            AppStudioError.GetRemoteConfigFailedError.message(
+              getLocalizedString("plugins.appstudio.dataRequired", "validDomain"),
+              isProvisionSucceeded
+            ),
+            HelpLinks.WhyNeedProvision
+          )
+        );
+      } else {
+        validDomains.push(botDomain);
+      }
+    }
+    for (const domain of validDomains) {
+      if (manifest.validDomains?.indexOf(domain) == -1) {
+        manifest.validDomains.push(domain);
+      }
+    }
+  }
   return ok(manifest);
 }
 

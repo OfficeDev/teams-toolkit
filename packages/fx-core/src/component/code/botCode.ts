@@ -30,16 +30,14 @@ import {
   DEFAULT_DOTNET_FRAMEWORK,
   TemplateProjectsConstants,
 } from "../../plugins/resource/bot/constants";
-import { ProgrammingLanguage } from "../../plugins/resource/bot/enums/programmingLanguage";
 import { CommandExecutionError } from "../../plugins/resource/bot/errors";
 import { Commands, CommonStrings } from "../../plugins/resource/bot/resources/strings";
 import * as utils from "../../plugins/resource/bot/utils/common";
 import { telemetryHelper } from "../../plugins/resource/bot/utils/telemetry-helper";
 import { TemplateZipFallbackError, UnzipError } from "../../plugins/resource/bot/v3/error";
-import { ComponentNames } from "../constants";
+import { ComponentNames, ProgrammingLanguage } from "../constants";
 import { ProgressMessages, ProgressTitles } from "../messages";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
-import { commonTelemetryPropsForBot } from "../resource/botService";
 import { getComponent } from "../workflow";
 import { BadComponent } from "../error";
 /**
@@ -65,17 +63,15 @@ export class BotCodeProvider {
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    if (actionContext?.telemetryProps) {
-      merge(actionContext?.telemetryProps, commonTelemetryPropsForBot(context));
-    }
     const projectSettings = context.projectSetting as ProjectSettingsV3;
     const appName = projectSettings.appName;
     const language =
-      inputs?.["programming-language"] ||
+      inputs?.[CoreQuestionNames.ProgrammingLanguage] ||
       context.projectSetting.programmingLanguage ||
-      "javascript";
+      ProgrammingLanguage.JS;
     const botFolder =
-      inputs.folder ?? (language === "csharp" ? "" : CommonStrings.BOT_WORKING_DIR_NAME);
+      inputs.folder ??
+      (language === ProgrammingLanguage.CSharp ? "" : CommonStrings.BOT_WORKING_DIR_NAME);
     const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
     const lang = convertToLangKey(language);
     const workingDir = path.join(inputs.projectPath, botFolder);
@@ -125,17 +121,14 @@ export class BotCodeProvider {
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    if (actionContext?.telemetryProps) {
-      merge(actionContext?.telemetryProps, commonTelemetryPropsForBot(context));
-    }
     const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
     if (!teamsBot) return ok(undefined);
     if (teamsBot.folder == undefined) throw new BadComponent("bot", this.name, "folder");
     const packDir = path.resolve(inputs.projectPath, teamsBot.folder);
-    const language = context.projectSetting.programmingLanguage || "javascript";
+    const language = context.projectSetting.programmingLanguage || ProgrammingLanguage.JS;
 
     await actionContext?.progressBar?.next(ProgressMessages.buildingBot);
-    if (language === ProgrammingLanguage.TypeScript) {
+    if (language === ProgrammingLanguage.TS) {
       //Typescript needs tsc build before deploy because of windows app server. other languages don"t need it.
       try {
         await utils.execute("npm install", packDir);
@@ -148,7 +141,7 @@ export class BotCodeProvider {
           e
         );
       }
-    } else if (language === ProgrammingLanguage.JavaScript) {
+    } else if (language === ProgrammingLanguage.JS) {
       try {
         // fail to npm install @microsoft/teamsfx on azure web app, so pack it locally.
         await utils.execute("npm install", packDir);
@@ -156,7 +149,7 @@ export class BotCodeProvider {
       } catch (e) {
         throw new CommandExecutionError(`${Commands.NPM_INSTALL}`, packDir, e);
       }
-    } else if (language === ProgrammingLanguage.Csharp) {
+    } else if (language === ProgrammingLanguage.CSharp) {
       const projectFileName = `${context.projectSetting.appName}.csproj`;
       const framework = await BotCodeProvider.getFrameworkVersion(
         path.join(packDir, projectFileName)

@@ -19,8 +19,6 @@ import {
   IBot,
   IConfigurableTab,
   IComposeExtension,
-  Result,
-  FxError,
   AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
@@ -36,7 +34,6 @@ import {
   mockV2PublishThatAlwaysSucceed,
   mockScaffoldCodeThatAlwaysSucceeds,
   MockedAzureAccountProvider,
-  mockExecuteUserTaskThatAlwaysSucceeds,
 } from "./util";
 import _ from "lodash";
 import { ResourcePluginsV2 } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
@@ -69,21 +66,20 @@ import "../../../src/plugins/resource/appstudio/v2";
 import "../../../src/plugins/resource/frontend/v2";
 import "../../../src/plugins/resource/bot/v2";
 import { newEnvInfo } from "../../../src";
-import fs, { ensureDir } from "fs-extra";
+import fs from "fs-extra";
 import { ProgrammingLanguage } from "../../../src/plugins/resource/bot/enums/programmingLanguage";
 import { randomAppName } from "../../core/utils";
-import { createEnv } from "../../../src/plugins/solution/fx-solution/v2/createEnv";
 import { ScaffoldingContextAdapter } from "../../../src/plugins/solution/fx-solution/v2/adaptor";
 import { LocalCrypto } from "../../../src/core/crypto";
-import { appStudioPlugin, botPlugin, fehostPlugin } from "../../constants";
+import { appStudioPlugin, botPlugin } from "../../constants";
 import { BuiltInFeaturePluginNames } from "../../../src/plugins/solution/fx-solution/v3/constants";
-import { AppStudioPluginV3 } from "../../../src/plugins/resource/appstudio/v3";
 import { armV2 } from "../../../src/plugins/solution/fx-solution/arm";
 import { NamedArmResourcePlugin } from "../../../src/common/armInterface";
 import * as featureFlags from "../../../src/common/featureFlags";
 import * as os from "os";
 import * as path from "path";
 import mockedEnv from "mocked-env";
+import * as appManifestUtils from "../../../src/component/resource/appManifest/appManifest";
 const tool = require("../../../src/common/tools");
 
 chai.use(chaiAsPromised);
@@ -282,18 +278,7 @@ describe("V2 implementation", () => {
     const mockedCtx = new MockedV2Context(projectSettings);
     const mockedInputs: Inputs = { platform: Platform.VSCode };
     mockedInputs[AzureSolutionQuestionNames.Capabilities] = [BotOptionItem.id];
-    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-    mocker
-      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
-      .callsFake(
-        async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath,
-          capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
-        ) => {
-          return ok(true);
-        }
-      );
+    mocker.stub<any, any>(appManifestUtils, "capabilityExceedLimit").resolves(ok(true));
     mocker
       .stub<any, any>(appStudioPlugin, "addCapabilities")
       .callsFake(

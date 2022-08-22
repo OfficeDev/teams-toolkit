@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-
 import "mocha";
 import * as chai from "chai";
 import sinon from "sinon";
@@ -290,7 +289,7 @@ describe("Update capability", () => {
       configurationUrl: "endpoint",
       scopes: ["team", "groupchat"],
     };
-    const result = await updateCapability(inputs, {
+    const result = await updateCapability(inputs.projectPath, {
       name: "configurableTab",
       snippet: tab,
     });
@@ -302,7 +301,7 @@ describe("Update capability", () => {
       botId: uuid.v4(),
       scopes: ["team", "groupchat"],
     };
-    const result = await updateCapability(inputsWithStaticTabs, {
+    const result = await updateCapability(inputsWithStaticTabs.projectPath, {
       name: "Bot",
       snippet: bot,
     });
@@ -367,7 +366,7 @@ describe("Delete capability", () => {
       entityId: "index2",
       scopes: ["personal", "team"],
     };
-    const result = await plugin.deleteCapability(ctx, inputsWithStaticTabs, {
+    const result = await deleteCapability(inputsWithStaticTabs.projectPath, {
       name: "staticTab",
       snippet: tab,
     });
@@ -378,14 +377,14 @@ describe("Delete capability", () => {
   });
 
   it("Delete configurable tab should succeed", async () => {
-    const result = await plugin.deleteCapability(ctx, inputs, {
+    const result = await deleteCapability(inputs.projectPath, {
       name: "configurableTab",
     });
     chai.assert.isTrue(result.isOk());
   });
 
   it("Delete bot should failed", async () => {
-    const result = await plugin.deleteCapability(ctx, inputsWithStaticTabs, {
+    const result = await deleteCapability(inputsWithStaticTabs.projectPath, {
       name: "Bot",
     });
     chai.assert.isTrue(result.isErr());
@@ -395,7 +394,7 @@ describe("Delete capability", () => {
   });
 
   it("Delete message extension should failed", async () => {
-    const result = await plugin.deleteCapability(ctx, inputsWithStaticTabs, {
+    const result = await deleteCapability(inputsWithStaticTabs.projectPath, {
       name: "MessageExtension",
     });
     chai.assert.isTrue(result.isErr());

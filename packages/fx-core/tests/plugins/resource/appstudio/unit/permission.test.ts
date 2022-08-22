@@ -15,12 +15,9 @@ import {
   v2,
   v3,
 } from "@microsoft/teamsfx-api";
-import { Constants, SOLUTION } from "../../../../../src/plugins/resource/appstudio/constants";
+import { Constants } from "../../../../../src/plugins/resource/appstudio/constants";
 import faker from "faker";
-import {
-  REMOTE_TEAMS_APP_ID,
-  PluginNames,
-} from "../../../../../src/plugins/solution/fx-solution/constants";
+import { PluginNames } from "../../../../../src/plugins/solution/fx-solution/constants";
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
 import { getAzureProjectRoot } from "../helper";
 import { newEnvInfo } from "../../../../../src";
@@ -31,14 +28,9 @@ import {
   MockedM365Provider,
   MockedV2Context,
 } from "../../../solution/util";
-import {
-  BuiltInFeaturePluginNames,
-  BuiltInSolutionNames,
-} from "../../../../../src/plugins/solution/fx-solution/v3/constants";
+import { BuiltInSolutionNames } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
 import * as uuid from "uuid";
 import Container from "typedi";
-import { AadAppForTeamsPluginV3 } from "../../../../../src/plugins/resource/aad/v3";
-import { AppStudioPluginV3 } from "../../../../../src/plugins/resource/appstudio/v3";
 import { AppManifest } from "../../../../../src/component/resource/appManifest/appManifest";
 import { ComponentNames } from "../../../../../src/component/constants";
 

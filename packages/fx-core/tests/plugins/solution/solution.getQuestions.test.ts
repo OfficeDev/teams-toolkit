@@ -23,7 +23,6 @@ import Container from "typedi";
 import * as uuid from "uuid";
 import "../../../src/plugins/resource/apim/v2";
 import "../../../src/plugins/resource/appstudio/v2";
-import { AppStudioPluginV3 } from "../../../src/plugins/resource/appstudio/v3";
 import "../../../src/plugins/resource/bot/v2";
 import "../../../src/plugins/resource/frontend/v2";
 import "../../../src/plugins/resource/function/v2";

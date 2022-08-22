@@ -100,9 +100,8 @@ import { aadPlugin, appStudioPlugin, spfxPlugin, fehostPlugin } from "../../cons
 import { AadAppForTeamsPlugin } from "../../../src";
 import * as backup from "../../../src/plugins/solution/fx-solution/utils/backupFiles";
 import { resourceGroupHelper } from "../../../src/plugins/solution/fx-solution/utils/ResourceGroupHelper";
-import * as manifestTemplate from "../../../src/plugins/resource/appstudio/manifestTemplate";
+import * as manifestTemplate from "../../../src/component/resource/appManifest/utils";
 import { SolutionRunningState } from "../../../src/plugins/solution/fx-solution/types";
-import mockedEnv from "mocked-env";
 import { askForProvisionConsentNew } from "../../../src/plugins/solution/fx-solution/v2/provision";
 
 chai.use(chaiAsPromised);
@@ -479,7 +478,7 @@ describe("provision() happy path for SPFx projects", () => {
       )
       .resolves(mockedManifest);
     mocker.stub(AppStudioClient, "importApp").resolves(mockedAppDef);
-    mocker.stub(manifestTemplate, "loadManifest").resolves(ok(new TeamsAppManifest()));
+    mocker.stub(manifestTemplate, "readAppManifest").resolves(ok(new TeamsAppManifest()));
     mocker.stub(AppStudioPluginImpl.prototype, "buildTeamsAppPackage").resolves("");
     mocker.stub(tools, "getSPFxTenant").returns(Promise.resolve("tenant"));
   });

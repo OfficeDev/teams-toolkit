@@ -16,7 +16,6 @@ import {
   TokenProvider,
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
-import { AppStudioPluginV3 } from "../../../../../src/plugins/resource/appstudio/v3";
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
 import { Constants } from "../../../../../src/plugins/resource/appstudio/constants";
 import { AppDefinition } from "./../../../../../src/plugins/resource/appstudio/interfaces/appDefinition";

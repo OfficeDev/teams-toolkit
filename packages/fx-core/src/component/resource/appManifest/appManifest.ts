@@ -35,6 +35,7 @@ import { hasTab } from "../../../common/projectSettingsHelperV3";
 import { globalVars } from "../../../core/globalVars";
 import { getTemplatesFolder } from "../../../folder";
 import {
+  BotScenario,
   CommandAndResponseOptionItem,
   NotificationOptionItem,
 } from "../../../plugins/solution/fx-solution/question";
@@ -52,6 +53,7 @@ import {
   MANIFEST_RESOURCES,
   STATIC_TABS_MAX_ITEMS,
   ErrorMessages,
+  BOTS_TPL_FOR_MULTI_ENV,
 } from "../../../plugins/resource/appstudio/constants";
 import { AppStudioError } from "../../../plugins/resource/appstudio/errors";
 import {
@@ -92,6 +94,7 @@ import isUUID from "validator/lib/isUUID";
 import { AppStudioScopes } from "../../../common/tools";
 import { AppStudioClient } from "../../../plugins/resource/appstudio/appStudio";
 import { AppUser } from "../../../plugins/resource/appstudio/interfaces/appUser";
+import { isBotNotificationEnabled } from "../../../common/featureFlags";
 
 @Service("app-manifest")
 export class AppManifest implements CloudResource {
@@ -165,9 +168,33 @@ export class AppManifest implements CloudResource {
     inputs: InputsWithProjectPath,
     capabilities: v3.ManifestCapability[]
   ): Promise<Result<undefined, FxError>> {
-    const res = await addCapabilities(inputs, capabilities);
-    if (res.isErr()) return err(res.error);
-    return ok(undefined);
+    return addCapabilities(inputs, capabilities);
+  }
+  @hooks([
+    ActionExecutionMW({
+      enableTelemetry: true,
+      telemetryComponentName: "AppStudioPlugin",
+      telemetryEventName: "update-capability",
+    }),
+  ])
+  async updateCapability(
+    projectPath: string,
+    capability: v3.ManifestCapability
+  ): Promise<Result<undefined, FxError>> {
+    return updateCapability(projectPath, capability);
+  }
+  @hooks([
+    ActionExecutionMW({
+      enableTelemetry: true,
+      telemetryComponentName: "AppStudioPlugin",
+      telemetryEventName: "delete-capability",
+    }),
+  ])
+  async deleteCapability(
+    projectPath: string,
+    capability: v3.ManifestCapability
+  ): Promise<Result<undefined, FxError>> {
+    return deleteCapability(projectPath, capability);
   }
   async capabilityExceedLimit(
     inputs: InputsWithProjectPath,
@@ -759,21 +786,34 @@ export async function addCapabilities(
           if (capability.existingApp) {
             appManifest.bots = appManifest.bots.concat(BOTS_TPL_EXISTING_APP);
           } else {
-            if (appManifest.bots === undefined) {
-              appManifest.bots = [];
-            }
-
             // import CoreQuestionNames introduces dependency cycle and breaks the whole program
             // inputs[CoreQuestionNames.Features]
-            const feature = inputs.features;
-            if (feature === CommandAndResponseOptionItem.id) {
-              // command and response bot
-              appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3);
-            } else if (feature === NotificationOptionItem.id) {
-              // notification
-              appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_NOTIFICATION_V3);
+            if (inputs.features) {
+              const feature = inputs.features;
+              if (feature === CommandAndResponseOptionItem.id) {
+                // command and response bot
+                appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3);
+              } else if (feature === NotificationOptionItem.id) {
+                // notification
+                appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_NOTIFICATION_V3);
+              } else {
+                // legacy bot
+                appManifest.bots = appManifest.bots.concat(BOTS_TPL_V3);
+              }
+            } else if (inputs.scenarios) {
+              const scenariosRaw = inputs.scenarios;
+              const scenarios = Array.isArray(scenariosRaw) ? scenariosRaw : [];
+              if (scenarios.includes(BotScenario.CommandAndResponseBot)) {
+                // command and response bot
+                appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3);
+              } else if (scenarios.includes(BotScenario.NotificationBot)) {
+                // notification
+                appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_NOTIFICATION_V3);
+              } else {
+                // legacy bot
+                appManifest.bots = appManifest.bots.concat(BOTS_TPL_V3);
+              }
             } else {
-              // legacy bot
               appManifest.bots = appManifest.bots.concat(BOTS_TPL_V3);
             }
           }
@@ -814,7 +854,7 @@ export async function addCapabilities(
 export async function updateCapability(
   projectPath: string,
   capability: v3.ManifestCapability
-): Promise<Result<any, FxError>> {
+): Promise<Result<undefined, FxError>> {
   const appManifestRes = await readAppManifest(projectPath);
   if (appManifestRes.isErr()) return err(appManifestRes.error);
   const manifest = appManifestRes.value;
@@ -882,7 +922,7 @@ export async function updateCapability(
 export async function deleteCapability(
   projectPath: string,
   capability: v3.ManifestCapability
-): Promise<Result<any, FxError>> {
+): Promise<Result<undefined, FxError>> {
   const appManifestRes = await readAppManifest(projectPath);
   if (appManifestRes.isErr()) return err(appManifestRes.error);
   const manifest = appManifestRes.value;

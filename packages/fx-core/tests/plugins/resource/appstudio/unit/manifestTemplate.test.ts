@@ -6,7 +6,15 @@ import sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
 import path from "path";
 import * as uuid from "uuid";
-import { v2, Platform, IStaticTab, IConfigurableTab, IBot } from "@microsoft/teamsfx-api";
+import {
+  v2,
+  Platform,
+  IStaticTab,
+  IConfigurableTab,
+  IBot,
+  TeamsAppManifest,
+  ok,
+} from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Container } from "typedi";
 import { LocalCrypto } from "../../../../../src/core/crypto";
@@ -17,7 +25,10 @@ import {
 } from "../helper";
 import { MockedLogProvider, MockedTelemetryReporter } from "../../../solution/util";
 import { AppStudioError } from "../../../../../src/plugins/resource/appstudio/errors";
-import { STATIC_TABS_TPL_FOR_MULTI_ENV } from "../../../../../src/plugins/resource/appstudio/constants";
+import {
+  STATIC_TABS_TPL_FOR_MULTI_ENV,
+  TEAMS_APP_MANIFEST_TEMPLATE_V3,
+} from "../../../../../src/plugins/resource/appstudio/constants";
 import {
   AzureSolutionQuestionNames,
   BotScenario,
@@ -34,13 +45,16 @@ import {
   deleteCapability,
   updateCapability,
 } from "../../../../../src/component/resource/appManifest/appManifest";
+import * as ManifestUtil from "../../../../../src/component/resource/appManifest/utils";
+import { setTools } from "../../../../../src/core/globalVars";
+import { MockTools } from "../../../../core/utils";
 
 describe("Load and Save manifest template", () => {
   const sandbox = sinon.createSandbox();
   let plugin: AppManifest;
   let ctx: v2.Context;
   let inputs: v2.InputsWithProjectPath;
-
+  setTools(new MockTools());
   beforeEach(async () => {
     plugin = Container.get<AppManifest>(ComponentNames.AppManifest);
     inputs = {
@@ -72,6 +86,7 @@ describe("Add capability", () => {
   let ctx: v2.Context;
   let inputs: v2.InputsWithProjectPath;
   let inputsWithStaticTabs: v2.InputsWithProjectPath;
+  let manifest: TeamsAppManifest;
 
   beforeEach(async () => {
     plugin = Container.get<AppManifest>(ComponentNames.AppManifest);
@@ -97,6 +112,9 @@ describe("Add capability", () => {
       platform: Platform.VSCode,
       projectPath: getAzureProjectRootWithStaticTabs(),
     };
+    manifest = JSON.parse(TEAMS_APP_MANIFEST_TEMPLATE_V3) as TeamsAppManifest;
+    sandbox.stub(ManifestUtil, "readAppManifest").resolves(ok(manifest));
+    sandbox.stub(ManifestUtil, "writeAppManifest").resolves(ok(undefined));
   });
 
   afterEach(async () => {
@@ -112,6 +130,7 @@ describe("Add capability", () => {
   });
 
   it("Check capability exceed limit: should return true", async () => {
+    manifest.configurableTabs?.push({ configurationUrl: "http://test.com", scopes: ["groupchat"] });
     const result = await plugin.capabilityExceedLimit(inputs, "configurableTab");
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
@@ -120,103 +139,36 @@ describe("Add capability", () => {
   });
 
   it("Add static tab capability", async () => {
-    const fileContent: Map<string, any> = new Map();
-    sandbox.stub(fs, "writeFile").callsFake(async (filePath: number | PathLike, data: any) => {
-      fileContent.set(path.normalize(filePath.toString()), data);
-    });
-
-    sandbox.stub(fs, "readJson").callsFake(async (filePath: string) => {
-      const content = fileContent.get(path.normalize(filePath));
-      if (content) {
-        return JSON.parse(content);
-      } else {
-        return await fs.readJSON(path.normalize(filePath));
-      }
-    });
-
     const capabilities = [{ name: "staticTab" as const }];
     const addCapabilityResult = await plugin.addCapability(inputsWithStaticTabs, capabilities);
     chai.assert.isTrue(addCapabilityResult.isOk());
 
     // The index should not be modified after add capability
     chai.assert.equal(STATIC_TABS_TPL_FOR_MULTI_ENV[0].entityId, "index");
-
-    const loadedManifestTemplate = await readAppManifest(inputsWithStaticTabs.projectPath);
-    chai.assert.isTrue(loadedManifestTemplate.isOk());
-
-    if (loadedManifestTemplate.isOk()) {
-      chai.assert.equal(loadedManifestTemplate.value.staticTabs!.length, 2);
-
-      chai.assert.equal(loadedManifestTemplate.value.staticTabs![1].entityId, "index1");
-    }
+    chai.assert.equal(manifest.staticTabs!.length, 1);
+    chai.assert.equal(manifest.staticTabs![0].entityId, "index0");
   });
 
   it("Add notification bot capability", async () => {
-    sandbox.stub(process, "env").value({
-      BOT_NOTIFICATION_ENABLED: "true",
-    });
-    const fileContent: Map<string, any> = new Map();
-    sandbox.stub(fs, "writeFile").callsFake(async (filePath: number | PathLike, data: any) => {
-      fileContent.set(path.normalize(filePath.toString()), data);
-    });
-
-    sandbox.stub(fs, "readJson").callsFake(async (filePath: string) => {
-      const content = fileContent.get(path.normalize(filePath));
-      if (content) {
-        return JSON.parse(content);
-      } else {
-        return await fs.readJSON(path.normalize(filePath));
-      }
-    });
-
     const capabilities = [{ name: "Bot" as const }];
     inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.NotificationBot];
     inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [AppServiceOptionItem.id];
     const addCapabilityResult = await plugin.addCapability(inputs, capabilities);
     chai.assert.isTrue(addCapabilityResult.isOk());
-
-    const loadedManifestTemplate = await readAppManifest(inputs.projectPath);
-    chai.assert.isTrue(loadedManifestTemplate.isOk());
-
-    if (loadedManifestTemplate.isOk()) {
-      chai.assert.equal(loadedManifestTemplate.value.bots?.length, 2);
-      chai.assert.isUndefined(loadedManifestTemplate.value.bots?.[1].commandLists);
-    }
+    chai.assert.equal(manifest.bots?.length, 1);
+    chai.assert.isUndefined(manifest.bots?.[0].commandLists);
   });
 
   it("Add command and response bot capability", async () => {
     sandbox.stub(process, "env").value({
       BOT_NOTIFICATION_ENABLED: "true",
     });
-    const fileContent: Map<string, any> = new Map();
-    sandbox.stub(fs, "writeFile").callsFake(async (filePath: number | PathLike, data: any) => {
-      fileContent.set(path.normalize(filePath.toString()), data);
-    });
-
-    sandbox.stub(fs, "readJson").callsFake(async (filePath: string) => {
-      const content = fileContent.get(path.normalize(filePath));
-      if (content) {
-        return JSON.parse(content);
-      } else {
-        return await fs.readJSON(path.normalize(filePath));
-      }
-    });
-
     const capabilities = [{ name: "Bot" as const }];
     inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.CommandAndResponseBot];
     const addCapabilityResult = await plugin.addCapability(inputs, capabilities);
     chai.assert.isTrue(addCapabilityResult.isOk());
-
-    const loadedManifestTemplate = await readAppManifest(inputs.projectPath);
-    chai.assert.isTrue(loadedManifestTemplate.isOk());
-
-    if (loadedManifestTemplate.isOk()) {
-      chai.assert.equal(loadedManifestTemplate.value.bots?.length, 2);
-      chai.assert.equal(
-        loadedManifestTemplate.value.bots?.[1].commandLists?.[0].commands?.[0].title,
-        "helloWorld"
-      );
-    }
+    chai.assert.equal(manifest.bots?.length, 1);
+    chai.assert.equal(manifest.bots?.[0].commandLists?.[0].commands?.[0].title, "helloWorld");
   });
 });
 

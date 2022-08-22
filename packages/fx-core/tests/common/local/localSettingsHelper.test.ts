@@ -37,6 +37,10 @@ describe("localSettingsHelper", () => {
         capabilities: ["Tab"],
         activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
       },
+      components: [
+        { name: "teams-tab", sso: true },
+        { name: "aad-app", provision: true },
+      ],
     };
     const localSettings0 = {
       teamsApp: {
@@ -97,6 +101,7 @@ describe("localSettingsHelper", () => {
 
       const projectSettingsAll = cloneDeep(projectSettings0);
       projectSettingsAll.solutionSettings.activeResourcePlugins.push("fx-resource-simple-auth");
+      projectSettingsAll.components.push({ name: "simple-auth", provision: true });
       const localEnvs = await convertToLocalEnvs(projectPath, projectSettingsAll, localSettings0);
 
       chai.assert.isDefined(localEnvs);

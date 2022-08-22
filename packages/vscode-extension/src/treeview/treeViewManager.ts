@@ -138,6 +138,13 @@ class TreeViewManager {
         { name: "new-folder", custom: false }
       ),
       new TreeViewCommand(
+        localize("teamstoolkit.commandsTreeViewProvider.previewTitle"),
+        localize("teamstoolkit.commandsTreeViewProvider.previewDescription"),
+        "fx-extension.selectAndDebug",
+        undefined,
+        { name: "debug-alt", custom: false }
+      ),
+      new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.samplesTitleNew"),
         localize("teamstoolkit.commandsTreeViewProvider.samplesDescription"),
         "fx-extension.openSamples",

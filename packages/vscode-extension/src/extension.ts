@@ -839,6 +839,13 @@ async function runBackgroundAsyncTasks(
       TreatmentVariables.OpenFolderInNewWindow,
       true
     )) as boolean | undefined;
+  TreatmentVariableValue.previewTreeViewCommand = (await exp
+    .getExpService()
+    .getTreatmentVariableAsync(
+      TreatmentVariables.VSCodeConfig,
+      TreatmentVariables.PreviewTreeViewCommand,
+      true
+    )) as boolean | undefined;
   if (!TreatmentVariableValue.isEmbeddedSurvey) {
     const survey = ExtensionSurvey.getInstance();
     survey.activate();

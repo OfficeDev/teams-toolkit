@@ -4,6 +4,7 @@ export class TreatmentVariables {
   public static readonly CustomizeTreeview = "customizetreeview";
   public static readonly UseFolderSelection = "usefolderselection";
   public static readonly OpenFolderInNewWindow = "openfolderinnewwindow";
+  public static readonly PreviewTreeViewCommand = "previewtreeviewcommand";
 }
 
 export class TreatmentVariableValue {
@@ -12,4 +13,6 @@ export class TreatmentVariableValue {
   public static useFolderSelection: boolean | undefined = undefined;
   // If this is true, users can choose to open in current window or new window(default) after creating a new project.
   public static openFolderInNewWindow: boolean | undefined = undefined;
+  // If this is true, users will see a new Tree View command to preview the Teams app.
+  public static previewTreeViewCommand: boolean | undefined = undefined;
 }

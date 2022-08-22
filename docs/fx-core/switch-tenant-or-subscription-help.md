@@ -104,14 +104,14 @@ By default, the browser is launched with a separate user profile in a temp folde
 
     You could also specify the path of user data folder for each account, and edit the value of "user-data-dir" in runtimeArgs whenever you switch account for previewing.
 
-  * Similarly, for a Teams project launched in Visual Studio, you could edit browser settings in Visual Studio, you could create a new browser configuration.    
-    1. Open the dropdown and select "Browser with".
-    2. Select "Ädd" to add a new profile
-    3. Find the path of the program, type `-user-data-dir=C:\\Users\\{username}\\temp\\edge\\tenantb` in the field of "Arguments", and give it a friendly name.
-    4. Select the newly added broswer configuration and then Visual Studio will launch browser with the selected configuration.
-
+  * Similarly, when running local debug of a Teams project launched in Visual Studio, you could create a new browser configuration after switching to another M365 tenant by following steps mentioned in [Add Browser Configuration in Visual Studio](#add-Bbowser-configuration-in-visual-studio). Type `--user-data-dir=C:\\Users\\{username}\\temp\\edge\\tenantb` as the argument when adding the program. And then choose the corresponding browser configuration before local debugging.    
+  
+     If you want to preview a Teams app in Visual Studio after switching M365 tenant, you could copy the preview URL shown in the output pane and then run your browser with arguments using command line. For example, you could start Edge with `msedge.exe --user-data-dir="C:\\Users\\{username}\\temp\\edge\\tenantb"`. Once the browser is launched, paste the preview URL.
+ 
 * Launch browser in incognito mode    
-This may not work for you if your org enables condition access. runtimeArgs are the arguments passed to the runtime executable. You could edit the launch configuration by adding `"runtimeArgs": ["--inprivate"]` (for Edge) or `"runtimeArgs": ["--incognito"]` (for Chrome) to launch the browser in incognito mode. For example, you could replace 
+  This may not work for you if your org enables condition access. 
+  * Visual Studio Code     
+  runtimeArgs are the arguments passed to the runtime executable. You could edit the launch configuration by adding `"runtimeArgs": ["--inprivate"]` (for Edge) or `"runtimeArgs": ["--incognito"]` (for Chrome) to launch the browser in incognito mode. For example, you could replace 
     ```
     {
        "name": "Attach to Frontend (Edge)",
@@ -139,5 +139,24 @@ This may not work for you if your org enables condition access. runtimeArgs are 
     }
     ```
 
-  to always start Edge in InPrivate browsing mode when local debugging.
+    to always start Edge in InPrivate browsing mode when local debugging.
+
+  * Visual Studio     
+    Similarly, for a Teams project launched in Visual Studio, you could create a new browser configuration by following steps mentioned in [Add Browser Configuration in Visual Studio](#add-Bbowser-configuration-in-visual-studio). For arguments when adding the program, type `--inPrivate` (Edge) or `--incognito` (Chrome).
+
+     If you want to preview a Teams app in a remote environment, you could launch the browser in incognito mode and then copy the preview URL shown in the output pane and paste it in the browser.
+    
+    
+
+## Appendix 
+### Add Browser Configuration in Visual Studio
+To create a new browser configuration in Visual Studio, you could
+1. Open the dropdown and select "Browser with".     
+![image](../images/fx-core/preview/vs-open-browser-with.png)
+2. Select "Ädd" to add a new profile   
+![image](../images/fx-core/preview/vs-add-browser-configuration.png)
+3. Find the path of the program, type the arguments you need in the field of "Arguments", and give it a friendly name. For example, we add a new configuration for Edge inPrivate mode as shown in the image below.    
+![image](../images/fx-core/preview/vs-add-browser-program.png)
+4. Select the newly added broswer configuration and then Visual Studio will launch browser with the selected configuration.    
+![image](../images/fx-core/preview/vs-switch-browser-configuration.png)
 

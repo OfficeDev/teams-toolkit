@@ -75,12 +75,14 @@ import { getCustomizedKeys } from "./utils/utils";
 import { TelemetryPropertyKey } from "./utils/telemetry";
 import _ from "lodash";
 import { HelpLinks, ResourcePlugins } from "../../../common/constants";
-import { getCapabilities, getManifestTemplatePath, loadManifest } from "./manifestTemplate";
 import { environmentManager } from "../../../core/environment";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { getProjectTemplatesFolderPath } from "../../../common/utils";
 import { renderTemplate } from "./utils/utils";
 import { PluginBot } from "../../resource/bot/resources/strings";
+import { readAppManifest } from "../../../component/resource/appManifest/utils";
+import { getCapabilities } from "../../../component/resource/appManifest/appManifest";
+import { getManifestTemplatePath } from "./manifestTemplate";
 
 export class AppStudioPluginImpl {
   public commonProperties: { [key: string]: string } = {};
@@ -222,7 +224,7 @@ export class AppStudioPluginImpl {
     const teamsAppId = await this.getTeamsAppId(ctx);
     let manifest: any;
     let manifestString: string;
-    const manifestResult = await loadManifest(ctx.root);
+    const manifestResult = await readAppManifest(ctx.root);
     if (manifestResult.isErr()) {
       return err(manifestResult.error);
     } else {
@@ -948,7 +950,7 @@ export class AppStudioPluginImpl {
 
     // User may manually update id in manifest template file, rather than configuration file
     // The id in manifest template file should override configurations
-    const manifestResult = await loadManifest(ctx.root);
+    const manifestResult = await readAppManifest(ctx.root);
     if (manifestResult.isOk()) {
       teamsAppId = manifestResult.value.id;
     }
@@ -971,7 +973,7 @@ export class AppStudioPluginImpl {
         AppStudioError.NotADirectoryError.message(appDirectory)
       );
     }
-    const manifestResult = await loadManifest(ctx.root);
+    const manifestResult = await readAppManifest(ctx.root);
     if (manifestResult.isErr()) {
       return err(manifestResult.error);
     }
@@ -1138,7 +1140,7 @@ export class AppStudioPluginImpl {
       .get("solution")
       ?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean);
 
-    const manifestResult = await loadManifest(ctx.root);
+    const manifestResult = await readAppManifest(ctx.root);
     if (manifestResult.isErr()) {
       return err(manifestResult.error);
     }
@@ -1303,7 +1305,7 @@ export class AppStudioPluginImpl {
   }
 
   private async getSPFxManifest(ctx: PluginContext): Promise<string> {
-    const manifestResult = await loadManifest(ctx.root);
+    const manifestResult = await readAppManifest(ctx.root);
     if (manifestResult.isErr()) {
       throw manifestResult.error;
     }

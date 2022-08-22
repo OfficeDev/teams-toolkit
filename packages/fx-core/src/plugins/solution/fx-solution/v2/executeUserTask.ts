@@ -95,7 +95,7 @@ import { unzip } from "../../../../common/template-utils/templatesUtils";
 import { InputsWithProjectPath } from "@microsoft/teamsfx-api/build/v2";
 import {
   AppManifest,
-  capabilityExceedLimit,
+  _capabilityExceedLimit,
 } from "../../../../component/resource/appManifest/appManifest";
 import { ComponentNames } from "../../../../component/constants";
 import { readAppManifest } from "../../../../component/resource/appManifest/utils";
@@ -390,18 +390,18 @@ export async function addCapability(
   if (manifestRes.isErr()) return err(manifestRes.error);
   const manifest = manifestRes.value;
 
-  const tabExceedRes = await capabilityExceedLimit(manifest, "staticTab");
+  const tabExceedRes = await _capabilityExceedLimit(manifest, "staticTab");
   if (tabExceedRes.isErr()) {
     return err(tabExceedRes.error);
   }
   const isTabAddable = !tabExceedRes.value;
   const isTabSPFxAddable = !tabExceedRes.value;
-  const botExceedRes = await capabilityExceedLimit(manifest, "Bot");
+  const botExceedRes = await _capabilityExceedLimit(manifest, "Bot");
   if (botExceedRes.isErr()) {
     return err(botExceedRes.error);
   }
   const isBotAddable = !botExceedRes.value;
-  const meExceedRes = await capabilityExceedLimit(manifest, "MessageExtension");
+  const meExceedRes = await _capabilityExceedLimit(manifest, "MessageExtension");
   if (meExceedRes.isErr()) {
     return err(meExceedRes.error);
   }
@@ -553,7 +553,7 @@ export async function addCapability(
   }
   // 4. update manifest
   if (capabilitiesToAddManifest.length > 0) {
-    await appStudioPlugin.addCapabilities(ctx, inputsNew, capabilitiesToAddManifest);
+    await appStudioPlugin.addCapability(inputsNew, capabilitiesToAddManifest);
   }
   if (capabilitiesAnswer.length > 0) {
     const addNames = capabilitiesAnswer.map((c) => `'${c}'`).join(" and ");

@@ -3,11 +3,12 @@
 
 import { err, FxError, ok, Result, v2, v3, Void } from "@microsoft/teamsfx-api";
 import {
-  capabilityExceedLimit,
+  addCapabilities,
+  _capabilityExceedLimit,
   deleteCapability,
   updateCapability,
-} from "../../../plugins/resource/appstudio/manifestTemplate";
-import { addCapabilities } from "./appManifest";
+  capabilityExceedLimit,
+} from "./appManifest";
 
 export class DefaultManifestProvider implements v3.AppManifestProvider {
   async updateCapability(

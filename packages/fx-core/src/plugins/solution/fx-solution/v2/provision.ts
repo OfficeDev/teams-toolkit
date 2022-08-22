@@ -47,7 +47,6 @@ import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
 import { Constants } from "../../../resource/appstudio/constants";
 import { BuiltInFeaturePluginNames } from "../v3/constants";
-import { fillInAzureConfigs, getM365TenantId } from "../v3/provision";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { solutionGlobalVars } from "../v3/solutionGlobalVars";
 import {
@@ -64,6 +63,7 @@ import {
 import { ComponentNames } from "../../../../component/constants";
 import { resetEnvInfoWhenSwitchM365 } from "../../../../component/utils";
 import { TelemetryEvent, TelemetryProperty } from "../../../../common/telemetry";
+import { fillInAzureConfigs, getM365TenantId } from "../../../../component/provision";
 
 function getSubscriptionId(state: Json): string {
   if (state && state[GLOBAL_CONFIG] && state[GLOBAL_CONFIG][SUBSCRIPTION_ID]) {

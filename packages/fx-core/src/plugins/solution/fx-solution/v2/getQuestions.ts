@@ -92,6 +92,7 @@ import { ComponentNames } from "../../../../component/constants";
 import {
   AppManifest,
   capabilityExceedLimit,
+  _capabilityExceedLimit,
 } from "../../../../component/resource/appManifest/appManifest";
 import { readAppManifest } from "../../../../component/resource/appManifest/utils";
 
@@ -649,17 +650,17 @@ export async function getQuestionsForAddCapability(
   const manifestRes = await readAppManifest(inputs.projectPath!);
   if (manifestRes.isErr()) return err(manifestRes.error);
   const manifest = manifestRes.value;
-  const tabExceedRes = await capabilityExceedLimit(manifest, "staticTab");
+  const tabExceedRes = await _capabilityExceedLimit(manifest, "staticTab");
   if (tabExceedRes.isErr()) {
     return err(tabExceedRes.error);
   }
   const isTabAddable = !tabExceedRes.value;
-  const botExceedRes = await capabilityExceedLimit(manifest, "Bot");
+  const botExceedRes = await _capabilityExceedLimit(manifest, "Bot");
   if (botExceedRes.isErr()) {
     return err(botExceedRes.error);
   }
   const isBotAddable = !botExceedRes.value;
-  const meExceedRes = await capabilityExceedLimit(manifest, "MessageExtension");
+  const meExceedRes = await _capabilityExceedLimit(manifest, "MessageExtension");
   if (meExceedRes.isErr()) {
     return err(meExceedRes.error);
   }
@@ -823,12 +824,7 @@ async function getStaticOptionsForAddCapability(
     options.push(MessageExtensionNewUIItem);
     return ok(options);
   }
-  const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-  const tabExceedRes = await appStudioPlugin.capabilityExceedLimit(
-    ctx,
-    inputs as v2.InputsWithProjectPath,
-    "staticTab"
-  );
+  const tabExceedRes = await capabilityExceedLimit(inputs.projectPath!, "staticTab");
   if (tabExceedRes.isErr()) {
     return err(tabExceedRes.error);
   }
@@ -840,11 +836,7 @@ async function getStaticOptionsForAddCapability(
   }
 
   const isTabAddable = !tabExceedRes.value;
-  const botExceedRes = await appStudioPlugin.capabilityExceedLimit(
-    ctx,
-    inputs as v2.InputsWithProjectPath,
-    "Bot"
-  );
+  const botExceedRes = await capabilityExceedLimit(inputs.projectPath!, "Bot");
   if (botExceedRes.isErr()) {
     return err(botExceedRes.error);
   }
@@ -852,11 +844,7 @@ async function getStaticOptionsForAddCapability(
   const hasMe = settings?.capabilities.includes(MessageExtensionItem.id);
   const isScenarioBotAddable = !botExceedRes.value && !hasMe;
   const isDefaultBotAddable = !botExceedRes.value;
-  const meExceedRes = await appStudioPlugin.capabilityExceedLimit(
-    ctx,
-    inputs as v2.InputsWithProjectPath,
-    "MessageExtension"
-  );
+  const meExceedRes = await capabilityExceedLimit(inputs.projectPath!, "MessageExtension");
   if (meExceedRes.isErr()) {
     return err(meExceedRes.error);
   }

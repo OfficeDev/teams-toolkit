@@ -68,7 +68,7 @@ If you have previewed (local or remote) your Teams app in one M365 tenant and th
 once the browser is launched when previewing in the new M365 tenant. If clicking "try again" or waiting for a few seconds to let Teams bring you to the sign in page, you may notice that the page won't be redirected correctly to the page of adding the Teams app. This happens due to the previous account info saved in the browser storage.
 
 #### Mitigation
-* Launch browser with usrData
+* Launch browser with userData
 By default, the browser is launched with a separate user profile in a temp folder. You could override the value of "userDataDir" to "true" and then specify the path of user data folder in runtimeArgs.
   *  Visual Studio Code    
   For example, when you sign in with another M365 account for local debugging, you could replace    
@@ -101,9 +101,9 @@ By default, the browser is launched with a separate user profile in a temp folde
           ]
       }
       ```
-      If you want to switch back to the previous M365 account for local debugging, please remove the lines about userDataDir and runtimeArgs that you just added before start local debugging again.
+      If you want to switch back to the previous M365 tenant for local debugging, please remove the lines about userDataDir and runtimeArgs that you just added before starting local debugging again.
 
-      You could also specify the path of user data folder for each account, and edit the value of "user-data-dir" in runtimeArgs whenever you switch account for previewing.
+      You could also specify the path of user data folder for each tenant, and edit the value of "user-data-dir" in runtimeArgs whenever you switch tenant for preview.
 
   * Visual Studio    
   Similarly, when running local debug of a Teams project launched in Visual Studio, you could create a new browser configuration after switching to another M365 tenant by following steps mentioned in [Add Browser Configuration in Visual Studio](#add-browser-configuration-in-visual-studio). Type `--user-data-dir=C:\\Users\\{username}\\temp\\edge\\tenantb` as the argument when adding the program. And then choose the corresponding browser configuration before local debugging.    

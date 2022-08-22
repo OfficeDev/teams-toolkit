@@ -213,7 +213,7 @@ export async function scaffoldSPFx(
     }
 
     // update readme
-    if (!(await fs.pathExists(`${outputFolderPath}/README.md`))) {
+    if (!isAddSpfx) {
       await fs.copyFile(
         path.resolve(templateFolder, "./solution/README.md"),
         `${outputFolderPath}/README.md`

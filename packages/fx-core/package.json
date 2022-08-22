@@ -40,6 +40,7 @@
     "test:solutionv3": "nyc mocha \"tests/plugins/solutionv3/*.test.ts\"",
     "test:env-checker": "npx mocha \"tests/common/deps-checker/**/*.it.ts\"",
     "test:core:miniapp": "nyc mocha \"tests/core/core.miniapp.test.ts\"",
+    "test:core:env": "nyc mocha \"tests/core/environment.test.ts\"",
     "test:core:other": "nyc mocha \"tests/core/other.test.ts\"",
     "test:component": "nyc mocha \"tests/component/**/*.test.ts\"",
     "test:hosting": "nyc mocha \"tests/common/hosting/**/*.test.ts\"",

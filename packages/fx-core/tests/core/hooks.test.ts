@@ -20,6 +20,7 @@ import {
   Stage,
   Tools,
   UserCancelError,
+  v3,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import fs from "fs-extra";
@@ -359,7 +360,7 @@ describe("Middleware - others", () => {
             projectPath: string,
             cryptoProvider: CryptoProvider,
             maybeEnvName?: string
-          ): Promise<Result<EnvInfo, FxError>> => {
+          ): Promise<Result<v3.EnvInfoV3, FxError>> => {
             const envName = maybeEnvName ?? environmentManager.getDefaultEnvName();
             envLoaded = envName;
 
@@ -370,7 +371,7 @@ describe("Middleware - others", () => {
                 },
               },
             };
-            const envState = new Map<string, any>();
+            const envState = { solution: {} };
             const envInfo = {
               envName: envName,
               config: envConfig,

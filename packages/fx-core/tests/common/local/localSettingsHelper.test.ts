@@ -9,11 +9,21 @@ import { cloneDeep } from "lodash";
 import * as path from "path";
 
 import { convertToLocalEnvs } from "../../../src/common/local/localSettingsHelper";
-
+import mockedEnv, { RestoreFn } from "mocked-env";
 chai.use(chaiAsPromised);
 
 describe("localSettingsHelper", () => {
   describe("convertToLocalEnvs()", () => {
+    let mockedEnvRestore: RestoreFn;
+
+    beforeEach(() => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "false" });
+    });
+
+    afterEach(() => {
+      mockedEnvRestore();
+    });
+
     const projectSettings0 = {
       appName: "unit-test0",
       projectId: "11111111-1111-1111-1111-111111111111",

@@ -4,7 +4,6 @@ import {
   ActionContext,
   CloudResource,
   Colors,
-  ContextV3,
   err,
   FxError,
   Inputs,
@@ -176,7 +175,7 @@ export class AppManifest implements CloudResource {
   ): Promise<Result<boolean, FxError>> {
     const appManifestRes = await readAppManifest(inputs.projectPath);
     if (appManifestRes.isErr()) return err(appManifestRes.error);
-    const res = await capabilityExceedLimit(appManifestRes.value, capability);
+    const res = await _capabilityExceedLimit(appManifestRes.value, capability);
     if (res.isErr()) return err(res.error);
     return ok(res.value);
   }
@@ -706,7 +705,7 @@ export async function addCapabilities(
   if (appManifestRes.isErr()) return err(appManifestRes.error);
   const appManifest = appManifestRes.value;
   for (const capability of capabilities) {
-    const exceedLimit = await capabilityExceedLimit(appManifest, capability.name);
+    const exceedLimit = await _capabilityExceedLimit(appManifest, capability.name);
     if (exceedLimit.isErr()) {
       return err(exceedLimit.error);
     }
@@ -947,8 +946,15 @@ export async function deleteCapability(
   if (writeRes.isErr()) return err(writeRes.error);
   return ok(undefined);
 }
-
 export async function capabilityExceedLimit(
+  projectPath: string,
+  capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension" | "WebApplicationInfo"
+): Promise<Result<boolean, FxError>> {
+  const manifestRes = await readAppManifest(projectPath);
+  if (manifestRes.isErr()) return err(manifestRes.error);
+  return _capabilityExceedLimit(manifestRes.value, capability);
+}
+export async function _capabilityExceedLimit(
   manifest: TeamsAppManifest,
   capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension" | "WebApplicationInfo"
 ): Promise<Result<boolean, FxError>> {
@@ -977,4 +983,30 @@ export async function capabilityExceedLimit(
         )
       );
   }
+}
+
+/**
+ * Only works for manifest.template.json
+ * @param projectRoot
+ * @returns
+ */
+export async function getCapabilities(projectRoot: string): Promise<Result<string[], FxError>> {
+  const manifestRes = await readAppManifest(projectRoot);
+  if (manifestRes.isErr()) {
+    return err(manifestRes.error);
+  }
+  const capabilities: string[] = [];
+  if (manifestRes.value.staticTabs && manifestRes.value.staticTabs!.length > 0) {
+    capabilities.push("staticTab");
+  }
+  if (manifestRes.value.configurableTabs && manifestRes.value.configurableTabs!.length > 0) {
+    capabilities.push("configurableTab");
+  }
+  if (manifestRes.value.bots && manifestRes.value.bots!.length > 0) {
+    capabilities.push("Bot");
+  }
+  if (manifestRes.value.composeExtensions) {
+    capabilities.push("MessageExtension");
+  }
+  return ok(capabilities);
 }

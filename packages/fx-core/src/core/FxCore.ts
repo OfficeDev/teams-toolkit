@@ -54,8 +54,6 @@ import {
 import { TelemetryReporterInstance } from "../common/telemetry";
 import { createV2Context, mapToJson, undefinedName } from "../common/tools";
 import { getTemplatesFolder } from "../folder";
-import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
-import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
 import {
   ApiConnectionOptionItem,
   AzureSolutionQuestionNames,
@@ -148,7 +146,7 @@ import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
 import { addCicdQuestion } from "../component/feature/cicd";
 import { ComponentNames } from "../component/constants";
 import { ApiConnectorImpl } from "../plugins/resource/apiconnector/plugin";
-import { publishQuestion } from "../component/resource/appManifest/appManifest";
+import { AppManifest, publishQuestion } from "../component/resource/appManifest/appManifest";
 import { createEnvWithName } from "../component/envManager";
 import { getTeamsAppManifestPath } from "../component/resource/appManifest/utils";
 import { getProjectTemplatesFolderPath } from "../common/utils";
@@ -470,8 +468,8 @@ export class FxCore implements v3.ICore {
       permissionRequestProvider: TOOLS.permissionRequest,
       projectSetting: projectSettings,
     };
-    const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-    return appStudioV3.registerTeamsApp(
+    const component = Container.get<AppManifest>(ComponentNames.AppManifest);
+    return component.provisionForCLI(
       context,
       inputs as v2.InputsWithProjectPath,
       newEnvInfoV3(),
@@ -1528,10 +1526,10 @@ export class FxCore implements v3.ICore {
     const context = createV2Context(projectSettings);
     ctx.contextV2 = context;
 
-    const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    const appStudioV3 = Container.get(ComponentNames.AppManifest) as AppManifest;
 
     // pre-check before initialize
-    const preCheckResult = await this.preCheck(appStudioV3, projectPath);
+    const preCheckResult = await this.preCheck(projectPath);
     if (preCheckResult.isErr()) {
       return err(preCheckResult.error);
     }
@@ -1540,11 +1538,9 @@ export class FxCore implements v3.ICore {
     const manifestInitRes = await appStudioV3.init(context, inputs as v2.InputsWithProjectPath);
     if (manifestInitRes.isErr()) return err(manifestInitRes.error);
 
-    const manifestAddcapRes = await appStudioV3.addCapabilities(
-      context,
-      inputs as v2.InputsWithProjectPath,
-      [{ name: "staticTab", existingApp: true }]
-    );
+    const manifestAddcapRes = await appStudioV3.addCapability(inputs as v2.InputsWithProjectPath, [
+      { name: "staticTab", existingApp: true },
+    ]);
     if (manifestAddcapRes.isErr()) return err(manifestAddcapRes.error);
 
     // create env config with existing tab's endpoint
@@ -1576,10 +1572,7 @@ export class FxCore implements v3.ICore {
   }
 
   // pre-check before initialize
-  async preCheck(
-    appStudioV3: AppStudioPluginV3,
-    projectPath: string
-  ): Promise<Result<Void, FxError>> {
+  async preCheck(projectPath: string): Promise<Result<Void, FxError>> {
     const existFiles = new Array<string>();
     // 0. check if projectSettings.json exists
     const settingsFile = path.resolve(
@@ -1593,7 +1586,8 @@ export class FxCore implements v3.ICore {
     }
 
     // 1. check if manifest templates exist
-    const manifestPreCheckResult = await appStudioV3.preCheck(projectPath);
+    const appManifestComponent = Container.get(ComponentNames.AppManifest) as any;
+    const manifestPreCheckResult = await appManifestComponent.preCheck(projectPath);
     existFiles.push(...manifestPreCheckResult);
 
     // 2. check if env config file exists

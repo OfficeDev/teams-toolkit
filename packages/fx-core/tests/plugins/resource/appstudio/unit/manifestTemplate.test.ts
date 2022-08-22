@@ -10,7 +10,6 @@ import * as uuid from "uuid";
 import { v2, Platform, IStaticTab, IConfigurableTab, IBot } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Container } from "typedi";
-import { AppStudioPluginV3 } from "./../../../../../src/plugins/resource/appstudio/v3";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import {
   getAzureProjectRoot,
@@ -18,7 +17,6 @@ import {
   MockUserInteraction,
 } from "../helper";
 import { MockedLogProvider, MockedTelemetryReporter } from "../../../solution/util";
-import { BuiltInFeaturePluginNames } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
 import { AppStudioError } from "../../../../../src/plugins/resource/appstudio/errors";
 import { STATIC_TABS_TPL_FOR_MULTI_ENV } from "../../../../../src/plugins/resource/appstudio/constants";
 import {
@@ -28,18 +26,24 @@ import {
 import { QuestionNames } from "../../../../../src/plugins/resource/bot/constants";
 import { AppServiceOptionItem } from "../../../../../src/plugins/resource/bot/question";
 import {
-  loadManifest,
-  saveManifest,
-} from "../../../../../src/plugins/resource/appstudio/manifestTemplate";
+  readAppManifest,
+  writeAppManifest,
+} from "../../../../../src/component/resource/appManifest/utils";
+import { ComponentNames } from "../../../../../src/component/constants";
+import {
+  AppManifest,
+  deleteCapability,
+  updateCapability,
+} from "../../../../../src/component/resource/appManifest/appManifest";
 
 describe("Load and Save manifest template", () => {
   const sandbox = sinon.createSandbox();
-  let plugin: AppStudioPluginV3;
+  let plugin: AppManifest;
   let ctx: v2.Context;
   let inputs: v2.InputsWithProjectPath;
 
   beforeEach(async () => {
-    plugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    plugin = Container.get<AppManifest>(ComponentNames.AppManifest);
     inputs = {
       platform: Platform.VSCode,
       projectPath: getAzureProjectRoot(),
@@ -51,12 +55,12 @@ describe("Load and Save manifest template", () => {
   });
 
   it("Load and Save manifest template file", async () => {
-    const loadedManifestTemplate = await loadManifest(inputs.projectPath);
+    const loadedManifestTemplate = await readAppManifest(inputs.projectPath);
     chai.assert.isTrue(loadedManifestTemplate.isOk());
     if (loadedManifestTemplate.isOk()) {
-      const saveManifestResult = await saveManifest(
-        inputs.projectPath,
-        loadedManifestTemplate.value
+      const saveManifestResult = await writeAppManifest(
+        loadedManifestTemplate.value,
+        inputs.projectPath
       );
       chai.assert.isTrue(saveManifestResult.isOk());
     }
@@ -65,13 +69,13 @@ describe("Load and Save manifest template", () => {
 
 describe("Add capability", () => {
   const sandbox = sinon.createSandbox();
-  let plugin: AppStudioPluginV3;
+  let plugin: AppManifest;
   let ctx: v2.Context;
   let inputs: v2.InputsWithProjectPath;
   let inputsWithStaticTabs: v2.InputsWithProjectPath;
 
   beforeEach(async () => {
-    plugin = new AppStudioPluginV3();
+    plugin = Container.get<AppManifest>(ComponentNames.AppManifest);
     ctx = {
       cryptoProvider: new LocalCrypto(""),
       userInteraction: new MockUserInteraction(),
@@ -101,7 +105,7 @@ describe("Add capability", () => {
   });
 
   it("Check capability exceed limit: should return false", async () => {
-    const result = await plugin.capabilityExceedLimit(ctx, inputs, "staticTab");
+    const result = await plugin.capabilityExceedLimit(inputs, "staticTab");
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
       chai.assert.isFalse(result.value);
@@ -109,7 +113,7 @@ describe("Add capability", () => {
   });
 
   it("Check capability exceed limit: should return true", async () => {
-    const result = await plugin.capabilityExceedLimit(ctx, inputs, "configurableTab");
+    const result = await plugin.capabilityExceedLimit(inputs, "configurableTab");
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
       chai.assert.isTrue(result.value);
@@ -132,17 +136,13 @@ describe("Add capability", () => {
     });
 
     const capabilities = [{ name: "staticTab" as const }];
-    const addCapabilityResult = await plugin.addCapabilities(
-      ctx,
-      inputsWithStaticTabs,
-      capabilities
-    );
+    const addCapabilityResult = await plugin.addCapability(inputsWithStaticTabs, capabilities);
     chai.assert.isTrue(addCapabilityResult.isOk());
 
     // The index should not be modified after add capability
     chai.assert.equal(STATIC_TABS_TPL_FOR_MULTI_ENV[0].entityId, "index");
 
-    const loadedManifestTemplate = await loadManifest(inputsWithStaticTabs.projectPath);
+    const loadedManifestTemplate = await readAppManifest(inputsWithStaticTabs.projectPath);
     chai.assert.isTrue(loadedManifestTemplate.isOk());
 
     if (loadedManifestTemplate.isOk()) {
@@ -173,10 +173,10 @@ describe("Add capability", () => {
     const capabilities = [{ name: "Bot" as const }];
     inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.NotificationBot];
     inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [AppServiceOptionItem.id];
-    const addCapabilityResult = await plugin.addCapabilities(ctx, inputs, capabilities);
+    const addCapabilityResult = await plugin.addCapability(inputs, capabilities);
     chai.assert.isTrue(addCapabilityResult.isOk());
 
-    const loadedManifestTemplate = await loadManifest(inputs.projectPath);
+    const loadedManifestTemplate = await readAppManifest(inputs.projectPath);
     chai.assert.isTrue(loadedManifestTemplate.isOk());
 
     if (loadedManifestTemplate.isOk()) {
@@ -205,10 +205,10 @@ describe("Add capability", () => {
 
     const capabilities = [{ name: "Bot" as const }];
     inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.CommandAndResponseBot];
-    const addCapabilityResult = await plugin.addCapabilities(ctx, inputs, capabilities);
+    const addCapabilityResult = await plugin.addCapability(inputs, capabilities);
     chai.assert.isTrue(addCapabilityResult.isOk());
 
-    const loadedManifestTemplate = await loadManifest(inputs.projectPath);
+    const loadedManifestTemplate = await readAppManifest(inputs.projectPath);
     chai.assert.isTrue(loadedManifestTemplate.isOk());
 
     if (loadedManifestTemplate.isOk()) {
@@ -223,13 +223,11 @@ describe("Add capability", () => {
 
 describe("Update capability", () => {
   const sandbox = sinon.createSandbox();
-  let plugin: AppStudioPluginV3;
   let ctx: v2.Context;
   let inputs: v2.InputsWithProjectPath;
   let inputsWithStaticTabs: v2.InputsWithProjectPath;
 
   beforeEach(async () => {
-    plugin = new AppStudioPluginV3();
     ctx = {
       cryptoProvider: new LocalCrypto(""),
       userInteraction: new MockUserInteraction(),
@@ -240,7 +238,7 @@ describe("Update capability", () => {
         projectId: "",
         solutionSettings: {
           name: "",
-          activeResourcePlugins: [plugin.name],
+          activeResourcePlugins: [],
         },
       },
     };
@@ -265,7 +263,7 @@ describe("Update capability", () => {
       entityId: "index",
       scopes: ["personal", "team"],
     };
-    const result = await plugin.updateCapability(ctx, inputsWithStaticTabs, {
+    const result = await updateCapability(inputsWithStaticTabs.projectPath, {
       name: "staticTab",
       snippet: tab,
     });
@@ -277,7 +275,7 @@ describe("Update capability", () => {
       entityId: "index2",
       scopes: ["personal", "team"],
     };
-    const result = await plugin.updateCapability(ctx, inputs, {
+    const result = await updateCapability(inputs.projectPath, {
       name: "staticTab",
       snippet: tab,
     });
@@ -292,7 +290,7 @@ describe("Update capability", () => {
       configurationUrl: "endpoint",
       scopes: ["team", "groupchat"],
     };
-    const result = await plugin.updateCapability(ctx, inputs, {
+    const result = await updateCapability(inputs, {
       name: "configurableTab",
       snippet: tab,
     });
@@ -304,7 +302,7 @@ describe("Update capability", () => {
       botId: uuid.v4(),
       scopes: ["team", "groupchat"],
     };
-    const result = await plugin.updateCapability(ctx, inputsWithStaticTabs, {
+    const result = await updateCapability(inputsWithStaticTabs, {
       name: "Bot",
       snippet: bot,
     });
@@ -317,13 +315,11 @@ describe("Update capability", () => {
 
 describe("Delete capability", () => {
   const sandbox = sinon.createSandbox();
-  let plugin: AppStudioPluginV3;
   let ctx: v2.Context;
   let inputs: v2.InputsWithProjectPath;
   let inputsWithStaticTabs: v2.InputsWithProjectPath;
 
   beforeEach(async () => {
-    plugin = new AppStudioPluginV3();
     ctx = {
       cryptoProvider: new LocalCrypto(""),
       userInteraction: new MockUserInteraction(),
@@ -334,7 +330,7 @@ describe("Delete capability", () => {
         projectId: "",
         solutionSettings: {
           name: "",
-          activeResourcePlugins: [plugin.name],
+          activeResourcePlugins: [],
         },
       },
     };
@@ -359,7 +355,7 @@ describe("Delete capability", () => {
       entityId: "index",
       scopes: ["personal", "team"],
     };
-    const result = await plugin.deleteCapability(ctx, inputsWithStaticTabs, {
+    const result = await deleteCapability(inputsWithStaticTabs.projectPath, {
       name: "staticTab",
       snippet: tab,
     });

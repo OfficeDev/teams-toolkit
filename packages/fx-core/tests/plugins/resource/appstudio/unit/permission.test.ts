@@ -39,6 +39,8 @@ import * as uuid from "uuid";
 import Container from "typedi";
 import { AadAppForTeamsPluginV3 } from "../../../../../src/plugins/resource/aad/v3";
 import { AppStudioPluginV3 } from "../../../../../src/plugins/resource/appstudio/v3";
+import { AppManifest } from "../../../../../src/component/resource/appManifest/appManifest";
+import { ComponentNames } from "../../../../../src/component/constants";
 
 const userList: AppUser = {
   tenantId: faker.datatype.uuid(),
@@ -119,11 +121,11 @@ describe("Remote Collaboration", () => {
       envName: "dev",
       state: {
         solution: { provisionSucceeded: true },
-        [BuiltInFeaturePluginNames.appStudio]: { teamsAppId: appId },
+        [ComponentNames.AppManifest]: { teamsAppId: appId },
       },
       config: {},
     };
-    const plugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    const plugin = Container.get<AppManifest>(ComponentNames.AppManifest);
     sandbox.stub(tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("anything"));
     sandbox.stub(AppStudioClient, "checkPermission").resolves("Administrator");
     const inputs: v2.InputsWithProjectPath = {
@@ -183,11 +185,11 @@ describe("Remote Collaboration", () => {
       envName: "dev",
       state: {
         solution: { provisionSucceeded: true },
-        [BuiltInFeaturePluginNames.appStudio]: { teamsAppId: appId },
+        [ComponentNames.AppManifest]: { teamsAppId: appId },
       },
       config: {},
     };
-    const plugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    const plugin = Container.get<AppManifest>(ComponentNames.AppManifest);
     sandbox.stub(ctx.m365TokenProvider!, "getAccessToken").resolves(ok("anything"));
     sandbox.stub(AppStudioClient, "grantPermission").resolves();
     const inputs: v2.InputsWithProjectPath = {
@@ -255,11 +257,11 @@ describe("Remote Collaboration", () => {
       envName: "dev",
       state: {
         solution: { provisionSucceeded: true },
-        [BuiltInFeaturePluginNames.appStudio]: { teamsAppId: appId },
+        [ComponentNames.AppManifest]: { teamsAppId: appId },
       },
       config: {},
     };
-    const plugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    const plugin = Container.get<AppManifest>(ComponentNames.AppManifest);
     sandbox.stub(ctx.m365TokenProvider!, "getAccessToken").resolves(ok("anything"));
     sandbox.stub(AppStudioClient, "getUserList").resolves([
       {

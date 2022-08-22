@@ -221,13 +221,13 @@ describe("AAD resource plugin V3", () => {
       config: envConfig,
       state: {
         solution: {},
-        [BuiltInFeaturePluginNames.aad]: {
+        [ComponentNames.AadApp]: {
           objectId: "mockObjectId",
           clientSecret: "mockClientSecret",
         },
       },
     };
-    const aadResource = envInfo.state[BuiltInFeaturePluginNames.aad] as v3.AADApp;
+    const aadResource = envInfo.state[ComponentNames.AadApp] as v3.AADApp;
     const config = new ProvisionConfig(false);
     const projectSettings = newProjectSettings();
     projectSettings.appName = randomAppName();
@@ -335,16 +335,16 @@ describe("AAD resource plugin V3", () => {
       config: envConfig,
       state: {
         solution: {},
-        [BuiltInFeaturePluginNames.aad]: {
+        [ComponentNames.AadApp]: {
           objectId: "mockObjectId",
           clientId: "mockClientId",
           clientSecret: "mockClientSecret",
           oauth2PermissionScopeId: "mockOauth2PermissionScopeId",
         },
-        [BuiltInFeaturePluginNames.frontend]: {
+        [ComponentNames.TeamsTab]: {
           domain: "mydomain.com",
         },
-        [BuiltInFeaturePluginNames.bot]: {
+        [ComponentNames.TeamsBot]: {
           botId: uuid.v4(),
         },
       },
@@ -357,13 +357,14 @@ describe("AAD resource plugin V3", () => {
       capabilities: ["Tab", "Bot"],
       azureResources: [],
       activeResourcePlugins: [BuiltInFeaturePluginNames.frontend, BuiltInFeaturePluginNames.bot],
+      components: [{ name: "teams-tab" }, { name: "aad-app" }, { name: "teams-bot" }],
     };
     const ctx = createV2Context(projectSettings);
     const config = new SetApplicationInContextConfig(false);
     config.restoreConfigFromEnvInfo(ctx, envInfo);
-    assert.equal(envInfo.state[BuiltInFeaturePluginNames.bot].botId, config.botId);
-    assert.equal(envInfo.state[BuiltInFeaturePluginNames.aad].clientId, config.clientId);
-    assert.equal(envInfo.state[BuiltInFeaturePluginNames.frontend].domain, config.frontendDomain);
+    assert.equal(envInfo.state[ComponentNames.TeamsBot].botId, config.botId);
+    assert.equal(envInfo.state[ComponentNames.AadApp].clientId, config.clientId);
+    assert.equal(envInfo.state[ComponentNames.TeamsTab].domain, config.frontendDomain);
   });
   it("SetApplicationInContextConfig - restoreConfigFromEnvInfo - failure", async () => {
     const envConfig: EnvConfig = {
@@ -469,17 +470,17 @@ describe("AAD resource plugin V3", () => {
       config: envConfig,
       state: {
         solution: {},
-        [BuiltInFeaturePluginNames.aad]: {
+        [ComponentNames.AadApp]: {
           objectId: "mockObjectId",
           clientId: "mockClientId",
           clientSecret: "mockClientSecret",
           applicationIdUris: "https://oossyyy.com",
         },
-        [BuiltInFeaturePluginNames.frontend]: {
+        [ComponentNames.TeamsTab]: {
           domain: "mydomain.com",
           endpoint: "https://mydomain.com/tab",
         },
-        [BuiltInFeaturePluginNames.bot]: {
+        [ComponentNames.TeamsBot]: {
           botId: uuid.v4(),
           siteEndpoint: "https://mydomain.com/bot",
         },
@@ -493,17 +494,15 @@ describe("AAD resource plugin V3", () => {
       capabilities: ["Tab", "Bot"],
       azureResources: [],
       activeResourcePlugins: [BuiltInFeaturePluginNames.frontend, BuiltInFeaturePluginNames.bot],
+      components: [{ name: "teams-tab" }, { name: "aad-app" }, { name: "teams-bot" }],
     };
     const ctx = createV2Context(projectSettings);
     const config = new PostProvisionConfig(true);
     config.restoreConfigFromEnvInfo(ctx, envInfo);
-    assert.equal(
-      envInfo.state[BuiltInFeaturePluginNames.frontend].endpoint,
-      config.frontendEndpoint
-    );
-    assert.equal(envInfo.state[BuiltInFeaturePluginNames.bot].siteEndpoint, config.botEndpoint);
-    assert.equal(envInfo.state[BuiltInFeaturePluginNames.aad].objectId, config.objectId);
-    assert.equal(envInfo.state[BuiltInFeaturePluginNames.aad].clientId, config.clientId);
+    assert.equal(envInfo.state[ComponentNames.TeamsTab].endpoint, config.frontendEndpoint);
+    assert.equal(envInfo.state[ComponentNames.TeamsBot].siteEndpoint, config.botEndpoint);
+    assert.equal(envInfo.state[ComponentNames.AadApp].objectId, config.objectId);
+    assert.equal(envInfo.state[ComponentNames.AadApp].clientId, config.clientId);
   });
   it("PostProvisionConfig - restoreConfigFromEnvInfo - failure", async () => {
     const envConfig: EnvConfig = {

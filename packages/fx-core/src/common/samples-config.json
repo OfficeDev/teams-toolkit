@@ -195,6 +195,16 @@
             "time": "10min to run",
             "configuration": "Manual configurations required",
             "suggested": false
+        },
+        {
+            "id": "stocks-update-notification-bot",
+            "title": "Stocks Update",
+            "shortDescription": "Keep up to date with the latest stock price in Microsoft Teams.",
+            "fullDescription": "This sample demonstrates how a Notification Bot can be used to call an external API using API Key authentication, on a pre-defined schedule of every 30 seconds, to obtain the latest stock information and render the results as an Adaptive Card.",
+            "tags": ["Bot", "TS", "Azure function", "API Key"],
+            "time": "5min to run",
+            "configuration": "Ready for local debug",
+            "suggested": false
         }
     ]
 }

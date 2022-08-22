@@ -229,7 +229,7 @@ export enum CardPromptMessageType {
   Info,
 
   /**
-   * Indicates errors occurred when processed the card action.
+   * Indicates invalid request for the adaptive card invoke action.
    */
   Error,
 }

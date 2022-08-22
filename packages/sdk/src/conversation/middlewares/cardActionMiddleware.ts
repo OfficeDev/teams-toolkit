@@ -38,7 +38,14 @@ export class CardActionMiddleware implements Middleware {
 
       for (const handler of this.actionHandlers) {
         if (handler.triggerVerb === actionVerb) {
-          const responseCard = await handler.handleActionInvoked(context, action.data);
+          let responseCard: any;
+          try {
+            responseCard = await handler.handleActionInvoked(context, action.data);
+          } catch (error) {
+            await this.sendInvokeResponse(context, this.defaultCardMessage);
+            throw error;
+          }
+
           if (!responseCard || this.instanceOfCardPromptMessage(responseCard)) {
             // return card prompt message
             await this.sendInvokeResponse(context, responseCard || this.defaultCardMessage);
@@ -79,19 +86,19 @@ export class CardActionMiddleware implements Middleware {
 
   private async sendInvokeResponse(
     context: TurnContext,
-    card: IAdaptiveCard | CardPromptMessage
+    result: IAdaptiveCard | CardPromptMessage
   ): Promise<void> {
-    const response: InvokeResponse = this.createInvokeResponse(card);
+    const response: InvokeResponse = this.createInvokeResponse(result);
     await context.sendActivity({
       type: ActivityTypes.InvokeResponse,
       value: response,
     });
   }
 
-  private createInvokeResponse(card: IAdaptiveCard | CardPromptMessage): InvokeResponse<any> {
+  private createInvokeResponse(result: IAdaptiveCard | CardPromptMessage): InvokeResponse<any> {
     // refer to: https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/universal-action-model#response-format
-    if (this.instanceOfCardPromptMessage(card)) {
-      switch (card.type) {
+    if (this.instanceOfCardPromptMessage(result)) {
+      switch (result.type) {
         case CardPromptMessageType.Error:
           return {
             status: StatusCodes.OK,
@@ -100,7 +107,7 @@ export class CardActionMiddleware implements Middleware {
               type: "application/vnd.microsoft.error",
               value: {
                 code: "BadRequest",
-                message: card.text,
+                message: result.text,
               },
             },
           };
@@ -111,7 +118,7 @@ export class CardActionMiddleware implements Middleware {
             body: {
               statusCode: StatusCodes.OK,
               type: "application/vnd.microsoft.activity.message",
-              value: card.text,
+              value: result.text,
             },
           };
       }
@@ -121,7 +128,7 @@ export class CardActionMiddleware implements Middleware {
         body: {
           statusCode: StatusCodes.OK,
           type: "application/vnd.microsoft.card.adaptive",
-          value: card,
+          value: result,
         },
       };
     }

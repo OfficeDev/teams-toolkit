@@ -16,6 +16,6 @@ export declare enum CardPromptMessageType
 
 |  Member | Value | Description |
 |  --- | --- | --- |
-|  Error | <code>1</code> | Indicates errors occurred when processed the card action. |
+|  Error | <code>1</code> | Indicates invalid request for the adaptive card invoke action. |
 |  Info | <code>0</code> | Indicates the card action is processed successfully. |
 

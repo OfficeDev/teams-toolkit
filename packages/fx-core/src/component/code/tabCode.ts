@@ -208,7 +208,7 @@ export class TabCodeProvider {
     } catch (e) {
       throw new CommandExecutionError(command, tabPath, e);
     }
-    return path.join("bin", "Release", "net6.0", "win-x86", "publish");
+    return path.join("publish");
   }
   private async doReactBuild(
     tabPath: string,

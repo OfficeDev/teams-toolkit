@@ -600,8 +600,7 @@ export class PostProvisionConfig {
     }
   }
   public restoreConfigFromEnvInfo(ctx: v2.Context, envInfo: v3.EnvInfoV3): void {
-    // const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
-    const aadResource = envInfo.state[BuiltInFeaturePluginNames.aad] as v3.AADApp;
+    const aadResource = envInfo.state[aadComponentKey] as v3.AADApp;
     let frontendEndpoint = aadResource?.endpoint;
     if (!frontendEndpoint) {
       frontendEndpoint = envInfo.state[tabComponentKey]?.endpoint;

@@ -68,7 +68,7 @@ If you have previewed (local or remote) your Teams app in one M365 tenant and th
 once the browser is launched when previewing in the new M365 tenant. If clicking "try again" or waiting for a few seconds to let Teams bring you to the sign in page, you may notice that the page won't be redirected correctly to the page of adding the Teams app. This happens due to the previous account info saved in the browser storage.
 
 #### Mitigation
-* Launch browser with userData
+* Launch browser with userData    
 By default, the browser is launched with a separate user profile in a temp folder. You could override the value of "userDataDir" to "true" and then specify the path of user data folder in runtimeArgs.
   *  Visual Studio Code    
   For example, when you sign in with another M365 account for local debugging, you could replace    
@@ -106,7 +106,7 @@ By default, the browser is launched with a separate user profile in a temp folde
       You could also specify the path of user data folder for each tenant, and edit the value of "user-data-dir" in runtimeArgs whenever you switch tenant for preview.
 
   * Visual Studio    
-  Similarly, when running local debug of a Teams project launched in Visual Studio, you could create a new browser configuration after switching to another M365 tenant by following steps mentioned in [Add Browser Configuration in Visual Studio](#add-browser-configuration-in-visual-studio). Type `--user-data-dir=C:\\Users\\{username}\\temp\\edge\\tenantb` as the argument when adding the program. And then choose the corresponding browser configuration before local debugging.    
+  When running local debug of a Teams project launched in Visual Studio, you could create a new browser configuration after switching to another M365 tenant by following steps mentioned in [Add Browser Configuration in Visual Studio](#add-browser-configuration-in-visual-studio). Type `--user-data-dir=C:\\Users\\{username}\\temp\\edge\\tenantb` (replace the path with what it makes sense to you) as the argument when adding the program. And then choose the corresponding browser configuration before local debugging.    
   
      If you want to preview a Teams app in Visual Studio after switching M365 tenant, you could copy the preview URL shown in the output pane and then run your browser with arguments using command line. For example, you could start Edge with `msedge.exe --user-data-dir="C:\\Users\\{username}\\temp\\edge\\tenantb"`. Once the browser is launched, paste the preview URL.
  

@@ -14,7 +14,7 @@ function featureFlagEnabled(flagName: string): boolean {
 }
 
 export function isV3(): boolean {
-  return featureFlagEnabled(FeatureFlagName.APIV3);
+  return true;
 }
 
 export function isVsCallingCli(): boolean {

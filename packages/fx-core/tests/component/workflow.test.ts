@@ -25,7 +25,7 @@ import "../../src/component/feature/sql";
 import "../../src/component/resource/botService";
 import { createContextV3 } from "../../src/component/utils";
 import { deleteFolder, MockTools, randomAppName } from "../core/utils";
-import * as provisionV3 from "../../src/plugins/solution/fx-solution/v3/provision";
+import * as provisionV3 from "../../src/component/provision";
 import * as provisionV2 from "../../src/plugins/solution/fx-solution/v2/provision";
 import { AppStudioClient } from "../../src/plugins/resource/appstudio/appStudio";
 import * as clientFactory from "../../src/plugins/resource/bot/clientFactory";
@@ -63,7 +63,7 @@ import { apiConnectorImpl } from "../../src/component/feature/apiConnector";
 import * as backup from "../../src/plugins/solution/fx-solution/utils/backupFiles";
 import { AadApp } from "../../src/component/resource/aadApp/aadApp";
 import { Constants } from "../../src/plugins/resource/aad/constants";
-import * as deployV3 from "../../src/plugins/solution/fx-solution/v3/deploy";
+import * as deployV3 from "../../src/component/core";
 import { CoreQuestionNames } from "../../src/core/question";
 
 describe("Workflow test for v3", () => {

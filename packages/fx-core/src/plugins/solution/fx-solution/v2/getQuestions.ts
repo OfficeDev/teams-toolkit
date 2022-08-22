@@ -21,7 +21,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import Container from "typedi";
 import { HelpLinks, ResourcePlugins } from "../../../../common/constants";
-import { Constants as AppStudioConstants } from "../../../resource/appstudio/constants";
 import { PluginNames, SolutionError, SolutionSource } from "../constants";
 import {
   ApiConnectionOptionItem,
@@ -34,7 +33,6 @@ import {
   AzureSolutionQuestionNames,
   BotNewUIOptionItem,
   BotOptionItem,
-  BotSsoItem,
   CicdOptionItem,
   CommandAndResponseOptionItem,
   createAddAzureResourceQuestion,
@@ -62,10 +60,9 @@ import {
 import { checkWetherProvisionSucceeded, getSelectedPlugins, isAzureProject } from "./utils";
 import { isV3 } from "../../../../core/globalVars";
 import { TeamsAppSolutionNameV2 } from "./constants";
-import { BuiltInFeaturePluginNames } from "../v3/constants";
 import { canAddCapability, canAddResource } from "./executeUserTask";
 import { NoCapabilityFoundError } from "../../../../core/error";
-import { isExistingTabApp, isVSProject } from "../../../../common/projectSettingsHelper";
+import { isVSProject } from "../../../../common/projectSettingsHelper";
 import {
   canAddApiConnection,
   canAddSso,
@@ -88,9 +85,7 @@ import {
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { Constants } from "../../../resource/aad/constants";
 import { PluginBot } from "../../../resource/bot/resources/strings";
-import { ComponentNames } from "../../../../component/constants";
 import {
-  AppManifest,
   capabilityExceedLimit,
   _capabilityExceedLimit,
 } from "../../../../component/resource/appManifest/appManifest";

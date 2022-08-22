@@ -17,8 +17,8 @@ import * as sinon from "sinon";
 import * as question from "../../src/component/questionV3";
 import { TeamsBot } from "../../src/component/feature/bot";
 import { AzureWebAppResource } from "../../src/component/resource/azureAppService/azureWebApp";
-import * as deployUtil from "../../src/plugins/solution/fx-solution/v3/deploy";
-import * as provisionUtil from "../../src/plugins/solution/fx-solution/v3/provision";
+import * as deployUtil from "../../src/component/core";
+import * as provisionUtil from "../../src/component/provision";
 
 describe("component core test", () => {
   const sandbox = sinon.createSandbox();

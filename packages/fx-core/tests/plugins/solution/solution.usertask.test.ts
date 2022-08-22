@@ -19,8 +19,6 @@ import {
   IBot,
   IConfigurableTab,
   IComposeExtension,
-  Result,
-  FxError,
   AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
@@ -36,7 +34,6 @@ import {
   mockV2PublishThatAlwaysSucceed,
   mockScaffoldCodeThatAlwaysSucceeds,
   MockedAzureAccountProvider,
-  mockExecuteUserTaskThatAlwaysSucceeds,
 } from "./util";
 import _ from "lodash";
 import { ResourcePluginsV2 } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
@@ -69,21 +66,20 @@ import "../../../src/plugins/resource/appstudio/v2";
 import "../../../src/plugins/resource/frontend/v2";
 import "../../../src/plugins/resource/bot/v2";
 import { newEnvInfo } from "../../../src";
-import fs, { ensureDir } from "fs-extra";
+import fs from "fs-extra";
 import { ProgrammingLanguage } from "../../../src/plugins/resource/bot/enums/programmingLanguage";
 import { randomAppName } from "../../core/utils";
-import { createEnv } from "../../../src/plugins/solution/fx-solution/v2/createEnv";
 import { ScaffoldingContextAdapter } from "../../../src/plugins/solution/fx-solution/v2/adaptor";
 import { LocalCrypto } from "../../../src/core/crypto";
-import { appStudioPlugin, botPlugin, fehostPlugin } from "../../constants";
+import { appStudioPlugin, botPlugin } from "../../constants";
 import { BuiltInFeaturePluginNames } from "../../../src/plugins/solution/fx-solution/v3/constants";
-import { AppStudioPluginV3 } from "../../../src/plugins/resource/appstudio/v3";
 import { armV2 } from "../../../src/plugins/solution/fx-solution/arm";
 import { NamedArmResourcePlugin } from "../../../src/common/armInterface";
 import * as featureFlags from "../../../src/common/featureFlags";
 import * as os from "os";
 import * as path from "path";
 import mockedEnv from "mocked-env";
+import * as appManifestUtils from "../../../src/component/resource/appManifest/appManifest";
 const tool = require("../../../src/common/tools");
 
 chai.use(chaiAsPromised);
@@ -282,34 +278,8 @@ describe("V2 implementation", () => {
     const mockedCtx = new MockedV2Context(projectSettings);
     const mockedInputs: Inputs = { platform: Platform.VSCode };
     mockedInputs[AzureSolutionQuestionNames.Capabilities] = [BotOptionItem.id];
-    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-    mocker
-      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
-      .callsFake(
-        async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath,
-          capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
-        ) => {
-          return ok(true);
-        }
-      );
-    mocker
-      .stub<any, any>(appStudioPlugin, "addCapabilities")
-      .callsFake(
-        async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath,
-          capabilities: (
-            | { name: "staticTab"; snippet?: IStaticTab }
-            | { name: "configurableTab"; snippet?: IConfigurableTab }
-            | { name: "Bot"; snippet?: IBot }
-            | { name: "MessageExtension"; snippet?: IComposeExtension }
-          )[]
-        ) => {
-          return ok(undefined);
-        }
-      );
+    mocker.stub<any, any>(appManifestUtils, "capabilityExceedLimit").resolves(ok(true));
+    mocker.stub<any, any>(appManifestUtils, "addCapabilities").resolves(ok(undefined));
     const result = await executeUserTask(
       mockedCtx,
       mockedInputs,
@@ -335,34 +305,8 @@ describe("V2 implementation", () => {
     const mockedCtx = new MockedV2Context(projectSettings);
     const mockedInputs: Inputs = { platform: Platform.VSCode };
     mockedInputs[AzureSolutionQuestionNames.Capabilities] = [BotOptionItem.id];
-    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-    mocker
-      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
-      .callsFake(
-        async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath,
-          capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
-        ) => {
-          return ok(false);
-        }
-      );
-    mocker
-      .stub<any, any>(appStudioPlugin, "addCapabilities")
-      .callsFake(
-        async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath,
-          capabilities: (
-            | { name: "staticTab"; snippet?: IStaticTab }
-            | { name: "configurableTab"; snippet?: IConfigurableTab }
-            | { name: "Bot"; snippet?: IBot }
-            | { name: "MessageExtension"; snippet?: IComposeExtension }
-          )[]
-        ) => {
-          return ok(undefined);
-        }
-      );
+    mocker.stub<any, any>(appManifestUtils, "capabilityExceedLimit").resolves(ok(false));
+    mocker.stub<any, any>(appManifestUtils, "addCapabilities").resolves(ok(undefined));
     const result = await executeUserTask(
       mockedCtx,
       mockedInputs,
@@ -654,9 +598,8 @@ describe("V2 implementation", () => {
 
   it("should return err when adding tab to non sso tab when aad manifest enabled", async () => {
     mocker.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
-    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     mocker
-      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
+      .stub<any, any>(appManifestUtils, "capabilityExceedLimit")
       .callsFake(
         async (
           ctx: v2.Context,
@@ -667,7 +610,7 @@ describe("V2 implementation", () => {
         }
       );
     mocker
-      .stub<any, any>(appStudioPlugin, "addCapabilities")
+      .stub<any, any>(appManifestUtils, "addCapabilities")
       .callsFake(
         async (
           ctx: v2.Context,
@@ -721,9 +664,8 @@ describe("V2 implementation", () => {
 
   it("should return err when adding non sso tab to tab when aad manifest enabled", async () => {
     mocker.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
-    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     mocker
-      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
+      .stub<any, any>(appManifestUtils, "capabilityExceedLimit")
       .callsFake(
         async (
           ctx: v2.Context,
@@ -734,7 +676,7 @@ describe("V2 implementation", () => {
         }
       );
     mocker
-      .stub<any, any>(appStudioPlugin, "addCapabilities")
+      .stub<any, any>(appManifestUtils, "addCapabilities")
       .callsFake(
         async (
           ctx: v2.Context,
@@ -788,9 +730,8 @@ describe("V2 implementation", () => {
 
   it("should success when adding tab to bot when aad manifest enabled", async () => {
     mocker.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
-    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     mocker
-      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
+      .stub<any, any>(appManifestUtils, "capabilityExceedLimit")
       .callsFake(
         async (
           ctx: v2.Context,
@@ -801,7 +742,7 @@ describe("V2 implementation", () => {
         }
       );
     mocker
-      .stub<any, any>(appStudioPlugin, "addCapabilities")
+      .stub<any, any>(appManifestUtils, "addCapabilities")
       .callsFake(
         async (
           ctx: v2.Context,
@@ -855,9 +796,8 @@ describe("V2 implementation", () => {
 
   it("should success when adding non sso tab to bot when aad manifest enabled", async () => {
     mocker.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
-    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     mocker
-      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
+      .stub<any, any>(appManifestUtils, "capabilityExceedLimit")
       .callsFake(
         async (
           ctx: v2.Context,
@@ -868,7 +808,7 @@ describe("V2 implementation", () => {
         }
       );
     mocker
-      .stub<any, any>(appStudioPlugin, "addCapabilities")
+      .stub<any, any>(appManifestUtils, "addCapabilities")
       .callsFake(
         async (
           ctx: v2.Context,
@@ -923,9 +863,8 @@ describe("V2 implementation", () => {
   it("should success when adding non sso tab to bot when aad manifest enabled using addFeature", async () => {
     mocker.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
     mocker.stub<any, any>(featureFlags, "isPreviewFeaturesEnabled").returns(true);
-    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     mocker
-      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
+      .stub<any, any>(appManifestUtils, "capabilityExceedLimit")
       .callsFake(
         async (
           ctx: v2.Context,
@@ -936,7 +875,7 @@ describe("V2 implementation", () => {
         }
       );
     mocker
-      .stub<any, any>(appStudioPlugin, "addCapabilities")
+      .stub<any, any>(appManifestUtils, "addCapabilities")
       .callsFake(
         async (
           ctx: v2.Context,
@@ -1740,7 +1679,7 @@ describe("V2 implementation", () => {
       mocker
         .stub<any, any>(spfxPluginV2, "scaffoldSourceCode")
         .returns(Promise.resolve(ok(undefined)));
-      mocker.stub(AppStudioPluginV3.prototype, "capabilityExceedLimit").resolves(ok(false));
+      mocker.stub(appManifestUtils, "capabilityExceedLimit").resolves(ok(false));
       const projectSettings: ProjectSettings = {
         appName: "my app",
         projectId: uuid.v4(),

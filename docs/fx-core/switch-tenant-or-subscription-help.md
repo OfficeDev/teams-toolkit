@@ -70,41 +70,43 @@ once the browser is launched when previewing in the new M365 tenant. If clicking
 #### Mitigation
 * Launch browser with usrData
 By default, the browser is launched with a separate user profile in a temp folder. You could override the value of "userDataDir" to "true" and then specify the path of user data folder in runtimeArgs.
-  * For example, when you sign in with another M365 account for local debugging, you could replace 
-    ```
-    {
-       "name": "Attach to Frontend (Edge)",
-        "type": "pwa-msedge",
-        "request": "launch",
-        "url": "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
-        "presentation": {
-            "group": "all",
-            "hidden": true
-        }
-    }
-    ```
-    with 
-    ```
-    {
-       "name": "Attach to Frontend (Edge)",
-        "type": "pwa-msedge",
-        "request": "launch",
-        "url": "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
-        "presentation": {
-            "group": "all",
-            "hidden": true
-        },
-        "userDataDir": true, // Enable to use customized user data folder.
-        "runtimeArgs": [
-           "--user-data-dir=C:\\Users\\{username}\\temp\\edge\\tenantb" // Pass the path of user data folder here.
-        ]
-    }
-    ```
-    If you want to switch back to the previous M365 account for local debugging, please remove the lines about userDataDir and runtimeArgs that you just added before start local debugging again.
+  *  Visual Studio Code    
+  For example, when you sign in with another M365 account for local debugging, you could replace    
+      ```
+      {
+        "name": "Attach to Frontend (Edge)",
+          "type": "pwa-msedge",
+          "request": "launch",
+          "url": "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+          "presentation": {
+              "group": "all",
+              "hidden": true
+          }
+      }
+      ```
+      with 
+      ```
+      {
+        "name": "Attach to Frontend (Edge)",
+          "type": "pwa-msedge",
+          "request": "launch",
+          "url": "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+          "presentation": {
+              "group": "all",
+              "hidden": true
+          },
+          "userDataDir": true, // Enable to use customized user data folder.
+          "runtimeArgs": [
+            "--user-data-dir=C:\\Users\\{username}\\temp\\edge\\tenantb" // Pass the path of user data folder here.
+          ]
+      }
+      ```
+      If you want to switch back to the previous M365 account for local debugging, please remove the lines about userDataDir and runtimeArgs that you just added before start local debugging again.
 
-    You could also specify the path of user data folder for each account, and edit the value of "user-data-dir" in runtimeArgs whenever you switch account for previewing.
+      You could also specify the path of user data folder for each account, and edit the value of "user-data-dir" in runtimeArgs whenever you switch account for previewing.
 
-  * Similarly, when running local debug of a Teams project launched in Visual Studio, you could create a new browser configuration after switching to another M365 tenant by following steps mentioned in [Add Browser Configuration in Visual Studio](#add-browser-configuration-in-visual-studio). Type `--user-data-dir=C:\\Users\\{username}\\temp\\edge\\tenantb` as the argument when adding the program. And then choose the corresponding browser configuration before local debugging.    
+  * Visual Studio    
+  Similarly, when running local debug of a Teams project launched in Visual Studio, you could create a new browser configuration after switching to another M365 tenant by following steps mentioned in [Add Browser Configuration in Visual Studio](#add-browser-configuration-in-visual-studio). Type `--user-data-dir=C:\\Users\\{username}\\temp\\edge\\tenantb` as the argument when adding the program. And then choose the corresponding browser configuration before local debugging.    
   
      If you want to preview a Teams app in Visual Studio after switching M365 tenant, you could copy the preview URL shown in the output pane and then run your browser with arguments using command line. For example, you could start Edge with `msedge.exe --user-data-dir="C:\\Users\\{username}\\temp\\edge\\tenantb"`. Once the browser is launched, paste the preview URL.
  

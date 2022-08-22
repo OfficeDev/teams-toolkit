@@ -1,28 +1,28 @@
-This doc is to help you understand what will happen when provisioning in an already-provisioned environment but with different account or Azure subscription or local debugging again with another Microsoft 365(M365) account. We will also explain how to recover from the backups in this doc.
+This doc is to help you understand what will happen when provisioning in an already-provisioned environment but with different account or Azure subscription or local debugging again with another Microsoft 365(Microsoft 365) account. We will also explain how to recover from the backups in this doc.
 
-> Important Notes: After switching accounts and provisioning or local debugging again, resources have been created before in the old M365 tenant or Azure subscription won't be deleted by default, and you have to manully delete them to avoid further costs if any. 
+> Important Notes: After switching accounts and provisioning or local debugging again, resources have been created before in the old Microsoft 365 tenant or Azure subscription won't be deleted by default, and you have to manully delete them to avoid further costs if any. 
 
 ## Switch Microsoft 365 Account
 ### Local Debug
-You could run local debugging for a Teams project with one M365 tenant and then easily switch to another tenant for further local debugging. To do this, you only need to:
-1. Sign out of the current M365 account.
+You could run local debugging for a Teams project with one Microsoft 365 tenant and then easily switch to another tenant for further local debugging. To do this, you only need to:
+1. Sign out of the current Microsoft 365 account.
 2. Sign in to the new account.
 3. Start local debugging.
 
 After that, we will 
 1. Back up configuration files for local environment. [Learn more about backup & recover](#backup--recover).
-2. Create all resources required for the local environment in the new M365 tenant.
-3. `state.local.json` file in .fx/states folder will be overwritten with the information of new resources in the new M365 tenant. If the project requires AAD, `local.userdata` will be overwritten with the new client secret.
+2. Create all resources required for the local environment in the new Microsoft 365 tenant.
+3. `state.local.json` file in .fx/states folder will be overwritten with the information of new resources in the new Microsoft 365 tenant. If the project requires AAD, `local.userdata` will be overwritten with the new client secret.
 
 ### Provision in a Remote Environment
-You could provision resources in a remote environment with one M365 tenant and then re-provision in the same environment but with another M365 tenant. To do this, you only need to:
-1. Sign out of the current M365 account.
+You could provision resources in a remote environment with one Microsoft 365 tenant and then re-provision in the same environment but with another Microsoft 365 tenant. To do this, you only need to:
+1. Sign out of the current Microsoft 365 account.
 2. Sign in to the new account.
 3. Start provision in the selected environment.
 
 After that, we will 
 1. Back up configuration files for the selected environment. [Learn more about backup & recover](#backup--recover).
-2. Create a new Teams app and a new AAD app (if needed) in the new M365 tenant. 
+2. Create a new Teams app and a new AAD app (if needed) in the new Microsoft 365 tenant. 
 3. If the project requires Azure bot service, we will generate a new bot service name and save it as the value of "botServiceName" in `azure.parameters.{env}.json`. We will use this new name to provision a new Azure bot service in the selected resource group and the subscription since it is not allowed to edit the value of Microsoft App ID of an existing Azure bot service. 
 4. If the project requires AAD, `{env}.userdata` will be overwritten with the new client secret.
 
@@ -63,15 +63,15 @@ Note: if you want to recover for a remote environment and you have added new fea
 
 ## Error
 ### Could not be Redirected to the Expected Teams Web Page
-If you have previewed (local or remote) your Teams app in one M365 tenant and then switch to another M365 account, you may encounter error as shown below 
+If you have previewed (local or remote) your Teams app in one Microsoft 365 tenant and then switch to another Microsoft 365 account, you may encounter error as shown below 
 ![image](../images/fx-core/preview/teams-signin-error.png)
-once the browser is launched when previewing in the new M365 tenant. If clicking "try again" or waiting for a few seconds to let Teams bring you to the sign in page, you may notice that the page won't be redirected correctly to the page of adding the Teams app. This happens due to the previous account info saved in the browser storage.
+once the browser is launched when previewing in the new Microsoft 365 tenant. If clicking "try again" or waiting for a few seconds to let Teams bring you to the sign in page, you may notice that the page won't be redirected correctly to the page of adding the Teams app. This happens due to the previous account info saved in the browser storage.
 
 #### Mitigation
 * Launch browser with userData    
 By default, the browser is launched with a separate user profile in a temp folder. You could override the value of "userDataDir" to "true" and then specify the path of user data folder in runtimeArgs.
   *  Visual Studio Code    
-  For example, when you sign in with another M365 account for local debugging, you could replace    
+  For example, when you sign in with another Microsoft 365 account for local debugging, you could replace    
       ```
       {
         "name": "Attach to Frontend (Edge)",
@@ -101,14 +101,14 @@ By default, the browser is launched with a separate user profile in a temp folde
           ]
       }
       ```
-      If you want to switch back to the previous M365 tenant for local debugging, please remove the lines about userDataDir and runtimeArgs that you just added before starting local debugging again.
+      If you want to switch back to the previous Microsoft 365 tenant for local debugging, please remove the lines about userDataDir and runtimeArgs that you just added before starting local debugging again.
 
       You could also specify the path of user data folder for each tenant, and edit the value of "user-data-dir" in runtimeArgs whenever you switch tenant for preview.
 
   * Visual Studio    
-  When running local debug of a Teams project launched in Visual Studio, you could create a new browser configuration after switching to another M365 tenant by following steps mentioned in [Add Browser Configuration in Visual Studio](#add-browser-configuration-in-visual-studio). Type `--user-data-dir=C:\\Users\\{username}\\temp\\edge\\tenantb` (replace the path with what it makes sense to you) as the argument when adding the program. And then choose the corresponding browser configuration before local debugging.    
+  When running local debug of a Teams project launched in Visual Studio, you could create a new browser configuration after switching to another Microsoft 365 tenant by following steps mentioned in [Add Browser Configuration in Visual Studio](#add-browser-configuration-in-visual-studio). Type `--user-data-dir=C:\\Users\\{username}\\temp\\edge\\tenantb` (replace the path with what it makes sense to you) as the argument when adding the program. And then choose the corresponding browser configuration before local debugging.    
   
-     If you want to preview a Teams app in Visual Studio after switching M365 tenant, you could copy the preview URL shown in the output pane and then run your browser with arguments using command line. For example, you could start Edge with `msedge.exe --user-data-dir="C:\\Users\\{username}\\temp\\edge\\tenantb"`. Once the browser is launched, paste the preview URL.
+     If you want to preview a Teams app in Visual Studio after switching Microsoft 365 tenant, you could copy the preview URL shown in the output pane and then run your browser with arguments using command line. For example, you could start Edge with `msedge.exe --user-data-dir="C:\\Users\\{username}\\temp\\edge\\tenantb"`. Once the browser is launched, paste the preview URL.
  
 * Launch browser in incognito mode    
   This may not work for you if your org enables condition access. 

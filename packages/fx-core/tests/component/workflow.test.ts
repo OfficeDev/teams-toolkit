@@ -66,6 +66,7 @@ import { Constants } from "../../src/plugins/resource/aad/constants";
 import * as deployV3 from "../../src/plugins/solution/fx-solution/v3/deploy";
 import { CoreQuestionNames } from "../../src/core/question";
 import { FunctionDeploy } from "../../src/plugins/resource/function/ops/deploy";
+import * as cp from "child_process";
 
 describe("Workflow test for v3", () => {
   const sandbox = sinon.createSandbox();
@@ -1134,7 +1135,7 @@ describe("Workflow test for v3", () => {
   it("api-code.build", async () => {
     const apiCode = Container.get("api-code") as any;
     sandbox.stub(FunctionDeploy, "installFuncExtensions").resolves();
-    sandbox.stub(FunctionDeploy, "build").resolves();
+    sandbox.stub(cp, "exec").resolves();
     sandbox.stub(apiCode, "handleDotnetChecker").resolves();
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,

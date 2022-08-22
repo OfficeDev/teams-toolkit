@@ -68,7 +68,7 @@ export class DeployUtil {
     ctx: v2.Context,
     azureAccountProvider: AzureAccountProvider,
     envInfo: v3.EnvInfoV3
-  ): Promise<Result<Void, FxError>> {
+  ): Promise<Result<undefined, FxError>> {
     return askForDeployConsent(ctx, azureAccountProvider, envInfo);
   }
   async checkDeployAzureSubscription(
@@ -427,7 +427,7 @@ async function askForDeployConsent(
   ctx: v2.Context,
   azureAccountProvider: AzureAccountProvider,
   envInfo: v3.EnvInfoV3
-): Promise<Result<Void, FxError>> {
+): Promise<Result<undefined, FxError>> {
   const azureToken = await azureAccountProvider.getAccountCredentialAsync();
 
   // Only Azure project requires this confirm dialog
@@ -445,7 +445,7 @@ async function askForDeployConsent(
   const choice = result?.isOk() ? result.value : undefined;
 
   if (choice === deployOption) {
-    return ok(Void);
+    return ok(undefined);
   }
   return err(new UserError(SolutionSource, "UserCancel", "UserCancel"));
 }

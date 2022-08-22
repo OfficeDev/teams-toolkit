@@ -18,7 +18,7 @@ import * as question from "../../src/component/questionV3";
 import { TeamsBot } from "../../src/component/feature/bot";
 import { AzureWebAppResource } from "../../src/component/resource/azureAppService/azureWebApp";
 import * as deployUtil from "../../src/component/core";
-import * as provisionUtil from "../../src/component/provision";
+import { deployUtils, provisionUtils } from "../../src/component/provisionUtil";
 
 describe("component core test", () => {
   const sandbox = sinon.createSandbox();
@@ -104,8 +104,8 @@ describe("component core test", () => {
     sandbox.stub(question, "getQuestionsForDeployV3").resolves(ok(undefined));
     sandbox.stub(TeamsBot.prototype, "build").resolves(ok(undefined));
     sandbox.stub(AzureWebAppResource.prototype, "deploy").resolves(ok(undefined));
-    sandbox.stub(deployUtil, "checkDeployAzureSubscription").resolves(ok(Void));
-    sandbox.stub(provisionUtil, "askForDeployConsent").resolves(ok(Void));
+    sandbox.stub(deployUtils, "checkDeployAzureSubscription").resolves(ok(undefined));
+    sandbox.stub(deployUtils, "askForDeployConsent").resolves(ok(undefined));
 
     const fxCore = new TeamsfxCore();
     const res = await fxCore.deploy(context as ResourceContextV3, inputs);

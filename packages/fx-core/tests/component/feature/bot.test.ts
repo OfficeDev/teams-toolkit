@@ -23,7 +23,7 @@ import { setTools } from "../../../src/core/globalVars";
 import { MockTools, randomAppName } from "../../core/utils";
 import "../../../src/component/core";
 import { environmentManager } from "../../../src/core/environment";
-import { ComponentNames } from "../../../src/component/constants";
+import { ComponentNames, ProgrammingLanguage } from "../../../src/component/constants";
 import {
   AzureSolutionQuestionNames,
   NotificationOptionItem,
@@ -31,6 +31,7 @@ import {
 import { QuestionNames } from "../../../src/plugins/resource/bot/constants";
 import { AppServiceOptionItem } from "../../../src/plugins/resource/bot/question";
 import Container from "typedi";
+import child_process from "child_process";
 describe("Bot Feature", () => {
   const sandbox = createSandbox();
   const tools = new MockTools();
@@ -103,5 +104,78 @@ describe("Bot Feature", () => {
     const botService = getComponent(context.projectSetting, ComponentNames.BotService);
     assert.exists(botService);
     assert.isTrue(botService?.provision);
+  });
+  it("bot build ts", async () => {
+    context.projectSetting.programmingLanguage = ProgrammingLanguage.TS;
+    context.projectSetting.components.push({
+      name: ComponentNames.TeamsBot,
+      folder: "bot",
+    });
+    const component = Container.get(ComponentNames.TeamsBot) as any;
+    const execStub = sandbox.stub(child_process, "exec").yields();
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+    };
+    const res = await component.build(context, inputs);
+    assert.isTrue(res.isOk());
+    assert.isTrue(execStub.calledTwice); // Exec `npm install` & `npm run build`
+    assert.equal(execStub.args?.[0]?.[0], "npm install");
+    assert.equal(execStub.args?.[1]?.[0], "npm run build");
+    assert.isTrue(
+      context.projectSetting.components.some(
+        (component) =>
+          component.name === ComponentNames.TeamsBot &&
+          component.artifactFolder === component.folder
+      )
+    );
+  });
+  it("bot build js", async () => {
+    context.projectSetting.programmingLanguage = ProgrammingLanguage.JS;
+    context.projectSetting.components.push({
+      name: ComponentNames.TeamsBot,
+      folder: "bot",
+    });
+    const component = Container.get(ComponentNames.TeamsBot) as any;
+    const execStub = sandbox.stub(child_process, "exec").yields();
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+    };
+    const res = await component.build(context, inputs);
+    assert.isTrue(res.isOk());
+    assert.isTrue(execStub.calledOnce); // Exec `npm install`
+    assert.equal(execStub.args?.[0]?.[0], "npm install");
+    assert.isTrue(
+      context.projectSetting.components.some(
+        (component) =>
+          component.name === ComponentNames.TeamsBot &&
+          component.artifactFolder === component.folder
+      )
+    );
+  });
+  it("bot build csharp", async () => {
+    context.projectSetting.programmingLanguage = ProgrammingLanguage.CSharp;
+    context.projectSetting.components.push({
+      name: ComponentNames.TeamsBot,
+      folder: "bot",
+    });
+    const component = Container.get(ComponentNames.TeamsBot) as any;
+    const execStub = sandbox.stub(child_process, "exec").yields();
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+    };
+    const res = await component.build(context, inputs);
+    assert.isTrue(res.isOk());
+    assert.isTrue(execStub.calledOnce); // Exec `dotnet publish`
+    assert.include(execStub.args?.[0]?.[0], "dotnet publish");
+    assert.isTrue(
+      context.projectSetting.components.some(
+        (component) =>
+          component.name === ComponentNames.TeamsBot &&
+          component.artifactFolder?.includes("publish")
+      )
+    );
   });
 });

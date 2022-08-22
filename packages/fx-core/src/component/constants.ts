@@ -241,3 +241,10 @@ export const BotServiceOutputs = {
     key: "botPassword",
   },
 };
+
+export const FunctionAppSetting = {
+  keys: {
+    allowedAppIds: "ALLOWED_APP_IDS",
+  },
+  allowedAppIdSep: ";",
+};

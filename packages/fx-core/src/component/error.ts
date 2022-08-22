@@ -86,3 +86,20 @@ export class PackDirectoryExistenceError extends UserError {
     super(source, new.target.name, msg0, msg1);
   }
 }
+
+export class ResourceNotFoundError extends SystemError {
+  constructor(source: string, message: string) {
+    super(
+      source,
+      new.target.name,
+      getDefaultString("error.function.FindAppError"),
+      getLocalizedString("error.function.FindAppError")
+    );
+  }
+}
+
+export class FindFunctionAppError extends ResourceNotFoundError {
+  constructor(source: string) {
+    super(source, "error.function.FindAppError");
+  }
+}

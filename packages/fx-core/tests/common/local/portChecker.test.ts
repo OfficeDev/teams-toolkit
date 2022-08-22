@@ -8,9 +8,17 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as sinon from "sinon";
 import proxyquire from "proxyquire";
-
+import mockedEnv, { RestoreFn } from "mocked-env";
 chai.use(chaiAsPromised);
+let mockedEnvRestore: RestoreFn;
 
+beforeEach(() => {
+  mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "false" });
+});
+
+afterEach(() => {
+  mockedEnvRestore();
+});
 describe("portChecker", () => {
   const projectPath = path.resolve(__dirname, "data");
   const projectSettings0 = {

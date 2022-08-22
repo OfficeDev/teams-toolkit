@@ -31,6 +31,7 @@ import {
 } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
 import { deleteFolder, MockTools, randomAppName } from "../../../../core/utils";
 import * as uuid from "uuid";
+import { ComponentNames } from "../../../../../src/component/constants";
 describe("AAD resource plugin V3", () => {
   const sandbox = sinon.createSandbox();
   beforeEach(async () => {
@@ -69,12 +70,12 @@ describe("AAD resource plugin V3", () => {
       config: envConfig,
       state: {
         solution: {},
-        [BuiltInFeaturePluginNames.aad]: {},
+        [ComponentNames.AadApp]: {},
       },
     };
     const skip = await Utils.skipCreateAadForProvision(envInfo);
     assert.isTrue(skip);
-    const aadResource = envInfo.state[BuiltInFeaturePluginNames.aad] as v3.AADApp;
+    const aadResource = envInfo.state[ComponentNames.AadApp] as v3.AADApp;
     assert.isTrue(aadResource.objectId === envConfig.auth?.objectId);
     assert.isTrue(aadResource.clientId === envConfig.auth?.clientId);
     assert.isTrue(aadResource.clientSecret === envConfig.auth?.clientSecret);

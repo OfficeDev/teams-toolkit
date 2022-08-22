@@ -23,10 +23,13 @@ import { setTools } from "../../../src/core/globalVars";
 import { MockTools, randomAppName } from "../../core/utils";
 import "../../../src/component/core";
 import { environmentManager } from "../../../src/core/environment";
-import { ComponentNames } from "../../../src/component/constants";
+import { ComponentNames, ProgrammingLanguage } from "../../../src/component/constants";
 import { FunctionScaffold } from "../../../src/plugins/resource/function/ops/scaffold";
 import { bicepUtils } from "../../../src/component/utils";
 import { Container } from "typedi";
+import { FunctionDeploy } from "../../../src/plugins/resource/function/ops/deploy";
+import child_process from "child_process";
+import { ApiCodeProvider } from "../../../src/component/code/apiCode";
 describe("Api Feature", () => {
   const sandbox = createSandbox();
   const tools = new MockTools();
@@ -121,5 +124,41 @@ describe("Api Feature", () => {
       (component) => component.name === ComponentNames.Function
     );
     assert.equal(azureFunction.length, 1);
+  });
+  it("api build ts", async () => {
+    context.projectSetting.programmingLanguage = ProgrammingLanguage.TS;
+    context.projectSetting.components.push({
+      name: ComponentNames.TeamsApi,
+      folder: "api",
+    });
+    const component = Container.get(ComponentNames.TeamsApi) as any;
+    sandbox.stub(FunctionDeploy, "installFuncExtensions").resolves();
+    const execStub = sandbox.stub(child_process, "exec").yields();
+    sandbox.stub(ApiCodeProvider.prototype, <any>"handleDotnetChecker").resolves();
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+    };
+    const res = await component.build(context, inputs);
+    assert.isTrue(res.isOk());
+    assert.isTrue(execStub.calledTwice); // Exec `npm install` & `npm run build`
+  });
+  it("api build js", async () => {
+    context.projectSetting.programmingLanguage = ProgrammingLanguage.JS;
+    context.projectSetting.components.push({
+      name: ComponentNames.TeamsApi,
+      folder: "api",
+    });
+    const component = Container.get(ComponentNames.TeamsApi) as any;
+    sandbox.stub(FunctionDeploy, "installFuncExtensions").resolves();
+    const execStub = sandbox.stub(child_process, "exec").yields();
+    sandbox.stub(ApiCodeProvider.prototype, <any>"handleDotnetChecker").resolves();
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+    };
+    const res = await component.build(context, inputs);
+    assert.isTrue(res.isOk());
+    assert.isTrue(execStub.calledOnce); // Exec `npm install`
   });
 });

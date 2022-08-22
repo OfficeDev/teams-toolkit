@@ -1,14 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { hooks } from "@feathersjs/hooks/lib";
 import {
   ActionContext,
-  AzureAccountProvider,
   CloudResource,
   ConfigFolderName,
   ContextV3,
-  EnvConfigFileNameTemplate,
-  EnvNamePlaceholder,
   err,
   FxError,
   InputsWithProjectPath,
@@ -18,64 +16,36 @@ import {
   ResourceContextV3,
   Result,
   UserError,
-  v2,
   v3,
-  Void,
 } from "@microsoft/teamsfx-api";
+import { AADApp } from "@microsoft/teamsfx-api/build/v3";
 import fs from "fs-extra";
+import * as jsonschema from "jsonschema";
+import { cloneDeep, merge } from "lodash";
 import path from "path";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
+import { PluginDisplayName } from "../common/constants";
+import { globalStateUpdate } from "../common/globalState";
+import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
+import { hasAAD, hasAzureResourceV3, hasBot } from "../common/projectSettingsHelperV3";
+import { TelemetryEvent, TelemetryProperty } from "../common/telemetry";
+import { getResourceGroupInPortal } from "../common/tools";
+import { ensureBasicFolderStructure } from "../core";
+import { downloadSample } from "../core/downloadSample";
+import { environmentManager } from "../core/environment";
+import { InvalidInputError } from "../core/error";
+import { globalVars } from "../core/globalVars";
+import { getQuestionsForCreateProjectV2 } from "../core/middleware";
 import {
   CoreQuestionNames,
   ProjectNamePattern,
   QuestionRootFolder,
   ScratchOptionNo,
 } from "../core/question";
-import { isVSProject, newProjectSettings } from "./../common/projectSettingsHelper";
-import "./bicep";
-import "./code/apiCode";
-import "./code/botCode";
-import "./code/spfxTabCode";
-import "./code/tabCode";
-import "./connection/apimConfig";
-import "./connection/azureFunctionConfig";
-import "./connection/azureWebAppConfig";
-import { configLocalEnvironment, setupLocalEnvironment } from "./debug";
-import { createEnvWithName } from "./envManager";
-import "./feature/api";
-import "./feature/apiConnector";
-import "./feature/apim";
-import "./feature/bot";
-import "./feature/cicd";
-import "./feature/keyVault";
-import "./feature/spfx";
-import "./feature/sql";
-import "./feature/sso";
-import "./feature/tab";
-import { AadApp } from "./resource/aadApp/aadApp";
-import "./resource/apim";
-import { AppManifest } from "./resource/appManifest/appManifest";
-import "./resource/azureAppService/azureFunction";
-import "./resource/azureAppService/azureWebApp";
-import "./resource/azureSql";
-import "./resource/azureStorage";
-import "./resource/botService";
-import "./resource/keyVault";
-import "./resource/spfx";
-import "./resource/aadApp/aadApp";
-import "./resource/simpleAuth";
-import { AADApp } from "@microsoft/teamsfx-api/build/v3";
-import * as jsonschema from "jsonschema";
-import { cloneDeep, merge } from "lodash";
-import { PluginDisplayName } from "../common/constants";
-import { globalStateUpdate } from "../common/globalState";
-import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
-import { hasAAD, hasAzureResourceV3, hasBot } from "../common/projectSettingsHelperV3";
-import { getResourceGroupInPortal } from "../common/tools";
-import { downloadSample } from "../core/downloadSample";
-import { InvalidInputError } from "../core/error";
-import { globalVars } from "../core/globalVars";
+import { sendErrorTelemetryThenReturnError } from "../core/telemetry";
+import { SolutionTelemetryEvent, ViewAadAppHelpLink } from "../plugins";
+import { Constants } from "../plugins/resource/aad/constants";
 import arm from "../plugins/solution/fx-solution/arm";
 import {
   ApiConnectionOptionItem,
@@ -94,40 +64,60 @@ import {
   TabSPFxNewUIItem,
 } from "../plugins/solution/fx-solution/question";
 import { resourceGroupHelper } from "../plugins/solution/fx-solution/utils/ResourceGroupHelper";
+import {
+  handleConfigFilesWhenSwitchAccount,
+  hasBotServiceCreated,
+} from "../plugins/solution/fx-solution/utils/util";
 import { executeConcurrently } from "../plugins/solution/fx-solution/v2/executor";
+import { askForProvisionConsentNew } from "../plugins/solution/fx-solution/v2/provision";
 import {
   checkWhetherLocalDebugM365TenantMatches,
   getBotTroubleShootMessage,
 } from "../plugins/solution/fx-solution/v2/utils";
+import { isVSProject, newProjectSettings } from "./../common/projectSettingsHelper";
+import "./bicep";
+import "./code/apiCode";
+import "./code/botCode";
+import "./code/spfxTabCode";
+import "./code/tabCode";
+import "./connection/apimConfig";
+import "./connection/azureFunctionConfig";
+import "./connection/azureWebAppConfig";
 import { AzureResources, ComponentNames } from "./constants";
+import { configLocalEnvironment, setupLocalEnvironment } from "./debug";
+import { createEnvWithName } from "./envManager";
+import "./feature/api";
+import "./feature/apiConnector";
+import "./feature/apim";
+import "./feature/bot";
+import "./feature/cicd";
+import "./feature/keyVault";
+import "./feature/spfx";
+import "./feature/sql";
+import "./feature/sso";
+import "./feature/tab";
+import { ActionExecutionMW } from "./middleware/actionExecutionMW";
 import { pluginName2ComponentName } from "./migrate";
+import { deployUtils, provisionUtils } from "./provisionUtil";
 import {
   getQuestionsForAddFeatureV3,
   getQuestionsForDeployV3,
   getQuestionsForProvisionV3,
 } from "./questionV3";
-import { hooks } from "@feathersjs/hooks/lib";
-import { ActionExecutionMW } from "./middleware/actionExecutionMW";
-import { getQuestionsForCreateProjectV2 } from "../core/middleware";
-import { askForProvisionConsentNew } from "../plugins/solution/fx-solution/v2/provision";
+import "./resource/aadApp/aadApp";
+import { AadApp } from "./resource/aadApp/aadApp";
+import "./resource/apim";
+import { AppManifest } from "./resource/appManifest/appManifest";
+import "./resource/azureAppService/azureFunction";
+import "./resource/azureAppService/azureWebApp";
+import "./resource/azureSql";
+import "./resource/azureStorage";
+import "./resource/botService";
+import "./resource/keyVault";
+import "./resource/simpleAuth";
+import "./resource/spfx";
 import { resetEnvInfoWhenSwitchM365 } from "./utils";
-import { TelemetryEvent, TelemetryProperty } from "../common/telemetry";
 import { getComponent } from "./workflow";
-import {
-  handleConfigFilesWhenSwitchAccount,
-  hasBotServiceCreated,
-} from "../plugins/solution/fx-solution/utils/util";
-import { ensureBasicFolderStructure } from "../core";
-import { environmentManager } from "../core/environment";
-import { sendErrorTelemetryThenReturnError } from "../core/telemetry";
-import {
-  ViewAadAppHelpLink,
-  SolutionTelemetryEvent,
-  SolutionSource,
-  SolutionError,
-} from "../plugins";
-import { Constants } from "../plugins/resource/aad/constants";
-import { askForDeployConsent, fillInAzureConfigs, getM365TenantId } from "./provision";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -599,7 +589,7 @@ export class TeamsfxCore {
 
     // 2. check azure account
     if (hasAzureResource) {
-      const subscriptionResult = await checkDeployAzureSubscription(
+      const subscriptionResult = await deployUtils.checkDeployAzureSubscription(
         context,
         context.envInfo,
         context.tokenProvider.azureAccountProvider
@@ -607,7 +597,7 @@ export class TeamsfxCore {
       if (subscriptionResult.isErr()) {
         return err(subscriptionResult.error);
       }
-      const consent = await askForDeployConsent(
+      const consent = await deployUtils.askForDeployConsent(
         context,
         context.tokenProvider.azureAccountProvider,
         context.envInfo
@@ -689,7 +679,9 @@ async function preProvision(
   const tenantIdInConfig = appManifest.tenantId;
 
   const isLocalDebug = envInfo.envName === "local";
-  const tenantInfoInTokenRes = await getM365TenantId(ctx.tokenProvider.m365TokenProvider);
+  const tenantInfoInTokenRes = await provisionUtils.getM365TenantId(
+    ctx.tokenProvider.m365TokenProvider
+  );
   if (tenantInfoInTokenRes.isErr()) {
     return err(tenantInfoInTokenRes.error);
   }
@@ -723,7 +715,12 @@ async function preProvision(
   if (hasAzureResourceV3(ctx.projectSetting) && envInfo.envName !== "local") {
     // ask common question and fill in solution config
     const subscriptionIdInState = envInfo.state.solution.subscriptionId;
-    const solutionConfigRes = await fillInAzureConfigs(ctx, inputs, envInfo, ctx.tokenProvider);
+    const solutionConfigRes = await provisionUtils.fillInAzureConfigs(
+      ctx,
+      inputs,
+      envInfo,
+      ctx.tokenProvider
+    );
     if (solutionConfigRes.isErr()) {
       return err(solutionConfigRes.error);
     }
@@ -836,7 +833,7 @@ export async function deployAadFromVscode(
   );
 
   // 2. check azure account
-  const subscriptionResult = await checkDeployAzureSubscription(
+  const subscriptionResult = await deployUtils.checkDeployAzureSubscription(
     context,
     context.envInfo,
     context.tokenProvider.azureAccountProvider
@@ -874,63 +871,4 @@ export async function deployAadFromVscode(
       )
     );
   }
-}
-
-/**
- * make sure subscription is correct before deployment
- *
- */
-export async function checkDeployAzureSubscription(
-  ctx: v2.Context,
-  envInfo: v3.EnvInfoV3,
-  azureAccountProvider: AzureAccountProvider
-): Promise<Result<Void, FxError>> {
-  const subscriptionIdInConfig =
-    envInfo.config.azure?.subscriptionId || (envInfo.state.solution.subscriptionId as string);
-  const subscriptionInAccount = await azureAccountProvider.getSelectedSubscription(true);
-  if (!subscriptionIdInConfig) {
-    if (subscriptionInAccount) {
-      envInfo.state.solution.subscriptionId = subscriptionInAccount.subscriptionId;
-      envInfo.state.solution.subscriptionName = subscriptionInAccount.subscriptionName;
-      envInfo.state.solution.tenantId = subscriptionInAccount.tenantId;
-      ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
-      return ok(Void);
-    } else {
-      return err(
-        new UserError(
-          SolutionSource,
-          SolutionError.SubscriptionNotFound,
-          "Failed to select subscription"
-        )
-      );
-    }
-  }
-  // make sure the user is logged in
-  await azureAccountProvider.getAccountCredentialAsync(true);
-  // verify valid subscription (permission)
-  const subscriptions = await azureAccountProvider.listSubscriptions();
-  const targetSubInfo = subscriptions.find(
-    (item) => item.subscriptionId === subscriptionIdInConfig
-  );
-  if (!targetSubInfo) {
-    return err(
-      new UserError(
-        SolutionSource,
-        SolutionError.SubscriptionNotFound,
-        `The subscription '${subscriptionIdInConfig}'(${
-          envInfo.state.solution.subscriptionName
-        }) for '${
-          envInfo.envName
-        }' environment is not found in the current account, please use the right Azure account or check the '${EnvConfigFileNameTemplate.replace(
-          EnvNamePlaceholder,
-          envInfo.envName
-        )}' file.`
-      )
-    );
-  }
-  envInfo.state.solution.subscriptionId = targetSubInfo.subscriptionId;
-  envInfo.state.solution.subscriptionName = targetSubInfo.subscriptionName;
-  envInfo.state.solution.tenantId = targetSubInfo.tenantId;
-  ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
-  return ok(Void);
 }

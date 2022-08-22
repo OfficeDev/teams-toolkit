@@ -38,11 +38,56 @@ import { resourceGroupHelper } from "../plugins/solution/fx-solution/utils/Resou
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 
+export class ProvisionUtil {
+  async fillInAzureConfigs(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v3.EnvInfoV3,
+    tokenProvider: TokenProvider
+  ): Promise<Result<FillInAzureConfigsResult, FxError>> {
+    return fillInAzureConfigs(ctx, inputs, envInfo, tokenProvider);
+  }
+
+  async askForProvisionConsent(
+    ctx: v2.Context,
+    azureAccountProvider: AzureAccountProvider,
+    envInfo: v3.EnvInfoV3
+  ): Promise<Result<undefined, FxError>> {
+    return askForProvisionConsent(ctx, azureAccountProvider, envInfo);
+  }
+
+  async getM365TenantId(
+    m365TokenProvider: M365TokenProvider
+  ): Promise<Result<M365TenantRes, FxError>> {
+    return getM365TenantId(m365TokenProvider);
+  }
+}
+
+export class DeployUtil {
+  async askForDeployConsent(
+    ctx: v2.Context,
+    azureAccountProvider: AzureAccountProvider,
+    envInfo: v3.EnvInfoV3
+  ): Promise<Result<Void, FxError>> {
+    return askForDeployConsent(ctx, azureAccountProvider, envInfo);
+  }
+  async checkDeployAzureSubscription(
+    ctx: v2.Context,
+    envInfo: v3.EnvInfoV3,
+    azureAccountProvider: AzureAccountProvider
+  ): Promise<Result<undefined, FxError>> {
+    return checkDeployAzureSubscription(ctx, envInfo, azureAccountProvider);
+  }
+}
+
+export const provisionUtils = new ProvisionUtil();
+export const deployUtils = new DeployUtil();
+
 /**
  * make sure subscription is correct before provision
  *
  */
-export async function checkProvisionSubscriptionWhenSwitchAccountEnabled(
+async function checkProvisionSubscriptionWhenSwitchAccountEnabled(
   ctx: v2.Context,
   envInfo: v3.EnvInfoV3,
   azureAccountProvider: AzureAccountProvider
@@ -204,7 +249,7 @@ function clearEnvInfoStateResource(envInfo: v3.EnvInfoV3): void {
  * Asks common questions and puts the answers in the global namespace of SolutionConfig
  *
  */
-export async function fillInAzureConfigs(
+async function fillInAzureConfigs(
   ctx: v2.Context,
   inputs: v2.InputsWithProjectPath,
   envInfo: v3.EnvInfoV3,
@@ -378,7 +423,7 @@ export async function fillInAzureConfigs(
   return ok({ hasSwitchedSubscription: subscriptionResult.value.hasSwitchedSubscription });
 }
 
-export async function askForDeployConsent(
+async function askForDeployConsent(
   ctx: v2.Context,
   azureAccountProvider: AzureAccountProvider,
   envInfo: v3.EnvInfoV3
@@ -405,11 +450,11 @@ export async function askForDeployConsent(
   return err(new UserError(SolutionSource, "UserCancel", "UserCancel"));
 }
 
-export async function askForProvisionConsent(
+async function askForProvisionConsent(
   ctx: v2.Context,
   azureAccountProvider: AzureAccountProvider,
   envInfo: v3.EnvInfoV3
-): Promise<Result<Void, FxError>> {
+): Promise<Result<undefined, FxError>> {
   const azureToken = await azureAccountProvider.getAccountCredentialAsync();
 
   // Only Azure project requires this confirm dialog
@@ -431,14 +476,14 @@ export async function askForProvisionConsent(
     }
     return err(new UserError(SolutionSource, "CancelProvision", "CancelProvision"));
   }
-  return ok(Void);
+  return ok(undefined);
 }
-interface M365TenantRes {
+export interface M365TenantRes {
   tenantIdInToken: string;
   tenantUserName: string;
 }
 
-export async function getM365TenantId(
+async function getM365TenantId(
   m365TokenProvider: M365TokenProvider
 ): Promise<Result<M365TenantRes, FxError>> {
   // Just to trigger M365 login before the concurrent execution of localDebug.
@@ -473,4 +518,63 @@ export async function getM365TenantId(
     );
   }
   return ok({ tenantIdInToken, tenantUserName });
+}
+
+/**
+ * make sure subscription is correct before deployment
+ *
+ */
+async function checkDeployAzureSubscription(
+  ctx: v2.Context,
+  envInfo: v3.EnvInfoV3,
+  azureAccountProvider: AzureAccountProvider
+): Promise<Result<undefined, FxError>> {
+  const subscriptionIdInConfig =
+    envInfo.config.azure?.subscriptionId || (envInfo.state.solution.subscriptionId as string);
+  const subscriptionInAccount = await azureAccountProvider.getSelectedSubscription(true);
+  if (!subscriptionIdInConfig) {
+    if (subscriptionInAccount) {
+      envInfo.state.solution.subscriptionId = subscriptionInAccount.subscriptionId;
+      envInfo.state.solution.subscriptionName = subscriptionInAccount.subscriptionName;
+      envInfo.state.solution.tenantId = subscriptionInAccount.tenantId;
+      ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
+      return ok(undefined);
+    } else {
+      return err(
+        new UserError(
+          SolutionSource,
+          SolutionError.SubscriptionNotFound,
+          "Failed to select subscription"
+        )
+      );
+    }
+  }
+  // make sure the user is logged in
+  await azureAccountProvider.getAccountCredentialAsync(true);
+  // verify valid subscription (permission)
+  const subscriptions = await azureAccountProvider.listSubscriptions();
+  const targetSubInfo = subscriptions.find(
+    (item) => item.subscriptionId === subscriptionIdInConfig
+  );
+  if (!targetSubInfo) {
+    return err(
+      new UserError(
+        SolutionSource,
+        SolutionError.SubscriptionNotFound,
+        `The subscription '${subscriptionIdInConfig}'(${
+          envInfo.state.solution.subscriptionName
+        }) for '${
+          envInfo.envName
+        }' environment is not found in the current account, please use the right Azure account or check the '${EnvConfigFileNameTemplate.replace(
+          EnvNamePlaceholder,
+          envInfo.envName
+        )}' file.`
+      )
+    );
+  }
+  envInfo.state.solution.subscriptionId = targetSubInfo.subscriptionId;
+  envInfo.state.solution.subscriptionName = targetSubInfo.subscriptionName;
+  envInfo.state.solution.tenantId = targetSubInfo.tenantId;
+  ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
+  return ok(undefined);
 }

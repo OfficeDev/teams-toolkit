@@ -25,7 +25,6 @@ import "../../src/component/feature/sql";
 import "../../src/component/resource/botService";
 import { createContextV3 } from "../../src/component/utils";
 import { deleteFolder, MockTools, randomAppName } from "../core/utils";
-import * as provisionV3 from "../../src/component/provision";
 import * as provisionV2 from "../../src/plugins/solution/fx-solution/v2/provision";
 import { AppStudioClient } from "../../src/plugins/resource/appstudio/appStudio";
 import * as clientFactory from "../../src/plugins/resource/bot/clientFactory";
@@ -65,6 +64,7 @@ import { AadApp } from "../../src/component/resource/aadApp/aadApp";
 import { Constants } from "../../src/plugins/resource/aad/constants";
 import * as deployV3 from "../../src/component/core";
 import { CoreQuestionNames } from "../../src/core/question";
+import { deployUtils, provisionUtils } from "../../src/component/provisionUtil";
 
 describe("Workflow test for v3", () => {
   const sandbox = sinon.createSandbox();
@@ -292,7 +292,7 @@ describe("Workflow test for v3", () => {
       .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
       .resolves(TestHelper.fakeCredential);
     sandbox
-      .stub(provisionV3, "fillInAzureConfigs")
+      .stub(provisionUtils, "fillInAzureConfigs")
       .resolves(ok({ hasSwitchedSubscription: false }));
     sandbox.stub(provisionV2, "askForProvisionConsentNew").resolves(ok(Void));
     sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
@@ -373,7 +373,9 @@ describe("Workflow test for v3", () => {
     sandbox
       .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
       .resolves(TestHelper.fakeCredential);
-    sandbox.stub(provisionV3, "fillInAzureConfigs").resolves(ok({ hasSwitchedSubscription: true }));
+    sandbox
+      .stub(provisionUtils, "fillInAzureConfigs")
+      .resolves(ok({ hasSwitchedSubscription: true }));
     sandbox.stub(provisionV2, "askForProvisionConsentNew").resolves(ok(Void));
     sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
     sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
@@ -596,7 +598,9 @@ describe("Workflow test for v3", () => {
     sandbox
       .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
       .resolves(TestHelper.fakeCredential);
-    sandbox.stub(provisionV3, "fillInAzureConfigs").resolves(ok({ hasSwitchedSubscription: true }));
+    sandbox
+      .stub(provisionUtils, "fillInAzureConfigs")
+      .resolves(ok({ hasSwitchedSubscription: true }));
     sandbox.stub(provisionV2, "askForProvisionConsentNew").resolves(ok(Void));
     sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
     sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
@@ -678,7 +682,7 @@ describe("Workflow test for v3", () => {
       .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
       .resolves(TestHelper.fakeCredential);
     sandbox
-      .stub(provisionV3, "fillInAzureConfigs")
+      .stub(provisionUtils, "fillInAzureConfigs")
       .resolves(ok({ hasSwitchedSubscription: false }));
     sandbox
       .stub(provisionV2, "askForProvisionConsentNew")
@@ -789,7 +793,9 @@ describe("Workflow test for v3", () => {
     sandbox
       .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
       .resolves(TestHelper.fakeCredential);
-    sandbox.stub(provisionV3, "fillInAzureConfigs").resolves(ok({ hasSwitchedSubscription: true }));
+    sandbox
+      .stub(provisionUtils, "fillInAzureConfigs")
+      .resolves(ok({ hasSwitchedSubscription: true }));
     sandbox.stub(provisionV2, "askForProvisionConsentNew").resolves(ok(Void));
     sandbox.stub(backup, "backupFiles").resolves(ok(undefined));
     sandbox
@@ -1041,7 +1047,7 @@ describe("Workflow test for v3", () => {
       .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
       .resolves(TestHelper.fakeCredential);
     sandbox
-      .stub(provisionV3, "fillInAzureConfigs")
+      .stub(provisionUtils, "fillInAzureConfigs")
       .resolves(ok({ hasSwitchedSubscription: false }));
     sandbox.stub(provisionV2, "askForProvisionConsentNew").resolves(ok(Void));
     sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
@@ -1054,7 +1060,7 @@ describe("Workflow test for v3", () => {
       objectId: "00000000-0000-0000-0000-000000000000",
     });
     sandbox.stub(arm, "deployArmTemplates").resolves(ok(undefined));
-    sandbox.stub(deployV3, "checkDeployAzureSubscription").resolves(ok({}));
+    sandbox.stub(deployUtils, "checkDeployAzureSubscription").resolves(ok(undefined));
     sandbox.stub(AadApp.prototype, "provision").resolves(ok(undefined));
     sandbox.stub(AadApp.prototype, "setApplicationInContext").resolves(ok(undefined));
     sandbox.stub(AadApp.prototype, "configure").resolves(ok(undefined));

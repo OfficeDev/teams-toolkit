@@ -63,7 +63,7 @@ import {
 import { ComponentNames } from "../../../../component/constants";
 import { resetEnvInfoWhenSwitchM365 } from "../../../../component/utils";
 import { TelemetryEvent, TelemetryProperty } from "../../../../common/telemetry";
-import { fillInAzureConfigs, getM365TenantId } from "../../../../component/provision";
+import { provisionUtils } from "../../../../component/provisionUtil";
 
 function getSubscriptionId(state: Json): string {
   if (state && state[GLOBAL_CONFIG] && state[GLOBAL_CONFIG][SUBSCRIPTION_ID]) {
@@ -151,7 +151,7 @@ async function provisionResourceImpl(
   if (!envInfo.state.solution) envInfo.state.solution = {};
   const solutionConfig = envInfo.state.solution;
   const tenantIdInConfig = teamsAppResource.tenantId;
-  const tenantIdInTokenRes = await getM365TenantId(tokenProvider.m365TokenProvider);
+  const tenantIdInTokenRes = await provisionUtils.getM365TenantId(tokenProvider.m365TokenProvider);
   if (tenantIdInTokenRes.isErr()) {
     return err(tenantIdInTokenRes.error);
   }
@@ -186,7 +186,7 @@ async function provisionResourceImpl(
     }
     const subscriptionIdInState = envInfo.state.solution.subscriptionId;
     // ask common question and fill in solution config
-    const solutionConfigRes = await fillInAzureConfigs(
+    const solutionConfigRes = await provisionUtils.fillInAzureConfigs(
       ctx,
       inputsNew,
       envInfo as v3.EnvInfoV3,

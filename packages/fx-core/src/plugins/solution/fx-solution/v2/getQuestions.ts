@@ -63,7 +63,6 @@ import { checkWetherProvisionSucceeded, getSelectedPlugins, isAzureProject } fro
 import { isV3 } from "../../../../core/globalVars";
 import { TeamsAppSolutionNameV2 } from "./constants";
 import { BuiltInFeaturePluginNames } from "../v3/constants";
-import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
 import { NoCapabilityFoundError } from "../../../../core/error";
 import { isExistingTabApp, isVSProject } from "../../../../common/projectSettingsHelper";
@@ -89,6 +88,12 @@ import {
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { Constants } from "../../../resource/aad/constants";
 import { PluginBot } from "../../../resource/bot/resources/strings";
+import { ComponentNames } from "../../../../component/constants";
+import {
+  AppManifest,
+  capabilityExceedLimit,
+} from "../../../../component/resource/appManifest/appManifest";
+import { readAppManifest } from "../../../../component/resource/appManifest/utils";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,
@@ -641,30 +646,20 @@ export async function getQuestionsForAddCapability(
   if (canProceed.isErr()) {
     return err(canProceed.error);
   }
-  const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-  const tabExceedRes = await appStudioPlugin.capabilityExceedLimit(
-    ctx,
-    inputs as v2.InputsWithProjectPath,
-    "staticTab"
-  );
+  const manifestRes = await readAppManifest(inputs.projectPath!);
+  if (manifestRes.isErr()) return err(manifestRes.error);
+  const manifest = manifestRes.value;
+  const tabExceedRes = await capabilityExceedLimit(manifest, "staticTab");
   if (tabExceedRes.isErr()) {
     return err(tabExceedRes.error);
   }
   const isTabAddable = !tabExceedRes.value;
-  const botExceedRes = await appStudioPlugin.capabilityExceedLimit(
-    ctx,
-    inputs as v2.InputsWithProjectPath,
-    "Bot"
-  );
+  const botExceedRes = await capabilityExceedLimit(manifest, "Bot");
   if (botExceedRes.isErr()) {
     return err(botExceedRes.error);
   }
   const isBotAddable = !botExceedRes.value;
-  const meExceedRes = await appStudioPlugin.capabilityExceedLimit(
-    ctx,
-    inputs as v2.InputsWithProjectPath,
-    "MessageExtension"
-  );
+  const meExceedRes = await capabilityExceedLimit(manifest, "MessageExtension");
   if (meExceedRes.isErr()) {
     return err(meExceedRes.error);
   }

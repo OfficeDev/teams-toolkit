@@ -43,7 +43,6 @@ import {
   OperationNotPermittedError,
 } from "../../../../core/error";
 import { CoreQuestionNames, validateCapabilities } from "../../../../core/question";
-import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import {
   AddSsoParameters,
   DEFAULT_PERMISSION_REQUEST,
@@ -94,6 +93,12 @@ import { getTemplatesFolder } from "../../../../folder";
 import AdmZip from "adm-zip";
 import { unzip } from "../../../../common/template-utils/templatesUtils";
 import { InputsWithProjectPath } from "@microsoft/teamsfx-api/build/v2";
+import {
+  AppManifest,
+  capabilityExceedLimit,
+} from "../../../../component/resource/appManifest/appManifest";
+import { ComponentNames } from "../../../../component/constants";
+import { readAppManifest } from "../../../../component/resource/appManifest/utils";
 export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,
@@ -381,33 +386,22 @@ export async function addCapability(
       return err(e);
     }
   }
+  const manifestRes = await readAppManifest(inputs.projectPath!);
+  if (manifestRes.isErr()) return err(manifestRes.error);
+  const manifest = manifestRes.value;
 
-  const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-  const inputsWithProjectPath = inputs as v2.InputsWithProjectPath;
-  const tabExceedRes = await appStudioPlugin.capabilityExceedLimit(
-    ctx,
-    inputs as v2.InputsWithProjectPath,
-    "staticTab"
-  );
+  const tabExceedRes = await capabilityExceedLimit(manifest, "staticTab");
   if (tabExceedRes.isErr()) {
     return err(tabExceedRes.error);
   }
   const isTabAddable = !tabExceedRes.value;
   const isTabSPFxAddable = !tabExceedRes.value;
-  const botExceedRes = await appStudioPlugin.capabilityExceedLimit(
-    ctx,
-    inputs as v2.InputsWithProjectPath,
-    "Bot"
-  );
+  const botExceedRes = await capabilityExceedLimit(manifest, "Bot");
   if (botExceedRes.isErr()) {
     return err(botExceedRes.error);
   }
   const isBotAddable = !botExceedRes.value;
-  const meExceedRes = await appStudioPlugin.capabilityExceedLimit(
-    ctx,
-    inputs as v2.InputsWithProjectPath,
-    "MessageExtension"
-  );
+  const meExceedRes = await capabilityExceedLimit(manifest, "MessageExtension");
   if (meExceedRes.isErr()) {
     return err(meExceedRes.error);
   }
@@ -439,7 +433,7 @@ export async function addCapability(
   const newCapabilitySet = new Set<string>();
   solutionSettings.capabilities.forEach((c) => newCapabilitySet.add(c));
   const vsProject = isVSProject(ctx.projectSetting);
-
+  const appStudioPlugin = Container.get<AppManifest>(ComponentNames.AppManifest);
   // check SPFx
   if (toAddSpfx) {
     pluginNamesToScaffold.add(ResourcePluginsV2.SpfxPlugin);
@@ -478,10 +472,7 @@ export async function addCapability(
         pluginNamesToArm.add(ResourcePluginsV2.AadPlugin);
 
         // Add webapplicationInfo in teams app manifest
-        const appStudioPlugin = Container.get<AppStudioPluginV3>(
-          BuiltInFeaturePluginNames.appStudio
-        );
-        await appStudioPlugin.addCapabilities(ctx, inputs as v2.InputsWithProjectPath, [
+        await appStudioPlugin.addCapability(inputs as v2.InputsWithProjectPath, [
           { name: "WebApplicationInfo" },
         ]);
       }
@@ -1033,8 +1024,8 @@ export async function addSso(
   }
 
   // Update manifest
-  const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-  await appStudioPlugin.addCapabilities(ctx, inputs as v2.InputsWithProjectPath, [
+  const appStudioPlugin = Container.get<AppManifest>(ComponentNames.AppManifest);
+  await appStudioPlugin.addCapability(inputs as v2.InputsWithProjectPath, [
     { name: "WebApplicationInfo" },
   ]);
 

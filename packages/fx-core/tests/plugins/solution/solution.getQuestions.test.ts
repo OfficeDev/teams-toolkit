@@ -66,6 +66,7 @@ import { BuiltInFeaturePluginNames } from "../../../src/plugins/solution/fx-solu
 import { MockedM365Provider, MockedAzureAccountProvider, MockedV2Context } from "./util";
 import { BotCapabilities, PluginBot } from "../../../src/plugins/resource/bot/resources/strings";
 import { BotHostTypes } from "../../../src";
+import * as appManifestUtils from "../../../src/component/resource/appManifest/appManifest";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -255,11 +256,10 @@ describe("getQuestionsForScaffolding()", async () => {
       method: "addCapability",
       namespace: "fx-solution-azure",
     };
-    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     sandbox.stub<any, any>(featureFlags, "isBotNotificationEnabled").returns(false);
     sandbox.stub<any, any>(tool, "isAadManifestEnabled").returns(false);
     sandbox
-      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
+      .stub<any, any>(appManifestUtils, "capabilityExceedLimit")
       .callsFake(
         async (
           ctx: v2.Context,
@@ -307,9 +307,8 @@ describe("getQuestionsForScaffolding()", async () => {
       method: "addCapability",
       namespace: "fx-solution-azure",
     };
-    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     sandbox
-      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
+      .stub<any, any>(appManifestUtils, "capabilityExceedLimit")
       .callsFake(
         async (
           ctx: v2.Context,
@@ -398,9 +397,8 @@ describe("getQuestionsForScaffolding()", async () => {
       method: "addFeature",
       namespace: "fx-solution-azure",
     };
-    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     sandbox
-      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
+      .stub<any, any>(appManifestUtils, "capabilityExceedLimit")
       .callsFake(
         async (
           ctx: v2.Context,
@@ -464,9 +462,8 @@ describe("getQuestionsForScaffolding()", async () => {
       method: "addFeature",
       namespace: "fx-solution-azure",
     };
-    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     sandbox
-      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
+      .stub<any, any>(appManifestUtils, "capabilityExceedLimit")
       .callsFake(
         async (
           ctx: v2.Context,
@@ -605,9 +602,8 @@ describe("getQuestionsForScaffolding()", async () => {
       method: "addFeature",
       namespace: "fx-solution-azure",
     };
-    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     sandbox
-      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
+      .stub<any, any>(appManifestUtils, "capabilityExceedLimit")
       .callsFake(
         async (
           ctx: v2.Context,
@@ -692,9 +688,8 @@ describe("getQuestionsForScaffolding()", async () => {
       method: "addFeature",
       namespace: "fx-solution-azure",
     };
-    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     sandbox
-      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
+      .stub<any, any>(appManifestUtils, "capabilityExceedLimit")
       .callsFake(
         async (
           ctx: v2.Context,

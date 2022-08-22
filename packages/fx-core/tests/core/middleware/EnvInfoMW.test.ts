@@ -10,10 +10,10 @@ import {
   Inputs,
   ok,
   Platform,
+  ProjectSettings,
   ProjectSettingsFileName,
   Result,
   v2,
-  v3,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import * as dotenv from "dotenv";
@@ -22,14 +22,7 @@ import "mocha";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import Container from "typedi";
-import {
-  environmentManager,
-  newEnvInfo,
-  newEnvInfoV3,
-  separateSecretDataV3,
-  setTools,
-} from "../../../src";
+import { environmentManager, newEnvInfo, newEnvInfoV3, setTools } from "../../../src";
 import { LocalCrypto } from "../../../src/core/crypto";
 import {
   ContextInjectorMW,
@@ -40,8 +33,11 @@ import {
   ProjectSettingsLoaderMW,
   ProjectSettingsWriterMW,
 } from "../../../src/core/middleware";
+import { EnvInfoLoaderMW_V3 } from "../../../src/core/middleware/envInfoLoaderV3";
 import { CoreHookContext } from "../../../src/core/types";
 import { MockProjectSettings, MockTools, randomAppName } from "../utils";
+import * as envInfoLoader from "../../../src/core/middleware/envInfoLoader";
+import { newProjectSettingsV3 } from "../../../src/component/utils";
 
 describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
   const sandbox = sinon.createSandbox();
@@ -189,31 +185,36 @@ describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
     newEnvInfoV3();
   });
 
-  // it("separateSecretDataV3()", async () => {
-  //   const data: v3.ResourceStates = {
-  //     solution: {},
-  //     r1: {
-  //       field1: "123456",
-  //     },
-  //     r2: {
-  //       field2: "789012",
-  //     },
-  //   };
-  //   Container.set("r1", { secretKeys: ["field1"], finalOutputKeys: ["field1"] });
-  //   Container.set("r2", { secretKeys: ["field2"], finalOutputKeys: ["field2"] });
-  //   const secret = separateSecretDataV3(data);
-  //   assert.deepEqual(secret, {
-  //     "r1.field1": "123456",
-  //     "r2.field2": "789012",
-  //   });
-  //   assert.deepEqual(data, {
-  //     solution: {},
-  //     r1: {
-  //       field1: "{{r1.field1}}",
-  //     },
-  //     r2: {
-  //       field2: "{{r2.field2}}",
-  //     },
-  //   });
-  // });
+  it("EnvInfoLoaderMW_V3()", async () => {
+    const tools = new MockTools();
+    setTools(tools);
+    const projectSettings = newProjectSettingsV3();
+    sandbox.stub(fs, "readJson").resolves(projectSettings);
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(envInfoLoader, "getTargetEnvName").resolves(ok("dev"));
+    const envInfo = newEnvInfoV3();
+    envInfo.state.solution = { programmingLanguage: "javascript", defaultFunctionName: "myFunc" };
+    sandbox.stub(environmentManager, "loadEnvInfo").resolves(ok(envInfo));
+    class MyClass {
+      tools = tools;
+      async getProjectSettings(
+        inputs: Inputs,
+        ctx?: CoreHookContext
+      ): Promise<Result<ProjectSettings, FxError>> {
+        return ok(ctx!.projectSettings!);
+      }
+    }
+    hooks(MyClass, {
+      getProjectSettings: [ProjectSettingsLoaderMW, EnvInfoLoaderMW_V3(false), ContextInjectorMW],
+    });
+    const my = new MyClass();
+    const inputs: Inputs = { platform: Platform.VSCode, projectPath: "." };
+    const res = await my.getProjectSettings(inputs);
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      const value = res.value;
+      assert.isDefined(value.programmingLanguage);
+      assert.isDefined(value.defaultFunctionName);
+    }
+  });
 });

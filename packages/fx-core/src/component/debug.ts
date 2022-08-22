@@ -314,7 +314,8 @@ export async function configLocalEnvironmentCommon(
       const clientId = envInfo.state[AAD_STATE_KEY]?.clientId;
       const clientSecret = envInfo.state[AAD_STATE_KEY]?.clientSecret;
       const applicationIdUri = envInfo.state[AAD_STATE_KEY]?.applicationIdUris;
-      const teamsAppTenantId = envInfo.state[APP_MANIFEST_KEY]?.tenantId;
+      const teamsAppTenantId =
+        envInfo.state[APP_MANIFEST_KEY]?.tenantId || envInfo.state.solution.teamsAppTenantId;
       const localTabEndpoint = envInfo.state[TAB_STATE_KEY]?.endpoint;
       const localFuncEndpoint = envInfo.state[API_STATE_KEY]?.functionEndpoint;
 

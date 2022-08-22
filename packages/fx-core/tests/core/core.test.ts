@@ -4,13 +4,10 @@
 import {
   err,
   Func,
-  FunctionRouter,
   FxError,
   Inputs,
   InputTextConfig,
   InputTextResult,
-  MultiSelectConfig,
-  MultiSelectResult,
   ok,
   Platform,
   ProjectSettings,
@@ -42,7 +39,6 @@ import {
   setTools,
   validateProjectSettings,
 } from "../../src";
-import { ConstantString } from "../../src/common/constants";
 import * as featureFlags from "../../src/common/featureFlags";
 import { loadProjectSettings } from "../../src/core/middleware/projectSettingsLoader";
 import {

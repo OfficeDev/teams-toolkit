@@ -104,7 +104,7 @@ By default, the browser is launched with a separate user profile in a temp folde
 
     You could also specify the path of user data folder for each account, and edit the value of "user-data-dir" in runtimeArgs whenever you switch account for previewing.
 
-  * Similarly, when running local debug of a Teams project launched in Visual Studio, you could create a new browser configuration after switching to another M365 tenant by following steps mentioned in [Add Browser Configuration in Visual Studio](#add-Bbowser-configuration-in-visual-studio). Type `--user-data-dir=C:\\Users\\{username}\\temp\\edge\\tenantb` as the argument when adding the program. And then choose the corresponding browser configuration before local debugging.    
+  * Similarly, when running local debug of a Teams project launched in Visual Studio, you could create a new browser configuration after switching to another M365 tenant by following steps mentioned in [Add Browser Configuration in Visual Studio](#add-browser-configuration-in-visual-studio). Type `--user-data-dir=C:\\Users\\{username}\\temp\\edge\\tenantb` as the argument when adding the program. And then choose the corresponding browser configuration before local debugging.    
   
      If you want to preview a Teams app in Visual Studio after switching M365 tenant, you could copy the preview URL shown in the output pane and then run your browser with arguments using command line. For example, you could start Edge with `msedge.exe --user-data-dir="C:\\Users\\{username}\\temp\\edge\\tenantb"`. Once the browser is launched, paste the preview URL.
  
@@ -142,7 +142,7 @@ By default, the browser is launched with a separate user profile in a temp folde
     to always start Edge in InPrivate browsing mode when local debugging.
 
   * Visual Studio     
-    Similarly, for a Teams project launched in Visual Studio, you could create a new browser configuration by following steps mentioned in [Add Browser Configuration in Visual Studio](#add-Bbowser-configuration-in-visual-studio). For arguments when adding the program, type `--inPrivate` (Edge) or `--incognito` (Chrome).
+    Similarly, for a Teams project launched in Visual Studio, you could create a new browser configuration by following steps mentioned in [Add Browser Configuration in Visual Studio](#add-browser-configuration-in-visual-studio). For arguments when adding the program, type `--inPrivate` (Edge) or `--incognito` (Chrome).
 
      If you want to preview a Teams app in a remote environment, you could launch the browser in incognito mode and then copy the preview URL shown in the output pane and paste it in the browser.
     

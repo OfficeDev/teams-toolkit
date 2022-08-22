@@ -9,17 +9,60 @@ import {
   AzureAccountProvider,
   NotImplementedError,
   SubscriptionInfo,
+  TokenRequest,
 } from "@microsoft/teamsfx-api";
 
 import { RequestTypes } from "../../apis";
 import { env } from "../../constant";
 import { getResponseWithErrorHandling } from "../../utils";
 import { MemoryCache } from "./memoryCache";
+import { AccessToken, GetTokenOptions } from "@azure/identity";
+
+class TeamsFxTokenCredential implements TokenCredential {
+  private connection: MessageConnection;
+
+  constructor(connection: MessageConnection) {
+    this.connection = connection;
+  }
+
+  async getToken(
+    scopes: string | string[],
+    options?: GetTokenOptions | undefined
+  ): Promise<AccessToken | null> {
+    let myScopes: string[] = [];
+    if (typeof scopes === "string") {
+      myScopes = [scopes];
+    } else {
+      myScopes = scopes;
+    }
+    const tokenRequest: TokenRequest = { scopes: myScopes };
+    const promise = this.connection.sendRequest(RequestTypes.azure.getAccessToken, tokenRequest);
+    const result = await getResponseWithErrorHandling(promise);
+    if (result.isErr()) {
+      return null;
+    } else {
+      const accessToken = result.value;
+      const tokenJson = ConvertTokenToJson(accessToken);
+      return {
+        token: accessToken,
+        expiresOnTimestamp: tokenJson.exp * 1000,
+      };
+    }
+  }
+}
+
+function ConvertTokenToJson(token: string): any {
+  const array = token.split(".");
+  const buff = Buffer.from(array[1], "base64");
+  return JSON.parse(buff.toString("utf8"));
+}
 
 export default class ServerAzureAccountProvider implements AzureAccountProvider {
   connection: MessageConnection;
+  teamsFxTokenCredential: TeamsFxTokenCredential;
   constructor(connection: MessageConnection) {
     this.connection = connection;
+    this.teamsFxTokenCredential = new TeamsFxTokenCredential(this.connection);
   }
   async getAccountCredentialAsync(
     showDialog?: boolean,
@@ -69,7 +112,7 @@ export default class ServerAzureAccountProvider implements AzureAccountProvider 
   }
 
   async getIdentityCredentialAsync(showDialog?: boolean): Promise<TokenCredential | undefined> {
-    return undefined;
+    return this.teamsFxTokenCredential;
   }
 
   async signout(): Promise<boolean> {

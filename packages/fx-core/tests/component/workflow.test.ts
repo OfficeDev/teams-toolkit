@@ -1125,6 +1125,7 @@ describe("Workflow test for v3", () => {
 
     inputs[Constants.INCLUDE_AAD_MANIFEST] = "yes";
     inputs.platform = Platform.CLI;
+    inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] = [];
     const deployRes = await fx.deploy(context as ResourceContextV3, inputs);
     if (deployRes.isErr()) {
       console.log(deployRes.error);

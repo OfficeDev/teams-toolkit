@@ -23,7 +23,6 @@ import {
 } from "../../../../../src/plugins/solution/fx-solution/constants";
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
 import { getAzureProjectRoot } from "../helper";
-import { newEnvInfo } from "../../../../../src";
 import { AppUser } from "../../../../../src/plugins/resource/appstudio/interfaces/appUser";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import {
@@ -31,17 +30,14 @@ import {
   MockedM365Provider,
   MockedV2Context,
 } from "../../../solution/util";
-import {
-  BuiltInFeaturePluginNames,
-  BuiltInSolutionNames,
-} from "../../../../../src/plugins/solution/fx-solution/v3/constants";
+import { BuiltInSolutionNames } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
 import * as uuid from "uuid";
 import Container from "typedi";
-import { AadAppForTeamsPluginV3 } from "../../../../../src/plugins/resource/aad/v3";
-import { AppStudioPluginV3 } from "../../../../../src/plugins/resource/appstudio/v3";
 import { ComponentNames } from "../../../../../src/component/constants";
 import { AppManifest } from "../../../../../src/component/resource/appManifest/appManifest";
-
+import { MockTools } from "../../../../core/utils";
+import { setTools } from "../../../../../src/core/globalVars";
+import { newEnvInfo } from "../../../../../src/core/environment";
 const userList: AppUser = {
   tenantId: faker.datatype.uuid(),
   aadId: faker.datatype.uuid(),
@@ -54,6 +50,7 @@ describe("Remote Collaboration", () => {
   let plugin: AppStudioPlugin;
   let ctx: PluginContext;
   let configOfOtherPlugins: Map<string, ConfigMap>;
+  setTools(new MockTools());
   const sandbox = sinon.createSandbox();
   const projectSettings: ProjectSettings = {
     appName: "my app",

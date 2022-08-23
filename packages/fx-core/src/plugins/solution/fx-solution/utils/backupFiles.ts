@@ -24,7 +24,7 @@ const userDateFileNameTemplate = `${EnvNamePlaceholder}.userdata`;
 const jsonSuffix = ".json";
 const userDataSuffix = ".userdata";
 
-const reportName = "backup-config-and-state-change-logs.md";
+const reportName = "backup-config-change-logs.md";
 
 async function doesBackupFolderCreatedByTTK(backupPath: string) {
   return (

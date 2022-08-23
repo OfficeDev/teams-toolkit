@@ -25,6 +25,7 @@ import {
 } from "../../../../src/component/resource/appManifest/constants";
 import { manifestUtils } from "../../../../src/component/resource/appManifest/utils";
 import { setTools } from "../../../../src/core/globalVars";
+import { CONFIGURABLE_TABS_TPL_EXISTING_APP } from "../../../../src/plugins/resource/appstudio/constants";
 import { AppStudioError } from "../../../../src/plugins/resource/appstudio/errors";
 import { QuestionNames } from "../../../../src/plugins/resource/bot/constants";
 import { AppServiceOptionItem } from "../../../../src/plugins/resource/bot/question";
@@ -144,7 +145,7 @@ describe("Add capability V3", () => {
     const addCapabilityResult = await component.addCapability(inputs, capabilities);
     chai.assert.isTrue(addCapabilityResult.isOk());
     chai.assert.equal(manifest.configurableTabs!.length, 1);
-    chai.assert.deepEqual(manifest.configurableTabs![0], CONFIGURABLE_TABS_TPL_V3[0]);
+    chai.assert.deepEqual(manifest.configurableTabs![0], CONFIGURABLE_TABS_TPL_EXISTING_APP[0]);
   });
 
   it("Add notification bot capability failed, exceed limit", async () => {

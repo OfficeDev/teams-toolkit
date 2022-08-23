@@ -53,64 +53,6 @@ describe("Test question", () => {
         chai.assert.equal(result === undefined, valid, message);
       }
     });
-
-    it("change selection", async () => {
-      // Arrange
-      const cases: [string[], string[], string[], string][] = [
-        [
-          [],
-          [FunctionsHttpTriggerOptionItem.id],
-          [FunctionsHttpTriggerOptionItem.id],
-          "should not change the first selection when empty",
-        ],
-        [
-          [FunctionsHttpTriggerOptionItem.id],
-          [FunctionsHttpTriggerOptionItem.id, FunctionsTimerTriggerOptionItem.id],
-          [FunctionsHttpTriggerOptionItem.id, FunctionsTimerTriggerOptionItem.id],
-          "should not change the first selection when not empty",
-        ],
-        [
-          [FunctionsHttpTriggerOptionItem.id, FunctionsTimerTriggerOptionItem.id],
-          [
-            FunctionsHttpTriggerOptionItem.id,
-            FunctionsTimerTriggerOptionItem.id,
-            AppServiceOptionItem.id,
-          ],
-          [AppServiceOptionItem.id],
-          "should remove functions on selecting app service",
-        ],
-        [
-          [AppServiceOptionItem.id],
-          [FunctionsTimerTriggerOptionItem.id, AppServiceOptionItem.id],
-          [FunctionsTimerTriggerOptionItem.id],
-          "should remove app service on selecting functions",
-        ],
-        [
-          [FunctionsHttpTriggerOptionItem.id, FunctionsTimerTriggerOptionItem.id],
-          [FunctionsTimerTriggerOptionItem.id],
-          [FunctionsTimerTriggerOptionItem.id],
-          "should do nothing on un-selecting",
-        ],
-      ];
-      const question = createHostTypeTriggerQuestion(Platform.VSCode);
-      chai.assert.notStrictEqual(question.onDidChangeSelection, undefined);
-      const onDidChangeSelection = question.onDidChangeSelection!;
-
-      for (const c of cases) {
-        const [previousSelection, currentSelection, expectedResult, message] = c;
-        // Act
-        const resultSet = await onDidChangeSelection(
-          new Set(currentSelection),
-          new Set(previousSelection)
-        );
-        // Assert
-        // sort and uniq to compare sets
-        const result = [...resultSet].sort();
-        const expected = [...new Set(expectedResult)].sort();
-
-        chai.assert.deepEqual(result, expected, message);
-      }
-    });
   });
 
   describe("Workaround CLI default value issue, remove me after CLI is fixed", () => {

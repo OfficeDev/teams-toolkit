@@ -16,7 +16,6 @@ import {
   ResourceContextV3,
   TeamsAppManifest,
   ok,
-  InputResult,
   SingleSelectResult,
 } from "@microsoft/teamsfx-api";
 import { randomAppName, MockLogProvider, MockTools } from "../../../core/utils";
@@ -31,8 +30,8 @@ import { Constants } from "../../../../src/plugins/resource/appstudio/constants"
 import { autoPublishOption } from "../../../../src/plugins/resource/appstudio/questions";
 import { PublishingState } from "../../../../src/plugins/resource/appstudio/interfaces/IPublishingAppDefinition";
 import * as appstudio from "../../../../src/component/resource/appManifest/appStudio";
-import * as utils from "../../../../src/component/resource/appManifest/utils";
 import { getAzureProjectRoot } from "../../../plugins/resource/appstudio/helper";
+import { manifestUtils } from "../../../../src/component/resource/appManifest/utils";
 
 describe("App-manifest Component", () => {
   const sandbox = sinon.createSandbox();
@@ -118,7 +117,7 @@ describe("App-manifest Component", () => {
 
   it("deploy - preivew only", async function () {
     const manifest = new TeamsAppManifest();
-    sandbox.stub(utils, "readAppManifest").resolves(ok(manifest));
+    sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readJSON").resolves(manifest);
     sandbox.stub(fs, "readFile").resolves(new Buffer(JSON.stringify(manifest)));
@@ -133,7 +132,7 @@ describe("App-manifest Component", () => {
 
   it.skip("deploy - succeed", async function () {
     const manifest = new TeamsAppManifest();
-    sandbox.stub(utils, "readAppManifest").resolves(ok(manifest));
+    sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readJSON").resolves(manifest);
     sandbox.stub(fs, "readFile").resolves(new Buffer(JSON.stringify(manifest)));
@@ -161,7 +160,7 @@ describe("App-manifest Component", () => {
     manifest.icons.color = "resources/color.png";
     manifest.icons.outline = "resources/outline.png";
 
-    sandbox.stub(utils, "readAppManifest").resolves(ok(manifest));
+    sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "writeFile").resolves();
     sandbox.stub(fs, "chmod").resolves();

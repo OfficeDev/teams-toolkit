@@ -37,7 +37,6 @@ import {
 import { canAddCICDWorkflows } from "../common/tools";
 import { ComponentNames } from "./constants";
 import { ComponentName2pluginName } from "./migrate";
-import { readAppManifest } from "./resource/appManifest/utils";
 import { getComponent } from "./workflow";
 import { STATIC_TABS_MAX_ITEMS } from "../plugins/resource/appstudio/constants";
 import {
@@ -87,6 +86,7 @@ import {
   versionCheckQuestion,
   webpartNameQuestion,
 } from "../plugins/resource/spfx/utils/questions";
+import { manifestUtils } from "./resource/appManifest/utils";
 
 export async function getQuestionsForProvisionV3(
   context: v2.Context,
@@ -230,7 +230,7 @@ export async function getQuestionsForAddFeatureV3(
   // check capability options
   const azureHost = ctx.projectSetting.solutionSettings?.hostType === HostTypeOptionAzure.id;
   if (azureHost) {
-    const manifestRes = await readAppManifest(inputs.projectPath!);
+    const manifestRes = await manifestUtils.readAppManifest(inputs.projectPath!);
     if (manifestRes.isErr()) return err(manifestRes.error);
     const manifest = manifestRes.value;
     const canAddTab = manifest.staticTabs!.length < STATIC_TABS_MAX_ITEMS;

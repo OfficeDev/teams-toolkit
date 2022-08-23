@@ -49,10 +49,17 @@ export type OBOUserCredentialCertificateContentConfig = {
   "tenantId": string
 }
 
-export type AppCredentialConfig = {
+export type AppCredentialClientSecretConfig = {
   [key: string]: string,
   "clientId": string,
   "clientSecret": string,
+  "tenantId": string
+}
+
+export type AppCredentialCertificateContentConfig = {
+  [key: string]: string,
+  "clientId": string,
+  "certificateContent": string,
   "tenantId": string
 }
 
@@ -73,7 +80,7 @@ export class TeamsFx implements TeamsFxConfiguration {
    *
    * @throws {@link ErrorCode|IdentityTypeNotSupported} when setting app identity in browser.
    */
-  constructor(identityType?: IdentityType, customConfig?: Record<string, string> | OBOUserCredentialClientSecretConfig | OBOUserCredentialCertificateContentConfig | AppCredentialConfig) {
+  constructor(identityType?: IdentityType, customConfig?: Record<string, string> | OBOUserCredentialClientSecretConfig | OBOUserCredentialCertificateContentConfig | AppCredentialCertificateContentConfig | AppCredentialClientSecretConfig) {
     this.identityType = identityType ?? IdentityType.User;
     this.configuration = new Map<string, string>();
     this.loadFromEnv();

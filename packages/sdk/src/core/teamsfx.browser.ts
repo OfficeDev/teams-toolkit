@@ -17,8 +17,7 @@ import { TeamsFxConfiguration } from "../models/teamsfxConfiguration";
 export type TeamsUserCredentialConfig = {
   [key: string]: string, //client id, initiate login endpoint or simple auth endpoint
   "clientId": string,
-  "initiateLoginEndpoint": string,
-  "authorityHost": string
+  "initiateLoginEndpoint": string
 }
 
 /**

@@ -197,7 +197,7 @@ export enum TelemetryEvent {
   // that prevents user performing concurrent operations.
   TreeViewCommandConcurrentExecution = "treeview-command-concurrent-execution",
 
-  // To track the A/B test of opening in new window after creating a new project
+  // To track the event of opening in new window after creating a new project
   OpenNewProject = "open-new-project",
 
   // To track the A/B test of choosing folder

@@ -33,11 +33,11 @@ import { AppStudioClient } from "../../../plugins/resource/appstudio/appStudio";
 import { Constants } from "../../../plugins/resource/appstudio/constants";
 import { AppStudioError } from "../../../plugins/resource/appstudio/errors";
 import { AppStudioResultFactory } from "../../../plugins/resource/appstudio/results";
-import { readAppManifest, getTeamsAppManifestPath } from "./utils";
 import { ComponentNames } from "../../constants";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { getCustomizedKeys } from "../../../plugins/resource/appstudio/utils/utils";
 import { TelemetryPropertyKey } from "../../../plugins/resource/appstudio/utils/telemetry";
+import { manifestUtils } from "./utils";
 
 /**
  * Create Teams app if not exists
@@ -394,7 +394,7 @@ export async function getManifest(
   telemetryProps?: Record<string, string>
 ): Promise<Result<TeamsAppManifest, FxError>> {
   // Read template
-  const manifestTemplateRes = await readAppManifest(projectPath);
+  const manifestTemplateRes = await manifestUtils.readAppManifest(projectPath);
   if (manifestTemplateRes.isErr()) {
     return err(manifestTemplateRes.error);
   }
@@ -485,7 +485,7 @@ export async function updateManifest(
     manifest = manifestResult.value;
   }
 
-  const manifestFileName = await getTeamsAppManifestPath(inputs.projectPath);
+  const manifestFileName = await manifestUtils.getTeamsAppManifestPath(inputs.projectPath);
   if (!(await fs.pathExists(manifestFileName))) {
     const isProvisionSucceeded = ctx.envInfo.state["solution"].provisionSucceeded as boolean;
     if (!isProvisionSucceeded) {

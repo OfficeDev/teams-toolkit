@@ -135,7 +135,6 @@ import { CoreHookContext } from "./types";
 import { isPreviewFeaturesEnabled } from "../common/featureFlags";
 import { createContextV3 } from "../component/utils";
 import { TeamsfxCore } from "../component/core";
-import "../component/core";
 import {
   FeatureId,
   getQuestionsForAddFeatureSubCommand,
@@ -150,8 +149,8 @@ import { ComponentNames } from "../component/constants";
 import { ApiConnectorImpl } from "../plugins/resource/apiconnector/plugin";
 import { publishQuestion } from "../component/resource/appManifest/appManifest";
 import { createEnvWithName } from "../component/envManager";
-import { getTeamsAppManifestPath } from "../component/resource/appManifest/utils";
 import { getProjectTemplatesFolderPath } from "../common/utils";
+import { manifestUtils } from "../component/resource/appManifest/utils";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -885,7 +884,9 @@ export class FxCore implements v3.ICore {
       const fx = Container.get("fx") as TeamsfxCore;
       res = await fx.addFeature(context, inputs as InputsWithProjectPath);
     } else if (func.method === "getManifestTemplatePath") {
-      const path = await getTeamsAppManifestPath((inputs as InputsWithProjectPath).projectPath);
+      const path = await manifestUtils.getTeamsAppManifestPath(
+        (inputs as InputsWithProjectPath).projectPath
+      );
       res = ok(path);
     } else if (func.method === "validateManifest") {
       const component = Container.get("app-manifest") as any;

@@ -51,7 +51,7 @@ export enum TelemetryEvent {
   Deploy = "deploy",
   DownloadSampleStart = "download-sample-start",
   DownloadSample = "download-sample",
-  CreateProject = "create-new-project",
+  CreateProject = "create",
   AddFeature = "add-feature",
   ProjectUpgrade = "project-upgrade",
   ProjectUpgradeStart = "project-upgrade-start",

@@ -2,8 +2,7 @@
 // Licensed under the MIT license.
 
 import { BotFrameworkAdapter } from "botbuilder";
-import { Activity, TurnContext } from "botbuilder-core";
-import { IAdaptiveCard } from "adaptivecards";
+import { Activity, InvokeResponse, TurnContext } from "botbuilder-core";
 
 /**
  * The response of a message action, e.g., `sendMessage`, `sendAdaptiveCard`.
@@ -205,36 +204,6 @@ export enum AdaptiveCardResponse {
 }
 
 /**
- * A message to respond to adaptive card action invoke.
- */
-export interface CardPromptMessage {
-  /**
-   * A string message to display in the client.
-   */
-  text: string;
-
-  /**
-   * The type of the message.
-   */
-  type?: CardPromptMessageType;
-}
-
-/**
- * The message type of a {@link CardPromptMessage}.
- */
-export enum CardPromptMessageType {
-  /**
-   * Indicates the card action is processed successfully.
-   */
-  Info,
-
-  /**
-   * Indicates invalid request for the adaptive card invoke action.
-   */
-  Error,
-}
-
-/**
  * Interface for adaptive card action handler that can process card action invoke and return a response.
  */
 export interface TeamsFxAdaptiveCardActionHandler {
@@ -254,11 +223,26 @@ export interface TeamsFxAdaptiveCardActionHandler {
    * The handler function that will be invoked when the action is fired.
    * @param context The turn context.
    * @param actionData The contextual data that associated with the action.
+   * 
+   * @returns A `Promise` representing a invoke response for the adaptive card invoke action.
+   * You can use the `InvokeResponseFactory` utility class to create an invoke response from
+   *  - A text message: 
+   *   ```typescript 
+   *   return InvokeResponseFactory.textMessage("Action is processed successfully!");
+   *   ```
+   *  - An adaptive card:
+   *    ```typescript
+   *    const responseCard = AdaptiveCards.declare(helloWorldCard).render(actionData);
+        return InvokeResponseFactory.adaptiveCard(responseCard);
+   *    ```
+   *  - An error response:
+   *     ```typescript
+   *     return InvokeResponseFactory.errorResponse(StatusCodes.BAD_REQUEST, "Invalid request");
+   *     ```
+   * 
+   * @remark For more details about the invoke response format, refer to https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/universal-action-model#response-format.
    */
-  handleActionInvoked(
-    context: TurnContext,
-    actionData: any
-  ): Promise<IAdaptiveCard | CardPromptMessage | void>;
+  handleActionInvoked(context: TurnContext, actionData: any): Promise<InvokeResponse>;
 }
 
 /**

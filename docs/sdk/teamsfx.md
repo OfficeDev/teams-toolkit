@@ -18,6 +18,7 @@
 |  [CommandBot](./teamsfx.commandbot.md) | A command bot for receiving commands and sending responses in Teams. |
 |  [ConversationBot](./teamsfx.conversationbot.md) | Provide utilities for bot conversation, including: - handle command and response. - send notification to varies targets (e.g., member, group, channel). |
 |  [ErrorWithCode](./teamsfx.errorwithcode.md) | Error class with code and message thrown by the SDK. |
+|  [InvokeResponseFactory](./teamsfx.invokeresponsefactory.md) | Provides methods for formatting various invoke responses a bot can send to respond to an invoke request. |
 |  [Member](./teamsfx.member.md) | A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team member. |
 |  [MessageBuilder](./teamsfx.messagebuilder.md) | Provides utility method to build bot message with cards that supported in Teams. |
 |  [MsGraphAuthProvider](./teamsfx.msgraphauthprovider.md) | Microsoft Graph auth provider for Teams Framework |
@@ -34,7 +35,6 @@
 |  --- | --- |
 |  [AdaptiveCardResponse](./teamsfx.adaptivecardresponse.md) | Options used to control how the response card will be sent to users. |
 |  [ApiKeyLocation](./teamsfx.apikeylocation.md) | Define available location for API Key location |
-|  [CardPromptMessageType](./teamsfx.cardpromptmessagetype.md) | The message type of a [CardPromptMessage](./teamsfx.cardpromptmessage.md)<!-- -->. |
 |  [ErrorCode](./teamsfx.errorcode.md) | Error code to trace the error types. |
 |  [IdentityType](./teamsfx.identitytype.md) | Identity type to use in authentication. |
 |  [LogLevel](./teamsfx.loglevel.md) | Log level. |
@@ -63,7 +63,6 @@
 |  [AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md) | Authentication related configuration. |
 |  [AuthProvider](./teamsfx.authprovider.md) | Defines method that injects authentication info to http requests |
 |  [CardActionOptions](./teamsfx.cardactionoptions.md) | Options to initialize [CardActionBot](./teamsfx.cardactionbot.md)<!-- -->. |
-|  [CardPromptMessage](./teamsfx.cardpromptmessage.md) | A message to respond to adaptive card action invoke. |
 |  [CommandMessage](./teamsfx.commandmessage.md) | Interface for a command message that can handled in a command handler. |
 |  [CommandOptions](./teamsfx.commandoptions.md) | Options to initialize [CommandBot](./teamsfx.commandbot.md)<!-- -->. |
 |  [ConversationOptions](./teamsfx.conversationoptions.md) | Options to initialize [ConversationBot](./teamsfx.conversationbot.md) |

@@ -26,9 +26,12 @@ import { DialogTurnResult } from 'botbuilder-dialogs';
 import { GetTokenOptions } from '@azure/identity';
 import { HeroCard } from 'botbuilder';
 import { IAdaptiveCard } from 'adaptivecards';
+import { InvokeResponse } from 'botbuilder-core';
+import { InvokeResponse as InvokeResponse_2 } from 'botbuilder';
 import { O365ConnectorCard } from 'botbuilder';
 import { ReceiptCard } from 'botbuilder';
 import { SecureContextOptions } from 'tls';
+import { StatusCodes } from 'botbuilder';
 import { TeamsChannelAccount } from 'botbuilder';
 import { ThumbnailCard } from 'botbuilder';
 import { TokenCredential } from '@azure/identity';
@@ -103,18 +106,6 @@ export class CardActionBot {
 // @public
 export interface CardActionOptions {
     actions?: TeamsFxAdaptiveCardActionHandler[];
-}
-
-// @public
-export interface CardPromptMessage {
-    text: string;
-    type?: CardPromptMessageType;
-}
-
-// @public
-export enum CardPromptMessageType {
-    Error = 1,
-    Info = 0
 }
 
 // @public
@@ -232,6 +223,14 @@ export function getTediousConnectionConfig(teamsfx: TeamsFx, databaseName?: stri
 export enum IdentityType {
     App = "Application",
     User = "User"
+}
+
+// @public
+export class InvokeResponseFactory {
+    static adaptiveCard(card: IAdaptiveCard): InvokeResponse_2;
+    static createInvokeResponse(statusCode: StatusCodes, body?: unknown): InvokeResponse_2;
+    static errorResponse(errorCode: StatusCodes, errorMessage: string): InvokeResponse_2;
+    static textMessage(message: string): InvokeResponse_2;
 }
 
 // @public
@@ -392,7 +391,7 @@ export class TeamsFx implements TeamsFxConfiguration {
 // @public
 export interface TeamsFxAdaptiveCardActionHandler {
     adaptiveCardResponse?: AdaptiveCardResponse;
-    handleActionInvoked(context: TurnContext, actionData: any): Promise<IAdaptiveCard | CardPromptMessage | void>;
+    handleActionInvoked(context: TurnContext, actionData: any): Promise<InvokeResponse>;
     triggerVerb: string;
 }
 

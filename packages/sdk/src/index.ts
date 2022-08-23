@@ -44,8 +44,6 @@ export { IdentityType } from "./models/identityType";
 
 export {
   AdaptiveCardResponse,
-  CardPromptMessage,
-  CardPromptMessageType,
   CommandMessage,
   CommandOptions,
   CardActionOptions,
@@ -70,3 +68,4 @@ export {
 export { CommandBot } from "./conversation/command";
 export { CardActionBot } from "./conversation/cardAction";
 export { MessageBuilder } from "./conversation/messageBuilder";
+export { InvokeResponseFactory } from "./conversation/invokeResponseFactory";

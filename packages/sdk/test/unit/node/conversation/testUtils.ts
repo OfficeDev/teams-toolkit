@@ -3,11 +3,9 @@
 
 import { IAdaptiveCard } from "adaptivecards";
 import { TurnContext } from "botbuilder-core";
-import { Activity } from "botframework-schema";
+import { Activity, InvokeResponse, StatusCodes } from "botframework-schema";
 import {
   AdaptiveCardResponse,
-  CardPromptMessage,
-  CardPromptMessageType,
   CommandMessage,
   MessageResponse,
   NotificationTarget,
@@ -17,6 +15,7 @@ import {
   TeamsFxBotCommandHandler,
   TriggerPatterns,
 } from "../../../../src/conversation/interface";
+import { InvokeResponseFactory } from "../../../../src/conversation/invokeResponseFactory";
 
 export class TestStorage implements NotificationTargetStorage {
   public items: any = {};
@@ -83,39 +82,46 @@ export class TestCommandHandler implements TeamsFxBotCommandHandler {
   }
 }
 
-export class TestCardActionHandler implements TeamsFxAdaptiveCardActionHandler {
+export class MockCardActionHandler implements TeamsFxAdaptiveCardActionHandler {
   isInvoked: boolean = false;
   triggerVerb: string;
   adaptiveCardResponse: AdaptiveCardResponse = AdaptiveCardResponse.ReplaceForInteractor;
-  responseMessage: any = undefined;
+  invokeResponse: InvokeResponse;
   actionData: any;
 
-  constructor(verb: string, responseMessage?: any) {
+  constructor(verb: string, response?: string | IAdaptiveCard) {
     this.triggerVerb = verb;
-    if (responseMessage) {
-      this.responseMessage = responseMessage;
+    if (!response) {
+      this.invokeResponse = InvokeResponseFactory.textMessage("Your response was sent to the app");
+    } else if (typeof response === "string") {
+      this.invokeResponse = InvokeResponseFactory.textMessage(response);
+    } else {
+      this.invokeResponse = InvokeResponseFactory.adaptiveCard(response);
     }
   }
 
-  async handleActionInvoked(
-    context: TurnContext,
-    actionData: any
-  ): Promise<void | CardPromptMessage | IAdaptiveCard> {
+  async handleActionInvoked(context: TurnContext, actionData: any): Promise<InvokeResponse> {
     this.isInvoked = true;
     this.actionData = actionData;
+    return this.invokeResponse;
+  }
+}
 
-    if (this.responseMessage) {
-      if (typeof this.responseMessage === "string") {
-        return {
-          text: this.responseMessage,
-          type: CardPromptMessageType.Info,
-        };
-      } else {
-        {
-          return this.responseMessage as IAdaptiveCard;
-        }
-      }
-    }
+export class MockCardActionHandlerWithErrorResponse implements TeamsFxAdaptiveCardActionHandler {
+  isInvoked: boolean = false;
+  triggerVerb: string;
+  invokeResponse: InvokeResponse;
+  actionData: any;
+
+  constructor(verb: string, errorCode: StatusCodes, errorMessage: string) {
+    this.triggerVerb = verb;
+    this.invokeResponse = InvokeResponseFactory.errorResponse(errorCode, errorMessage);
+  }
+
+  async handleActionInvoked(context: TurnContext, actionData: any): Promise<InvokeResponse> {
+    this.isInvoked = true;
+    this.actionData = actionData;
+    return this.invokeResponse;
   }
 }
 
@@ -141,7 +147,7 @@ export class MockContext {
 
 export class MockActionInvokeContext {
   private activity: any;
-  message: any;
+  content: any;
 
   constructor(verb: string, data?: any) {
     this.activity = {
@@ -159,7 +165,7 @@ export class MockActionInvokeContext {
   }
 
   public sendActivity(activity: any): Promise<void> {
-    this.message = activity.value.body.value;
+    this.content = activity.value.body.value;
     return new Promise((resolve) => {
       resolve();
     });

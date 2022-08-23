@@ -1,23 +1,28 @@
 import { assert } from "chai";
-import { BotFrameworkAdapter, ConversationReference, TurnContext } from "botbuilder";
+import { BotFrameworkAdapter, ConversationReference, StatusCodes, TurnContext } from "botbuilder";
 import * as sinon from "sinon";
 import { CardActionBot } from "../../../../src/conversation/cardAction";
 import { CardActionMiddleware } from "../../../../src/conversation/middlewares/cardActionMiddleware";
-import { MockActionInvokeContext, TestCardActionHandler } from "./testUtils";
+import {
+  MockActionInvokeContext,
+  MockCardActionHandler,
+  MockCardActionHandlerWithErrorResponse,
+} from "./testUtils";
+import { IAdaptiveCard } from "adaptivecards";
 
 describe("Card Action Handler - Node", () => {
   it("handler should send text message response correctly", async () => {
-    const doStuffAction = new TestCardActionHandler("doStuff", "sample-response");
+    const doStuffAction = new MockCardActionHandler("doStuff", "sample-response");
     const testContext = new MockActionInvokeContext("doStuff");
     const middleware = new CardActionMiddleware([doStuffAction]);
     await middleware.onTurn(testContext as any, async () => {});
 
     assert.isTrue(doStuffAction.isInvoked);
-    assert.strictEqual(testContext.message, "sample-response");
+    assert.strictEqual(testContext.content, "sample-response");
   });
 
   it("handler should send adaptive card response correctly", async () => {
-    const responseCard = {
+    const responseCard: IAdaptiveCard = {
       version: "1.0.0",
       type: "AdaptiveCard",
       body: [
@@ -28,27 +33,51 @@ describe("Card Action Handler - Node", () => {
       ],
     };
 
-    const doStuffAction = new TestCardActionHandler("doStuff", responseCard);
+    const doStuffAction = new MockCardActionHandler("doStuff", responseCard);
     const testContext = new MockActionInvokeContext("doStuff");
     const middleware = new CardActionMiddleware([doStuffAction]);
     await middleware.onTurn(testContext as any, async () => {});
 
     assert.isTrue(doStuffAction.isInvoked);
-    assert.deepEqual(testContext.message, responseCard);
+    assert.deepEqual(testContext.content, responseCard);
   });
 
-  it("handler should send default response if no return value", async () => {
-    const doStuffAction = new TestCardActionHandler("doStuff");
+  it("handler should send user error response correctly", async () => {
+    const errorMessage = "Invalid request";
+    const doStuffAction = new MockCardActionHandlerWithErrorResponse(
+      "doStuff",
+      StatusCodes.BAD_REQUEST,
+      errorMessage
+    );
     const testContext = new MockActionInvokeContext("doStuff");
     const middleware = new CardActionMiddleware([doStuffAction]);
     await middleware.onTurn(testContext as any, async () => {});
 
     assert.isTrue(doStuffAction.isInvoked);
-    assert.strictEqual(testContext.message, "Your response was sent to the app");
+    assert.isNotNull(testContext.content);
+    assert.strictEqual(testContext.content.message, errorMessage);
+    assert.strictEqual(testContext.content.code, StatusCodes.BAD_REQUEST.toString());
+  });
+
+  it("handler should send server error response correctly", async () => {
+    const errorMessage = "Internal server error";
+    const doStuffAction = new MockCardActionHandlerWithErrorResponse(
+      "doStuff",
+      StatusCodes.INTERNAL_SERVER_ERROR,
+      errorMessage
+    );
+    const testContext = new MockActionInvokeContext("doStuff");
+    const middleware = new CardActionMiddleware([doStuffAction]);
+    await middleware.onTurn(testContext as any, async () => {});
+
+    assert.isTrue(doStuffAction.isInvoked);
+    assert.isNotNull(testContext.content);
+    assert.strictEqual(testContext.content.message, errorMessage);
+    assert.strictEqual(testContext.content.code, StatusCodes.INTERNAL_SERVER_ERROR.toString());
   });
 
   it("handler should get action data correctly", async () => {
-    const doStuffAction = new TestCardActionHandler("doStuff", "myResponseMessage");
+    const doStuffAction = new MockCardActionHandler("doStuff", "sampleResponse");
     const testContext = new MockActionInvokeContext("doStuff", { foo: "bar" });
     const middleware = new CardActionMiddleware([doStuffAction]);
     await middleware.onTurn(testContext as any, async () => {});
@@ -94,7 +123,7 @@ describe("ard Action Bot Tests - Node", () => {
 
   it("registerHandler should add card action successfully", () => {
     const cardAction = new CardActionBot(adapter);
-    cardAction.registerHandler(new TestCardActionHandler("myAction"));
+    cardAction.registerHandler(new MockCardActionHandler("myAction"));
 
     assert.strictEqual(middlewares.length, 1);
     assert.isTrue(middlewares[0] instanceof CardActionMiddleware);
@@ -102,14 +131,14 @@ describe("ard Action Bot Tests - Node", () => {
 
     assert.isNotEmpty(middleware.actionHandlers);
     assert.isTrue(middleware.actionHandlers.length === 1);
-    assert.isTrue(middleware.actionHandlers[0] instanceof TestCardActionHandler);
+    assert.isTrue(middleware.actionHandlers[0] instanceof MockCardActionHandler);
   });
 
   it("registerHandlers should add card actions successfully", () => {
     const cardAction = new CardActionBot(adapter);
     cardAction.registerHandlers([
-      new TestCardActionHandler("myAction1"),
-      new TestCardActionHandler("myAction2"),
+      new MockCardActionHandler("myAction1"),
+      new MockCardActionHandler("myAction2"),
     ]);
 
     assert.strictEqual(middlewares.length, 1);
@@ -118,9 +147,9 @@ describe("ard Action Bot Tests - Node", () => {
 
     assert.isNotEmpty(middleware.actionHandlers);
     assert.isTrue(middleware.actionHandlers.length === 2);
-    assert.isTrue(middleware.actionHandlers[0] instanceof TestCardActionHandler);
+    assert.isTrue(middleware.actionHandlers[0] instanceof MockCardActionHandler);
     assert.isTrue(middleware.actionHandlers[0].triggerVerb == "myAction1");
-    assert.isTrue(middleware.actionHandlers[1] instanceof TestCardActionHandler);
+    assert.isTrue(middleware.actionHandlers[1] instanceof MockCardActionHandler);
     assert.isTrue(middleware.actionHandlers[1].triggerVerb == "myAction2");
   });
 });

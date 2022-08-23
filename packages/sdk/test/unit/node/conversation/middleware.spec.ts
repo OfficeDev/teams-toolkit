@@ -10,8 +10,8 @@ import { CommandResponseMiddleware } from "../../../../src/conversation/middlewa
 import { ConversationReferenceStore } from "../../../../src/conversation/storage";
 import {
   MockActionInvokeContext,
+  MockCardActionHandler,
   MockContext,
-  TestCardActionHandler,
   TestCommandHandler,
   TestStorage,
 } from "./testUtils";
@@ -95,7 +95,7 @@ describe("CommandResponse Middleware Tests - Node", () => {
 
 describe("CardAction Middleware Tests - Node", () => {
   it("onTurn should invoke card action handler if verb is matched", async () => {
-    const doStuffAction = new TestCardActionHandler("doStuff", "myResponseMessage");
+    const doStuffAction = new MockCardActionHandler("doStuff", "myResponseMessage");
     const middleware = new CardActionMiddleware([doStuffAction]);
 
     const testContext = new MockActionInvokeContext("doStuff");
@@ -106,7 +106,7 @@ describe("CardAction Middleware Tests - Node", () => {
   });
 
   it("onTurn shouldn't invoke card action handler if verb is not matched", async () => {
-    const doStuffAction = new TestCardActionHandler("doStuff", "myResponseMessage");
+    const doStuffAction = new MockCardActionHandler("doStuff", "myResponseMessage");
     const middleware = new CardActionMiddleware([doStuffAction]);
 
     const testContext = new MockActionInvokeContext("inconsistent-verb");

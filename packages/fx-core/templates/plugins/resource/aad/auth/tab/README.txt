@@ -1,33 +1,29 @@
-Enable single sign-on for tab applications
+Enable single sign-on for Teams tab applications
 -------------------------
-Microsoft Teams provides a mechanism by which an application can obtain the signed-in Teams user token to access Microsoft Graph (and other APIs).
-Teams Toolkit facilitates this interaction by abstracting some of the Azure Active Directory flows and integrations behind some simple, high level APIs.
-This enables you to add single sign-on (SSO) features easily to your Teams application.
 
-Changes to your project
+Files generated/updated in your project
 -------------------------
-When you added the SSO feature to your application, Teams Toolkit updated your project to support SSO:
-After you successfully added SSO into your project, Teams Toolkit will create and modify some files that helps you implement SSO feature.
-1. Create: 'aad.template.json' under 'templates/appPackage'
+
+1. New file - 'aad.template.json' is created in folder 'templates/appPackage'
    - The Azure Active Directory application manifest that is used to register the application with AAD.
-2. Modify: 'manifest.template.json' under 'templates/appPackage'
+2. Update file - 'templates/appPackage/manifest.template.json'
    - An 'webApplicationInfo' object will be added into your Teams app manifest template. This field is required by Teams when enabling SSO.
-3. Create: 'Auth/tab'
-   - Reference code and a 'README.txt' file. These files are provided for reference. See below for more information.
-4. Modify: 'appsettings.json' and 'appsettings.Development.json'
+3. New file - 'Auth/tab'
+   - Sample code and a 'README.txt' file. These files are provided for reference. See below for more information.
+4. Update file - 'appsettings.json' and 'appsettings.Development.json'
    - Configs that will be used by TeamsFx SDK will be added into your app settings. Please update add the 'TeamsFx' object if you have other appsettings files.
 
-Update your code to add SSO
+Actions required - update your code to add SSO authentication
 -------------------------
-As described above, the Teams Toolkit generated some configuration to set up your application for SSO, but you need to update your application business logic to take advantage of the SSO feature as appropriate.
 
-1. Move 'GetUserProfile.razor' file under 'Auth/tab' to 'Components/'.
+You need to update your application code to take advantage of the SSO authentication.
+
+1. Move 'GetUserProfile.razor' file from 'Auth/tab' folder to 'Components/' folder.
    - 'GetUserProfile': This file implements a function that uses TeamsFx SDK to call Microsoft Graph API to get user info.
-2. Replace the following line: '<AddSSO />' with '<GetUserProfile />' to replace the 'AddSSO' component with 'GetUserProfile' component in 'Components/Welcome.razor'.
+2. Rplace the 'AddSSO' component with 'GetUserProfile' component. To do this, just replace the following line: '<AddSSO />' with '<GetUserProfile />' in 'Components/Welcome.razor' file.
 
 Debug your application
 -------------------------
-You can debug your application by:
 
 1. Right-click your project and select Teams Toolkit > Prepare Teams app dependencies
 2. If prompted, sign in with an M365 account for the Teams organization you want 
@@ -36,6 +32,7 @@ to install the app to
 4. In the launched browser, select the Add button to load the app in Teams
 
 Teams Toolkit will use the AAD manifest file to register a AAD application registered for SSO.
+
 To learn more about Teams Toolkit local debug functionalities, refer to https://docs.microsoft.com/microsoftteams/platform/toolkit/debug-local.
 
 Customize AAD applications

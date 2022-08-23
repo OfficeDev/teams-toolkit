@@ -10,10 +10,19 @@ import * as path from "path";
 
 import { convertToLocalEnvs } from "../../../src/common/local/localStateHelper";
 import { v3 } from "@microsoft/teamsfx-api";
-
+import mockedEnv, { RestoreFn } from "mocked-env";
 chai.use(chaiAsPromised);
 
-describe("localSettingsHelper", () => {
+describe("localStateHelper", () => {
+  let mockedEnvRestore: RestoreFn;
+
+  beforeEach(() => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "false" });
+  });
+
+  afterEach(() => {
+    mockedEnvRestore();
+  });
   describe("convertToLocalEnvs()", () => {
     const projectSettings0 = {
       appName: "unit-test0",

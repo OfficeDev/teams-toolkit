@@ -192,4 +192,251 @@ describe("App-manifest Component", () => {
       chai.assert.equal(publishAction.error.name, AppStudioError.TeamsAppPublishFailedError.name);
     }
   });
+  it("getManifest(tab) - happy path", async function () {
+    const manifestString = `{
+      "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.14/MicrosoftTeams.schema.json",
+      "manifestVersion": "1.14",
+      "version": "1.0.0",
+      "id": "{{state.app-manifest.teamsAppId}}",
+      "packageName": "com.microsoft.teams.extension",
+      "developer": {
+          "name": "Teams App, Inc.",
+          "websiteUrl": "https://www.example.com",
+          "privacyUrl": "https://www.example.com/termofuse",
+          "termsOfUseUrl": "https://www.example.com/privacy"
+      },
+      "icons": {
+          "color": "{{config.manifest.icons.color}}",
+          "outline": "{{config.manifest.icons.outline}}"
+      },
+      "name": {
+          "short": "{{config.manifest.appName.short}}",
+          "full": "{{config.manifest.appName.full}}"
+      },
+      "description": {
+          "short": "{{config.manifest.description.short}}",
+          "full": "{{config.manifest.description.full}}"
+      },
+      "accentColor": "#FFFFFF",
+      "bots": [],
+      "composeExtensions": [],
+      "staticTabs": [
+          {
+              "entityId": "index0",
+              "name": "Personal Tab",
+              "contentUrl": "{{{state.teams-tab.endpoint}}}{{{state.teams-tab.indexPath}}}/tab",
+              "websiteUrl": "{{{state.teams-tab.endpoint}}}{{{state.teams-tab.indexPath}}}/tab",
+              "scopes": [
+                  "personal"
+              ]
+          }
+      ],
+      "permissions": [
+          "identity",
+          "messageTeamMembers"
+      ],
+      "validDomains": [
+          "{{state.teams-tab.domain}}"
+      ],
+      "webApplicationInfo": {
+          "id": "{{state.aad-app.clientId}}",
+          "resource": "{{{state.aad-app.applicationIdUris}}}"
+      }
+    }`;
+    sandbox.stub(fs, "readFile").resolves(manifestString as any);
+    sandbox.stub(fs, "pathExists").resolves(true);
+    const envInfo = newEnvInfoV3();
+    envInfo.envName = "local";
+    context.tokenProvider = tools.tokenProvider;
+    envInfo.state = {
+      solution: {
+        provisionSucceeded: true,
+        teamsAppTenantId: "zzzzzz-zzzzzz-zzzzz",
+      },
+      "app-manifest": {
+        tenantId: "xxxxxxxxx-xxxxxxx-xxxxxxx",
+        teamsAppId: "yyyyyyy-yyyyyyy-yyyyyyy",
+      },
+      "teams-tab": {
+        indexPath: "/index.html#",
+        endpoint: "https://localhost:53000",
+        domain: "localhost",
+      },
+      "aad-app": {
+        clientId: "aaaaaaaaaaa-aaaaaaaaaaa-aaaaaaaa",
+      },
+    };
+    const getManifestRes = await appstudio.getManifest("", envInfo);
+    chai.assert(getManifestRes.isOk());
+    if (getManifestRes.isOk()) {
+      const finalManifest = getManifestRes.value;
+      chai.assert(finalManifest.validDomains?.includes("localhost:53000"));
+    }
+  });
+
+  it("getManifest(tab+bot) - error", async function () {
+    const manifestString = `{
+      "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.14/MicrosoftTeams.schema.json",
+      "manifestVersion": "1.14",
+      "version": "1.0.0",
+      "id": "{{state.app-manifest.teamsAppId}}",
+      "packageName": "com.microsoft.teams.extension",
+      "developer": {
+          "name": "Teams App, Inc.",
+          "websiteUrl": "https://www.example.com",
+          "privacyUrl": "https://www.example.com/termofuse",
+          "termsOfUseUrl": "https://www.example.com/privacy"
+      },
+      "icons": {
+          "color": "{{config.manifest.icons.color}}",
+          "outline": "{{config.manifest.icons.outline}}"
+      },
+      "name": {
+          "short": "{{config.manifest.appName.short}}",
+          "full": "{{config.manifest.appName.full}}"
+      },
+      "description": {
+          "short": "{{config.manifest.description.short}}",
+          "full": "{{config.manifest.description.full}}"
+      },
+      "accentColor": "#FFFFFF",
+      "bots": [],
+      "composeExtensions": [],
+      "staticTabs": [
+          {
+              "entityId": "index0",
+              "name": "Personal Tab",
+              "contentUrl": "{{{state.teams-tab.endpoint}}}{{{state.teams-tab.indexPath}}}/tab",
+              "websiteUrl": "{{{state.teams-tab.endpoint}}}{{{state.teams-tab.indexPath}}}/tab",
+              "scopes": [
+                  "personal"
+              ]
+          }
+      ],
+      "permissions": [
+          "identity",
+          "messageTeamMembers"
+      ],
+      "validDomains": [
+          "{{state.teams-tab.domain}}"
+      ],
+      "webApplicationInfo": {
+          "id": "{{state.aad-app.clientId}}",
+          "resource": "{{{state.aad-app.applicationIdUris}}}"
+      }
+    }`;
+    sandbox.stub(fs, "readFile").resolves(manifestString as any);
+    sandbox.stub(fs, "pathExists").resolves(true);
+    const envInfo = newEnvInfoV3();
+    envInfo.envName = "local";
+    context.tokenProvider = tools.tokenProvider;
+    envInfo.state = {
+      solution: {
+        provisionSucceeded: true,
+        teamsAppTenantId: "zzzzzz-zzzzzz-zzzzz",
+      },
+      "app-manifest": {
+        tenantId: "xxxxxxxxx-xxxxxxx-xxxxxxx",
+        teamsAppId: "yyyyyyy-yyyyyyy-yyyyyyy",
+      },
+      "teams-tab": {
+        indexPath: "/index.html#",
+        endpoint: "https://localhost:53000",
+        domain: "localhost",
+      },
+      "aad-app": {
+        clientId: "aaaaaaaaaaa-aaaaaaaaaaa-aaaaaaaa",
+      },
+      "teams-bot": {
+        botId: "bbbbcccccc",
+      },
+    };
+    const getManifestRes = await appstudio.getManifest("", envInfo);
+    chai.assert(getManifestRes.isErr());
+  });
+
+  it("getManifest(tab+bot) - happy path", async function () {
+    const manifestString = `{
+      "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.14/MicrosoftTeams.schema.json",
+      "manifestVersion": "1.14",
+      "version": "1.0.0",
+      "id": "{{state.app-manifest.teamsAppId}}",
+      "packageName": "com.microsoft.teams.extension",
+      "developer": {
+          "name": "Teams App, Inc.",
+          "websiteUrl": "https://www.example.com",
+          "privacyUrl": "https://www.example.com/termofuse",
+          "termsOfUseUrl": "https://www.example.com/privacy"
+      },
+      "icons": {
+          "color": "{{config.manifest.icons.color}}",
+          "outline": "{{config.manifest.icons.outline}}"
+      },
+      "name": {
+          "short": "{{config.manifest.appName.short}}",
+          "full": "{{config.manifest.appName.full}}"
+      },
+      "description": {
+          "short": "{{config.manifest.description.short}}",
+          "full": "{{config.manifest.description.full}}"
+      },
+      "accentColor": "#FFFFFF",
+      "bots": [],
+      "composeExtensions": [],
+      "staticTabs": [
+          {
+              "entityId": "index0",
+              "name": "Personal Tab",
+              "contentUrl": "{{{state.teams-tab.endpoint}}}{{{state.teams-tab.indexPath}}}/tab",
+              "websiteUrl": "{{{state.teams-tab.endpoint}}}{{{state.teams-tab.indexPath}}}/tab",
+              "scopes": [
+                  "personal"
+              ]
+          }
+      ],
+      "permissions": [
+          "identity",
+          "messageTeamMembers"
+      ],
+      "validDomains": [
+      ],
+      "webApplicationInfo": {
+          "id": "{{state.aad-app.clientId}}",
+          "resource": "{{{state.aad-app.applicationIdUris}}}"
+      }
+    }`;
+    sandbox.stub(fs, "readFile").resolves(manifestString as any);
+    sandbox.stub(fs, "pathExists").resolves(true);
+    const envInfo = newEnvInfoV3();
+    envInfo.envName = "local";
+    context.tokenProvider = tools.tokenProvider;
+    envInfo.state = {
+      solution: {
+        provisionSucceeded: true,
+        teamsAppTenantId: "zzzzzz-zzzzzz-zzzzz",
+      },
+      "app-manifest": {
+        tenantId: "xxxxxxxxx-xxxxxxx-xxxxxxx",
+        teamsAppId: "yyyyyyy-yyyyyyy-yyyyyyy",
+      },
+      "teams-tab": {
+        indexPath: "/index.html#",
+        endpoint: "https://localhost:53000",
+        domain: "localhost",
+      },
+      "aad-app": {
+        clientId: "aaaaaaaaaaa-aaaaaaaaaaa-aaaaaaaa",
+      },
+      "teams-bot": {
+        botId: "bbbbcccccc",
+        validDomain: "abc.com",
+      },
+    };
+    const getManifestRes = await appstudio.getManifest("", envInfo);
+    chai.assert(getManifestRes.isOk());
+    if (getManifestRes.isOk()) {
+      const finalManifest = getManifestRes.value;
+      chai.assert(finalManifest.validDomains?.includes("abc.com"));
+    }
+  });
 });

@@ -87,9 +87,10 @@ async function migrate(ctx: CoreHookContext): Promise<boolean> {
       Component.core,
       TelemetryEvent.ProjectAadManifestMigrationAddAADTemplateStart
     );
-    const projectSettingsJson = await fs.readJson(projectSettingsPath);
+    const projectSettingsJsonOld = await fs.readJson(projectSettingsPath);
 
-    await generateAadManifest(inputs.projectPath!, projectSettingsJson);
+    // make sure this function use upgraded version of projectsettings for V3
+    await generateAadManifest(inputs.projectPath!, projectSettings);
 
     const aadManifestPath = path.join(
       inputs.projectPath as string,
@@ -99,7 +100,7 @@ async function migrate(ctx: CoreHookContext): Promise<boolean> {
     );
     fileList.push(aadManifestPath);
 
-    await fs.writeJSON(projectSettingsPath, projectSettingsJson, { spaces: 4, EOL: os.EOL });
+    await fs.writeJSON(projectSettingsPath, projectSettings, { spaces: 4, EOL: os.EOL });
 
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectAadManifestMigrationAddAADTemplate);
 
@@ -111,7 +112,7 @@ async function migrate(ctx: CoreHookContext): Promise<boolean> {
 
     await fs.writeJSON(
       path.join(backupPath, ".fx", "configs", "projectSettings.json"),
-      projectSettings,
+      projectSettingsJsonOld,
       { spaces: 4, EOL: os.EOL }
     );
     fileList.push(path.join(backupPath, ".fx", "configs", "projectSettings.json"));

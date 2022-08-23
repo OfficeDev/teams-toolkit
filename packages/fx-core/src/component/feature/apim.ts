@@ -17,6 +17,7 @@ import "reflect-metadata";
 import Container, { Service } from "typedi";
 import { hasApi } from "../../common/projectSettingsHelperV3";
 import { convertToAlphanumericOnly } from "../../common/utils";
+import { AzureResourceApim, AzureResourceFunction } from "../../plugins";
 import { buildAnswer } from "../../plugins/resource/apim/answer";
 import { ApimPluginConfig } from "../../plugins/resource/apim/config";
 import {
@@ -30,7 +31,7 @@ import { ComponentNames } from "../constants";
 import { Plans } from "../messages";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { APIMResource } from "../resource/apim";
-import { generateConfigBiceps, bicepUtils } from "../utils";
+import { generateConfigBiceps, bicepUtils, addFeatureNotify } from "../utils";
 import { getComponent } from "../workflow";
 
 @Service(ComponentNames.APIMFeature)
@@ -42,7 +43,7 @@ export class ApimFeature {
   ): Promise<Result<undefined, FxError>> {
     const component = getComponent(context.projectSetting, ComponentNames.APIM);
     if (component) return ok(undefined);
-
+    const addedResources: string[] = [];
     const effects: Effect[] = [];
 
     const hasFunc = hasApi(context.projectSetting);
@@ -53,6 +54,7 @@ export class ApimFeature {
       const res = await teamsApi.add(context, inputs);
       if (res.isErr()) return err(res.error);
       effects.push("add teams-api");
+      addedResources.push(AzureResourceFunction.id);
     }
 
     // 2. scaffold
@@ -98,6 +100,8 @@ export class ApimFeature {
       effects.push("generate config biceps");
     }
     effects.push("generate bicep");
+    addedResources.push(AzureResourceApim.id);
+    addFeatureNotify(inputs, context.userInteraction, "Resource", addedResources);
     return ok(undefined);
   }
   @hooks([

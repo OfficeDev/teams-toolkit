@@ -65,7 +65,6 @@ describe("Bot Feature", () => {
       botPassword: "botPassword",
     };
     sandbox.stub(AppStudio, "getBotRegistration").rejects({
-      config: { url: `${getAppStudioEndpoint()}/api/botframework/xxx`, methos: "post" },
       response: { status: 500 },
     });
     const res = await component.provision(context as ResourceContextV3, inputs);
@@ -75,8 +74,6 @@ describe("Bot Feature", () => {
       assert.equal(error.name, "ProvisionError");
       assert.exists(error.innerError);
       assert.equal(error.innerError?.response?.status, 500);
-      assert.equal(error.innerError?.toJSON?.config?.method, "post");
-      assert.include(error.innerError?.config?.url, "botframwork");
     }
   });
 });

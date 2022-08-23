@@ -37,6 +37,7 @@ import { AzureResource } from "./azureResource";
 import { Plans, ProgressMessages, ProgressTitles } from "../messages";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
+import { wrapPluginError } from "../../plugins/resource/bot/errors";
 @Service("bot-service")
 export class BotService extends AzureResource {
   outputs = BotServiceOutputs;
@@ -65,6 +66,11 @@ export class BotService extends AzureResource {
       progressTitle: ProgressTitles.provisionBot,
       progressSteps: 1,
       errorSource: "BotService",
+      errorHandler: (e, t) => {
+        // context and name are for sending telemetry, since we don't send telemetry here, it's ok to leave them empty
+        const res = wrapPluginError(e, {} as any, false, "");
+        return res.isErr() ? res.error : (e as FxError);
+      },
     }),
   ])
   async provision(
@@ -88,13 +94,14 @@ export class BotService extends AzureResource {
   @hooks([
     ActionExecutionMW({
       errorSource: "BotService",
+      errorHandler: (e, t) => {
+        // context and name are for sending telemetry, since we don't send telemetry here, it's ok to leave them empty
+        const res = wrapPluginError(e, {} as any, false, "");
+        return res.isErr() ? res.error : (e as FxError);
+      },
     }),
   ])
-  async configure(
-    context: ResourceContextV3,
-    inputs: InputsWithProjectPath,
-    actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>> {
+  async configure(context: ResourceContextV3): Promise<Result<undefined, FxError>> {
     // create bot aad app by API call
     const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
     if (!teamsBot) return ok(undefined);

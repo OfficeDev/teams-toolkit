@@ -6,7 +6,7 @@ import { CreateAppError, CreateSecretError } from "../aad/errors";
 import { ErrorNames, AzureConstants } from "./constants";
 import { Messages } from "./resources/messages";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
-import { err, PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { err, FxError, PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { FxBotPluginResultFactory as ResultFactory, FxResult } from "./result";
 import { Logger } from "./logger";
 import { telemetryHelper } from "./utils/telemetry-helper";
@@ -332,7 +332,18 @@ export function wrapError(
     sendTelemetry && telemetryHelper.sendResultEvent(context, name, res);
     return res;
   }
+  return wrapPluginError(e, context, sendTelemetry, name);
+}
 
+//! context and name are only for telemetry, they may be empty if sendTelemetry is false
+export function wrapPluginError(
+  e: InnerError,
+  context: PluginContext,
+  sendTelemetry: boolean,
+  name: string
+): FxResult {
+  const errorMsg = isErrorWithMessage(e) ? e.message : "";
+  const innerError = isPluginError(e) ? e.innerError : undefined;
   if (e instanceof PluginError || e instanceof CommonHostingError) {
     const message = e.genMessage() + errorMsg;
     const displayMessage = e.genDisplayMessage() + errorMsg;

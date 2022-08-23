@@ -832,13 +832,6 @@ async function runBackgroundAsyncTasks(
       TreatmentVariables.UseFolderSelection,
       true
     )) as boolean | undefined;
-  TreatmentVariableValue.openFolderInNewWindow = (await exp
-    .getExpService()
-    .getTreatmentVariableAsync(
-      TreatmentVariables.VSCodeConfig,
-      TreatmentVariables.OpenFolderInNewWindow,
-      true
-    )) as boolean | undefined;
   TreatmentVariableValue.previewTreeViewCommand = (await exp
     .getExpService()
     .getTreatmentVariableAsync(

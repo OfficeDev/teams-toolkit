@@ -11,6 +11,17 @@ import { internalLogger } from "../util/logger";
 import { TeamsFxConfiguration } from "../models/teamsfxConfiguration";
 
 /**
+ * Frank edit
+ * TeamsUserCredentialConfig class
+ */
+export type TeamsUserCredentialConfig = {
+  [key: string]: string, //client id, initiate login endpoint or simple auth endpoint
+  "clientId": string,
+  "initiateLoginEndpoint": string,
+  "authorityHost": string
+}
+
+/**
  * A class providing credential and configuration.
  */
 export class TeamsFx implements TeamsFxConfiguration {
@@ -18,7 +29,7 @@ export class TeamsFx implements TeamsFxConfiguration {
   private teamsUserCredential?: TeamsUserCredential;
   public identityType: IdentityType;
 
-  constructor(identityType?: IdentityType, customConfig?: Record<string, string>) {
+  constructor(identityType?: IdentityType, customConfig?: Record<string, string> | TeamsUserCredentialConfig) {
     this.identityType = identityType ?? IdentityType.User;
     if (this.identityType !== IdentityType.User) {
       const errorMsg = formatString(

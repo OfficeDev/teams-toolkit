@@ -30,6 +30,33 @@ const ReservedKey: Set<string> = new Set<string>([
 ]);
 
 /**
+ * Frank edit
+ * OBOUserCredentialClientSecretConfig, OBOUserCredentialCertificateContentConfig, AppCredentialConfig classes
+ */
+export type OBOUserCredentialClientSecretConfig = {
+  [key: string]: string,
+  "clientId": string,
+  "authorityHost": string,
+  "clientSecret": string,
+  "tenantId": string
+}
+
+export type OBOUserCredentialCertificateContentConfig = {
+  [key: string]: string,
+  "clientId": string,
+  "authorityHost": string,
+  "certificateContent": string,
+  "tenantId": string
+}
+
+export type AppCredentialConfig = {
+  [key: string]: string,
+  "clientId": string,
+  "clientSecret": string,
+  "tenantId": string
+}
+
+/**
  * A class providing credential and configuration.
  */
 export class TeamsFx implements TeamsFxConfiguration {
@@ -46,7 +73,7 @@ export class TeamsFx implements TeamsFxConfiguration {
    *
    * @throws {@link ErrorCode|IdentityTypeNotSupported} when setting app identity in browser.
    */
-  constructor(identityType?: IdentityType, customConfig?: Record<string, string>) {
+  constructor(identityType?: IdentityType, customConfig?: Record<string, string> | OBOUserCredentialClientSecretConfig | OBOUserCredentialCertificateContentConfig | AppCredentialConfig) {
     this.identityType = identityType ?? IdentityType.User;
     this.configuration = new Map<string, string>();
     this.loadFromEnv();
@@ -56,44 +83,6 @@ export class TeamsFx implements TeamsFxConfiguration {
         if (value) {
           this.configuration.set(key, value);
         }
-      }
-    }
-    // Frank edit. 
-    try {
-      if (identityType && customConfig)
-        this.identityTypeAndConfigMatchCheck(identityType, this.configuration);
-      else if (customConfig)
-        this.identityTypeAndConfigMatchCheck(undefined, this.configuration);
-    } catch (e) {
-
-    }
-  }
-
-  /**
-   * Frank edit
-   * Check if customConfig matchs identityType 
-   * 
-   */
-  identityTypeAndConfigMatchCheck(identityType?: IdentityType | undefined, config?: Map<string, string | undefined>): void {
-    if (identityType) {
-      switch(identityType) {
-        case IdentityType.User: 
-          if (config&&(!config.has("initiateLoginEndpoint")||!(config.has("clientId"))))
-            throw new Error("Config missing: clientId or initiateLoginEndpoint");
-          break;
-        case IdentityType.App:
-          if (config&&(!config.has("clientId")||!(config.has("clientSecret"))))
-            throw new Error("Config missing error: clientId or clientSecret");
-          break;
-        default:
-          throw new Error("identity type error: Bad identity type!");
-      } 
-    }
-    else {
-      // TODO:
-      // legalConfigList 
-      if (config) {
-
       }
     }
   }

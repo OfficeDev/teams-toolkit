@@ -228,7 +228,7 @@ export async function getQuestionsForAddFeatureV3(
     return ok(addFeatureNode);
   }
   // check capability options
-  const azureHost = ctx.projectSetting.solutionSettings?.hostType === HostTypeOptionAzure.id;
+  const azureHost = hasAzureResourceV3(ctx.projectSetting as ProjectSettingsV3);
   if (azureHost) {
     const manifestRes = await manifestUtils.readAppManifest(inputs.projectPath!);
     if (manifestRes.isErr()) return err(manifestRes.error);

@@ -24,7 +24,9 @@ import {
   STATIC_TABS_TPL_V3,
   TEAMS_APP_MANIFEST_TEMPLATE,
 } from "../../../../src/component/resource/appManifest/constants";
+import { DefaultManifestProvider } from "../../../../src/component/resource/appManifest/manifestProvider";
 import { manifestUtils } from "../../../../src/component/resource/appManifest/utils";
+import { createContextV3 } from "../../../../src/component/utils";
 import { setTools } from "../../../../src/core/globalVars";
 import { CONFIGURABLE_TABS_TPL_EXISTING_APP } from "../../../../src/plugins/resource/appstudio/constants";
 import { AppStudioError } from "../../../../src/plugins/resource/appstudio/errors";
@@ -52,7 +54,58 @@ describe("Load and Save manifest template V3", () => {
     }
   });
 });
-
+describe("Manifest provider", () => {
+  setTools(new MockTools());
+  const provider = new DefaultManifestProvider();
+  const context = createContextV3();
+  const inputs = {
+    platform: Platform.VSCode,
+    projectPath: ".",
+  };
+  const sandbox = sinon.createSandbox();
+  let manifest: TeamsAppManifest;
+  beforeEach(async () => {
+    manifest = JSON.parse(TEAMS_APP_MANIFEST_TEMPLATE) as TeamsAppManifest;
+    sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
+    sandbox.stub(manifestUtils, "writeAppManifest").resolves(ok(undefined));
+  });
+  afterEach(async () => {
+    sandbox.restore();
+  });
+  it("addCapabilities", async () => {
+    const capabilities = [{ name: "staticTab" as const }];
+    const res = await provider.addCapabilities(context, inputs, capabilities);
+    chai.assert.isTrue(res.isOk());
+  });
+  it("updateCapability", async () => {
+    const tab: IStaticTab = {
+      entityId: "index",
+      scopes: ["personal", "team"],
+    };
+    manifest.staticTabs?.push(STATIC_TABS_TPL_V3[0]);
+    const res = await provider.updateCapability(context, inputs, {
+      name: "staticTab",
+      snippet: tab,
+    });
+    chai.assert.isTrue(res.isOk());
+  });
+  it("deleteCapability", async () => {
+    const tab: IStaticTab = {
+      entityId: "index",
+      scopes: ["personal", "team"],
+    };
+    manifest.staticTabs?.push(STATIC_TABS_TPL_V3[0]);
+    const res = await provider.deleteCapability(context, inputs, {
+      name: "staticTab",
+      snippet: tab,
+    });
+    chai.assert.isTrue(res.isOk());
+  });
+  it("capabilityExceedLimit", async () => {
+    const res = await provider.capabilityExceedLimit(context, inputs, "staticTab");
+    chai.assert.isTrue(res.isOk());
+  });
+});
 describe("Add capability V3", () => {
   const sandbox = sinon.createSandbox();
   let inputs: v2.InputsWithProjectPath;

@@ -282,6 +282,9 @@ function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext)
     "initProject"
   );
 
+  // Initialize an existing application
+  registerInCommandController(context, "fx-extension.debug", handlers.debugHandler);
+
   // Add features
   registerInCommandController(
     context,
@@ -810,6 +813,14 @@ async function runBackgroundAsyncTasks(
 
   await openWelcomePageAfterExtensionInstallation();
 
+  TreatmentVariableValue.previewTreeViewCommand = (await exp
+    .getExpService()
+    .getTreatmentVariableAsync(
+      TreatmentVariables.VSCodeConfig,
+      TreatmentVariables.PreviewTreeViewCommand,
+      true
+    )) as boolean | undefined;
+
   if (isTeamsFxProject) {
     await handlers.autoOpenProjectHandler();
     await handlers.promptSPFxUpgrade();
@@ -830,13 +841,6 @@ async function runBackgroundAsyncTasks(
     .getTreatmentVariableAsync(
       TreatmentVariables.VSCodeConfig,
       TreatmentVariables.UseFolderSelection,
-      true
-    )) as boolean | undefined;
-  TreatmentVariableValue.previewTreeViewCommand = (await exp
-    .getExpService()
-    .getTreatmentVariableAsync(
-      TreatmentVariables.VSCodeConfig,
-      TreatmentVariables.PreviewTreeViewCommand,
       true
     )) as boolean | undefined;
   if (!TreatmentVariableValue.isEmbeddedSurvey) {

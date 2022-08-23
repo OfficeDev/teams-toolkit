@@ -155,10 +155,10 @@ export class AppManifest implements CloudResource {
     }),
   ])
   async updateCapability(
-    projectPath: string,
+    inputs: InputsWithProjectPath,
     capability: v3.ManifestCapability
   ): Promise<Result<undefined, FxError>> {
-    return manifestUtils.updateCapability(projectPath, capability);
+    return manifestUtils.updateCapability(inputs.projectPath, capability);
   }
   @hooks([
     ActionExecutionMW({
@@ -168,10 +168,10 @@ export class AppManifest implements CloudResource {
     }),
   ])
   async deleteCapability(
-    projectPath: string,
+    inputs: InputsWithProjectPath,
     capability: v3.ManifestCapability
   ): Promise<Result<undefined, FxError>> {
-    return manifestUtils.deleteCapability(projectPath, capability);
+    return manifestUtils.deleteCapability(inputs.projectPath, capability);
   }
   async capabilityExceedLimit(
     inputs: InputsWithProjectPath,

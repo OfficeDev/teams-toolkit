@@ -20,6 +20,7 @@ import { ComponentNames } from "../../../../src/component/constants";
 import { AppManifest } from "../../../../src/component/resource/appManifest/appManifest";
 import {
   BOTS_TPL_FOR_NOTIFICATION_V3,
+  COMPOSE_EXTENSIONS_TPL_V3,
   CONFIGURABLE_TABS_TPL_V3,
   STATIC_TABS_TPL_V3,
   TEAMS_APP_MANIFEST_TEMPLATE,
@@ -248,6 +249,16 @@ describe("Add capability V3", () => {
     chai.assert.equal(manifest.bots?.length, 1);
     chai.assert.equal(manifest.bots?.[0].commandLists?.[0].commands?.[0].title, "helloWorld");
   });
+  it("Add messaging extension success", async () => {
+    const result = await component.addCapability(inputs, [{ name: "MessageExtension" }]);
+    chai.assert.isTrue(result.isOk());
+  });
+  it("Add messaging extension with snippet success", async () => {
+    const result = await component.addCapability(inputs, [
+      { name: "MessageExtension", snippet: COMPOSE_EXTENSIONS_TPL_V3[0] },
+    ]);
+    chai.assert.isTrue(result.isOk());
+  });
 
   it("getCapabilities", async () => {
     const res = await manifestUtils.getCapabilities(inputs.projectPath);
@@ -281,7 +292,7 @@ describe("Update capability V3", () => {
       entityId: "index",
       scopes: ["personal", "team"],
     };
-    const result = await component.updateCapability(inputs.projectPath, {
+    const result = await component.updateCapability(inputs, {
       name: "staticTab",
       snippet: tab,
     });
@@ -294,7 +305,7 @@ describe("Update capability V3", () => {
       entityId: "index2",
       scopes: ["personal", "team"],
     };
-    const result = await component.updateCapability(inputs.projectPath, {
+    const result = await component.updateCapability(inputs, {
       name: "staticTab",
       snippet: tab,
     });
@@ -309,7 +320,7 @@ describe("Update capability V3", () => {
       configurationUrl: "endpoint",
       scopes: ["team", "groupchat"],
     };
-    const result = await component.updateCapability(inputs.projectPath, {
+    const result = await component.updateCapability(inputs, {
       name: "configurableTab",
       snippet: tab,
     });
@@ -321,7 +332,7 @@ describe("Update capability V3", () => {
       botId: uuid.v4(),
       scopes: ["team", "groupchat"],
     };
-    const result = await component.updateCapability(inputs.projectPath, {
+    const result = await component.updateCapability(inputs, {
       name: "Bot",
       snippet: bot,
     });
@@ -329,6 +340,15 @@ describe("Update capability V3", () => {
     if (result.isErr()) {
       chai.assert.equal(result.error.name, AppStudioError.CapabilityNotExistError.name);
     }
+  });
+
+  it("Update messaging extension success", async () => {
+    manifest.composeExtensions?.push(COMPOSE_EXTENSIONS_TPL_V3[0]);
+    const result = await component.updateCapability(inputs, {
+      name: "MessageExtension",
+      snippet: COMPOSE_EXTENSIONS_TPL_V3[0],
+    });
+    chai.assert.isTrue(result.isOk());
   });
 });
 
@@ -356,7 +376,7 @@ describe("Delete capability", () => {
       entityId: "index",
       scopes: ["personal", "team"],
     };
-    const result = await component.deleteCapability(inputs.projectPath, {
+    const result = await component.deleteCapability(inputs, {
       name: "staticTab",
       snippet: tab,
     });
@@ -368,7 +388,7 @@ describe("Delete capability", () => {
       entityId: "index2",
       scopes: ["personal", "team"],
     };
-    const result = await component.deleteCapability(inputs.projectPath, {
+    const result = await component.deleteCapability(inputs, {
       name: "staticTab",
       snippet: tab,
     });
@@ -379,7 +399,7 @@ describe("Delete capability", () => {
   });
 
   it("Delete configurable tab should succeed", async () => {
-    const result = await component.deleteCapability(inputs.projectPath, {
+    const result = await component.deleteCapability(inputs, {
       name: "configurableTab",
     });
     chai.assert.isTrue(result.isOk());
@@ -387,7 +407,7 @@ describe("Delete capability", () => {
 
   it("Delete configurable tab should failed", async () => {
     manifest.configurableTabs = [];
-    const result = await component.deleteCapability(inputs.projectPath, {
+    const result = await component.deleteCapability(inputs, {
       name: "configurableTab",
     });
     chai.assert.isTrue(result.isErr());
@@ -397,7 +417,7 @@ describe("Delete capability", () => {
   });
 
   it("Delete bot should failed", async () => {
-    const result = await component.deleteCapability(inputs.projectPath, {
+    const result = await component.deleteCapability(inputs, {
       name: "Bot",
     });
     chai.assert.isTrue(result.isErr());
@@ -407,7 +427,7 @@ describe("Delete capability", () => {
   });
 
   it("Delete message extension should failed", async () => {
-    const result = await component.deleteCapability(inputs.projectPath, {
+    const result = await component.deleteCapability(inputs, {
       name: "MessageExtension",
     });
     chai.assert.isTrue(result.isErr());

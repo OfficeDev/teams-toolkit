@@ -154,7 +154,7 @@
     "teamstoolkit.commandsTreeViewProvider.manifestEditorTitleNew": "Edit manifest file",
     "teamstoolkit.commandsTreeViewProvider.previewACDescription": "Preview and author Adaptive Cards directly in Visual Studio Code",
     "teamstoolkit.commandsTreeViewProvider.previewAdaptiveCard": "Preview and Debug Adaptive Cards",
-    "teamstoolkit.commandsTreeViewProvider.previewDescription": "Preview your Teams app locally or in the cloud",
+    "teamstoolkit.commandsTreeViewProvider.previewDescription": "Preview your Teams app locally",
     "teamstoolkit.commandsTreeViewProvider.previewTitle": "Preview your Teams app",
     "teamstoolkit.commandsTreeViewProvider.projectDescription": "Manage your project",
     "teamstoolkit.commandsTreeViewProvider.projectTitle": "PROJECT",

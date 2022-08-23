@@ -6,21 +6,33 @@ import * as sinon from "sinon";
 import * as vscode from "vscode";
 import { ProjectConfigV3, ok } from "@microsoft/teamsfx-api";
 import { ManifestTemplateHoverProvider } from "../../src/hoverProvider";
+import { vscodeHelper } from "../../src/debug/depsChecker/vscodeHelper";
 import * as handlers from "../../src/handlers";
 import { MockCore } from "../mocks/mockCore";
 
 describe("Manifest template hover", async () => {
-  const document = <vscode.TextDocument>{
+  const text = `{
+    "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.14/MicrosoftTeams.schema.json",
+    "manifestVersion": "1.14",
+    "version": "1.0.0",
+    "id": "{{state.fx-resource-appstudio.teamsAppId}}"
+  }`;
+  const document: vscode.TextDocument = {
     fileName: "manifest.template.json",
     getText: () => {
-      return `{
-                "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.14/MicrosoftTeams.schema.json",
-                "manifestVersion": "1.14",
-                "version": "1.0.0",
-                "id": "{{state.fx-resource-appstudio.teamsAppId}}"
-            }`;
+      return text;
     },
-  };
+    lineAt: (line: number) => {
+      const lines = text.split("\n");
+      return {
+        lineNumber: line,
+        text: lines[line - 1],
+      };
+    },
+    getWordRangeAtPosition: (position: vscode.Position, regex?: RegExp) => {
+      return undefined;
+    },
+  } as any;
 
   const config: ProjectConfigV3 = {
     projectSettings: {
@@ -45,6 +57,7 @@ describe("Manifest template hover", async () => {
   beforeEach(() => {
     sinon.stub(handlers, "core").value(new MockCore());
     sinon.stub(MockCore.prototype, "getProjectConfigV3").resolves(ok(config));
+    sinon.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(false);
   });
 
   afterEach(() => {
@@ -69,9 +82,6 @@ describe("Manifest template hover", async () => {
     const cts = new vscode.CancellationTokenSource();
     const hover = await hoverProvider.provideHover(document, position, cts.token);
 
-    chai.assert.isTrue(hover !== undefined);
-    if (hover !== undefined) {
-      chai.assert.isTrue(hover.contents.length > 0);
-    }
+    chai.assert.isTrue(hover === undefined);
   });
 });

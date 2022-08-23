@@ -3,7 +3,6 @@
 
 import {
   Platform,
-  ProjectSettings,
   TokenProvider,
   v2,
   v3,
@@ -21,7 +20,6 @@ import sinon from "sinon";
 import * as uuid from "uuid";
 import { CollaborationState, hasAAD, hasAzureResource, hasSPFx, SolutionError } from "../../src";
 import { checkPermission, grantPermission, listCollaborator } from "../../src/core/collaborator";
-import { AppStudioPluginV3 } from "../../src/plugins/resource/appstudio/v3";
 import { CollaborationUtil } from "../../src/plugins/solution/fx-solution/v2/collaborationUtil";
 import {
   BuiltInFeaturePluginNames,
@@ -35,6 +33,8 @@ import {
 import { randomAppName } from "./utils";
 import { Container } from "typedi";
 import { AadAppForTeamsPluginV3 } from "../../src/plugins/resource/aad/v3";
+import { AppManifest } from "../../src/component/resource/appManifest/appManifest";
+import { ComponentNames } from "../../src/component/constants";
 describe("Collaborator APIs for V3", () => {
   const sandbox = sinon.createSandbox();
   const projectSettings: ProjectSettingsV3 = {
@@ -176,7 +176,7 @@ describe("Collaborator APIs for V3", () => {
           name: "fake_name",
         })
       );
-      const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
       sandbox
         .stub(appStudio, "listCollaborator")
         .resolves(
@@ -235,7 +235,7 @@ describe("Collaborator APIs for V3", () => {
           name: "fake_name",
         })
       );
-      const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
       const aadPlugin = Container.get<AadAppForTeamsPluginV3>(BuiltInFeaturePluginNames.aad);
       sandbox.stub(appStudio, "listCollaborator").resolves(
         ok([
@@ -291,7 +291,7 @@ describe("Collaborator APIs for V3", () => {
           name: "fake_name",
         })
       );
-      const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
       sandbox.stub(appStudio, "listCollaborator").resolves(
         ok([
           {
@@ -368,7 +368,7 @@ describe("Collaborator APIs for V3", () => {
           name: "fake_name",
         })
       );
-      const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
       sandbox
         .stub(appStudio, "checkPermission")
         .resolves(
@@ -425,7 +425,7 @@ describe("Collaborator APIs for V3", () => {
           name: "fake_name",
         })
       );
-      const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
       const aadPlugin = Container.get<AadAppForTeamsPluginV3>(BuiltInFeaturePluginNames.aad);
       sandbox.stub(appStudio, "checkPermission").resolves(
         ok([
@@ -604,7 +604,7 @@ describe("Collaborator APIs for V3", () => {
           isAdministrator: true,
         });
 
-      const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
       sandbox
         .stub(appStudio, "grantPermission")
         .resolves(
@@ -664,7 +664,7 @@ describe("Collaborator APIs for V3", () => {
           displayName: "displayName2",
           isAdministrator: true,
         });
-      const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
       const aadPlugin = Container.get<AadAppForTeamsPluginV3>(BuiltInFeaturePluginNames.aad);
       sandbox.stub(appStudio, "grantPermission").resolves(
         ok([
@@ -730,7 +730,7 @@ describe("Collaborator APIs for V3", () => {
           displayName: "displayName2",
           isAdministrator: true,
         });
-      const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
       sandbox.stub(appStudio, "grantPermission").resolves(
         ok([
           {

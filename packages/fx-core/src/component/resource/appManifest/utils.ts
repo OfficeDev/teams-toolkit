@@ -82,11 +82,8 @@ export class ManifestUtils {
     if (appManifestRes.isErr()) return err(appManifestRes.error);
     const appManifest = appManifestRes.value;
     for (const capability of capabilities) {
-      const exceedLimit = await this._capabilityExceedLimit(appManifest, capability.name);
-      if (exceedLimit.isErr()) {
-        return err(exceedLimit.error);
-      }
-      if (exceedLimit.value) {
+      const exceedLimit = this._capabilityExceedLimit(appManifest, capability.name);
+      if (exceedLimit) {
         return err(
           AppStudioResultFactory.UserError(
             AppStudioError.CapabilityExceedLimitError.name,
@@ -342,38 +339,27 @@ export class ManifestUtils {
   ): Promise<Result<boolean, FxError>> {
     const manifestRes = await this.readAppManifest(projectPath);
     if (manifestRes.isErr()) return err(manifestRes.error);
-    return this._capabilityExceedLimit(manifestRes.value, capability);
+    return ok(this._capabilityExceedLimit(manifestRes.value, capability));
   }
-  async _capabilityExceedLimit(
+  _capabilityExceedLimit(
     manifest: TeamsAppManifest,
     capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension" | "WebApplicationInfo"
-  ): Promise<Result<boolean, FxError>> {
-    let exceed = false;
+  ): boolean {
     switch (capability) {
       case "staticTab":
-        exceed =
-          manifest.staticTabs !== undefined && manifest.staticTabs!.length >= STATIC_TABS_MAX_ITEMS;
-        return ok(exceed);
-      case "configurableTab":
-        exceed = manifest.configurableTabs !== undefined && manifest.configurableTabs!.length >= 1;
-        return ok(exceed);
-      case "Bot":
-        exceed = manifest.bots !== undefined && manifest.bots!.length >= 1;
-        return ok(exceed);
-      case "MessageExtension":
-        exceed =
-          manifest.composeExtensions !== undefined && manifest.composeExtensions!.length >= 1;
-        return ok(exceed);
-      case "WebApplicationInfo":
-        return ok(false);
-      default:
-        return err(
-          AppStudioResultFactory.SystemError(
-            AppStudioError.InvalidCapabilityError.name,
-            AppStudioError.InvalidCapabilityError.message(capability)
-          )
+        return (
+          manifest.staticTabs !== undefined && manifest.staticTabs!.length >= STATIC_TABS_MAX_ITEMS
         );
+      case "configurableTab":
+        return manifest.configurableTabs !== undefined && manifest.configurableTabs!.length >= 1;
+      case "Bot":
+        return manifest.bots !== undefined && manifest.bots!.length >= 1;
+      case "MessageExtension":
+        return manifest.composeExtensions !== undefined && manifest.composeExtensions!.length >= 1;
+      case "WebApplicationInfo":
+        return false;
     }
+    return false;
   }
 
   /**

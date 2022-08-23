@@ -9,7 +9,7 @@ import {
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
 import * as templatesAction from "../../../src/common/template-utils/templatesActions";
-import * as manifestUtils from "../../../src/component/resource/appManifest/utils";
+import { manifestUtils } from "../../../src/component/resource/appManifest/utils";
 import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
 import { assert } from "chai";
 import "mocha";
@@ -50,7 +50,7 @@ describe("Bot Feature", () => {
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     sandbox.stub(templatesAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
-    sandbox.stub(manifestUtils, "writeAppManifest").resolves();
+    sandbox.stub(manifestUtils, "writeAppManifest").resolves(ok(undefined));
     sandbox.stub(projectSettingsLoader, "loadProjectSettings").resolves(ok(projectSetting));
     sandbox.stub(fs, "readJson").resolves({});
     sandbox.stub(fs, "writeJSON").resolves();

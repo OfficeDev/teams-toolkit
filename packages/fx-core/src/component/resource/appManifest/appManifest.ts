@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import { hooks } from "@feathersjs/hooks/lib";
 import {
   ActionContext,
   CloudResource,
@@ -8,14 +9,18 @@ import {
   FxError,
   Inputs,
   InputsWithProjectPath,
+  M365TokenProvider,
   ok,
   Platform,
-  ResourceContextV3,
+  ProjectSettingsV3,
   QTreeNode,
+  ResourceContextV3,
   Result,
   SystemError,
   TeamsAppManifest,
+  TokenProvider,
   UserError,
+  v2,
   v3,
   v2,
   ProjectSettingsV3,
@@ -24,18 +29,21 @@ import {
   TokenProvider,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
-import { cloneDeep } from "lodash";
 import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
 import { pathToFileURL } from "url";
-import { getLocalizedString } from "../../../common/localizeUtils";
+import isUUID from "validator/lib/isUUID";
 import { VSCodeExtensionCommand } from "../../../common/constants";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import { hasTab } from "../../../common/projectSettingsHelperV3";
+import { AppStudioScopes } from "../../../common/tools";
+import { getProjectTemplatesFolderPath } from "../../../common/utils";
 import { globalVars } from "../../../core/globalVars";
 import { getTemplatesFolder } from "../../../folder";
+import { AppStudioClient } from "../../../plugins/resource/appstudio/appStudio";
 import {
-  BotScenario,
   CommandAndResponseOptionItem,
   NotificationOptionItem,
 } from "../../../plugins/solution/fx-solution/question";
@@ -45,25 +53,25 @@ import {
   COMPOSE_EXTENSIONS_TPL_EXISTING_APP,
   CONFIGURABLE_TABS_TPL_EXISTING_APP,
   DEFAULT_COLOR_PNG_FILENAME,
+  DEFAULT_DEVELOPER,
   DEFAULT_OUTLINE_PNG_FILENAME,
+  ErrorMessages,
+  MANIFEST_RESOURCES,
   OUTLINE_TEMPLATE,
   STATIC_TABS_TPL_EXISTING_APP,
   DEFAULT_DEVELOPER,
   Constants,
-  MANIFEST_RESOURCES,
-  STATIC_TABS_MAX_ITEMS,
-  ErrorMessages,
-  BOTS_TPL_FOR_MULTI_ENV,
 } from "../../../plugins/resource/appstudio/constants";
 import { AppStudioError } from "../../../plugins/resource/appstudio/errors";
+import { AppUser } from "../../../plugins/resource/appstudio/interfaces/appUser";
 import {
   autoPublishOption,
   manuallySubmitOption,
 } from "../../../plugins/resource/appstudio/questions";
 import { AppStudioResultFactory } from "../../../plugins/resource/appstudio/results";
 import {
-  TelemetryPropertyKey,
   TelemetryEventName,
+  TelemetryPropertyKey,
 } from "../../../plugins/resource/appstudio/utils/telemetry";
 import { ComponentNames } from "../../constants";
 import {
@@ -89,12 +97,6 @@ import { readAppManifest, writeAppManifest } from "./utils";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { getProjectTemplatesFolderPath } from "../../../common/utils";
-import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
-import isUUID from "validator/lib/isUUID";
-import { AppStudioScopes } from "../../../common/tools";
-import { AppStudioClient } from "../../../plugins/resource/appstudio/appStudio";
-import { AppUser } from "../../../plugins/resource/appstudio/interfaces/appUser";
-import { isBotNotificationEnabled } from "../../../common/featureFlags";
 
 @Service("app-manifest")
 export class AppManifest implements CloudResource {
@@ -168,43 +170,9 @@ export class AppManifest implements CloudResource {
     inputs: InputsWithProjectPath,
     capabilities: v3.ManifestCapability[]
   ): Promise<Result<undefined, FxError>> {
-    return addCapabilities(inputs, capabilities);
-  }
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryComponentName: "AppStudioPlugin",
-      telemetryEventName: "update-capability",
-    }),
-  ])
-  async updateCapability(
-    projectPath: string,
-    capability: v3.ManifestCapability
-  ): Promise<Result<undefined, FxError>> {
-    return updateCapability(projectPath, capability);
-  }
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryComponentName: "AppStudioPlugin",
-      telemetryEventName: "delete-capability",
-    }),
-  ])
-  async deleteCapability(
-    projectPath: string,
-    capability: v3.ManifestCapability
-  ): Promise<Result<undefined, FxError>> {
-    return deleteCapability(projectPath, capability);
-  }
-  async capabilityExceedLimit(
-    inputs: InputsWithProjectPath,
-    capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension" | "WebApplicationInfo"
-  ): Promise<Result<boolean, FxError>> {
-    const appManifestRes = await readAppManifest(inputs.projectPath);
-    if (appManifestRes.isErr()) return err(appManifestRes.error);
-    const res = await _capabilityExceedLimit(appManifestRes.value, capability);
+    const res = await addCapabilities(inputs, capabilities);
     if (res.isErr()) return err(res.error);
-    return ok(res.value);
+    return ok(undefined);
   }
   @hooks([
     ActionExecutionMW({
@@ -468,244 +436,6 @@ export class AppManifest implements CloudResource {
   ): Promise<Result<undefined, FxError>> {
     return await updateManifest(context, inputs);
   }
-
-  /**
-   * Check if manifest templates already exist.
-   */
-  async preCheck(projectPath: string): Promise<string[]> {
-    const existFiles = new Array<string>();
-    for (const templates of ["Templates", "templates"]) {
-      const appPackageDir = path.join(projectPath, templates, "appPackage");
-      const manifestPath = path.resolve(appPackageDir, "manifest.template.json");
-      if (await fs.pathExists(manifestPath)) {
-        existFiles.push(manifestPath);
-      }
-      const resourcesDir = path.resolve(appPackageDir, MANIFEST_RESOURCES);
-      const defaultColorPath = path.join(resourcesDir, DEFAULT_COLOR_PNG_FILENAME);
-      if (await fs.pathExists(defaultColorPath)) {
-        existFiles.push(defaultColorPath);
-      }
-      const defaultOutlinePath = path.join(resourcesDir, DEFAULT_OUTLINE_PNG_FILENAME);
-      if (await fs.pathExists(defaultOutlinePath)) {
-        existFiles.push(defaultOutlinePath);
-      }
-    }
-    return existFiles;
-  }
-  private async getTeamsAppId(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    envInfo: v3.EnvInfoV3
-  ): Promise<string> {
-    let teamsAppId = "";
-    // User may manually update id in manifest template file, rather than configuration file
-    // The id in manifest template file should override configurations
-    const manifestResult = await getManifest(inputs.projectPath, envInfo);
-    if (manifestResult.isOk()) {
-      teamsAppId = manifestResult.value.id;
-    }
-    if (!isUUID(teamsAppId)) {
-      teamsAppId = (envInfo.state[ComponentNames.AppManifest] as v3.TeamsAppResource).teamsAppId;
-    }
-    return teamsAppId;
-  }
-
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryComponentName: "AppStudioPlugin",
-      telemetryEventName: TelemetryEventName.listCollaborator,
-      errorSource: "AppStudioPlugin",
-    }),
-  ])
-  async listCollaborator(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    envInfo: v3.EnvInfoV3,
-    m365TokenProvider: M365TokenProvider
-  ): Promise<Result<TeamsAppAdmin[], FxError>> {
-    try {
-      const teamsAppId = await this.getTeamsAppId(ctx, inputs, envInfo);
-      if (!teamsAppId) {
-        return err(
-          new UserError(
-            Constants.PLUGIN_NAME,
-            "GetConfigError",
-            ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, this.name)
-          )
-        );
-      }
-      const appStudioTokenRes = await m365TokenProvider.getAccessToken({ scopes: AppStudioScopes });
-      const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
-      let userLists;
-      try {
-        userLists = await AppStudioClient.getUserList(teamsAppId, appStudioToken as string);
-        if (!userLists) {
-          return ok([]);
-        }
-      } catch (error: any) {
-        if (error.name === 404) {
-          error.message = ErrorMessages.TeamsAppNotFound(teamsAppId);
-        }
-        throw error;
-      }
-
-      const teamsAppAdmin: TeamsAppAdmin[] = userLists
-        .filter((userList) => {
-          return userList.isAdministrator;
-        })
-        .map((userList) => {
-          return {
-            userObjectId: userList.aadId,
-            displayName: userList.displayName,
-            userPrincipalName: userList.userPrincipalName,
-            resourceId: teamsAppId,
-          };
-        });
-
-      return ok(teamsAppAdmin);
-    } catch (error: any) {
-      const fxError =
-        error.name && error.name >= 400 && error.name < 500
-          ? AppStudioResultFactory.UserError(
-              AppStudioError.ListCollaboratorFailedError.name,
-              AppStudioError.ListCollaboratorFailedError.message(error)
-            )
-          : AppStudioResultFactory.SystemError(
-              AppStudioError.ListCollaboratorFailedError.name,
-              AppStudioError.ListCollaboratorFailedError.message(error)
-            );
-
-      return err(fxError);
-    }
-  }
-
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryComponentName: "AppStudioPlugin",
-      telemetryEventName: TelemetryEventName.grantPermission,
-      errorSource: "AppStudioPlugin",
-    }),
-  ])
-  public async grantPermission(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    envInfo: v3.EnvInfoV3,
-    m365TokenProvider: M365TokenProvider,
-    userInfo: AppUser
-  ): Promise<Result<ResourcePermission[], FxError>> {
-    try {
-      const appStudioTokenRes = await m365TokenProvider.getAccessToken({ scopes: AppStudioScopes });
-      const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
-
-      const teamsAppId = await this.getTeamsAppId(ctx, inputs, envInfo);
-      if (!teamsAppId) {
-        const msgs = ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, this.name);
-        return err(
-          new UserError(
-            Constants.PLUGIN_NAME,
-            AppStudioError.GrantPermissionFailedError.name,
-            msgs[0],
-            msgs[1]
-          )
-        );
-      }
-
-      try {
-        await AppStudioClient.grantPermission(teamsAppId, appStudioToken as string, userInfo);
-      } catch (error: any) {
-        const msgs = AppStudioError.GrantPermissionFailedError.message(error?.message, teamsAppId);
-        return err(
-          new UserError(
-            Constants.PLUGIN_NAME,
-            AppStudioError.GrantPermissionFailedError.name,
-            msgs[0],
-            msgs[1]
-          )
-        );
-      }
-      const result: ResourcePermission[] = [
-        {
-          name: Constants.PERMISSIONS.name,
-          roles: [Constants.PERMISSIONS.admin],
-          type: Constants.PERMISSIONS.type,
-          resourceId: teamsAppId,
-        },
-      ];
-      return ok(result);
-    } catch (error: any) {
-      const fxError =
-        error.name && error.name >= 400 && error.name < 500
-          ? AppStudioResultFactory.UserError(
-              AppStudioError.GrantPermissionFailedError.name,
-              AppStudioError.GrantPermissionFailedError.message(error.message)
-            )
-          : AppStudioResultFactory.SystemError(
-              AppStudioError.GrantPermissionFailedError.name,
-              AppStudioError.GrantPermissionFailedError.message(error.message)
-            );
-
-      return err(fxError);
-    }
-  }
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryComponentName: "AppStudioPlugin",
-      telemetryEventName: TelemetryEventName.checkPermission,
-      errorSource: "AppStudioPlugin",
-    }),
-  ])
-  async checkPermission(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    envInfo: v3.EnvInfoV3,
-    m365TokenProvider: M365TokenProvider,
-    userInfo: AppUser
-  ): Promise<Result<ResourcePermission[], FxError>> {
-    try {
-      const appStudioTokenRes = await m365TokenProvider.getAccessToken({ scopes: AppStudioScopes });
-      const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
-      const teamsAppId = await this.getTeamsAppId(ctx, inputs, envInfo);
-      if (!teamsAppId) {
-        return err(
-          new UserError(
-            Constants.PLUGIN_NAME,
-            "GetConfigError",
-            ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, this.name)
-          )
-        );
-      }
-      const teamsAppRoles = await AppStudioClient.checkPermission(
-        teamsAppId,
-        appStudioToken as string,
-        userInfo.aadId
-      );
-
-      const result: ResourcePermission[] = [
-        {
-          name: Constants.PERMISSIONS.name,
-          roles: [teamsAppRoles as string],
-          type: Constants.PERMISSIONS.type,
-          resourceId: teamsAppId,
-        },
-      ];
-      return ok(result);
-    } catch (error: any) {
-      const fxError =
-        error.name && error.name >= 400 && error.name < 500
-          ? AppStudioResultFactory.UserError(
-              AppStudioError.CheckPermissionFailedError.name,
-              AppStudioError.CheckPermissionFailedError.message(error)
-            )
-          : AppStudioResultFactory.SystemError(
-              AppStudioError.CheckPermissionFailedError.name,
-              AppStudioError.CheckPermissionFailedError.message(error)
-            );
-      return err(fxError);
-    }
-  }
 }
 
 export async function publishQuestion(
@@ -786,34 +516,21 @@ export async function addCapabilities(
           if (capability.existingApp) {
             appManifest.bots = appManifest.bots.concat(BOTS_TPL_EXISTING_APP);
           } else {
+            if (appManifest.bots === undefined) {
+              appManifest.bots = [];
+            }
+
             // import CoreQuestionNames introduces dependency cycle and breaks the whole program
             // inputs[CoreQuestionNames.Features]
-            if (inputs.features) {
-              const feature = inputs.features;
-              if (feature === CommandAndResponseOptionItem.id) {
-                // command and response bot
-                appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3);
-              } else if (feature === NotificationOptionItem.id) {
-                // notification
-                appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_NOTIFICATION_V3);
-              } else {
-                // legacy bot
-                appManifest.bots = appManifest.bots.concat(BOTS_TPL_V3);
-              }
-            } else if (inputs.scenarios) {
-              const scenariosRaw = inputs.scenarios;
-              const scenarios = Array.isArray(scenariosRaw) ? scenariosRaw : [];
-              if (scenarios.includes(BotScenario.CommandAndResponseBot)) {
-                // command and response bot
-                appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3);
-              } else if (scenarios.includes(BotScenario.NotificationBot)) {
-                // notification
-                appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_NOTIFICATION_V3);
-              } else {
-                // legacy bot
-                appManifest.bots = appManifest.bots.concat(BOTS_TPL_V3);
-              }
+            const feature = inputs.features;
+            if (feature === CommandAndResponseOptionItem.id) {
+              // command and response bot
+              appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3);
+            } else if (feature === NotificationOptionItem.id) {
+              // notification
+              appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_NOTIFICATION_V3);
             } else {
+              // legacy bot
               appManifest.bots = appManifest.bots.concat(BOTS_TPL_V3);
             }
           }
@@ -985,68 +702,4 @@ export async function deleteCapability(
   const writeRes = await writeAppManifest(manifest, projectPath);
   if (writeRes.isErr()) return err(writeRes.error);
   return ok(undefined);
-}
-export async function capabilityExceedLimit(
-  projectPath: string,
-  capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension" | "WebApplicationInfo"
-): Promise<Result<boolean, FxError>> {
-  const manifestRes = await readAppManifest(projectPath);
-  if (manifestRes.isErr()) return err(manifestRes.error);
-  return _capabilityExceedLimit(manifestRes.value, capability);
-}
-export async function _capabilityExceedLimit(
-  manifest: TeamsAppManifest,
-  capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension" | "WebApplicationInfo"
-): Promise<Result<boolean, FxError>> {
-  let exceed = false;
-  switch (capability) {
-    case "staticTab":
-      exceed =
-        manifest.staticTabs !== undefined && manifest.staticTabs!.length >= STATIC_TABS_MAX_ITEMS;
-      return ok(exceed);
-    case "configurableTab":
-      exceed = manifest.configurableTabs !== undefined && manifest.configurableTabs!.length >= 1;
-      return ok(exceed);
-    case "Bot":
-      exceed = manifest.bots !== undefined && manifest.bots!.length >= 1;
-      return ok(exceed);
-    case "MessageExtension":
-      exceed = manifest.composeExtensions !== undefined && manifest.composeExtensions!.length >= 1;
-      return ok(exceed);
-    case "WebApplicationInfo":
-      return ok(false);
-    default:
-      return err(
-        AppStudioResultFactory.SystemError(
-          AppStudioError.InvalidCapabilityError.name,
-          AppStudioError.InvalidCapabilityError.message(capability)
-        )
-      );
-  }
-}
-
-/**
- * Only works for manifest.template.json
- * @param projectRoot
- * @returns
- */
-export async function getCapabilities(projectRoot: string): Promise<Result<string[], FxError>> {
-  const manifestRes = await readAppManifest(projectRoot);
-  if (manifestRes.isErr()) {
-    return err(manifestRes.error);
-  }
-  const capabilities: string[] = [];
-  if (manifestRes.value.staticTabs && manifestRes.value.staticTabs!.length > 0) {
-    capabilities.push("staticTab");
-  }
-  if (manifestRes.value.configurableTabs && manifestRes.value.configurableTabs!.length > 0) {
-    capabilities.push("configurableTab");
-  }
-  if (manifestRes.value.bots && manifestRes.value.bots!.length > 0) {
-    capabilities.push("Bot");
-  }
-  if (manifestRes.value.composeExtensions) {
-    capabilities.push("MessageExtension");
-  }
-  return ok(capabilities);
 }

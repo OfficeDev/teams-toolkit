@@ -9,7 +9,7 @@ import {
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
 import * as templatesAction from "../../../src/common/template-utils/templatesActions";
-import * as manifestUtils from "../../../src/component/resource/appManifest/utils";
+import { manifestUtils } from "../../../src/component/resource/appManifest/utils";
 import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
 import { assert } from "chai";
 import "mocha";
@@ -44,7 +44,7 @@ describe("Tab Feature", () => {
   beforeEach(() => {
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
-    sandbox.stub(manifestUtils, "writeAppManifest").resolves();
+    sandbox.stub(manifestUtils, "writeAppManifest").resolves(ok(undefined));
     sandbox.stub(projectSettingsLoader, "loadProjectSettings").resolves(ok(projectSetting));
     sandbox.stub(fs, "readJson").resolves({});
     sandbox.stub(fs, "writeJSON").resolves();
@@ -68,7 +68,7 @@ describe("Tab Feature", () => {
 
   it("add react tab", async () => {
     sandbox.stub(templatesAction, "scaffoldFromTemplates").resolves();
-    sandbox.stub(utils, "persistBicep").resolves(ok(undefined));
+    sandbox.stub(utils.bicepUtils, "persistBiceps").resolves(ok(undefined));
 
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
@@ -93,7 +93,7 @@ describe("Tab Feature", () => {
 
   it("add react tab twice", async () => {
     sandbox.stub(templatesAction, "scaffoldFromTemplates").rejects();
-    sandbox.stub(utils, "persistBicep").rejects();
+    sandbox.stub(utils.bicepUtils, "persistBiceps").resolves(ok(undefined));
 
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,

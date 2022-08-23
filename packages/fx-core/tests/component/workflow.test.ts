@@ -1031,6 +1031,114 @@ describe("Workflow test for v3", () => {
     assert.isTrue(res.isOk());
   });
 
+  it("fx.deploy.cli.withAAD", async () => {
+    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
+    mockedEnvRestore = mockedEnv({
+      SWITCH_ACCOUNT: "false",
+      TEAMSFX_APIV3: "true",
+      TEAMSFX_AAD_MANIFEST: "true",
+    });
+    sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
+    sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
+    sandbox
+      .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
+      .resolves(ok({ tid: "mockTid" }));
+    sandbox
+      .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
+      .resolves(TestHelper.fakeCredential);
+    sandbox
+      .stub(provisionV3, "fillInAzureConfigs")
+      .resolves(ok({ hasSwitchedSubscription: false }));
+    sandbox.stub(provisionV2, "askForProvisionConsentNew").resolves(ok(Void));
+    sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
+    sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
+    sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
+    sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
+    sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
+      clientId: "00000000-0000-0000-0000-000000000000",
+      clientSecret: "mockClientSecret",
+      objectId: "00000000-0000-0000-0000-000000000000",
+    });
+    sandbox.stub(arm, "deployArmTemplates").resolves(ok(undefined));
+    sandbox.stub(deployV3, "checkDeployAzureSubscription").resolves(ok({}));
+    sandbox.stub(AadApp.prototype, "provision").resolves(ok(undefined));
+    sandbox.stub(AadApp.prototype, "setApplicationInContext").resolves(ok(undefined));
+    sandbox.stub(AadApp.prototype, "configure").resolves(ok(undefined));
+    sandbox.stub(AadApp.prototype, "deploy").resolves(ok(undefined));
+
+    const appName = `unittest${randomAppName()}`;
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+      [AzureSolutionQuestionNames.Features]: "Bot",
+      language: "typescript",
+      "app-name": appName,
+      folder: path.join(os.homedir(), "TeamsApps"),
+    };
+    const initRes = await fx.init(context, inputs);
+    if (initRes.isErr()) {
+      console.log(initRes.error);
+    }
+
+    assert.isTrue(initRes.isOk());
+    context.envInfo = newEnvInfoV3();
+    context.tokenProvider = tools.tokenProvider;
+    context.envInfo.state = {
+      solution: {
+        provisionSucceeded: true,
+        needCreateResourceGroup: false,
+        resourceGroupName: "mockRG",
+        location: "eastasia",
+        resourceNameSuffix: "3bf854123",
+        teamsAppTenantId: "mockTid",
+        subscriptionId: "mockSid",
+        subscriptionName: "mockSname",
+        tenantId: "mockAzureTid",
+      },
+      "azure-web-app": {
+        sku: "F1",
+        appName: "testwebApp",
+        domain: "testwebApp.azurewebsites.net",
+        appServicePlanName: "testwebAppPlan",
+        resourceId:
+          "/subscriptions/mockSid/resourceGroups/jay-texas/providers/Microsoft.Web/sites/testwebApp",
+        endpoint: "https://testwebApp.azurewebsites.net",
+      },
+      [ComponentNames.AadApp]: {
+        clientId: "00000000-0000-0000-0000-000000000000",
+      },
+    };
+
+    const component = Container.get("teams-bot") as any;
+    const addBotRes = await component.add(context, inputs);
+    if (addBotRes.isErr()) {
+      console.log(addBotRes.error);
+    }
+    assert.isTrue(addBotRes.isOk());
+
+    const ssoComponent = Container.get(ComponentNames.SSO) as any;
+    const ssoRes = await ssoComponent.add(context, inputs);
+    if (ssoRes.isErr()) {
+      console.log(ssoRes.error);
+    }
+    assert.isTrue(ssoRes.isOk());
+
+    const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
+    if (provisionRes.isErr()) {
+      console.log(provisionRes.error);
+    }
+    assert.isTrue(provisionRes.isOk());
+
+    inputs[Constants.INCLUDE_AAD_MANIFEST] = "yes";
+    inputs.platform = Platform.CLI;
+    inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] = [];
+    const deployRes = await fx.deploy(context as ResourceContextV3, inputs);
+    if (deployRes.isErr()) {
+      console.log(deployRes.error);
+    }
+    assert.isTrue(deployRes.isOk());
+  });
+
   it("fx.deployAadFromVscode", async () => {
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     mockedEnvRestore = mockedEnv({

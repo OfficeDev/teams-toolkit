@@ -527,6 +527,13 @@ export class TeamsfxCore {
     const projectSettings = context.projectSetting as ProjectSettingsV3;
     const inputPlugins = inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] || [];
     const inputComponentNames = inputPlugins.map(pluginName2ComponentName) as string[];
+    if (
+      hasAAD(context.projectSetting) &&
+      inputs[Constants.INCLUDE_AAD_MANIFEST] === "yes" &&
+      inputs.platform === Platform.CLI
+    ) {
+      inputComponentNames.push(ComponentNames.AadApp);
+    }
     const thunks = [];
     let hasAzureResource = false;
     // 1. collect resources to deploy

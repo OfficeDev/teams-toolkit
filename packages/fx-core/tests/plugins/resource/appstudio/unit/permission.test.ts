@@ -20,7 +20,6 @@ import faker from "faker";
 import { PluginNames } from "../../../../../src/plugins/solution/fx-solution/constants";
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
 import { getAzureProjectRoot } from "../helper";
-import { newEnvInfo } from "../../../../../src";
 import { AppUser } from "../../../../../src/plugins/resource/appstudio/interfaces/appUser";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import {
@@ -33,6 +32,9 @@ import * as uuid from "uuid";
 import Container from "typedi";
 import { AppManifest } from "../../../../../src/component/resource/appManifest/appManifest";
 import { ComponentNames } from "../../../../../src/component/constants";
+import { MockTools } from "../../../../core/utils";
+import { setTools } from "../../../../../src/core/globalVars";
+import { newEnvInfo } from "../../../../../src/core/environment";
 
 const userList: AppUser = {
   tenantId: faker.datatype.uuid(),
@@ -46,6 +48,7 @@ describe("Remote Collaboration", () => {
   let plugin: AppStudioPlugin;
   let ctx: PluginContext;
   let configOfOtherPlugins: Map<string, ConfigMap>;
+  setTools(new MockTools());
   const sandbox = sinon.createSandbox();
   const projectSettings: ProjectSettings = {
     appName: "my app",
@@ -117,14 +120,14 @@ describe("Remote Collaboration", () => {
       },
       config: {},
     };
-    const plugin = Container.get<AppManifest>(ComponentNames.AppManifest);
+    const component = Container.get<AppManifest>(ComponentNames.AppManifest);
     sandbox.stub(tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("anything"));
     sandbox.stub(AppStudioClient, "checkPermission").resolves("Administrator");
     const inputs: v2.InputsWithProjectPath = {
       platform: Platform.VSCode,
       projectPath: getAzureProjectRoot(),
     };
-    const checkPermission = await plugin.checkPermission(
+    const checkPermission = await component.checkPermission(
       ctxV2,
       inputs,
       envInfo,
@@ -181,14 +184,14 @@ describe("Remote Collaboration", () => {
       },
       config: {},
     };
-    const plugin = Container.get<AppManifest>(ComponentNames.AppManifest);
+    const component = Container.get<AppManifest>(ComponentNames.AppManifest);
     sandbox.stub(ctx.m365TokenProvider!, "getAccessToken").resolves(ok("anything"));
     sandbox.stub(AppStudioClient, "grantPermission").resolves();
     const inputs: v2.InputsWithProjectPath = {
       platform: Platform.VSCode,
       projectPath: getAzureProjectRoot(),
     };
-    const grantPermission = await plugin.grantPermission(
+    const grantPermission = await component.grantPermission(
       ctxV2,
       inputs,
       envInfo,
@@ -253,7 +256,7 @@ describe("Remote Collaboration", () => {
       },
       config: {},
     };
-    const plugin = Container.get<AppManifest>(ComponentNames.AppManifest);
+    const component = Container.get<AppManifest>(ComponentNames.AppManifest);
     sandbox.stub(ctx.m365TokenProvider!, "getAccessToken").resolves(ok("anything"));
     sandbox.stub(AppStudioClient, "getUserList").resolves([
       {
@@ -268,7 +271,7 @@ describe("Remote Collaboration", () => {
       platform: Platform.VSCode,
       projectPath: getAzureProjectRoot(),
     };
-    const listCollaborator = await plugin.listCollaborator(
+    const listCollaborator = await component.listCollaborator(
       ctxV2,
       inputs,
       envInfo,

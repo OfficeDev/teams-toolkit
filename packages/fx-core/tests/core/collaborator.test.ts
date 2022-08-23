@@ -3,7 +3,6 @@
 
 import {
   Platform,
-  ProjectSettings,
   TokenProvider,
   v2,
   v3,

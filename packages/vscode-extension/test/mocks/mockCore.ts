@@ -98,4 +98,8 @@ export class MockCore implements Core {
   async getProjectConfig(inputs: Inputs): Promise<Result<any, FxError>> {
     return ok("");
   }
+
+  async getProjectConfigV3(inputs: Inputs): Promise<Result<any, FxError>> {
+    return ok("");
+  }
 }

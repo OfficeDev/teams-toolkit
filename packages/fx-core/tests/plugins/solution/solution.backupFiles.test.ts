@@ -18,6 +18,7 @@ describe("update Azure parameters", async () => {
 
   const targetConfigDir = path.join(backupFolder, TestFilePath.configFolder);
   const targetStateDir = path.join(backupFolder, TestFilePath.stateFolder);
+  const reportName = "backup-config-change-logs.md";
 
   const targetEnvName = "target";
   const originalResourceBaseName = "originalResourceBaseName";
@@ -80,6 +81,9 @@ describe("update Azure parameters", async () => {
     expect(gitIgnoreExists).equal(true);
     const gitIgnoreContent = await fs.readFile(path.join(TestHelper.rootDir, ".gitignore"));
     expect(gitIgnoreContent.includes(".backup")).equal(true);
+
+    const backupFileExists = await fs.pathExists(path.join(backupFolder, reportName));
+    expect(backupFileExists).equal(true);
   });
 
   it("No files exist", async () => {
@@ -141,6 +145,9 @@ describe("update Azure parameters", async () => {
     expect(gitIgnoreExists).equal(true);
     const gitIgnoreContent = await fs.readFile(path.join(TestHelper.rootDir, ".gitignore"));
     expect(gitIgnoreContent.includes(".backup")).equal(true);
+
+    const backupFileExists = await fs.pathExists(path.join(backupFolder, reportName));
+    expect(backupFileExists).equal(true);
   });
 
   it("Backup state, Azure parameters and user data files", async () => {
@@ -199,6 +206,9 @@ describe("update Azure parameters", async () => {
     expect(gitIgnoreExists).equal(true);
     const gitIgnoreContent = await fs.readFile(path.join(TestHelper.rootDir, ".gitignore"));
     expect(gitIgnoreContent.includes(".backup")).equal(true);
+
+    const backupFileExists = await fs.pathExists(path.join(backupFolder, reportName));
+    expect(backupFileExists).equal(true);
   });
 
   it("Backup in previously created .backup folder", async () => {
@@ -229,6 +239,9 @@ describe("update Azure parameters", async () => {
     expect(gitIgnoreExists).equal(true);
     const gitIgnoreContent = await fs.readFile(path.join(TestHelper.rootDir, ".gitignore"));
     expect(gitIgnoreContent.includes(".backup")).equal(true);
+
+    const backupFileExists = await fs.pathExists(path.join(backupFolder, reportName));
+    expect(backupFileExists).equal(true);
   });
 
   it("Backup in .teamsfx.backup folder", async () => {
@@ -261,5 +274,8 @@ describe("update Azure parameters", async () => {
     expect(gitIgnoreExists).equal(true);
     const gitIgnoreContent = await fs.readFile(path.join(TestHelper.rootDir, ".gitignore"));
     expect(gitIgnoreContent.includes(".backup")).equal(true);
+
+    const backupFileExists = await fs.pathExists(path.join(teamsfxBackupFolder, reportName));
+    expect(backupFileExists).equal(true);
   });
 });

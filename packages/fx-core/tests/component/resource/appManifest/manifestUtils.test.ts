@@ -19,6 +19,7 @@ import * as uuid from "uuid";
 import { ComponentNames } from "../../../../src/component/constants";
 import { AppManifest } from "../../../../src/component/resource/appManifest/appManifest";
 import {
+  BOTS_TPL_FOR_NOTIFICATION_V3,
   CONFIGURABLE_TABS_TPL_V3,
   STATIC_TABS_TPL_V3,
   TEAMS_APP_MANIFEST_TEMPLATE,
@@ -171,6 +172,18 @@ describe("Add capability V3", () => {
     chai.assert.isUndefined(manifest.bots?.[0].commandLists);
   });
 
+  it("Add notification bot capability with snippet", async () => {
+    const capabilities: v3.ManifestCapability[] = [
+      { name: "Bot" as const, snippet: BOTS_TPL_FOR_NOTIFICATION_V3[0] },
+    ];
+    inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.NotificationBot];
+    inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [AppServiceOptionItem.id];
+    const addCapabilityResult = await component.addCapability(inputs, capabilities);
+    chai.assert.isTrue(addCapabilityResult.isOk());
+    chai.assert.equal(manifest.bots?.length, 1);
+    chai.assert.isUndefined(manifest.bots?.[0].commandLists);
+  });
+
   it("Add command and response bot capability", async () => {
     sandbox.stub(process, "env").value({
       BOT_NOTIFICATION_ENABLED: "true",
@@ -181,6 +194,11 @@ describe("Add capability V3", () => {
     chai.assert.isTrue(addCapabilityResult.isOk());
     chai.assert.equal(manifest.bots?.length, 1);
     chai.assert.equal(manifest.bots?.[0].commandLists?.[0].commands?.[0].title, "helloWorld");
+  });
+
+  it("getCapabilities", async () => {
+    const res = await manifestUtils.getCapabilities(inputs.projectPath);
+    chai.assert.isTrue(res.isOk());
   });
 });
 

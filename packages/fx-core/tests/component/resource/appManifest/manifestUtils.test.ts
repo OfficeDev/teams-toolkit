@@ -52,12 +52,10 @@ describe("Load and Save manifest template V3", () => {
 
 describe("Add capability V3", () => {
   const sandbox = sinon.createSandbox();
-  let component: AppManifest;
   let inputs: v2.InputsWithProjectPath;
   let manifest: TeamsAppManifest;
-
+  const component = Container.get<AppManifest>(ComponentNames.AppManifest);
   beforeEach(async () => {
-    component = Container.get<AppManifest>(ComponentNames.AppManifest);
     inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -122,10 +120,11 @@ describe("Add capability V3", () => {
   });
 });
 
-describe("Update capability", () => {
+describe("Update capability V3", () => {
   const sandbox = sinon.createSandbox();
   let inputs: v2.InputsWithProjectPath;
   let manifest: TeamsAppManifest;
+  const component = Container.get(ComponentNames.AppManifest) as AppManifest;
   beforeEach(async () => {
     inputs = {
       platform: Platform.VSCode,
@@ -147,7 +146,7 @@ describe("Update capability", () => {
       entityId: "index",
       scopes: ["personal", "team"],
     };
-    const result = await manifestUtils.updateCapability(inputs.projectPath, {
+    const result = await component.updateCapability(inputs.projectPath, {
       name: "staticTab",
       snippet: tab,
     });
@@ -160,7 +159,7 @@ describe("Update capability", () => {
       entityId: "index2",
       scopes: ["personal", "team"],
     };
-    const result = await manifestUtils.updateCapability(inputs.projectPath, {
+    const result = await component.updateCapability(inputs.projectPath, {
       name: "staticTab",
       snippet: tab,
     });
@@ -175,7 +174,7 @@ describe("Update capability", () => {
       configurationUrl: "endpoint",
       scopes: ["team", "groupchat"],
     };
-    const result = await manifestUtils.updateCapability(inputs.projectPath, {
+    const result = await component.updateCapability(inputs.projectPath, {
       name: "configurableTab",
       snippet: tab,
     });
@@ -187,7 +186,7 @@ describe("Update capability", () => {
       botId: uuid.v4(),
       scopes: ["team", "groupchat"],
     };
-    const result = await manifestUtils.updateCapability(inputs.projectPath, {
+    const result = await component.updateCapability(inputs.projectPath, {
       name: "Bot",
       snippet: bot,
     });
@@ -202,6 +201,7 @@ describe("Delete capability", () => {
   const sandbox = sinon.createSandbox();
   let inputs: v2.InputsWithProjectPath;
   let manifest: TeamsAppManifest;
+  const component = Container.get(ComponentNames.AppManifest) as AppManifest;
   beforeEach(async () => {
     inputs = {
       platform: Platform.VSCode,
@@ -221,7 +221,7 @@ describe("Delete capability", () => {
       entityId: "index",
       scopes: ["personal", "team"],
     };
-    const result = await manifestUtils.deleteCapability(inputs.projectPath, {
+    const result = await component.deleteCapability(inputs.projectPath, {
       name: "staticTab",
       snippet: tab,
     });
@@ -233,7 +233,7 @@ describe("Delete capability", () => {
       entityId: "index2",
       scopes: ["personal", "team"],
     };
-    const result = await manifestUtils.deleteCapability(inputs.projectPath, {
+    const result = await component.deleteCapability(inputs.projectPath, {
       name: "staticTab",
       snippet: tab,
     });
@@ -244,7 +244,7 @@ describe("Delete capability", () => {
   });
 
   it("Delete configurable tab should succeed", async () => {
-    const result = await manifestUtils.deleteCapability(inputs.projectPath, {
+    const result = await component.deleteCapability(inputs.projectPath, {
       name: "configurableTab",
     });
     chai.assert.isTrue(result.isOk());
@@ -252,7 +252,7 @@ describe("Delete capability", () => {
 
   it("Delete configurable tab should failed", async () => {
     manifest.configurableTabs = [];
-    const result = await manifestUtils.deleteCapability(inputs.projectPath, {
+    const result = await component.deleteCapability(inputs.projectPath, {
       name: "configurableTab",
     });
     chai.assert.isTrue(result.isErr());
@@ -262,7 +262,7 @@ describe("Delete capability", () => {
   });
 
   it("Delete bot should failed", async () => {
-    const result = await manifestUtils.deleteCapability(inputs.projectPath, {
+    const result = await component.deleteCapability(inputs.projectPath, {
       name: "Bot",
     });
     chai.assert.isTrue(result.isErr());
@@ -272,7 +272,7 @@ describe("Delete capability", () => {
   });
 
   it("Delete message extension should failed", async () => {
-    const result = await manifestUtils.deleteCapability(inputs.projectPath, {
+    const result = await component.deleteCapability(inputs.projectPath, {
       name: "MessageExtension",
     });
     chai.assert.isTrue(result.isErr());

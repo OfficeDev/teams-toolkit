@@ -53,7 +53,6 @@ import {
   MANIFEST_RESOURCES,
   STATIC_TABS_MAX_ITEMS,
   ErrorMessages,
-  BOTS_TPL_FOR_MULTI_ENV,
 } from "../../../plugins/resource/appstudio/constants";
 import { AppStudioError } from "../../../plugins/resource/appstudio/errors";
 import {
@@ -94,7 +93,6 @@ import isUUID from "validator/lib/isUUID";
 import { AppStudioScopes } from "../../../common/tools";
 import { AppStudioClient } from "../../../plugins/resource/appstudio/appStudio";
 import { AppUser } from "../../../plugins/resource/appstudio/interfaces/appUser";
-import { isBotNotificationEnabled } from "../../../common/featureFlags";
 
 @Service("app-manifest")
 export class AppManifest implements CloudResource {

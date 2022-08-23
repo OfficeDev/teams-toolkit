@@ -8,6 +8,7 @@ import {
   Platform,
   TeamsAppManifest,
   v2,
+  v3,
 } from "@microsoft/teamsfx-api";
 import * as chai from "chai";
 import "mocha";
@@ -95,6 +96,68 @@ describe("Add capability V3", () => {
     chai.assert.equal(STATIC_TABS_TPL_V3[0].entityId, "index");
     chai.assert.equal(manifest.staticTabs!.length, 1);
     chai.assert.equal(manifest.staticTabs![0].entityId, "index0");
+  });
+
+  it("Add static tab capability with snippet", async () => {
+    const capabilities: v3.ManifestCapability[] = [
+      { name: "staticTab" as const, snippet: STATIC_TABS_TPL_V3[0] },
+    ];
+    const addCapabilityResult = await component.addCapability(inputs, capabilities);
+    chai.assert.isTrue(addCapabilityResult.isOk());
+    chai.assert.equal(manifest.staticTabs!.length, 1);
+    chai.assert.equal(manifest.staticTabs![0].entityId, "index");
+  });
+
+  it("Add static tab capability with existing app", async () => {
+    const capabilities: v3.ManifestCapability[] = [
+      { name: "staticTab" as const, existingApp: true },
+    ];
+    const addCapabilityResult = await component.addCapability(inputs, capabilities);
+    chai.assert.isTrue(addCapabilityResult.isOk());
+
+    // The index should not be modified after add capability
+    chai.assert.equal(STATIC_TABS_TPL_V3[0].entityId, "index");
+    chai.assert.equal(manifest.staticTabs!.length, 1);
+    chai.assert.equal(manifest.staticTabs![0].entityId, "index0");
+  });
+
+  it("Add configurable tab capability", async () => {
+    const capabilities: v3.ManifestCapability[] = [{ name: "configurableTab" as const }];
+    const addCapabilityResult = await component.addCapability(inputs, capabilities);
+    chai.assert.isTrue(addCapabilityResult.isOk());
+    chai.assert.equal(manifest.configurableTabs!.length, 1);
+  });
+
+  it("Add configurable tab capability with snippet", async () => {
+    const capabilities: v3.ManifestCapability[] = [
+      { name: "configurableTab" as const, snippet: CONFIGURABLE_TABS_TPL_V3[0] },
+    ];
+    const addCapabilityResult = await component.addCapability(inputs, capabilities);
+    chai.assert.isTrue(addCapabilityResult.isOk());
+    chai.assert.equal(manifest.configurableTabs!.length, 1);
+  });
+
+  it("Add configurable tab capability with existing app", async () => {
+    const capabilities: v3.ManifestCapability[] = [
+      { name: "configurableTab" as const, existingApp: true },
+    ];
+    const addCapabilityResult = await component.addCapability(inputs, capabilities);
+    chai.assert.isTrue(addCapabilityResult.isOk());
+    chai.assert.equal(manifest.configurableTabs!.length, 1);
+    chai.assert.deepEqual(manifest.configurableTabs![0], CONFIGURABLE_TABS_TPL_V3[0]);
+  });
+
+  it("Add notification bot capability failed, exceed limit", async () => {
+    const capabilities = [{ name: "Bot" as const }];
+    inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.NotificationBot];
+    inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [AppServiceOptionItem.id];
+    const addCapabilityResult = await component.addCapability(inputs, capabilities);
+    chai.assert.isTrue(addCapabilityResult.isOk());
+    chai.assert.equal(manifest.bots?.length, 1);
+    chai.assert.isUndefined(manifest.bots?.[0].commandLists);
+
+    const addCapabilityResult2 = await component.addCapability(inputs, capabilities);
+    chai.assert.isTrue(addCapabilityResult2.isErr());
   });
 
   it("Add notification bot capability", async () => {

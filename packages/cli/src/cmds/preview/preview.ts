@@ -83,7 +83,7 @@ import { openHubWebClient } from "./launch";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 
 enum Checker {
-  M365Account = "M365 Account",
+  M365Account = "Microsoft 365 Account",
   LocalCertificate = "Development certificate for localhost",
   Ports = "Ports",
 }

@@ -3,11 +3,12 @@
 
 import { err, FxError, ok, Result, v2, v3, Void } from "@microsoft/teamsfx-api";
 import {
-  capabilityExceedLimit,
+  addCapabilities,
+  _capabilityExceedLimit,
   deleteCapability,
   updateCapability,
-} from "../../../plugins/resource/appstudio/manifestTemplate";
-import { addCapabilities } from "./appManifest";
+  capabilityExceedLimit,
+} from "./appManifest";
 
 export class DefaultManifestProvider implements v3.AppManifestProvider {
   async updateCapability(
@@ -15,14 +16,18 @@ export class DefaultManifestProvider implements v3.AppManifestProvider {
     inputs: v2.InputsWithProjectPath,
     capability: v3.ManifestCapability
   ): Promise<Result<Void, FxError>> {
-    return await updateCapability(inputs.projectPath, capability);
+    const res = await updateCapability(inputs.projectPath, capability);
+    if (res.isErr()) return err(res.error);
+    return ok(Void);
   }
   async deleteCapability(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     capability: v3.ManifestCapability
   ): Promise<Result<Void, FxError>> {
-    return await deleteCapability(inputs.projectPath, capability);
+    const res = await deleteCapability(inputs.projectPath, capability);
+    if (res.isErr()) return err(res.error);
+    return ok(Void);
   }
   async capabilityExceedLimit(
     ctx: v2.Context,

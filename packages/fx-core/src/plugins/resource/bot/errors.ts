@@ -6,7 +6,7 @@ import { CreateAppError, CreateSecretError } from "../aad/errors";
 import { ErrorNames, AzureConstants } from "./constants";
 import { Messages } from "./resources/messages";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
-import { err, FxError, PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { err, PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { FxBotPluginResultFactory as ResultFactory, FxResult } from "./result";
 import { Logger } from "./logger";
 import { telemetryHelper } from "./utils/telemetry-helper";

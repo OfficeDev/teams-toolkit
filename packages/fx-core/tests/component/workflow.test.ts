@@ -65,7 +65,6 @@ import { AadApp } from "../../src/component/resource/aadApp/aadApp";
 import { Constants } from "../../src/plugins/resource/aad/constants";
 import * as deployV3 from "../../src/plugins/solution/fx-solution/v3/deploy";
 import { CoreQuestionNames } from "../../src/core/question";
-import { FunctionDeploy } from "../../src/plugins/resource/function/ops/deploy";
 
 describe("Workflow test for v3", () => {
   const sandbox = sinon.createSandbox();
@@ -1237,18 +1236,6 @@ describe("Workflow test for v3", () => {
       console.log(deployRes.error);
     }
     assert.isTrue(deployRes.isOk());
-  });
-  it("api-code.build", async () => {
-    const apiCode = Container.get("api-code") as any;
-    sandbox.stub(FunctionDeploy, "installFuncExtensions").resolves();
-    sandbox.stub(FunctionDeploy, "build").resolves();
-    sandbox.stub(apiCode, "handleDotnetChecker").resolves();
-    const inputs: InputsWithProjectPath = {
-      projectPath: projectPath,
-      platform: Platform.VSCode,
-    };
-    const res = await apiCode.build(context, inputs);
-    assert.isTrue(res.isOk());
   });
   it("getParameterJsonV3", async () => {
     const str = `{

@@ -29,7 +29,6 @@ import {
   mockApimService,
   mockApiManagementService,
   DefaultTestInput,
-  mockCredential,
   MockAxiosInput,
   mockApiVersionSet,
   mockApi,
@@ -102,7 +101,6 @@ function mockApimPlugin(sandbox: SinonSandbox, mockApimInput?: MockAxiosInput) {
   const productApiStub = mockProductApi(sandbox);
   apiManagementClient.productApi = productApiStub;
 
-  mockCredential(sandbox, credential, "test@unittest.com");
   const lazyApimService = new Lazy(async () => apimService);
   const openApiProcessor = new OpenApiProcessor();
   sandbox.stub(openApiProcessor, "loadOpenApiDocument").resolves({

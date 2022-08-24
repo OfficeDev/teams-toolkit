@@ -13,13 +13,26 @@ import {
 import { ApimService } from "../../../../src/plugins/resource/apim/services/apimService";
 import {
   Api,
+  ApiCreateOrUpdateOptionalParams,
+  ApiCreateOrUpdateResponse,
   ApiManagementClient,
   ApiManagementService,
+  ApiManagementServiceCreateOrUpdateOptionalParams,
+  ApiManagementServiceCreateOrUpdateResponse,
+  ApiManagementServiceGetOptionalParams,
+  ApiManagementServiceGetResponse,
   ApiVersionSet,
+  ApiVersionSetCreateOrUpdateOptionalParams,
+  ApiVersionSetCreateOrUpdateResponse,
+  ApiVersionSetGetOptionalParams,
+  ApiVersionSetGetResponse,
   ProductApi,
+  ProductApiCheckEntityExistsOptionalParams,
+  ProductApiCheckEntityExistsResponse,
+  ProductApiCreateOrUpdateOptionalParams,
+  ProductApiCreateOrUpdateResponse,
 } from "@azure/arm-apimanagement";
 import { ResourceManagementClient } from "@azure/arm-resources";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import {
   ApiCreateOrUpdateParameter,
   ApiManagementServiceResource,
@@ -29,6 +42,7 @@ import axios, { AxiosInstance } from "axios";
 import { IAadInfo } from "../../../../src/plugins/resource/apim/interfaces/IAadResource";
 import { PluginContext } from "@microsoft/teamsfx-api";
 import { newEnvInfo } from "../../../../src";
+import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/identity";
 
 export type StubbedClass<T> = SinonStubbedInstance<T> & T;
 
@@ -110,11 +124,11 @@ export const DefaultTestOutput = {
 export function mockApimService(sandbox: SinonSandbox): {
   apimService: ApimService;
   apiManagementClient: StubbedClass<ApiManagementClient>;
-  credential: StubbedClass<MockTokenCredentials>;
+  credential: MockTokenCredentials;
 } {
   const apiManagementClient = createSinonStubInstance(sandbox, ApiManagementClient);
   const resourceProviderClient = createSinonStubInstance(sandbox, ResourceManagementClient);
-  const credential = createSinonStubInstance(sandbox, MockTokenCredentials);
+  const credential = new MockTokenCredentials();
   const apimService = new ApimService(
     apiManagementClient,
     resourceProviderClient.providers,
@@ -138,191 +152,172 @@ export function mockApiManagementService(
   sandbox: SinonSandbox,
   mockTestInput: MockApiManagementServiceInput = DefaultTestInput
 ): any {
-  const apiManagementServiceStub = sandbox.createStubInstance(ApiManagementService);
-  const getStub = apiManagementServiceStub.get as unknown as sinon.SinonStub<
-    [string, string],
-    Promise<any>
-  >;
-  getStub
-    .withArgs(
-      mockTestInput.resourceGroup.existing,
-      match((input: string) => {
-        return input !== mockTestInput.apimServiceName?.existing;
-      })
-    )
-    .rejects(
-      buildError({
-        code: "ResourceNotFound",
-        statusCode: 404,
-        message: `The Resource 'Microsoft.ApiManagement/service/xxxx' under resource group 'test-existing-resource-group' was not found. For more details please go to https://aka.ms/ARMResourceNotFoundFix`,
-      })
-    );
-
-  if (mockTestInput.resourceGroup?.new) {
-    getStub.withArgs(mockTestInput.resourceGroup.new, match.any).rejects(
-      buildError({
-        code: "ResourceGroupNotFound",
-        statusCode: 404,
-        message: `Resource group '${mockTestInput.resourceGroup.new}' could not be found.`,
-      })
-    );
-  }
-
-  if (mockTestInput.apimServiceName?.existing) {
-    getStub
-      .withArgs(mockTestInput.resourceGroup.existing, mockTestInput.apimServiceName.existing)
-      .resolves({});
-  }
-
-  const createOrUpdateStub = apiManagementServiceStub.createOrUpdate as unknown as SinonStub<
-    [string, string, ApiManagementServiceResource],
-    Promise<any>
-  >;
-  createOrUpdateStub
-    .withArgs(
-      match.any,
-      match((input: string) => input !== mockTestInput.apimServiceName?.error),
-      match.any
-    )
-    .resolves({});
-  if (mockTestInput.apimServiceName?.error) {
-    createOrUpdateStub.withArgs(match.any, mockTestInput.apimServiceName.error, match.any).rejects(
-      buildError({
-        code: "TestError",
-        statusCode: 400,
-        message: "Mock test error",
-      })
-    );
-  }
-
-  return apiManagementServiceStub;
+  return {
+    get: async function (
+      resourceGroupName: string,
+      serviceName: string,
+      options?: ApiManagementServiceGetOptionalParams
+    ): Promise<ApiManagementServiceGetResponse> {
+      if (serviceName === mockTestInput.apimServiceName?.existing && !resourceGroupName) {
+        return {
+          name: "name",
+          sku: {
+            name: "skuName",
+            capacity: 12,
+          },
+          location: "location",
+          publisherEmail: "email",
+          publisherName: "publisherName",
+        };
+      } else {
+        return {
+          name: "name2",
+          sku: {
+            name: "skuName2",
+            capacity: 12,
+          },
+          location: "location2",
+          publisherEmail: "email2",
+          publisherName: "publisherName2",
+        };
+      }
+    },
+    beginCreateOrUpdateAndWait: async function (
+      resourceGroupName: string,
+      serviceName: string,
+      parameters: ApiManagementServiceResource,
+      options?: ApiManagementServiceCreateOrUpdateOptionalParams
+    ): Promise<ApiManagementServiceCreateOrUpdateResponse> {
+      if (serviceName !== mockTestInput.apimServiceName?.error) {
+        return {
+          sku: {
+            name: "skuName",
+            capacity: 12,
+          },
+          location: "location",
+          publisherEmail: "email",
+          publisherName: "publisherName",
+        };
+      } else {
+        return {
+          sku: {
+            name: "skuName2",
+            capacity: 12,
+          },
+          location: "location2",
+          publisherEmail: "email2",
+          publisherName: "publisherName2",
+        };
+      }
+    },
+  };
 }
 
 export function mockApiVersionSet(sandbox: SinonSandbox): any {
-  const apiVersionSet = sandbox.createStubInstance(ApiVersionSet);
-  const createOrUpdateStub = apiVersionSet.createOrUpdate as unknown as SinonStub<
-    [string, string, string, ApiVersionSetContract],
-    Promise<any>
-  >;
-  createOrUpdateStub.withArgs(match.any, match.any, match.any, match.any).resolves({});
-
-  const getStub = apiVersionSet.get as unknown as SinonStub<[string, string, string], Promise<any>>;
-  getStub
-    .withArgs(
-      match.any,
-      match.any,
-      match((input: string) => input !== DefaultTestInput.versionSet.existing)
-    )
-    .rejects(
-      buildError({
-        code: "ResourceNotFound",
-        statusCode: 404,
-        message: `The version set 'test-version-set' was not found.`,
-      })
-    );
-  getStub.withArgs(match.any, match.any, DefaultTestInput.versionSet.existing).resolves({});
-
-  return apiVersionSet;
+  return {
+    get: async function (
+      resourceGroupName: string,
+      serviceName: string,
+      versionSetId: string,
+      options?: ApiVersionSetGetOptionalParams
+    ): Promise<ApiVersionSetGetResponse> {
+      if (versionSetId === DefaultTestInput.versionSet.existing) {
+        return {
+          name: "name",
+        };
+      } else {
+        return {};
+      }
+    },
+    createOrUpdate: async function (
+      resourceGroupName: string,
+      serviceName: string,
+      versionSetId: string,
+      parameters: ApiVersionSetContract,
+      options?: ApiVersionSetCreateOrUpdateOptionalParams
+    ): Promise<ApiVersionSetCreateOrUpdateResponse> {
+      return {};
+    },
+  };
 }
 
 export function mockApi(sandbox: SinonSandbox): any {
-  const apiStub = sandbox.createStubInstance(Api);
-  const createOrUpdateStub = apiStub.createOrUpdate as unknown as SinonStub<
-    [string, string, string, ApiCreateOrUpdateParameter],
-    Promise<any>
-  >;
-  createOrUpdateStub
-    .withArgs(
-      match.any,
-      match.any,
-      match((input: string) => input !== DefaultTestInput.apiId.error),
-      match.any
-    )
-    .resolves({});
-  createOrUpdateStub
-    .withArgs(match.any, match.any, DefaultTestInput.apiId.error, match.any)
-    .rejects(
-      buildError({
-        code: "TestError",
-        statusCode: 400,
-        message: "Mock test error",
-      })
-    );
-  return apiStub;
+  return {
+    beginCreateOrUpdateAndWait: async function (
+      resourceGroupName: string,
+      serviceName: string,
+      apiId: string,
+      parameters: ApiCreateOrUpdateParameter,
+      options?: ApiCreateOrUpdateOptionalParams
+    ): Promise<ApiCreateOrUpdateResponse> {
+      if (apiId !== DefaultTestInput.apiId.error) {
+        return {
+          name: "name",
+        };
+      } else {
+        return {
+          name: "name2",
+        };
+      }
+    },
+  };
 }
 
 export function mockProductApi(sandbox: SinonSandbox): any {
-  const productApi = sandbox.createStubInstance(ProductApi);
-
-  // Mock productApi.createOrUpdate
-  const productApiStub = productApi.createOrUpdate as unknown as SinonStub<
-    [string, string, string, string],
-    Promise<any>
-  >;
-  // createOrUpdate (success)
-  productApiStub
-    .withArgs(
-      match.any,
-      match.any,
-      match((input: string) => input !== DefaultTestInput.productId.error),
-      match((input: string) => input !== DefaultTestInput.apiId.error)
-    )
-    .resolves({});
-  // createOrUpdate (failed)
-  productApiStub
-    .withArgs(match.any, match.any, DefaultTestInput.productId.error, DefaultTestInput.apiId.error)
-    .rejects(
-      buildError({
-        code: "TestError",
-        statusCode: 400,
-        message: "Mock test error",
-      })
-    );
-
-  // Mock productApi.checkEntityExists
-  const checkEntityExistsStub = productApi.checkEntityExists as unknown as SinonStub<
-    [string, string, string, string],
-    Promise<any>
-  >;
-  checkEntityExistsStub.rejects(UnexpectedInputError);
-  checkEntityExistsStub
-    .withArgs(
-      match.any,
-      match.any,
-      match((input: string) => input !== DefaultTestInput.productId.existing),
-      match((input: string) => input !== DefaultTestInput.apiId.existing)
-    )
-    .rejects(
-      buildError({
-        code: "ResourceNotFound",
-        statusCode: 404,
-        message: `The product api '${DefaultTestInput.versionSet.new}' was not found.`,
-      })
-    );
-  checkEntityExistsStub
-    .withArgs(
-      match.any,
-      match.any,
-      DefaultTestInput.productId.existing,
-      DefaultTestInput.apiId.existing
-    )
-    .resolves({});
-
-  return productApi;
+  return {
+    createOrUpdate: async function (
+      resourceGroupName: string,
+      serviceName: string,
+      productId: string,
+      apiId: string,
+      options?: ProductApiCreateOrUpdateOptionalParams
+    ): Promise<ProductApiCreateOrUpdateResponse> {
+      if (
+        productId !== DefaultTestInput.productId.error &&
+        apiId !== DefaultTestInput.apiId.error
+      ) {
+        return {
+          name: "name",
+        };
+      } else {
+        return {
+          name: "name2",
+        };
+      }
+    },
+    checkEntityExists: async function (
+      resourceGroupName: string,
+      serviceName: string,
+      productId: string,
+      apiId: string,
+      options?: ProductApiCheckEntityExistsOptionalParams
+    ): Promise<ProductApiCheckEntityExistsResponse> {
+      if (
+        productId === DefaultTestInput.productId.existing &&
+        apiId === DefaultTestInput.apiId.existing
+      ) {
+        return {
+          body: true,
+        };
+      } else {
+        return {
+          body: false,
+        };
+      }
+    },
+  };
 }
 
-export class MockTokenCredentials extends TokenCredentialsBase {
-  public async getToken(): Promise<any> {
-    return undefined;
+export class MockTokenCredentials implements TokenCredential {
+  public async getToken(
+    scopes: string | string[],
+    options?: GetTokenOptions
+  ): Promise<AccessToken | null> {
+    return {
+      token: "a.eyJ1c2VySWQiOiJ0ZXN0QHRlc3QuY29tIn0=.c",
+      expiresOnTimestamp: 1234,
+    };
   }
-}
-
-export function mockCredential(
-  sandbox: SinonSandbox,
-  credential: StubbedClass<MockTokenCredentials>,
-  token: any
-): void {
-  credential.getToken = sandbox.stub<[], Promise<any>>().resolves(token);
 }
 
 export type MockAxiosInput = {

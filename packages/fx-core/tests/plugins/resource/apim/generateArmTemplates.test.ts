@@ -212,7 +212,7 @@ describe("apimManager.generateArmTemplates", () => {
 
   async function mockApimManager(): Promise<ApimManager> {
     const openApiProcessor = new OpenApiProcessor();
-    const credential = generateFakeServiceClientCredentials();
+    const credential = new MyTokenCredential();
     const identityCredential = new MyTokenCredential();
     const subscriptionId = "test-subscription-id";
     const apimManagementClient = new ApiManagementClient(credential, subscriptionId);
@@ -220,12 +220,7 @@ describe("apimManager.generateArmTemplates", () => {
       .providers;
     const lazyApimService = new Lazy<ApimService>(() =>
       Promise.resolve(
-        new ApimService(
-          apimManagementClient,
-          resourceProviderClient,
-          credential as TokenCredentialsBase,
-          subscriptionId
-        )
+        new ApimService(apimManagementClient, resourceProviderClient, credential, subscriptionId)
       )
     );
     return new ApimManager(lazyApimService, openApiProcessor);

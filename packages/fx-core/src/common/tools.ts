@@ -940,6 +940,12 @@ export async function getSPFxToken(
   return spoToken;
 }
 
+export function ConvertTokenToJson(token: string): Record<string, unknown> {
+  const array = token.split(".");
+  const buff = Buffer.from(array[1], "base64");
+  return JSON.parse(buff.toString("utf8"));
+}
+
 export function getFixedCommonProjectSettings(rootPath: string | undefined) {
   if (!rootPath) {
     return undefined;

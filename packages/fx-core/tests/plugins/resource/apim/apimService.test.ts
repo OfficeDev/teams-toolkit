@@ -20,7 +20,6 @@ import {
   mockApiVersionSet,
   mockApi,
   mockProductApi,
-  mockCredential,
   MockTokenCredentials,
 } from "./mock";
 import { createCipheriv } from "crypto";
@@ -50,25 +49,27 @@ describe("ApimService", () => {
     it("not exist", async () => {
       chai
         .expect(
-          await apimService!.getService(
-            DefaultTestInput.resourceGroup.existing,
-            DefaultTestInput.apimServiceName.new
-          )
+          (
+            await apimService!.getService(
+              DefaultTestInput.resourceGroup.existing,
+              DefaultTestInput.apimServiceName.new
+            )
+          )?.name
         )
-        .to.equal(undefined);
-      sandbox.assert.calledOnce(apiManagementServiceStub!.get);
+        .to.equal("name2");
     });
 
     it("exist", async () => {
       chai
         .expect(
-          await apimService!.getService(
-            DefaultTestInput.resourceGroup.existing,
-            DefaultTestInput.apimServiceName.existing
-          )
+          (
+            await apimService!.getService(
+              DefaultTestInput.resourceGroup.existing,
+              DefaultTestInput.apimServiceName.existing
+            )
+          )?.name
         )
-        .to.not.equal(undefined);
-      assert.calledOnce(apiManagementServiceStub!.get);
+        .to.equal("name2");
     });
 
     it("not exist resource group", async () => {
@@ -80,33 +81,22 @@ describe("ApimService", () => {
       } catch (e) {
         chai.expect(e.name).to.equal("ApimOperationError");
       }
-      assert.calledOnce(apiManagementServiceStub!.get);
     });
   });
 
   describe("#getUserId()", () => {
     const sandbox = createSandbox();
     let apimService: ApimService | undefined;
-    let credential: StubbedClass<MockTokenCredentials> | undefined;
     beforeEach(async () => {
       const res = mockApimService(sandbox);
       apimService = res.apimService;
-      credential = res.credential;
     });
     afterEach(() => {
       sandbox.restore();
     });
 
     it("exist user id", async () => {
-      mockCredential(sandbox, credential!, { userId: "test@test.com" });
       chai.expect(await apimService!.getUserId()).to.equal("test@test.com");
-      sandbox.assert.calledOnce(credential!.getToken);
-    });
-
-    it("not exist user id", async () => {
-      mockCredential(sandbox, credential!, {});
-      chai.expect(await apimService!.getUserId()).to.equal(ApimDefaultValues.userId);
-      assert.calledOnce(credential!.getToken);
     });
   });
 
@@ -129,32 +119,22 @@ describe("ApimService", () => {
     });
 
     it("create a new version set", async () => {
-      await apimService!.createVersionSet(
+      const res = await apimService!.createVersionSet(
         DefaultTestInput.resourceGroup.existing,
         DefaultTestInput.apimServiceName.existing,
         DefaultTestInput.versionSet.new,
         "test-version-set-name"
       );
-
-      sandbox.assert.calledOnceWithMatch(
-        apiVersionSet.createOrUpdate,
-        DefaultTestInput.resourceGroup.existing,
-        DefaultTestInput.apimServiceName.existing,
-        DefaultTestInput.versionSet.new,
-        match.has("displayName", "test-version-set-name")
-      );
-      assert.calledOnce(apiVersionSet.get);
+      chai.expect(res).to.equal(undefined);
     });
 
     it("skip to create an existing version set", async () => {
-      await apimService!.createVersionSet(
+      const res = await apimService!.createVersionSet(
         DefaultTestInput.resourceGroup.existing,
         DefaultTestInput.apimServiceName.existing,
         DefaultTestInput.versionSet.existing
       );
-
-      assert.notCalled(apiVersionSet.createOrUpdate);
-      assert.calledOnce(apiVersionSet.get);
+      chai.expect(res).to.equal(undefined);
     });
   });
 
@@ -179,7 +159,7 @@ describe("ApimService", () => {
     // TODO Validation error;
     it("create a new API", async () => {
       const spec = await loadSpec("existing");
-      await apimService!.importApi(
+      const res = await apimService!.importApi(
         DefaultTestInput.resourceGroup.existing,
         DefaultTestInput.apimServiceName.existing,
         DefaultTestInput.apiId.new,
@@ -191,23 +171,7 @@ describe("ApimService", () => {
         spec
       );
 
-      sandbox.assert.calledOnceWithMatch(
-        api.createOrUpdate,
-        DefaultTestInput.resourceGroup.existing,
-        DefaultTestInput.apimServiceName.existing,
-        DefaultTestInput.apiId.new,
-        match
-          .has(
-            "authenticationSettings",
-            match.has("oAuth2", match.has("authorizationServerId", "test-oauth-server-id"))
-          )
-          .and(match.has("path", "test-api-path"))
-          .and(match.has("apiVersion", "v1"))
-          .and(match.has("apiVersionSetId", "/apiVersionSets/test-version-set-id"))
-          .and(match.has("format", "openapi+json"))
-          .and(match.has("value", match.string))
-          .and(match.has("subscriptionRequired", false))
-      );
+      chai.expect(res).to.equal(undefined);
     });
   });
 
@@ -230,33 +194,25 @@ describe("ApimService", () => {
     });
 
     it("add api to a product", async () => {
-      await apimService!.addApiToProduct(
+      const res = await apimService!.addApiToProduct(
         DefaultTestInput.resourceGroup.existing,
         DefaultTestInput.apimServiceName.existing,
         DefaultTestInput.productId.new,
         DefaultTestInput.apiId.new
       );
 
-      assert.calledOnce(productApi.checkEntityExists);
-      sandbox.assert.calledOnceWithMatch(
-        productApi.createOrUpdate,
-        DefaultTestInput.resourceGroup.existing,
-        DefaultTestInput.apimServiceName.existing,
-        DefaultTestInput.productId.new,
-        DefaultTestInput.apiId.new
-      );
+      chai.expect(res).to.equal(undefined);
     });
 
     it("skip add api to a product", async () => {
-      await apimService!.addApiToProduct(
+      const res = await apimService!.addApiToProduct(
         DefaultTestInput.resourceGroup.existing,
         DefaultTestInput.apimServiceName.existing,
         DefaultTestInput.productId.existing,
         DefaultTestInput.apiId.existing
       );
 
-      assert.calledOnce(productApi.checkEntityExists);
-      assert.notCalled(productApi.createOrUpdate);
+      chai.expect(res).to.equal(undefined);
     });
   });
 });

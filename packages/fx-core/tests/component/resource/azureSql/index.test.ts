@@ -23,16 +23,104 @@ import { newEnvInfoV3 } from "../../../../src";
 import path from "path";
 import * as os from "os";
 import faker from "faker";
-import { TokenCredential } from "@azure/core-http";
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import { Servers, FirewallRules, ServerAzureADAdministrators } from "@azure/arm-sql";
+import {
+  SqlManagementClient,
+  FirewallRule,
+  FirewallRulesCreateOrUpdateOptionalParams,
+  FirewallRulesCreateOrUpdateResponse,
+  FirewallRulesDeleteOptionalParams,
+  ServerAzureADAdministratorsListByServerOptionalParams,
+  ServerAzureADAdministrator,
+  AdministratorName,
+  ServerAzureADAdministratorsCreateOrUpdateOptionalParams,
+  ServerAzureADAdministratorsCreateOrUpdateResponse,
+  CheckNameAvailabilityRequest,
+  ServersCheckNameAvailabilityOptionalParams,
+  ServersCheckNameAvailabilityResponse,
+} from "@azure/arm-sql";
+import * as azureSql from "@azure/arm-sql";
 import axios from "axios";
 import { TokenResponse } from "adal-node/lib/adal";
 import { TokenInfo, UserType } from "../../../../src/component/resource/azureSql/utils/common";
 import * as Common from "../../../../src/component/resource/azureSql/utils/common";
+import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/core-auth";
+import { PagedAsyncIterableIterator } from "@azure/core-paging";
 
 chai.use(chaiAsPromised);
+
+class MyTokenCredential implements TokenCredential {
+  async getToken(
+    scopes: string | string[],
+    options?: GetTokenOptions | undefined
+  ): Promise<AccessToken | null> {
+    return {
+      token: "token",
+      expiresOnTimestamp: 1234,
+    };
+  }
+}
+
+const mockFirewallRules = {
+  createOrUpdate: async function (
+    resourceGroupName: string,
+    serverName: string,
+    firewallRuleName: string,
+    parameters: FirewallRule,
+    options?: FirewallRulesCreateOrUpdateOptionalParams
+  ): Promise<FirewallRulesCreateOrUpdateResponse> {
+    return {};
+  },
+  delete: async function (
+    resourceGroupName: string,
+    serverName: string,
+    firewallRuleName: string,
+    options?: FirewallRulesDeleteOptionalParams
+  ): Promise<void> {},
+};
+
+const mockServerAzureADAdministrators = {
+  listByServer: function (
+    resourceGroupName: string,
+    serverName: string,
+    options?: ServerAzureADAdministratorsListByServerOptionalParams
+  ): PagedAsyncIterableIterator<ServerAzureADAdministrator> {
+    return {
+      next() {
+        throw new Error("Function not implemented.");
+      },
+      [Symbol.asyncIterator]() {
+        throw new Error("Function not implemented.");
+      },
+      byPage: () => {
+        return generator() as any;
+      },
+    };
+
+    function* generator() {
+      yield [];
+    }
+  },
+  beginCreateOrUpdateAndWait: async function (
+    resourceGroupName: string,
+    serverName: string,
+    administratorName: AdministratorName,
+    parameters: ServerAzureADAdministrator,
+    options?: ServerAzureADAdministratorsCreateOrUpdateOptionalParams
+  ): Promise<ServerAzureADAdministratorsCreateOrUpdateResponse> {
+    return {};
+  },
+};
+
+const mockServers = {
+  checkNameAvailability: async function (
+    parameters: CheckNameAvailabilityRequest,
+    options?: ServersCheckNameAvailabilityOptionalParams
+  ): Promise<ServersCheckNameAvailabilityResponse> {
+    return { available: true };
+  },
+};
 
 describe("Azure-SQL Component", () => {
   const tools = new MockTools();
@@ -65,10 +153,12 @@ describe("Azure-SQL Component", () => {
       return credentials as unknown as TokenCredentialsBase;
     };
 
-    sandbox.stub(FirewallRules.prototype, "createOrUpdate").resolves();
-    sandbox.stub(FirewallRules.prototype, "deleteMethod").resolves();
-    sandbox.stub(ServerAzureADAdministrators.prototype, "listByServer").resolves([]);
-    sandbox.stub(ServerAzureADAdministrators.prototype, "createOrUpdate").resolves();
+    const mockSqlManagementClient = new SqlManagementClient(new MyTokenCredential(), "id");
+    mockSqlManagementClient.firewallRules = mockFirewallRules as any;
+    mockSqlManagementClient.serverAzureADAdministrators = mockServerAzureADAdministrators as any;
+    mockSqlManagementClient.servers = mockServers as any;
+    sandbox.stub(azureSql, "SqlManagementClient").returns(mockSqlManagementClient);
+
     sandbox
       .stub(msRestNodeAuth.ApplicationTokenCredentials.prototype, "getToken")
       .resolves({ accessToken: faker.random.word() } as TokenResponse);
@@ -100,7 +190,6 @@ describe("Azure-SQL Component", () => {
   });
 
   it("provision happy path", async function () {
-    sandbox.stub(Servers.prototype, "checkNameAvailability").resolves({ available: true });
     sandbox
       .stub(MockUserInteraction.prototype, "inputText")
       .resolves(ok({ type: "success", result: "" }));

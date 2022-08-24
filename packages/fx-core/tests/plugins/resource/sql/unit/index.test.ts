@@ -20,10 +20,100 @@ import { ManagementClient } from "../../../../../src/plugins/resource/sql/manage
 import { SqlPluginImpl } from "../../../../../src/plugins/resource/sql/plugin";
 import { sqlUserNameValidator } from "../../../../../src/plugins/resource/sql/utils/checkInput";
 import axios from "axios";
+import {
+  SqlManagementClient,
+  FirewallRule,
+  FirewallRulesCreateOrUpdateOptionalParams,
+  FirewallRulesCreateOrUpdateResponse,
+  FirewallRulesDeleteOptionalParams,
+  ServerAzureADAdministratorsListByServerOptionalParams,
+  ServerAzureADAdministrator,
+  AdministratorName,
+  ServerAzureADAdministratorsCreateOrUpdateOptionalParams,
+  ServerAzureADAdministratorsCreateOrUpdateResponse,
+  CheckNameAvailabilityRequest,
+  ServersCheckNameAvailabilityOptionalParams,
+  ServersCheckNameAvailabilityResponse,
+} from "@azure/arm-sql";
+import * as azureSql from "@azure/arm-sql";
+import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/core-auth";
+import { PagedAsyncIterableIterator } from "@azure/core-paging";
 
 chai.use(chaiAsPromised);
 
 dotenv.config();
+
+class MyTokenCredential implements TokenCredential {
+  async getToken(
+    scopes: string | string[],
+    options?: GetTokenOptions | undefined
+  ): Promise<AccessToken | null> {
+    return {
+      token: "token",
+      expiresOnTimestamp: 1234,
+    };
+  }
+}
+
+const mockFirewallRules = {
+  createOrUpdate: async function (
+    resourceGroupName: string,
+    serverName: string,
+    firewallRuleName: string,
+    parameters: FirewallRule,
+    options?: FirewallRulesCreateOrUpdateOptionalParams
+  ): Promise<FirewallRulesCreateOrUpdateResponse> {
+    return {};
+  },
+  delete: async function (
+    resourceGroupName: string,
+    serverName: string,
+    firewallRuleName: string,
+    options?: FirewallRulesDeleteOptionalParams
+  ): Promise<void> {},
+};
+
+const mockServerAzureADAdministrators = {
+  listByServer: function (
+    resourceGroupName: string,
+    serverName: string,
+    options?: ServerAzureADAdministratorsListByServerOptionalParams
+  ): PagedAsyncIterableIterator<ServerAzureADAdministrator> {
+    return {
+      next() {
+        throw new Error("Function not implemented.");
+      },
+      [Symbol.asyncIterator]() {
+        throw new Error("Function not implemented.");
+      },
+      byPage: () => {
+        return generator() as any;
+      },
+    };
+
+    function* generator() {
+      yield [];
+    }
+  },
+  beginCreateOrUpdateAndWait: async function (
+    resourceGroupName: string,
+    serverName: string,
+    administratorName: AdministratorName,
+    parameters: ServerAzureADAdministrator,
+    options?: ServerAzureADAdministratorsCreateOrUpdateOptionalParams
+  ): Promise<ServerAzureADAdministratorsCreateOrUpdateResponse> {
+    return {};
+  },
+};
+
+const mockServers = {
+  checkNameAvailability: async function (
+    parameters: CheckNameAvailabilityRequest,
+    options?: ServersCheckNameAvailabilityOptionalParams
+  ): Promise<ServersCheckNameAvailabilityResponse> {
+    return { available: true };
+  },
+};
 
 describe("sqlPlugin", () => {
   let sqlPlugin: SqlPlugin;
@@ -67,7 +157,9 @@ describe("sqlPlugin", () => {
 
   it("preProvision", async function () {
     // Arrange
-    sinon.stub(Servers.prototype, "checkNameAvailability").resolves({ available: true });
+    const mockSqlManagementClient = new SqlManagementClient(new MyTokenCredential(), "id");
+    mockSqlManagementClient.servers = mockServers as any;
+    sinon.stub(azureSql, "SqlManagementClient").returns(mockSqlManagementClient);
     sinon.stub(SqlPluginImpl.prototype, "askInputs").resolves();
     sinon
       .stub(ApplicationTokenCredentials.prototype, "getToken")
@@ -91,7 +183,9 @@ describe("sqlPlugin", () => {
 
   it("preProvision failed for no answer", async function () {
     // Arrange
-    sinon.stub(Servers.prototype, "checkNameAvailability").resolves({ available: true });
+    const mockSqlManagementClient = new SqlManagementClient(new MyTokenCredential(), "id");
+    mockSqlManagementClient.servers = mockServers as any;
+    sinon.stub(azureSql, "SqlManagementClient").returns(mockSqlManagementClient);
     sinon.stub(SqlPluginImpl.prototype, "askInputs").resolves();
     sinon
       .stub(ApplicationTokenCredentials.prototype, "getToken")
@@ -109,10 +203,11 @@ describe("sqlPlugin", () => {
     sqlPlugin.sqlImpl.config.sqlServer = "test-sql";
 
     // Arrange
-    sinon.stub(FirewallRules.prototype, "createOrUpdate").resolves();
-    sinon.stub(FirewallRules.prototype, "deleteMethod").resolves();
-    sinon.stub(ServerAzureADAdministrators.prototype, "listByServer").resolves([]);
-    sinon.stub(ServerAzureADAdministrators.prototype, "createOrUpdate").resolves();
+    const mockSqlManagementClient = new SqlManagementClient(new MyTokenCredential(), "id");
+    mockSqlManagementClient.firewallRules = mockFirewallRules as any;
+    mockSqlManagementClient.serverAzureADAdministrators = mockServerAzureADAdministrators as any;
+    mockSqlManagementClient.servers = mockServers as any;
+    sinon.stub(azureSql, "SqlManagementClient").returns(mockSqlManagementClient);
     sinon
       .stub(ApplicationTokenCredentials.prototype, "getToken")
       .resolves({ accessToken: faker.random.word() } as TokenResponse);
@@ -132,10 +227,11 @@ describe("sqlPlugin", () => {
     sqlPlugin.sqlImpl.config.sqlServer = "test-sql";
 
     // Arrange
-    sinon.stub(FirewallRules.prototype, "createOrUpdate").resolves();
-    sinon.stub(FirewallRules.prototype, "deleteMethod").resolves();
-    sinon.stub(ServerAzureADAdministrators.prototype, "listByServer").resolves([]);
-    sinon.stub(ServerAzureADAdministrators.prototype, "createOrUpdate").resolves();
+    const mockSqlManagementClient = new SqlManagementClient(new MyTokenCredential(), "id");
+    mockSqlManagementClient.firewallRules = mockFirewallRules as any;
+    mockSqlManagementClient.serverAzureADAdministrators = mockServerAzureADAdministrators as any;
+    mockSqlManagementClient.servers = mockServers as any;
+    sinon.stub(azureSql, "SqlManagementClient").returns(mockSqlManagementClient);
     sinon
       .stub(ApplicationTokenCredentials.prototype, "getToken")
       .resolves({ accessToken: faker.random.word() } as TokenResponse);
@@ -156,10 +252,11 @@ describe("sqlPlugin", () => {
     sqlPlugin.sqlImpl.config.sqlServer = "test-sql";
 
     // Arrange
-    sinon.stub(FirewallRules.prototype, "createOrUpdate").resolves();
-    sinon.stub(FirewallRules.prototype, "deleteMethod").resolves();
-    sinon.stub(ServerAzureADAdministrators.prototype, "listByServer").resolves([]);
-    sinon.stub(ServerAzureADAdministrators.prototype, "createOrUpdate").resolves();
+    const mockSqlManagementClient = new SqlManagementClient(new MyTokenCredential(), "id");
+    mockSqlManagementClient.firewallRules = mockFirewallRules as any;
+    mockSqlManagementClient.serverAzureADAdministrators = mockServerAzureADAdministrators as any;
+    mockSqlManagementClient.servers = mockServers as any;
+    sinon.stub(azureSql, "SqlManagementClient").returns(mockSqlManagementClient);
     sinon.stub(axios, "get").resolves({ data: "1.1.1.1" });
 
     TestHelper.mockArmOutput(pluginContext);
@@ -176,10 +273,11 @@ describe("sqlPlugin", () => {
     sqlPlugin.sqlImpl.config.sqlServer = "test-sql";
 
     // Arrange
-    sinon.stub(FirewallRules.prototype, "createOrUpdate").resolves();
-    sinon.stub(FirewallRules.prototype, "deleteMethod").resolves();
-    sinon.stub(ServerAzureADAdministrators.prototype, "listByServer").resolves([]);
-    sinon.stub(ServerAzureADAdministrators.prototype, "createOrUpdate").resolves();
+    const mockSqlManagementClient = new SqlManagementClient(new MyTokenCredential(), "id");
+    mockSqlManagementClient.firewallRules = mockFirewallRules as any;
+    mockSqlManagementClient.serverAzureADAdministrators = mockServerAzureADAdministrators as any;
+    mockSqlManagementClient.servers = mockServers as any;
+    sinon.stub(azureSql, "SqlManagementClient").returns(mockSqlManagementClient);
     const errorMessage = "getaddrinfo ENOTFOUND";
     sinon.stub(axios, "get").throws(new Error(errorMessage));
 

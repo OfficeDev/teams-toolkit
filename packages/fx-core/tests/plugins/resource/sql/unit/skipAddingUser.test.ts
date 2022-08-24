@@ -14,10 +14,100 @@ import { Constants } from "../../../../../src/plugins/resource/sql/constants";
 import * as commonUtils from "../../../../../src/plugins/resource/sql/utils/commonUtils";
 import { FirewallRules, ServerAzureADAdministrators, Servers } from "@azure/arm-sql";
 import axios from "axios";
+import {
+  SqlManagementClient,
+  FirewallRule,
+  FirewallRulesCreateOrUpdateOptionalParams,
+  FirewallRulesCreateOrUpdateResponse,
+  FirewallRulesDeleteOptionalParams,
+  ServerAzureADAdministratorsListByServerOptionalParams,
+  ServerAzureADAdministrator,
+  AdministratorName,
+  ServerAzureADAdministratorsCreateOrUpdateOptionalParams,
+  ServerAzureADAdministratorsCreateOrUpdateResponse,
+  CheckNameAvailabilityRequest,
+  ServersCheckNameAvailabilityOptionalParams,
+  ServersCheckNameAvailabilityResponse,
+} from "@azure/arm-sql";
+import * as azureSql from "@azure/arm-sql";
+import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/core-auth";
+import { PagedAsyncIterableIterator } from "@azure/core-paging";
 
 chai.use(chaiAsPromised);
 
 dotenv.config();
+
+class MyTokenCredential implements TokenCredential {
+  async getToken(
+    scopes: string | string[],
+    options?: GetTokenOptions | undefined
+  ): Promise<AccessToken | null> {
+    return {
+      token: "token",
+      expiresOnTimestamp: 1234,
+    };
+  }
+}
+
+const mockFirewallRules = {
+  createOrUpdate: async function (
+    resourceGroupName: string,
+    serverName: string,
+    firewallRuleName: string,
+    parameters: FirewallRule,
+    options?: FirewallRulesCreateOrUpdateOptionalParams
+  ): Promise<FirewallRulesCreateOrUpdateResponse> {
+    return {};
+  },
+  delete: async function (
+    resourceGroupName: string,
+    serverName: string,
+    firewallRuleName: string,
+    options?: FirewallRulesDeleteOptionalParams
+  ): Promise<void> {},
+};
+
+const mockServerAzureADAdministrators = {
+  listByServer: function (
+    resourceGroupName: string,
+    serverName: string,
+    options?: ServerAzureADAdministratorsListByServerOptionalParams
+  ): PagedAsyncIterableIterator<ServerAzureADAdministrator> {
+    return {
+      next() {
+        throw new Error("Function not implemented.");
+      },
+      [Symbol.asyncIterator]() {
+        throw new Error("Function not implemented.");
+      },
+      byPage: () => {
+        return generator() as any;
+      },
+    };
+
+    function* generator() {
+      yield [];
+    }
+  },
+  beginCreateOrUpdateAndWait: async function (
+    resourceGroupName: string,
+    serverName: string,
+    administratorName: AdministratorName,
+    parameters: ServerAzureADAdministrator,
+    options?: ServerAzureADAdministratorsCreateOrUpdateOptionalParams
+  ): Promise<ServerAzureADAdministratorsCreateOrUpdateResponse> {
+    return {};
+  },
+};
+
+const mockServers = {
+  checkNameAvailability: async function (
+    parameters: CheckNameAvailabilityRequest,
+    options?: ServersCheckNameAvailabilityOptionalParams
+  ): Promise<ServersCheckNameAvailabilityResponse> {
+    return { available: false };
+  },
+};
 
 describe("skipAddingUser", () => {
   let sqlPlugin: SqlPlugin;
@@ -43,7 +133,9 @@ describe("skipAddingUser", () => {
 
   it("preProvision", async function () {
     // Arrange
-    sinon.stub(Servers.prototype, "checkNameAvailability").resolves({ available: false });
+    const mockSqlManagementClient = new SqlManagementClient(new MyTokenCredential(), "id");
+    mockSqlManagementClient.servers = mockServers as any;
+    sinon.stub(azureSql, "SqlManagementClient").returns(mockSqlManagementClient);
     sinon
       .stub(ApplicationTokenCredentials.prototype, "getToken")
       .resolves({ accessToken: faker.random.word() } as TokenResponse);
@@ -103,10 +195,10 @@ describe("skipAddingUser", () => {
     sqlPlugin.sqlImpl.config.sqlServer = "test-sql";
 
     // Arrange
-    sinon.stub(FirewallRules.prototype, "createOrUpdate").resolves();
-    sinon.stub(FirewallRules.prototype, "deleteMethod").resolves();
-    sinon.stub(ServerAzureADAdministrators.prototype, "listByServer").resolves([]);
-    sinon.stub(ServerAzureADAdministrators.prototype, "createOrUpdate").resolves();
+    const mockSqlManagementClient = new SqlManagementClient(new MyTokenCredential(), "id");
+    mockSqlManagementClient.firewallRules = mockFirewallRules as any;
+    mockSqlManagementClient.serverAzureADAdministrators = mockServerAzureADAdministrators as any;
+    sinon.stub(azureSql, "SqlManagementClient").returns(mockSqlManagementClient);
     sinon.stub(axios, "get").resolves({ data: "1.1.1.1" });
 
     TestHelper.mockArmOutput(pluginContext);

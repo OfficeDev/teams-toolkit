@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { SqlManagementClient, SqlManagementModels } from "@azure/arm-sql";
+import { FirewallRule, ServerAzureADAdministrator, SqlManagementClient } from "@azure/arm-sql";
 import axios from "axios";
 import { ErrorMessage } from "../errors";
 import { Constants } from "../constants";
@@ -23,7 +23,7 @@ export class ManagementClient {
     azureAccountProvider: AzureAccountProvider,
     config: ManagementConfig
   ): Promise<ManagementClient> {
-    const credential = await azureAccountProvider.getAccountCredentialAsync();
+    const credential = await azureAccountProvider.getIdentityCredentialAsync();
     const manager = new SqlManagementClient(credential!, config.azureSubscriptionId);
     return new ManagementClient(manager, config);
   }
@@ -32,6 +32,7 @@ export class ManagementClient {
     try {
       const result = await this.manager.servers.checkNameAvailability({
         name: this.config.sqlServer,
+        type: "Microsoft.Sql/servers",
       });
       if (result.available) {
         return false;
@@ -49,15 +50,16 @@ export class ManagementClient {
 
   async existAadAdmin(aadAdmin: string): Promise<boolean> {
     try {
-      const result = await this.manager.serverAzureADAdministrators.listByServer(
-        this.config.resourceGroup,
-        this.config.sqlServer
-      );
-      if (result.find((item: { login: string }) => item.login === aadAdmin)) {
-        return true;
-      } else {
-        return false;
+      for await (const page of this.manager.serverAzureADAdministrators
+        .listByServer(this.config.resourceGroup, this.config.sqlServer)
+        .byPage({ maxPageSize: 100 })) {
+        for (const item of page) {
+          if (item.login === aadAdmin) {
+            return true;
+          }
+        }
       }
+      return false;
     } catch (error) {
       throw SqlResultFactory.UserError(
         ErrorMessage.SqlCheckAdminError.name,
@@ -68,18 +70,19 @@ export class ManagementClient {
   }
 
   async addAADadmin(tenantId: string, aadAdminObjectId: string, aadAdmin: string): Promise<void> {
-    let model: SqlManagementModels.ServerAzureADAdministrator = {
+    let model: ServerAzureADAdministrator = {
       tenantId: tenantId,
       sid: aadAdminObjectId,
       login: aadAdmin,
     };
     const tmp: any = model;
     tmp.administratorType = Constants.sqlAdministratorType;
-    model = tmp as unknown as SqlManagementModels.ServerAzureADAdministrator;
+    model = tmp as unknown as ServerAzureADAdministrator;
     try {
-      await this.manager.serverAzureADAdministrators.createOrUpdate(
+      await this.manager.serverAzureADAdministrators.beginCreateOrUpdateAndWait(
         this.config.resourceGroup,
         this.config.sqlServer,
+        aadAdmin,
         model
       );
     } catch (error) {
@@ -104,7 +107,7 @@ export class ManagementClient {
       partials[2] = Constants.ipEndToken;
       partials[3] = Constants.ipEndToken;
       const endIp: string = partials.join(".");
-      const model: SqlManagementModels.FirewallRule = {
+      const model: FirewallRule = {
         startIpAddress: startIp,
         endIpAddress: endIp,
       };
@@ -130,7 +133,7 @@ export class ManagementClient {
       await Promise.all(
         Array.from(Array(this.totalFirewallRuleCount).keys()).map(async (i: number) => {
           const ruleName = this.getRuleName(i);
-          await this.manager.firewallRules.deleteMethod(
+          await this.manager.firewallRules.delete(
             this.config.resourceGroup,
             this.config.sqlServer,
             ruleName

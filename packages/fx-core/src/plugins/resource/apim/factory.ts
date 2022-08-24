@@ -159,7 +159,7 @@ export class Factory {
   ): Promise<ApimService> {
     const credential = AssertNotEmpty(
       "credential",
-      await azureAccountProvider?.getAccountCredentialAsync()
+      await azureAccountProvider?.getIdentityCredentialAsync()
     );
     const identityCredential = AssertNotEmpty(
       "identityCredential",

@@ -19,42 +19,6 @@ import {
 } from "../../../../../src/plugins/solution/fx-solution/question";
 
 describe("Test question", () => {
-  describe("HostTypeTrigger question", () => {
-    beforeEach(() => {
-      sinon.restore();
-    });
-
-    it("validation", async () => {
-      // Arrange
-      // [inputs, outputs, message]
-      const cases: ([string[], boolean] | [string[], boolean, string])[] = [
-        [[], false, "should not accept empty value"],
-        [[AppServiceOptionItem.id], true, "should accept app service"],
-        [
-          [AppServiceOptionItem.id, FunctionsHttpTriggerOptionItem.id],
-          false,
-          "should not accept app service & functions",
-        ],
-        [
-          [FunctionsHttpTriggerOptionItem.id, FunctionsTimerTriggerOptionItem.id],
-          true,
-          "should accept all functions triggers",
-        ],
-      ];
-      const question = createHostTypeTriggerQuestion(Platform.VSCode);
-      const validFunc = (question.validation as FuncValidation<string[]>).validFunc;
-
-      for (const c of cases) {
-        const [input, valid, message] = c;
-        // Act
-        const result = await validFunc(input);
-
-        // Assert
-        chai.assert.equal(result === undefined, valid, message);
-      }
-    });
-  });
-
   describe("Workaround CLI default value issue, remove me after CLI is fixed", () => {
     it("cliName and ID must be the same", () => {
       // Arrange

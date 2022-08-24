@@ -54,7 +54,7 @@ export class SimpleAuth {
       errorSource: "sa",
       enableTelemetry: true,
       telemetryComponentName: "fx-resource-simple-auth",
-      telemetryEventName: "provision",
+      telemetryEventName: "configure",
     }),
   ])
   async configure(

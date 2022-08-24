@@ -33,6 +33,8 @@ import { funcDepsLogger } from "../../plugins/resource/function/utils/depsChecke
 import { funcDepsTelemetry } from "../../plugins/resource/function/utils/depsChecker/funcPluginTelemetry";
 import { LinuxNotSupportedError } from "../../common/deps-checker/depsError";
 import { InfoMessages } from "../../plugins/resource/function/resources/message";
+import { LanguageStrategyFactory } from "../../plugins/resource/function/language-strategy";
+import { execute } from "./utils";
 /**
  * api scaffold
  */
@@ -105,7 +107,13 @@ export class ApiCodeProvider {
     }
 
     await actionContext?.progressBar?.next(ProgressMessages.buildingApi);
-    await FunctionDeploy.build(buildPath, language as FunctionLanguage);
+    for (const commandItem of LanguageStrategyFactory.getStrategy(language as FunctionLanguage)
+      .buildCommands) {
+      const command: string = commandItem.command;
+      const relativePath: string = commandItem.relativePath;
+      const absolutePath: string = path.join(buildPath, relativePath);
+      await execute(command, absolutePath, context.logProvider);
+    }
     return ok(undefined);
   }
 

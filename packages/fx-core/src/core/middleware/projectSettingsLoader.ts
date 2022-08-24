@@ -43,7 +43,6 @@ import { globalVars, isV3 } from "../globalVars";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 import { CoreHookContext } from "../types";
 import { convertProjectSettingsV2ToV3 } from "../../component/migrate";
-
 export const ProjectSettingsLoaderMW: Middleware = async (
   ctx: CoreHookContext,
   next: NextFunction

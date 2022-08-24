@@ -16,6 +16,8 @@ import { DotnetChecker } from "../../../src/common/deps-checker/internal/dotnetC
 import { NgrokChecker } from "../../../src/common/deps-checker/internal/ngrokChecker";
 import { FuncToolChecker } from "../../../src/common/deps-checker/internal/funcToolChecker";
 import { DepsCheckerError } from "../../../src/common/deps-checker/depsError";
+import mockedEnv, { RestoreFn } from "mocked-env";
+import { environmentManager } from "../../../src";
 
 chai.use(chaiAsPromised);
 
@@ -263,8 +265,16 @@ describe("LocalEnvManager", () => {
 
   describe("getActiveDependencies()", () => {
     const sandbox = sinon.createSandbox();
+    let mockedEnvRestore: RestoreFn;
+
+    beforeEach(() => {
+      sandbox.restore();
+      mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "false" });
+    });
+
     afterEach(() => {
       sandbox.restore();
+      mockedEnvRestore();
     });
 
     testData.forEach((data) => {
@@ -277,6 +287,38 @@ describe("LocalEnvManager", () => {
         };
         const result = localEnvManager.getActiveDependencies(projectSettings);
         chai.assert.sameDeepMembers(data.depsTypes, result);
+      });
+    });
+  });
+
+  describe("getLocalEnvInfo()", () => {
+    const sandbox = sinon.createSandbox();
+    let mockedEnvRestore: RestoreFn;
+
+    beforeEach(() => {
+      sandbox.restore();
+      mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "true" });
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+      mockedEnvRestore();
+    });
+
+    it("getLocalEnvInfo() happy path", async () => {
+      sandbox.stub(environmentManager, "loadEnvInfo").resolves(
+        ok({
+          envName: "local",
+          config: {},
+          state: { solution: { key: "value" } },
+        })
+      );
+      const res = await localEnvManager.getLocalEnvInfo(projectPath, { projectId: "123" });
+      chai.assert.isDefined(res);
+      chai.assert.deepEqual(res, {
+        envName: "local",
+        config: {},
+        state: { solution: { key: "value" } },
       });
     });
   });

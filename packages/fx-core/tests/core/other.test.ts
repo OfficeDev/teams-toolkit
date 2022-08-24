@@ -4,6 +4,7 @@
 import {
   FuncValidation,
   Inputs,
+  Json,
   Platform,
   ProjectSettings,
   Stage,
@@ -49,6 +50,7 @@ import { ResourceManagementClient } from "@azure/arm-resources";
 import { resourceGroupHelper } from "../../src/plugins/solution/fx-solution/utils/ResourceGroupHelper";
 import { MockedAzureAccountProvider } from "../plugins/solution/util";
 import { MockedAzureTokenProvider } from "../plugins/solution/solution.provision.test";
+import { upgradeDefaultFunctionName, upgradeProgrammingLanguage } from "../../src/core/middleware";
 describe("Other test case", () => {
   const sandbox = sinon.createSandbox();
 
@@ -307,5 +309,27 @@ describe("Other test case", () => {
       mockRmClient
     );
     assert.isTrue(node !== undefined);
+  });
+  it("upgradeProgrammingLanguage", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "myapp",
+      version: "1.0.0",
+      projectId: "123",
+    };
+    const state: Json = { solution: { programmingLanguage: "javascript" } };
+    upgradeProgrammingLanguage(state, projectSettings);
+    assert.equal(projectSettings.programmingLanguage, "javascript");
+    assert.isUndefined(state.solution.programmingLanguage);
+  });
+  it("upgradeDefaultFunctionName", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "myapp",
+      version: "1.0.0",
+      projectId: "123",
+    };
+    const state = { solution: { defaultFunctionName: "getUserProfile" } };
+    upgradeDefaultFunctionName(state, projectSettings);
+    assert.equal(projectSettings.defaultFunctionName, "getUserProfile");
+    assert.isUndefined(state.solution.defaultFunctionName);
   });
 });

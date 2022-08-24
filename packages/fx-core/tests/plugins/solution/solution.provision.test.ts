@@ -1281,7 +1281,7 @@ describe("API v2 implementation", () => {
       expect(mockedEnvInfo.state.solution.provisionSucceeded === true);
     });
 
-    it("provision after switch M365 account", async () => {
+    it("provision after switch Microsoft 365 account", async () => {
       const projectSettings: ProjectSettings = {
         appName: "my app",
         projectId: uuid.v4(),
@@ -1330,7 +1330,7 @@ describe("API v2 implementation", () => {
       expect(mockedEnvInfo.state.solution.provisionSucceeded).equals(true);
     });
 
-    it("provision after switch M365 account error when backup", async () => {
+    it("provision after switch Microsoft 365 account error when backup", async () => {
       const projectSettings: ProjectSettings = {
         appName: "my app",
         projectId: uuid.v4(),
@@ -1683,7 +1683,7 @@ describe("askForProvisionConsentNew", () => {
 
     // Assert
     const expectedAccountsInfo =
-      "Azure account: someUserName\nAzure subscription: subscriptionName\nM365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
+      "Azure account: someUserName\nAzure subscription: subscriptionName\nMicrosoft 365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
     expect(showMessageSpy.calledOnce).equal(true);
     expect(showMessageSpy.calledWithMatch("warn", expectedAccountsInfo, true, "Provision")).equal(
       true
@@ -1752,7 +1752,7 @@ describe("askForProvisionConsentNew", () => {
 
     // Assert
     const expectedAccountsInfo =
-      "You are now using a different Microsoft 365 tenant from what you previously used.\nAzure account: someUserName\nAzure subscription: subscriptionName\nM365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
+      "You are now using a different Microsoft 365 tenant from what you previously used.\nAzure account: someUserName\nAzure subscription: subscriptionName\nMicrosoft 365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
     expect(showMessageSpy.calledOnce).equal(true);
     expect(
       showMessageSpy.calledWithMatch("warn", expectedAccountsInfo, true, "Provision", "Learn more")
@@ -1822,7 +1822,7 @@ describe("askForProvisionConsentNew", () => {
 
     // Assert
     const expectedAccountsInfo =
-      "You are now using a different Azure subscription from what you previously used.\nAzure account: someUserName\nAzure subscription: subscriptionName\nM365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
+      "You are now using a different Azure subscription from what you previously used.\nAzure account: someUserName\nAzure subscription: subscriptionName\nMicrosoft 365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
     expect(showMessageSpy.calledOnce).equal(true);
     expect(
       showMessageSpy.calledWithMatch("warn", expectedAccountsInfo, true, "Provision", "Learn more")
@@ -1892,7 +1892,7 @@ describe("askForProvisionConsentNew", () => {
 
     // Assert
     const expectedAccountsInfo =
-      "You are now using a different Microsoft 365 tenant and a differnt Azure subscription from what you previously used.\nAzure account: someUserName\nAzure subscription: subscriptionName\nM365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
+      "You are now using a different Microsoft 365 tenant and a differnt Azure subscription from what you previously used.\nAzure account: someUserName\nAzure subscription: subscriptionName\nMicrosoft 365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
     expect(showMessageSpy.calledOnce).equal(true);
     expect(
       showMessageSpy.calledWithMatch("warn", expectedAccountsInfo, true, "Provision", "Learn more")
@@ -1962,7 +1962,7 @@ describe("askForProvisionConsentNew", () => {
 
     // Assert
     const expectedAccountsInfo =
-      "You are now using a different Microsoft 365 tenant from what you previously used.\nM365 account: m365Name\n\nDo you want to provision resources in dev environment using the account listed above?";
+      "You are now using a different Microsoft 365 tenant from what you previously used.\nMicrosoft 365 account: m365Name\n\nDo you want to provision resources in dev environment using the account listed above?";
     expect(showMessageSpy.calledOnce).equal(true);
     expect(
       showMessageSpy.calledWithMatch("warn", expectedAccountsInfo, true, "Provision", "Learn more")

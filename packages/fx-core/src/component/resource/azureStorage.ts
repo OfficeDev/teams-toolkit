@@ -27,7 +27,7 @@ import { FrontendDeployment } from "../../plugins/resource/frontend/ops/deploy";
 import { AzureResource } from "./azureResource";
 import { FrontendPluginInfo } from "../../plugins/resource/frontend/constants";
 import { ComponentNames, StorageOutputs } from "../constants";
-import { ProgressMessages, ProgressTitles } from "../messages";
+import { LogMessages, ProgressMessages, ProgressTitles } from "../messages";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { CheckThrowSomethingMissing } from "../error";
@@ -56,6 +56,7 @@ export class AzureStorageResource extends AzureResource {
   ): Promise<Result<undefined, FxError>> {
     const ctx = context as ResourceContextV3;
     if (context.envInfo.envName !== "local") {
+      context.logProvider.info(LogMessages.enableStaticWebsite);
       const frontendConfigRes = await this.buildFrontendConfig(
         ctx.envInfo,
         ComponentNames.TeamsTab,

@@ -131,7 +131,7 @@
             "id": "NPM-search-connector-M365",
             "title": "NPM Search Connector",
             "shortDescription": "Search and Share an NPM Package in Teams and Outlook (Web)",
-            "fullDescription": "NPM Search Connector is a Message Extension that runs across M365 including Teams and Outlook (Web). It allows you to perform a quick search for a NPM package and insert package details into conversations for easy sharing. The front end is built with Adaptive Cards and the backend is an Azure Bot Service.",
+            "fullDescription": "NPM Search Connector is a Message Extension that runs across Microsoft 365 including Teams and Outlook (Web). It allows you to perform a quick search for a NPM package and insert package details into conversations for easy sharing. The front end is built with Adaptive Cards and the backend is an Azure Bot Service.",
             "tags": ["Message extension", "JS", "Outlook"],
             "time": "45min to run",
             "configuration": "Manual configurations required",

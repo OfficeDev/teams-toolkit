@@ -203,7 +203,8 @@ export async function getPortsInUse(): Promise<number[]> {
   try {
     const projectPath = globalVariables.workspaceUri!.fsPath;
     const projectSettings = await localEnvManager.getProjectSettings(projectPath);
-    return await localEnvManager.getPortsInUse(projectPath, projectSettings);
+    const ports = await localEnvManager.getPortsFromProject(projectPath, projectSettings);
+    return await localEnvManager.getPortsInUse(ports);
   } catch (error: any) {
     VsCodeLogInstance.warning(`Failed to check used ports. Error: ${error}`);
     return [];

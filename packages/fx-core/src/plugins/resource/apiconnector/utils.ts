@@ -3,7 +3,7 @@
 "use strict";
 import { Inputs, FxError, SystemError } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
-import { LanguageType, FileType } from "./constants";
+import { LanguageType, FileType, Constants } from "./constants";
 import { ErrorMessage } from "./errors";
 import { ResultFactory } from "./result";
 import { getLocalizedString } from "../../../common/localizeUtils";
@@ -20,6 +20,15 @@ export function generateTempFolder(): string {
 export function getSampleFileName(apiName: string, languageType: string) {
   const languageExt = languageType === LanguageType.JS ? FileType.JS : FileType.TS;
   return apiName + "." + languageExt;
+}
+
+export function getSampleDirPath(componentPath: string) {
+  let basePath = componentPath;
+  if (fs.pathExistsSync(path.join(basePath, "src"))) {
+    basePath = path.join(basePath, "src");
+  }
+  const sampleDirPath = path.join(basePath, Constants.sampleCodeDir);
+  return sampleDirPath;
 }
 
 export async function copyFileIfExist(srcFile: string, targetFile: string) {
@@ -64,13 +73,17 @@ export class Notification {
   public static readonly READ_MORE_URL = "https://aka.ms/teamsfx-connect-api";
 
   public static GetBasicString(
+    projectPath: string,
     apiName: string,
     components: string[],
     languageType: string
   ): string {
     const fileName = getSampleFileName(apiName, languageType);
     const generatedFiles = concatLines(
-      components.map((item) => path.join(item, fileName)),
+      components.map((item) => {
+        const sampleDirPath = getSampleDirPath(path.join(projectPath, item));
+        return path.join(path.relative(projectPath, sampleDirPath), fileName);
+      }),
       " and "
     );
     return getLocalizedString("plugins.apiConnector.Notification.GenerateFiles", generatedFiles);
@@ -84,11 +97,17 @@ export class Notification {
   }
 
   public static getNotificationMsg(
+    projectPath: string,
     config: ApiConnectorConfiguration,
     languageType: string
   ): string {
     const apiName: string = config.APIName;
-    const retMsg: string = Notification.GetBasicString(apiName, config.ComponentType, languageType);
+    const retMsg: string = Notification.GetBasicString(
+      projectPath,
+      apiName,
+      config.ComponentType,
+      languageType
+    );
     return retMsg;
   }
 }

@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Inputs, MultiSelectQuestion, OptionItem, Platform } from "@microsoft/teamsfx-api";
+import { Inputs, SingleSelectQuestion, OptionItem, Platform } from "@microsoft/teamsfx-api";
 import { isPreviewFeaturesEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { CoreQuestionNames, handleSelectionConflict } from "../../../core/question";
@@ -14,20 +14,26 @@ import { HostType, Runtime } from "./v2/enum";
 
 export interface HostTypeTriggerOptionItem extends OptionItem {
   hostType: HostType;
-  trigger?: NotificationTrigger;
+  triggers?: NotificationTrigger[];
 }
 
 // NOTE: id must be the sample as cliName to prevent parsing error for CLI default value.
 export const FunctionsTimerTriggerOptionItem: HostTypeTriggerOptionItem = optionWithL10n({
   id: "timer-functions",
   hostType: HostType.Functions,
-  trigger: NotificationTriggers.TIMER,
+  triggers: [NotificationTriggers.TIMER],
+});
+
+export const FunctionsHttpAndTimerTriggerOptionItem: HostTypeTriggerOptionItem = optionWithL10n({
+  id: "http-and-timer-functions",
+  hostType: HostType.Functions,
+  triggers: [NotificationTriggers.HTTP, NotificationTriggers.TIMER],
 });
 
 export const FunctionsHttpTriggerOptionItem: HostTypeTriggerOptionItem = optionWithL10n({
   id: "http-functions",
   hostType: HostType.Functions,
-  trigger: NotificationTriggers.HTTP,
+  triggers: [NotificationTriggers.HTTP],
 });
 
 export const AppServiceOptionItem: HostTypeTriggerOptionItem = optionWithL10n({
@@ -45,6 +51,7 @@ export const AppServiceOptionItemForVS: HostTypeTriggerOptionItem = optionWithL1
 export const FunctionsOptionItems: HostTypeTriggerOptionItem[] = [
   FunctionsHttpTriggerOptionItem,
   FunctionsTimerTriggerOptionItem,
+  FunctionsHttpAndTimerTriggerOptionItem,
 ];
 
 // The restrictions of this question:
@@ -53,12 +60,12 @@ export const FunctionsOptionItems: HostTypeTriggerOptionItem[] = [
 export function createHostTypeTriggerQuestion(
   platform?: Platform,
   runtime?: Runtime
-): MultiSelectQuestion {
+): SingleSelectQuestion {
   const prefix = "plugins.bot.questionHostTypeTrigger";
 
-  const defaultOptionItem =
+  const appServiceOptionItem =
     runtime === Runtime.Dotnet ? AppServiceOptionItemForVS : AppServiceOptionItem;
-  let staticOptions = [defaultOptionItem, ...FunctionsOptionItems];
+  let staticOptions = [appServiceOptionItem, ...FunctionsOptionItems];
   if (platform === Platform.CLI) {
     // The UI in CLI is different. It does not have description. So we need to merge that into label.
     staticOptions = staticOptions.map((option) => {
@@ -72,38 +79,10 @@ export function createHostTypeTriggerQuestion(
   return {
     name: QuestionNames.BOT_HOST_TYPE_TRIGGER,
     title: getLocalizedString(`${prefix}.title`),
-    type: "multiSelect",
+    type: "singleSelect",
     staticOptions: staticOptions,
-    default: [defaultOptionItem.id],
+    default: appServiceOptionItem.id,
     placeholder: getLocalizedString(`${prefix}.placeholder`),
-    validation: {
-      validFunc: async (input: string[]): Promise<string | undefined> => {
-        const name = input as string[];
-        if (name.length === 0) {
-          return getLocalizedString(`${prefix}.error.emptySelection`);
-        }
-
-        //invalid if both appService and function items are selected
-        if (name.includes(defaultOptionItem.id) && name.length > 1) {
-          return getLocalizedString(`${prefix}.error.hostTypeConflict`);
-        }
-
-        return undefined;
-      },
-    },
-    onDidChangeSelection: async function (
-      currentSelectedIds: Set<string>,
-      previousSelectedIds: Set<string>
-    ): Promise<Set<string>> {
-      return handleSelectionConflict(
-        [
-          new Set([defaultOptionItem.id]),
-          new Set([FunctionsHttpTriggerOptionItem.id, FunctionsTimerTriggerOptionItem.id]),
-        ],
-        previousSelectedIds,
-        currentSelectedIds
-      );
-    },
   };
 }
 

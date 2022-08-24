@@ -59,15 +59,11 @@ export class ScaffoldConfig {
     this.hostType = ScaffoldConfig.getHostTypeFromProjectSettings(context);
 
     const rawHostTypeTriggers = context.answers?.[QuestionNames.BOT_HOST_TYPE_TRIGGER];
-    if (Array.isArray(rawHostTypeTriggers)) {
-      // convert HostTypeTrigger question to trigger name
-      this.triggers = rawHostTypeTriggers
-        .map((hostTypeTrigger) => {
-          const option = FunctionsOptionItems.find((option) => option.id === hostTypeTrigger);
-          return option?.trigger;
-        })
-        .filter((item): item is NotificationTrigger => item !== undefined);
-    }
+
+    const triggers = FunctionsOptionItems.find(
+      (option) => option.id === rawHostTypeTriggers
+    )?.triggers;
+    this.triggers = triggers || [];
   }
 
   public saveConfigIntoContext(context: PluginContext): void {

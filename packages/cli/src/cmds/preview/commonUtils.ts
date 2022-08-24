@@ -256,7 +256,8 @@ export async function getPortsInUse(workspaceFolder: string): Promise<number[]> 
   try {
     const localEnvManager = new LocalEnvManager(cliLogger, CliTelemetry.getReporter());
     const projectSettings = await localEnvManager.getProjectSettings(workspaceFolder);
-    return await localEnvManager.getPortsInUse(workspaceFolder, projectSettings);
+    const ports = await localEnvManager.getPortsFromProject(workspaceFolder, projectSettings);
+    return await localEnvManager.getPortsInUse(ports);
   } catch (error: any) {
     cliLogger.warning(`Failed to check used ports. Error: ${error}`);
     return [];

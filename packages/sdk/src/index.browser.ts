@@ -39,7 +39,7 @@ export {
   createPfxCertOption,
 } from "./apiClient/certificateAuthProvider.browser";
 
-export { TeamsFx } from "./core/teamsfx.browser";
+export { TeamsFx, TeamsUserCredentialConfig } from "./core/teamsfx.browser";
 export { IdentityType } from "./models/identityType";
 
 export {

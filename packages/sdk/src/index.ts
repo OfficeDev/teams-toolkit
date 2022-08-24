@@ -39,7 +39,13 @@ export {
   createPfxCertOption,
 } from "./apiClient/certificateAuthProvider";
 
-export { TeamsFx } from "./core/teamsfx";
+export { 
+  TeamsFx, 
+  OBOUserCredentialClientSecretConfig, 
+  OBOUserCredentialCertificateContentConfig, 
+  AppCredentialClientSecretConfig, 
+  AppCredentialCertificateContentConfig 
+} from "./core/teamsfx";
 export { IdentityType } from "./models/identityType";
 
 export {

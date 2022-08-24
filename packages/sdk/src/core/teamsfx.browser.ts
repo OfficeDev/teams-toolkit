@@ -10,14 +10,9 @@ import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { internalLogger } from "../util/logger";
 import { TeamsFxConfiguration } from "../models/teamsfxConfiguration";
 
-/**
- * Frank edit
- * TeamsUserCredentialConfig class
- */
-export type TeamsUserCredentialConfig = {
-  [key: string]: string, //client id, initiate login endpoint or simple auth endpoint
-  "clientId": string,
-  "initiateLoginEndpoint": string
+export interface TeamsUserCredentialConfig {
+  "clientId"?: string,
+  "initiateLoginEndpoint"?: string
 }
 
 /**
@@ -42,10 +37,11 @@ export class TeamsFx implements TeamsFxConfiguration {
     this.configuration = new Map<string, string>();
     this.loadFromEnv();
     if (customConfig) {
-      for (const key of Object.keys(customConfig)) {
-        const value = customConfig[key];
+      const myConfig: Record<string, string> = customConfig as Record<string, string>;
+      for (const key of Object.keys(myConfig)) {
+        const value = myConfig[key];
         if (value) {
-          this.configuration.set(key, value);
+            this.configuration.set(key, value);
         }
       }
     }

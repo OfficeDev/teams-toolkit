@@ -10,7 +10,6 @@ import { formatString } from "../util/utils";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { internalLogger } from "../util/logger";
 import { TeamsFxConfiguration } from "../models/teamsfxConfiguration";
-import { config } from "process";
 
 // Following keys are used by SDK internally
 const ReservedKey: Set<string> = new Set<string>([
@@ -29,38 +28,30 @@ const ReservedKey: Set<string> = new Set<string>([
   "sqlIdentityId",
 ]);
 
-/**
- * Frank edit
- * OBOUserCredentialClientSecretConfig, OBOUserCredentialCertificateContentConfig, AppCredentialConfig classes
- */
-export type OBOUserCredentialClientSecretConfig = {
-  [key: string]: string,
-  "clientId": string,
-  "authorityHost": string,
-  "clientSecret": string,
-  "tenantId": string
+export interface OBOUserCredentialClientSecretConfig {
+  "clientId"?: string,
+  "authorityHost"?: string,
+  "clientSecret"?: string,
+  "tenantId"?: string
 }
 
-export type OBOUserCredentialCertificateContentConfig = {
-  [key: string]: string,
-  "clientId": string,
-  "authorityHost": string,
-  "certificateContent": string,
-  "tenantId": string
+export interface OBOUserCredentialCertificateContentConfig {
+  "clientId"?: string,
+  "authorityHost"?: string,
+  "certificateContent"?: string,
+  "tenantId"?: string
 }
 
-export type AppCredentialClientSecretConfig = {
-  [key: string]: string,
-  "clientId": string,
-  "clientSecret": string,
-  "tenantId": string
+export interface AppCredentialClientSecretConfig {
+  "clientId"?: string,
+  "clientSecret"?: string,
+  "tenantId"?: string
 }
 
-export type AppCredentialCertificateContentConfig = {
-  [key: string]: string,
-  "clientId": string,
-  "certificateContent": string,
-  "tenantId": string
+export interface AppCredentialCertificateContentConfig {
+  "clientId"?: string,
+  "certificateContent"?: string,
+  "tenantId"?: string
 }
 
 /**
@@ -76,8 +67,7 @@ export class TeamsFx implements TeamsFxConfiguration {
    * Constructor of TeamsFx
    *
    * @param {IdentityType} identityType - Choose user or app identity
-   * @param customConfig - key/value pairs of customized configuration that overrides default ones.
-   *
+   * @param customConfig - key/value pairs of customized configuration that overrides default ones, or a specific type according to scenarios
    * @throws {@link ErrorCode|IdentityTypeNotSupported} when setting app identity in browser.
    */
   constructor(identityType?: IdentityType, customConfig?: Record<string, string> | OBOUserCredentialClientSecretConfig | OBOUserCredentialCertificateContentConfig | AppCredentialCertificateContentConfig | AppCredentialClientSecretConfig) {
@@ -85,8 +75,9 @@ export class TeamsFx implements TeamsFxConfiguration {
     this.configuration = new Map<string, string>();
     this.loadFromEnv();
     if (customConfig) {
-      for (const key of Object.keys(customConfig)) {
-        const value = customConfig[key];
+      const myConfig: Record<string, string> = customConfig as Record<string, string>;
+      for (const key of Object.keys(myConfig)) {
+        const value = myConfig[key];
         if (value) {
           this.configuration.set(key, value);
         }

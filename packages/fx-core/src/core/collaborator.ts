@@ -30,7 +30,6 @@ import {
 } from "../common/permissionInterface";
 import { AppStudioScopes, getHashedEnv } from "../common/tools";
 import { AadAppForTeamsPluginV3 } from "../plugins/resource/aad/v3";
-import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
 import {
   AzureRoleAssignmentsHelpLink,
   SharePointManageSiteAdminHelpLink,
@@ -48,6 +47,7 @@ import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { VSCodeExtensionCommand } from "../common/constants";
 import { ComponentNames } from "../component/constants";
 import { hasAAD, hasAzureResourceV3, hasSPFxTab } from "../common/projectSettingsHelperV3";
+import { AppManifest } from "../component/resource/appManifest/appManifest";
 
 export async function listCollaborator(
   ctx: ContextV3,
@@ -74,7 +74,7 @@ export async function listCollaborator(
     });
   }
   const hasAad = hasAAD(ctx.projectSetting);
-  const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+  const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
   const aadPlugin = Container.get<AadAppForTeamsPluginV3>(BuiltInFeaturePluginNames.aad);
   const appStudioRes = await appStudio.listCollaborator(
     ctx,
@@ -269,7 +269,7 @@ export async function checkPermission(
     ctx.userInteraction.showMessage("info", message, false);
   }
 
-  const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+  const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
   const aadPlugin = Container.get<AadAppForTeamsPluginV3>(BuiltInFeaturePluginNames.aad);
   const appStudioRes = await appStudio.checkPermission(
     ctx,
@@ -412,7 +412,7 @@ export async function grantPermission(
       ctx.userInteraction.showMessage("info", message, false);
     }
     const isAadActivated = hasAAD(ctx.projectSetting);
-    const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
     const aadPlugin = Container.get<AadAppForTeamsPluginV3>(BuiltInFeaturePluginNames.aad);
     const appStudioRes = await appStudio.grantPermission(
       ctx,

@@ -18,7 +18,7 @@ List common errors as follows. You can find the common deployment error from sea
 ### Mitigation
 1. Search `Microsoft.Web/serverfarms` in all bicep files in your project
 1. Add `properties: {}` to the resource definition. Here is an example:
-    ![image](../../images/fx-core/arm/add-empty-properties.PNG)
+    ![image](../../images/fx-core/arm/add-empty-properties.png)
 
 ## The maximum number of Free App Service Plan allowed in a Subscription is xx.
 

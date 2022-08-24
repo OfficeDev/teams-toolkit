@@ -292,6 +292,7 @@ export class RegisterResourceProviderError extends PluginError {
   }
 }
 
+//! context and name are only for telemetry, they may be empty if sendTelemetry is false
 export function wrapError(
   e: InnerError,
   context: PluginContext,
@@ -332,7 +333,6 @@ export function wrapError(
     sendTelemetry && telemetryHelper.sendResultEvent(context, name, res);
     return res;
   }
-
   if (e instanceof PluginError || e instanceof CommonHostingError) {
     const message = e.genMessage() + errorMsg;
     const displayMessage = e.genDisplayMessage() + errorMsg;

@@ -9,6 +9,7 @@ import {
   FunctionsTimerTriggerOptionItem,
   AppServiceOptionItem,
   AppServiceOptionItemForVS,
+  FunctionsHttpAndTimerTriggerOptionItem,
 } from "../question";
 import { BicepModules, HostType, ProgrammingLanguage, Runtime } from "./enum";
 
@@ -41,6 +42,14 @@ const triggerScenariosMap: Map<string, string[]> = new Map<string, string[]>([
     FunctionsTimerTriggerOptionItem.id,
     [
       TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME,
+      TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_TIMER_SCENARIO_NAME,
+    ],
+  ],
+  [
+    FunctionsHttpAndTimerTriggerOptionItem.id,
+    [
+      TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME,
+      TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_HTTP_SCENARIO_NAME,
       TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_TIMER_SCENARIO_NAME,
     ],
   ],

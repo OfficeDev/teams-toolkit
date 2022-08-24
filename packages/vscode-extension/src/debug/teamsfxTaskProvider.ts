@@ -33,6 +33,9 @@ import {
 import { vscodeHelper } from "./depsChecker/vscodeHelper";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
+import { NgrokTaskTerminal } from "./taskTerminal/ngrokTaskProvider";
+import { PrerequisiteTaskTerminal } from "../taskTerminal/prerequisiteTaskTerminal";
+import { BaseTaskTerminal } from "./taskTerminal/baseTaskTerminal";
 
 export class TeamsfxTaskProvider implements vscode.TaskProvider {
   public static readonly type: string = ProductName;
@@ -148,11 +151,35 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
   }
 
   public async resolveTask(
-    task: vscode.Task,
+    _task: vscode.Task,
     token?: vscode.CancellationToken | undefined
   ): Promise<vscode.Task | undefined> {
-    // Return undefined since all tasks are provided and fully resolved
-    return undefined;
+    if (_task.definition.type !== TeamsfxTaskProvider.type || !_task.definition.command) {
+      return undefined;
+    }
+
+    const createTerminalFuncs = {
+      "check-prerequisites": (d: vscode.TaskDefinition) => new PrerequisiteTaskTerminal(d),
+    };
+
+    const createTerminal = Object.entries(createTerminalFuncs).find(
+      ([k]) => k == _task.definition.command
+    )?.[1];
+
+    if (!createTerminal) {
+      return undefined;
+    }
+
+    return new vscode.Task(
+      _task.definition,
+      vscode.TaskScope.Workspace,
+      _task.name,
+      TeamsfxTaskProvider.type,
+      new vscode.CustomExecution(
+        async (resolvedDefinition: vscode.TaskDefinition): Promise<vscode.Pseudoterminal> =>
+          Promise.resolve(createTerminal(resolvedDefinition))
+      )
+    );
   }
 
   private async createFrontendStartTask(

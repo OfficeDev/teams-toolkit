@@ -33,9 +33,7 @@ import {
 import { vscodeHelper } from "./depsChecker/vscodeHelper";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
-import { NgrokTaskTerminal } from "./taskTerminal/ngrokTaskProvider";
-import { PrerequisiteTaskTerminal } from "../taskTerminal/prerequisiteTaskTerminal";
-import { BaseTaskTerminal } from "./taskTerminal/baseTaskTerminal";
+import { PrerequisiteTaskTerminal } from "./taskTerminal/prerequisiteTaskTerminal";
 
 export class TeamsfxTaskProvider implements vscode.TaskProvider {
   public static readonly type: string = ProductName;

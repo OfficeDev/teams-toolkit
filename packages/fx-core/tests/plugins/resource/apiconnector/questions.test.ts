@@ -7,6 +7,7 @@ import * as path from "path";
 import sinon from "sinon";
 import fs from "fs-extra";
 import { checkApiNameExist } from "../../../../src/plugins/resource/apiconnector/checker";
+import { Constants } from "../../../../src/plugins/resource/apiconnector/constants";
 describe("Api Connector question test cases", async () => {
   const sandbox = sinon.createSandbox();
   const testpath = path.join(__dirname, "api-connect-question");
@@ -29,7 +30,7 @@ describe("Api Connector question test cases", async () => {
   });
 
   it("checkApiNameExist validate fail", async () => {
-    await fs.ensureFile(path.join(botPath, "test.js"));
+    await fs.ensureFile(path.join(botPath, Constants.sampleCodeDir, "test.js"));
     const languageType = "javascript";
     const components: string[] = ["bot", "api"];
     const res = await checkApiNameExist("test", testpath, components, languageType);

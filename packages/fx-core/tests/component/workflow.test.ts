@@ -66,6 +66,7 @@ import { Constants } from "../../src/plugins/resource/aad/constants";
 import * as deployV3 from "../../src/plugins/solution/fx-solution/v3/deploy";
 import { TokenCredential, AccessToken, GetTokenOptions } from "@azure/core-http";
 import { CoreQuestionNames } from "../../src/core/question";
+import * as questionV3 from "../../src/component/questionV3";
 
 class MyTokenCredential implements TokenCredential {
   async getToken(
@@ -78,6 +79,7 @@ class MyTokenCredential implements TokenCredential {
     };
   }
 }
+
 describe("Workflow test for v3", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -1074,6 +1076,7 @@ describe("Workflow test for v3", () => {
     sandbox.stub(AadApp.prototype, "setApplicationInContext").resolves(ok(undefined));
     sandbox.stub(AadApp.prototype, "configure").resolves(ok(undefined));
     sandbox.stub(AadApp.prototype, "deploy").resolves(ok(undefined));
+    sandbox.stub(questionV3, "getQuestionsForDeployV3").resolves(ok(undefined));
 
     const appName = `unittest${randomAppName()}`;
     const inputs: InputsWithProjectPath = {

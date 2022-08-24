@@ -282,7 +282,7 @@ function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext)
     "initProject"
   );
 
-  // Initialize an existing application
+  // User can click to debug directly, same as pressing "F5".
   registerInCommandController(context, "fx-extension.debug", handlers.debugHandler);
 
   // Add features

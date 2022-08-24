@@ -25,7 +25,7 @@ import {
   getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,
 } from "../../../common/tools";
-import { NameValuePair, Site } from "@azure/arm-appservice/esm/models";
+import { NameValuePair, Site } from "@azure/arm-appservice";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { LogMessages } from "../../messages";
@@ -66,15 +66,23 @@ export class AzureFunctionResource extends AzureAppService {
     const credentials = CheckThrowSomethingMissing(
       this.alias,
       "Azure account",
-      await context.tokenProvider.azureAccountProvider.getAccountCredentialAsync()
+      await context.tokenProvider.azureAccountProvider.getIdentityCredentialAsync()
     );
     const resourceGroupName = getResourceGroupNameFromResourceId(resourceId);
     const functionAppName = getSiteNameFromResourceId(resourceId);
     const subscriptionId = getSubscriptionIdFromResourceId(resourceId);
 
     const client = AzureClientFactory.getWebSiteManagementClient(credentials, subscriptionId);
-    const webAppCollection = await client.webApps.listByResourceGroup(resourceGroupName);
-    const site = webAppCollection.find((webApp) => webApp.name === functionAppName);
+    let site: Site | undefined = undefined;
+    for await (const page of client.webApps
+      .listByResourceGroup(resourceGroupName)
+      .byPage({ maxPageSize: 100 })) {
+      for (const webApp of page) {
+        if (webApp.name === functionAppName) {
+          site = webApp;
+        }
+      }
+    }
     if (!site) {
       throw new FindFunctionAppError(this.alias);
     }
@@ -84,7 +92,7 @@ export class AzureFunctionResource extends AzureAppService {
     );
     if (settings?.properties) {
       Object.entries(settings.properties).forEach((kv: [string, string]) => {
-        this.pushAppSettings(site, kv[0], kv[1], false);
+        this.pushAppSettings(site!, kv[0], kv[1], false);
       });
     }
     this.collectFunctionAppSettings(context, site);

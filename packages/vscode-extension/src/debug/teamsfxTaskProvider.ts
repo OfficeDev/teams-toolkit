@@ -35,6 +35,10 @@ import { localTelemetryReporter } from "./localTelemetryReporter";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import { PrerequisiteTaskTerminal } from "./taskTerminal/prerequisiteTaskTerminal";
 
+const createTerminalFuncs = Object.freeze({
+  "debug-check-prerequisites": (d: vscode.TaskDefinition) => new PrerequisiteTaskTerminal(d),
+});
+
 export class TeamsfxTaskProvider implements vscode.TaskProvider {
   public static readonly type: string = ProductName;
 
@@ -156,12 +160,8 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       return undefined;
     }
 
-    const createTerminalFuncs = {
-      "check-prerequisites": (d: vscode.TaskDefinition) => new PrerequisiteTaskTerminal(d),
-    };
-
     const createTerminal = Object.entries(createTerminalFuncs).find(
-      ([k]) => k == task.definition.command
+      ([k]) => k === task.definition.command
     )?.[1];
 
     if (createTerminal) {

@@ -40,7 +40,7 @@ async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
     if (commandType === "login") {
       const message = [
         {
-          content: `[${constants.cliSource}] Successfully signed in to M365.`,
+          content: `[${constants.cliSource}] Successfully signed in to Microsoft 365.`,
           color: Colors.BRIGHT_GREEN,
         },
         { content: " Your username is ", color: Colors.BRIGHT_WHITE },
@@ -49,7 +49,10 @@ async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
       CLILogProvider.necessaryLog(LogLevel.Info, getColorizedString(message));
     } else {
       const message = [
-        { content: `[${constants.cliSource}] Your M365 Account is: `, color: Colors.BRIGHT_WHITE },
+        {
+          content: `[${constants.cliSource}] Your Microsoft 365 Account is: `,
+          color: Colors.BRIGHT_WHITE,
+        },
         { content: (result as any).upn, color: Colors.BRIGHT_MAGENTA },
       ];
       CLILogProvider.necessaryLog(LogLevel.Info, getColorizedString(message));
@@ -58,7 +61,7 @@ async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
     if (commandType === "login") {
       CLILogProvider.necessaryLog(
         LogLevel.Error,
-        `[${constants.cliSource}] Failed to sign in to M365.`
+        `[${constants.cliSource}] Failed to sign in to Microsoft 365.`
       );
     }
   }
@@ -181,7 +184,7 @@ class AccountShow extends YargsCommand {
     if (m365Status.status === signedIn) {
       (await checkIsOnline())
         ? await outputM365Info("show")
-        : await outputAccountInfoOffline("M365", (m365Status.accountInfo as any).upn);
+        : await outputAccountInfoOffline("Microsoft 365", (m365Status.accountInfo as any).upn);
     }
 
     const azureStatus = await AzureTokenProvider.getStatus();
@@ -194,7 +197,7 @@ class AccountShow extends YargsCommand {
     if (m365Status.status !== signedIn && azureStatus.status !== signedIn) {
       CLILogProvider.necessaryLog(
         LogLevel.Info,
-        "Use `teamsfx account login azure` or `teamsfx account login m365` to log in to Azure or M365 account."
+        "Use `teamsfx account login azure` or `teamsfx account login m365` to log in to Azure or Microsoft 365 account."
       );
     }
 
@@ -225,7 +228,7 @@ class AccountLogin extends YargsCommand {
 export class M365Login extends YargsCommand {
   public readonly commandHead = `m365`;
   public readonly command = `${this.commandHead}`;
-  public readonly description = "Log in to M365.";
+  public readonly description = "Log in to Microsoft 365.";
 
   public builder(yargs: Argv): Argv<any> {
     return yargs.options(this.params);
@@ -308,7 +311,7 @@ class AccountLogout extends YargsCommand {
 
   public builder(yargs: Argv): Argv<any> {
     return yargs.positional("service", {
-      description: "Azure or M365",
+      description: "Azure or Microsoft 365",
       type: "string",
       choices: ["azure", "m365"],
       coerce: toLocaleLowerCase,
@@ -337,12 +340,12 @@ class AccountLogout extends YargsCommand {
         if (result) {
           CLILogProvider.necessaryLog(
             LogLevel.Info,
-            `[${constants.cliSource}] Successfully signed out of M365.`
+            `[${constants.cliSource}] Successfully signed out of Microsoft 365.`
           );
         } else {
           CLILogProvider.necessaryLog(
             LogLevel.Error,
-            `[${constants.cliSource}] Failed to sign out of M365.`
+            `[${constants.cliSource}] Failed to sign out of Microsoft 365.`
           );
         }
         break;
@@ -380,7 +383,7 @@ export default class Account extends YargsCommand {
   public readonly commandHead = `account`;
   public readonly command = `${this.commandHead} <action>`;
   public readonly description =
-    "Manage cloud service accounts. The supported cloud services are 'Azure' and 'M365'.";
+    "Manage cloud service accounts. The supported cloud services are 'Azure' and 'Microsoft 365'.";
 
   public readonly subCommands: YargsCommand[] = [
     new AccountShow(),

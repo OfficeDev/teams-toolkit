@@ -291,6 +291,31 @@ describe("LocalEnvManager", () => {
     });
   });
 
+  describe("getPortsFromProject()", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
+    it("tab + bot", async () => {
+      const projectSettings = {
+        appName: "",
+        projectId: "",
+        programmingLanguage: "javascript",
+        solutionSettings: {
+          name: "fx-solution-azure",
+          hostType: "Azure",
+          capabilities: ["Tab", "Bot"],
+        },
+      };
+
+      const ports = await localEnvManager.getPortsFromProject(projectPath, projectSettings);
+      chai.assert.sameMembers(
+        ports,
+        [53000, 3978, 9239],
+        `Expected [53000, 3978, 9239], actual ${ports}`
+      );
+    });
+  });
   describe("getLocalEnvInfo()", () => {
     const sandbox = sinon.createSandbox();
     let mockedEnvRestore: RestoreFn;

@@ -7,6 +7,7 @@ import { Activity, InvokeResponse, StatusCodes } from "botframework-schema";
 import {
   AdaptiveCardResponse,
   CommandMessage,
+  InvokeResponseErrorCode,
   MessageResponse,
   NotificationTarget,
   NotificationTargetStorage,
@@ -113,7 +114,7 @@ export class MockCardActionHandlerWithErrorResponse implements TeamsFxAdaptiveCa
   invokeResponse: InvokeResponse;
   actionData: any;
 
-  constructor(verb: string, errorCode: StatusCodes, errorMessage: string) {
+  constructor(verb: string, errorCode: InvokeResponseErrorCode, errorMessage: string) {
     this.triggerVerb = verb;
     this.invokeResponse = InvokeResponseFactory.errorResponse(errorCode, errorMessage);
   }

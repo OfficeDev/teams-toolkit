@@ -52,6 +52,7 @@ export {
   NotificationTarget,
   NotificationTargetStorage,
   NotificationTargetType,
+  InvokeResponseErrorCode,
   TriggerPatterns,
   TeamsFxAdaptiveCardActionHandler,
   TeamsFxBotCommandHandler,

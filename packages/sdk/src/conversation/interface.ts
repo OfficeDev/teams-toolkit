@@ -204,11 +204,27 @@ export enum AdaptiveCardResponse {
 }
 
 /**
+ * Status code for an `application/vnd.microsoft.error` invoke response.
+ */
+export enum InvokeResponseErrorCode {
+  /**
+   * Invalid request.
+   */
+  BadRequest = 400,
+
+  /**
+   * Internal server error.
+   */
+  InternalServerError = 500,
+}
+
+/**
  * Interface for adaptive card action handler that can process card action invoke and return a response.
  */
 export interface TeamsFxAdaptiveCardActionHandler {
   /**
    * The verb defined in adaptive card action that can trigger this handler.
+   * The verb string here is case-insensitive.
    */
   triggerVerb: string;
 

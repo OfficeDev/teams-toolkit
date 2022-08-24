@@ -42,6 +42,8 @@ export class CommandResponseMiddleware implements Middleware {
               await context.sendActivity(replyActivity);
             }
           }
+
+          break;
         }
       }
     }

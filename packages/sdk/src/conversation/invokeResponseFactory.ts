@@ -1,5 +1,16 @@
 import { IAdaptiveCard } from "adaptivecards";
 import { InvokeResponse, StatusCodes } from "botbuilder";
+import { InvokeResponseErrorCode } from "./interface";
+
+/**
+ * Available response type for an adaptive card invoke response.
+ * @internal
+ */
+export enum InvokeResponseType {
+  AdaptiveCard = "application/vnd.microsoft.card.adaptive",
+  Message = "application/vnd.microsoft.activity.message",
+  Error = "application/vnd.microsoft.error",
+}
 
 /**
  * Provides methods for formatting various invoke responses a bot can send to respond to an invoke request.
@@ -49,7 +60,7 @@ export class InvokeResponseFactory {
       status: StatusCodes.OK,
       body: {
         statusCode: StatusCodes.OK,
-        type: "application/vnd.microsoft.activity.message",
+        type: InvokeResponseType.Message,
         value: message,
       },
     };
@@ -75,7 +86,7 @@ export class InvokeResponseFactory {
       status: StatusCodes.OK,
       body: {
         statusCode: StatusCodes.OK,
-        type: "application/vnd.microsoft.card.adaptive",
+        type: InvokeResponseType.AdaptiveCard,
         value: card,
       },
     };
@@ -94,18 +105,15 @@ export class InvokeResponseFactory {
    *
    * @returns {InvokeResponse} An InvokeResponse object.
    */
-  public static errorResponse(errorCode: StatusCodes, errorMessage: string): InvokeResponse {
-    if (errorCode !== StatusCodes.BAD_REQUEST && errorCode !== StatusCodes.INTERNAL_SERVER_ERROR) {
-      throw new Error(
-        `Unexpected status Code: ${errorCode}. Expected: ${StatusCodes.BAD_REQUEST} (BadRequest) or ${StatusCodes.INTERNAL_SERVER_ERROR} (InternalServerError)`
-      );
-    }
-
+  public static errorResponse(
+    errorCode: InvokeResponseErrorCode,
+    errorMessage: string
+  ): InvokeResponse {
     return {
       status: StatusCodes.OK,
       body: {
         statusCode: errorCode,
-        type: "application/vnd.microsoft.error",
+        type: InvokeResponseType.Error,
         value: {
           code: errorCode.toString(),
           message: errorMessage,

@@ -4,11 +4,14 @@ import {
   InvokeResponse,
   MessageFactory,
   Middleware,
-  StatusCodes,
   TurnContext,
 } from "botbuilder";
-import { AdaptiveCardResponse, TeamsFxAdaptiveCardActionHandler } from "../interface";
-import { InvokeResponseFactory } from "../invokeResponseFactory";
+import {
+  AdaptiveCardResponse,
+  InvokeResponseErrorCode,
+  TeamsFxAdaptiveCardActionHandler,
+} from "../interface";
+import { InvokeResponseFactory, InvokeResponseType } from "../invokeResponseFactory";
 
 /**
  * @internal
@@ -29,13 +32,13 @@ export class CardActionMiddleware implements Middleware {
       const actionVerb = action.verb;
 
       for (const handler of this.actionHandlers) {
-        if (handler.triggerVerb === actionVerb) {
+        if (handler.triggerVerb.toLocaleLowerCase() === actionVerb.toLocaleLowerCase()) {
           let response: InvokeResponse;
           try {
             response = await handler.handleActionInvoked(context, action.data);
           } catch (error: any) {
             const errorResponse = InvokeResponseFactory.errorResponse(
-              StatusCodes.INTERNAL_SERVER_ERROR,
+              InvokeResponseErrorCode.InternalServerError,
               error.message
             );
             await this.sendInvokeResponse(context, errorResponse);
@@ -44,17 +47,21 @@ export class CardActionMiddleware implements Middleware {
 
           const responseType = response.body?.type;
           switch (responseType) {
-            case "application/vnd.microsoft.activity.message":
+            case InvokeResponseType.Message:
               await this.sendInvokeResponse(context, response);
               break;
-            case "application/vnd.microsoft.card.adaptive":
+            case InvokeResponseType.AdaptiveCard:
               const card = response.body?.value;
               if (!card) {
+                const errorMessage = "Adaptive card content cannot be found in the response body";
                 await this.sendInvokeResponse(
                   context,
-                  InvokeResponseFactory.textMessage(this.defaultMessage)
+                  InvokeResponseFactory.errorResponse(
+                    InvokeResponseErrorCode.InternalServerError,
+                    errorMessage
+                  )
                 );
-                throw new Error(`Adaptive card content cannot be found in the response body`);
+                throw new Error(errorMessage);
               }
 
               if (card.refresh && handler.adaptiveCardResponse !== AdaptiveCardResponse.NewForAll) {
@@ -78,11 +85,13 @@ export class CardActionMiddleware implements Middleware {
                 await this.sendInvokeResponse(context, response);
               }
               break;
-            case "application/vnd.microsoft.error":
+            case InvokeResponseType.Error:
             default:
               await this.sendInvokeResponse(context, response);
               break;
           }
+
+          break;
         }
       }
     }

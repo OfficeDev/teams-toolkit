@@ -9,6 +9,7 @@ import {
   MockCardActionHandlerWithErrorResponse,
 } from "./testUtils";
 import { IAdaptiveCard } from "adaptivecards";
+import { InvokeResponseErrorCode } from "../../../../src/conversation/interface";
 
 describe("Card Action Handler - Node", () => {
   it("handler should send text message response correctly", async () => {
@@ -46,7 +47,7 @@ describe("Card Action Handler - Node", () => {
     const errorMessage = "Invalid request";
     const doStuffAction = new MockCardActionHandlerWithErrorResponse(
       "doStuff",
-      StatusCodes.BAD_REQUEST,
+      InvokeResponseErrorCode.BadRequest,
       errorMessage
     );
     const testContext = new MockActionInvokeContext("doStuff");
@@ -63,7 +64,7 @@ describe("Card Action Handler - Node", () => {
     const errorMessage = "Internal server error";
     const doStuffAction = new MockCardActionHandlerWithErrorResponse(
       "doStuff",
-      StatusCodes.INTERNAL_SERVER_ERROR,
+      InvokeResponseErrorCode.InternalServerError,
       errorMessage
     );
     const testContext = new MockActionInvokeContext("doStuff");

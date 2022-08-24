@@ -7,7 +7,7 @@ import chaiAsPromised from "chai-as-promised";
 import { createContextV3 } from "../../../../src/component/utils";
 import { MockTools, randomAppName } from "../../../core/utils";
 import { setTools } from "../../../../src/core/globalVars";
-import sinon from "sinon";
+import { createSandbox } from "sinon";
 import {
   ContextV3,
   InputsWithProjectPath,
@@ -19,16 +19,18 @@ import path from "path";
 import fs from "fs-extra";
 import * as os from "os";
 import { AzureFunctionResource } from "../../../../src/component/resource/azureAppService/azureFunction";
-import { assign } from "lodash";
+import { AzureClientFactory } from "../../../../src/component/resource/azureAppService/azureLibs";
+import { assign, merge } from "lodash";
 import * as hostingUtils from "../../../../src/common/azure-hosting/utils";
 import { AzureOperations } from "../../../../src/common/azure-hosting/azureOps";
 import * as botUtils from "../../../../src/plugins/resource/bot/utils/common";
+import { APIMOutputs, ComponentNames, Scenarios } from "../../../../src/component/constants";
 
 chai.use(chaiAsPromised);
 
 describe("Azure-Function Component", () => {
   const tools = new MockTools();
-  const sandbox = sinon.createSandbox();
+  const sandbox = createSandbox();
   const component = new AzureFunctionResource();
   const appName = `unittest${randomAppName()}`;
   const projectPath = path.join(os.homedir(), "TeamsApps", appName);
@@ -42,13 +44,65 @@ describe("Azure-Function Component", () => {
 
   beforeEach(async () => {
     context = createContextV3();
+    context.projectSetting.components.push({
+      name: ComponentNames.Function,
+      scenario: Scenarios.Api,
+      provision: true,
+      connections: [],
+    });
     context.envInfo = newEnvInfoV3();
+    assign(context.envInfo, {
+      state: {
+        [ComponentNames.TeamsApi]: {
+          [component.outputs.resourceId.key]:
+            "/subscriptions/subs/resourceGroups/rg/providers/Microsoft.Web/sites/siteName/appServices",
+        },
+      },
+    });
   });
   afterEach(() => {
     sandbox.restore();
   });
 
+  it("skip configure when local", async function () {
+    context.envInfo = newEnvInfoV3("local");
+    const configureAction = await component.configure(context as ResourceContextV3, inputs);
+    chai.assert.isTrue(configureAction.isOk());
+  });
+
+  it("skip configure when no apim", async function () {
+    const configureAction = await component.configure(context as ResourceContextV3, inputs);
+    chai.assert.isTrue(configureAction.isOk());
+  });
+
   it("configure happy path", async function () {
+    context.projectSetting.components = [
+      {
+        name: ComponentNames.Function,
+        scenario: Scenarios.Api,
+        provision: true,
+        connections: [ComponentNames.APIM],
+      },
+    ];
+    merge(context.envInfo?.state, {
+      [ComponentNames.APIM]: {
+        [APIMOutputs.apimClientAADClientId.key]: "clientId",
+      },
+    });
+    context.tokenProvider = {
+      azureAccountProvider: {
+        getAccountCredentialAsync: async () => ({} as any),
+      } as any,
+    } as any;
+    sandbox.stub(AzureClientFactory, "getWebSiteManagementClient").returns({
+      webApps: {
+        listApplicationSettings: (rgName: string, siteName: string) => ({
+          properties: [{ name: "", value: "" }],
+        }),
+        listByResourceGroup: (rgName: string) => [{ name: "siteName" }],
+        update: (rgName: string, siteName: string, site: any) => ({}),
+      } as any,
+    } as any);
     const configureAction = await component.configure(context as ResourceContextV3, inputs);
     chai.assert.isTrue(configureAction.isOk());
   });
@@ -62,22 +116,10 @@ describe("Azure-Function Component", () => {
     const restartWebAppStub = sandbox.stub(AzureOperations, "restartWebApp").resolves();
     sandbox.stub(botUtils, "zipFolderAsync").resolves({} as any);
     sandbox.stub(hostingUtils, "azureWebSiteDeploy").resolves({} as any);
-    context.projectSetting.components.push({
-      name: "function",
-      scenario: "api",
-    });
-    assign(context.envInfo, {
-      state: {
-        ["function"]: {
-          [component.outputs.resourceId.key]:
-            "/subscriptions/subs/resourceGroups/rg/providers/Microsoft.Web/sites/siteName/appServices",
-        },
-      },
-    });
     assign(inputs, {
-      componentId: "function",
+      componentId: ComponentNames.TeamsApi,
       hosting: inputs.hosting,
-      scenario: "api",
+      scenario: Scenarios.Api,
       folder: "api",
       artifactFolder: "api",
     });

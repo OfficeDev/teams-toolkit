@@ -151,10 +151,10 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
   }
 
   public async resolveTask(
-    _task: vscode.Task,
+    task: vscode.Task,
     token?: vscode.CancellationToken | undefined
   ): Promise<vscode.Task | undefined> {
-    if (_task.definition.type !== TeamsfxTaskProvider.type || !_task.definition.command) {
+    if (task.definition.type !== TeamsfxTaskProvider.type || !task.definition.command) {
       return undefined;
     }
 
@@ -163,23 +163,23 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     };
 
     const createTerminal = Object.entries(createTerminalFuncs).find(
-      ([k]) => k == _task.definition.command
+      ([k]) => k == task.definition.command
     )?.[1];
 
-    if (!createTerminal) {
-      return undefined;
+    if (createTerminal) {
+      return new vscode.Task(
+        task.definition,
+        vscode.TaskScope.Workspace,
+        task.name,
+        TeamsfxTaskProvider.type,
+        new vscode.CustomExecution(
+          async (resolvedDefinition: vscode.TaskDefinition): Promise<vscode.Pseudoterminal> =>
+            Promise.resolve(createTerminal(resolvedDefinition))
+        )
+      );
     }
 
-    return new vscode.Task(
-      _task.definition,
-      vscode.TaskScope.Workspace,
-      _task.name,
-      TeamsfxTaskProvider.type,
-      new vscode.CustomExecution(
-        async (resolvedDefinition: vscode.TaskDefinition): Promise<vscode.Pseudoterminal> =>
-          Promise.resolve(createTerminal(resolvedDefinition))
-      )
-    );
+    return undefined;
   }
 
   private async createFrontendStartTask(

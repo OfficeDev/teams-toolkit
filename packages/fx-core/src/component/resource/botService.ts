@@ -37,7 +37,7 @@ import { AzureResource } from "./azureResource";
 import { Plans, ProgressMessages, ProgressTitles } from "../messages";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
-import { wrapPluginError } from "../../plugins/resource/bot/errors";
+import { wrapError } from "../../plugins/resource/bot/errors";
 @Service("bot-service")
 export class BotService extends AzureResource {
   outputs = BotServiceOutputs;
@@ -68,7 +68,7 @@ export class BotService extends AzureResource {
       errorSource: "BotService",
       errorHandler: (e, t) => {
         // context and name are for sending telemetry, since we don't send telemetry here, it's ok to leave them empty
-        const res = wrapPluginError(e, {} as any, false, "");
+        const res = wrapError(e, {} as any, false, "");
         return res.isErr() ? res.error : (e as FxError);
       },
     }),
@@ -96,7 +96,7 @@ export class BotService extends AzureResource {
       errorSource: "BotService",
       errorHandler: (e, t) => {
         // context and name are for sending telemetry, since we don't send telemetry here, it's ok to leave them empty
-        const res = wrapPluginError(e, {} as any, false, "");
+        const res = wrapError(e, {} as any, false, "");
         return res.isErr() ? res.error : (e as FxError);
       },
     }),

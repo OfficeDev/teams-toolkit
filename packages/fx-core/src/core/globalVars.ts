@@ -14,7 +14,7 @@ function featureFlagEnabled(flagName: string): boolean {
 }
 
 export function isV3(): boolean {
-  return featureFlagEnabled(FeatureFlagName.APIV3);
+  return process.env[FeatureFlagName.APIV3] === "false" ? false : true;
 }
 
 export function isVsCallingCli(): boolean {

@@ -265,8 +265,16 @@ describe("LocalEnvManager", () => {
 
   describe("getActiveDependencies()", () => {
     const sandbox = sinon.createSandbox();
+    let mockedEnvRestore: RestoreFn;
+
+    beforeEach(() => {
+      sandbox.restore();
+      mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "false" });
+    });
+
     afterEach(() => {
       sandbox.restore();
+      mockedEnvRestore();
     });
 
     testData.forEach((data) => {

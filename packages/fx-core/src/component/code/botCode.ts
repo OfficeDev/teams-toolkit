@@ -23,7 +23,7 @@ import {
   ScaffoldContext,
   scaffoldFromTemplates,
 } from "../../common/template-utils/templatesActions";
-import { convertToLangKey } from "./utils";
+import { convertToLangKey, execute } from "./utils";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { CoreQuestionNames } from "../../core/question";
 import {
@@ -32,7 +32,6 @@ import {
 } from "../../plugins/resource/bot/constants";
 import { CommandExecutionError } from "../../plugins/resource/bot/errors";
 import { Commands, CommonStrings } from "../../plugins/resource/bot/resources/strings";
-import * as utils from "../../plugins/resource/bot/utils/common";
 import { telemetryHelper } from "../../plugins/resource/bot/utils/telemetry-helper";
 import { TemplateZipFallbackError, UnzipError } from "../../plugins/resource/bot/v3/error";
 import { ComponentNames, ProgrammingLanguage } from "../constants";
@@ -131,8 +130,8 @@ export class BotCodeProvider {
     if (language === ProgrammingLanguage.TS) {
       //Typescript needs tsc build before deploy because of windows app server. other languages don"t need it.
       try {
-        await utils.execute("npm install", packDir);
-        await utils.execute("npm run build", packDir);
+        await execute("npm install", packDir, context.logProvider);
+        await execute("npm run build", packDir, context.logProvider);
         merge(teamsBot, { build: true, artifactFolder: teamsBot.folder });
       } catch (e) {
         throw new CommandExecutionError(
@@ -144,7 +143,7 @@ export class BotCodeProvider {
     } else if (language === ProgrammingLanguage.JS) {
       try {
         // fail to npm install @microsoft/teamsfx on azure web app, so pack it locally.
-        await utils.execute("npm install", packDir);
+        await execute("npm install", packDir, context.logProvider);
         merge(teamsBot, { build: true, artifactFolder: teamsBot.folder });
       } catch (e) {
         throw new CommandExecutionError(`${Commands.NPM_INSTALL}`, packDir, e);
@@ -154,7 +153,7 @@ export class BotCodeProvider {
       const framework = await BotCodeProvider.getFrameworkVersion(
         path.join(packDir, projectFileName)
       );
-      await utils.execute(`dotnet publish --configuration Release`, packDir);
+      await execute(`dotnet publish --configuration Release`, packDir, context.logProvider);
       const artifactFolder = path.join(".", "bin", "Release", framework, "publish");
       merge(teamsBot, { build: true, artifactFolder: artifactFolder });
     }

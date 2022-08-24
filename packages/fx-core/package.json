@@ -25,7 +25,7 @@
     "test:keyvault": "nyc mocha \"tests/plugins/resource/keyvault/**/*.test.ts\"",
     "test:apiconnector": "nyc mocha \"tests/plugins/resource/apiconnector/**/*.test.ts\"",
     "test:unit": "nyc --no-clean mocha \"tests/**/*.test.ts\" ",
-    "test:common": "nyc --no-clean mocha \"tests/common/*.test.ts\"",
+    "test:common": "nyc --no-clean mocha \"tests/common/**/*.test.ts\"",
     "test:solution": "nyc mocha \"tests/plugins/solution/*.test.ts\"",
     "test:solution:deploy": "nyc mocha \"tests/plugins/solution/solution.deploy.test.ts\"",
     "test:solution:debug": "nyc mocha \"tests/plugins/solution/debug/**/*.test.ts\"",

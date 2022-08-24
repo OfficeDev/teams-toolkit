@@ -146,6 +146,7 @@ export class TeamsApi {
       projectSettings.components.push({
         name: ComponentNames.Function,
         scenario: Scenarios.Api,
+        provision: true,
       });
       addedComponents.push(ComponentNames.Function);
     }

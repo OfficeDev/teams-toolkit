@@ -413,8 +413,8 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(editAadManifestTemplateCmd);
 
-  const preview = vscode.commands.registerCommand("fx-extension.preview", (node) => {
-    Correlator.run(handlers.treeViewPreviewHandler, node.identifier);
+  const preview = vscode.commands.registerCommand("fx-extension.preview", async (node) => {
+    await Correlator.run(handlers.treeViewPreviewHandler, node.identifier);
   });
   context.subscriptions.push(preview);
 
@@ -589,8 +589,8 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
 
   const previewWithIcon = vscode.commands.registerCommand(
     "fx-extension.previewWithIcon",
-    (node) => {
-      Correlator.run(handlers.treeViewPreviewHandler, node.identifier);
+    async (node) => {
+      await Correlator.run(handlers.treeViewPreviewHandler, node.identifier);
     }
   );
   context.subscriptions.push(previewWithIcon);

@@ -25,7 +25,7 @@ import {
 import { CheckThrowSomethingMissing } from "../../plugins/resource/bot/v3/error";
 import * as uuid from "uuid";
 import { ResourceNameFactory } from "../../plugins/resource/bot/utils/resourceNameFactory";
-import { MaxLengths, TelemetryKeys } from "../../plugins/resource/bot/constants";
+import { MaxLengths } from "../../plugins/resource/bot/constants";
 import { AADRegistration } from "../../plugins/resource/bot/aadRegistration";
 import { Messages } from "../../plugins/resource/bot/resources/messages";
 import { IBotRegistration } from "../../plugins/resource/bot/appStudio/interfaces/IBotRegistration";
@@ -34,11 +34,10 @@ import { BotServiceOutputs, ComponentNames } from "../constants";
 import { normalizeName } from "../utils";
 import { getComponent } from "../workflow";
 import { AzureResource } from "./azureResource";
-import { telemetryHelper } from "../../plugins/resource/bot/utils/telemetry-helper";
 import { Plans, ProgressMessages, ProgressTitles } from "../messages";
 import { hooks } from "@feathersjs/hooks/lib";
-import { merge } from "lodash";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
+import { wrapError } from "../../plugins/resource/bot/errors";
 @Service("bot-service")
 export class BotService extends AzureResource {
   outputs = BotServiceOutputs;
@@ -68,8 +67,9 @@ export class BotService extends AzureResource {
       progressSteps: 1,
       errorSource: "BotService",
       errorHandler: (e, t) => {
-        telemetryHelper.fillAppStudioErrorProperty(e, t);
-        return e as FxError;
+        // context and name are for sending telemetry, since we don't send telemetry here, it's ok to leave them empty
+        const res = wrapError(e, {} as any, false, "");
+        return res.isErr() ? res.error : (e as FxError);
       },
     }),
   ])
@@ -79,10 +79,9 @@ export class BotService extends AzureResource {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     // create bot aad app by API call
-    if (actionContext?.telemetryProps) {
-      merge(actionContext.telemetryProps, commonTelemetryPropsForBot(context));
-    }
     await actionContext?.progressBar?.next(ProgressMessages.provisionBot);
+    // init bot state
+    context.envInfo.state[ComponentNames.TeamsBot] ||= {};
     const aadRes = await createBotAAD(context);
     if (aadRes.isErr()) return err(aadRes.error);
     if (context.envInfo.envName === "local") {
@@ -96,19 +95,13 @@ export class BotService extends AzureResource {
     ActionExecutionMW({
       errorSource: "BotService",
       errorHandler: (e, t) => {
-        telemetryHelper.fillAppStudioErrorProperty(e, t);
-        return e as FxError;
+        // context and name are for sending telemetry, since we don't send telemetry here, it's ok to leave them empty
+        const res = wrapError(e, {} as any, false, "");
+        return res.isErr() ? res.error : (e as FxError);
       },
     }),
   ])
-  async configure(
-    context: ResourceContextV3,
-    inputs: InputsWithProjectPath,
-    actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>> {
-    if (actionContext?.telemetryProps) {
-      merge(actionContext.telemetryProps, commonTelemetryPropsForBot(context));
-    }
+  async configure(context: ResourceContextV3): Promise<Result<undefined, FxError>> {
     // create bot aad app by API call
     const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
     if (!teamsBot) return ok(undefined);
@@ -120,13 +113,13 @@ export class BotService extends AzureResource {
         scopes: AppStudioScopes,
       });
       const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
-      CheckThrowSomethingMissing(ConfigNames.LOCAL_ENDPOINT, teamsBotState.endpoint);
+      CheckThrowSomethingMissing(ConfigNames.LOCAL_ENDPOINT, teamsBotState.siteEndpoint);
       CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
       CheckThrowSomethingMissing(ConfigNames.LOCAL_BOT_ID, teamsBotState.botId);
       await AppStudio.updateMessageEndpoint(
         appStudioToken!,
         teamsBotState.botId,
-        `${teamsBotState.endpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`
+        `${teamsBotState.siteEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`
       );
     }
     return ok(undefined);
@@ -140,7 +133,6 @@ export async function createBotAAD(ctx: ResourceContextV3): Promise<Result<any, 
   const graphToken = graphTokenRes.isOk() ? graphTokenRes.value : undefined;
   CheckThrowSomethingMissing(ConfigNames.GRAPH_TOKEN, graphToken);
   CheckThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, ctx.projectSetting.appName);
-  ctx.envInfo.state[ComponentNames.TeamsBot] = ctx.envInfo.state[ComponentNames.TeamsBot] || {};
   const botConfig = ctx.envInfo.state[ComponentNames.TeamsBot];
   const botAADCreated = botConfig?.botId !== undefined && botConfig?.botPassword !== undefined;
   if (!botAADCreated) {
@@ -189,16 +181,4 @@ export async function createBotRegInAppStudio(
   await AppStudio.createBotRegistration(appStudioToken!, botReg);
   ctx.logProvider.info(Messages.SuccessfullyProvisionedBotRegistration);
   return ok(undefined);
-}
-
-export function commonTelemetryPropsForBot(context: ContextV3): Record<string, string> {
-  const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
-  const props: Record<string, string> = {
-    [TelemetryKeys.HostType]:
-      teamsBot?.hosting === ComponentNames.Function ? "azure-function" : "app-service",
-    [TelemetryKeys.BotCapabilities]: teamsBot?.capabilities
-      ? JSON.stringify(teamsBot.capabilities)
-      : "",
-  };
-  return props;
 }

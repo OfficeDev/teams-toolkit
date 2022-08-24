@@ -60,7 +60,7 @@ import "./resource/botService";
 import "./resource/keyVault";
 import "./resource/spfx";
 import "./resource/aadApp/aadApp";
-
+import "./resource/simpleAuth";
 import { AADApp } from "@microsoft/teamsfx-api/build/v3";
 import * as jsonschema from "jsonschema";
 import { cloneDeep, merge } from "lodash";
@@ -533,6 +533,13 @@ export class TeamsfxCore {
     const projectSettings = context.projectSetting as ProjectSettingsV3;
     const inputPlugins = inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] || [];
     const inputComponentNames = inputPlugins.map(pluginName2ComponentName) as string[];
+    if (
+      hasAAD(context.projectSetting) &&
+      inputs[Constants.INCLUDE_AAD_MANIFEST] === "yes" &&
+      inputs.platform === Platform.CLI
+    ) {
+      inputComponentNames.push(ComponentNames.AadApp);
+    }
     const thunks = [];
     let hasAzureResource = false;
     // 1. collect resources to deploy
@@ -554,6 +561,8 @@ export class TeamsfxCore {
               const buildRes = await featureComponent.build(context, clonedInputs);
               if (buildRes.isErr()) return err(buildRes.error);
             }
+            // build process may change the artifact folder, so we need reassign the value
+            clonedInputs.artifactFolder = component.artifactFolder;
             return await deployComponent.deploy!(context, clonedInputs);
           },
         });

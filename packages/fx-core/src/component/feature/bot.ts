@@ -31,6 +31,7 @@ import { QuestionNames, TemplateProjectsScenarios } from "../../plugins/resource
 import {
   AppServiceOptionItem,
   AppServiceOptionItemForVS,
+  FunctionsHttpAndTimerTriggerOptionItem,
   FunctionsHttpTriggerOptionItem,
   FunctionsTimerTriggerOptionItem,
 } from "../../plugins/resource/bot/question";
@@ -229,12 +230,6 @@ export class TeamsBot {
     }
 
     projectSettings.programmingLanguage ||= inputs[CoreQuestionNames.ProgrammingLanguage];
-
-    const msg =
-      inputs.platform === Platform.CLI
-        ? getLocalizedString("core.addCapability.addCapabilityNoticeForCli")
-        : getLocalizedString("core.addCapability.addCapabilitiesNotice");
-    context.userInteraction.showMessage("info", format(msg, "Bot"), false);
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.Components]: JSON.stringify(addedComponents),
     });
@@ -274,19 +269,18 @@ const featureToCapability: Map<string, string> = new Map([
   [NotificationOptionItem.id, "notification"],
 ]);
 
-const featureToScenario: Map<string, (triggers?: string[]) => TemplateProjectsScenarios[]> =
-  new Map([
-    [BotOptionItem.id, () => [TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME]],
-    [NotificationOptionItem.id, (triggers?: string[]) => resolveNotificationScenario(triggers)],
-    [
-      CommandAndResponseOptionItem.id,
-      () => [TemplateProjectsScenarios.COMMAND_AND_RESPONSE_SCENARIO_NAME],
-    ],
-    [MessageExtensionItem.id, () => [TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME]],
-    [M365SearchAppOptionItem.id, () => [TemplateProjectsScenarios.M365_SCENARIO_NAME]],
-  ]);
+const featureToScenario: Map<string, (triggers?: string) => TemplateProjectsScenarios[]> = new Map([
+  [BotOptionItem.id, () => [TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME]],
+  [NotificationOptionItem.id, (triggers?: string) => resolveNotificationScenario(triggers)],
+  [
+    CommandAndResponseOptionItem.id,
+    () => [TemplateProjectsScenarios.COMMAND_AND_RESPONSE_SCENARIO_NAME],
+  ],
+  [MessageExtensionItem.id, () => [TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME]],
+  [M365SearchAppOptionItem.id, () => [TemplateProjectsScenarios.M365_SCENARIO_NAME]],
+]);
 
-const triggersToScenario: Map<string, TemplateProjectsScenarios[]> = new Map([
+const triggersToScenarios: Map<string, TemplateProjectsScenarios[]> = new Map([
   [AppServiceOptionItem.id, [TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME]],
   [AppServiceOptionItemForVS.id, [TemplateProjectsScenarios.NOTIFICATION_WEBAPI_SCENARIO_NAME]],
   [
@@ -303,15 +297,21 @@ const triggersToScenario: Map<string, TemplateProjectsScenarios[]> = new Map([
       TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_TIMER_SCENARIO_NAME,
     ],
   ],
+  [
+    FunctionsHttpAndTimerTriggerOptionItem.id,
+    [
+      TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME,
+      TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_HTTP_SCENARIO_NAME,
+      TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_TIMER_SCENARIO_NAME,
+    ],
+  ],
 ]);
 
-const resolveNotificationScenario = (triggers?: string[]): TemplateProjectsScenarios[] => {
-  if (!Array.isArray(triggers)) {
+const resolveNotificationScenario = (triggers?: string): TemplateProjectsScenarios[] => {
+  if (typeof triggers !== "string") {
     return [];
   }
-  return ([] as TemplateProjectsScenarios[]).concat(
-    ...triggers.map((trigger) => triggersToScenario.get(trigger) ?? [])
-  );
+  return triggersToScenarios.get(triggers) || [];
 };
 
 const resolveHosting: (inputs: InputsWithProjectPath) => string = (inputs): string => {
@@ -319,7 +319,8 @@ const resolveHosting: (inputs: InputsWithProjectPath) => string = (inputs): stri
   const triggers = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] as string[];
   if (
     triggers?.includes(FunctionsHttpTriggerOptionItem.id) ||
-    triggers?.includes(FunctionsTimerTriggerOptionItem.id)
+    triggers?.includes(FunctionsTimerTriggerOptionItem.id) ||
+    triggers?.includes(FunctionsHttpAndTimerTriggerOptionItem.id)
   ) {
     hosting = "azure-function";
   }

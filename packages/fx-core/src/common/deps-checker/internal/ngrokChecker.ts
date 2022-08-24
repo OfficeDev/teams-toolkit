@@ -11,7 +11,7 @@ import { DepsCheckerError } from "../depsError";
 import { runWithProgressIndicator } from "../util/progressIndicator";
 import { cpUtils } from "../util/cpUtils";
 import { isWindows } from "../util/system";
-import { DepsCheckerEvent, TelemtryMessages } from "../constant/telemetry";
+import { DepsCheckerEvent, TelemetryProperties, TelemtryMessages } from "../constant/telemetry";
 import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
 import { DependencyStatus, DepsChecker, DepsType } from "../depsChecker";
@@ -235,22 +235,60 @@ export class NgrokChecker implements DepsChecker {
     );
   }
 
+  private static extractNpmInstallLog(exitCode: number, log: string) {
+    const nodePattern = /npm\s+info\s+using\s+node@(.*)/;
+    const nodeResult = log.match(nodePattern);
+    const nodeVersion = nodeResult ? nodeResult[1].trim() : undefined;
+
+    const npmPattern = /npm\s+info\s+using\s+npm@(.*)/;
+    const npmResult = log.match(npmPattern);
+    const npmVersion = npmResult ? npmResult[1].trim() : undefined;
+
+    // Save all error log and lines that contain "ngrok"
+    const errorPattern = /(npm\s+ERR+.*)|(.*ngrok.*)/gi;
+    const preventEmailRedactedRegex = /[^\s]*@[^\s]*/;
+    const errorResults = log.match(errorPattern);
+    const errorMessage = errorResults?.map((value) => {
+      // redact strings that contain "@" to prevent telemetry reporter from redacting the whole property
+      return value.trim().replace(preventEmailRedactedRegex, "<redacted: email>");
+    });
+
+    const properties: { [key: string]: string } = {};
+    properties[TelemetryProperties.NgrokNpmInstallExitCode] = `${exitCode}`;
+    properties[TelemetryProperties.NgrokNpmInstallNodeVersion] = `${nodeVersion}`;
+    properties[TelemetryProperties.NgrokNpmInstallNpmVersion] = `${npmVersion}`;
+    properties[TelemetryProperties.NgrokNpmInstallLog] = `${errorMessage?.join("\n")}`;
+    return properties;
+  }
+
   private async doInstallNgrok(): Promise<void> {
     await this._logger.info(Messages.startInstallNgrok.replace("@NameVersion", displayNgrokName));
 
     try {
-      await cpUtils.executeCommand(
+      const npmCommand = this.getExecCommand("npm");
+      const result = await cpUtils.tryExecuteCommand(
         undefined,
         this._logger,
         { timeout: timeout, shell: false },
-        this.getExecCommand("npm"),
+        npmCommand,
         "install",
         // not use -f, to avoid npm@6 bug: exit code = 0, even if install fail
         `${ngrokName}@${installPackageVersion}`,
         "--prefix",
         `${this.getDefaultInstallPath()}`,
-        "--no-audit"
+        "--no-audit",
+        "--loglevel", // this will make npm output log to stderr
+        "verbose"
       );
+
+      const log = result.cmdOutputIncludingStderr;
+      const properties = NgrokChecker.extractNpmInstallLog(result.code, log);
+      this._telemetry.sendEvent(DepsCheckerEvent.ngrokNpmLog, properties);
+      if (result.code !== 0) {
+        const errorMessage = `Failed to run command: "${npmCommand} ${result.formattedArgs}", code: "${result.code}",
+                              output: "${result.cmdOutput}", error: "${result.cmdOutputIncludingStderr}"`;
+        throw new Error(errorMessage);
+      }
 
       await fs.ensureFile(this.getSentinelPath());
     } catch (error) {

@@ -37,7 +37,6 @@ import {
 import { canAddCICDWorkflows } from "../common/tools";
 import { ComponentNames } from "./constants";
 import { ComponentName2pluginName } from "./migrate";
-import { readAppManifest } from "./resource/appManifest/utils";
 import { getComponent } from "./workflow";
 import { STATIC_TABS_MAX_ITEMS } from "../plugins/resource/appstudio/constants";
 import {
@@ -58,7 +57,6 @@ import {
   CicdOptionItem,
   CommandAndResponseOptionItem,
   DeployPluginSelectQuestion,
-  HostTypeOptionAzure,
   HostTypeOptionSPFx,
   MessageExtensionItem,
   MessageExtensionNewUIItem,
@@ -87,6 +85,9 @@ import {
   versionCheckQuestion,
   webpartNameQuestion,
 } from "../plugins/resource/spfx/utils/questions";
+import { manifestUtils } from "./resource/appManifest/utils";
+import { Constants } from "../plugins/resource/aad/constants";
+import { Constants as Constants1 } from "../plugins/resource/appstudio/constants";
 
 export async function getQuestionsForProvisionV3(
   context: v2.Context,
@@ -153,7 +154,7 @@ export async function getQuestionsForDeployV3(
       .filter((component) => component.deploy && deployableComponents.includes(component.name))
       .map((component) => component.name) as string[];
     if (CLIPlatforms.includes(inputs.platform)) {
-      deployableComponents.push(ComponentNames.AppManifest);
+      selectableComponents.push(ComponentNames.AppManifest);
     }
   }
   const options = selectableComponents.map((c) => {
@@ -187,6 +188,26 @@ export async function getQuestionsForDeployV3(
       apimNode.condition = { contains: BuiltInFeaturePluginNames.apim };
       node.addChild(apimNode);
     }
+  }
+  if (selectableComponents.includes(ComponentNames.AadApp)) {
+    const aadNode = new QTreeNode({
+      name: Constants.INCLUDE_AAD_MANIFEST,
+      type: "singleSelect",
+      staticOptions: ["yes", "no"],
+      title: getLocalizedString("core.aad.includeAadQuestionTitle"),
+      default: "no",
+    });
+    node.addChild(aadNode);
+  }
+  if (selectableComponents.includes(ComponentNames.AppManifest)) {
+    const appManifestNode = new QTreeNode({
+      name: Constants1.INCLUDE_APP_MANIFEST,
+      type: "singleSelect",
+      staticOptions: ["yes", "no"],
+      title: getLocalizedString("plugins.appstudio.whetherToDeployManifest"),
+      default: "no",
+    });
+    node.addChild(appManifestNode);
   }
   return ok(node);
 }
@@ -228,9 +249,9 @@ export async function getQuestionsForAddFeatureV3(
     return ok(addFeatureNode);
   }
   // check capability options
-  const azureHost = ctx.projectSetting.solutionSettings?.hostType === HostTypeOptionAzure.id;
+  const azureHost = hasAzureResourceV3(ctx.projectSetting as ProjectSettingsV3);
   if (azureHost) {
-    const manifestRes = await readAppManifest(inputs.projectPath!);
+    const manifestRes = await manifestUtils.readAppManifest(inputs.projectPath!);
     if (manifestRes.isErr()) return err(manifestRes.error);
     const manifest = manifestRes.value;
     const canAddTab = manifest.staticTabs!.length < STATIC_TABS_MAX_ITEMS;

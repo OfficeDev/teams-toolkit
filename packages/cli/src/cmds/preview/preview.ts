@@ -47,6 +47,7 @@ import {
   validationSettingsHelpLink,
   AppStudioScopes,
   TelemetryContext,
+  isV3,
 } from "@microsoft/teamsfx-core";
 
 import { YargsCommand } from "../../yargsCommand";
@@ -82,7 +83,7 @@ import { openHubWebClient } from "./launch";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 
 enum Checker {
-  M365Account = "M365 Account",
+  M365Account = "Microsoft 365 Account",
   LocalCertificate = "Development certificate for localhost",
   Ports = "Ports",
 }
@@ -782,7 +783,7 @@ export default class Preview extends YargsCommand {
       ?.get(constants.teamsAppTenantIdConfigKey) as string;
 
     const remoteTeamsAppId: string = config?.config
-      ?.get(constants.appstudioPluginName)
+      ?.get(isV3() ? "app-manifest" : constants.appstudioPluginName)
       ?.get(constants.remoteTeamsAppIdConfigKey);
     if (remoteTeamsAppId === undefined || remoteTeamsAppId.length === 0) {
       return err(errors.PreviewWithoutProvision());

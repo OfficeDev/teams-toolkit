@@ -119,9 +119,6 @@ export class DotnetBotImpl extends TeamsBotImpl {
         if (clientSecret) {
           appSettings = appSettings.replace(RegularExpr.clientSecret, clientSecret);
         }
-        if (tenantId) {
-          appSettings = appSettings.replace(RegularExpr.tenantId, tenantId);
-        }
         if (oauthAuthority) {
           appSettings = appSettings.replace(RegularExpr.oauthAuthority, oauthAuthority);
         }

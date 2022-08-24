@@ -112,9 +112,9 @@ export const doctorResult = {
   Node12MatchFunction:
     "If you have your own Azure Functions Core Tools installed, make sure it works with new Node.js version. See (https://docs.microsoft.com/azure/azure-functions/functions-versions#languages) for Azure Functions supported Node versions",
   SideLoadingDisabled:
-    "Your M365 tenant admin hasn't enabled sideloading permission for your account. You can't install your app to Teams!",
-  NotSignIn: "No M365 account login",
-  SignInSuccess: `M365 Account (@account) is logged in and sideloading enabled`,
+    "Your Microsoft 365 tenant admin hasn't enabled sideloading permission for your account. You can't install your app to Teams!",
+  NotSignIn: "No Microsoft 365 account login",
+  SignInSuccess: `Microsoft 365 Account (@account) is logged in and sideloading enabled`,
   SkipTrustingCert: "Skip trusting development certificate for localhost",
   HelpLink: `Please refer to @Link for more information.`,
 };
@@ -157,4 +157,4 @@ export const installApp = {
 export const m365TenantHintMessage =
   "WARN: Please note that after you enrolled your developer tenant in Office 365 Target Release, it may take couple days for the enrollment to take effect. Please click https://aka.ms/teamsfx-m365-apps-prerequisites for more information about setting up dev environment for extending Teams apps across Microsoft 365.";
 export const m365SwitchedMessage =
-  "Warn: You are now using a different Microsoft 365 account from what you previously used."; // todo: add "Please visit https://aka.ms/teamsfx-envchecker-help to learn more." once the doc is ready
+  "WARN: You are now using a different Microsoft 365 tenant from what you previously used. Please visit https://aka.ms/teamsfx-switch-tenant-or-subscription-help to learn more.";

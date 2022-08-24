@@ -146,7 +146,7 @@ export function M365AccountInfoNotFound(): UserError {
   return new SystemError(
     constants.cliSource,
     "M365AccountInfoNotFound",
-    "M365 account info not found"
+    "Microsoft 365 account info not found"
   );
 }
 

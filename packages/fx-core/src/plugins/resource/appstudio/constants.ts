@@ -28,6 +28,15 @@ export class Constants {
   public static readonly CORRELATION_ID = "X-Correlation-ID";
 }
 
+export class APP_STUDIO_API_NAMES {
+  public static readonly CREATE_APP = "create-app";
+  public static readonly GET_APP = "get-app";
+  public static readonly PUBLISH_APP = "publish-app";
+  public static readonly GET_PUBLISHED_APP = "get-published-app";
+  public static readonly UPDATE_PUBLISHED_APP = "update-published-app";
+  public static readonly UPDATE_OWNER = "update-owner";
+}
+
 export class ErrorMessages {
   static readonly GetConfigError = (configName: string, plugin: string) =>
     `Failed to get configuration value "${configName}" for ${plugin}.`;

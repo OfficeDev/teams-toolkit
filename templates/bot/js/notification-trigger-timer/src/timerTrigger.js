@@ -18,7 +18,7 @@ module.exports = async function (context, myTimer) {
 
   /****** To distinguish different target types ******/
   /** "Channel" means this bot is installed to a Team (default to notify General channel)
-  if (target.type === "Channel") {
+  if (target.type === NotificationTargetType.Channel) {
     // Directly notify the Team (to the default General channel)
     await target.sendAdaptiveCard(...);
     // List all channels in the Team then notify each channel
@@ -35,7 +35,7 @@ module.exports = async function (context, myTimer) {
   **/
 
   /** "Group" means this bot is installed to a Group Chat
-  if (target.type === "Group") {
+  if (target.type === NotificationTargetType.Group) {
     // Directly notify the Group Chat
     await target.sendAdaptiveCard(...);
     // List all members in the Group Chat then notify each member
@@ -47,7 +47,7 @@ module.exports = async function (context, myTimer) {
   **/
 
   /** "Person" means this bot is installed as a Personal app
-  if (target.type === "Person") {
+  if (target.type === NotificationTargetType.Person) {
     // Directly notify the individual person
     await target.sendAdaptiveCard(...);
   }

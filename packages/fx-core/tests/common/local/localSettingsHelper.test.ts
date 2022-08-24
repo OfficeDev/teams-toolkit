@@ -9,11 +9,21 @@ import { cloneDeep } from "lodash";
 import * as path from "path";
 
 import { convertToLocalEnvs } from "../../../src/common/local/localSettingsHelper";
-
+import mockedEnv, { RestoreFn } from "mocked-env";
 chai.use(chaiAsPromised);
 
 describe("localSettingsHelper", () => {
   describe("convertToLocalEnvs()", () => {
+    let mockedEnvRestore: RestoreFn;
+
+    beforeEach(() => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "false" });
+    });
+
+    afterEach(() => {
+      mockedEnvRestore();
+    });
+
     const projectSettings0 = {
       appName: "unit-test0",
       projectId: "11111111-1111-1111-1111-111111111111",
@@ -27,6 +37,10 @@ describe("localSettingsHelper", () => {
         capabilities: ["Tab"],
         activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
       },
+      components: [
+        { name: "teams-tab", sso: true },
+        { name: "aad-app", provision: true },
+      ],
     };
     const localSettings0 = {
       teamsApp: {
@@ -87,6 +101,7 @@ describe("localSettingsHelper", () => {
 
       const projectSettingsAll = cloneDeep(projectSettings0);
       projectSettingsAll.solutionSettings.activeResourcePlugins.push("fx-resource-simple-auth");
+      projectSettingsAll.components.push({ name: "simple-auth", provision: true });
       const localEnvs = await convertToLocalEnvs(projectPath, projectSettingsAll, localSettings0);
 
       chai.assert.isDefined(localEnvs);

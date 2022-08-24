@@ -6,6 +6,7 @@ import {
   ContextV3,
   FxError,
   InputsWithProjectPath,
+  LogProvider,
   ok,
   ResourceContextV3,
   Result,
@@ -40,9 +41,9 @@ import {
   UnzipTemplateError,
 } from "../../plugins/resource/frontend/resources/errors";
 import { Messages } from "../../plugins/resource/frontend/resources/messages";
-import { ComponentNames } from "../constants";
+import { ComponentNames, ProgrammingLanguage } from "../constants";
 import { getComponent } from "../workflow";
-import { convertToLangKey } from "./utils";
+import { convertToLangKey, execute } from "./utils";
 import {
   envFilePath,
   EnvKeys,
@@ -51,7 +52,6 @@ import {
 } from "../../plugins/resource/frontend/env";
 import { isVSProject } from "../../common/projectSettingsHelper";
 import { DotnetCommands } from "../../plugins/resource/frontend/dotnet/constants";
-import { Utils } from "../../plugins/resource/frontend/utils";
 import { CommandExecutionError } from "../../plugins/resource/bot/errors";
 import { ScaffoldProgress } from "../../plugins/resource/frontend/resources/steps";
 import { ProgressMessages, ProgressTitles } from "../messages";
@@ -86,7 +86,7 @@ export class TabCodeProvider {
   ): Promise<Result<string, FxError>> {
     inputs.folder =
       inputs.folder ||
-      (inputs[CoreQuestionNames.ProgrammingLanguage] === "csharp"
+      (inputs[CoreQuestionNames.ProgrammingLanguage] === ProgrammingLanguage.CSharp
         ? ""
         : FrontendPathInfo.WorkingDir);
     const langKey = convertToLangKey(inputs[CoreQuestionNames.ProgrammingLanguage]);
@@ -168,8 +168,13 @@ export class TabCodeProvider {
     await actionContext?.progressBar?.next(ProgressMessages.buildingTab);
     const tabPath = path.resolve(inputs.projectPath, teamsTab.folder);
     const artifactFolder = isVSProject(context.projectSetting)
-      ? await this.doBlazorBuild(tabPath)
-      : await this.doReactBuild(tabPath, ctx.envInfo.envName, context.telemetryReporter);
+      ? await this.doBlazorBuild(tabPath, context.logProvider)
+      : await this.doReactBuild(
+          tabPath,
+          ctx.envInfo.envName,
+          context.telemetryReporter,
+          context.logProvider
+        );
     merge(teamsTab, {
       build: true,
       artifactFolder: path.join(teamsTab.folder, artifactFolder),
@@ -201,19 +206,20 @@ export class TabCodeProvider {
 
     return envs;
   }
-  private async doBlazorBuild(tabPath: string): Promise<string> {
+  private async doBlazorBuild(tabPath: string, logger?: LogProvider): Promise<string> {
     const command = DotnetCommands.buildRelease("win-x86");
     try {
-      await Utils.execute(command, tabPath);
+      await execute(command, tabPath, logger);
     } catch (e) {
       throw new CommandExecutionError(command, tabPath, e);
     }
-    return path.join("bin", "Release", "net6.0", "win-x86", "publish");
+    return "publish";
   }
   private async doReactBuild(
     tabPath: string,
     envName: string,
-    telemetryReporter?: TelemetryReporter
+    telemetryReporter?: TelemetryReporter,
+    logger?: LogProvider
   ): Promise<string> {
     const needBuild = await FrontendDeployment.needBuild(tabPath, envName);
     if (!needBuild) {
@@ -228,20 +234,21 @@ export class TabCodeProvider {
       telemetryReporter?.sendTelemetryEvent(TelemetryEvent.InstallScriptNotFound);
     }
 
-    await Utils.execute(
+    await execute(
       "install:teamsfx" in scripts
         ? Commands.InstallNodePackages
         : Commands.DefaultInstallNodePackages,
-      tabPath
+      tabPath,
+      logger
     );
 
     if ("build:teamsfx" in scripts) {
-      await Utils.execute(Commands.BuildFrontend, tabPath, {
+      await execute(Commands.BuildFrontend, tabPath, logger, {
         TEAMS_FX_ENV: envName,
       });
     } else {
       const envs = await loadEnvFile(envFilePath(envName, tabPath));
-      await Utils.execute(Commands.DefaultBuildFrontend, tabPath, {
+      await execute(Commands.DefaultBuildFrontend, tabPath, logger, {
         ...envs.customizedRemoteEnvs,
         ...envs.teamsfxRemoteEnvs,
       });

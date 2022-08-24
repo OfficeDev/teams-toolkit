@@ -26,6 +26,7 @@ import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { globalVars } from "../../core/globalVars";
 import { CoreQuestionNames } from "../../core/question";
+import { AzureResourceFunction } from "../../plugins";
 import {
   DefaultValues,
   FunctionPluginPathInfo,
@@ -37,11 +38,11 @@ import { functionNameQuestion } from "../../plugins/resource/function/question";
 import { ErrorMessages } from "../../plugins/resource/function/resources/message";
 import { BicepComponent } from "../bicep";
 import { ApiCodeProvider } from "../code/apiCode";
-import { ComponentNames, Scenarios } from "../constants";
+import { ComponentNames, ProgrammingLanguage, Scenarios } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { AzureFunctionResource } from "../resource/azureAppService/azureFunction";
-import { generateConfigBiceps, bicepUtils } from "../utils";
+import { generateConfigBiceps, bicepUtils, addFeatureNotify } from "../utils";
 import { getComponent } from "../workflow";
 import { SSO } from "./sso";
 
@@ -76,7 +77,7 @@ export class TeamsApi {
     inputs[CoreQuestionNames.ProgrammingLanguage] =
       context.projectSetting.programmingLanguage ||
       inputs[CoreQuestionNames.ProgrammingLanguage] ||
-      "javascript";
+      ProgrammingLanguage.JS;
     const addedComponents: string[] = [];
 
     // 1. scaffold function
@@ -97,6 +98,7 @@ export class TeamsApi {
     if (apiConfig) {
       apiConfig.functionNames = apiConfig.functionNames || [];
       apiConfig.functionNames.push(inputs[QuestionKey.functionName]);
+      addFeatureNotify(inputs, context.userInteraction, "Resource", [AzureResourceFunction.id]);
       return ok(undefined);
     }
 
@@ -144,6 +146,7 @@ export class TeamsApi {
       projectSettings.components.push({
         name: ComponentNames.Function,
         scenario: Scenarios.Api,
+        provision: true,
       });
       addedComponents.push(ComponentNames.Function);
     }
@@ -174,6 +177,7 @@ export class TeamsApi {
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.Components]: JSON.stringify(addedComponents),
     });
+    addFeatureNotify(inputs, context.userInteraction, "Resource", [AzureResourceFunction.id]);
     return ok(undefined);
   }
   async build(

@@ -56,6 +56,23 @@ export const scenarioToComponent = new Map([
   [Scenarios.Tab, ComponentNames.TeamsTab],
 ]);
 
+export enum ProgrammingLanguage {
+  JS = "javascript",
+  TS = "typescript",
+  CSharp = "csharp",
+}
+
+export enum Runtime {
+  nodejs = "node",
+  dotnet = "dotnet",
+}
+
+export const languageToRuntime = new Map([
+  [ProgrammingLanguage.JS, Runtime.nodejs],
+  [ProgrammingLanguage.TS, Runtime.nodejs],
+  [ProgrammingLanguage.CSharp, Runtime.dotnet],
+]);
+
 export const ActionNames = {
   provision: "provision",
   configure: "configure",
@@ -223,4 +240,11 @@ export const BotServiceOutputs = {
   botPassword: {
     key: "botPassword",
   },
+};
+
+export const FunctionAppSetting = {
+  keys: {
+    allowedAppIds: "ALLOWED_APP_IDS",
+  },
+  allowedAppIdSep: ";",
 };

@@ -38,7 +38,7 @@ describe("Core API for mini app", () => {
     deleteFolder(projectPath);
     mockedEnvRestore();
   });
-  it("init + add tab", async () => {
+  it("init", async () => {
     const appName = randomAppName();
     projectPath = path.join(os.tmpdir(), appName);
     const inputs: Inputs = {
@@ -49,31 +49,5 @@ describe("Core API for mini app", () => {
     const core = new FxCore(tools);
     const initRes = await core.init(inputs);
     assert.isTrue(initRes.isOk());
-    if (initRes.isOk()) {
-      const spfxPlugin = Container.get(ResourcePluginsV2.SpfxPlugin) as v2.ResourcePlugin;
-      sandbox.stub(spfxPlugin, "scaffoldSourceCode").resolves(ok(Void));
-      const addInputs: InputsWithProjectPath = {
-        platform: Platform.CLI,
-        projectPath: projectPath,
-        capabilities: [TabOptionItem.id],
-        "programming-language": "typescript",
-      };
-      const func: Func = {
-        namespace: "fx-solution-azure",
-        method: "addCapability",
-      };
-      const stateFile = path.join(projectPath, ".fx", "states", "state.dev.json");
-      const envState = { solution: { provisionSucceeded: true } };
-      fs.ensureDirSync(path.join(projectPath, ".fx", "states"));
-      fs.writeJsonSync(stateFile, envState);
-      const addRes = await core.executeUserTaskV2(func, addInputs);
-      if (addRes.isErr()) {
-        console.log(addRes.error);
-      }
-      assert.isTrue(addRes.isOk());
-      const envState2 = fs.readJsonSync(stateFile, { encoding: "utf-8" });
-      assert.isTrue(envState2.solution.provisionSucceeded === false);
-      await loadEnvInfoV3(addInputs, newProjectSettings(), "dev", false);
-    }
   });
 });

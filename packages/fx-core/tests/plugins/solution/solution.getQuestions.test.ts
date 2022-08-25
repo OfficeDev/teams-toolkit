@@ -68,7 +68,7 @@ import { BotCapabilities, PluginBot } from "../../../src/plugins/resource/bot/re
 import { BotHostTypes } from "../../../src";
 import { AppManifest } from "../../../src/component/resource/appManifest/appManifest";
 import { ComponentNames } from "../../../src/component/constants";
-
+import mockedEnv, { RestoreFn } from "mocked-env";
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 const functionPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FunctionPlugin);
@@ -101,7 +101,7 @@ describe("getQuestionsForScaffolding()", async () => {
       azureResources: [],
     },
   };
-
+  let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
     spfxPluginV2.getQuestionsForScaffolding = async function () {
       return ok(undefined);
@@ -121,10 +121,12 @@ describe("getQuestionsForScaffolding()", async () => {
     cicdPlugin.getQuestionsForUserTask = async function () {
       return ok(undefined);
     };
+    mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "false" });
   });
 
   afterEach(() => {
     sandbox.restore();
+    mockedEnvRestore();
   });
 
   it("getQuestionsForScaffolding", async () => {

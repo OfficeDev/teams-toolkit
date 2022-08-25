@@ -316,7 +316,7 @@ describe("V2 implementation", () => {
     mockedInputs[AzureSolutionQuestionNames.Capabilities] = [BotOptionItem.id];
     const appStudioPlugin = Container.get<AppManifest>(ComponentNames.AppManifest);
     mocker.stub<any, any>(appStudioPlugin, "capabilityExceedLimit").resolves(ok(false));
-    mocker.stub<any, any>(appStudioPlugin, "addCapabilities").resolves(ok(undefined));
+    mocker.stub<any, any>(appStudioPlugin, "addCapability").resolves(ok(undefined));
     const result = await executeUserTask(
       mockedCtx,
       mockedInputs,
@@ -694,7 +694,7 @@ describe("V2 implementation", () => {
     mocker.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
     const appStudioPlugin = Container.get<AppManifest>(ComponentNames.AppManifest);
     mocker.stub<any, any>(appStudioPlugin, "capabilityExceedLimit").resolves(ok(false));
-    mocker.stub<any, any>(appStudioPlugin, "addCapabilities").resolves(ok(undefined));
+    mocker.stub<any, any>(appStudioPlugin, "addCapability").resolves(ok(undefined));
 
     const projectSettings: ProjectSettings = {
       appName: "my app",

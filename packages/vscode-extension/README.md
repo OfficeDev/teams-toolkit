@@ -3,7 +3,8 @@
 
 The Teams Toolkit helps developers create and deploy Teams apps with integrated Identity, access to cloud storage, data from [Microsoft Graph](https://docs.microsoft.com/en-us/graph/teams-concept-overview), and other services in [Azure](https://docs.microsoft.com/en-us/microsoftteams/platform/build-your-first-app/build-bot) and [M365](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant) with a "zero-configuration" approach to the developer experience.
 
-<img src="https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/landingPage_MicrosoftTeams.png">
+<img src="https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/landingPage_GetStart.gif">
+
 
 ## What are Teams app "Capabilities"?
 
@@ -23,7 +24,11 @@ Teams apps are a combination of [capabilities](https://aka.ms/teamsfx-capabiliti
 
 ## Getting started
 
-After installing the Teams Toolkit, follow the [Get Started](https://aka.ms/teamsfx-build-first-app) instructions in our documentation to start with.
+Open Teams Toolkit to create a new Teams app, start coding!
+
+<img src="https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/create_project.gif">
+
+follow the [Get Started](https://aka.ms/teamsfx-build-first-app) instructions in our documentation to start with new project.
 
 In the Teams Toolkit for Visual Studio Code, you can easily discover all applicable commands in the sidebar and Command Palette with the keyword "Teams". It also supports [Command Line Interface (CLI)](https://www.npmjs.com/package/@microsoft/teamsfx-cli) to increase efficiency.
 
@@ -34,7 +39,7 @@ Verify you have the right prerequisites for building Teams apps and install some
 <table>
     <tr>
         <td><img src="https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/landingPage_nodejs.png"></td>
-        <td><h3>Node.js</h3>As a fundamental runtime context for Teams app, Node.js v14.x or v16.x is required (v16.x is recommended). If you develop SPFx Tab app, please install either v12.x or v14.x (recommended).</td>
+        <td><h3>Node.js</h3>As a fundamental runtime context for Teams app, Node.js v14.x or v16.x is required (v16.x is recommended). If you develop SPFx Tab app, please install v14.x (recommended).</td>
     </tr>
     <tr>
         <td><img src="https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/landingPage_m365.png"></td>
@@ -78,14 +83,16 @@ At its core, the Teams app embraces three components:
 
 When an app is installed, the Teams client parses the manifest file to determine needed information like the name of your app and the URL where the services are located.
 
-- To configure your app, navigate to the `appPackage/manifest.template.json` file or from UI to select `DEVELOPMENT`-`Edit manifest file` and edit the manifest.
+- To configure your app, navigate to the `templates/appPackage/manifest.template.json` file or from UI to select `DEVELOPMENT`-`Edit manifest file` and edit the manifest.
 - The toolkit will automatically update the app registration data accordingly during app side-loading and publish.
 
-Read more on [customizing](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/teamsfx-manifest-customization) and [previewing](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/teamsfx-manifest-preview) manifest file.
+Read more on [Preview and customize manifest file](https://docs.microsoft.com/en-us/microsoftteams/platform/toolkit/teamsfx-preview-and-customize-app-manifest).
 
 ### Preview your app on your local/remote dev environment
 
 Simply press F5 to run your first Teams app or navigate to the Debug tab in the activity bar and select Run icon to display the Run and Debug view. As a default, the toolkit will automatically help you to setup local environment and load the app in Teams.
+
+<img src="https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/debug.gif">
 
 If you want to have a better estimation of how the app will behave in the cloud environment, you can deploy your resources to the cloud and preview your app with the backend running in the cloud (remote).
 

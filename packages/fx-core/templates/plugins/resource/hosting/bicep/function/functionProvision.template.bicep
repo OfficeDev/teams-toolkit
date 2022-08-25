@@ -17,6 +17,7 @@ resource serverfarm 'Microsoft.Web/serverfarms@2021-02-01' = {
   sku: {
     name: functionSKU
   }
+  properties: {}
 }
 
 // Azure Storage is required when creating Azure Functions instance

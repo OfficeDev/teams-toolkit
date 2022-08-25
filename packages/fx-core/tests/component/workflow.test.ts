@@ -65,7 +65,7 @@ import { AadApp } from "../../src/component/resource/aadApp/aadApp";
 import { Constants } from "../../src/plugins/resource/aad/constants";
 import * as deployV3 from "../../src/plugins/solution/fx-solution/v3/deploy";
 import { CoreQuestionNames } from "../../src/core/question";
-
+import * as questionV3 from "../../src/component/questionV3";
 describe("Workflow test for v3", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -1059,6 +1059,7 @@ describe("Workflow test for v3", () => {
     sandbox.stub(AadApp.prototype, "setApplicationInContext").resolves(ok(undefined));
     sandbox.stub(AadApp.prototype, "configure").resolves(ok(undefined));
     sandbox.stub(AadApp.prototype, "deploy").resolves(ok(undefined));
+    sandbox.stub(questionV3, "getQuestionsForDeployV3").resolves(ok(undefined));
 
     const appName = `unittest${randomAppName()}`;
     const inputs: InputsWithProjectPath = {

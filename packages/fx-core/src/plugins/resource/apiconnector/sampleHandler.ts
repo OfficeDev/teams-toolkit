@@ -10,6 +10,7 @@ import { compileHandlebarsTemplateString } from "../../../common";
 import { ConstantString } from "../../../common/constants";
 import { ApiConnectorConfiguration } from "./config";
 import { ErrorMessage } from "./errors";
+import { getSampleDirPath } from "./utils";
 export class SampleHandler {
   private readonly projectRoot: string;
   private readonly languageExt: FileType;
@@ -51,22 +52,19 @@ export class SampleHandler {
         component: this.component,
         languageExt: this.languageExt,
       };
-      const codeFileName: string = config.APIName + "." + fileSuffix;
-      let codePath = path.join(this.projectRoot, this.component);
-      if (await fs.pathExists(path.join(codePath, "src"))) {
-        codePath = path.join(codePath, "src");
+      const sampleFileName: string = config.APIName + "." + fileSuffix;
+      const componentPath = path.join(this.projectRoot, this.component);
+      const sampleDirPath = getSampleDirPath(componentPath);
+      fs.ensureDir(sampleDirPath);
+      const sampleFilePath = path.join(sampleDirPath, sampleFileName);
+      if (await fs.pathExists(sampleFilePath)) {
+        await fs.remove(sampleFilePath);
       }
-      codePath = path.join(codePath, Constants.sampleCodeDir);
-      fs.ensureDir(codePath);
-      const codeFilePath = path.join(codePath, codeFileName);
-      if (await fs.pathExists(codeFilePath)) {
-        await fs.remove(codeFilePath);
-      }
-      const codeFile = compileHandlebarsTemplateString(templateString, context);
-      await fs.writeFile(codeFilePath, codeFile);
+      const sampleFile = compileHandlebarsTemplateString(templateString, context);
+      await fs.writeFile(sampleFilePath, sampleFile);
       return {
         changeType: FileChangeType.Create,
-        filePath: codeFilePath,
+        filePath: sampleFilePath,
       };
     } catch (error) {
       throw ResultFactory.SystemError(

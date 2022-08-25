@@ -1,13 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  BotState,
-  SigninStateVerificationQuery,
-  StatePropertyAccessor,
-  TeamsActivityHandler,
-  TurnContext,
-} from "botbuilder";
+import { SigninStateVerificationQuery, TeamsActivityHandler, TurnContext } from "botbuilder";
 
 import { SsoConfig, SsoExecutionActivityHandler, TeamsFxBotSsoCommandHandler } from "../interface";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../../core/errors";

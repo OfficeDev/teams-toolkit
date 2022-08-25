@@ -16,12 +16,14 @@
 |  [Channel](./teamsfx.channel.md) | A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team channel. |
 |  [CommandBot](./teamsfx.commandbot.md) | A command bot for receiving commands and sending responses in Teams. |
 |  [ConversationBot](./teamsfx.conversationbot.md) | Provide utilities for bot conversation, including: - handle command and response. - send notification to varies targets (e.g., member, group, channel). |
+|  [DefaultSsoExecutionActivityHandler](./teamsfx.defaultssoexecutionactivityhandler.md) | Default sso execution activity handler |
 |  [ErrorWithCode](./teamsfx.errorwithcode.md) | Error class with code and message thrown by the SDK. |
 |  [Member](./teamsfx.member.md) | A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team member. |
 |  [MessageBuilder](./teamsfx.messagebuilder.md) | Provides utility method to build bot message with cards that supported in Teams. |
 |  [MsGraphAuthProvider](./teamsfx.msgraphauthprovider.md) | Microsoft Graph auth provider for Teams Framework |
 |  [NotificationBot](./teamsfx.notificationbot.md) | Provide utilities to send notification to varies targets (e.g., member, group, channel). |
 |  [OnBehalfOfUserCredential](./teamsfx.onbehalfofusercredential.md) | Represent on-behalf-of flow to get user identity, and it is designed to be used in server side. |
+|  [SsoExecutionDialog](./teamsfx.ssoexecutiondialog.md) | Sso execution dialog, use to handle sso command |
 |  [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) | A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a bot installation. Teams Bot could be installed into - Personal chat - Group chat - Team (by default the <code>General</code> channel) |
 |  [TeamsBotSsoPrompt](./teamsfx.teamsbotssoprompt.md) | Creates a new prompt that leverage Teams Single Sign On (SSO) support for bot to automatically sign in user and help receive oauth token, asks the user to consent if needed. |
 |  [TeamsFx](./teamsfx.teamsfx.md) | A class providing credential and configuration. |
@@ -66,9 +68,12 @@
 |  [NotificationOptions\_2](./teamsfx.notificationoptions_2.md) | Options to initialize [NotificationBot](./teamsfx.notificationbot.md)<!-- -->. |
 |  [NotificationTarget](./teamsfx.notificationtarget.md) | Represent a notification target. |
 |  [NotificationTargetStorage](./teamsfx.notificationtargetstorage.md) | Interface for a storage provider that stores and retrieves notification target references. |
+|  [SsoConfig](./teamsfx.ssoconfig.md) | Interface for SSO configuration for BotSSO |
+|  [SsoExecutionActivityHandler](./teamsfx.ssoexecutionactivityhandler.md) | Interface for user to customize sso execution activity handler |
 |  [TeamsBotSsoPromptSettings](./teamsfx.teamsbotssopromptsettings.md) | Settings used to configure an TeamsBotSsoPrompt instance. |
 |  [TeamsBotSsoPromptTokenResponse](./teamsfx.teamsbotssoprompttokenresponse.md) | Token response provided by Teams Bot SSO prompt |
 |  [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) | Interface for a command handler that can process command to a TeamsFx bot and return a response. |
+|  [TeamsFxBotSsoCommandHandler](./teamsfx.teamsfxbotssocommandhandler.md) | Interface for a command handler that can process sso command to a TeamsFx bot and return a response. |
 |  [UserInfo](./teamsfx.userinfo.md) | UserInfo with user displayName, objectId and preferredUserName. |
 
 ## Type Aliases

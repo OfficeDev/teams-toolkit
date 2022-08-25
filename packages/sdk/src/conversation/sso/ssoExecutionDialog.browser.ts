@@ -5,7 +5,7 @@ import { formatString } from "../../util/utils";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../../core/errors";
 import { TeamsFx } from "../../core/teamsfx.browser";
 import { TeamsFxBotSsoCommandHandler } from "../interface";
-import { StatePropertyAccessor, TurnContext } from "botbuilder";
+import { StatePropertyAccessor, TurnContext, Storage } from "botbuilder";
 import { ComponentDialog } from "botbuilder-dialogs";
 /*
  * Sso execution dialog, use to handle sso command
@@ -22,7 +22,6 @@ export class SsoExecutionDialog extends ComponentDialog {
       formatString(ErrorMessage.BrowserRuntimeNotSupported, "SsoExecutionDialog"),
       ErrorCode.RuntimeNotSupported
     );
-    super();
   }
 
   /**

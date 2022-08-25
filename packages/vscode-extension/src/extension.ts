@@ -282,6 +282,9 @@ function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext)
     "initProject"
   );
 
+  // User can click to debug directly, same as pressing "F5".
+  registerInCommandController(context, "fx-extension.debug", handlers.debugHandler);
+
   // Add features
   registerInCommandController(
     context,
@@ -809,6 +812,14 @@ async function runBackgroundAsyncTasks(
   upgrade.showChangeLog();
 
   await openWelcomePageAfterExtensionInstallation();
+
+  TreatmentVariableValue.previewTreeViewCommand = (await exp
+    .getExpService()
+    .getTreatmentVariableAsync(
+      TreatmentVariables.VSCodeConfig,
+      TreatmentVariables.PreviewTreeViewCommand,
+      true
+    )) as boolean | undefined;
 
   if (isTeamsFxProject) {
     await handlers.autoOpenProjectHandler();

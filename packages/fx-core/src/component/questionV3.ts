@@ -131,6 +131,13 @@ export async function getQuestionsForDeployV3(
     ComponentNames.APIM,
     ComponentNames.AppManifest,
   ];
+  const componentDisplayNames = {
+    [ComponentNames.TeamsTab]: "NodeJS Tab frontend",
+    [ComponentNames.TeamsBot]: "Bot",
+    [ComponentNames.TeamsApi]: "Azure Function",
+    [ComponentNames.APIM]: "API Management",
+    [ComponentNames.AppManifest]: "App Studio",
+  };
 
   if (CLIPlatforms.includes(inputs.platform)) {
     deployableComponents.push(ComponentNames.AadApp);
@@ -162,11 +169,10 @@ export async function getQuestionsForDeployV3(
   }
   const options = selectableComponents.map((c) => {
     const pluginName = ComponentName2pluginName(c);
-    const plugin = Container.get<Plugin>(pluginName);
     const item: OptionItem = {
       id: pluginName,
-      label: plugin.displayName,
-      cliName: getPluginCLIName(plugin.name),
+      label: componentDisplayNames[c],
+      cliName: getPluginCLIName(pluginName),
     };
     return item;
   });

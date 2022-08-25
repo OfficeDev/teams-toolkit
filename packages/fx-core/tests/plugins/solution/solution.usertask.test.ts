@@ -63,7 +63,7 @@ import {
 import { executeUserTask } from "../../../src/plugins/solution/fx-solution/v2/executeUserTask";
 import "../../../src/plugins/resource/function/v2";
 import "../../../src/plugins/resource/sql/v2";
-import "../../../src/component/resource/apim/v2";
+import "../../../src/plugins/resource/apim/v2";
 import "../../../src/plugins/resource/localdebug/v2";
 import "../../../src/plugins/resource/appstudio/v2";
 import "../../../src/plugins/resource/frontend/v2";

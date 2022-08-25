@@ -1,4 +1,4 @@
-This doc is to help you understand what will happen when provisioning in an already-provisioned environment but with different account or Azure subscription or local debugging again with another Microsoft 365(Microsoft 365) account. We will also explain how to recover from the backups in this doc.
+This doc is to help you understand what will happen when provisioning in an already-provisioned environment but with different account or Azure subscription or local debugging again with another Microsoft 365 account. We will also explain how to recover from the backups in this doc.
 
 > Important Notes: After switching accounts and provisioning or local debugging again, resources have been created before in the old Microsoft 365 tenant or Azure subscription won't be deleted by default, and you have to manully delete them to avoid further costs if any. 
 

@@ -1,6 +1,6 @@
-# How to create a free M365 test tenant?
+# How to create a free Microsoft 365 test tenant?
 
-M365 test tenant is to get you an instant sandbox of Microsoft 365 developer environment. Instead of making you provison all your Microsoft 365 apps and install your data packs one by one, it contains pre-installed sample data packs so you can quickly work on this tenant.
+Microsoft 365 test tenant is to get you an instant sandbox of Microsoft 365 developer environment. Instead of making you provison all your Microsoft 365 apps and install your data packs one by one, it contains pre-installed sample data packs so you can quickly work on this tenant.
 
 ## Prequisitives
 
@@ -36,9 +36,9 @@ If you don't have a personal Microsoft account, or a work or school account. You
 
 - Setup your Microsoft 365 E5 sandbox
 
-![setup m365 sandbox](./setupm365.png)
+![setup Microsoft 365 sandbox](./setupm365.png)
 
-![setup m365 sandbox step 2](./setupm3652.png)
+![setup Microsoft 365 sandbox step 2](./setupm3652.png)
 
 - You may need to add a phone number for security verification.
 

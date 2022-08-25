@@ -17,6 +17,7 @@ resource serverfarms 'Microsoft.Web/serverfarms@2021-02-01' = {
   sku: {
     name: serverfarmsSku // You can follow https://aka.ms/teamsfx-bicep-add-param-tutorial to add functionServerfarmsSku property to provisionParameters to override the default value "Y1".
   }
+  properties: {}
 }
 
 // Azure Functions that hosts your function code

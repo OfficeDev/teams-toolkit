@@ -42,6 +42,9 @@ import { MockTools } from "../../../../core/utils";
 import { setTools } from "../../../../../src/core/globalVars";
 import { newEnvInfo } from "../../../../../src/core/environment";
 import { AppStudioPluginV3 } from "../../../../../src/plugins/resource/appstudio/v3";
+import axios from "axios";
+import { AppDefinition } from "../../../../../src/plugins/resource/appstudio/interfaces/appDefinition";
+
 const userList: AppUser = {
   tenantId: faker.datatype.uuid(),
   aadId: faker.datatype.uuid(),
@@ -167,12 +170,31 @@ describe("Remote Collaboration", () => {
         version: "1.0",
       },
     };
+
+    const appDef: AppDefinition = {
+      appName: "fake",
+      teamsAppId: appId,
+      userList: [],
+    };
+
     const appStudioConfig = new ConfigMap();
     appStudioConfig.set(Constants.TEAMS_APP_ID, appId);
     ctx.envInfo.state.set(PluginNames.APPST, appStudioConfig);
 
     sandbox.stub(ctx.m365TokenProvider!, "getAccessToken").resolves(ok("anything"));
-    sandbox.stub(AppStudioClient, "grantPermission").resolves();
+
+    const fakeAxiosInstance = axios.create();
+    sandbox.stub(axios, "create").returns(fakeAxiosInstance);
+    sandbox.stub(fakeAxiosInstance, "get").resolves({
+      data: appDef,
+    });
+
+    sandbox
+      .stub(fakeAxiosInstance, "post")
+      .onCall(0)
+      .rejects(new Error("Request failed with status code 400"))
+      .onCall(1)
+      .resolves();
 
     const grantPermission = await plugin.grantPermission(ctx, userList);
     chai.assert.isTrue(grantPermission.isOk());
@@ -192,10 +214,26 @@ describe("Remote Collaboration", () => {
       },
       config: {},
     };
+    const appDef: AppDefinition = {
+      appName: "fake",
+      teamsAppId: appId,
+      userList: [],
+    };
     const component = Container.get<AppManifest>(ComponentNames.AppManifest);
     const plugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     sandbox.stub(ctx.m365TokenProvider!, "getAccessToken").resolves(ok("anything"));
-    sandbox.stub(AppStudioClient, "grantPermission").resolves();
+    const fakeAxiosInstance = axios.create();
+    sandbox.stub(axios, "create").returns(fakeAxiosInstance);
+    sandbox.stub(fakeAxiosInstance, "get").resolves({
+      data: appDef,
+    });
+
+    sandbox
+      .stub(fakeAxiosInstance, "post")
+      .onCall(0)
+      .rejects(new Error("Request failed with status code 400"))
+      .onCall(1)
+      .resolves();
     const inputs: v2.InputsWithProjectPath = {
       platform: Platform.VSCode,
       projectPath: getAzureProjectRoot(),

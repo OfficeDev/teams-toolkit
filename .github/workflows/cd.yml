@@ -238,6 +238,17 @@ jobs:
           command: |
             bash ./.github/scripts/download-simpleauth.sh
 
+      - name: replace sideloading placeholders
+        run: bash .github/scripts/sideloading-replace.sh
+        env:
+          SIDELOADING_SERVICE_ENDPOINT: ${{ secrets.SIDELOADING_SERVICE_ENDPOINT }}
+          SIDELOADING_SERVICE_SCOPE: ${{ secrets.SIDELOADING_SERVICE_SCOPE }}
+
+      - name: commit change on local
+        run: |
+          git add packages/cli/src/cmds/m365/serviceConstant.ts
+          git commit -m "chore: replace sideloading placeholders"
+
       - name: publish alpha release to npm org
         if: ${{ github.ref == 'refs/heads/dev' }}
         run: |

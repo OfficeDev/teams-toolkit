@@ -501,6 +501,13 @@ export async function createProjectFromWalkthroughHandler(
   return result;
 }
 
+export async function debugHandler(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewLocalDebug, getTriggerFromProperty(args));
+  await vscode.commands.executeCommand("workbench.action.debug.start");
+
+  return ok(null);
+}
+
 export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.RunIconDebugStart, getTriggerFromProperty(args));
   const result = await selectAndDebug();

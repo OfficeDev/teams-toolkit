@@ -43,7 +43,6 @@ import {
   OperationNotPermittedError,
 } from "../../../../core/error";
 import { CoreQuestionNames, validateCapabilities } from "../../../../core/question";
-import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import {
   AddSsoParameters,
   DEFAULT_PERMISSION_REQUEST,
@@ -478,7 +477,7 @@ export async function addCapability(
 
         // Add webapplicationInfo in teams app manifest
         const appStudioPlugin = Container.get<AppManifest>(ComponentNames.AppManifest);
-        await appStudioPlugin.addCapability(ctx, inputs as v2.InputsWithProjectPath, [
+        await appStudioPlugin.addCapability(inputs as v2.InputsWithProjectPath, [
           { name: "WebApplicationInfo" },
         ]);
       }
@@ -559,7 +558,7 @@ export async function addCapability(
   }
   // 4. update manifest
   if (capabilitiesToAddManifest.length > 0) {
-    await appStudioPlugin.addCapabilities(ctx, inputsNew, capabilitiesToAddManifest);
+    await appStudioPlugin.addCapability(inputsNew, capabilitiesToAddManifest);
   }
   if (capabilitiesAnswer.length > 0) {
     const addNames = capabilitiesAnswer.map((c) => `'${c}'`).join(" and ");
@@ -1032,7 +1031,7 @@ export async function addSso(
   // Update manifest
   // const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
   const appStudioPlugin = Container.get<AppManifest>(ComponentNames.AppManifest);
-  await appStudioPlugin.addCapability(ctx, inputs as v2.InputsWithProjectPath, [
+  await appStudioPlugin.addCapability(inputs as v2.InputsWithProjectPath, [
     { name: "WebApplicationInfo" },
   ]);
 

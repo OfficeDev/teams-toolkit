@@ -69,10 +69,39 @@ describe("azure app service hosting", () => {
       );
       chai.assert.equal(template.Configuration.Orchestration, expectedConfigOrchestration);
     });
+
+    it("create bicep for vs", async () => {
+      context.configs = ["dotnet", "running-on-azure"];
+      const hosting = AzureHostingFactory.createHosting(ServiceType.AppService);
+      const template = await hosting.generateBicep(context);
+
+      chai.assert.exists(template.Configuration);
+      chai.assert.deepEqual(template.Reference, hosting.reference);
+
+      const expectedConfigModule = await fs.readFile(
+        path.resolve(path.join(__dirname, "expectedBicep", "webAppConfigModuleForVS.bicep")),
+        "utf-8"
+      );
+      chai.assert.equal(template.Configuration.Modules[hosting.hostType], expectedConfigModule);
+
+      const expectedProvisionOrchestration = await fs.readFile(
+        path.resolve(path.join(__dirname, "expectedBicep", "webAppProvisionOrchestration.bicep")),
+        "utf-8"
+      );
+      chai.assert.equal(template.Provision.Orchestration, expectedProvisionOrchestration);
+
+      const expectedConfigOrchestration = await fs.readFile(
+        path.resolve(path.join(__dirname, "expectedBicep", "webAppConfigOrchestration.bicep")),
+        "utf-8"
+      );
+      chai.assert.equal(template.Configuration.Orchestration, expectedConfigOrchestration);
+    });
   });
 
   describe("update bicep", () => {
     it("update bicep", async () => {
+      context.configs = ["node", "running-on-azure"];
+
       const hosting = AzureHostingFactory.createHosting(ServiceType.AppService);
       const template = await hosting.updateBicep(context);
 

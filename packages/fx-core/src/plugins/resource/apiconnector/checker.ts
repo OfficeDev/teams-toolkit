@@ -4,7 +4,7 @@
 import * as fs from "fs-extra";
 import path from "path";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { getSampleFileName } from "./utils";
+import { getSampleDirPath, getSampleFileName } from "./utils";
 
 const guidRegex = /^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$/;
 
@@ -17,8 +17,9 @@ export async function checkApiNameExist(
   const apiFileName: string = getSampleFileName(input, languageType);
   for (const component of components) {
     const componentPath = path.join(projectPath, component);
+    const apiFilePath = getSampleDirPath(componentPath);
     // This pathExistsSync is a workaround for cli interactive command.
-    if (fs.pathExistsSync(path.join(componentPath, apiFileName))) {
+    if (fs.pathExistsSync(path.join(apiFilePath, apiFileName))) {
       return getLocalizedString(
         "plugins.apiConnector.QuestionAppName.validation.ApiNameExist",
         apiFileName

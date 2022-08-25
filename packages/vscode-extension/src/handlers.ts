@@ -501,6 +501,13 @@ export async function createProjectFromWalkthroughHandler(
   return result;
 }
 
+export async function debugHandler(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewLocalDebug, getTriggerFromProperty(args));
+  await vscode.commands.executeCommand("workbench.action.debug.start");
+
+  return ok(null);
+}
+
 export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.RunIconDebugStart, getTriggerFromProperty(args));
   const result = await selectAndDebug();
@@ -2236,6 +2243,11 @@ export async function showError(e: UserError | SystemError) {
     const help = {
       title: localize("teamstoolkit.handlers.getHelp"),
       run: async (): Promise<void> => {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickGetHelp, {
+          [TelemetryProperty.ErrorCode]: errorCode,
+          [TelemetryProperty.ErrorMessage]: notificationMessage,
+          [TelemetryProperty.HelpLink]: e.helpLink!,
+        });
         commands.executeCommand("vscode.open", Uri.parse(`${e.helpLink}#${e.source}${e.name}`));
       },
     };

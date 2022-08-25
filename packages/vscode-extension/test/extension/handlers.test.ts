@@ -25,7 +25,7 @@ import { PanelType } from "../../src/controls/PanelType";
 import { AzureAccountManager } from "../../src/commonlib/azureLogin";
 import { MockCore } from "../mocks/mockCore";
 import * as commonUtils from "../../src/utils/commonUtils";
-import { localize } from "../../src/utils/localizeUtils";
+import * as localizeUtils from "../../src/utils/localizeUtils";
 import * as extension from "../../src/extension";
 import TreeViewManagerInstance from "../../src/treeview/treeViewManager";
 import { CollaborationState, CoreHookContext } from "@microsoft/teamsfx-core";
@@ -155,6 +155,17 @@ describe("handlers", () => {
       sinon.assert.calledOnce(sendTelemetryErrorEvent);
       sinon.restore();
     });
+
+    it("debugHandler()", async () => {
+      const sendTelemetryEventStub = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      const executeCommandStub = sinon.stub(vscode.commands, "executeCommand");
+
+      await handlers.debugHandler();
+
+      sinon.assert.calledOnceWithExactly(executeCommandStub, "workbench.action.debug.start");
+      sinon.assert.calledOnce(sendTelemetryEventStub);
+      sinon.restore();
+    });
   });
 
   describe("runCommand()", function () {
@@ -193,7 +204,7 @@ describe("handlers", () => {
         chai.assert.equal(res.error.name, ExtensionErrors.EnvStateNotFoundError);
         chai.assert.equal(
           res.error.message,
-          util.format(localize("teamstoolkit.handlers.localStateFileNotFound"), env)
+          util.format(localizeUtils.localize("teamstoolkit.handlers.localStateFileNotFound"), env)
         );
       }
     });
@@ -657,6 +668,30 @@ describe("handlers", () => {
     await handlers.deployAadAppManifest([{ fsPath: "path/aad.dev.template" }, "CodeLens"]);
     sinon.assert.calledOnce(deployArtifacts);
     chai.assert.equal(deployArtifacts.getCall(0).args[0]["include-aad-manifest"], "yes");
+    sinon.restore();
+  });
+
+  it("showError", async () => {
+    sinon.stub(localizeUtils, "localize").returns("");
+    const showErrorMessageStub = sinon
+      .stub(vscode.window, "showErrorMessage")
+      .callsFake((title: string, button: any) => {
+        return Promise.resolve(button);
+      });
+    const sendTelemetryEventStub = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+    sinon.stub(vscode.commands, "executeCommand");
+    const error = new UserError("test source", "test name", "test message", "test displayMessage");
+    error.helpLink = "test helpLink";
+
+    await handlers.showError(error);
+
+    chai.assert.isTrue(
+      sendTelemetryEventStub.calledWith(extTelemetryEvents.TelemetryEvent.ClickGetHelp, {
+        "error-code": "test source.test name",
+        "error-message": "test displayMessage",
+        "help-link": "test helpLink",
+      })
+    );
     sinon.restore();
   });
 

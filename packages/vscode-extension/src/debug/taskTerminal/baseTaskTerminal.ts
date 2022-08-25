@@ -27,7 +27,6 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
   }
 
   handleInput(data: string): void {
-    this.writeEmitter.fire(data === "\r" ? "\r\n" : data);
     if (data.includes(ControlCodes.CtrlC)) {
       this.stop();
     }

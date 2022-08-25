@@ -15,8 +15,8 @@ export class CommentMessages {
 export const teamsClientSDKName = "@microsoft/teams-js";
 export const teamsClientSDKVersion = "^2.0.0";
 export const teamsManifestSchema =
-  "https://developer.microsoft.com/en-us/json-schemas/teams/v1.13/MicrosoftTeams.schema.json";
-export const teamsManifestVersion = "1.13";
+  "https://developer.microsoft.com/en-us/json-schemas/teams/v1.14/MicrosoftTeams.schema.json";
+export const teamsManifestVersion = "1.14";
 
 export const teamsClientSDKDefaultNamespace = "microsoftTeams";
 

@@ -23,6 +23,7 @@ import {
   checkInputEmpty,
   Notification,
   sendErrorTelemetry,
+  getSampleDirPath,
 } from "./utils";
 import {
   ApiConnectorConfiguration,
@@ -128,7 +129,7 @@ export class ApiConnectorImpl {
           filesChanged = filesChanged.concat(changes);
         })
       );
-      const msg: string = Notification.getNotificationMsg(config, languageType);
+      const msg: string = Notification.getNotificationMsg(projectPath, config, languageType);
       const logMessage = getLocalizedString(
         "plugins.apiConnector.Log.CommandSuccess",
         filesChanged.reduce(
@@ -193,7 +194,11 @@ export class ApiConnectorImpl {
     }
     TelemetryUtils.sendEvent(Telemetry.stage.scaffold, true, telemetryProperties);
     const result = config.ComponentType.map((item) => {
-      return path.join(projectPath, item, getSampleFileName(config.APIName, languageType));
+      const componentPath = path.join(projectPath, item);
+      return path.join(
+        getSampleDirPath(componentPath),
+        getSampleFileName(config.APIName, languageType)
+      );
     });
     return { generatedFiles: result };
   }
@@ -248,7 +253,8 @@ export class ApiConnectorImpl {
     languageType: string
   ) {
     const apiFileName = getSampleFileName(apiName, languageType);
-    const sampleFilePath = path.join(projectPath, component, apiFileName);
+    const sampleDirPath = getSampleDirPath(path.join(projectPath, component));
+    const sampleFilePath = path.join(sampleDirPath, apiFileName);
     await removeFileIfExist(sampleFilePath);
   }
 

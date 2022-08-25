@@ -21,7 +21,7 @@ export enum InvokeResponseType {
  *
  * This example sends an invoke response that contains an adaptive card.
  *
- * ```javascript
+ * ```typescript
  *
  * const myCard: IAdaptiveCard = {
  *    type: "AdaptiveCard",

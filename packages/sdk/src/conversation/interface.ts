@@ -253,7 +253,7 @@ export interface TeamsFxAdaptiveCardActionHandler {
    *    ```
    *  - An error response:
    *     ```typescript
-   *     return InvokeResponseFactory.errorResponse(StatusCodes.BAD_REQUEST, "Invalid request");
+   *     return InvokeResponseFactory.errorResponse(InvokeResponseErrorCode.BadRequest, "Invalid request");
    *     ```
    * 
    * @remark For more details about the invoke response format, refer to https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/universal-action-model#response-format.

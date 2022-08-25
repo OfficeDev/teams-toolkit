@@ -32,7 +32,7 @@ export class CardActionMiddleware implements Middleware {
       const actionVerb = action.verb;
 
       for (const handler of this.actionHandlers) {
-        if (handler.triggerVerb.toLocaleLowerCase() === actionVerb.toLocaleLowerCase()) {
+        if (handler.triggerVerb?.toLowerCase() === actionVerb?.toLowerCase()) {
           let response: InvokeResponse;
           try {
             response = await handler.handleActionInvoked(context, action.data);
@@ -47,9 +47,6 @@ export class CardActionMiddleware implements Middleware {
 
           const responseType = response.body?.type;
           switch (responseType) {
-            case InvokeResponseType.Message:
-              await this.sendInvokeResponse(context, response);
-              break;
             case InvokeResponseType.AdaptiveCard:
               const card = response.body?.value;
               if (!card) {
@@ -85,6 +82,7 @@ export class CardActionMiddleware implements Middleware {
                 await this.sendInvokeResponse(context, response);
               }
               break;
+            case InvokeResponseType.Message:
             case InvokeResponseType.Error:
             default:
               await this.sendInvokeResponse(context, response);

@@ -640,7 +640,6 @@ export async function getQuestionsForAddCapability(
     return err(canProceed.error);
   }
   const appStudioPlugin = Container.get<AppManifest>(ComponentNames.AppManifest);
-  // const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
   const tabExceedRes = await appStudioPlugin.capabilityExceedLimit(
     inputs as v2.InputsWithProjectPath,
     "staticTab"
@@ -824,7 +823,6 @@ async function getStaticOptionsForAddCapability(
     options.push(MessageExtensionNewUIItem);
     return ok(options);
   }
-  // const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
   const appStudioPlugin = Container.get<AppManifest>(ComponentNames.AppManifest);
   const tabExceedRes = await appStudioPlugin.capabilityExceedLimit(
     inputs as v2.InputsWithProjectPath,

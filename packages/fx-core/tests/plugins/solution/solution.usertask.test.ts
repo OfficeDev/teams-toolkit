@@ -1568,7 +1568,7 @@ describe("V2 implementation", () => {
       mocker
         .stub<any, any>(spfxPluginV2, "scaffoldSourceCode")
         .returns(Promise.resolve(ok(undefined)));
-      mocker.stub(AppStudioPluginV3.prototype, "capabilityExceedLimit").resolves(ok(false));
+      mocker.stub(AppManifest.prototype, "capabilityExceedLimit").resolves(ok(false));
       const projectSettings: ProjectSettings = {
         appName: "my app",
         projectId: uuid.v4(),

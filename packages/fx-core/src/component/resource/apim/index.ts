@@ -4,26 +4,24 @@
 import { hooks } from "@feathersjs/hooks/lib";
 import {
   Action,
+  ActionContext,
+  Bicep,
+  ContextV3,
   FxError,
   InputsWithProjectPath,
   ok,
-  Result,
-  ResourceContextV3,
-  ContextV3,
-  ActionContext,
-  v3,
   QTreeNode,
-  Bicep,
+  ResourceContextV3,
+  Result,
+  v3,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { buildAnswer } from "../../../plugins/resource/apim/answer";
-import {
-  AadPluginConfig,
-  ApimPluginConfig,
-  FunctionPluginConfig,
-  SolutionConfig,
-} from "../../../plugins/resource/apim/config";
+import { APIMOutputs, ComponentNames } from "../../constants";
+import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
+import { AzureResource } from "../azureResource";
+import { buildAnswer } from "./answer";
+import { AadPluginConfig, ApimPluginConfig, FunctionPluginConfig, SolutionConfig } from "./config";
 import {
   AadDefaultValues,
   ApimPluginConfigKeys,
@@ -31,12 +29,9 @@ import {
   ProgressMessages,
   ProgressStep,
   ProjectConstants,
-} from "../../../plugins/resource/apim/constants";
-import { AssertNotEmpty } from "../../../plugins/resource/apim/error";
-import { Factory } from "../../../plugins/resource/apim/factory";
-import { APIMOutputs, ComponentNames } from "../../constants";
-import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
-import { AzureResource } from "../azureResource";
+} from "./constants";
+import { AssertNotEmpty } from "./error";
+import { Factory } from "./factory";
 @Service(ComponentNames.APIM)
 export class APIMResource extends AzureResource {
   readonly name = ComponentNames.APIM;

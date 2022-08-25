@@ -8,7 +8,7 @@ import {
   BuildError,
   InvalidAadObjectId,
   UnhandledError,
-} from "../../../../src/plugins/resource/apim/error";
+} from "../../../../src/component/resource/apim/error";
 
 describe("Error", () => {
   describe("#AssertNotEmpty()", () => {

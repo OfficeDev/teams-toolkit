@@ -4,9 +4,9 @@ import "mocha";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { assert, createSandbox, SinonStub } from "sinon";
-import { AadService } from "../../../../src/plugins/resource/apim/services/aadService";
+import { AadService } from "../../../../src/component/resource/apim/services/aadService";
 import { aadMatcher, mockAxios, DefaultTestInput } from "./mock";
-import { IAadInfo } from "../../../../src/plugins/resource/apim/interfaces/IAadResource";
+import { IAadInfo } from "../../../../src/component/resource/apim/interfaces/IAadResource";
 chai.use(chaiAsPromised);
 
 describe("AadService", () => {

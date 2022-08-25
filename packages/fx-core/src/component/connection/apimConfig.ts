@@ -5,9 +5,9 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { Bicep, ContextV3, FxError, InputsWithProjectPath, Result } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { PluginLifeCycle, ProjectConstants } from "../../plugins/resource/apim/constants";
 import { ComponentNames } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
+import { PluginLifeCycle, ProjectConstants } from "../resource/apim/constants";
 import { ComponentConnections } from "../utils";
 import { AzureResourceConfig } from "./azureResourceConfig";
 @Service("apim-config")

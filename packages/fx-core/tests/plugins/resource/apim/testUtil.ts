@@ -8,9 +8,9 @@ import {
   Result,
   TokenRequest,
 } from "@microsoft/teamsfx-api";
-import { BuildError, NotImplemented } from "../../../../src/plugins/resource/apim/error";
+import { BuildError, NotImplemented } from "../../../../src/component/resource/apim/error";
 import { ConfidentialClientApplication } from "@azure/msal-node";
-import { AssertNotEmpty } from "../../../../src/plugins/resource/apim/error";
+import { AssertNotEmpty } from "../../../../src/component/resource/apim/error";
 import dotenv from "dotenv";
 
 dotenv.config();

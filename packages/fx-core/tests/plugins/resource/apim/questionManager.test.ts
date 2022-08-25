@@ -5,16 +5,16 @@ import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { createSandbox, SinonSandbox } from "sinon";
 import dotenv from "dotenv";
-import * as CLI from "../../../../src/plugins/resource/apim/questions/cliQuestion";
-import * as VSCode from "../../../../src/plugins/resource/apim/questions/vscodeQuestion";
-import { OpenApiProcessor } from "../../../../src/plugins/resource/apim/utils/openApiProcessor";
-import { ApimService } from "../../../../src/plugins/resource/apim/services/apimService";
-import { Lazy } from "../../../../src/plugins/resource/apim/utils/commonUtils";
+import * as CLI from "../../../../src/component/resource/apim/questions/cliQuestion";
+import * as VSCode from "../../../../src/component/resource/apim/questions/vscodeQuestion";
+import { OpenApiProcessor } from "../../../../src/component/resource/apim/utils/openApiProcessor";
+import { ApimService } from "../../../../src/component/resource/apim/services/apimService";
+import { Lazy } from "../../../../src/component/resource/apim/utils/commonUtils";
 import {
   CliQuestionManager,
   VscQuestionManager,
-} from "../../../../src/plugins/resource/apim/managers/questionManager";
-import { ApimPluginConfig } from "../../../../src/plugins/resource/apim/config";
+} from "../../../../src/component/resource/apim/managers/questionManager";
+import { ApimPluginConfig } from "../../../../src/component/resource/apim/config";
 dotenv.config();
 chai.use(chaiAsPromised);
 

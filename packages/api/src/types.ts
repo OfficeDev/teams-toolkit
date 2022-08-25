@@ -240,6 +240,7 @@ export interface Inputs extends Json {
   sourceEnvName?: string;
   targetResourceGroupName?: string;
   targetResourceLocationName?: string; // for vs to create a new resource group
+  targetSubscriptionId?: string;
   platform: Platform;
   stage?: Stage;
   vscodeEnv?: VsCodeEnv;

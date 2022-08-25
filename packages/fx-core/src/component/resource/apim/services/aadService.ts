@@ -12,8 +12,8 @@ import { IName } from "../interfaces/IName";
 import { AzureResource, OperationStatus, Operation } from "../constants";
 import { LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
 import { LogMessages } from "../log";
-import { Telemetry } from "../utils/telemetry";
 import { RetryHandler } from "../utils/commonUtils";
+import { Telemetry } from "../utils/telemetry";
 
 export class AadService {
   private readonly logger: LogProvider | undefined;

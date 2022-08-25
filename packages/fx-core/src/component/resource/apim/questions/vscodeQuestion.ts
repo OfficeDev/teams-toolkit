@@ -16,7 +16,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { getResourceGroupNameFromResourceId } from "../../../../common/tools";
 import { APIM_STATE_KEY } from "../../../../component/migrate";
-import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
+import { BuiltInFeaturePluginNames } from "../../../../plugins/solution/fx-solution/v3/constants";
 import { buildAnswer } from "../answer";
 import { ApimPluginConfig, SolutionConfig } from "../config";
 import { ApimDefaultValues, ApimPluginConfigKeys, QuestionConstants } from "../constants";

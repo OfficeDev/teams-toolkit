@@ -33,6 +33,8 @@ describe("Provision Command Tests", function () {
   let logs: string[] = [];
   let allArguments = new Map<string, any>();
 
+  const existedSubId = "existedSubId";
+
   before(() => {
     sandbox.stub(HelpParamGenerator, "getYargsParamForHelp").callsFake(() => {
       return {};
@@ -50,6 +52,7 @@ describe("Provision Command Tests", function () {
       });
     sandbox.stub(Utils, "setSubscriptionId").callsFake(async (id?: string, folder?: string) => {
       if (!id) return ok(null);
+      if (id === existedSubId) return ok(null);
       else return err(NotFoundSubscriptionId());
     });
     sandbox.stub(FxCore.prototype, "provisionResources").callsFake(async (inputs: Inputs) => {
@@ -152,6 +155,19 @@ describe("Provision Command Tests", function () {
       });
 
     await cmd.handler(args);
+    expect(telemetryEvents).deep.equals([TelemetryEvent.ProvisionStart, TelemetryEvent.Provision]);
+  });
+
+  it("Provision Command Running -- with subscriptionId", async () => {
+    const cmd = new Provision();
+    const subscriptionParam = "subscription";
+    const args = {
+      interactive: false,
+      [constants.RootFolderNode.data.name as string]: "real",
+      [subscriptionParam]: existedSubId,
+    };
+    await cmd.handler(args);
+    expect(allArguments.get(subscriptionParam)).equals(existedSubId);
     expect(telemetryEvents).deep.equals([TelemetryEvent.ProvisionStart, TelemetryEvent.Provision]);
   });
 });

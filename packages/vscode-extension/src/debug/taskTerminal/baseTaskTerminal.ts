@@ -8,6 +8,7 @@ const ControlCodes = {
   CtrlC: "\u0003",
 };
 
+// TODO: ensure local debug session in teamsfx task
 export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
   protected writeEmitter = new vscode.EventEmitter<string>();
   onDidWrite: vscode.Event<string> = this.writeEmitter.event;
@@ -32,7 +33,6 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
     }
   }
 
-  // TODO: end local debug session
   protected stop(error?: any): void {
     if (error?.message) {
       // TODO: add color

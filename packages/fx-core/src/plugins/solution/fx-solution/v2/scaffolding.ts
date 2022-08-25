@@ -173,11 +173,16 @@ export async function scaffoldByPlugins(
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     await scaffoldReadme(capabilities, azureResources, inputs.projectPath!);
 
-    ctx.userInteraction.showMessage(
-      "info",
-      `Success: ${getLocalizedString("core.create.successNotice")}`,
-      false
-    );
+    const isVs = isVSProject(ctx.projectSetting);
+    if (isVs) {
+      ctx.logProvider.info(`Success: ${getLocalizedString("core.create.successNotice")}`);
+    } else {
+      ctx.userInteraction.showMessage(
+        "info",
+        `Success: ${getLocalizedString("core.create.successNotice")}`,
+        false
+      );
+    }
     ctx.logProvider?.info(`finish scaffolding ${plugins.map((p) => p.name).join(",")}!`);
     return ok(Void);
   } else {

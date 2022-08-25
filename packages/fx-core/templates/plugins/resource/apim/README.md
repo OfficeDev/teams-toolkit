@@ -5,7 +5,7 @@ Azure API Management (APIM) is used to create consistent and modern API gateways
 ## Prerequisite
 
 - [Node.js](https://nodejs.org/en/)
-- An M365 account. If you do not have an M365 account, apply for one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
+- An Microsoft 365 account. If you do not have an Microsoft 365 account, apply for one from [Microsoft 365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
 - An Azure account with an active subscription. [Create an account for free](https://azure.microsoft.com/en-us/free/)
   - Ensure the resource provider 'Microsoft.ApiManagement' is registered for the subscription by following [document](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/error-register-resource-provider#solution-3---azure-portal)
 - Teams Toolkit Extension for Visual Studio Code or TeamsFx CLI
@@ -25,7 +25,7 @@ Deploy your project to Azure by following these steps:
 
 | From Visual Studio Code | From TeamsFx CLI |
 | :-----------------------| :----------------|
-| <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNTS` section from sidebar.<sup>\*</sup></li> <li>After you signed in, select a subscription under your account.<sup>\*</sup></li><li>Open Teams Toolkit, and sign into M365 by clicking the `Sign in to M365` under the `ACCOUNTS` section from sidebar.<sup>\*</sup></li><li>Open the command palette and select: `Teams: Provision in the cloud`.</li><li>Open the command palette and select: `Teams: Deploy to the cloud`.</li></ul> |<ul> <li>Run command `teamsfx account login azure`.<sup>\*</sup></li> <li>Run command `teamsfx account set --subscription $subscriptionId`.<sup>\*</sup></li> <li>Run command `teamsfx account login m365`.<sup>\*</sup></li> <li> Run command `teamsfx provision`.</li> <li>First-time: Run command `teamsfx deploy function apim --open-api-document openapi/openapi.json --api-prefix $apiPrefix --api-version $apiVersion`. </li><li>Non-first-time: Run command `teamsfx deploy function apim --api-version $apiVersion`. </li></ul>|
+| <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNTS` section from sidebar.<sup>\*</sup></li> <li>After you signed in, select a subscription under your account.<sup>\*</sup></li><li>Open Teams Toolkit, and sign into Microsoft 365 by clicking the `Sign in to Microsoft 365` under the `ACCOUNTS` section from sidebar.<sup>\*</sup></li><li>Open the command palette and select: `Teams: Provision in the cloud`.</li><li>Open the command palette and select: `Teams: Deploy to the cloud`.</li></ul> |<ul> <li>Run command `teamsfx account login azure`.<sup>\*</sup></li> <li>Run command `teamsfx account set --subscription $subscriptionId`.<sup>\*</sup></li> <li>Run command `teamsfx account login m365`.<sup>\*</sup></li> <li> Run command `teamsfx provision`.</li> <li>First-time: Run command `teamsfx deploy function apim --open-api-document openapi/openapi.json --api-prefix $apiPrefix --api-version $apiVersion`. </li><li>Non-first-time: Run command `teamsfx deploy function apim --api-version $apiVersion`. </li></ul>|
 
 > \* Skip this step if you have already done in the previous steps.
 

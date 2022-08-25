@@ -277,17 +277,7 @@ describe("V2 implementation", () => {
     const mockedInputs: Inputs = { platform: Platform.VSCode };
     mockedInputs[AzureSolutionQuestionNames.Capabilities] = [BotOptionItem.id];
     const appStudioPlugin = Container.get<AppManifest>(ComponentNames.AppManifest);
-    mocker
-      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
-      .callsFake(
-        async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath,
-          capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
-        ) => {
-          return ok(true);
-        }
-      );
+    mocker.stub<any, any>(appStudioPlugin, "capabilityExceedLimit").resolves(ok(true));
     mocker.stub<any, any>(appStudioPlugin, "addCapability").resolves(ok(undefined));
     const result = await executeUserTask(
       mockedCtx,

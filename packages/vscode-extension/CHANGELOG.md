@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.0.5 - Aug 22, 2022
+
+Incremental version for Teams Toolkit with multiple bugs fix, enhancements and a new feature to allow switch Microsoft 365 tenant and Azure subscription for local debugging and cloud provision.
+
 ## 4.0.4 - Aug 09, 2022
 
 Incremental version for Teams Toolkit with multiple bugs fix, enhancements and new additions to sample application gallery.

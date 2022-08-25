@@ -52,10 +52,3 @@ export function getSolutionPluginByName(name: string): Solution | undefined {
   if (solutions.length > 0) return solutions[0];
   return undefined;
 }
-
-export function getGlobalSolutionsV3(): v3.ISolution[] {
-  return [
-    Container.get<v3.ISolution>(BuiltInSolutionNames.azure),
-    // Container.get<v3.ISolution>(BuiltInSolutionNames.spfx),
-  ];
-}

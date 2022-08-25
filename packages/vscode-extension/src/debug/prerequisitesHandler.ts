@@ -78,7 +78,7 @@ enum Checker {
   Frontend = "frontend",
   Backend = "backend",
   Bot = "bot",
-  M365Account = "M365 Account",
+  M365Account = "Microsoft 365 Account",
   LocalCertificate = "Development certificate for localhost",
   AzureFunctionsExtension = "Azure Functions binding extension",
   Ports = "Ports",
@@ -534,7 +534,7 @@ async function ensureM365Account(
           new SystemError(
             ExtensionSource,
             ExtensionErrors.PrerequisitesNoM365AccountError,
-            "No M365 account login"
+            "No Microsoft 365 account login"
           )
         );
       }

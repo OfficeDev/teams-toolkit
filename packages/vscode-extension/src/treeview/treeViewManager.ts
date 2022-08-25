@@ -7,6 +7,7 @@ import * as vscode from "vscode";
 import { TreeCategory } from "@microsoft/teamsfx-api";
 
 import { AdaptiveCardCodeLensProvider } from "../codeLensProvider";
+import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import { localize } from "../utils/localizeUtils";
 import accountTreeViewProviderInstance from "./account/accountTreeViewProvider";
 import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
@@ -60,6 +61,24 @@ class TreeViewManager {
           "fx-extension.OpenAdaptiveCardExt",
           undefined,
           { name: "eye", custom: false }
+        )
+      );
+      developmentTreeviewProvider.refresh();
+    }
+    if (TreatmentVariableValue.previewTreeViewCommand) {
+      const developmentTreeviewProvider = this.getTreeView(
+        "teamsfx-development"
+      ) as CommandsTreeViewProvider;
+      const developmentCommands = developmentTreeviewProvider.getCommands();
+      developmentCommands.splice(
+        1,
+        0,
+        new TreeViewCommand(
+          localize("teamstoolkit.commandsTreeViewProvider.previewTitle"),
+          localize("teamstoolkit.commandsTreeViewProvider.previewDescription"),
+          "fx-extension.debug",
+          undefined,
+          { name: "debug-alt", custom: false }
         )
       );
       developmentTreeviewProvider.refresh();
@@ -145,27 +164,21 @@ class TreeViewManager {
         { name: "library", custom: false },
         TreeCategory.GettingStarted
       ),
-    ];
-
-    developmentCommands.push(
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.addFeatureTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.addFeatureDescription"),
         "fx-extension.addFeature",
         "addFeature",
         { name: "teamsfx-add-feature", custom: false }
-      )
-    );
-
-    developmentCommands.push(
+      ),
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.manifestEditorTitleNew"),
         localize("teamstoolkit.commandsTreeViewProvider.manifestEditorDescription"),
         "fx-extension.openManifest",
         "manifestEditor",
         { name: "edit", custom: false }
-      )
-    );
+      ),
+    ];
 
     const developmentProvider = new CommandsTreeViewProvider(developmentCommands);
     disposables.push(

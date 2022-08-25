@@ -956,6 +956,8 @@ export interface Inputs extends Json {
     // (undocumented)
     targetResourceLocationName?: string;
     // (undocumented)
+    targetSubscriptionId?: string;
+    // (undocumented)
     vscodeEnv?: VsCodeEnv;
 }
 

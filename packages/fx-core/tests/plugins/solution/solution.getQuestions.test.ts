@@ -264,8 +264,7 @@ describe("getQuestionsForScaffolding()", async () => {
       .stub<any, any>(manifestUtils, "capabilityExceedLimit")
       .callsFake(
         async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath,
+          projectPath: string,
           capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
         ) => {
           return ok(false);
@@ -578,8 +577,7 @@ describe("getQuestionsForScaffolding()", async () => {
       .stub<any, any>(manifestUtils, "capabilityExceedLimit")
       .callsFake(
         async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath,
+          projectPath: string,
           capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
         ) => {
           if (capability === "Bot") {
@@ -664,8 +662,7 @@ describe("getQuestionsForScaffolding()", async () => {
       .stub<any, any>(manifestUtils, "capabilityExceedLimit")
       .callsFake(
         async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath,
+          projectPath: string,
           capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
         ) => {
           if (capability === "Bot") {

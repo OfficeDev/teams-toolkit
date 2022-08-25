@@ -21,7 +21,7 @@ import {
   TabSPFxItem,
 } from "../../src/plugins/solution/fx-solution/question";
 import { BuiltInSolutionNames } from "../../src/plugins/solution/fx-solution/v3/constants";
-import { deleteFolder, mockSolutionV3getQuestionsAPI, MockTools, randomAppName } from "./utils";
+import { deleteFolder, MockTools, randomAppName } from "./utils";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import fs from "fs-extra";
 import { SPFXQuestionNames } from "../../src/plugins/resource/spfx/utils/questions";
@@ -33,10 +33,6 @@ describe("Core basic APIs for v3", () => {
   let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
     sandbox.restore();
-    const solutionAzure = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
-    mockSolutionV3getQuestionsAPI(solutionAzure, sandbox);
-    const solutionSPFx = Container.get<v3.ISolution>(BuiltInSolutionNames.spfx);
-    mockSolutionV3getQuestionsAPI(solutionSPFx, sandbox);
     setTools(tools);
     mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "true" });
     sandbox
@@ -52,8 +48,6 @@ describe("Core basic APIs for v3", () => {
           request: {},
         };
       });
-    sandbox.stub<any, any>(solutionAzure, "addFeature").resolves(ok([]));
-    sandbox.stub<any, any>(solutionSPFx, "addFeature").resolves(ok([]));
     sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev"]));
     sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
   });
@@ -78,14 +72,6 @@ describe("Core basic APIs for v3", () => {
     const res = await core.createProject(inputs);
     assert.isTrue(res.isOk());
     projectPath = inputs.projectPath!;
-    const solutionV3 = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
-    // sandbox.stub<any, any>(solutionV3, "provisionResources").resolves(ok(Void));
-    // const provisionRes = await core.provisionResources({
-    //   platform: Platform.VSCode,
-    //   projectPath: projectPath,
-    //   env: "dev",
-    // });
-    // assert.isTrue(provisionRes.isOk());
   });
   it("create from new (VSC, Tab+Bot)", async () => {
     appName = randomAppName();

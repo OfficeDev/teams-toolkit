@@ -343,9 +343,12 @@ export namespace AppStudioClient {
       if (!response || !response.data || !checkUser(response.data as AppDefinition, newUser)) {
         throw new Error(ErrorMessages.GrantPermissionFailed);
       }
-    } catch (error) {
-      const exception = wrapException(error, APP_STUDIO_API_NAMES.UPDATE_OWNER);
-      throw exception;
+    } catch (err) {
+      if (err?.message?.indexOf("Request failed with status code 400") >= 0) {
+        await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app.userList);
+      } else {
+        throw err;
+      }
     }
   }
 

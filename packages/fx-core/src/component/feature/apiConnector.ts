@@ -2,11 +2,11 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { ContextV3, FxError, InputsWithProjectPath, ok, Result } from "@microsoft/teamsfx-api";
+import { ContextV3, FxError, InputsWithProjectPath, Result } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { ApiConnectorImpl } from "../../plugins/resource/apiconnector/plugin";
-import { ResultFactory } from "../../plugins/resource/apiconnector/result";
+import { ApiConnectorImpl } from "./apiconnector/ApiConnectorImpl";
+import { ResultFactory } from "./apiconnector/result";
 import { UserTaskFunctionName } from "../../plugins/solution/fx-solution/constants";
 import "../connection/azureWebAppConfig";
 import { ComponentNames } from "../constants";

@@ -48,6 +48,25 @@ describe("Api Connector scaffold sample code", async () => {
     await fs.remove(testpath);
     sandbox.restore();
   });
+
+  it("scaffold api without project path", async () => {
+    const expectInputs = {
+      component: ["api", "bot"],
+      alias: "test",
+      endpoint: "test.endpoint",
+      "auth-type": "cert",
+    };
+    const context = MockContext();
+    const fakeInputs: Inputs = { ...inputs, ...expectInputs, projectPath: "" };
+    const apiConnector: ApiConnectorImpl = new ApiConnectorImpl();
+    try {
+      await apiConnector.scaffold(context, fakeInputs);
+    } catch (err) {
+      expect(err instanceof UserError).to.be.true;
+      chai.assert.strictEqual(err.name, "InvalidProjectError");
+    }
+  });
+
   it("scaffold api without api active resource", async () => {
     const expectInputs = {
       component: ["api"],

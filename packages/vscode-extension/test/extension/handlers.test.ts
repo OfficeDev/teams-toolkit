@@ -155,6 +155,17 @@ describe("handlers", () => {
       sinon.assert.calledOnce(sendTelemetryErrorEvent);
       sinon.restore();
     });
+
+    it("debugHandler()", async () => {
+      const sendTelemetryEventStub = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      const executeCommandStub = sinon.stub(vscode.commands, "executeCommand");
+
+      await handlers.debugHandler();
+
+      sinon.assert.calledOnceWithExactly(executeCommandStub, "workbench.action.debug.start");
+      sinon.assert.calledOnce(sendTelemetryEventStub);
+      sinon.restore();
+    });
   });
 
   describe("runCommand()", function () {

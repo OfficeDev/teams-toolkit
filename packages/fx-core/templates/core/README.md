@@ -5,7 +5,7 @@ Embed existing web app is to bring your own static webpages and embed in Microso
 ## Get Started
 
 Before run this app locally, make sure you have prepared the following prerequisites:
-* An [M365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts).
+* An [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts).
 
 Also, make sure your own static webpages meets the [prerequisites](https://aka.ms/teamsfx-embed-existing-web#prerequisites) and launches locally.
 

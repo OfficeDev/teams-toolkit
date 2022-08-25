@@ -43,7 +43,6 @@ import { AzureResourceApim } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import "./v2";
-import "./v3";
 import { ArmTemplateResult } from "../../../common/armInterface";
 import { convertToAlphanumericOnly } from "../../../common/utils";
 

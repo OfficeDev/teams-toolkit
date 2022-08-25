@@ -9,7 +9,7 @@ import {
   getQuestionsForAddResourceV3,
   getQuestionsForDeployV3,
 } from "../../src/component/questionV3";
-import * as manifestUtils from "../../src/component/resource/appManifest/utils";
+import { manifestUtils } from "../../src/component/resource/appManifest/utils";
 import {
   Inputs,
   InputsWithProjectPath,

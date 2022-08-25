@@ -85,7 +85,6 @@ describe("handlers", () => {
       sinon.stub(commonUtils, "isExistingTabApp").returns(Promise.resolve(false));
       const sendTelemetryEventFunc = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      const disposeFunc = sinon.stub(ExtTelemetry, "dispose");
       const createProject = sinon.spy(handlers.core, "createProject");
       const executeCommandFunc = sinon.stub(vscode.commands, "executeCommand");
       const globalStateUpdateStub = sinon.stub(globalState, "globalStateUpdate");
@@ -99,10 +98,7 @@ describe("handlers", () => {
       chai.assert.isTrue(
         sendTelemetryEventFunc.calledWith(extTelemetryEvents.TelemetryEvent.CreateProject)
       );
-      sinon.assert.calledOnce(disposeFunc);
       sinon.assert.calledOnce(createProject);
-      chai.assert.isFalse(executeCommandFunc.calledOnceWith("vscode.openFolder"));
-      clock.tick(3000);
       chai.assert.isTrue(executeCommandFunc.calledOnceWith("vscode.openFolder"));
       sinon.restore();
       clock.restore();

@@ -42,7 +42,7 @@ export enum TelemetryProperty {
 
 export enum TelemetryEvent {
   Scaffold = "scaffold",
-  GenerateBicep = "generate-arm-template",
+  GenerateBicep = "generate-arm-templates",
   LocalDebug = "local-debug",
   PostLocalDebug = "post-local-debug",
   Provision = "provision",
@@ -51,7 +51,7 @@ export enum TelemetryEvent {
   Deploy = "deploy",
   DownloadSampleStart = "download-sample-start",
   DownloadSample = "download-sample",
-  CreateProject = "create-new-project",
+  CreateProject = "create",
   AddFeature = "add-feature",
   ProjectUpgrade = "project-upgrade",
   ProjectUpgradeStart = "project-upgrade-start",

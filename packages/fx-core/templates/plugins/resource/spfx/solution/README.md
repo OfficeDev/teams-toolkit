@@ -16,7 +16,7 @@ The SharePoint Framework (SPFx) is a page and web part model that provides full 
 ## Prerequisites
 
 > - Node.js v14/16
-> - An M365 account. Get your own free Microsoft 365 tenant from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
+> - An Microsoft 365 account. Get your own free Microsoft 365 tenant from [Microsoft 365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
 
 ## Solution
 
@@ -46,7 +46,7 @@ Version|Date|Comments
     Or you can use TeamsFx CLI with running this cmd under your project path:
     `teamsfx provision`
 
-    It will provision an app in Teams App Studio. You may need to login with your M365 tenant admin account.
+    It will provision an app in Teams App Studio. You may need to login with your Microsoft 365 tenant admin account.
 
 4. Build and Deploy your SharePoint Package.
     - Click `Deploy to the cloud` in DEPLOYMENT panel of Teams Toolkit extension, or run `Teams: Deploy to the cloud` from command palette. This will generate a SharePoint package (*.sppkg) under sharepoint/solution folder.

@@ -1,8 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { BotFrameworkAdapter } from "botbuilder";
-import { Activity, TurnContext } from "botbuilder-core";
+import {
+  BotFrameworkAdapter,
+  ConversationState,
+  TeamsActivityHandler,
+  UserState,
+  Activity,
+  TurnContext,
+  Storage,
+} from "botbuilder";
 
 /**
  * The response of a message action, e.g., `sendMessage`, `sendAdaptiveCard`.
@@ -164,6 +171,36 @@ export interface TeamsFxBotCommandHandler {
 }
 
 /**
+ * Interface for a command handler that can process sso command to a TeamsFx bot and return a response.
+ */
+export interface TeamsFxBotSsoCommandHandler {
+  /**
+   * command id used to create sso command dialog, if not assigned, it will generate random command id
+   */
+  commandId?: string;
+
+  /**
+   * The string or regular expression patterns that can trigger this handler.
+   */
+  triggerPatterns: TriggerPatterns;
+
+  /**
+   * Handles a bot command received activity.
+   *
+   * @param context The bot context.
+   * @param message The command message the user types from Teams.
+   * @param ssoToken The sso token which can be used to exchange access token for the bot.
+   * @returns A `Promise` representing an activity or text to send as the command response.
+   * Or no return value if developers want to send the response activity by themselves in this method.
+   */
+  handleCommandReceived(
+    context: TurnContext,
+    message: CommandMessage,
+    ssoToken: string
+  ): Promise<string | Partial<Activity> | void>;
+}
+
+/**
  * Options to initialize {@link CommandBot}.
  */
 export interface CommandOptions {
@@ -171,6 +208,86 @@ export interface CommandOptions {
    * The commands to registered with the command bot. Each command should implement the interface {@link TeamsFxBotCommandHandler} so that it can be correctly handled by this command bot.
    */
   commands?: TeamsFxBotCommandHandler[];
+
+  /**
+   * The commands to registered with the sso command bot. Each sso command should implement the interface {@link TeamsFxBotSsoCommandHandler} so that it can be correctly handled by this command bot.
+   */
+  ssoCommands?: TeamsFxBotSsoCommandHandler[];
+
+  /**
+   * Configurations for sso command bot
+   */
+  ssoConfig?: SsoConfig;
+}
+
+/**
+ * Interface for SSO configuration for BotSSO
+ */
+export interface SsoConfig {
+  /**
+   * Custom sso execution activity handler class which should implement the interface {@link SsoExecutionActivityHandler}. If not provided, it will use {@link DefaultSsoExecutionActivityHandler} by default
+   */
+  CustomSsoExecutionActivityHandler?: new (ssoConfig: SsoConfig) => SsoExecutionActivityHandler;
+
+  /**
+   * The list of scopes for which the token will have access, if not provided, it will use graph permission ["User.Read"] by default
+   */
+  scopes?: string[];
+
+  /**
+   * Conversation state for sso command bot, if not provided, it will use internal memory storage to create a new one.
+   */
+  conversationState?: ConversationState;
+
+  /**
+   * User state for sso command bot, if not provided, it will use internal memory storage to create a new one.
+   */
+  userState?: UserState;
+
+  /**
+   * Used by {@link SsoExecutionDialog} to remove duplicated messages, if not provided, it will use internal memory storage
+   */
+  dedupStorage?: Storage;
+
+  /**
+   * teamsfx configuration for sso
+   */
+  teamsFxConfig?: {
+    /**
+     * Hostname of AAD authority, default value comes from M365_AUTHORITY_HOST environment variable.
+     */
+    authorityHost?: string;
+
+    /**
+     * The client (application) ID of an App Registration in the tenant, default value comes from M365_CLIENT_ID environment variable.
+     */
+    clientId?: string;
+
+    /**
+     * AAD tenant id, default value comes from M365_TENANT_ID environment variable.
+     */
+    tenantId?: string;
+
+    /**
+     * Secret string that the application uses when requesting a token. Only used in confidential client applications. Can be created in the Azure app registration portal. Default value comes from M365_CLIENT_SECRET environment variable.
+     */
+    clientSecret?: string;
+
+    /**
+     * The content of a PEM-encoded public/private key certificate.
+     */
+    certificateContent?: string;
+
+    /**
+     * Login page for Teams to redirect to.  Default value comes from INITIATE_LOGIN_ENDPOINT environment variable.
+     */
+    initiateLoginEndpoint?: string;
+
+    /**
+     * Application ID URI. Default value comes from M365_APPLICATION_ID_URI environment variable.
+     */
+    applicationIdUri?: string;
+  };
 }
 
 /**
@@ -214,4 +331,15 @@ export interface ConversationOptions {
      */
     enabled?: boolean;
   };
+}
+
+/**
+ * Interface for user to customize sso execution activity handler
+ */
+export interface SsoExecutionActivityHandler extends TeamsActivityHandler {
+  /**
+   * Add {@link TeamsFxBotSsoCommandHandler} instance to {@link SsoExecutionDialog}
+   * @param handler instance of {@link TeamsFxBotSsoCommandHandler}
+   */
+  addCommand(handler: TeamsFxBotSsoCommandHandler): void;
 }

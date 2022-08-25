@@ -2,7 +2,13 @@
 // Licensed under the MIT license.
 
 import { Activity, ActivityTypes, Middleware, TurnContext } from "botbuilder";
-import { CommandMessage, TeamsFxBotCommandHandler, TriggerPatterns } from "./interface";
+import {
+  CommandMessage,
+  SsoExecutionActivityHandler,
+  TeamsFxBotCommandHandler,
+  TeamsFxBotSsoCommandHandler,
+  TriggerPatterns,
+} from "./interface";
 import { ConversationReferenceStore } from "./storage";
 import { cloneConversation } from "./utils";
 
@@ -105,11 +111,25 @@ export class NotificationMiddleware implements Middleware {
 }
 
 export class CommandResponseMiddleware implements Middleware {
-  public readonly commandHandlers: TeamsFxBotCommandHandler[] = [];
+  public readonly commandHandlers: (TeamsFxBotCommandHandler | TeamsFxBotSsoCommandHandler)[] = [];
 
-  constructor(handlers?: TeamsFxBotCommandHandler[]) {
-    if (handlers && handlers.length > 0) {
-      this.commandHandlers.push(...handlers);
+  public activityHandler: SsoExecutionActivityHandler | undefined;
+
+  constructor(
+    handlers?: TeamsFxBotCommandHandler[],
+    ssoHandlers?: TeamsFxBotSsoCommandHandler[],
+    activityHandler?: SsoExecutionActivityHandler
+  ) {
+    handlers = handlers ?? [];
+    ssoHandlers = ssoHandlers ?? [];
+    if (handlers.length > 0 || ssoHandlers.length > 0) {
+      this.commandHandlers.push(...handlers, ...ssoHandlers);
+
+      this.activityHandler = activityHandler;
+
+      for (const ssoHandler of ssoHandlers) {
+        this.activityHandler?.addCommand(ssoHandler);
+      }
     }
   }
 
@@ -118,32 +138,44 @@ export class CommandResponseMiddleware implements Middleware {
       // Invoke corresponding command handler for the command response
       const commandText = this.getActivityText(context.activity);
 
-      const message: CommandMessage = {
-        text: commandText,
-      };
-
       for (const handler of this.commandHandlers) {
         const matchResult = this.shouldTrigger(handler.triggerPatterns, commandText);
 
         // It is important to note that the command bot will stop processing handlers
         // when the first command handler is matched.
         if (!!matchResult) {
-          message.matches = Array.isArray(matchResult) ? matchResult : void 0;
-          const response = await handler.handleCommandReceived(context, message);
-
-          if (typeof response === "string") {
-            await context.sendActivity(response);
+          if (this.isSsoExecutionHandler(handler)) {
+            await this.activityHandler?.run(context);
           } else {
-            const replyActivity = response as Partial<Activity>;
-            if (replyActivity) {
-              await context.sendActivity(replyActivity);
+            const message: CommandMessage = {
+              text: commandText,
+            };
+            message.matches = Array.isArray(matchResult) ? matchResult : void 0;
+            const response = await (handler as TeamsFxBotCommandHandler).handleCommandReceived(
+              context,
+              message
+            );
+            if (typeof response === "string") {
+              await context.sendActivity(response);
+            } else {
+              const replyActivity = response as Partial<Activity>;
+              if (replyActivity) {
+                await context.sendActivity(replyActivity);
+              }
             }
           }
         }
       }
+    } else {
+      await this.activityHandler?.run(context);
     }
-
     await next();
+  }
+
+  private isSsoExecutionHandler(
+    handler: TeamsFxBotCommandHandler | TeamsFxBotSsoCommandHandler
+  ): boolean {
+    return "commandId" in handler;
   }
 
   private matchPattern(pattern: string | RegExp, text: string): boolean | RegExpMatchArray {

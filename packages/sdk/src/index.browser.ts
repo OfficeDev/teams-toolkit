@@ -52,8 +52,13 @@ export {
   CommandMessage,
   TriggerPatterns,
   TeamsFxBotCommandHandler,
+  TeamsFxBotSsoCommandHandler,
+  SsoExecutionActivityHandler,
+  SsoConfig,
 } from "./conversation/interface";
 export { ConversationBot } from "./conversation/conversation.browser";
+export { SsoExecutionDialog } from "./conversation/sso/ssoExecutionDialog.browser";
+export { DefaultSsoExecutionActivityHandler } from "./conversation/sso/defaultSsoExecutionActivityHandler.browser";
 export {
   Channel,
   Member,

@@ -2,8 +2,9 @@
 // Licensed under the MIT license.
 
 import { BotFrameworkAdapter } from "botbuilder";
-import { CommandOptions, TeamsFxBotCommandHandler } from "./interface";
+import { CommandOptions, SsoExecutionActivityHandler, TeamsFxBotCommandHandler } from "./interface";
 import { CommandResponseMiddleware } from "./middleware";
+import { DefaultSsoExecutionActivityHandler } from "./sso/defaultSsoExecutionActivityHandler";
 
 /**
  * A command bot for receiving commands and sending responses in Teams.
@@ -22,7 +23,21 @@ export class CommandBot {
    * @param options - initialize options
    */
   constructor(adapter: BotFrameworkAdapter, options?: CommandOptions) {
-    this.middleware = new CommandResponseMiddleware(options?.commands);
+    let ssoCommandActivityHandler: SsoExecutionActivityHandler;
+
+    if (options?.ssoConfig?.CustomSsoExecutionActivityHandler) {
+      ssoCommandActivityHandler = new options.ssoConfig.CustomSsoExecutionActivityHandler(
+        options?.ssoConfig
+      );
+    } else {
+      ssoCommandActivityHandler = new DefaultSsoExecutionActivityHandler(options?.ssoConfig);
+    }
+
+    this.middleware = new CommandResponseMiddleware(
+      options?.commands,
+      options?.ssoCommands,
+      ssoCommandActivityHandler
+    );
     this.adapter = adapter.use(this.middleware);
   }
 

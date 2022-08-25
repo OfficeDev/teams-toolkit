@@ -7,8 +7,7 @@
 /// <reference types="node" />
 
 import { AccessToken } from '@azure/identity';
-import { Activity } from 'botbuilder-core';
-import { Activity as Activity_2 } from 'botbuilder';
+import { Activity } from 'botbuilder';
 import { Attachment } from 'botbuilder';
 import { AuthenticationProvider } from '@microsoft/microsoft-graph-client';
 import { AxiosInstance } from 'axios';
@@ -18,8 +17,10 @@ import { CardAction } from 'botbuilder';
 import { CardImage } from 'botbuilder';
 import { ChannelInfo } from 'botbuilder';
 import { Client } from '@microsoft/microsoft-graph-client';
+import { ComponentDialog } from 'botbuilder-dialogs';
 import { ConnectionConfig } from 'tedious';
 import { ConversationReference } from 'botbuilder';
+import { ConversationState } from 'botbuilder';
 import { Dialog } from 'botbuilder-dialogs';
 import { DialogContext } from 'botbuilder-dialogs';
 import { DialogTurnResult } from 'botbuilder-dialogs';
@@ -28,12 +29,16 @@ import { HeroCard } from 'botbuilder';
 import { O365ConnectorCard } from 'botbuilder';
 import { ReceiptCard } from 'botbuilder';
 import { SecureContextOptions } from 'tls';
+import { SigninStateVerificationQuery } from 'botbuilder';
+import { StatePropertyAccessor } from 'botbuilder';
+import { Storage as Storage_2 } from 'botbuilder';
+import { TeamsActivityHandler } from 'botbuilder';
 import { TeamsChannelAccount } from 'botbuilder';
 import { ThumbnailCard } from 'botbuilder';
 import { TokenCredential } from '@azure/identity';
 import { TokenResponse } from 'botframework-schema';
-import { TurnContext } from 'botbuilder-core';
-import { TurnContext as TurnContext_2 } from 'botbuilder';
+import { TurnContext } from 'botbuilder';
+import { UserState } from 'botbuilder';
 import { WebRequest } from 'botbuilder';
 import { WebResponse } from 'botbuilder';
 
@@ -118,6 +123,8 @@ export interface CommandMessage {
 // @public
 export interface CommandOptions {
     commands?: TeamsFxBotCommandHandler[];
+    ssoCommands?: TeamsFxBotSsoCommandHandler[];
+    ssoConfig?: SsoConfig;
 }
 
 // @public
@@ -126,7 +133,7 @@ export class ConversationBot {
     readonly adapter: BotFrameworkAdapter;
     readonly command?: CommandBot;
     readonly notification?: NotificationBot;
-    requestHandler(req: WebRequest, res: WebResponse, logic?: (context: TurnContext_2) => Promise<any>): Promise<void>;
+    requestHandler(req: WebRequest, res: WebResponse, logic?: (context: TurnContext) => Promise<any>): Promise<void>;
 }
 
 // @public
@@ -161,6 +168,16 @@ export function createPemCertOption(cert: string | Buffer, key: string | Buffer,
 export function createPfxCertOption(pfx: string | Buffer, options?: {
     passphrase?: string;
 }): SecureContextOptions;
+
+// @public
+export class DefaultSsoExecutionActivityHandler extends TeamsActivityHandler implements SsoExecutionActivityHandler {
+    constructor(ssoConfig: SsoConfig | undefined);
+    addCommand(handler: TeamsFxBotSsoCommandHandler): void;
+    handleTeamsSigninTokenExchange(context: TurnContext, query: SigninStateVerificationQuery): Promise<void>;
+    handleTeamsSigninVerifyState(context: TurnContext, query: SigninStateVerificationQuery): Promise<void>;
+    onSignInInvoke(context: TurnContext): Promise<void>;
+    run(context: TurnContext): Promise<void>;
+}
 
 // @public
 export enum ErrorCode {
@@ -229,15 +246,15 @@ export class Member implements NotificationTarget {
 
 // @public
 export class MessageBuilder {
-    static attachAdaptiveCard<TData extends object>(cardTemplate: unknown, data: TData): Partial<Activity_2>;
-    static attachAdaptiveCardWithoutData(card: unknown): Partial<Activity_2>;
-    static attachContent(attachement: Attachment): Partial<Activity_2>;
-    static attachHeroCard(title: string, images?: (CardImage | string)[], buttons?: (CardAction | string)[], other?: Partial<HeroCard>): Partial<Activity_2>;
-    static attachO365ConnectorCard(card: O365ConnectorCard): Partial<Activity_2>;
-    static AttachReceiptCard(card: ReceiptCard): Partial<Activity_2>;
-    static attachSigninCard(title: string, url: string, text?: string): Partial<Activity_2>;
+    static attachAdaptiveCard<TData extends object>(cardTemplate: unknown, data: TData): Partial<Activity>;
+    static attachAdaptiveCardWithoutData(card: unknown): Partial<Activity>;
+    static attachContent(attachement: Attachment): Partial<Activity>;
+    static attachHeroCard(title: string, images?: (CardImage | string)[], buttons?: (CardAction | string)[], other?: Partial<HeroCard>): Partial<Activity>;
+    static attachO365ConnectorCard(card: O365ConnectorCard): Partial<Activity>;
+    static AttachReceiptCard(card: ReceiptCard): Partial<Activity>;
+    static attachSigninCard(title: string, url: string, text?: string): Partial<Activity>;
     // (undocumented)
-    static attachThumbnailCard(title: string, images?: (CardImage | string)[], buttons?: (CardAction | string)[], other?: Partial<ThumbnailCard>): Partial<Activity_2>;
+    static attachThumbnailCard(title: string, images?: (CardImage | string)[], buttons?: (CardAction | string)[], other?: Partial<ThumbnailCard>): Partial<Activity>;
 }
 
 // @public
@@ -309,6 +326,37 @@ export function setLogger(logger?: Logger): void;
 export function setLogLevel(level: LogLevel): void;
 
 // @public
+export interface SsoConfig {
+    conversationState?: ConversationState;
+    CustomSsoExecutionActivityHandler?: new (ssoConfig: SsoConfig) => SsoExecutionActivityHandler;
+    dedupStorage?: Storage_2;
+    scopes?: string[];
+    teamsFxConfig?: {
+        authorityHost?: string;
+        clientId?: string;
+        tenantId?: string;
+        clientSecret?: string;
+        certificateContent?: string;
+        initiateLoginEndpoint?: string;
+        applicationIdUri?: string;
+    };
+    userState?: UserState;
+}
+
+// @public
+export interface SsoExecutionActivityHandler extends TeamsActivityHandler {
+    addCommand(handler: TeamsFxBotSsoCommandHandler): void;
+}
+
+// @public
+export class SsoExecutionDialog extends ComponentDialog {
+    constructor(dedupStorage: Storage_2, requiredScopes: string[], teamsfx: TeamsFx);
+    addCommand(handler: TeamsFxBotSsoCommandHandler): void;
+    protected onEndDialog(context: TurnContext): Promise<void>;
+    run(context: TurnContext, accessor: StatePropertyAccessor): Promise<void>;
+}
+
+// @public
 export class TeamsBotInstallation implements NotificationTarget {
     constructor(adapter: BotFrameworkAdapter, conversationReference: Partial<ConversationReference>);
     readonly adapter: BotFrameworkAdapter;
@@ -356,6 +404,13 @@ export class TeamsFx implements TeamsFxConfiguration {
 // @public
 export interface TeamsFxBotCommandHandler {
     handleCommandReceived(context: TurnContext, message: CommandMessage): Promise<string | Partial<Activity> | void>;
+    triggerPatterns: TriggerPatterns;
+}
+
+// @public
+export interface TeamsFxBotSsoCommandHandler {
+    commandId?: string;
+    handleCommandReceived(context: TurnContext, message: CommandMessage, ssoToken: string): Promise<string | Partial<Activity> | void>;
     triggerPatterns: TriggerPatterns;
 }
 

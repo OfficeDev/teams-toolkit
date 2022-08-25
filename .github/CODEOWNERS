@@ -59,7 +59,7 @@
 /packages/fx-core/src/plugins/resource/aad @KennethBWSong @adashen @SLdragon
 /packages/fx-core/tests/plugins/resource/aad @KennethBWSong @adashen @SLdragon
 
-/packages/fx-core/src/plugins/resource/apim @XiaofuHuang @dooriya @kimizhu
+/packages/fx-core/src/component/resource/apim @XiaofuHuang @dooriya @kimizhu
 /packages/fx-core/tests/plugins/resource/apim @XiaofuHuang @dooriya @kimizhu
 
 /packages/fx-core/src/plugins/resource/appstudio @nliu-ms @jayzhang @1yefuwang1 @HuihuiWu-Microsoft

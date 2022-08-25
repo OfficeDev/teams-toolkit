@@ -11,7 +11,7 @@
     "src/common/armInterface.ts",
     "src/plugins/resource/localdebug/legacyPlugin.ts",
     "src/plugins/resource/aad/interfaces/**/*",
-    "src/plugins/resource/apim/interfaces/**/*",
+    "src/component/resource/apim/interfaces/**/*",
     "src/plugins/resource/bot/interface.ts",
     "src/plugins/resource/bot/appStudio/interfaces/**/*",
     "src/plugins/resource/frontend/interface.ts",

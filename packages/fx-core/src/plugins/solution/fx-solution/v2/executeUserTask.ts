@@ -94,6 +94,8 @@ import { getTemplatesFolder } from "../../../../folder";
 import AdmZip from "adm-zip";
 import { unzip } from "../../../../common/template-utils/templatesUtils";
 import { InputsWithProjectPath } from "@microsoft/teamsfx-api/build/v2";
+import { AppManifest } from "../../../../component/resource/appManifest/appManifest";
+import { ComponentNames } from "../../../../component/constants";
 export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,
@@ -381,11 +383,10 @@ export async function addCapability(
       return err(e);
     }
   }
-
-  const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+  const appStudioPlugin = Container.get<AppManifest>(ComponentNames.AppManifest);
+  // const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
   const inputsWithProjectPath = inputs as v2.InputsWithProjectPath;
   const tabExceedRes = await appStudioPlugin.capabilityExceedLimit(
-    ctx,
     inputs as v2.InputsWithProjectPath,
     "staticTab"
   );
@@ -395,7 +396,6 @@ export async function addCapability(
   const isTabAddable = !tabExceedRes.value;
   const isTabSPFxAddable = !tabExceedRes.value;
   const botExceedRes = await appStudioPlugin.capabilityExceedLimit(
-    ctx,
     inputs as v2.InputsWithProjectPath,
     "Bot"
   );
@@ -404,7 +404,6 @@ export async function addCapability(
   }
   const isBotAddable = !botExceedRes.value;
   const meExceedRes = await appStudioPlugin.capabilityExceedLimit(
-    ctx,
     inputs as v2.InputsWithProjectPath,
     "MessageExtension"
   );
@@ -478,10 +477,8 @@ export async function addCapability(
         pluginNamesToArm.add(ResourcePluginsV2.AadPlugin);
 
         // Add webapplicationInfo in teams app manifest
-        const appStudioPlugin = Container.get<AppStudioPluginV3>(
-          BuiltInFeaturePluginNames.appStudio
-        );
-        await appStudioPlugin.addCapabilities(ctx, inputs as v2.InputsWithProjectPath, [
+        const appStudioPlugin = Container.get<AppManifest>(ComponentNames.AppManifest);
+        await appStudioPlugin.addCapability(ctx, inputs as v2.InputsWithProjectPath, [
           { name: "WebApplicationInfo" },
         ]);
       }
@@ -1033,8 +1030,9 @@ export async function addSso(
   }
 
   // Update manifest
-  const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-  await appStudioPlugin.addCapabilities(ctx, inputs as v2.InputsWithProjectPath, [
+  // const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+  const appStudioPlugin = Container.get<AppManifest>(ComponentNames.AppManifest);
+  await appStudioPlugin.addCapability(ctx, inputs as v2.InputsWithProjectPath, [
     { name: "WebApplicationInfo" },
   ]);
 

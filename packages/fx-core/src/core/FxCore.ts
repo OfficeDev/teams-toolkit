@@ -54,8 +54,6 @@ import {
 import { TelemetryReporterInstance } from "../common/telemetry";
 import { createV2Context, mapToJson, undefinedName } from "../common/tools";
 import { getTemplatesFolder } from "../folder";
-import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
-import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
 import {
   ApiConnectionOptionItem,
   AzureSolutionQuestionNames,

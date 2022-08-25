@@ -20,12 +20,12 @@ import { CommandMessage, TeamsFxBotSsoCommandHandler, TriggerPatterns } from "..
 import { TeamsBotSsoPrompt } from "../../bot/teamsBotSsoPrompt";
 import { TeamsBotSsoPromptTokenResponse } from "../../bot/teamsBotSsoPromptTokenResponse";
 import { TeamsFx } from "../../core/teamsfx";
-import "isomorphic-fetch";
 import { v4 as uuidv4 } from "uuid";
 
 const DIALOG_NAME = "SsoExecutionDialog";
 const TEAMS_SSO_PROMPT_ID = "TeamsFxSsoPrompt";
 const COMMAND_ROUTE_DIALOG = "CommandRouteDialog";
+
 /**
  * Sso execution dialog, use to handle sso command
  */

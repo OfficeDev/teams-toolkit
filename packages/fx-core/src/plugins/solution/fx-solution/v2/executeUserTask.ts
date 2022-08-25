@@ -383,7 +383,6 @@ export async function addCapability(
     }
   }
   const appStudioPlugin = Container.get<AppManifest>(ComponentNames.AppManifest);
-  // const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
   const inputsWithProjectPath = inputs as v2.InputsWithProjectPath;
   const tabExceedRes = await appStudioPlugin.capabilityExceedLimit(
     inputs as v2.InputsWithProjectPath,
@@ -1029,7 +1028,6 @@ export async function addSso(
   }
 
   // Update manifest
-  // const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
   const appStudioPlugin = Container.get<AppManifest>(ComponentNames.AppManifest);
   await appStudioPlugin.addCapability(inputs as v2.InputsWithProjectPath, [
     { name: "WebApplicationInfo" },

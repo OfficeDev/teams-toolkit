@@ -1527,7 +1527,6 @@ export class FxCore implements v3.ICore {
     const context = createV2Context(projectSettings);
     ctx.contextV2 = context;
 
-    // const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     const appStudioComponent = Container.get<AppManifest>(ComponentNames.AppManifest);
 
     // pre-check before initialize

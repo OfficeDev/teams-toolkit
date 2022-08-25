@@ -1,4 +1,6 @@
 import { FxError, Inputs, Json, Result, v2 } from "@microsoft/teamsfx-api";
+import { isVSProject } from "../../../../common";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 import { armV2 } from "../arm";
 import { NamedArmResourcePluginAdaptor, ScaffoldingContextAdapter } from "./adaptor";
 import { showUpdateArmTemplateNotice } from "./executeUserTask";
@@ -22,7 +24,12 @@ export async function generateResourceTemplateForPlugins(
   inputs: Inputs,
   plugins: v2.ResourcePlugin[]
 ): Promise<Result<Json, FxError>> {
-  showUpdateArmTemplateNotice(ctx.userInteraction);
+  const isVs = isVSProject(ctx.projectSetting);
+  if (isVs) {
+    ctx.logProvider.info(getLocalizedString("core.updateArmTemplate.successNotice"));
+  } else {
+    showUpdateArmTemplateNotice(ctx.userInteraction);
+  }
   const legacyContext = new ScaffoldingContextAdapter([ctx, inputs]);
   const armResult = await armV2.generateArmTemplate(legacyContext, plugins);
   return armResult;

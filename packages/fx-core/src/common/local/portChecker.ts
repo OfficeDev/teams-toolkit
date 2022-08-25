@@ -53,11 +53,10 @@ async function detectPortListening(port: number, logger?: LogProvider): Promise<
   }
 }
 
-export async function getPortsInUse(
+export async function getPortsFromProject(
   projectPath: string,
   projectSettings: ProjectSettings,
-  ignoreDebugPort?: boolean,
-  logger?: LogProvider
+  ignoreDebugPort?: boolean
 ): Promise<number[]> {
   const ports: number[] = [];
 
@@ -93,6 +92,10 @@ export async function getPortsInUse(
     }
   }
 
+  return ports;
+}
+
+export async function getPortsInUse(ports: number[], logger?: LogProvider): Promise<number[]> {
   const portsInUse: number[] = [];
   for (const port of ports) {
     if (await detectPortListening(port, logger)) {

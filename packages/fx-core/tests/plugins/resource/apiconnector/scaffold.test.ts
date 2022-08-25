@@ -83,7 +83,7 @@ describe("Api Connector scaffold sample code", async () => {
     expect(await fs.pathExists(path.join(apiPath, Constants.envFileName))).to.be.true;
     expect(await fs.pathExists(path.join(apiPath, Constants1.sampleCodeDir, "test.js"))).to.be.true;
     const expectResult = ["api", "bot"].map((item) => {
-      return path.join(testpath, item, "test.js");
+      return path.join(testpath, item, Constants1.sampleCodeDir, "test.js");
     });
     expect(result).to.deep.equal({ generatedFiles: expectResult });
   });
@@ -114,7 +114,8 @@ describe("Api Connector scaffold sample code", async () => {
         "Failed to scaffold connect API files, Reason: fake error"
       );
     }
-    expect(await fs.pathExists(path.join(botPath, "fake.ts"))).to.be.false;
+    expect(await fs.pathExists(path.join(botPath, Constants1.sampleCodeDir, "fake.ts"))).to.be
+      .false;
     const actualFile = await fs.readFile(
       path.join(__dirname, "sampleFiles", "package.json"),
       ConstantString.UTF8Encoding

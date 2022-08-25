@@ -2,7 +2,7 @@
 
 ## Prerequisites
 - Teams app projects are version controlled by Azure DevOps.
-- (Optional) An M365 account. If you do not have M365 account, apply one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program). The M365 account credentials are required for steps of provision, publish and deployment for SPFx projects. Any extra interactive verification steps should be disabled for the M365 account, and please check details in sections below.
+- (Optional) An Microsoft 365 account. If you do not have Microsoft 365 account, apply one from [Microsoft 365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program). The Microsoft 365 account credentials are required for steps of provision, publish and deployment for SPFx projects. Any extra interactive verification steps should be disabled for the Microsoft 365 account, and please check details in sections below.
 - (Optional) An Azure service principal with necessary permissions. The Azure service principal credentials are required for steps of provision and deploy for Azure based projects.
 
 ## Steps
@@ -25,10 +25,10 @@ Steps to create Pipeline variables in Azure DevOps:
 |AZURE_SERVICE_PRINCIPAL_PASSWORD|The password of Azure service principal.|
 |AZURE_SUBSCRIPTION_ID|To identify the subscription in which the resources will be provisioned.|
 |AZURE_TENANT_ID|To identify the tenant in which the subscription resides.|
-|M365_ACCOUNT_NAME|The M365 account for creating and publishing the Teams App.|
-|M365_ACCOUNT_PASSWORD|The password of the M365 account.|
-|M365_TENANT_ID|To identify the tenant in which the Teams App will be created/published. This value is optional unless you have a multi-tenant account and you want to use another tenant. Read more on [how to find your M365 tenant ID](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-how-to-find-tenant).|
-> Note: Currently, a non-interactive authentication style for M365 is used in CI/CD workflows, so please ensure that your M365 account has sufficient privileges in your tenant and doesn't have multi-factor authentication or other advanced security features enabled. Please refer to the [Configure M365 Credentials](https://github.com/OfficeDev/teamsfx-cli-action/blob/main/README.md#configure-m365azure-credentials-as-github-secret) to make sure you have disabled Multi-factor Authentication and Security Defaults for the credentials used in the workflow.
+|M365_ACCOUNT_NAME|The Microsoft 365 account for creating and publishing the Teams App.|
+|M365_ACCOUNT_PASSWORD|The password of the Microsoft 365 account.|
+|M365_TENANT_ID|To identify the tenant in which the Teams App will be created/published. This value is optional unless you have a multi-tenant account and you want to use another tenant. Read more on [how to find your Microsoft 365 tenant ID](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-how-to-find-tenant).|
+> Note: Currently, a non-interactive authentication style for Microsoft 365 is used in CI/CD workflows, so please ensure that your Microsoft 365 account has sufficient privileges in your tenant and doesn't have multi-factor authentication or other advanced security features enabled. Please refer to the [Configure Microsoft 365 Credentials](https://github.com/OfficeDev/teamsfx-cli-action/blob/main/README.md#configure-m365azure-credentials-as-github-secret) to make sure you have disabled Multi-factor Authentication and Security Defaults for the credentials used in the workflow.
 
 > Note: Currently, service principal for Azure is used in CI/CD workflows, and to create Azure service principals for use, refer to [here](#how-to-create-azure-service-principals-for-use).
 

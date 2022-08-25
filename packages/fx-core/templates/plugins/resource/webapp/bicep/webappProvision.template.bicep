@@ -14,6 +14,7 @@ resource serverFarms 'Microsoft.Web/serverfarms@2021-02-01' = {
     name: sku
   }
   kind: 'app'
+  properties: {}
 }
 
 resource webApp 'Microsoft.Web/sites@2021-02-01' = {

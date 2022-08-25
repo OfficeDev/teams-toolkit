@@ -12,6 +12,14 @@ Resource deployments `modules` for your project failed.
 
 # General Errors
 List common errors as follows. You can find the common deployment error from search engines as well.
+
+## Object reference not set to an instance of an object.
+
+### Mitigation
+1. Search `Microsoft.Web/serverfarms` in all bicep files in your project
+1. Add `properties: {}` to the resource definition. Here is an example:
+    ![image](../../images/fx-core/arm/add-empty-properties.png)
+
 ## The maximum number of Free App Service Plan allowed in a Subscription is xx.
 
 ### Mitigation #1

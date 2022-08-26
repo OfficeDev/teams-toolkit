@@ -40,12 +40,7 @@ import {
   UnzipTemplateError,
 } from "../../plugins/resource/frontend/resources/errors";
 import { Messages } from "../../plugins/resource/frontend/resources/messages";
-import {
-  AppManifestOutputs,
-  ComponentNames,
-  OauthAuthority,
-  ProgrammingLanguage,
-} from "../constants";
+import { ComponentNames, ProgrammingLanguage } from "../constants";
 import { getComponent } from "../workflow";
 import { convertToLangKey, execute } from "./utils";
 import {
@@ -67,7 +62,7 @@ import {
   TabOptionItem,
 } from "../../plugins/solution/fx-solution/question";
 import { BadComponent } from "../error";
-import { AppSettingConstants } from "./appSettingConstants";
+import { AppSettingConstants, replaceBlazorAppSettings } from "./appSettingUtils";
 import baseAppSettings from "./appSettings/baseAppSettings.json";
 import ssoBlazorAppSettings from "./appSettings/ssoBlazorAppSettings.json";
 /**
@@ -162,11 +157,7 @@ export class TabCodeProvider {
       } else {
         appSettings = await fs.readFile(appSettingsPath, "utf-8");
       }
-      await fs.writeFile(
-        appSettingsPath,
-        this.replaceRawAppSettings(context, appSettings),
-        "utf-8"
-      );
+      await fs.writeFile(appSettingsPath, replaceBlazorAppSettings(context, appSettings), "utf-8");
     } else {
       const envFile = envFilePath(context.envInfo.envName, path.join(inputs.projectPath, tabDir));
       const envs = this.collectEnvs(context);
@@ -206,27 +197,6 @@ export class TabCodeProvider {
       artifactFolder: path.join(teamsTab.folder, artifactFolder),
     });
     return ok(undefined);
-  }
-  private replaceRawAppSettings(context: ContextV3, appSettings: string): string {
-    const clientId =
-      context.envInfo?.state?.[ComponentNames.AadApp]?.clientId ??
-      AppSettingConstants.Placeholders.clientId;
-    const clientSecret =
-      context.envInfo?.state?.[ComponentNames.AadApp]?.clientSecret ??
-      AppSettingConstants.Placeholders.clientSecret;
-    const tenantId =
-      context.envInfo?.state?.[ComponentNames.AppManifest]?.[AppManifestOutputs.tenantId.key];
-    const oauthAuthority = tenantId
-      ? OauthAuthority(tenantId)
-      : AppSettingConstants.Placeholders.oauthAuthority;
-
-    appSettings = appSettings.replace(AppSettingConstants.RegularExpr.clientId, clientId);
-    appSettings = appSettings.replace(AppSettingConstants.RegularExpr.clientSecret, clientSecret);
-    appSettings = appSettings.replace(
-      AppSettingConstants.RegularExpr.oauthAuthority,
-      oauthAuthority
-    );
-    return appSettings;
   }
   private collectEnvs(ctx: ContextV3): { [key: string]: string } {
     const envs: { [key: string]: string } = {};

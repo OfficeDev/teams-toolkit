@@ -14,7 +14,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { ComponentNames } from "../../constants";
+import { AadAppOutputs, ComponentNames } from "../../constants";
 import * as path from "path";
 import fs from "fs-extra";
 import { getTemplatesFolder } from "../../../folder";
@@ -27,47 +27,7 @@ import { createAuthFiles } from "../../../plugins/solution/fx-solution/v2/execut
 export class AadApp implements CloudResource {
   readonly type = "cloud";
   readonly name = ComponentNames.AadApp;
-  outputs = {
-    applicationIdUri: {
-      key: "applicationIdUri",
-    },
-    clientId: {
-      key: "clientId",
-    },
-    clientSecret: {
-      key: "clientSecret",
-    },
-    objectId: {
-      key: "objectId",
-    },
-    oauth2PermissionScopeId: {
-      key: "oauth2PermissionScopeId",
-    },
-    frontendEndpoint: {
-      key: "frontendEndpoint",
-    },
-    botId: {
-      key: "botId",
-    },
-    botEndpoint: {
-      key: "botEndpoint",
-    },
-    domain: {
-      key: "domain",
-    },
-    endpoint: {
-      key: "endpoint",
-    },
-    oauthAuthority: {
-      key: "oauthAuthority",
-    },
-    oauthHost: {
-      key: "oauthHost",
-    },
-    tenantId: {
-      key: "tenantId",
-    },
-  };
+  outputs = AadAppOutputs;
   finalOutputKeys = [
     "applicationIdUris",
     "clientId",

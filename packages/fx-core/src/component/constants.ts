@@ -242,9 +242,42 @@ export const BotServiceOutputs = {
   },
 };
 
-export const AppManifestOutputs = {
-  teamsAppId: {
-    key: "teamsAppId",
+export const AadAppOutputs = {
+  applicationIdUris: {
+    key: "applicationIdUris",
+  },
+  clientId: {
+    key: "clientId",
+  },
+  clientSecret: {
+    key: "clientSecret",
+  },
+  objectId: {
+    key: "objectId",
+  },
+  oauth2PermissionScopeId: {
+    key: "oauth2PermissionScopeId",
+  },
+  frontendEndpoint: {
+    key: "frontendEndpoint",
+  },
+  botId: {
+    key: "botId",
+  },
+  botEndpoint: {
+    key: "botEndpoint",
+  },
+  domain: {
+    key: "domain",
+  },
+  endpoint: {
+    key: "endpoint",
+  },
+  oauthAuthority: {
+    key: "oauthAuthority",
+  },
+  oauthHost: {
+    key: "oauthHost",
   },
   tenantId: {
     key: "tenantId",
@@ -257,6 +290,3 @@ export const FunctionAppSetting = {
   },
   allowedAppIdSep: ";",
 };
-
-export const OauthAuthority = (tenantId: string): string =>
-  `https://login.microsoftonline.com/${tenantId}`;

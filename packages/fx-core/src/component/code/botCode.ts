@@ -35,15 +35,16 @@ import { CommandExecutionError } from "../../plugins/resource/bot/errors";
 import { Commands, CommonStrings } from "../../plugins/resource/bot/resources/strings";
 import { telemetryHelper } from "../../plugins/resource/bot/utils/telemetry-helper";
 import { TemplateZipFallbackError, UnzipError } from "../../plugins/resource/bot/v3/error";
-import { BotServiceOutputs, ComponentNames, ProgrammingLanguage } from "../constants";
+import { ComponentNames, ProgrammingLanguage } from "../constants";
 import { ProgressMessages, ProgressTitles } from "../messages";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { getComponent } from "../workflow";
 import { BadComponent } from "../error";
 import { isVSProject } from "../../common/projectSettingsHelper";
-import { AppSettingConstants } from "./appSettingConstants";
+import { AppSettingConstants, replaceBotAppSettings } from "./appSettingUtils";
 import baseAppSettings from "./appSettings/baseAppSettings.json";
 import botAppSettings from "./appSettings/botAppSettings.json";
+import ssoBotAppSettings from "./appSettings/ssoBotAppSettings.json";
 /**
  * bot scaffold plugin
  */
@@ -130,17 +131,22 @@ export class BotCodeProvider {
     let appSettings: string;
     if (!(await fs.pathExists(appSettingsPath))) {
       // if appsetting file not exist, generate a new one
-      appSettings = JSON.stringify(
+      let appSettingsJson =
         teamsBot?.hosting === ComponentNames.Function
           ? botAppSettings
-          : { ...baseAppSettings, ...botAppSettings },
-        null,
-        2
-      );
+          : { ...baseAppSettings, ...botAppSettings };
+      appSettingsJson = teamsBot?.sso
+        ? { ...appSettingsJson, ...ssoBotAppSettings }
+        : appSettingsJson;
+      appSettings = JSON.stringify(appSettingsJson, null, 2);
     } else {
       appSettings = await fs.readFile(appSettingsPath, "utf-8");
     }
-    await fs.writeFile(appSettingsPath, this.replaceRawAppSettings(context, appSettings), "utf-8");
+    await fs.writeFile(
+      appSettingsPath,
+      replaceBotAppSettings(context, appSettings, teamsBot?.sso),
+      "utf-8"
+    );
     return ok(undefined);
   }
   @hooks([
@@ -210,16 +216,5 @@ export class BotCodeProvider {
       }
     } catch {}
     return DEFAULT_DOTNET_FRAMEWORK;
-  }
-  private replaceRawAppSettings(context: ResourceContextV3, appSettings: string): string {
-    const botId =
-      context.envInfo.state?.[ComponentNames.TeamsBot]?.[BotServiceOutputs.botId.key] ??
-      AppSettingConstants.Placeholders.botId;
-    const botPassword =
-      context.envInfo.state?.[ComponentNames.TeamsBot]?.[BotServiceOutputs.botPassword.key] ??
-      AppSettingConstants.Placeholders.botPassword;
-    appSettings = appSettings.replace(AppSettingConstants.Placeholders.botId, botId);
-    appSettings = appSettings.replace(AppSettingConstants.Placeholders.botPassword, botPassword);
-    return appSettings;
   }
 }

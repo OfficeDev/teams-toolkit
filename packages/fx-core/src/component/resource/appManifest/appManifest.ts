@@ -58,7 +58,7 @@ import {
   TelemetryEventName,
   TelemetryPropertyKey,
 } from "../../../plugins/resource/appstudio/utils/telemetry";
-import { AppManifestOutputs, ComponentNames } from "../../constants";
+import { ComponentNames } from "../../constants";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import {
   buildTeamsAppPackage,
@@ -75,7 +75,15 @@ import { manifestUtils } from "./utils";
 @Service("app-manifest")
 export class AppManifest implements CloudResource {
   name = "app-manifest";
-  outputs = AppManifestOutputs;
+  outputs = {
+    teamsAppId: {
+      key: "teamsAppId",
+    },
+    tenantId: {
+      key: "tenantId",
+    },
+  };
+
   finalOutputKeys = ["teamsAppId", "tenantId"];
   @hooks([
     ActionExecutionMW({

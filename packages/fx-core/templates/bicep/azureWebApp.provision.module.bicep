@@ -15,6 +15,7 @@ resource serverfarm 'Microsoft.Web/serverfarms@2021-02-01' = {
   sku: {
     name: webAppSKU
   }
+  properties: {}
 }
 
 // Web App that hosts your app

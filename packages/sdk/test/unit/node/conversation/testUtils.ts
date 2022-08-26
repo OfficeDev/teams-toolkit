@@ -10,6 +10,7 @@ import {
   NotificationTargetStorage,
   NotificationTargetType,
   TeamsFxBotCommandHandler,
+  TeamsFxBotSsoCommandHandler,
   TriggerPatterns,
 } from "../../../../src/conversation/interface";
 
@@ -55,6 +56,20 @@ export class TestTarget implements NotificationTarget {
       this.content = card;
       resolve({});
     });
+  }
+}
+
+export class TestSsoCommandHandler implements TeamsFxBotSsoCommandHandler {
+  public triggerPatterns: TriggerPatterns;
+  constructor(patterns: TriggerPatterns) {
+    this.triggerPatterns = patterns;
+  }
+  async handleCommandReceived(
+    context: TurnContext,
+    message: CommandMessage,
+    ssoToken: string
+  ): Promise<string | void | Partial<Activity>> {
+    return "Sample command response";
   }
 }
 

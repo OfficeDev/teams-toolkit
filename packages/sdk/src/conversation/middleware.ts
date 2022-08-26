@@ -118,7 +118,7 @@ export class CommandResponseMiddleware implements Middleware {
   constructor(
     handlers?: TeamsFxBotCommandHandler[],
     ssoHandlers?: TeamsFxBotSsoCommandHandler[],
-    activityHandler?: SsoExecutionActivityHandler
+    activityHandler?: SsoExecutionActivityHandler | undefined
   ) {
     handlers = handlers ?? [];
     ssoHandlers = ssoHandlers ?? [];
@@ -131,6 +131,22 @@ export class CommandResponseMiddleware implements Middleware {
         this.activityHandler?.addCommand(ssoHandler);
       }
     }
+  }
+
+  /**
+   * Set sso execution activity handler
+   * @param activityHandler SsoExecutionActivityHandler instance
+   */
+  public setActivityHandler(activityHandler: SsoExecutionActivityHandler) {
+    this.activityHandler = activityHandler;
+  }
+
+  /**
+   * Get sso execution activity handler
+   * @returns SsoExecutionActivityHandler instance or undefined
+   */
+  public getActivityHandler(): SsoExecutionActivityHandler | undefined {
+    return this.activityHandler;
   }
 
   public async onTurn(context: TurnContext, next: () => Promise<void>): Promise<void> {

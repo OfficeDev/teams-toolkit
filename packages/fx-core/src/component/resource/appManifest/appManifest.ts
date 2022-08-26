@@ -45,7 +45,6 @@ import {
   DEFAULT_DEVELOPER,
   DEFAULT_OUTLINE_PNG_FILENAME,
   ErrorMessages,
-  MANIFEST_RESOURCES,
   OUTLINE_TEMPLATE,
 } from "../../../plugins/resource/appstudio/constants";
 import { AppStudioError } from "../../../plugins/resource/appstudio/errors";
@@ -59,7 +58,7 @@ import {
   TelemetryEventName,
   TelemetryPropertyKey,
 } from "../../../plugins/resource/appstudio/utils/telemetry";
-import { ComponentNames } from "../../constants";
+import { AppManifestOutputs, ComponentNames } from "../../constants";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import {
   buildTeamsAppPackage,
@@ -76,14 +75,7 @@ import { manifestUtils } from "./utils";
 @Service("app-manifest")
 export class AppManifest implements CloudResource {
   name = "app-manifest";
-  outputs = {
-    teamsAppId: {
-      key: "teamsAppId",
-    },
-    tenantId: {
-      key: "tenantId",
-    },
-  };
+  outputs = AppManifestOutputs;
   finalOutputKeys = ["teamsAppId", "tenantId"];
   @hooks([
     ActionExecutionMW({

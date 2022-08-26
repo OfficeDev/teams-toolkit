@@ -31,7 +31,6 @@ import {
   Constants,
   FrontendPathInfo,
   DependentPluginInfo,
-  FrontendPluginInfo,
   TelemetryEvent,
   Commands,
 } from "../../plugins/resource/frontend/constants";
@@ -41,7 +40,12 @@ import {
   UnzipTemplateError,
 } from "../../plugins/resource/frontend/resources/errors";
 import { Messages } from "../../plugins/resource/frontend/resources/messages";
-import { ComponentNames, ProgrammingLanguage } from "../constants";
+import {
+  AppManifestOutputs,
+  ComponentNames,
+  OauthAuthority,
+  ProgrammingLanguage,
+} from "../constants";
 import { getComponent } from "../workflow";
 import { convertToLangKey, execute } from "./utils";
 import {
@@ -63,6 +67,9 @@ import {
   TabOptionItem,
 } from "../../plugins/solution/fx-solution/question";
 import { BadComponent } from "../error";
+import { AppSettingConstants } from "./appSettingConstants";
+import baseAppSettings from "./appSettings/baseAppSettings.json";
+import ssoBlazorAppSettings from "./appSettings/ssoBlazorAppSettings.json";
 /**
  * tab scaffold
  */
@@ -71,9 +78,7 @@ export class TabCodeProvider {
   name = "tab-code";
   @hooks([
     ActionExecutionMW({
-      errorSource: FrontendPluginInfo.ShortName,
-      errorIssueLink: FrontendPluginInfo.IssueLink,
-      errorHelpLink: FrontendPluginInfo.HelpLink,
+      errorSource: "FE",
       enableProgressBar: true,
       progressTitle: ProgressTitles.scaffoldTab,
       progressSteps: Object.keys(ScaffoldProgress.steps).length,
@@ -133,7 +138,7 @@ export class TabCodeProvider {
   }
   @hooks([
     ActionExecutionMW({
-      errorSource: "tab",
+      errorSource: "FE",
     }),
   ])
   async configure(
@@ -142,10 +147,31 @@ export class TabCodeProvider {
   ): Promise<Result<undefined, FxError>> {
     const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
     const tabDir = teamsTab?.folder;
-    if (!tabDir || !inputs.env) return ok(undefined);
-    const envFile = envFilePath(inputs.env, path.join(inputs.projectPath, tabDir));
-    const envs = this.collectEnvs(context);
-    await saveEnvFile(envFile, { teamsfxRemoteEnvs: envs, customizedRemoteEnvs: {} });
+    // Non-sso tab do not need to be configured
+    if (!tabDir || !teamsTab?.sso) return ok(undefined);
+    if (isVSProject(context.projectSetting) && context.envInfo.envName === "local") {
+      const appSettingsPath = path.resolve(
+        inputs.projectPath,
+        tabDir,
+        AppSettingConstants.DevelopmentFileName
+      );
+      let appSettings: string;
+      if (!(await fs.pathExists(appSettingsPath))) {
+        // if appsetting file not exist, generate a new one
+        appSettings = JSON.stringify({ ...baseAppSettings, ...ssoBlazorAppSettings }, null, 2);
+      } else {
+        appSettings = await fs.readFile(appSettingsPath, "utf-8");
+      }
+      await fs.writeFile(
+        appSettingsPath,
+        this.replaceRawAppSettings(context, appSettings),
+        "utf-8"
+      );
+    } else {
+      const envFile = envFilePath(context.envInfo.envName, path.join(inputs.projectPath, tabDir));
+      const envs = this.collectEnvs(context);
+      await saveEnvFile(envFile, { teamsfxRemoteEnvs: envs, customizedRemoteEnvs: {} });
+    }
     return ok(undefined);
   }
   @hooks([
@@ -153,7 +179,7 @@ export class TabCodeProvider {
       enableProgressBar: true,
       progressTitle: ProgressTitles.buildingTab,
       progressSteps: 1,
-      errorSource: "tab",
+      errorSource: "FE",
     }),
   ])
   async build(
@@ -180,6 +206,27 @@ export class TabCodeProvider {
       artifactFolder: path.join(teamsTab.folder, artifactFolder),
     });
     return ok(undefined);
+  }
+  private replaceRawAppSettings(context: ContextV3, appSettings: string): string {
+    const clientId =
+      context.envInfo?.state?.[ComponentNames.AadApp]?.clientId ??
+      AppSettingConstants.Placeholders.clientId;
+    const clientSecret =
+      context.envInfo?.state?.[ComponentNames.AadApp]?.clientSecret ??
+      AppSettingConstants.Placeholders.clientSecret;
+    const tenantId =
+      context.envInfo?.state?.[ComponentNames.AppManifest]?.[AppManifestOutputs.tenantId.key];
+    const oauthAuthority = tenantId
+      ? OauthAuthority(tenantId)
+      : AppSettingConstants.Placeholders.oauthAuthority;
+
+    appSettings = appSettings.replace(AppSettingConstants.RegularExpr.clientId, clientId);
+    appSettings = appSettings.replace(AppSettingConstants.RegularExpr.clientSecret, clientSecret);
+    appSettings = appSettings.replace(
+      AppSettingConstants.RegularExpr.oauthAuthority,
+      oauthAuthority
+    );
+    return appSettings;
   }
   private collectEnvs(ctx: ContextV3): { [key: string]: string } {
     const envs: { [key: string]: string } = {};

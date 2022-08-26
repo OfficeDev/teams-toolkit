@@ -242,9 +242,21 @@ export const BotServiceOutputs = {
   },
 };
 
+export const AppManifestOutputs = {
+  teamsAppId: {
+    key: "teamsAppId",
+  },
+  tenantId: {
+    key: "tenantId",
+  },
+};
+
 export const FunctionAppSetting = {
   keys: {
     allowedAppIds: "ALLOWED_APP_IDS",
   },
   allowedAppIdSep: ";",
 };
+
+export const OauthAuthority = (tenantId: string): string =>
+  `https://login.microsoftonline.com/${tenantId}`;

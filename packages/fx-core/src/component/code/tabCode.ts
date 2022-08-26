@@ -143,7 +143,7 @@ export class TabCodeProvider {
     const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
     const tabDir = teamsTab?.folder;
     // Non-sso tab do not need to be configured
-    if (!tabDir || !teamsTab?.sso) return ok(undefined);
+    if (tabDir == undefined || !teamsTab?.sso) return ok(undefined);
     if (isVSProject(context.projectSetting) && context.envInfo.envName === "local") {
       const appSettingsPath = path.resolve(
         inputs.projectPath,

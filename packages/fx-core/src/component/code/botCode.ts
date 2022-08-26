@@ -113,6 +113,11 @@ export class BotCodeProvider {
     }
     return ok(undefined);
   }
+  @hooks([
+    ActionExecutionMW({
+      errorSource: "BT",
+    }),
+  ])
   async configure(
     context: ResourceContextV3,
     inputs: InputsWithProjectPath
@@ -122,7 +127,7 @@ export class BotCodeProvider {
     }
     const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
     const botDir = teamsBot?.folder;
-    if (!botDir) return ok(undefined);
+    if (botDir == undefined) return ok(undefined);
     const appSettingsPath = path.resolve(
       inputs.projectPath,
       botDir,

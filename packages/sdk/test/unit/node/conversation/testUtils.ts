@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { TurnContext } from "botbuilder-core";
+import { Storage, StoreItems, TurnContext } from "botbuilder";
 import { Activity } from "botframework-schema";
 import {
   CommandMessage,
@@ -13,6 +13,7 @@ import {
   TeamsFxBotSsoCommandHandler,
   TriggerPatterns,
 } from "../../../../src/conversation/interface";
+import { v4 as uuidv4 } from "uuid";
 
 export class TestStorage implements NotificationTargetStorage {
   public items: any = {};
@@ -61,8 +62,12 @@ export class TestTarget implements NotificationTarget {
 
 export class TestSsoCommandHandler implements TeamsFxBotSsoCommandHandler {
   public triggerPatterns: TriggerPatterns;
-  constructor(patterns: TriggerPatterns) {
+  public commandId?: string | undefined;
+  constructor(patterns: TriggerPatterns, commandId?: string) {
     this.triggerPatterns = patterns;
+    if (commandId) {
+      this.commandId = commandId ?? uuidv4();
+    }
   }
   async handleCommandReceived(
     context: TurnContext,
@@ -95,10 +100,10 @@ export class TestCommandHandler implements TeamsFxBotCommandHandler {
 
 export class MockContext {
   private activity: any;
-  constructor(text: string) {
+  constructor(text: string, type = "message") {
     this.activity = {
       text: text,
-      type: "message",
+      type: type,
       recipient: {
         id: "1",
         name: "test-bot",
@@ -111,5 +116,17 @@ export class MockContext {
       console.log("Send activity successfully.");
       resolve();
     });
+  }
+}
+
+export class CustomStorage implements Storage {
+  read(keys: string[]): Promise<StoreItems> {
+    return Promise.resolve({});
+  }
+  write(changes: StoreItems): Promise<void> {
+    return Promise.resolve();
+  }
+  delete(keys: string[]): Promise<void> {
+    return Promise.resolve();
   }
 }

@@ -20,7 +20,6 @@ describe("CommandBot Tests - Node", () => {
   const clientId = "fake_client_id";
   const clientSecret = "fake_client_secret";
   const tenantId = "fake_tenant";
-  const userPrincipalName = "fake_userPrincipalName";
   const authorityHost = "fake_authority_host";
   const initiateLoginEndpoint = "fake_initiate_login_endpoint";
   const applicationIdUri = "fake_application_id_uri";

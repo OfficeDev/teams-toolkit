@@ -2,19 +2,44 @@
 // Licensed under the MIT license.
 
 import { ConversationReference, TurnContext } from "botbuilder";
-import { assert, use as chaiUse } from "chai";
+import { assert, expect, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
+import mockedEnv from "mocked-env";
 import * as sinon from "sinon";
+import { DefaultSsoExecutionActivityHandler } from "../../../../src";
 import {
   CommandResponseMiddleware,
   NotificationMiddleware,
 } from "../../../../src/conversation/middleware";
 import { ConversationReferenceStore } from "../../../../src/conversation/storage";
-import { MockContext, TestCommandHandler, TestStorage } from "./testUtils";
+import { MockContext, TestCommandHandler, TestSsoCommandHandler, TestStorage } from "./testUtils";
 
 chaiUse(chaiPromises);
 
 describe("CommandResponse Middleware Tests - Node", () => {
+  const clientId = "fake_client_id";
+  const clientSecret = "fake_client_secret";
+  const tenantId = "fake_tenant";
+  const authorityHost = "fake_authority_host";
+  const initiateLoginEndpoint = "fake_initiate_login_endpoint";
+  const applicationIdUri = "fake_application_id_uri";
+
+  let mockedEnvRestore: () => void;
+
+  beforeEach(() => {
+    mockedEnvRestore = mockedEnv({
+      INITIATE_LOGIN_ENDPOINT: initiateLoginEndpoint,
+      M365_CLIENT_ID: clientId,
+      M365_CLIENT_SECRET: clientSecret,
+      M365_TENANT_ID: tenantId,
+      M365_AUTHORITY_HOST: authorityHost,
+      M365_APPLICATION_ID_URI: applicationIdUri,
+    });
+  });
+  afterEach(() => {
+    sinon.restore();
+    mockedEnvRestore();
+  });
   it("onTurn should correctly trigger command if matches string", async () => {
     const testContext = new MockContext("test");
 
@@ -85,6 +110,40 @@ describe("CommandResponse Middleware Tests - Node", () => {
 
     // Assert the test command handler is invoked
     assert.isFalse(testCommandHandler.isInvoked);
+  });
+
+  it("onTurn should correctly trigger sso command activity handler", async () => {
+    const testContext = new MockContext("test");
+    const testSsoCommand = new TestSsoCommandHandler("test");
+    const defaultSsoExecutionActivityHandler = new DefaultSsoExecutionActivityHandler(undefined);
+    const stub = sinon.stub(defaultSsoExecutionActivityHandler, "run").resolves();
+
+    const middleware = new CommandResponseMiddleware(
+      [],
+      [testSsoCommand],
+      defaultSsoExecutionActivityHandler
+    );
+
+    await middleware.onTurn(testContext as any, async () => {});
+    expect(stub.called).to.be.true;
+    expect(stub.calledOnceWith(testContext as any));
+  });
+
+  it("onTurn should be called if context is not a message activity", async () => {
+    const testContext = new MockContext("test", "invoke");
+    const testSsoCommand = new TestSsoCommandHandler("test");
+    const defaultSsoExecutionActivityHandler = new DefaultSsoExecutionActivityHandler(undefined);
+    const stub = sinon.stub(defaultSsoExecutionActivityHandler, "run").resolves();
+
+    const middleware = new CommandResponseMiddleware(
+      [],
+      [testSsoCommand],
+      defaultSsoExecutionActivityHandler
+    );
+
+    await middleware.onTurn(testContext as any, async () => {});
+    expect(stub.called).to.be.true;
+    expect(stub.calledOnceWith(testContext as any));
   });
 });
 

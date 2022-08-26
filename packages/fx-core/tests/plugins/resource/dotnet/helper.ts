@@ -37,9 +37,6 @@ export class TestHelper {
   } as any;
 
   static azureAccountProvider: AzureAccountProvider = {
-    getAccountCredentialAsync: async () => {
-      return TestHelper.credential;
-    },
     getIdentityCredentialAsync: async () => {
       return new MyTokenCredential();
     },

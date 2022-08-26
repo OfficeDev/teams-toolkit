@@ -37,7 +37,7 @@ import {
   TestFilePath,
   ProjectSettingKey,
 } from "../commonlib/constants";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { AzureScopes, environmentManager } from "@microsoft/teamsfx-core";
 import m365Login from "../../src/commonlib/m365Login";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 import { getWebappServicePlan } from "../commonlib/utilities";
@@ -607,8 +607,8 @@ export async function validateServicePlan(
   console.log(`Start to validate server farm ${servicePlanName}.`);
 
   const tokenProvider = MockAzureAccountProvider;
-  const tokenCredential = await tokenProvider.getAccountCredentialAsync();
-  const token = (await tokenCredential?.getToken())?.accessToken;
+  const tokenCredential = await tokenProvider.getIdentityCredentialAsync();
+  const token = (await tokenCredential?.getToken(AzureScopes))?.token;
 
   const serivcePlanResponse = await getWebappServicePlan(
     subscription,

@@ -44,19 +44,6 @@ export class AzureAccountProviderUserPassword implements AzureAccountProvider {
     return AzureAccountProviderUserPassword.instance;
   }
 
-  async getAccountCredentialAsync(): Promise<TokenCredentialsBase | undefined> {
-    if (AzureAccountProviderUserPassword.tokenCredentialsBase == undefined) {
-      AzureAccountProviderUserPassword.tokenCredentialsBase =
-        await msRestNodeAuth.loginWithUsernamePassword(user, password, {
-          domain: cfg.AZURE_TENANT_ID,
-        });
-    }
-
-    return new Promise((resolve) => {
-      resolve(AzureAccountProviderUserPassword.tokenCredentialsBase);
-    });
-  }
-
   async getIdentityCredentialAsync(): Promise<TokenCredential | undefined> {
     if (AzureAccountProviderUserPassword.tokenCredential == undefined) {
       const identityCredential = new identity.UsernamePasswordCredential(

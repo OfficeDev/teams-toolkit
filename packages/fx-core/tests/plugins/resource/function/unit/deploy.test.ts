@@ -29,7 +29,7 @@ class MyTokenCredential implements TokenCredential {
     options?: GetTokenOptions | undefined
   ): Promise<AccessToken | null> {
     return {
-      token: "token",
+      token: "a.eyJ1c2VySWQiOiJ0ZXN0QHRlc3QuY29tIn0=.c",
       expiresOnTimestamp: 1234,
     };
   }
@@ -103,11 +103,6 @@ const context: any = {
     ],
   ]),
   azureAccountProvider: {
-    getAccountCredentialAsync: async () => ({
-      signRequest: () => {
-        return;
-      },
-    }),
     getIdentityCredentialAsync: async () => {
       return new MyTokenCredential();
     },

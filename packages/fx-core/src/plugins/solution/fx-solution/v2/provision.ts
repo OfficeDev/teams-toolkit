@@ -16,7 +16,13 @@ import {
   TelemetryReporter,
   AzureAccountProvider,
 } from "@microsoft/teamsfx-api";
-import { AppStudioScopes, getHashedEnv, getResourceGroupInPortal } from "../../../../common/tools";
+import {
+  AppStudioScopes,
+  AzureScopes,
+  ConvertTokenToJson,
+  getHashedEnv,
+  getResourceGroupInPortal,
+} from "../../../../common/tools";
 import { executeConcurrently } from "./executor";
 import {
   ensurePermissionRequest,
@@ -443,8 +449,9 @@ export async function askForProvisionConsentNew(
   previousM365TenantId: string,
   previousSubscriptionId?: string
 ): Promise<Result<Void, FxError>> {
-  const azureToken = await azureAccountProvider.getAccountCredentialAsync();
-  const username = (azureToken as any).username || "";
+  const azureToken = await azureAccountProvider.getIdentityCredentialAsync();
+  const token = (await azureToken?.getToken(AzureScopes))?.token;
+  const username = ConvertTokenToJson(token as any).unique_name || "";
   const subscriptionId = envInfo.state.solution?.subscriptionId || "";
   const subscriptionName = envInfo.state.solution?.subscriptionName || "";
   const m365TenantId = envInfo.state.solution?.teamsAppTenantId || "";

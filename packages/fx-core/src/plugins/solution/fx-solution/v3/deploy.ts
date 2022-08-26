@@ -141,7 +141,7 @@ export async function checkDeployAzureSubscription(
     }
   }
   // make sure the user is logged in
-  await azureAccountProvider.getAccountCredentialAsync(true);
+  await azureAccountProvider.getIdentityCredentialAsync(true);
   // verify valid subscription (permission)
   const subscriptions = await azureAccountProvider.listSubscriptions();
   const targetSubInfo = subscriptions.find(

@@ -80,7 +80,7 @@ async function outputAzureInfo(
     await AzureTokenCIProvider.init(userName, password, tenantId);
     azureProvider = AzureTokenCIProvider;
   }
-  const result = await azureProvider.getAccountCredentialAsync(true, tenantId);
+  const result = await azureProvider.getIdentityCredentialAsync(true);
   if (result) {
     const subscriptions = await azureProvider.listSubscriptions();
     if (commandType === "login") {

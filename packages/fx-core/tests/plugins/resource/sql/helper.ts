@@ -1,20 +1,15 @@
-import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import { PluginContext } from "@microsoft/teamsfx-api";
 import { ARM_TEMPLATE_OUTPUT, newEnvInfo } from "../../../../src";
 import { Constants } from "../../../../src/plugins/resource/sql/constants";
 import { MockUserInteraction } from "../../../core/utils";
+import { MyTokenCredential } from "../bot/unit/utils";
 
 export class TestHelper {
-  static async pluginContext(
-    credentials: msRestNodeAuth.TokenCredentialsBase
-  ): Promise<PluginContext> {
+  static async pluginContext(): Promise<PluginContext> {
     const pluginContext = {
       azureAccountProvider: {
-        getAccountCredentialAsync() {
-          return credentials;
-        },
         getIdentityCredentialAsync() {
-          return credentials;
+          return new MyTokenCredential();
         },
         getSelectedSubscription: async () => {
           return {

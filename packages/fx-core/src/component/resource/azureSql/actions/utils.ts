@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { ResourceContextV3, v3, AzureAccountProvider, LogProvider } from "@microsoft/teamsfx-api";
+import { AzureScopes } from "../../../../common";
 import { ComponentNames } from "../../../constants";
 import { ManagementClient } from "../clients/management";
 import { SqlClient } from "../clients/sql";
@@ -27,10 +28,10 @@ export class UtilFunctions {
   static async parseLoginToken(azureAccountProvider: AzureAccountProvider): Promise<TokenInfo> {
     // get login user info to set aad admin in sql
     try {
-      const credential = await azureAccountProvider.getAccountCredentialAsync();
-      const token = await credential!.getToken();
-      const accessToken = token.accessToken;
-      return parseToken(accessToken);
+      const credential = await azureAccountProvider.getIdentityCredentialAsync();
+      const token = await credential!.getToken(AzureScopes);
+      const accessToken = token?.token;
+      return parseToken(accessToken!);
     } catch (error: any) {
       throw SqlResultFactory.SystemError(
         ErrorMessage.SqlUserInfoError.name,

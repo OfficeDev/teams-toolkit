@@ -43,7 +43,7 @@ class MyTokenCredential implements TokenCredential {
     options?: GetTokenOptions | undefined
   ): Promise<AccessToken | null> {
     return {
-      token: "token",
+      token: "a.eyJ1c2VySWQiOiJ0ZXN0QHRlc3QuY29tIn0=.c",
       expiresOnTimestamp: 1234,
     };
   }
@@ -112,19 +112,12 @@ const mockServers = {
 describe("skipAddingUser", () => {
   let sqlPlugin: SqlPlugin;
   let pluginContext: PluginContext;
-  let credentials: msRestNodeAuth.TokenCredentialsBase;
 
-  before(async () => {
-    credentials = new msRestNodeAuth.ApplicationTokenCredentials(
-      faker.datatype.uuid(),
-      faker.internet.url(),
-      faker.internet.password()
-    );
-  });
+  before(async () => {});
 
   beforeEach(async () => {
     sqlPlugin = new SqlPlugin();
-    pluginContext = await TestHelper.pluginContext(credentials);
+    pluginContext = await TestHelper.pluginContext();
   });
 
   afterEach(() => {
@@ -160,8 +153,13 @@ describe("skipAddingUser", () => {
     chai.assert.isFalse(sqlPlugin.sqlImpl.config.skipAddingUser);
 
     // set no identity credential
+    let i = 0;
     pluginContext.azureAccountProvider!.getIdentityCredentialAsync = async () => {
-      return undefined;
+      if (i++ == 1) {
+        return undefined;
+      } else {
+        return new MyTokenCredential();
+      }
     };
     // Act
     preProvisionResult = await sqlPlugin.preProvision(pluginContext);

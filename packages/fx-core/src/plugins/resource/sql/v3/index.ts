@@ -19,6 +19,7 @@ import * as path from "path";
 import { Service } from "typedi";
 import { Bicep } from "../../../../common/constants";
 import {
+  AzureScopes,
   generateBicepFromFile,
   getResourceGroupNameFromResourceId,
   getSubscriptionIdFromResourceId,
@@ -195,10 +196,10 @@ export class SqlPluginV3 implements v3.PluginV3 {
   private async parseLoginToken(azureAccountProvider: AzureAccountProvider) {
     // get login user info to set aad admin in sql
     try {
-      const credential = await azureAccountProvider.getAccountCredentialAsync();
-      const token = await credential!.getToken();
-      const accessToken = token.accessToken;
-      const tokenInfo = parseToken(accessToken);
+      const credential = await azureAccountProvider.getIdentityCredentialAsync();
+      const token = await credential!.getToken(AzureScopes);
+      const accessToken = token?.token;
+      const tokenInfo = parseToken(accessToken!);
       this.config.aadAdmin = tokenInfo.name;
       this.config.aadAdminObjectId = tokenInfo.objectId;
       this.config.aadAdminType = tokenInfo.userType;

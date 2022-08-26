@@ -12,16 +12,15 @@ import {
 } from "../../../../src/common/localSettingsConstants";
 import { SOLUTION } from "../../../../src/plugins/resource/appstudio/constants";
 import { ConfigKeysOfOtherPlugin } from "../../../../src/plugins/resource/aad/constants";
+import { MyTokenCredential } from "../bot/unit/utils";
 
 export class TestHelper {
-  static async pluginContext(
-    credentials: msRestNodeAuth.TokenCredentialsBase
-  ): Promise<PluginContext> {
+  static async pluginContext(): Promise<PluginContext> {
     const mockEndpoint = "https://endpoint.mock";
     const pluginContext = {
       azureAccountProvider: {
-        getAccountCredentialAsync() {
-          return credentials;
+        getIdentityCredentialAsync() {
+          return new MyTokenCredential();
         },
         getSelectedSubscription: async () => {
           return {

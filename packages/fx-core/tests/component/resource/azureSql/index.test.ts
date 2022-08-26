@@ -56,7 +56,7 @@ class MyTokenCredential implements TokenCredential {
     options?: GetTokenOptions | undefined
   ): Promise<AccessToken | null> {
     return {
-      token: "token",
+      token: "a.eyJ1c2VySWQiOiJ0ZXN0QHRlc3QuY29tIn0=.c",
       expiresOnTimestamp: 1234,
     };
   }
@@ -141,16 +141,8 @@ describe("Azure-SQL Component", () => {
     context.envInfo = newEnvInfoV3();
     sandbox.stub(SqlClient, "initToken").resolves("mock token");
 
-    const credentials = new msRestNodeAuth.ApplicationTokenCredentials(
-      faker.datatype.uuid(),
-      faker.internet.url(),
-      faker.internet.password()
-    );
     context.tokenProvider!.azureAccountProvider.getIdentityCredentialAsync = async () => {
-      return credentials as unknown as TokenCredential;
-    };
-    context.tokenProvider!.azureAccountProvider.getAccountCredentialAsync = async () => {
-      return credentials as unknown as TokenCredentialsBase;
+      return new MyTokenCredential();
     };
 
     const mockSqlManagementClient = new SqlManagementClient(new MyTokenCredential(), "id");

@@ -72,7 +72,7 @@ describe("DefaultTediousConnection Tests - Node", () => {
     identityManager_GetToken.callsFake(async () => {
       return new Promise<AccessToken>((resolve) => {
         resolve({
-          token: fakeToken,
+          token: "a.eyJ1c2VySWQiOiJ0ZXN0QHRlc3QuY29tIn0=.c",
           expiresOnTimestamp: 12345678,
         });
       });

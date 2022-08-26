@@ -34,7 +34,13 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "../../../../common/telemetry";
-import { AppStudioScopes, getHashedEnv, getResourceGroupInPortal } from "../../../../common/tools";
+import {
+  AppStudioScopes,
+  AzureScopes,
+  ConvertTokenToJson,
+  getHashedEnv,
+  getResourceGroupInPortal,
+} from "../../../../common/tools";
 import { convertToAlphanumericOnly } from "../../../../common/utils";
 import { ComponentNames } from "../../../../component/constants";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
@@ -345,7 +351,7 @@ export async function checkProvisionSubscriptionWhenSwitchAccountEnabled(
   }
 
   // make sure the user is logged in
-  await azureAccountProvider.getAccountCredentialAsync(true);
+  await azureAccountProvider.getIdentityCredentialAsync(true);
   // verify valid subscription (permission)
   const subscriptions = await azureAccountProvider.listSubscriptions();
 
@@ -504,7 +510,7 @@ export async function fillInAzureConfigs(
       subscriptionResult.value.hasSwitchedSubscription.toString(),
   });
 
-  // Note setSubscription here will change the token returned by getAccountCredentialAsync according to the subscription selected.
+  // Note setSubscription here will change the token returned by getIdentityCredentialAsync according to the subscription selected.
   // So getting azureToken needs to precede setSubscription.
   const azureToken = await tokenProvider.azureAccountProvider.getIdentityCredentialAsync();
   if (azureToken === undefined) {
@@ -655,10 +661,11 @@ export async function askForDeployConsent(
   azureAccountProvider: AzureAccountProvider,
   envInfo: v3.EnvInfoV3
 ): Promise<Result<Void, FxError>> {
-  const azureToken = await azureAccountProvider.getAccountCredentialAsync();
+  const azureCredential = await azureAccountProvider.getIdentityCredentialAsync();
+  const azureToken = (await azureCredential?.getToken(AzureScopes))?.token;
 
   // Only Azure project requires this confirm dialog
-  const username = (azureToken as any).username || "";
+  const username = ConvertTokenToJson(azureToken as any).unique_name || "";
   const subscriptionId = envInfo.state.solution?.subscriptionId || "";
   const subscriptionName = envInfo.state.solution?.subscriptionName || "";
   const msg = getLocalizedString(
@@ -682,10 +689,11 @@ export async function askForProvisionConsent(
   azureAccountProvider: AzureAccountProvider,
   envInfo: v3.EnvInfoV3
 ): Promise<Result<Void, FxError>> {
-  const azureToken = await azureAccountProvider.getAccountCredentialAsync();
+  const azureCredential = await azureAccountProvider.getIdentityCredentialAsync();
+  const azureToken = (await azureCredential?.getToken(AzureScopes))?.token;
 
   // Only Azure project requires this confirm dialog
-  const username = (azureToken as any).username || "";
+  const username = ConvertTokenToJson(azureToken as any).unique_name || "";
   const subscriptionId = envInfo.state.solution?.subscriptionId || "";
   const subscriptionName = envInfo.state.solution?.subscriptionName || "";
   const msgNew = getLocalizedString(

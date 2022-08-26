@@ -74,7 +74,7 @@ class MyTokenCredential implements TokenCredential {
     options?: GetTokenOptions | undefined
   ): Promise<AccessToken | null> {
     return {
-      token: "abc",
+      token: "a.eyJ1c2VySWQiOiJ0ZXN0QHRlc3QuY29tIn0=.c",
       expiresOnTimestamp: 12345,
     };
   }
@@ -303,9 +303,6 @@ describe("Workflow test for v3", () => {
       .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
       .resolves(ok({ tid: "mockTid" }));
     sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-      .resolves(TestHelper.fakeCredential);
-    sandbox
       .stub(provisionV3, "fillInAzureConfigs")
       .resolves(ok({ hasSwitchedSubscription: false }));
     sandbox.stub(provisionV2, "askForProvisionConsentNew").resolves(ok(Void));
@@ -384,9 +381,6 @@ describe("Workflow test for v3", () => {
     sandbox
       .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
       .resolves(ok({ tid: "mockTid" }));
-    sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-      .resolves(TestHelper.fakeCredential);
     sandbox.stub(provisionV3, "fillInAzureConfigs").resolves(ok({ hasSwitchedSubscription: true }));
     sandbox.stub(provisionV2, "askForProvisionConsentNew").resolves(ok(Void));
     sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
@@ -459,9 +453,6 @@ describe("Workflow test for v3", () => {
     sandbox
       .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
       .resolves(ok({ tid: "mockSwitchedTid", upn: "mockUpn" }));
-    sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-      .resolves(TestHelper.fakeCredential);
     sandbox.stub(backup, "backupFiles").resolves(ok(undefined));
     sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
     sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
@@ -535,9 +526,6 @@ describe("Workflow test for v3", () => {
     sandbox
       .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
       .resolves(ok({ tid: "mockSwitchedTid", upn: "mockUpn" }));
-    sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-      .resolves(TestHelper.fakeCredential);
     sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
     sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
     sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
@@ -607,9 +595,6 @@ describe("Workflow test for v3", () => {
     sandbox
       .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
       .resolves(ok({ tid: "mockSwitchedTid" }));
-    sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-      .resolves(TestHelper.fakeCredential);
     sandbox.stub(provisionV3, "fillInAzureConfigs").resolves(ok({ hasSwitchedSubscription: true }));
     sandbox.stub(provisionV2, "askForProvisionConsentNew").resolves(ok(Void));
     sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
@@ -689,9 +674,6 @@ describe("Workflow test for v3", () => {
       .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
       .resolves(ok({ tid: "mockTid" }));
     sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-      .resolves(TestHelper.fakeCredential);
-    sandbox
       .stub(provisionV3, "fillInAzureConfigs")
       .resolves(ok({ hasSwitchedSubscription: false }));
     sandbox
@@ -756,9 +738,6 @@ describe("Workflow test for v3", () => {
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getJsonObject").resolves(undefined);
-    sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-      .resolves(TestHelper.fakeCredential);
     const appName = `unittest${randomAppName()}`;
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
@@ -800,9 +779,6 @@ describe("Workflow test for v3", () => {
     sandbox
       .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
       .resolves(ok({ tid: "mockTid" }));
-    sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-      .resolves(TestHelper.fakeCredential);
     sandbox.stub(provisionV3, "fillInAzureConfigs").resolves(ok({ hasSwitchedSubscription: true }));
     sandbox.stub(provisionV2, "askForProvisionConsentNew").resolves(ok(Void));
     sandbox.stub(backup, "backupFiles").resolves(ok(undefined));
@@ -870,9 +846,6 @@ describe("Workflow test for v3", () => {
     sandbox
       .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
       .resolves(ok({ tid: "mockTid" }));
-    sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-      .resolves(TestHelper.fakeCredential);
     sandbox.stub(provisionV2, "askForProvisionConsentNew").resolves(ok(Void));
     sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
     sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
@@ -931,9 +904,6 @@ describe("Workflow test for v3", () => {
     sandbox
       .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
       .resolves(ok({ tid: "mockTid" }));
-    sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-      .resolves(TestHelper.fakeCredential);
     sandbox.stub(provisionV2, "askForProvisionConsentNew").resolves(ok(Void));
     sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
     sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
@@ -995,9 +965,6 @@ describe("Workflow test for v3", () => {
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(FrontendDeployment, "doFrontendDeploymentV3").resolves();
     sandbox.stub(aadManifest, "generateAadManifestTemplate").resolves();
-    sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-      .resolves(TestHelper.fakeCredential);
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
@@ -1051,9 +1018,6 @@ describe("Workflow test for v3", () => {
     sandbox
       .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
       .resolves(ok({ tid: "mockTid" }));
-    sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-      .resolves(TestHelper.fakeCredential);
     sandbox
       .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -1163,9 +1127,6 @@ describe("Workflow test for v3", () => {
     sandbox
       .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
       .resolves(ok({ tid: "mockTid" }));
-    sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-      .resolves(TestHelper.fakeCredential);
     sandbox
       .stub(provisionV3, "fillInAzureConfigs")
       .resolves(ok({ hasSwitchedSubscription: false }));

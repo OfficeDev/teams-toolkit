@@ -99,7 +99,6 @@ describe("Azure-Function Component", () => {
     });
     context.tokenProvider = {
       azureAccountProvider: {
-        getAccountCredentialAsync: async () => ({} as any),
         getIdentityCredentialAsync: async () => new MyTokenCredential(),
       } as any,
     } as any;

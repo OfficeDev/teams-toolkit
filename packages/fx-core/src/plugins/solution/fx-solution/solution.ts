@@ -1995,7 +1995,7 @@ export async function askForProvisionConsent(ctx: SolutionContext): Promise<Resu
     return ok(Void);
   }
 
-  const azureToken = await ctx.azureAccountProvider?.getAccountCredentialAsync();
+  const azureToken = await ctx.azureAccountProvider?.getIdentityCredentialAsync();
 
   // Only Azure project requires this confirm dialog
   const username = (azureToken as any).username ? (azureToken as any).username : "";

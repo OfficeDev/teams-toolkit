@@ -10,7 +10,7 @@ import * as chai from "chai";
 import fs from "fs-extra";
 import path from "path";
 import MockAzureAccountProvider from "../../../src/commonlib/azureLoginUserPassword";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { AzureScopes, environmentManager } from "@microsoft/teamsfx-core";
 import {
   getSubscriptionId,
   getTestFolder,
@@ -54,8 +54,8 @@ describe("Blazor App", function () {
     await CliHelper.provisionProject(projectPath, "", env);
 
     const tokenProvider = MockAzureAccountProvider;
-    const tokenCredential = await tokenProvider.getAccountCredentialAsync();
-    const token = (await tokenCredential?.getToken())?.accessToken;
+    const tokenCredential = await tokenProvider.getIdentityCredentialAsync();
+    const token = (await tokenCredential?.getToken(AzureScopes))?.token;
     chai.assert.exists(token);
 
     const context = await readContextMultiEnv(projectPath, envName);

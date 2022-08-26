@@ -307,9 +307,6 @@ describe("Teams Bot Resource Plugin", () => {
       sinon.stub(mockedTokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("anything"));
 
       sinon
-        .stub(mockedTokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(fakeCreds);
-      sinon
         .stub(mockedTokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
         .resolves(new testUtils.MyTokenCredential());
       // Act
@@ -344,10 +341,6 @@ describe("Teams Bot Resource Plugin", () => {
 
       sinon.stub(pluginContext.m365TokenProvider!, "getAccessToken").resolves(ok("anything"));
       sinon.stub(botPluginImpl.config.scaffold, "botAADCreated").returns(true);
-      const fakeCreds = testUtils.generateFakeTokenCredentialsBase();
-      sinon
-        .stub(pluginContext.azureAccountProvider!, "getAccountCredentialAsync")
-        .resolves(fakeCreds);
       // Act
       const result = await botPlugin.postProvision(pluginContext);
 
@@ -399,10 +392,6 @@ describe("Teams Bot Resource Plugin", () => {
         },
       };
       sinon.stub(mockedTokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("anything"));
-      const fakeCreds = testUtils.generateFakeTokenCredentialsBase();
-      sinon
-        .stub(mockedTokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(fakeCreds);
 
       // Act
       const result = await botPlugin.configureResource(ctx, inputs, envInfoV3, mockedTokenProvider);
@@ -477,9 +466,6 @@ describe("Teams Bot Resource Plugin", () => {
       // Arrange
       const pluginContext = testUtils.newPluginContext();
       pluginContext.root = rootDir;
-      sinon
-        .stub(pluginContext.azureAccountProvider!, "getAccountCredentialAsync")
-        .resolves(testUtils.generateFakeTokenCredentialsBase());
       pluginContext.config.set(
         "botWebAppResourceId",
         "/subscriptions/test-subscription/resourceGroups/test-rg/providers/Microsoft.Web/sites/test-webapp"
@@ -528,9 +514,6 @@ describe("Teams Bot Resource Plugin", () => {
       // Arrange
       const pluginContext = testUtils.newPluginContext();
       pluginContext.root = rootDir;
-      sinon
-        .stub(pluginContext.azureAccountProvider!, "getAccountCredentialAsync")
-        .resolves(testUtils.generateFakeTokenCredentialsBase());
       sinon
         .stub(pluginContext.azureAccountProvider!, "getIdentityCredentialAsync")
         .resolves(new testUtils.MyTokenCredential());
@@ -602,9 +585,6 @@ describe("Teams Bot Resource Plugin", () => {
           },
         },
       };
-      sinon
-        .stub(mockedTokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(testUtils.generateFakeTokenCredentialsBase());
 
       // Act
       const result = await botPlugin.deploy(ctx, inputs, envInfoV3, mockedTokenProvider);

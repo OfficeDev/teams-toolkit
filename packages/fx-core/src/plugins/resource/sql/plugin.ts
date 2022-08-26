@@ -32,7 +32,7 @@ import {
 } from "../../../common";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
-import { generateBicepFromFile, getUuid } from "../../../common/tools";
+import { AzureScopes, generateBicepFromFile, getUuid } from "../../../common/tools";
 import { ManagementClient, SqlMgrClient } from "./managementClient";
 
 export class SqlPluginImpl {
@@ -389,10 +389,10 @@ export class SqlPluginImpl {
   private async parseLoginToken(ctx: PluginContext) {
     // get login user info to set aad admin in sql
     try {
-      const credential = await ctx.azureAccountProvider!.getAccountCredentialAsync();
-      const token = await credential!.getToken();
-      const accessToken = token.accessToken;
-      const tokenInfo = parseToken(accessToken);
+      const credential = await ctx.azureAccountProvider!.getIdentityCredentialAsync();
+      const token = await credential!.getToken(AzureScopes);
+      const accessToken = token?.token;
+      const tokenInfo = parseToken(accessToken!);
       this.config.aadAdmin = tokenInfo.name;
       this.config.aadAdminObjectId = tokenInfo.objectId;
       this.config.aadAdminType = tokenInfo.userType;

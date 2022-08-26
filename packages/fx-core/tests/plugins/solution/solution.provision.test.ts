@@ -225,27 +225,18 @@ const mockedSubscriptionId = "mocked subscription id";
 const mockedTenantId = "mocked tenant id";
 
 class MyTokenCredential implements TokenCredential {
-  getToken(
+  async getToken(
     scopes: string | string[],
     options?: GetTokenOptions | undefined
   ): Promise<AccessToken | null> {
-    throw new Error("Method not implemented.");
+    return {
+      token: "a.eyJ1c2VySWQiOiJ0ZXN0QHRlc3QuY29tIn0=.c",
+      expiresOnTimestamp: 12345,
+    };
   }
 }
 
 export class MockedAzureTokenProvider implements AzureAccountProvider {
-  getAccountCredential(showDialog?: boolean): TokenCredentialsBase {
-    throw new Error("Method not implemented.");
-  }
-  getIdentityCredential(showDialog?: boolean): TokenCredential {
-    return new MyTokenCredential();
-  }
-  async getAccountCredentialAsync(
-    showDialog?: boolean,
-    tenantId?: string
-  ): Promise<TokenCredentialsBase> {
-    return new UserTokenCredentials("someClientId", "some.domain", "someUserName", "somePassword");
-  }
   getIdentityCredentialAsync(showDialog?: boolean): Promise<TokenCredential> {
     return Promise.resolve(new MyTokenCredential());
   }
@@ -1683,7 +1674,7 @@ describe("askForProvisionConsentNew", () => {
 
     // Assert
     const expectedAccountsInfo =
-      "Azure account: someUserName\nAzure subscription: subscriptionName\nMicrosoft 365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
+      "Azure account: \nAzure subscription: subscriptionName\nMicrosoft 365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
     expect(showMessageSpy.calledOnce).equal(true);
     expect(showMessageSpy.calledWithMatch("warn", expectedAccountsInfo, true, "Provision")).equal(
       true
@@ -1752,7 +1743,7 @@ describe("askForProvisionConsentNew", () => {
 
     // Assert
     const expectedAccountsInfo =
-      "You are now using a different Microsoft 365 tenant from what you previously used.\nAzure account: someUserName\nAzure subscription: subscriptionName\nMicrosoft 365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
+      "You are now using a different Microsoft 365 tenant from what you previously used.\nAzure account: \nAzure subscription: subscriptionName\nMicrosoft 365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
     expect(showMessageSpy.calledOnce).equal(true);
     expect(
       showMessageSpy.calledWithMatch("warn", expectedAccountsInfo, true, "Provision", "Learn more")
@@ -1822,7 +1813,7 @@ describe("askForProvisionConsentNew", () => {
 
     // Assert
     const expectedAccountsInfo =
-      "You are now using a different Azure subscription from what you previously used.\nAzure account: someUserName\nAzure subscription: subscriptionName\nMicrosoft 365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
+      "You are now using a different Azure subscription from what you previously used.\nAzure account: \nAzure subscription: subscriptionName\nMicrosoft 365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
     expect(showMessageSpy.calledOnce).equal(true);
     expect(
       showMessageSpy.calledWithMatch("warn", expectedAccountsInfo, true, "Provision", "Learn more")
@@ -1892,7 +1883,7 @@ describe("askForProvisionConsentNew", () => {
 
     // Assert
     const expectedAccountsInfo =
-      "You are now using a different Microsoft 365 tenant and a differnt Azure subscription from what you previously used.\nAzure account: someUserName\nAzure subscription: subscriptionName\nMicrosoft 365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
+      "You are now using a different Microsoft 365 tenant and a differnt Azure subscription from what you previously used.\nAzure account: \nAzure subscription: subscriptionName\nMicrosoft 365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
     expect(showMessageSpy.calledOnce).equal(true);
     expect(
       showMessageSpy.calledWithMatch("warn", expectedAccountsInfo, true, "Provision", "Learn more")

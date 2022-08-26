@@ -29,19 +29,12 @@ dotenv.config();
 describe("generateArmTemplates", () => {
   let sqlPlugin: SqlPlugin;
   let pluginContext: PluginContext;
-  let credentials: msRestNodeAuth.TokenCredentialsBase;
 
-  before(async () => {
-    credentials = new msRestNodeAuth.ApplicationTokenCredentials(
-      faker.datatype.uuid(),
-      faker.internet.url(),
-      faker.internet.password()
-    );
-  });
+  before(async () => {});
 
   beforeEach(async () => {
     sqlPlugin = new SqlPlugin();
-    pluginContext = await TestHelper.pluginContext(credentials);
+    pluginContext = await TestHelper.pluginContext();
   });
 
   afterEach(() => {

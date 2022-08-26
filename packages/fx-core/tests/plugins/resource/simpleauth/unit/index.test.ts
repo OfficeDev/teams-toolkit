@@ -40,23 +40,12 @@ const testWithAzure: boolean = process.env.UT_TEST_ON_AZURE ? true : false;
 describe("simpleAuthPlugin", () => {
   let simpleAuthPlugin: SimpleAuthPlugin;
   let pluginContext: PluginContext;
-  let credentials: msRestNodeAuth.TokenCredentialsBase;
 
-  before(async () => {
-    if (testWithAzure) {
-      credentials = await msRestNodeAuth.interactiveLogin();
-    } else {
-      credentials = new msRestNodeAuth.ApplicationTokenCredentials(
-        faker.datatype.uuid(),
-        faker.internet.url(),
-        faker.internet.password()
-      );
-    }
-  });
+  before(async () => {});
 
   beforeEach(async () => {
     simpleAuthPlugin = new SimpleAuthPlugin();
-    pluginContext = await TestHelper.pluginContext(credentials);
+    pluginContext = await TestHelper.pluginContext();
   });
 
   afterEach(() => {

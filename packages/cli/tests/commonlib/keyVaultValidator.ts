@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { AzureScopes } from "@microsoft/teamsfx-core";
 import axios from "axios";
 import * as chai from "chai";
 import MockAzureAccountProvider, {
@@ -78,8 +79,8 @@ export class KeyVaultValidator {
     console.log("Start to validate Key Vault.");
 
     const tokenProvider = MockAzureAccountProvider;
-    const tokenCredential = await tokenProvider.getAccountCredentialAsync();
-    const token = (await tokenCredential?.getToken())?.accessToken;
+    const tokenCredential = await tokenProvider.getIdentityCredentialAsync();
+    const token = (await tokenCredential?.getToken(AzureScopes))?.token;
 
     console.log("Validating key vault instance.");
     const keyVaultResponse = await this.getKeyVault(

@@ -212,10 +212,6 @@ export function randomAppName() {
 }
 
 export class MockAzureAccountProvider implements AzureAccountProvider {
-  getAccountCredentialAsync(): Promise<TokenCredentialsBase | undefined> {
-    throw new Error("getAccountCredentialAsync Method not implemented.");
-  }
-
   async getIdentityCredentialAsync(): Promise<TokenCredential | undefined> {
     return new MyTokenCredential();
   }

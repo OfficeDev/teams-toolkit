@@ -24,19 +24,12 @@ dotenv.config();
 describe("identityPlugin", () => {
   let identityPlugin: IdentityPlugin;
   let pluginContext: PluginContext;
-  let credentials: msRestNodeAuth.TokenCredentialsBase;
 
-  before(async () => {
-    credentials = new msRestNodeAuth.ApplicationTokenCredentials(
-      faker.datatype.uuid(),
-      faker.internet.url(),
-      faker.internet.password()
-    );
-  });
+  before(async () => {});
 
   beforeEach(async () => {
     identityPlugin = new IdentityPlugin();
-    pluginContext = await TestHelper.pluginContext(credentials);
+    pluginContext = await TestHelper.pluginContext();
   });
 
   afterEach(() => {

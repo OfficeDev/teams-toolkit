@@ -40,6 +40,7 @@ import { UserTokenCredentials } from "@azure/ms-rest-nodeauth";
 import os from "os";
 import * as cpUtils from "../../../src/common/cpUtils";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
+import { MyTokenCredential } from "../resource/bot/unit/utils";
 
 const mockedTokenProvider: TokenProvider = {
   azureAccountProvider: new MockedAzureAccountProvider(),
@@ -282,14 +283,8 @@ export class TestHelper {
   }
 
   static mockArmDeploymentDependencies(mockedCtx: SolutionContext, mocker: sinon.SinonSandbox) {
-    mockedCtx.azureAccountProvider!.getAccountCredentialAsync = async function () {
-      const azureToken = new UserTokenCredentials(
-        TestHelper.clientId,
-        TestHelper.domain,
-        TestHelper.username,
-        TestHelper.password
-      );
-      return azureToken;
+    mockedCtx.azureAccountProvider!.getIdentityCredentialAsync = async function () {
+      return new MyTokenCredential();
     };
     mockedCtx.azureAccountProvider!.getSelectedSubscription = async function () {
       const subscriptionInfo = {

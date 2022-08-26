@@ -49,7 +49,7 @@ class MyTokenCredential implements TokenCredential {
     options?: GetTokenOptions | undefined
   ): Promise<AccessToken | null> {
     return {
-      token: "token",
+      token: "a.eyJ1c2VySWQiOiJ0ZXN0QHRlc3QuY29tIn0=.c",
       expiresOnTimestamp: 1234,
     };
   }
@@ -118,19 +118,12 @@ const mockServers = {
 describe("sqlPlugin", () => {
   let sqlPlugin: SqlPlugin;
   let pluginContext: PluginContext;
-  let credentials: msRestNodeAuth.TokenCredentialsBase;
 
-  before(async () => {
-    credentials = new msRestNodeAuth.ApplicationTokenCredentials(
-      faker.datatype.uuid(),
-      faker.internet.url(),
-      faker.internet.password()
-    );
-  });
+  before(async () => {});
 
   beforeEach(async () => {
     sqlPlugin = new SqlPlugin();
-    pluginContext = await TestHelper.pluginContext(credentials);
+    pluginContext = await TestHelper.pluginContext();
   });
 
   afterEach(() => {

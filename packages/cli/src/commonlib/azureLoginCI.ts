@@ -68,7 +68,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
     AzureAccountManager.tenantId = tenantId;
     try {
-      await this.getAccountCredentialAsync();
+      await this.getIdentityCredentialAsync();
       await AzureSpCrypto.saveAzureSP(clientId, AzureAccountManager.secret, tenantId);
     } catch (error) {
       CLILogProvider.necessaryLog(LLevel.Info, JSON.stringify(error));
@@ -85,32 +85,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       AzureAccountManager.tenantId = data.tenantId;
     }
     return false;
-  }
-
-  async getAccountCredentialAsync(): Promise<TokenCredentialsBase | undefined> {
-    await this.load();
-    if (AzureAccountManager.tokenCredentialsBase == undefined) {
-      let authres;
-      if (await fs.pathExists(AzureAccountManager.secret)) {
-        authres = await msRestNodeAuth.loginWithServicePrincipalCertificate(
-          AzureAccountManager.clientId,
-          AzureAccountManager.secret,
-          AzureAccountManager.tenantId
-        );
-        AzureAccountManager.tokenCredentialsBase = authres;
-      } else {
-        authres = await msRestNodeAuth.loginWithServicePrincipalSecretWithAuthResponse(
-          AzureAccountManager.clientId,
-          AzureAccountManager.secret,
-          AzureAccountManager.tenantId
-        );
-        AzureAccountManager.tokenCredentialsBase = authres.credentials;
-      }
-    }
-
-    return new Promise((resolve) => {
-      resolve(AzureAccountManager.tokenCredentialsBase);
-    });
   }
 
   async getIdentityCredentialAsync(): Promise<TokenCredential | undefined> {

@@ -118,7 +118,7 @@ export class WebviewPanel {
                 [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
                 [TelemetryProperty.AccountType]: AccountType.Azure,
               });
-              await AzureAccountManager.getAccountCredentialAsync(false);
+              await AzureAccountManager.getIdentityCredentialAsync(false);
             });
             break;
           case Commands.CreateNewProject:
@@ -244,7 +244,7 @@ export class WebviewPanel {
       async (status, token, accountInfo) => {
         let email = undefined;
         if (status === "SignedIn") {
-          const token = await AzureAccountManager.getAccountCredentialAsync();
+          const token = await AzureAccountManager.getIdentityCredentialAsync();
           if (token !== undefined) {
             email = (token as any).username ? (token as any).username : undefined;
           }

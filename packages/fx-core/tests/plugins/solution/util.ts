@@ -294,13 +294,6 @@ export class MockedM365Provider implements M365TokenProvider {
 }
 
 export class MockedAzureAccountProvider implements AzureAccountProvider {
-  async getAccountCredentialAsync(
-    showDialog?: boolean,
-    tenantId?: string
-  ): Promise<TokenCredentialsBase> {
-    return new MockedTokenCredentials("mock", "mock");
-  }
-
   async getIdentityCredentialAsync(showDialog?: boolean): Promise<TokenCredential | undefined> {
     return new MyTokenCredential();
   }

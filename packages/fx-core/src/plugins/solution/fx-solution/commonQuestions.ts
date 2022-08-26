@@ -114,7 +114,7 @@ export async function checkSubscription(
     subscriptionName = `(${subscriptionName})`;
   }
   // make sure the user is logged in
-  await azureAccountProvider.getAccountCredentialAsync(true);
+  await azureAccountProvider.getIdentityCredentialAsync(true);
 
   // verify valid subscription (permission)
   const subscriptions = await azureAccountProvider.listSubscriptions();
@@ -393,7 +393,7 @@ async function askCommonQuestions(
     `[${PluginDisplayName.Solution}] askCommonQuestions, step 1 - check subscriptionId pass!`
   );
 
-  // Note setSubscription here will change the token returned by getAccountCredentialAsync according to the subscription selected.
+  // Note setSubscription here will change the token returned by getIdentityCredentialAsync according to the subscription selected.
   // So getting azureToken needs to precede setSubscription.
   const azureToken = await azureAccountProvider?.getIdentityCredentialAsync();
   if (azureToken === undefined) {

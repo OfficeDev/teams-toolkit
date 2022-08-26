@@ -3,7 +3,6 @@
 
 import { MessageConnection } from "vscode-jsonrpc";
 import { TokenCredential } from "@azure/core-auth";
-import { TokenCredentialsBase, DeviceTokenCredentials } from "@azure/ms-rest-nodeauth";
 
 import {
   AzureAccountProvider,
@@ -63,52 +62,6 @@ export default class ServerAzureAccountProvider implements AzureAccountProvider 
   constructor(connection: MessageConnection) {
     this.connection = connection;
     this.teamsFxTokenCredential = new TeamsFxTokenCredential(this.connection);
-  }
-  async getAccountCredentialAsync(
-    showDialog?: boolean,
-    tenantId?: string
-  ): Promise<TokenCredentialsBase | undefined> {
-    const promise = this.connection.sendRequest(RequestTypes.azure.getAccountCredential);
-    const result = await getResponseWithErrorHandling(promise);
-    if (result.isErr()) {
-      throw result.error;
-    }
-    const { accessToken, tokenJsonString } = result.value;
-    const tokenJson = JSON.parse(tokenJsonString);
-    const newTokenJson = (function ConvertTokenToJson(token: string) {
-      const array = token!.split(".");
-      const buff = Buffer.from(array[1], "base64");
-      return JSON.parse(buff.toString("utf8"));
-    })(accessToken);
-    const tokenExpiresIn = Math.round(new Date().getTime() / 1000) - (newTokenJson.iat as number);
-
-    const memoryCache = new (MemoryCache as any)();
-    memoryCache.add(
-      [
-        {
-          tokenType: "Bearer",
-          expiresIn: tokenExpiresIn,
-          expiresOn: {},
-          resource: env.activeDirectoryResourceId,
-          accessToken: accessToken,
-          userId: (newTokenJson as any).upn ?? (newTokenJson as any).unique_name,
-          _clientId: "7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0",
-          _authority: env.activeDirectoryEndpointUrl + newTokenJson.tid,
-        },
-      ],
-      function () {
-        const _ = 1;
-      }
-    );
-    const credential = new DeviceTokenCredentials(
-      "7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0",
-      tokenJson.tid,
-      tokenJson.upn ?? tokenJson.unique_name,
-      undefined,
-      env,
-      memoryCache
-    );
-    return Promise.resolve(credential);
   }
 
   async getIdentityCredentialAsync(showDialog?: boolean): Promise<TokenCredential | undefined> {

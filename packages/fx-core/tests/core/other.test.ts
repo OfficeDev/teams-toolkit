@@ -300,7 +300,7 @@ describe("Other test case", () => {
   it("getQuestionsForResourceGroup", async () => {
     const mockSubscriptionId = "mockSub";
     const accountProvider = new MockedAzureTokenProvider();
-    const mockToken = await accountProvider.getIdentityCredential();
+    const mockToken = await accountProvider.getIdentityCredentialAsync();
     const mockRmClient = new ResourceManagementClient(mockToken, mockSubscriptionId);
     const node = await resourceGroupHelper.getQuestionsForResourceGroup(
       "defaultRG",

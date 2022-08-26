@@ -27,7 +27,7 @@ export class ApimValidator {
     azureAccountProvider: AzureAccountProvider,
     m365TokenProvider: M365TokenProvider
   ): Promise<void> {
-    const tokenCredential = await azureAccountProvider.getAccountCredentialAsync();
+    const tokenCredential = await azureAccountProvider.getIdentityCredentialAsync();
     this.apimClient = new ApiManagementClient(tokenCredential!, subscriptionId);
     this.resourceGroupClient = new ResourceManagementClient(tokenCredential!, subscriptionId);
     const graphTokenRes = await m365TokenProvider.getAccessToken({ scopes: GraphScopes });

@@ -42,12 +42,15 @@ function replaceAppSettings(
   appSettings: string,
   scenario: Scenario
 ): string {
+  function escapeRegExp(s: string): RegExp {
+    return new RegExp(s.replace(/[|\\{}()[\]^$+*?.]/g, "\\$&"), "g");
+  }
   function _replace(
     searchValue: string,
     newValue?: string,
     transform: (v?: string) => string | undefined = (v) => v
   ): string {
-    const searchRegExp = new RegExp(searchValue.replace(/\$/g, "\\$"), "g");
+    const searchRegExp = escapeRegExp(searchValue);
     return appSettings.replace(searchRegExp, transform(newValue) ?? searchValue);
   }
 

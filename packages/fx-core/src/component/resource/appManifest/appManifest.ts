@@ -45,6 +45,7 @@ import {
   DEFAULT_DEVELOPER,
   DEFAULT_OUTLINE_PNG_FILENAME,
   ErrorMessages,
+  MANIFEST_RESOURCES,
   OUTLINE_TEMPLATE,
 } from "../../../plugins/resource/appstudio/constants";
 import { AppStudioError } from "../../../plugins/resource/appstudio/errors";

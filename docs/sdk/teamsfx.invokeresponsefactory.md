@@ -18,7 +18,7 @@ All of these functions return an  object, which can be passed as input to genera
 
 This example sends an invoke response that contains an adaptive card.
 
-```javascript
+```typescript
 
 const myCard: IAdaptiveCard = {
    type: "AdaptiveCard",

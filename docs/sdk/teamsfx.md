@@ -37,6 +37,7 @@
 |  [ApiKeyLocation](./teamsfx.apikeylocation.md) | Define available location for API Key location |
 |  [ErrorCode](./teamsfx.errorcode.md) | Error code to trace the error types. |
 |  [IdentityType](./teamsfx.identitytype.md) | Identity type to use in authentication. |
+|  [InvokeResponseErrorCode](./teamsfx.invokeresponseerrorcode.md) | Status code for an <code>application/vnd.microsoft.error</code> invoke response. |
 |  [LogLevel](./teamsfx.loglevel.md) | Log level. |
 |  [NotificationTargetType](./teamsfx.notificationtargettype.md) | The target type where the notification will be sent to. |
 

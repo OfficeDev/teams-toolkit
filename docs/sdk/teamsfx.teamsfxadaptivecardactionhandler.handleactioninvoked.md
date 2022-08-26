@@ -23,7 +23,7 @@ handleActionInvoked(context: TurnContext, actionData: any): Promise<InvokeRespon
 
 Promise&lt;InvokeResponse&gt;
 
-A `Promise` representing a invoke response for the adaptive card invoke action. You can use the `InvokeResponseFactory` utility class to create an invoke response from - A text message: \`\`\`<!-- -->typescript return InvokeResponseFactory.textMessage("Action is processed successfully!"); \`\`\` - An adaptive card: \`\`\`<!-- -->typescript const responseCard = AdaptiveCards.declare(helloWorldCard).render(actionData); return InvokeResponseFactory.adaptiveCard(responseCard); \`\`\` - An error response: \`\`\`<!-- -->typescript return InvokeResponseFactory.errorResponse(StatusCodes.BAD\_REQUEST, "Invalid request"); \`\`\`
+A `Promise` representing a invoke response for the adaptive card invoke action. You can use the `InvokeResponseFactory` utility class to create an invoke response from - A text message: \`\`\`<!-- -->typescript return InvokeResponseFactory.textMessage("Action is processed successfully!"); \`\`\` - An adaptive card: \`\`\`<!-- -->typescript const responseCard = AdaptiveCards.declare(helloWorldCard).render(actionData); return InvokeResponseFactory.adaptiveCard(responseCard); \`\`\` - An error response: \`\`\`<!-- -->typescript return InvokeResponseFactory.errorResponse(InvokeResponseErrorCode.BadRequest, "Invalid request"); \`\`\`
 
  For more details about the invoke response format, refer to https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/universal-action-model\#response-format.
 

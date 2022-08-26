@@ -11,14 +11,14 @@ The type of the invoke response is `application/vnd.microsoft.error` indicates t
 <b>Signature:</b>
 
 ```typescript
-static errorResponse(errorCode: StatusCodes, errorMessage: string): InvokeResponse;
+static errorResponse(errorCode: InvokeResponseErrorCode, errorMessage: string): InvokeResponse;
 ```
 
 ## Parameters
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  errorCode | StatusCodes | The status code indicates error, available values: - 400 (BadRequest): indicate the incoming request was invalid. - 500 (InternalServerError): indicate an unexpected error occurred. |
+|  errorCode | [InvokeResponseErrorCode](./teamsfx.invokeresponseerrorcode.md) | The status code indicates error, available values: - 400 (BadRequest): indicate the incoming request was invalid. - 500 (InternalServerError): indicate an unexpected error occurred. |
 |  errorMessage | string | The error message. |
 
 <b>Returns:</b>

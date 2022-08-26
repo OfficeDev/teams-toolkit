@@ -4,7 +4,7 @@
 
 ## TeamsFxAdaptiveCardActionHandler.triggerVerb property
 
-The verb defined in adaptive card action that can trigger this handler.
+The verb defined in adaptive card action that can trigger this handler. The verb string here is case-insensitive.
 
 <b>Signature:</b>
 

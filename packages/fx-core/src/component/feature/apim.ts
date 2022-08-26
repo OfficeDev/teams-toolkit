@@ -14,23 +14,19 @@ import {
   Result,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
-import Container, { Service } from "typedi";
+import { Container, Service } from "typedi";
 import { hasApi } from "../../common/projectSettingsHelperV3";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { AzureResourceApim, AzureResourceFunction } from "../../plugins";
-import { buildAnswer } from "../../plugins/resource/apim/answer";
-import { ApimPluginConfig } from "../../plugins/resource/apim/config";
-import {
-  PluginLifeCycle,
-  ProgressMessages,
-  ProgressStep,
-} from "../../plugins/resource/apim/constants";
-import { Factory } from "../../plugins/resource/apim/factory";
 import { BicepComponent } from "../bicep";
 import { ComponentNames } from "../constants";
 import { Plans } from "../messages";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { APIMResource } from "../resource/apim";
+import { buildAnswer } from "../resource/apim/answer";
+import { ApimPluginConfig } from "../resource/apim/config";
+import { PluginLifeCycle, ProgressMessages, ProgressStep } from "../resource/apim/constants";
+import { Factory } from "../resource/apim/factory";
 import { generateConfigBiceps, bicepUtils, addFeatureNotify } from "../utils";
 import { getComponent } from "../workflow";
 

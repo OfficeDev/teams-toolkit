@@ -6,12 +6,12 @@ import chaiAsPromised from "chai-as-promised";
 import dotenv from "dotenv";
 import { assert, createSandbox, match } from "sinon";
 import fs from "fs-extra";
-import { ApimService } from "../../../../src/plugins/resource/apim/services/apimService";
+import { ApimService } from "../../../../src/component/resource/apim/services/apimService";
 import { ApiManagementClient } from "@azure/arm-apimanagement";
 import {
   ApimDefaultValues,
   OpenApiSchemaVersion,
-} from "../../../../src/plugins/resource/apim/constants";
+} from "../../../../src/component/resource/apim/constants";
 import {
   mockApimService,
   mockApiManagementService,

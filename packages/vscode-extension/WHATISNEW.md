@@ -60,13 +60,13 @@ Incremental version for Teams Toolkit with multiple bugs fix and enhancements.
 
 ## 4.0.0 - May 24, 2022
 
-Major version for Teams Toolkit with new features to support more Teams app scenario like notification bot and command bot. What's more, this version adds support to extend Teams app across M365 platform like Office.com and Outlook.
+Major version for Teams Toolkit with new features to support more Teams app scenario like notification bot and command bot. What's more, this version adds support to extend Teams app across Microsoft 365 platform like Office.com and Outlook.
 
 New Features:
 
 - User can create more business-oriented Teams app template using Teams Toolkit. For example, user can now create not only bot app but also notification bot or command bot. User can see more options are there to choose when create a new Teams app. <br>
  ![manifest preview](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/scenario-teams-app.png) <br>
-- User can create Teams app that can launch and preview in other M365 platform like Office.com and Outlook. The options are offered when user create a new Teams app.
+- User can create Teams app that can launch and preview in other Microsoft 365 platform like Office.com and Outlook. The options are offered when user create a new Teams app.
 - User can incrementally add features to their Teams app using `Add features` in Teams Toolkit during the development process. For example, adding additional Teams extending capability, adding Azure resources like SQL Database or Azure Function etc., adding Single Sign on or API connections and so on.
   ![manifest preview](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/add-features.png) <br>
 - User can preview the Teams manifest file and only deploy the manifest file without deploy the whole project.
@@ -99,7 +99,7 @@ Enhancement:
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
 
 New Features:
-- Provide multiple entry points of creating testing tenant/accounts to unblock user from M365 account issues, like M365 account does not have sideloading permission or user does not have M365 account at all. These entry points include: <br>
+- Provide multiple entry points of creating testing tenant/accounts to unblock user from Microsoft 365 account issues, like Microsoft 365 account does not have sideloading permission or user does not have Microsoft 365 account at all. These entry points include: <br>
 	a). an Add(+) button besides ACCOUNTS in sidebar <br>
 	![ITP in sidebar](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/create-itp-sidebar.png) <br>
 	b). an new "Create an account" option in `Teams: Accounts` Command <br>

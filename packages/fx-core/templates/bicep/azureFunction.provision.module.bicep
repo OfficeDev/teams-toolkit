@@ -17,6 +17,7 @@ resource serverfarm 'Microsoft.Web/serverfarms@2021-02-01' = {
   sku: {
     name: functionAppSKU
   }
+  properties: {}
 }
 
 // Azure Function that host your app

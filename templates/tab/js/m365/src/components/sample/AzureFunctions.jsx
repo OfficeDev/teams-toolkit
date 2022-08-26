@@ -1,12 +1,12 @@
 import { useContext } from "react";
 import { Button, Loader } from "@fluentui/react-northstar";
 import { useData } from "@microsoft/teamsfx-react";
-import { BearerTokenAuthProvider, createApiClient, TeamsFx } from "@microsoft/teamsfx";
+import { BearerTokenAuthProvider, createApiClient } from "@microsoft/teamsfx";
 import { TeamsFxContext } from "../Context";
 
 const functionName = process.env.REACT_APP_FUNC_NAME || "myFunc";
 
-async function callFunction(teamsfx?: TeamsFx) {
+async function callFunction(teamsfx) {
   if (!teamsfx) {
     throw new Error("TeamsFx SDK is not initialized.");
   }

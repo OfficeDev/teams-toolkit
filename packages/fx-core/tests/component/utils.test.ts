@@ -12,6 +12,7 @@ import { MockTools } from "../core/utils";
 import sinon from "sinon";
 import { deployUtils } from "../../src/component/deployUtils";
 import { assert } from "chai";
+import { TestHelper } from "../plugins/resource/frontend/helper";
 describe("resetEnvInfoWhenSwitchM365", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -209,7 +210,7 @@ describe("resetEnvInfoWhenSwitchM365", () => {
     const context = createContextV3();
     sandbox
       .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-      .resolves({ username: "MockName" });
+      .resolves(TestHelper.fakeCredential);
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Deploy"));
     const envInfo = newEnvInfoV3();
     envInfo.state.solution.subscriptionId = "mockSubId";

@@ -139,7 +139,7 @@ describe("Tab Feature", () => {
     const res = await component.provision(context as ResourceContextV3, inputs);
     assert.isTrue(res.isOk());
     const tabState = context.envInfo.state?.[ComponentNames.TeamsTab];
-    assert.equal(tabState?.[StorageOutputs.indexPath.key], "index.html#");
+    assert.equal(tabState?.[StorageOutputs.indexPath.key], "/index.html#");
   });
   it("local debug config state vs", async () => {
     context.projectSetting.programmingLanguage = ProgrammingLanguage.CSharp;
@@ -151,7 +151,7 @@ describe("Tab Feature", () => {
       platform: Platform.VS,
     };
     context.envInfo = newEnvInfoV3("local");
-    const component = Container.get(ComponentNames.TeamsBot) as any;
+    const component = Container.get(ComponentNames.TeamsTab) as any;
     const res = await component.provision(context as ResourceContextV3, inputs);
     assert.isTrue(res.isOk());
     const tabState = context.envInfo.state?.[ComponentNames.TeamsTab];

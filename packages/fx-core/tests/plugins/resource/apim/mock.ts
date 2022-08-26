@@ -10,7 +10,7 @@ import {
   SinonStubbedMember,
   StubbableType,
 } from "sinon";
-import { ApimService } from "../../../../src/plugins/resource/apim/services/apimService";
+import { ApimService } from "../../../../src/component/resource/apim/services/apimService";
 import {
   Api,
   ApiCreateOrUpdateOptionalParams,
@@ -39,7 +39,7 @@ import {
   ApiVersionSetContract,
 } from "@azure/arm-apimanagement/src/models";
 import axios, { AxiosInstance } from "axios";
-import { IAadInfo } from "../../../../src/plugins/resource/apim/interfaces/IAadResource";
+import { IAadInfo } from "../../../../src/component/resource/apim/interfaces/IAadResource";
 import { PluginContext } from "@microsoft/teamsfx-api";
 import { newEnvInfo } from "../../../../src";
 import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/identity";

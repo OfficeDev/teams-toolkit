@@ -4,14 +4,14 @@ import "mocha";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "path";
-import { OpenApiProcessor } from "../../../../src/plugins/resource/apim/utils/openApiProcessor";
+import { OpenApiProcessor } from "../../../../src/component/resource/apim/utils/openApiProcessor";
 import {
   EmptyTitleInOpenApiDocument,
   EmptyVersionInOpenApiDocument,
   InvalidFunctionEndpoint,
   InvalidOpenApiDocument,
-} from "../../../../src/plugins/resource/apim/error";
-import { OpenApiSchemaVersion } from "../../../../src/plugins/resource/apim/constants";
+} from "../../../../src/component/resource/apim/error";
+import { OpenApiSchemaVersion } from "../../../../src/component/resource/apim/constants";
 chai.use(chaiAsPromised);
 
 const testDataBaseFolder = "./tests/plugins/resource/apim/data/openApiProcessor";

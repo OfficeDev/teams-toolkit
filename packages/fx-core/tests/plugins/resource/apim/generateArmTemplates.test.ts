@@ -3,10 +3,10 @@
 import "mocha";
 import chai from "chai";
 import { ResourceManagementClient } from "@azure/arm-resources";
-import { Lazy } from "../../../../src/plugins/resource/apim/utils/commonUtils";
-import { ApimManager } from "../../../../src/plugins/resource/apim/managers/apimManager";
-import { OpenApiProcessor } from "../../../../src/plugins/resource/apim/utils/openApiProcessor";
-import { ApimService } from "../../../../src/plugins/resource/apim/services/apimService";
+import { Lazy } from "../../../../src/component/resource/apim/utils/commonUtils";
+import { ApimManager } from "../../../../src/component/resource/apim/managers/apimManager";
+import { OpenApiProcessor } from "../../../../src/component/resource/apim/utils/openApiProcessor";
+import { ApimService } from "../../../../src/component/resource/apim/services/apimService";
 import { ApiManagementClient } from "@azure/arm-apimanagement";
 import path from "path";
 import fs from "fs-extra";
@@ -17,7 +17,7 @@ import {
 } from "../util";
 import { ConstantString } from "../../../../src/common/constants";
 import { MyTokenCredential } from "../bot/unit/utils";
-import { ApimOutputBicepSnippet } from "../../../../src/plugins/resource/apim/constants";
+import { ApimOutputBicepSnippet } from "../../../../src/component/resource/apim/constants";
 import { ArmTemplateResult } from "../../../../src/common/armInterface";
 import {
   AzureResourceApim,

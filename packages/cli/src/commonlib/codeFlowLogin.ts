@@ -553,6 +553,10 @@ export function CheckOnlineError(): UserError {
 
 export function ConvertTokenToJson(token: string): any {
   const array = token.split(".");
+  if (array.length === 5) {
+    // this is a JWE
+    return {};
+  }
   const buff = Buffer.from(array[1], "base64");
   return JSON.parse(buff.toString(UTF8));
 }

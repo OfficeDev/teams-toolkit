@@ -4,7 +4,6 @@ import "mocha";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import dotenv from "dotenv";
-import { ApimPlugin } from "../../../../src/plugins/resource/apim/index";
 import {
   ConfigMap,
   FxError,
@@ -18,12 +17,11 @@ import {
   QuestionConstants,
   TeamsToolkitComponent,
   OpenApiSchemaVersion,
-} from "../../../../src/plugins/resource/apim/constants";
-import { AadService } from "../../../../src/plugins/resource/apim/services/aadService";
-import { AadManager } from "../../../../src/plugins/resource/apim/managers/aadManager";
-import { newEnvInfo } from "../../../../src";
+} from "../../../../src/component/resource/apim/constants";
+import { AadService } from "../../../../src/component/resource/apim/services/aadService";
+import { AadManager } from "../../../../src/component/resource/apim/managers/aadManager";
 import { createSandbox, SinonSandbox } from "sinon";
-import { Factory } from "../../../../src/plugins/resource/apim/factory";
+import { Factory } from "../../../../src/component/resource/apim/factory";
 import {
   mockAxios,
   mockApimService,
@@ -34,10 +32,12 @@ import {
   mockApi,
   mockProductApi,
 } from "./mock";
-import { Lazy } from "../../../../src/plugins/resource/apim/utils/commonUtils";
-import { ApimManager } from "../../../../src/plugins/resource/apim/managers/apimManager";
-import { OpenApiProcessor } from "../../../../src/plugins/resource/apim/utils/openApiProcessor";
-import { TeamsAppAadManager } from "../../../../src/plugins/resource/apim/managers/teamsAppAadManager";
+import { Lazy } from "../../../../src/component/resource/apim/utils/commonUtils";
+import { ApimManager } from "../../../../src/component/resource/apim/managers/apimManager";
+import { OpenApiProcessor } from "../../../../src/component/resource/apim/utils/openApiProcessor";
+import { TeamsAppAadManager } from "../../../../src/component/resource/apim/managers/teamsAppAadManager";
+import { ApimPlugin } from "../../../../src/plugins/resource/apim";
+import { newEnvInfo } from "../../../../src/core/environment";
 
 dotenv.config();
 chai.use(chaiAsPromised);

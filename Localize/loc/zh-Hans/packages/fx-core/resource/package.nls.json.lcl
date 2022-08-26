@@ -861,10 +861,13 @@
       </Item>
       <Item ItemId=";core.aadManifestMigration.SuccessMessage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Congratulations! AAD manifest has been added, and please start to use this file to customize your AAD App registration. We have added aad.template.json, updated your projectSettings.json and backed up projectSettings.json to .backup folder. For more information about AAD manifest, please refer %s]]></Val>
+          <Val><![CDATA[Detect that your project is a previous version and auto update your project for new Teams Toolkit version. The following changes have been made:]A;1.aad.template.json is created under 'templates/appPackage'.For more information about AAD manifest, please refer %s]A;2.ProjectSettings.json is updated to include authentication related configuration. You can find a backup of old version in .backup folder.]A;Congratulations! Your project now is updated and ready to run in latest version of Teams Toolkit.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[祝贺! 已添加 AAD 清单，请开始使用此文件自定义 AAD 应用注册。我们添加了 aad.template.json，更新了 projectSettings.json 并将 projectSettings.json 备份到 .backup 文件夹。有关 AAD 清单的详细信息，请参阅 %s]]></Val>
+            <Val><![CDATA[检测你的项目是否为早期版本，并自动更新项目以获取新的 Teams 工具包版本。已进行以下更改:]A;1.aad.template.json 是在“templates/appPackage”下创建的。有关 AAD 清单的详细信息，请参阅 %s]A;2.ProjectSettings.json 已更新，以包括与身份验证相关的配置。可以在 .backup 文件夹中找到旧版本的备份。]A;恭喜! 你的项目现已更新并准备好在最新版本的 Teams 工具包中运行。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Congratulations! AAD manifest has been added, and please start to use this file to customize your AAD App registration. We have added aad.template.json, updated your projectSettings.json and backed up projectSettings.json to .backup folder. For more information about AAD manifest, please refer %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -990,48 +993,48 @@
       </Item>
       <Item ItemId=";core.addResource.addResourceNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Resource "%s" has been successfully configured for your project, trigger 'Teams: Provision in the cloud' will create the resource in your Azure subscription.]]></Val>
+          <Val><![CDATA[Resource %s has been successfully configured for your project, trigger 'Teams: Provision in the cloud' will create the resource in your Azure subscription.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[资源 "%s" 已成功为项目配置，触发“Teams: 在云中预配”将在 Azure 订阅中创建资源。]]></Val>
+            <Val><![CDATA[已成功为项目配置资源 %s，触发“Teams: 在云中预配”将在 Azure 订阅中创建资源。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[[Teams Toolkit]5D; Resource "%s" has been successfully configured for your project, trigger 'Teams: Provision in the cloud' will create the resource in your Azure subscription.]]></Val>
+            <Val><![CDATA[Resource "%s" has been successfully configured for your project, trigger 'Teams: Provision in the cloud' will create the resource in your Azure subscription.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.addResource.addResourceNoticeForCli" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Resource "%s" has been successfully configured for your project, run 'teamsfx provision' will create the resource in your Azure subscription.]]></Val>
+          <Val><![CDATA[Resource %s has been successfully configured for your project, run 'teamsfx provision' will create the resource in your Azure subscription.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[资源 "%s" 已成功为项目配置，运行“teamsfx 预配”将在 Azure 订阅中创建资源。]]></Val>
+            <Val><![CDATA[已成功为项目配置资源 %s，运行“teamsfx 预配”将在 Azure 订阅中创建资源。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[[Teams Toolkit]5D; Resource "%s" has been successfully configured for your project, run 'teamsfx provision' will create the resource in your Azure subscription.]]></Val>
+            <Val><![CDATA[Resource "%s" has been successfully configured for your project, run 'teamsfx provision' will create the resource in your Azure subscription.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.addResource.addResourcesNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Resources "%s" have been successfully configured for your project, trigger 'Teams: Provision in the cloud' will create the resources in your Azure subscription.]]></Val>
+          <Val><![CDATA[Resources %s have been successfully configured for your project, trigger 'Teams: Provision in the cloud' will create the resources in your Azure subscription.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[资源 "%s" 已成功为项目配置，触发“Teams: 在云中预配”将在 Azure 订阅中创建资源。]]></Val>
+            <Val><![CDATA[已成功为项目配置资源 %s，触发“Teams: 在云中预配”将在 Azure 订阅中创建资源。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[[Teams Toolkit]5D; Resources "%s" have been successfully configured for your project, trigger 'Teams: Provision in the cloud' will create the resources in your Azure subscription.]]></Val>
+            <Val><![CDATA[Resources "%s" have been successfully configured for your project, trigger 'Teams: Provision in the cloud' will create the resources in your Azure subscription.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.addResource.addResourcesNoticeForCli" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Resources "%s" have been successfully configured for your project, run 'teamsfx provision' will create the resources in your Azure subscription.]]></Val>
+          <Val><![CDATA[Resources %s have been successfully configured for your project, run 'teamsfx provision' will create the resources in your Azure subscription.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[资源 "%s" 已成功为项目配置，运行“teamsfx 预配”将在 Azure 订阅中创建资源。]]></Val>
+            <Val><![CDATA[已成功为项目配置资源 %s，运行“teamsfx 预配”将在 Azure 订阅中创建资源。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[[Teams Toolkit]5D; Resources "%s" have been successfully configured for your project, run 'teamsfx provision' will create the resources in your Azure subscription.]]></Val>
+            <Val><![CDATA[Resources "%s" have been successfully configured for your project, run 'teamsfx provision' will create the resources in your Azure subscription.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -1176,6 +1179,15 @@
           <Val><![CDATA[Project path does not exist]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[项目路径不存在]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.backupFiles.FailedToBackupFiles" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to backup %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[未能备份 %s。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2194,6 +2206,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.handleConfigFile.FailedToUpdateAzureParameters" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to update Azure parameters for %s environment.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[未能更新 %s 环境的 Azure 参数。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.init.successNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Your project has been successfully initialized to operate with TeamsFx.]A;]A;Some next steps:]A;teamsfx add <feature> will allow you to add features like single sign on or Teams notification integration.]A;]A;Pro tip:]A;Read on aka.ms/teams-manifest to learn more about updating manifest file to connect with your existing launch page experience.]]></Val>
@@ -2205,13 +2226,22 @@
       </Item>
       <Item ItemId=";core.localDebug.tenantConfirmNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[You already run local debug for the Teams app in another tenant '%s'. You can sign out %s and sign in with the matched M365 account to re-use the previous local debug resource. If you really want to switch tenant for local debug, you can delete the local file(s) (%s) and re-run local debug.]]></Val>
+          <Val><![CDATA[You already run local debug for the Teams app in another tenant '%s'. You can sign out %s and sign in with the matched Mirosoft 365 account to re-use the previous local debug resource. If you really want to switch tenant for local debug, you can delete the local file(s) (%s) and re-run local debug.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[你已在另一租户 "%s" 中运行 Teams 应用的本地调试。可以注销 %s 并使用匹配的 M365 帐户登录，以重新使用以前的本地调试资源。如果确定要为本地调试切换租户，可以删除本地文件 (%s) 并重新运行本地调试。]]></Val>
+            <Val><![CDATA[你已在另一租户“%s”中运行 Teams 应用的本地调试。可以注销 %s 并使用匹配的 Mirosoft 365 帐户登录，以重新使用以前的本地调试资源。如果确实要切换租户以进行本地调试，则可以删除本地文件(%s)，然后重新运行本地调试。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[You already run local debug for the Teams app in another tenant '%s'. You can sign out %s and sign in with the matched M365 account to re-use the previous local debug resource. If you really want to switch tenant for local debug, you can delete the %s file and re-run local debug.]]></Val>
+            <Val><![CDATA[You already run local debug for the Teams app in another tenant '%s'. You can sign out %s and sign in with the matched M365 account to re-use the previous local debug resource. If you really want to switch tenant for local debug, you can delete the local file(s) (%s) and re-run local debug.]]></Val>
           </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.localDebug.tenantConfirmNoticeWhenAllowSwitchAccount" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You already run local debug for the Teams app in another tenant '%s'. If you really want to switch tenant for local debug, you can delete the local file(s) (%s) and re-run local debug.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[你已在另一租户“%s”中运行 Teams 应用的本地调试。如果确实要切换租户以进行本地调试，则可以删除本地文件(%s)，然后重新运行本地调试。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2341,11 +2371,38 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.provision.azureAccount" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Azure account: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure 帐户: %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.provision.azureSubscription" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Azure subscription: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure 订阅: %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.provision.configurationFinishNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[[%s]5D; Configuration finished.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[[%s]5D; 配置已完成。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.provision.confirmEnvAndCostNotice" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cost may incur according to the usage. Do you want to provision resources in %s environment using accounts listed above?]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[根据使用情况可能会产生费用。是否要使用上面列出的帐户在 %s 环境中预配资源?]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2359,6 +2416,15 @@
           <Prev Cat="Text">
             <Val><![CDATA[Do you want to provision resources in %s environment?]A;%s (Azure account) with %s (subscription) will be used to provision. the resources. Cost may incur according to the usage.]]></Val>
           </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.provision.confirmEnvOnlyNotice" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Do you want to provision resources in %s environment using the account listed above?]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[是否要使用上面列出的帐户在 %s 环境中预配资源?]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2383,11 +2449,47 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.provision.createNewAzureBotNotice" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[We will create a new Azure bot resource.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[我们将创建新的 Azure 机器人资源。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.provision.failNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[fail to provision '%s' in the cloud!]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[无法在云中预配 "%s"!]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.provision.learnMore" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Learn more]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[了解详细信息]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.provision.m365Account" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Microsoft 365 account: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Microsoft 365 帐户: %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.provision.provision" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Provision]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[预配]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2406,6 +2508,33 @@
           <Val><![CDATA['%s' successfully provisioned in the cloud.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA["%s" 已在云中成功预配。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.provision.switchedAzureSubscriptionNotice" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You are now using a different Azure subscription from what you previously used.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[你现在使用的 Azure 订阅与以前使用的订阅不同。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.provision.switchedM365AccountAndAzureSubscriptionNotice" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You are now using a different Microsoft 365 tenant and a differnt Azure subscription from what you previously used.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[你现在使用的 Microsoft 365 租户和 Azure 订阅与以前使用的租户和订阅不同。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.provision.switchedM365AccountNotice" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You are now using a different Microsoft 365 tenant from what you previously used.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[你现在使用的 Microsoft 365 租户与以前使用的租户不同。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2442,6 +2571,24 @@
           <Val><![CDATA[[%s]5D; Publish start.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[[%s]5D; 发布开始。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.question.workspaceFolder.placeholder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select the folder that will contain your project root folder]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[选择将包含项目根文件夹的文件夹]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.question.workspaceFolder.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Workspace folder]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[工作区文件夹]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2700,13 +2847,22 @@
       </Item>
       <Item ItemId=";error.ActionNotExist" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Action not found: %s]]></Val>
+          <Val><![CDATA[Action not found: %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[找不到操作: %s]]></Val>
+            <Val><![CDATA[找不到操作: %s。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Action not exist: %s]]></Val>
+            <Val><![CDATA[Action not found: %s]]></Val>
           </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.BadComponent" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Component '%s' lacks of property: %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[组件“%s”缺少属性: %s。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2721,10 +2877,13 @@
       </Item>
       <Item ItemId=";error.ComponentNotExist" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Component not found: %s]]></Val>
+          <Val><![CDATA[Component not found: %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[找不到组件: %s]]></Val>
+            <Val><![CDATA[找不到组件: %s。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Component not found: %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3654,10 +3813,13 @@
       </Item>
       <Item ItemId=";error.aad.manifest.UnknownResourceAccessId" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unknown resourceAccess id: %s]]></Val>
+          <Val><![CDATA[Unknown resourceAccess id: %s, if you're using permission as resourceAccess id, please try to use permission id instead.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[未知 resourceAccess ID: %s]]></Val>
+            <Val><![CDATA[未知 resourceAccess id: %s，如果你正在将权限用作 resourceAccess id，请尝试改用权限 ID。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unknown resourceAccess id: %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3799,7 +3961,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";error.appstudio.apiFailed" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";error.appstudio.apiFailed" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[API call to Developer Portal failed: %s, %s, Request path: %s, X-Correlation-ID: %s. This may come from some intermittent service error. Please wait for a few minutes and retry the current step.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -3808,7 +3970,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";error.appstudio.apiFailed.telemetry" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";error.appstudio.apiFailed.telemetry" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[API call to Developer Portal failed: %s, %s, API name: %s, X-Correlation-ID: %s. This may come from some intermittent service error. Please wait for a few minutes and retry the current step.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -7890,10 +8052,13 @@
       </Item>
       <Item ItemId=";plugins.spfx.error.nodeVersionNotSupported" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Node.js version v%s is not supported for SPFx v%s. Check aka.ms/teamsfx-spfx-help for more details.]]></Val>
+          <Val><![CDATA[Node.js version v%s is not supported for SPFx v%s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[SPFx v%s 不支持 Node.js 版本 v%s。有关更多详细信息，请检查 aka.ms/teamsfx-spfx-help。]]></Val>
+            <Val><![CDATA[SPFx v%s 不支持 Node.js 版本 v%s。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Node.js version v%s is not supported for SPFx v%s. Check aka.ms/teamsfx-spfx-help for more details.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -7908,22 +8073,25 @@
       </Item>
       <Item ItemId=";plugins.spfx.error.npmNotFound" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[NPM not found on your machine. Check aka.ms/teamsfx-spfx-help to install the supported version.]]></Val>
+          <Val><![CDATA[NPM not found on your machine. Please install the supported version.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[在你的计算机上找不到 NPM。检查 aka.ms/teamsfx-spfx-help 以安装支持的版本。]]></Val>
+            <Val><![CDATA[在你的计算机上找不到 NPM。请安装受支持的版本。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Npm not found on your machine!]]></Val>
+            <Val><![CDATA[NPM not found on your machine. Check aka.ms/teamsfx-spfx-help to install the supported version.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";plugins.spfx.error.npmVersionNotSupported" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[NPM version v%s is not supported for SPFx v%s. Check aka.ms/teamsfx-spfx-help for more details.]]></Val>
+          <Val><![CDATA[NPM version v%s is not supported for SPFx v%s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[SPFx v%s 不支持 NPM 版本 v%s。有关更多详细信息，请检查 aka.ms/teamsfx-spfx-help。]]></Val>
+            <Val><![CDATA[SPFx v%s 不支持 NPM 版本 v%s。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[NPM version v%s is not supported for SPFx v%s. Check aka.ms/teamsfx-spfx-help for more details.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

@@ -15,7 +15,7 @@ Verify you have the right prerequisites for building Teams apps and install some
     </tr>
     <tr>
         <td><img src="https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/media/landingPage_m365.png"></td>
-        <td><h3>M365</h3>The Teams Toolkit requires a Microsoft 365 organizational account where Teams is running and has been registered.</td>
+        <td><h3>Microsoft 365</h3>The Teams Toolkit requires a Microsoft 365 organizational account where Teams is running and has been registered.</td>
     </tr>
     <tr>
         <td><img src="https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/media/landingPage_azure.png"></td>
@@ -23,7 +23,7 @@ Verify you have the right prerequisites for building Teams apps and install some
     </tr>
 </table>
 
-> Don’t have a M365 to experience building Teams app? Sign up for [Microsoft Developer Program](https://developer.microsoft.com/en-us/microsoft-365/dev-program), which allows you to have a testing tenant with preconfigured permissions.
+> Don’t have a Microsoft 365 account to experience building Teams app? Sign up for [Microsoft Developer Program](https://developer.microsoft.com/en-us/microsoft-365/dev-program), which allows you to have a testing tenant with preconfigured permissions.
 
 ### Built the project
 

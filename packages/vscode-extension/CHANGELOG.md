@@ -34,12 +34,12 @@ Incremental version for Teams Toolkit with multiple bugs fix and enhancements.
 
 ## 4.0.0 - May 24, 2022
 
-Major version for Teams Toolkit with new features to support more Teams app scenario like notification bot and command bot. What's more, this version adds support to extend Teams app across M365 platform like Office.com and Outlook.
+Major version for Teams Toolkit with new features to support more Teams app scenario like notification bot and command bot. What's more, this version adds support to extend Teams app across Microsoft 365 platform like Office.com and Outlook.
 
 New Features:
 
 - User can create more business-oriented Teams app template using Teams Toolkit. For example, user can now create not only bot app but also notification bot or command bot. User can see more options are there to choose when create a new Teams app.
-- User can create Teams app that can launch and preview in other M365 platform like Office.com and Outlook. The options are offered when user create a new Teams app.
+- User can create Teams app that can launch and preview in other Microsoft 365 platform like Office.com and Outlook. The options are offered when user create a new Teams app.
 - User can incrementally add features to their Teams app using `Add features` in Teams Toolkit during the development process. For example, adding additional Teams extending capability, adding Azure resources like SQL Database or Azure Function etc., adding Single Sign on or API connections and so on.
 - User can preview the Teams manifest file and only deploy the manifest file without deploy the whole project.
 - User can customized Azure AD manifest file.
@@ -67,7 +67,7 @@ Enhancement:
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
 
 New Features:
-- Provide multiple entry points of creating testing tenant/accounts to unblock user from M365 account issues, like M365 account does not have sideloading permission or user does not have M365 account at all. These entry points include an Add(+) button besides ACCOUNTS in sidebar, an new "Create an account" option in `Teams: Accounts` Command and improved Get Started page.
+- Provide multiple entry points of creating testing tenant/accounts to unblock user from Microsoft 365 account issues, like Microsoft 365 account does not have sideloading permission or user does not have Microsoft 365 account at all. These entry points include an Add(+) button besides ACCOUNTS in sidebar, an new "Create an account" option in `Teams: Accounts` Command and improved Get Started page.
 
 Enhancement:
 - Improved SPFx Project scaffolding experience by using Yeoman Generator. 
@@ -215,7 +215,7 @@ New Feature:
 
 - Support projects migration from Teams Toolkit V1 to V2. If your Teams projects are created using Teams Toolkit V1, try migrate your project follow the [migration instructions](https://aka.ms/teamsfx-migrate-v1).
 - Support local debug experience for Teams Tab/Bot/Messaging extension project migrated from Teams Toolkit V1.
-- Check permission to turn-on Teams custom app uploading when user sign-in to M365 account. Learn more about [Teams app uploading or sideloading permission](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading).
+- Check permission to turn-on Teams custom app uploading when user sign-in to Microsoft 365 account. Learn more about [Teams app uploading or sideloading permission](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading).
 - (Preview Feature) Support provision cloud resources using Azure Resource Manager. To enable this feature, please follow [instructions](https://github.com/OfficeDev/TeamsFx/wiki/Enable-Preview-Features-in-Teams-Toolkit).
 
 Enhancement:
@@ -303,7 +303,7 @@ Added:
 
 - new design of UI and command palette list
 - new getting started guide, samples and doc link from toolkit
-- new sign-in experience for M365 and Azure
+- new sign-in experience for Microsoft 365 and Azure
 - new interactive flow for creating new app
 - add messaging extension capability to Teams app
 - sample codes for in-meeting app.

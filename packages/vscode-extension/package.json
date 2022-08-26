@@ -26,7 +26,7 @@
   "keywords": [
     "Microsoft Teams",
     "Azure",
-    "M365"
+    "Microsoft 365"
   ],
   "preview": false,
   "categories": [
@@ -450,6 +450,11 @@
       {
         "command": "fx-extension.createFromWalkthrough",
         "title": "Teams - Create Project",
+        "enablement": "never"
+      },
+      {
+        "command": "fx-extension.debug",
+        "title": "Teams - Preview your Teams app",
         "enablement": "never"
       },
       {
@@ -998,8 +1003,8 @@
           },
           {
             "id": "teamsToolkitCreateFreeAccount",
-            "title": "Create a M365 testing tenant for free",
-            "description": "Create a free M365 testing tenant to install and preview your Teams apps in Teams.\n If you already have an M365 organizational account, [sign in to M365](command:fx-extension.signinM365?%5B%22WalkThrough%22%5D) and validate [sideloading](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) is enabled.\n[Create a M365 testing tenant](https://developer.microsoft.com/en-us/microsoft-365/dev-program)",
+            "title": "Create a Microsoft 365 testing tenant for free",
+            "description": "Create a free Microsoft 365 testing tenant to install and preview your Teams apps in Teams.\n If you already have a Microsoft 365 organizational account, [sign in to Microsoft 365](command:fx-extension.signinM365?%5B%22WalkThrough%22%5D) and validate [sideloading](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) is enabled.\n[Create a Microsoft 365 testing tenant](https://developer.microsoft.com/en-us/microsoft-365/dev-program)",
             "media": {
               "markdown": "media/itp/itp.md"
             }
@@ -1007,7 +1012,7 @@
           {
             "id": "teamsToolkitPreview",
             "title": "Preview your Teams app locally",
-            "description": "Press [F5](command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D) or discover '[Run and Debug](command:workbench.view.debug)' panel on the activity bar, and click the play icon to locally preview your app in Teams context.\n[Run local preview (F5)](command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D)\n__Tip: To run local preview, sign in to M365 (organizational account) with sideloading option.__",
+            "description": "Press [F5](command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D) or discover '[Run and Debug](command:workbench.view.debug)' panel on the activity bar, and click the play icon to locally preview your app in Teams context.\n[Run local preview (F5)](command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D)\n__Tip: To run local preview, sign in to Microsoft 365 (organizational account) with sideloading option.__",
             "media": {
               "svg": "media/walkthrough/F5.svg",
               "altText": "Preview your Teams app locally"

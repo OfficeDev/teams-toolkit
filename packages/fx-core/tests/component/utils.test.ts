@@ -1,5 +1,4 @@
-import { ManagedRestorableDroppedDatabaseBackupShortTermRetentionPolicies } from "@azure/arm-sql";
-import { InputsWithProjectPath, Platform, v3 } from "@microsoft/teamsfx-api";
+import { InputsWithProjectPath, Platform, v3, ok } from "@microsoft/teamsfx-api";
 import { expect } from "chai";
 import { newEnvInfoV3, setTools } from "../../src";
 import { convertContext } from "../../src/component/resource/aadApp/utils";
@@ -210,7 +209,7 @@ describe("resetEnvInfoWhenSwitchM365", () => {
     const context = createContextV3();
     sandbox
       .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-      .resolves({ name: "MockName" });
+      .resolves({ username: "MockName" });
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Deploy"));
     const envInfo = newEnvInfoV3();
     envInfo.state.solution.subscriptionId = "mockSubId";

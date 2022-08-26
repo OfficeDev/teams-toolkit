@@ -3,7 +3,6 @@
 import "mocha";
 import chai from "chai";
 import { ResourceManagementClient } from "@azure/arm-resources";
-import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
 import { Lazy } from "../../../../src/component/resource/apim/utils/commonUtils";
 import { ApimManager } from "../../../../src/component/resource/apim/managers/apimManager";
 import { OpenApiProcessor } from "../../../../src/component/resource/apim/utils/openApiProcessor";

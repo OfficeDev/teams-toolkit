@@ -88,7 +88,8 @@ export class TeamsBot {
     let botConfig = getComponent(projectSettings, ComponentNames.TeamsBot);
     // bot can only add once
     if (botConfig) {
-      if (botConfig.capabilities?.includes(botCapability)) {
+      if (!botConfig.capabilities?.includes(botCapability)) {
+        botConfig.capabilities.push(botCapability);
         const res = await this.addBotCapability(inputs);
         if (res.isErr()) return err(res.error);
         effects.push("add bot capability in app manifest");

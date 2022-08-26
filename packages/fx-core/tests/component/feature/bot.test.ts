@@ -60,6 +60,7 @@ describe("Bot Feature", () => {
   let writeFileStub: SinonStub;
   let scaffoldStub: SinonStub;
   beforeEach(() => {
+    const manifest = {} as TeamsAppManifest;
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     scaffoldStub = sandbox.stub(templatesAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
@@ -97,6 +98,9 @@ describe("Bot Feature", () => {
     };
     const teamsBotComponent = Container.get("teams-bot") as any;
     const addBotRes = await teamsBotComponent.add(context, inputs);
+    if (addBotRes.isErr()) {
+      console.log(addBotRes.error);
+    }
     assert.isTrue(addBotRes.isOk());
     const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
     assert.exists(teamsBot);
@@ -113,7 +117,7 @@ describe("Bot Feature", () => {
     const addMeRes = await teamsBotComponent.add(context, inputs2);
     assert.isTrue(addMeRes.isOk());
     assert.deepEqual(teamsBot?.capabilities, ["bot", "message-extension"]);
-    assert.isTrue(scaffoldStub.calledTwice);
+    assert.isTrue(scaffoldStub.calledOnce);
   });
   it("add restify notification bot", async () => {
     sandbox.stub(utils.bicepUtils, "persistBiceps").resolves(ok(undefined));

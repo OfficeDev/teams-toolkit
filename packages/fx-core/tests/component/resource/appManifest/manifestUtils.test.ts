@@ -13,7 +13,7 @@ import {
 import * as chai from "chai";
 import "mocha";
 import "reflect-metadata";
-import sinon from "sinon";
+import sinon, { stub } from "sinon";
 import { Container } from "typedi";
 import * as uuid from "uuid";
 import { ComponentNames } from "../../../../src/component/constants";
@@ -39,6 +39,7 @@ import {
 } from "../../../../src/plugins/solution/fx-solution/question";
 import { MockTools } from "../../../core/utils";
 import { getAzureProjectRoot } from "../../../plugins/resource/appstudio/helper";
+import fs from "fs-extra";
 
 describe("Load and Save manifest template V3", () => {
   setTools(new MockTools());
@@ -263,6 +264,13 @@ describe("Add capability V3", () => {
   it("getCapabilities", async () => {
     const res = await manifestUtils.getCapabilities(inputs.projectPath);
     chai.assert.isTrue(res.isOk());
+  });
+
+  it("preCheck", async () => {
+    const component = Container.get(ComponentNames.AppManifest) as AppManifest;
+    sandbox.stub(fs, "pathExists").resolves(true);
+    const res = await component.preCheck(inputs.projectPath);
+    chai.assert.isTrue(res.length > 0);
   });
 });
 

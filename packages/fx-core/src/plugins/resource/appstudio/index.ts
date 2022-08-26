@@ -32,7 +32,6 @@ import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContai
 import { Links } from "../bot/constants";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import "./v2";
-import "./v3";
 import { AppUser } from "./interfaces/appUser";
 import { getManifestTemplatePath } from "./manifestTemplate";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";

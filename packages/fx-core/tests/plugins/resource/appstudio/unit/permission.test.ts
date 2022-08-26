@@ -15,12 +15,9 @@ import {
   v2,
   v3,
 } from "@microsoft/teamsfx-api";
-import { Constants, SOLUTION } from "../../../../../src/plugins/resource/appstudio/constants";
+import { Constants } from "../../../../../src/plugins/resource/appstudio/constants";
 import faker from "faker";
-import {
-  REMOTE_TEAMS_APP_ID,
-  PluginNames,
-} from "../../../../../src/plugins/solution/fx-solution/constants";
+import { PluginNames } from "../../../../../src/plugins/solution/fx-solution/constants";
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
 import { getAzureProjectRoot } from "../helper";
 import { AppUser } from "../../../../../src/plugins/resource/appstudio/interfaces/appUser";
@@ -30,10 +27,7 @@ import {
   MockedM365Provider,
   MockedV2Context,
 } from "../../../solution/util";
-import {
-  BuiltInFeaturePluginNames,
-  BuiltInSolutionNames,
-} from "../../../../../src/plugins/solution/fx-solution/v3/constants";
+import { BuiltInSolutionNames } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
 import * as uuid from "uuid";
 import Container from "typedi";
 import { ComponentNames } from "../../../../../src/component/constants";
@@ -41,7 +35,6 @@ import { AppManifest } from "../../../../../src/component/resource/appManifest/a
 import { MockTools } from "../../../../core/utils";
 import { setTools } from "../../../../../src/core/globalVars";
 import { newEnvInfo } from "../../../../../src/core/environment";
-import { AppStudioPluginV3 } from "../../../../../src/plugins/resource/appstudio/v3";
 import axios from "axios";
 import { AppDefinition } from "../../../../../src/plugins/resource/appstudio/interfaces/appDefinition";
 
@@ -130,7 +123,6 @@ describe("Remote Collaboration", () => {
       config: {},
     };
     const component = Container.get<AppManifest>(ComponentNames.AppManifest);
-    const plugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     sandbox.stub(tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("anything"));
     sandbox.stub(AppStudioClient, "checkPermission").resolves("Administrator");
     const inputs: v2.InputsWithProjectPath = {
@@ -144,7 +136,6 @@ describe("Remote Collaboration", () => {
       tokenProvider.m365TokenProvider,
       userList
     );
-    await plugin.checkPermission(ctxV2, inputs, envInfo, tokenProvider.m365TokenProvider, userList);
     chai.assert.isTrue(checkPermission.isOk());
     if (checkPermission.isOk()) {
       chai.assert.deepEqual(checkPermission.value[0].roles, ["Administrator"]);
@@ -220,7 +211,6 @@ describe("Remote Collaboration", () => {
       userList: [],
     };
     const component = Container.get<AppManifest>(ComponentNames.AppManifest);
-    const plugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     sandbox.stub(ctx.m365TokenProvider!, "getAccessToken").resolves(ok("anything"));
     const fakeAxiosInstance = axios.create();
     sandbox.stub(axios, "create").returns(fakeAxiosInstance);
@@ -245,7 +235,6 @@ describe("Remote Collaboration", () => {
       tokenProvider.m365TokenProvider,
       userList
     );
-    await plugin.grantPermission(ctxV2, inputs, envInfo, tokenProvider.m365TokenProvider, userList);
     chai.assert.isTrue(grantPermission.isOk());
     if (grantPermission.isOk()) {
       chai.assert.deepEqual(grantPermission.value[0].roles, ["Administrator"]);
@@ -305,7 +294,6 @@ describe("Remote Collaboration", () => {
       config: {},
     };
     const component = Container.get<AppManifest>(ComponentNames.AppManifest);
-    const plugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     sandbox.stub(ctx.m365TokenProvider!, "getAccessToken").resolves(ok("anything"));
     sandbox.stub(AppStudioClient, "getUserList").resolves([
       {
@@ -326,7 +314,6 @@ describe("Remote Collaboration", () => {
       envInfo,
       tokenProvider.m365TokenProvider
     );
-    await plugin.listCollaborator(ctxV2, inputs, envInfo, tokenProvider.m365TokenProvider);
     chai.assert.isTrue(listCollaborator.isOk());
     if (listCollaborator.isOk()) {
       chai.assert.equal(listCollaborator.value[0].userObjectId, "aadId");

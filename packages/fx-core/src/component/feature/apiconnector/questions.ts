@@ -13,10 +13,9 @@ import {
   MultiSelectQuestion,
   Platform,
   FxError,
-  AzureSolutionSettings,
   ProjectSettingsV3,
+  ContextV3,
 } from "@microsoft/teamsfx-api";
-import { Context } from "@microsoft/teamsfx-api/build/v2";
 import { AuthType, Constants } from "./constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import {
@@ -27,12 +26,10 @@ import {
   checkIsGuid,
   checkEmptySelect,
 } from "./checker";
-import { isV3 } from "../../../core";
 import { DepsHandler } from "./depsHandler";
 import { Notification, sendErrorTelemetry } from "./utils";
 import { ResultFactory } from "./result";
 import { ErrorMessage } from "./errors";
-import { ResourcePlugins } from "../../../common/constants";
 import { hasBot, hasApi } from "../../../common/projectSettingsHelperV3";
 import { TelemetryUtils, Telemetry } from "./telemetry";
 
@@ -54,11 +51,11 @@ export class BaseQuestionService {
 }
 
 export class ComponentsQuestion extends BaseQuestionService implements IQuestionService {
-  protected readonly ctx: Context;
+  protected readonly ctx: ContextV3;
   protected readonly components: OptionItem[];
   protected readonly projectPath: string;
   constructor(
-    ctx: Context,
+    ctx: ContextV3,
     inputs: Inputs,
     telemetryReporter?: TelemetryReporter,
     logger?: LogProvider
@@ -72,29 +69,13 @@ export class ComponentsQuestion extends BaseQuestionService implements IQuestion
       this.components.push(botOption);
       this.components.push(functionOption);
     } else {
-      if (!isV3()) {
-        const activePlugins = (ctx.projectSetting.solutionSettings as AzureSolutionSettings)
-          ?.activeResourcePlugins;
-        if (!activePlugins) {
-          throw ResultFactory.UserError(
-            ErrorMessage.NoActivePluginsExistError.name,
-            ErrorMessage.NoActivePluginsExistError.message()
-          );
-        }
-        if (activePlugins.includes(ResourcePlugins.Bot)) {
-          this.components.push(botOption);
-        }
-        if (activePlugins.includes(ResourcePlugins.Function)) {
-          this.components.push(functionOption);
-        }
-      } else {
-        if (hasBot(ctx.projectSetting as ProjectSettingsV3)) {
-          this.components.push(botOption);
-        }
-        if (hasApi(ctx.projectSetting as ProjectSettingsV3)) {
-          this.components.push(functionOption);
-        }
+      if (hasBot(ctx.projectSetting as ProjectSettingsV3)) {
+        this.components.push(botOption);
       }
+      if (hasApi(ctx.projectSetting as ProjectSettingsV3)) {
+        this.components.push(functionOption);
+      }
+
       if (this.components.length === 0) {
         throw ResultFactory.UserError(
           ErrorMessage.NoValidCompoentExistError.name,
@@ -155,8 +136,8 @@ export class ComponentsQuestion extends BaseQuestionService implements IQuestion
   }
 }
 export class ApiNameQuestion extends BaseQuestionService implements IQuestionService {
-  protected readonly ctx: Context | undefined;
-  constructor(ctx?: Context, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
+  protected readonly ctx: ContextV3 | undefined;
+  constructor(ctx?: ContextV3, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
     super(telemetryReporter, logger);
     this.ctx = ctx;
   }

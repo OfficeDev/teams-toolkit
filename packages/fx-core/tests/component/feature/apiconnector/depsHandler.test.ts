@@ -8,8 +8,8 @@ import fs from "fs-extra";
 import { expect } from "chai";
 import sinon from "sinon";
 import semver from "semver";
-import { DepsHandler } from "../../../../src/plugins/resource/apiconnector/depsHandler";
 import { UserError } from "@microsoft/teamsfx-api";
+import { DepsHandler } from "../../../../src/component/feature/apiconnector/depsHandler";
 
 describe("DepsHandler in Api Connector", () => {
   const fakeProjectPath = path.join(__dirname, "test-api-connector-depsHandler");

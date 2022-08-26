@@ -1,45 +1,50 @@
 import { TelemetryReporter } from "@microsoft/teamsfx-api";
-import path from "path";
-import { newEnvInfo } from "../../../../src";
+import { ComponentNames } from "../../../../src/component/constants";
 import {
   BasicAuthConfig,
   AADAuthConfig,
   APIKeyAuthConfig,
-} from "../../../../src/plugins/resource/apiconnector/config";
-import { AuthType, KeyLocation } from "../../../../src/plugins/resource/apiconnector/constants";
+} from "../../../../src/component/feature/apiconnector/config";
+import { AuthType, KeyLocation } from "../../../../src/component/feature/apiconnector/constants";
 import { DependentPluginInfo } from "../../../../src/plugins/resource/function/constants";
+import { MockUserInteraction } from "../../../core/utils";
 
 export function MockContext(): any {
   return {
-    envInfo: newEnvInfo(
-      undefined,
-      undefined,
-      new Map<string, Map<string, string>>([
-        [
-          DependentPluginInfo.solutionPluginName,
-          new Map<string, string>([
-            [DependentPluginInfo.resourceGroupName, "ut"],
-            [DependentPluginInfo.subscriptionId, "ut"],
-            [DependentPluginInfo.resourceNameSuffix, "ut"],
-          ]),
-        ],
-      ])
-    ),
-    app: {
-      name: {
-        short: "ut",
+    envInfo: {
+      envName: "dev",
+      state: {
+        solution: {
+          [DependentPluginInfo.resourceGroupName]: "ut",
+          [DependentPluginInfo.subscriptionId]: "ut",
+          [DependentPluginInfo.resourceNameSuffix]: "ut",
+        },
+      },
+      config: {
+        manifest: {
+          appName: {
+            short: "teamsfx_app",
+          },
+          description: {
+            short: `Short description of teamsfx_app`,
+            full: `Full description of teamsfx_app`,
+          },
+          icons: {
+            color: "resources/color.png",
+            outline: "resources/outline.png",
+          },
+        },
       },
     },
     projectSetting: {
       appName: "ut",
       programmingLanguage: "javascript",
-      solutionSettings: {
-        activeResourcePlugins: ["fx-resource-bot", "fx-resource-function"],
-      },
+      projectId: "projectId",
+      components: [{ name: ComponentNames.TeamsBot }, { name: ComponentNames.TeamsApi }],
     },
-    config: new Map(),
-    root: path.join(__dirname, "ut"),
+
     telemetryReporter: mockTelemetryReporter,
+    userInteraction: new MockUserInteraction(),
   };
 }
 

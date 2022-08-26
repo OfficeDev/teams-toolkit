@@ -987,9 +987,6 @@ export async function getQuestionsForAddFeature(
   if (inputs.platform === Platform.CLI_HELP || isCicdAddable) {
     pluginsWithResources.push([ResourcePluginsV2.CICDPlugin, CicdOptionItem.id]);
   }
-  if (inputs.platform === Platform.CLI_HELP || isApiConnectionAddable) {
-    pluginsWithResources.push([ResourcePluginsV2.ApiConnectorPlugin, ApiConnectionOptionItem.id]);
-  }
   if (isSPFxMultiTabEnabled()) {
     pluginsWithResources.push([ResourcePluginsV2.SpfxPlugin, TabSPFxNewUIItem.id]);
   }

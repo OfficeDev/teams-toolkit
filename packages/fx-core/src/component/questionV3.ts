@@ -81,7 +81,7 @@ import { Runtime } from "../plugins/resource/bot/v2/enum";
 import { getPlatformRuntime } from "../plugins/resource/bot/v2/mapping";
 import { buildQuestionNode } from "./resource/azureSql/questions";
 import { functionNameQuestion } from "../plugins/resource/function/question";
-import { ApiConnectorImpl } from "../plugins/resource/apiconnector/plugin";
+import { ApiConnectorImpl } from "./feature/apiconnector/ApiConnectorImpl";
 import { addCicdQuestion } from "./feature/cicd";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import {

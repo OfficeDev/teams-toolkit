@@ -144,8 +144,8 @@ import {
 import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
 import { addCicdQuestion } from "../component/feature/cicd";
 import { ComponentNames } from "../component/constants";
-import { ApiConnectorImpl } from "../plugins/resource/apiconnector/plugin";
 import { AppManifest, publishQuestion } from "../component/resource/appManifest/appManifest";
+import { ApiConnectorImpl } from "../component/feature/apiconnector/ApiConnectorImpl";
 import { createEnvWithName } from "../component/envManager";
 import { getProjectTemplatesFolderPath } from "../common/utils";
 import { manifestUtils } from "../component/resource/appManifest/utils";

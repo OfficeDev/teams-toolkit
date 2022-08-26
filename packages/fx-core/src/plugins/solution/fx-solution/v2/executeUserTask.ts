@@ -58,7 +58,6 @@ import {
 } from "../constants";
 import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
 import {
-  ApiConnectionOptionItem,
   AzureResourceApim,
   AzureResourceFunction,
   AzureResourceKeyVault,
@@ -856,13 +855,6 @@ export async function addFeature(
   }
   if (featureAnswer === SingleSignOnOptionItem.id) {
     return addSso(ctx, inputs, localSettings);
-  } else if (featureAnswer === ApiConnectionOptionItem.id) {
-    const apiFunction: Func = {
-      namespace: "fx-solution-azure/fx-resource-api-connector",
-      method: "connectExistingApi",
-      params: {},
-    };
-    return executeUserTask(ctx, inputs, apiFunction, localSettings, envInfo, tokenProvider);
   } else if (featureAnswer === CicdOptionItem.id) {
     const cicdFunction: Func = {
       namespace: "fx-solution-azure/fx-resource-cicd",

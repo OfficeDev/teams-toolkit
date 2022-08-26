@@ -41,7 +41,6 @@ import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
 import { Constants } from "../../../resource/appstudio/constants";
 import { BuiltInFeaturePluginNames } from "../v3/constants";
-import { fillInAzureConfigs, getM365TenantId } from "../v3/provision";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { solutionGlobalVars } from "../v3/solutionGlobalVars";
 import {
@@ -130,7 +129,7 @@ async function provisionResourceImpl(
   if (!envInfo.state.solution) envInfo.state.solution = {};
   const solutionConfig = envInfo.state.solution;
   const tenantIdInConfig = teamsAppResource.tenantId;
-  const tenantIdInTokenRes = await getM365TenantId(tokenProvider.m365TokenProvider);
+  const tenantIdInTokenRes = await provisionUtils.getM365TenantId(tokenProvider.m365TokenProvider);
   if (tenantIdInTokenRes.isErr()) {
     return err(tenantIdInTokenRes.error);
   }
@@ -165,7 +164,7 @@ async function provisionResourceImpl(
     }
     const subscriptionIdInState = envInfo.state.solution.subscriptionId;
     // ask common question and fill in solution config
-    const solutionConfigRes = await fillInAzureConfigs(
+    const solutionConfigRes = await provisionUtils.fillInAzureConfigs(
       ctx,
       inputsNew,
       envInfo as v3.EnvInfoV3,

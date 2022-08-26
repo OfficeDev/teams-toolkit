@@ -4,7 +4,6 @@
 import * as path from "path";
 import * as fs from "fs-extra";
 import {
-  AzureSolutionSettings,
   Inputs,
   QTreeNode,
   SystemError,
@@ -12,9 +11,8 @@ import {
   ok,
   Platform,
   FxError,
-  ProjectSettingsV3,
+  ContextV3,
 } from "@microsoft/teamsfx-api";
-import { Context } from "@microsoft/teamsfx-api/build/v2";
 import {
   generateTempFolder,
   copyFileIfExist,
@@ -36,7 +34,6 @@ import { ApiConnectorResult, ResultFactory, QuestionResult, FileChange } from ".
 import { AuthType, Constants, KeyLocation, ComponentType } from "./constants";
 import { EnvHandler } from "./envHandler";
 import { ErrorMessage } from "./errors";
-import { ResourcePlugins } from "../../../common/constants";
 import {
   ApiNameQuestion,
   basicAuthUsernameQuestion,
@@ -57,15 +54,12 @@ import {
 } from "./questions";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { SampleHandler } from "./sampleHandler";
-import { isAADEnabled } from "../../../common";
-import { getAzureSolutionSettings } from "../../solution/fx-solution/v2/utils";
 import { DepsHandler } from "./depsHandler";
 import { Telemetry, TelemetryUtils } from "./telemetry";
-import { isV3 } from "../../../core";
 import { hasAAD, hasBot, hasApi } from "../../../common/projectSettingsHelperV3";
 
 export class ApiConnectorImpl {
-  public async scaffold(ctx: Context, inputs: Inputs): Promise<ApiConnectorResult> {
+  public async scaffold(ctx: ContextV3, inputs: Inputs): Promise<ApiConnectorResult> {
     if (!inputs.projectPath) {
       throw ResultFactory.UserError(
         ErrorMessage.InvalidProjectError.name,
@@ -85,16 +79,8 @@ export class ApiConnectorImpl {
       telemetryProperties
     );
     // CLI checker
-    const bot = isV3()
-      ? hasBot(ctx.projectSetting as ProjectSettingsV3)
-      : (
-          ctx.projectSetting.solutionSettings as AzureSolutionSettings
-        )?.activeResourcePlugins?.includes(ResourcePlugins.Bot);
-    const hasFunc = isV3()
-      ? hasApi(ctx.projectSetting as ProjectSettingsV3)
-      : (
-          ctx.projectSetting.solutionSettings as AzureSolutionSettings
-        )?.activeResourcePlugins?.includes(ResourcePlugins.Function);
+    const bot = hasBot(ctx.projectSetting);
+    const hasFunc = hasApi(ctx.projectSetting);
     if (!bot && config.ComponentType.includes(ComponentType.BOT)) {
       throw ResultFactory.UserError(
         ErrorMessage.componentNotExistError.name,
@@ -360,7 +346,7 @@ export class ApiConnectorImpl {
     return await depsHandler.addPkgDeps();
   }
 
-  public async generateQuestion(ctx: Context, inputs: Inputs): Promise<QuestionResult> {
+  public async generateQuestion(ctx: ContextV3, inputs: Inputs): Promise<QuestionResult> {
     const whichComponent = new ComponentsQuestion(ctx, inputs);
     const apiNameQuestion = new ApiNameQuestion(ctx);
     const whichAuthType = this.buildAuthTypeQuestion(ctx, inputs);
@@ -375,7 +361,7 @@ export class ApiConnectorImpl {
     return ok(question);
   }
 
-  public buildAuthTypeQuestion(ctx: Context, inputs: Inputs): QTreeNode {
+  public buildAuthTypeQuestion(ctx: ContextV3, inputs: Inputs): QTreeNode {
     const whichAuthType = new QTreeNode({
       name: Constants.questionKey.apiType,
       type: "singleSelect",
@@ -401,14 +387,9 @@ export class ApiConnectorImpl {
     return node;
   }
 
-  public buildAADAuthQuestion(ctx: Context, inputs: Inputs): QTreeNode {
-    let aad;
-    if (isV3()) {
-      aad = hasAAD(ctx.projectSetting as ProjectSettingsV3);
-    } else {
-      const solutionSettings = getAzureSolutionSettings(ctx)!;
-      aad = isAADEnabled(solutionSettings);
-    }
+  public buildAADAuthQuestion(ctx: ContextV3, inputs: Inputs): QTreeNode {
+    const aad = hasAAD(ctx.projectSetting);
+
     let node: QTreeNode;
     if (aad || inputs.platform === Platform.CLI_HELP) {
       node = new QTreeNode({

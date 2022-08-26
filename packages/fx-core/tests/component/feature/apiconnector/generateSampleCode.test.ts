@@ -8,11 +8,11 @@ import os from "os";
 import sinon from "sinon";
 import fs from "fs-extra";
 import { expect } from "chai";
-import { ConstantString } from "../util";
-import { SampleHandler } from "../../../../src/plugins/resource/apiconnector/sampleHandler";
-import { ApiConnectorConfiguration } from "../../../../src/plugins/resource/apiconnector/config";
+import { SampleHandler } from "../../../../src/component/feature/apiconnector/sampleHandler";
+import { ApiConnectorConfiguration } from "../../../../src/component/feature/apiconnector/config";
 import { SampleCodeCases } from "./utils";
-import { Constants } from "../../../../src/plugins/resource/apiconnector/constants";
+import { Constants } from "../../../../src/component/feature/apiconnector/constants";
+import { ConstantString } from "../../../../src/common/constants";
 
 describe("Api Connector scaffold sample code", async () => {
   const sandbox = sinon.createSandbox();

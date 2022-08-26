@@ -2,7 +2,6 @@ import { PersonCard } from "@microsoft/mgt-react";
 import { useContext } from "react";
 import { TeamsFxContext } from "../Context";
 
-
 export function PersonCardGraphToolkit(props) {
   const { themeString } = useContext(TeamsFxContext);
 

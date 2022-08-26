@@ -1,7 +1,6 @@
 import {
   Inputs,
   FxError,
-  UserError,
   TokenProvider,
   v2,
   v3,
@@ -12,9 +11,6 @@ import {
   SystemError,
   Platform,
   Colors,
-  Json,
-  TelemetryReporter,
-  AzureAccountProvider,
 } from "@microsoft/teamsfx-api";
 import { AppStudioScopes, getHashedEnv, getResourceGroupInPortal } from "../../../../common/tools";
 import { executeConcurrently } from "./executor";
@@ -32,11 +28,9 @@ import {
   SolutionError,
   SOLUTION_PROVISION_SUCCEEDED,
   SolutionSource,
-  SUBSCRIPTION_ID,
   SolutionTelemetryEvent,
   SolutionTelemetryComponentName,
   SolutionTelemetryProperty,
-  REMOTE_TEAMS_APP_TENANT_ID,
 } from "../constants";
 import _, { isUndefined } from "lodash";
 import { PluginDisplayName } from "../../../../common/constants";
@@ -61,7 +55,6 @@ import {
   hasBotServiceCreated,
   sendErrorTelemetryThenReturnError,
 } from "../utils/util";
-import { ComponentNames } from "../../../../component/constants";
 import { resetEnvInfoWhenSwitchM365 } from "../../../../component/utils";
 import { getSubscriptionId, provisionUtils } from "../../../../component/provisionUtils";
 

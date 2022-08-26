@@ -8,26 +8,26 @@ import {
 } from "../constants";
 import { AssertNotEmpty } from "../error";
 import { IApimPluginConfig, IFunctionPluginConfig, ISolutionConfig } from "../config";
-import { ApimService } from "../services/apimService";
-import { OpenApiProcessor } from "../utils/openApiProcessor";
 import { IAnswer } from "../answer";
 import { LogProvider, PluginContext, TelemetryReporter } from "@microsoft/teamsfx-api";
-import {
-  getApimServiceNameFromResourceId,
-  getAuthServiceNameFromResourceId,
-  getProductNameFromResourceId,
-  Lazy,
-} from "../utils/commonUtils";
-import { NamingRules } from "../utils/namingRules";
 import path from "path";
 import { Bicep, ConstantString } from "../../../../common/constants";
 import { ArmTemplateResult } from "../../../../common/armInterface";
 import * as fs from "fs-extra";
 import { getResourceGroupNameFromResourceId } from "../../../../common/tools";
 import { getTemplatesFolder } from "../../../../folder";
-import { getActivatedV2ResourcePlugins } from "../../../solution/fx-solution/ResourcePluginContainer";
-import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/adaptor";
 import { generateBicepFromFile } from "../../../../common/tools";
+import { ApimService } from "../services/apimService";
+import {
+  getApimServiceNameFromResourceId,
+  getAuthServiceNameFromResourceId,
+  getProductNameFromResourceId,
+  Lazy,
+} from "../utils/commonUtils";
+import { OpenApiProcessor } from "../utils/openApiProcessor";
+import { NamingRules } from "../utils/namingRules";
+import { getActivatedV2ResourcePlugins } from "../../../../plugins/solution/fx-solution/ResourcePluginContainer";
+import { NamedArmResourcePluginAdaptor } from "../../../../plugins/solution/fx-solution/v2/adaptor";
 
 export class ApimManager {
   private readonly logger: LogProvider | undefined;

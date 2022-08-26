@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { EnvInfo, UserError, SystemError, TelemetryReporter } from "@microsoft/teamsfx-api";
-import { solutionGlobalVars } from "../../../solution/fx-solution/v3/solutionGlobalVars";
+import { solutionGlobalVars } from "../../../../plugins/solution/fx-solution/v3/solutionGlobalVars";
 import { PluginLifeCycle, ProjectConstants, OperationStatus } from "../constants";
 import { IName } from "../interfaces/IName";
 

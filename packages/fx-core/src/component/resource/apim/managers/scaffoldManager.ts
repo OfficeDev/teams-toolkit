@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { ApimDefaultValues, ProjectConstants } from "../constants";
-import { OpenApiProcessor } from "../utils/openApiProcessor";
 import { LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../../../folder";
+import { OpenApiProcessor } from "../utils/openApiProcessor";
 
 export class ScaffoldManager {
   private readonly logger: LogProvider | undefined;

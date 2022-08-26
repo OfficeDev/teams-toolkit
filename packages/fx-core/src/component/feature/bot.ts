@@ -239,8 +239,7 @@ export class TeamsBot {
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
     const botCode = Container.get<BotCodeProvider>(ComponentNames.BotCode);
-    const res = await botCode.configure(context, inputs);
-    return ok(undefined);
+    return await botCode.configure(context, inputs);
   }
   async build(
     context: ResourceContextV3,

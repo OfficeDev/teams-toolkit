@@ -5,8 +5,6 @@ import { IdentityPlugin } from "../../../../../src/plugins/resource/identity";
 import * as dotenv from "dotenv";
 import chaiAsPromised from "chai-as-promised";
 import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
-import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
-import * as faker from "faker";
 import * as sinon from "sinon";
 import fs from "fs-extra";
 import * as path from "path";

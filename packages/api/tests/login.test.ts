@@ -13,7 +13,6 @@ import {
 } from "../src/utils/login";
 import { assert } from "chai";
 import { TokenCredential } from "@azure/core-auth";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { ok, Result } from "neverthrow";
 import { FxError } from "../src/error";
 

@@ -11,8 +11,6 @@ import * as path from "path";
 import { Platform, TokenProvider } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import * as lib from "../../../src/common/azure-hosting/utils";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import { TokenResponse } from "adal-node";
 import * as appService from "@azure/arm-appservice";
 import { TokenCredential, AccessToken, GetTokenOptions } from "@azure/core-http";
 

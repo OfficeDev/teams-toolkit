@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as faker from "faker";
-import { ApplicationTokenCredentials, TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import {
   AzureAccountProvider,
   ConfigMap,
@@ -20,11 +19,6 @@ export class TestHelper {
   static rgName = "app-test-rg";
   static location = "eastus2";
   static rootDir: string = faker.system.directoryPath();
-  static credential: TokenCredentialsBase = new ApplicationTokenCredentials(
-    faker.datatype.uuid(),
-    faker.internet.url(),
-    faker.internet.password()
-  );
   static subscriptionId: string = faker.datatype.uuid();
   static blazorLanguage = "csharp";
   static clientId: string = faker.datatype.uuid();

@@ -6,9 +6,6 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import { AzureOperations } from "../../../src/common/azure-hosting/azureOps";
 import * as appService from "@azure/arm-appservice";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import { TokenResponse } from "adal-node";
-import { HttpHeaders, WebResourceLike } from "@azure/ms-rest-js";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import chaiAsPromised from "chai-as-promised";

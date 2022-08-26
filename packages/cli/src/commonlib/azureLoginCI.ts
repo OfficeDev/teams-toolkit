@@ -3,8 +3,6 @@
 "use strict";
 
 import { TokenCredential } from "@azure/core-http";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import * as identity from "@azure/identity";
 import { Subscription, SubscriptionClient } from "@azure/arm-subscriptions";
 import * as fs from "fs-extra";
@@ -26,8 +24,6 @@ import { AzureSpCrypto } from "./cacheAccess";
  * Prepare for service principal login, not fully implemented
  */
 export class AzureAccountManager extends login implements AzureAccountProvider {
-  static tokenCredentialsBase: TokenCredentialsBase;
-
   static tokenCredential: TokenCredential;
 
   private static subscriptionId: string | undefined;

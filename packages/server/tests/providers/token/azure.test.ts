@@ -9,8 +9,6 @@ import sinon from "sinon";
 import ServerAzureAccountProvider from "../../../src/providers/token/azure";
 import { createMessageConnection } from "vscode-jsonrpc";
 import { err, ok } from "@microsoft/teamsfx-api";
-import { expect } from "chai";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 
 chai.use(chaiAsPromised);
 

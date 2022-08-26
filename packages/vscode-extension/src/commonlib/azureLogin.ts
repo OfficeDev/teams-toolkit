@@ -5,7 +5,6 @@
 "use strict";
 
 import { TokenCredential } from "@azure/core-auth";
-import { DeviceTokenCredentials, TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import {
   AzureAccountProvider,
   UserError,
@@ -16,7 +15,7 @@ import {
   ConfigFolderName,
 } from "@microsoft/teamsfx-api";
 import { ExtensionErrors } from "../error";
-import { AzureAccount } from "./azure-account.api";
+import { AzureAccountExtensionApi as AzureAccount } from "./azure-account.api";
 import { LoginFailureError } from "./codeFlowLogin";
 import * as vscode from "vscode";
 import * as identity from "@azure/identity";
@@ -151,9 +150,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   private doGetIdentityCredentialAsync(): Promise<TokenCredential | undefined> {
     if (this.isUserLogin()) {
       return new Promise(async (resolve) => {
-        const tokenJson = await this.getJsonObject();
-        const tenantId = (tokenJson as any).tid;
-        const vsCredential = new identity.VisualStudioCodeCredential({ tenantId: tenantId });
+        const vsCredential = new identity.VisualStudioCodeCredential();
         resolve(vsCredential);
       });
     }
@@ -341,7 +338,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
     AzureAccountManager.currentStatus = azureAccount.status;
     await this.updateSubscriptionInfo();
-    azureAccount.onStatusChanged(async (event) => {
+    azureAccount.onStatusChanged(async (event: string | undefined) => {
       if (this.isLegacyVersion()) {
         if (AzureAccountManager.currentStatus === "Initializing") {
           AzureAccountManager.currentStatus = event;

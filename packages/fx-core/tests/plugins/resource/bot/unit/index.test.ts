@@ -291,8 +291,6 @@ describe("Teams Bot Resource Plugin", () => {
         },
       };
 
-      const fakeCreds = testUtils.generateFakeTokenCredentialsBase();
-
       let item: any = { registrationState: "Unregistered" };
       const fakeRPClient: any = {
         get: (_: string) => item,

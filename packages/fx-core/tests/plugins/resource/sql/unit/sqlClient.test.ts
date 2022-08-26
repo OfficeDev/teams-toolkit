@@ -5,12 +5,10 @@ import { TestHelper } from "../helper";
 import { SqlPlugin } from "../../../../../src/plugins/resource/sql";
 import * as dotenv from "dotenv";
 import { PluginContext, UserError } from "@microsoft/teamsfx-api";
-import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import * as faker from "faker";
 import * as sinon from "sinon";
 import { SqlClient } from "../../../../../src/plugins/resource/sql/sqlClient";
 import { ErrorMessage } from "../../../../../src/plugins/resource/sql/errors";
-import { TokenResponse } from "adal-node/lib/adal";
 import { getLocalizedString } from "../../../../../src/common/localizeUtils";
 
 chai.use(chaiAsPromised);
@@ -27,9 +25,6 @@ describe("sqlClient", () => {
   beforeEach(async () => {
     sqlPlugin = new SqlPlugin();
     pluginContext = await TestHelper.pluginContext();
-    sinon
-      .stub(msRestNodeAuth.ApplicationTokenCredentials.prototype, "getToken")
-      .resolves({ accessToken: faker.random.word() } as TokenResponse);
     client = await SqlClient.create(pluginContext.azureAccountProvider!, sqlPlugin.sqlImpl.config);
   });
 
@@ -133,11 +128,6 @@ describe("sqlClient", () => {
   });
 
   it("initToken error with domain code", async function () {
-    // Arrange
-    sinon
-      .stub(msRestNodeAuth.ApplicationTokenCredentials.prototype, "getToken")
-      .rejects(new Error("test error" + ErrorMessage.DomainCode));
-
     // Act
     try {
       await SqlClient.initToken(pluginContext.azureAccountProvider!, sqlPlugin.sqlImpl.config);

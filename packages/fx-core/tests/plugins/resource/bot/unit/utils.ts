@@ -12,10 +12,7 @@ import {
   CryptoProvider,
   TokenRequest,
 } from "@microsoft/teamsfx-api";
-import { ResourceGroups } from "@azure/arm-resources";
 import { ServiceClientCredentials } from "@azure/ms-rest-js";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import { TokenResponse } from "adal-node";
 
 import * as utils from "../../../../../src/plugins/resource/bot/utils/common";
 import {
@@ -170,21 +167,6 @@ export function generateFakeLogProvider(): LogProvider {
       return Promise.resolve(true);
     },
   };
-}
-
-class FakeTokenCredentials extends TokenCredentialsBase {
-  public async getToken(): Promise<TokenResponse> {
-    return {
-      tokenType: "Bearer",
-      expiresIn: Date.now(),
-      expiresOn: new Date(),
-      resource: "anything",
-      accessToken: "anything",
-    };
-  }
-}
-export function generateFakeTokenCredentialsBase(): TokenCredentialsBase {
-  return new FakeTokenCredentials("anything", "anything");
 }
 
 export function newPluginContext(): PluginContext {

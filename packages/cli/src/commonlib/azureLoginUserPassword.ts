@@ -6,8 +6,6 @@
 import { Subscription, SubscriptionClient, TenantIdDescription } from "@azure/arm-subscriptions";
 import { TokenCredential } from "@azure/core-http";
 import * as identity from "@azure/identity";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import dotenv from "dotenv";
 
 import { AzureAccountProvider, SubscriptionInfo, UserError } from "@microsoft/teamsfx-api";
@@ -26,8 +24,6 @@ type LoginStatus = {
 };
 
 export class AzureAccountProviderUserPassword implements AzureAccountProvider {
-  static tokenCredentialsBase: TokenCredentialsBase;
-
   static tokenCredential: TokenCredential;
 
   private static instance: AzureAccountProviderUserPassword;

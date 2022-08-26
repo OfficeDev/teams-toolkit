@@ -10,7 +10,6 @@ import * as path from "path";
 import { SimpleAuthPlugin } from "../../../../../src/plugins/resource/simpleauth/index";
 import { mockArmOutput, TestHelper } from "../helper";
 import { Constants } from "../../../../../src/plugins/resource/simpleauth/constants";
-import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import * as fs from "fs-extra";
 import { WebAppClient } from "../../../../../src/plugins/resource/simpleauth/webAppClient";
 import * as faker from "faker";

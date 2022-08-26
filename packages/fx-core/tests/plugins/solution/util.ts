@@ -1,5 +1,3 @@
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import { TokenResponse } from "adal-node";
 import { TokenCredential } from "@azure/core-http";
 import {
   v2,
@@ -240,18 +238,6 @@ export class MockedV2Context implements v2.Context {
     this.cryptoProvider = new MockedCryptoProvider();
     this.projectSetting = settings;
     this.permissionRequestProvider = new MockPermissionRequestProvider();
-  }
-}
-
-class MockedTokenCredentials extends TokenCredentialsBase {
-  public async getToken(): Promise<TokenResponse> {
-    return {
-      tokenType: "Bearer",
-      expiresIn: Date.now(),
-      expiresOn: new Date(),
-      resource: "mock",
-      accessToken: "mock",
-    };
   }
 }
 

@@ -5,18 +5,12 @@ import { TestHelper } from "../helper";
 import { SqlPlugin } from "../../../../../src/plugins/resource/sql";
 import * as dotenv from "dotenv";
 import { Platform, PluginContext, Stage } from "@microsoft/teamsfx-api";
-import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import * as faker from "faker";
 import * as sinon from "sinon";
-import { Databases, Servers, FirewallRules, ServerAzureADAdministrators } from "@azure/arm-sql";
-import { ApplicationTokenCredentials } from "@azure/ms-rest-nodeauth";
-import { TokenResponse } from "adal-node/lib/adal";
-import { Providers } from "@azure/arm-resources";
 import { SqlClient } from "../../../../../src/plugins/resource/sql/sqlClient";
 import { Constants } from "../../../../../src/plugins/resource/sql/constants";
 import * as commonUtils from "../../../../../src/plugins/resource/sql/utils/commonUtils";
 import { UserType } from "../../../../../src/plugins/resource/sql/utils/commonUtils";
-import { ManagementClient } from "../../../../../src/plugins/resource/sql/managementClient";
 import { SqlPluginImpl } from "../../../../../src/plugins/resource/sql/plugin";
 import { sqlUserNameValidator } from "../../../../../src/plugins/resource/sql/utils/checkInput";
 import axios from "axios";
@@ -154,9 +148,6 @@ describe("sqlPlugin", () => {
     mockSqlManagementClient.servers = mockServers as any;
     sinon.stub(azureSql, "SqlManagementClient").returns(mockSqlManagementClient);
     sinon.stub(SqlPluginImpl.prototype, "askInputs").resolves();
-    sinon
-      .stub(ApplicationTokenCredentials.prototype, "getToken")
-      .resolves({ accessToken: faker.random.word() } as TokenResponse);
     const mockInfo: commonUtils.TokenInfo = {
       name: faker.random.word(),
       objectId: faker.random.word(),
@@ -180,9 +171,6 @@ describe("sqlPlugin", () => {
     mockSqlManagementClient.servers = mockServers as any;
     sinon.stub(azureSql, "SqlManagementClient").returns(mockSqlManagementClient);
     sinon.stub(SqlPluginImpl.prototype, "askInputs").resolves();
-    sinon
-      .stub(ApplicationTokenCredentials.prototype, "getToken")
-      .resolves({ accessToken: faker.random.word() } as TokenResponse);
     pluginContext.answers = { platform: Platform.VSCode };
 
     // Act
@@ -201,9 +189,6 @@ describe("sqlPlugin", () => {
     mockSqlManagementClient.serverAzureADAdministrators = mockServerAzureADAdministrators as any;
     mockSqlManagementClient.servers = mockServers as any;
     sinon.stub(azureSql, "SqlManagementClient").returns(mockSqlManagementClient);
-    sinon
-      .stub(ApplicationTokenCredentials.prototype, "getToken")
-      .resolves({ accessToken: faker.random.word() } as TokenResponse);
     sinon.stub(SqlClient.prototype, "addDatabaseUser").resolves();
     sinon.stub(axios, "get").resolves({ data: "1.1.1.1" });
 
@@ -225,9 +210,6 @@ describe("sqlPlugin", () => {
     mockSqlManagementClient.serverAzureADAdministrators = mockServerAzureADAdministrators as any;
     mockSqlManagementClient.servers = mockServers as any;
     sinon.stub(azureSql, "SqlManagementClient").returns(mockSqlManagementClient);
-    sinon
-      .stub(ApplicationTokenCredentials.prototype, "getToken")
-      .resolves({ accessToken: faker.random.word() } as TokenResponse);
     const addUserStub = sinon.stub(SqlClient.prototype, "addDatabaseUser").resolves();
     sinon.stub(axios, "get").resolves({ data: "1.1.1.1" });
     TestHelper.mockArmOutput(pluginContext);

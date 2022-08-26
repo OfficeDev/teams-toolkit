@@ -16,7 +16,7 @@ import { AadAppForTeamsPlugin } from "../../../../../src/plugins/resource/aad/in
 import { mockProvisionResult, TestHelper, mockSkipFlag, mockTokenProviderM365 } from "../helper";
 import sinon from "sinon";
 import { AadAppClient } from "../../../../../src/plugins/resource/aad/aadAppClient";
-import { getAppStudioToken, getGraphToken } from "../tokenProvider";
+import { getAppStudioToken } from "../tokenProvider";
 import { ConfigKeys } from "../../../../../src/plugins/resource/aad/constants";
 import { ProvisionConfig } from "../../../../../src/plugins/resource/aad/utils/configs";
 import faker from "faker";
@@ -489,9 +489,6 @@ describe("AadAppForTeamsPlugin: Azure", () => {
 
     appStudioToken = await getAppStudioToken();
     chai.assert.isString(appStudioToken);
-
-    graphToken = await getGraphToken();
-    chai.assert.isString(graphToken);
   });
 
   beforeEach(() => {

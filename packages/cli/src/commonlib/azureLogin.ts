@@ -4,7 +4,6 @@
 "use strict";
 
 import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/core-auth";
-import { TokenCredentialsBase, DeviceTokenCredentials } from "@azure/ms-rest-nodeauth";
 import {
   AzureAccountProvider,
   UserError,

@@ -73,37 +73,17 @@ import { MockedM365Provider, MockedV2Context, validManifest } from "./util";
 import { AppDefinition } from "../../../src/plugins/resource/appstudio/interfaces/appDefinition";
 import _ from "lodash";
 import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/core-auth";
-import { TokenCredentialsBase, UserTokenCredentials } from "@azure/ms-rest-nodeauth";
 import {
-  ExportTemplateRequest,
   Provider,
-  Providers,
-  ProvidersGetAtTenantScopeOptionalParams,
-  ProvidersGetAtTenantScopeResponse,
-  ProvidersListAtTenantScopeOptionalParams,
   ProvidersListOptionalParams,
-  ProvidersProviderPermissionsOptionalParams,
-  ProvidersProviderPermissionsResponse,
-  ProvidersRegisterAtManagementGroupScopeOptionalParams,
-  ProvidersRegisterOptionalParams,
-  ProvidersRegisterResponse,
-  ProvidersUnregisterOptionalParams,
-  ProvidersUnregisterResponse,
   ResourceGroup,
-  ResourceGroupPatchable,
-  ResourceGroups,
   ResourceGroupsCheckExistenceOptionalParams,
   ResourceGroupsCheckExistenceResponse,
   ResourceGroupsCreateOrUpdateOptionalParams,
   ResourceGroupsCreateOrUpdateResponse,
-  ResourceGroupsDeleteOptionalParams,
-  ResourceGroupsExportTemplateOptionalParams,
-  ResourceGroupsExportTemplateResponse,
   ResourceGroupsGetOptionalParams,
   ResourceGroupsGetResponse,
   ResourceGroupsListOptionalParams,
-  ResourceGroupsUpdateOptionalParams,
-  ResourceGroupsUpdateResponse,
   ResourceManagementClient,
 } from "@azure/arm-resources";
 import { AppStudioClient } from "../../../src/plugins/resource/appstudio/appStudio";

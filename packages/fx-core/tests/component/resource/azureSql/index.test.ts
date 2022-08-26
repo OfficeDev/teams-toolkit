@@ -23,8 +23,6 @@ import { newEnvInfoV3 } from "../../../../src";
 import path from "path";
 import * as os from "os";
 import faker from "faker";
-import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import {
   SqlManagementClient,
   FirewallRule,
@@ -42,7 +40,6 @@ import {
 } from "@azure/arm-sql";
 import * as azureSql from "@azure/arm-sql";
 import axios from "axios";
-import { TokenResponse } from "adal-node/lib/adal";
 import { TokenInfo, UserType } from "../../../../src/component/resource/azureSql/utils/common";
 import * as Common from "../../../../src/component/resource/azureSql/utils/common";
 import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/core-auth";
@@ -150,10 +147,6 @@ describe("Azure-SQL Component", () => {
     mockSqlManagementClient.serverAzureADAdministrators = mockServerAzureADAdministrators as any;
     mockSqlManagementClient.servers = mockServers as any;
     sandbox.stub(azureSql, "SqlManagementClient").returns(mockSqlManagementClient);
-
-    sandbox
-      .stub(msRestNodeAuth.ApplicationTokenCredentials.prototype, "getToken")
-      .resolves({ accessToken: faker.random.word() } as TokenResponse);
     sandbox.stub(SqlClient.prototype, "addDatabaseUser").resolves();
     sandbox.stub(axios, "get").resolves({ data: "1.1.1.1" });
     const mockInfo: TokenInfo = {

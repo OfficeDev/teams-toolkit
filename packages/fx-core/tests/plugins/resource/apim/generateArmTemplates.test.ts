@@ -16,8 +16,7 @@ import {
   ResourcePlugins,
 } from "../util";
 import { ConstantString } from "../../../../src/common/constants";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import { generateFakeServiceClientCredentials, MyTokenCredential } from "../bot/unit/utils";
+import { MyTokenCredential } from "../bot/unit/utils";
 import { ApimOutputBicepSnippet } from "../../../../src/plugins/resource/apim/constants";
 import { ArmTemplateResult } from "../../../../src/common/armInterface";
 import {

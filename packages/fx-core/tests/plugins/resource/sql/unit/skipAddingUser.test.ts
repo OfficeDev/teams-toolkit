@@ -5,14 +5,10 @@ import { TestHelper } from "../helper";
 import { SqlPlugin } from "../../../../../src/plugins/resource/sql";
 import * as dotenv from "dotenv";
 import { Platform, PluginContext } from "@microsoft/teamsfx-api";
-import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import * as faker from "faker";
 import * as sinon from "sinon";
-import { ApplicationTokenCredentials } from "@azure/ms-rest-nodeauth";
-import { TokenResponse } from "adal-node/lib/adal";
 import { Constants } from "../../../../../src/plugins/resource/sql/constants";
 import * as commonUtils from "../../../../../src/plugins/resource/sql/utils/commonUtils";
-import { FirewallRules, ServerAzureADAdministrators, Servers } from "@azure/arm-sql";
 import axios from "axios";
 import {
   SqlManagementClient,
@@ -129,9 +125,6 @@ describe("skipAddingUser", () => {
     const mockSqlManagementClient = new SqlManagementClient(new MyTokenCredential(), "id");
     mockSqlManagementClient.servers = mockServers as any;
     sinon.stub(azureSql, "SqlManagementClient").returns(mockSqlManagementClient);
-    sinon
-      .stub(ApplicationTokenCredentials.prototype, "getToken")
-      .resolves({ accessToken: faker.random.word() } as TokenResponse);
     const mockInfo: commonUtils.TokenInfo = {
       name: faker.random.word(),
       objectId: faker.random.word(),

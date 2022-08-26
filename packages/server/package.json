@@ -90,7 +90,6 @@
     "webpack-cli": "^4.7.2"
   },
   "dependencies": {
-    "@azure/ms-rest-nodeauth": "^3.1.1",
     "@azure/identity": "^1.3.0",
     "@microsoft/teamsfx-api": "^0.20.5-rc",
     "@microsoft/teamsfx-core": "^1.15.0-rc",

@@ -36,7 +36,6 @@ import {
   MockedTelemetryReporter,
   MockedUserInteraction,
 } from "./util";
-import { UserTokenCredentials } from "@azure/ms-rest-nodeauth";
 import os from "os";
 import * as cpUtils from "../../../src/common/cpUtils";
 import { Context } from "@microsoft/teamsfx-api/build/v2";

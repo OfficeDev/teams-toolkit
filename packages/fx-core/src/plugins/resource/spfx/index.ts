@@ -20,16 +20,9 @@ import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContai
 import { SPFxPluginImpl } from "./plugin";
 import { TelemetryEvent, UserTasks } from "./utils/constants";
 import { ProgressHelper } from "./utils/progress-helper";
-import {
-  frameworkQuestion,
-  SPFXQuestionNames,
-  versionCheckQuestion,
-  webpartDescriptionQuestion,
-  webpartNameQuestion,
-} from "./utils/questions";
+import { frameworkQuestion, versionCheckQuestion, webpartNameQuestion } from "./utils/questions";
 import { telemetryHelper } from "./utils/telemetry-helper";
 import "./v2";
-import "./v3";
 @Service(ResourcePlugins.SpfxPlugin)
 export class SpfxPlugin implements Plugin {
   name = "fx-resource-spfx";

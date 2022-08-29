@@ -10,7 +10,7 @@ import { setTools } from "../../../src/core/globalVars";
 import { MockTools, randomAppName } from "../../core/utils";
 import "../../../src/component/core";
 import { canAddSso } from "../../../src/component/feature/sso";
-describe("Tab Feature", () => {
+describe("SSO Feature", () => {
   const sandbox = createSandbox();
   const tools = new MockTools();
   setTools(tools);
@@ -29,7 +29,26 @@ describe("Tab Feature", () => {
     sandbox.restore();
   });
 
-  it("shouldn't AddSso in tab-sso project", async () => {
+  it("should AddSso in tab-sso project without sso component", async () => {
+    const projectSetting: ProjectSettingsV3 = {
+      ...basicProjectSetting,
+      components: [
+        {
+          name: "teams-tab",
+          hosting: "azure-storage",
+          deploy: true,
+          provision: true,
+          build: true,
+          folder: "tabs",
+          sso: true,
+        },
+      ],
+    };
+    const res = await canAddSso(projectSetting);
+    assert.isFalse(res);
+  });
+
+  it("shouldn't AddSso in tab-sso project with sso", async () => {
     const projectSetting: ProjectSettingsV3 = {
       ...basicProjectSetting,
       components: [

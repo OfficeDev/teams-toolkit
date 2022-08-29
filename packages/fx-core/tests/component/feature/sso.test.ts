@@ -45,7 +45,7 @@ describe("SSO Feature", () => {
       ],
     };
     const res = await canAddSso(projectSetting);
-    assert.isFalse(res);
+    assert.isTrue(res);
   });
 
   it("shouldn't AddSso in tab-sso project with sso", async () => {

@@ -32,6 +32,8 @@ import {
 } from "../../../src/component/constants";
 import {
   AzureSolutionQuestionNames,
+  BotOptionItem,
+  MessageExtensionItem,
   NotificationOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import { QuestionNames } from "../../../src/plugins/resource/bot/constants";
@@ -52,13 +54,14 @@ describe("Bot Feature", () => {
     programmingLanguage: "typescript",
     components: [],
   };
-  const manifest = {} as TeamsAppManifest;
 
   let pathExistStub: SinonStub;
   let writeFileStub: SinonStub;
+  let scaffoldStub: SinonStub;
   beforeEach(() => {
+    const manifest = {} as TeamsAppManifest;
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
-    sandbox.stub(templatesAction, "scaffoldFromTemplates").resolves();
+    scaffoldStub = sandbox.stub(templatesAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
     sandbox.stub(manifestUtils, "writeAppManifest").resolves(ok(undefined));
     sandbox.stub(projectSettingsLoader, "loadProjectSettings").resolves(ok(projectSetting));
@@ -83,6 +86,38 @@ describe("Bot Feature", () => {
     sandbox.restore();
   });
 
+  it("add message extension over bot", async () => {
+    sandbox.stub(utils.bicepUtils, "persistBiceps").resolves(ok(undefined));
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+      [AzureSolutionQuestionNames.Features]: BotOptionItem.id,
+      language: "typescript",
+      "app-name": appName,
+    };
+    const teamsBotComponent = Container.get("teams-bot") as any;
+    const addBotRes = await teamsBotComponent.add(context, inputs);
+    if (addBotRes.isErr()) {
+      console.log(addBotRes.error);
+    }
+    assert.isTrue(addBotRes.isOk());
+    const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
+    assert.exists(teamsBot);
+    assert.deepEqual(teamsBot?.capabilities, ["bot"]);
+    assert.isTrue(scaffoldStub.calledOnce);
+
+    const inputs2: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+      [AzureSolutionQuestionNames.Features]: MessageExtensionItem.id,
+      language: "typescript",
+      "app-name": appName,
+    };
+    const addMeRes = await teamsBotComponent.add(context, inputs2);
+    assert.isTrue(addMeRes.isOk());
+    assert.deepEqual(teamsBot?.capabilities, ["bot", "message-extension"]);
+    assert.isTrue(scaffoldStub.calledOnce);
+  });
   it("add restify notification bot", async () => {
     sandbox.stub(utils.bicepUtils, "persistBiceps").resolves(ok(undefined));
     const inputs: InputsWithProjectPath = {

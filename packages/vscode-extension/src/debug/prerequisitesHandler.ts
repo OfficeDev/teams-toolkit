@@ -341,7 +341,7 @@ export async function checkAndInstallForTask(
   prerequisites: string[],
   ports?: number[]
 ): Promise<Result<void, FxError>> {
-  const orderedCheckers = await getOrderedCheckersV2(prerequisites, ports);
+  const orderedCheckers = await getOrderedCheckersForTask(prerequisites, ports);
 
   return await localTelemetryReporter.runWithTelemetryProperties(
     TelemetryEvent.DebugPrerequisites,
@@ -1174,7 +1174,7 @@ async function getOrderedCheckersForGetStarted(): Promise<PrerequisiteOrderedChe
   }
 }
 
-async function getOrderedCheckersV2(
+async function getOrderedCheckersForTask(
   prerequisites: string[],
   ports?: number[]
 ): Promise<PrerequisiteOrderedChecker[]> {

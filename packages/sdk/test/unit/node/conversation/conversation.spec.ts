@@ -22,6 +22,7 @@ describe("ConversationBot Tests - Node", () => {
     assert.isDefined(conversationBot.adapter.onTurnError);
     assert.isUndefined(conversationBot.command);
     assert.isUndefined(conversationBot.notification);
+    assert.isUndefined(conversationBot.cardAction);
   });
 
   it("Create with customized adapter", () => {
@@ -31,6 +32,7 @@ describe("ConversationBot Tests - Node", () => {
     assert.equal(conversationBot.adapter, adapter);
     assert.isUndefined(conversationBot.command);
     assert.isUndefined(conversationBot.notification);
+    assert.isUndefined(conversationBot.cardAction);
   });
 
   it("Create with customized adapterConfig", () => {
@@ -39,17 +41,20 @@ describe("ConversationBot Tests - Node", () => {
     assert.isDefined(conversationBot.adapter.onTurnError);
     assert.isUndefined(conversationBot.command);
     assert.isUndefined(conversationBot.notification);
+    assert.isUndefined(conversationBot.cardAction);
   });
 
   it("Create with all enabled", () => {
     const conversationBot = new ConversationBot({
       command: { enabled: true },
       notification: { enabled: true },
+      cardAction: { enabled: true },
     });
     assert.isDefined(conversationBot.adapter);
     assert.isDefined(conversationBot.adapter.onTurnError);
     assert.isDefined(conversationBot.command);
     assert.isDefined(conversationBot.notification);
+    assert.isDefined(conversationBot.cardAction);
   });
 
   it("requestHandler correctly handles empty logic", async () => {

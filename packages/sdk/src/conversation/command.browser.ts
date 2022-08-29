@@ -5,7 +5,7 @@ import { BotFrameworkAdapter } from "botbuilder";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { formatString } from "../util/utils";
 import { TeamsFxBotCommandHandler } from "./interface";
-import { CommandResponseMiddleware } from "./middleware";
+import { CommandResponseMiddleware } from "./middlewares/commandMiddleware";
 
 /**
  * A command bot for receiving commands and sending responses in Teams.
@@ -55,7 +55,7 @@ export class CommandBot {
    */
   public registerCommands(commands: TeamsFxBotCommandHandler[]): void {
     throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "CommandnBot"),
+      formatString(ErrorMessage.BrowserRuntimeNotSupported, "CommandBot"),
       ErrorCode.RuntimeNotSupported
     );
   }

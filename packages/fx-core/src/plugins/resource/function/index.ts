@@ -34,7 +34,6 @@ import { FunctionPluginResultFactory as ResultFactory, FxResult } from "./result
 import { Logger } from "./utils/logger";
 import { TelemetryHelper } from "./utils/telemetry-helper";
 import "./v2";
-import "./v3";
 @Service(ResourcePlugins.FunctionPlugin)
 export class FunctionPlugin implements Plugin {
   name = "fx-resource-function";

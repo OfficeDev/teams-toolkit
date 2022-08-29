@@ -38,7 +38,7 @@ import { TestSsoCommandHandler } from "../testUtils";
 chaiUse(chaiPromises);
 let mockedEnvRestore: () => void;
 
-describe("TeamsBotSsoPrompt Tests - Node", () => {
+describe("SsoExecutionDialog Tests - Node", () => {
   const sleep = promisify(setTimeout);
 
   const clientId = "fake_client_id";

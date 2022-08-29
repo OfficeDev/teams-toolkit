@@ -174,7 +174,7 @@ async function provisionResourceImpl(
       return err(solutionConfigRes.error);
     }
 
-    const consentResult = await provisionUtils.askForProvisionConsentNew(
+    const consentResult = await provisionUtils.askForProvisionConsent(
       ctx,
       tokenProvider.azureAccountProvider,
       envInfo as v3.EnvInfoV3,
@@ -217,7 +217,7 @@ async function provisionResourceImpl(
       }
     }
   } else if (hasSwitchedM365Tenant) {
-    const consentResult = await provisionUtils.askForProvisionConsentNew(
+    const consentResult = await provisionUtils.askForProvisionConsent(
       ctx,
       tokenProvider.azureAccountProvider,
       envInfo as v3.EnvInfoV3,

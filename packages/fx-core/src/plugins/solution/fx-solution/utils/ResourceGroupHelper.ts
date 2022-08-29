@@ -177,9 +177,8 @@ export class ResourceGroupHelper {
         )
       );
     const subscriptionClient = new SubscriptionClient(azureToken);
-    const askSubRes = await azureAccountProvider.getSelectedSubscription(true);
     const listLocations = await subscriptionClient.subscriptions.listLocations(
-      askSubRes!.subscriptionId
+      rmClient.subscriptionId
     );
     const locations = listLocations.map((item) => item.displayName);
     const providerData = await rmClient.providers.get(MsResources);

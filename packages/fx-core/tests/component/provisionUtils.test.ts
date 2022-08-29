@@ -27,7 +27,7 @@ function MockContext(): any {
   };
 }
 
-describe.only("checkProvisionSubscription", () => {
+describe("checkProvisionSubscription", () => {
   const mocker = sinon.createSandbox();
 
   afterEach(() => {

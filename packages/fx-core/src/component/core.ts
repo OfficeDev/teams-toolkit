@@ -15,8 +15,6 @@ import {
   ResourceContextV3,
   Result,
   UserError,
-  v2,
-  v3,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import path from "path";
@@ -49,7 +47,6 @@ import "./feature/spfx";
 import "./feature/sql";
 import "./feature/sso";
 import "./feature/tab";
-import { AadApp } from "./resource/aadApp/aadApp";
 import "./resource/apim";
 import { AppManifest } from "./resource/appManifest/appManifest";
 import "./resource/azureAppService/azureFunction";
@@ -89,18 +86,8 @@ import {
   TabSPFxItem,
   TabSPFxNewUIItem,
 } from "../plugins/solution/fx-solution/question";
-import { resourceGroupHelper } from "../plugins/solution/fx-solution/utils/ResourceGroupHelper";
 import { executeConcurrently } from "../plugins/solution/fx-solution/v2/executor";
-import {
-  checkWhetherLocalDebugM365TenantMatches,
-  getBotTroubleShootMessage,
-} from "../plugins/solution/fx-solution/v2/utils";
-import { checkDeployAzureSubscription } from "../plugins/solution/fx-solution/v3/deploy";
-import {
-  askForDeployConsent,
-  fillInAzureConfigs,
-  getM365TenantId,
-} from "../plugins/solution/fx-solution/v3/provision";
+import { getBotTroubleShootMessage } from "../plugins/solution/fx-solution/v2/utils";
 import { AzureResources, ComponentNames } from "./constants";
 import { pluginName2ComponentName } from "./migrate";
 import {
@@ -111,19 +98,13 @@ import {
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "./middleware/actionExecutionMW";
 import { getQuestionsForCreateProjectV2 } from "../core/middleware";
-import { askForProvisionConsentNew } from "../plugins/solution/fx-solution/v2/provision";
-import { resetEnvInfoWhenSwitchM365 } from "./utils";
 import { TelemetryEvent, TelemetryProperty } from "../common/telemetry";
 import { getComponent } from "./workflow";
-import {
-  handleConfigFilesWhenSwitchAccount,
-  hasBotServiceCreated,
-} from "../plugins/solution/fx-solution/utils/util";
 import { ensureBasicFolderStructure } from "../core";
 import { environmentManager } from "../core/environment";
-import { sendErrorTelemetryThenReturnError } from "../core/telemetry";
-import { ViewAadAppHelpLink, SolutionTelemetryEvent } from "../plugins";
 import { Constants } from "../plugins/resource/aad/constants";
+import { deployUtils } from "./deployUtils";
+import { provisionUtils } from "./provisionUtils";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -335,7 +316,7 @@ export class TeamsfxCore {
 
     // 1. pre provision
     {
-      const res = await preProvision(ctx, inputs);
+      const res = await provisionUtils.preProvision(ctx, inputs);
       if (res.isErr()) return err(res.error);
     }
     // 2. create a teams app
@@ -476,35 +457,6 @@ export class TeamsfxCore {
     return ok(undefined);
   }
 
-  // async build(
-  //   context: ResourceContextV3,
-  //   inputs: InputsWithProjectPath
-  // ): Promise<Result<undefined, FxError>> {
-  //   const projectSettings = context.projectSetting as ProjectSettingsV3;
-  //   const thunks = [];
-  //   for (const component of projectSettings.components) {
-  //     const componentInstance = Container.get(component.name) as any;
-  //     if (component.build && componentInstance.build) {
-  //       thunks.push({
-  //         pluginName: `${component.name}`,
-  //         taskName: "build",
-  //         thunk: () => {
-  //           const clonedInputs = cloneDeep(inputs);
-  //           clonedInputs.folder = component.folder;
-  //           clonedInputs.artifactFolder = component.artifactFolder;
-  //           clonedInputs.componentId = component.name;
-  //           return componentInstance.build!(context, clonedInputs);
-  //         },
-  //       });
-  //     }
-  //   }
-  //   const result = await executeConcurrently(thunks, context.logProvider);
-  //   if (result.kind !== "success") {
-  //     return err(result.error);
-  //   }
-  //   return ok(undefined);
-  // }
-
   @hooks([
     ActionExecutionMW({
       question: async (context: ContextV3, inputs: InputsWithProjectPath) => {
@@ -523,7 +475,7 @@ export class TeamsfxCore {
     const isDeployAADManifestFromVSCode =
       inputs[Constants.INCLUDE_AAD_MANIFEST] === "yes" && inputs.platform === Platform.VSCode;
     if (isDeployAADManifestFromVSCode) {
-      return deployAadFromVscode(context, inputs);
+      return deployUtils.deployAadFromVscode(context, inputs);
     }
     context.logProvider.info(
       `inputs(${AzureSolutionQuestionNames.PluginSelectionDeploy}) = ${
@@ -602,7 +554,7 @@ export class TeamsfxCore {
 
     // 2. check azure account
     if (hasAzureResource) {
-      const subscriptionResult = await checkDeployAzureSubscription(
+      const subscriptionResult = await deployUtils.checkDeployAzureSubscription(
         context,
         context.envInfo,
         context.tokenProvider.azureAccountProvider
@@ -610,7 +562,7 @@ export class TeamsfxCore {
       if (subscriptionResult.isErr()) {
         return err(subscriptionResult.error);
       }
-      const consent = await askForDeployConsent(
+      const consent = await deployUtils.askForDeployConsent(
         context,
         context.tokenProvider.azureAccountProvider,
         context.envInfo
@@ -672,209 +624,5 @@ export class TeamsfxCore {
       context.logProvider.info(msg);
       return err(result.error);
     }
-  }
-}
-
-async function preProvision(
-  context: ContextV3,
-  inputs: InputsWithProjectPath
-): Promise<Result<undefined, FxError>> {
-  const ctx = context as ResourceContextV3;
-  const envInfo = ctx.envInfo;
-  const hasBotServiceCreatedBefore = hasBotServiceCreated(envInfo as v3.EnvInfoV3);
-
-  // 1. check M365 tenant
-  envInfo.state[ComponentNames.AppManifest] = envInfo.state[ComponentNames.AppManifest] || {};
-  envInfo.state.solution = envInfo.state.solution || {};
-  const appManifest = envInfo.state[ComponentNames.AppManifest];
-  const solutionConfig = envInfo.state.solution;
-  solutionConfig.provisionSucceeded = false;
-  const tenantIdInConfig = appManifest.tenantId;
-
-  const isLocalDebug = envInfo.envName === "local";
-  const tenantInfoInTokenRes = await getM365TenantId(ctx.tokenProvider.m365TokenProvider);
-  if (tenantInfoInTokenRes.isErr()) {
-    return err(tenantInfoInTokenRes.error);
-  }
-  const tenantIdInToken = tenantInfoInTokenRes.value.tenantIdInToken;
-  const hasSwitchedM365Tenant =
-    !!tenantIdInConfig && !!tenantIdInToken && tenantIdInToken !== tenantIdInConfig;
-
-  if (!isLocalDebug) {
-    if (hasSwitchedM365Tenant) {
-      resetEnvInfoWhenSwitchM365(envInfo);
-    }
-  } else {
-    const res = await checkWhetherLocalDebugM365TenantMatches(
-      envInfo,
-      ctx.telemetryReporter,
-      tenantIdInConfig,
-      ctx.tokenProvider.m365TokenProvider,
-      inputs.projectPath
-    );
-    if (res.isErr()) {
-      return err(res.error);
-    }
-  }
-
-  envInfo.state[ComponentNames.AppManifest] = envInfo.state[ComponentNames.AppManifest] || {};
-  envInfo.state[ComponentNames.AppManifest].tenantId = tenantIdInToken;
-  envInfo.state.solution.teamsAppTenantId = tenantIdInToken;
-  globalVars.m365TenantId = tenantIdInToken;
-
-  // 3. check Azure configs
-  if (hasAzureResourceV3(ctx.projectSetting) && envInfo.envName !== "local") {
-    // ask common question and fill in solution config
-    const subscriptionIdInState = envInfo.state.solution.subscriptionId;
-    const solutionConfigRes = await fillInAzureConfigs(ctx, inputs, envInfo, ctx.tokenProvider);
-    if (solutionConfigRes.isErr()) {
-      return err(solutionConfigRes.error);
-    }
-
-    const consentResult = await askForProvisionConsentNew(
-      ctx,
-      ctx.tokenProvider.azureAccountProvider,
-      envInfo as v3.EnvInfoV3,
-      hasSwitchedM365Tenant,
-      solutionConfigRes.value.hasSwitchedSubscription,
-      tenantInfoInTokenRes.value.tenantUserName,
-      true,
-      tenantIdInConfig,
-      subscriptionIdInState
-    );
-    if (consentResult.isErr()) {
-      return err(consentResult.error);
-    }
-
-    // create resource group if needed
-    if (solutionConfig.needCreateResourceGroup) {
-      const createRgRes = await resourceGroupHelper.createNewResourceGroup(
-        solutionConfig.resourceGroupName,
-        ctx.tokenProvider.azureAccountProvider,
-        solutionConfig.subscriptionId,
-        solutionConfig.location
-      );
-      if (createRgRes.isErr()) {
-        return err(createRgRes.error);
-      }
-    }
-
-    if (solutionConfigRes.value.hasSwitchedSubscription || hasSwitchedM365Tenant) {
-      const handleConfigFilesWhenSwitchAccountsRes = await handleConfigFilesWhenSwitchAccount(
-        envInfo as v3.EnvInfoV3,
-        ctx.projectSetting.appName,
-        inputs.projectPath,
-        hasSwitchedM365Tenant,
-        solutionConfigRes.value.hasSwitchedSubscription,
-        hasBotServiceCreatedBefore
-      );
-
-      if (handleConfigFilesWhenSwitchAccountsRes.isErr()) {
-        return err(handleConfigFilesWhenSwitchAccountsRes.error);
-      }
-    }
-  } else if (hasSwitchedM365Tenant && !isLocalDebug) {
-    const consentResult = await askForProvisionConsentNew(
-      ctx,
-      ctx.tokenProvider.azureAccountProvider,
-      envInfo as v3.EnvInfoV3,
-      hasSwitchedM365Tenant,
-      false,
-      tenantInfoInTokenRes.value.tenantUserName,
-      false,
-      tenantIdInConfig
-    );
-    if (consentResult.isErr()) {
-      return err(consentResult.error);
-    }
-    const handleConfigFilesWhenSwitchAccountsRes = await handleConfigFilesWhenSwitchAccount(
-      envInfo as v3.EnvInfoV3,
-      ctx.projectSetting.appName,
-      inputs.projectPath,
-      hasSwitchedM365Tenant,
-      false,
-      false
-    );
-
-    if (handleConfigFilesWhenSwitchAccountsRes.isErr()) {
-      return err(handleConfigFilesWhenSwitchAccountsRes.error);
-    }
-  }
-  return ok(undefined);
-}
-
-export async function deployAadFromVscode(
-  context: ResourceContextV3,
-  inputs: InputsWithProjectPath
-): Promise<Result<undefined, FxError>> {
-  const thunks = [];
-  // 1. collect resources to deploy
-  const deployComponent = Container.get<AadApp>(ComponentNames.AadApp);
-  thunks.push({
-    pluginName: `${deployComponent.name}`,
-    taskName: `deploy`,
-    thunk: async () => {
-      const clonedInputs = cloneDeep(inputs);
-      clonedInputs.componentId = deployComponent.name;
-      return await deployComponent.deploy!(context, clonedInputs);
-    },
-  });
-  if (thunks.length === 0) {
-    return err(
-      new UserError(
-        "fx",
-        "NoResourcePluginSelected",
-        getDefaultString("core.NoPluginSelected"),
-        getLocalizedString("core.NoPluginSelected")
-      )
-    );
-  }
-
-  context.logProvider.info(
-    getLocalizedString(
-      "core.deploy.selectedPluginsToDeployNotice",
-      PluginDisplayName.Solution,
-      JSON.stringify(thunks.map((p) => p.pluginName))
-    )
-  );
-
-  // 2. check azure account
-  const subscriptionResult = await checkDeployAzureSubscription(
-    context,
-    context.envInfo,
-    context.tokenProvider.azureAccountProvider
-  );
-  if (subscriptionResult.isErr()) {
-    return err(subscriptionResult.error);
-  }
-
-  // 3. start deploy
-  context.logProvider.info(
-    getLocalizedString("core.deploy.startNotice", PluginDisplayName.Solution)
-  );
-  const result = await executeConcurrently(thunks, context.logProvider);
-
-  if (result.kind === "success") {
-    const msg = getLocalizedString("core.deploy.aadManifestSuccessNotice");
-    context.logProvider.info(msg);
-    context.userInteraction
-      .showMessage("info", msg, false, getLocalizedString("core.deploy.aadManifestLearnMore"))
-      .then((result) => {
-        const userSelected = result.isOk() ? result.value : undefined;
-        if (userSelected === getLocalizedString("core.deploy.aadManifestLearnMore")) {
-          context.userInteraction?.openUrl(ViewAadAppHelpLink);
-        }
-      });
-    return ok(undefined);
-  } else {
-    const msg = getLocalizedString("core.deploy.failNotice", context.projectSetting.appName);
-    context.logProvider.info(msg);
-    return err(
-      sendErrorTelemetryThenReturnError(
-        SolutionTelemetryEvent.Deploy,
-        result.error,
-        context.telemetryReporter
-      )
-    );
   }
 }

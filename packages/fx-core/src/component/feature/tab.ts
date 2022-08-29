@@ -10,16 +10,12 @@ import {
   FxError,
   InputsWithProjectPath,
   ok,
-  Platform,
   ResourceContextV3,
   Result,
   v3,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
-import { format } from "util";
-import { getLocalizedString } from "../../common/localizeUtils";
-import { isVSProject } from "../../common/projectSettingsHelper";
 import { globalVars } from "../../core/globalVars";
 import { CoreQuestionNames } from "../../core/question";
 import { Constants, FrontendPathInfo } from "../../plugins/resource/frontend/constants";
@@ -27,7 +23,7 @@ import {
   AzureSolutionQuestionNames,
   TabNonSsoItem,
 } from "../../plugins/solution/fx-solution/question";
-import { ComponentNames, Scenarios } from "../constants";
+import { ComponentNames, Scenarios, StorageOutputs } from "../constants";
 import { Plans } from "../messages";
 import { getComponent, getComponentByScenario } from "../workflow";
 import { assign, cloneDeep, merge } from "lodash";
@@ -38,10 +34,10 @@ import { convertToAlphanumericOnly } from "../../common/utils";
 import { IdentityResource } from "../resource/identity";
 import { generateLocalDebugSettings } from "../debug";
 import { AppManifest } from "../resource/appManifest/appManifest";
-import { FRONTEND_INDEX_PATH } from "../../plugins/resource/appstudio/constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { hooks } from "@feathersjs/hooks/lib";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
+import { isVSProject } from "../../common";
 
 @Service("teams-tab")
 export class TeamsTab {
@@ -110,7 +106,7 @@ export class TeamsTab {
       name: ComponentNames.TeamsTab,
       hosting: inputs.hosting,
       deploy: true,
-      provision: inputs[CoreQuestionNames.ProgrammingLanguage] != "csharp",
+      provision: true,
       build: true,
       folder: clonedInputs.folder,
     };
@@ -222,23 +218,19 @@ export class TeamsTab {
       errorSource: "FE",
     }),
   ])
-  async provision(
-    context: ResourceContextV3,
-    inputs: InputsWithProjectPath
-  ): Promise<Result<undefined, FxError>> {
+  async provision(context: ResourceContextV3): Promise<Result<undefined, FxError>> {
     if (context.envInfo.envName === "local") {
       context.envInfo.state[ComponentNames.TeamsTab] =
         context.envInfo.state[ComponentNames.TeamsTab] || {};
-      context.envInfo.state[ComponentNames.TeamsTab][FRONTEND_INDEX_PATH] =
-        Constants.FrontendIndexPath;
+      if (isVSProject(context.projectSetting)) {
+        context.envInfo.state[ComponentNames.TeamsTab][StorageOutputs.indexPath.key] = "";
+      } else {
+        context.envInfo.state[ComponentNames.TeamsTab][StorageOutputs.indexPath.key] =
+          Constants.FrontendIndexPath;
+      }
     }
     return ok(undefined);
   }
-  @hooks([
-    ActionExecutionMW({
-      errorSource: "FE",
-    }),
-  ])
   async configure(
     context: ResourceContextV3,
     inputs: InputsWithProjectPath
@@ -248,11 +240,6 @@ export class TeamsTab {
     if (res.isErr()) return err(res.error);
     return ok(undefined);
   }
-  @hooks([
-    ActionExecutionMW({
-      errorSource: "FE",
-    }),
-  ])
   async build(
     context: ResourceContextV3,
     inputs: InputsWithProjectPath

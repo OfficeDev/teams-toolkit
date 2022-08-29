@@ -124,7 +124,7 @@ export class ProvisionUtils {
         return err(solutionConfigRes.error);
       }
 
-      const consentResult = await this.askForProvisionConsentNew(
+      const consentResult = await this.askForProvisionConsent(
         ctx,
         ctx.tokenProvider.azureAccountProvider,
         envInfo as v3.EnvInfoV3,
@@ -167,7 +167,7 @@ export class ProvisionUtils {
         }
       }
     } else if (hasSwitchedM365Tenant && !isLocalDebug) {
-      const consentResult = await this.askForProvisionConsentNew(
+      const consentResult = await this.askForProvisionConsent(
         ctx,
         ctx.tokenProvider.azureAccountProvider,
         envInfo as v3.EnvInfoV3,
@@ -236,7 +236,7 @@ export class ProvisionUtils {
     const subscriptions = await azureAccountProvider.listSubscriptions();
 
     if (targetSubscriptionIdFromCLI) {
-      const targetSubscriptionInfo = this.findSubscriptionFromList(
+      const targetSubscriptionInfo = findSubscriptionFromList(
         targetSubscriptionIdFromCLI,
         subscriptions
       );
@@ -256,10 +256,7 @@ export class ProvisionUtils {
     }
 
     if (subscriptionIdInConfig) {
-      const targetConfigSubInfo = this.findSubscriptionFromList(
-        subscriptionIdInConfig,
-        subscriptions
-      );
+      const targetConfigSubInfo = findSubscriptionFromList(subscriptionIdInConfig, subscriptions);
 
       if (!targetConfigSubInfo) {
         return err(
@@ -311,13 +308,6 @@ export class ProvisionUtils {
         );
       }
     }
-  }
-
-  findSubscriptionFromList(
-    subscriptionId: string,
-    subscriptions: SubscriptionInfo[]
-  ): SubscriptionInfo | undefined {
-    return subscriptions.find((item) => item.subscriptionId === subscriptionId);
   }
 
   updateEnvInfoSubscription(envInfo: v3.EnvInfoV3, subscriptionInfo: SubscriptionInfo) {
@@ -567,35 +557,6 @@ export class ProvisionUtils {
     return ok({ hasSwitchedSubscription: subscriptionResult.value.hasSwitchedSubscription });
   }
 
-  async askForProvisionConsent(
-    ctx: v2.Context,
-    azureAccountProvider: AzureAccountProvider,
-    envInfo: v3.EnvInfoV3
-  ): Promise<Result<Void, FxError>> {
-    const azureToken = await azureAccountProvider.getAccountCredentialAsync();
-
-    // Only Azure project requires this confirm dialog
-    const username = (azureToken as any).username || "";
-    const subscriptionId = envInfo.state.solution?.subscriptionId || "";
-    const subscriptionName = envInfo.state.solution?.subscriptionName || "";
-    const msgNew = getLocalizedString(
-      "core.provision.confirmEnvNotice",
-      envInfo.envName,
-      username,
-      subscriptionName ? subscriptionName : subscriptionId
-    );
-    const confirmRes = await ctx.userInteraction.showMessage("warn", msgNew, true, "Provision");
-    const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
-
-    if (confirm !== "Provision") {
-      if (confirm === "Pricing calculator") {
-        ctx.userInteraction.openUrl("https://azure.microsoft.com/en-us/pricing/calculator/");
-      }
-      return err(new UserError(SolutionSource, "CancelProvision", "CancelProvision"));
-    }
-    return ok(Void);
-  }
-
   async getM365TenantId(
     m365TokenProvider: M365TokenProvider
   ): Promise<Result<M365TenantRes, FxError>> {
@@ -637,7 +598,7 @@ export class ProvisionUtils {
     return ok({ tenantIdInToken, tenantUserName });
   }
 
-  async askForProvisionConsentNew(
+  async askForProvisionConsent(
     ctx: v2.Context,
     azureAccountProvider: AzureAccountProvider,
     envInfo: v3.EnvInfoV3,
@@ -765,6 +726,13 @@ export function getTeamsAppTenantId(state: Json): string {
     return state[GLOBAL_CONFIG][REMOTE_TEAMS_APP_TENANT_ID];
   }
   return "";
+}
+
+export function findSubscriptionFromList(
+  subscriptionId: string,
+  subscriptions: SubscriptionInfo[]
+): SubscriptionInfo | undefined {
+  return subscriptions.find((item) => item.subscriptionId === subscriptionId);
 }
 
 export const provisionUtils = new ProvisionUtils();

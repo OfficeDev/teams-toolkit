@@ -32,22 +32,22 @@ This section walks through the generated code. The project folder contains the f
 | - | - |
 | `.fx` | Project level settings, configurations, and environment information |
 | `.vscode` | VSCode files for local debug |
-| `bot` | The source code for the command and response Teams application |
+| `bot` | The source code for the workflow bot Teams application |
 | `templates` | Templates for the Teams application manifest and for provisioning Azure resources |
 
 The core command-response implementation is in `bot` folder.
 
-The following files provide the business logic for command and response bot. These files can be updated to fit your business logic requirements. The default implementation provides a starting point to help you get started.
+The following files provide the business logic for the workflow bot. These files can be updated to fit your business logic requirements. The default implementation provides a starting point to help you get started.
 
 | File | Contents |
 | - | - |
-| `src/index.ts` | Application entry point and `restify` handlers for command and response |
+| `src/index.ts` | Application entry point and `restify` handlers for the workflow bot |
 | `src/adaptiveCards/helloworldCommand.json` | A generated Adaptive Card that is sent to Teams |
 | `src/commands/helloworldCommandHandler.ts` | Responds to the command message |
 | `src/cardActions/helloworldActionHandler.ts` | Responds to the `doStuff` card action |
 | `src/cardModels.ts` | The default Adaptive Card data model |
 
-The following files implement the core command and response on the Bot Framework. You generally will not need to customize these files.
+The following files implement the core workflow bot on the Bot Framework. You generally will not need to customize these files.
 
 | File / Folder | Contents |
 | - | - |

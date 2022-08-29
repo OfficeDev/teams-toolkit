@@ -2,18 +2,25 @@
 // Licensed under the MIT license.
 
 import { Storage, StoreItems, TurnContext } from "botbuilder";
-import { Activity } from "botframework-schema";
+import { IAdaptiveCard } from "adaptivecards";
+
+import { Activity, InvokeResponse, StatusCodes } from "botframework-schema";
 import {
+  AdaptiveCardResponse,
   CommandMessage,
+  InvokeResponseErrorCode,
   MessageResponse,
   NotificationTarget,
   NotificationTargetStorage,
   NotificationTargetType,
+  TeamsFxAdaptiveCardActionHandler,
   TeamsFxBotCommandHandler,
   TeamsFxBotSsoCommandHandler,
   TriggerPatterns,
 } from "../../../../src/conversation/interface";
+
 import { v4 as uuidv4 } from "uuid";
+import { InvokeResponseFactory } from "../../../../src/conversation/invokeResponseFactory";
 
 export class TestStorage implements NotificationTargetStorage {
   public items: any = {};
@@ -105,6 +112,49 @@ export class TestCommandHandler implements TeamsFxBotCommandHandler {
   }
 }
 
+export class MockCardActionHandler implements TeamsFxAdaptiveCardActionHandler {
+  isInvoked: boolean = false;
+  triggerVerb: string;
+  adaptiveCardResponse: AdaptiveCardResponse = AdaptiveCardResponse.ReplaceForInteractor;
+  invokeResponse: InvokeResponse;
+  actionData: any;
+
+  constructor(verb: string, response?: string | IAdaptiveCard) {
+    this.triggerVerb = verb;
+    if (!response) {
+      this.invokeResponse = InvokeResponseFactory.textMessage("Your response was sent to the app");
+    } else if (typeof response === "string") {
+      this.invokeResponse = InvokeResponseFactory.textMessage(response);
+    } else {
+      this.invokeResponse = InvokeResponseFactory.adaptiveCard(response);
+    }
+  }
+
+  async handleActionInvoked(context: TurnContext, actionData: any): Promise<InvokeResponse> {
+    this.isInvoked = true;
+    this.actionData = actionData;
+    return this.invokeResponse;
+  }
+}
+
+export class MockCardActionHandlerWithErrorResponse implements TeamsFxAdaptiveCardActionHandler {
+  isInvoked: boolean = false;
+  triggerVerb: string;
+  invokeResponse: InvokeResponse;
+  actionData: any;
+
+  constructor(verb: string, errorCode: InvokeResponseErrorCode, errorMessage: string) {
+    this.triggerVerb = verb;
+    this.invokeResponse = InvokeResponseFactory.errorResponse(errorCode, errorMessage);
+  }
+
+  async handleActionInvoked(context: TurnContext, actionData: any): Promise<InvokeResponse> {
+    this.isInvoked = true;
+    this.actionData = actionData;
+    return this.invokeResponse;
+  }
+}
+
 export class MockContext {
   private activity: any;
   constructor(text: string, type = "message") {
@@ -120,7 +170,6 @@ export class MockContext {
 
   public sendActivity(activity: any): Promise<void> {
     return new Promise((resolve) => {
-      console.log("Send activity successfully.");
       resolve();
     });
   }
@@ -135,5 +184,32 @@ export class CustomStorage implements Storage {
   }
   delete(keys: string[]): Promise<void> {
     return Promise.resolve();
+  }
+}
+
+export class MockActionInvokeContext {
+  private activity: any;
+  content: any;
+
+  constructor(verb: string, data?: any) {
+    this.activity = {
+      type: "invoke",
+      name: "adaptiveCard/action",
+      value: {
+        action: {
+          type: "Action.Execute",
+          verb: verb,
+          data: data,
+        },
+      },
+      trigger: "manual",
+    };
+  }
+
+  public sendActivity(activity: any): Promise<void> {
+    this.content = activity.value.body.value;
+    return new Promise((resolve) => {
+      resolve();
+    });
   }
 }

@@ -17,7 +17,7 @@ export declare class SsoExecutionDialog extends ComponentDialog
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(dedupStorage, requiredScopes, teamsfx)](./teamsfx.ssoexecutiondialog._constructor_.md) |  | Creates a new instance of the SsoExecutionDialog. |
+|  [(constructor)(dedupStorage, ssoPromptSettings, teamsfx, dialogName)](./teamsfx.ssoexecutiondialog._constructor_.md) |  | Creates a new instance of the SsoExecutionDialog. |
 
 ## Methods
 

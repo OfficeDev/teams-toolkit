@@ -6,8 +6,8 @@ import {
   ApimPluginConfigKeys,
   SolutionConfigKeys,
   TeamsToolkitComponent,
-} from "../../../../src/plugins/resource/apim/constants";
-import { ApimPluginConfig, SolutionConfig } from "../../../../src/plugins/resource/apim/config";
+} from "../../../../src/component/resource/apim/constants";
+import { ApimPluginConfig, SolutionConfig } from "../../../../src/component/resource/apim/config";
 import {
   ConfigMap,
   ConfigValue,

@@ -16,7 +16,7 @@ registerCommands(commands: TeamsFxBotCommandHandler[]): void;
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  commands | [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md)<!-- -->\[\] | The command to registered. |
+|  commands | [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md)<!-- -->\[\] | The commands to registered. |
 
 <b>Returns:</b>
 

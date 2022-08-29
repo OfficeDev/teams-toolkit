@@ -6,14 +6,19 @@ import { assert, expect, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import mockedEnv from "mocked-env";
 import * as sinon from "sinon";
-import { DefaultSsoExecutionActivityHandler } from "../../../../src";
-import {
-  CommandResponseMiddleware,
-  NotificationMiddleware,
-} from "../../../../src/conversation/middleware";
+import { CommandResponseMiddleware } from "../../../../src/conversation/middlewares/commandMiddleware";
 import { ConversationReferenceStore } from "../../../../src/conversation/storage";
-import { MockContext, TestCommandHandler, TestSsoCommandHandler, TestStorage } from "./testUtils";
-
+import {
+  MockActionInvokeContext,
+  MockCardActionHandler,
+  MockContext,
+  TestCommandHandler,
+  TestSsoCommandHandler,
+  TestStorage,
+} from "./testUtils";
+import { CardActionMiddleware } from "../../../../src/conversation/middlewares/cardActionMiddleware";
+import { DefaultSsoExecutionActivityHandler } from "../../../../src/conversation/sso/defaultSsoExecutionActivityHandler";
+import { NotificationMiddleware } from "../../../../src/conversation/middlewares/notificationMiddleware";
 chaiUse(chaiPromises);
 
 describe("CommandResponse Middleware Tests - Node", () => {
@@ -144,6 +149,30 @@ describe("CommandResponse Middleware Tests - Node", () => {
     await middleware.onTurn(testContext as any, async () => {});
     expect(stub.called).to.be.true;
     expect(stub.calledOnceWith(testContext as any));
+  });
+});
+
+describe("CardAction Middleware Tests - Node", () => {
+  it("onTurn should invoke card action handler if verb is matched", async () => {
+    const doStuffAction = new MockCardActionHandler("doStuff", "myResponseMessage");
+    const middleware = new CardActionMiddleware([doStuffAction]);
+
+    const testContext = new MockActionInvokeContext("doStuff");
+    await middleware.onTurn(testContext as any, async () => {});
+
+    // Assert the card action handler is invoked
+    assert.isTrue(doStuffAction.isInvoked);
+  });
+
+  it("onTurn shouldn't invoke card action handler if verb is not matched", async () => {
+    const doStuffAction = new MockCardActionHandler("doStuff", "myResponseMessage");
+    const middleware = new CardActionMiddleware([doStuffAction]);
+
+    const testContext = new MockActionInvokeContext("inconsistent-verb");
+    await middleware.onTurn(testContext as any, async () => {});
+
+    // Assert the card action handler is not invoked
+    assert.isFalse(doStuffAction.isInvoked);
   });
 });
 

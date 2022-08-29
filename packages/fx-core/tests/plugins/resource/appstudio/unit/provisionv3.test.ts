@@ -16,7 +16,6 @@ import {
   TokenProvider,
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
-import { AppStudioPluginV3 } from "../../../../../src/plugins/resource/appstudio/v3";
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
 import { Constants } from "../../../../../src/plugins/resource/appstudio/constants";
 import { AppDefinition } from "./../../../../../src/plugins/resource/appstudio/interfaces/appDefinition";
@@ -28,6 +27,9 @@ import {
   MockedTelemetryReporter,
 } from "../../../solution/util";
 import { MockedM365TokenProvider, MockUserInteraction } from "../helper";
+import { AppManifest } from "../../../../../src/component/resource/appManifest/appManifest";
+import { ComponentNames } from "../../../../../src/component/constants";
+import Container from "typedi";
 
 describe("Provision Teams app with Azure", () => {
   const sandbox = sinon.createSandbox();
@@ -38,14 +40,12 @@ describe("Provision Teams app with Azure", () => {
     userList: [],
   };
 
-  let plugin: AppStudioPluginV3;
+  const plugin = Container.get<AppManifest>(ComponentNames.AppManifest);
   let context: v2.Context;
   let inputs: v2.InputsWithProjectPath;
   let mockedTokenProvider: TokenProvider;
 
   beforeEach(async () => {
-    plugin = new AppStudioPluginV3();
-
     const projectSettings: ProjectSettings = {
       appName: "fake",
       projectId: uuid(),
@@ -88,7 +88,7 @@ describe("Provision Teams app with Azure", () => {
 
   it("Register Teams app with user provided zip", async () => {
     sandbox.stub(AppStudioClient, "importApp").resolves(appDef);
-    const teamsAppId = await plugin.registerTeamsApp(
+    const teamsAppId = await plugin.provisionForCLI(
       context,
       inputs,
       newEnvInfoV3(),
@@ -102,7 +102,7 @@ describe("Provision Teams app with Azure", () => {
     (error.name as any) = 409;
     sandbox.stub(AppStudioClient, "getApp").resolves(appDef);
     sandbox.stub(AppStudioClient, "importApp").resolves(appDef);
-    const teamsAppId = await plugin.registerTeamsApp(
+    const teamsAppId = await plugin.provisionForCLI(
       context,
       inputs,
       newEnvInfoV3(),

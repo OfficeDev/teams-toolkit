@@ -59,7 +59,7 @@
 /packages/fx-core/src/plugins/resource/aad @KennethBWSong @adashen @SLdragon
 /packages/fx-core/tests/plugins/resource/aad @KennethBWSong @adashen @SLdragon
 
-/packages/fx-core/src/plugins/resource/apim @XiaofuHuang @dooriya @kimizhu
+/packages/fx-core/src/component/resource/apim @XiaofuHuang @dooriya @kimizhu
 /packages/fx-core/tests/plugins/resource/apim @XiaofuHuang @dooriya @kimizhu
 
 /packages/fx-core/src/plugins/resource/appstudio @nliu-ms @jayzhang @1yefuwang1 @HuihuiWu-Microsoft
@@ -134,5 +134,5 @@
 /packages/fx-core/test/component @jayzhang @xzf0587 @hund030 @LongOddCode
 /packages/fx-core/templates/bicep @jayzhang @xzf0587 @hund030 @LongOddCode
 
-/packages/fx-core/src/plugins/resource/apiconnector @xzf0587 @wenytang-ms @blackchoey
-/packages/fx-core/tests/plugins/resource/apiconnector @xzf0587 @wenytang-ms @blackchoey
+/packages/fx-core/src/component/feature/apiconnector @xzf0587 @wenytang-ms @blackchoey
+/packages/fx-core/tests/component/feature/apiconnector @xzf0587 @wenytang-ms @blackchoey

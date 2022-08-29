@@ -192,6 +192,7 @@ export enum TelemetryEvent {
 
   ShowOutputChannel = "show-output-channel",
   OpenFolder = "open-folder",
+  ClickGetHelp = "click-get-help",
 
   // To track the effect of UX changes
   // that prevents user performing concurrent operations.
@@ -281,6 +282,8 @@ export enum TelemetryProperty {
   Timestamp = "timestamp",
   ProgrammingLanguage = "programming-language",
   HostType = "host-type",
+  // Used with ClickGetHelp
+  HelpLink = "help-link",
 }
 
 export enum TelemetryMeasurements {

@@ -51,7 +51,6 @@ describe("DefaultSsoExecutionActivityHandler Tests - Node", () => {
     );
     const ssoExecutionDialog = defaultSsoExecutionActivityHandler.ssoExecutionDialog;
     assert.isDefined(ssoExecutionDialog);
-    assert.strictEqual(ssoExecutionDialog.requiredScopes[0], "User.Read");
 
     const userState = defaultSsoExecutionActivityHandler.userState;
     assert.isDefined(userState);
@@ -70,7 +69,7 @@ describe("DefaultSsoExecutionActivityHandler Tests - Node", () => {
 
     const ssoConfig: SsoConfig = {
       CustomSsoExecutionActivityHandler: DefaultSsoExecutionActivityHandler,
-      scopes: ["User.Read.All"],
+      scopes: ["User.Read"],
       userState: new UserState(storage),
       conversationState: new ConversationState(storage),
       dedupStorage: storage,
@@ -81,7 +80,6 @@ describe("DefaultSsoExecutionActivityHandler Tests - Node", () => {
 
     const ssoExecutionDialog = defaultSsoExecutionActivityHandler.ssoExecutionDialog;
     assert.isDefined(ssoExecutionDialog);
-    assert.strictEqual(ssoExecutionDialog.requiredScopes[0], "User.Read.All");
 
     const userState = defaultSsoExecutionActivityHandler.userState;
     assert.isDefined(userState);

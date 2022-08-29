@@ -6,7 +6,7 @@ import {
   capitalizeFirstLetter,
   getFileExtension,
   RetryHandler,
-} from "../../../../src/plugins/resource/apim/utils/commonUtils";
+} from "../../../../src/component/resource/apim/utils/commonUtils";
 import chaiAsPromised from "chai-as-promised";
 import sinon from "sinon";
 chai.use(chaiAsPromised);

@@ -9,7 +9,7 @@ import {
   TeamsFxBotCommandHandler,
   TeamsFxBotSsoCommandHandler,
 } from "./interface";
-import { CommandResponseMiddleware } from "./middleware";
+import { CommandResponseMiddleware } from "./middlewares/commandMiddleware";
 import { DefaultSsoExecutionActivityHandler } from "./sso/defaultSsoExecutionActivityHandler";
 
 /**

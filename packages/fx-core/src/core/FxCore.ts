@@ -54,8 +54,6 @@ import {
 import { TelemetryReporterInstance } from "../common/telemetry";
 import { createV2Context, mapToJson, undefinedName } from "../common/tools";
 import { getTemplatesFolder } from "../folder";
-import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
-import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
 import {
   ApiConnectionOptionItem,
   AzureSolutionQuestionNames,
@@ -134,7 +132,6 @@ import {
 import { CoreHookContext } from "./types";
 import { isPreviewFeaturesEnabled } from "../common/featureFlags";
 import { createContextV3 } from "../component/utils";
-import { TeamsfxCore } from "../component/core";
 import "../component/core";
 import {
   FeatureId,
@@ -147,8 +144,8 @@ import {
 import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
 import { addCicdQuestion } from "../component/feature/cicd";
 import { ComponentNames } from "../component/constants";
-import { ApiConnectorImpl } from "../plugins/resource/apiconnector/plugin";
-import { publishQuestion } from "../component/resource/appManifest/appManifest";
+import { AppManifest, publishQuestion } from "../component/resource/appManifest/appManifest";
+import { ApiConnectorImpl } from "../component/feature/apiconnector/ApiConnectorImpl";
 import { createEnvWithName } from "../component/envManager";
 import { getProjectTemplatesFolderPath } from "../common/utils";
 import { manifestUtils } from "../component/resource/appManifest/utils";
@@ -362,7 +359,7 @@ export class FxCore implements v3.ICore {
     setCurrentStage(Stage.create);
     inputs.stage = Stage.create;
     const context = createContextV3();
-    const fx = Container.get("fx") as TeamsfxCore;
+    const fx = Container.get("fx") as any;
     const res = await fx.create(context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx.projectSettings = context.projectSetting;
@@ -470,8 +467,8 @@ export class FxCore implements v3.ICore {
       permissionRequestProvider: TOOLS.permissionRequest,
       projectSetting: projectSettings,
     };
-    const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-    return appStudioV3.registerTeamsApp(
+    const appStudioV3 = Container.get<AppManifest>(ComponentNames.AppManifest);
+    return appStudioV3.provisionForCLI(
       context,
       inputs as v2.InputsWithProjectPath,
       newEnvInfoV3(),
@@ -756,7 +753,7 @@ export class FxCore implements v3.ICore {
   ): Promise<Result<any, FxError>> {
     inputs.stage = Stage.addFeature;
     const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-    const fx = Container.get("fx") as TeamsfxCore;
+    const fx = Container.get("fx") as any;
     const res = await fx.addFeature(context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
@@ -882,7 +879,7 @@ export class FxCore implements v3.ICore {
       res = await component.add(context, inputs as InputsWithProjectPath);
     } else if (func.method === "addFeature") {
       inputs.stage = Stage.addFeature;
-      const fx = Container.get("fx") as TeamsfxCore;
+      const fx = Container.get("fx") as any;
       res = await fx.addFeature(context, inputs as InputsWithProjectPath);
     } else if (func.method === "getManifestTemplatePath") {
       const path = await manifestUtils.getTeamsAppManifestPath(
@@ -1530,20 +1527,22 @@ export class FxCore implements v3.ICore {
     const context = createV2Context(projectSettings);
     ctx.contextV2 = context;
 
-    const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    const appStudioComponent = Container.get<AppManifest>(ComponentNames.AppManifest);
 
     // pre-check before initialize
-    const preCheckResult = await this.preCheck(appStudioV3, projectPath);
+    const preCheckResult = await this.preCheck(appStudioComponent, projectPath);
     if (preCheckResult.isErr()) {
       return err(preCheckResult.error);
     }
 
     // init manifest
-    const manifestInitRes = await appStudioV3.init(context, inputs as v2.InputsWithProjectPath);
+    const manifestInitRes = await appStudioComponent.init(
+      context,
+      inputs as v2.InputsWithProjectPath
+    );
     if (manifestInitRes.isErr()) return err(manifestInitRes.error);
 
-    const manifestAddcapRes = await appStudioV3.addCapabilities(
-      context,
+    const manifestAddcapRes = await appStudioComponent.addCapability(
       inputs as v2.InputsWithProjectPath,
       [{ name: "staticTab", existingApp: true }]
     );
@@ -1578,10 +1577,7 @@ export class FxCore implements v3.ICore {
   }
 
   // pre-check before initialize
-  async preCheck(
-    appStudioV3: AppStudioPluginV3,
-    projectPath: string
-  ): Promise<Result<Void, FxError>> {
+  async preCheck(appStudioV3: AppManifest, projectPath: string): Promise<Result<Void, FxError>> {
     const existFiles = new Array<string>();
     // 0. check if projectSettings.json exists
     const settingsFile = path.resolve(

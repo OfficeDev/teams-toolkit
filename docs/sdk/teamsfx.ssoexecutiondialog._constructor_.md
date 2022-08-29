@@ -9,7 +9,7 @@ Creates a new instance of the SsoExecutionDialog.
 <b>Signature:</b>
 
 ```typescript
-constructor(dedupStorage: Storage, requiredScopes: string[], teamsfx: TeamsFx);
+constructor(dedupStorage: Storage, ssoPromptSettings: TeamsBotSsoPromptSettings, teamsfx: TeamsFx, dialogName?: string);
 ```
 
 ## Parameters
@@ -17,6 +17,7 @@ constructor(dedupStorage: Storage, requiredScopes: string[], teamsfx: TeamsFx);
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  dedupStorage | Storage | Helper storage to remove duplicated messages |
-|  requiredScopes | string\[\] | The list of scopes for which the token will have access |
+|  ssoPromptSettings | [TeamsBotSsoPromptSettings](./teamsfx.teamsbotssopromptsettings.md) |  |
 |  teamsfx | [TeamsFx](./teamsfx.teamsfx.md) | [TeamsFx](./teamsfx.teamsfx.md) instance for authentication |
+|  dialogName | string |  |
 

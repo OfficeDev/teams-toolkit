@@ -70,6 +70,7 @@ for (const target of await conversationBot.notification.installations()) {
 |  Property | Modifiers | Type | Description |
 |  --- | --- | --- | --- |
 |  [adapter](./teamsfx.conversationbot.adapter.md) |  | BotFrameworkAdapter | The bot adapter. |
+|  [cardAction?](./teamsfx.conversationbot.cardaction.md) |  | [CardActionBot](./teamsfx.cardactionbot.md) | <i>(Optional)</i> The action handler used for adaptive card universal actions. |
 |  [command?](./teamsfx.conversationbot.command.md) |  | [CommandBot](./teamsfx.commandbot.md) | <i>(Optional)</i> The entrypoint of command and response. |
 |  [notification?](./teamsfx.conversationbot.notification.md) |  | [NotificationBot](./teamsfx.notificationbot.md) | <i>(Optional)</i> The entrypoint of notification. |
 

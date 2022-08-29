@@ -200,10 +200,11 @@ export class ProvisionUtils {
    * make sure subscription is correct before provision
    *
    */
-  async checkProvisionSubscriptionWhenSwitchAccountEnabled(
+  async checkProvisionSubscription(
     ctx: v2.Context,
     envInfo: v3.EnvInfoV3,
-    azureAccountProvider: AzureAccountProvider
+    azureAccountProvider: AzureAccountProvider,
+    targetSubscriptionIdFromCLI: string | undefined
   ): Promise<Result<ProvisionSubscriptionCheckResult, FxError>> {
     const subscriptionIdInConfig: string | undefined = envInfo.config.azure?.subscriptionId;
     const subscriptionNameInConfig: string | undefined =
@@ -212,9 +213,8 @@ export class ProvisionUtils {
     const subscriptionNameInState: string | undefined =
       envInfo.state.solution.subscriptionName || subscriptionIdInState;
 
-    const subscriptionInAccount = await azureAccountProvider.getSelectedSubscription(true);
-
-    if (!subscriptionIdInState && !subscriptionIdInConfig) {
+    if (!subscriptionIdInState && !subscriptionIdInConfig && !targetSubscriptionIdFromCLI) {
+      const subscriptionInAccount = await azureAccountProvider.getSelectedSubscription(true);
       if (!subscriptionInAccount) {
         return err(
           new UserError(
@@ -235,9 +235,30 @@ export class ProvisionUtils {
     // verify valid subscription (permission)
     const subscriptions = await azureAccountProvider.listSubscriptions();
 
+    if (targetSubscriptionIdFromCLI) {
+      const targetSubscriptionInfo = this.findSubscriptionFromList(
+        targetSubscriptionIdFromCLI,
+        subscriptions
+      );
+      if (!targetSubscriptionInfo) {
+        return err(
+          new UserError(
+            SolutionSource,
+            SolutionError.SubscriptionNotFound,
+            `The subscription '${targetSubscriptionIdFromCLI}' for '${envInfo.envName}' environment is not found in the current account, please use the right Azure account or check the subscription parameter.`
+          )
+        );
+      } else {
+        this.updateEnvInfoSubscription(envInfo, targetSubscriptionInfo);
+        ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
+        return ok({ hasSwitchedSubscription: false });
+      }
+    }
+
     if (subscriptionIdInConfig) {
-      const targetConfigSubInfo = subscriptions.find(
-        (item) => item.subscriptionId === subscriptionIdInConfig
+      const targetConfigSubInfo = this.findSubscriptionFromList(
+        subscriptionIdInConfig,
+        subscriptions
       );
 
       if (!targetConfigSubInfo) {
@@ -258,9 +279,7 @@ export class ProvisionUtils {
           ctx,
           envInfo,
           targetConfigSubInfo,
-          subscriptionIdInState,
-          subscriptionNameInState,
-          azureAccountProvider
+          subscriptionIdInState
         );
       }
     } else {
@@ -268,6 +287,7 @@ export class ProvisionUtils {
         (item) => item.subscriptionId === subscriptionIdInState
       );
 
+      const subscriptionInAccount = await azureAccountProvider.getSelectedSubscription(true);
       if (!subscriptionInAccount) {
         if (targetStateSubInfo) {
           this.updateEnvInfoSubscription(envInfo, targetStateSubInfo);
@@ -287,12 +307,17 @@ export class ProvisionUtils {
           ctx,
           envInfo,
           subscriptionInAccount,
-          subscriptionIdInState,
-          subscriptionNameInState,
-          azureAccountProvider
+          subscriptionIdInState
         );
       }
     }
+  }
+
+  findSubscriptionFromList(
+    subscriptionId: string,
+    subscriptions: SubscriptionInfo[]
+  ): SubscriptionInfo | undefined {
+    return subscriptions.find((item) => item.subscriptionId === subscriptionId);
   }
 
   updateEnvInfoSubscription(envInfo: v3.EnvInfoV3, subscriptionInfo: SubscriptionInfo) {
@@ -305,9 +330,7 @@ export class ProvisionUtils {
     ctx: v2.Context,
     envInfo: v3.EnvInfoV3,
     targetSubscriptionInfo: SubscriptionInfo,
-    subscriptionInStateId: string | undefined,
-    subscriptionInStateName: string | undefined,
-    azureAccountProvider: AzureAccountProvider
+    subscriptionInStateId: string | undefined
   ): Promise<Result<ProvisionSubscriptionCheckResult, FxError>> {
     const hasSwitchedSubscription =
       !!subscriptionInStateId && targetSubscriptionInfo.subscriptionId !== subscriptionInStateId;
@@ -374,10 +397,12 @@ export class ProvisionUtils {
       inputs.env ? { [TelemetryProperty.Env]: getHashedEnv(inputs.env) } : {}
     );
 
-    const subscriptionResult = await this.checkProvisionSubscriptionWhenSwitchAccountEnabled(
+    const targetSubscriptionId = inputs.targetSubscriptionId;
+    const subscriptionResult = await this.checkProvisionSubscription(
       ctx,
       envInfo,
-      tokenProvider.azureAccountProvider
+      tokenProvider.azureAccountProvider,
+      targetSubscriptionId
     );
 
     if (subscriptionResult.isErr()) {

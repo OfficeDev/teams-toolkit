@@ -1,15 +1,13 @@
 name: Auto Update Branch
-on:
-  push:
-    branches:
-      - dev
+on: push
 jobs:
   autoupdate:
     name: autoupdate
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - name: update all PRs
-        uses: maxkomarychev/pr-updater-action@v1.0.0
-        with:
-            token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/checkout@v2
+      - name: PR Auto Updater
+        uses: grmoon/autoupdater@0.0.2
+        env:
+          # Required
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"

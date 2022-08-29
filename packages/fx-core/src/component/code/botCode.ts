@@ -9,6 +9,7 @@ import {
   InputsWithProjectPath,
   ok,
   ProjectSettingsV3,
+  ResourceContextV3,
   Result,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
@@ -39,6 +40,11 @@ import { ProgressMessages, ProgressTitles } from "../messages";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { getComponent } from "../workflow";
 import { BadComponent } from "../error";
+import { isVSProject } from "../../common/projectSettingsHelper";
+import { AppSettingConstants, replaceBotAppSettings } from "./appSettingUtils";
+import baseAppSettings from "./appSettings/baseAppSettings.json";
+import botAppSettings from "./appSettings/botAppSettings.json";
+import ssoBotAppSettings from "./appSettings/ssoBotAppSettings.json";
 /**
  * bot scaffold plugin
  */
@@ -50,7 +56,7 @@ export class BotCodeProvider {
       enableProgressBar: true,
       progressTitle: ProgressTitles.scaffoldBot,
       progressSteps: 1,
-      errorSource: "bot",
+      errorSource: "BT",
       errorHandler: (e, t) => {
         telemetryHelper.fillAppStudioErrorProperty(e, t);
         return e as FxError;
@@ -109,10 +115,51 @@ export class BotCodeProvider {
   }
   @hooks([
     ActionExecutionMW({
+      errorSource: "BT",
+    }),
+  ])
+  async configure(
+    context: ResourceContextV3,
+    inputs: InputsWithProjectPath
+  ): Promise<Result<undefined, FxError>> {
+    if (!isVSProject(context.projectSetting) || context.envInfo.envName !== "local") {
+      return ok(undefined);
+    }
+    const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
+    const botDir = teamsBot?.folder;
+    if (botDir == undefined) return ok(undefined);
+    const appSettingsPath = path.resolve(
+      inputs.projectPath,
+      botDir,
+      AppSettingConstants.DevelopmentFileName
+    );
+    let appSettings: string;
+    if (!(await fs.pathExists(appSettingsPath))) {
+      // if appsetting file not exist, generate a new one
+      let appSettingsJson =
+        teamsBot?.hosting === ComponentNames.Function
+          ? botAppSettings
+          : { ...baseAppSettings, ...botAppSettings };
+      appSettingsJson = teamsBot?.sso
+        ? { ...appSettingsJson, ...ssoBotAppSettings }
+        : appSettingsJson;
+      appSettings = JSON.stringify(appSettingsJson, null, 2);
+    } else {
+      appSettings = await fs.readFile(appSettingsPath, "utf-8");
+    }
+    await fs.writeFile(
+      appSettingsPath,
+      replaceBotAppSettings(context, appSettings, teamsBot?.sso),
+      "utf-8"
+    );
+    return ok(undefined);
+  }
+  @hooks([
+    ActionExecutionMW({
       enableProgressBar: true,
       progressTitle: ProgressTitles.buildingBot,
       progressSteps: 1,
-      errorSource: "bot",
+      errorSource: "BT",
     }),
   ])
   async build(

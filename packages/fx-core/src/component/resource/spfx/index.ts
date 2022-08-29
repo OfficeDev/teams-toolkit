@@ -1,4 +1,23 @@
-import { MANIFEST_LOCAL, MANIFEST_TEMPLATE } from "../../appstudio/constants";
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+import { hooks } from "@feathersjs/hooks/lib";
+import {
+  CloudResource,
+  Colors,
+  err,
+  FxError,
+  InputsWithProjectPath,
+  ok,
+  Platform,
+  ResourceContextV3,
+  Result,
+  TokenProvider,
+  UserCancelError,
+  v2,
+} from "@microsoft/teamsfx-api";
+import "reflect-metadata";
+import { Service } from "typedi";
 import {
   BuildSPPackageError,
   CreateAppCatalogFailedError,
@@ -7,209 +26,50 @@ import {
   GetTenantFailedError,
   InsufficientPermissionError,
   NoSPPackageError,
-  ScaffoldError,
   UploadAppPackageFailedError,
-} from "../error";
+} from "../../../plugins/resource/spfx/error";
 import {
   Constants,
   DeployProgressMessage,
-  PlaceHolders,
   PreDeployProgressMessage,
-} from "../utils/constants";
-import lodash from "lodash";
-import { SPFXQuestionNames } from "../utils/questions";
-import { sleep, Utils } from "../utils/utils";
+} from "../../../plugins/resource/spfx/utils/constants";
+import { ProgressHelper } from "../../../plugins/resource/spfx/utils/progress-helper";
+import { sleep, Utils } from "../../../plugins/resource/spfx/utils/utils";
+import { ComponentNames } from "../../constants";
+import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import path from "path";
 import fs from "fs-extra";
-import {
-  Colors,
-  err,
-  FxError,
-  ok,
-  Platform,
-  Result,
-  TokenProvider,
-  UserCancelError,
-  v2,
-  v3,
-} from "@microsoft/teamsfx-api";
-import { ProgressHelper } from "../utils/progress-helper";
-import { SPOClient } from "../spoClient";
+import { SPOClient } from "../../../plugins/resource/spfx/spoClient";
+import { getSPFxToken, GraphScopes } from "../../../common";
+import { getLocalizedString } from "../../../common/localizeUtils";
 import axios from "axios";
-import { getTemplatesFolder } from "../../../../folder";
-import {
-  getAppDirectory,
-  getSPFxTenant,
-  getSPFxToken,
-  GraphReadUserScopes,
-  GraphScopes,
-  SPFxScopes,
-} from "../../../../common/tools";
-import { getLocalizedString } from "../../../../common/localizeUtils";
 
-export class SPFxPluginImpl {
-  async scaffold(
-    ctx: v3.ContextWithManifestProvider,
-    inputs: v2.InputsWithProjectPath,
-    componentId: string
-  ): Promise<Result<any, FxError>> {
-    try {
-      const webpartName = inputs[SPFXQuestionNames.webpart_name] as string;
-      const componentName = Utils.normalizeComponentName(webpartName);
-      const componentNameCamelCase = lodash.camelCase(componentName);
-      const componentClassName = `${componentName}WebPart`;
-      const componentStrings = componentClassName + "Strings";
-      const libraryName = lodash.kebabCase(ctx.projectSetting?.appName);
-      let componentAlias = componentClassName;
-      if (componentClassName.length > Constants.MAX_ALIAS_LENGTH) {
-        componentAlias = componentClassName.substring(0, Constants.MAX_ALIAS_LENGTH);
-      }
-      let componentClassNameKebabCase = lodash.kebabCase(componentClassName);
-      if (componentClassNameKebabCase.length > Constants.MAX_BUNDLE_NAME_LENGTH) {
-        componentClassNameKebabCase = componentClassNameKebabCase.substring(
-          0,
-          Constants.MAX_BUNDLE_NAME_LENGTH
-        );
-        const lastCharacterIndex = componentClassNameKebabCase.length - 1;
-        if (componentClassNameKebabCase[lastCharacterIndex] === "-") {
-          componentClassNameKebabCase = componentClassNameKebabCase.substring(
-            0,
-            lastCharacterIndex
-          );
-        }
-      }
-
-      const outputFolderPath = `${inputs.projectPath}/SPFx`;
-      await fs.mkdir(outputFolderPath);
-
-      // teams folder
-      const teamsDir = `${outputFolderPath}/teams`;
-
-      const templateFolder = path.join(getTemplatesFolder(), "plugins", "resource", "spfx");
-
-      await fs.mkdir(teamsDir);
-      await fs.copyFile(
-        path.resolve(templateFolder, "./webpart/base/images/color.png"),
-        `${teamsDir}/${componentId}_color.png`
-      );
-      await fs.copyFile(
-        path.resolve(templateFolder, "./webpart/base/images/outline.png"),
-        `${teamsDir}/${componentId}_outline.png`
-      );
-
-      // src folder
-      const srcDir = `${outputFolderPath}/src`;
-      await fs.mkdir(srcDir);
-      await fs.copyFile(
-        path.resolve(templateFolder, "./solution/src/index.ts"),
-        `${srcDir}/index.ts`
-      );
-
-      switch (inputs[SPFXQuestionNames.framework_type] as string) {
-        case Constants.FRAMEWORK_NONE:
-          fs.mkdirSync(`${srcDir}/webparts/${componentNameCamelCase}`, {
-            recursive: true,
-          });
-          await fs.copyFile(
-            path.resolve(templateFolder, "./webpart/none/{componentClassName}.module.scss"),
-            `${srcDir}/webparts/${componentNameCamelCase}/${componentClassName}.module.scss`
-          );
-          await fs.copyFile(
-            path.resolve(templateFolder, "./webpart/none/{componentClassName}.ts"),
-            `${srcDir}/webparts/${componentNameCamelCase}/${componentClassName}.ts`
-          );
-          await fs.copyFile(
-            path.resolve(templateFolder, "./webpart/none/package.json"),
-            `${outputFolderPath}/package.json`
-          );
-          break;
-        case Constants.FRAMEWORK_REACT:
-          const componentDir = `${srcDir}/webparts/${componentNameCamelCase}/components`;
-          fs.mkdirSync(componentDir, { recursive: true });
-          await fs.copyFile(
-            path.resolve(templateFolder, "./webpart/react/{componentClassName}.ts"),
-            `${srcDir}/webparts/${componentNameCamelCase}/${componentClassName}.ts`
-          );
-          await fs.copyFile(
-            path.resolve(templateFolder, "./webpart/react/components/{componentName}.module.scss"),
-            `${componentDir}/${componentName}.module.scss`
-          );
-          await fs.copyFile(
-            path.resolve(templateFolder, "./webpart/react/components/{componentName}.tsx"),
-            `${componentDir}/${componentName}.tsx`
-          );
-          await fs.copyFile(
-            path.resolve(templateFolder, "./webpart/react/components/I{componentName}Props.ts"),
-            `${componentDir}/I${componentName}Props.ts`
-          );
-          await fs.copyFile(
-            path.resolve(templateFolder, "./webpart/react/package.json"),
-            `${outputFolderPath}/package.json`
-          );
-          break;
-      }
-
-      await fs.copy(
-        path.resolve(templateFolder, "./webpart/base/loc"),
-        `${srcDir}/webparts/${componentNameCamelCase}/loc`
-      );
-      await fs.copy(
-        path.resolve(templateFolder, "./webpart/base/{componentClassName}.manifest.json"),
-        `${srcDir}/webparts/${componentNameCamelCase}/${componentClassName}.manifest.json`
-      );
-
-      // config folder
-      await fs.copy(
-        path.resolve(templateFolder, "./solution/config"),
-        `${outputFolderPath}/config`
-      );
-
-      // Other files
-      await fs.copyFile(
-        path.resolve(templateFolder, "./solution/README.md"),
-        `${outputFolderPath}/README.md`
-      );
-      await fs.copyFile(
-        path.resolve(templateFolder, "./solution/_gitignore"),
-        `${outputFolderPath}/.gitignore`
-      );
-      await fs.copyFile(
-        path.resolve(templateFolder, "./solution/gulpfile.js"),
-        `${outputFolderPath}/gulpfile.js`
-      );
-      await fs.copyFile(
-        path.resolve(templateFolder, "./solution/tsconfig.json"),
-        `${outputFolderPath}/tsconfig.json`
-      );
-      await fs.copyFile(
-        path.resolve(templateFolder, "./solution/tslint.json"),
-        `${outputFolderPath}/tslint.json`
-      );
-
-      // Configure placeholders
-      const replaceMap: Map<string, string> = new Map();
-      replaceMap.set(PlaceHolders.componentName, componentName);
-      replaceMap.set(PlaceHolders.componentNameCamelCase, componentNameCamelCase);
-      replaceMap.set(PlaceHolders.componentClassName, componentClassName);
-      replaceMap.set(PlaceHolders.componentStrings, componentStrings);
-      replaceMap.set(PlaceHolders.libraryName, libraryName);
-      replaceMap.set(PlaceHolders.componentId, componentId);
-      replaceMap.set(PlaceHolders.componentAlias, componentAlias);
-      replaceMap.set(
-        PlaceHolders.componentDescription,
-        inputs[SPFXQuestionNames.webpart_desp] as string
-      );
-      replaceMap.set(PlaceHolders.componentNameUnescaped, webpartName);
-      replaceMap.set(PlaceHolders.componentClassNameKebabCase, componentClassNameKebabCase);
-
-      const appDirectory = await getAppDirectory(inputs.projectPath);
-      await Utils.configure(outputFolderPath, replaceMap);
-      await Utils.configure(path.join(appDirectory, MANIFEST_TEMPLATE), replaceMap);
-      await Utils.configure(path.join(appDirectory, MANIFEST_LOCAL), replaceMap);
-      return ok(undefined);
-    } catch (error) {
-      return err(ScaffoldError(error as Error));
+@Service(ComponentNames.SPFx)
+export class SpfxResource implements CloudResource {
+  readonly name = ComponentNames.SPFx;
+  outputs = {};
+  finalOutputKeys = [];
+  @hooks([
+    ActionExecutionMW({
+      enableTelemetry: true,
+      telemetryComponentName: "fx-resource-spfx",
+      telemetryEventName: "deploy",
+      errorSource: "SPFx",
+    }),
+  ])
+  async deploy(
+    context: ResourceContextV3,
+    inputs: InputsWithProjectPath
+  ): Promise<Result<undefined, FxError>> {
+    const buildRes = await this.buildSPPackage(context, inputs);
+    if (buildRes.isErr()) {
+      return err(buildRes.error);
     }
+    const deployRes = await this._deploy(context, inputs, context.tokenProvider!);
+    if (deployRes.isErr()) {
+      return err(deployRes.error);
+    }
+    return ok(undefined);
   }
 
   async buildSPPackage(
@@ -224,7 +84,7 @@ export class SPFxPluginImpl {
       const workspacePath = `${inputs.projectPath}/SPFx`;
       await progressHandler?.next(PreDeployProgressMessage.NpmInstall);
       await Utils.execute(`npm install`, "SPFx", workspacePath, ctx.logProvider, true);
-      const gulpCommand = await SPFxPluginImpl.findGulpCommand(workspacePath);
+      const gulpCommand = await SpfxResource.findGulpCommand(workspacePath);
       await progressHandler?.next(PreDeployProgressMessage.GulpBundle);
       await Utils.execute(
         `${gulpCommand} bundle --ship --no-color`,
@@ -270,7 +130,7 @@ export class SPFxPluginImpl {
     }
   }
 
-  async deploy(
+  async _deploy(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     tokenProvider: TokenProvider

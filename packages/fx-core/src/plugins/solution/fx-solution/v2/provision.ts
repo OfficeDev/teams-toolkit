@@ -1,7 +1,6 @@
 import {
   Inputs,
   FxError,
-  UserError,
   TokenProvider,
   v2,
   v3,
@@ -12,9 +11,6 @@ import {
   SystemError,
   Platform,
   Colors,
-  Json,
-  TelemetryReporter,
-  AzureAccountProvider,
 } from "@microsoft/teamsfx-api";
 import { AppStudioScopes, getHashedEnv, getResourceGroupInPortal } from "../../../../common/tools";
 import { executeConcurrently } from "./executor";
@@ -32,11 +28,9 @@ import {
   SolutionError,
   SOLUTION_PROVISION_SUCCEEDED,
   SolutionSource,
-  SUBSCRIPTION_ID,
   SolutionTelemetryEvent,
   SolutionTelemetryComponentName,
   SolutionTelemetryProperty,
-  REMOTE_TEAMS_APP_TENANT_ID,
 } from "../constants";
 import _, { isUndefined } from "lodash";
 import { PluginDisplayName } from "../../../../common/constants";
@@ -47,7 +41,6 @@ import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
 import { Constants } from "../../../resource/appstudio/constants";
 import { BuiltInFeaturePluginNames } from "../v3/constants";
-import { fillInAzureConfigs, getM365TenantId } from "../v3/provision";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { solutionGlobalVars } from "../v3/solutionGlobalVars";
 import {
@@ -61,23 +54,8 @@ import {
   hasBotServiceCreated,
   sendErrorTelemetryThenReturnError,
 } from "../utils/util";
-import { ComponentNames } from "../../../../component/constants";
 import { resetEnvInfoWhenSwitchM365 } from "../../../../component/utils";
-import { TelemetryEvent, TelemetryProperty } from "../../../../common/telemetry";
-
-function getSubscriptionId(state: Json): string {
-  if (state && state[GLOBAL_CONFIG] && state[GLOBAL_CONFIG][SUBSCRIPTION_ID]) {
-    return state[GLOBAL_CONFIG][SUBSCRIPTION_ID];
-  }
-  return "";
-}
-
-function getTeamsAppTenantId(state: Json): string {
-  if (state && state[GLOBAL_CONFIG] && state[GLOBAL_CONFIG][REMOTE_TEAMS_APP_TENANT_ID]) {
-    return state[GLOBAL_CONFIG][REMOTE_TEAMS_APP_TENANT_ID];
-  }
-  return "";
-}
+import { getSubscriptionId, provisionUtils } from "../../../../component/provisionUtils";
 
 export async function provisionResource(
   ctx: v2.Context,
@@ -151,7 +129,7 @@ async function provisionResourceImpl(
   if (!envInfo.state.solution) envInfo.state.solution = {};
   const solutionConfig = envInfo.state.solution;
   const tenantIdInConfig = teamsAppResource.tenantId;
-  const tenantIdInTokenRes = await getM365TenantId(tokenProvider.m365TokenProvider);
+  const tenantIdInTokenRes = await provisionUtils.getM365TenantId(tokenProvider.m365TokenProvider);
   if (tenantIdInTokenRes.isErr()) {
     return err(tenantIdInTokenRes.error);
   }
@@ -186,7 +164,7 @@ async function provisionResourceImpl(
     }
     const subscriptionIdInState = envInfo.state.solution.subscriptionId;
     // ask common question and fill in solution config
-    const solutionConfigRes = await fillInAzureConfigs(
+    const solutionConfigRes = await provisionUtils.fillInAzureConfigs(
       ctx,
       inputsNew,
       envInfo as v3.EnvInfoV3,
@@ -196,7 +174,7 @@ async function provisionResourceImpl(
       return err(solutionConfigRes.error);
     }
 
-    const consentResult = await askForProvisionConsentNew(
+    const consentResult = await provisionUtils.askForProvisionConsentNew(
       ctx,
       tokenProvider.azureAccountProvider,
       envInfo as v3.EnvInfoV3,
@@ -239,7 +217,7 @@ async function provisionResourceImpl(
       }
     }
   } else if (hasSwitchedM365Tenant) {
-    const consentResult = await askForProvisionConsentNew(
+    const consentResult = await provisionUtils.askForProvisionConsentNew(
       ctx,
       tokenProvider.azureAccountProvider,
       envInfo as v3.EnvInfoV3,
@@ -430,119 +408,4 @@ async function provisionResourceImpl(
     envInfo.state[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] = true;
     return ok(Void);
   }
-}
-
-export async function askForProvisionConsentNew(
-  ctx: v2.Context,
-  azureAccountProvider: AzureAccountProvider,
-  envInfo: v3.EnvInfoV3,
-  hasSwitchedM365Tenant: boolean,
-  hasSwitchedSubscription: boolean,
-  m365AccountName: string,
-  hasAzureResource: boolean,
-  previousM365TenantId: string,
-  previousSubscriptionId?: string
-): Promise<Result<Void, FxError>> {
-  const azureToken = await azureAccountProvider.getAccountCredentialAsync();
-  const username = (azureToken as any).username || "";
-  const subscriptionId = envInfo.state.solution?.subscriptionId || "";
-  const subscriptionName = envInfo.state.solution?.subscriptionName || "";
-  const m365TenantId = envInfo.state.solution?.teamsAppTenantId || "";
-
-  let switchedNotice = "";
-
-  if (hasSwitchedM365Tenant && hasSwitchedSubscription) {
-    switchedNotice = getLocalizedString(
-      "core.provision.switchedM365AccountAndAzureSubscriptionNotice"
-    );
-  } else if (hasSwitchedM365Tenant && !hasSwitchedSubscription) {
-    switchedNotice = getLocalizedString("core.provision.switchedM365AccountNotice");
-  } else if (!hasSwitchedM365Tenant && hasSwitchedSubscription) {
-    switchedNotice = getLocalizedString("core.provision.switchedAzureSubscriptionNotice");
-
-    const botResource =
-      envInfo.state[BuiltInFeaturePluginNames.bot] ?? envInfo.state[ComponentNames.TeamsBot];
-    const newBotNotice =
-      !!botResource && !!botResource["resourceId"]
-        ? getLocalizedString("core.provision.createNewAzureBotNotice")
-        : "";
-
-    switchedNotice = switchedNotice + newBotNotice;
-  }
-
-  const azureAccountInfo = getLocalizedString("core.provision.azureAccount", username);
-  const azureSubscriptionInfo = getLocalizedString(
-    "core.provision.azureSubscription",
-    subscriptionName ? subscriptionName : subscriptionId
-  );
-  const m365AccountInfo = getLocalizedString(
-    "core.provision.m365Account",
-    m365AccountName ? m365AccountName : m365TenantId
-  );
-
-  let accountsInfo = "";
-  if (!switchedNotice && !hasAzureResource) {
-    return ok(Void);
-  } else if (!switchedNotice && hasAzureResource) {
-    accountsInfo = [azureAccountInfo, azureSubscriptionInfo, m365AccountInfo].join("\n");
-  } else {
-    // switchedNotice
-    accountsInfo = hasAzureResource
-      ? [switchedNotice, azureAccountInfo, azureSubscriptionInfo, m365AccountInfo].join("\n")
-      : [switchedNotice, m365AccountInfo].join("\n");
-  }
-
-  const confirmMsg = hasAzureResource
-    ? getLocalizedString("core.provision.confirmEnvAndCostNotice", envInfo.envName)
-    : hasSwitchedM365Tenant
-    ? getLocalizedString("core.provision.confirmEnvOnlyNotice", envInfo.envName)
-    : "";
-
-  const provisionText = getLocalizedString("core.provision.provision");
-  const learnMoreText = getLocalizedString("core.provision.learnMore");
-  const items =
-    hasSwitchedM365Tenant || hasSwitchedSubscription
-      ? [provisionText, learnMoreText]
-      : [provisionText];
-
-  let confirm: string | undefined;
-  do {
-    const confirmRes = await ctx.userInteraction.showMessage(
-      "warn",
-      accountsInfo + "\n\n" + confirmMsg,
-      true,
-      ...items
-    );
-    confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
-    ctx.telemetryReporter?.sendTelemetryEvent(
-      TelemetryEvent.ConfirmProvision,
-      envInfo.envName
-        ? {
-            [TelemetryProperty.Env]: getHashedEnv(envInfo.envName),
-            [TelemetryProperty.HasSwitchedM365Tenant]: hasSwitchedM365Tenant.toString(),
-            [TelemetryProperty.HasSwitchedSubscription]: hasSwitchedSubscription.toString(),
-            [SolutionTelemetryProperty.SubscriptionId]: getSubscriptionId(envInfo.state),
-            [SolutionTelemetryProperty.M365TenantId]: getTeamsAppTenantId(envInfo.state),
-            [SolutionTelemetryProperty.PreviousM365TenantId]: previousM365TenantId,
-            [SolutionTelemetryProperty.PreviousSubsriptionId]: previousSubscriptionId ?? "",
-            [SolutionTelemetryProperty.ConfirmRes]: !confirm
-              ? "Error"
-              : confirm === learnMoreText
-              ? "Learn more"
-              : confirm === provisionText
-              ? "Provision"
-              : "",
-          }
-        : {}
-    );
-    if (confirm !== provisionText) {
-      if (confirm === learnMoreText) {
-        ctx.userInteraction.openUrl("https://aka.ms/teamsfx-switch-tenant-or-subscription-help");
-      } else {
-        return err(new UserError(SolutionSource, "CancelProvision", "CancelProvision"));
-      }
-    }
-  } while (confirm === learnMoreText);
-
-  return ok(Void);
 }

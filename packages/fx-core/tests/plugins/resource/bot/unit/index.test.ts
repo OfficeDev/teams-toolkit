@@ -9,40 +9,18 @@ import * as path from "path";
 
 import { PluginNames, TeamsBot } from "../../../../../src";
 import { TeamsBotImpl } from "../../../../../src/plugins/resource/bot/plugin";
-
 import * as utils from "../../../../../src/plugins/resource/bot/utils/common";
 import { ProgrammingLanguage } from "../../../../../src/plugins/resource/bot/enums/programmingLanguage";
 import { FxBotPluginResultFactory as ResultFactory } from "../../../../../src/plugins/resource/bot/result";
 import * as testUtils from "./utils";
 import { PluginActRoles } from "../../../../../src/plugins/resource/bot/enums/pluginActRoles";
-import * as factory from "../../../../../src/plugins/resource/bot/clientFactory";
 import { CommonStrings } from "../../../../../src/plugins/resource/bot/resources/strings";
 import { AADRegistration } from "../../../../../src/plugins/resource/bot/aadRegistration";
 import { BotAuthCredential } from "../../../../../src/plugins/resource/bot/botAuthCredential";
 import { AppStudio } from "../../../../../src/plugins/resource/bot/appStudio/appStudio";
 import { LanguageStrategy } from "../../../../../src/plugins/resource/bot/languageStrategy";
-import { NodeJSBotPluginV3 } from "../../../../../src/plugins/resource/bot/v3";
-import {
-  Func,
-  ok,
-  Platform,
-  ProjectSettings,
-  Stage,
-  TokenProvider,
-  v2,
-  v3,
-} from "@microsoft/teamsfx-api";
-import {
-  BuiltInFeaturePluginNames,
-  BuiltInSolutionNames,
-} from "../../../../../src/plugins/solution/fx-solution/v3/constants";
-import {
-  MockedAzureAccountProvider,
-  MockedM365Provider,
-  MockedV2Context,
-} from "../../../solution/util";
-import { randomAppName } from "../../../../core/utils";
-import * as os from "os";
+import { Func, ok, Stage } from "@microsoft/teamsfx-api";
+import { BuiltInSolutionNames } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
 import { ResourcePlugins } from "../../../../../src/common/constants";
 import { ConfigKeys } from "../../../../../src/plugins/resource/bot/constants";
 import { BOT_ID } from "../../../../../src/plugins/resource/appstudio/constants";
@@ -252,73 +230,6 @@ describe("Teams Bot Resource Plugin", () => {
     });
   });
 
-  describe("Test Provision V3 (remote)", () => {
-    afterEach(() => {
-      sinon.restore();
-    });
-
-    beforeEach(() => {});
-
-    it("Happy Path", async () => {
-      const botPlugin = new NodeJSBotPluginV3();
-      const projectSettings: ProjectSettings = {
-        appName: "my app",
-        projectId: "1232343534",
-        solutionSettings: {
-          name: BuiltInSolutionNames.azure,
-          version: "3.0.0",
-          capabilities: ["Bot"],
-          hostType: "Azure",
-          azureResources: [],
-          activeResourcePlugins: [BuiltInFeaturePluginNames.bot],
-        },
-      };
-      const ctx = new MockedV2Context(projectSettings);
-      const inputs: v2.InputsWithProjectPath = {
-        platform: Platform.VSCode,
-        projectPath: path.join(os.tmpdir(), randomAppName()),
-      };
-      const mockedTokenProvider: TokenProvider = {
-        azureAccountProvider: new MockedAzureAccountProvider(),
-        m365TokenProvider: new MockedM365Provider(),
-      };
-      const envInfoV3: v3.EnvInfoV3 = {
-        envName: "dev",
-        config: {},
-        state: {
-          solution: {},
-          [BuiltInFeaturePluginNames.bot]: { botId: "mockBotId", botPassword: "mockPassword" },
-        },
-      };
-
-      const fakeCreds = testUtils.generateFakeTokenCredentialsBase();
-
-      let item: any = { registrationState: "Unregistered" };
-      const fakeRPClient: any = {
-        get: (_: string) => item,
-        register: (_: string) => {
-          item = {};
-          item = { ...item, $namespace: { registrationState: "Registered" } };
-          return item;
-        },
-      };
-      sinon.stub(factory, "createResourceProviderClient").returns(fakeRPClient);
-
-      sinon.stub(mockedTokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("anything"));
-
-      sinon
-        .stub(mockedTokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(fakeCreds);
-      sinon
-        .stub(mockedTokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
-        .resolves(new testUtils.MyTokenCredential());
-      // Act
-      const result = await botPlugin.provisionResource(ctx, inputs, envInfoV3, mockedTokenProvider);
-
-      // Assert
-      chai.assert.isTrue(result.isOk());
-    });
-  });
   describe("Test postProvision", () => {
     afterEach(() => {
       sinon.restore();
@@ -355,62 +266,7 @@ describe("Teams Bot Resource Plugin", () => {
       chai.assert.isTrue(result.isOk());
     });
   });
-  describe("Test configResources V3 (remote)", () => {
-    afterEach(() => {
-      sinon.restore();
-    });
 
-    beforeEach(() => {});
-
-    it("Happy Path", async () => {
-      const botPlugin = new NodeJSBotPluginV3();
-      const projectSettings: ProjectSettings = {
-        appName: "my app",
-        projectId: "1232343534",
-        solutionSettings: {
-          name: BuiltInSolutionNames.azure,
-          version: "3.0.0",
-          capabilities: ["Bot"],
-          hostType: "Azure",
-          azureResources: [],
-          activeResourcePlugins: [BuiltInFeaturePluginNames.bot],
-        },
-      };
-      const ctx = new MockedV2Context(projectSettings);
-      const inputs: v2.InputsWithProjectPath = {
-        platform: Platform.VSCode,
-        projectPath: path.join(os.tmpdir(), randomAppName()),
-      };
-      const mockedTokenProvider: TokenProvider = {
-        azureAccountProvider: new MockedAzureAccountProvider(),
-        m365TokenProvider: new MockedM365Provider(),
-      };
-      const envInfoV3: v3.EnvInfoV3 = {
-        envName: "dev",
-        config: {},
-        state: {
-          solution: {},
-          [BuiltInFeaturePluginNames.bot]: {
-            botId: "mockBotId",
-            botPassword: "mockPassword",
-            siteEndpoint: "https://anything.azurewebsites.net",
-            botChannelRegName: "anything",
-          },
-        },
-      };
-      sinon.stub(mockedTokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("anything"));
-      const fakeCreds = testUtils.generateFakeTokenCredentialsBase();
-      sinon
-        .stub(mockedTokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(fakeCreds);
-
-      // Act
-      const result = await botPlugin.configureResource(ctx, inputs, envInfoV3, mockedTokenProvider);
-
-      // Assert
-      chai.assert.isTrue(result.isOk());
-    });
-  });
   describe("Test preDeploy", () => {
     let botPlugin: TeamsBot;
     let botPluginImpl: TeamsBotImpl;
@@ -546,74 +402,6 @@ describe("Teams Bot Resource Plugin", () => {
     });
   });
 
-  describe("Test deploy V3", () => {
-    beforeEach(() => {
-      sinon.stub(LanguageStrategy, "localBuild").resolves();
-      sinon.stub(utils, "zipAFolder").returns(new AdmZip().toBuffer());
-      sinon.stub(AzureOperations, "listPublishingCredentials").resolves({
-        publishingUserName: "test-username",
-        publishingPassword: "test-password",
-      });
-      sinon.stub(AzureOperations, "zipDeployPackage").resolves("");
-      sinon.stub(AzureOperations, "checkDeployStatus").resolves();
-      sinon.stub(fs, "pathExists").resolves(true);
-    });
-
-    afterEach(async () => {
-      sinon.restore();
-    });
-
-    it("Happy Path", async () => {
-      const botPlugin = new NodeJSBotPluginV3();
-      const projectSettings: ProjectSettings = {
-        appName: "my app",
-        projectId: "1232343534",
-        solutionSettings: {
-          name: BuiltInSolutionNames.azure,
-          version: "3.0.0",
-          capabilities: ["Bot"],
-          hostType: "Azure",
-          azureResources: [],
-          activeResourcePlugins: [BuiltInFeaturePluginNames.bot],
-        },
-        programmingLanguage: "typescript",
-      };
-      const ctx = new MockedV2Context(projectSettings);
-      const inputs: v2.InputsWithProjectPath = {
-        platform: Platform.VSCode,
-        projectPath: path.join(os.tmpdir(), randomAppName()),
-      };
-      const mockedTokenProvider: TokenProvider = {
-        azureAccountProvider: new MockedAzureAccountProvider(),
-        m365TokenProvider: new MockedM365Provider(),
-      };
-      const envInfoV3: v3.EnvInfoV3 = {
-        envName: "dev",
-        config: {},
-        state: {
-          solution: {},
-          [BuiltInFeaturePluginNames.bot]: {
-            botId: "mockBotId",
-            botPassword: "mockPassword",
-            siteEndpoint: "https://anything.azurewebsites.net",
-            botChannelRegName: "anything",
-            botWebAppResourceId:
-              "/subscriptions/test-subscription/resourceGroups/test-rg/providers/Microsoft.Web/sites/test-webapp",
-          },
-        },
-      };
-      sinon
-        .stub(mockedTokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(testUtils.generateFakeTokenCredentialsBase());
-
-      // Act
-      const result = await botPlugin.deploy(ctx, inputs, envInfoV3, mockedTokenProvider);
-
-      // Assert
-      chai.assert.isTrue(result.isOk());
-    });
-  });
-
   describe("Test localDebug", () => {
     afterEach(() => {
       sinon.restore();
@@ -643,61 +431,6 @@ describe("Teams Bot Resource Plugin", () => {
 
       // Act
       const result = await botPlugin.localDebug(pluginContext);
-
-      // Assert
-      chai.assert.isTrue(result.isOk());
-    });
-  });
-
-  describe("Test provision V3 (local)", () => {
-    afterEach(() => {
-      sinon.restore();
-    });
-
-    beforeEach(() => {});
-
-    it("Happy Path", async () => {
-      const botPlugin = new NodeJSBotPluginV3();
-      const projectSettings: ProjectSettings = {
-        appName: "my app",
-        projectId: "1232343534",
-        solutionSettings: {
-          name: BuiltInSolutionNames.azure,
-          version: "3.0.0",
-          capabilities: ["Bot"],
-          hostType: "Azure",
-          azureResources: [],
-          activeResourcePlugins: [BuiltInFeaturePluginNames.bot],
-        },
-      };
-      const ctx = new MockedV2Context(projectSettings);
-      const inputs: v2.InputsWithProjectPath = {
-        platform: Platform.VSCode,
-        projectPath: path.join(os.tmpdir(), randomAppName()),
-      };
-      const mockedTokenProvider: TokenProvider = {
-        azureAccountProvider: new MockedAzureAccountProvider(),
-        m365TokenProvider: new MockedM365Provider(),
-      };
-      const envInfoV3: v3.EnvInfoV3 = {
-        envName: "local",
-        config: {},
-        state: {
-          solution: {},
-          [BuiltInFeaturePluginNames.bot]: {},
-        },
-      };
-
-      sinon.stub(mockedTokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("anything"));
-      const botAuthCreds = new BotAuthCredential();
-      botAuthCreds.clientId = "anything";
-      botAuthCreds.clientSecret = "anything";
-      botAuthCreds.objectId = "anything";
-      sinon.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves(botAuthCreds);
-      sinon.stub(AppStudio, "createBotRegistration").resolves();
-
-      // Act
-      const result = await botPlugin.provisionResource(ctx, inputs, envInfoV3, mockedTokenProvider);
 
       // Assert
       chai.assert.isTrue(result.isOk());
@@ -736,62 +469,6 @@ describe("Teams Bot Resource Plugin", () => {
 
       // Act
       const result = await botPlugin.postLocalDebug(pluginContext);
-
-      // Assert
-      chai.assert.isTrue(result.isOk());
-    });
-  });
-
-  describe("Test configureResource V3 (local)", () => {
-    afterEach(() => {
-      sinon.restore();
-    });
-
-    beforeEach(() => {});
-
-    it("Happy Path", async () => {
-      const botPlugin = new NodeJSBotPluginV3();
-      const projectSettings: ProjectSettings = {
-        appName: "my app",
-        projectId: "1232343534",
-        solutionSettings: {
-          name: BuiltInSolutionNames.azure,
-          version: "3.0.0",
-          capabilities: ["Bot"],
-          hostType: "Azure",
-          azureResources: [],
-          activeResourcePlugins: [BuiltInFeaturePluginNames.bot],
-        },
-      };
-      const ctx = new MockedV2Context(projectSettings);
-      const inputs: v2.InputsWithProjectPath = {
-        platform: Platform.VSCode,
-        projectPath: path.join(os.tmpdir(), randomAppName()),
-      };
-      const mockedTokenProvider: TokenProvider = {
-        azureAccountProvider: new MockedAzureAccountProvider(),
-        m365TokenProvider: new MockedM365Provider(),
-      };
-      const envInfoV3: v3.EnvInfoV3 = {
-        envName: "dev",
-        config: {},
-        state: {
-          solution: {},
-          [BuiltInFeaturePluginNames.bot]: {
-            botId: "mockBotId",
-            botPassword: "mockPassword",
-            siteEndpoint: "https://anything.azurewebsites.net",
-            botChannelRegName: "anything",
-          },
-        },
-      };
-      // Arrange
-      const pluginContext = testUtils.newPluginContext();
-      sinon.stub(pluginContext.m365TokenProvider!, "getAccessToken").resolves(ok("anything"));
-      sinon.stub(AppStudio, "updateMessageEndpoint").resolves();
-
-      // Act
-      const result = await botPlugin.configureResource(ctx, inputs, envInfoV3, mockedTokenProvider);
 
       // Assert
       chai.assert.isTrue(result.isOk());

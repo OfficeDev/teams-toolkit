@@ -84,6 +84,7 @@ export class AppManifest implements CloudResource {
       key: "tenantId",
     },
   };
+
   finalOutputKeys = ["teamsAppId", "tenantId"];
   @hooks([
     ActionExecutionMW({

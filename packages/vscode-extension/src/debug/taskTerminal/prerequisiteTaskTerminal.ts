@@ -3,11 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import * as vscode from "vscode";
+import { checkAndInstallV2 } from "../prerequisitesHandler";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 
 export interface PrerequisiteArgs {
   prerequisites?: string[];
   ports?: number[];
+}
+
+export enum Prerequisite {
+  nodejs = "nodejs",
+  m365Account = "m365Account",
+  devCert = "devCert",
+  func = "func",
+  ngrok = "ngrok",
+  dotnet = "dotnet",
+  ports = "ports",
 }
 
 export class PrerequisiteTaskTerminal extends BaseTaskTerminal {
@@ -19,6 +30,6 @@ export class PrerequisiteTaskTerminal extends BaseTaskTerminal {
   }
 
   async do(): Promise<void> {
-    // TODO: use _checkAndInstall in prerequisiteHandler
+    await checkAndInstallV2(this.args.prerequisites ?? [], this.args.ports);
   }
 }

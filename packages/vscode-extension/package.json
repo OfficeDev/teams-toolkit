@@ -736,7 +736,81 @@
         ],
         "properties": {
           "command": {
-            "type": "string"
+            "oneOf": [
+              {
+                "const": "debug-check-prerequisites",
+                "description": "Validate and install prerequisites.\n See https://aka.ms/teamsfx-debug-tasks#check-prerequisites for how to customize following args."
+              }
+            ]
+          },
+          "args": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "prerequisites"
+                ],
+                "properties": {
+                  "prerequisites": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "anyOf": [
+                        {
+                          "const": "nodejs",
+                          "title": "Validate Node.js"
+                        },
+                        {
+                          "const": "m365Account",
+                          "title": "Validate M365 account"
+                        },
+                        {
+                          "const": "devCert",
+                          "title": "Install localhost SSL certificate"
+                        },
+                        {
+                          "const": "func",
+                          "title": "Install Azure Functions Core Tools"
+                        },
+                        {
+                          "const": "ngrok",
+                          "title": "Install Ngrok"
+                        },
+                        {
+                          "const": "dotnet",
+                          "title": "Install .NET"
+                        },
+                        {
+                          "const": "ports",
+                          "title": "Validate available ports"
+                        }
+                      ]
+                    }
+                  },
+                  "ports": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "prerequisites": {
+                      "contains": {
+                        "const": "ports"
+                      }
+                    }
+                  }
+                },
+                "then": {
+                  "required": [
+                    "ports"
+                  ]
+                },
+                "additionalProperties": false
+              }
+            ]
           }
         }
       }

@@ -87,6 +87,12 @@ export class TeamsBot {
     let botConfig = getComponent(projectSettings, ComponentNames.TeamsBot);
     // bot can only add once
     if (botConfig) {
+      if (!botConfig.capabilities?.includes(botCapability)) {
+        botConfig.capabilities.push(botCapability);
+        const res = await this.addBotCapability(inputs);
+        if (res.isErr()) return err(res.error);
+        effects.push("add bot capability in app manifest");
+      }
       return ok(undefined);
     }
     const addedComponents: string[] = [];
@@ -211,18 +217,7 @@ export class TeamsBot {
 
     // 5. app-manifest.addCapability
     {
-      const manifestCapability: v3.ManifestCapability = {
-        name:
-          inputs[CoreQuestionNames.Features] === MessageExtensionItem.id
-            ? "MessageExtension"
-            : "Bot",
-      };
-      const clonedInputs = {
-        ...cloneDeep(inputs),
-        validDomain: "{{state.fx-resource-bot.domain}}", // TODO: replace fx-resource-bot with inputs.hosting after updating state file
-      };
-      const appManifest = Container.get<AppManifest>(ComponentNames.AppManifest);
-      const res = await appManifest.addCapability(clonedInputs, [manifestCapability]);
+      const res = await this.addBotCapability(inputs);
       if (res.isErr()) return err(res.error);
       effects.push("add bot capability in app manifest");
     }
@@ -249,6 +244,24 @@ export class TeamsBot {
     const res = await botCode.build(context, inputs);
     if (res.isErr()) return err(res.error);
     return ok(undefined);
+  }
+  private async addBotCapability(
+    inputs: InputsWithProjectPath
+  ): Promise<Result<undefined, FxError>> {
+    {
+      const manifestCapability: v3.ManifestCapability = {
+        name:
+          inputs[CoreQuestionNames.Features] === MessageExtensionItem.id
+            ? "MessageExtension"
+            : "Bot",
+      };
+      const clonedInputs = {
+        ...cloneDeep(inputs),
+        validDomain: "{{state.fx-resource-bot.domain}}", // TODO: replace fx-resource-bot with inputs.hosting after updating state file
+      };
+      const appManifest = Container.get<AppManifest>(ComponentNames.AppManifest);
+      return await appManifest.addCapability(clonedInputs, [manifestCapability]);
+    }
   }
 }
 

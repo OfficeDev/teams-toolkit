@@ -12,7 +12,6 @@ import {
   FxError,
   InputsWithProjectPath,
   ok,
-  Platform,
   ResourceContextV3,
   Result,
   v3,
@@ -20,9 +19,6 @@ import {
 import { assign, cloneDeep, merge } from "lodash";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
-import { format } from "util";
-import { getLocalizedString } from "../../common/localizeUtils";
-import { isVSProject } from "../../common/projectSettingsHelper";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { globalVars } from "../../core/globalVars";
@@ -46,7 +42,7 @@ import {
 import { BicepComponent } from "../bicep";
 import { BotCodeProvider } from "../code/botCode";
 import "../connection/azureWebAppConfig";
-import { ComponentNames, Scenarios } from "../constants";
+import { ComponentNames, ProgrammingLanguage, Scenarios } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
 import { Plans } from "../messages";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
@@ -102,14 +98,15 @@ export class TeamsBot {
         inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER]
       );
       const language =
-        inputs?.["programming-language"] ||
+        inputs?.[CoreQuestionNames.ProgrammingLanguage] ||
         context.projectSetting.programmingLanguage ||
-        "javascript";
-      const folder = language === "csharp" ? "." : CommonStrings.BOT_WORKING_DIR_NAME;
+        ProgrammingLanguage.JS;
+      const folder =
+        language === ProgrammingLanguage.CSharp ? "." : CommonStrings.BOT_WORKING_DIR_NAME;
       assign(clonedInputs, {
         folder: folder,
         scenarios: scenarios,
-        language: inputs[CoreQuestionNames.ProgrammingLanguage],
+        language: language,
       });
       const botCode = Container.get<BotCodeProvider>(ComponentNames.BotCode);
       const res = await botCode.generate(context, clonedInputs);
@@ -118,6 +115,7 @@ export class TeamsBot {
       botConfig = {
         name: ComponentNames.TeamsBot,
         hosting: inputs.hosting,
+        provision: language === ProgrammingLanguage.CSharp,
         deploy: true,
         capabilities: botCapability ? [botCapability] : [],
         build: true,
@@ -235,6 +233,13 @@ export class TeamsBot {
     });
     addFeatureNotify(inputs, context.userInteraction, "Capability", [inputs.features]);
     return ok(undefined);
+  }
+  async configure(
+    context: ResourceContextV3,
+    inputs: InputsWithProjectPath
+  ): Promise<Result<undefined, FxError>> {
+    const botCode = Container.get<BotCodeProvider>(ComponentNames.BotCode);
+    return await botCode.configure(context, inputs);
   }
   async build(
     context: ResourceContextV3,

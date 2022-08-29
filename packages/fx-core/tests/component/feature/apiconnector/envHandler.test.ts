@@ -7,18 +7,18 @@ import * as path from "path";
 import fs from "fs-extra";
 import * as dotenv from "dotenv";
 import { expect } from "chai";
-import { EnvHandler } from "../../../../src/plugins/resource/apiconnector/envHandler";
+import { LocalEnvProvider, LocalEnvs } from "../../../../src/common/local/localEnvProvider";
+import { UserError } from "@microsoft/teamsfx-api";
 import {
   AuthType,
   ComponentType,
   Constants,
-} from "../../../../src/plugins/resource/apiconnector/constants";
+} from "../../../../src/component/feature/apiconnector/constants";
+import { EnvHandler } from "../../../../src/component/feature/apiconnector/envHandler";
 import {
   ApiConnectorConfiguration,
   BasicAuthConfig,
-} from "../../../../src/plugins/resource/apiconnector/config";
-import { LocalEnvProvider, LocalEnvs } from "../../../../src/common/local/localEnvProvider";
-import { UserError } from "@microsoft/teamsfx-api";
+} from "../../../../src/component/feature/apiconnector/config";
 
 describe("EnvHandler", () => {
   const fakeProjectPath = path.join(__dirname, "test-api-connector");

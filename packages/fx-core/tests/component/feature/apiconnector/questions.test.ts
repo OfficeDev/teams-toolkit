@@ -6,8 +6,8 @@ import * as chai from "chai";
 import * as path from "path";
 import sinon from "sinon";
 import fs from "fs-extra";
-import { checkApiNameExist } from "../../../../src/plugins/resource/apiconnector/checker";
-import { Constants } from "../../../../src/plugins/resource/apiconnector/constants";
+import { checkApiNameExist } from "../../../../src/component/feature/apiconnector/checker";
+import { Constants } from "../../../../src/component/feature/apiconnector/constants";
 describe("Api Connector question test cases", async () => {
   const sandbox = sinon.createSandbox();
   const testpath = path.join(__dirname, "api-connect-question");

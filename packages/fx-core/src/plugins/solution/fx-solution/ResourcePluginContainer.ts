@@ -40,7 +40,6 @@ export const ResourcePluginsV2 = {
   SimpleAuthPlugin: "SimpleAuthPluginV2",
   KeyVaultPlugin: "KeyVaultPluginV2",
   CICDPlugin: "CICDPluginV2",
-  ApiConnectorPlugin: "ApiConnectorPluginV2",
 };
 
 /**

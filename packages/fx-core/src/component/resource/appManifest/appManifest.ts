@@ -84,6 +84,7 @@ export class AppManifest implements CloudResource {
       key: "tenantId",
     },
   };
+
   finalOutputKeys = ["teamsAppId", "tenantId"];
   @hooks([
     ActionExecutionMW({
@@ -442,29 +443,29 @@ export class AppManifest implements CloudResource {
     return await updateManifest(context, inputs);
   }
 
-  // /**
-  //  * Check if manifest templates already exist.
-  //  */
-  // async preCheck(projectPath: string): Promise<string[]> {
-  //   const existFiles = new Array<string>();
-  //   for (const templates of ["Templates", "templates"]) {
-  //     const appPackageDir = path.join(projectPath, templates, "appPackage");
-  //     const manifestPath = path.resolve(appPackageDir, "manifest.template.json");
-  //     if (await fs.pathExists(manifestPath)) {
-  //       existFiles.push(manifestPath);
-  //     }
-  //     const resourcesDir = path.resolve(appPackageDir, MANIFEST_RESOURCES);
-  //     const defaultColorPath = path.join(resourcesDir, DEFAULT_COLOR_PNG_FILENAME);
-  //     if (await fs.pathExists(defaultColorPath)) {
-  //       existFiles.push(defaultColorPath);
-  //     }
-  //     const defaultOutlinePath = path.join(resourcesDir, DEFAULT_OUTLINE_PNG_FILENAME);
-  //     if (await fs.pathExists(defaultOutlinePath)) {
-  //       existFiles.push(defaultOutlinePath);
-  //     }
-  //   }
-  //   return existFiles;
-  // }
+  /**
+   * Check if manifest templates already exist.
+   */
+  async preCheck(projectPath: string): Promise<string[]> {
+    const existFiles = new Array<string>();
+    for (const templates of ["Templates", "templates"]) {
+      const appPackageDir = path.join(projectPath, templates, "appPackage");
+      const manifestPath = path.resolve(appPackageDir, "manifest.template.json");
+      if (await fs.pathExists(manifestPath)) {
+        existFiles.push(manifestPath);
+      }
+      const resourcesDir = path.resolve(appPackageDir, MANIFEST_RESOURCES);
+      const defaultColorPath = path.join(resourcesDir, DEFAULT_COLOR_PNG_FILENAME);
+      if (await fs.pathExists(defaultColorPath)) {
+        existFiles.push(defaultColorPath);
+      }
+      const defaultOutlinePath = path.join(resourcesDir, DEFAULT_OUTLINE_PNG_FILENAME);
+      if (await fs.pathExists(defaultOutlinePath)) {
+        existFiles.push(defaultOutlinePath);
+      }
+    }
+    return existFiles;
+  }
   private async getTeamsAppId(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,

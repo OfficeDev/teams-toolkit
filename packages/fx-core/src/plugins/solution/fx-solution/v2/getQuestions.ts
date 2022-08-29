@@ -21,7 +21,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import Container from "typedi";
 import { HelpLinks, ResourcePlugins } from "../../../../common/constants";
-import { Constants as AppStudioConstants } from "../../../resource/appstudio/constants";
 import { PluginNames, SolutionError, SolutionSource } from "../constants";
 import {
   ApiConnectionOptionItem,
@@ -34,7 +33,6 @@ import {
   AzureSolutionQuestionNames,
   BotNewUIOptionItem,
   BotOptionItem,
-  BotSsoItem,
   CicdOptionItem,
   CommandAndResponseOptionItem,
   createAddAzureResourceQuestion,
@@ -62,11 +60,9 @@ import {
 import { checkWetherProvisionSucceeded, getSelectedPlugins, isAzureProject } from "./utils";
 import { isV3 } from "../../../../core/globalVars";
 import { TeamsAppSolutionNameV2 } from "./constants";
-import { BuiltInFeaturePluginNames } from "../v3/constants";
-import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
 import { NoCapabilityFoundError } from "../../../../core/error";
-import { isExistingTabApp, isVSProject } from "../../../../common/projectSettingsHelper";
+import { isVSProject } from "../../../../common/projectSettingsHelper";
 import {
   canAddApiConnection,
   canAddSso,
@@ -89,6 +85,8 @@ import {
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { Constants } from "../../../resource/aad/constants";
 import { PluginBot } from "../../../resource/bot/resources/strings";
+import { ComponentNames } from "../../../../component/constants";
+import { AppManifest } from "../../../../component/resource/appManifest/appManifest";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,
@@ -641,9 +639,8 @@ export async function getQuestionsForAddCapability(
   if (canProceed.isErr()) {
     return err(canProceed.error);
   }
-  const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+  const appStudioPlugin = Container.get<AppManifest>(ComponentNames.AppManifest);
   const tabExceedRes = await appStudioPlugin.capabilityExceedLimit(
-    ctx,
     inputs as v2.InputsWithProjectPath,
     "staticTab"
   );
@@ -652,7 +649,6 @@ export async function getQuestionsForAddCapability(
   }
   const isTabAddable = !tabExceedRes.value;
   const botExceedRes = await appStudioPlugin.capabilityExceedLimit(
-    ctx,
     inputs as v2.InputsWithProjectPath,
     "Bot"
   );
@@ -661,7 +657,6 @@ export async function getQuestionsForAddCapability(
   }
   const isBotAddable = !botExceedRes.value;
   const meExceedRes = await appStudioPlugin.capabilityExceedLimit(
-    ctx,
     inputs as v2.InputsWithProjectPath,
     "MessageExtension"
   );
@@ -828,9 +823,8 @@ async function getStaticOptionsForAddCapability(
     options.push(MessageExtensionNewUIItem);
     return ok(options);
   }
-  const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+  const appStudioPlugin = Container.get<AppManifest>(ComponentNames.AppManifest);
   const tabExceedRes = await appStudioPlugin.capabilityExceedLimit(
-    ctx,
     inputs as v2.InputsWithProjectPath,
     "staticTab"
   );
@@ -846,7 +840,6 @@ async function getStaticOptionsForAddCapability(
 
   const isTabAddable = !tabExceedRes.value;
   const botExceedRes = await appStudioPlugin.capabilityExceedLimit(
-    ctx,
     inputs as v2.InputsWithProjectPath,
     "Bot"
   );
@@ -858,7 +851,6 @@ async function getStaticOptionsForAddCapability(
   const isScenarioBotAddable = !botExceedRes.value && !hasMe;
   const isDefaultBotAddable = !botExceedRes.value;
   const meExceedRes = await appStudioPlugin.capabilityExceedLimit(
-    ctx,
     inputs as v2.InputsWithProjectPath,
     "MessageExtension"
   );
@@ -994,9 +986,6 @@ export async function getQuestionsForAddFeature(
   ];
   if (inputs.platform === Platform.CLI_HELP || isCicdAddable) {
     pluginsWithResources.push([ResourcePluginsV2.CICDPlugin, CicdOptionItem.id]);
-  }
-  if (inputs.platform === Platform.CLI_HELP || isApiConnectionAddable) {
-    pluginsWithResources.push([ResourcePluginsV2.ApiConnectorPlugin, ApiConnectionOptionItem.id]);
   }
   if (isSPFxMultiTabEnabled()) {
     pluginsWithResources.push([ResourcePluginsV2.SpfxPlugin, TabSPFxNewUIItem.id]);

@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import {
-  AzureSolutionSettings,
   ContextV3,
   err,
   FxError,
@@ -13,33 +12,23 @@ import {
   Result,
   Stage,
   SystemError,
-  UserError,
   v3,
   Void,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
-import { isExistingTabApp, BotHostTypeName, BotHostTypes } from "../../common";
-import { ResourcePlugins } from "../../common/constants";
 import { getLocalizedString } from "../../common/localizeUtils";
-import { hasBot } from "../../common/projectSettingsHelperV3";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { sendErrorTelemetryThenReturnError } from "../../core/telemetry";
 import {
   AddSsoParameters,
   AzureSolutionQuestionNames,
-  BotOptionItem,
-  BotSsoItem,
-  HostTypeOptionAzure,
-  MessageExtensionItem,
-  PluginNames,
   SolutionError,
   SolutionSource,
   SolutionTelemetryComponentName,
   SolutionTelemetryEvent,
   SolutionTelemetryProperty,
   TabOptionItem,
-  TabSsoItem,
 } from "../../plugins";
 import "../connection/azureWebAppConfig";
 import { ComponentNames, TelemetryConstants } from "../constants";

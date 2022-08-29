@@ -364,3 +364,9 @@ export class InlayHint {
 
   constructor(public position: vscode.Position) {}
 }
+
+export enum TaskRevealKind {
+  Always = 1,
+  Silent = 2,
+  Never = 3,
+}

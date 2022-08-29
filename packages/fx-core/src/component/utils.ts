@@ -485,9 +485,8 @@ export function getHostingComponent(
   return undefined;
 }
 
-// TODO:implement after V3 project setting update
-export function isHostedByAzure(context: ContextV3): boolean {
-  return true;
+export function isDebug(context: ContextV3): boolean {
+  return context.envInfo?.envName === "local";
 }
 
 export async function generateConfigBiceps(

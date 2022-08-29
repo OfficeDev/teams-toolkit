@@ -1,19 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { SigninStateVerificationQuery, TeamsActivityHandler, TurnContext } from "botbuilder";
+import { SigninStateVerificationQuery, TurnContext } from "botbuilder";
 
-import { SsoConfig, SsoExecutionActivityHandler, TeamsFxBotSsoCommandHandler } from "../interface";
+import { SsoConfig, TeamsFxBotSsoCommandHandler } from "../interface";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../../core/errors";
 import { formatString } from "../../util/utils";
 
 /**
  * Default sso execution activity handler
  */
-export class DefaultSsoExecutionActivityHandler
-  extends TeamsActivityHandler
-  implements SsoExecutionActivityHandler
-{
+export class DefaultSsoExecutionActivityHandler {
   /**
    * Creates a new instance of the DefaultSsoExecutionActivityHandler.
    * @param ssoConfig configuration for sso command bot

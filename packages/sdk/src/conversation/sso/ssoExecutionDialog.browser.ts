@@ -6,11 +6,10 @@ import { ErrorWithCode, ErrorCode, ErrorMessage } from "../../core/errors";
 import { TeamsFx } from "../../core/teamsfx.browser";
 import { TeamsFxBotSsoCommandHandler } from "../interface";
 import { StatePropertyAccessor, TurnContext, Storage } from "botbuilder";
-import { ComponentDialog } from "botbuilder-dialogs";
 /*
  * Sso execution dialog, use to handle sso command
  */
-export class SsoExecutionDialog extends ComponentDialog {
+export class SsoExecutionDialog {
   /**
    * Creates a new instance of the SsoExecutionDialog.
    * @param dedupStorage Helper storage to remove duplicated messages

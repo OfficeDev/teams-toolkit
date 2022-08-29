@@ -132,7 +132,7 @@ import {
 import { CoreHookContext } from "./types";
 import { isPreviewFeaturesEnabled } from "../common/featureFlags";
 import { createContextV3 } from "../component/utils";
-import { TeamsfxCore } from "../component/core";
+import "../component/core";
 import {
   FeatureId,
   getQuestionsForAddFeatureSubCommand,
@@ -359,7 +359,7 @@ export class FxCore implements v3.ICore {
     setCurrentStage(Stage.create);
     inputs.stage = Stage.create;
     const context = createContextV3();
-    const fx = Container.get("fx") as TeamsfxCore;
+    const fx = Container.get("fx") as any;
     const res = await fx.create(context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx.projectSettings = context.projectSetting;
@@ -753,7 +753,7 @@ export class FxCore implements v3.ICore {
   ): Promise<Result<any, FxError>> {
     inputs.stage = Stage.addFeature;
     const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-    const fx = Container.get("fx") as TeamsfxCore;
+    const fx = Container.get("fx") as any;
     const res = await fx.addFeature(context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
@@ -879,7 +879,7 @@ export class FxCore implements v3.ICore {
       res = await component.add(context, inputs as InputsWithProjectPath);
     } else if (func.method === "addFeature") {
       inputs.stage = Stage.addFeature;
-      const fx = Container.get("fx") as TeamsfxCore;
+      const fx = Container.get("fx") as any;
       res = await fx.addFeature(context, inputs as InputsWithProjectPath);
     } else if (func.method === "getManifestTemplatePath") {
       const path = await manifestUtils.getTeamsAppManifestPath(

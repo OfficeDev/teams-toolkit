@@ -7,6 +7,7 @@ coverage:
     project:
       default:
         target: auto   # require coverage equal or more than current
+        threshold: 0.2%
         if_ci_failed: error #success, failure, error, ignore      
 
 comment:

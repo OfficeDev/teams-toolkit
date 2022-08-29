@@ -11,7 +11,7 @@ import {
   TurnContext,
   UserState,
 } from "botbuilder";
-import { TeamsBotSsoPrompt, TeamsBotSsoPromptSettings } from "../../bot/teamsBotSsoPrompt";
+import { TeamsBotSsoPromptSettings } from "../../bot/teamsBotSsoPrompt";
 import { TeamsFx } from "../../core/teamsfx";
 import { IdentityType } from "../../models/identityType";
 import { SsoConfig, SsoExecutionActivityHandler, TeamsFxBotSsoCommandHandler } from "../interface";

@@ -10,7 +10,6 @@ import {
   Effect,
   err,
   FxError,
-  Inputs,
   InputsWithProjectPath,
   ok,
   ResourceContextV3,

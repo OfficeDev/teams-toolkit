@@ -54,7 +54,6 @@ describe("Bot Feature", () => {
     programmingLanguage: "typescript",
     components: [],
   };
-  const manifest = {} as TeamsAppManifest;
 
   let pathExistStub: SinonStub;
   let writeFileStub: SinonStub;

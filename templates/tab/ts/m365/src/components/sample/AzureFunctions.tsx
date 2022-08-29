@@ -1,14 +1,17 @@
-import React from "react";
+import { useContext } from "react";
 import { Button, Loader } from "@fluentui/react-northstar";
-import { useData } from "./lib/useData";
+import { useData } from "@microsoft/teamsfx-react";
 import * as axios from "axios";
 import { BearerTokenAuthProvider, createApiClient, TeamsFx } from "@microsoft/teamsfx";
+import { TeamsFxContext } from "../Context";
 
-var functionName = process.env.REACT_APP_FUNC_NAME || "myFunc";
+const functionName = process.env.REACT_APP_FUNC_NAME || "myFunc";
 
-async function callFunction() {
+async function callFunction(teamsfx?: TeamsFx) {
+  if (!teamsfx) {
+    throw new Error("TeamsFx SDK is not initialized.");
+  }
   try {
-    const teamsfx = new TeamsFx();
     const credential = teamsfx.getCredential();
     const apiBaseUrl = teamsfx.getConfig("apiEndpoint") + "/api/";
     // createApiClient(...) creates an Axios instance which uses BearerTokenAuthProvider to inject token to request header
@@ -50,8 +53,9 @@ export function AzureFunctions(props: { codePath?: string; docsUrl?: string }) {
     docsUrl: "https://aka.ms/teamsfx-azure-functions",
     ...props,
   };
-  const { loading, data, error, reload } = useData(callFunction, {
-    auto: false,
+  const teamsfx = useContext(TeamsFxContext).teamsfx;
+  const { loading, data, error, reload } = useData(() => callFunction(teamsfx), {
+    autoLoad: false,
   });
   return (
     <div>
@@ -66,7 +70,7 @@ export function AzureFunctions(props: { codePath?: string; docsUrl?: string }) {
       )}
       {!loading && !!data && !error && <pre className="fixed">{JSON.stringify(data, null, 2)}</pre>}
       {!loading && !data && !error && <pre className="fixed"></pre>}
-      {!loading && !!error && <div className="error fixed">{error.toString()}</div>}
+      {!loading && !!error && <div className="error fixed">{(error as any).toString()}</div>}
       <h4>How to edit the Azure Function</h4>
       <p>
         See the code in <code>{codePath}</code> to add your business logic.

@@ -1,13 +1,16 @@
-import React from "react";
+import { useContext } from "react";
 import { Button, Loader } from "@fluentui/react-northstar";
-import { useData } from "./lib/useData";
-import { BearerTokenAuthProvider, createApiClient, TeamsFx } from "@microsoft/teamsfx";
+import { useData } from "@microsoft/teamsfx-react";
+import { BearerTokenAuthProvider, createApiClient } from "@microsoft/teamsfx";
+import { TeamsFxContext } from "../Context";
 
-var functionName = process.env.REACT_APP_FUNC_NAME || "myFunc";
+const functionName = process.env.REACT_APP_FUNC_NAME || "myFunc";
 
-async function callFunction() {
+async function callFunction(teamsfx) {
+  if (!teamsfx) {
+    throw new Error("TeamsFx SDK is not initialized.");
+  }
   try {
-    const teamsfx = new TeamsFx();
     const credential = teamsfx.getCredential();
     const apiBaseUrl = teamsfx.getConfig("apiEndpoint") + "/api/";
     // createApiClient(...) creates an Axios instance which uses BearerTokenAuthProvider to inject token to request header
@@ -44,9 +47,11 @@ export function AzureFunctions(props) {
     docsUrl: "https://aka.ms/teamsfx-azure-functions",
     ...props,
   };
-  const { loading, data, error, reload } = useData(callFunction, {
-    auto: false,
+  const teamsfx = useContext(TeamsFxContext).teamsfx;
+  const { loading, data, error, reload } = useData(() => callFunction(teamsfx), {
+    autoLoad: false,
   });
+
   return (
     <div>
       <h2>Call your Azure Function</h2>

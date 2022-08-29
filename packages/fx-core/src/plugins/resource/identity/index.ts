@@ -23,7 +23,6 @@ import { ArmTemplateResult } from "../../../common/armInterface";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
 import { generateBicepFromFile } from "../../../common/tools";
 import "./v2";
-import "./v3";
 import { TelemetryUtils } from "./utils/telemetryUtil";
 @Service(ResourcePlugins.IdentityPlugin)
 export class IdentityPlugin implements Plugin {

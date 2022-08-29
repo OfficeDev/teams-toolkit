@@ -23,7 +23,6 @@ import { BotOptionItem, MessageExtensionItem } from "../../solution";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import "./v2";
-import "./v3";
 import { DotnetBotImpl } from "./dotnet/plugin";
 import { PluginImpl } from "./interface";
 import {

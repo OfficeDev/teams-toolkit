@@ -1,7 +1,7 @@
 {
     "name": "workflow-bot",
     "version": "1.0.0",
-    "description": "Microsoft Teams Toolkit Command and Response Bot Sample",
+    "description": "Microsoft Teams Toolkit Workflow Bot Sample",
     "author": "Microsoft",
     "license": "MIT",
     "main": "./lib/index.js",
@@ -20,7 +20,7 @@
     "dependencies": {
         "@microsoft/adaptivecards-tools": "^1.0.0",
         "@microsoft/teamsfx": "^1.0.0",
-        "botbuilder": "~4.16.0",
+        "botbuilder": "~4.17.0",
         "restify": "^8.5.1"
     },
     "devDependencies": {
@@ -28,7 +28,7 @@
         "env-cmd": "^10.1.0",
         "nodemon": "^2.0.7",
         "shx": "^0.3.4",
-        "ts-node": "~9.1.1",
-        "typescript": "~3.9.2"
+        "ts-node": "^10.4.0",
+        "typescript": "^4.4.4"
     }
 }

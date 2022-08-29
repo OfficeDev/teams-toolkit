@@ -21,7 +21,7 @@ import * as path from "path";
 import fs from "fs-extra";
 import { getTemplatesFolder } from "../../../folder";
 import { generateBicepFromFile, getUuid } from "../../../common/tools";
-import { isDebug } from "../../utils";
+import { isLocalEnv } from "../../utils";
 @Service("azure-sql")
 export class AzureSqlResource implements CloudResource {
   readonly name = ComponentNames.AzureSQL;
@@ -65,7 +65,7 @@ export class AzureSqlResource implements CloudResource {
     context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
-    if (isDebug(context)) {
+    if (isLocalEnv(context)) {
       return ok(undefined);
     }
     const res = await ProvisionActionImplement.execute(context, inputs);
@@ -76,7 +76,7 @@ export class AzureSqlResource implements CloudResource {
     context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
-    if (isDebug(context)) {
+    if (isLocalEnv(context)) {
       return ok(undefined);
     }
     const res = await ConfigureActionImplement.execute(context, inputs);

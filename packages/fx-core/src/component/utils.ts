@@ -485,7 +485,7 @@ export function getHostingComponent(
   return undefined;
 }
 
-export function isDebug(context: ContextV3): boolean {
+export function isLocalEnv(context: ContextV3): boolean {
   return context.envInfo?.envName === "local";
 }
 

@@ -478,6 +478,36 @@ class ADOTestPlanClient {
 
 /**
  * @param {string}  argv[3] - mocha output file path.
+ * @param {string}  argv[4] - mocha metrics file path.
+ * @param {string}  argv[5] - "vscode" or "cli".
+ * @param {string}  argv[6] - version of the package.
+ */
+async function uploadToDatabase() {
+  if (process.argv.length != 7) {
+    throw new Error("invalid param length");
+  }
+
+  if (!(await fs.pathExists(process.argv[3])) && !(await fs.pathExists(process.argv[4]))) {
+    throw new Error("invalid file path");
+  }
+
+  if (
+    !Object.values(TestPlanType).includes(
+      process.argv[5].trim() as TestPlanType
+    )
+  ) {
+    throw new Error("invalid app type");
+  }
+
+  try {
+    
+  } catch (error) {
+    
+  }
+}
+
+/**
+ * @param {string}  argv[3] - mocha output file path.
  * @param {string}  argv[4] - "vscode" or "cli".
  * @param {string}  argv[5] - version of the package.
  */
@@ -601,6 +631,12 @@ async function main() {
         .catch((err: any) => {
           throw err;
         });
+      break;
+    }
+    case "upload": {
+      uploadToDatabase().catch((err: any) => {
+        throw err;
+      });
       break;
     }
     default: {

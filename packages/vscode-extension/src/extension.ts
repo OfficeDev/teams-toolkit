@@ -813,6 +813,7 @@ async function runBackgroundAsyncTasks(
 
   await openWelcomePageAfterExtensionInstallation();
 
+  await exp.initialize(context);
   TreatmentVariableValue.previewTreeViewCommand = (await exp
     .getExpService()
     .getTreatmentVariableAsync(
@@ -828,7 +829,6 @@ async function runBackgroundAsyncTasks(
     await AzureAccountManager.updateSubscriptionInfo();
   }
 
-  await exp.initialize(context);
   TreatmentVariableValue.isEmbeddedSurvey = (await exp
     .getExpService()
     .getTreatmentVariableAsync(

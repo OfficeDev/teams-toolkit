@@ -91,6 +91,7 @@ import {
 import { manifestUtils } from "./resource/appManifest/utils";
 import { Constants } from "../plugins/resource/aad/constants";
 import { getQuestionsForDeployAPIM } from "./resource/apim";
+import { canAddSso } from "./feature/sso";
 
 export async function getQuestionsForProvisionV3(
   context: v2.Context,
@@ -105,9 +106,6 @@ export async function getQuestionsForProvisionV3(
     const node = new QTreeNode({ type: "group" });
     if (hasAzureResourceV3(context.projectSetting as ProjectSettingsV3)) {
       node.addChild(new QTreeNode(AskSubscriptionQuestion));
-    }
-    if (getComponent(context.projectSetting as ProjectSettingsV3, ComponentNames.AzureSQL)) {
-      node.addChild(buildQuestionNode());
     }
     return ok(node);
   }
@@ -294,7 +292,7 @@ export async function getQuestionsForAddFeatureV3(
     if (!hasKeyVault(projectSettingsV3)) {
       options.push(AzureResourceKeyVaultNewUI);
     }
-    if (!hasAAD(projectSettingsV3)) {
+    if (canAddSso(ctx.projectSetting as ProjectSettingsV3)) {
       options.push(SingleSignOnOptionItem);
     }
     if (hasBot(projectSettingsV3) || hasApi(projectSettingsV3)) {

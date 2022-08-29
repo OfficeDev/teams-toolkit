@@ -257,7 +257,7 @@ export class TeamsBot {
       };
       const clonedInputs = {
         ...cloneDeep(inputs),
-        validDomain: "{{state.fx-resource-bot.domain}}", // TODO: replace fx-resource-bot with inputs.hosting after updating state file
+        validDomain: `{{state.${ComponentNames.TeamsBot}.domain}}`,
       };
       const appManifest = Container.get<AppManifest>(ComponentNames.AppManifest);
       return await appManifest.addCapability(clonedInputs, [manifestCapability]);

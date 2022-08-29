@@ -269,7 +269,7 @@ export async function getQuestionsForAddFeatureV3(
     const alreadyHasNewBot =
       teamsBot?.capabilities?.includes("notification") ||
       teamsBot?.capabilities?.includes("command-response");
-    if (!botExceedLimit && !alreadyHasNewBot) {
+    if (!botExceedLimit && !alreadyHasNewBot && !meExceedLimit) {
       options.push(NotificationOptionItem);
       options.push(CommandAndResponseOptionItem);
       options.push(BotNewUIOptionItem);

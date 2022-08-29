@@ -736,10 +736,12 @@
         ],
         "properties": {
           "command": {
-            "oneOf": [
+            "anyOf": [
               {
                 "const": "debug-check-prerequisites",
-                "description": "Validate and install prerequisites.\n See https://aka.ms/teamsfx-debug-tasks#check-prerequisites for how to customize following args."
+                "description": "%teamstoolkit.taskDefinitions.command.prerequisites.description%"
+              },
+              {
               }
             ]
           },
@@ -758,31 +760,31 @@
                       "anyOf": [
                         {
                           "const": "nodejs",
-                          "title": "Validate Node.js"
+                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.nodejsTitle%"
                         },
                         {
                           "const": "m365Account",
-                          "title": "Validate M365 account"
+                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.m365AccountTitle%"
                         },
                         {
                           "const": "devCert",
-                          "title": "Install localhost SSL certificate"
+                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.devCertTitle%"
                         },
                         {
                           "const": "func",
-                          "title": "Install Azure Functions Core Tools"
+                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.funcTitle%"
                         },
                         {
                           "const": "ngrok",
-                          "title": "Install Ngrok"
+                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.ngrokTitle%"
                         },
                         {
                           "const": "dotnet",
-                          "title": "Install .NET"
+                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.dotnetTitle%"
                         },
                         {
                           "const": "ports",
-                          "title": "Validate available ports"
+                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.portsTitle%"
                         }
                       ]
                     }

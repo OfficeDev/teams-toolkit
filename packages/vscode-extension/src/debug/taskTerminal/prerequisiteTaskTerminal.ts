@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import * as vscode from "vscode";
-import { checkAndInstallV2 } from "../prerequisitesHandler";
+import { checkAndInstallForTask } from "../prerequisitesHandler";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 
 export interface PrerequisiteArgs {
@@ -30,6 +30,6 @@ export class PrerequisiteTaskTerminal extends BaseTaskTerminal {
   }
 
   async do(): Promise<void> {
-    await checkAndInstallV2(this.args.prerequisites ?? [], this.args.ports);
+    await checkAndInstallForTask(this.args.prerequisites ?? [], this.args.ports);
   }
 }

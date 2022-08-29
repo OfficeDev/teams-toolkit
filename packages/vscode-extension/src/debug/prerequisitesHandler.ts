@@ -337,7 +337,7 @@ export async function checkAndInstall(): Promise<Result<void, FxError>> {
   );
 }
 
-export async function checkAndInstallV2(
+export async function checkAndInstallForTask(
   prerequisites: string[],
   ports?: number[]
 ): Promise<Result<void, FxError>> {

@@ -63,10 +63,17 @@ export class TestTarget implements NotificationTarget {
 export class TestSsoCommandHandler implements TeamsFxBotSsoCommandHandler {
   public triggerPatterns: TriggerPatterns;
   public commandId?: string | undefined;
-  constructor(patterns: TriggerPatterns, commandId?: string) {
+  public responseMessage?: string | undefined;
+  constructor(patterns: TriggerPatterns, commandId?: string, responseMessage?: string) {
     this.triggerPatterns = patterns;
     if (commandId) {
       this.commandId = commandId ?? uuidv4();
+    }
+
+    if (responseMessage) {
+      this.responseMessage = responseMessage;
+    } else {
+      this.responseMessage = "Sample command response";
     }
   }
   async handleCommandReceived(
@@ -74,7 +81,7 @@ export class TestSsoCommandHandler implements TeamsFxBotSsoCommandHandler {
     message: CommandMessage,
     ssoToken: string
   ): Promise<string | void | Partial<Activity>> {
-    return "Sample command response";
+    return this.responseMessage;
   }
 }
 

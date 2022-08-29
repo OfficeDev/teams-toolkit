@@ -7,30 +7,34 @@ import {
   Dialog,
   DialogSet,
   DialogTurnStatus,
+  DialogContext,
 } from "botbuilder-dialogs";
 import {
   Activity,
   ActivityTypes,
+  Channels,
   StatePropertyAccessor,
   Storage,
   tokenExchangeOperationName,
   TurnContext,
 } from "botbuilder";
 import { CommandMessage, TeamsFxBotSsoCommandHandler, TriggerPatterns } from "../interface";
-import { TeamsBotSsoPrompt } from "../../bot/teamsBotSsoPrompt";
+import { TeamsBotSsoPrompt, TeamsBotSsoPromptSettings } from "../../bot/teamsBotSsoPrompt";
 import { TeamsBotSsoPromptTokenResponse } from "../../bot/teamsBotSsoPromptTokenResponse";
 import { TeamsFx } from "../../core/teamsfx";
 import { v4 as uuidv4 } from "uuid";
+import { formatString } from "../../util/utils";
+import { ErrorCode, ErrorMessage, ErrorWithCode } from "../../core/errors";
+import { internalLogger } from "../../util/logger";
 
-const DIALOG_NAME = "SsoExecutionDialog";
-const TEAMS_SSO_PROMPT_ID = "TeamsFxSsoPrompt";
-const COMMAND_ROUTE_DIALOG = "CommandRouteDialog";
+let DIALOG_NAME = "SsoExecutionDialog";
+let TEAMS_SSO_PROMPT_ID = "TeamsFxSsoPrompt";
+let COMMAND_ROUTE_DIALOG = "CommandRouteDialog";
 
 /**
  * Sso execution dialog, use to handle sso command
  */
 export class SsoExecutionDialog extends ComponentDialog {
-  private requiredScopes: string[];
   private dedupStorage: Storage;
   private dedupStorageKeys: string[] = [];
   private commandMapping: Map<string, string | RegExp | (string | RegExp)[]> = new Map<
@@ -41,22 +45,28 @@ export class SsoExecutionDialog extends ComponentDialog {
   /**
    * Creates a new instance of the SsoExecutionDialog.
    * @param dedupStorage Helper storage to remove duplicated messages
-   * @param requiredScopes The list of scopes for which the token will have access
+   * @param settings The list of scopes for which the token will have access
    * @param teamsfx {@link TeamsFx} instance for authentication
    */
-  constructor(dedupStorage: Storage, requiredScopes: string[], teamsfx: TeamsFx) {
-    super(DIALOG_NAME);
+  constructor(
+    dedupStorage: Storage,
+    ssoPromptSettings: TeamsBotSsoPromptSettings,
+    teamsfx: TeamsFx,
+    dialogName?: string
+  ) {
+    super(dialogName ?? DIALOG_NAME);
+    if (dialogName) {
+      DIALOG_NAME = dialogName;
+      TEAMS_SSO_PROMPT_ID = dialogName + TEAMS_SSO_PROMPT_ID;
+      COMMAND_ROUTE_DIALOG = dialogName + COMMAND_ROUTE_DIALOG;
+    }
 
     this.initialDialogId = COMMAND_ROUTE_DIALOG;
 
     this.dedupStorage = dedupStorage;
     this.dedupStorageKeys = [];
-    this.requiredScopes = requiredScopes;
 
-    const ssoDialog = new TeamsBotSsoPrompt(teamsfx, TEAMS_SSO_PROMPT_ID, {
-      scopes: this.requiredScopes,
-      endOnInvalidMessage: true,
-    });
+    const ssoDialog = new TeamsBotSsoPrompt(teamsfx, TEAMS_SSO_PROMPT_ID, ssoPromptSettings);
     this.addDialog(ssoDialog);
 
     const commandRouteDialog = new WaterfallDialog(COMMAND_ROUTE_DIALOG, [
@@ -130,6 +140,7 @@ export class SsoExecutionDialog extends ComponentDialog {
     dialogSet.add(this);
 
     const dialogContext = await dialogSet.createContext(context);
+    this.ensureMsTeamsChannel(dialogContext);
     const results = await dialogContext.continueDialog();
     if (results && results.status === DialogTurnStatus.empty) {
       await dialogContext.beginDialog(this.id);
@@ -158,7 +169,7 @@ export class SsoExecutionDialog extends ComponentDialog {
     if (commandId) {
       return await stepContext.beginDialog(commandId);
     }
-    await stepContext.context.sendActivity(`Cannot find command: ${text}`);
+    await stepContext.context.sendActivity(`Cannot find command: ${turnContext.activity.text}`);
     return await stepContext.endDialog();
   }
 
@@ -295,5 +306,22 @@ export class SsoExecutionDialog extends ComponentDialog {
     }
 
     return undefined;
+  }
+
+  /**
+   * Ensure bot is running in MS Teams since TeamsBotSsoPrompt is only supported in MS Teams channel.
+   * @param dc dialog context
+   * @throws {@link ErrorCode|ChannelNotSupported} if bot channel is not MS Teams
+   * @internal
+   */
+  private ensureMsTeamsChannel(dc: DialogContext) {
+    if (dc.context.activity.channelId != Channels.Msteams) {
+      const errorMsg = formatString(
+        ErrorMessage.OnlyMSTeamsChannelSupported,
+        "SSO execution dialog"
+      );
+      internalLogger.error(errorMsg);
+      throw new ErrorWithCode(errorMsg, ErrorCode.ChannelNotSupported);
+    }
   }
 }

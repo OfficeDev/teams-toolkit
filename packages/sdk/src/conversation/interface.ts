@@ -250,6 +250,25 @@ export interface SsoConfig {
   dedupStorage?: Storage;
 
   /**
+   * Settings used to configure an teams sso prompt instance.
+   */
+  ssoPromptConfig?: {
+    /**
+     * Number of milliseconds the prompt will wait for the user to authenticate.
+     * Defaults to a value `900,000` (15 minutes.)
+     */
+    timeout?: number;
+
+    /**
+     * Value indicating whether the TeamsBotSsoPrompt should end upon receiving an
+     * invalid message.  Generally the TeamsBotSsoPrompt will end the auth flow when receives user
+     * message not related to the auth flow. Setting the flag to false ignores the user's message instead.
+     * Defaults to value `true`
+     */
+    endOnInvalidMessage?: boolean;
+  };
+
+  /**
    * teamsfx configuration for sso
    */
   teamsFxConfig?: {

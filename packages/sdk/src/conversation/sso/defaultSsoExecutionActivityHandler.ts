@@ -11,6 +11,7 @@ import {
   TurnContext,
   UserState,
 } from "botbuilder";
+import { TeamsBotSsoPrompt, TeamsBotSsoPromptSettings } from "../../bot/teamsBotSsoPrompt";
 import { TeamsFx } from "../../core/teamsfx";
 import { IdentityType } from "../../models/identityType";
 import { SsoConfig, SsoExecutionActivityHandler, TeamsFxBotSsoCommandHandler } from "../interface";
@@ -41,8 +42,12 @@ export class DefaultSsoExecutionActivityHandler
     const scopes = ssoConfig?.scopes ?? ["User.Read"];
 
     const teamsfx = new TeamsFx(IdentityType.User, ssoConfig?.teamsFxConfig);
-
-    this.ssoExecutionDialog = new SsoExecutionDialog(dedupStorage, scopes, teamsfx);
+    const settings: TeamsBotSsoPromptSettings = {
+      scopes: scopes,
+      timeout: ssoConfig?.ssoPromptConfig?.timeout,
+      endOnInvalidMessage: ssoConfig?.ssoPromptConfig?.endOnInvalidMessage === false ? false : true,
+    };
+    this.ssoExecutionDialog = new SsoExecutionDialog(dedupStorage, settings, teamsfx);
     this.conversationState = conversationState;
 
     this.dialogState = conversationState.createProperty("DialogState");

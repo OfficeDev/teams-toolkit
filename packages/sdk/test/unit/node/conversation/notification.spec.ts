@@ -17,7 +17,7 @@ import { assert, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import * as sinon from "sinon";
 import { NotificationTargetType } from "../../../../src/conversation/interface";
-import { NotificationMiddleware } from "../../../../src/conversation/middleware";
+import { NotificationMiddleware } from "../../../../src/conversation/middlewares/notificationMiddleware";
 import {
   Channel,
   Member,

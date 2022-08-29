@@ -1,7 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ResourceContextV3, v3, AzureAccountProvider, LogProvider } from "@microsoft/teamsfx-api";
+import {
+  ResourceContextV3,
+  v3,
+  AzureAccountProvider,
+  LogProvider,
+  Json,
+} from "@microsoft/teamsfx-api";
 import { ComponentNames } from "../../../constants";
 import { ManagementClient } from "../clients/management";
 import { SqlClient } from "../clients/sql";
@@ -41,7 +47,7 @@ export class UtilFunctions {
   }
 
   static async getSkipAddingUser(
-    config: v3.AzureSolutionConfig,
+    config: Json,
     azureAccountProvider: AzureAccountProvider
   ): Promise<boolean> {
     const skipAddingUser = config[Constants.skipAddingSqlUser];

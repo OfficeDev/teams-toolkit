@@ -22,15 +22,9 @@ import {
   v3,
   Void,
 } from "@microsoft/teamsfx-api";
-import { Container } from "typedi";
 import { createV2Context, deepCopy, isExistingTabAppEnabled } from "../../common/tools";
 import { newProjectSettings } from "../../common/projectSettingsHelper";
-import { SPFxPluginV3 } from "../../plugins/resource/spfx/v3";
 import { ExistingTabOptionItem, TabSPFxItem } from "../../plugins/solution/fx-solution/question";
-import {
-  BuiltInFeaturePluginNames,
-  BuiltInSolutionNames,
-} from "../../plugins/solution/fx-solution/v3/constants";
 import { getQuestionsForGrantPermission } from "../collaborator";
 import { CoreSource, FunctionRouterError } from "../error";
 import { isV3, TOOLS } from "../globalVars";
@@ -314,75 +308,13 @@ export async function getQuestionsForPublish(
 export async function getQuestionsForInit(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  const node = new QTreeNode({ type: "group" });
-  // no need to ask workspace folder for CLI.
-  if (inputs.platform !== Platform.CLI) {
-    node.addChild(new QTreeNode(QuestionRootFolder));
-  }
-  node.addChild(new QTreeNode(createAppNameQuestion(false)));
-  const solution = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
-  const context = createV2Context(newProjectSettings());
-  if (solution.getQuestionsForInit) {
-    const res = await solution.getQuestionsForInit(context, inputs);
-    if (res.isErr()) return res;
-    if (res.value) {
-      const solutionNode = res.value as QTreeNode;
-      if (solutionNode.data) node.addChild(solutionNode);
-    }
-  }
-  return ok(node.trim());
+  return ok(undefined);
 }
 
 export async function getQuestionsForCreateProjectV3(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
-  // create new
-  const createNew = new QTreeNode({ type: "group" });
-  node.addChild(createNew);
-  createNew.condition = { equals: ScratchOptionYes.id };
-
-  // capabilities
-  const capQuestion = createCapabilityQuestion();
-  const capNode = new QTreeNode(capQuestion);
-  createNew.addChild(capNode);
-  const solution = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
-  const context = createV2Context(newProjectSettings());
-  if (solution.getQuestionsForInit) {
-    const res = await solution.getQuestionsForInit(context, inputs);
-    if (res.isErr()) return res;
-    if (res.value) {
-      const solutionNode = res.value as QTreeNode;
-      if (solutionNode.data) capNode.addChild(solutionNode);
-    }
-  }
-  const spfxPlugin = Container.get<SPFxPluginV3>(BuiltInFeaturePluginNames.spfx);
-  const spfxRes = await spfxPlugin.getQuestionsForAddInstance(context, inputs);
-  if (spfxRes.isOk()) {
-    if (spfxRes.value?.data) {
-      spfxRes.value.condition = { contains: TabSPFxItem.id };
-      capNode.addChild(spfxRes.value);
-    }
-  }
-  // Language
-  const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
-  programmingLanguage.condition = { minItems: 1 };
-  createNew.addChild(programmingLanguage);
-
-  // only CLI need folder input
-  if (inputs.platform === Platform.CLI) {
-    createNew.addChild(new QTreeNode(QuestionRootFolder));
-  }
-  createNew.addChild(new QTreeNode(createAppNameQuestion()));
-
-  // create from sample
-  const sampleNode = new QTreeNode(SampleSelect);
-  node.addChild(sampleNode);
-  sampleNode.condition = { equals: ScratchOptionNo.id };
-  if (inputs.platform !== Platform.VSCode) {
-    sampleNode.addChild(new QTreeNode(QuestionRootFolder));
-  }
-  return ok(node.trim());
+  return ok(undefined);
 }
 
 async function setSolutionScaffoldingQuestionNodeAsChild(

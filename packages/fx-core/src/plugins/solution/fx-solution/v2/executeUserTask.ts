@@ -43,7 +43,6 @@ import {
   OperationNotPermittedError,
 } from "../../../../core/error";
 import { CoreQuestionNames, validateCapabilities } from "../../../../core/question";
-import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import {
   AddSsoParameters,
   DEFAULT_PERMISSION_REQUEST,
@@ -59,7 +58,6 @@ import {
 } from "../constants";
 import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
 import {
-  ApiConnectionOptionItem,
   AzureResourceApim,
   AzureResourceFunction,
   AzureResourceKeyVault,
@@ -94,6 +92,8 @@ import { getTemplatesFolder } from "../../../../folder";
 import AdmZip from "adm-zip";
 import { unzip } from "../../../../common/template-utils/templatesUtils";
 import { InputsWithProjectPath } from "@microsoft/teamsfx-api/build/v2";
+import { AppManifest } from "../../../../component/resource/appManifest/appManifest";
+import { ComponentNames } from "../../../../component/constants";
 export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,
@@ -381,11 +381,9 @@ export async function addCapability(
       return err(e);
     }
   }
-
-  const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+  const appStudioPlugin = Container.get<AppManifest>(ComponentNames.AppManifest);
   const inputsWithProjectPath = inputs as v2.InputsWithProjectPath;
   const tabExceedRes = await appStudioPlugin.capabilityExceedLimit(
-    ctx,
     inputs as v2.InputsWithProjectPath,
     "staticTab"
   );
@@ -395,7 +393,6 @@ export async function addCapability(
   const isTabAddable = !tabExceedRes.value;
   const isTabSPFxAddable = !tabExceedRes.value;
   const botExceedRes = await appStudioPlugin.capabilityExceedLimit(
-    ctx,
     inputs as v2.InputsWithProjectPath,
     "Bot"
   );
@@ -404,7 +401,6 @@ export async function addCapability(
   }
   const isBotAddable = !botExceedRes.value;
   const meExceedRes = await appStudioPlugin.capabilityExceedLimit(
-    ctx,
     inputs as v2.InputsWithProjectPath,
     "MessageExtension"
   );
@@ -478,10 +474,8 @@ export async function addCapability(
         pluginNamesToArm.add(ResourcePluginsV2.AadPlugin);
 
         // Add webapplicationInfo in teams app manifest
-        const appStudioPlugin = Container.get<AppStudioPluginV3>(
-          BuiltInFeaturePluginNames.appStudio
-        );
-        await appStudioPlugin.addCapabilities(ctx, inputs as v2.InputsWithProjectPath, [
+        const appStudioPlugin = Container.get<AppManifest>(ComponentNames.AppManifest);
+        await appStudioPlugin.addCapability(inputs as v2.InputsWithProjectPath, [
           { name: "WebApplicationInfo" },
         ]);
       }
@@ -562,7 +556,7 @@ export async function addCapability(
   }
   // 4. update manifest
   if (capabilitiesToAddManifest.length > 0) {
-    await appStudioPlugin.addCapabilities(ctx, inputsNew, capabilitiesToAddManifest);
+    await appStudioPlugin.addCapability(inputsNew, capabilitiesToAddManifest);
   }
   if (capabilitiesAnswer.length > 0) {
     const addNames = capabilitiesAnswer.map((c) => `'${c}'`).join(" and ");
@@ -861,13 +855,6 @@ export async function addFeature(
   }
   if (featureAnswer === SingleSignOnOptionItem.id) {
     return addSso(ctx, inputs, localSettings);
-  } else if (featureAnswer === ApiConnectionOptionItem.id) {
-    const apiFunction: Func = {
-      namespace: "fx-solution-azure/fx-resource-api-connector",
-      method: "connectExistingApi",
-      params: {},
-    };
-    return executeUserTask(ctx, inputs, apiFunction, localSettings, envInfo, tokenProvider);
   } else if (featureAnswer === CicdOptionItem.id) {
     const cicdFunction: Func = {
       namespace: "fx-solution-azure/fx-resource-cicd",
@@ -1033,8 +1020,8 @@ export async function addSso(
   }
 
   // Update manifest
-  const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-  await appStudioPlugin.addCapabilities(ctx, inputs as v2.InputsWithProjectPath, [
+  const appStudioPlugin = Container.get<AppManifest>(ComponentNames.AppManifest);
+  await appStudioPlugin.addCapability(inputs as v2.InputsWithProjectPath, [
     { name: "WebApplicationInfo" },
   ]);
 

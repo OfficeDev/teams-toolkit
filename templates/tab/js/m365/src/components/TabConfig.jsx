@@ -1,6 +1,6 @@
 import React from "react";
 import "./App.css";
-import * as microsoftTeams from "@microsoft/teams-js";
+import { app, pages } from "@microsoft/teams-js";
 
 /**
  * The 'Config' component is used to display your group tabs
@@ -11,21 +11,22 @@ import * as microsoftTeams from "@microsoft/teams-js";
 class TabConfig extends React.Component {
   render() {
     // Initialize the Microsoft Teams SDK
-    microsoftTeams.app.initialize().then(() => {
+    app.initialize().then(() => {
       /**
        * When the user clicks "Save", save the url for your configured tab.
        * This allows for the addition of query string parameters based on
        * the settings selected by the user.
        */
-      microsoftTeams.pages.config.registerOnSaveHandler((saveEvent) => {
+      pages.config.registerOnSaveHandler((saveEvent) => {
         const baseUrl = `https://${window.location.hostname}:${window.location.port}`;
-        microsoftTeams.pages.config.setConfig({
+        pages.config.setConfig({
           suggestedDisplayName: "My Tab",
           entityId: "Test",
           contentUrl: baseUrl + "/index.html#/tab",
           websiteUrl: baseUrl + "/index.html#/tab",
+        }).then(() => {
+          saveEvent.notifySuccess();
         });
-        saveEvent.notifySuccess();
       });
 
       /**
@@ -34,7 +35,7 @@ class TabConfig extends React.Component {
        * to be valid.  This will enable the save button in the configuration
        * dialog.
        */
-      microsoftTeams.pages.config.setValidityState(true);
+      pages.config.setValidityState(true);
     });
 
     return (

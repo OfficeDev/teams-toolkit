@@ -1,51 +1,52 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
-  Plugin,
+  AzureSolutionSettings,
+  err,
+  Func,
   FxError,
+  ok,
+  Plugin,
   PluginContext,
+  QTreeNode,
+  Result,
+  Stage,
   SystemError,
   UserError,
-  Result,
-  err,
-  ok,
-  QTreeNode,
-  Stage,
-  Func,
-  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
+import { Service } from "typedi";
+import { ArmTemplateResult } from "../../../common/armInterface";
+import { convertToAlphanumericOnly } from "../../../common/utils";
+import { buildAnswer } from "../../../component/resource/apim/answer";
 import {
-  AssertNotEmpty,
-  BuildError,
-  NoPluginConfig,
-  NotImplemented,
-  UnhandledError,
-} from "./error";
-import { Telemetry } from "./utils/telemetry";
-import { AadPluginConfig, ApimPluginConfig, FunctionPluginConfig, SolutionConfig } from "./config";
+  AadPluginConfig,
+  ApimPluginConfig,
+  FunctionPluginConfig,
+  SolutionConfig,
+} from "../../../component/resource/apim/config";
 import {
   AadDefaultValues,
+  ApimPluginConfigKeys,
+  OperationStatus,
   PluginLifeCycle,
   PluginLifeCycleToProgressStep,
   ProgressMessages,
   ProgressStep,
   ProjectConstants,
-  OperationStatus,
   UserTask,
-  ApimPluginConfigKeys,
-  TeamsToolkitComponent,
-  ComponentRetryOperations,
-} from "./constants";
-import { Factory } from "./factory";
-import { ProgressBar } from "./utils/progressBar";
-import { buildAnswer } from "./answer";
+} from "../../../component/resource/apim/constants";
+import {
+  AssertNotEmpty,
+  BuildError,
+  NotImplemented,
+  UnhandledError,
+} from "../../../component/resource/apim/error";
+import { Factory } from "../../../component/resource/apim/factory";
+import { ProgressBar } from "../../../component/resource/apim/utils/progressBar";
+import { Telemetry } from "../../../component/resource/apim/utils/telemetry";
 import { AzureResourceApim } from "../../solution/fx-solution/question";
-import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import "./v2";
-import "./v3";
-import { ArmTemplateResult } from "../../../common/armInterface";
-import { convertToAlphanumericOnly } from "../../../common/utils";
 
 @Service(ResourcePlugins.ApimPlugin)
 export class ApimPlugin implements Plugin {

@@ -1234,7 +1234,66 @@
           }
         ]
       }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "IssuesOnlyResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "isAction",
+              "parameters": {
+                "action": "opened"
+              }
+            },
+            {
+              "name": "bodyContains",
+              "parameters": {
+                "bodyPattern": "API call to Developer Portal failed: Error, Request failed with status code \\d{3}, API name: (.*), X-Correlation-ID: (.*).",
+                "isRegex": true
+              }
+            }
+          ]
+        },
+        "eventType": "issue",
+        "eventNames": [
+          "issues",
+          "project_card"
+        ],
+        "actions": [
+          {
+            "name": "addLabel",
+            "parameters": {
+              "label": "upstream"
+            }
+          },
+          {
+            "name": "assignToIcmUserGroup",
+            "parameters": {
+              "groupId": "jbGQ6GHZ9wghOWN2Mb7dE",
+              "assignmentTarget": "Primary"
+            }
+          },
+          {
+            "name": "addReply",
+            "parameters": {
+              "comment": "Sorry for the inconvenience! Based on the info provided, the issue is caused by the API failure from Teams Developer Portal. We will inform you once we get any updates."
+            }
+          }
+        ]
+      }
     }
   ],
-  "userGroups": []
+  "userGroups": [
+    {
+      "groupType": "ICM",
+      "name": "Teams Toolkit Service Monitoring",
+      "onCallTeamId": 97190,
+      "_id": "jbGQ6GHZ9wghOWN2Mb7dE"
+    }
+  ]
 }

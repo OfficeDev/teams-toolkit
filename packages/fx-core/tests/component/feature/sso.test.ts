@@ -171,9 +171,41 @@ describe("SSO feature", () => {
     sandbox.restore();
   });
 
-  it("add sso", async () => {
+  it("add sso with generateManifest failed", async () => {
     const aadComponent = Container.get(ComponentNames.AadApp) as any;
     sandbox.stub(aadComponent, "generateManifest").resolves(err(undefined));
+
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+      language: "typescript",
+      "app-name": appName,
+    };
+
+    const component = Container.get(ComponentNames.SSO) as any;
+    const ssoRes = await component.add(context, inputs);
+    assert.isTrue(ssoRes.isErr());
+  });
+
+  it("add sso with generateBicep failed", async () => {
+    const aadComponent = Container.get(ComponentNames.AadApp) as any;
+    sandbox.stub(aadComponent, "generateBicep").resolves(err(undefined));
+
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+      language: "typescript",
+      "app-name": appName,
+    };
+
+    const component = Container.get(ComponentNames.SSO) as any;
+    const ssoRes = await component.add(context, inputs);
+    assert.isTrue(ssoRes.isErr());
+  });
+
+  it("add sso with generateAuthFiles failed", async () => {
+    const aadComponent = Container.get(ComponentNames.AadApp) as any;
+    sandbox.stub(aadComponent, "generateAuthFiles").resolves(err(undefined));
 
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,

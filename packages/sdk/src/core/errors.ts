@@ -31,6 +31,11 @@ export enum ErrorCode {
   ChannelNotSupported = "ChannelNotSupported",
 
   /**
+   * Sso activity handler is undefined
+   */
+  SsoActivityHandlerIsUndefined = "SsoActivityHandlerIsUndefined",
+
+  /**
    * Runtime is not supported error.
    */
   RuntimeNotSupported = "RuntimeNotSupported",
@@ -99,6 +104,10 @@ export class ErrorMessage {
 
   // ChannelNotSupported Error
   static readonly OnlyMSTeamsChannelSupported = "{0} is only supported in MS Teams Channel";
+
+  // SsoActivityHandlerIsUndefined Error
+  static readonly SsoActivityHandlerIsNull =
+    "Sso command can only be used or added when sso activity handler is not undefined";
 
   // IdentityTypeNotSupported Error
   static readonly IdentityTypeNotSupported = "{0} identity is not supported in {1}";

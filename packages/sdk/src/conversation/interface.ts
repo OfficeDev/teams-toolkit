@@ -11,6 +11,8 @@ import {
   InvokeResponse,
   Storage,
 } from "botbuilder";
+import { TeamsBotSsoPromptTokenResponse } from "../bot/teamsBotSsoPromptTokenResponse";
+import { AuthenticationConfiguration } from "../models/configuration";
 
 /**
  * The response of a message action, e.g., `sendMessage`, `sendAdaptiveCard`.
@@ -197,7 +199,7 @@ export interface TeamsFxBotSsoCommandHandler {
   handleCommandReceived(
     context: TurnContext,
     message: CommandMessage,
-    ssoToken: string
+    ssoToken: TeamsBotSsoPromptTokenResponse
   ): Promise<string | Partial<Activity> | void>;
 }
 
@@ -214,11 +216,6 @@ export interface CommandOptions {
    * The commands to registered with the sso command bot. Each sso command should implement the interface {@link TeamsFxBotSsoCommandHandler} so that it can be correctly handled by this command bot.
    */
   ssoCommands?: TeamsFxBotSsoCommandHandler[];
-
-  /**
-   * Configurations for sso command bot
-   */
-  ssoConfig?: SsoConfig;
 }
 
 /**
@@ -310,7 +307,7 @@ export interface TeamsFxAdaptiveCardActionHandler {
 }
 
 /**
- * Interface for SSO configuration for BotSSO
+ * Interface for SSO configuration for Bot SSO
  */
 export interface SsoConfig {
   /**
@@ -360,42 +357,7 @@ export interface SsoConfig {
   /**
    * teamsfx configuration for sso
    */
-  teamsFxConfig?: {
-    /**
-     * Hostname of AAD authority, default value comes from M365_AUTHORITY_HOST environment variable.
-     */
-    authorityHost?: string;
-
-    /**
-     * The client (application) ID of an App Registration in the tenant, default value comes from M365_CLIENT_ID environment variable.
-     */
-    clientId?: string;
-
-    /**
-     * AAD tenant id, default value comes from M365_TENANT_ID environment variable.
-     */
-    tenantId?: string;
-
-    /**
-     * Secret string that the application uses when requesting a token. Only used in confidential client applications. Can be created in the Azure app registration portal. Default value comes from M365_CLIENT_SECRET environment variable.
-     */
-    clientSecret?: string;
-
-    /**
-     * The content of a PEM-encoded public/private key certificate.
-     */
-    certificateContent?: string;
-
-    /**
-     * Login page for Teams to redirect to.  Default value comes from INITIATE_LOGIN_ENDPOINT environment variable.
-     */
-    initiateLoginEndpoint?: string;
-
-    /**
-     * Application ID URI. Default value comes from M365_APPLICATION_ID_URI environment variable.
-     */
-    applicationIdUri?: string;
-  };
+  teamsFxConfig?: Partial<AuthenticationConfiguration>;
 }
 
 /**
@@ -419,6 +381,11 @@ export interface ConversationOptions {
    * If neither `adapter` nor `adapterConfig` is provided, will use BOT_ID and BOT_PASSWORD from environment variables.
    */
   adapterConfig?: { [key: string]: unknown };
+
+  /**
+   * Configurations for sso command bot
+   */
+  ssoConfig?: SsoConfig;
 
   /**
    * The command part.

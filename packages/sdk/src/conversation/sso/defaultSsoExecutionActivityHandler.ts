@@ -33,7 +33,7 @@ export class DefaultSsoExecutionActivityHandler
    * Creates a new instance of the DefaultSsoExecutionActivityHandler.
    * @param ssoConfig configuration for sso command bot
    */
-  constructor(ssoConfig: SsoConfig | undefined) {
+  constructor(ssoConfig?: SsoConfig | undefined) {
     super();
     const memoryStorage = new MemoryStorage();
     const userState = ssoConfig?.userState ?? new UserState(memoryStorage);
@@ -45,7 +45,7 @@ export class DefaultSsoExecutionActivityHandler
     const settings: TeamsBotSsoPromptSettings = {
       scopes: scopes,
       timeout: ssoConfig?.ssoPromptConfig?.timeout,
-      endOnInvalidMessage: ssoConfig?.ssoPromptConfig?.endOnInvalidMessage === false ? false : true,
+      endOnInvalidMessage: ssoConfig?.ssoPromptConfig?.endOnInvalidMessage,
     };
     this.ssoExecutionDialog = new SsoExecutionDialog(dedupStorage, settings, teamsfx);
     this.conversationState = conversationState;

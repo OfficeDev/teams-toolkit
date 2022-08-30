@@ -21,6 +21,7 @@ import {
 
 import { v4 as uuidv4 } from "uuid";
 import { InvokeResponseFactory } from "../../../../src/conversation/invokeResponseFactory";
+import { TeamsBotSsoPromptTokenResponse } from "../../../../src";
 
 export class TestStorage implements NotificationTargetStorage {
   public items: any = {};
@@ -86,7 +87,7 @@ export class TestSsoCommandHandler implements TeamsFxBotSsoCommandHandler {
   async handleCommandReceived(
     context: TurnContext,
     message: CommandMessage,
-    ssoToken: string
+    ssoToken: TeamsBotSsoPromptTokenResponse
   ): Promise<string | void | Partial<Activity>> {
     return this.responseMessage;
   }

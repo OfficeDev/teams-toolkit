@@ -2,14 +2,7 @@
 // Licensed under the MIT license.
 
 import { assert } from "chai";
-import {
-  BotFrameworkAdapter,
-  ConversationReference,
-  ConversationState,
-  MemoryStorage,
-  TurnContext,
-  UserState,
-} from "botbuilder";
+import { ConversationState, MemoryStorage, TurnContext, UserState } from "botbuilder";
 import * as sinon from "sinon";
 import { CustomStorage } from "../testUtils";
 import mockedEnv from "mocked-env";

@@ -131,7 +131,7 @@ export class Channel implements NotificationTarget {
 
 // @public
 export class CommandBot {
-    constructor(adapter: BotFrameworkAdapter, options?: CommandOptions);
+    constructor(adapter: BotFrameworkAdapter, options?: CommandOptions, ssoCommandActivityHandler?: SsoExecutionActivityHandler, ssoConfig?: SsoConfig);
     registerCommand(command: TeamsFxBotCommandHandler): void;
     registerCommands(commands: TeamsFxBotCommandHandler[]): void;
     registerSsoCommand(ssoCommand: TeamsFxBotSsoCommandHandler): void;
@@ -148,7 +148,6 @@ export interface CommandMessage {
 export interface CommandOptions {
     commands?: TeamsFxBotCommandHandler[];
     ssoCommands?: TeamsFxBotSsoCommandHandler[];
-    ssoConfig?: SsoConfig;
 }
 
 // @public
@@ -176,6 +175,7 @@ export interface ConversationOptions {
     notification?: NotificationOptions_2 & {
         enabled?: boolean;
     };
+    ssoConfig?: SsoConfig;
 }
 
 // @public
@@ -199,7 +199,7 @@ export function createPfxCertOption(pfx: string | Buffer, options?: {
 
 // @public
 export class DefaultSsoExecutionActivityHandler extends TeamsActivityHandler implements SsoExecutionActivityHandler {
-    constructor(ssoConfig: SsoConfig | undefined);
+    constructor(ssoConfig?: SsoConfig | undefined);
     addCommand(handler: TeamsFxBotSsoCommandHandler): void;
     handleTeamsSigninTokenExchange(context: TurnContext, query: SigninStateVerificationQuery): Promise<void>;
     handleTeamsSigninVerifyState(context: TurnContext, query: SigninStateVerificationQuery): Promise<void>;
@@ -221,6 +221,7 @@ export enum ErrorCode {
     InvalidResponse = "InvalidResponse",
     RuntimeNotSupported = "RuntimeNotSupported",
     ServiceError = "ServiceError",
+    SsoActivityHandlerIsUndefined = "SsoActivityHandlerIsUndefined",
     TokenExpiredError = "TokenExpiredError",
     UiRequiredError = "UiRequiredError"
 }
@@ -377,15 +378,7 @@ export interface SsoConfig {
         timeout?: number;
         endOnInvalidMessage?: boolean;
     };
-    teamsFxConfig?: {
-        authorityHost?: string;
-        clientId?: string;
-        tenantId?: string;
-        clientSecret?: string;
-        certificateContent?: string;
-        initiateLoginEndpoint?: string;
-        applicationIdUri?: string;
-    };
+    teamsFxConfig?: Partial<AuthenticationConfiguration>;
     userState?: UserState;
 }
 
@@ -463,7 +456,7 @@ export interface TeamsFxBotCommandHandler {
 // @public
 export interface TeamsFxBotSsoCommandHandler {
     commandId?: string;
-    handleCommandReceived(context: TurnContext, message: CommandMessage, ssoToken: string): Promise<string | Partial<Activity> | void>;
+    handleCommandReceived(context: TurnContext, message: CommandMessage, ssoToken: TeamsBotSsoPromptTokenResponse): Promise<string | Partial<Activity> | void>;
     triggerPatterns: TriggerPatterns;
 }
 

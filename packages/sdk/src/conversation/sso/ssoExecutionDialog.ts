@@ -94,11 +94,7 @@ export class SsoExecutionDialog extends ComponentDialog {
             const message: CommandMessage = stepContext.result.message;
             const matchResult = this.shouldTrigger(handler.triggerPatterns, message.text);
             message.matches = Array.isArray(matchResult) ? matchResult : void 0;
-            const response = await handler.handleCommandReceived(
-              context,
-              message,
-              tokenResponse.ssoToken
-            );
+            const response = await handler.handleCommandReceived(context, message, tokenResponse);
 
             if (typeof response === "string") {
               await context.sendActivity(response);

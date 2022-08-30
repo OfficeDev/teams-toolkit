@@ -2,6 +2,9 @@
 // Licensed under the MIT license.
 
 import { Activity, ActivityTypes, Middleware, TurnContext } from "botbuilder";
+import { ErrorCode, ErrorMessage, ErrorWithCode } from "../../core/errors";
+import { internalLogger } from "../../util/logger";
+import { formatString } from "../../util/utils";
 import {
   CommandMessage,
   SsoExecutionActivityHandler,
@@ -16,40 +19,32 @@ import {
 export class CommandResponseMiddleware implements Middleware {
   public readonly commandHandlers: (TeamsFxBotCommandHandler | TeamsFxBotSsoCommandHandler)[] = [];
 
-  public activityHandler: SsoExecutionActivityHandler | undefined;
+  public ssoActivityHandler: SsoExecutionActivityHandler | undefined;
+  public hasSsoCommand: boolean;
 
   constructor(
     handlers?: TeamsFxBotCommandHandler[],
     ssoHandlers?: TeamsFxBotSsoCommandHandler[],
-    activityHandler?: SsoExecutionActivityHandler | undefined
+    activityHandler?: SsoExecutionActivityHandler
   ) {
     handlers = handlers ?? [];
     ssoHandlers = ssoHandlers ?? [];
-    if (handlers.length > 0 || ssoHandlers.length > 0) {
-      this.commandHandlers.push(...handlers, ...ssoHandlers);
+    this.hasSsoCommand = ssoHandlers.length > 0;
 
-      this.activityHandler = activityHandler;
+    this.ssoActivityHandler = activityHandler;
 
-      for (const ssoHandler of ssoHandlers) {
-        this.activityHandler?.addCommand(ssoHandler);
-      }
+    if (this.hasSsoCommand && !this.ssoActivityHandler) {
+      internalLogger.error(ErrorMessage.SsoActivityHandlerIsNull);
+      throw new ErrorWithCode(
+        ErrorMessage.SsoActivityHandlerIsNull,
+        ErrorCode.SsoActivityHandlerIsUndefined
+      );
     }
-  }
 
-  /**
-   * Set sso execution activity handler
-   * @param activityHandler SsoExecutionActivityHandler instance
-   */
-  public setActivityHandler(activityHandler: SsoExecutionActivityHandler) {
-    this.activityHandler = activityHandler;
-  }
-
-  /**
-   * Get sso execution activity handler
-   * @returns SsoExecutionActivityHandler instance or undefined
-   */
-  public getActivityHandler(): SsoExecutionActivityHandler | undefined {
-    return this.activityHandler;
+    this.commandHandlers.push(...handlers, ...ssoHandlers);
+    for (const ssoHandler of ssoHandlers) {
+      this.ssoActivityHandler?.addCommand(ssoHandler);
+    }
   }
 
   public async onTurn(context: TurnContext, next: () => Promise<void>): Promise<void> {
@@ -64,7 +59,7 @@ export class CommandResponseMiddleware implements Middleware {
         // when the first command handler is matched.
         if (!!matchResult) {
           if (this.isSsoExecutionHandler(handler)) {
-            await this.activityHandler?.run(context);
+            await this.ssoActivityHandler?.run(context);
           } else {
             const message: CommandMessage = {
               text: commandText,
@@ -83,10 +78,13 @@ export class CommandResponseMiddleware implements Middleware {
               }
             }
           }
+          break;
         }
       }
     } else {
-      await this.activityHandler?.run(context);
+      if (this.hasSsoCommand) {
+        await this.ssoActivityHandler?.run(context);
+      }
     }
     await next();
   }

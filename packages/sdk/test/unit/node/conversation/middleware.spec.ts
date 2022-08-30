@@ -137,7 +137,7 @@ describe("CommandResponse Middleware Tests - Node", () => {
   it("onTurn should be called if context is not a message activity", async () => {
     const testContext = new MockContext("test", "invoke");
     const testSsoCommand = new TestSsoCommandHandler("test");
-    const defaultSsoExecutionActivityHandler = new DefaultSsoExecutionActivityHandler(undefined);
+    const defaultSsoExecutionActivityHandler = new DefaultSsoExecutionActivityHandler();
     const stub = sinon.stub(defaultSsoExecutionActivityHandler, "run").resolves();
 
     const middleware = new CommandResponseMiddleware(

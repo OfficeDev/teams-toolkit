@@ -39,6 +39,7 @@ import {
   BotScenario,
   CommandAndResponseOptionItem,
   NotificationOptionItem,
+  WorkflowOptionItem,
 } from "../../../plugins/solution/fx-solution/question";
 export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {
@@ -137,8 +138,11 @@ export class ManifestUtils {
               // inputs[CoreQuestionNames.Features]
               if (inputs.features) {
                 const feature = inputs.features;
-                if (feature === CommandAndResponseOptionItem.id) {
-                  // command and response bot
+                if (
+                  feature === CommandAndResponseOptionItem.id ||
+                  feature == WorkflowOptionItem.id
+                ) {
+                  // command and response bot or workflow bot
                   appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3);
                 } else if (feature === NotificationOptionItem.id) {
                   // notification
@@ -150,8 +154,11 @@ export class ManifestUtils {
               } else if (inputs.scenarios) {
                 const scenariosRaw = inputs.scenarios;
                 const scenarios = Array.isArray(scenariosRaw) ? scenariosRaw : [];
-                if (scenarios.includes(BotScenario.CommandAndResponseBot)) {
-                  // command and response bot
+                if (
+                  scenarios.includes(BotScenario.CommandAndResponseBot) ||
+                  scenarios.includes(BotScenario.WorkflowBot)
+                ) {
+                  // command and response bot or workflow bot
                   appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3);
                 } else if (scenarios.includes(BotScenario.NotificationBot)) {
                   // notification

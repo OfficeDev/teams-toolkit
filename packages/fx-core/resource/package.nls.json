@@ -528,6 +528,8 @@
   "core.Option.recommend": "Recommended",
   "core.CommandAndResponseOption.label": "Command bot",
   "core.CommandAndResponseOption.detail": "Respond to simple commands in Microsoft Teams chat",
+  "core.WorkflowOption.label": "Workflow bot",
+  "core.WorkflowOption.detail": "Automate repetitive workflows for common business processes in Microsoft Teams chat",
   "core.ExistingTabOption.label": "Embed existing web app",
   "core.ExistingTabOption.detail": "Bring your own static webpages and embed in Microsoft Teams",
   "core.ExistingTabEndpointQuestion.placeholder": "Input your existing tab endpoint",

@@ -45,7 +45,7 @@ function updateFileDeps(file, deps) {
             if(!(semver.prerelease(semver.minVersion(dep_[key])).includes("alpha") || semver.prerelease(semver.minVersion(dep_[key])).includes("rc") || semver.prerelease(semver.minVersion(dep_[key])).includes("beta"))){
                 continue;
             }
-            if(key === "@microsoft/teamsfx") {
+            if(key === "@microsoft/teamsfx" || "@microsoft/teamsfx-react") {
                 const m365VersionPattern = /^\^?\d+\.\d+\.\d+-beta\.\d+$/;
                 if (dep_[key].match(m365VersionPattern)) {
                     continue;

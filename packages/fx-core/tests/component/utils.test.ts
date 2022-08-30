@@ -13,6 +13,11 @@ import sinon from "sinon";
 import { deployUtils } from "../../src/component/deployUtils";
 import { assert } from "chai";
 import { TestHelper } from "../plugins/resource/frontend/helper";
+import {
+  FindFunctionAppError,
+  PackDirectoryExistenceError,
+  ResourceNotFoundError,
+} from "../../src/component/error";
 describe("resetEnvInfoWhenSwitchM365", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -220,5 +225,13 @@ describe("resetEnvInfoWhenSwitchM365", () => {
       envInfo
     );
     assert.isTrue(res.isErr());
+  });
+  it("errors", async () => {
+    const error1 = new PackDirectoryExistenceError("FE");
+    assert.isDefined(error1);
+    const error2 = new ResourceNotFoundError("test", "");
+    assert.isDefined(error2);
+    const error3 = new FindFunctionAppError("FE");
+    assert.isDefined(error3);
   });
 });

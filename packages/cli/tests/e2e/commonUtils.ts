@@ -566,6 +566,7 @@ sku: {
   name: 'B1'
 }
 kind: 'app'
+properties: {}
 }
 `;
   const frontendHostingTestServerFarm = "frontendhosting_testResource";

@@ -52,7 +52,7 @@ export class CommandBot {
   /**
    * Registers a command into the command bot.
    *
-   * @param command The command to registered.
+   * @param command The command to register.
    */
   public registerCommand(command: TeamsFxBotCommandHandler): void {
     if (command) {
@@ -63,7 +63,7 @@ export class CommandBot {
   /**
    * Registers commands into the command bot.
    *
-   * @param commands The commands to registered.
+   * @param commands The commands to register.
    */
   public registerCommands(commands: TeamsFxBotCommandHandler[]): void {
     if (commands) {
@@ -74,7 +74,7 @@ export class CommandBot {
   /**
    * Registers a sso command into the command bot.
    *
-   * @param command The command to registered.
+   * @param command The command to register.
    */
   public registerSsoCommand(ssoCommand: TeamsFxBotSsoCommandHandler): void {
     if (ssoCommand) {
@@ -89,7 +89,7 @@ export class CommandBot {
   /**
    * Registers commands into the command bot.
    *
-   * @param commands The commands to registered.
+   * @param commands The commands to register.
    */
   public registerSsoCommands(ssoCommands: TeamsFxBotSsoCommandHandler[]): void {
     if (ssoCommands) {

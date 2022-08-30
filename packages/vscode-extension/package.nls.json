@@ -361,5 +361,13 @@
     "teamstoolkit.webview.invalidFolder": "Invalid folder",
     "teamstoolkit.webview.samplePageTitle": "Samples",
     "teamstoolkit.webview.surveyPageTitle": "Teams Toolkit Survey",
-    "teamstoolkit.webview.unzipPackage": "Unzipping the sample package"
+    "teamstoolkit.webview.unzipPackage": "Unzipping the sample package",
+    "teamstoolkit.taskDefinitions.command.prerequisites.description": "Validate and install prerequisites.\n See https://aka.ms/teamsfx-debug-tasks#debug-check-prerequisites for how to customize following args.",
+    "teamstoolkit.taskDefinitions.args.prerequisites.nodejsTitle": "Validate Node.js",
+    "teamstoolkit.taskDefinitions.args.prerequisites.m365AccountTitle": "Validate M365 account",
+    "teamstoolkit.taskDefinitions.args.prerequisites.devCertTitle": "Install localhost SSL certificate",
+    "teamstoolkit.taskDefinitions.args.prerequisites.funcTitle": "Install Azure Functions Core Tools",
+    "teamstoolkit.taskDefinitions.args.prerequisites.ngrokTitle": "Install Ngrok",
+    "teamstoolkit.taskDefinitions.args.prerequisites.dotnetTitle": "Install .NET",
+    "teamstoolkit.taskDefinitions.args.prerequisites.portsTitle": "Validate available ports"
 }

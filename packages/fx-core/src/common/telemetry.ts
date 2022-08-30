@@ -107,6 +107,7 @@ export enum TelemetryEvent {
   ScaffoldFromTemplates = "scaffold-from-templates",
   ConfirmProvision = "confirm-provision",
   CheckLocalDebugTenant = "check-local-debug-tenant",
+  DebugSetUpSSO = "debug-set-up-sso",
 }
 
 export enum TelemetrySuccess {

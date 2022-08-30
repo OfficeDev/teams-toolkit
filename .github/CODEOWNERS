@@ -136,3 +136,5 @@
 
 /packages/fx-core/src/component/feature/apiconnector @xzf0587 @wenytang-ms @blackchoey
 /packages/fx-core/tests/component/feature/apiconnector @xzf0587 @wenytang-ms @blackchoey
+
+/packages/fx-core/src/component/debugHandler @swatDong @XiaofuHuang @kuojianlu @kimizhu

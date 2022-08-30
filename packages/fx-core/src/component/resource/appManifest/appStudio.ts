@@ -280,7 +280,12 @@ export async function buildTeamsAppPackage(
 ): Promise<Result<string, FxError>> {
   const buildFolderPath = path.join(projectPath, BuildFolderName, AppPackageFolderName);
   await fs.ensureDir(buildFolderPath);
-  const manifestRes = await manifestUtils.getManifest(projectPath, envInfo, telemetryProps);
+  const manifestRes = await manifestUtils.getManifest(
+    projectPath,
+    envInfo,
+    withEmptyCapabilities,
+    telemetryProps
+  );
   if (manifestRes.isErr()) {
     return err(manifestRes.error);
   }
@@ -388,7 +393,7 @@ export async function updateManifest(
 ): Promise<Result<undefined, FxError>> {
   const teamsAppId = ctx.envInfo.state[ComponentNames.AppManifest]?.teamsAppId;
   let manifest: any;
-  const manifestResult = await manifestUtils.getManifest(inputs.projectPath, ctx.envInfo);
+  const manifestResult = await manifestUtils.getManifest(inputs.projectPath, ctx.envInfo, false);
   if (manifestResult.isErr()) {
     ctx.logProvider?.error(getLocalizedString("error.appstudio.updateManifestFailed"));
     const isProvisionSucceeded = ctx.envInfo.state["solution"].provisionSucceeded as boolean;

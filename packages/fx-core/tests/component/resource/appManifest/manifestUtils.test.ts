@@ -526,9 +526,9 @@ describe("getManifest V3", () => {
   it("getManifest", async () => {
     const envInfo = newEnvInfoV3();
     envInfo.envName = "local";
-    const res1 = await manifestUtils.getManifest("", envInfo);
+    const res1 = await manifestUtils.getManifest("", envInfo, false);
     envInfo.envName = "dev";
-    const res2 = await manifestUtils.getManifest("", envInfo);
+    const res2 = await manifestUtils.getManifest("", envInfo, false);
     chai.assert.isTrue(res1.isErr());
     chai.assert.isTrue(res2.isErr());
   });

@@ -351,16 +351,11 @@ describe("Workflow test for v3", () => {
             "/subscriptions/mockSid/resourceGroups/jay-texas/providers/Microsoft.Web/sites/testwebApp",
           endpoint: "https://testwebApp.azurewebsites.net",
         },
-        [ComponentNames.TeamsBot]: {
+        [ComponentNames.BotService]: {
           botId: "00000000-0000-0000-0000-000000000000",
-          domain: "abc.com",
         },
         [ComponentNames.AadApp]: {
           clientId: "00000000-0000-0000-0000-000000000000",
-          applicationIdUris: "https://aas-bcc",
-        },
-        [ComponentNames.AppManifest]: {
-          teamsAppId: "00000000-0000-0000-0000-000000000000",
         },
       };
 
@@ -440,17 +435,6 @@ describe("Workflow test for v3", () => {
           resourceId:
             "/subscriptions/mockSid/resourceGroups/jay-texas/providers/Microsoft.Web/sites/testwebApp",
           endpoint: "https://testwebApp.azurewebsites.net",
-        },
-        [ComponentNames.TeamsBot]: {
-          botId: "00000000-0000-0000-0000-000000000000",
-          domain: "abc.com",
-        },
-        [ComponentNames.AadApp]: {
-          clientId: "00000000-0000-0000-0000-000000000000",
-          applicationIdUris: "https://aas-bcc",
-        },
-        [ComponentNames.AppManifest]: {
-          teamsAppId: "00000000-0000-0000-0000-000000000000",
         },
       };
       const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
@@ -684,16 +668,8 @@ describe("Workflow test for v3", () => {
             "/subscriptions/mockSid/resourceGroups/jay-texas/providers/Microsoft.Web/sites/testwebApp",
           endpoint: "https://testwebApp.azurewebsites.net",
         },
-        [ComponentNames.TeamsBot]: {
-          botId: "00000000-0000-0000-0000-000000000000",
-          domain: "abc.com",
-        },
-        [ComponentNames.AadApp]: {
-          clientId: "00000000-0000-0000-0000-000000000000",
-          applicationIdUris: "https://aas-bcc",
-        },
         [ComponentNames.AppManifest]: {
-          teamsAppId: "00000000-0000-0000-0000-000000000000",
+          tenantId: "mockTid",
         },
       };
       const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
@@ -949,16 +925,8 @@ describe("Workflow test for v3", () => {
           subscriptionName: "mockSname",
           tenantId: "mockAzureTid",
         },
-        [ComponentNames.TeamsBot]: {
-          botId: "00000000-0000-0000-0000-000000000000",
-          domain: "abc.com",
-        },
-        [ComponentNames.AadApp]: {
-          clientId: "00000000-0000-0000-0000-000000000000",
-          applicationIdUris: "https://aas-bcc",
-        },
         [ComponentNames.AppManifest]: {
-          teamsAppId: "00000000-0000-0000-0000-000000000000",
+          tenantId: "oldMockTid",
         },
       };
 
@@ -1161,14 +1129,6 @@ describe("Workflow test for v3", () => {
       },
       [ComponentNames.AadApp]: {
         clientId: "00000000-0000-0000-0000-000000000000",
-        applicationIdUris: "https://aas-bcc",
-      },
-      [ComponentNames.AppManifest]: {
-        teamsAppId: "mockAppId",
-      },
-      [ComponentNames.TeamsBot]: {
-        botId: "mockBotId",
-        domain: "abc.com",
       },
     };
 
@@ -1276,14 +1236,6 @@ describe("Workflow test for v3", () => {
       },
       [ComponentNames.AadApp]: {
         clientId: "00000000-0000-0000-0000-000000000000",
-        applicationIdUris: "https://aas-bcc",
-      },
-      [ComponentNames.AppManifest]: {
-        teamsAppId: "mockAppId",
-      },
-      [ComponentNames.TeamsBot]: {
-        botId: "mockBotId",
-        domain: "abc.com",
       },
     };
 

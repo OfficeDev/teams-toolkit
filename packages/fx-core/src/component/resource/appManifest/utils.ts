@@ -398,6 +398,7 @@ export class ManifestUtils {
   async getManifest(
     projectPath: string,
     envInfo: v3.EnvInfoV3,
+    ignoreEnvStateValueMissing: boolean,
     telemetryProps?: Record<string, string>
   ): Promise<Result<TeamsAppManifest, FxError>> {
     // Read template
@@ -411,7 +412,11 @@ export class ManifestUtils {
       telemetryProps[TelemetryPropertyKey.customizedKeys] = JSON.stringify(customizedKeys);
     }
     // Render mustache template with state and config
-    const resolvedManifestString = resolveManifestTemplate(envInfo, manifestTemplateString);
+    const resolvedManifestString = resolveManifestTemplate(
+      envInfo,
+      manifestTemplateString,
+      !ignoreEnvStateValueMissing
+    );
     const isLocalDebug = envInfo.envName === "local";
     const isProvisionSucceeded =
       envInfo.state.solution.provisionSucceeded === "true" ||

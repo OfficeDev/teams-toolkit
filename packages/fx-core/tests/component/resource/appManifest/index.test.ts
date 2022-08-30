@@ -268,7 +268,7 @@ describe("App-manifest Component", () => {
         applicationIdUris: "https://aas-bcc",
       },
     };
-    const getManifestRes = await manifestUtils.getManifest("", envInfo);
+    const getManifestRes = await manifestUtils.getManifest("", envInfo, false);
     chai.assert(getManifestRes.isOk());
     if (getManifestRes.isOk()) {
       const finalManifest = getManifestRes.value;
@@ -354,7 +354,7 @@ describe("App-manifest Component", () => {
         botId: "bbbbcccccc",
       },
     };
-    const getManifestRes = await manifestUtils.getManifest("", envInfo);
+    const getManifestRes = await manifestUtils.getManifest("", envInfo, false);
     chai.assert(getManifestRes.isErr());
   });
 
@@ -436,7 +436,7 @@ describe("App-manifest Component", () => {
         validDomain: "abc.com",
       },
     };
-    const getManifestRes = await manifestUtils.getManifest("", envInfo);
+    const getManifestRes = await manifestUtils.getManifest("", envInfo, false);
     chai.assert(getManifestRes.isOk());
     if (getManifestRes.isOk()) {
       const finalManifest = getManifestRes.value;

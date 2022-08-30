@@ -9,7 +9,7 @@ import "../connection/azureWebAppConfig";
 import "../resource/azureSql";
 import "../resource/identity";
 import { ComponentNames } from "../constants";
-import { hasApi } from "../../common/projectSettingsHelperV3";
+import { hasApi, hasTab } from "../../common/projectSettingsHelperV3";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { BicepComponent } from "../bicep";
 import { AzureSqlResource } from "../resource/azureSql";
@@ -27,8 +27,7 @@ export class Sql {
   ): Promise<Result<undefined, FxError>> {
     const addedResources: string[] = [];
     const sqlComponent = getComponent(context.projectSetting, ComponentNames.AzureSQL);
-    const hasFunc = hasApi(context.projectSetting);
-    if (!hasFunc) {
+    if (hasTab(context.projectSetting) && !hasApi(context.projectSetting)) {
       const teamsApi = Container.get(ComponentNames.TeamsApi) as any;
       const res = await teamsApi.add(context, inputs);
       if (res.isErr()) return err(res.error);

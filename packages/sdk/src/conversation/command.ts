@@ -3,7 +3,7 @@
 
 import { BotFrameworkAdapter } from "botbuilder";
 import { CommandOptions, TeamsFxBotCommandHandler } from "./interface";
-import { CommandResponseMiddleware } from "./middleware";
+import { CommandResponseMiddleware } from "./middlewares/commandMiddleware";
 
 /**
  * A command bot for receiving commands and sending responses in Teams.

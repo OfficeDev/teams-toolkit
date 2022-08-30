@@ -41,6 +41,13 @@ import {
   NotificationOptionItem,
   WorkflowOptionItem,
 } from "../../../plugins/solution/fx-solution/question";
+import { getCustomizedKeys } from "../../../plugins/resource/appstudio/utils/utils";
+import { TelemetryPropertyKey } from "../../../plugins/resource/appstudio/utils/telemetry";
+import Mustache from "mustache";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { HelpLinks } from "../../../common/constants";
+import { ComponentNames } from "../../constants";
+import { compileHandlebarsTemplateString } from "../../../common/tools";
 export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {
     const filePath = await this.getTeamsAppManifestPath(projectPath);
@@ -394,6 +401,133 @@ export class ManifestUtils {
     }
     return ok(capabilities);
   }
+
+  async getManifest(
+    projectPath: string,
+    envInfo: v3.EnvInfoV3,
+    ignoreEnvStateValueMissing: boolean,
+    telemetryProps?: Record<string, string>
+  ): Promise<Result<TeamsAppManifest, FxError>> {
+    // Read template
+    const manifestTemplateRes = await manifestUtils.readAppManifest(projectPath);
+    if (manifestTemplateRes.isErr()) {
+      return err(manifestTemplateRes.error);
+    }
+    const manifestTemplateString = JSON.stringify(manifestTemplateRes.value);
+    const customizedKeys = getCustomizedKeys("", JSON.parse(manifestTemplateString));
+    if (telemetryProps) {
+      telemetryProps[TelemetryPropertyKey.customizedKeys] = JSON.stringify(customizedKeys);
+    }
+    // Render mustache template with state and config
+    const resolvedManifestString = resolveManifestTemplate(
+      envInfo,
+      manifestTemplateString,
+      !ignoreEnvStateValueMissing
+    );
+    const isLocalDebug = envInfo.envName === "local";
+    const isProvisionSucceeded =
+      envInfo.state.solution.provisionSucceeded === "true" ||
+      envInfo.state.solution.provisionSucceeded === true;
+    const tokens = [
+      ...new Set(
+        Mustache.parse(resolvedManifestString)
+          .filter((x) => {
+            return x[0] != "text" && (!isLocalDebug || x[1] != "state.app-manifest.teamsAppId");
+          })
+          .map((x) => x[1])
+      ),
+    ];
+    if (tokens.length > 0) {
+      if (isLocalDebug) {
+        return err(
+          AppStudioResultFactory.UserError(
+            AppStudioError.GetLocalDebugConfigFailedError.name,
+            AppStudioError.GetLocalDebugConfigFailedError.message(
+              new Error(getLocalizedString("plugins.appstudio.dataRequired", tokens.join(",")))
+            )
+          )
+        );
+      } else {
+        return err(
+          AppStudioResultFactory.UserError(
+            AppStudioError.GetRemoteConfigFailedError.name,
+            AppStudioError.GetRemoteConfigFailedError.message(
+              getLocalizedString("plugins.appstudio.dataRequired", tokens.join(",")),
+              isProvisionSucceeded
+            ),
+            HelpLinks.WhyNeedProvision
+          )
+        );
+      }
+    }
+    const manifest: TeamsAppManifest = JSON.parse(resolvedManifestString);
+    // dynamically set validDomains for manifest, which can be refactored by static manifest templates
+    if (isLocalDebug || manifest.validDomains?.length === 0) {
+      const validDomains: string[] = [];
+      const tabEndpoint = envInfo.state[ComponentNames.TeamsTab]?.endpoint as string;
+      const tabDomain = envInfo.state[ComponentNames.TeamsTab]?.domain as string;
+      if (tabDomain) {
+        validDomains.push(tabDomain);
+      }
+      if (tabEndpoint && isLocalDebug) {
+        validDomains.push(tabEndpoint.slice(8));
+      }
+      const botId = envInfo.state[ComponentNames.TeamsBot]?.botId;
+      const botDomain = envInfo.state[ComponentNames.TeamsBot]?.validDomain;
+      if (botId) {
+        if (!botDomain) {
+          return err(
+            AppStudioResultFactory.UserError(
+              AppStudioError.GetRemoteConfigFailedError.name,
+              AppStudioError.GetRemoteConfigFailedError.message(
+                getLocalizedString("plugins.appstudio.dataRequired", "validDomain"),
+                isProvisionSucceeded
+              ),
+              HelpLinks.WhyNeedProvision
+            )
+          );
+        } else {
+          validDomains.push(botDomain);
+        }
+      }
+      for (const domain of validDomains) {
+        if (manifest.validDomains?.indexOf(domain) == -1) {
+          manifest.validDomains.push(domain);
+        }
+      }
+    }
+    return ok(manifest);
+  }
+}
+
+export function resolveManifestTemplate(
+  envInfo: v3.EnvInfoV3,
+  templateString: string,
+  keepEnvStatePlaceHoldersIfValuesNotExist = true
+): string {
+  const view = {
+    config: cloneDeep(envInfo.config),
+    state: cloneDeep(envInfo.state),
+  };
+  if (keepEnvStatePlaceHoldersIfValuesNotExist) {
+    const spans = Mustache.parse(templateString);
+    for (const span of spans) {
+      if (span[0] !== "text") {
+        const placeholder = span[1];
+        const array = placeholder.split(".");
+        if (array.length === 3 && array[0] === "state") {
+          const component = array[1];
+          const configKey = array[2];
+          if (!view.state[component] || !view.state[component][configKey]) {
+            view.state[component] = view.state[component] || {};
+            view.state[component][configKey] = `{{${placeholder}}}`;
+          }
+        }
+      }
+    }
+  }
+  const result = compileHandlebarsTemplateString(templateString, view);
+  return result;
 }
 
 export const manifestUtils = new ManifestUtils();

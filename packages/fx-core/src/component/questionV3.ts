@@ -456,9 +456,6 @@ export async function getQuestionsForAddFeatureSubCommand(
   ) {
     functionNameQuestion.validation = undefined;
     return ok(new QTreeNode(functionNameQuestion));
-  } else if (featureId === AzureResourceApimNewUI.id) {
-    functionNameQuestion.validation = undefined;
-    return ok(new QTreeNode(functionNameQuestion));
   } else if (featureId === AzureResourceKeyVaultNewUI.id) {
   } else if (featureId === CicdOptionItem.id) {
     return await addCicdQuestion(createContextV3(), inputs as InputsWithProjectPath);

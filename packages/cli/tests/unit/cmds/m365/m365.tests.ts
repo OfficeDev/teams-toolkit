@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { LogLevel, ok } from "@microsoft/teamsfx-api";
-import axios, { AxiosInstance, AxiosResponse } from "axios";
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import fs from "fs-extra";
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
@@ -17,6 +17,8 @@ describe("M365", () => {
   const sandbox = sinon.createSandbox();
   let registeredCommands: string[] = [];
   let logs: string[] = [];
+  let axiosGetResponses: Record<string, unknown> = {};
+  let axiosPostResponses: Record<string, unknown> = {};
   const testAxiosInstance = {
     defaults: {
       headers: {
@@ -24,7 +26,14 @@ describe("M365", () => {
       },
     },
     get: function <T = any, R = AxiosResponse<T>>(url: string): Promise<R> {
-      return Promise.resolve({} as R);
+      return Promise.resolve(axiosGetResponses[url] as R);
+    },
+    post: function <T = any, R = AxiosResponse<T>>(
+      url: string,
+      data?: any,
+      config?: AxiosRequestConfig
+    ): Promise<R> {
+      return Promise.resolve(axiosPostResponses[url] as R);
     },
   } as AxiosInstance;
 
@@ -35,6 +44,8 @@ describe("M365", () => {
   beforeEach(() => {
     registeredCommands = [];
     logs = [];
+    axiosGetResponses = {};
+    axiosPostResponses = {};
     sandbox
       .stub<any, any>(yargs, "command")
       .callsFake((command: string, description: string, builder: any, handler: any) => {
@@ -71,6 +82,28 @@ describe("M365", () => {
     const m365 = new M365();
     const sideloading = m365.subCommands.find((cmd) => cmd.commandHead === "sideloading");
     expect(sideloading).not.undefined;
+
+    axiosPostResponses["/dev/v1/users/packages"] = {
+      data: {
+        operationId: "test-operation-id",
+        titlePreview: {
+          titleId: "test-title-id",
+        },
+      },
+    };
+    axiosPostResponses["/dev/v1/users/packages/acquisitions"] = {
+      data: {
+        statusId: "test-status-id",
+      },
+    };
+    axiosGetResponses["/dev/v1/users/packages/status/test-status-id"] = {
+      status: 200,
+    };
+    axiosGetResponses["/catalog/v1/users/titles/test-title-id/launchInfo"] = {
+      data: {
+        test: "test",
+      },
+    };
 
     await sideloading!.handler({ "file-path": "test" });
     expect(logs.length).greaterThan(0);

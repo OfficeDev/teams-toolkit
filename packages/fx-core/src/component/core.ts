@@ -523,7 +523,10 @@ export class TeamsfxCore {
         }
       }
     }
-    if (inputComponentNames.includes(ComponentNames.AppManifest)) {
+    if (
+      !(inputs["include-app-manifest"] && inputs["include-app-manifest"] === "no") &&
+      inputComponentNames.includes(ComponentNames.AppManifest)
+    ) {
       const appManifest = Container.get<AppManifest>(ComponentNames.AppManifest);
       thunks.push({
         pluginName: ComponentNames.AppManifest,

@@ -84,6 +84,7 @@ export class AppManifest implements CloudResource {
       key: "tenantId",
     },
   };
+
   finalOutputKeys = ["teamsAppId", "tenantId"];
   @hooks([
     ActionExecutionMW({
@@ -280,10 +281,11 @@ export class AppManifest implements CloudResource {
           false,
           actionCtx!.telemetryProps!
         );
+        if (appPackagePath.isErr()) return err(appPackagePath.error);
         const msg = getLocalizedString(
           "plugins.appstudio.adminApprovalTip",
           ctx.projectSetting.appName,
-          appPackagePath
+          appPackagePath.value
         );
         ctx.userInteraction
           .showMessage("info", msg, false, "OK", Constants.READ_MORE)

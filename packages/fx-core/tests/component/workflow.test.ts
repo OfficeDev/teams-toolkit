@@ -25,8 +25,6 @@ import "../../src/component/feature/sql";
 import "../../src/component/resource/botService";
 import { createContextV3 } from "../../src/component/utils";
 import { deleteFolder, MockTools, randomAppName } from "../core/utils";
-import * as provisionV3 from "../../src/plugins/solution/fx-solution/v3/provision";
-import * as provisionV2 from "../../src/plugins/solution/fx-solution/v2/provision";
 import { AppStudioClient } from "../../src/plugins/resource/appstudio/appStudio";
 import * as clientFactory from "../../src/plugins/resource/bot/clientFactory";
 import { AADRegistration } from "../../src/plugins/resource/bot/aadRegistration";
@@ -63,10 +61,11 @@ import { apiConnectorImpl } from "../../src/component/feature/apiConnector";
 import * as backup from "../../src/plugins/solution/fx-solution/utils/backupFiles";
 import { AadApp } from "../../src/component/resource/aadApp/aadApp";
 import { Constants } from "../../src/plugins/resource/aad/constants";
-import * as deployV3 from "../../src/plugins/solution/fx-solution/v3/deploy";
 import { TokenCredential, AccessToken, GetTokenOptions } from "@azure/core-http";
 import { CoreQuestionNames } from "../../src/core/question";
 import * as questionV3 from "../../src/component/questionV3";
+import { provisionUtils } from "../../src/component/provisionUtils";
+import { deployUtils } from "../../src/component/deployUtils";
 
 class MyTokenCredential implements TokenCredential {
   async getToken(
@@ -296,668 +295,727 @@ describe("Workflow test for v3", () => {
     }
     assert.isTrue(res.isOk());
   });
-  it("fx.provision", async () => {
-    sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
-    sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
-    sandbox
-      .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
-      .resolves(ok({ tid: "mockTid" }));
-    sandbox
-      .stub(provisionV3, "fillInAzureConfigs")
-      .resolves(ok({ hasSwitchedSubscription: false }));
-    sandbox.stub(provisionV2, "askForProvisionConsentNew").resolves(ok(Void));
-    sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
-    sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-    sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-    sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
-    sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
-      clientId: "00000000-0000-0000-0000-000000000000",
-      clientSecret: "mockClientSecret",
-      objectId: "00000000-0000-0000-0000-000000000000",
-    });
-    sandbox.stub(arm, "deployArmTemplates").resolves(ok(undefined));
-    const appName = `unittest${randomAppName()}`;
-    const inputs: InputsWithProjectPath = {
-      projectPath: projectPath,
-      platform: Platform.VSCode,
-      [AzureSolutionQuestionNames.Features]: "Bot",
-      language: "typescript",
-      "app-name": appName,
-      folder: path.join(os.homedir(), "TeamsApps"),
-    };
-    const initRes = await fx.init(context, inputs);
-    if (initRes.isErr()) {
-      console.log(initRes.error);
-    }
-    assert.isTrue(initRes.isOk());
-    const component = Container.get("teams-bot") as any;
-    const addBotRes = await component.add(context, inputs);
-    if (addBotRes.isErr()) {
-      console.log(addBotRes.error);
-    }
-    assert.isTrue(addBotRes.isOk());
-    context.envInfo = newEnvInfoV3();
-    context.tokenProvider = tools.tokenProvider;
-    context.envInfo.state = {
-      solution: {
-        provisionSucceeded: true,
-        needCreateResourceGroup: false,
-        resourceGroupName: "mockRG",
-        location: "eastasia",
-        resourceNameSuffix: "3bf854123",
-        teamsAppTenantId: "mockTid",
-        subscriptionId: "mockSid",
-        subscriptionName: "mockSname",
-        tenantId: "mockAzureTid",
-      },
-      "azure-web-app": {
-        sku: "F1",
-        appName: "testwebApp",
-        domain: "testwebApp.azurewebsites.net",
-        appServicePlanName: "testwebAppPlan",
-        resourceId:
-          "/subscriptions/mockSid/resourceGroups/jay-texas/providers/Microsoft.Web/sites/testwebApp",
-        endpoint: "https://testwebApp.azurewebsites.net",
-      },
-      [ComponentNames.BotService]: {
-        botId: "00000000-0000-0000-0000-000000000000",
-      },
-      [ComponentNames.AadApp]: {
+
+  describe("provision", async () => {
+    it("fx.provision", async () => {
+      sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
+      sandbox
+        .stub(tools.tokenProvider.m365TokenProvider, "getAccessToken")
+        .resolves(ok("fakeToken"));
+      sandbox
+        .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
+        .resolves(ok({ tid: "mockTid" }));
+      sandbox
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
+      sandbox
+        .stub(provisionUtils, "fillInAzureConfigs")
+        .resolves(ok({ hasSwitchedSubscription: false }));
+      sandbox.stub(provisionUtils, "askForProvisionConsent").resolves(ok(Void));
+      sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
+      sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
+      sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
+      sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
+      sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
         clientId: "00000000-0000-0000-0000-000000000000",
-      },
-    };
+        clientSecret: "mockClientSecret",
+        objectId: "00000000-0000-0000-0000-000000000000",
+      });
+      sandbox.stub(arm, "deployArmTemplates").resolves(ok(undefined));
+      const appName = `unittest${randomAppName()}`;
+      const inputs: InputsWithProjectPath = {
+        projectPath: projectPath,
+        platform: Platform.VSCode,
+        [AzureSolutionQuestionNames.Features]: "Bot",
+        language: "typescript",
+        "app-name": appName,
+        folder: path.join(os.homedir(), "TeamsApps"),
+      };
+      const initRes = await fx.init(context, inputs);
+      if (initRes.isErr()) {
+        console.log(initRes.error);
+      }
+      assert.isTrue(initRes.isOk());
+      const component = Container.get("teams-bot") as any;
+      const addBotRes = await component.add(context, inputs);
+      if (addBotRes.isErr()) {
+        console.log(addBotRes.error);
+      }
+      assert.isTrue(addBotRes.isOk());
+      context.envInfo = newEnvInfoV3();
+      context.tokenProvider = tools.tokenProvider;
+      context.envInfo.state = {
+        solution: {
+          provisionSucceeded: true,
+          needCreateResourceGroup: false,
+          resourceGroupName: "mockRG",
+          location: "eastasia",
+          resourceNameSuffix: "3bf854123",
+          teamsAppTenantId: "mockTid",
+          subscriptionId: "mockSid",
+          subscriptionName: "mockSname",
+          tenantId: "mockAzureTid",
+        },
+        "azure-web-app": {
+          sku: "F1",
+          appName: "testwebApp",
+          domain: "testwebApp.azurewebsites.net",
+          appServicePlanName: "testwebAppPlan",
+          resourceId:
+            "/subscriptions/mockSid/resourceGroups/jay-texas/providers/Microsoft.Web/sites/testwebApp",
+          endpoint: "https://testwebApp.azurewebsites.net",
+        },
+        [ComponentNames.BotService]: {
+          botId: "00000000-0000-0000-0000-000000000000",
+        },
+        [ComponentNames.AadApp]: {
+          clientId: "00000000-0000-0000-0000-000000000000",
+        },
+      };
 
-    const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
-    if (provisionRes.isErr()) {
-      console.log(provisionRes.error);
-    }
-    assert.isTrue(provisionRes.isOk());
-  });
-
-  it("fx.provision after switching subscription", async () => {
-    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
-    sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
-    sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
-    sandbox
-      .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
-      .resolves(ok({ tid: "mockTid" }));
-    sandbox.stub(provisionV3, "fillInAzureConfigs").resolves(ok({ hasSwitchedSubscription: true }));
-    sandbox.stub(provisionV2, "askForProvisionConsentNew").resolves(ok(Void));
-    sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
-    sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-    sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-    sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
-    sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
-      clientId: "mockClientId",
-      clientSecret: "mockClientSecret",
-      objectId: "mockObjectId",
-    });
-    sandbox.stub(armFunctions, "updateAzureParameters").resolves(ok(undefined));
-    sandbox.stub(arm, "deployArmTemplates").resolves(ok(undefined));
-    const appName = `unittest${randomAppName()}`;
-    const inputs: InputsWithProjectPath = {
-      projectPath: projectPath,
-      platform: Platform.VSCode,
-      [AzureSolutionQuestionNames.Features]: "Bot",
-      language: "typescript",
-      "app-name": appName,
-      folder: path.join(os.homedir(), "TeamsApps"),
-    };
-    const initRes = await fx.init(context, inputs);
-    if (initRes.isErr()) {
-      console.log(initRes.error);
-    }
-    assert.isTrue(initRes.isOk());
-    const teamsBot = Container.get("teams-bot") as any;
-    const addBotRes = await teamsBot.add(context, inputs);
-    if (addBotRes.isErr()) {
-      console.log(addBotRes.error);
-    }
-    assert.isTrue(addBotRes.isOk());
-    context.envInfo = newEnvInfoV3();
-    context.tokenProvider = tools.tokenProvider;
-    context.envInfo.state = {
-      solution: {
-        provisionSucceeded: true,
-        needCreateResourceGroup: false,
-        resourceGroupName: "mockRG",
-        location: "eastasia",
-        resourceNameSuffix: "3bf854123",
-        teamsAppTenantId: "mockTid",
-        subscriptionId: "mockSid",
-        subscriptionName: "mockSname",
-        tenantId: "mockAzureTid",
-      },
-      "azure-web-app": {
-        sku: "F1",
-        appName: "testwebApp",
-        domain: "testwebApp.azurewebsites.net",
-        appServicePlanName: "testwebAppPlan",
-        resourceId:
-          "/subscriptions/mockSid/resourceGroups/jay-texas/providers/Microsoft.Web/sites/testwebApp",
-        endpoint: "https://testwebApp.azurewebsites.net",
-      },
-    };
-    const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
-    if (provisionRes.isErr()) {
-      console.log(provisionRes.error);
-    }
-    assert.isTrue(provisionRes.isOk());
-  });
-
-  it("fx.provision local debug after switching m365 tenant", async () => {
-    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
-    sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
-    sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
-    sandbox.stub(armFunctions, "updateAzureParameters").resolves(ok(undefined));
-    sandbox
-      .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
-      .resolves(ok({ tid: "mockSwitchedTid", upn: "mockUpn" }));
-    sandbox.stub(backup, "backupFiles").resolves(ok(undefined));
-    sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
-    sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-    sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-    sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
-    sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
-      clientId: "mockClientId",
-      clientSecret: "mockClientSecret",
-      objectId: "mockObjectId",
-    });
-    const appName = `unittest${randomAppName()}`;
-    const inputs: InputsWithProjectPath = {
-      projectPath: projectPath,
-      platform: Platform.VSCode,
-      features: "Bot",
-      language: "typescript",
-      "app-name": appName,
-      folder: path.join(os.homedir(), "TeamsApps"),
-      checkerInfo: {
-        skipNgrok: true,
-      },
-    };
-    const initRes = await fx.init(context, inputs);
-    if (initRes.isErr()) {
-      console.log(initRes.error);
-    }
-    assert.isTrue(initRes.isOk());
-
-    context.projectSetting.components = [
-      {
-        name: "teams-bot",
-        build: true,
-        capabilities: ["bot"],
-        deploy: true,
-        folder: "bot",
-        hosting: "azure-web-app",
-      },
-    ];
-    context.envInfo = newEnvInfoV3("local");
-    context.tokenProvider = tools.tokenProvider;
-    context.envInfo.state = {
-      solution: {
-        provisionSucceeded: true,
-        teamsAppTenantId: "mockTid",
-      },
-      "app-manifest": {
-        tenantId: "mockTid",
-        teamsAppId: "mockTeamsAppId",
-      },
-    };
-    context.envInfo.config.bot = {
-      siteEndpoint: "https://localtest:3978",
-    };
-    const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
-    if (provisionRes.isErr()) {
-      console.log(provisionRes.error);
-    }
-    assert.isTrue(provisionRes.isOk());
-    assert.isTrue(context.envInfo.state.solution.teamsAppTenantId === "mockSwitchedTid");
-    assert.isTrue(context.envInfo.state.solution.provisionSucceeded);
-    assert.isTrue(context.envInfo.state["app-manifest"]["tenantId"] === "mockSwitchedTid");
-  });
-
-  it("fx.provision local debug after switching m365 tenant: backup error", async () => {
-    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
-    sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
-    sandbox
-      .stub(backup, "backupFiles")
-      .resolves(err(new UserError("solution", "backupError", "backupError")));
-    sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
-    sandbox
-      .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
-      .resolves(ok({ tid: "mockSwitchedTid", upn: "mockUpn" }));
-    sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
-    sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-    sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-    sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
-    sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
-      clientId: "mockClientId",
-      clientSecret: "mockClientSecret",
-      objectId: "mockObjectId",
-    });
-    const appName = `unittest${randomAppName()}`;
-    const inputs: InputsWithProjectPath = {
-      projectPath: projectPath,
-      platform: Platform.VSCode,
-      features: "Bot",
-      language: "typescript",
-      "app-name": appName,
-      folder: path.join(os.homedir(), "TeamsApps"),
-      checkerInfo: {
-        skipNgrok: true,
-      },
-    };
-    const initRes = await fx.init(context, inputs);
-    if (initRes.isErr()) {
-      console.log(initRes.error);
-    }
-    assert.isTrue(initRes.isOk());
-
-    context.projectSetting.components = [
-      {
-        name: "teams-bot",
-        build: true,
-        capabilities: ["bot"],
-        deploy: true,
-        folder: "bot",
-        hosting: "azure-web-app",
-      },
-    ];
-    context.envInfo = newEnvInfoV3("local");
-    context.tokenProvider = tools.tokenProvider;
-    context.envInfo.state = {
-      solution: {
-        provisionSucceeded: true,
-        teamsAppTenantId: "mockTid",
-      },
-      "app-manifest": {
-        tenantId: "mockTid",
-        teamsAppId: "mockTeamsAppId",
-      },
-    };
-    context.envInfo.config.bot = {
-      siteEndpoint: "https://localtest:3978",
-    };
-    const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
-    if (provisionRes.isErr()) {
-      console.log(provisionRes.error);
-    }
-    assert.isTrue(provisionRes.isErr());
-    if (provisionRes.isErr()) {
-      assert.isTrue(provisionRes.error.name === "backupError");
-    }
-  });
-
-  it("fx.provision after switching M365", async () => {
-    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
-    sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
-    sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
-    sandbox
-      .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
-      .resolves(ok({ tid: "mockSwitchedTid" }));
-    sandbox.stub(provisionV3, "fillInAzureConfigs").resolves(ok({ hasSwitchedSubscription: true }));
-    sandbox.stub(provisionV2, "askForProvisionConsentNew").resolves(ok(Void));
-    sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
-    sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-    sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-    sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
-    sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
-      clientId: "mockClientId",
-      clientSecret: "mockClientSecret",
-      objectId: "mockObjectId",
-    });
-    sandbox.stub(armFunctions, "updateAzureParameters").resolves(ok(undefined));
-    sandbox.stub(backup, "backupFiles").resolves(ok(undefined));
-    sandbox.stub(arm, "deployArmTemplates").resolves(ok(undefined));
-    const appName = `unittest${randomAppName()}`;
-    const inputs: InputsWithProjectPath = {
-      projectPath: projectPath,
-      platform: Platform.VSCode,
-      [AzureSolutionQuestionNames.Features]: "Bot",
-      language: "typescript",
-      "app-name": appName,
-      folder: path.join(os.homedir(), "TeamsApps"),
-    };
-    const initRes = await fx.init(context, inputs);
-    if (initRes.isErr()) {
-      console.log(initRes.error);
-    }
-    assert.isTrue(initRes.isOk());
-    const teamsBot = Container.get("teams-bot") as any;
-    const addBotRes = await teamsBot.add(context, inputs);
-    if (addBotRes.isErr()) {
-      console.log(addBotRes.error);
-    }
-    assert.isTrue(addBotRes.isOk());
-    context.envInfo = newEnvInfoV3();
-    context.tokenProvider = tools.tokenProvider;
-    context.envInfo.state = {
-      solution: {
-        provisionSucceeded: true,
-        needCreateResourceGroup: false,
-        resourceGroupName: "mockRG",
-        location: "eastasia",
-        resourceNameSuffix: "3bf854123",
-        teamsAppTenantId: "mockTid",
-        subscriptionId: "mockSid",
-        subscriptionName: "mockSname",
-        tenantId: "mockAzureTid",
-      },
-      "azure-web-app": {
-        sku: "F1",
-        appName: "testwebApp",
-        domain: "testwebApp.azurewebsites.net",
-        appServicePlanName: "testwebAppPlan",
-        resourceId:
-          "/subscriptions/mockSid/resourceGroups/jay-texas/providers/Microsoft.Web/sites/testwebApp",
-        endpoint: "https://testwebApp.azurewebsites.net",
-      },
-      [ComponentNames.AppManifest]: {
-        tenantId: "mockTid",
-      },
-    };
-    const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
-    if (provisionRes.isErr()) {
-      console.log(provisionRes.error);
-    }
-    assert.isTrue(provisionRes.isOk());
-    assert.isTrue(context.envInfo.state.solution.teamsAppTenantId === "mockSwitchedTid");
-    assert.isTrue(context.envInfo.state.solution.provisionSucceeded);
-    assert.isTrue(context.envInfo.state["app-manifest"]["tenantId"] === "mockSwitchedTid");
-  });
-
-  it("fx.provision cancel when confirming", async () => {
-    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
-    sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
-    sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
-    sandbox
-      .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
-      .resolves(ok({ tid: "mockTid" }));
-    sandbox
-      .stub(provisionV3, "fillInAzureConfigs")
-      .resolves(ok({ hasSwitchedSubscription: false }));
-    sandbox
-      .stub(provisionV2, "askForProvisionConsentNew")
-      .resolves(err(new UserError("Solution", "CancelProvision", "CancelProvision")));
-    sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
-    sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-    sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-    sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
-    sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
-      clientId: "00000000-0000-0000-0000-000000000000",
-      clientSecret: "mockClientSecret",
-      objectId: "00000000-0000-0000-0000-000000000000",
-    });
-    sandbox.stub(arm, "deployArmTemplates").resolves(ok(undefined));
-    const appName = `unittest${randomAppName()}`;
-    const inputs: InputsWithProjectPath = {
-      projectPath: projectPath,
-      platform: Platform.VSCode,
-      [AzureSolutionQuestionNames.Features]: "Bot",
-      language: "typescript",
-      "app-name": appName,
-      folder: path.join(os.homedir(), "TeamsApps"),
-    };
-    const initRes = await fx.init(context, inputs);
-    if (initRes.isErr()) {
-      console.log(initRes.error);
-    }
-    assert.isTrue(initRes.isOk());
-    const component = Container.get("teams-bot") as any;
-    const addBotRes = await component.add(context, inputs);
-    if (addBotRes.isErr()) {
-      console.log(addBotRes.error);
-    }
-    assert.isTrue(addBotRes.isOk());
-    context.envInfo = newEnvInfoV3();
-    context.tokenProvider = tools.tokenProvider;
-    context.envInfo.state = {
-      solution: {
-        provisionSucceeded: true,
-        needCreateResourceGroup: false,
-        resourceGroupName: "mockRG",
-        location: "eastasia",
-        resourceNameSuffix: "3bf854123",
-        teamsAppTenantId: "mockTid",
-        subscriptionId: "mockSid",
-        subscriptionName: "mockSname",
-        tenantId: "mockAzureTid",
-      },
-    };
-
-    const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
-
-    assert.isTrue(provisionRes.isErr());
-    if (provisionRes.isErr()) {
-      assert.isTrue(provisionRes.error.name === "CancelProvision");
-    }
-  });
-
-  it("fx.provision could not get m365 token", async () => {
-    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
-    sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
-    sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
-    sandbox.stub(tools.tokenProvider.m365TokenProvider, "getJsonObject").resolves(undefined);
-    const appName = `unittest${randomAppName()}`;
-    const inputs: InputsWithProjectPath = {
-      projectPath: projectPath,
-      platform: Platform.VSCode,
-      features: "Bot",
-      language: "typescript",
-      "app-name": appName,
-      folder: path.join(os.homedir(), "TeamsApps"),
-      checkerInfo: {
-        skipNgrok: true,
-      },
-    };
-    const initRes = await fx.init(context, inputs);
-    if (initRes.isErr()) {
-      console.log(initRes.error);
-    }
-    assert.isTrue(initRes.isOk());
-
-    context.projectSetting.components = [
-      {
-        name: "teams-bot",
-        build: true,
-        capabilities: ["bot"],
-        deploy: true,
-        folder: "bot",
-        hosting: "azure-web-app",
-      },
-    ];
-    context.envInfo = newEnvInfoV3("local");
-    context.tokenProvider = tools.tokenProvider;
-    const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
-    assert.isTrue(provisionRes.isErr());
-  });
-
-  it("fx.provision error when update Azure parameters", async () => {
-    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
-    sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
-    sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
-    sandbox
-      .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
-      .resolves(ok({ tid: "mockTid" }));
-    sandbox.stub(provisionV3, "fillInAzureConfigs").resolves(ok({ hasSwitchedSubscription: true }));
-    sandbox.stub(provisionV2, "askForProvisionConsentNew").resolves(ok(Void));
-    sandbox.stub(backup, "backupFiles").resolves(ok(undefined));
-    sandbox
-      .stub(armFunctions, "updateAzureParameters")
-      .resolves(err(new UserError("Solution", "error1", "error1")));
-    sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
-    sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-    sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-    sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
-    sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
-      clientId: "00000000-0000-0000-0000-000000000000",
-      clientSecret: "mockClientSecret",
-      objectId: "00000000-0000-0000-0000-000000000000",
+      const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
+      if (provisionRes.isErr()) {
+        console.log(provisionRes.error);
+      }
+      assert.isTrue(provisionRes.isOk());
     });
 
-    const appName = `unittest${randomAppName()}`;
-    const inputs: InputsWithProjectPath = {
-      projectPath: projectPath,
-      platform: Platform.VSCode,
-      [AzureSolutionQuestionNames.Features]: "Bot",
-      language: "typescript",
-      "app-name": appName,
-      folder: path.join(os.homedir(), "TeamsApps"),
-    };
-    const initRes = await fx.init(context, inputs);
-    if (initRes.isErr()) {
-      console.log(initRes.error);
-    }
-    assert.isTrue(initRes.isOk());
-    const component = Container.get("teams-bot") as any;
-    const addBotRes = await component.add(context, inputs);
-    if (addBotRes.isErr()) {
-      console.log(addBotRes.error);
-    }
-    assert.isTrue(addBotRes.isOk());
-    context.envInfo = newEnvInfoV3();
-    context.tokenProvider = tools.tokenProvider;
-    context.envInfo.state = {
-      solution: {
-        provisionSucceeded: true,
-        needCreateResourceGroup: false,
-        resourceGroupName: "mockRG",
-        location: "eastasia",
-        resourceNameSuffix: "3bf854123",
-        teamsAppTenantId: "mockTid",
-        subscriptionId: "mockSid",
-        subscriptionName: "mockSname",
-        tenantId: "mockAzureTid",
-      },
-    };
-
-    const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
-
-    assert.isTrue(provisionRes.isErr());
-    if (provisionRes.isErr()) {
-      assert.isTrue(provisionRes.error.name === "error1");
-    }
-  });
-
-  it("fx.provision project without Azure resources after switch M365 account", async () => {
-    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
-    sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
-    sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
-    sandbox
-      .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
-      .resolves(ok({ tid: "mockTid" }));
-    sandbox.stub(provisionV2, "askForProvisionConsentNew").resolves(ok(Void));
-    sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
-    sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-    sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-    sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
-    sandbox.stub(armFunctions, "updateAzureParameters").resolves(ok(undefined));
-    sandbox.stub(backup, "backupFiles").resolves(ok(undefined));
-    sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
-      clientId: "00000000-0000-0000-0000-000000000000",
-      clientSecret: "mockClientSecret",
-      objectId: "00000000-0000-0000-0000-000000000000",
+    it("fx.provision after switching subscription", async () => {
+      sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
+      sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
+      sandbox
+        .stub(tools.tokenProvider.m365TokenProvider, "getAccessToken")
+        .resolves(ok("fakeToken"));
+      sandbox
+        .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
+        .resolves(ok({ tid: "mockTid" }));
+      sandbox
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
+      sandbox
+        .stub(provisionUtils, "fillInAzureConfigs")
+        .resolves(ok({ hasSwitchedSubscription: true }));
+      sandbox.stub(provisionUtils, "askForProvisionConsent").resolves(ok(Void));
+      sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
+      sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
+      sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
+      sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
+      sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
+        clientId: "mockClientId",
+        clientSecret: "mockClientSecret",
+        objectId: "mockObjectId",
+      });
+      sandbox.stub(armFunctions, "updateAzureParameters").resolves(ok(undefined));
+      sandbox.stub(arm, "deployArmTemplates").resolves(ok(undefined));
+      const appName = `unittest${randomAppName()}`;
+      const inputs: InputsWithProjectPath = {
+        projectPath: projectPath,
+        platform: Platform.VSCode,
+        [AzureSolutionQuestionNames.Features]: "Bot",
+        language: "typescript",
+        "app-name": appName,
+        folder: path.join(os.homedir(), "TeamsApps"),
+      };
+      const initRes = await fx.init(context, inputs);
+      if (initRes.isErr()) {
+        console.log(initRes.error);
+      }
+      assert.isTrue(initRes.isOk());
+      const teamsBot = Container.get("teams-bot") as any;
+      const addBotRes = await teamsBot.add(context, inputs);
+      if (addBotRes.isErr()) {
+        console.log(addBotRes.error);
+      }
+      assert.isTrue(addBotRes.isOk());
+      context.envInfo = newEnvInfoV3();
+      context.tokenProvider = tools.tokenProvider;
+      context.envInfo.state = {
+        solution: {
+          provisionSucceeded: true,
+          needCreateResourceGroup: false,
+          resourceGroupName: "mockRG",
+          location: "eastasia",
+          resourceNameSuffix: "3bf854123",
+          teamsAppTenantId: "mockTid",
+          subscriptionId: "mockSid",
+          subscriptionName: "mockSname",
+          tenantId: "mockAzureTid",
+        },
+        "azure-web-app": {
+          sku: "F1",
+          appName: "testwebApp",
+          domain: "testwebApp.azurewebsites.net",
+          appServicePlanName: "testwebAppPlan",
+          resourceId:
+            "/subscriptions/mockSid/resourceGroups/jay-texas/providers/Microsoft.Web/sites/testwebApp",
+          endpoint: "https://testwebApp.azurewebsites.net",
+        },
+      };
+      const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
+      if (provisionRes.isErr()) {
+        console.log(provisionRes.error);
+      }
+      assert.isTrue(provisionRes.isOk());
     });
 
-    const appName = `unittest${randomAppName()}`;
-    const inputs: InputsWithProjectPath = {
-      projectPath: projectPath,
-      platform: Platform.VSCode,
-      [AzureSolutionQuestionNames.Features]: "spfx",
-      language: "typescript",
-      "app-name": appName,
-      folder: path.join(os.homedir(), "TeamsApps"),
-    };
-    const initRes = await fx.init(context, inputs);
-    if (initRes.isErr()) {
-      console.log(initRes.error);
-    }
-    assert.isTrue(initRes.isOk());
-    context.envInfo = newEnvInfoV3();
-    context.tokenProvider = tools.tokenProvider;
-    context.envInfo.state = {
-      solution: {
-        provisionSucceeded: true,
-        needCreateResourceGroup: false,
-        resourceGroupName: "mockRG",
-        location: "eastasia",
-        resourceNameSuffix: "3bf854123",
-        teamsAppTenantId: "oldMockTid",
-        subscriptionId: "mockSid",
-        subscriptionName: "mockSname",
-        tenantId: "mockAzureTid",
-      },
-      [ComponentNames.AppManifest]: {
-        tenantId: "oldMockTid",
-      },
-    };
+    it("fx.provision local debug after switching m365 tenant", async () => {
+      sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
+      sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
+      sandbox
+        .stub(tools.tokenProvider.m365TokenProvider, "getAccessToken")
+        .resolves(ok("fakeToken"));
+      sandbox.stub(armFunctions, "updateAzureParameters").resolves(ok(undefined));
+      sandbox
+        .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
+        .resolves(ok({ tid: "mockSwitchedTid", upn: "mockUpn" }));
+      sandbox
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
+      sandbox.stub(backup, "backupFiles").resolves(ok(undefined));
+      sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
+      sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
+      sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
+      sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
+      sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
+        clientId: "mockClientId",
+        clientSecret: "mockClientSecret",
+        objectId: "mockObjectId",
+      });
+      const appName = `unittest${randomAppName()}`;
+      const inputs: InputsWithProjectPath = {
+        projectPath: projectPath,
+        platform: Platform.VSCode,
+        features: "Bot",
+        language: "typescript",
+        "app-name": appName,
+        folder: path.join(os.homedir(), "TeamsApps"),
+        checkerInfo: {
+          skipNgrok: true,
+        },
+      };
+      const initRes = await fx.init(context, inputs);
+      if (initRes.isErr()) {
+        console.log(initRes.error);
+      }
+      assert.isTrue(initRes.isOk());
 
-    const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
-
-    assert.isTrue(provisionRes.isOk());
-  });
-
-  it("fx.provision project without Azure resources after switch M365 account: backupFiles error ", async () => {
-    sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
-    sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
-    sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
-    sandbox
-      .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
-      .resolves(ok({ tid: "mockTid" }));
-    sandbox.stub(provisionV2, "askForProvisionConsentNew").resolves(ok(Void));
-    sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
-    sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-    sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-    sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
-    sandbox.stub(armFunctions, "updateAzureParameters").resolves(ok(undefined));
-    sandbox
-      .stub(backup, "backupFiles")
-      .resolves(err(new UserError("solution", "backupError", "backupError")));
-    sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
-      clientId: "00000000-0000-0000-0000-000000000000",
-      clientSecret: "mockClientSecret",
-      objectId: "00000000-0000-0000-0000-000000000000",
+      context.projectSetting.components = [
+        {
+          name: "teams-bot",
+          build: true,
+          capabilities: ["bot"],
+          deploy: true,
+          folder: "bot",
+          hosting: "azure-web-app",
+        },
+      ];
+      context.envInfo = newEnvInfoV3("local");
+      context.tokenProvider = tools.tokenProvider;
+      context.envInfo.state = {
+        solution: {
+          provisionSucceeded: true,
+          teamsAppTenantId: "mockTid",
+        },
+        "app-manifest": {
+          tenantId: "mockTid",
+          teamsAppId: "mockTeamsAppId",
+        },
+      };
+      context.envInfo.config.bot = {
+        siteEndpoint: "https://localtest:3978",
+      };
+      const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
+      if (provisionRes.isErr()) {
+        console.log(provisionRes.error);
+      }
+      assert.isTrue(provisionRes.isOk());
+      assert.isTrue(context.envInfo.state.solution.teamsAppTenantId === "mockSwitchedTid");
+      assert.isTrue(context.envInfo.state.solution.provisionSucceeded);
+      assert.isTrue(context.envInfo.state["app-manifest"]["tenantId"] === "mockSwitchedTid");
     });
 
-    const appName = `unittest${randomAppName()}`;
-    const inputs: InputsWithProjectPath = {
-      projectPath: projectPath,
-      platform: Platform.VSCode,
-      [AzureSolutionQuestionNames.Features]: "spfx",
-      language: "typescript",
-      "app-name": appName,
-      folder: path.join(os.homedir(), "TeamsApps"),
-    };
-    const initRes = await fx.init(context, inputs);
-    if (initRes.isErr()) {
-      console.log(initRes.error);
-    }
-    assert.isTrue(initRes.isOk());
-    context.envInfo = newEnvInfoV3();
-    context.tokenProvider = tools.tokenProvider;
-    context.envInfo.state = {
-      solution: {
-        provisionSucceeded: true,
-        needCreateResourceGroup: false,
-        resourceGroupName: "mockRG",
-        location: "eastasia",
-        resourceNameSuffix: "3bf854123",
-        teamsAppTenantId: "oldMockTid",
-        subscriptionId: "mockSid",
-        subscriptionName: "mockSname",
-        tenantId: "mockAzureTid",
-      },
-      [ComponentNames.AppManifest]: {
-        tenantId: "oldMockTid",
-      },
-    };
+    it("fx.provision local debug after switching m365 tenant: backup error", async () => {
+      sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
+      sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
+      sandbox
+        .stub(backup, "backupFiles")
+        .resolves(err(new UserError("solution", "backupError", "backupError")));
+      sandbox
+        .stub(tools.tokenProvider.m365TokenProvider, "getAccessToken")
+        .resolves(ok("fakeToken"));
+      sandbox
+        .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
+        .resolves(ok({ tid: "mockSwitchedTid", upn: "mockUpn" }));
+      sandbox
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
+      sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
+      sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
+      sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
+      sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
+      sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
+        clientId: "mockClientId",
+        clientSecret: "mockClientSecret",
+        objectId: "mockObjectId",
+      });
+      const appName = `unittest${randomAppName()}`;
+      const inputs: InputsWithProjectPath = {
+        projectPath: projectPath,
+        platform: Platform.VSCode,
+        features: "Bot",
+        language: "typescript",
+        "app-name": appName,
+        folder: path.join(os.homedir(), "TeamsApps"),
+        checkerInfo: {
+          skipNgrok: true,
+        },
+      };
+      const initRes = await fx.init(context, inputs);
+      if (initRes.isErr()) {
+        console.log(initRes.error);
+      }
+      assert.isTrue(initRes.isOk());
 
-    const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
+      context.projectSetting.components = [
+        {
+          name: "teams-bot",
+          build: true,
+          capabilities: ["bot"],
+          deploy: true,
+          folder: "bot",
+          hosting: "azure-web-app",
+        },
+      ];
+      context.envInfo = newEnvInfoV3("local");
+      context.tokenProvider = tools.tokenProvider;
+      context.envInfo.state = {
+        solution: {
+          provisionSucceeded: true,
+          teamsAppTenantId: "mockTid",
+        },
+        "app-manifest": {
+          tenantId: "mockTid",
+          teamsAppId: "mockTeamsAppId",
+        },
+      };
+      context.envInfo.config.bot = {
+        siteEndpoint: "https://localtest:3978",
+      };
+      const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
+      if (provisionRes.isErr()) {
+        console.log(provisionRes.error);
+      }
+      assert.isTrue(provisionRes.isErr());
+      if (provisionRes.isErr()) {
+        assert.isTrue(provisionRes.error.name === "backupError");
+      }
+    });
 
-    assert.isTrue(provisionRes.isErr());
-    if (provisionRes.isErr()) {
-      assert.isTrue(provisionRes.error.name === "backupError");
-    }
+    it("fx.provision after switching M365", async () => {
+      sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
+      sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
+      sandbox
+        .stub(tools.tokenProvider.m365TokenProvider, "getAccessToken")
+        .resolves(ok("fakeToken"));
+      sandbox
+        .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
+        .resolves(ok({ tid: "mockSwitchedTid" }));
+      sandbox
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
+      sandbox
+        .stub(provisionUtils, "fillInAzureConfigs")
+        .resolves(ok({ hasSwitchedSubscription: true }));
+      sandbox.stub(provisionUtils, "askForProvisionConsent").resolves(ok(Void));
+      sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
+      sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
+      sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
+      sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
+      sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
+        clientId: "mockClientId",
+        clientSecret: "mockClientSecret",
+        objectId: "mockObjectId",
+      });
+      sandbox.stub(armFunctions, "updateAzureParameters").resolves(ok(undefined));
+      sandbox.stub(backup, "backupFiles").resolves(ok(undefined));
+      sandbox.stub(arm, "deployArmTemplates").resolves(ok(undefined));
+      const appName = `unittest${randomAppName()}`;
+      const inputs: InputsWithProjectPath = {
+        projectPath: projectPath,
+        platform: Platform.VSCode,
+        [AzureSolutionQuestionNames.Features]: "Bot",
+        language: "typescript",
+        "app-name": appName,
+        folder: path.join(os.homedir(), "TeamsApps"),
+      };
+      const initRes = await fx.init(context, inputs);
+      if (initRes.isErr()) {
+        console.log(initRes.error);
+      }
+      assert.isTrue(initRes.isOk());
+      const teamsBot = Container.get("teams-bot") as any;
+      const addBotRes = await teamsBot.add(context, inputs);
+      if (addBotRes.isErr()) {
+        console.log(addBotRes.error);
+      }
+      assert.isTrue(addBotRes.isOk());
+      context.envInfo = newEnvInfoV3();
+      context.tokenProvider = tools.tokenProvider;
+      context.envInfo.state = {
+        solution: {
+          provisionSucceeded: true,
+          needCreateResourceGroup: false,
+          resourceGroupName: "mockRG",
+          location: "eastasia",
+          resourceNameSuffix: "3bf854123",
+          teamsAppTenantId: "mockTid",
+          subscriptionId: "mockSid",
+          subscriptionName: "mockSname",
+          tenantId: "mockAzureTid",
+        },
+        "azure-web-app": {
+          sku: "F1",
+          appName: "testwebApp",
+          domain: "testwebApp.azurewebsites.net",
+          appServicePlanName: "testwebAppPlan",
+          resourceId:
+            "/subscriptions/mockSid/resourceGroups/jay-texas/providers/Microsoft.Web/sites/testwebApp",
+          endpoint: "https://testwebApp.azurewebsites.net",
+        },
+        [ComponentNames.AppManifest]: {
+          tenantId: "mockTid",
+        },
+      };
+      const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
+      if (provisionRes.isErr()) {
+        console.log(provisionRes.error);
+      }
+      assert.isTrue(provisionRes.isOk());
+      assert.isTrue(context.envInfo.state.solution.teamsAppTenantId === "mockSwitchedTid");
+      assert.isTrue(context.envInfo.state.solution.provisionSucceeded);
+      assert.isTrue(context.envInfo.state["app-manifest"]["tenantId"] === "mockSwitchedTid");
+    });
+
+    it("fx.provision cancel when confirming", async () => {
+      sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
+      sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
+      sandbox
+        .stub(tools.tokenProvider.m365TokenProvider, "getAccessToken")
+        .resolves(ok("fakeToken"));
+      sandbox
+        .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
+        .resolves(ok({ tid: "mockTid" }));
+      sandbox
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
+      sandbox
+        .stub(provisionUtils, "fillInAzureConfigs")
+        .resolves(ok({ hasSwitchedSubscription: false }));
+      sandbox
+        .stub(provisionUtils, "askForProvisionConsent")
+        .resolves(err(new UserError("Solution", "CancelProvision", "CancelProvision")));
+      sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
+      sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
+      sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
+      sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
+      sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
+        clientId: "00000000-0000-0000-0000-000000000000",
+        clientSecret: "mockClientSecret",
+        objectId: "00000000-0000-0000-0000-000000000000",
+      });
+      sandbox.stub(arm, "deployArmTemplates").resolves(ok(undefined));
+      const appName = `unittest${randomAppName()}`;
+      const inputs: InputsWithProjectPath = {
+        projectPath: projectPath,
+        platform: Platform.VSCode,
+        [AzureSolutionQuestionNames.Features]: "Bot",
+        language: "typescript",
+        "app-name": appName,
+        folder: path.join(os.homedir(), "TeamsApps"),
+      };
+      const initRes = await fx.init(context, inputs);
+      if (initRes.isErr()) {
+        console.log(initRes.error);
+      }
+      assert.isTrue(initRes.isOk());
+      const component = Container.get("teams-bot") as any;
+      const addBotRes = await component.add(context, inputs);
+      if (addBotRes.isErr()) {
+        console.log(addBotRes.error);
+      }
+      assert.isTrue(addBotRes.isOk());
+      context.envInfo = newEnvInfoV3();
+      context.tokenProvider = tools.tokenProvider;
+      context.envInfo.state = {
+        solution: {
+          provisionSucceeded: true,
+          needCreateResourceGroup: false,
+          resourceGroupName: "mockRG",
+          location: "eastasia",
+          resourceNameSuffix: "3bf854123",
+          teamsAppTenantId: "mockTid",
+          subscriptionId: "mockSid",
+          subscriptionName: "mockSname",
+          tenantId: "mockAzureTid",
+        },
+      };
+
+      const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
+
+      assert.isTrue(provisionRes.isErr());
+      if (provisionRes.isErr()) {
+        assert.isTrue(provisionRes.error.name === "CancelProvision");
+      }
+    });
+
+    it("fx.provision could not get m365 token", async () => {
+      sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
+      sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
+      sandbox
+        .stub(tools.tokenProvider.m365TokenProvider, "getAccessToken")
+        .resolves(ok("fakeToken"));
+      sandbox.stub(tools.tokenProvider.m365TokenProvider, "getJsonObject").resolves(undefined);
+      sandbox
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
+      const appName = `unittest${randomAppName()}`;
+      const inputs: InputsWithProjectPath = {
+        projectPath: projectPath,
+        platform: Platform.VSCode,
+        features: "Bot",
+        language: "typescript",
+        "app-name": appName,
+        folder: path.join(os.homedir(), "TeamsApps"),
+        checkerInfo: {
+          skipNgrok: true,
+        },
+      };
+      const initRes = await fx.init(context, inputs);
+      if (initRes.isErr()) {
+        console.log(initRes.error);
+      }
+      assert.isTrue(initRes.isOk());
+
+      context.projectSetting.components = [
+        {
+          name: "teams-bot",
+          build: true,
+          capabilities: ["bot"],
+          deploy: true,
+          folder: "bot",
+          hosting: "azure-web-app",
+        },
+      ];
+      context.envInfo = newEnvInfoV3("local");
+      context.tokenProvider = tools.tokenProvider;
+      const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
+      assert.isTrue(provisionRes.isErr());
+    });
+
+    it("fx.provision error when update Azure parameters", async () => {
+      sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
+      sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
+      sandbox
+        .stub(tools.tokenProvider.m365TokenProvider, "getAccessToken")
+        .resolves(ok("fakeToken"));
+      sandbox
+        .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
+        .resolves(ok({ tid: "mockTid" }));
+      sandbox
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
+      sandbox
+        .stub(provisionUtils, "fillInAzureConfigs")
+        .resolves(ok({ hasSwitchedSubscription: true }));
+      sandbox.stub(provisionUtils, "askForProvisionConsent").resolves(ok(Void));
+      sandbox.stub(backup, "backupFiles").resolves(ok(undefined));
+      sandbox
+        .stub(armFunctions, "updateAzureParameters")
+        .resolves(err(new UserError("Solution", "error1", "error1")));
+      sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
+      sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
+      sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
+      sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
+      sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
+        clientId: "00000000-0000-0000-0000-000000000000",
+        clientSecret: "mockClientSecret",
+        objectId: "00000000-0000-0000-0000-000000000000",
+      });
+
+      const appName = `unittest${randomAppName()}`;
+      const inputs: InputsWithProjectPath = {
+        projectPath: projectPath,
+        platform: Platform.VSCode,
+        [AzureSolutionQuestionNames.Features]: "Bot",
+        language: "typescript",
+        "app-name": appName,
+        folder: path.join(os.homedir(), "TeamsApps"),
+      };
+      const initRes = await fx.init(context, inputs);
+      if (initRes.isErr()) {
+        console.log(initRes.error);
+      }
+      assert.isTrue(initRes.isOk());
+      const component = Container.get("teams-bot") as any;
+      const addBotRes = await component.add(context, inputs);
+      if (addBotRes.isErr()) {
+        console.log(addBotRes.error);
+      }
+      assert.isTrue(addBotRes.isOk());
+      context.envInfo = newEnvInfoV3();
+      context.tokenProvider = tools.tokenProvider;
+      context.envInfo.state = {
+        solution: {
+          provisionSucceeded: true,
+          needCreateResourceGroup: false,
+          resourceGroupName: "mockRG",
+          location: "eastasia",
+          resourceNameSuffix: "3bf854123",
+          teamsAppTenantId: "mockTid",
+          subscriptionId: "mockSid",
+          subscriptionName: "mockSname",
+          tenantId: "mockAzureTid",
+        },
+      };
+
+      const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
+
+      assert.isTrue(provisionRes.isErr());
+      if (provisionRes.isErr()) {
+        assert.isTrue(provisionRes.error.name === "error1");
+      }
+    });
+
+    it("fx.provision project without Azure resources after switch M365 account", async () => {
+      sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
+      sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
+      sandbox
+        .stub(tools.tokenProvider.m365TokenProvider, "getAccessToken")
+        .resolves(ok("fakeToken"));
+      sandbox
+        .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
+        .resolves(ok({ tid: "mockTid" }));
+      sandbox
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
+      sandbox.stub(provisionUtils, "askForProvisionConsent").resolves(ok(Void));
+      sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
+      sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
+      sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
+      sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
+      sandbox.stub(armFunctions, "updateAzureParameters").resolves(ok(undefined));
+      sandbox.stub(backup, "backupFiles").resolves(ok(undefined));
+      sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
+        clientId: "00000000-0000-0000-0000-000000000000",
+        clientSecret: "mockClientSecret",
+        objectId: "00000000-0000-0000-0000-000000000000",
+      });
+
+      const appName = `unittest${randomAppName()}`;
+      const inputs: InputsWithProjectPath = {
+        projectPath: projectPath,
+        platform: Platform.VSCode,
+        [AzureSolutionQuestionNames.Features]: "spfx",
+        language: "typescript",
+        "app-name": appName,
+        folder: path.join(os.homedir(), "TeamsApps"),
+      };
+      const initRes = await fx.init(context, inputs);
+      if (initRes.isErr()) {
+        console.log(initRes.error);
+      }
+      assert.isTrue(initRes.isOk());
+      context.envInfo = newEnvInfoV3();
+      context.tokenProvider = tools.tokenProvider;
+      context.envInfo.state = {
+        solution: {
+          provisionSucceeded: true,
+          needCreateResourceGroup: false,
+          resourceGroupName: "mockRG",
+          location: "eastasia",
+          resourceNameSuffix: "3bf854123",
+          teamsAppTenantId: "oldMockTid",
+          subscriptionId: "mockSid",
+          subscriptionName: "mockSname",
+          tenantId: "mockAzureTid",
+        },
+        [ComponentNames.AppManifest]: {
+          tenantId: "oldMockTid",
+        },
+      };
+
+      const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
+
+      assert.isTrue(provisionRes.isOk());
+    });
+
+    it("fx.provision project without Azure resources after switch M365 account: backupFiles error ", async () => {
+      sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
+      sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
+      sandbox
+        .stub(tools.tokenProvider.m365TokenProvider, "getAccessToken")
+        .resolves(ok("fakeToken"));
+      sandbox
+        .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
+        .resolves(ok({ tid: "mockTid" }));
+      sandbox
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
+      sandbox.stub(provisionUtils, "askForProvisionConsent").resolves(ok(Void));
+      sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
+      sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
+      sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
+      sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
+      sandbox.stub(armFunctions, "updateAzureParameters").resolves(ok(undefined));
+      sandbox
+        .stub(backup, "backupFiles")
+        .resolves(err(new UserError("solution", "backupError", "backupError")));
+      sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
+        clientId: "00000000-0000-0000-0000-000000000000",
+        clientSecret: "mockClientSecret",
+        objectId: "00000000-0000-0000-0000-000000000000",
+      });
+
+      const appName = `unittest${randomAppName()}`;
+      const inputs: InputsWithProjectPath = {
+        projectPath: projectPath,
+        platform: Platform.VSCode,
+        [AzureSolutionQuestionNames.Features]: "spfx",
+        language: "typescript",
+        "app-name": appName,
+        folder: path.join(os.homedir(), "TeamsApps"),
+      };
+      const initRes = await fx.init(context, inputs);
+      if (initRes.isErr()) {
+        console.log(initRes.error);
+      }
+      assert.isTrue(initRes.isOk());
+      context.envInfo = newEnvInfoV3();
+      context.tokenProvider = tools.tokenProvider;
+      context.envInfo.state = {
+        solution: {
+          provisionSucceeded: true,
+          needCreateResourceGroup: false,
+          resourceGroupName: "mockRG",
+          location: "eastasia",
+          resourceNameSuffix: "3bf854123",
+          teamsAppTenantId: "oldMockTid",
+          subscriptionId: "mockSid",
+          subscriptionName: "mockSname",
+          tenantId: "mockAzureTid",
+        },
+        [ComponentNames.AppManifest]: {
+          tenantId: "oldMockTid",
+        },
+      };
+
+      const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
+
+      assert.isTrue(provisionRes.isErr());
+      if (provisionRes.isErr()) {
+        assert.isTrue(provisionRes.error.name === "backupError");
+      }
+    });
   });
 
   it("azure-storage.deploy", async () => {
@@ -965,6 +1023,9 @@ describe("Workflow test for v3", () => {
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
     sandbox.stub(FrontendDeployment, "doFrontendDeploymentV3").resolves();
     sandbox.stub(aadManifest, "generateAadManifestTemplate").resolves();
+    sandbox
+      .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+      .resolves(new MyTokenCredential());
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
@@ -1022,9 +1083,9 @@ describe("Workflow test for v3", () => {
       .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
     sandbox
-      .stub(provisionV3, "fillInAzureConfigs")
+      .stub(provisionUtils, "fillInAzureConfigs")
       .resolves(ok({ hasSwitchedSubscription: false }));
-    sandbox.stub(provisionV2, "askForProvisionConsentNew").resolves(ok(Void));
+    sandbox.stub(provisionUtils, "askForProvisionConsent").resolves(ok(Void));
     sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
     sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
     sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
@@ -1035,7 +1096,7 @@ describe("Workflow test for v3", () => {
       objectId: "00000000-0000-0000-0000-000000000000",
     });
     sandbox.stub(arm, "deployArmTemplates").resolves(ok(undefined));
-    sandbox.stub(deployV3, "checkDeployAzureSubscription").resolves(ok({}));
+    sandbox.stub(deployUtils, "checkDeployAzureSubscription").resolves(ok({}));
     sandbox.stub(AadApp.prototype, "provision").resolves(ok(undefined));
     sandbox.stub(AadApp.prototype, "setApplicationInContext").resolves(ok(undefined));
     sandbox.stub(AadApp.prototype, "configure").resolves(ok(undefined));
@@ -1128,9 +1189,12 @@ describe("Workflow test for v3", () => {
       .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
       .resolves(ok({ tid: "mockTid" }));
     sandbox
-      .stub(provisionV3, "fillInAzureConfigs")
+      .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+      .resolves(new MyTokenCredential());
+    sandbox
+      .stub(provisionUtils, "fillInAzureConfigs")
       .resolves(ok({ hasSwitchedSubscription: false }));
-    sandbox.stub(provisionV2, "askForProvisionConsentNew").resolves(ok(Void));
+    sandbox.stub(provisionUtils, "askForProvisionConsent").resolves(ok(Void));
     sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
     sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
     sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
@@ -1141,7 +1205,7 @@ describe("Workflow test for v3", () => {
       objectId: "00000000-0000-0000-0000-000000000000",
     });
     sandbox.stub(arm, "deployArmTemplates").resolves(ok(undefined));
-    sandbox.stub(deployV3, "checkDeployAzureSubscription").resolves(ok({}));
+    sandbox.stub(deployUtils, "checkDeployAzureSubscription").resolves(ok({}));
     sandbox.stub(AadApp.prototype, "provision").resolves(ok(undefined));
     sandbox.stub(AadApp.prototype, "setApplicationInContext").resolves(ok(undefined));
     sandbox.stub(AadApp.prototype, "configure").resolves(ok(undefined));

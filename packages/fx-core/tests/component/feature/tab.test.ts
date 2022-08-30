@@ -6,6 +6,7 @@ import {
   ok,
   Platform,
   ProjectSettingsV3,
+  ResourceContextV3,
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
 import * as templatesAction from "../../../src/common/template-utils/templatesActions";
@@ -16,16 +17,22 @@ import "mocha";
 import * as os from "os";
 import * as path from "path";
 import fs from "fs-extra";
-import { createSandbox } from "sinon";
+import { createSandbox, SinonStub } from "sinon";
 import * as utils from "../../../src/component/utils";
 import { getComponent } from "../../../src/component/workflow";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools, randomAppName } from "../../core/utils";
 import "../../../src/component/core";
-import { environmentManager } from "../../../src/core/environment";
-import { ComponentNames } from "../../../src/component/constants";
+import { environmentManager, newEnvInfoV3 } from "../../../src/core/environment";
+import {
+  AadAppOutputs,
+  ComponentNames,
+  ProgrammingLanguage,
+  StorageOutputs,
+} from "../../../src/component/constants";
 import * as aadManifest from "../../../src/core/generateAadManifestTemplate";
 import Container from "typedi";
+import { AppSettingConstants } from "../../../src/component/code/appSettingUtils";
 describe("Tab Feature", () => {
   const sandbox = createSandbox();
   const tools = new MockTools();
@@ -41,6 +48,8 @@ describe("Tab Feature", () => {
   };
   context.projectSetting = projectSetting;
   const manifest = {} as TeamsAppManifest;
+
+  let writeFileStub: SinonStub;
   beforeEach(() => {
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
@@ -53,7 +62,7 @@ describe("Tab Feature", () => {
     sandbox.stub(fs, "copyFile").resolves();
     sandbox.stub(fs, "ensureDir").resolves();
     sandbox.stub(fs, "appendFile").resolves();
-    sandbox.stub(fs, "writeFile").resolves();
+    writeFileStub = sandbox.stub(fs, "writeFile").resolves();
     sandbox.stub(fs, "ensureDirSync").returns();
     sandbox.stub(fs, "readdirSync").returns([]);
     sandbox.stub(fs, "appendFileSync").returns();
@@ -115,5 +124,69 @@ describe("Tab Feature", () => {
       (component) => component.name === ComponentNames.AzureStorage
     );
     assert.equal(storage.length, 1);
+  });
+  it("local debug config state vsc", async () => {
+    context.projectSetting.programmingLanguage = ProgrammingLanguage.JS;
+    context.projectSetting.components.push({
+      name: ComponentNames.TeamsTab,
+    });
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+    };
+    context.envInfo = newEnvInfoV3("local");
+    const component = Container.get(ComponentNames.TeamsTab) as any;
+    const res = await component.provision(context as ResourceContextV3, inputs);
+    assert.isTrue(res.isOk());
+    const tabState = context.envInfo.state?.[ComponentNames.TeamsTab];
+    assert.equal(tabState?.[StorageOutputs.indexPath.key], "/index.html#");
+  });
+  it("local debug config state vs", async () => {
+    context.projectSetting.programmingLanguage = ProgrammingLanguage.CSharp;
+    context.projectSetting.components.push({
+      name: ComponentNames.TeamsTab,
+    });
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VS,
+    };
+    context.envInfo = newEnvInfoV3("local");
+    const component = Container.get(ComponentNames.TeamsTab) as any;
+    const res = await component.provision(context as ResourceContextV3, inputs);
+    assert.isTrue(res.isOk());
+    const tabState = context.envInfo.state?.[ComponentNames.TeamsTab];
+    assert.equal(tabState?.[StorageOutputs.indexPath.key], "");
+  });
+  it("configure sso blazor tab", async () => {
+    const appSettings = [
+      AppSettingConstants.Placeholders.clientId,
+      AppSettingConstants.Placeholders.clientSecret,
+      AppSettingConstants.Placeholders.oauthAuthority,
+    ].join(";");
+    sandbox.stub(fs, "readFile").resolves(appSettings as any);
+    context.projectSetting.programmingLanguage = ProgrammingLanguage.CSharp;
+    context.projectSetting.components.push({
+      name: ComponentNames.TeamsTab,
+      folder: ".",
+      sso: true,
+    });
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VS,
+    };
+    context.envInfo = newEnvInfoV3("local");
+    const clientId = "123";
+    const clientSecret = "abc";
+    const oauthAuthority = "https://login.microsoftonline.com/890-86";
+    context.envInfo.state[ComponentNames.AadApp] = {
+      [AadAppOutputs.clientId.key]: clientId,
+      [AadAppOutputs.clientSecret.key]: clientSecret,
+      [AadAppOutputs.oauthAuthority.key]: oauthAuthority,
+    };
+    const component = Container.get(ComponentNames.TeamsTab) as any;
+    const res = await component.configure(context as ResourceContextV3, inputs);
+    assert.isTrue(res.isOk());
+    const expectedAppSettings = [clientId, clientSecret, oauthAuthority].join(";");
+    assert.equal(writeFileStub.args?.[0]?.[1], expectedAppSettings);
   });
 });

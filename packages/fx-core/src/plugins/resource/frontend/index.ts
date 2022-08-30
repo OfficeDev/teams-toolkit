@@ -25,7 +25,6 @@ import { HostTypeOptionAzure, TabOptionItem } from "../../solution/fx-solution/q
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import "./v2";
-import "./v3";
 import { DotnetPluginImpl } from "./dotnet/plugin";
 import { DotnetPluginInfo } from "./dotnet/constants";
 import { PluginImpl } from "./interface";

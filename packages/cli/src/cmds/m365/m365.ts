@@ -4,6 +4,7 @@
 "use strict";
 
 import axios from "axios";
+import FormData from "form-data";
 import fs from "fs-extra";
 import { Argv } from "yargs";
 
@@ -12,19 +13,23 @@ import { FxError, ok, Result, Void, LogLevel } from "@microsoft/teamsfx-api";
 import { serviceEndpoint, serviceScope } from "./serviceConstant";
 import CLILogProvider from "../../commonlib/log";
 import M365TokenProvider from "../../commonlib/m365Login";
+import { sleep } from "../../utils";
 import { YargsCommand } from "../../yargsCommand";
 
 /*
  * This command is in preview.
  * TODO:
- *   - sideloading
+ *   - retire SIDELOADING_SERVICE_ENDPOINT and SIDELOADING_SERVICE_SCOPE
  *   - e2e test
  *   - telemetry
  *   - make all wordings constants
  */
 
+const sideloadingServiceEndpoint = process.env.SIDELOADING_SERVICE_ENDPOINT ?? serviceEndpoint;
+const sideloadingServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? serviceScope;
+
 async function getTokenAndUpn(): Promise<[string, string]> {
-  const tokenRes = await M365TokenProvider.getAccessToken({ scopes: [serviceScope] });
+  const tokenRes = await M365TokenProvider.getAccessToken({ scopes: [sideloadingServiceScope] });
   if (tokenRes.isErr()) {
     CLILogProvider.necessaryLog(
       LogLevel.Error,
@@ -55,7 +60,8 @@ async function getTokenAndUpn(): Promise<[string, string]> {
 }
 
 async function sideLoading(baseUrl: string, token: string, manifestPath: string): Promise<void> {
-  await fs.readFile(manifestPath);
+  const data = await fs.readFile(manifestPath);
+
   const instance = axios.create({
     baseURL: baseUrl,
     timeout: 30000,
@@ -63,8 +69,49 @@ async function sideLoading(baseUrl: string, token: string, manifestPath: string)
   instance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
   try {
-    // TODO: add sideloading API calls
-    await instance.get("/");
+    const content = new FormData();
+    content.append("package", data);
+    CLILogProvider.necessaryLog(LogLevel.Info, "Uploading package ...");
+    const uploadResponse = await instance.post(
+      "/dev/v1/users/packages",
+      content.getBuffer(),
+      content.getHeaders()
+    );
+
+    const operationId = uploadResponse.data.operationId;
+    const titleId = uploadResponse.data.titlePreview.titleId;
+    CLILogProvider.debug(`Package uploaded. OperationId: ${operationId}, TitleId: ${titleId}`);
+
+    CLILogProvider.necessaryLog(LogLevel.Info, "Acquiring package ...");
+    const acquireResponse = await instance.post("/dev/v1/users/packages/acquisitions", {
+      operationId: operationId,
+    });
+
+    const statusId = acquireResponse.data.statusId;
+    CLILogProvider.debug(`Acquiring package with statusId: ${statusId} ...`);
+
+    let complete = false;
+    do {
+      const statusResponse = await instance.get(`/dev/v1/users/packages/status/${statusId}`);
+      const resCode = statusResponse.status;
+      if (resCode === 200) {
+        complete = true;
+      } else {
+        await sleep(2000);
+      }
+    } while (complete === false);
+
+    CLILogProvider.necessaryLog(LogLevel.Info, `Acquire done. App TitleId: ${titleId}`);
+
+    CLILogProvider.necessaryLog(LogLevel.Info, "Checking acquired package ...");
+    const launchInfo = await instance.get(`/catalog/v1/users/titles/${titleId}/launchInfo`, {
+      params: {
+        SupportedElementTypes:
+          // eslint-disable-next-line no-secrets/no-secrets
+          "Extension,OfficeAddIn,ExchangeAddIn,FirstPartyPages,Dynamics,AAD,LineOfBusiness,LaunchPage,MessageExtension,Bot",
+      },
+    });
+    CLILogProvider.debug(JSON.stringify(launchInfo.data));
     CLILogProvider.necessaryLog(LogLevel.Info, "Sideloading done.");
   } catch (error: any) {
     CLILogProvider.necessaryLog(LogLevel.Error, "Sideloading failed.");
@@ -101,7 +148,7 @@ class M365Sideloading extends YargsCommand {
 
     const manifestPath = args["file-path"];
     const tokenAndUpn = await getTokenAndUpn();
-    await sideLoading(serviceEndpoint, tokenAndUpn[0], manifestPath);
+    await sideLoading(sideloadingServiceEndpoint, tokenAndUpn[0], manifestPath);
     return ok(Void);
   }
 }

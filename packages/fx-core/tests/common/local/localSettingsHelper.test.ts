@@ -293,19 +293,117 @@ describe("localSettingsHelper", () => {
             ],
           },
         ],
+        [
+          "Tab + Backend project",
+          { components: ["aad", "backend", "frontend"] },
+          {
+            appName: "",
+            projectId: "",
+            components: [
+              {
+                name: "teams-tab",
+                hosting: "azure-storage",
+                deploy: true,
+                provision: true,
+                build: true,
+                folder: "tabs",
+                sso: true,
+              },
+              {
+                name: "azure-storage",
+                scenario: "Tab",
+                provision: true,
+              },
+              {
+                name: "identity",
+                provision: true,
+              },
+              {
+                name: "aad-app",
+                provision: true,
+                deploy: true,
+              },
+              {
+                name: "teams-api",
+                provision: true,
+                deploy: true,
+              },
+            ],
+          },
+        ],
+        [
+          "SPFx project",
+          { components: ["spfx"] },
+          {
+            appName: "mock name",
+            projectId: "mock id",
+            components: [
+              {
+                name: "teams-tab",
+                hosting: "spfx",
+                deploy: true,
+                folder: "SPFx",
+                build: true,
+              },
+              {
+                name: "spfx",
+                provision: true,
+              },
+            ],
+          },
+        ],
+        [
+          "Empty project settings",
+          { components: [] },
+          {
+            appName: "mock name",
+            projectId: "mock id",
+            components: [],
+          },
+        ],
       ];
 
-      for (const c of cases) {
+      for (const [message, expected, input] of cases) {
         // Act
-        projectSettings = c[2];
+        projectSettings = input;
         const projectComponentsStr = await getProjectComponents(projectPath);
 
         // Assert
-        chai.assert.isDefined(projectComponentsStr);
-        const projectComponents: { [key: string]: any } = JSON.parse(projectComponentsStr!);
-        projectComponents?.components?.sort?.();
-        chai.assert.deepEqual(projectComponents, c[1], c[0]);
+        if (expected === undefined) {
+          chai.assert.isUndefined(projectComponentsStr);
+        } else {
+          chai.assert.isDefined(projectComponentsStr);
+          const projectComponents: { [key: string]: any } = JSON.parse(projectComponentsStr!);
+          projectComponents?.components?.sort?.();
+          chai.assert.deepEqual(projectComponents, expected, message);
+        }
       }
+    });
+  });
+
+  describe("getProjectComponents() errors", () => {
+    const projectPath = "fake path";
+
+    beforeEach(() => {
+      sinon
+        .stub(LocalEnvManager.prototype, "getProjectSettings")
+        .callsFake(async (): Promise<ProjectSettings> => {
+          throw new Error("test error");
+        });
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("getProjectComponents", async () => {
+      // Arrange
+
+      // Act
+      const projectComponentsStr = await getProjectComponents(projectPath);
+
+      // Assert
+      chai.assert.isUndefined(projectComponentsStr);
     });
   });
 });

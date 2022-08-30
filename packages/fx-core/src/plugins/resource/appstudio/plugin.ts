@@ -71,7 +71,7 @@ import { v4 } from "uuid";
 import isUUID from "validator/lib/isUUID";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import Mustache from "mustache";
-import { getCustomizedKeys } from "./utils/utils";
+import { getCustomizedKeys, renderTemplate } from "./utils/utils";
 import { TelemetryPropertyKey } from "./utils/telemetry";
 import _ from "lodash";
 import { HelpLinks, ResourcePlugins } from "../../../common/constants";
@@ -79,7 +79,6 @@ import { getCapabilities, getManifestTemplatePath, loadManifest } from "./manife
 import { environmentManager } from "../../../core/environment";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { getProjectTemplatesFolderPath } from "../../../common/utils";
-import { renderTemplate } from "./utils/utils";
 import { PluginBot } from "../../resource/bot/resources/strings";
 
 export class AppStudioPluginImpl {
@@ -1201,13 +1200,7 @@ export class AppStudioPluginImpl {
     const tokens = [
       ...new Set(
         Mustache.parse(manifestString)
-          .filter((x) => {
-            return (
-              x[0] != "text" &&
-              (ctx.envInfo.envName !== environmentManager.getLocalEnvName() ||
-                x[1] != "state.fx-resource-appstudio.teamsAppId")
-            );
-          })
+          .filter((x) => x[0] != "text")
           .map((x) => x[1])
       ),
     ];

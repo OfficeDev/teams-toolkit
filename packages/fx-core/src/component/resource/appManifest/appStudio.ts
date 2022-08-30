@@ -20,7 +20,7 @@ import AdmZip from "adm-zip";
 import fs from "fs-extra";
 import * as path from "path";
 import { v4 } from "uuid";
-import _ from "lodash";
+import _, { cloneDeep } from "lodash";
 import * as util from "util";
 import isUUID from "validator/lib/isUUID";
 import {
@@ -38,6 +38,7 @@ import { getDefaultString, getLocalizedString } from "../../../common/localizeUt
 import { getCustomizedKeys } from "../../../plugins/resource/appstudio/utils/utils";
 import { TelemetryPropertyKey } from "../../../plugins/resource/appstudio/utils/telemetry";
 import { manifestUtils } from "./utils";
+import Mustache from "mustache";
 
 /**
  * Create Teams app if not exists
@@ -398,25 +399,51 @@ export async function getManifest(
   if (manifestTemplateRes.isErr()) {
     return err(manifestTemplateRes.error);
   }
-  let manifestString = JSON.stringify(manifestTemplateRes.value);
-  const customizedKeys = getCustomizedKeys("", JSON.parse(manifestString));
+  const manifestTemplateString = JSON.stringify(manifestTemplateRes.value);
+  const customizedKeys = getCustomizedKeys("", JSON.parse(manifestTemplateString));
   if (telemetryProps) {
     telemetryProps[TelemetryPropertyKey.customizedKeys] = JSON.stringify(customizedKeys);
   }
   // Render mustache template with state and config
-  const view = {
-    config: envInfo.config,
-    state: envInfo.state,
-  };
-  manifestString = compileHandlebarsTemplateString(manifestString, view);
-
-  const manifest: TeamsAppManifest = JSON.parse(manifestString);
-
-  // dynamically set validDomains for manifest, which can be refactored by static manifest templates
+  const resolvedManifestString = resolveManifestTemplate(envInfo, manifestTemplateString);
   const isLocalDebug = envInfo.envName === "local";
   const isProvisionSucceeded =
     envInfo.state.solution.provisionSucceeded === "true" ||
     envInfo.state.solution.provisionSucceeded === true;
+  const tokens = [
+    ...new Set(
+      Mustache.parse(resolvedManifestString)
+        .filter((x) => {
+          return x[0] != "text" && (!isLocalDebug || x[1] != "state.app-manifest.teamsAppId");
+        })
+        .map((x) => x[1])
+    ),
+  ];
+  if (tokens.length > 0) {
+    if (isLocalDebug) {
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.GetLocalDebugConfigFailedError.name,
+          AppStudioError.GetLocalDebugConfigFailedError.message(
+            new Error(getLocalizedString("plugins.appstudio.dataRequired", tokens.join(",")))
+          )
+        )
+      );
+    } else {
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.GetRemoteConfigFailedError.name,
+          AppStudioError.GetRemoteConfigFailedError.message(
+            getLocalizedString("plugins.appstudio.dataRequired", tokens.join(",")),
+            isProvisionSucceeded
+          ),
+          HelpLinks.WhyNeedProvision
+        )
+      );
+    }
+  }
+  const manifest: TeamsAppManifest = JSON.parse(resolvedManifestString);
+  // dynamically set validDomains for manifest, which can be refactored by static manifest templates
   if (isLocalDebug || manifest.validDomains?.length === 0) {
     const validDomains: string[] = [];
     const tabEndpoint = envInfo.state[ComponentNames.TeamsTab]?.endpoint as string;
@@ -452,6 +479,36 @@ export async function getManifest(
     }
   }
   return ok(manifest);
+}
+
+export function resolveManifestTemplate(
+  envInfo: v3.EnvInfoV3,
+  templateString: string,
+  keepEnvStatePlaceHoldersIfValuesNotExist = true
+): string {
+  const view = {
+    config: cloneDeep(envInfo.config),
+    state: cloneDeep(envInfo.state),
+  };
+  if (keepEnvStatePlaceHoldersIfValuesNotExist) {
+    const spans = Mustache.parse(templateString);
+    for (const span of spans) {
+      if (span[0] !== "text") {
+        const placeholder = span[1];
+        const array = placeholder.split(".");
+        if (array.length === 3 && array[0] === "state") {
+          const component = array[1];
+          const configKey = array[2];
+          if (!view.state[component] || !view.state[component][configKey]) {
+            view.state[component] = view.state[component] || {};
+            view.state[component][configKey] = `{{${placeholder}}}`;
+          }
+        }
+      }
+    }
+  }
+  const result = compileHandlebarsTemplateString(templateString, view);
+  return result;
 }
 
 export async function updateManifest(

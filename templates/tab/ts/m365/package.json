@@ -12,6 +12,7 @@
         "@microsoft/teamsfx": "2.0.0-beta.0",
         "@microsoft/teamsfx-react": "2.0.0-beta.1",
         "axios": "^0.21.1",
+        "msteams-react-base-component": "^4.0.1",
         "react": "^16.14.0",
         "react-dom": "^16.14.0",
         "react-router-dom": "^5.1.2",

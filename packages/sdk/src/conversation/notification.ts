@@ -19,7 +19,7 @@ import {
   NotificationOptions,
   MessageResponse,
 } from "./interface";
-import { NotificationMiddleware } from "./middleware";
+import { NotificationMiddleware } from "./middlewares/notificationMiddleware";
 import { ConversationReferenceStore, LocalFileStorage } from "./storage";
 import * as utils from "./utils";
 

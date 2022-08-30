@@ -41,7 +41,11 @@ import { MockTools } from "../../../core/utils";
 import { getAzureProjectRoot } from "../../../plugins/resource/appstudio/helper";
 import fs from "fs-extra";
 import { newEnvInfoV3 } from "../../../../src";
-import { resolveManifestTemplate } from "../../../../src/component/resource/appManifest/appStudio";
+import {
+  getManifest,
+  resolveManifestTemplate,
+} from "../../../../src/component/resource/appManifest/appStudio";
+import { env } from "process";
 
 describe("Load and Save manifest template V3", () => {
   setTools(new MockTools());
@@ -445,70 +449,92 @@ describe("Delete capability", () => {
       chai.assert.equal(result.error.name, AppStudioError.CapabilityNotExistError.name);
     }
   });
+});
 
-  it("resolveManifestTemplate", async () => {
+describe("getManifest V3", () => {
+  const sandbox = sinon.createSandbox();
+  let inputs: v2.InputsWithProjectPath;
+  let manifest: TeamsAppManifest;
+  const manifestTemplate = `{
+      "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.14/MicrosoftTeams.schema.json",
+      "manifestVersion": "1.14",
+      "version": "1.0.0",
+      "id": "{{state.fx-resource-appstudio.teamsAppId}}",
+      "packageName": "com.microsoft.teams.extension",
+      "developer": {
+          "name": "Teams App, Inc.",
+          "websiteUrl": "https://www.example.com",
+          "privacyUrl": "https://www.example.com/termofuse",
+          "termsOfUseUrl": "https://www.example.com/privacy"
+      },
+      "icons": {
+          "color": "{{config.manifest.icons.color}}",
+          "outline": "{{config.manifest.icons.outline}}"
+      },
+      "name": {
+          "short": "{{config.manifest.appName.short}}",
+          "full": "{{config.manifest.appName.full}}"
+      },
+      "description": {
+          "short": "{{config.manifest.description.short}}",
+          "full": "{{config.manifest.description.full}}"
+      },
+      "accentColor": "#FFFFFF",
+      "bots": [],
+      "composeExtensions": [],
+      "configurableTabs": [
+          {
+              "configurationUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/config",
+              "canUpdateConfiguration": true,
+              "scopes": [
+                  "team",
+                  "groupchat"
+              ]
+          }
+      ],
+      "staticTabs": [
+          {
+              "entityId": "index0",
+              "name": "Personal Tab",
+              "contentUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/tab",
+              "websiteUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/tab",
+              "scopes": [
+                  "personal"
+              ]
+          }
+      ],
+      "permissions": [
+          "identity",
+          "messageTeamMembers"
+      ],
+      "validDomains": [
+          "{{state.fx-resource-frontend-hosting.domain}}"
+      ],
+      "webApplicationInfo": {
+          "id": "{{state.fx-resource-aad-app-for-teams.clientId}}",
+          "resource": "{{{state.fx-resource-aad-app-for-teams.applicationIdUris}}}"
+      }
+  }`;
+  beforeEach(async () => {
+    inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    manifest = JSON.parse(manifestTemplate) as TeamsAppManifest;
+    sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
+    sandbox.stub(manifestUtils, "writeAppManifest").resolves(ok(undefined));
+  });
+
+  afterEach(async () => {
+    sandbox.restore();
+  });
+  it("getManifest", async () => {
     const envInfo = newEnvInfoV3();
-    const manifestTemplate = `{
-        "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.14/MicrosoftTeams.schema.json",
-        "manifestVersion": "1.14",
-        "version": "1.0.0",
-        "id": "{{state.fx-resource-appstudio.teamsAppId}}",
-        "packageName": "com.microsoft.teams.extension",
-        "developer": {
-            "name": "Teams App, Inc.",
-            "websiteUrl": "https://www.example.com",
-            "privacyUrl": "https://www.example.com/termofuse",
-            "termsOfUseUrl": "https://www.example.com/privacy"
-        },
-        "icons": {
-            "color": "{{config.manifest.icons.color}}",
-            "outline": "{{config.manifest.icons.outline}}"
-        },
-        "name": {
-            "short": "{{config.manifest.appName.short}}",
-            "full": "{{config.manifest.appName.full}}"
-        },
-        "description": {
-            "short": "{{config.manifest.description.short}}",
-            "full": "{{config.manifest.description.full}}"
-        },
-        "accentColor": "#FFFFFF",
-        "bots": [],
-        "composeExtensions": [],
-        "configurableTabs": [
-            {
-                "configurationUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/config",
-                "canUpdateConfiguration": true,
-                "scopes": [
-                    "team",
-                    "groupchat"
-                ]
-            }
-        ],
-        "staticTabs": [
-            {
-                "entityId": "index0",
-                "name": "Personal Tab",
-                "contentUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/tab",
-                "websiteUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/tab",
-                "scopes": [
-                    "personal"
-                ]
-            }
-        ],
-        "permissions": [
-            "identity",
-            "messageTeamMembers"
-        ],
-        "validDomains": [
-            "{{state.fx-resource-frontend-hosting.domain}}"
-        ],
-        "webApplicationInfo": {
-            "id": "{{state.fx-resource-aad-app-for-teams.clientId}}",
-            "resource": "{{{state.fx-resource-aad-app-for-teams.applicationIdUris}}}"
-        }
-    }`;
-    const resolved = resolveManifestTemplate(envInfo, manifestTemplate);
-    chai.assert.isTrue(resolved.includes("state.fx-resource-frontend-hosting.endpoint"));
+    envInfo.envName = "local";
+    const res1 = await getManifest("", envInfo);
+    envInfo.envName = "dev";
+    const res2 = await getManifest("", envInfo);
+    chai.assert.isTrue(res1.isErr());
+    chai.assert.isTrue(res2.isErr());
   });
 });

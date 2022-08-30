@@ -1,4 +1,7 @@
-import { Inputs, Question } from "@microsoft/teamsfx-api";
+import * as jsonschema from "jsonschema";
+import * as fs from "fs-extra";
+import * as path from "path";
+import { Inputs, Question, Stage } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import {
   NodeVersionNotSupportedError,
@@ -34,7 +37,36 @@ export const webpartNameQuestion: Question = {
   title: "Web Part Name",
   default: "helloworld",
   validation: {
-    pattern: "^[a-zA-Z_][a-zA-Z0-9_]*$",
+    validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
+      const schema = {
+        pattern: "^[a-zA-Z_][a-zA-Z0-9_]*$",
+      };
+      const validateRes = jsonschema.validate(input, schema);
+      if (validateRes.errors && validateRes.errors.length > 0) {
+        return getLocalizedString(
+          "plugins.spfx.questions.webpartName.error.notMatch",
+          input,
+          schema.pattern
+        );
+      }
+
+      if (previousInputs?.stage === Stage.addFeature && previousInputs?.projectPath) {
+        const webpartFolder = path.join(
+          previousInputs?.projectPath,
+          "SPFx",
+          "src",
+          "webparts",
+          input
+        );
+        if (await fs.pathExists(webpartFolder)) {
+          return getLocalizedString(
+            "plugins.spfx.questions.webpartName.error.duplicate",
+            webpartFolder
+          );
+        }
+      }
+      return undefined;
+    },
   },
 };
 

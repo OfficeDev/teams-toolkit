@@ -51,7 +51,6 @@ function updateFileDeps(file, deps) {
                     continue;
                 }
             }
-
             fileChange = true;
             if(semver.prerelease(value)){
                 dep_[key] = value;

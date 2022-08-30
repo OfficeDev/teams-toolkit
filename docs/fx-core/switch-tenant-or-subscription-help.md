@@ -149,7 +149,7 @@ By default, the browser is launched with a separate user profile in a temp folde
      If you want to preview a Teams app in a remote environment, you could launch the browser in incognito mode and then copy the preview URL shown in the output pane and paste it in the browser.
     
 ### Could not Authorize or Send Request in Visual Studio
-After switching Microsoft M365 tenant for preparing Teams app dependencies in Visual Studio, you may notice issues when local debugging with a Teams app requiring AAD resources including get 401 error when sending a bot command or could not authorize to get the users' profile photo in the tab like the image shown below. 
+After switching Microsoft M365 tenant for preparing Teams app dependencies in Visual Studio, you may notice issues when local debugging with a Teams app requiring AAD resources like receiving 401 response when sending a bot command or could not authorize to get the user's profile photo in the tab like the image shown below. 
 ![image](../images/fx-core/localdebug/vs-authorize-error.png)
 
 We are still improving this scenario but for now a workaround for this is:

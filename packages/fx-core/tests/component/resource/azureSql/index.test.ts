@@ -185,20 +185,32 @@ describe("Azure-SQL Component", () => {
     context.envInfo!.state[ComponentNames.Identity] = {
       [Constants.identityName]: "mock-identity",
     };
-    const configureAction = await component.configure(context as ResourceContextV3, inputs);
-    chai.assert.isTrue(configureAction.isOk());
+    const res = await component.configure(context as ResourceContextV3, inputs);
+    chai.assert.isTrue(res.isOk());
   });
 
   it("provision happy path", async function () {
     sandbox
       .stub(MockUserInteraction.prototype, "inputText")
       .resolves(ok({ type: "success", result: "" }));
-    const provisionAction = await component.provision(context as ResourceContextV3, inputs);
-    chai.assert.isTrue(provisionAction.isOk());
+    const res = await component.provision(context as ResourceContextV3, inputs);
+    chai.assert.isTrue(res.isOk());
   });
 
   it("generateBicep happy path", async function () {
-    const generateBicepAction = await component.generateBicep(context as ResourceContextV3, inputs);
-    chai.assert.isTrue(generateBicepAction.isOk());
+    const res = await component.generateBicep(context as ResourceContextV3, inputs);
+    chai.assert.isTrue(res.isOk());
+  });
+
+  it("provision in debug", async function () {
+    context.envInfo!.envName = "local";
+    const res = await component.provision(context as ResourceContextV3, inputs);
+    chai.assert.isTrue(res.isOk());
+  });
+
+  it("configure in debug", async function () {
+    context.envInfo!.envName = "local";
+    const res = await component.configure(context as ResourceContextV3, inputs);
+    chai.assert.isTrue(res.isOk());
   });
 });

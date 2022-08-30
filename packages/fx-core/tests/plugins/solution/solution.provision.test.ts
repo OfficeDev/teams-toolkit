@@ -1616,7 +1616,7 @@ describe("API v2 implementation", () => {
   });
 });
 
-describe("askForProvisionConsentNew", () => {
+describe("askForProvisionConsent", () => {
   const mocker = sinon.createSandbox();
   afterEach(() => {
     mocker.restore();
@@ -1669,7 +1669,7 @@ describe("askForProvisionConsentNew", () => {
     const m365AccountName = "m365Name";
 
     // Act
-    await provisionUtils.askForProvisionConsentNew(
+    await provisionUtils.askForProvisionConsent(
       mockedCtx,
       mockedAzureTokenProvider,
       mockedEnvInfo as v3.EnvInfoV3,
@@ -1737,7 +1737,7 @@ describe("askForProvisionConsentNew", () => {
     const m365AccountName = "m365Name";
 
     // Act
-    const res = await provisionUtils.askForProvisionConsentNew(
+    const res = await provisionUtils.askForProvisionConsent(
       mockedCtx,
       mockedAzureTokenProvider,
       mockedEnvInfo as v3.EnvInfoV3,
@@ -1807,7 +1807,7 @@ describe("askForProvisionConsentNew", () => {
     const m365AccountName = "m365Name";
 
     // Act
-    const res = await provisionUtils.askForProvisionConsentNew(
+    const res = await provisionUtils.askForProvisionConsent(
       mockedCtx,
       mockedAzureTokenProvider,
       mockedEnvInfo as v3.EnvInfoV3,
@@ -1877,7 +1877,7 @@ describe("askForProvisionConsentNew", () => {
     const m365AccountName = "m365Name";
 
     // Act
-    const res = await provisionUtils.askForProvisionConsentNew(
+    const res = await provisionUtils.askForProvisionConsent(
       mockedCtx,
       mockedAzureTokenProvider,
       mockedEnvInfo as v3.EnvInfoV3,
@@ -1947,7 +1947,7 @@ describe("askForProvisionConsentNew", () => {
     const m365AccountName = "m365Name";
 
     // Act
-    const res = await provisionUtils.askForProvisionConsentNew(
+    const res = await provisionUtils.askForProvisionConsent(
       mockedCtx,
       mockedAzureTokenProvider,
       mockedEnvInfo as v3.EnvInfoV3,
@@ -1999,7 +1999,7 @@ describe("askForProvisionConsentNew", () => {
     const m365AccountName = "m365Name";
 
     // Act
-    const res = await provisionUtils.askForProvisionConsentNew(
+    const res = await provisionUtils.askForProvisionConsent(
       mockedCtx,
       mockedAzureTokenProvider,
       mockedEnvInfo as v3.EnvInfoV3,
@@ -2045,7 +2045,7 @@ describe("askForProvisionConsentNew", () => {
     const m365AccountName = "m365Name";
 
     // Act
-    const res = await provisionUtils.askForProvisionConsentNew(
+    const res = await provisionUtils.askForProvisionConsent(
       mockedCtx,
       mockedAzureTokenProvider,
       mockedEnvInfo as v3.EnvInfoV3,
@@ -2109,7 +2109,7 @@ describe("askForProvisionConsentNew", () => {
     const m365AccountName = "m365Name";
 
     // Act
-    const res = await provisionUtils.askForProvisionConsentNew(
+    const res = await provisionUtils.askForProvisionConsent(
       mockedCtx,
       mockedAzureTokenProvider,
       mockedEnvInfo as v3.EnvInfoV3,
@@ -2170,7 +2170,7 @@ describe("askForProvisionConsentNew", () => {
     const m365AccountName = "m365Name";
 
     // Act
-    const res = await provisionUtils.askForProvisionConsentNew(
+    const res = await provisionUtils.askForProvisionConsent(
       mockedCtx,
       mockedAzureTokenProvider,
       mockedEnvInfo as v3.EnvInfoV3,

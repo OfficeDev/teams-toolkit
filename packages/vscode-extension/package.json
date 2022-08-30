@@ -736,7 +736,83 @@
         ],
         "properties": {
           "command": {
-            "type": "string"
+            "anyOf": [
+              {
+                "const": "debug-check-prerequisites",
+                "description": "%teamstoolkit.taskDefinitions.command.prerequisites.description%"
+              },
+              {
+              }
+            ]
+          },
+          "args": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "prerequisites"
+                ],
+                "properties": {
+                  "prerequisites": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "anyOf": [
+                        {
+                          "const": "nodejs",
+                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.nodejsTitle%"
+                        },
+                        {
+                          "const": "m365Account",
+                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.m365AccountTitle%"
+                        },
+                        {
+                          "const": "devCert",
+                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.devCertTitle%"
+                        },
+                        {
+                          "const": "func",
+                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.funcTitle%"
+                        },
+                        {
+                          "const": "ngrok",
+                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.ngrokTitle%"
+                        },
+                        {
+                          "const": "dotnet",
+                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.dotnetTitle%"
+                        },
+                        {
+                          "const": "ports",
+                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.portsTitle%"
+                        }
+                      ]
+                    }
+                  },
+                  "ports": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "prerequisites": {
+                      "contains": {
+                        "const": "ports"
+                      }
+                    }
+                  }
+                },
+                "then": {
+                  "required": [
+                    "ports"
+                  ]
+                },
+                "additionalProperties": false
+              }
+            ]
           }
         }
       }

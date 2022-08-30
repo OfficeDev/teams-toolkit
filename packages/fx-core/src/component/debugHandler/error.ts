@@ -7,12 +7,11 @@ import { getDefaultString, getLocalizedString } from "../../common/localizeUtils
 
 export const errorSource = "debugHandler";
 
-export class InvalidSSODebugArgsError extends UserError {
-  constructor() {
-    super({
-      source: errorSource,
-      message: getDefaultString("error.debugHandler.InvalidSSODebugArgsError"),
-      displayMessage: getLocalizedString("error.debugHandler.InvalidSSODebugArgsError"),
-    });
-  }
+export function InvalidSSODebugArgsError(): UserError {
+  return new UserError(
+    errorSource,
+    "InvalidSSODebugArgsError",
+    getDefaultString("error.debugHandler.InvalidSSODebugArgsError"),
+    getLocalizedString("error.debugHandler.InvalidSSODebugArgsError")
+  );
 }

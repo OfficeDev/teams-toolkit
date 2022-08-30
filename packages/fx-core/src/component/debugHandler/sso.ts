@@ -203,7 +203,7 @@ export class SSODebugHandler {
     if (this.args.objectId && this.args.clientId && this.args.clientSecret) {
       return ok(true);
     } else if (this.args.objectId || this.args.clientId || this.args.clientSecret) {
-      return err(new InvalidSSODebugArgsError());
+      return err(InvalidSSODebugArgsError());
     } else {
       return ok(false);
     }

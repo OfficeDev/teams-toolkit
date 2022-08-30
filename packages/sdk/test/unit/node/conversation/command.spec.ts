@@ -5,7 +5,7 @@ import { assert } from "chai";
 import { BotFrameworkAdapter, ConversationReference, TeamsInfo, TurnContext } from "botbuilder";
 import * as sinon from "sinon";
 import { CommandBot } from "../../../../src/conversation/command";
-import { CommandResponseMiddleware } from "../../../../src/conversation/middleware";
+import { CommandResponseMiddleware } from "../../../../src/conversation/middlewares/commandMiddleware";
 import { TestCommandHandler } from "./testUtils";
 
 describe("CommandBot Tests - Node", () => {

@@ -64,7 +64,6 @@ import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import {
   buildTeamsAppPackage,
   createTeamsApp,
-  getManifest,
   publishTeamsApp,
   updateManifest,
   updateTeamsApp,
@@ -367,7 +366,7 @@ export class AppManifest implements CloudResource {
     context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<string[], FxError>> {
-    const manifestRes = await getManifest(inputs.projectPath, context.envInfo);
+    const manifestRes = await manifestUtils.getManifest(inputs.projectPath, context.envInfo);
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }
@@ -475,7 +474,7 @@ export class AppManifest implements CloudResource {
     let teamsAppId = "";
     // User may manually update id in manifest template file, rather than configuration file
     // The id in manifest template file should override configurations
-    const manifestResult = await getManifest(inputs.projectPath, envInfo);
+    const manifestResult = await manifestUtils.getManifest(inputs.projectPath, envInfo);
     if (manifestResult.isOk()) {
       teamsAppId = manifestResult.value.id;
     }

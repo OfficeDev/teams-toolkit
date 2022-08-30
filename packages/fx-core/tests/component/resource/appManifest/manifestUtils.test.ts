@@ -13,7 +13,7 @@ import {
 import * as chai from "chai";
 import "mocha";
 import "reflect-metadata";
-import sinon, { stub } from "sinon";
+import sinon from "sinon";
 import { Container } from "typedi";
 import * as uuid from "uuid";
 import { ComponentNames } from "../../../../src/component/constants";
@@ -41,11 +41,6 @@ import { MockTools } from "../../../core/utils";
 import { getAzureProjectRoot } from "../../../plugins/resource/appstudio/helper";
 import fs from "fs-extra";
 import { newEnvInfoV3 } from "../../../../src";
-import {
-  getManifest,
-  resolveManifestTemplate,
-} from "../../../../src/component/resource/appManifest/appStudio";
-import { env } from "process";
 
 describe("Load and Save manifest template V3", () => {
   setTools(new MockTools());
@@ -531,9 +526,9 @@ describe("getManifest V3", () => {
   it("getManifest", async () => {
     const envInfo = newEnvInfoV3();
     envInfo.envName = "local";
-    const res1 = await getManifest("", envInfo);
+    const res1 = await manifestUtils.getManifest("", envInfo);
     envInfo.envName = "dev";
-    const res2 = await getManifest("", envInfo);
+    const res2 = await manifestUtils.getManifest("", envInfo);
     chai.assert.isTrue(res1.isErr());
     chai.assert.isTrue(res2.isErr());
   });

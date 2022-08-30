@@ -72,6 +72,7 @@ import { ProgressHelper } from "./progressHelper";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 import * as commonUtils from "./commonUtils";
 import { localTelemetryReporter } from "./localTelemetryReporter";
+import { Prerequisite } from "./taskTerminal/prerequisiteTaskTerminal";
 
 enum Checker {
   SPFx = "SPFx",
@@ -336,12 +337,37 @@ export async function checkAndInstall(): Promise<Result<void, FxError>> {
   );
 }
 
-// TODO: use _checkAndInstall for new prerequisite task
-// export async function checkAndInstallV2(
-//   orderedCheckers: PrerequisiteOrderedChecker[],
-//   ports: number[]
-// ): Promise<Result<void, FxError>> {
-// }
+export async function checkAndInstallForTask(
+  prerequisites: string[],
+  ports?: number[]
+): Promise<Result<void, FxError>> {
+  const orderedCheckers = await getOrderedCheckersForTask(prerequisites, ports);
+
+  return await localTelemetryReporter.runWithTelemetryProperties(
+    TelemetryEvent.DebugPrerequisites,
+    {},
+    async (ctx: TelemetryContext) => {
+      // terminate all running teamsfx tasks
+      if (allRunningTeamsfxTasks.size > 0) {
+        VsCodeLogInstance.info("Terminate all running teamsfx tasks.");
+        terminateAllRunningTeamsfxTasks();
+      }
+
+      const res = await _checkAndInstall("LocalDebug Prerequisite Check", orderedCheckers);
+      if (res.error) {
+        const debugSession = commonUtils.getLocalDebugSession();
+        addCheckResultsForTelemetry(
+          res.checkResults,
+          debugSession.properties,
+          debugSession.errorProps
+        );
+        addCheckResultsForTelemetry(res.checkResults, ctx.properties, ctx.errorProps);
+        return err(res.error);
+      }
+      return ok(undefined);
+    }
+  );
+}
 
 async function _checkAndInstall(
   logLabel: string,
@@ -1146,6 +1172,46 @@ async function getOrderedCheckersForGetStarted(): Promise<PrerequisiteOrderedChe
     // not a teamsfx project
     return [{ info: { checker: DepsType.AzureNode }, fastFail: false }];
   }
+}
+
+async function getOrderedCheckersForTask(
+  prerequisites: string[],
+  ports?: number[]
+): Promise<PrerequisiteOrderedChecker[]> {
+  const checkers: PrerequisiteOrderedChecker[] = [];
+  if (prerequisites.includes(Prerequisite.nodejs)) {
+    checkers.push({ info: { checker: DepsType.AzureNode }, fastFail: true });
+  }
+  if (prerequisites.includes(Prerequisite.m365Account)) {
+    checkers.push({ info: { checker: Checker.M365Account }, fastFail: false });
+  }
+  if (prerequisites.includes(Prerequisite.devCert)) {
+    checkers.push({ info: { checker: Checker.LocalCertificate }, fastFail: false });
+  }
+
+  const deps: DepsType[] = [];
+  if (prerequisites.includes(Prerequisite.func)) {
+    deps.push(DepsType.FuncCoreTools);
+  }
+  if (prerequisites.includes(Prerequisite.ngrok)) {
+    deps.push(DepsType.Ngrok);
+  }
+  if (prerequisites.includes(Prerequisite.dotnet)) {
+    deps.push(DepsType.Dotnet);
+  }
+  const orderedDeps = DepsManager.sortBySequence(deps);
+
+  for (let i = 0; i < orderedDeps.length - 1; ++i) {
+    checkers.push({ info: { checker: orderedDeps[i] }, fastFail: false });
+  }
+  if (orderedDeps.length > 0) {
+    checkers.push({ info: { checker: orderedDeps[orderedDeps.length - 1] }, fastFail: true });
+  }
+
+  if (prerequisites.includes(Prerequisite.ports)) {
+    checkers.push({ info: { checker: Checker.Ports, ports: ports }, fastFail: false });
+  }
+  return checkers;
 }
 
 function getDeps(checkerOrDeps: (Checker | DepsType)[]): DepsType[] {

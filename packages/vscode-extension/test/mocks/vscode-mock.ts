@@ -102,6 +102,7 @@ mockedVSCode.Task = vscodeMocks.vscMockExtHostedTypes.Task;
   vscodeMocks.vscMockExtHostedTypes.ProtocolTypeHierarchyItem;
 (mockedVSCode as any).CancellationError = vscodeMocks.vscMockExtHostedTypes.CancellationError;
 (mockedVSCode as any).LSPCancellationError = vscodeMocks.vscMockExtHostedTypes.LSPCancellationError;
+mockedVSCode.TaskRevealKind = vscodeMocks.vscMockExtHostedTypes.TaskRevealKind;
 
 // Setup window APIs
 (mockedVSCode as any).window = {

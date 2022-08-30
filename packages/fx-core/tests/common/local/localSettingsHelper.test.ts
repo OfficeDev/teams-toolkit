@@ -2,14 +2,20 @@
 // Licensed under the MIT license.
 
 import "mocha";
+import sinon from "sinon";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import * as fs from "fs-extra";
 import { cloneDeep } from "lodash";
 import * as path from "path";
 
-import { convertToLocalEnvs } from "../../../src/common/local/localSettingsHelper";
+import {
+  convertToLocalEnvs,
+  getProjectComponents,
+} from "../../../src/common/local/localSettingsHelper";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import { LocalEnvManager } from "../../../src";
+import { ProjectSettings, ProjectSettingsV3 } from "@microsoft/teamsfx-api";
 chai.use(chaiAsPromised);
 
 describe("localSettingsHelper", () => {
@@ -148,6 +154,158 @@ describe("localSettingsHelper", () => {
       chai.assert.equal(localEnvs["BACKEND_FOO"], "BACKEND");
       chai.assert.equal(localEnvs["BOT_FOO"], "BOT");
       chai.assert.isTrue(Object.keys(localEnvs).length > 3);
+    });
+  });
+
+  describe("getProjectComponents()", () => {
+    const projectPath = "fake path";
+    let projectSettings: ProjectSettingsV3;
+
+    beforeEach(() => {
+      sinon
+        .stub(LocalEnvManager.prototype, "getProjectSettings")
+        .callsFake(async (): Promise<ProjectSettings> => {
+          return projectSettings;
+        });
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("getProjectComponents", async () => {
+      // Arrange
+      // error message, result, projectSettings.json
+      const cases: [string, { [key: string]: unknown }, ProjectSettingsV3][] = [
+        [
+          "Notification bot project",
+          {
+            components: ["bot"],
+            botHostType: "azure-functions",
+            botCapabilities: ["notification"],
+          },
+          {
+            appName: "mock name",
+            projectId: "mock id",
+            components: [
+              {
+                name: "teams-bot",
+                hosting: "azure-function",
+                deploy: true,
+                capabilities: ["notification"],
+                build: true,
+                folder: "bot",
+              },
+              {
+                name: "bot-service",
+                provision: true,
+              },
+              {
+                name: "azure-function",
+                scenario: "Bot",
+                connections: ["identity", "teams-bot"],
+              },
+              {
+                name: "identity",
+                provision: true,
+              },
+            ],
+            pluginSettings: {
+              "fx-resource-bot": {
+                "host-type": "azure-function",
+                capabilities: ["notification"],
+              },
+            },
+          },
+        ],
+        [
+          "Command bot project",
+          {
+            components: ["bot"],
+            botHostType: "app-service",
+            botCapabilities: ["command-response"],
+          },
+          {
+            appName: "mock name",
+            projectId: "mock id",
+            components: [
+              {
+                name: "teams-bot",
+                hosting: "azure-web-app",
+                provision: false,
+                deploy: true,
+                capabilities: ["command-response"],
+                build: true,
+                folder: "bot",
+              },
+              {
+                name: "bot-service",
+                provision: true,
+              },
+              {
+                name: "azure-web-app",
+                scenario: "Bot",
+                connections: ["identity", "teams-bot"],
+              },
+              {
+                name: "identity",
+                provision: true,
+              },
+            ],
+            pluginSettings: {
+              "fx-resource-bot": {
+                "host-type": "azure-function",
+                capabilities: ["notification"],
+              },
+            },
+          },
+        ],
+        [
+          "SSO tab project",
+          { components: ["aad", "frontend"] },
+          {
+            appName: "mock name",
+            projectId: "mock id",
+            components: [
+              {
+                name: "teams-tab",
+                hosting: "azure-storage",
+                deploy: true,
+                provision: true,
+                build: true,
+                folder: "tabs",
+                sso: true,
+              },
+              {
+                name: "azure-storage",
+                scenario: "Tab",
+                provision: true,
+              },
+              {
+                name: "identity",
+                provision: true,
+              },
+              {
+                name: "aad-app",
+                provision: true,
+                deploy: true,
+              },
+            ],
+          },
+        ],
+      ];
+
+      for (const c of cases) {
+        // Act
+        projectSettings = c[2];
+        const projectComponentsStr = await getProjectComponents(projectPath);
+
+        // Assert
+        chai.assert.isDefined(projectComponentsStr);
+        const projectComponents: { [key: string]: any } = JSON.parse(projectComponentsStr!);
+        projectComponents?.components?.sort?.();
+        chai.assert.deepEqual(projectComponents, c[1], c[0]);
+      }
     });
   });
 });

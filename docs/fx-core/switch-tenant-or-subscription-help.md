@@ -2,6 +2,21 @@ This doc is to help you understand what will happen when provisioning in an alre
 
 > Important Notes: After switching accounts and provisioning or local debugging again, resources have been created before in the old Microsoft 365 tenant or Azure subscription won't be deleted by default, and you have to manully delete them to avoid further costs if any. 
 
+- [Switch Microsoft 365 Account](#switch-microsoft-365-account)
+  - [Local Debug](#local-debug)
+  - [Provision in a Remote Environment](#provision-in-a-remote-environment)
+- [Switch Azure Subscription](#switch-azure-subscription)
+  - [Provision in a Remote Environment](#provision-in-a-remote-environment-1)
+- [Backup & Recover](#backup--recover)
+  - [Why Backup](#why-backup)
+  - [Backup](#backup)
+  - [Recover](#recover)
+- [Troubleshoot](#troubleshoot)
+  - [Could not be Redirected to the Expected Teams Web Page](#could-not-be-redirected-to-the-expected-teams-web-page)
+    - [Mitigation](#mitigation)
+  - [Could not Authorize or Send Request in Visual Studio](#could-not-authorize-or-send-request-in-visual-studio)
+- [Appendix](#appendix)
+  - [Add Browser Configuration in Visual Studio](#add-browser-configuration-in-visual-studio)
 ## Switch Microsoft 365 Account
 ### Local Debug
 You could run local debugging for a Teams project with one Microsoft 365 tenant and then easily switch to another tenant for further local debugging. To do this, you only need to:
@@ -61,7 +76,7 @@ Note: if you want to recover for a remote environment and you have added new fea
 * Run provision and deploy again.    
 * Delete the backups when you think there is no need to keep them.
 
-## Error
+## Troubleshoot
 ### Could not be Redirected to the Expected Teams Web Page
 If you have previewed (local or remote) your Teams app in one Microsoft 365 tenant and then switch to another Microsoft 365 account, you may encounter error as shown below 
 ![image](../images/fx-core/preview/teams-signin-error.png)

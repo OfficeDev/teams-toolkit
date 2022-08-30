@@ -450,10 +450,15 @@ export async function getQuestionsForAddFeatureSubCommand(
     return await getNotificationTriggerQuestionNode(inputs);
   } else if (TabFeatureIds.includes(featureId)) {
   } else if (featureId === AzureResourceSQLNewUI.id) {
-  } else if (featureId === AzureResourceFunctionNewUI.id) {
+  } else if (
+    featureId === AzureResourceFunctionNewUI.id ||
+    featureId === AzureResourceApimNewUI.id
+  ) {
     functionNameQuestion.validation = undefined;
     return ok(new QTreeNode(functionNameQuestion));
   } else if (featureId === AzureResourceApimNewUI.id) {
+    functionNameQuestion.validation = undefined;
+    return ok(new QTreeNode(functionNameQuestion));
   } else if (featureId === AzureResourceKeyVaultNewUI.id) {
   } else if (featureId === CicdOptionItem.id) {
     return await addCicdQuestion(createContextV3(), inputs as InputsWithProjectPath);

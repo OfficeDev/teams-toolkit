@@ -1,5 +1,5 @@
 import * as jsonschema from "jsonschema";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as path from "path";
 import { Inputs, Question, Stage } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../../../common/localizeUtils";

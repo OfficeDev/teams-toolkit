@@ -1210,7 +1210,7 @@ async function getOrderedCheckers(): Promise<PrerequisiteOrderedChecker[]> {
     parallelCheckers.push({
       checker: Checker.NpmInstall,
       cwd: path.join(workspacePath, ProjectFolderName[NpmInstallComponent.SPFx]),
-      shortName: NpmInstallComponent.SPFx,
+      component: NpmInstallComponent.SPFx,
       displayName: NpmInstallDisplayName[NpmInstallComponent.SPFx],
       args: [defaultNpmInstallArg],
     });
@@ -1219,7 +1219,7 @@ async function getOrderedCheckers(): Promise<PrerequisiteOrderedChecker[]> {
       parallelCheckers.push({ checker: Checker.AzureFunctionsExtension });
       parallelCheckers.push({
         checker: Checker.NpmInstall,
-        shortName: NpmInstallComponent.Backend,
+        component: NpmInstallComponent.Backend,
         displayName: NpmInstallDisplayName[NpmInstallComponent.Backend],
         cwd: path.join(workspacePath, ProjectFolderName[NpmInstallComponent.Backend]),
         args: [defaultNpmInstallArg],
@@ -1229,7 +1229,7 @@ async function getOrderedCheckers(): Promise<PrerequisiteOrderedChecker[]> {
     if (ProjectSettingsHelper.includeBot(projectSettings)) {
       parallelCheckers.push({
         checker: Checker.NpmInstall,
-        shortName: NpmInstallComponent.Bot,
+        component: NpmInstallComponent.Bot,
         displayName: NpmInstallDisplayName[NpmInstallComponent.Bot],
         cwd: path.join(workspacePath, ProjectFolderName[NpmInstallComponent.Bot]),
         args: [defaultNpmInstallArg],
@@ -1238,7 +1238,7 @@ async function getOrderedCheckers(): Promise<PrerequisiteOrderedChecker[]> {
     if (ProjectSettingsHelper.includeFrontend(projectSettings)) {
       parallelCheckers.push({
         checker: Checker.NpmInstall,
-        shortName: NpmInstallComponent.Frontend,
+        component: NpmInstallComponent.Frontend,
         displayName: NpmInstallDisplayName[NpmInstallComponent.Frontend],
         cwd: path.join(workspacePath, ProjectFolderName[NpmInstallComponent.Frontend]),
         args: [defaultNpmInstallArg],

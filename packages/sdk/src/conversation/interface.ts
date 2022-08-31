@@ -178,11 +178,6 @@ export interface TeamsFxBotCommandHandler {
  */
 export interface TeamsFxBotSsoCommandHandler {
   /**
-   * command id used to create sso command dialog, if not assigned, it will generate random command id
-   */
-  commandId?: string;
-
-  /**
    * The string or regular expression patterns that can trigger this handler.
    */
   triggerPatterns: TriggerPatterns;
@@ -311,14 +306,14 @@ export interface TeamsFxAdaptiveCardActionHandler {
  */
 export interface SsoConfig {
   /**
+   * The list of scopes for which the token will have access
+   */
+  scopes: string[];
+
+  /**
    * Custom sso execution activity handler class which should implement the interface {@link SsoExecutionActivityHandler}. If not provided, it will use {@link DefaultSsoExecutionActivityHandler} by default
    */
   CustomSsoExecutionActivityHandler?: new (ssoConfig: SsoConfig) => SsoExecutionActivityHandler;
-
-  /**
-   * The list of scopes for which the token will have access, if not provided, it will use graph permission ["User.Read"] by default
-   */
-  scopes?: string[];
 
   /**
    * Conversation state for sso command bot, if not provided, it will use internal memory storage to create a new one.
@@ -357,7 +352,7 @@ export interface SsoConfig {
   /**
    * teamsfx configuration for sso
    */
-  teamsFxConfig?: Partial<AuthenticationConfiguration>;
+  teamsFxConfig?: AuthenticationConfiguration;
 }
 
 /**
@@ -424,7 +419,14 @@ export interface ConversationOptions {
 export interface SsoExecutionActivityHandler extends TeamsActivityHandler {
   /**
    * Add {@link TeamsFxBotSsoCommandHandler} instance to {@link SsoExecutionDialog}
-   * @param handler instance of {@link TeamsFxBotSsoCommandHandler}
+   * @param handler {@link SsoExecutionDialogHandler} callback function
+   * @param triggerPatterns The trigger pattern
    */
-  addCommand(handler: TeamsFxBotSsoCommandHandler): void;
+  addCommand(handler: SsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void;
 }
+
+export type SsoExecutionDialogHandler = (
+  context: TurnContext,
+  tokenResponse: TeamsBotSsoPromptTokenResponse,
+  message: CommandMessage
+) => Promise<void>;

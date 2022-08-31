@@ -200,7 +200,7 @@ export function createPfxCertOption(pfx: string | Buffer, options?: {
 // @public
 export class DefaultSsoExecutionActivityHandler extends TeamsActivityHandler implements SsoExecutionActivityHandler {
     constructor(ssoConfig?: SsoConfig | undefined);
-    addCommand(handler: TeamsFxBotSsoCommandHandler): void;
+    addCommand(handler: SsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void;
     handleTeamsSigninTokenExchange(context: TurnContext, query: SigninStateVerificationQuery): Promise<void>;
     handleTeamsSigninVerifyState(context: TurnContext, query: SigninStateVerificationQuery): Promise<void>;
     onSignInInvoke(context: TurnContext): Promise<void>;
@@ -373,7 +373,7 @@ export interface SsoConfig {
     conversationState?: ConversationState;
     CustomSsoExecutionActivityHandler?: new (ssoConfig: SsoConfig) => SsoExecutionActivityHandler;
     dedupStorage?: Storage_2;
-    scopes?: string[];
+    scopes: string[];
     ssoPromptConfig?: {
         timeout?: number;
         endOnInvalidMessage?: boolean;
@@ -384,16 +384,19 @@ export interface SsoConfig {
 
 // @public
 export interface SsoExecutionActivityHandler extends TeamsActivityHandler {
-    addCommand(handler: TeamsFxBotSsoCommandHandler): void;
+    addCommand(handler: SsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void;
 }
 
 // @public
 export class SsoExecutionDialog extends ComponentDialog {
     constructor(dedupStorage: Storage_2, ssoPromptSettings: TeamsBotSsoPromptSettings, teamsfx: TeamsFx, dialogName?: string);
-    addCommand(handler: TeamsFxBotSsoCommandHandler): void;
+    addCommand(handler: SsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void;
     protected onEndDialog(context: TurnContext): Promise<void>;
     run(context: TurnContext, accessor: StatePropertyAccessor): Promise<void>;
 }
+
+// @public (undocumented)
+export type SsoExecutionDialogHandler = (context: TurnContext, tokenResponse: TeamsBotSsoPromptTokenResponse, message: CommandMessage) => Promise<void>;
 
 // @public
 export class TeamsBotInstallation implements NotificationTarget {
@@ -455,7 +458,6 @@ export interface TeamsFxBotCommandHandler {
 
 // @public
 export interface TeamsFxBotSsoCommandHandler {
-    commandId?: string;
     handleCommandReceived(context: TurnContext, message: CommandMessage, ssoToken: TeamsBotSsoPromptTokenResponse): Promise<string | Partial<Activity> | void>;
     triggerPatterns: TriggerPatterns;
 }

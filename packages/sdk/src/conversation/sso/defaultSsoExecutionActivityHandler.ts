@@ -14,7 +14,13 @@ import {
 import { TeamsBotSsoPromptSettings } from "../../bot/teamsBotSsoPrompt";
 import { TeamsFx } from "../../core/teamsfx";
 import { IdentityType } from "../../models/identityType";
-import { SsoConfig, SsoExecutionActivityHandler, TeamsFxBotSsoCommandHandler } from "../interface";
+import {
+  SsoConfig,
+  SsoExecutionActivityHandler,
+  SsoExecutionDialogHandler,
+  TeamsFxBotSsoCommandHandler,
+  TriggerPatterns,
+} from "../interface";
 import { SsoExecutionDialog } from "./ssoExecutionDialog";
 
 /**
@@ -41,7 +47,7 @@ export class DefaultSsoExecutionActivityHandler
     const dedupStorage = ssoConfig?.dedupStorage ?? memoryStorage;
     const scopes = ssoConfig?.scopes ?? ["User.Read"];
 
-    const teamsfx = new TeamsFx(IdentityType.User, ssoConfig?.teamsFxConfig);
+    const teamsfx = new TeamsFx(IdentityType.User, { ...ssoConfig?.teamsFxConfig });
     const settings: TeamsBotSsoPromptSettings = {
       scopes: scopes,
       timeout: ssoConfig?.ssoPromptConfig?.timeout,
@@ -61,10 +67,11 @@ export class DefaultSsoExecutionActivityHandler
 
   /**
    * Add TeamsFxBotSsoCommandHandler instance to sso execution dialog
-   * @param handler {@link TeamsFxBotSsoCommandHandler} instance
+   * @param handler {@link SsoExecutionDialogHandler} callback function
+   * @param triggerPatterns The trigger pattern
    */
-  addCommand(handler: TeamsFxBotSsoCommandHandler): void {
-    this.ssoExecutionDialog.addCommand(handler);
+  addCommand(handler: SsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void {
+    this.ssoExecutionDialog.addCommand(handler, triggerPatterns);
   }
 
   /**

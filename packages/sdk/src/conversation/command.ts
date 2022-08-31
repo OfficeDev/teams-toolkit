@@ -74,16 +74,8 @@ export class CommandBot {
    * @param command The command to register.
    */
   public registerSsoCommand(ssoCommand: TeamsFxBotSsoCommandHandler): void {
-    if (!this.middleware.ssoActivityHandler) {
-      internalLogger.error(ErrorMessage.SsoActivityHandlerIsNull);
-      throw new ErrorWithCode(
-        ErrorMessage.SsoActivityHandlerIsNull,
-        ErrorCode.SsoActivityHandlerIsUndefined
-      );
-    }
-    this.middleware.commandHandlers.push(ssoCommand);
-    this.middleware.ssoActivityHandler?.addCommand(ssoCommand);
-    this.middleware.hasSsoCommand = true;
+    this.validateSsoActivityHandler();
+    this.middleware.addSsoCommand(ssoCommand);
   }
 
   /**
@@ -93,18 +85,20 @@ export class CommandBot {
    */
   public registerSsoCommands(ssoCommands: TeamsFxBotSsoCommandHandler[]): void {
     if (ssoCommands.length > 0) {
-      if (!this.middleware.ssoActivityHandler) {
-        internalLogger.error(ErrorMessage.SsoActivityHandlerIsNull);
-        throw new ErrorWithCode(
-          ErrorMessage.SsoActivityHandlerIsNull,
-          ErrorCode.SsoActivityHandlerIsUndefined
-        );
-      }
+      this.validateSsoActivityHandler();
       for (const ssoCommand of ssoCommands) {
-        this.middleware.ssoActivityHandler?.addCommand(ssoCommand);
+        this.middleware.addSsoCommand(ssoCommand);
       }
-      this.middleware.commandHandlers.push(...ssoCommands);
-      this.middleware.hasSsoCommand = true;
+    }
+  }
+
+  private validateSsoActivityHandler() {
+    if (!this.middleware.ssoActivityHandler) {
+      internalLogger.error(ErrorMessage.SsoActivityHandlerIsNull);
+      throw new ErrorWithCode(
+        ErrorMessage.SsoActivityHandlerIsNull,
+        ErrorCode.SsoActivityHandlerIsUndefined
+      );
     }
   }
 }

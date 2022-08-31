@@ -18,7 +18,7 @@ import {
   tokenExchangeOperationName,
   TurnContext,
 } from "botbuilder";
-import { CommandMessage, TeamsFxBotSsoCommandHandler, TriggerPatterns } from "../interface";
+import { CommandMessage, SsoExecutionDialogHandler, TriggerPatterns } from "../interface";
 import { TeamsBotSsoPrompt, TeamsBotSsoPromptSettings } from "../../bot/teamsBotSsoPrompt";
 import { TeamsBotSsoPromptTokenResponse } from "../../bot/teamsBotSsoPromptTokenResponse";
 import { TeamsFx } from "../../core/teamsfx";
@@ -77,33 +77,22 @@ export class SsoExecutionDialog extends ComponentDialog {
 
   /**
    * Add TeamsFxBotSsoCommandHandler instance
-   * @param handler TeamsFxBotSsoCommandHandler instance
+   * @param handler {@link SsoExecutionDialogHandler} callback function
+   * @param triggerPatterns The trigger pattern
    */
-  public addCommand(handler: TeamsFxBotSsoCommandHandler): void {
-    if (!handler.commandId) {
-      handler.commandId = uuidv4();
-    }
-    const dialog = new WaterfallDialog(handler.commandId, [
+  public addCommand(handler: SsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void {
+    const commandId = uuidv4();
+    const dialog = new WaterfallDialog(commandId, [
       this.ssoStep.bind(this),
       this.dedupStep.bind(this),
       async (stepContext: any) => {
         const tokenResponse: TeamsBotSsoPromptTokenResponse = stepContext.result.tokenResponse;
         const context: TurnContext = stepContext.context;
+        const message: CommandMessage = stepContext.result.message;
+
         try {
           if (tokenResponse) {
-            const message: CommandMessage = stepContext.result.message;
-            const matchResult = this.shouldTrigger(handler.triggerPatterns, message.text);
-            message.matches = Array.isArray(matchResult) ? matchResult : void 0;
-            const response = await handler.handleCommandReceived(context, message, tokenResponse);
-
-            if (typeof response === "string") {
-              await context.sendActivity(response);
-            } else {
-              const replyActivity = response as Partial<Activity>;
-              if (replyActivity) {
-                await context.sendActivity(replyActivity);
-              }
-            }
+            handler(context, tokenResponse, message);
           } else {
             await context.sendActivity("Failed to retrieve user token from conversation context.");
           }
@@ -116,12 +105,7 @@ export class SsoExecutionDialog extends ComponentDialog {
       },
     ]);
 
-    if (this.commandMapping.has(handler.commandId)) {
-      throw new Error(
-        `Cannot add command. There is already a command with same id ${handler.commandId}`
-      );
-    }
-    this.commandMapping.set(handler.commandId, handler.triggerPatterns);
+    this.commandMapping.set(commandId, triggerPatterns);
     this.addDialog(dialog);
   }
 

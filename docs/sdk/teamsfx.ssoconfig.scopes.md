@@ -4,10 +4,10 @@
 
 ## SsoConfig.scopes property
 
-The list of scopes for which the token will have access, if not provided, it will use graph permission \["User.Read"\] by default
+The list of scopes for which the token will have access
 
 <b>Signature:</b>
 
 ```typescript
-scopes?: string[];
+scopes: string[];
 ```

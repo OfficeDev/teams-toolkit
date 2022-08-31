@@ -70,14 +70,9 @@ export class TestTarget implements NotificationTarget {
 
 export class TestSsoCommandHandler implements TeamsFxBotSsoCommandHandler {
   public triggerPatterns: TriggerPatterns;
-  public commandId?: string | undefined;
   public responseMessage?: string | undefined;
-  constructor(patterns: TriggerPatterns, commandId?: string, responseMessage?: string) {
+  constructor(patterns: TriggerPatterns, responseMessage?: string) {
     this.triggerPatterns = patterns;
-    if (commandId) {
-      this.commandId = commandId ?? uuidv4();
-    }
-
     if (responseMessage) {
       this.responseMessage = responseMessage;
     } else {

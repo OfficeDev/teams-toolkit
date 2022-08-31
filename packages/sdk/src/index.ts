@@ -59,6 +59,7 @@ export {
   TeamsFxBotSsoCommandHandler,
   SsoExecutionActivityHandler,
   SsoConfig,
+  SsoExecutionDialogHandler,
 } from "./conversation/interface";
 export { ConversationBot } from "./conversation/conversation";
 export { SsoExecutionDialog } from "./conversation/sso/ssoExecutionDialog";

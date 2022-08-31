@@ -17,5 +17,5 @@ export interface SsoExecutionActivityHandler extends TeamsActivityHandler
 
 |  Method | Description |
 |  --- | --- |
-|  [addCommand(handler)](./teamsfx.ssoexecutionactivityhandler.addcommand.md) | Add [TeamsFxBotSsoCommandHandler](./teamsfx.teamsfxbotssocommandhandler.md) instance to [SsoExecutionDialog](./teamsfx.ssoexecutiondialog.md) |
+|  [addCommand(handler, triggerPatterns)](./teamsfx.ssoexecutionactivityhandler.addcommand.md) | Add [TeamsFxBotSsoCommandHandler](./teamsfx.teamsfxbotssocommandhandler.md) instance to [SsoExecutionDialog](./teamsfx.ssoexecutiondialog.md) |
 

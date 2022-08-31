@@ -87,5 +87,6 @@
 |  Type Alias | Description |
 |  --- | --- |
 |  [LogFunction](./teamsfx.logfunction.md) | Log function for customized logging. |
+|  [SsoExecutionDialogHandler](./teamsfx.ssoexecutiondialoghandler.md) |  |
 |  [TriggerPatterns](./teamsfx.triggerpatterns.md) | The trigger pattern used to trigger a [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) instance. |
 

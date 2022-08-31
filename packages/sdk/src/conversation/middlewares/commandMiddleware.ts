@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { Activity, ActivityTypes, Middleware, TurnContext } from "botbuilder";
+import { TeamsBotSsoPromptTokenResponse } from "../../bot/teamsBotSsoPromptTokenResponse";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../../core/errors";
 import { internalLogger } from "../../util/logger";
 import {
@@ -17,6 +18,7 @@ import {
  */
 export class CommandResponseMiddleware implements Middleware {
   public readonly commandHandlers: (TeamsFxBotCommandHandler | TeamsFxBotSsoCommandHandler)[] = [];
+  private readonly ssoCommandHandlers: TeamsFxBotSsoCommandHandler[] = [];
 
   public ssoActivityHandler: SsoExecutionActivityHandler | undefined;
   public hasSsoCommand: boolean;
@@ -29,7 +31,6 @@ export class CommandResponseMiddleware implements Middleware {
     handlers = handlers ?? [];
     ssoHandlers = ssoHandlers ?? [];
     this.hasSsoCommand = ssoHandlers.length > 0;
-
     this.ssoActivityHandler = activityHandler;
 
     if (this.hasSsoCommand && !this.ssoActivityHandler) {
@@ -40,10 +41,29 @@ export class CommandResponseMiddleware implements Middleware {
       );
     }
 
-    this.commandHandlers.push(...handlers, ...ssoHandlers);
+    this.commandHandlers.push(...handlers);
     for (const ssoHandler of ssoHandlers) {
-      this.ssoActivityHandler?.addCommand(ssoHandler);
+      this.addSsoCommand(ssoHandler);
     }
+  }
+
+  public addSsoCommand(ssoHandler: TeamsFxBotSsoCommandHandler) {
+    this.ssoActivityHandler?.addCommand(
+      async (
+        context: TurnContext,
+        tokenResponse: TeamsBotSsoPromptTokenResponse,
+        message: CommandMessage
+      ) => {
+        const matchResult = this.shouldTrigger(ssoHandler.triggerPatterns, message.text);
+        message.matches = Array.isArray(matchResult) ? matchResult : void 0;
+        const response = await ssoHandler.handleCommandReceived(context, message, tokenResponse);
+        await this.processResponse(context, response);
+      },
+      ssoHandler.triggerPatterns
+    );
+    this.ssoCommandHandlers.push(ssoHandler);
+    this.commandHandlers.push(ssoHandler);
+    this.hasSsoCommand = true;
   }
 
   public async onTurn(context: TurnContext, next: () => Promise<void>): Promise<void> {
@@ -68,14 +88,8 @@ export class CommandResponseMiddleware implements Middleware {
               context,
               message
             );
-            if (typeof response === "string") {
-              await context.sendActivity(response);
-            } else {
-              const replyActivity = response as Partial<Activity>;
-              if (replyActivity) {
-                await context.sendActivity(replyActivity);
-              }
-            }
+
+            await this.processResponse(context, response);
           }
           break;
         }
@@ -88,10 +102,21 @@ export class CommandResponseMiddleware implements Middleware {
     await next();
   }
 
+  private async processResponse(context: TurnContext, response: string | void | Partial<Activity>) {
+    if (typeof response === "string") {
+      await context.sendActivity(response);
+    } else {
+      const replyActivity = response as Partial<Activity>;
+      if (replyActivity) {
+        await context.sendActivity(replyActivity);
+      }
+    }
+  }
+
   private isSsoExecutionHandler(
     handler: TeamsFxBotCommandHandler | TeamsFxBotSsoCommandHandler
   ): boolean {
-    return "commandId" in handler;
+    return this.ssoCommandHandlers.indexOf(handler) >= 0;
   }
 
   private matchPattern(pattern: string | RegExp, text: string): boolean | RegExpMatchArray {

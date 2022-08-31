@@ -15,6 +15,7 @@ import {
   TeamsChannelAccount,
   TestAdapter,
   tokenExchangeOperationName,
+  TurnContext,
   verifyStateOperationName,
 } from "botbuilder-core";
 import { DialogSet, DialogState } from "botbuilder-dialogs";
@@ -25,6 +26,8 @@ import {
   TeamsBotSsoPromptSettings,
   TeamsFx,
   SsoExecutionDialog,
+  TeamsBotSsoPromptTokenResponse,
+  CommandMessage,
 } from "../../../../../src";
 import { assert, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
@@ -340,9 +343,24 @@ describe("SsoExecutionDialog Tests - Node", () => {
       endOnInvalidMessage: endOnInvalidMessage,
     };
     const ssoExecutionDialog = new SsoExecutionDialog(storage, ssoPromptSettings, teamsfx);
-
+    const testHandler = new TestSsoCommandHandler("TestCommand", testSsoHandlerResponseMessage);
     ssoExecutionDialog.addCommand(
-      new TestSsoCommandHandler("TestCommand", undefined, testSsoHandlerResponseMessage)
+      async (
+        context: TurnContext,
+        tokenResponse: TeamsBotSsoPromptTokenResponse,
+        message: CommandMessage
+      ) => {
+        const response = await testHandler.handleCommandReceived(context, message, tokenResponse);
+        if (typeof response === "string") {
+          await context.sendActivity(response);
+        } else {
+          const replyActivity = response as Partial<Activity>;
+          if (replyActivity) {
+            await context.sendActivity(replyActivity);
+          }
+        }
+      },
+      testHandler.triggerPatterns
     );
     dialogs.add(ssoExecutionDialog);
 

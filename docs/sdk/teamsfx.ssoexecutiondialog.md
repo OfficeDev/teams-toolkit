@@ -23,7 +23,7 @@ export declare class SsoExecutionDialog extends ComponentDialog
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
-|  [addCommand(handler)](./teamsfx.ssoexecutiondialog.addcommand.md) |  | Add TeamsFxBotSsoCommandHandler instance |
+|  [addCommand(handler, triggerPatterns)](./teamsfx.ssoexecutiondialog.addcommand.md) |  | Add TeamsFxBotSsoCommandHandler instance |
 |  [onEndDialog(context)](./teamsfx.ssoexecutiondialog.onenddialog.md) |  | Called when the component is ending. |
 |  [run(context, accessor)](./teamsfx.ssoexecutiondialog.run.md) |  | The run method handles the incoming activity (in the form of a DialogContext) and passes it through the dialog system. |
 

@@ -9,14 +9,15 @@ Add TeamsFxBotSsoCommandHandler instance
 <b>Signature:</b>
 
 ```typescript
-addCommand(handler: TeamsFxBotSsoCommandHandler): void;
+addCommand(handler: SsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void;
 ```
 
 ## Parameters
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  handler | [TeamsFxBotSsoCommandHandler](./teamsfx.teamsfxbotssocommandhandler.md) | TeamsFxBotSsoCommandHandler instance |
+|  handler | [SsoExecutionDialogHandler](./teamsfx.ssoexecutiondialoghandler.md) | [SsoExecutionDialogHandler](./teamsfx.ssoexecutiondialoghandler.md) callback function |
+|  triggerPatterns | [TriggerPatterns](./teamsfx.triggerpatterns.md) | The trigger pattern |
 
 <b>Returns:</b>
 

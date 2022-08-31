@@ -16,7 +16,6 @@ export interface TeamsFxBotSsoCommandHandler
 
 |  Property | Type | Description |
 |  --- | --- | --- |
-|  [commandId?](./teamsfx.teamsfxbotssocommandhandler.commandid.md) | string | <i>(Optional)</i> command id used to create sso command dialog, if not assigned, it will generate random command id |
 |  [triggerPatterns](./teamsfx.teamsfxbotssocommandhandler.triggerpatterns.md) | [TriggerPatterns](./teamsfx.triggerpatterns.md) | The string or regular expression patterns that can trigger this handler. |
 
 ## Methods

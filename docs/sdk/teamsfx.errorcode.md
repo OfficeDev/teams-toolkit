@@ -28,6 +28,7 @@ export declare enum ErrorCode
 |  InvalidResponse | <code>&quot;InvalidResponse&quot;</code> | Invalid response error. |
 |  RuntimeNotSupported | <code>&quot;RuntimeNotSupported&quot;</code> | Runtime is not supported error. |
 |  ServiceError | <code>&quot;ServiceError&quot;</code> | Call service (AAD or simple authentication server) failed. |
+|  SsoActivityHandlerIsUndefined | <code>&quot;SsoActivityHandlerIsUndefined&quot;</code> | Sso activity handler is undefined |
 |  TokenExpiredError | <code>&quot;TokenExpiredError&quot;</code> | Token is not within its valid time range error. |
 |  UiRequiredError | <code>&quot;UiRequiredError&quot;</code> | The user or administrator has not consented to use the application error. |
 

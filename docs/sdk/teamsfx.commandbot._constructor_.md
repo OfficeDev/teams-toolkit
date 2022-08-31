@@ -9,7 +9,7 @@ Creates a new instance of the `CommandBot`<!-- -->.
 <b>Signature:</b>
 
 ```typescript
-constructor(adapter: BotFrameworkAdapter, options?: CommandOptions);
+constructor(adapter: BotFrameworkAdapter, options?: CommandOptions, ssoCommandActivityHandler?: SsoExecutionActivityHandler, ssoConfig?: SsoConfig);
 ```
 
 ## Parameters
@@ -18,4 +18,6 @@ constructor(adapter: BotFrameworkAdapter, options?: CommandOptions);
 |  --- | --- | --- |
 |  adapter | BotFrameworkAdapter | The bound <code>BotFrameworkAdapter</code>. |
 |  options | [CommandOptions](./teamsfx.commandoptions.md) | initialize options |
+|  ssoCommandActivityHandler | [SsoExecutionActivityHandler](./teamsfx.ssoexecutionactivityhandler.md) |  |
+|  ssoConfig | [SsoConfig](./teamsfx.ssoconfig.md) |  |
 

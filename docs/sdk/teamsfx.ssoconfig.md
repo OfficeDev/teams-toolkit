@@ -4,7 +4,7 @@
 
 ## SsoConfig interface
 
-Interface for SSO configuration for BotSSO
+Interface for SSO configuration for Bot SSO
 
 <b>Signature:</b>
 
@@ -21,6 +21,6 @@ export interface SsoConfig
 |  [dedupStorage?](./teamsfx.ssoconfig.dedupstorage.md) | Storage | <i>(Optional)</i> Used by [SsoExecutionDialog](./teamsfx.ssoexecutiondialog.md) to remove duplicated messages, if not provided, it will use internal memory storage |
 |  [scopes?](./teamsfx.ssoconfig.scopes.md) | string\[\] | <i>(Optional)</i> The list of scopes for which the token will have access, if not provided, it will use graph permission \["User.Read"\] by default |
 |  [ssoPromptConfig?](./teamsfx.ssoconfig.ssopromptconfig.md) | { timeout?: number; endOnInvalidMessage?: boolean; } | <i>(Optional)</i> Settings used to configure an teams sso prompt instance. |
-|  [teamsFxConfig?](./teamsfx.ssoconfig.teamsfxconfig.md) | { authorityHost?: string; clientId?: string; tenantId?: string; clientSecret?: string; certificateContent?: string; initiateLoginEndpoint?: string; applicationIdUri?: string; } | <i>(Optional)</i> teamsfx configuration for sso |
+|  [teamsFxConfig?](./teamsfx.ssoconfig.teamsfxconfig.md) | Partial&lt;[AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md)<!-- -->&gt; | <i>(Optional)</i> teamsfx configuration for sso |
 |  [userState?](./teamsfx.ssoconfig.userstate.md) | UserState | <i>(Optional)</i> User state for sso command bot, if not provided, it will use internal memory storage to create a new one. |
 

@@ -4,7 +4,6 @@
 import { Activity, ActivityTypes, Middleware, TurnContext } from "botbuilder";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../../core/errors";
 import { internalLogger } from "../../util/logger";
-import { formatString } from "../../util/utils";
 import {
   CommandMessage,
   SsoExecutionActivityHandler,

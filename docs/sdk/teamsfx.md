@@ -73,7 +73,7 @@
 |  [NotificationOptions\_2](./teamsfx.notificationoptions_2.md) | Options to initialize [NotificationBot](./teamsfx.notificationbot.md)<!-- -->. |
 |  [NotificationTarget](./teamsfx.notificationtarget.md) | Represent a notification target. |
 |  [NotificationTargetStorage](./teamsfx.notificationtargetstorage.md) | Interface for a storage provider that stores and retrieves notification target references. |
-|  [SsoConfig](./teamsfx.ssoconfig.md) | Interface for SSO configuration for BotSSO |
+|  [SsoConfig](./teamsfx.ssoconfig.md) | Interface for SSO configuration for Bot SSO |
 |  [SsoExecutionActivityHandler](./teamsfx.ssoexecutionactivityhandler.md) | Interface for user to customize sso execution activity handler |
 |  [TeamsBotSsoPromptSettings](./teamsfx.teamsbotssopromptsettings.md) | Settings used to configure an TeamsBotSsoPrompt instance. |
 |  [TeamsBotSsoPromptTokenResponse](./teamsfx.teamsbotssoprompttokenresponse.md) | Token response provided by Teams Bot SSO prompt |

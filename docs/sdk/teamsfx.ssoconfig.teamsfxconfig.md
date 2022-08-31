@@ -9,13 +9,5 @@ teamsfx configuration for sso
 <b>Signature:</b>
 
 ```typescript
-teamsFxConfig?: {
-        authorityHost?: string;
-        clientId?: string;
-        tenantId?: string;
-        clientSecret?: string;
-        certificateContent?: string;
-        initiateLoginEndpoint?: string;
-        applicationIdUri?: string;
-    };
+teamsFxConfig?: Partial<AuthenticationConfiguration>;
 ```

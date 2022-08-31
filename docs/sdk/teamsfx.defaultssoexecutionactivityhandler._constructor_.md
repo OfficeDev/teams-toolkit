@@ -9,7 +9,7 @@ Creates a new instance of the DefaultSsoExecutionActivityHandler.
 <b>Signature:</b>
 
 ```typescript
-constructor(ssoConfig: SsoConfig | undefined);
+constructor(ssoConfig?: SsoConfig | undefined);
 ```
 
 ## Parameters

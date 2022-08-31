@@ -21,4 +21,5 @@ export interface ConversationOptions
 |  [cardAction?](./teamsfx.conversationoptions.cardaction.md) | [CardActionOptions](./teamsfx.cardactionoptions.md) &amp; { enabled?: boolean; } | <i>(Optional)</i> The adaptive card action handler part. |
 |  [command?](./teamsfx.conversationoptions.command.md) | [CommandOptions](./teamsfx.commandoptions.md) &amp; { enabled?: boolean; } | <i>(Optional)</i> The command part. |
 |  [notification?](./teamsfx.conversationoptions.notification.md) | NotificationOptions &amp; { enabled?: boolean; } | <i>(Optional)</i> The notification part. |
+|  [ssoConfig?](./teamsfx.conversationoptions.ssoconfig.md) | [SsoConfig](./teamsfx.ssoconfig.md) | <i>(Optional)</i> Configurations for sso command bot |
 

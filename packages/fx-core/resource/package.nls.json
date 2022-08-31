@@ -132,6 +132,8 @@
   "core.collaboration.Permission": ", Permission: ",
   "plugins.spfx.questions.framework.title": "Framework",
   "plugins.spfx.questions.versionCheck.title": "Checking Node.js and NPM versions...",
+  "plugins.spfx.questions.webpartName.error.duplicate": "The foler %s already exists. Please choose a different name for your component.",
+  "plugins.spfx.questions.webpartName.error.notMatch": "%s doesn't match pattern: %s",
   "plugins.spfx.buildNotice": "SharePoint package successfully built at %s.",
   "plugins.spfx.deployNotice": "SharePoint package %s has been successfully deployed to [%s](%s).",
   "plugins.spfx.deployFailedNotice": "You don't have permission to upload and deploy package to App Catalog %s, please use site admin account, or you can get your own free Microsoft 365 tenant from [Microsoft 365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)",

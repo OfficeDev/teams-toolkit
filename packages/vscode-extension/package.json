@@ -742,7 +742,10 @@
                 "description": "%teamstoolkit.taskDefinitions.command.prerequisites.description%"
               },
               {
-              }
+                "const": "debug-npm-install",
+                "description": "%teamstoolkit.taskDefinitions.command.npmInstall.description%"
+              },
+              {}
             ]
           },
           "args": {
@@ -809,6 +812,39 @@
                   "required": [
                     "ports"
                   ]
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "required": [
+                  "projects"
+                ],
+                "properties": {
+                  "projects": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "cwd"
+                      ],
+                      "properties": {
+                        "cwd": {
+                          "type": "string"
+                        },
+                        "npmInstallArgs": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "forceUpdate": {
+                    "type": "boolean",
+                    "default": false
+                  }
                 },
                 "additionalProperties": false
               }

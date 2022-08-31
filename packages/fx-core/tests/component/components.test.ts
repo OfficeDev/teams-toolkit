@@ -44,12 +44,6 @@ import {
 } from "../../src/plugins/resource/spfx/utils/questions";
 import { DefaultManifestProvider } from "../../src/component/resource/appManifest/manifestProvider";
 import { ComponentNames } from "../../src/component/constants";
-import {
-  AddSsoParameters,
-  AzureResourceApim,
-  AzureResourceSQL,
-  AzureSolutionQuestionNames,
-} from "../../src";
 import { FunctionScaffold } from "../../src/plugins/resource/function/ops/scaffold";
 import { TeamsfxCore } from "../../src/component/core";
 import { Container } from "typedi";
@@ -65,7 +59,13 @@ import { CoreQuestionNames } from "../../src/core/question";
 import * as questionV3 from "../../src/component/questionV3";
 import { provisionUtils } from "../../src/component/provisionUtils";
 import { deployUtils } from "../../src/component/deployUtils";
-describe("Workflow test for v3", () => {
+import {
+  AzureResourceApim,
+  AzureResourceSQL,
+  AzureSolutionQuestionNames,
+} from "../../src/plugins/solution/fx-solution/question";
+import { AddSsoParameters } from "../../src/plugins/solution/fx-solution/constants";
+describe("Core component test for v3", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
   setTools(tools);
@@ -104,7 +104,7 @@ describe("Workflow test for v3", () => {
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
-      [AzureSolutionQuestionNames.Features]: "Bot",
+      features: "Bot",
       language: "typescript",
     };
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
@@ -163,7 +163,7 @@ describe("Workflow test for v3", () => {
       projectPath: projectPath,
       platform: Platform.VSCode,
       ["function-name"]: "getUserProfile",
-      [CoreQuestionNames.Features]: AzureResourceSQL.id,
+      features: AzureResourceSQL.id,
     };
     const component = Container.get("fx") as any;
     const res = await component.addFeature(context, inputs);
@@ -635,7 +635,7 @@ describe("Workflow test for v3", () => {
       const inputs: InputsWithProjectPath = {
         projectPath: projectPath,
         platform: Platform.VSCode,
-        [AzureSolutionQuestionNames.Features]: "Bot",
+        features: "Bot",
         language: "typescript",
         "app-name": appName,
         folder: path.join(os.homedir(), "TeamsApps"),
@@ -842,7 +842,7 @@ describe("Workflow test for v3", () => {
       const inputs: InputsWithProjectPath = {
         projectPath: projectPath,
         platform: Platform.VSCode,
-        [AzureSolutionQuestionNames.Features]: "Bot",
+        features: "Bot",
         language: "typescript",
         "app-name": appName,
         folder: path.join(os.homedir(), "TeamsApps"),
@@ -911,7 +911,7 @@ describe("Workflow test for v3", () => {
       const inputs: InputsWithProjectPath = {
         projectPath: projectPath,
         platform: Platform.VSCode,
-        [AzureSolutionQuestionNames.Features]: "spfx",
+        features: "spfx",
         language: "typescript",
         "app-name": appName,
         folder: path.join(os.homedir(), "TeamsApps"),
@@ -976,7 +976,7 @@ describe("Workflow test for v3", () => {
       const inputs: InputsWithProjectPath = {
         projectPath: projectPath,
         platform: Platform.VSCode,
-        [AzureSolutionQuestionNames.Features]: "spfx",
+        features: "spfx",
         language: "typescript",
         "app-name": appName,
         folder: path.join(os.homedir(), "TeamsApps"),
@@ -1103,7 +1103,7 @@ describe("Workflow test for v3", () => {
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
-      [AzureSolutionQuestionNames.Features]: "Bot",
+      features: "Bot",
       language: "typescript",
       "app-name": appName,
       folder: path.join(os.homedir(), "TeamsApps"),

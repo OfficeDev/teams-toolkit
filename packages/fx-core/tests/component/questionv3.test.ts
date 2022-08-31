@@ -20,10 +20,11 @@ import {
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
 import { createContextV3 } from "../../src/component/utils";
-import { CicdOptionItem, newEnvInfoV3 } from "../../src";
+import { newEnvInfoV3 } from "../../src/core/environment";
 import { FeatureId } from "../../src/component/questionV3";
 import "../../src/component/core";
 import * as tools from "../../src/common/tools";
+import { CicdOptionItem } from "../../src/plugins/solution/fx-solution/question";
 
 describe("question for v3", () => {
   const sandbox = sinon.createSandbox();

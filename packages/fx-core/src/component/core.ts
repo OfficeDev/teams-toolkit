@@ -323,19 +323,17 @@ export class TeamsfxCore {
       if (folderExist) {
         return err(new ProjectFolderExistError(inputs.projectPath));
       }
-    } else {
       const isValid = isValidProject(inputs.projectPath);
       if (isValid) {
         return err(
           new OperationNotPermittedError("initialize a project in existing teamsfx project")
         );
       }
-    }
-
-    // pre-check before initialize
-    const preCheckResult = await preCheck(inputs.projectPath);
-    if (preCheckResult.isErr()) {
-      return err(preCheckResult.error);
+      // pre-check before initialize
+      const preCheckResult = await preCheck(inputs.projectPath);
+      if (preCheckResult.isErr()) {
+        return err(preCheckResult.error);
+      }
     }
 
     {

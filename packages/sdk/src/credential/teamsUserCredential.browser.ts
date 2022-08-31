@@ -84,14 +84,14 @@ export class TeamsUserCredential implements TokenCredential {
    * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
    */
-  async login(scopes: string | string[]): Promise<void> {
+  async login(scopes: string | string[], resources?: string[]): Promise<void> {
     validateScopesType(scopes);
     const scopesStr = typeof scopes === "string" ? scopes : scopes.join(" ");
 
     internalLogger.info(`Popup login page to get user's access token with scopes: ${scopesStr}`);
 
     if (!this.initialized) {
-      await this.init();
+      await this.init(resources);
     }
 
     return new Promise<void>((resolve, reject) => {
@@ -168,6 +168,7 @@ export class TeamsUserCredential implements TokenCredential {
    * ```
    *
    * @param {string | string[]} scopes - The list of scopes for which the token will have access.
+   * @param {string[]} resources - An optional list of resource for which to acquire the access token; only used for full trust apps.
    * @param {GetTokenOptions} options - The options used to configure any requests this TokenCredential implementation might make.
    *
    * @throws {@link ErrorCode|InternalError} when failed to get access token with unknown error.
@@ -182,10 +183,11 @@ export class TeamsUserCredential implements TokenCredential {
    */
   async getToken(
     scopes: string | string[],
+    resources?: string[],
     options?: GetTokenOptions
   ): Promise<AccessToken | null> {
     validateScopesType(scopes);
-    const ssoToken = await this.getSSOToken();
+    const ssoToken = await this.getSSOToken(resources);
 
     const scopeStr = typeof scopes === "string" ? scopes : scopes.join(" ");
     if (scopeStr === "") {
@@ -196,7 +198,7 @@ export class TeamsUserCredential implements TokenCredential {
       internalLogger.info("Get access token with scopes: " + scopeStr);
 
       if (!this.initialized) {
-        await this.init();
+        await this.init(resources);
       }
 
       let tokenResponse;
@@ -259,14 +261,14 @@ export class TeamsUserCredential implements TokenCredential {
    *
    * @returns Basic user info with user displayName, objectId and preferredUserName.
    */
-  public async getUserInfo(): Promise<UserInfo> {
+  public async getUserInfo(resources?: string[]): Promise<UserInfo> {
     internalLogger.info("Get basic user info from SSO token");
-    const ssoToken = await this.getSSOToken();
+    const ssoToken = await this.getSSOToken(resources);
     return getUserInfoFromSsoToken(ssoToken.token);
   }
 
-  private async init(): Promise<void> {
-    const ssoToken = await this.getSSOToken();
+  private async init(resources?: string[]): Promise<void> {
+    const ssoToken = await this.getSSOToken(resources);
     const info = getTenantIdAndLoginHintFromSsoToken(ssoToken.token);
     this.loginHint = info.loginHint;
     this.tid = info.tid;
@@ -288,9 +290,12 @@ export class TeamsUserCredential implements TokenCredential {
   /**
    * Get SSO token using teams SDK
    * It will try to get SSO token from memory first, if SSO token doesn't exist or about to expired, then it will using teams SDK to get SSO token
+   *
+   * @param {string[]} resources - An optional list of resource for which to acquire the access token; only used for full trust apps.
+   *
    * @returns SSO token
    */
-  private getSSOToken(): Promise<AccessToken> {
+  private getSSOToken(resources?: string[]): Promise<AccessToken> {
     return new Promise<AccessToken>((resolve, reject) => {
       if (this.ssoToken) {
         if (this.ssoToken.expiresOnTimestamp - Date.now() > tokenRefreshTimeSpanInMillisecond) {
@@ -333,7 +338,7 @@ export class TeamsUserCredential implements TokenCredential {
               internalLogger.error(errorMsg);
               reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
             },
-            resources: [],
+            resources: resources ?? [],
           });
         });
       } else {

@@ -29,11 +29,13 @@ export class OnBehalfOfUserCredential implements TokenCredential {
 
   /**
    * Get access token from credential.
+   * @param {string[]} resources - An optional list of resource for which to acquire the access token; only used for full trust apps.
    * @remarks
    * Can only be used in server side.
    */
   async getToken(
     scopes: string | string[],
+    resources?: string[],
     options?: GetTokenOptions
   ): Promise<AccessToken | null> {
     throw new ErrorWithCode(

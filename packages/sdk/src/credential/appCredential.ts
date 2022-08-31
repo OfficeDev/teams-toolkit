@@ -69,6 +69,7 @@ export class AppCredential implements TokenCredential {
    */
   async getToken(
     scopes: string | string[],
+    resources?: string[],
     options?: GetTokenOptions
   ): Promise<AccessToken | null> {
     let accessToken;

@@ -130,7 +130,7 @@ export class TeamsFx implements TeamsFxConfiguration {
    * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
    */
-  public async login(scopes: string | string[]): Promise<void> {
+  public async login(scopes: string | string[], resources?: string[]): Promise<void> {
     throw new ErrorWithCode(
       formatString(ErrorMessage.NodejsRuntimeNotSupported, "login"),
       ErrorCode.RuntimeNotSupported

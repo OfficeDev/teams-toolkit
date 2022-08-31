@@ -24,6 +24,7 @@ describe("TeamsFx Tests - Browser", () => {
       return {
         getToken: async (
           scopes: string | string[],
+          resources?: string[],
           options?: GetTokenOptions
         ): Promise<AccessToken | null> => {
           return null;

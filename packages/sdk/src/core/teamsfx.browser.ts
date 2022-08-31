@@ -91,8 +91,8 @@ export class TeamsFx implements TeamsFxConfiguration {
     return await (this.getCredential() as TeamsUserCredential).getUserInfo();
   }
 
-  public async login(scopes: string | string[]): Promise<void> {
-    await (this.getCredential() as TeamsUserCredential).login(scopes);
+  public async login(scopes: string | string[], resources?: string[]): Promise<void> {
+    await (this.getCredential() as TeamsUserCredential).login(scopes, resources);
   }
 
   public setSsoToken(ssoToken: string): TeamsFx {

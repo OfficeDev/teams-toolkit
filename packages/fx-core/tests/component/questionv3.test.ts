@@ -9,6 +9,19 @@ import {
   getQuestionsForAddResourceV3,
   getQuestionsForDeployV3,
 } from "../../src/component/questionV3";
+import {
+  AzureResourceApimNewUI,
+  AzureResourceFunctionNewUI,
+  AzureResourceKeyVaultNewUI,
+  AzureResourceSQLNewUI,
+  BotNewUIOptionItem,
+  CommandAndResponseOptionItem,
+  MessageExtensionNewUIItem,
+  NotificationOptionItem,
+  SingleSignOnOptionItem,
+  TabNonSsoItem,
+  WorkflowOptionItem,
+} from "../../src/plugins/solution/fx-solution/question";
 import { manifestUtils } from "../../src/component/resource/appManifest/utils";
 import {
   Inputs,
@@ -87,6 +100,7 @@ describe("question for v3", () => {
     const res = await getQuestionsForDeployV3(context, inputs, envInfo);
     assert.isTrue(res.isOk());
   });
+
   it("getQuestionsForAddFeatureV3 - CLI_HELP", async () => {
     const context = createContextV3();
     const inputs: InputsWithProjectPath = {
@@ -96,6 +110,7 @@ describe("question for v3", () => {
     const res = await getQuestionsForAddFeatureV3(context, inputs);
     assert.isTrue(res.isOk());
   });
+
   it("getQuestionsForAddFeatureV3 - VS Code", async () => {
     const manifest = new TeamsAppManifest();
     manifest.staticTabs = [];
@@ -135,6 +150,75 @@ describe("question for v3", () => {
     assert.isTrue(res.isOk());
   });
 
+  it("getQuestionsForAddFeatureV3 for tab - VS Code", async () => {
+    const manifest = new TeamsAppManifest();
+    manifest.staticTabs = [];
+    manifest.bots = [];
+    manifest.composeExtensions = [];
+    sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
+    const projectSettings = {
+      appName: "tabApp",
+      projectId: "112233",
+      version: "2.1.0",
+      isFromSample: false,
+      components: [
+        {
+          name: "teams-tab",
+          hosting: "azure-storage",
+          build: true,
+          folder: "tabs",
+        },
+        {
+          name: "azure-storage",
+          scenario: "Tab",
+          provision: true,
+        },
+        {
+          name: "identity",
+          provision: true,
+        },
+      ],
+      programmingLanguage: "typescript",
+    };
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const context = createContextV3(projectSettings);
+    const res = await getQuestionsForAddFeatureV3(context, inputs);
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      const node = res.value;
+      assert.isTrue(
+        node &&
+          node.data &&
+          node.data.type === "singleSelect" &&
+          node.data.staticOptions.length === 11,
+        "option item count check"
+      );
+      if (node && node.data && node.data.type === "singleSelect") {
+        const options = (node.data as SingleSelectQuestion).staticOptions as OptionItem[];
+        assert.deepEqual(
+          options,
+          [
+            NotificationOptionItem,
+            CommandAndResponseOptionItem,
+            WorkflowOptionItem,
+            BotNewUIOptionItem,
+            TabNonSsoItem,
+            MessageExtensionNewUIItem,
+            AzureResourceApimNewUI,
+            AzureResourceSQLNewUI,
+            AzureResourceKeyVaultNewUI,
+            SingleSignOnOptionItem,
+            AzureResourceFunctionNewUI,
+          ],
+          "option item should match"
+        );
+      }
+    }
+  });
+
   it("getQuestionsForAddFeatureV3 for SPFx - VS Code", async () => {
     const manifest = new TeamsAppManifest();
     manifest.staticTabs = [];
@@ -169,17 +253,6 @@ describe("question for v3", () => {
     const context = createContextV3(projectSettings);
     const res = await getQuestionsForAddFeatureV3(context, inputs);
     assert.isTrue(res.isOk());
-    if (res.isOk()) {
-      const node = res.value;
-      assert.isTrue(
-        node && node.data && node.data.type === "singleSelect",
-        "result should be singleSelect"
-      );
-      if (node && node.data && node.data.type === "singleSelect") {
-        const options = (node.data as SingleSelectQuestion).staticOptions as OptionItem[];
-        assert.deepEqual(options, [CicdOptionItem], "option item should match");
-      }
-    }
   });
 
   it("getQuestionsForAddResourceV3 - CLI_HELP", async () => {

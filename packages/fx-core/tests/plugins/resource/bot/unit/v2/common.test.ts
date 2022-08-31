@@ -15,6 +15,7 @@ import {
   M365SearchAppOptionItem,
   MessageExtensionNewUIItem,
   NotificationOptionItem,
+  WorkflowOptionItem,
 } from "../../../../../../src";
 import {
   QuestionNames,
@@ -135,6 +136,14 @@ describe("Bot Plugin v2", () => {
       );
     });
 
+    it("scenario for workflow bot", async () => {
+      inputs[AzureSolutionQuestionNames.Capabilities] = [WorkflowOptionItem.id];
+      fillInSolutionSettings(context.projectSetting, inputs);
+      const templateScenarios = decideTemplateScenarios(context, inputs);
+      chai.assert.equal(templateScenarios.size, 1);
+      chai.assert.isTrue(templateScenarios.has(TemplateProjectsScenarios.WORKFLOW_SCENARIO_NAME));
+    });
+
     it("scenario for default bot", async () => {
       inputs[AzureSolutionQuestionNames.Capabilities] = [BotOptionItem.id];
       fillInSolutionSettings(context.projectSetting, inputs);
@@ -185,6 +194,14 @@ describe("Bot Plugin v2", () => {
       const botCapabilities = resolveBotCapabilities(inputs);
       chai.assert.equal(botCapabilities.length, 1);
       chai.assert.isTrue(botCapabilities.includes(BotCapabilities.COMMAND_AND_RESPONSE));
+    });
+
+    it("bot capabilities for workflow bot", async () => {
+      inputs[AzureSolutionQuestionNames.Capabilities] = [WorkflowOptionItem.id];
+      fillInSolutionSettings(context.projectSetting, inputs);
+      const botCapabilities = resolveBotCapabilities(inputs);
+      chai.assert.equal(botCapabilities.length, 1);
+      chai.assert.isTrue(botCapabilities.includes(BotCapabilities.WORKFLOW));
     });
 
     it("bot capabilities for default bot", async () => {

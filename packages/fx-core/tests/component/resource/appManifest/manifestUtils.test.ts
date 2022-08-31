@@ -251,6 +251,19 @@ describe("Add capability V3", () => {
     chai.assert.equal(manifest.bots?.length, 1);
     chai.assert.equal(manifest.bots?.[0].commandLists?.[0].commands?.[0].title, "helloWorld");
   });
+
+  it("Add workflow bot capability", async () => {
+    sandbox.stub(process, "env").value({
+      BOT_NOTIFICATION_ENABLED: "true",
+    });
+    const capabilities = [{ name: "Bot" as const }];
+    inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.WorkflowBot];
+    const addCapabilityResult = await component.addCapability(inputs, capabilities);
+    chai.assert.isTrue(addCapabilityResult.isOk());
+    chai.assert.equal(manifest.bots?.length, 1);
+    chai.assert.equal(manifest.bots?.[0].commandLists?.[0].commands?.[0].title, "helloWorld");
+  });
+
   it("Add messaging extension success", async () => {
     const result = await component.addCapability(inputs, [{ name: "MessageExtension" }]);
     chai.assert.isTrue(result.isOk());

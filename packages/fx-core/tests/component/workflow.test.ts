@@ -351,11 +351,13 @@ describe("Workflow test for v3", () => {
             "/subscriptions/mockSid/resourceGroups/jay-texas/providers/Microsoft.Web/sites/testwebApp",
           endpoint: "https://testwebApp.azurewebsites.net",
         },
-        [ComponentNames.BotService]: {
-          botId: "00000000-0000-0000-0000-000000000000",
-        },
         [ComponentNames.AadApp]: {
           clientId: "00000000-0000-0000-0000-000000000000",
+          applicationIdUris: "https://abc.com",
+        },
+        [ComponentNames.TeamsBot]: {
+          botId: "00000000-0000-0000-0000-000000000000",
+          domain: "abc.com",
         },
       };
 
@@ -435,6 +437,10 @@ describe("Workflow test for v3", () => {
           resourceId:
             "/subscriptions/mockSid/resourceGroups/jay-texas/providers/Microsoft.Web/sites/testwebApp",
           endpoint: "https://testwebApp.azurewebsites.net",
+        },
+        [ComponentNames.TeamsBot]: {
+          botId: "00000000-0000-0000-0000-000000000000",
+          domain: "abc.com",
         },
       };
       const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
@@ -665,11 +671,15 @@ describe("Workflow test for v3", () => {
           domain: "testwebApp.azurewebsites.net",
           appServicePlanName: "testwebAppPlan",
           resourceId:
-            "/subscriptions/mockSid/resourceGroups/jay-texas/providers/Microsoft.Web/sites/testwebApp",
+            "/subscriptions/mockSid/resourceGroups/xxx/providers/Microsoft.Web/sites/testwebApp",
           endpoint: "https://testwebApp.azurewebsites.net",
         },
         [ComponentNames.AppManifest]: {
           tenantId: "mockTid",
+        },
+        [ComponentNames.TeamsBot]: {
+          botId: "00000000-0000-0000-0000-000000000000",
+          domain: "abc.com",
         },
       };
       const provisionRes = await fx.provision(context as ResourceContextV3, inputs);
@@ -1129,6 +1139,11 @@ describe("Workflow test for v3", () => {
       },
       [ComponentNames.AadApp]: {
         clientId: "00000000-0000-0000-0000-000000000000",
+        applicationIdUris: "https://abc.com",
+      },
+      [ComponentNames.TeamsBot]: {
+        botId: "00000000-0000-0000-0000-000000000000",
+        domain: "abc.com",
       },
     };
 
@@ -1236,6 +1251,11 @@ describe("Workflow test for v3", () => {
       },
       [ComponentNames.AadApp]: {
         clientId: "00000000-0000-0000-0000-000000000000",
+        applicationIdUris: "https://abc.com",
+      },
+      [ComponentNames.TeamsBot]: {
+        botId: "00000000-0000-0000-0000-000000000000",
+        domain: "abc.com",
       },
     };
 

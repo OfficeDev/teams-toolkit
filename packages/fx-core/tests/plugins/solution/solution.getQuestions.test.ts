@@ -54,6 +54,7 @@ import {
   TabNonSsoItem,
   TabOptionItem,
   SingleSignOnOptionItem,
+  WorkflowOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import { ResourcePluginsV2 } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import {
@@ -412,6 +413,7 @@ describe("getQuestionsForScaffolding()", async () => {
           [
             NotificationOptionItem,
             CommandAndResponseOptionItem,
+            WorkflowOptionItem,
             TabNewUIOptionItem,
             TabNonSsoItem,
             BotNewUIOptionItem,
@@ -460,7 +462,7 @@ describe("getQuestionsForScaffolding()", async () => {
         node &&
           node.data &&
           node.data.type === "singleSelect" &&
-          node.data.staticOptions.length === 10,
+          node.data.staticOptions.length === 11,
         "option item count check"
       );
       if (node && node.data && node.data.type === "singleSelect") {
@@ -470,6 +472,7 @@ describe("getQuestionsForScaffolding()", async () => {
           [
             NotificationOptionItem,
             CommandAndResponseOptionItem,
+            WorkflowOptionItem,
             TabNonSsoItem,
             BotNewUIOptionItem,
             MessageExtensionNewUIItem,

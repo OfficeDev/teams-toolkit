@@ -253,8 +253,11 @@ export async function addCapabilities(
               const scenariosRaw = inputs[AzureSolutionQuestionNames.Scenarios];
               const scenarios = Array.isArray(scenariosRaw) ? scenariosRaw : [];
 
-              if (scenarios.includes(BotScenario.CommandAndResponseBot)) {
-                // command and response bot
+              if (
+                scenarios.includes(BotScenario.CommandAndResponseBot) ||
+                scenarios.includes(BotScenario.WorkflowBot)
+              ) {
+                // command and response bot or workflow bot
                 manifest.bots = manifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE);
               } else if (scenarios.includes(BotScenario.NotificationBot)) {
                 // notification

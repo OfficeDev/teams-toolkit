@@ -51,6 +51,7 @@ import {
   TabSPFxItem,
   TabSPFxNewUIItem,
   TabSsoItem,
+  WorkflowOptionItem,
 } from "../question";
 import {
   getAllV2ResourcePluginMap,
@@ -108,6 +109,7 @@ export async function getQuestionsForScaffolding(
         BotOptionItem.id,
         NotificationOptionItem.id,
         CommandAndResponseOptionItem.id,
+        WorkflowOptionItem.id,
         MessageExtensionItem.id,
         ...(isAadManifestEnabled() ? [TabNonSsoItem.id] : []),
         M365SsoLaunchPageOptionItem.id,
@@ -190,7 +192,8 @@ export async function getQuestionsForScaffolding(
             cap.includes(BotOptionItem.id) ||
             cap.includes(MessageExtensionItem.id) ||
             cap.includes(NotificationOptionItem.id) ||
-            cap.includes(CommandAndResponseOptionItem.id)
+            cap.includes(CommandAndResponseOptionItem.id) ||
+            cap.includes(WorkflowOptionItem.id)
           ) {
             return undefined;
           }
@@ -224,6 +227,7 @@ export async function getQuestionsForScaffoldingPreview(
         BotOptionItem.id,
         NotificationOptionItem.id,
         CommandAndResponseOptionItem.id,
+        WorkflowOptionItem.id,
         MessageExtensionItem.id,
         ...(isAadManifestEnabled() ? [TabNonSsoItem.id] : []),
         M365SsoLaunchPageOptionItem.id,
@@ -304,7 +308,8 @@ export async function getQuestionsForScaffoldingPreview(
             cap === BotOptionItem.id ||
             cap === MessageExtensionItem.id ||
             cap === NotificationOptionItem.id ||
-            cap === CommandAndResponseOptionItem.id
+            cap === CommandAndResponseOptionItem.id ||
+            cap === WorkflowOptionItem.id
           ) {
             return undefined;
           }
@@ -605,7 +610,9 @@ export async function getQuestionsForAddCapability(
     addCapQuestion.staticOptions = [
       ...(isBotNotificationEnabled() ? [TabNewUIOptionItem] : [TabOptionItem]),
       ...[BotOptionItem],
-      ...(isBotNotificationEnabled() ? [NotificationOptionItem, CommandAndResponseOptionItem] : []),
+      ...(isBotNotificationEnabled()
+        ? [NotificationOptionItem, CommandAndResponseOptionItem, WorkflowOptionItem]
+        : []),
       ...(isBotNotificationEnabled() ? [MessageExtensionNewUIItem] : [MessageExtensionItem]),
       ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
     ];
@@ -677,6 +684,7 @@ export async function getQuestionsForAddCapability(
   if (isBotAddable) {
     if (isBotNotificationEnabled()) {
       options.push(CommandAndResponseOptionItem);
+      options.push(WorkflowOptionItem);
       options.push(NotificationOptionItem);
       options.push(BotOptionItem);
     } else {
@@ -818,6 +826,7 @@ async function getStaticOptionsForAddCapability(
     const options: OptionItem[] = [];
     options.push(NotificationOptionItem);
     options.push(CommandAndResponseOptionItem);
+    options.push(WorkflowOptionItem);
     options.push(TabNewUIOptionItem, TabNonSsoItem);
     options.push(BotNewUIOptionItem);
     options.push(MessageExtensionNewUIItem);
@@ -878,6 +887,7 @@ async function getStaticOptionsForAddCapability(
   if (isScenarioBotAddable) {
     options.push(NotificationOptionItem);
     options.push(CommandAndResponseOptionItem);
+    options.push(WorkflowOptionItem);
   }
   if (isTabAddable) {
     if (!settings?.capabilities.includes(TabOptionItem.id)) {
@@ -969,6 +979,7 @@ export async function getQuestionsForAddFeature(
       enum: [
         NotificationOptionItem.id,
         CommandAndResponseOptionItem.id,
+        WorkflowOptionItem.id,
         TabNewUIOptionItem.id,
         TabNonSsoItem.id,
         BotNewUIOptionItem.id,

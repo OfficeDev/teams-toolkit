@@ -70,6 +70,7 @@ import {
   TabNewUIOptionItem,
   TabNonSsoItem,
   TabSPFxNewUIItem,
+  WorkflowOptionItem,
 } from "../plugins/solution/fx-solution/question";
 import { getPluginCLIName } from "../plugins/solution/fx-solution/v2/getQuestions";
 import { checkWetherProvisionSucceeded } from "../plugins/solution/fx-solution/v2/utils";
@@ -234,6 +235,7 @@ export async function getQuestionsForAddFeatureV3(
   if (inputs.platform === Platform.CLI_HELP) {
     options.push(NotificationOptionItem);
     options.push(CommandAndResponseOptionItem);
+    options.push(WorkflowOptionItem);
     options.push(BotNewUIOptionItem);
     options.push(TabNewUIOptionItem, TabNonSsoItem);
     options.push(MessageExtensionNewUIItem);
@@ -268,10 +270,12 @@ export async function getQuestionsForAddFeatureV3(
     const teamsBot = getComponent(ctx.projectSetting as ProjectSettingsV3, ComponentNames.TeamsBot);
     const alreadyHasNewBot =
       teamsBot?.capabilities?.includes("notification") ||
-      teamsBot?.capabilities?.includes("command-response");
+      teamsBot?.capabilities?.includes("command-response") ||
+      teamsBot?.capabilities?.includes("workflow");
     if (!botExceedLimit && !alreadyHasNewBot && !meExceedLimit) {
       options.push(NotificationOptionItem);
       options.push(CommandAndResponseOptionItem);
+      options.push(WorkflowOptionItem);
       options.push(BotNewUIOptionItem);
     }
     if (canAddTab) {
@@ -331,6 +335,7 @@ export async function getQuestionsForAddFeatureV3(
       enum: [
         NotificationOptionItem.id,
         CommandAndResponseOptionItem.id,
+        WorkflowOptionItem.id,
         TabNewUIOptionItem.id,
         TabNonSsoItem.id,
         BotNewUIOptionItem.id,
@@ -387,6 +392,7 @@ export async function getQuestionsForAddResourceV3(
       enum: [
         NotificationOptionItem.id,
         CommandAndResponseOptionItem.id,
+        WorkflowOptionItem.id,
         TabNewUIOptionItem.id,
         TabNonSsoItem.id,
         BotNewUIOptionItem.id,

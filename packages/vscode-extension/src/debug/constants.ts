@@ -89,3 +89,5 @@ export class LaunchUrl {
 export const teamsAppIdPlaceholder = "${teamsAppId}";
 export const teamsAppInternalIdPlaceholder = "${teamsAppInternalId}";
 export const accountHintPlaceholder = "${account-hint}";
+
+export const outputPanelLink = "[output panel](command:fx-extension.showOutputChannel)";

@@ -63,7 +63,7 @@ import {
   runTask,
   terminateAllRunningTeamsfxTasks,
 } from "./teamsfxTaskHandler";
-import { trustDevCertHelpLink } from "./constants";
+import { trustDevCertHelpLink, outputPanelLink } from "./constants";
 import M365TokenInstance from "../commonlib/m365Login";
 import { signedOut } from "../commonlib/common/constant";
 import { ProgressHandler } from "../progressHandler";
@@ -1062,11 +1062,11 @@ async function handleCheckResults(
       await progressHelper?.stop(false);
       const message = util.format(
         getDefaultString("teamstoolkit.localDebug.prerequisitesCheckFailure"),
-        "[output panel](command:fx-extension.showOutputChannel)"
+        outputPanelLink
       );
       const displayMessage = util.format(
         localize("teamstoolkit.localDebug.prerequisitesCheckFailure"),
-        "[output panel](command:fx-extension.showOutputChannel)"
+        outputPanelLink
       );
       const errorOptions: UserErrorOptions = {
         source: ExtensionSource,

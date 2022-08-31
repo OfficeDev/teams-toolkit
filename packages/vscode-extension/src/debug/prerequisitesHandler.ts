@@ -7,7 +7,6 @@ import {
   FxError,
   ok,
   ProductName,
-  ProjectSettings,
   Result,
   SystemError,
   UnknownError,
@@ -44,7 +43,7 @@ import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionSource, ExtensionErrors } from "../error";
 import { VS_CODE_UI } from "../extension";
 import * as globalVariables from "../globalVariables";
-import { showError, tools } from "../handlers";
+import { tools } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   TelemetryDebugDevCertStatus,
@@ -457,7 +456,6 @@ async function _checkAndInstall(
     await handleCheckResults(checkResults, progressHelper);
   } catch (error: unknown) {
     const fxError = assembleError(error);
-    showError(fxError);
     await progressHelper?.stop(false);
     return { checkResults: checkResults, error: fxError };
   }

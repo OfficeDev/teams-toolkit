@@ -372,5 +372,4 @@
     "teamstoolkit.taskDefinitions.args.prerequisites.dotnetTitle": "Install .NET",
     "teamstoolkit.taskDefinitions.args.prerequisites.portsTitle": "Validate available ports",
     "teamstoolkit.taskDefinitions.command.npmInstall.description": "Install NPM Packages.\n See https://aka.ms/teamsfx-debug-tasks#debug-npm-install for how to customize following args."
-
 }

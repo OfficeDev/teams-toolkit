@@ -16,7 +16,6 @@ import {
 import {
   AppStudioScopes,
   checkNpmDependencies,
-  defaultHelpLink,
   DependencyStatus,
   DepsCheckerError,
   DepsManager,
@@ -54,22 +53,21 @@ import {
 import { VSCodeDepsChecker } from "./depsChecker/vscodeChecker";
 import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
 import { vscodeLogger } from "./depsChecker/vscodeLogger";
-import {
-  DisplayMessages,
-  doctorConstant,
-  npmInstallDisplayMessages,
-  prerequisiteCheckDisplayMessages,
-} from "./depsChecker/doctorConstant";
+import { doctorConstant } from "./depsChecker/doctorConstant";
 import { vscodeHelper } from "./depsChecker/vscodeHelper";
 import {
   taskEndEventEmitter,
   trackedTasks,
-  allRunningDebugSessions,
   allRunningTeamsfxTasks,
-  runTask,
   terminateAllRunningTeamsfxTasks,
+  runTask,
 } from "./teamsfxTaskHandler";
-import { trustDevCertHelpLink } from "./constants";
+import {
+  trustDevCertHelpLink,
+  prerequisiteCheckDisplayMessages,
+  npmInstallDisplayMessages,
+  DisplayMessages,
+} from "./constants";
 import M365TokenInstance from "../commonlib/m365Login";
 import { signedOut } from "../commonlib/common/constant";
 import { ProgressHandler } from "../progressHandler";
@@ -1135,11 +1133,19 @@ async function handleCheckResults(
 
     if (shouldStop) {
       await progressHelper?.stop(false);
+      const message = util.format(
+        getDefaultString(displayMessages.errorMessageKey),
+        "[output panel](command:fx-extension.showOutputChannel)"
+      );
+      const displayMessage = util.format(
+        localize(displayMessages.errorDisplayMessageKey),
+        "[output panel](command:fx-extension.showOutputChannel)"
+      );
       const errorOptions: UserErrorOptions = {
         source: ExtensionSource,
         name: displayMessages.errorName,
-        message: displayMessages.errorMessage,
-        displayMessage: displayMessages.errorDisplayMessage,
+        message: message,
+        displayMessage: displayMessage,
         helpLink: displayMessages.errorHelpLink,
       };
       throw new UserError(errorOptions);

@@ -1,11 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { defaultHelpLink } from "@microsoft/teamsfx-core";
-import { ExtensionErrors } from "../../error";
-import * as util from "util";
-import { getDefaultString, localize } from "../../utils/localizeUtils";
-
 const InstallNode =
   "Go to https://nodejs.org/about/releases/ to install Node.js (v16 is recommended).";
 
@@ -30,49 +25,4 @@ export const doctorConstant = {
   NpmInstallSuccess: "NPM packages for @app are installed",
   NpmInstallFailure: "NPM Install for @app",
   HelpLink: `Please refer to @Link for more information.`,
-};
-
-export const prerequisiteCheckDisplayMessages = {
-  taskName: "Prerequisites Check",
-  check:
-    "Teams Toolkit is checking if all required prerequisites are installed and will install them if not. A summary will be generated for your reference.",
-  checkNumber: "We are checking total @number of prerequisites for you.",
-  summary: "Prerequisites Check Summary:",
-  learnMore: "Visit @Link to learn more about prerequisites check.",
-  learnMoreHelpLink: defaultHelpLink,
-  launchServices:
-    "Services will be launched locally, please check your terminal window for details.",
-  errorName: ExtensionErrors.PrerequisitesValidationError,
-  errorMessage: util.format(
-    getDefaultString("teamstoolkit.localDebug.prerequisitesCheckFailure"), // TODO: update the error message after remove vscode settings
-    "[output panel](command:fx-extension.showOutputChannel)"
-  ),
-  errorDisplayMessage: util.format(
-    localize("teamstoolkit.localDebug.prerequisitesCheckFailure"),
-    "[output panel](command:fx-extension.showOutputChannel)"
-  ),
-  errorHelpLink: "https://aka.ms/teamsfx-envchecker-help",
-};
-
-export type DisplayMessages = typeof prerequisiteCheckDisplayMessages;
-
-export const npmInstallDisplayMessages: DisplayMessages = {
-  taskName: "NPM Package Install",
-  check:
-    "Teams Toolkit is checking if all the NPM packages are installed and will install them if not. A summary will be generated for your reference.",
-  checkNumber: "We are checking total @number of projects for you.",
-  summary: "NPM Package Installation Summary:",
-  learnMore: "Visit @Link to learn more about NPM package install task.",
-  learnMoreHelpLink: "https://aka.ms/teamsfx-npm-package-task",
-  launchServices: "", // TODO: update npm install help link
-  errorName: ExtensionErrors.PrerequisitesInstallPackagesError,
-  errorMessage: util.format(
-    getDefaultString("teamstoolkit.localDebug.npmInstallFailure"),
-    "[output panel](command:fx-extension.showOutputChannel)"
-  ),
-  errorDisplayMessage: util.format(
-    localize("teamstoolkit.localDebug.npmInstallFailure"),
-    "[output panel](command:fx-extension.showOutputChannel)"
-  ),
-  errorHelpLink: "https://aka.ms/teamsfx-npm-package-task", // TODO: update npm install help link
 };

@@ -3,10 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import * as vscode from "vscode";
-import { BaseTaskTerminal } from "./baseTaskTerminal";
-import * as globalVariables from "../../globalVariables";
-import { npmInstallTask } from "../prerequisitesHandler";
+import * as util from "util";
 import * as path from "path";
+import * as globalVariables from "../../globalVariables";
+import { UserError } from "@microsoft/teamsfx-api";
+import { BaseTaskTerminal } from "./baseTaskTerminal";
+import { npmInstallTask } from "../prerequisitesHandler";
+import { ExtensionErrors, ExtensionSource } from "../../error";
+import { getDefaultString, localize } from "../../utils/localizeUtils";
 
 export interface NpmInstallArgs {
   projects?: ProjectOptions[];
@@ -33,8 +37,12 @@ export class NpmInstallTaskTerminal extends BaseTaskTerminal {
 
     const npmInstallProjectOptions = this.args.projects.map((projectOption) => {
       if (!projectOption.cwd) {
-        // TODO: update error and test
-        throw new Error("error");
+        throw new UserError(
+          ExtensionSource,
+          ExtensionErrors.TaskDefinitionError,
+          util.format(getDefaultString("teamstoolkit.localDebug.taskDefinitionError"), "cwd"),
+          util.format(localize("teamstoolkit.localDebug.taskDefinitionError"), "cwd")
+        );
       }
 
       return {

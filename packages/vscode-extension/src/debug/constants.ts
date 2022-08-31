@@ -130,8 +130,8 @@ export const npmInstallDisplayMessages: DisplayMessages = {
   checkNumber: "We are checking total @number of projects for you.",
   summary: "NPM Package Installation Summary:",
   learnMore: "Visit @Link to learn more about NPM package install task.",
-  learnMoreHelpLink: "https://aka.ms/teamsfx-npm-package-task",
-  launchServices: "", // TODO: update npm install help link
+  learnMoreHelpLink: "https://aka.ms/teamsfx-npm-package-task", // TODO: update npm install help link
+  launchServices: "",
   errorName: ExtensionErrors.PrerequisitesInstallPackagesError,
   errorMessageKey: "teamstoolkit.localDebug.npmInstallFailure",
   errorDisplayMessageKey: "teamstoolkit.localDebug.npmInstallFailure",

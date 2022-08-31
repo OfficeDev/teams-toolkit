@@ -25,7 +25,11 @@
     "src/plugins/solution/fx-solution/debug/error.ts",
     "src/plugins/resource/localdebug/util/error.ts",
     "src/plugins/resource/appstudio/interfaces/**/*",
-    "src/plugins/resource/function/v3/error.ts"
+    "src/plugins/resource/function/v3/error.ts",
+    "src/component/resource/azureSql/types.ts",
+    "src/component/feature/apiconnector/config.ts",
+    "src/component/middleware/types.ts",
+    "src/plugins/resource/bot/v2/interface/codeTemplateInfo.ts"
   ],
   "reporter": [
     "text",

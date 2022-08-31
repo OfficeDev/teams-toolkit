@@ -11,3 +11,4 @@ export * from "./folder";
 export * from "./core/environment";
 export * from "./common/localSettingsProvider";
 export * from "./component/migrate";
+export * from "./component/debugHandler";

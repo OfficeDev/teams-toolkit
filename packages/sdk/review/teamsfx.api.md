@@ -210,9 +210,14 @@ export class DefaultSsoExecutionActivityHandler extends TeamsActivityHandler imp
 // @public
 export enum ErrorCode {
     AuthorizationInfoAlreadyExists = "AuthorizationInfoAlreadyExists",
+    CannotFindCommand = "CannotFindCommand",
     ChannelNotSupported = "ChannelNotSupported",
     ConsentFailed = "ConsentFailed",
     FailedOperation = "FailedOperation",
+    FailedToProcessSsoHandler = "FailedToProcessSsoHandler",
+    FailedToRetrieveSsoToken = "FailedToRetrieveSsoToken",
+    FailedToRunDedupStep = "FailedToRunDedupStep",
+    FailedToRunSsoStep = "FailedToRunSsoStep",
     IdentityTypeNotSupported = "IdentityTypeNotSupported",
     InternalError = "InternalError",
     InvalidCertificate = "InvalidCertificate",
@@ -371,7 +376,7 @@ export function setLogLevel(level: LogLevel): void;
 // @public
 export interface SsoConfig {
     conversationState?: ConversationState;
-    CustomSsoExecutionActivityHandler?: new (ssoConfig: SsoConfig) => SsoExecutionActivityHandler;
+    CustomSsoExecutionActivityHandler?: new (ssoConfig: SsoConfig | undefined) => SsoExecutionActivityHandler;
     dedupStorage?: Storage_2;
     scopes: string[];
     ssoPromptConfig?: {
@@ -383,8 +388,16 @@ export interface SsoConfig {
 }
 
 // @public
-export interface SsoExecutionActivityHandler extends TeamsActivityHandler {
+export interface SsoExecutionActivityHandler {
     addCommand(handler: SsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void;
+    // (undocumented)
+    handleTeamsSigninTokenExchange(context: TurnContext, query: SigninStateVerificationQuery): Promise<void>;
+    // (undocumented)
+    handleTeamsSigninVerifyState(context: TurnContext, query: SigninStateVerificationQuery): Promise<void>;
+    // (undocumented)
+    onSignInInvoke(context: TurnContext): Promise<void>;
+    // (undocumented)
+    run(context: TurnContext): Promise<void>;
 }
 
 // @public

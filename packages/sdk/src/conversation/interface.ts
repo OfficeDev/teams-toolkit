@@ -4,12 +4,12 @@
 import {
   BotFrameworkAdapter,
   ConversationState,
-  TeamsActivityHandler,
   UserState,
   Activity,
   TurnContext,
   InvokeResponse,
   Storage,
+  SigninStateVerificationQuery,
 } from "botbuilder";
 import { TeamsBotSsoPromptTokenResponse } from "../bot/teamsBotSsoPromptTokenResponse";
 import { AuthenticationConfiguration } from "../models/configuration";
@@ -313,7 +313,9 @@ export interface SsoConfig {
   /**
    * Custom sso execution activity handler class which should implement the interface {@link SsoExecutionActivityHandler}. If not provided, it will use {@link DefaultSsoExecutionActivityHandler} by default
    */
-  CustomSsoExecutionActivityHandler?: new (ssoConfig: SsoConfig) => SsoExecutionActivityHandler;
+  CustomSsoExecutionActivityHandler?: new (
+    ssoConfig: SsoConfig | undefined
+  ) => SsoExecutionActivityHandler;
 
   /**
    * Conversation state for sso command bot, if not provided, it will use internal memory storage to create a new one.
@@ -416,13 +418,23 @@ export interface ConversationOptions {
 /**
  * Interface for user to customize sso execution activity handler
  */
-export interface SsoExecutionActivityHandler extends TeamsActivityHandler {
+export interface SsoExecutionActivityHandler {
   /**
    * Add {@link TeamsFxBotSsoCommandHandler} instance to {@link SsoExecutionDialog}
    * @param handler {@link SsoExecutionDialogHandler} callback function
    * @param triggerPatterns The trigger pattern
    */
   addCommand(handler: SsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void;
+  run(context: TurnContext): Promise<void>;
+  handleTeamsSigninVerifyState(
+    context: TurnContext,
+    query: SigninStateVerificationQuery
+  ): Promise<void>;
+  handleTeamsSigninTokenExchange(
+    context: TurnContext,
+    query: SigninStateVerificationQuery
+  ): Promise<void>;
+  onSignInInvoke(context: TurnContext): Promise<void>;
 }
 
 export type SsoExecutionDialogHandler = (

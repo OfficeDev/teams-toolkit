@@ -37,6 +37,8 @@ let COMMAND_ROUTE_DIALOG = "CommandRouteDialog";
 export class SsoExecutionDialog extends ComponentDialog {
   private dedupStorage: Storage;
   private dedupStorageKeys: string[] = [];
+
+  // Map to store the commandId and triggerPatterns, key: commandId, value: triggerPatterns
   private commandMapping: Map<string, string | RegExp | (string | RegExp)[]> = new Map<
     string,
     string | RegExp | (string | RegExp)[]
@@ -92,15 +94,18 @@ export class SsoExecutionDialog extends ComponentDialog {
 
         try {
           if (tokenResponse) {
-            handler(context, tokenResponse, message);
+            await handler(context, tokenResponse, message);
           } else {
-            await context.sendActivity("Failed to retrieve user token from conversation context.");
+            throw new Error(ErrorMessage.FailedToRetrieveSsoToken);
           }
           return await stepContext.endDialog();
         } catch (error: unknown) {
-          await context.sendActivity("Failed to retrieve user token from conversation context.");
-          await context.sendActivity((error as Error).message as string);
-          return await stepContext.endDialog();
+          const errorMsg = formatString(
+            ErrorMessage.FailedToProcessSsoHandler,
+            (error as Error).message
+          );
+          internalLogger.error(errorMsg);
+          throw new ErrorWithCode(errorMsg, ErrorCode.FailedToProcessSsoHandler);
         }
       },
     ]);
@@ -145,12 +150,14 @@ export class SsoExecutionDialog extends ComponentDialog {
 
     const text = this.getActivityText(turnContext.activity);
 
-    const commandId = this.matchCommands(text);
+    const commandId = this.getMatchesCommandId(text);
     if (commandId) {
       return await stepContext.beginDialog(commandId);
     }
-    await stepContext.context.sendActivity(`Cannot find command: ${turnContext.activity.text}`);
-    return await stepContext.endDialog();
+
+    const errorMsg = formatString(ErrorMessage.CannotFindCommand, turnContext.activity.text);
+    internalLogger.error(errorMsg);
+    throw new ErrorWithCode(errorMsg, ErrorCode.CannotFindCommand);
   }
 
   private async ssoStep(stepContext: any) {
@@ -166,10 +173,9 @@ export class SsoExecutionDialog extends ComponentDialog {
 
       return await stepContext.beginDialog(TEAMS_SSO_PROMPT_ID);
     } catch (error: unknown) {
-      const context = stepContext.context;
-      await context.sendActivity("Failed to run SSO step");
-      await context.sendActivity((error as Error).message);
-      return await stepContext.endDialog();
+      const errorMsg = formatString(ErrorMessage.FailedToRunSsoStep, (error as Error).message);
+      internalLogger.error(errorMsg);
+      throw new ErrorWithCode(errorMsg, ErrorCode.FailedToRunSsoStep);
     }
   }
 
@@ -185,10 +191,9 @@ export class SsoExecutionDialog extends ComponentDialog {
         message: stepContext.options.commandMessage,
       });
     } catch (error: unknown) {
-      const context = stepContext.context;
-      await context.sendActivity("Failed to run dedup step");
-      await context.sendActivity((error as Error).message);
-      return await stepContext.endDialog();
+      const errorMsg = formatString(ErrorMessage.FailedToRunDedupStep, (error as Error).message);
+      internalLogger.error(errorMsg);
+      throw new ErrorWithCode(errorMsg, ErrorCode.FailedToRunDedupStep);
     }
   }
 
@@ -265,22 +270,22 @@ export class SsoExecutionDialog extends ComponentDialog {
     return false;
   }
 
-  private shouldTrigger(patterns: TriggerPatterns, text: string): RegExpMatchArray | boolean {
+  private isPatternMatched(patterns: TriggerPatterns, text: string): boolean {
     const expressions = Array.isArray(patterns) ? patterns : [patterns];
 
     for (const ex of expressions) {
-      const arg = this.matchPattern(ex, text);
-      if (arg) return arg;
+      const matches = this.matchPattern(ex, text);
+      return !!matches;
     }
 
     return false;
   }
 
-  private matchCommands(text: string): string | undefined {
+  private getMatchesCommandId(text: string): string | undefined {
     for (const command of this.commandMapping) {
       const pattern: TriggerPatterns = command[1];
 
-      if (this.shouldTrigger(pattern, text)) {
+      if (this.isPatternMatched(pattern, text)) {
         return command[0];
       }
     }

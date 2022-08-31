@@ -9,5 +9,5 @@ Custom sso execution activity handler class which should implement the interface
 <b>Signature:</b>
 
 ```typescript
-CustomSsoExecutionActivityHandler?: new (ssoConfig: SsoConfig) => SsoExecutionActivityHandler;
+CustomSsoExecutionActivityHandler?: new (ssoConfig: SsoConfig | undefined) => SsoExecutionActivityHandler;
 ```

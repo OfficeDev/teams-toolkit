@@ -17,9 +17,14 @@ export declare enum ErrorCode
 |  Member | Value | Description |
 |  --- | --- | --- |
 |  AuthorizationInfoAlreadyExists | <code>&quot;AuthorizationInfoAlreadyExists&quot;</code> | Authentication info already exists error. |
+|  CannotFindCommand | <code>&quot;CannotFindCommand&quot;</code> | Cannot find command |
 |  ChannelNotSupported | <code>&quot;ChannelNotSupported&quot;</code> | Channel is not supported error. |
 |  ConsentFailed | <code>&quot;ConsentFailed&quot;</code> | User failed to finish the AAD consent flow failed. |
 |  FailedOperation | <code>&quot;FailedOperation&quot;</code> | Operation failed. |
+|  FailedToProcessSsoHandler | <code>&quot;FailedToProcessSsoHandler&quot;</code> | Failed to process sso handler |
+|  FailedToRetrieveSsoToken | <code>&quot;FailedToRetrieveSsoToken&quot;</code> | Failed to retrieve sso token |
+|  FailedToRunDedupStep | <code>&quot;FailedToRunDedupStep&quot;</code> | Failed to run dedup step |
+|  FailedToRunSsoStep | <code>&quot;FailedToRunSsoStep&quot;</code> | Failed to run sso step |
 |  IdentityTypeNotSupported | <code>&quot;IdentityTypeNotSupported&quot;</code> | Identity type error. |
 |  InternalError | <code>&quot;InternalError&quot;</code> | Internal error. |
 |  InvalidCertificate | <code>&quot;InvalidCertificate&quot;</code> | Invalid certificate error. |

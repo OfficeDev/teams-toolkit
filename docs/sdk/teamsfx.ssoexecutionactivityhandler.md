@@ -9,13 +9,16 @@ Interface for user to customize sso execution activity handler
 <b>Signature:</b>
 
 ```typescript
-export interface SsoExecutionActivityHandler extends TeamsActivityHandler 
+export interface SsoExecutionActivityHandler 
 ```
-<b>Extends:</b> TeamsActivityHandler
 
 ## Methods
 
 |  Method | Description |
 |  --- | --- |
 |  [addCommand(handler, triggerPatterns)](./teamsfx.ssoexecutionactivityhandler.addcommand.md) | Add [TeamsFxBotSsoCommandHandler](./teamsfx.teamsfxbotssocommandhandler.md) instance to [SsoExecutionDialog](./teamsfx.ssoexecutiondialog.md) |
+|  [handleTeamsSigninTokenExchange(context, query)](./teamsfx.ssoexecutionactivityhandler.handleteamssignintokenexchange.md) |  |
+|  [handleTeamsSigninVerifyState(context, query)](./teamsfx.ssoexecutionactivityhandler.handleteamssigninverifystate.md) |  |
+|  [onSignInInvoke(context)](./teamsfx.ssoexecutionactivityhandler.onsignininvoke.md) |  |
+|  [run(context)](./teamsfx.ssoexecutionactivityhandler.run.md) |  |
 

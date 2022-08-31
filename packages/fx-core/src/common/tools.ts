@@ -863,7 +863,11 @@ export async function getSideloadingStatus(token: string): Promise<boolean | und
             "UnknownValue",
             `AppStudio response code: ${response.status}, body: ${response.data}`
           ),
-          { [TelemetryProperty.CheckSideloadingHttpStatus]: `${response.status}` }
+          {
+            [TelemetryProperty.CheckSideloadingStatusCode]: `${response.status}`,
+            [TelemetryProperty.CheckSideloadingMethod]: "get",
+            [TelemetryProperty.CheckSideloadingUrl]: "<check-sideloading-status>",
+          }
         );
       }
 

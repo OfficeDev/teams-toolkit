@@ -5,10 +5,10 @@ import responseCard from "../adaptiveCards/doStuffActionResponse.json";
 import { CardData } from "../cardModels";
 
 /**
- * The `HelloWorldCardActionHandler` registers an action with the `TeamsFxBotActionHandler` and responds
+ * The `DoStuffCardActionHandler` registers an action with the `TeamsFxBotActionHandler` and responds
  * with an Adaptive Card if the user clicks the Adaptive Card action with `triggerVerb`.
  */
-export class HelloWorldCardActionHandler implements TeamsFxAdaptiveCardActionHandler {
+export class DoStuffCardActionHandler implements TeamsFxAdaptiveCardActionHandler {
   triggerVerb = "doStuff";
 
   async handleActionInvoked(context: TurnContext, actionData: any): Promise<InvokeResponse> {

@@ -22,8 +22,10 @@ import { newEnvInfoV3 } from "../../../src/core/environment";
 import { BotService } from "../../../src/component/resource/botService";
 import { ComponentNames } from "../../../src/component/constants";
 import { AppStudio } from "../../../src/plugins/resource/bot/appStudio/appStudio";
-import { ProvisionError } from "../../../src/plugins/resource/bot/errors";
-import { getAppStudioEndpoint } from "../../../src/component/resource/appManifest/constants";
+import { TeamsfxCore } from "../../../src/component/core";
+import { AppManifest } from "../../../src/component/resource/appManifest/appManifest";
+import { provisionUtils } from "../../../src/component/provisionUtils";
+import { TelemetryKeys } from "../../../src/plugins/resource/bot/constants";
 
 describe("Bot Feature", () => {
   const tools = new MockTools();
@@ -75,5 +77,44 @@ describe("Bot Feature", () => {
       assert.exists(error.innerError);
       assert.equal(error.innerError?.response?.status, 500);
     }
+  });
+  it("send telemetry for app studio error when local debug", async () => {
+    sandbox.stub(AppManifest.prototype, "provision").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "preProvision").resolves(ok(undefined));
+    const telemetryStub = sandbox
+      .stub(context.telemetryReporter, "sendTelemetryErrorEvent")
+      .resolves();
+
+    context.projectSetting.components.push({
+      name: ComponentNames.BotService,
+      provision: true,
+    });
+    context.envInfo.state[ComponentNames.TeamsBot] = {
+      botId: "botID",
+      botPassword: "botPassword",
+    };
+    sandbox.stub(AppStudio, "getBotRegistration").rejects({
+      response: { status: 500 },
+      toJSON: () => ({
+        config: {
+          url: "https://dev.teams.microsoft.com/api/botframework",
+          method: "post",
+        },
+      }),
+    });
+    const fxComponent = new TeamsfxCore();
+    const res = await fxComponent.provision(context as ResourceContextV3, inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      const error = res.error;
+      assert.equal(error.name, "ProvisionError");
+      assert.exists(error.innerError);
+      assert.equal(error.innerError?.response?.status, 500);
+    }
+    assert.isTrue(telemetryStub.calledTwice);
+    const props = telemetryStub.args[1]?.[1];
+    assert.equal(props?.[TelemetryKeys.StatusCode], "500");
+    assert.equal(props?.[TelemetryKeys.Url], "<botframework-url>");
+    assert.equal(props?.[TelemetryKeys.Method], "post");
   });
 });

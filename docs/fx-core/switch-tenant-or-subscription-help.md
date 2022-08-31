@@ -167,7 +167,7 @@ By default, the browser is launched with a separate user profile in a temp folde
 After switching Microsoft M365 tenant for preparing Teams app dependencies in Visual Studio, you may notice issues when local debugging with a Teams app requiring AAD resources like receiving 401 response when sending a bot command or could not authorize to get the user's profile photo in the tab like the image shown below. 
 ![image](../images/fx-core/localdebug/vs-authorize-error.png)
 
-We are still improving this scenario but for now a workaround for this is:
+We are still improving this scenario but for now a workaround is:
 1. Please keep a copy of the current content of appsettings.Development.json.
 2. Delete appsettings.Development.json
 3. Run F5 again.

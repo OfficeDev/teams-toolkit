@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Microsoft Teams Framework for Node.js and browser.",
   "main": "dist/index.node.cjs.js",
   "browser": "dist/index.esm2017.js",
@@ -51,6 +51,7 @@
     "@azure/msal-node": "~1.1.0",
     "@microsoft/adaptivecards-tools": "^1.0.1",
     "@microsoft/microsoft-graph-client": "^3.0.1",
+    "adaptivecards": "^2.10.0",
     "axios": "^0.27.2",
     "botbuilder": ">=4.15.0 <5.0.0",
     "botbuilder-dialogs": ">=4.15.0 <5.0.0",

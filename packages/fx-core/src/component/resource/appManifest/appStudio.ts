@@ -23,21 +23,15 @@ import { v4 } from "uuid";
 import _ from "lodash";
 import * as util from "util";
 import isUUID from "validator/lib/isUUID";
-import {
-  AppStudioScopes,
-  compileHandlebarsTemplateString,
-  getAppDirectory,
-} from "../../../common/tools";
+import { AppStudioScopes, getAppDirectory } from "../../../common/tools";
 import { HelpLinks } from "../../../common/constants";
 import { AppStudioClient } from "../../../plugins/resource/appstudio/appStudio";
 import { Constants } from "../../../plugins/resource/appstudio/constants";
 import { AppStudioError } from "../../../plugins/resource/appstudio/errors";
 import { AppStudioResultFactory } from "../../../plugins/resource/appstudio/results";
-import { readAppManifest, getTeamsAppManifestPath } from "./utils";
 import { ComponentNames } from "../../constants";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
-import { getCustomizedKeys } from "../../../plugins/resource/appstudio/utils/utils";
-import { TelemetryPropertyKey } from "../../../plugins/resource/appstudio/utils/telemetry";
+import { manifestUtils } from "./utils";
 
 /**
  * Create Teams app if not exists
@@ -286,7 +280,12 @@ export async function buildTeamsAppPackage(
 ): Promise<Result<string, FxError>> {
   const buildFolderPath = path.join(projectPath, BuildFolderName, AppPackageFolderName);
   await fs.ensureDir(buildFolderPath);
-  const manifestRes = await getManifest(projectPath, envInfo, telemetryProps);
+  const manifestRes = await manifestUtils.getManifest(
+    projectPath,
+    envInfo,
+    withEmptyCapabilities,
+    telemetryProps
+  );
   if (manifestRes.isErr()) {
     return err(manifestRes.error);
   }
@@ -388,79 +387,13 @@ export async function validateManifest(
   }
 }
 
-export async function getManifest(
-  projectPath: string,
-  envInfo: v3.EnvInfoV3,
-  telemetryProps?: Record<string, string>
-): Promise<Result<TeamsAppManifest, FxError>> {
-  // Read template
-  const manifestTemplateRes = await readAppManifest(projectPath);
-  if (manifestTemplateRes.isErr()) {
-    return err(manifestTemplateRes.error);
-  }
-  let manifestString = JSON.stringify(manifestTemplateRes.value);
-  const customizedKeys = getCustomizedKeys("", JSON.parse(manifestString));
-  if (telemetryProps) {
-    telemetryProps[TelemetryPropertyKey.customizedKeys] = JSON.stringify(customizedKeys);
-  }
-  // Render mustache template with state and config
-  const view = {
-    config: envInfo.config,
-    state: envInfo.state,
-  };
-  manifestString = compileHandlebarsTemplateString(manifestString, view);
-
-  const manifest: TeamsAppManifest = JSON.parse(manifestString);
-
-  // dynamically set validDomains for manifest, which can be refactored by static manifest templates
-  const isLocalDebug = envInfo.envName === "local";
-  const isProvisionSucceeded =
-    envInfo.state.solution.provisionSucceeded === "true" ||
-    envInfo.state.solution.provisionSucceeded === true;
-  if (isLocalDebug || manifest.validDomains?.length === 0) {
-    const validDomains: string[] = [];
-    const tabEndpoint = envInfo.state[ComponentNames.TeamsTab]?.endpoint as string;
-    const tabDomain = envInfo.state[ComponentNames.TeamsTab]?.domain as string;
-    if (tabDomain) {
-      validDomains.push(tabDomain);
-    }
-    if (tabEndpoint && isLocalDebug) {
-      validDomains.push(tabEndpoint.slice(8));
-    }
-    const botId = envInfo.state[ComponentNames.TeamsBot]?.botId;
-    const botDomain = envInfo.state[ComponentNames.TeamsBot]?.validDomain;
-    if (botId) {
-      if (!botDomain) {
-        return err(
-          AppStudioResultFactory.UserError(
-            AppStudioError.GetRemoteConfigFailedError.name,
-            AppStudioError.GetRemoteConfigFailedError.message(
-              getLocalizedString("plugins.appstudio.dataRequired", "validDomain"),
-              isProvisionSucceeded
-            ),
-            HelpLinks.WhyNeedProvision
-          )
-        );
-      } else {
-        validDomains.push(botDomain);
-      }
-    }
-    for (const domain of validDomains) {
-      if (manifest.validDomains?.indexOf(domain) == -1) {
-        manifest.validDomains.push(domain);
-      }
-    }
-  }
-  return ok(manifest);
-}
-
 export async function updateManifest(
   ctx: ResourceContextV3,
   inputs: InputsWithProjectPath
 ): Promise<Result<undefined, FxError>> {
   const teamsAppId = ctx.envInfo.state[ComponentNames.AppManifest]?.teamsAppId;
   let manifest: any;
-  const manifestResult = await getManifest(inputs.projectPath, ctx.envInfo);
+  const manifestResult = await manifestUtils.getManifest(inputs.projectPath, ctx.envInfo, false);
   if (manifestResult.isErr()) {
     ctx.logProvider?.error(getLocalizedString("error.appstudio.updateManifestFailed"));
     const isProvisionSucceeded = ctx.envInfo.state["solution"].provisionSucceeded as boolean;
@@ -485,7 +418,7 @@ export async function updateManifest(
     manifest = manifestResult.value;
   }
 
-  const manifestFileName = await getTeamsAppManifestPath(inputs.projectPath);
+  const manifestFileName = await manifestUtils.getTeamsAppManifestPath(inputs.projectPath);
   if (!(await fs.pathExists(manifestFileName))) {
     const isProvisionSucceeded = ctx.envInfo.state["solution"].provisionSucceeded as boolean;
     if (!isProvisionSucceeded) {

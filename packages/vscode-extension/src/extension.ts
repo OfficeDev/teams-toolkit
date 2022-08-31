@@ -282,6 +282,9 @@ function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext)
     "initProject"
   );
 
+  // User can click to debug directly, same as pressing "F5".
+  registerInCommandController(context, "fx-extension.debug", handlers.debugHandler);
+
   // Add features
   registerInCommandController(
     context,
@@ -413,8 +416,8 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(editAadManifestTemplateCmd);
 
-  const preview = vscode.commands.registerCommand("fx-extension.preview", (node) => {
-    Correlator.run(handlers.treeViewPreviewHandler, node.identifier);
+  const preview = vscode.commands.registerCommand("fx-extension.preview", async (node) => {
+    await Correlator.run(handlers.treeViewPreviewHandler, node.identifier);
   });
   context.subscriptions.push(preview);
 
@@ -589,8 +592,8 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
 
   const previewWithIcon = vscode.commands.registerCommand(
     "fx-extension.previewWithIcon",
-    (node) => {
-      Correlator.run(handlers.treeViewPreviewHandler, node.identifier);
+    async (node) => {
+      await Correlator.run(handlers.treeViewPreviewHandler, node.identifier);
     }
   );
   context.subscriptions.push(previewWithIcon);
@@ -810,6 +813,15 @@ async function runBackgroundAsyncTasks(
 
   await openWelcomePageAfterExtensionInstallation();
 
+  await exp.initialize(context);
+  TreatmentVariableValue.previewTreeViewCommand = (await exp
+    .getExpService()
+    .getTreatmentVariableAsync(
+      TreatmentVariables.VSCodeConfig,
+      TreatmentVariables.PreviewTreeViewCommand,
+      true
+    )) as boolean | undefined;
+
   if (isTeamsFxProject) {
     await handlers.autoOpenProjectHandler();
     await handlers.promptSPFxUpgrade();
@@ -817,7 +829,6 @@ async function runBackgroundAsyncTasks(
     await AzureAccountManager.updateSubscriptionInfo();
   }
 
-  await exp.initialize(context);
   TreatmentVariableValue.isEmbeddedSurvey = (await exp
     .getExpService()
     .getTreatmentVariableAsync(
@@ -830,13 +841,6 @@ async function runBackgroundAsyncTasks(
     .getTreatmentVariableAsync(
       TreatmentVariables.VSCodeConfig,
       TreatmentVariables.UseFolderSelection,
-      true
-    )) as boolean | undefined;
-  TreatmentVariableValue.openFolderInNewWindow = (await exp
-    .getExpService()
-    .getTreatmentVariableAsync(
-      TreatmentVariables.VSCodeConfig,
-      TreatmentVariables.OpenFolderInNewWindow,
       true
     )) as boolean | undefined;
   if (!TreatmentVariableValue.isEmbeddedSurvey) {

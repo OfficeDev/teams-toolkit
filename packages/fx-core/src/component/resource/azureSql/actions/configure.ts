@@ -93,7 +93,7 @@ export class ConfigureActionImplement {
     const identity = UtilFunctions.getIdentity(ctx);
     const sqlConfig = LoadSqlConfig(state, identity);
     const skipAddingUser = await UtilFunctions.getSkipAddingUser(
-      solutionConfig,
+      ctx.envInfo.config,
       ctx.tokenProvider.azureAccountProvider
     );
     actionContext.telemetry?.addProperty(

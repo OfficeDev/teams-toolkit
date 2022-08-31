@@ -18,6 +18,7 @@ import { AppStudioScopes } from "../../../../common";
 import { PluginDisplayName } from "../../../../common/constants";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { getAzurePlugins, isVSProject } from "../../../../common/projectSettingsHelper";
+import { deployUtils } from "../../../../component/deployUtils";
 import { Constants } from "../../../resource/aad/constants";
 import { checkM365Tenant, checkSubscription } from "../commonQuestions";
 import {
@@ -33,7 +34,6 @@ import {
 } from "../constants";
 import { AzureSolutionQuestionNames } from "../question";
 import { sendErrorTelemetryThenReturnError } from "../utils/util";
-import { askForDeployConsent } from "../v3/provision";
 import { executeConcurrently, NamedThunk } from "./executor";
 import {
   extractSolutionInputs,
@@ -174,7 +174,7 @@ export async function deploy(
   const hasAzureResource = thunks.some((thunk) => azurePlugins.includes(thunk.pluginName));
 
   if (isAzureProject(getAzureSolutionSettings(ctx)) && hasAzureResource) {
-    const consent = await askForDeployConsent(
+    const consent = await deployUtils.askForDeployConsent(
       ctx,
       tokenProvider.azureAccountProvider,
       envInfo as v3.EnvInfoV3

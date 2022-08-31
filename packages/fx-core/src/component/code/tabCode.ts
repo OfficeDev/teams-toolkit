@@ -6,6 +6,7 @@ import {
   ContextV3,
   FxError,
   InputsWithProjectPath,
+  LogProvider,
   ok,
   ResourceContextV3,
   Result,
@@ -30,7 +31,6 @@ import {
   Constants,
   FrontendPathInfo,
   DependentPluginInfo,
-  FrontendPluginInfo,
   TelemetryEvent,
   Commands,
 } from "../../plugins/resource/frontend/constants";
@@ -42,7 +42,7 @@ import {
 import { Messages } from "../../plugins/resource/frontend/resources/messages";
 import { ComponentNames, ProgrammingLanguage } from "../constants";
 import { getComponent } from "../workflow";
-import { convertToLangKey } from "./utils";
+import { convertToLangKey, execute } from "./utils";
 import {
   envFilePath,
   EnvKeys,
@@ -51,7 +51,6 @@ import {
 } from "../../plugins/resource/frontend/env";
 import { isVSProject } from "../../common/projectSettingsHelper";
 import { DotnetCommands } from "../../plugins/resource/frontend/dotnet/constants";
-import { Utils } from "../../plugins/resource/frontend/utils";
 import { CommandExecutionError } from "../../plugins/resource/bot/errors";
 import { ScaffoldProgress } from "../../plugins/resource/frontend/resources/steps";
 import { ProgressMessages, ProgressTitles } from "../messages";
@@ -63,6 +62,9 @@ import {
   TabOptionItem,
 } from "../../plugins/solution/fx-solution/question";
 import { BadComponent } from "../error";
+import { AppSettingConstants, replaceBlazorAppSettings } from "./appSettingUtils";
+import baseAppSettings from "./appSettings/baseAppSettings.json";
+import ssoBlazorAppSettings from "./appSettings/ssoBlazorAppSettings.json";
 /**
  * tab scaffold
  */
@@ -71,9 +73,7 @@ export class TabCodeProvider {
   name = "tab-code";
   @hooks([
     ActionExecutionMW({
-      errorSource: FrontendPluginInfo.ShortName,
-      errorIssueLink: FrontendPluginInfo.IssueLink,
-      errorHelpLink: FrontendPluginInfo.HelpLink,
+      errorSource: "FE",
       enableProgressBar: true,
       progressTitle: ProgressTitles.scaffoldTab,
       progressSteps: Object.keys(ScaffoldProgress.steps).length,
@@ -133,7 +133,7 @@ export class TabCodeProvider {
   }
   @hooks([
     ActionExecutionMW({
-      errorSource: "tab",
+      errorSource: "FE",
     }),
   ])
   async configure(
@@ -142,10 +142,27 @@ export class TabCodeProvider {
   ): Promise<Result<undefined, FxError>> {
     const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
     const tabDir = teamsTab?.folder;
-    if (!tabDir || !inputs.env) return ok(undefined);
-    const envFile = envFilePath(inputs.env, path.join(inputs.projectPath, tabDir));
-    const envs = this.collectEnvs(context);
-    await saveEnvFile(envFile, { teamsfxRemoteEnvs: envs, customizedRemoteEnvs: {} });
+    // Non-sso tab do not need to be configured
+    if (tabDir == undefined || !teamsTab?.sso) return ok(undefined);
+    if (isVSProject(context.projectSetting) && context.envInfo.envName === "local") {
+      const appSettingsPath = path.resolve(
+        inputs.projectPath,
+        tabDir,
+        AppSettingConstants.DevelopmentFileName
+      );
+      let appSettings: string;
+      if (!(await fs.pathExists(appSettingsPath))) {
+        // if appsetting file not exist, generate a new one
+        appSettings = JSON.stringify({ ...baseAppSettings, ...ssoBlazorAppSettings }, null, 2);
+      } else {
+        appSettings = await fs.readFile(appSettingsPath, "utf-8");
+      }
+      await fs.writeFile(appSettingsPath, replaceBlazorAppSettings(context, appSettings), "utf-8");
+    } else {
+      const envFile = envFilePath(context.envInfo.envName, path.join(inputs.projectPath, tabDir));
+      const envs = this.collectEnvs(context);
+      await saveEnvFile(envFile, { teamsfxRemoteEnvs: envs, customizedRemoteEnvs: {} });
+    }
     return ok(undefined);
   }
   @hooks([
@@ -153,7 +170,7 @@ export class TabCodeProvider {
       enableProgressBar: true,
       progressTitle: ProgressTitles.buildingTab,
       progressSteps: 1,
-      errorSource: "tab",
+      errorSource: "FE",
     }),
   ])
   async build(
@@ -168,8 +185,13 @@ export class TabCodeProvider {
     await actionContext?.progressBar?.next(ProgressMessages.buildingTab);
     const tabPath = path.resolve(inputs.projectPath, teamsTab.folder);
     const artifactFolder = isVSProject(context.projectSetting)
-      ? await this.doBlazorBuild(tabPath)
-      : await this.doReactBuild(tabPath, ctx.envInfo.envName, context.telemetryReporter);
+      ? await this.doBlazorBuild(tabPath, context.logProvider)
+      : await this.doReactBuild(
+          tabPath,
+          ctx.envInfo.envName,
+          context.telemetryReporter,
+          context.logProvider
+        );
     merge(teamsTab, {
       build: true,
       artifactFolder: path.join(teamsTab.folder, artifactFolder),
@@ -201,19 +223,20 @@ export class TabCodeProvider {
 
     return envs;
   }
-  private async doBlazorBuild(tabPath: string): Promise<string> {
+  private async doBlazorBuild(tabPath: string, logger?: LogProvider): Promise<string> {
     const command = DotnetCommands.buildRelease("win-x86");
     try {
-      await Utils.execute(command, tabPath);
+      await execute(command, tabPath, logger);
     } catch (e) {
       throw new CommandExecutionError(command, tabPath, e);
     }
-    return path.join("bin", "Release", "net6.0", "win-x86", "publish");
+    return "publish";
   }
   private async doReactBuild(
     tabPath: string,
     envName: string,
-    telemetryReporter?: TelemetryReporter
+    telemetryReporter?: TelemetryReporter,
+    logger?: LogProvider
   ): Promise<string> {
     const needBuild = await FrontendDeployment.needBuild(tabPath, envName);
     if (!needBuild) {
@@ -228,20 +251,21 @@ export class TabCodeProvider {
       telemetryReporter?.sendTelemetryEvent(TelemetryEvent.InstallScriptNotFound);
     }
 
-    await Utils.execute(
+    await execute(
       "install:teamsfx" in scripts
         ? Commands.InstallNodePackages
         : Commands.DefaultInstallNodePackages,
-      tabPath
+      tabPath,
+      logger
     );
 
     if ("build:teamsfx" in scripts) {
-      await Utils.execute(Commands.BuildFrontend, tabPath, {
+      await execute(Commands.BuildFrontend, tabPath, logger, {
         TEAMS_FX_ENV: envName,
       });
     } else {
       const envs = await loadEnvFile(envFilePath(envName, tabPath));
-      await Utils.execute(Commands.DefaultBuildFrontend, tabPath, {
+      await execute(Commands.DefaultBuildFrontend, tabPath, logger, {
         ...envs.customizedRemoteEnvs,
         ...envs.teamsfxRemoteEnvs,
       });

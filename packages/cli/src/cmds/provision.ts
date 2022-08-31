@@ -74,6 +74,7 @@ export default class Provision extends YargsCommand {
   public readonly command = `${this.commandHead}`;
   public readonly description = "Provision the cloud resources in the current application.";
   public readonly resourceGroupParam = "resource-group";
+  public readonly subscriptionParam = "subscription";
   public readonly subCommands = [new ProvisionManifest()];
 
   public builder(yargs: Argv): Argv<any> {
@@ -84,6 +85,7 @@ export default class Provision extends YargsCommand {
       type: "string",
       global: false,
     });
+
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
@@ -112,6 +114,10 @@ export default class Provision extends YargsCommand {
 
     if (this.resourceGroupParam in args) {
       inputs.targetResourceGroupName = args[this.resourceGroupParam];
+    }
+
+    if (this.subscriptionParam in args) {
+      inputs.targetSubscriptionId = args[this.subscriptionParam];
     }
 
     const result = await activate(rootFolder, true);

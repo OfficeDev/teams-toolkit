@@ -15,15 +15,11 @@ import {
   v2,
   v3,
 } from "@microsoft/teamsfx-api";
-import { Constants, SOLUTION } from "../../../../../src/plugins/resource/appstudio/constants";
+import { Constants } from "../../../../../src/plugins/resource/appstudio/constants";
 import faker from "faker";
-import {
-  REMOTE_TEAMS_APP_ID,
-  PluginNames,
-} from "../../../../../src/plugins/solution/fx-solution/constants";
+import { PluginNames } from "../../../../../src/plugins/solution/fx-solution/constants";
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
 import { getAzureProjectRoot } from "../helper";
-import { newEnvInfo } from "../../../../../src";
 import { AppUser } from "../../../../../src/plugins/resource/appstudio/interfaces/appUser";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import {
@@ -31,14 +27,16 @@ import {
   MockedM365Provider,
   MockedV2Context,
 } from "../../../solution/util";
-import {
-  BuiltInFeaturePluginNames,
-  BuiltInSolutionNames,
-} from "../../../../../src/plugins/solution/fx-solution/v3/constants";
+import { BuiltInSolutionNames } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
 import * as uuid from "uuid";
 import Container from "typedi";
-import { AadAppForTeamsPluginV3 } from "../../../../../src/plugins/resource/aad/v3";
-import { AppStudioPluginV3 } from "../../../../../src/plugins/resource/appstudio/v3";
+import { ComponentNames } from "../../../../../src/component/constants";
+import { AppManifest } from "../../../../../src/component/resource/appManifest/appManifest";
+import { MockTools } from "../../../../core/utils";
+import { setTools } from "../../../../../src/core/globalVars";
+import { newEnvInfo } from "../../../../../src/core/environment";
+import axios from "axios";
+import { AppDefinition } from "../../../../../src/plugins/resource/appstudio/interfaces/appDefinition";
 
 const userList: AppUser = {
   tenantId: faker.datatype.uuid(),
@@ -52,6 +50,7 @@ describe("Remote Collaboration", () => {
   let plugin: AppStudioPlugin;
   let ctx: PluginContext;
   let configOfOtherPlugins: Map<string, ConfigMap>;
+  setTools(new MockTools());
   const sandbox = sinon.createSandbox();
   const projectSettings: ProjectSettings = {
     appName: "my app",
@@ -119,18 +118,18 @@ describe("Remote Collaboration", () => {
       envName: "dev",
       state: {
         solution: { provisionSucceeded: true },
-        [BuiltInFeaturePluginNames.appStudio]: { teamsAppId: appId },
+        [ComponentNames.AppManifest]: { teamsAppId: appId },
       },
       config: {},
     };
-    const plugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    const component = Container.get<AppManifest>(ComponentNames.AppManifest);
     sandbox.stub(tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("anything"));
     sandbox.stub(AppStudioClient, "checkPermission").resolves("Administrator");
     const inputs: v2.InputsWithProjectPath = {
       platform: Platform.VSCode,
       projectPath: getAzureProjectRoot(),
     };
-    const checkPermission = await plugin.checkPermission(
+    const checkPermission = await component.checkPermission(
       ctxV2,
       inputs,
       envInfo,
@@ -162,12 +161,31 @@ describe("Remote Collaboration", () => {
         version: "1.0",
       },
     };
+
+    const appDef: AppDefinition = {
+      appName: "fake",
+      teamsAppId: appId,
+      userList: [],
+    };
+
     const appStudioConfig = new ConfigMap();
     appStudioConfig.set(Constants.TEAMS_APP_ID, appId);
     ctx.envInfo.state.set(PluginNames.APPST, appStudioConfig);
 
     sandbox.stub(ctx.m365TokenProvider!, "getAccessToken").resolves(ok("anything"));
-    sandbox.stub(AppStudioClient, "grantPermission").resolves();
+
+    const fakeAxiosInstance = axios.create();
+    sandbox.stub(axios, "create").returns(fakeAxiosInstance);
+    sandbox.stub(fakeAxiosInstance, "get").resolves({
+      data: appDef,
+    });
+
+    sandbox
+      .stub(fakeAxiosInstance, "post")
+      .onCall(0)
+      .rejects(new Error("Request failed with status code 400"))
+      .onCall(1)
+      .resolves();
 
     const grantPermission = await plugin.grantPermission(ctx, userList);
     chai.assert.isTrue(grantPermission.isOk());
@@ -183,18 +201,34 @@ describe("Remote Collaboration", () => {
       envName: "dev",
       state: {
         solution: { provisionSucceeded: true },
-        [BuiltInFeaturePluginNames.appStudio]: { teamsAppId: appId },
+        [ComponentNames.AppManifest]: { teamsAppId: appId },
       },
       config: {},
     };
-    const plugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    const appDef: AppDefinition = {
+      appName: "fake",
+      teamsAppId: appId,
+      userList: [],
+    };
+    const component = Container.get<AppManifest>(ComponentNames.AppManifest);
     sandbox.stub(ctx.m365TokenProvider!, "getAccessToken").resolves(ok("anything"));
-    sandbox.stub(AppStudioClient, "grantPermission").resolves();
+    const fakeAxiosInstance = axios.create();
+    sandbox.stub(axios, "create").returns(fakeAxiosInstance);
+    sandbox.stub(fakeAxiosInstance, "get").resolves({
+      data: appDef,
+    });
+
+    sandbox
+      .stub(fakeAxiosInstance, "post")
+      .onCall(0)
+      .rejects(new Error("Request failed with status code 400"))
+      .onCall(1)
+      .resolves();
     const inputs: v2.InputsWithProjectPath = {
       platform: Platform.VSCode,
       projectPath: getAzureProjectRoot(),
     };
-    const grantPermission = await plugin.grantPermission(
+    const grantPermission = await component.grantPermission(
       ctxV2,
       inputs,
       envInfo,
@@ -255,11 +289,11 @@ describe("Remote Collaboration", () => {
       envName: "dev",
       state: {
         solution: { provisionSucceeded: true },
-        [BuiltInFeaturePluginNames.appStudio]: { teamsAppId: appId },
+        [ComponentNames.AppManifest]: { teamsAppId: appId },
       },
       config: {},
     };
-    const plugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    const component = Container.get<AppManifest>(ComponentNames.AppManifest);
     sandbox.stub(ctx.m365TokenProvider!, "getAccessToken").resolves(ok("anything"));
     sandbox.stub(AppStudioClient, "getUserList").resolves([
       {
@@ -274,7 +308,7 @@ describe("Remote Collaboration", () => {
       platform: Platform.VSCode,
       projectPath: getAzureProjectRoot(),
     };
-    const listCollaborator = await plugin.listCollaborator(
+    const listCollaborator = await component.listCollaborator(
       ctxV2,
       inputs,
       envInfo,

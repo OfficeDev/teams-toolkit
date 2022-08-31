@@ -14,6 +14,7 @@ import {
   Plugin,
   ProjectSettingsV3,
   QTreeNode,
+  ResourceContextV3,
   Result,
   SingleSelectQuestion,
   Stage,
@@ -37,9 +38,11 @@ import {
 import { canAddCICDWorkflows } from "../common/tools";
 import { ComponentNames } from "./constants";
 import { ComponentName2pluginName } from "./migrate";
-import { readAppManifest } from "./resource/appManifest/utils";
 import { getComponent } from "./workflow";
-import { STATIC_TABS_MAX_ITEMS } from "../plugins/resource/appstudio/constants";
+import {
+  STATIC_TABS_MAX_ITEMS,
+  Constants as Constants1,
+} from "../plugins/resource/appstudio/constants";
 import {
   createHostTypeTriggerQuestion,
   getConditionOfNotificationTriggerQuestion,
@@ -58,7 +61,6 @@ import {
   CicdOptionItem,
   CommandAndResponseOptionItem,
   DeployPluginSelectQuestion,
-  HostTypeOptionAzure,
   HostTypeOptionSPFx,
   MessageExtensionItem,
   MessageExtensionNewUIItem,
@@ -79,14 +81,17 @@ import { Runtime } from "../plugins/resource/bot/v2/enum";
 import { getPlatformRuntime } from "../plugins/resource/bot/v2/mapping";
 import { buildQuestionNode } from "./resource/azureSql/questions";
 import { functionNameQuestion } from "../plugins/resource/function/question";
-import { ApiConnectorImpl } from "../plugins/resource/apiconnector/plugin";
+import { ApiConnectorImpl } from "./feature/apiconnector/ApiConnectorImpl";
 import { addCicdQuestion } from "./feature/cicd";
-import { ApimPluginV3 } from "../plugins/resource/apim/v3";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import {
   versionCheckQuestion,
   webpartNameQuestion,
 } from "../plugins/resource/spfx/utils/questions";
+import { manifestUtils } from "./resource/appManifest/utils";
+import { Constants } from "../plugins/resource/aad/constants";
+import { getQuestionsForDeployAPIM } from "./resource/apim";
+import { canAddSso } from "./feature/sso";
 
 export async function getQuestionsForProvisionV3(
   context: v2.Context,
@@ -101,9 +106,6 @@ export async function getQuestionsForProvisionV3(
     const node = new QTreeNode({ type: "group" });
     if (hasAzureResourceV3(context.projectSetting as ProjectSettingsV3)) {
       node.addChild(new QTreeNode(AskSubscriptionQuestion));
-    }
-    if (getComponent(context.projectSetting as ProjectSettingsV3, ComponentNames.AzureSQL)) {
-      node.addChild(buildQuestionNode());
     }
     return ok(node);
   }
@@ -127,6 +129,13 @@ export async function getQuestionsForDeployV3(
     ComponentNames.APIM,
     ComponentNames.AppManifest,
   ];
+  const componentDisplayNames = {
+    [ComponentNames.TeamsTab]: "NodeJS Tab frontend",
+    [ComponentNames.TeamsBot]: "Bot",
+    [ComponentNames.TeamsApi]: "Azure Function",
+    [ComponentNames.APIM]: "API Management",
+    [ComponentNames.AppManifest]: "App Studio",
+  };
 
   if (CLIPlatforms.includes(inputs.platform)) {
     deployableComponents.push(ComponentNames.AadApp);
@@ -153,16 +162,15 @@ export async function getQuestionsForDeployV3(
       .filter((component) => component.deploy && deployableComponents.includes(component.name))
       .map((component) => component.name) as string[];
     if (CLIPlatforms.includes(inputs.platform)) {
-      deployableComponents.push(ComponentNames.AppManifest);
+      selectableComponents.push(ComponentNames.AppManifest);
     }
   }
   const options = selectableComponents.map((c) => {
     const pluginName = ComponentName2pluginName(c);
-    const plugin = Container.get<Plugin>(pluginName);
     const item: OptionItem = {
       id: pluginName,
-      label: plugin.displayName,
-      cliName: getPluginCLIName(plugin.name),
+      label: componentDisplayNames[c],
+      cliName: getPluginCLIName(pluginName),
     };
     return item;
   });
@@ -174,12 +182,12 @@ export async function getQuestionsForDeployV3(
   selectQuestion.default = options.map((i) => i.id);
   const node = new QTreeNode(selectQuestion);
   if (selectableComponents.includes(ComponentNames.APIM)) {
-    const apimV3 = Container.get<ApimPluginV3>(BuiltInFeaturePluginNames.apim);
-    const apimDeployNodeRes = await apimV3.getQuestionsForDeploy(
-      ctx,
-      inputs,
-      envInfo!,
-      ctx.tokenProvider!
+    const resourceContext = ctx as ContextV3;
+    resourceContext.envInfo = envInfo;
+    resourceContext.tokenProvider = ctx.tokenProvider;
+    const apimDeployNodeRes = await getQuestionsForDeployAPIM(
+      resourceContext as ResourceContextV3,
+      inputs as InputsWithProjectPath
     );
     if (apimDeployNodeRes.isErr()) return err(apimDeployNodeRes.error);
     if (apimDeployNodeRes.value) {
@@ -187,6 +195,26 @@ export async function getQuestionsForDeployV3(
       apimNode.condition = { contains: BuiltInFeaturePluginNames.apim };
       node.addChild(apimNode);
     }
+  }
+  if (selectableComponents.includes(ComponentNames.AadApp)) {
+    const aadNode = new QTreeNode({
+      name: Constants.INCLUDE_AAD_MANIFEST,
+      type: "singleSelect",
+      staticOptions: ["yes", "no"],
+      title: getLocalizedString("core.aad.includeAadQuestionTitle"),
+      default: "no",
+    });
+    node.addChild(aadNode);
+  }
+  if (selectableComponents.includes(ComponentNames.AppManifest)) {
+    const appManifestNode = new QTreeNode({
+      name: Constants1.INCLUDE_APP_MANIFEST,
+      type: "singleSelect",
+      staticOptions: ["yes", "no"],
+      title: getLocalizedString("plugins.appstudio.whetherToDeployManifest"),
+      default: "no",
+    });
+    node.addChild(appManifestNode);
   }
   return ok(node);
 }
@@ -228,9 +256,9 @@ export async function getQuestionsForAddFeatureV3(
     return ok(addFeatureNode);
   }
   // check capability options
-  const azureHost = ctx.projectSetting.solutionSettings?.hostType === HostTypeOptionAzure.id;
+  const azureHost = hasAzureResourceV3(ctx.projectSetting as ProjectSettingsV3);
   if (azureHost) {
-    const manifestRes = await readAppManifest(inputs.projectPath!);
+    const manifestRes = await manifestUtils.readAppManifest(inputs.projectPath!);
     if (manifestRes.isErr()) return err(manifestRes.error);
     const manifest = manifestRes.value;
     const canAddTab = manifest.staticTabs!.length < STATIC_TABS_MAX_ITEMS;
@@ -241,7 +269,7 @@ export async function getQuestionsForAddFeatureV3(
     const alreadyHasNewBot =
       teamsBot?.capabilities?.includes("notification") ||
       teamsBot?.capabilities?.includes("command-response");
-    if (!botExceedLimit && !alreadyHasNewBot) {
+    if (!botExceedLimit && !alreadyHasNewBot && !meExceedLimit) {
       options.push(NotificationOptionItem);
       options.push(CommandAndResponseOptionItem);
       options.push(BotNewUIOptionItem);
@@ -264,7 +292,7 @@ export async function getQuestionsForAddFeatureV3(
     if (!hasKeyVault(projectSettingsV3)) {
       options.push(AzureResourceKeyVaultNewUI);
     }
-    if (!hasAAD(projectSettingsV3)) {
+    if (canAddSso(ctx.projectSetting as ProjectSettingsV3)) {
       options.push(SingleSignOnOptionItem);
     }
     if (hasBot(projectSettingsV3) || hasApi(projectSettingsV3)) {
@@ -422,10 +450,12 @@ export async function getQuestionsForAddFeatureSubCommand(
     return await getNotificationTriggerQuestionNode(inputs);
   } else if (TabFeatureIds.includes(featureId)) {
   } else if (featureId === AzureResourceSQLNewUI.id) {
-  } else if (featureId === AzureResourceFunctionNewUI.id) {
+  } else if (
+    featureId === AzureResourceFunctionNewUI.id ||
+    featureId === AzureResourceApimNewUI.id
+  ) {
     functionNameQuestion.validation = undefined;
     return ok(new QTreeNode(functionNameQuestion));
-  } else if (featureId === AzureResourceApimNewUI.id) {
   } else if (featureId === AzureResourceKeyVaultNewUI.id) {
   } else if (featureId === CicdOptionItem.id) {
     return await addCicdQuestion(createContextV3(), inputs as InputsWithProjectPath);

@@ -219,15 +219,13 @@ export class TeamsTab {
     }),
   ])
   async provision(context: ResourceContextV3): Promise<Result<undefined, FxError>> {
-    if (context.envInfo.envName === "local") {
-      context.envInfo.state[ComponentNames.TeamsTab] =
-        context.envInfo.state[ComponentNames.TeamsTab] || {};
-      if (isVSProject(context.projectSetting)) {
-        context.envInfo.state[ComponentNames.TeamsTab][StorageOutputs.indexPath.key] = "";
-      } else {
-        context.envInfo.state[ComponentNames.TeamsTab][StorageOutputs.indexPath.key] =
-          Constants.FrontendIndexPath;
-      }
+    context.envInfo.state[ComponentNames.TeamsTab] =
+      context.envInfo.state[ComponentNames.TeamsTab] || {};
+    if (isVSProject(context.projectSetting)) {
+      context.envInfo.state[ComponentNames.TeamsTab][StorageOutputs.indexPath.key] = "/";
+    } else {
+      context.envInfo.state[ComponentNames.TeamsTab][StorageOutputs.indexPath.key] =
+        Constants.FrontendIndexPath;
     }
     return ok(undefined);
   }

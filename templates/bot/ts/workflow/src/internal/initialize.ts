@@ -1,4 +1,4 @@
-import { HelloWorldCardActionHandler } from "../cardActions/helloworldActionHandler";
+import { DoStuffCardActionHandler } from "../cardActions/doStuffActionHandler";
 import { HelloWorldCommandHandler } from "../commands/helloworldCommandHandler";
 import { ConversationBot } from "@microsoft/teamsfx";
 
@@ -18,6 +18,6 @@ export const commandBot = new ConversationBot({
   },
   cardAction: {
     enabled: true,
-    actions: [new HelloWorldCardActionHandler()],
+    actions: [new DoStuffCardActionHandler()],
   },
 });

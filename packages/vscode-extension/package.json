@@ -1197,7 +1197,6 @@
     "mock-require": "^3.0.3",
     "ms-rest": "^2.5.4",
     "node-loader": "^2.0.0",
-    "node-sass": "^7.0.1",
     "nyc": "^15.1.0",
     "prettier": "^2.4.1",
     "react": "^17.0.2",

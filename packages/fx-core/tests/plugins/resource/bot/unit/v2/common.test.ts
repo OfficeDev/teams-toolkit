@@ -26,6 +26,7 @@ import {
   AppServiceOptionItemForVS,
   FunctionsHttpTriggerOptionItem,
   FunctionsTimerTriggerOptionItem,
+  FunctionsHttpAndTimerTriggerOptionItem,
 } from "../../../../../../src/plugins/resource/bot/question";
 import { fillInSolutionSettings } from "../../../../../../src/plugins/solution/fx-solution/v2/utils";
 import {
@@ -50,7 +51,7 @@ describe("Bot Plugin v2", () => {
 
     it("scenario for restify notification bot", async () => {
       inputs[AzureSolutionQuestionNames.Capabilities] = [NotificationOptionItem.id];
-      inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [AppServiceOptionItem.id];
+      inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = AppServiceOptionItem.id;
       fillInSolutionSettings(context.projectSetting, inputs);
       const templateScenarios = decideTemplateScenarios(context, inputs);
       chai.assert.equal(templateScenarios.size, 1);
@@ -61,7 +62,7 @@ describe("Bot Plugin v2", () => {
 
     it("scenario for webapi notification bot", async () => {
       inputs[AzureSolutionQuestionNames.Capabilities] = [NotificationOptionItem.id];
-      inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [AppServiceOptionItemForVS.id];
+      inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = AppServiceOptionItemForVS.id;
       fillInSolutionSettings(context.projectSetting, inputs);
       const templateScenarios = decideTemplateScenarios(context, inputs);
       chai.assert.equal(templateScenarios.size, 1);
@@ -72,7 +73,7 @@ describe("Bot Plugin v2", () => {
 
     it("scenario for http-functions notification bot", async () => {
       inputs[AzureSolutionQuestionNames.Capabilities] = [NotificationOptionItem.id];
-      inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [FunctionsHttpTriggerOptionItem.id];
+      inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = FunctionsHttpTriggerOptionItem.id;
       fillInSolutionSettings(context.projectSetting, inputs);
       const templateScenarios = decideTemplateScenarios(context, inputs);
       chai.assert.equal(templateScenarios.size, 2);
@@ -88,7 +89,7 @@ describe("Bot Plugin v2", () => {
 
     it("scenario for timer-functions notification bot", async () => {
       inputs[AzureSolutionQuestionNames.Capabilities] = [NotificationOptionItem.id];
-      inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [FunctionsTimerTriggerOptionItem.id];
+      inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = FunctionsTimerTriggerOptionItem.id;
       fillInSolutionSettings(context.projectSetting, inputs);
       const templateScenarios = decideTemplateScenarios(context, inputs);
       chai.assert.equal(templateScenarios.size, 2);
@@ -104,10 +105,7 @@ describe("Bot Plugin v2", () => {
 
     it("scenario for http-functions and timer-functions notification bot", async () => {
       inputs[AzureSolutionQuestionNames.Capabilities] = [NotificationOptionItem.id];
-      inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = [
-        FunctionsHttpTriggerOptionItem.id,
-        FunctionsTimerTriggerOptionItem.id,
-      ];
+      inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] = FunctionsHttpAndTimerTriggerOptionItem.id;
       fillInSolutionSettings(context.projectSetting, inputs);
       const templateScenarios = decideTemplateScenarios(context, inputs);
       chai.assert.equal(templateScenarios.size, 3);

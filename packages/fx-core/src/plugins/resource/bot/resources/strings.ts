@@ -112,6 +112,7 @@ export class Commands {
 export const BotCapabilities = {
   NOTIFICATION: "notification",
   COMMAND_AND_RESPONSE: "command-response",
+  WORKFLOW: "workflow",
   BOT: "bot",
   MESSAGE_EXTENSION: "message-extension",
   M365_SEARCH_APP: "m365-search-app",
@@ -122,11 +123,13 @@ export type BotCapability = typeof BotCapabilities[keyof typeof BotCapabilities]
 export const QuestionBotScenarioToPluginActRoles = new Map<BotScenario, PluginActRoles>([
   [BotScenario.NotificationBot, PluginActRoles.Notification],
   [BotScenario.CommandAndResponseBot, PluginActRoles.CommandAndResponse],
+  [BotScenario.WorkflowBot, PluginActRoles.Workflow],
 ]);
 
 export const QuestionBotScenarioToBotCapability = new Map<BotScenario, BotCapability>([
   [BotScenario.NotificationBot, BotCapabilities.NOTIFICATION],
   [BotScenario.CommandAndResponseBot, BotCapabilities.COMMAND_AND_RESPONSE],
+  [BotScenario.WorkflowBot, BotCapabilities.WORKFLOW],
 ]);
 
 export const NotificationTriggers = {

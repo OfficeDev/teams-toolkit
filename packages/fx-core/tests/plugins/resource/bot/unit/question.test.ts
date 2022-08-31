@@ -16,6 +16,7 @@ import {
   AzureSolutionQuestionNames,
   CommandAndResponseOptionItem,
   NotificationOptionItem,
+  WorkflowOptionItem,
 } from "../../../../../src/plugins/solution/fx-solution/question";
 
 describe("Test question", () => {
@@ -73,6 +74,16 @@ describe("Test question", () => {
       const inputs: Inputs = { platform: Platform.VSCode };
       // Act
       inputs[AzureSolutionQuestionNames.Capabilities] = CommandAndResponseOptionItem.id;
+      // Assert
+      chai.assert.isTrue(
+        showNotificationTriggerCondition.validFunc(undefined, inputs) !== undefined
+      );
+    });
+    it("Should not ask trigger questions for workflow bot", async () => {
+      // Arrange
+      const inputs: Inputs = { platform: Platform.VSCode };
+      // Act
+      inputs[AzureSolutionQuestionNames.Capabilities] = WorkflowOptionItem.id;
       // Assert
       chai.assert.isTrue(
         showNotificationTriggerCondition.validFunc(undefined, inputs) !== undefined

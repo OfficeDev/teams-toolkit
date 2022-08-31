@@ -24,6 +24,7 @@ import {
   TabOptionItem,
   TabSPFxItem,
   TabSPFxNewUIItem,
+  WorkflowOptionItem,
 } from "../../src/plugins/solution/fx-solution/question";
 import { getLocalizedString } from "../../src/common/localizeUtils";
 
@@ -168,6 +169,7 @@ describe("Capability Questions", () => {
       chai.assert.deepEqual(question.staticOptions, [
         NotificationOptionItem,
         CommandAndResponseOptionItem,
+        WorkflowOptionItem,
         TabNewUIOptionItem,
         TabSPFxNewUIItem,
         TabNonSsoItem,

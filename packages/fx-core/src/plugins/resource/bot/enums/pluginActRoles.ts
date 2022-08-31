@@ -3,4 +3,5 @@ export enum PluginActRoles {
   MessageExtension = "MessagingExtension",
   Notification = "Notification",
   CommandAndResponse = "CommandAndResponse",
+  Workflow = "Workflow",
 }

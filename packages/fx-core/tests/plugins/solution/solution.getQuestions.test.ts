@@ -76,7 +76,6 @@ const sqlPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SqlPlugin
 const spfxPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SpfxPlugin);
 const frontendPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FrontendPlugin);
 const botPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.BotPlugin);
-const cicdPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.CICDPlugin);
 const mockedProvider: TokenProvider = {
   azureAccountProvider: new MockedAzureAccountProvider(),
   m365TokenProvider: new MockedM365Provider(),
@@ -116,9 +115,6 @@ describe("getQuestionsForScaffolding()", async () => {
       return ok(undefined);
     };
     botPluginV2.getQuestionsForScaffolding = async function () {
-      return ok(undefined);
-    };
-    cicdPlugin.getQuestionsForUserTask = async function () {
       return ok(undefined);
     };
     mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "false" });

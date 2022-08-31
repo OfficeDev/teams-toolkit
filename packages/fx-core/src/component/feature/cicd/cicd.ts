@@ -18,10 +18,14 @@ import {
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
-import { NoCapabilityFoundError } from "../../core/error";
-import { environmentManager } from "../../core/environment";
-import { InternalError, NoProjectOpenedError } from "../../plugins/resource/cicd/errors";
+import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
+import { NoCapabilityFoundError } from "../../../core/error";
+import { environmentManager } from "../../../core/environment";
+import { InternalError, NoProjectOpenedError } from "./errors";
+import { isMiniApp } from "../../../common/projectSettingsHelperV3";
+import { ComponentNames } from "../../constants";
+import { hooks } from "@feathersjs/hooks/lib";
+import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import {
   azdoOption,
   cdOption,
@@ -31,15 +35,9 @@ import {
   provisionOption,
   publishOption,
   questionNames,
-} from "../../plugins/resource/cicd/questions";
-import { ExistingTemplatesStat } from "../../plugins/resource/cicd/utils/existingTemplatesStat";
-import { isMiniApp } from "../../common/projectSettingsHelperV3";
-import { CICDImpl } from "../../plugins/resource/cicd/plugin";
-import { isV3 } from "../../core/globalVars";
-import { isExistingTabApp } from "../../common/projectSettingsHelper";
-import { ComponentNames } from "../constants";
-import { hooks } from "@feathersjs/hooks/lib";
-import { ActionExecutionMW } from "../middleware/actionExecutionMW";
+} from "./questions";
+import { CICDImpl } from "./CICDImpl";
+import { ExistingTemplatesStat } from "./existingTemplatesStat";
 @Service(ComponentNames.CICD)
 export class CICD {
   name = ComponentNames.CICD;
@@ -56,7 +54,7 @@ export class CICD {
   ): Promise<Result<undefined, FxError>> {
     const cicdImpl: CICDImpl = new CICDImpl();
     const envName = inputs.env || inputs[questionNames.Environment];
-    const res = await cicdImpl.addCICDWorkflows(context, inputs, envName);
+    const res = await cicdImpl.addCICDWorkflows(context, inputs, envName, context.envInfo);
     if (res.isErr()) return err(res.error);
     return ok(undefined);
   }
@@ -67,9 +65,7 @@ export async function addCicdQuestion(
   inputs: InputsWithProjectPath
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   // add CI CD workflows for minimal app is not supported.
-  const isExistingApp = !isV3()
-    ? isExistingTabApp(ctx.projectSetting)
-    : isMiniApp(ctx.projectSetting);
+  const isExistingApp = isMiniApp(ctx.projectSetting);
   if (inputs.platform !== Platform.CLI_HELP && isExistingApp) {
     throw new NoCapabilityFoundError(Stage.addCiCdFlow);
   }

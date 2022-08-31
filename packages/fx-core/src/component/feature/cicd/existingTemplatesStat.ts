@@ -1,19 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ProviderKind } from "../providers/enums";
-import { CICDProviderFactory } from "../providers/factory";
-import {
-  azdoOption,
-  cdOption,
-  ciOption,
-  githubOption,
-  jenkinsOption,
-  providerOptions,
-  provisionOption,
-  publishOption,
-  templateOptions,
-} from "../questions";
+import { ProviderKind } from "./provider/enums";
+import { CICDProviderFactory } from "./provider/factory";
+import { providerOptions, templateOptions } from "./questions";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { OptionItem } from "@microsoft/teamsfx-api";

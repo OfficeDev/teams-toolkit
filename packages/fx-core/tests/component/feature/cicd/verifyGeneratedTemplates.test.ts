@@ -2,46 +2,70 @@
 // Licensed under the MIT license.
 
 import "mocha";
-import * as chai from "chai";
-import { CICDPluginV2 } from "../../../../src/plugins/resource/cicd/index";
-import { Inputs, Platform, ProjectSettings } from "@microsoft/teamsfx-api";
-import { Context, EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
+import {
+  ContextV3,
+  Inputs,
+  Platform,
+  ProjectSettingsV3,
+  TelemetryReporter,
+} from "@microsoft/teamsfx-api";
 import * as utils from "../../../../src/plugins/resource/bot/utils/common";
 import * as fs from "fs-extra";
 import path from "path";
 import { getTemplatesFolder } from "../../../../src";
-import { CICDProviderFactory } from "../../../../src/plugins/resource/cicd/providers/factory";
-import { ProviderKind, TemplateKind } from "../../../../src/plugins/resource/cicd/providers/enums";
-import { MockedV2Context } from "../../solution/util";
-import { generateBuildScript } from "../../../../src/plugins/resource/cicd/utils/buildScripts";
 import Mustache from "mustache";
+import { ProviderKind, TemplateKind } from "../../../../src/component/feature/cicd/provider/enums";
+import { CICDProviderFactory } from "../../../../src/component/feature/cicd/provider/factory";
+import { generateBuildScript } from "../../../../src/component/feature/cicd/utils/buildScripts";
+import { CICDImpl } from "../../../../src/component/feature/cicd/CICDImpl";
+import { ComponentNames } from "../../../../src/component/constants";
+import { MockTelemetryReporter, MockUserInteraction } from "../../../core/utils";
+import { expect } from "chai";
+import {
+  hasAPIM,
+  hasAzureResourceV3,
+  hasSPFxTab,
+  hasSQL,
+} from "../../../../src/common/projectSettingsHelperV3";
+import { convertToAlphanumericOnly } from "../../../../src/common/utils";
+import { EnvInfoV3 } from "@microsoft/teamsfx-api/build/v3";
+import sinon from "sinon";
 
 describe("Verify Generated Templates & README", () => {
-  const cicdPlugin: CICDPluginV2 = new CICDPluginV2();
+  const cicdPlugin: CICDImpl = new CICDImpl();
 
   const testFolder: string = path.resolve(__dirname, utils.genUUID());
-
+  const sandbox = sinon.createSandbox();
   after(async () => {
     await fs.remove(testFolder);
+    sandbox.restore();
   });
 
   describe("Verify Templates for GitHub, AzDo, Jekinks separately", () => {
     it("Content of Templates & README should be expected", async () => {
       const providerPromises = Object.values(ProviderKind).map(async (providerKind) => {
-        const projectSettings: ProjectSettings = {
+        const projectSetting: ProjectSettingsV3 = {
           appName: "my app",
           projectId: "1232343534",
           solutionSettings: {
             name: "solution",
             version: "3.0.0",
-            capabilities: ["Bot"],
-            hostType: "Azure",
             azureResources: [],
-            activeResourcePlugins: ["bot"],
             programmingLanguage: "javascript",
           },
+          components: [{ name: ComponentNames.TeamsBot }],
         };
-        const context: Context = new MockedV2Context(projectSettings);
+        const envInfo: EnvInfoV3 = {
+          envName: "staging",
+          state: { solution: {} },
+          config: {},
+        };
+        const context: any = {
+          projectSetting,
+          userInteraction: new MockUserInteraction(),
+          envInfo,
+          telemetryReporter: new MockTelemetryReporter(),
+        };
         const inputs: Inputs = {
           platform: Platform.VSCode,
           projectPath: path.join(testFolder, utils.genUUID()),
@@ -50,11 +74,8 @@ describe("Verify Generated Templates & README", () => {
           provider: providerKind,
         };
         await fs.ensureDir(inputs.projectPath!);
-        const envInfo: EnvInfoV2 = {
-          envName: "staging",
-          state: {},
-          config: {},
-        };
+
+        const envName = "staging";
         const localTemplatePath = path.join(
           getTemplatesFolder(),
           "plugins",
@@ -65,18 +86,19 @@ describe("Verify Generated Templates & README", () => {
 
         const provider = CICDProviderFactory.create(providerKind);
 
-        await cicdPlugin.addCICDWorkflows(context, inputs, envInfo);
+        await cicdPlugin.addCICDWorkflows(context, inputs, envName, envInfo);
         // Assert
         const contentsToBeComparedPromises = Object.values(TemplateKind).map(
           async (templateKind, index, arr) => {
             //return [actual, expected].
-            const hostType = context.projectSetting.solutionSettings?.hostType;
             const replacements = {
-              env_name: envInfo.envName,
+              env_name: envName,
               build_script: generateBuildScript(context.projectSetting),
-              hosting_type_contains_spfx: hostType == "SPFx",
-              hosting_type_contains_azure: hostType == "Azure",
-              cloud_resources_contains_sql: false,
+              hosting_type_contains_spfx: hasSPFxTab(projectSetting),
+              hosting_type_contains_azure: hasAzureResourceV3(projectSetting),
+              cloud_resources_contains_sql: hasSQL(projectSetting),
+              api_prefix: convertToAlphanumericOnly(context.projectSetting.appName),
+              cloud_resources_contains_apim: hasAPIM(projectSetting),
             };
             const sourceTemplatePath = path.join(
               localTemplatePath,
@@ -113,7 +135,7 @@ describe("Verify Generated Templates & README", () => {
       // Assert
       for (const contentsToBeComparedPromises of await Promise.all(providerPromises)) {
         for (const contents of await Promise.all(contentsToBeComparedPromises)) {
-          chai.assert(contents[0] == contents[1]);
+          expect(contents[0]).equals(contents[1]);
         }
       }
     });
@@ -121,20 +143,28 @@ describe("Verify Generated Templates & README", () => {
 
   describe("Verify Incremental Cases", () => {
     it("Add GitHub then Jenkins, Content of Templates should be expected", async () => {
-      const projectSettings: ProjectSettings = {
+      const projectSetting: ProjectSettingsV3 = {
         appName: "my app",
         projectId: "1232343534",
         solutionSettings: {
           name: "solution",
           version: "3.0.0",
-          capabilities: ["Bot"],
-          hostType: "Azure",
           azureResources: [],
-          activeResourcePlugins: ["bot"],
           programmingLanguage: "javascript",
         },
+        components: [{ name: ComponentNames.TeamsBot }],
       };
-      const context: Context = new MockedV2Context(projectSettings);
+      const envInfo: EnvInfoV3 = {
+        envName: "staging",
+        state: { solution: {} },
+        config: {},
+      };
+      const context: any = {
+        projectSetting,
+        userInteraction: new MockUserInteraction(),
+        envInfo,
+        telemetryReporter: new MockTelemetryReporter(),
+      };
       const inputs: Inputs = {
         platform: Platform.VSCode,
         projectPath: path.join(testFolder, utils.genUUID()),
@@ -143,15 +173,11 @@ describe("Verify Generated Templates & README", () => {
         provider: ProviderKind.GitHub,
       };
       await fs.ensureDir(inputs.projectPath!);
-      const envInfo: EnvInfoV2 = {
-        envName: "staging",
-        state: {},
-        config: {},
-      };
+      const envName = "staging";
 
-      await cicdPlugin.addCICDWorkflows(context, inputs, envInfo);
+      await cicdPlugin.addCICDWorkflows(context, inputs, envName, envInfo);
       inputs["provider"] = ProviderKind.Jenkins;
-      await cicdPlugin.addCICDWorkflows(context, inputs, envInfo);
+      await cicdPlugin.addCICDWorkflows(context, inputs, envName, envInfo);
 
       // Assert
       const templatePromises = Object.values(TemplateKind).map(async (templateKind) => {
@@ -165,13 +191,14 @@ describe("Verify Generated Templates & README", () => {
             providerKind
           );
 
-          const hostType = context.projectSetting.solutionSettings?.hostType;
           const replacements = {
-            env_name: envInfo.envName,
+            env_name: envName,
             build_script: generateBuildScript(context.projectSetting),
-            hosting_type_contains_spfx: hostType == "SPFx",
-            hosting_type_contains_azure: hostType == "Azure",
-            cloud_resources_contains_sql: false,
+            hosting_type_contains_spfx: hasSPFxTab(projectSetting),
+            hosting_type_contains_azure: hasAzureResourceV3(projectSetting),
+            cloud_resources_contains_sql: hasSQL(projectSetting),
+            api_prefix: convertToAlphanumericOnly(context.projectSetting.appName),
+            cloud_resources_contains_apim: hasAPIM(projectSetting),
           };
           const sourceTemplatePath = path.join(
             localTemplatePath,
@@ -193,7 +220,7 @@ describe("Verify Generated Templates & README", () => {
 
       for (const templateResult of await Promise.all(templatePromises)) {
         for (const contents of await Promise.all(templateResult)) {
-          chai.assert(contents[0] == contents[1]);
+          expect(contents[0]).equals(contents[1]);
         }
       }
     });

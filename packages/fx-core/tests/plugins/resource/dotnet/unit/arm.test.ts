@@ -101,8 +101,8 @@ var m365ClientSecret = provisionParameters['m365ClientSecret']
 var m365TenantId = provisionParameters['m365TenantId']
 var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
 var oauthAuthority = uri(m365OauthAuthorityHost, m365TenantId)
-var initiateLoginEndpoint = uri(webappEndpoint, 'auth-start.html')
 var webappEndpoint = provisionOutputs.webappOutput.value.endpoint
+var initiateLoginEndpoint = uri(webappEndpoint, 'auth-start.html')
 
 resource appSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   name: '\${webappName}/appsettings'

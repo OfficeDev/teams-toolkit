@@ -11,7 +11,7 @@ Files generated/updated in your project
 2.  Update file - 'templates/appPackage/manifest.template.json'
    - An `webApplicationInfo` object will be added into your Teams app manifest template. This field is required by Teams when enabling SSO. |
 3. New file - `Auth/bot`
-    - Sample code, redirect pages and a `README.txt` file. These files are provided for reference. See below for more information. |
+    - Sample code, redirect pages and a `README.md` file. These files are provided for reference. See below for more information. |
 4. Update file - 'appsettings.json' and 'appsettings.Development.json'
    - Configs that will be used by TeamsFx SDK will be added into your app settings. Please update add the 'TeamsFx' object if you have other appsettings files.
 

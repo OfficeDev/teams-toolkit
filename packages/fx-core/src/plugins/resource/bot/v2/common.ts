@@ -60,12 +60,9 @@ export function decideTemplateScenarios(ctx: Context, inputs: Inputs): Set<strin
         break;
       case BotScenario.NotificationBot:
         //! Will not scaffold any trigger when notificationTriggerType is undefined,
-        const notificationTriggerType = (inputs[
-          QuestionNames.BOT_HOST_TYPE_TRIGGER
-        ] as string[]) ?? [AppServiceOptionItem.id];
-        notificationTriggerType.forEach((triggerType) => {
-          getTriggerScenarios(triggerType).forEach((item) => templateScenarios.add(item));
-        });
+        const notificationTriggerType =
+          (inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] as string) ?? AppServiceOptionItem.id;
+        getTriggerScenarios(notificationTriggerType).forEach((item) => templateScenarios.add(item));
         break;
       case M365SearchAppOptionItem.id:
         templateScenarios.add(TemplateProjectsScenarios.M365_SCENARIO_NAME);

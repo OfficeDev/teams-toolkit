@@ -1,4 +1,4 @@
-import { DoStuffCardActionHandler } from "../cardActions/helloworldActionHandler";
+import { DoStuffCardActionHandler } from "../cardActions/doStuffActionHandler";
 import { HelloWorldCommandHandler } from "../commands/helloworldCommandHandler";
 import { ConversationBot } from "@microsoft/teamsfx";
 

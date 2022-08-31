@@ -9,6 +9,7 @@ import {
   InputsWithProjectPath,
   v3,
   IStaticTab,
+  ContextV3,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
@@ -48,6 +49,7 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { HelpLinks } from "../../../common/constants";
 import { ComponentNames } from "../../constants";
 import { compileHandlebarsTemplateString } from "../../../common/tools";
+import { hasTab } from "../../../common/projectSettingsHelperV3";
 export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {
     const filePath = await this.getTeamsAppManifestPath(projectPath);
@@ -497,6 +499,21 @@ export class ManifestUtils {
       }
     }
     return ok(manifest);
+  }
+
+  async isExistingTab(
+    inputs: InputsWithProjectPath,
+    context: ContextV3
+  ): Promise<Result<boolean, FxError>> {
+    const manifestTemplateRes = await this.readAppManifest(inputs.projectPath);
+    if (manifestTemplateRes.isErr()) return err(manifestTemplateRes.error);
+    const manifest = manifestTemplateRes.value;
+    const hasTabInProjectSettings = hasTab(context.projectSetting);
+    const hasExistingTabInManifest =
+      manifest.staticTabs !== undefined &&
+      manifest.staticTabs.filter((tab) => tab.contentUrl && !tab.contentUrl.includes("{{state."))
+        .length > 0;
+    return ok(hasExistingTabInManifest && !hasTabInProjectSettings);
   }
 }
 

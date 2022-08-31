@@ -23,6 +23,7 @@ import { convertContext } from "./utils";
 import { convertProjectSettingsV3ToV2 } from "../../migrate";
 import { generateAadManifestTemplate } from "../../../core/generateAadManifestTemplate";
 import { createAuthFiles } from "../../../plugins/solution/fx-solution/v2/executeUserTask";
+import { isVSProject } from "../../../common";
 @Service(ComponentNames.AadApp)
 export class AadApp implements CloudResource {
   readonly type = "cloud";
@@ -58,7 +59,13 @@ export class AadApp implements CloudResource {
     needTab: boolean,
     needBot: boolean
   ): Promise<Result<undefined, FxError>> {
-    const res = await createAuthFiles(inputs, context, needTab, needBot);
+    const res = await createAuthFiles(
+      inputs,
+      context,
+      needTab,
+      needBot,
+      isVSProject(context.projectSetting)
+    );
     if (res.isErr()) return err(res.error);
     return ok(undefined);
   }

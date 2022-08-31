@@ -94,7 +94,8 @@ export class AppManifest implements CloudResource {
   ])
   async init(
     context: v2.Context,
-    inputs: InputsWithProjectPath
+    inputs: InputsWithProjectPath,
+    existingApp = false
   ): Promise<Result<undefined, FxError>> {
     let manifest;
     const sourceTemplatesFolder = getTemplatesFolder();
@@ -112,7 +113,6 @@ export class AppManifest implements CloudResource {
       const manifestString = (await fs.readFile(manifestFile)).toString();
       manifest = JSON.parse(manifestString);
     } else {
-      const existingApp = inputs.existingApp as boolean;
       const manifestString = TEAMS_APP_MANIFEST_TEMPLATE;
       manifest = JSON.parse(manifestString);
       if (existingApp || !hasTab(context.projectSetting as ProjectSettingsV3)) {

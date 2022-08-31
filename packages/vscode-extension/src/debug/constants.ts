@@ -137,3 +137,5 @@ export const npmInstallDisplayMessages: DisplayMessages = {
   errorDisplayMessageKey: "teamstoolkit.localDebug.npmInstallFailure",
   errorHelpLink: "https://aka.ms/teamsfx-npm-package-task", // TODO: update npm install help link
 };
+
+export const outputPanelLink = "[output panel](command:fx-extension.showOutputChannel)";

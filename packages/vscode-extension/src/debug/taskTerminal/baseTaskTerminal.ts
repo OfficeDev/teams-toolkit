@@ -3,6 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import * as vscode from "vscode";
+import { assembleError, FxError, Result } from "@microsoft/teamsfx-api";
+import { showError } from "../../handlers";
+import { outputPanelLink } from "../constants";
 
 const ControlCodes = {
   CtrlC: "\u0003",
@@ -19,7 +22,10 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
 
   open(): void {
     this.do()
-      .then(() => this.stop())
+      .then((res) => {
+        const error = res.isErr() ? res.error : undefined;
+        this.stop(error);
+      })
       .catch((error) => this.stop(error));
   }
 
@@ -36,11 +42,13 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
   protected stop(error?: any): void {
     if (error?.message) {
       // TODO: add color
-      this.writeEmitter.fire(`${error?.message}\r\n`);
+      const displayMessage = error?.message?.replace(outputPanelLink, "output panel");
+      this.writeEmitter.fire(`${displayMessage}\r\n`);
     }
     const exitCode = error ? 1 : 0;
     this.closeEmitter.fire(exitCode);
+    showError(assembleError(error));
   }
 
-  protected abstract do(): Promise<void>;
+  protected abstract do(): Promise<Result<void, FxError>>;
 }

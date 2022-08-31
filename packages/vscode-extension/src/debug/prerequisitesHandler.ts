@@ -43,7 +43,7 @@ import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionSource, ExtensionErrors } from "../error";
 import { VS_CODE_UI } from "../extension";
 import * as globalVariables from "../globalVariables";
-import { showError, tools } from "../handlers";
+import { tools } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   TelemetryDebugDevCertStatus,
@@ -67,6 +67,7 @@ import {
   prerequisiteCheckDisplayMessages,
   npmInstallDisplayMessages,
   DisplayMessages,
+  outputPanelLink,
 } from "./constants";
 import M365TokenInstance from "../commonlib/m365Login";
 import { signedOut } from "../commonlib/common/constant";
@@ -517,7 +518,6 @@ async function _checkAndInstall(
     await handleCheckResults(checkResults, displayMessages, progressHelper);
   } catch (error: unknown) {
     const fxError = assembleError(error);
-    showError(fxError);
     await progressHelper?.stop(false);
     return { checkResults: checkResults, error: fxError };
   }
@@ -1135,11 +1135,11 @@ async function handleCheckResults(
       await progressHelper?.stop(false);
       const message = util.format(
         getDefaultString(displayMessages.errorMessageKey),
-        "[output panel](command:fx-extension.showOutputChannel)"
+        outputPanelLink
       );
       const displayMessage = util.format(
         localize(displayMessages.errorDisplayMessageKey),
-        "[output panel](command:fx-extension.showOutputChannel)"
+        outputPanelLink
       );
       const errorOptions: UserErrorOptions = {
         source: ExtensionSource,

@@ -1284,6 +1284,7 @@ export async function validateLocalPrerequisitesHandler(): Promise<string | unde
       await sendDebugAllEvent(result.error);
       commonUtils.endLocalDebugSession();
       // return non-zero value to let task "exit ${command:xxx}" to exit
+      showError(result.error);
       return "1";
     }
   });
@@ -1334,6 +1335,7 @@ export async function validateGetStartedPrerequisitesHandler(
   );
   const result = await localPrerequisites.checkPrerequisitesForGetStarted();
   if (result.isErr()) {
+    showError(result.error);
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
   }

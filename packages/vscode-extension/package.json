@@ -745,7 +745,8 @@
                 "const": "debug-npm-install",
                 "description": "%teamstoolkit.taskDefinitions.command.npmInstall.description%"
               },
-              {}
+              {
+              }
             ]
           },
           "args": {

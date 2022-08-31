@@ -108,7 +108,7 @@ enum ResultStatus {
   failed = "failed",
 }
 
-enum NpmInstallType {
+enum NpmInstallComponent {
   SPFx = "SPFx",
   Frontend = "frontend",
   Backend = "backend",
@@ -116,17 +116,17 @@ enum NpmInstallType {
 }
 
 const NpmInstallDisplayName = Object.freeze({
-  [NpmInstallType.SPFx]: "tab app (SPFx-based)",
-  [NpmInstallType.Frontend]: "tab app (react-based)",
-  [NpmInstallType.Bot]: "bot app",
-  [NpmInstallType.Backend]: "function app",
+  [NpmInstallComponent.SPFx]: "tab app (SPFx-based)",
+  [NpmInstallComponent.Frontend]: "tab app (react-based)",
+  [NpmInstallComponent.Bot]: "bot app",
+  [NpmInstallComponent.Backend]: "function app",
 });
 
 const ProjectFolderName = Object.freeze({
-  [NpmInstallType.SPFx]: FolderName.SPFx,
-  [NpmInstallType.Frontend]: FolderName.Frontend,
-  [NpmInstallType.Bot]: FolderName.Bot,
-  [NpmInstallType.Backend]: FolderName.Function,
+  [NpmInstallComponent.SPFx]: FolderName.SPFx,
+  [NpmInstallComponent.Frontend]: FolderName.Frontend,
+  [NpmInstallComponent.Bot]: FolderName.Bot,
+  [NpmInstallComponent.Backend]: FolderName.Function,
 });
 
 const ProgressMessage = Object.freeze({
@@ -149,7 +149,7 @@ type NpmInstallCheckerInfo = {
   cwd: string;
   args: string[];
   forceUpdate?: boolean;
-  shortName: string;
+  component: string;
   displayName: string;
 };
 type PortCheckerInfo = { checker: Checker.Ports; ports: number[] };
@@ -378,7 +378,7 @@ export async function checkAndInstallForTask(
   );
 }
 
-export async function npmInstallTask(
+export async function checkAndInstallNpmPackagesForTask(
   projectOptions: {
     cwd: string;
     args?: string[];
@@ -392,7 +392,7 @@ export async function npmInstallTask(
       cwd: p.cwd,
       args: p.args ?? [],
       forceUpdate: p.forceUpdate,
-      shortName: cwdBaseName,
+      component: cwdBaseName,
       displayName: p.cwd,
     };
   });
@@ -549,7 +549,7 @@ function getCheckPromise(
     case Checker.NpmInstall:
       const npmInstalChecherInfo = checkerInfo as NpmInstallCheckerInfo;
       return checkNpmInstall(
-        npmInstalChecherInfo.shortName,
+        npmInstalChecherInfo.component,
         npmInstalChecherInfo.displayName,
         step.getPrefix(),
         npmInstalChecherInfo.cwd,
@@ -981,14 +981,14 @@ function handleNodeNotSupportedError(
 }
 
 function checkNpmInstall(
-  shortName: string,
+  component: string,
   displayName: string,
   prefix: string,
   folder: string,
   args: string[],
   forceUpdate?: boolean
 ): Promise<CheckResult> {
-  const taskName = `${shortName} npm install`;
+  const taskName = `${component} npm install`;
   return runWithCheckResultTelemetryProperties(
     TelemetryEvent.DebugPrereqsCheckNpmInstall,
     { [TelemetryProperty.DebugNpmInstallName]: taskName },
@@ -1059,7 +1059,7 @@ function checkNpmInstall(
             error = new UserError(
               ExtensionSource,
               "NpmInstallFailure",
-              `Failed to npm install for ${shortName}`
+              `Failed to npm install for ${component}`
             );
           }
         }
@@ -1209,9 +1209,9 @@ async function getOrderedCheckers(): Promise<PrerequisiteOrderedChecker[]> {
   if (ProjectSettingsHelper.isSpfx(projectSettings)) {
     parallelCheckers.push({
       checker: Checker.NpmInstall,
-      cwd: path.join(workspacePath, ProjectFolderName[NpmInstallType.SPFx]),
-      shortName: NpmInstallType.SPFx,
-      displayName: NpmInstallDisplayName[NpmInstallType.SPFx],
+      cwd: path.join(workspacePath, ProjectFolderName[NpmInstallComponent.SPFx]),
+      shortName: NpmInstallComponent.SPFx,
+      displayName: NpmInstallDisplayName[NpmInstallComponent.SPFx],
       args: [defaultNpmInstallArg],
     });
   } else {
@@ -1219,9 +1219,9 @@ async function getOrderedCheckers(): Promise<PrerequisiteOrderedChecker[]> {
       parallelCheckers.push({ checker: Checker.AzureFunctionsExtension });
       parallelCheckers.push({
         checker: Checker.NpmInstall,
-        shortName: NpmInstallType.Backend,
-        displayName: NpmInstallDisplayName[NpmInstallType.Backend],
-        cwd: path.join(workspacePath, ProjectFolderName[NpmInstallType.Backend]),
+        shortName: NpmInstallComponent.Backend,
+        displayName: NpmInstallDisplayName[NpmInstallComponent.Backend],
+        cwd: path.join(workspacePath, ProjectFolderName[NpmInstallComponent.Backend]),
         args: [defaultNpmInstallArg],
       });
     }
@@ -1229,18 +1229,18 @@ async function getOrderedCheckers(): Promise<PrerequisiteOrderedChecker[]> {
     if (ProjectSettingsHelper.includeBot(projectSettings)) {
       parallelCheckers.push({
         checker: Checker.NpmInstall,
-        shortName: NpmInstallType.Bot,
-        displayName: NpmInstallDisplayName[NpmInstallType.Bot],
-        cwd: path.join(workspacePath, ProjectFolderName[NpmInstallType.Bot]),
+        shortName: NpmInstallComponent.Bot,
+        displayName: NpmInstallDisplayName[NpmInstallComponent.Bot],
+        cwd: path.join(workspacePath, ProjectFolderName[NpmInstallComponent.Bot]),
         args: [defaultNpmInstallArg],
       });
     }
     if (ProjectSettingsHelper.includeFrontend(projectSettings)) {
       parallelCheckers.push({
         checker: Checker.NpmInstall,
-        shortName: NpmInstallType.Frontend,
-        displayName: NpmInstallDisplayName[NpmInstallType.Frontend],
-        cwd: path.join(workspacePath, ProjectFolderName[NpmInstallType.Frontend]),
+        shortName: NpmInstallComponent.Frontend,
+        displayName: NpmInstallDisplayName[NpmInstallComponent.Frontend],
+        cwd: path.join(workspacePath, ProjectFolderName[NpmInstallComponent.Frontend]),
         args: [defaultNpmInstallArg],
       });
     }

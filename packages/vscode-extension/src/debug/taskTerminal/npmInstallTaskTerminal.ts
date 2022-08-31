@@ -8,7 +8,7 @@ import * as path from "path";
 import * as globalVariables from "../../globalVariables";
 import { UserError } from "@microsoft/teamsfx-api";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
-import { npmInstallTask } from "../prerequisitesHandler";
+import { checkAndInstallNpmPackagesForTask } from "../prerequisitesHandler";
 import { ExtensionErrors, ExtensionSource } from "../../error";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
 
@@ -57,6 +57,6 @@ export class NpmInstallTaskTerminal extends BaseTaskTerminal {
       };
     });
 
-    await npmInstallTask(npmInstallProjectOptions);
+    await checkAndInstallNpmPackagesForTask(npmInstallProjectOptions);
   }
 }

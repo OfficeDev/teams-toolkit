@@ -566,11 +566,12 @@ sku: {
   name: 'B1'
 }
 kind: 'app'
+properties: {}
 }
 `;
   const frontendHostingTestServerFarm = "frontendhosting_testResource";
   await fs.appendFile(
-    path.join(bicepFileFolder, TestFilePath.provisionFolder, "frontendHosting.bicep"),
+    path.join(bicepFileFolder, TestFilePath.provisionFolder, "azureStorageTab.bicep"),
     customizedServerFarmsBicepTemplate.replace(pattern, frontendHostingTestServerFarm)
   );
   newServerFarms.push(frontendHostingTestServerFarm);

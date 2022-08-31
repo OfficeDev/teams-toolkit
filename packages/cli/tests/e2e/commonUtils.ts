@@ -179,7 +179,7 @@ export async function setBotSkuNameToB1Bicep(projectPath: string, envName: strin
   );
   const parametersFilePath = path.resolve(projectPath, bicepParameterFile);
   const parameters = await fs.readJSON(parametersFilePath);
-  parameters["parameters"]["provisionParameters"]["value"]["botWebAppSKU"] = "B1";
+  parameters["parameters"]["provisionParameters"]["value"]["webAppSKU"] = "B1";
   return fs.writeJSON(parametersFilePath, parameters, { spaces: 4 });
 }
 
@@ -566,11 +566,12 @@ sku: {
   name: 'B1'
 }
 kind: 'app'
+properties: {}
 }
 `;
   const frontendHostingTestServerFarm = "frontendhosting_testResource";
   await fs.appendFile(
-    path.join(bicepFileFolder, TestFilePath.provisionFolder, "frontendHosting.bicep"),
+    path.join(bicepFileFolder, TestFilePath.provisionFolder, "azureStorageTab.bicep"),
     customizedServerFarmsBicepTemplate.replace(pattern, frontendHostingTestServerFarm)
   );
   newServerFarms.push(frontendHostingTestServerFarm);

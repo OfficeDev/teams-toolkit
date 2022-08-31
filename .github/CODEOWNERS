@@ -38,11 +38,12 @@
 /packages/cli/tests/e2e/keyvault @adashen @formulahendry @xzf0587
 /packages/cli/tests/unit/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/cli/tests/unit/cmds/preview @swatDong @kuojianlu @qinezh @a1exwang
+/packages/cli/tests/unit/cmds/m365 @swatDong @kuojianlu @kimizhu
 
 /packages/api @jayzhang @1yefuwang1 @LongOddCode @nliu-ms
 /packages/api/src/schemas @dooriya @qinezh @a1exwang @kimizhu
 
-/packages/sdk @tecton @blackchoey @SLdragon @dilin-MS @wenytang-ms
+/packages/sdk @tecton @blackchoey @SLdragon @dilin-MS @wenytang-ms @yiqing-zhao
 /packages/sdk/src/conversation @kimizhu @swatDong @a1exwang @XiaofuHuang @dooriya
 /packages/sdk/test/unit/node/conversation @kimizhu @swatDong @a1exwang @XiaofuHuang @dooriya
 
@@ -120,7 +121,7 @@
 
 /packages/function-extension @adashen @blackchoey @dilin-MS
 
-/packages/dotnet-sdk @tecton  @JerryYangKai
+/packages/dotnet-sdk @tecton @JerryYangKai @yiqing-zhao
 /packages/dotnet-sdk/src/TeamsFx/Conversation @swatDong @dooriya @kimizhu
 /packages/dotnet-sdk/src/TeamsFx.Test/Conversation @swatDong @dooriya @kimizhu
 
@@ -136,3 +137,5 @@
 
 /packages/fx-core/src/component/feature/apiconnector @xzf0587 @wenytang-ms @blackchoey
 /packages/fx-core/tests/component/feature/apiconnector @xzf0587 @wenytang-ms @blackchoey
+
+/packages/sdk-react @tecton @yiqing-zhao

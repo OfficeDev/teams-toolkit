@@ -5,13 +5,13 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { ContextV3, FxError, InputsWithProjectPath, Result } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { ApiConnectorImpl } from "./apiconnector/ApiConnectorImpl";
-import { ResultFactory } from "./apiconnector/result";
-import { UserTaskFunctionName } from "../../plugins/solution/fx-solution/constants";
-import "../connection/azureWebAppConfig";
-import { ComponentNames } from "../constants";
-import { ActionExecutionMW } from "../middleware/actionExecutionMW";
-import "../resource/azureSql";
+import { ApiConnectorImpl } from "./ApiConnectorImpl";
+import { ResultFactory } from "./result";
+import { UserTaskFunctionName } from "../../../plugins/solution/fx-solution/constants";
+import "../../connection/azureWebAppConfig";
+import { ComponentNames } from "../../constants";
+import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
+import "../../resource/azureSql";
 
 export const apiConnectorImpl: ApiConnectorImpl = new ApiConnectorImpl();
 @Service(ComponentNames.ApiConnector)

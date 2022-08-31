@@ -151,6 +151,7 @@ describe("Plugin Settings: 'capabilities'", () => {
       [BotCapabilities.COMMAND_AND_RESPONSE],
       "Scaffold command and response bot",
     ],
+    [true, {}, [BotScenario.WorkflowBot], [BotCapabilities.WORKFLOW], "Scaffold workflow bot"],
     [
       true,
       {},

@@ -270,7 +270,8 @@ export async function getQuestionsForAddFeatureV3(
     const teamsBot = getComponent(ctx.projectSetting as ProjectSettingsV3, ComponentNames.TeamsBot);
     const alreadyHasNewBot =
       teamsBot?.capabilities?.includes("notification") ||
-      teamsBot?.capabilities?.includes("command-response");
+      teamsBot?.capabilities?.includes("command-response") ||
+      teamsBot?.capabilities?.includes("workflow");
     if (!botExceedLimit && !alreadyHasNewBot && !meExceedLimit) {
       options.push(NotificationOptionItem);
       options.push(CommandAndResponseOptionItem);

@@ -458,7 +458,6 @@ describe("getQuestionsForScaffolding()", async () => {
     assert.isTrue(res.isOk() && res.value && res.value.data !== undefined);
     if (res.isOk()) {
       const node = res.value;
-      console.log(node?.data);
       assert.isTrue(
         node &&
           node.data &&

@@ -55,6 +55,9 @@ export function decideTemplateScenarios(ctx: Context, inputs: Inputs): Set<strin
       case BotScenario.CommandAndResponseBot:
         templateScenarios.add(TemplateProjectsScenarios.COMMAND_AND_RESPONSE_SCENARIO_NAME);
         break;
+      case BotScenario.WorkflowBot:
+        templateScenarios.add(TemplateProjectsScenarios.WORKFLOW_SCENARIO_NAME);
+        break;
       case BotScenario.NotificationBot:
         //! Will not scaffold any trigger when notificationTriggerType is undefined,
         const notificationTriggerType = (inputs[

@@ -183,7 +183,7 @@ export class TeamsfxCore {
         }
       }
 
-      const initRes = await this.init(context, inputs);
+      const initRes = await this.init(context, inputs, isInitExistingApp);
       if (initRes.isErr()) return err(initRes.error);
 
       delete inputs.folder;
@@ -319,16 +319,16 @@ export class TeamsfxCore {
     }
 
     if (isInitExistingApp) {
-      const folderExist = await fs.pathExists(inputs.projectPath);
-      if (folderExist) {
-        return err(new ProjectFolderExistError(inputs.projectPath));
-      }
-      const isValid = isValidProject(inputs.projectPath);
-      if (isValid) {
-        return err(
-          new OperationNotPermittedError("initialize a project in existing teamsfx project")
-        );
-      }
+      // const folderExist = await fs.pathExists(inputs.projectPath);
+      // if (folderExist) {
+      //   return err(new ProjectFolderExistError(inputs.projectPath));
+      // }
+      // const isValid = isValidProject(inputs.projectPath);
+      // if (isValid) {
+      //   return err(
+      //     new OperationNotPermittedError("initialize a project in existing teamsfx project")
+      //   );
+      // }
       // pre-check before initialize
       const preCheckResult = await preCheck(inputs.projectPath);
       if (preCheckResult.isErr()) {
@@ -429,7 +429,7 @@ export class TeamsfxCore {
       if (localEnvSetupResult.isErr()) {
         return err(localEnvSetupResult.error);
       }
-    } else if (hasAzureResourceV3(ctx.projectSetting)) {
+    } else if (hasAzureResourceV3(ctx.projectSetting, true)) {
       //4.2 deploy arm templates for remote
       ctx.logProvider.info(
         getLocalizedString("core.deployArmTemplates.StartNotice", PluginDisplayName.Solution)

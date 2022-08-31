@@ -3,7 +3,7 @@
 
 import { SigninStateVerificationQuery, TurnContext } from "botbuilder";
 
-import { SsoConfig, TeamsFxBotSsoCommandHandler } from "../interface";
+import { SsoConfig, SsoExecutionDialogHandler, TriggerPatterns } from "../interface";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../../core/errors";
 import { formatString } from "../../util/utils";
 
@@ -24,9 +24,10 @@ export class DefaultSsoExecutionActivityHandler {
 
   /**
    * Add TeamsFxBotSsoCommandHandler instance to sso execution dialog
-   * @param handler {@link TeamsFxBotSsoCommandHandler} instance
+   * @param handler {@link SsoExecutionDialogHandler} callback function
+   * @param triggerPatterns The trigger pattern
    */
-  addCommand(handler: TeamsFxBotSsoCommandHandler): void {
+  addCommand(handler: SsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void {
     throw new ErrorWithCode(
       formatString(ErrorMessage.BrowserRuntimeNotSupported, "DefaultSsoExecutionActivityHandler"),
       ErrorCode.RuntimeNotSupported

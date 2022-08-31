@@ -4,7 +4,7 @@
 import { formatString } from "../../util/utils";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../../core/errors";
 import { TeamsFx } from "../../core/teamsfx.browser";
-import { TeamsFxBotSsoCommandHandler } from "../interface";
+import { SsoExecutionDialogHandler, TriggerPatterns } from "../interface";
 import { StatePropertyAccessor, TurnContext, Storage } from "botbuilder";
 /*
  * Sso execution dialog, use to handle sso command
@@ -25,9 +25,10 @@ export class SsoExecutionDialog {
 
   /**
    * Add TeamsFxBotSsoCommandHandler instance
-   * @param handler TeamsFxBotSsoCommandHandler instance
+   * @param handler {@link SsoExecutionDialogHandler} callback function
+   * @param triggerPatterns The trigger pattern
    */
-  public addCommand(handler: TeamsFxBotSsoCommandHandler): void {
+  public addCommand(handler: SsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void {
     throw new ErrorWithCode(
       formatString(ErrorMessage.BrowserRuntimeNotSupported, "SsoExecutionDialog"),
       ErrorCode.RuntimeNotSupported

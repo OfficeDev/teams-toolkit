@@ -21,6 +21,6 @@ export interface SsoConfig
 |  [dedupStorage?](./teamsfx.ssoconfig.dedupstorage.md) | Storage | <i>(Optional)</i> Used by [SsoExecutionDialog](./teamsfx.ssoexecutiondialog.md) to remove duplicated messages, if not provided, it will use internal memory storage |
 |  [scopes](./teamsfx.ssoconfig.scopes.md) | string\[\] | The list of scopes for which the token will have access |
 |  [ssoPromptConfig?](./teamsfx.ssoconfig.ssopromptconfig.md) | { timeout?: number; endOnInvalidMessage?: boolean; } | <i>(Optional)</i> Settings used to configure an teams sso prompt instance. |
-|  [teamsFxConfig?](./teamsfx.ssoconfig.teamsfxconfig.md) | Partial&lt;[AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md)<!-- -->&gt; | <i>(Optional)</i> teamsfx configuration for sso |
+|  [teamsFxConfig?](./teamsfx.ssoconfig.teamsfxconfig.md) | [AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md) | <i>(Optional)</i> teamsfx configuration for sso |
 |  [userState?](./teamsfx.ssoconfig.userstate.md) | UserState | <i>(Optional)</i> User state for sso command bot, if not provided, it will use internal memory storage to create a new one. |
 

@@ -378,7 +378,7 @@ export interface SsoConfig {
         timeout?: number;
         endOnInvalidMessage?: boolean;
     };
-    teamsFxConfig?: Partial<AuthenticationConfiguration>;
+    teamsFxConfig?: AuthenticationConfiguration;
     userState?: UserState;
 }
 

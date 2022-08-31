@@ -18,7 +18,6 @@ import {
   SsoConfig,
   SsoExecutionActivityHandler,
   SsoExecutionDialogHandler,
-  TeamsFxBotSsoCommandHandler,
   TriggerPatterns,
 } from "../interface";
 import { SsoExecutionDialog } from "./ssoExecutionDialog";

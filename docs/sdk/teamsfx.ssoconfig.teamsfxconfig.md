@@ -9,5 +9,5 @@ teamsfx configuration for sso
 <b>Signature:</b>
 
 ```typescript
-teamsFxConfig?: Partial<AuthenticationConfiguration>;
+teamsFxConfig?: AuthenticationConfiguration;
 ```

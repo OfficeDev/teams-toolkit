@@ -156,7 +156,7 @@
     "teamstoolkit.commandsTreeViewProvider.previewAdaptiveCard": "Preview and Debug Adaptive Cards",
     "teamstoolkit.commandsTreeViewProvider.previewDescription": "Debug and preview your Teams app",
     "teamstoolkit.commandsTreeViewProvider.previewTitle": "Preview your Teams app (F5)",
-    "_teamstoolkit.commandsTreeViewProvider.previewTitle.comment": "no need to translate 'F5'",
+    "_teamstoolkit.commandsTreeViewProvider.previewTitle.comment": "shortcut key, no need to translate 'F5'",
     "teamstoolkit.commandsTreeViewProvider.projectDescription": "Manage your project",
     "teamstoolkit.commandsTreeViewProvider.projectTitle": "PROJECT",
     "teamstoolkit.commandsTreeViewProvider.provision.blockTooltip": "Cannot run command when provisioning. Try again when provision operation is finished.",

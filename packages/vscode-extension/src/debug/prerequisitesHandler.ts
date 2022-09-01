@@ -446,7 +446,8 @@ async function _checkAndInstall(
     await progressHelper.start(
       enabledCheckers.map((v) => {
         return {
-          key: (v as NpmInstallCheckerInfo).displayName,
+          key:
+            v.checker === Checker.NpmInstall ? (v as NpmInstallCheckerInfo).displayName : v.checker,
           detail:
             v.checker === Checker.NpmInstall
               ? ProgressMessage[Checker.NpmInstall]((v as NpmInstallCheckerInfo).displayName)

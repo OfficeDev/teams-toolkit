@@ -5,7 +5,7 @@
 import * as vscode from "vscode";
 import { assembleError, FxError, Result } from "@microsoft/teamsfx-api";
 import { showError } from "../../handlers";
-import { outputPanelLink } from "../constants";
+import { outputPanelCommand } from "../constants";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
 
 const ControlCodes = {
@@ -46,11 +46,11 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
       const defaultOutputPanel = getDefaultString("teamstoolkit.localDebug.outputPanel");
       const localizeOutputPanel = localize("teamstoolkit.localDebug.outputPanel");
       const errorMessage = error?.message?.replace(
-        `[${defaultOutputPanel}](${outputPanelLink})`,
+        `[${defaultOutputPanel}](${outputPanelCommand})`,
         defaultOutputPanel
       );
       const displayErrorMessage = error?.displayMessage?.replace(
-        `[${localizeOutputPanel}](${outputPanelLink})`,
+        `[${localizeOutputPanel}](${outputPanelCommand})`,
         localizeOutputPanel
       );
 

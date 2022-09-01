@@ -16,11 +16,6 @@ import {
   UserError,
   ok,
   v3,
-  M365TokenProvider,
-  TokenRequest,
-  Result,
-  FxError,
-  LoginStatus,
 } from "@microsoft/teamsfx-api";
 import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
 import { environmentManager } from "../../../src/core/environment";
@@ -28,47 +23,7 @@ import { AadAppManifestManager } from "../../../src/plugins/resource/aad/aadAppM
 import { TokenProvider } from "../../../src/plugins/resource/aad/utils/tokenProvider";
 import { AadAppClient } from "../../../src/plugins/resource/aad/aadAppClient";
 import { ComponentNames } from "../../../src/component/constants";
-
-class MockM365TokenProvider implements M365TokenProvider {
-  private readonly tenantId: string;
-
-  constructor(tenantId: string) {
-    this.tenantId = tenantId;
-  }
-
-  async getAccessToken(tokenRequest: TokenRequest): Promise<Result<string, FxError>> {
-    return ok("token");
-  }
-
-  async getJsonObject(
-    tokenRequest: TokenRequest
-  ): Promise<Result<Record<string, unknown>, FxError>> {
-    return ok({
-      tid: this.tenantId,
-    });
-  }
-
-  async getStatus(tokenRequest: TokenRequest): Promise<Result<LoginStatus, FxError>> {
-    throw new Error("Method not implemented.");
-  }
-
-  async setStatusChangeMap(
-    name: string,
-    tokenRequest: TokenRequest,
-    statusChange: (
-      status: string,
-      token?: string | undefined,
-      accountInfo?: Record<string, unknown> | undefined
-    ) => Promise<void>,
-    immediateCall?: boolean | undefined
-  ): Promise<Result<boolean, FxError>> {
-    throw new Error("Method not implemented.");
-  }
-
-  async removeStatusChangeMap(name: string): Promise<Result<boolean, FxError>> {
-    throw new Error("Method not implemented.");
-  }
-}
+import { MockM365TokenProvider } from "./utils";
 
 describe("SSODebugHandler", () => {
   const projectPath = path.resolve(__dirname, "data");

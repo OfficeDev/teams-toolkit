@@ -506,6 +506,8 @@
   "error.apiConnector.componentNotExistError": "Component %s not exist, please add first",
   "error.apiConnector.envVarExistError": "Please provide a different API name to avoid conflicts with existing env variables %s in .env.teamsfx.local",
   "error.debugHandler.InvalidSSODebugArgsError": "objectId, clientId and clientSecret are all required if you use existing AAD app for SSO.",
+  "error.debugHandler.InvalidBotDebugArgsError": "botId and botPassword are all required if you use existing bot. botMessagingEndpoint is required.",
+  "error.debugHandler.InvalidTabDebugArgsError": "baseUrl is required and must be in the format of 'https://localhost:{port}'.",
   "core.QuestionAppName.validation.pattern": "Application name must start with letters and contain at least two letters or digits. It can not contain some special characters.",
   "core.QuestionAppName.validation.maxlength": "Application name is longer than the maximum length of 30.",
   "core.QuestionAppName.validation.pathExist": "Path exists: %s. Select a different application name.",

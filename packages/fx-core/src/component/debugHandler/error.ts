@@ -15,3 +15,30 @@ export function InvalidSSODebugArgsError(): UserError {
     getLocalizedString("error.debugHandler.InvalidSSODebugArgsError")
   );
 }
+
+export function InvalidExistingBotArgsError(): UserError {
+  return new UserError(
+    errorSource,
+    "InvalidBotDebugArgsError",
+    getDefaultString("error.debugHandler.InvalidExistingBotArgsError"),
+    getLocalizedString("error.debugHandler.InvalidExistingBotArgsError")
+  );
+}
+
+export function BotMessagingEndpointMissingError(): UserError {
+  return new UserError(
+    errorSource,
+    "InvalidBotDebugArgsError",
+    getDefaultString("error.debugHandler.BotMessagingEndpointMissingError"),
+    getLocalizedString("error.debugHandler.BotMessagingEndpointMissingError")
+  );
+}
+
+export function InvalidTabDebugArgsError(): UserError {
+  return new UserError(
+    errorSource,
+    "InvalidTabDebugArgsError",
+    getDefaultString("error.debugHandler.InvalidTabDebugArgsError"),
+    getLocalizedString("error.debugHandler.InvalidTabDebugArgsError")
+  );
+}

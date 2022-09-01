@@ -5,7 +5,7 @@
 import * as vscode from "vscode";
 import * as util from "util";
 import * as path from "path";
-import { UserError, FxError, Result, ok, err } from "@microsoft/teamsfx-api";
+import { UserError, FxError, Result, ok } from "@microsoft/teamsfx-api";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import { checkAndInstallNpmPackagesForTask } from "../prerequisitesHandler";
 import { ExtensionErrors, ExtensionSource } from "../../error";

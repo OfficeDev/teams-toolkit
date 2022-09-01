@@ -48,4 +48,31 @@ describe("App Studio API Test", () => {
       }
     });
   });
+
+  it("BadeRequest with 2xx status code", async () => {
+    const fakeAxiosInstance = axios.create();
+    sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+    const response = {
+      data: {
+        error: "BadRequest",
+      },
+      message: "fake message",
+    };
+    sinon.stub(fakeAxiosInstance, "post").resolves(response);
+
+    const ctx = {
+      envInfo: newEnvInfo(),
+      root: "fakeRoot",
+    } as any as PluginContext;
+    TelemetryUtils.init(ctx);
+    sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
+
+    try {
+      await AppStudioClient.publishTeamsApp(appStudioToken, Buffer.from(""), appStudioToken);
+    } catch (error) {
+      chai.assert.equal(error.name, AppStudioError.DeveloperPortalAPIFailedError.name);
+      chai.assert.isNotNull(error.response);
+    }
+  });
 });

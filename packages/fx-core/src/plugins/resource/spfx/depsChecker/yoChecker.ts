@@ -21,8 +21,6 @@ import { telemetryHelper } from "../utils/telemetry-helper";
 import { TelemetryEvents, TelemetryProperty } from "../utils/telemetryEvents";
 import { DependencyValidateError, NpmInstallError } from "../error";
 import { cpUtils } from "../../../../common/deps-checker/util/cpUtils";
-import { Utils } from "../utils/utils";
-import { Constants } from "../utils/constants";
 
 const name = "yo";
 const supportedVersion = "4.3.0";

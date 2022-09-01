@@ -434,7 +434,7 @@ export class ManifestUtils {
       ...new Set(
         Mustache.parse(resolvedManifestString)
           .filter((x) => {
-            return x[0] != "text" && (!isLocalDebug || x[1] != "state.app-manifest.teamsAppId");
+            return x[0] != "text" && x[1] != "state.app-manifest.teamsAppId";
           })
           .map((x) => x[1])
       ),

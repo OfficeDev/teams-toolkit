@@ -10,7 +10,7 @@ import { formatString } from "../util/utils";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { internalLogger } from "../util/logger";
 import { TeamsFxConfiguration } from "../models/teamsfxConfiguration";
-import { AuthenticationConfiguration } from "../../types/src";
+import { AuthenticationConfiguration } from "../models/configuration";
 
 // Following keys are used by SDK internally
 const ReservedKey: Set<string> = new Set<string>([
@@ -46,12 +46,12 @@ export class TeamsFx implements TeamsFxConfiguration {
    *
    * @throws {@link ErrorCode|IdentityTypeNotSupported} when setting app identity in browser.
    */
-  constructor(identityType?: IdentityType, customConfig?: Record<string, string> | Partial<AuthenticationConfiguration>) {
+  constructor(identityType?: IdentityType, customConfig?: Record<string, string> | AuthenticationConfiguration) {
     this.identityType = identityType ?? IdentityType.User;
     this.configuration = new Map<string, string>();
     this.loadFromEnv();
     if (customConfig) {
-      const myConfig: Record<string, string> = customConfig;
+      const myConfig: Record<string, string> = {...customConfig};
       for (const key of Object.keys(myConfig)) {
         const value = myConfig[key];
         if (value) {

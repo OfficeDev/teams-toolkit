@@ -17,6 +17,7 @@
         "bot/js/notification-trigger-http",
         "bot/js/notification-trigger-timer",
         "bot/ts/command-and-response",
+        "bot/ts/workflow",
         "bot/ts/default",
         "bot/ts/m365",
         "bot/ts/notification-function-base",

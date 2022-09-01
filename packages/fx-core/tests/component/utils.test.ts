@@ -1,6 +1,5 @@
 import { InputsWithProjectPath, Platform, v3, ok } from "@microsoft/teamsfx-api";
 import { expect } from "chai";
-import { newEnvInfoV3, setTools } from "../../src";
 import { convertContext } from "../../src/component/resource/aadApp/utils";
 import {
   addFeatureNotify,
@@ -18,6 +17,8 @@ import {
   PackDirectoryExistenceError,
   ResourceNotFoundError,
 } from "../../src/component/error";
+import { setTools } from "../../src/core/globalVars";
+import { newEnvInfoV3 } from "../../src/core/environment";
 describe("resetEnvInfoWhenSwitchM365", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();

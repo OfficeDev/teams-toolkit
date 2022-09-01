@@ -24,6 +24,8 @@ import {
 } from "../commonUtils";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { it } from "../../commonlib/it";
+import { CliHelper } from "../../commonlib/cliHelper";
+import { Capability } from "../../commonlib/constants";
 
 describe("aadGetAppError", function () {
   let testFolder: string;
@@ -46,14 +48,7 @@ describe("aadGetAppError", function () {
     projectPath = path.resolve(testFolder, appName);
 
     // new a project
-
-    await execAsync(`teamsfx new --interactive false --app-name ${appName}`, {
-      cwd: testFolder,
-
-      env: process.env,
-
-      timeout: 0,
-    });
+    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
 
     console.log(`[Successfully] scaffold to ${projectPath}`);
   });

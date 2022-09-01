@@ -18,6 +18,7 @@ import {
   cleanUp,
   readContextMultiEnv,
   getActivePluginsFromProjectSetting,
+  setProvisionParameterValue,
 } from "../commonUtils";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, PluginId, StateConfigKey } from "../../commonlib/constants";
@@ -38,6 +39,7 @@ describe("Blazor App", function () {
   const envName = environmentManager.getDefaultEnvName();
   const env = Object.assign({}, process.env);
   env["TEAMSFX_CLI_DOTNET"] = "true";
+  env["TEAMSFX_APIV3"] = "false";
 
   after(async () => {
     // clean up
@@ -52,6 +54,10 @@ describe("Blazor App", function () {
   it(`Provision Resource`, async () => {
     await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(projectPath, "", env);
+    await setProvisionParameterValue(projectPath, "dev", {
+      key: "webappServerfarmsSku",
+      value: "B1",
+    });
 
     const tokenProvider = MockAzureAccountProvider;
     const tokenCredential = await tokenProvider.getAccountCredentialAsync();

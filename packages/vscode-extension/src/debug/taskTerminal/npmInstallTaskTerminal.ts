@@ -5,7 +5,6 @@
 import * as vscode from "vscode";
 import * as util from "util";
 import * as path from "path";
-import * as globalVariables from "../../globalVariables";
 import { UserError, FxError, Result, ok, err } from "@microsoft/teamsfx-api";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import { checkAndInstallNpmPackagesForTask } from "../prerequisitesHandler";
@@ -46,12 +45,7 @@ export class NpmInstallTaskTerminal extends BaseTaskTerminal {
       }
 
       return {
-        cwd: path.normalize(
-          projectOption.cwd.replace(
-            "${teamsfx:workspaceFolder}",
-            globalVariables.workspaceUri?.fsPath ?? ""
-          )
-        ),
+        cwd: path.normalize(BaseTaskTerminal.resolveTeamsFxVariables(projectOption.cwd)),
         args: projectOption.npmInstallArgs,
         forceUpdate: this.args.forceUpdate,
       };

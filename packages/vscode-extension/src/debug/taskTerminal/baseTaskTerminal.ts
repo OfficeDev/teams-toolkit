@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as vscode from "vscode";
 import { assembleError, FxError, Result } from "@microsoft/teamsfx-api";
+import * as globalVariables from "../../globalVariables";
 import { showError } from "../../handlers";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
 import { outputPanelCommand } from "../constants";
@@ -62,4 +63,8 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
   }
 
   protected abstract do(): Promise<Result<void, FxError>>;
+
+  public static resolveTeamsFxVariables(str: string): string {
+    return str.replace("${teamsfx:workspaceFolder}", globalVariables.workspaceUri?.fsPath ?? "");
+  }
 }

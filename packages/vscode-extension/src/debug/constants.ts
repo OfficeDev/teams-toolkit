@@ -93,6 +93,20 @@ export const teamsAppIdPlaceholder = "${teamsAppId}";
 export const teamsAppInternalIdPlaceholder = "${teamsAppInternalId}";
 export const accountHintPlaceholder = "${account-hint}";
 
+export type DisplayMessages = {
+  taskName: string;
+  check: string;
+  checkNumber: string;
+  summary: string;
+  learnMore: string;
+  learnMoreHelpLink: string;
+  launchServices: string;
+  errorName: string;
+  errorMessageKey: string;
+  errorDisplayMessageKey: string;
+  errorHelpLink: string;
+};
+
 export const prerequisiteCheckDisplayMessages: DisplayMessages = {
   taskName: "Prerequisites Check",
   check:
@@ -107,20 +121,6 @@ export const prerequisiteCheckDisplayMessages: DisplayMessages = {
   errorMessageKey: "teamstoolkit.localDebug.prerequisitesCheckFailure",
   errorDisplayMessageKey: "teamstoolkit.localDebug.prerequisitesCheckFailure",
   errorHelpLink: "https://aka.ms/teamsfx-envchecker-help",
-};
-
-export type DisplayMessages = {
-  taskName: string;
-  check: string;
-  checkNumber: string;
-  summary: string;
-  learnMore: string;
-  learnMoreHelpLink: string;
-  launchServices: string;
-  errorName: string;
-  errorMessageKey: string;
-  errorDisplayMessageKey: string;
-  errorHelpLink: string;
 };
 
 export const npmInstallDisplayMessages: DisplayMessages = {

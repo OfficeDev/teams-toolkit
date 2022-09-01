@@ -6,7 +6,7 @@ import * as vscode from "vscode";
 import * as util from "util";
 import * as path from "path";
 import * as globalVariables from "../../globalVariables";
-import { UserError } from "@microsoft/teamsfx-api";
+import { UserError, FxError, Result, ok, err } from "@microsoft/teamsfx-api";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import { checkAndInstallNpmPackagesForTask } from "../prerequisitesHandler";
 import { ExtensionErrors, ExtensionSource } from "../../error";
@@ -30,9 +30,9 @@ export class NpmInstallTaskTerminal extends BaseTaskTerminal {
     this.args = taskDefinition.args as NpmInstallArgs;
   }
 
-  async do(): Promise<void> {
+  async do(): Promise<Result<void, FxError>> {
     if (!this.args?.projects || this.args.projects.length === 0) {
-      return;
+      return ok(undefined);
     }
 
     const npmInstallProjectOptions = this.args.projects.map((projectOption) => {
@@ -57,6 +57,6 @@ export class NpmInstallTaskTerminal extends BaseTaskTerminal {
       };
     });
 
-    await checkAndInstallNpmPackagesForTask(npmInstallProjectOptions);
+    return await checkAndInstallNpmPackagesForTask(npmInstallProjectOptions);
   }
 }

@@ -472,12 +472,13 @@ async function _checkAndInstall(
                   depsManager,
                   localEnvManager,
                   step
-                ).finally(() =>
-                  progressHelper?.end(
-                    orderedCheckerInfo.checker === Checker.NpmInstall
-                      ? orderedCheckerInfo.displayName
-                      : orderedCheckerInfo.checker
-                  )
+                ).finally(
+                  async () =>
+                    await progressHelper?.end(
+                      orderedCheckerInfo.checker === Checker.NpmInstall
+                        ? orderedCheckerInfo.displayName
+                        : orderedCheckerInfo.checker
+                    )
                 )
               );
             }
@@ -502,12 +503,13 @@ async function _checkAndInstall(
           depsManager,
           localEnvManager,
           step
-        ).finally(() =>
-          progressHelper?.end(
-            orderedCheckerInfo.checker === Checker.NpmInstall
-              ? orderedCheckerInfo.displayName
-              : orderedCheckerInfo.checker
-          )
+        ).finally(
+          async () =>
+            await progressHelper?.end(
+              orderedCheckerInfo.checker === Checker.NpmInstall
+                ? orderedCheckerInfo.displayName
+                : orderedCheckerInfo.checker
+            )
         );
         checkResults.push(checkResult);
         if (orderedChecker.fastFail) {

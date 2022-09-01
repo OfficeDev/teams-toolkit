@@ -741,8 +741,7 @@
                 "const": "debug-check-prerequisites",
                 "description": "%teamstoolkit.taskDefinitions.command.prerequisites.description%"
               },
-              {
-              }
+              {}
             ]
           },
           "args": {

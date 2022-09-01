@@ -2,38 +2,41 @@
 // Licensed under the MIT license.
 "use strict";
 
+import { v4 as uuidv4 } from "uuid";
+
 import {
-  FxError,
-  v3,
-  Result,
-  ProjectSettingsV3,
+  assembleError,
+  ConfigMap,
+  EnvConfig,
+  EnvInfo,
   err,
+  FxError,
+  LogProvider,
+  M365TokenProvider,
   ok,
   PluginContext,
-  LogProvider,
+  ProjectSettingsV3,
+  Result,
   TelemetryReporter,
   UserInteraction,
-  EnvInfo,
-  EnvConfig,
-  ConfigMap,
-  M365TokenProvider,
-  assembleError,
+  v3,
   Void,
 } from "@microsoft/teamsfx-api";
+
+import { ProjectSettingsHelper } from "../../common/local/projectSettingsHelper";
+import { TelemetryEvent } from "../../common/telemetry";
+import { objectToMap } from "../../common/tools";
 import { LocalCrypto } from "../../core/crypto";
-import { ComponentNames } from "../constants";
-import { AadAppManifestManager } from "../../plugins/resource/aad/aadAppManifestManager";
-import { AadAppClient } from "../../plugins/resource/aad/aadAppClient";
-import { Constants } from "../../plugins/resource/aad/constants";
 import { environmentManager } from "../../core/environment";
-import { loadProjectSettingsByProjectPath } from "../../core/middleware";
-import { objectToMap, ProjectSettingsHelper } from "../../common";
-import { convertEnvStateV3ToV2 } from "../migrate";
+import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
+import { AadAppClient } from "../../plugins/resource/aad/aadAppClient";
+import { AadAppManifestManager } from "../../plugins/resource/aad/aadAppManifestManager";
+import { Constants } from "../../plugins/resource/aad/constants";
 import { ProvisionConfig } from "../../plugins/resource/aad/utils/configs";
 import { TokenProvider } from "../../plugins/resource/aad/utils/tokenProvider";
-import { v4 as uuidv4 } from "uuid";
+import { ComponentNames } from "../constants";
+import { convertEnvStateV3ToV2 } from "../migrate";
 import { errorSource, InvalidSSODebugArgsError } from "./error";
-import { TelemetryEvent } from "../../common/telemetry";
 
 export interface SSODebugArgs {
   objectId?: string;

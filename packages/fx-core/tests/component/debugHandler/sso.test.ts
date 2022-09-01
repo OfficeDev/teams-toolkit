@@ -2,27 +2,29 @@
 // Licensed under the MIT license.
 
 import "mocha";
-import * as chai from "chai";
-import * as sinon from "sinon";
-import * as path from "path";
 
-import { SSODebugArgs, SSODebugHandler } from "../../../src/component/debugHandler/sso";
-import { InvalidSSODebugArgsError, errorSource } from "../../../src/component/debugHandler/error";
+import * as chai from "chai";
+import * as path from "path";
+import * as sinon from "sinon";
+
 import {
   err,
+  ok,
   ProjectSettings,
   ProjectSettingsV3,
   SystemError,
   UserError,
-  ok,
   v3,
 } from "@microsoft/teamsfx-api";
-import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
+
+import { ComponentNames } from "../../../src/component/constants";
+import { errorSource, InvalidSSODebugArgsError } from "../../../src/component/debugHandler/error";
+import { SSODebugArgs, SSODebugHandler } from "../../../src/component/debugHandler/sso";
 import { environmentManager } from "../../../src/core/environment";
+import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
+import { AadAppClient } from "../../../src/plugins/resource/aad/aadAppClient";
 import { AadAppManifestManager } from "../../../src/plugins/resource/aad/aadAppManifestManager";
 import { TokenProvider } from "../../../src/plugins/resource/aad/utils/tokenProvider";
-import { AadAppClient } from "../../../src/plugins/resource/aad/aadAppClient";
-import { ComponentNames } from "../../../src/component/constants";
 import { MockM365TokenProvider } from "./utils";
 
 describe("SSODebugHandler", () => {

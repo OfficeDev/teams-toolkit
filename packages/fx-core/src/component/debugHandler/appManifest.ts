@@ -87,7 +87,7 @@ export class AppManifestDebugHandler {
 
       if (!checkArgsResult.value) {
         // build
-        const result = await buildTeamsAppPackage(this.projectPath, envInfoV3);
+        const result = await buildTeamsAppPackage(projectSettingsV3, this.projectPath, envInfoV3);
         if (result.isErr()) {
           return err(result.error);
         }

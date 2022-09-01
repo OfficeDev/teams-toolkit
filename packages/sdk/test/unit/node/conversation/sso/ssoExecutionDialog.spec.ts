@@ -37,6 +37,7 @@ import { AccessToken } from "@azure/identity";
 import { promisify } from "util";
 import { TeamsInfo } from "botbuilder";
 import { TestSsoCommandHandler } from "../testUtils";
+import { ErrorMessage } from "../../../../../src/core/errors";
 
 chaiUse(chaiPromises);
 let mockedEnvRestore: () => void;
@@ -156,10 +157,7 @@ describe("SsoExecutionDialog Tests - Node", () => {
       })
       .assertReply((activity) => {
         assert.strictEqual(activity.type, ActivityTypes.Message);
-        assert.strictEqual(
-          activity.text,
-          "Failed to retrieve user token from conversation context."
-        );
+        assert.strictEqual(activity.text, ErrorMessage.FailedToRetrieveSsoToken);
       });
   });
 
@@ -193,10 +191,7 @@ describe("SsoExecutionDialog Tests - Node", () => {
       })
       .assertReply((activity) => {
         assert.strictEqual(activity.type, ActivityTypes.Message);
-        assert.strictEqual(
-          activity.text,
-          "Failed to retrieve user token from conversation context."
-        );
+        assert.strictEqual(activity.text, ErrorMessage.FailedToRetrieveSsoToken);
       });
   });
 
@@ -372,6 +367,10 @@ describe("SsoExecutionDialog Tests - Node", () => {
       await ssoExecutionDialog.run(turnContext, dialogState);
       await convoState.saveChanges(turnContext, false);
     });
+
+    adapter.onTurnError = async (context: TurnContext, error: Error) => {
+      await context.sendActivity(error.message);
+    };
     return adapter;
   }
 });

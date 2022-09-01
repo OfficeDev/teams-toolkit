@@ -22,7 +22,6 @@ import { CommandMessage, BotSsoExecutionDialogHandler, TriggerPatterns } from ".
 import { TeamsBotSsoPrompt, TeamsBotSsoPromptSettings } from "../../bot/teamsBotSsoPrompt";
 import { TeamsBotSsoPromptTokenResponse } from "../../bot/teamsBotSsoPromptTokenResponse";
 import { TeamsFx } from "../../core/teamsfx";
-import { v4 as uuidv4 } from "uuid";
 import { formatString } from "../../util/utils";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../../core/errors";
 import { internalLogger } from "../../util/logger";

@@ -13,7 +13,6 @@ import {
 } from "botbuilder";
 import { TeamsBotSsoPromptSettings } from "../../bot/teamsBotSsoPrompt";
 import { TeamsFx } from "../../core/teamsfx";
-import { AuthenticationConfiguration } from "../../models/configuration";
 import { IdentityType } from "../../models/identityType";
 import {
   BotSsoConfig,

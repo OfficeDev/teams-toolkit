@@ -5,7 +5,8 @@
 import * as vscode from "vscode";
 import { assembleError, FxError, Result } from "@microsoft/teamsfx-api";
 import { showError } from "../../handlers";
-import { outputPanelLink } from "../constants";
+import { getDefaultString, localize } from "../../utils/localizeUtils";
+import { outputPanelCommand } from "../constants";
 
 const ControlCodes = {
   CtrlC: "\u0003",
@@ -40,14 +41,24 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
   }
 
   protected stop(error?: any): void {
-    if (error?.message) {
+    if (error) {
       // TODO: add color
-      const displayMessage = error?.message?.replace(outputPanelLink, "output panel");
-      this.writeEmitter.fire(`${displayMessage}\r\n`);
+      const defaultOutputPanel = getDefaultString("teamstoolkit.localDebug.outputPanel");
+      const localizeOutputPanel = localize("teamstoolkit.localDebug.outputPanel");
+      const errorMessage = error?.message?.replace(
+        `[${defaultOutputPanel}](${outputPanelCommand})`,
+        defaultOutputPanel
+      );
+      const displayErrorMessage = error?.displayMessage?.replace(
+        `[${localizeOutputPanel}](${outputPanelCommand})`,
+        localizeOutputPanel
+      );
+
+      this.writeEmitter.fire(`${displayErrorMessage ?? errorMessage}\r\n`);
+      showError(assembleError(error));
+      this.closeEmitter.fire(1);
     }
-    const exitCode = error ? 1 : 0;
-    this.closeEmitter.fire(exitCode);
-    showError(assembleError(error));
+    this.closeEmitter.fire(0);
   }
 
   protected abstract do(): Promise<Result<void, FxError>>;

@@ -67,7 +67,7 @@ import {
   prerequisiteCheckDisplayMessages,
   npmInstallDisplayMessages,
   DisplayMessages,
-  outputPanelLink,
+  outputPanelCommand,
 } from "./constants";
 import M365TokenInstance from "../commonlib/m365Login";
 import { signedOut } from "../commonlib/common/constant";
@@ -1137,11 +1137,11 @@ async function handleCheckResults(
       await progressHelper?.stop(false);
       const message = util.format(
         getDefaultString(displayMessages.errorMessageKey),
-        outputPanelLink
+        `[${getDefaultString("teamstoolkit.localDebug.outputPanel")}](${outputPanelCommand})`
       );
       const displayMessage = util.format(
         localize(displayMessages.errorDisplayMessageKey),
-        outputPanelLink
+        `[${localize("teamstoolkit.localDebug.outputPanel")}](${outputPanelCommand})`
       );
       const errorOptions: UserErrorOptions = {
         source: ExtensionSource,

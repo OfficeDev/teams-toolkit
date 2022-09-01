@@ -15,7 +15,7 @@ import {
   ok,
   v3,
 } from "@microsoft/teamsfx-api";
-import { InvalidBotDebugArgsError } from "../../../src/component/debugHandler/error";
+import { BotMessagingEndpointMissingError } from "../../../src/component/debugHandler/error";
 import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
 import { environmentManager } from "../../../src/core/environment";
 import { ComponentNames } from "../../../src/component/constants";
@@ -43,7 +43,7 @@ describe("TabDebugHandler", () => {
       chai.assert(result.isErr());
       if (result.isErr()) {
         chai.assert(result.error instanceof UserError);
-        chai.assert.equal(result.error.name, InvalidBotDebugArgsError().name);
+        chai.assert.equal(result.error.name, BotMessagingEndpointMissingError().name);
       }
     });
 

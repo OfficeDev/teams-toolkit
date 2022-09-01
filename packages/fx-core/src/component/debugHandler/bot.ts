@@ -25,7 +25,11 @@ import { ResourceNameFactory } from "../../plugins/resource/bot/utils/resourceNa
 import { genUUID } from "../../plugins/resource/bot/utils/common";
 import { MaxLengths } from "../../plugins/resource/bot/constants";
 import { AppStudioScopes, GraphScopes } from "../../common/tools";
-import { InvalidBotDebugArgsError, errorSource } from "./error";
+import {
+  InvalidExistingBotArgsError,
+  BotMessagingEndpointMissingError,
+  errorSource,
+} from "./error";
 import { IBotRegistration } from "../../plugins/resource/bot/appStudio/interfaces/IBotRegistration";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { PluginLocalDebug } from "../../plugins/resource/bot/resources/strings";
@@ -178,11 +182,11 @@ export class BotDebugHandler {
     if (this.args.botId && this.args.botPassword) {
       flag = true;
     } else if (this.args.botId || this.args.botPassword) {
-      return err(InvalidBotDebugArgsError());
+      return err(InvalidExistingBotArgsError());
     }
 
-    if (!this.args.botMessagingEndpoint) {
-      return err(InvalidBotDebugArgsError());
+    if (!this.args.botMessagingEndpoint || this.args.botMessagingEndpoint.trim().length === 0) {
+      return err(BotMessagingEndpointMissingError());
     }
 
     if (this.args.botMessagingEndpoint.includes(botTunnelEndpointPlaceholder)) {

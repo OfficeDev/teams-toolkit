@@ -16,12 +16,21 @@ export function InvalidSSODebugArgsError(): UserError {
   );
 }
 
-export function InvalidBotDebugArgsError(): UserError {
+export function InvalidExistingBotArgsError(): UserError {
   return new UserError(
     errorSource,
     "InvalidBotDebugArgsError",
-    getDefaultString("error.debugHandler.InvalidBotDebugArgsError"),
-    getLocalizedString("error.debugHandler.InvalidBotDebugArgsError")
+    getDefaultString("error.debugHandler.InvalidExistingBotArgsError"),
+    getLocalizedString("error.debugHandler.InvalidExistingBotArgsError")
+  );
+}
+
+export function BotMessagingEndpointMissingError(): UserError {
+  return new UserError(
+    errorSource,
+    "InvalidBotDebugArgsError",
+    getDefaultString("error.debugHandler.BotMessagingEndpointMissingError"),
+    getLocalizedString("error.debugHandler.BotMessagingEndpointMissingError")
   );
 }
 

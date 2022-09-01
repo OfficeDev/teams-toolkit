@@ -22,8 +22,8 @@ export class PackageService {
   }
 
   public async sideLoading(token: string, manifestPath: string): Promise<void> {
-    const data = await fs.readFile(manifestPath);
     try {
+      const data = await fs.readFile(manifestPath);
       const content = new FormData();
       content.append("package", data);
       CLILogProvider.necessaryLog(LogLevel.Info, "Uploading package ...");
@@ -103,9 +103,8 @@ export class PackageService {
   }
 
   public async retrieveTitleId(token: string, manifestPath: string): Promise<string> {
-    const data = await fs.readFile(manifestPath);
-
     try {
+      const data = await fs.readFile(manifestPath);
       const content = new FormData();
       content.append("package", data);
       CLILogProvider.necessaryLog(LogLevel.Info, "Retrieve TitleId ...");

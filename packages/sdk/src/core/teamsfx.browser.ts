@@ -9,6 +9,7 @@ import { formatString } from "../util/utils";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { internalLogger } from "../util/logger";
 import { TeamsFxConfiguration } from "../models/teamsfxConfiguration";
+import { AuthenticationConfiguration } from "../../types/src";
 
 /**
  * A class providing credential and configuration.
@@ -18,7 +19,7 @@ export class TeamsFx implements TeamsFxConfiguration {
   private teamsUserCredential?: TeamsUserCredential;
   public identityType: IdentityType;
 
-  constructor(identityType?: IdentityType, customConfig?: Record<string, string>) {
+  constructor(identityType?: IdentityType, customConfig?: Record<string, string> | Partial<AuthenticationConfiguration>) {
     this.identityType = identityType ?? IdentityType.User;
     if (this.identityType !== IdentityType.User) {
       const errorMsg = formatString(
@@ -32,8 +33,9 @@ export class TeamsFx implements TeamsFxConfiguration {
     this.configuration = new Map<string, string>();
     this.loadFromEnv();
     if (customConfig) {
-      for (const key of Object.keys(customConfig)) {
-        const value = customConfig[key];
+      const myConfig: Record<string, string> = customConfig;
+      for (const key of Object.keys(myConfig)) {
+        const value = myConfig[key];
         if (value) {
           this.configuration.set(key, value);
         }

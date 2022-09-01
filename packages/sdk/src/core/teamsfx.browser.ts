@@ -9,7 +9,7 @@ import { formatString } from "../util/utils";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { internalLogger } from "../util/logger";
 import { TeamsFxConfiguration } from "../models/teamsfxConfiguration";
-import { AuthenticationConfiguration } from "../../types/src";
+import { AuthenticationConfiguration } from "../../types/teamsfx-public";
 
 /**
  * A class providing credential and configuration.

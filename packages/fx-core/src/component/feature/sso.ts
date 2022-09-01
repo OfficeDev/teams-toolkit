@@ -35,6 +35,7 @@ import { ComponentNames, TelemetryConstants } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
 import { AadApp } from "../resource/aadApp/aadApp";
 import { AppManifest } from "../resource/appManifest/appManifest";
+import { manifestUtils } from "../resource/appManifest/utils";
 import "../resource/azureSql";
 import "../resource/identity";
 import { generateConfigBiceps, bicepUtils } from "../utils";
@@ -107,7 +108,14 @@ export class SSO {
       inputs.stage === Stage.addFeature &&
       inputs[AzureSolutionQuestionNames.Features] !== TabOptionItem.id
     ) {
-      const res = await aadApp.generateAuthFiles(context, inputs, updates.tab!, updates.bot!);
+      const isExistingTabAppRes = await manifestUtils.isExistingTab(inputs, context);
+      if (isExistingTabAppRes.isErr()) return err(isExistingTabAppRes.error);
+      const res = await aadApp.generateAuthFiles(
+        context,
+        inputs,
+        updates.tab! || isExistingTabAppRes.value,
+        updates.bot!
+      );
       if (res.isErr()) {
         return err(
           sendErrorTelemetryThenReturnError(

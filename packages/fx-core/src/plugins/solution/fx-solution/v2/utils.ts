@@ -47,6 +47,7 @@ import {
   TabOptionItem,
   TabSPFxItem,
   TabSsoItem,
+  WorkflowOptionItem,
 } from "../question";
 import { getActivatedV2ResourcePlugins, getAllV2ResourcePlugins } from "../ResourcePluginContainer";
 import { getPluginContext } from "../utils/util";
@@ -316,7 +317,8 @@ export function fillInSolutionSettings(
   let hostType = answers[AzureSolutionQuestionNames.HostType] as string;
   if (
     capabilities.includes(NotificationOptionItem.id) ||
-    capabilities.includes(CommandAndResponseOptionItem.id)
+    capabilities.includes(CommandAndResponseOptionItem.id) ||
+    capabilities.includes(WorkflowOptionItem.id)
   ) {
     // find and replace "NotificationOptionItem" and "CommandAndResponseOptionItem" to "BotOptionItem", so it does not impact capabilities in projectSettings.json
     const scenarios: BotScenario[] = [];
@@ -325,11 +327,19 @@ export function fillInSolutionSettings(
       capabilities[notificationIndex] = BotOptionItem.id;
       scenarios.push(BotScenario.NotificationBot);
     }
+
     const commandAndResponseIndex = capabilities.indexOf(CommandAndResponseOptionItem.id);
     if (commandAndResponseIndex !== -1) {
       capabilities[commandAndResponseIndex] = BotOptionItem.id;
       scenarios.push(BotScenario.CommandAndResponseBot);
     }
+
+    const workflowIndex = capabilities.indexOf(WorkflowOptionItem.id);
+    if (workflowIndex !== -1) {
+      capabilities[workflowIndex] = BotOptionItem.id;
+      scenarios.push(BotScenario.WorkflowBot);
+    }
+
     answers[AzureSolutionQuestionNames.Scenarios] = scenarios;
     // dedup
     capabilities = [...new Set(capabilities)];

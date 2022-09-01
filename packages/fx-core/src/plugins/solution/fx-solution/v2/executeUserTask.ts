@@ -77,6 +77,7 @@ import {
   TabOptionItem,
   TabSPFxNewUIItem,
   TabSsoItem,
+  WorkflowOptionItem,
 } from "../question";
 import { getAllV2ResourcePluginMap, ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { sendErrorTelemetryThenReturnError } from "../utils/util";
@@ -343,11 +344,19 @@ export async function addCapability(
     capabilitiesAnswer[notificationIndex] = BotOptionItem.id;
     scenarios.push(BotScenario.NotificationBot);
   }
+
   const commandAndResponseIndex = capabilitiesAnswer.indexOf(CommandAndResponseOptionItem.id);
   if (commandAndResponseIndex !== -1) {
     capabilitiesAnswer[commandAndResponseIndex] = BotOptionItem.id;
     scenarios.push(BotScenario.CommandAndResponseBot);
   }
+
+  const workflowIndex = capabilitiesAnswer.indexOf(WorkflowOptionItem.id);
+  if (workflowIndex !== -1) {
+    capabilitiesAnswer[workflowIndex] = BotOptionItem.id;
+    scenarios.push(BotScenario.WorkflowBot);
+  }
+
   inputsNew[AzureSolutionQuestionNames.Scenarios] = scenarios;
   capabilitiesAnswer = [...new Set(capabilitiesAnswer)];
 

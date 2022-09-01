@@ -8,3 +8,4 @@ export * from "./projectSettingsHelper";
 export * from "./taskDefinition";
 export * from "./constants";
 export * from "./localTelemetryReporter";
+export * from "./localSettingsHelper";

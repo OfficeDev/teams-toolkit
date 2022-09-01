@@ -139,3 +139,5 @@
 /packages/fx-core/tests/component/feature/apiconnector @xzf0587 @wenytang-ms @blackchoey
 
 /packages/sdk-react @tecton @yiqing-zhao
+
+/packages/fx-core/src/component/debugHandler @swatDong @XiaofuHuang @kuojianlu @kimizhu

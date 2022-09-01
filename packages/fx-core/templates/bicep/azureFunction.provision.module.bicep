@@ -67,7 +67,7 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
           name: 'WEBSITE_RUN_FROM_PACKAGE'
           value: '1' // Run Azure Function from a package file
         }
-        {{#if (contains "teams-bot" connections)}}
+        {{#if (equals "Bot" scenario)}}
         {
           name: 'RUNNING_ON_AZURE'
           value: '1'

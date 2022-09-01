@@ -362,12 +362,17 @@ export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): Pro
     const aad = getComponent(settingsV3, ComponentNames.AadApp);
     if (aad) {
       settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-aad-app-for-teams");
+      if (!settingsV2.solutionSettings.capabilities.includes("TabSSO")) {
+        settingsV2.solutionSettings.capabilities.push("TabSSO");
+      }
     }
     const teamsTab = getComponent(settingsV3, ComponentNames.TeamsTab);
     if (teamsTab) {
       settingsV2.solutionSettings.capabilities.push("Tab");
       if (teamsTab.sso) {
-        settingsV2.solutionSettings.capabilities.push("TabSSO");
+        if (!settingsV2.solutionSettings.capabilities.includes("TabSSO")) {
+          settingsV2.solutionSettings.capabilities.push("TabSSO");
+        }
       }
       if (teamsTab.hosting === "spfx") {
         settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-spfx");

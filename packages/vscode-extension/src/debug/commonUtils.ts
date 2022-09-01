@@ -21,6 +21,7 @@ import {
   PluginNames,
   GLOBAL_CONFIG,
   getResourceGroupInPortal,
+  getProjectComponents as coreGetProjectComponents,
 } from "@microsoft/teamsfx-core";
 import { allRunningDebugSessions } from "./teamsfxTaskHandler";
 
@@ -398,32 +399,6 @@ export function checkAndSkipDebugging(): boolean {
 
 // for telemetry use only
 export async function getProjectComponents(): Promise<string | undefined> {
-  const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
-  try {
-    const projectPath = globalVariables.workspaceUri!.fsPath;
-    const projectSettings = await localEnvManager.getProjectSettings(projectPath);
-    const result: { [key: string]: any } = { components: [] };
-    if (ProjectSettingsHelper.isSpfx(projectSettings)) {
-      result.components.push("spfx");
-    }
-    if (ProjectSettingsHelper.includeFrontend(projectSettings)) {
-      result.components.push("frontend");
-    }
-    if (ProjectSettingsHelper.includeBot(projectSettings)) {
-      result.components.push(`bot`);
-      result.botHostType = ProjectSettingsHelper.includeFuncHostedBot(projectSettings)
-        ? "azure-functions"
-        : "app-service";
-      result.botCapabilities = ProjectSettingsHelper.getBotCapabilities(projectSettings);
-    }
-    if (ProjectSettingsHelper.includeBackend(projectSettings)) {
-      result.components.push("backend");
-    }
-    if (ProjectSettingsHelper.includeAAD(projectSettings)) {
-      result.components.push("aad");
-    }
-    return JSON.stringify(result);
-  } catch (error: any) {
-    return undefined;
-  }
+  const projectPath = globalVariables.workspaceUri!.fsPath;
+  return coreGetProjectComponents(projectPath, VsCodeLogInstance, ExtTelemetry.reporter);
 }

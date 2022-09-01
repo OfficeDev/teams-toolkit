@@ -9,7 +9,7 @@ import { createContextV3 } from "../../src/component/utils";
 import { configLocalEnvironment, setupLocalEnvironment } from "../../src/component/debug";
 import { MockTools } from "../core/utils";
 import { setTools } from "../../src/core/globalVars";
-import { ComponentNames } from "../../src/component/constants";
+import { ComponentNames, ProgrammingLanguage } from "../../src/component/constants";
 import mockedEnv from "mocked-env";
 chai.use(chaiAsPromised);
 
@@ -142,7 +142,7 @@ describe("DebugComponent", () => {
       const projectSetting: ProjectSettingsV3 = {
         appName: "",
         projectId: uuid.v4(),
-        programmingLanguage: "typescript",
+        programmingLanguage: ProgrammingLanguage.TS,
         components: [
           {
             name: ComponentNames.TeamsBot,
@@ -195,6 +195,46 @@ describe("DebugComponent", () => {
       envInfo.config = {};
       const result2 = await configLocalEnvironment(context, inputs);
       chai.assert.isTrue(result2.isOk());
+    });
+    it("happy path", async () => {
+      const projectSetting: ProjectSettingsV3 = {
+        appName: "",
+        projectId: uuid.v4(),
+        programmingLanguage: ProgrammingLanguage.CSharp,
+        components: [
+          {
+            name: ComponentNames.TeamsBot,
+            hosting: ComponentNames.Function,
+          },
+          {
+            name: ComponentNames.AadApp,
+          },
+        ],
+      };
+      const inputs = {
+        platform: Platform.VS,
+        projectPath: path.resolve(__dirname, `./data/${projectSetting.projectId}`),
+        checkerInfo: { skipNgrok: true },
+      };
+      const context = createContextV3(projectSetting);
+      const envInfo: any = {
+        envName: "default",
+        config: {},
+        state: {
+          solution: {},
+          [ComponentNames.TeamsBot]: {
+            siteEndPoint: "https://www.test.com",
+            siteEndpoint: "https://endpoint.com/",
+            domain: "endpoint.com/",
+          },
+          [ComponentNames.AppManifest]: {
+            tenantId: "mockTenantId",
+          },
+        },
+      };
+      context.envInfo = envInfo;
+      const result = await configLocalEnvironment(context, inputs);
+      chai.assert.isTrue(result.isOk());
     });
   });
 });

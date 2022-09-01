@@ -5,8 +5,8 @@
 import * as vscode from "vscode";
 import { assembleError, FxError, Result } from "@microsoft/teamsfx-api";
 import { showError } from "../../handlers";
-import { outputPanelCommand } from "../constants";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
+import { outputPanelCommand } from "../constants";
 
 const ControlCodes = {
   CtrlC: "\u0003",

@@ -3,8 +3,10 @@
 
 import "mocha";
 import { expect } from "chai";
-import { stub, restore } from "sinon";
+import { stub, restore, assert } from "sinon";
 import rewire from "rewire";
+
+import fs from "fs-extra";
 
 import { TestHelper } from "../helper";
 
@@ -86,5 +88,45 @@ describe("Yo checker", () => {
 
     const result = await yc.ensureDependency(pluginContext);
     expect(result.isOk()).is.false;
+  });
+
+  it("is installed", async () => {
+    const yc = new YoChecker(new StubLogger());
+    stub(fs, "pathExists").callsFake(async () => {
+      console.log("stub pathExists");
+      return true;
+    });
+
+    stub(YoChecker.prototype, <any>"queryVersion").callsFake(async () => {
+      console.log("stub queryversion");
+      return ryc.__get__("supportedVersion");
+    });
+
+    const result = await yc.isInstalled();
+    expect(result).is.true;
+  });
+
+  it("install", async () => {
+    const yc = new YoChecker(new StubLogger());
+    const cleanStub = stub(YoChecker.prototype, <any>"cleanup").callsFake(async () => {
+      console.log("stub cleanup");
+      return;
+    });
+    const installStub = stub(YoChecker.prototype, <any>"installYo").callsFake(async () => {
+      console.log("stub installyo");
+      return;
+    });
+    const validateStub = stub(YoChecker.prototype, <any>"validate").callsFake(async () => {
+      console.log("stub validate");
+      return false;
+    });
+
+    try {
+      await yc.install();
+    } catch {
+      assert.callCount(installStub, 1);
+      assert.callCount(cleanStub, 2);
+      assert.callCount(validateStub, 1);
+    }
   });
 });

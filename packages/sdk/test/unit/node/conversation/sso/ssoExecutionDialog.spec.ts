@@ -25,7 +25,7 @@ import {
   ErrorCode,
   TeamsBotSsoPromptSettings,
   TeamsFx,
-  SsoExecutionDialog,
+  BotSsoExecutionDialog,
   TeamsBotSsoPromptTokenResponse,
   CommandMessage,
 } from "../../../../../src";
@@ -42,7 +42,7 @@ import { ErrorMessage } from "../../../../../src/core/errors";
 chaiUse(chaiPromises);
 let mockedEnvRestore: () => void;
 
-describe("SsoExecutionDialog Tests - Node", () => {
+describe("BotSsoExecutionDialog Tests - Node", () => {
   const sleep = promisify(setTimeout);
 
   const clientId = "fake_client_id";
@@ -337,7 +337,7 @@ describe("SsoExecutionDialog Tests - Node", () => {
       timeout: timeout_value,
       endOnInvalidMessage: endOnInvalidMessage,
     };
-    const ssoExecutionDialog = new SsoExecutionDialog(storage, ssoPromptSettings, teamsfx);
+    const ssoExecutionDialog = new BotSsoExecutionDialog(storage, ssoPromptSettings, teamsfx);
     const testHandler = new TestSsoCommandHandler("TestCommand", testSsoHandlerResponseMessage);
     ssoExecutionDialog.addCommand(
       async (

@@ -8,7 +8,7 @@ import { CommandBot } from "../../../../src/conversation/command";
 import { CommandResponseMiddleware } from "../../../../src/conversation/middlewares/commandMiddleware";
 import { TestCommandHandler, TestSsoCommandHandler } from "./testUtils";
 import mockedEnv from "mocked-env";
-import { DefaultSsoExecutionActivityHandler } from "../../../../src/conversation/sso/defaultSsoExecutionActivityHandler";
+import { DefaultBotSsoExecutionActivityHandler } from "../../../../src/conversation/sso/defaultBotSsoExecutionActivityHandler";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../../../../src/core/errors";
 
 describe("CommandBot Tests - Node", () => {
@@ -94,7 +94,7 @@ describe("CommandBot Tests - Node", () => {
   });
 
   it("create sso command bot should add correct activity handler", () => {
-    const defaultSsoHandler = new DefaultSsoExecutionActivityHandler(undefined);
+    const defaultSsoHandler = new DefaultBotSsoExecutionActivityHandler(undefined);
     const commandBot = new CommandBot(
       adapter,
       {
@@ -106,7 +106,7 @@ describe("CommandBot Tests - Node", () => {
     const middleware = middlewares[0] as CommandResponseMiddleware;
 
     assert.isDefined(middleware.ssoActivityHandler);
-    assert.isTrue(middleware.ssoActivityHandler instanceof DefaultSsoExecutionActivityHandler);
+    assert.isTrue(middleware.ssoActivityHandler instanceof DefaultBotSsoExecutionActivityHandler);
     assert.isTrue(middleware.commandHandlers.length == 1);
   });
 
@@ -120,33 +120,45 @@ describe("CommandBot Tests - Node", () => {
   });
 
   it("add sso command handler should add correct activity handler", () => {
-    const commandBot = new CommandBot(adapter, undefined, new DefaultSsoExecutionActivityHandler());
+    const commandBot = new CommandBot(
+      adapter,
+      undefined,
+      new DefaultBotSsoExecutionActivityHandler()
+    );
     const middleware = middlewares[0] as CommandResponseMiddleware;
     commandBot.registerSsoCommand(new TestSsoCommandHandler("test"));
     assert.isDefined(middleware.ssoActivityHandler);
-    assert.isTrue(middleware.ssoActivityHandler instanceof DefaultSsoExecutionActivityHandler);
+    assert.isTrue(middleware.ssoActivityHandler instanceof DefaultBotSsoExecutionActivityHandler);
     assert.isTrue(middleware.commandHandlers.length == 1);
   });
 
   it("add sso command handlers should add correct activity handler", () => {
-    const commandBot = new CommandBot(adapter, undefined, new DefaultSsoExecutionActivityHandler());
+    const commandBot = new CommandBot(
+      adapter,
+      undefined,
+      new DefaultBotSsoExecutionActivityHandler()
+    );
     const middleware = middlewares[0] as CommandResponseMiddleware;
     commandBot.registerSsoCommands([
       new TestSsoCommandHandler("test"),
       new TestSsoCommandHandler("test2"),
     ]);
     assert.isDefined(middleware.ssoActivityHandler);
-    assert.isTrue(middleware.ssoActivityHandler instanceof DefaultSsoExecutionActivityHandler);
+    assert.isTrue(middleware.ssoActivityHandler instanceof DefaultBotSsoExecutionActivityHandler);
     assert.isTrue(middleware.commandHandlers.length == 2);
   });
 
   it("add both normal command and sso command should add correct activity handler", () => {
-    const commandBot = new CommandBot(adapter, undefined, new DefaultSsoExecutionActivityHandler());
+    const commandBot = new CommandBot(
+      adapter,
+      undefined,
+      new DefaultBotSsoExecutionActivityHandler()
+    );
     const middleware = middlewares[0] as CommandResponseMiddleware;
     commandBot.registerCommand(new TestCommandHandler("test"));
     commandBot.registerSsoCommand(new TestSsoCommandHandler("test"));
     assert.isDefined(middleware.ssoActivityHandler);
-    assert.isTrue(middleware.ssoActivityHandler instanceof DefaultSsoExecutionActivityHandler);
+    assert.isTrue(middleware.ssoActivityHandler instanceof DefaultBotSsoExecutionActivityHandler);
     assert.isTrue(middleware.commandHandlers.length == 2);
   });
 });

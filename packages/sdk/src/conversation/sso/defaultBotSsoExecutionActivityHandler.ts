@@ -13,46 +13,55 @@ import {
 } from "botbuilder";
 import { TeamsBotSsoPromptSettings } from "../../bot/teamsBotSsoPrompt";
 import { TeamsFx } from "../../core/teamsfx";
+import { AuthenticationConfiguration } from "../../models/configuration";
 import { IdentityType } from "../../models/identityType";
 import {
-  SsoConfig,
-  SsoExecutionActivityHandler,
-  SsoExecutionDialogHandler,
+  BotSsoConfig,
+  BotSsoExecutionActivityHandler,
+  BotSsoExecutionDialogHandler,
   TriggerPatterns,
 } from "../interface";
-import { SsoExecutionDialog } from "./ssoExecutionDialog";
+import { BotSsoExecutionDialog } from "./botSsoExecutionDialog";
 
 /**
  * Default sso execution activity handler
  */
-export class DefaultSsoExecutionActivityHandler
+export class DefaultBotSsoExecutionActivityHandler
   extends TeamsActivityHandler
-  implements SsoExecutionActivityHandler
+  implements BotSsoExecutionActivityHandler
 {
-  private ssoExecutionDialog: SsoExecutionDialog;
+  private ssoExecutionDialog: BotSsoExecutionDialog;
   private userState: BotState;
   private conversationState: BotState;
   private dialogState: StatePropertyAccessor;
 
   /**
-   * Creates a new instance of the DefaultSsoExecutionActivityHandler.
+   * Creates a new instance of the DefaultBotSsoExecutionActivityHandler.
    * @param ssoConfig configuration for sso command bot
    */
-  constructor(ssoConfig?: SsoConfig | undefined) {
+  constructor(ssoConfig?: BotSsoConfig | undefined) {
     super();
     const memoryStorage = new MemoryStorage();
-    const userState = ssoConfig?.userState ?? new UserState(memoryStorage);
-    const conversationState = ssoConfig?.conversationState ?? new ConversationState(memoryStorage);
-    const dedupStorage = ssoConfig?.dedupStorage ?? memoryStorage;
-    const scopes = ssoConfig?.scopes ?? ["User.Read"];
-
-    const teamsfx = new TeamsFx(IdentityType.User, { ...ssoConfig?.teamsFxConfig });
+    const userState = ssoConfig?.dialog?.userState ?? new UserState(memoryStorage);
+    const conversationState =
+      ssoConfig?.dialog?.conversationState ?? new ConversationState(memoryStorage);
+    const dedupStorage = ssoConfig?.dialog?.dedupStorage ?? memoryStorage;
+    const scopes = ssoConfig?.aad.scopes ?? [".default"];
     const settings: TeamsBotSsoPromptSettings = {
       scopes: scopes,
-      timeout: ssoConfig?.ssoPromptConfig?.timeout,
-      endOnInvalidMessage: ssoConfig?.ssoPromptConfig?.endOnInvalidMessage,
+      timeout: ssoConfig?.dialog?.ssoPromptConfig?.timeout,
+      endOnInvalidMessage: ssoConfig?.dialog?.ssoPromptConfig?.endOnInvalidMessage,
     };
-    this.ssoExecutionDialog = new SsoExecutionDialog(dedupStorage, settings, teamsfx);
+
+    let teamsfx: TeamsFx;
+    if (ssoConfig) {
+      const { scopes, ...customConfig } = ssoConfig?.aad;
+      teamsfx = new TeamsFx(IdentityType.User, { ...customConfig });
+    } else {
+      teamsfx = new TeamsFx(IdentityType.User);
+    }
+
+    this.ssoExecutionDialog = new BotSsoExecutionDialog(dedupStorage, settings, teamsfx);
     this.conversationState = conversationState;
 
     this.dialogState = conversationState.createProperty("DialogState");
@@ -66,10 +75,10 @@ export class DefaultSsoExecutionActivityHandler
 
   /**
    * Add TeamsFxBotSsoCommandHandler instance to sso execution dialog
-   * @param handler {@link SsoExecutionDialogHandler} callback function
+   * @param handler {@link BotSsoExecutionDialogHandler} callback function
    * @param triggerPatterns The trigger pattern
    */
-  addCommand(handler: SsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void {
+  addCommand(handler: BotSsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void {
     this.ssoExecutionDialog.addCommand(handler, triggerPatterns);
   }
 

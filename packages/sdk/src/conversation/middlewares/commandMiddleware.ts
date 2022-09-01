@@ -7,7 +7,7 @@ import { ErrorCode, ErrorMessage, ErrorWithCode } from "../../core/errors";
 import { internalLogger } from "../../util/logger";
 import {
   CommandMessage,
-  SsoExecutionActivityHandler,
+  BotSsoExecutionActivityHandler,
   TeamsFxBotCommandHandler,
   TeamsFxBotSsoCommandHandler,
   TriggerPatterns,
@@ -20,13 +20,13 @@ export class CommandResponseMiddleware implements Middleware {
   public readonly commandHandlers: (TeamsFxBotCommandHandler | TeamsFxBotSsoCommandHandler)[] = [];
   private readonly ssoCommandHandlers: TeamsFxBotSsoCommandHandler[] = [];
 
-  public ssoActivityHandler: SsoExecutionActivityHandler | undefined;
+  public ssoActivityHandler: BotSsoExecutionActivityHandler | undefined;
   public hasSsoCommand: boolean;
 
   constructor(
     handlers?: TeamsFxBotCommandHandler[],
     ssoHandlers?: TeamsFxBotSsoCommandHandler[],
-    activityHandler?: SsoExecutionActivityHandler
+    activityHandler?: BotSsoExecutionActivityHandler
   ) {
     handlers = handlers ?? [];
     ssoHandlers = ssoHandlers ?? [];

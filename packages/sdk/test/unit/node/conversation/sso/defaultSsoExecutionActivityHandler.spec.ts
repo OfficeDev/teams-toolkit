@@ -6,11 +6,11 @@ import { ConversationState, MemoryStorage, TurnContext, UserState } from "botbui
 import * as sinon from "sinon";
 import { CustomStorage } from "../testUtils";
 import mockedEnv from "mocked-env";
-import { DefaultSsoExecutionActivityHandler } from "../../../../../src/conversation/sso/defaultSsoExecutionActivityHandler";
-import { SsoExecutionDialog } from "../../../../../src/conversation/sso/ssoExecutionDialog";
-import { SsoConfig } from "../../../../../types/src/conversation/interface";
+import { DefaultBotSsoExecutionActivityHandler } from "../../../../../src/conversation/sso/defaultBotSsoExecutionActivityHandler";
+import { BotSsoExecutionDialog } from "../../../../../src/conversation/sso/botSsoExecutionDialog";
+import { BotSsoConfig } from "../../../../../types/src/conversation/interface";
 
-describe("DefaultSsoExecutionActivityHandler Tests - Node", () => {
+describe("DefaultBotSsoExecutionActivityHandler Tests - Node", () => {
   let mockedEnvRestore: () => void;
 
   const sandbox = sinon.createSandbox();
@@ -39,66 +39,70 @@ describe("DefaultSsoExecutionActivityHandler Tests - Node", () => {
   });
 
   it("create default sso execution activity handler should work", () => {
-    const defaultSsoExecutionActivityHandler: any = new DefaultSsoExecutionActivityHandler(
+    const defaultBotSsoExecutionActivityHandler: any = new DefaultBotSsoExecutionActivityHandler(
       undefined
     );
-    const ssoExecutionDialog = defaultSsoExecutionActivityHandler.ssoExecutionDialog;
+    const ssoExecutionDialog = defaultBotSsoExecutionActivityHandler.ssoExecutionDialog;
     assert.isDefined(ssoExecutionDialog);
 
-    const userState = defaultSsoExecutionActivityHandler.userState;
+    const userState = defaultBotSsoExecutionActivityHandler.userState;
     assert.isDefined(userState);
     assert.isTrue(userState.storage instanceof MemoryStorage);
 
-    const conversationState = defaultSsoExecutionActivityHandler.conversationState;
+    const conversationState = defaultBotSsoExecutionActivityHandler.conversationState;
     assert.isDefined(conversationState);
     assert.isTrue(userState.storage instanceof MemoryStorage);
 
-    const dialogState = defaultSsoExecutionActivityHandler.dialogState;
+    const dialogState = defaultBotSsoExecutionActivityHandler.dialogState;
     assert.isDefined(dialogState);
   });
 
   it("create default sso execution activity handler should work with custom config", () => {
     const storage = new CustomStorage();
 
-    const ssoConfig: SsoConfig = {
-      CustomSsoExecutionActivityHandler: DefaultSsoExecutionActivityHandler,
-      scopes: ["User.Read"],
-      userState: new UserState(storage),
-      conversationState: new ConversationState(storage),
-      dedupStorage: storage,
+    const ssoConfig: BotSsoConfig = {
+      dialog: {
+        CustomBotSsoExecutionActivityHandler: DefaultBotSsoExecutionActivityHandler,
+        userState: new UserState(storage),
+        conversationState: new ConversationState(storage),
+        dedupStorage: storage,
+      },
+      aad: {
+        scopes: ["User.Read"],
+      },
     };
-    const defaultSsoExecutionActivityHandler: any = new DefaultSsoExecutionActivityHandler(
+    const defaultBotSsoExecutionActivityHandler: any = new DefaultBotSsoExecutionActivityHandler(
       ssoConfig
     );
 
-    const ssoExecutionDialog = defaultSsoExecutionActivityHandler.ssoExecutionDialog;
+    const ssoExecutionDialog = defaultBotSsoExecutionActivityHandler.ssoExecutionDialog;
     assert.isDefined(ssoExecutionDialog);
 
-    const userState = defaultSsoExecutionActivityHandler.userState;
+    const userState = defaultBotSsoExecutionActivityHandler.userState;
     assert.isDefined(userState);
     assert.isTrue(userState.storage instanceof CustomStorage);
 
-    const conversationState = defaultSsoExecutionActivityHandler.conversationState;
+    const conversationState = defaultBotSsoExecutionActivityHandler.conversationState;
     assert.isDefined(conversationState);
     assert.isTrue(userState.storage instanceof CustomStorage);
   });
 
   it("trigger sign in function should call sso execution dialog", () => {
-    const defaultSsoExecutionActivityHandler: any = new DefaultSsoExecutionActivityHandler(
+    const defaultBotSsoExecutionActivityHandler: any = new DefaultBotSsoExecutionActivityHandler(
       undefined
     );
     const ssoExecutionDialog =
-      defaultSsoExecutionActivityHandler.ssoExecutionDialog as SsoExecutionDialog;
+      defaultBotSsoExecutionActivityHandler.ssoExecutionDialog as BotSsoExecutionDialog;
     const stub = sinon.stub(ssoExecutionDialog, "run").resolves();
     const context = sandbox.createStubInstance(TurnContext);
 
-    defaultSsoExecutionActivityHandler.handleTeamsSigninVerifyState(context);
+    defaultBotSsoExecutionActivityHandler.handleTeamsSigninVerifyState(context);
     assert.isTrue(stub.callCount === 1);
 
-    defaultSsoExecutionActivityHandler.handleTeamsSigninTokenExchange(context);
+    defaultBotSsoExecutionActivityHandler.handleTeamsSigninTokenExchange(context);
     assert.isTrue(stub.callCount === 2);
 
-    defaultSsoExecutionActivityHandler.onSignInInvoke(context);
+    defaultBotSsoExecutionActivityHandler.onSignInInvoke(context);
     assert.isTrue(stub.callCount === 3);
   });
 });

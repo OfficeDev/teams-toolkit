@@ -17,7 +17,7 @@ import {
   TestStorage,
 } from "./testUtils";
 import { CardActionMiddleware } from "../../../../src/conversation/middlewares/cardActionMiddleware";
-import { DefaultSsoExecutionActivityHandler } from "../../../../src/conversation/sso/defaultSsoExecutionActivityHandler";
+import { DefaultBotSsoExecutionActivityHandler } from "../../../../src/conversation/sso/defaultBotSsoExecutionActivityHandler";
 import { NotificationMiddleware } from "../../../../src/conversation/middlewares/notificationMiddleware";
 chaiUse(chaiPromises);
 
@@ -120,13 +120,15 @@ describe("CommandResponse Middleware Tests - Node", () => {
   it("onTurn should correctly trigger sso command activity handler", async () => {
     const testContext = new MockContext("test");
     const testSsoCommand = new TestSsoCommandHandler("test");
-    const defaultSsoExecutionActivityHandler = new DefaultSsoExecutionActivityHandler(undefined);
-    const stub = sinon.stub(defaultSsoExecutionActivityHandler, "run").resolves();
+    const defaultBotSsoExecutionActivityHandler = new DefaultBotSsoExecutionActivityHandler(
+      undefined
+    );
+    const stub = sinon.stub(defaultBotSsoExecutionActivityHandler, "run").resolves();
 
     const middleware = new CommandResponseMiddleware(
       [],
       [testSsoCommand],
-      defaultSsoExecutionActivityHandler
+      defaultBotSsoExecutionActivityHandler
     );
 
     await middleware.onTurn(testContext as any, async () => {});
@@ -137,13 +139,13 @@ describe("CommandResponse Middleware Tests - Node", () => {
   it("onTurn should be called if context is not a message activity", async () => {
     const testContext = new MockContext("test", "invoke");
     const testSsoCommand = new TestSsoCommandHandler("test");
-    const defaultSsoExecutionActivityHandler = new DefaultSsoExecutionActivityHandler();
-    const stub = sinon.stub(defaultSsoExecutionActivityHandler, "run").resolves();
+    const defaultBotSsoExecutionActivityHandler = new DefaultBotSsoExecutionActivityHandler();
+    const stub = sinon.stub(defaultBotSsoExecutionActivityHandler, "run").resolves();
 
     const middleware = new CommandResponseMiddleware(
       [],
       [testSsoCommand],
-      defaultSsoExecutionActivityHandler
+      defaultBotSsoExecutionActivityHandler
     );
 
     await middleware.onTurn(testContext as any, async () => {});

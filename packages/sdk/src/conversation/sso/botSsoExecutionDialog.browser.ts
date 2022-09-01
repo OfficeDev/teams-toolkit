@@ -4,33 +4,33 @@
 import { formatString } from "../../util/utils";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../../core/errors";
 import { TeamsFx } from "../../core/teamsfx.browser";
-import { SsoExecutionDialogHandler, TriggerPatterns } from "../interface";
+import { BotSsoExecutionDialogHandler, TriggerPatterns } from "../interface";
 import { StatePropertyAccessor, TurnContext, Storage } from "botbuilder";
 /*
  * Sso execution dialog, use to handle sso command
  */
-export class SsoExecutionDialog {
+export class BotSsoExecutionDialog {
   /**
-   * Creates a new instance of the SsoExecutionDialog.
+   * Creates a new instance of the BotSsoExecutionDialog.
    * @param dedupStorage Helper storage to remove duplicated messages
    * @param requiredScopes The list of scopes for which the token will have access
    * @param teamsfx {@link TeamsFx} instance for authentication
    */
   constructor(dedupStorage: Storage, requiredScopes: string[], teamsfx: TeamsFx) {
     throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "SsoExecutionDialog"),
+      formatString(ErrorMessage.BrowserRuntimeNotSupported, "BotSsoExecutionDialog"),
       ErrorCode.RuntimeNotSupported
     );
   }
 
   /**
    * Add TeamsFxBotSsoCommandHandler instance
-   * @param handler {@link SsoExecutionDialogHandler} callback function
+   * @param handler {@link BotSsoExecutionDialogHandler} callback function
    * @param triggerPatterns The trigger pattern
    */
-  public addCommand(handler: SsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void {
+  public addCommand(handler: BotSsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void {
     throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "SsoExecutionDialog"),
+      formatString(ErrorMessage.BrowserRuntimeNotSupported, "BotSsoExecutionDialog"),
       ErrorCode.RuntimeNotSupported
     );
   }
@@ -43,7 +43,7 @@ export class SsoExecutionDialog {
    */
   public async run(context: TurnContext, accessor: StatePropertyAccessor) {
     throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "SsoExecutionDialog"),
+      formatString(ErrorMessage.BrowserRuntimeNotSupported, "BotSsoExecutionDialog"),
       ErrorCode.RuntimeNotSupported
     );
   }
@@ -55,7 +55,7 @@ export class SsoExecutionDialog {
    */
   protected async onEndDialog(context: TurnContext) {
     throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "SsoExecutionDialog"),
+      formatString(ErrorMessage.BrowserRuntimeNotSupported, "BotSsoExecutionDialog"),
       ErrorCode.RuntimeNotSupported
     );
   }

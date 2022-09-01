@@ -4,9 +4,9 @@
 import { BotFrameworkAdapter, TurnContext, WebRequest, WebResponse } from "botbuilder";
 import { CardActionBot } from "./cardAction";
 import { CommandBot } from "./command";
-import { ConversationOptions, SsoExecutionActivityHandler } from "./interface";
+import { ConversationOptions, BotSsoExecutionActivityHandler } from "./interface";
 import { NotificationBot } from "./notification";
-import { DefaultSsoExecutionActivityHandler } from "./sso/defaultSsoExecutionActivityHandler";
+import { DefaultBotSsoExecutionActivityHandler } from "./sso/defaultBotSsoExecutionActivityHandler";
 
 /**
  * Provide utilities for bot conversation, including:
@@ -95,13 +95,13 @@ export class ConversationBot {
       this.adapter = this.createDefaultAdapter(options.adapterConfig);
     }
 
-    let ssoCommandActivityHandler: SsoExecutionActivityHandler;
-    if (options?.ssoConfig?.CustomSsoExecutionActivityHandler) {
-      ssoCommandActivityHandler = new options.ssoConfig.CustomSsoExecutionActivityHandler(
+    let ssoCommandActivityHandler: BotSsoExecutionActivityHandler;
+    if (options?.ssoConfig?.dialog?.CustomBotSsoExecutionActivityHandler) {
+      ssoCommandActivityHandler = new options.ssoConfig.dialog.CustomBotSsoExecutionActivityHandler(
         options?.ssoConfig
       );
     } else {
-      ssoCommandActivityHandler = new DefaultSsoExecutionActivityHandler(options.ssoConfig);
+      ssoCommandActivityHandler = new DefaultBotSsoExecutionActivityHandler(options.ssoConfig);
     }
 
     if (options.command?.enabled) {

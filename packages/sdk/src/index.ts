@@ -57,13 +57,13 @@ export {
   TeamsFxAdaptiveCardActionHandler,
   TeamsFxBotCommandHandler,
   TeamsFxBotSsoCommandHandler,
-  SsoExecutionActivityHandler,
-  SsoConfig,
-  SsoExecutionDialogHandler,
+  BotSsoExecutionActivityHandler,
+  BotSsoConfig,
+  BotSsoExecutionDialogHandler,
 } from "./conversation/interface";
 export { ConversationBot } from "./conversation/conversation";
-export { SsoExecutionDialog } from "./conversation/sso/ssoExecutionDialog";
-export { DefaultSsoExecutionActivityHandler } from "./conversation/sso/defaultSsoExecutionActivityHandler";
+export { BotSsoExecutionDialog } from "./conversation/sso/botSsoExecutionDialog";
+export { DefaultBotSsoExecutionActivityHandler } from "./conversation/sso/defaultBotSsoExecutionActivityHandler";
 export {
   Channel,
   Member,

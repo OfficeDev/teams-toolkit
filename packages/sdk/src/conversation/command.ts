@@ -6,8 +6,8 @@ import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
 import { internalLogger } from "../util/logger";
 import {
   CommandOptions,
-  SsoConfig,
-  SsoExecutionActivityHandler,
+  BotSsoConfig,
+  BotSsoExecutionActivityHandler,
   TeamsFxBotCommandHandler,
   TeamsFxBotSsoCommandHandler,
 } from "./interface";
@@ -22,7 +22,7 @@ import { CommandResponseMiddleware } from "./middlewares/commandMiddleware";
 export class CommandBot {
   private readonly adapter: BotFrameworkAdapter;
   private readonly middleware: CommandResponseMiddleware;
-  private readonly ssoConfig: SsoConfig | undefined;
+  private readonly ssoConfig: BotSsoConfig | undefined;
 
   /**
    * Creates a new instance of the `CommandBot`.
@@ -33,8 +33,8 @@ export class CommandBot {
   constructor(
     adapter: BotFrameworkAdapter,
     options?: CommandOptions,
-    ssoCommandActivityHandler?: SsoExecutionActivityHandler,
-    ssoConfig?: SsoConfig
+    ssoCommandActivityHandler?: BotSsoExecutionActivityHandler,
+    ssoConfig?: BotSsoConfig
   ) {
     this.ssoConfig = ssoConfig;
 

@@ -304,57 +304,59 @@ export interface TeamsFxAdaptiveCardActionHandler {
 /**
  * Interface for SSO configuration for Bot SSO
  */
-export interface SsoConfig {
+export interface BotSsoConfig {
   /**
-   * The list of scopes for which the token will have access
+   * aad related configurations
    */
-  scopes: string[];
-
-  /**
-   * Custom sso execution activity handler class which should implement the interface {@link SsoExecutionActivityHandler}. If not provided, it will use {@link DefaultSsoExecutionActivityHandler} by default
-   */
-  CustomSsoExecutionActivityHandler?: new (
-    ssoConfig: SsoConfig | undefined
-  ) => SsoExecutionActivityHandler;
-
-  /**
-   * Conversation state for sso command bot, if not provided, it will use internal memory storage to create a new one.
-   */
-  conversationState?: ConversationState;
-
-  /**
-   * User state for sso command bot, if not provided, it will use internal memory storage to create a new one.
-   */
-  userState?: UserState;
-
-  /**
-   * Used by {@link SsoExecutionDialog} to remove duplicated messages, if not provided, it will use internal memory storage
-   */
-  dedupStorage?: Storage;
-
-  /**
-   * Settings used to configure an teams sso prompt instance.
-   */
-  ssoPromptConfig?: {
+  aad: {
     /**
-     * Number of milliseconds the prompt will wait for the user to authenticate.
-     * Defaults to a value `900,000` (15 minutes.)
+     * The list of scopes for which the token will have access
      */
-    timeout?: number;
+    scopes?: string[];
+  } & AuthenticationConfiguration;
+
+  dialog?: {
+    /**
+     * Custom sso execution activity handler class which should implement the interface {@link BotSsoExecutionActivityHandler}. If not provided, it will use {@link DefaultBotSsoExecutionActivityHandler} by default
+     */
+    CustomBotSsoExecutionActivityHandler?: new (
+      ssoConfig?: BotSsoConfig | undefined
+    ) => BotSsoExecutionActivityHandler;
 
     /**
-     * Value indicating whether the TeamsBotSsoPrompt should end upon receiving an
-     * invalid message.  Generally the TeamsBotSsoPrompt will end the auth flow when receives user
-     * message not related to the auth flow. Setting the flag to false ignores the user's message instead.
-     * Defaults to value `true`
+     * Conversation state for sso command bot, if not provided, it will use internal memory storage to create a new one.
      */
-    endOnInvalidMessage?: boolean;
+    conversationState?: ConversationState;
+
+    /**
+     * User state for sso command bot, if not provided, it will use internal memory storage to create a new one.
+     */
+    userState?: UserState;
+
+    /**
+     * Used by {@link BotSsoExecutionDialog} to remove duplicated messages, if not provided, it will use internal memory storage
+     */
+    dedupStorage?: Storage;
+
+    /**
+     * Settings used to configure an teams sso prompt dialog.
+     */
+    ssoPromptConfig?: {
+      /**
+       * Number of milliseconds the prompt will wait for the user to authenticate.
+       * Defaults to a value `900,000` (15 minutes.)
+       */
+      timeout?: number;
+
+      /**
+       * Value indicating whether the TeamsBotSsoPrompt should end upon receiving an
+       * invalid message.  Generally the TeamsBotSsoPrompt will end the auth flow when receives user
+       * message not related to the auth flow. Setting the flag to false ignores the user's message instead.
+       * Defaults to value `true`
+       */
+      endOnInvalidMessage?: boolean;
+    };
   };
-
-  /**
-   * teamsfx configuration for sso
-   */
-  teamsFxConfig?: AuthenticationConfiguration;
 }
 
 /**
@@ -382,7 +384,7 @@ export interface ConversationOptions {
   /**
    * Configurations for sso command bot
    */
-  ssoConfig?: SsoConfig;
+  ssoConfig?: BotSsoConfig;
 
   /**
    * The command part.
@@ -418,13 +420,13 @@ export interface ConversationOptions {
 /**
  * Interface for user to customize sso execution activity handler
  */
-export interface SsoExecutionActivityHandler {
+export interface BotSsoExecutionActivityHandler {
   /**
-   * Add {@link TeamsFxBotSsoCommandHandler} instance to {@link SsoExecutionDialog}
-   * @param handler {@link SsoExecutionDialogHandler} callback function
+   * Add {@link TeamsFxBotSsoCommandHandler} instance to {@link BotSsoExecutionDialog}
+   * @param handler {@link BotSsoExecutionDialogHandler} callback function
    * @param triggerPatterns The trigger pattern
    */
-  addCommand(handler: SsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void;
+  addCommand(handler: BotSsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void;
   run(context: TurnContext): Promise<void>;
   handleTeamsSigninVerifyState(
     context: TurnContext,
@@ -437,7 +439,7 @@ export interface SsoExecutionActivityHandler {
   onSignInInvoke(context: TurnContext): Promise<void>;
 }
 
-export type SsoExecutionDialogHandler = (
+export type BotSsoExecutionDialogHandler = (
   context: TurnContext,
   tokenResponse: TeamsBotSsoPromptTokenResponse,
   message: CommandMessage

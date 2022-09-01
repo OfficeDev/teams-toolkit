@@ -101,6 +101,48 @@ export class BearerTokenAuthProvider implements AuthProvider {
 }
 
 // @public
+export interface BotSsoConfig {
+    aad: {
+        scopes?: string[];
+    } & AuthenticationConfiguration;
+    // (undocumented)
+    dialog?: {
+        CustomBotSsoExecutionActivityHandler?: new (ssoConfig?: BotSsoConfig | undefined) => BotSsoExecutionActivityHandler;
+        conversationState?: ConversationState;
+        userState?: UserState;
+        dedupStorage?: Storage_2;
+        ssoPromptConfig?: {
+            timeout?: number;
+            endOnInvalidMessage?: boolean;
+        };
+    };
+}
+
+// @public
+export interface BotSsoExecutionActivityHandler {
+    addCommand(handler: BotSsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void;
+    // (undocumented)
+    handleTeamsSigninTokenExchange(context: TurnContext, query: SigninStateVerificationQuery): Promise<void>;
+    // (undocumented)
+    handleTeamsSigninVerifyState(context: TurnContext, query: SigninStateVerificationQuery): Promise<void>;
+    // (undocumented)
+    onSignInInvoke(context: TurnContext): Promise<void>;
+    // (undocumented)
+    run(context: TurnContext): Promise<void>;
+}
+
+// @public
+export class BotSsoExecutionDialog extends ComponentDialog {
+    constructor(dedupStorage: Storage_2, ssoPromptSettings: TeamsBotSsoPromptSettings, teamsfx: TeamsFx, dialogName?: string);
+    addCommand(handler: BotSsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void;
+    protected onEndDialog(context: TurnContext): Promise<void>;
+    run(context: TurnContext, accessor: StatePropertyAccessor): Promise<void>;
+}
+
+// @public (undocumented)
+export type BotSsoExecutionDialogHandler = (context: TurnContext, tokenResponse: TeamsBotSsoPromptTokenResponse, message: CommandMessage) => Promise<void>;
+
+// @public
 export class CardActionBot {
     constructor(adapter: BotFrameworkAdapter, options?: CardActionOptions);
     registerHandler(actionHandler: TeamsFxAdaptiveCardActionHandler): void;
@@ -131,7 +173,7 @@ export class Channel implements NotificationTarget {
 
 // @public
 export class CommandBot {
-    constructor(adapter: BotFrameworkAdapter, options?: CommandOptions, ssoCommandActivityHandler?: SsoExecutionActivityHandler, ssoConfig?: SsoConfig);
+    constructor(adapter: BotFrameworkAdapter, options?: CommandOptions, ssoCommandActivityHandler?: BotSsoExecutionActivityHandler, ssoConfig?: BotSsoConfig);
     registerCommand(command: TeamsFxBotCommandHandler): void;
     registerCommands(commands: TeamsFxBotCommandHandler[]): void;
     registerSsoCommand(ssoCommand: TeamsFxBotSsoCommandHandler): void;
@@ -175,7 +217,7 @@ export interface ConversationOptions {
     notification?: NotificationOptions_2 & {
         enabled?: boolean;
     };
-    ssoConfig?: SsoConfig;
+    ssoConfig?: BotSsoConfig;
 }
 
 // @public
@@ -198,9 +240,9 @@ export function createPfxCertOption(pfx: string | Buffer, options?: {
 }): SecureContextOptions;
 
 // @public
-export class DefaultSsoExecutionActivityHandler extends TeamsActivityHandler implements SsoExecutionActivityHandler {
-    constructor(ssoConfig?: SsoConfig | undefined);
-    addCommand(handler: SsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void;
+export class DefaultBotSsoExecutionActivityHandler extends TeamsActivityHandler implements BotSsoExecutionActivityHandler {
+    constructor(ssoConfig?: BotSsoConfig | undefined);
+    addCommand(handler: BotSsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void;
     handleTeamsSigninTokenExchange(context: TurnContext, query: SigninStateVerificationQuery): Promise<void>;
     handleTeamsSigninVerifyState(context: TurnContext, query: SigninStateVerificationQuery): Promise<void>;
     onSignInInvoke(context: TurnContext): Promise<void>;
@@ -372,44 +414,6 @@ export function setLogger(logger?: Logger): void;
 
 // @public
 export function setLogLevel(level: LogLevel): void;
-
-// @public
-export interface SsoConfig {
-    conversationState?: ConversationState;
-    CustomSsoExecutionActivityHandler?: new (ssoConfig: SsoConfig | undefined) => SsoExecutionActivityHandler;
-    dedupStorage?: Storage_2;
-    scopes: string[];
-    ssoPromptConfig?: {
-        timeout?: number;
-        endOnInvalidMessage?: boolean;
-    };
-    teamsFxConfig?: AuthenticationConfiguration;
-    userState?: UserState;
-}
-
-// @public
-export interface SsoExecutionActivityHandler {
-    addCommand(handler: SsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void;
-    // (undocumented)
-    handleTeamsSigninTokenExchange(context: TurnContext, query: SigninStateVerificationQuery): Promise<void>;
-    // (undocumented)
-    handleTeamsSigninVerifyState(context: TurnContext, query: SigninStateVerificationQuery): Promise<void>;
-    // (undocumented)
-    onSignInInvoke(context: TurnContext): Promise<void>;
-    // (undocumented)
-    run(context: TurnContext): Promise<void>;
-}
-
-// @public
-export class SsoExecutionDialog extends ComponentDialog {
-    constructor(dedupStorage: Storage_2, ssoPromptSettings: TeamsBotSsoPromptSettings, teamsfx: TeamsFx, dialogName?: string);
-    addCommand(handler: SsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void;
-    protected onEndDialog(context: TurnContext): Promise<void>;
-    run(context: TurnContext, accessor: StatePropertyAccessor): Promise<void>;
-}
-
-// @public (undocumented)
-export type SsoExecutionDialogHandler = (context: TurnContext, tokenResponse: TeamsBotSsoPromptTokenResponse, message: CommandMessage) => Promise<void>;
 
 // @public
 export class TeamsBotInstallation implements NotificationTarget {

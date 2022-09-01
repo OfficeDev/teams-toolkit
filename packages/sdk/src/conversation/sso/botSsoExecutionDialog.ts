@@ -18,7 +18,7 @@ import {
   tokenExchangeOperationName,
   TurnContext,
 } from "botbuilder";
-import { CommandMessage, SsoExecutionDialogHandler, TriggerPatterns } from "../interface";
+import { CommandMessage, BotSsoExecutionDialogHandler, TriggerPatterns } from "../interface";
 import { TeamsBotSsoPrompt, TeamsBotSsoPromptSettings } from "../../bot/teamsBotSsoPrompt";
 import { TeamsBotSsoPromptTokenResponse } from "../../bot/teamsBotSsoPromptTokenResponse";
 import { TeamsFx } from "../../core/teamsfx";
@@ -26,15 +26,16 @@ import { v4 as uuidv4 } from "uuid";
 import { formatString } from "../../util/utils";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../../core/errors";
 import { internalLogger } from "../../util/logger";
+import { createHash } from "crypto";
 
-let DIALOG_NAME = "SsoExecutionDialog";
+let DIALOG_NAME = "BotSsoExecutionDialog";
 let TEAMS_SSO_PROMPT_ID = "TeamsFxSsoPrompt";
 let COMMAND_ROUTE_DIALOG = "CommandRouteDialog";
 
 /**
  * Sso execution dialog, use to handle sso command
  */
-export class SsoExecutionDialog extends ComponentDialog {
+export class BotSsoExecutionDialog extends ComponentDialog {
   private dedupStorage: Storage;
   private dedupStorageKeys: string[] = [];
 
@@ -45,7 +46,7 @@ export class SsoExecutionDialog extends ComponentDialog {
   >();
 
   /**
-   * Creates a new instance of the SsoExecutionDialog.
+   * Creates a new instance of the BotSsoExecutionDialog.
    * @param dedupStorage Helper storage to remove duplicated messages
    * @param settings The list of scopes for which the token will have access
    * @param teamsfx {@link TeamsFx} instance for authentication
@@ -79,11 +80,11 @@ export class SsoExecutionDialog extends ComponentDialog {
 
   /**
    * Add TeamsFxBotSsoCommandHandler instance
-   * @param handler {@link SsoExecutionDialogHandler} callback function
+   * @param handler {@link BotSsoExecutionDialogHandler} callback function
    * @param triggerPatterns The trigger pattern
    */
-  public addCommand(handler: SsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void {
-    const commandId = uuidv4();
+  public addCommand(handler: BotSsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void {
+    const commandId = this.getCommandHash(triggerPatterns);
     const dialog = new WaterfallDialog(commandId, [
       this.ssoStep.bind(this),
       this.dedupStep.bind(this),
@@ -112,6 +113,14 @@ export class SsoExecutionDialog extends ComponentDialog {
 
     this.commandMapping.set(commandId, triggerPatterns);
     this.addDialog(dialog);
+  }
+
+  private getCommandHash(patterns: TriggerPatterns): string {
+    const expressions = Array.isArray(patterns) ? patterns : [patterns];
+    const patternStr = expressions.join();
+    const patternStrWithoutSpecialChar = patternStr.replace(/[^a-zA-Z0-9]/g, "");
+    const hash = createHash("sha256").update(patternStr).digest("hex").toLowerCase();
+    return patternStrWithoutSpecialChar + hash;
   }
 
   /**

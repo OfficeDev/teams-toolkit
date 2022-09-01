@@ -14,6 +14,7 @@ import {
   execAsync,
   getActivePluginsFromProjectSetting,
   getCapabilitiesFromProjectSetting,
+  setBotSkuNameToB1Bicep,
 } from "../commonUtils";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, PluginId } from "../../commonlib/constants";
@@ -87,6 +88,7 @@ describe("Add SSO", () => {
         expect(readmeExists).to.be.false;
       }
 
+      await setBotSkuNameToB1Bicep(projectPath, "dev");
       await CliHelper.provisionProject(projectPath);
 
       // Assert

@@ -12,11 +12,12 @@ import {
   v3,
   Void,
 } from "@microsoft/teamsfx-api";
+
 import { LocalCrypto } from "../../core/crypto";
 import { environmentManager } from "../../core/environment";
 import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
-import { ComponentNames } from "../constants";
 import { Constants } from "../../plugins/resource/frontend/constants";
+import { ComponentNames } from "../constants";
 import { errorSource, InvalidTabDebugArgsError } from "./error";
 
 export interface TabDebugArgs {

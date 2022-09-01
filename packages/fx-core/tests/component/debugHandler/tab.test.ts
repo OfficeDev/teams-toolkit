@@ -2,24 +2,26 @@
 // Licensed under the MIT license.
 
 import "mocha";
-import * as chai from "chai";
-import * as sinon from "sinon";
-import * as path from "path";
 
-import { TabDebugArgs, TabDebugHandler } from "../../../src/component/debugHandler/tab";
+import * as chai from "chai";
+import * as path from "path";
+import * as sinon from "sinon";
+
 import {
-  UserError,
-  SystemError,
   err,
-  ProjectSettings,
   ok,
+  ProjectSettings,
   ProjectSettingsV3,
+  SystemError,
+  UserError,
   v3,
 } from "@microsoft/teamsfx-api";
-import { InvalidTabDebugArgsError } from "../../../src/component/debugHandler/error";
-import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
-import { environmentManager } from "../../../src/core/environment";
+
 import { ComponentNames } from "../../../src/component/constants";
+import { InvalidTabDebugArgsError } from "../../../src/component/debugHandler/error";
+import { TabDebugArgs, TabDebugHandler } from "../../../src/component/debugHandler/tab";
+import { environmentManager } from "../../../src/core/environment";
+import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
 import { Constants } from "../../../src/plugins/resource/frontend/constants";
 
 describe("TabDebugHandler", () => {

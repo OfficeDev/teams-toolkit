@@ -3,38 +3,39 @@
 "use strict";
 
 import {
-  M365TokenProvider,
+  assembleError,
+  err,
+  FxError,
   LogProvider,
+  M365TokenProvider,
+  ok,
+  ProjectSettingsV3,
+  Result,
   TelemetryReporter,
   UserInteraction,
-  Result,
-  FxError,
-  ok,
-  err,
-  ProjectSettingsV3,
   v3,
   Void,
-  assembleError,
 } from "@microsoft/teamsfx-api";
-import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
-import { environmentManager } from "../../core/environment";
-import { LocalCrypto } from "../../core/crypto";
-import { ComponentNames } from "../constants";
-import { AADRegistration } from "../../plugins/resource/bot/aadRegistration";
-import { ResourceNameFactory } from "../../plugins/resource/bot/utils/resourceNameFactory";
-import { genUUID } from "../../plugins/resource/bot/utils/common";
-import { MaxLengths } from "../../plugins/resource/bot/constants";
+
 import { AppStudioScopes, GraphScopes } from "../../common/tools";
+import { convertToAlphanumericOnly } from "../../common/utils";
+import { LocalCrypto } from "../../core/crypto";
+import { environmentManager } from "../../core/environment";
+import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
+import { AADRegistration } from "../../plugins/resource/bot/aadRegistration";
+import { AppStudio } from "../../plugins/resource/bot/appStudio/appStudio";
+import { IBotRegistration } from "../../plugins/resource/bot/appStudio/interfaces/IBotRegistration";
+import { MaxLengths } from "../../plugins/resource/bot/constants";
+import { PluginLocalDebug } from "../../plugins/resource/bot/resources/strings";
+import { genUUID } from "../../plugins/resource/bot/utils/common";
+import { ResourceNameFactory } from "../../plugins/resource/bot/utils/resourceNameFactory";
+import { ComponentNames } from "../constants";
+import { botTunnelEndpointPlaceholder } from "./constants";
 import {
-  InvalidExistingBotArgsError,
   BotMessagingEndpointMissingError,
   errorSource,
+  InvalidExistingBotArgsError,
 } from "./error";
-import { IBotRegistration } from "../../plugins/resource/bot/appStudio/interfaces/IBotRegistration";
-import { convertToAlphanumericOnly } from "../../common/utils";
-import { PluginLocalDebug } from "../../plugins/resource/bot/resources/strings";
-import { AppStudio } from "../../plugins/resource/bot/appStudio/appStudio";
-import { botTunnelEndpointPlaceholder } from "./constants";
 
 export interface BotDebugArgs {
   botId?: string;

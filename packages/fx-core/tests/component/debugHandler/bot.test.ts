@@ -2,26 +2,29 @@
 // Licensed under the MIT license.
 
 import "mocha";
+
 import * as chai from "chai";
-import * as sinon from "sinon";
 import * as path from "path";
-import { BotDebugArgs, BotDebugHandler } from "../../../src";
+import * as sinon from "sinon";
+
 import {
-  UserError,
-  SystemError,
   err,
+  ok,
   ProjectSettings,
   ProjectSettingsV3,
-  ok,
+  SystemError,
+  UserError,
   v3,
 } from "@microsoft/teamsfx-api";
-import { BotMessagingEndpointMissingError } from "../../../src/component/debugHandler/error";
-import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
-import { environmentManager } from "../../../src/core/environment";
+
+import { BotDebugArgs, BotDebugHandler } from "../../../src";
 import { ComponentNames } from "../../../src/component/constants";
+import { BotMessagingEndpointMissingError } from "../../../src/component/debugHandler/error";
+import { environmentManager } from "../../../src/core/environment";
+import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
 import { AADRegistration } from "../../../src/plugins/resource/bot/aadRegistration";
-import { BotAuthCredential } from "../../../src/plugins/resource/bot/botAuthCredential";
 import { AppStudio } from "../../../src/plugins/resource/bot/appStudio/appStudio";
+import { BotAuthCredential } from "../../../src/plugins/resource/bot/botAuthCredential";
 import { MockM365TokenProvider } from "./utils";
 
 describe("TabDebugHandler", () => {

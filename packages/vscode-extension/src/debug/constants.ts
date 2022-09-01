@@ -104,6 +104,7 @@ export type DisplayMessages = {
   errorName: string;
   errorMessageKey: string;
   errorDisplayMessageKey: string;
+  errorMessageLink: string;
   errorHelpLink: string;
 };
 
@@ -120,6 +121,7 @@ export const prerequisiteCheckDisplayMessages: DisplayMessages = {
   errorName: ExtensionErrors.PrerequisitesValidationError,
   errorMessageKey: "teamstoolkit.localDebug.prerequisitesCheckFailure",
   errorDisplayMessageKey: "teamstoolkit.localDebug.prerequisitesCheckFailure",
+  errorMessageLink: "teamstoolkit.localDebug.outputPanel",
   errorHelpLink: "https://aka.ms/teamsfx-envchecker-help",
 };
 
@@ -135,7 +137,6 @@ export const npmInstallDisplayMessages: DisplayMessages = {
   errorName: ExtensionErrors.PrerequisitesInstallPackagesError,
   errorMessageKey: "teamstoolkit.localDebug.npmInstallFailure",
   errorDisplayMessageKey: "teamstoolkit.localDebug.npmInstallFailure",
+  errorMessageLink: "teamstoolkit.localDebug.terminal",
   errorHelpLink: "https://aka.ms/teamsfx-npm-package-task", // TODO: update npm install help link
 };
-
-export const outputPanelCommand = "command:fx-extension.showOutputChannel";

@@ -2302,6 +2302,42 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.handlers.promptSPFx.upgradeProject.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You are using a legacy version of SPFx in your project while the current version of Teams Toolkit supports SPFx v%s. If you want to use SPFx v%s, follow 'CLI for Microsoft 365' to upgrade.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Você está usando uma versão herdada da SPFx em seu projeto, enquanto a versão atual do Kit de Ferramentas do Teams suporta SPFx v%s. Se desejar usar a SPFx v%s, siga 'CLI para Microsoft 365' para atualizar.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.promptSPFx.upgradeProject.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[CLI for M365]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[CLI para M365]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.promptSPFx.upgradeToolkit.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You are using a newer version of SPFx in your project while the current version of Teams Toolkit supports SPFx v%s. Please note that some of the newer SPFx features might not be supported. If you are not using the latest version of Teams Toolkit, consider to upgrade.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Você está usando uma versão mais recente da SPFx em seu projeto, enquanto a versão atual do Kit de Ferramentas do Teams suporta SPFx v%s. Observe que alguns dos recursos SPFx mais recentes podem não ser suportados. Se você não estiver usando a versão mais recente do Kit de Ferramentas do Teams, considere atualizar.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.promptSPFx.upgradeToolkit.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Upgrade]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Atualizar]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.handlers.provisionBeforeGrantOrListPermission" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[You cannot add or list owners because a Teams app is not provisioned yet, please click the Provision Resources button below to register a Teams app.]]></Val>
@@ -2626,6 +2662,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.localDebug.switchM365AccountWarning" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You are now using a different Microsoft 365 tenant from what you previously used.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Agora você está usando um locatário do Microsoft 365 diferente do usado anteriormente.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.migrateTeamsManifest.progressTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Upgrade Teams Manifest to Extend in Outlook and Office]]></Val>
@@ -2901,6 +2946,24 @@
           <Val><![CDATA[Check [output window]5D;(%s) for details.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Verifique [janela de saída]5D;(%s) para obter mais detalhes.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.qm.browse" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Browse...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Navegar...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.qm.defaultFolder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Default folder]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Pasta padrão]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

@@ -861,10 +861,13 @@
       </Item>
       <Item ItemId=";core.aadManifestMigration.SuccessMessage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Congratulations! AAD manifest has been added, and please start to use this file to customize your AAD App registration. We have added aad.template.json, updated your projectSettings.json and backed up projectSettings.json to .backup folder. For more information about AAD manifest, please refer %s]]></Val>
+          <Val><![CDATA[Detect that your project is a previous version and auto update your project for new Teams Toolkit version. The following changes have been made:]A;1.aad.template.json is created under 'templates/appPackage'.For more information about AAD manifest, please refer %s]A;2.ProjectSettings.json is updated to include authentication related configuration. You can find a backup of old version in .backup folder.]A;Congratulations! Your project now is updated and ready to run in latest version of Teams Toolkit.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[おめでとうございます! AAD マニフェストが追加されました。AAD アプリの登録をカスタマイズするには、このファイルの使用を開始してください。aad.template.json が追加され、projectSettings.json が更新され、projectSettings.json が .backup フォルダーにバックアップされました。AAD マニフェストの詳細については、%s を参照してください]]></Val>
+            <Val><![CDATA[プロジェクトが以前のバージョンであることを検出し、新しい Teams Toolkit バージョン用にプロジェクトを自動更新します。次の変更が行われました: ]A; 1. aad.template.json が "templates/appPackage" の下に作成されました。AAD マニフェストの詳細については、%s を参照してください ]A; 2. ProjectSettings.json が更新され、認証関連の構成を組み込みました。以前のバージョンのバックアップは ".backup" フォルダーにあります。]A; おめでとう! プロジェクトが更新され、Teams Toolkit の最新バージョンで実行する準備ができました。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Congratulations! AAD manifest has been added, and please start to use this file to customize your AAD App registration. We have added aad.template.json, updated your projectSettings.json and backed up projectSettings.json to .backup folder. For more information about AAD manifest, please refer %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -990,48 +993,48 @@
       </Item>
       <Item ItemId=";core.addResource.addResourceNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Resource "%s" has been successfully configured for your project, trigger 'Teams: Provision in the cloud' will create the resource in your Azure subscription.]]></Val>
+          <Val><![CDATA[Resource %s has been successfully configured for your project, trigger 'Teams: Provision in the cloud' will create the resource in your Azure subscription.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[リソース "%s"がプロジェクトに対して正常に構成されました。'Teams: クラウドでプロビジョニング' をトリガーすると、Azure サブスクリプションにリソースが作成されます。]]></Val>
+            <Val><![CDATA[単一のリソース "%s" がプロジェクトに対して正常に構成されています。"Teams: Provision in the cloud" をトリガーすると、Azure サブスクリプションにリソースが作成されます。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[[Teams Toolkit]5D; Resource "%s" has been successfully configured for your project, trigger 'Teams: Provision in the cloud' will create the resource in your Azure subscription.]]></Val>
+            <Val><![CDATA[Resource "%s" has been successfully configured for your project, trigger 'Teams: Provision in the cloud' will create the resource in your Azure subscription.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.addResource.addResourceNoticeForCli" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Resource "%s" has been successfully configured for your project, run 'teamsfx provision' will create the resource in your Azure subscription.]]></Val>
+          <Val><![CDATA[Resource %s has been successfully configured for your project, run 'teamsfx provision' will create the resource in your Azure subscription.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[リソース "%s"がプロジェクトに対して正常に構成されました。'teamsfx provision' を実行すると、Azure サブスクリプションにリソースが作成されます。]]></Val>
+            <Val><![CDATA[単一リソース "%s" がプロジェクトに対して正常に構成されました。"teamsfx provision" を実行すると、Azure サブスクリプションにリソースが作成されます。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[[Teams Toolkit]5D; Resource "%s" has been successfully configured for your project, run 'teamsfx provision' will create the resource in your Azure subscription.]]></Val>
+            <Val><![CDATA[Resource "%s" has been successfully configured for your project, run 'teamsfx provision' will create the resource in your Azure subscription.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.addResource.addResourcesNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Resources "%s" have been successfully configured for your project, trigger 'Teams: Provision in the cloud' will create the resources in your Azure subscription.]]></Val>
+          <Val><![CDATA[Resources %s have been successfully configured for your project, trigger 'Teams: Provision in the cloud' will create the resources in your Azure subscription.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[リソース "%s"がプロジェクトに対して正常に構成されました。'Teams: クラウドでプロビジョニング' をトリガーすると、Azure サブスクリプションにリソースが作成されます。]]></Val>
+            <Val><![CDATA[複数のリソース "%s" がプロジェクトに対して正常に構成されています。"Teams: Provision in the cloud" をトリガーすると、Azure サブスクリプションにリソースが作成されます。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[[Teams Toolkit]5D; Resources "%s" have been successfully configured for your project, trigger 'Teams: Provision in the cloud' will create the resources in your Azure subscription.]]></Val>
+            <Val><![CDATA[Resources "%s" have been successfully configured for your project, trigger 'Teams: Provision in the cloud' will create the resources in your Azure subscription.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.addResource.addResourcesNoticeForCli" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Resources "%s" have been successfully configured for your project, run 'teamsfx provision' will create the resources in your Azure subscription.]]></Val>
+          <Val><![CDATA[Resources %s have been successfully configured for your project, run 'teamsfx provision' will create the resources in your Azure subscription.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[リソース "%s"がプロジェクトに対して正常に構成されました。'teamsfx provision' を実行すると、Azure サブスクリプションにリソースが作成されます。]]></Val>
+            <Val><![CDATA[複数のリソース "%s" がプロジェクトに対して正常に構成されました。 "teamsfx provision" を実行すると、Azure サブスクリプションにリソースが作成されます。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[[Teams Toolkit]5D; Resources "%s" have been successfully configured for your project, run 'teamsfx provision' will create the resources in your Azure subscription.]]></Val>
+            <Val><![CDATA[Resources "%s" have been successfully configured for your project, run 'teamsfx provision' will create the resources in your Azure subscription.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -1176,6 +1179,15 @@
           <Val><![CDATA[Project path does not exist]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[プロジェクト パスが存在しません]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.backupFiles.FailedToBackupFiles" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to backup %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[%s をバックアップできませんでした。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2194,6 +2206,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.handleConfigFile.FailedToUpdateAzureParameters" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to update Azure parameters for %s environment.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[%s 環境の Azure パラメーターの更新に失敗しました。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.init.successNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Your project has been successfully initialized to operate with TeamsFx.]A;]A;Some next steps:]A;teamsfx add <feature> will allow you to add features like single sign on or Teams notification integration.]A;]A;Pro tip:]A;Read on aka.ms/teams-manifest to learn more about updating manifest file to connect with your existing launch page experience.]]></Val>
@@ -2205,13 +2226,22 @@
       </Item>
       <Item ItemId=";core.localDebug.tenantConfirmNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[You already run local debug for the Teams app in another tenant '%s'. You can sign out %s and sign in with the matched M365 account to re-use the previous local debug resource. If you really want to switch tenant for local debug, you can delete the local file(s) (%s) and re-run local debug.]]></Val>
+          <Val><![CDATA[You already run local debug for the Teams app in another tenant '%s'. You can sign out %s and sign in with the matched Mirosoft 365 account to re-use the previous local debug resource. If you really want to switch tenant for local debug, you can delete the local file(s) (%s) and re-run local debug.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[別のテナント '%s' で Teams アプリのローカル デバッグを既に実行しています。%s をサインアウトし、対応する Microsoft 365 アカウントでサインインして、以前のローカル デバッグ リソースを再利用できます。ローカル デバッグ用にテナントを切り替える場合は、ローカル ファイル (%s) を削除し、ローカル デバッグを再実行できます。]]></Val>
+            <Val><![CDATA[別のテナント "%s" で Teams アプリのローカル デバッグを既に実行しています。%s をサインアウトし、合致する Microsoft 365 アカウントでサインインして、以前のローカル デバッグ リソースを再利用できます。ローカル デバッグ用にテナントを切り替えたい場合は、ローカル ファイル (%s) を削除し、ローカル デバッグを再実行できます。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[You already run local debug for the Teams app in another tenant '%s'. You can sign out %s and sign in with the matched M365 account to re-use the previous local debug resource. If you really want to switch tenant for local debug, you can delete the %s file and re-run local debug.]]></Val>
+            <Val><![CDATA[You already run local debug for the Teams app in another tenant '%s'. You can sign out %s and sign in with the matched M365 account to re-use the previous local debug resource. If you really want to switch tenant for local debug, you can delete the local file(s) (%s) and re-run local debug.]]></Val>
           </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.localDebug.tenantConfirmNoticeWhenAllowSwitchAccount" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You already run local debug for the Teams app in another tenant '%s'. If you really want to switch tenant for local debug, you can delete the local file(s) (%s) and re-run local debug.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[別のテナント "%s" で Teams アプリのローカル デバッグを既に実行しています。ローカル デバッグ用にテナントを切り替える場合は、ローカル ファイル (%s) を削除し、ローカル デバッグを再実行できます。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2341,11 +2371,38 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.provision.azureAccount" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Azure account: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure アカウント: %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.provision.azureSubscription" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Azure subscription: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure サブスクリプション: %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.provision.configurationFinishNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[[%s]5D; Configuration finished.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[[%s]5D; 構成が完了しました。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.provision.confirmEnvAndCostNotice" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cost may incur according to the usage. Do you want to provision resources in %s environment using accounts listed above?]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[使用量によってはコストの負担を招く場合があります。上記のアカウントを使用して、%s 環境で複数のリソースを準備しますか?]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2359,6 +2416,15 @@
           <Prev Cat="Text">
             <Val><![CDATA[Do you want to provision resources in %s environment?]A;%s (Azure account) with %s (subscription) will be used to provision. the resources. Cost may incur according to the usage.]]></Val>
           </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.provision.confirmEnvOnlyNotice" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Do you want to provision resources in %s environment using the account listed above?]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[上記のアカウントを使用して、%s 環境で複数のリソースを準備しますか?]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2383,11 +2449,47 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.provision.createNewAzureBotNotice" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[We will create a new Azure bot resource.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[新しい Azure ボット リソースを作成します。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.provision.failNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[fail to provision '%s' in the cloud!]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[クラウドで '%s' をプロビジョニングできません。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.provision.learnMore" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Learn more]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[詳細情報]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.provision.m365Account" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Microsoft 365 account: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Microsoft 365 アカウント: %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.provision.provision" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Provision]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[準備]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2406,6 +2508,33 @@
           <Val><![CDATA['%s' successfully provisioned in the cloud.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA['%s' はクラウドで正常にプロビジョニングされました。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.provision.switchedAzureSubscriptionNotice" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You are now using a different Azure subscription from what you previously used.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[以前使用したテナントとは別の Azure サブスクリプションを使用しています。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.provision.switchedM365AccountAndAzureSubscriptionNotice" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You are now using a different Microsoft 365 tenant and a differnt Azure subscription from what you previously used.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[別の Microsoft 365 テナントと、以前使用した Azure サブスクリプションとは異なる Azure サブスクリプションを使用しています。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.provision.switchedM365AccountNotice" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You are now using a different Microsoft 365 tenant from what you previously used.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[以前使用したテナントとは別の Microsoft 365 テナントを使用しています。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2442,6 +2571,24 @@
           <Val><![CDATA[[%s]5D; Publish start.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[[%s]5D; 公開が開始されます。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.question.workspaceFolder.placeholder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select the folder that will contain your project root folder]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[プロジェクトのルート フォルダーを含む予定のフォルダーを選択します]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.question.workspaceFolder.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Workspace folder]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[ワークスペース フォルダー]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2700,13 +2847,22 @@
       </Item>
       <Item ItemId=";error.ActionNotExist" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Action not found: %s]]></Val>
+          <Val><![CDATA[Action not found: %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[アクションが見つかりません: %s]]></Val>
+            <Val><![CDATA[アクションが見つかりません: %s。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Action not exist: %s]]></Val>
+            <Val><![CDATA[Action not found: %s]]></Val>
           </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.BadComponent" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Component '%s' lacks of property: %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[コンポーネント"%s" プロパティが不足しています: %s。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2721,10 +2877,13 @@
       </Item>
       <Item ItemId=";error.ComponentNotExist" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Component not found: %s]]></Val>
+          <Val><![CDATA[Component not found: %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[コンポーネントが見つかりません: %s]]></Val>
+            <Val><![CDATA[コンポーネントが見つかりません: %s。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Component not found: %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3654,10 +3813,13 @@
       </Item>
       <Item ItemId=";error.aad.manifest.UnknownResourceAccessId" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unknown resourceAccess id: %s]]></Val>
+          <Val><![CDATA[Unknown resourceAccess id: %s, if you're using permission as resourceAccess id, please try to use permission id instead.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[不明な resourceAccess ID: %s]]></Val>
+            <Val><![CDATA[不明な resourceAccess id: %s、resourceAccess id としてアクセス許可を使用している場合は、代わりにアクセス許可 ID を試用してみてください。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unknown resourceAccess id: %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3799,7 +3961,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";error.appstudio.apiFailed" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";error.appstudio.apiFailed" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[API call to Developer Portal failed: %s, %s, Request path: %s, X-Correlation-ID: %s. This may come from some intermittent service error. Please wait for a few minutes and retry the current step.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -3808,7 +3970,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";error.appstudio.apiFailed.telemetry" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";error.appstudio.apiFailed.telemetry" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[API call to Developer Portal failed: %s, %s, API name: %s, X-Correlation-ID: %s. This may come from some intermittent service error. Please wait for a few minutes and retry the current step.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -7890,10 +8052,13 @@
       </Item>
       <Item ItemId=";plugins.spfx.error.nodeVersionNotSupported" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Node.js version v%s is not supported for SPFx v%s. Check aka.ms/teamsfx-spfx-help for more details.]]></Val>
+          <Val><![CDATA[Node.js version v%s is not supported for SPFx v%s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Node.js バージョン v%s は、SPFx v%s ではサポートされていません。詳細については、aka.ms/teamsfx-spfx-help を確認してください。]]></Val>
+            <Val><![CDATA[Node.js バージョン v%s は SPFx v%s ではサポートされていません。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Node.js version v%s is not supported for SPFx v%s. Check aka.ms/teamsfx-spfx-help for more details.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -7908,22 +8073,25 @@
       </Item>
       <Item ItemId=";plugins.spfx.error.npmNotFound" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[NPM not found on your machine. Check aka.ms/teamsfx-spfx-help to install the supported version.]]></Val>
+          <Val><![CDATA[NPM not found on your machine. Please install the supported version.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[お使いのマシンに NPM が見つかりません。aka.ms/teamsfx-spfx-help を確認して、サポートされているバージョンをインストールしてください。]]></Val>
+            <Val><![CDATA[お使いのコンピューターに NPM が見つかりません。サポートされているバージョンをインストールしてください。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Npm not found on your machine!]]></Val>
+            <Val><![CDATA[NPM not found on your machine. Check aka.ms/teamsfx-spfx-help to install the supported version.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";plugins.spfx.error.npmVersionNotSupported" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[NPM version v%s is not supported for SPFx v%s. Check aka.ms/teamsfx-spfx-help for more details.]]></Val>
+          <Val><![CDATA[NPM version v%s is not supported for SPFx v%s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[NPM バージョン v%s は、SPFx v%sではサポートされていません。詳細については、aka.ms/teamsfx-spfx-help を確認してください。]]></Val>
+            <Val><![CDATA[NPM バージョン v%s は SPFx v%s ではサポートされていません。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[NPM version v%s is not supported for SPFx v%s. Check aka.ms/teamsfx-spfx-help for more details.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

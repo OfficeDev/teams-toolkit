@@ -7,7 +7,6 @@ import {
   FxError,
   ok,
   ProductName,
-  ProjectSettings,
   Result,
   SystemError,
   UnknownError,
@@ -44,7 +43,7 @@ import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionSource, ExtensionErrors } from "../error";
 import { VS_CODE_UI } from "../extension";
 import * as globalVariables from "../globalVariables";
-import { showError, tools } from "../handlers";
+import { tools } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   TelemetryDebugDevCertStatus,
@@ -64,7 +63,7 @@ import {
   runTask,
   terminateAllRunningTeamsfxTasks,
 } from "./teamsfxTaskHandler";
-import { trustDevCertHelpLink } from "./constants";
+import { trustDevCertHelpLink, outputPanelCommand } from "./constants";
 import M365TokenInstance from "../commonlib/m365Login";
 import { signedOut } from "../commonlib/common/constant";
 import { ProgressHandler } from "../progressHandler";
@@ -457,7 +456,6 @@ async function _checkAndInstall(
     await handleCheckResults(checkResults, progressHelper);
   } catch (error: unknown) {
     const fxError = assembleError(error);
-    showError(fxError);
     await progressHelper?.stop(false);
     return { checkResults: checkResults, error: fxError };
   }
@@ -1064,11 +1062,11 @@ async function handleCheckResults(
       await progressHelper?.stop(false);
       const message = util.format(
         getDefaultString("teamstoolkit.localDebug.prerequisitesCheckFailure"),
-        "[output panel](command:fx-extension.showOutputChannel)"
+        `[${getDefaultString("teamstoolkit.localDebug.outputPanel")}](${outputPanelCommand})`
       );
       const displayMessage = util.format(
         localize("teamstoolkit.localDebug.prerequisitesCheckFailure"),
-        "[output panel](command:fx-extension.showOutputChannel)"
+        `[${localize("teamstoolkit.localDebug.outputPanel")}](${outputPanelCommand})`
       );
       const errorOptions: UserErrorOptions = {
         source: ExtensionSource,

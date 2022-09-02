@@ -275,6 +275,7 @@ export class AppManifest implements CloudResource {
         actionCtx.telemetryProps[TelemetryPropertyKey.manual] = String(true);
       try {
         const appPackagePath = await buildTeamsAppPackage(
+          context.projectSetting,
           inputs.projectPath,
           ctx.envInfo,
           false,
@@ -399,7 +400,11 @@ export class AppManifest implements CloudResource {
     context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<string, FxError>> {
-    const res = await buildTeamsAppPackage(inputs.projectPath, context.envInfo);
+    const res = await buildTeamsAppPackage(
+      context.projectSetting,
+      inputs.projectPath,
+      context.envInfo
+    );
     if (res.isOk()) {
       if (inputs.platform === Platform.CLI || inputs.platform === Platform.VS) {
         const builtSuccess = [

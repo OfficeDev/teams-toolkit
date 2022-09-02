@@ -5,7 +5,7 @@
 import * as vscode from "vscode";
 import * as util from "util";
 import * as path from "path";
-import { UserError, FxError, Result, ok } from "@microsoft/teamsfx-api";
+import { UserError, FxError, Result, ok, Void } from "@microsoft/teamsfx-api";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import { checkAndInstallNpmPackagesForTask } from "../prerequisitesHandler";
 import { ExtensionErrors, ExtensionSource } from "../../error";
@@ -29,9 +29,9 @@ export class NpmInstallTaskTerminal extends BaseTaskTerminal {
     this.args = taskDefinition.args as NpmInstallArgs;
   }
 
-  async do(): Promise<Result<void, FxError>> {
+  async do(): Promise<Result<Void, FxError>> {
     if (!this.args?.projects || this.args.projects.length === 0) {
-      return ok(undefined);
+      return ok(Void);
     }
 
     const npmInstallProjectOptions = this.args.projects.map((projectOption) => {

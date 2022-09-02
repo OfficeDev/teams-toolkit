@@ -12,6 +12,7 @@ import {
   UnknownError,
   UserError,
   UserErrorOptions,
+  Void,
 } from "@microsoft/teamsfx-api";
 import {
   AppStudioScopes,
@@ -349,7 +350,7 @@ export async function checkAndInstall(): Promise<Result<void, FxError>> {
 export async function checkAndInstallForTask(
   prerequisites: string[],
   ports?: number[]
-): Promise<Result<void, FxError>> {
+): Promise<Result<Void, FxError>> {
   const orderedCheckers = await getOrderedCheckersForTask(prerequisites, ports);
 
   return await localTelemetryReporter.runWithTelemetryProperties(
@@ -373,7 +374,7 @@ export async function checkAndInstallForTask(
         addCheckResultsForTelemetry(res.checkResults, ctx.properties, ctx.errorProps);
         return err(res.error);
       }
-      return ok(undefined);
+      return ok(Void);
     }
   );
 }
@@ -384,7 +385,7 @@ export async function checkAndInstallNpmPackagesForTask(
     args?: string[];
     forceUpdate?: boolean;
   }[]
-): Promise<Result<void, FxError>> {
+): Promise<Result<Void, FxError>> {
   const checkers = projectOptions.map<NpmInstallCheckerInfo>((p) => {
     const cwdBaseName = path.basename(p.cwd);
     return {
@@ -408,7 +409,7 @@ export async function checkAndInstallNpmPackagesForTask(
     return err(res.error);
   }
 
-  return ok(undefined);
+  return ok(Void);
 }
 
 async function _checkAndInstall(

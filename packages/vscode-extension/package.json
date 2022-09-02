@@ -746,6 +746,20 @@
                 "description": "%teamstoolkit.taskDefinitions.command.npmInstall.description%"
               },
               {
+                "const": "debug-set-up-tab",
+                "description": "%teamstoolkit.taskDefinitions.command.tab.description%"
+              },
+              {
+                "const": "debug-set-up-bot",
+                "description": "%teamstoolkit.taskDefinitions.command.bot.description%"
+              },
+              {
+                "const": "debug-set-up-sso",
+                "description": "%teamstoolkit.taskDefinitions.command.bot.description%"
+              },
+              {
+                "const": "debug-prepare-manifest",
+                "description": "%teamstoolkit.taskDefinitions.command.manifest.description%"
               }
             ]
           },
@@ -845,6 +859,71 @@
                   "forceUpdate": {
                     "type": "boolean",
                     "default": false
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "baseUrl"
+                ],
+                "properties": {
+                  "baseUrl": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.tab.baseUrlTitle%"
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "required": [
+                  "botMessagingEndpoint"
+                ],
+                "properties": {
+                  "botId": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.bot.botIdTitle%"
+                  },
+                  "botPassword": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.bot.botPasswordTitle%"
+                  },
+                  "botMessagingEndpoint": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.bot.botMessagingEndpointTitle%"
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "objectId": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.sso.objectIdTitle%"
+                  },
+                  "clientId": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.sso.clientIdTitle%"
+                  },
+                  "clientSecret": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.sso.clientSecretTitle%"
+                  },
+                  "accessAsUserScopeId": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.sso.accessAsUserScopeIdTitle%"
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "manifestPackagePath": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.manifest.manifestPackagePathTitle%"
                   }
                 },
                 "additionalProperties": false

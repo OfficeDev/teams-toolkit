@@ -35,6 +35,10 @@ import { localTelemetryReporter } from "./localTelemetryReporter";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import { PrerequisiteTaskTerminal } from "./taskTerminal/prerequisiteTaskTerminal";
 import { NpmInstallTaskTerminal } from "./taskTerminal/npmInstallTaskTerminal";
+import { SetUpTabTaskTerminal } from "./taskTerminal/setUpTabTaskTerminal";
+import { PrepareManifestTaskTerminal } from "./taskTerminal/prepareManifestTaskTerminal";
+import { SetUpSSOTaskTerminal } from "./taskTerminal/setUpSSOTaskTerminal";
+import { SetUpBotTaskTerminal } from "./taskTerminal/setUpBotTaskTerminal";
 
 const customTasks = Object.freeze({
   "debug-check-prerequisites": {
@@ -43,6 +47,22 @@ const customTasks = Object.freeze({
   },
   "debug-npm-install": {
     createTerminal: (d: vscode.TaskDefinition) => new NpmInstallTaskTerminal(d),
+    presentationReveal: vscode.TaskRevealKind.Never,
+  },
+  "debug-set-up-tab": {
+    createTerminal: (d: vscode.TaskDefinition) => new SetUpTabTaskTerminal(d),
+    presentationReveal: vscode.TaskRevealKind.Never,
+  },
+  "debug-set-up-bot": {
+    createTerminal: (d: vscode.TaskDefinition) => new SetUpBotTaskTerminal(d),
+    presentationReveal: vscode.TaskRevealKind.Never,
+  },
+  "debug-set-up-sso": {
+    createTerminal: (d: vscode.TaskDefinition) => new SetUpSSOTaskTerminal(d),
+    presentationReveal: vscode.TaskRevealKind.Never,
+  },
+  "debug-prepare-manifest": {
+    createTerminal: (d: vscode.TaskDefinition) => new PrepareManifestTaskTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Never,
   },
 });

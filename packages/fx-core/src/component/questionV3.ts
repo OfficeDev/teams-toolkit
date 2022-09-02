@@ -282,11 +282,13 @@ export async function getQuestionsForAddFeatureV3(
       teamsBot?.capabilities?.includes("notification") ||
       teamsBot?.capabilities?.includes("command-response") ||
       teamsBot?.capabilities?.includes("workflow");
-    if (!botExceedLimit && !alreadyHasNewBot && !meExceedLimit) {
-      options.push(NotificationOptionItem);
-      options.push(CommandAndResponseOptionItem);
-      if (isWorkflowBotEnabled()) {
-        options.push(WorkflowOptionItem);
+    if (!botExceedLimit && !alreadyHasNewBot) {
+      if (!meExceedLimit) {
+        options.push(NotificationOptionItem);
+        options.push(CommandAndResponseOptionItem);
+        if (isWorkflowBotEnabled()) {
+          options.push(WorkflowOptionItem);
+        }
       }
       options.push(BotNewUIOptionItem);
     }

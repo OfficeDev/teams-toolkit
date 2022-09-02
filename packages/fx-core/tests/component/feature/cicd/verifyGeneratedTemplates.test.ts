@@ -2,13 +2,7 @@
 // Licensed under the MIT license.
 
 import "mocha";
-import {
-  ContextV3,
-  Inputs,
-  Platform,
-  ProjectSettingsV3,
-  TelemetryReporter,
-} from "@microsoft/teamsfx-api";
+import { Inputs, Platform, ProjectSettingsV3, UserError } from "@microsoft/teamsfx-api";
 import * as utils from "../../../../src/plugins/resource/bot/utils/common";
 import * as fs from "fs-extra";
 import path from "path";
@@ -31,9 +25,8 @@ import { convertToAlphanumericOnly } from "../../../../src/common/utils";
 import { EnvInfoV3 } from "@microsoft/teamsfx-api/build/v3";
 import sinon from "sinon";
 
-describe("Verify Generated Templates & README", () => {
+describe("Add ci cd workflow", () => {
   const cicdPlugin: CICDImpl = new CICDImpl();
-
   const testFolder: string = path.resolve(__dirname, utils.genUUID());
   const sandbox = sinon.createSandbox();
   after(async () => {
@@ -222,6 +215,51 @@ describe("Verify Generated Templates & README", () => {
         for (const contents of await Promise.all(templateResult)) {
           expect(contents[0]).equals(contents[1]);
         }
+      }
+    });
+  });
+
+  describe.only("Errors when adding CI CD workflows", () => {
+    it("Missing project path", async () => {
+      const projectSetting: ProjectSettingsV3 = {
+        appName: "my app",
+        projectId: "1232343534",
+        solutionSettings: {
+          name: "solution",
+          version: "3.0.0",
+          azureResources: [],
+          programmingLanguage: "javascript",
+        },
+        components: [{ name: ComponentNames.TeamsBot }],
+      };
+      const envInfo: EnvInfoV3 = {
+        envName: "staging",
+        state: { solution: {} },
+        config: {},
+      };
+      const context: any = {
+        projectSetting,
+        userInteraction: new MockUserInteraction(),
+        envInfo,
+        telemetryReporter: new MockTelemetryReporter(),
+      };
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: "",
+        "target-env": "staging",
+        template: ["ci", "cd", "provision", "publish"],
+        provider: ProviderKind.GitHub,
+      };
+
+      const envName = "staging";
+
+      const res = await cicdPlugin.addCICDWorkflows(context, inputs, envName, envInfo);
+      expect(res.isErr()).equal(true);
+      if (res.isErr()) {
+        const error = res.error as any;
+        expect(error.displayMessage).equal(
+          "No project opened. Suggestions: You can create a new project or open an existing one."
+        );
       }
     });
   });

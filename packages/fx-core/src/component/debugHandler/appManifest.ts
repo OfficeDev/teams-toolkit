@@ -3,6 +3,7 @@
 "use strict";
 
 import fs from "fs-extra";
+import { cloneDeep } from "lodash";
 
 import {
   assembleError,
@@ -115,7 +116,7 @@ export class AppManifestDebugHandler {
       envInfoV3.state[ComponentNames.AppManifest].tenantId = appdefinition.tenantId;
 
       await environmentManager.writeEnvState(
-        envInfoV3.state,
+        cloneDeep(envInfoV3.state),
         this.projectPath,
         cryptoProvider,
         environmentManager.getLocalEnvName(),

@@ -5,17 +5,14 @@ import "mocha";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 
-import { UserError, Result, ok } from "@microsoft/teamsfx-api";
+import { UserError, ok } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
 
+import * as tools from "../../../src/common/tools";
 import { LocalEnvManager } from "../../../src/common/local/localEnvManager";
-import { DepsInfo, DepsType } from "../../../src/common/deps-checker/depsChecker";
+import { DepsType } from "../../../src/common/deps-checker/depsChecker";
 import sinon from "sinon";
-import { DotnetChecker } from "../../../src/common/deps-checker/internal/dotnetChecker";
-import { NgrokChecker } from "../../../src/common/deps-checker/internal/ngrokChecker";
-import { FuncToolChecker } from "../../../src/common/deps-checker/internal/funcToolChecker";
-import { DepsCheckerError } from "../../../src/common/deps-checker/depsError";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { environmentManager } from "../../../src";
 
@@ -84,12 +81,14 @@ describe("LocalEnvManager", () => {
       await fs.ensureDir(configFolder);
       await fs.emptyDir(configFolder);
 
+      sinon.stub(tools, "waitSeconds").resolves();
       let error: UserError | undefined = undefined;
       try {
         await localEnvManager.getProjectSettings(projectPath);
       } catch (e: any) {
         error = e as UserError;
       }
+      sinon.restore();
 
       chai.assert.isDefined(error);
       chai.assert.equal(error!.name, "FileNotFoundError");
@@ -150,10 +149,12 @@ describe("LocalEnvManager", () => {
         JSON.stringify(projectSettings0)
       );
 
+      sinon.stub(tools, "waitSeconds").resolves();
       const projectSettings = await localEnvManager.getProjectSettings(projectPath);
       const localSettings = await localEnvManager.getLocalSettings(projectPath, {
         projectId: projectSettings.projectId,
       });
+      sinon.restore();
 
       chai.assert.isUndefined(localSettings);
     });

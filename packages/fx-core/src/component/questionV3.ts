@@ -77,7 +77,11 @@ import { checkWetherProvisionSucceeded } from "../plugins/solution/fx-solution/v
 import { NoCapabilityFoundError } from "../core/error";
 import { ProgrammingLanguageQuestion } from "../core/question";
 import { createContextV3 } from "./utils";
-import { isCLIDotNetEnabled, isSPFxMultiTabEnabled } from "../common/featureFlags";
+import {
+  isCLIDotNetEnabled,
+  isSPFxMultiTabEnabled,
+  isWorkflowBotEnabled,
+} from "../common/featureFlags";
 import { Runtime } from "../plugins/resource/bot/v2/enum";
 import { getPlatformRuntime } from "../plugins/resource/bot/v2/mapping";
 import { buildQuestionNode } from "./resource/azureSql/questions";
@@ -86,6 +90,7 @@ import { ApiConnectorImpl } from "./feature/apiconnector/ApiConnectorImpl";
 import { addCicdQuestion } from "./feature/cicd";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import {
+  frameworkQuestion,
   versionCheckQuestion,
   webpartNameQuestion,
 } from "../plugins/resource/spfx/utils/questions";
@@ -93,6 +98,7 @@ import { manifestUtils } from "./resource/appManifest/utils";
 import { Constants } from "../plugins/resource/aad/constants";
 import { getQuestionsForDeployAPIM } from "./resource/apim";
 import { canAddSso } from "./feature/sso";
+import { getAddSPFxQuestionNode } from "./feature/spfx";
 
 export async function getQuestionsForProvisionV3(
   context: v2.Context,
@@ -235,7 +241,11 @@ export async function getQuestionsForAddFeatureV3(
   if (inputs.platform === Platform.CLI_HELP) {
     options.push(NotificationOptionItem);
     options.push(CommandAndResponseOptionItem);
-    options.push(WorkflowOptionItem);
+
+    if (isWorkflowBotEnabled()) {
+      options.push(WorkflowOptionItem);
+    }
+
     options.push(BotNewUIOptionItem);
     options.push(TabNewUIOptionItem, TabNonSsoItem);
     options.push(MessageExtensionNewUIItem);
@@ -275,7 +285,9 @@ export async function getQuestionsForAddFeatureV3(
     if (!botExceedLimit && !alreadyHasNewBot && !meExceedLimit) {
       options.push(NotificationOptionItem);
       options.push(CommandAndResponseOptionItem);
-      options.push(WorkflowOptionItem);
+      if (isWorkflowBotEnabled()) {
+        options.push(WorkflowOptionItem);
+      }
       options.push(BotNewUIOptionItem);
     }
     if (canAddTab) {
@@ -323,7 +335,7 @@ export async function getQuestionsForAddFeatureV3(
   if (triggerNodeRes.value) {
     addFeatureNode.addChild(triggerNodeRes.value);
   }
-  const addSPFxNodeRes = getAddSPFxQuestionNode();
+  const addSPFxNodeRes = await getAddSPFxQuestionNode(inputs.projectPath);
   if (addSPFxNodeRes.isErr()) return err(addSPFxNodeRes.error);
   if (addSPFxNodeRes.value) {
     addFeatureNode.addChild(addSPFxNodeRes.value);
@@ -492,18 +504,4 @@ export async function getNotificationTriggerQuestionNode(
   }
   res.condition = showNotificationTriggerCondition;
   return ok(res);
-}
-
-export function getAddSPFxQuestionNode(): Result<QTreeNode | undefined, FxError> {
-  const spfx_add_feature = new QTreeNode({
-    type: "group",
-  });
-  spfx_add_feature.condition = { equals: TabSPFxNewUIItem.id };
-
-  const spfx_version_check = new QTreeNode(versionCheckQuestion);
-  spfx_add_feature.addChild(spfx_version_check);
-
-  const spfx_webpart_name = new QTreeNode(webpartNameQuestion);
-  spfx_version_check.addChild(spfx_webpart_name);
-  return ok(spfx_add_feature);
 }

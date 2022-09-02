@@ -41,6 +41,11 @@ import { CicdOptionItem } from "../../src/plugins/solution/fx-solution/question"
 
 describe("question for v3", () => {
   const sandbox = sinon.createSandbox();
+  beforeEach(() => {
+    sandbox.stub(process, "env").value({
+      WORKFLOW_BOT_ENABLED: "true",
+    });
+  });
   afterEach(() => {
     sandbox.restore();
   });

@@ -17,6 +17,7 @@ describe("M365", () => {
   const sandbox = sinon.createSandbox();
   let registeredCommands: string[] = [];
   let logs: string[] = [];
+  let axiosDeleteResponses: Record<string, unknown> = {};
   let axiosGetResponses: Record<string, unknown> = {};
   let axiosPostResponses: Record<string, unknown> = {};
   const testAxiosInstance = {
@@ -24,6 +25,12 @@ describe("M365", () => {
       headers: {
         common: {},
       },
+    },
+    delete: function <T = any, R = AxiosResponse<T>>(
+      url: string,
+      config?: AxiosRequestConfig
+    ): Promise<R> {
+      return Promise.resolve(axiosDeleteResponses[url] as R);
     },
     get: function <T = any, R = AxiosResponse<T>>(url: string): Promise<R> {
       return Promise.resolve(axiosGetResponses[url] as R);
@@ -44,6 +51,7 @@ describe("M365", () => {
   beforeEach(() => {
     registeredCommands = [];
     logs = [];
+    axiosDeleteResponses = {};
     axiosGetResponses = {};
     axiosPostResponses = {};
     sandbox
@@ -58,6 +66,9 @@ describe("M365", () => {
     sandbox.stub(CLILogProvider, "necessaryLog").callsFake((level: LogLevel, message: string) => {
       logs.push(message);
     });
+    sandbox.stub(CLILogProvider, "debug").callsFake((message: string) => {
+      return Promise.resolve(false);
+    });
     sandbox.stub(M365TokenProvider, "getAccessToken").returns(Promise.resolve(ok("test-token")));
     sandbox
       .stub(M365TokenProvider, "getStatus")
@@ -71,7 +82,7 @@ describe("M365", () => {
   it("M365 is empty command", async () => {
     const m365 = new M365();
     m365.builder(yargs);
-    expect(registeredCommands).deep.equals(["sideloading"]);
+    expect(registeredCommands).deep.equals(["sideloading", "unacquire", "launchinfo"]);
 
     const res = await m365.runCommand({});
     expect(res.isOk()).to.be.true;
@@ -109,5 +120,83 @@ describe("M365", () => {
     expect(logs.length).greaterThan(0);
     const finalLog = logs[logs.length - 1];
     expect(finalLog).equals("Sideloading done.");
+  });
+
+  it("M365 Unacquire command (title-id)", async () => {
+    const m365 = new M365();
+    const unacquire = m365.subCommands.find((cmd) => cmd.commandHead === "unacquire");
+    expect(unacquire).not.undefined;
+
+    axiosDeleteResponses["/catalog/v1/users/acquisitions/test-title-id"] = {
+      status: 200,
+    };
+
+    await unacquire!.handler({ "title-id": "test-title-id" });
+    expect(logs.length).greaterThan(0);
+    const finalLog = logs[logs.length - 1];
+    expect(finalLog).equals("Unacquiring done.");
+  });
+
+  it("M365 Unacquire command (file-path)", async () => {
+    const m365 = new M365();
+    const unacquire = m365.subCommands.find((cmd) => cmd.commandHead === "unacquire");
+    expect(unacquire).not.undefined;
+
+    axiosPostResponses["/dev/v1/users/packages"] = {
+      data: {
+        titlePreview: {
+          titleId: "test-title-id",
+        },
+      },
+    };
+    axiosDeleteResponses["/catalog/v1/users/acquisitions/test-title-id"] = {
+      status: 200,
+    };
+
+    await unacquire!.handler({ "file-path": "test" });
+    expect(logs.length).greaterThan(0);
+    const finalLog = logs[logs.length - 1];
+    expect(finalLog).equals("Unacquiring done.");
+  });
+
+  it("M365 LaunchInfo command (title-id)", async () => {
+    const m365 = new M365();
+    const launchInfo = m365.subCommands.find((cmd) => cmd.commandHead === "launchinfo");
+    expect(launchInfo).not.undefined;
+
+    axiosGetResponses["/catalog/v1/users/titles/test-title-id/launchInfo"] = {
+      data: {
+        foo: "bar",
+      },
+    };
+
+    await launchInfo!.handler({ "title-id": "test-title-id" });
+    expect(logs.length).greaterThan(0);
+    const finalLog = logs[logs.length - 1];
+    expect(finalLog).equals(JSON.stringify({ foo: "bar" }));
+  });
+
+  it("M365 LaunchInfo command (file-path)", async () => {
+    const m365 = new M365();
+    const launchInfo = m365.subCommands.find((cmd) => cmd.commandHead === "launchinfo");
+    expect(launchInfo).not.undefined;
+
+    axiosPostResponses["/dev/v1/users/packages"] = {
+      data: {
+        titlePreview: {
+          titleId: "test-title-id",
+        },
+      },
+    };
+    axiosGetResponses["/catalog/v1/users/titles/test-title-id/launchInfo"] = {
+      data: {
+        foo: "bar",
+      },
+    };
+
+    await launchInfo!.handler({ "file-path": "test" });
+    expect(logs.length).greaterThan(0);
+    const finalLog = logs[logs.length - 1];
+    expect(finalLog).equals(JSON.stringify({ foo: "bar" }));
   });
 });

@@ -2,7 +2,13 @@
 // Licensed under the MIT license.
 
 import "mocha";
-import { Inputs, Platform, ProjectSettingsV3, UserError } from "@microsoft/teamsfx-api";
+import {
+  Inputs,
+  Platform,
+  ProjectSettingsV3,
+  SystemError,
+  UserError,
+} from "@microsoft/teamsfx-api";
 import * as utils from "../../../../src/plugins/resource/bot/utils/common";
 import * as fs from "fs-extra";
 import path from "path";
@@ -260,6 +266,123 @@ describe("Add ci cd workflow", () => {
         expect(error.displayMessage).equal(
           "No project opened. Suggestions: You can create a new project or open an existing one."
         );
+      }
+    });
+
+    it("Missing env name", async () => {
+      const projectSetting: ProjectSettingsV3 = {
+        appName: "my app",
+        projectId: "1232343534",
+        solutionSettings: {
+          name: "solution",
+          version: "3.0.0",
+          azureResources: [],
+          programmingLanguage: "javascript",
+        },
+        components: [{ name: ComponentNames.TeamsBot }],
+      };
+      const envInfo: EnvInfoV3 = {
+        envName: "staging",
+        state: { solution: {} },
+        config: {},
+      };
+      const context: any = {
+        projectSetting,
+        userInteraction: new MockUserInteraction(),
+        envInfo,
+        telemetryReporter: new MockTelemetryReporter(),
+      };
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: path.join(testFolder, utils.genUUID()),
+        "target-env": "staging",
+        template: ["ci", "cd", "provision", "publish"],
+        provider: ProviderKind.GitHub,
+      };
+
+      const res = await cicdPlugin.addCICDWorkflows(context, inputs, "", envInfo);
+      expect(res.isErr()).equal(true);
+      if (res.isErr()) {
+        const error = res.error as any;
+        expect(error instanceof SystemError).equal(true);
+      }
+    });
+
+    it("Missing provider name", async () => {
+      const projectSetting: ProjectSettingsV3 = {
+        appName: "my app",
+        projectId: "1232343534",
+        solutionSettings: {
+          name: "solution",
+          version: "3.0.0",
+          azureResources: [],
+          programmingLanguage: "javascript",
+        },
+        components: [{ name: ComponentNames.TeamsBot }],
+      };
+      const envInfo: EnvInfoV3 = {
+        envName: "staging",
+        state: { solution: {} },
+        config: {},
+      };
+      const context: any = {
+        projectSetting,
+        userInteraction: new MockUserInteraction(),
+        envInfo,
+        telemetryReporter: new MockTelemetryReporter(),
+      };
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: path.join(testFolder, utils.genUUID()),
+        "target-env": "staging",
+        template: ["ci", "cd", "provision", "publish"],
+        provider: "",
+      };
+
+      const res = await cicdPlugin.addCICDWorkflows(context, inputs, "staging", envInfo);
+      expect(res.isErr()).equal(true);
+      if (res.isErr()) {
+        const error = res.error as any;
+        expect(error instanceof SystemError).equal(true);
+      }
+    });
+
+    it("Missing templateNames", async () => {
+      const projectSetting: ProjectSettingsV3 = {
+        appName: "my app",
+        projectId: "1232343534",
+        solutionSettings: {
+          name: "solution",
+          version: "3.0.0",
+          azureResources: [],
+          programmingLanguage: "javascript",
+        },
+        components: [{ name: ComponentNames.TeamsBot }],
+      };
+      const envInfo: EnvInfoV3 = {
+        envName: "staging",
+        state: { solution: {} },
+        config: {},
+      };
+      const context: any = {
+        projectSetting,
+        userInteraction: new MockUserInteraction(),
+        envInfo,
+        telemetryReporter: new MockTelemetryReporter(),
+      };
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: path.join(testFolder, utils.genUUID()),
+        "target-env": "staging",
+        template: [],
+        provider: ProviderKind.GitHub,
+      };
+
+      const res = await cicdPlugin.addCICDWorkflows(context, inputs, "staging", envInfo);
+      expect(res.isErr()).equal(true);
+      if (res.isErr()) {
+        const error = res.error as any;
+        expect(error instanceof SystemError).equal(true);
       }
     });
   });

@@ -112,4 +112,43 @@ describe("App Studio API Test", () => {
       chai.assert.equal(res, appDef);
     });
   });
+
+  describe("get Teams app", () => {
+    it("Happy path", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const response = {
+        data: appDef,
+      };
+      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+
+      const res = await AppStudioClient.getApp(appDef.teamsAppId!, appStudioToken);
+      chai.assert.equal(res, appDef);
+    });
+
+    it("404 not found", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const error = {
+        name: "404",
+        message: "fake message",
+      };
+      sinon.stub(fakeAxiosInstance, "get").throws(error);
+
+      const ctx = {
+        envInfo: newEnvInfo(),
+        root: "fakeRoot",
+      } as any as PluginContext;
+      TelemetryUtils.init(ctx);
+      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
+
+      try {
+        await AppStudioClient.getApp(appDef.teamsAppId!, appStudioToken);
+      } catch (error) {
+        chai.assert.equal(error.name, AppStudioError.DeveloperPortalAPIFailedError.name);
+      }
+    });
+  });
 });

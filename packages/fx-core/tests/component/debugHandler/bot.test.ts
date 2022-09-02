@@ -20,6 +20,11 @@ import {
 import { BotDebugArgs, BotDebugHandler } from "../../../src";
 import { ComponentNames } from "../../../src/component/constants";
 import { BotMessagingEndpointMissingError } from "../../../src/component/debugHandler/error";
+import {
+  LocalEnvKeys,
+  LocalEnvProvider,
+  LocalEnvs,
+} from "../../../src/component/debugHandler/localEnvProvider";
 import { environmentManager } from "../../../src/core/environment";
 import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
 import { AADRegistration } from "../../../src/plugins/resource/bot/aadRegistration";
@@ -135,6 +140,15 @@ describe("TabDebugHandler", () => {
       sinon.stub(environmentManager, "writeEnvState").callsFake(async () => {
         return ok("");
       });
+      let botEnvs: LocalEnvs = {
+        template: {},
+        teamsfx: {},
+        customized: {},
+      };
+      sinon.stub(LocalEnvProvider.prototype, "loadBotLocalEnvs").returns(Promise.resolve(botEnvs));
+      sinon.stub(LocalEnvProvider.prototype, "saveBotLocalEnvs").callsFake(async (envs) => {
+        botEnvs = envs;
+      });
       const domain = "af0e-180-158-57-208.ngrok.io";
       const botEndpoint = `https://${domain}`;
       const args: BotDebugArgs = {
@@ -155,6 +169,15 @@ describe("TabDebugHandler", () => {
       );
       chai.assert.equal(envInfoV3.state[ComponentNames.TeamsBot].siteEndpoint, botEndpoint);
       chai.assert.equal(envInfoV3.state[ComponentNames.TeamsBot].validDomain, domain);
+      const expected: LocalEnvs = {
+        template: {
+          [LocalEnvKeys.bot.template.BotId]: botAuthCredential.clientId as string,
+          [LocalEnvKeys.bot.template.BotPassword]: botAuthCredential.clientSecret as string,
+        },
+        teamsfx: {},
+        customized: {},
+      };
+      chai.assert.deepEqual(botEnvs, expected);
       sinon.restore();
     });
 
@@ -193,6 +216,15 @@ describe("TabDebugHandler", () => {
       sinon.stub(environmentManager, "writeEnvState").callsFake(async () => {
         return ok("");
       });
+      let botEnvs: LocalEnvs = {
+        template: {},
+        teamsfx: {},
+        customized: {},
+      };
+      sinon.stub(LocalEnvProvider.prototype, "loadBotLocalEnvs").returns(Promise.resolve(botEnvs));
+      sinon.stub(LocalEnvProvider.prototype, "saveBotLocalEnvs").callsFake(async (envs) => {
+        botEnvs = envs;
+      });
       const domain = "af0e-180-158-57-208.ngrok.io";
       const botEndpoint = `https://${domain}`;
       const args: BotDebugArgs = {
@@ -209,6 +241,15 @@ describe("TabDebugHandler", () => {
       chai.assert.equal(envInfoV3.state[ComponentNames.TeamsBot].botPassword, args.botPassword);
       chai.assert.equal(envInfoV3.state[ComponentNames.TeamsBot].siteEndpoint, botEndpoint);
       chai.assert.equal(envInfoV3.state[ComponentNames.TeamsBot].validDomain, domain);
+      const expected: LocalEnvs = {
+        template: {
+          [LocalEnvKeys.bot.template.BotId]: args.botId as string,
+          [LocalEnvKeys.bot.template.BotPassword]: args.botPassword as string,
+        },
+        teamsfx: {},
+        customized: {},
+      };
+      chai.assert.deepEqual(botEnvs, expected);
       sinon.restore();
     });
   });

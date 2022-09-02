@@ -19,6 +19,11 @@ import {
 
 import { ComponentNames } from "../../../src/component/constants";
 import { InvalidTabDebugArgsError } from "../../../src/component/debugHandler/error";
+import {
+  LocalEnvKeys,
+  LocalEnvProvider,
+  LocalEnvs,
+} from "../../../src/component/debugHandler/localEnvProvider";
 import { TabDebugArgs, TabDebugHandler } from "../../../src/component/debugHandler/tab";
 import { environmentManager } from "../../../src/core/environment";
 import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
@@ -129,6 +134,17 @@ describe("TabDebugHandler", () => {
       sinon.stub(environmentManager, "writeEnvState").callsFake(async () => {
         return ok("");
       });
+      let frontendEnvs: LocalEnvs = {
+        template: {},
+        teamsfx: {},
+        customized: {},
+      };
+      sinon
+        .stub(LocalEnvProvider.prototype, "loadFrontendLocalEnvs")
+        .returns(Promise.resolve(frontendEnvs));
+      sinon.stub(LocalEnvProvider.prototype, "saveFrontendLocalEnvs").callsFake(async (envs) => {
+        frontendEnvs = envs;
+      });
       const baseUrl = "https://localhost:53000";
       const args: TabDebugArgs = {
         baseUrl,
@@ -142,6 +158,16 @@ describe("TabDebugHandler", () => {
         envInfoV3.state[ComponentNames.TeamsTab].indexPath,
         Constants.FrontendIndexPath
       );
+      const expectedEnvs: LocalEnvs = {
+        template: {
+          [LocalEnvKeys.frontend.template.Browser]: "none",
+          [LocalEnvKeys.frontend.template.Https]: "true",
+          [LocalEnvKeys.frontend.template.Port]: "53000",
+        },
+        teamsfx: {},
+        customized: {},
+      };
+      chai.assert.deepEqual(frontendEnvs, expectedEnvs);
       sinon.restore();
     });
   });

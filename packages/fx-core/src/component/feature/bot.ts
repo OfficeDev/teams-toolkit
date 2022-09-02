@@ -252,7 +252,8 @@ export class TeamsBot {
     {
       const manifestCapability: v3.ManifestCapability = {
         name:
-          inputs[CoreQuestionNames.Features] === MessageExtensionItem.id
+          inputs[CoreQuestionNames.Features] === MessageExtensionItem.id ||
+          inputs[CoreQuestionNames.Features] === M365SearchAppOptionItem.id
             ? "MessageExtension"
             : "Bot",
       };

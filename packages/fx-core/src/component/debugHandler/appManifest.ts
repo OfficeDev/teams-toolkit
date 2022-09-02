@@ -3,6 +3,7 @@
 "use strict";
 
 import fs from "fs-extra";
+import { cloneDeep } from "lodash";
 
 import {
   assembleError,
@@ -87,7 +88,7 @@ export class AppManifestDebugHandler {
 
       if (!checkArgsResult.value) {
         // build
-        const result = await buildTeamsAppPackage(this.projectPath, envInfoV3);
+        const result = await buildTeamsAppPackage(projectSettingsV3, this.projectPath, envInfoV3);
         if (result.isErr()) {
           return err(result.error);
         }
@@ -115,7 +116,7 @@ export class AppManifestDebugHandler {
       envInfoV3.state[ComponentNames.AppManifest].tenantId = appdefinition.tenantId;
 
       await environmentManager.writeEnvState(
-        envInfoV3.state,
+        cloneDeep(envInfoV3.state),
         this.projectPath,
         cryptoProvider,
         environmentManager.getLocalEnvName(),

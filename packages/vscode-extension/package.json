@@ -755,7 +755,7 @@
               },
               {
                 "const": "debug-set-up-sso",
-                "description": "%teamstoolkit.taskDefinitions.command.bot.description%"
+                "description": "%teamstoolkit.taskDefinitions.command.sso.description%"
               },
               {
                 "const": "debug-prepare-manifest",

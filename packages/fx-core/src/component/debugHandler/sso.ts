@@ -111,7 +111,7 @@ export class SSODebugHandler {
           this.args.accessAsUserScopeId || uuidv4();
       }
 
-      TokenProvider.init({
+      await TokenProvider.init({
         m365: this.m365TokenProvider,
       });
 

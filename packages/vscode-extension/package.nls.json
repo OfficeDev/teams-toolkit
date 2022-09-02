@@ -285,7 +285,7 @@
     "teamstoolkit.localDebug.prerequisitesCheckFailure": "Prerequisites Check Failed. Please check the %s to see the details. If you wish to bypass checking and installing any prerequisites, you can disable them in Visual Studio Code settings.",
     "teamstoolkit.localDebug.npmInstallFailure": "NPM Package Install Task Failed. Please check the %s to see the details.",
     "teamstoolkit.localDebug.outputPanel": "output panel",
-    "teamstoolkit.localDebug.terminal": "[terminal](command:workbench.action.terminal.focus)",
+    "teamstoolkit.localDebug.terminal": "terminal",
     "teamstoolkit.localDebug.switchM365AccountWarning": "You are now using a different Microsoft 365 tenant from what you previously used.",
     "teamstoolkit.localDebug.taskDefinitionError": "The value of '%s' is invalid for the task of type 'teamsfx'",
     "teamstoolkit.migrateTeamsManifest.progressTitle": "Upgrade Teams Manifest to Extend in Outlook and Office",

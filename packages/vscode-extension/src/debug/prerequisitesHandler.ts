@@ -1137,17 +1137,13 @@ async function handleCheckResults(
       await progressHelper?.stop(false);
       const message = util.format(
         getDefaultString(displayMessages.errorMessageKey),
-        util.format(
-          getDefaultString(displayMessages.errorMessageLink),
-          getDefaultString(displayMessages.errorMessageCommand)
-        )
+        `[${getDefaultString(displayMessages.errorMessageLink)}](${
+          displayMessages.errorMessageCommand
+        })`
       );
       const displayMessage = util.format(
         localize(displayMessages.errorDisplayMessageKey),
-        util.format(
-          localize(displayMessages.errorMessageLink),
-          localize(displayMessages.errorMessageCommand)
-        )
+        `[${localize(displayMessages.errorMessageLink)}](${displayMessages.errorMessageCommand})`
       );
       const errorOptions: UserErrorOptions = {
         source: ExtensionSource,

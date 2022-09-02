@@ -45,7 +45,12 @@ describe("Build Teams Package", () => {
   });
 
   it("Build Teams app package", async () => {
-    const zipFile = await buildTeamsAppPackage(inputs.projectPath, envInfo, true);
+    const zipFile = await buildTeamsAppPackage(
+      context.projectSetting,
+      inputs.projectPath,
+      envInfo,
+      true
+    );
     chai.assert.isTrue(zipFile.isOk());
   });
 });

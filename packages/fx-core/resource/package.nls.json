@@ -211,7 +211,7 @@
   "plugins.appstudio.publishProgressUpdate": "Updating app definition for app %s in Developer Portal",
   "plugins.appstudio.publishProgressBuild": "Building Teams app package in %s.",
   "plugins.appstudio.publishProgressPublish": "Publishing %s",
-  "plugins.appstudio.dataRequired": "Data required: %s",
+  "plugins.appstudio.dataRequired": "Data required: %s.",
   "plugins.appstudio.manuallySubmitTip": "Manually submit Teams app package file",
   "plugins.appstudio.manuallySubmitDescription": "Build the Teams app package. You will need to send it to your Teams administrator manually",
   "plugins.appstudio.autoPublishTip": "Install for your organization",

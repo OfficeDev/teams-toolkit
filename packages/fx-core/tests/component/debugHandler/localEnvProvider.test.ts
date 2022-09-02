@@ -9,7 +9,7 @@ import * as os from "os";
 import * as path from "path";
 import * as sinon from "sinon";
 
-import { FolderName } from "../../../src";
+import { FolderName } from "../../../src/common/local/constants";
 import { LocalEnvProvider, LocalEnvs } from "../../../src/component/debugHandler/localEnvProvider";
 
 describe("LocalEnvProvider", () => {

@@ -212,14 +212,14 @@ describe("question for v3", () => {
             NotificationOptionItem,
             CommandAndResponseOptionItem,
             WorkflowOptionItem,
-            BotNewUIOptionItem,
             TabNonSsoItem,
+            BotNewUIOptionItem,
             MessageExtensionNewUIItem,
+            AzureResourceFunctionNewUI,
             AzureResourceApimNewUI,
             AzureResourceSQLNewUI,
             AzureResourceKeyVaultNewUI,
             SingleSignOnOptionItem,
-            AzureResourceFunctionNewUI,
           ],
           "option item should match"
         );
@@ -351,15 +351,15 @@ describe("question for v3", () => {
     const res = await getQuestionsForAddFeatureV3(context, inputs);
     assert.isTrue(res.isOk());
     const expectedOptions = [
-      BotNewUIOptionItem,
       TabNewUIOptionItem,
       TabNonSsoItem,
+      BotNewUIOptionItem,
+      AzureResourceFunctionNewUI,
       AzureResourceApimNewUI,
       AzureResourceSQLNewUI,
       AzureResourceKeyVaultNewUI,
       SingleSignOnOptionItem,
       ApiConnectionOptionItem,
-      AzureResourceFunctionNewUI,
     ];
     if (res.isOk()) {
       const node = res.value;

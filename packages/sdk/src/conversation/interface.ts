@@ -312,7 +312,7 @@ export interface BotSsoConfig {
     /**
      * The list of scopes for which the token will have access
      */
-    scopes?: string[];
+    scopes: string[];
   } & AuthenticationConfiguration;
 
   dialog?: {

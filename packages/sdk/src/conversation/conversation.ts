@@ -95,13 +95,15 @@ export class ConversationBot {
       this.adapter = this.createDefaultAdapter(options.adapterConfig);
     }
 
-    let ssoCommandActivityHandler: BotSsoExecutionActivityHandler;
-    if (options?.ssoConfig?.dialog?.CustomBotSsoExecutionActivityHandler) {
-      ssoCommandActivityHandler = new options.ssoConfig.dialog.CustomBotSsoExecutionActivityHandler(
-        options?.ssoConfig
-      );
-    } else {
-      ssoCommandActivityHandler = new DefaultBotSsoExecutionActivityHandler(options.ssoConfig);
+    let ssoCommandActivityHandler: BotSsoExecutionActivityHandler | undefined;
+
+    if (options?.ssoConfig) {
+      if (options.ssoConfig.dialog?.CustomBotSsoExecutionActivityHandler) {
+        ssoCommandActivityHandler =
+          new options.ssoConfig.dialog.CustomBotSsoExecutionActivityHandler(options.ssoConfig);
+      } else {
+        ssoCommandActivityHandler = new DefaultBotSsoExecutionActivityHandler(options.ssoConfig);
+      }
     }
 
     if (options.command?.enabled) {

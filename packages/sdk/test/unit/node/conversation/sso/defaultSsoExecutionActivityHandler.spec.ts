@@ -8,7 +8,7 @@ import { CustomStorage } from "../testUtils";
 import mockedEnv from "mocked-env";
 import { DefaultBotSsoExecutionActivityHandler } from "../../../../../src/conversation/sso/defaultBotSsoExecutionActivityHandler";
 import { BotSsoExecutionDialog } from "../../../../../src/conversation/sso/botSsoExecutionDialog";
-import { BotSsoConfig } from "../../../../../types/src/conversation/interface";
+import { BotSsoConfig } from "../../../../../src/conversation/interface";
 
 describe("DefaultBotSsoExecutionActivityHandler Tests - Node", () => {
   let mockedEnvRestore: () => void;

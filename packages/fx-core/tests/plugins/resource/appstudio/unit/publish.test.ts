@@ -12,6 +12,7 @@ import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio
 import { AppStudioPluginImpl } from "./../../../../../src/plugins/resource/appstudio/plugin";
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
 import { PublishingState } from "./../../../../../src/plugins/resource/appstudio/interfaces/IPublishingAppDefinition";
+import { AppDefinition } from "./../../../../../src/plugins/resource/appstudio/interfaces/appDefinition";
 import { mockTokenProviderM365 } from "./../../aad/helper";
 import { getAzureProjectRoot, MockUserInteraction } from "./../helper";
 import { TeamsBot } from "./../../../../../src/plugins/resource/bot";
@@ -27,6 +28,11 @@ describe("Publish Teams app with Azure", () => {
   let selectedPlugins: Plugin[];
   const sandbox = sinon.createSandbox();
   const appPackagePath = path.resolve(__dirname, "./../resources/appPackage/appPackage.zip");
+  const appDef: AppDefinition = {
+    appName: "fake",
+    teamsAppId: uuid(),
+    userList: [],
+  };
 
   beforeEach(async () => {
     plugin = new AppStudioPlugin();
@@ -56,6 +62,7 @@ describe("Publish Teams app with Azure", () => {
     selectedPlugins = [BotPlugin];
     sandbox.stub(AppStudioClient, "publishTeamsApp").resolves(uuid());
     sandbox.stub(AppStudioClient, "publishTeamsAppUpdate").resolves(uuid());
+    sandbox.stub(AppStudioClient, "importApp").resolves(appDef);
     sandbox.stub(fs, "move").resolves();
   });
 

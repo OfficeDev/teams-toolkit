@@ -25,6 +25,7 @@ import {
 } from "@microsoft/teamsfx-api";
 
 import { ProjectSettingsHelper } from "../../common/local/projectSettingsHelper";
+import { hasSQL } from "../../common/projectSettingsHelperV3";
 import { TelemetryEvent } from "../../common/telemetry";
 import { objectToMap } from "../../common/tools";
 import { LocalCrypto } from "../../core/crypto";
@@ -230,6 +231,19 @@ export class SSODebugHandler {
       backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.AllowedAppIds] =
         getAllowedAppIds().join(";");
 
+      if (hasSQL(projectSettingsV3)) {
+        backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.SqlEndpoint] =
+          backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.SqlEndpoint] || "";
+        backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.SqlUserName] =
+          backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.SqlUserName] || "";
+        backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.SqlPassword] =
+          backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.SqlPassword] || "";
+        backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.SqlDbName] =
+          backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.SqlDbName] || "";
+        backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.SqlIdentityId] =
+          backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.SqlIdentityId] || "";
+      }
+
       await localEnvProvider.saveBackendLocalEnvs(backendEnvs);
     }
     if (ProjectSettingsHelper.includeBot(projectSettingsV3)) {
@@ -248,6 +262,24 @@ export class SSODebugHandler {
       }/auth-start.html`;
       botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.ApplicationIdUri] =
         envInfoV3.state[ComponentNames.AadApp].applicationIdUris;
+
+      if (ProjectSettingsHelper.includeBackend(projectSettingsV3)) {
+        botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.ApiEndpoint] =
+          botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.ApiEndpoint] || "http://localhost:7071";
+      }
+
+      if (hasSQL(projectSettingsV3)) {
+        botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.SqlEndpoint] =
+          botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.SqlEndpoint] || "";
+        botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.SqlUserName] =
+          botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.SqlUserName] || "";
+        botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.SqlPassword] =
+          botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.SqlPassword] || "";
+        botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.SqlDbName] =
+          botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.SqlDbName] || "";
+        botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.SqlIdentityId] =
+          botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.SqlIdentityId] || "";
+      }
 
       await localEnvProvider.saveBotLocalEnvs(botEnvs);
     }

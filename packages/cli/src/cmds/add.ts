@@ -31,12 +31,14 @@ import {
   CapabilityAddNotification,
   CapabilityAddSSOTab,
   CapabilityAddTab,
+  CapabilityAddWorkflow,
 } from "./capability";
 import {
   isBotNotificationEnabled,
   isAadManifestEnabled,
   isApiConnectEnabled,
   isPreviewFeaturesEnabled,
+  isWorkflowBotEnabled,
 } from "@microsoft/teamsfx-core";
 
 export class AddCICD extends YargsCommand {
@@ -226,7 +228,15 @@ export default class Add extends YargsCommand {
       ? [
           // Category 1: Add Teams Capability
           ...(isBotNotificationEnabled()
-            ? [new CapabilityAddNotification(), new CapabilityAddCommandAndResponse()]
+            ? [
+                ...(isWorkflowBotEnabled()
+                  ? [
+                      new CapabilityAddNotification(),
+                      new CapabilityAddCommandAndResponse(),
+                      new CapabilityAddWorkflow(),
+                    ]
+                  : [new CapabilityAddNotification(), new CapabilityAddCommandAndResponse()]),
+              ]
             : []),
           new CapabilityAddSSOTab(),
           new CapabilityAddTab(),

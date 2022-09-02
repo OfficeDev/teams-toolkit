@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 "use strict";
 
+import { cloneDeep } from "lodash";
+
 import {
   assembleError,
   err,
@@ -13,6 +15,7 @@ import {
   Void,
 } from "@microsoft/teamsfx-api";
 
+import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
 import { LocalCrypto } from "../../core/crypto";
 import { environmentManager } from "../../core/environment";
 import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
@@ -66,17 +69,34 @@ export class TabDebugHandler {
       envInfoV3.state[ComponentNames.TeamsTab].indexPath = Constants.FrontendIndexPath;
 
       await environmentManager.writeEnvState(
-        envInfoV3.state,
+        cloneDeep(envInfoV3.state),
         this.projectPath,
         cryptoProvider,
         environmentManager.getLocalEnvName(),
         true
       );
 
+      await this.setEnvs(envInfoV3);
+
       return ok(Void);
     } catch (error: any) {
       return err(assembleError(error, errorSource));
     }
+  }
+
+  private async setEnvs(envInfoV3: v3.EnvInfoV3): Promise<void> {
+    const localEnvProvider = new LocalEnvProvider(this.projectPath);
+    const frontendEnvs = await localEnvProvider.loadFrontendLocalEnvs();
+
+    frontendEnvs.template[LocalEnvKeys.frontend.template.Browser] = "none";
+    frontendEnvs.template[LocalEnvKeys.frontend.template.Https] = "true";
+
+    const url = new URL(envInfoV3.state[ComponentNames.TeamsTab].endpoint as string);
+    frontendEnvs.template[LocalEnvKeys.frontend.template.Port] = url.port;
+
+    // certificate envs are set when cheking prerequisites
+
+    await localEnvProvider.saveFrontendLocalEnvs(frontendEnvs);
   }
 
   private async checkArgs(): Promise<Result<boolean, FxError>> {

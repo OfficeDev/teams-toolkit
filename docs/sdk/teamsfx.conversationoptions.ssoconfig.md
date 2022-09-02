@@ -9,5 +9,5 @@ Configurations for sso command bot
 <b>Signature:</b>
 
 ```typescript
-ssoConfig?: SsoConfig;
+ssoConfig?: BotSsoConfig;
 ```

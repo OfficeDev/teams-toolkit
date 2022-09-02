@@ -105,7 +105,9 @@ export class BotSsoExecutionDialog extends ComponentDialog {
             (error as Error).message
           );
           internalLogger.error(errorMsg);
-          throw new ErrorWithCode(errorMsg, ErrorCode.FailedToProcessSsoHandler);
+          return await stepContext.endDialog(
+            new ErrorWithCode(errorMsg, ErrorCode.FailedToProcessSsoHandler)
+          );
         }
       },
     ]);
@@ -137,6 +139,12 @@ export class BotSsoExecutionDialog extends ComponentDialog {
     const results = await dialogContext.continueDialog();
     if (results && results.status === DialogTurnStatus.empty) {
       await dialogContext.beginDialog(this.id);
+    } else if (
+      results &&
+      results.status === DialogTurnStatus.complete &&
+      results.result instanceof Error
+    ) {
+      throw results.result;
     }
   }
 
@@ -183,14 +191,17 @@ export class BotSsoExecutionDialog extends ComponentDialog {
     } catch (error: unknown) {
       const errorMsg = formatString(ErrorMessage.FailedToRunSsoStep, (error as Error).message);
       internalLogger.error(errorMsg);
-      throw new ErrorWithCode(errorMsg, ErrorCode.FailedToRunSsoStep);
+      return await stepContext.endDialog(new ErrorWithCode(errorMsg, ErrorCode.FailedToRunSsoStep));
     }
   }
 
   private async dedupStep(stepContext: any) {
     const tokenResponse = stepContext.result;
     if (!tokenResponse) {
-      throw new ErrorWithCode(ErrorMessage.FailedToRetrieveSsoToken, ErrorCode.FailedToRunSsoStep);
+      internalLogger.error(ErrorMessage.FailedToRetrieveSsoToken);
+      return await stepContext.endDialog(
+        new ErrorWithCode(ErrorMessage.FailedToRetrieveSsoToken, ErrorCode.FailedToRunSsoStep)
+      );
     }
 
     try {
@@ -205,7 +216,9 @@ export class BotSsoExecutionDialog extends ComponentDialog {
     } catch (error: unknown) {
       const errorMsg = formatString(ErrorMessage.FailedToRunDedupStep, (error as Error).message);
       internalLogger.error(errorMsg);
-      throw new ErrorWithCode(errorMsg, ErrorCode.FailedToRunDedupStep);
+      return await stepContext.endDialog(
+        new ErrorWithCode(errorMsg, ErrorCode.FailedToRunDedupStep)
+      );
     }
   }
 

@@ -103,7 +103,7 @@ export class BearerTokenAuthProvider implements AuthProvider {
 // @public
 export interface BotSsoConfig {
     aad: {
-        scopes?: string[];
+        scopes: string[];
     } & AuthenticationConfiguration;
     // (undocumented)
     dialog?: {

@@ -86,9 +86,12 @@ export class DefaultBotSsoExecutionActivityHandler
    * @param context The context object for the current turn.
    */
   async run(context: TurnContext) {
-    await super.run(context);
-    await this.conversationState.saveChanges(context, false);
-    await this.userState.saveChanges(context, false);
+    try {
+      await super.run(context);
+    } finally {
+      await this.conversationState.saveChanges(context, false);
+      await this.userState.saveChanges(context, false);
+    }
   }
 
   /**

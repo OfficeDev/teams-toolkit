@@ -13,8 +13,8 @@ import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
 import { getTemplatesFolder } from "@microsoft/teamsfx-core";
 import Mustache from "mustache";
-import { CICDProviderFactory } from "@microsoft/teamsfx-core/src/plugins/resource/cicd/providers/factory";
-import { ProviderKind } from "@microsoft/teamsfx-core/src/plugins/resource/cicd/providers/enums";
+import { CICDProviderFactory } from "@microsoft/teamsfx-core/src/component/feature/cicd/providers/factory";
+import { ProviderKind } from "@microsoft/teamsfx-core/src/component/feature/cicd/providers/enums";
 import * as fs from "fs-extra";
 import mockedEnv from "mocked-env";
 describe("Verify generated templates & readme V3", function () {

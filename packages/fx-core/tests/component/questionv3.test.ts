@@ -8,8 +8,10 @@ import {
   getQuestionsForAddFeatureV3,
   getQuestionsForAddResourceV3,
   getQuestionsForDeployV3,
+  FeatureId,
 } from "../../src/component/questionV3";
 import {
+  ApiConnectionOptionItem,
   AzureResourceApimNewUI,
   AzureResourceFunctionNewUI,
   AzureResourceKeyVaultNewUI,
@@ -19,6 +21,7 @@ import {
   MessageExtensionNewUIItem,
   NotificationOptionItem,
   SingleSignOnOptionItem,
+  TabNewUIOptionItem,
   TabNonSsoItem,
   WorkflowOptionItem,
 } from "../../src/plugins/solution/fx-solution/question";
@@ -34,10 +37,9 @@ import {
 } from "@microsoft/teamsfx-api";
 import { createContextV3 } from "../../src/component/utils";
 import { newEnvInfoV3 } from "../../src/core/environment";
-import { FeatureId } from "../../src/component/questionV3";
 import "../../src/component/core";
 import * as tools from "../../src/common/tools";
-import { CicdOptionItem } from "../../src/plugins/solution/fx-solution/question";
+import { ComponentNames } from "../../src/component/constants";
 
 describe("question for v3", () => {
   const sandbox = sinon.createSandbox();
@@ -210,14 +212,14 @@ describe("question for v3", () => {
             NotificationOptionItem,
             CommandAndResponseOptionItem,
             WorkflowOptionItem,
-            BotNewUIOptionItem,
             TabNonSsoItem,
+            BotNewUIOptionItem,
             MessageExtensionNewUIItem,
+            AzureResourceFunctionNewUI,
             AzureResourceApimNewUI,
             AzureResourceSQLNewUI,
             AzureResourceKeyVaultNewUI,
             SingleSignOnOptionItem,
-            AzureResourceFunctionNewUI,
           ],
           "option item should match"
         );
@@ -310,6 +312,68 @@ describe("question for v3", () => {
     for (const feature in FeatureId) {
       const res = await getQuestionsForAddFeatureSubCommand(feature as FeatureId, inputs);
       assert.isTrue(res.isOk());
+    }
+  });
+  it("getQuestionsForAddFeatureV3 for Message Extension - VS Code", async () => {
+    const manifest = new TeamsAppManifest();
+    manifest.staticTabs = [];
+    manifest.bots = [];
+    manifest.composeExtensions = [{} as any];
+    sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
+    const projectSettings = {
+      appName: "meApp",
+      projectId: "112233",
+      version: "2.1.0",
+      isFromSample: false,
+      components: [
+        {
+          name: ComponentNames.TeamsBot,
+          hosting: ComponentNames.AzureWebApp,
+          folder: "bot",
+        },
+        {
+          name: ComponentNames.AzureWebApp,
+          scenario: "Bot",
+        },
+        { name: ComponentNames.BotService, provision: true },
+        {
+          name: "identity",
+          provision: true,
+        },
+      ],
+      programmingLanguage: "typescript",
+    };
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const context = createContextV3(projectSettings);
+    const res = await getQuestionsForAddFeatureV3(context, inputs);
+    assert.isTrue(res.isOk());
+    const expectedOptions = [
+      TabNewUIOptionItem,
+      TabNonSsoItem,
+      BotNewUIOptionItem,
+      AzureResourceFunctionNewUI,
+      AzureResourceApimNewUI,
+      AzureResourceSQLNewUI,
+      AzureResourceKeyVaultNewUI,
+      SingleSignOnOptionItem,
+      ApiConnectionOptionItem,
+    ];
+    if (res.isOk()) {
+      const node = res.value;
+      assert.isTrue(
+        node &&
+          node.data &&
+          node.data.type === "singleSelect" &&
+          node.data.staticOptions.length === expectedOptions.length,
+        "option item count check"
+      );
+      if (node && node.data && node.data.type === "singleSelect") {
+        const options = (node.data as SingleSelectQuestion).staticOptions as OptionItem[];
+        assert.deepEqual(options, expectedOptions, "option item should match");
+      }
     }
   });
 });

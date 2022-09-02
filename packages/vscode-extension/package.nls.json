@@ -154,8 +154,9 @@
     "teamstoolkit.commandsTreeViewProvider.manifestEditorTitleNew": "Edit manifest file",
     "teamstoolkit.commandsTreeViewProvider.previewACDescription": "Preview and author Adaptive Cards directly in Visual Studio Code",
     "teamstoolkit.commandsTreeViewProvider.previewAdaptiveCard": "Preview and Debug Adaptive Cards",
-    "teamstoolkit.commandsTreeViewProvider.previewDescription": "Preview your Teams app locally",
-    "teamstoolkit.commandsTreeViewProvider.previewTitle": "Preview your Teams app",
+    "teamstoolkit.commandsTreeViewProvider.previewDescription": "Debug and preview your Teams app",
+    "teamstoolkit.commandsTreeViewProvider.previewTitle": "Preview your Teams app (F5)",
+    "_teamstoolkit.commandsTreeViewProvider.previewTitle.comment": "shortcut key, no need to translate 'F5'",
     "teamstoolkit.commandsTreeViewProvider.projectDescription": "Manage your project",
     "teamstoolkit.commandsTreeViewProvider.projectTitle": "PROJECT",
     "teamstoolkit.commandsTreeViewProvider.provision.blockTooltip": "Cannot run command when provisioning. Try again when provision operation is finished.",
@@ -283,8 +284,11 @@
     "teamstoolkit.localDebug.portsAlreadyInUse": "Ports: %s are already in use. Close these ports and try again.",
     "teamstoolkit.localDebug.portWarning": "Changing port(s) in package.json may break local debug. Ensure all port changes are expected or refer to documentation by clicking `Learn More` button. (%s package.json location: %s)",
     "teamstoolkit.localDebug.prerequisitesCheckFailure": "Prerequisites Check Failed. Please check the %s to see the details. If you wish to bypass checking and installing any prerequisites, you can disable them in Visual Studio Code settings.",
+    "teamstoolkit.localDebug.npmInstallFailure": "NPM Package Install Task Failed. Please check the %s to see the details.",
     "teamstoolkit.localDebug.outputPanel": "output panel",
+    "teamstoolkit.localDebug.terminal": "terminal",
     "teamstoolkit.localDebug.switchM365AccountWarning": "You are now using a different Microsoft 365 tenant from what you previously used.",
+    "teamstoolkit.localDebug.taskDefinitionError": "The value of '%s' is invalid for the task of type 'teamsfx'",
     "teamstoolkit.migrateTeamsManifest.progressTitle": "Upgrade Teams Manifest to Extend in Outlook and Office",
     "teamstoolkit.migrateTeamsManifest.selectFileConfig.name": "Select Teams Manifest to Upgrade",
     "teamstoolkit.migrateTeamsManifest.selectFileConfig.title": "Select Teams Manifest to Upgrade",
@@ -370,5 +374,6 @@
     "teamstoolkit.taskDefinitions.args.prerequisites.funcTitle": "Install Azure Functions Core Tools",
     "teamstoolkit.taskDefinitions.args.prerequisites.ngrokTitle": "Install Ngrok",
     "teamstoolkit.taskDefinitions.args.prerequisites.dotnetTitle": "Install .NET",
-    "teamstoolkit.taskDefinitions.args.prerequisites.portsTitle": "Validate available ports"
+    "teamstoolkit.taskDefinitions.args.prerequisites.portsTitle": "Validate available ports",
+    "teamstoolkit.taskDefinitions.command.npmInstall.description": "Install NPM Packages.\n See https://aka.ms/teamsfx-debug-tasks#debug-npm-install for how to customize following args."
 }

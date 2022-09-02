@@ -4,9 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 import * as vscode from "vscode";
 import { assembleError, FxError, Result } from "@microsoft/teamsfx-api";
+import * as globalVariables from "../../globalVariables";
 import { showError } from "../../handlers";
-import { getDefaultString, localize } from "../../utils/localizeUtils";
-import { outputPanelCommand } from "../constants";
 
 const ControlCodes = {
   CtrlC: "\u0003",
@@ -43,18 +42,7 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
   protected stop(error?: any): void {
     if (error) {
       // TODO: add color
-      const defaultOutputPanel = getDefaultString("teamstoolkit.localDebug.outputPanel");
-      const localizeOutputPanel = localize("teamstoolkit.localDebug.outputPanel");
-      const errorMessage = error?.message?.replace(
-        `[${defaultOutputPanel}](${outputPanelCommand})`,
-        defaultOutputPanel
-      );
-      const displayErrorMessage = error?.displayMessage?.replace(
-        `[${localizeOutputPanel}](${outputPanelCommand})`,
-        localizeOutputPanel
-      );
-
-      this.writeEmitter.fire(`${displayErrorMessage ?? errorMessage}\r\n`);
+      this.writeEmitter.fire(`${error?.displayMessage ?? error?.message}\r\n`);
       showError(assembleError(error));
       this.closeEmitter.fire(1);
     }
@@ -62,4 +50,8 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
   }
 
   protected abstract do(): Promise<Result<void, FxError>>;
+
+  public static resolveTeamsFxVariables(str: string): string {
+    return str.replace("${teamsfx:workspaceFolder}", globalVariables.workspaceUri?.fsPath ?? "");
+  }
 }

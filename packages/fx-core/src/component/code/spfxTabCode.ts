@@ -14,6 +14,7 @@ import {
   PluginContext,
   ProjectSettingsV3,
   Result,
+  Stage,
   v3,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
@@ -81,13 +82,11 @@ export async function scaffoldSPFx(
   const ui = (context as ContextV3).userInteraction || (context as PluginContext).ui;
   const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ui);
   try {
+    const isAddSpfx = inputs.stage === Stage.addFeature && isSPFxMultiTabEnabled();
     const webpartName = inputs[SPFXQuestionNames.webpart_name] as string;
-    let framework,
-      solutionName: string | undefined = undefined;
-    const isAddSpfx =
-      inputs[SPFXQuestionNames.framework_type] === undefined && isSPFxMultiTabEnabled();
+    const framework = (inputs[SPFXQuestionNames.framework_type] as string) ?? undefined;
+    let solutionName: string | undefined = undefined;
     if (!isAddSpfx) {
-      framework = inputs[SPFXQuestionNames.framework_type] as string;
       solutionName =
         ((context as ContextV3).projectSetting?.appName as string) ||
         ((context as PluginContext).projectSettings?.appName as string);

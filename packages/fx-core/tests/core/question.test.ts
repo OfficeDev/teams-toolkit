@@ -160,6 +160,18 @@ describe("Capability Questions", () => {
   });
 
   describe("createCapabilityQuestionPreview()", () => {
+    beforeEach(() => {
+      sinon.restore();
+      sinon.stub(process, "env").value({
+        BOT_NOTIFICATION_ENABLED: "true",
+        WORKFLOW_BOT_ENABLED: "true",
+      });
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
+
     it("should return single select question", () => {
       // Act
       const question = createCapabilityQuestionPreview();

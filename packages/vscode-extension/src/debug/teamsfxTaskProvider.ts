@@ -34,10 +34,15 @@ import { vscodeHelper } from "./depsChecker/vscodeHelper";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import { PrerequisiteTaskTerminal } from "./taskTerminal/prerequisiteTaskTerminal";
+import { NpmInstallTaskTerminal } from "./taskTerminal/npmInstallTaskTerminal";
 
 const customTasks = Object.freeze({
   "debug-check-prerequisites": {
     createTerminal: (d: vscode.TaskDefinition) => new PrerequisiteTaskTerminal(d),
+    presentationReveal: vscode.TaskRevealKind.Never,
+  },
+  "debug-npm-install": {
+    createTerminal: (d: vscode.TaskDefinition) => new NpmInstallTaskTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Never,
   },
 });

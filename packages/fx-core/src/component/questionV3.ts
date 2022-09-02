@@ -282,15 +282,12 @@ export async function getQuestionsForAddFeatureV3(
       teamsBot?.capabilities?.includes("notification") ||
       teamsBot?.capabilities?.includes("command-response") ||
       teamsBot?.capabilities?.includes("workflow");
-    if (!botExceedLimit && !alreadyHasNewBot) {
-      if (!meExceedLimit) {
-        options.push(NotificationOptionItem);
-        options.push(CommandAndResponseOptionItem);
-        if (isWorkflowBotEnabled()) {
-          options.push(WorkflowOptionItem);
-        }
+    if (!botExceedLimit && !meExceedLimit) {
+      options.push(NotificationOptionItem);
+      options.push(CommandAndResponseOptionItem);
+      if (isWorkflowBotEnabled()) {
+        options.push(WorkflowOptionItem);
       }
-      options.push(BotNewUIOptionItem);
     }
     if (canAddTab) {
       if (!hasTab(projectSettingsV3)) {
@@ -299,9 +296,14 @@ export async function getQuestionsForAddFeatureV3(
         options.push(hasAAD(projectSettingsV3) ? TabNewUIOptionItem : TabNonSsoItem);
       }
     }
+    if (!botExceedLimit) {
+      options.push(BotNewUIOptionItem);
+    }
     if (!meExceedLimit && !alreadyHasNewBot) {
       options.push(MessageExtensionNewUIItem);
     }
+    // function can always be added
+    options.push(AzureResourceFunctionNewUI);
     // check cloud resource options
     if (!hasAPIM(projectSettingsV3)) {
       options.push(AzureResourceApimNewUI);
@@ -316,8 +318,6 @@ export async function getQuestionsForAddFeatureV3(
     if (hasBot(projectSettingsV3) || hasApi(projectSettingsV3)) {
       options.push(ApiConnectionOptionItem);
     }
-    // function can always be added
-    options.push(AzureResourceFunctionNewUI);
   } else if (
     isSPFxMultiTabEnabled() &&
     ctx.projectSetting.solutionSettings?.hostType === HostTypeOptionSPFx.id

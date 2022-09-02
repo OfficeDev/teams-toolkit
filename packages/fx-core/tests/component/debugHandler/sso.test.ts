@@ -19,6 +19,11 @@ import {
 
 import { ComponentNames } from "../../../src/component/constants";
 import { errorSource, InvalidSSODebugArgsError } from "../../../src/component/debugHandler/error";
+import {
+  LocalEnvKeys,
+  LocalEnvProvider,
+  LocalEnvs,
+} from "../../../src/component/debugHandler/localEnvProvider";
 import { SSODebugArgs, SSODebugHandler } from "../../../src/component/debugHandler/sso";
 import { environmentManager } from "../../../src/core/environment";
 import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
@@ -153,11 +158,15 @@ describe("SSODebugHandler", () => {
       sinon
         .stub(projectSettingsLoader, "loadProjectSettingsByProjectPath")
         .returns(Promise.resolve(ok(projectSettingV3)));
+      const endpoint = "https://localhost:53000";
       const envInfoV3: v3.EnvInfoV3 = {
         envName: environmentManager.getLocalEnvName(),
         config: {},
         state: {
           solution: {},
+          [ComponentNames.TeamsTab]: {
+            endpoint,
+          },
         },
       };
       sinon.stub(environmentManager, "loadEnvInfo").returns(Promise.resolve(ok(envInfoV3)));
@@ -182,6 +191,17 @@ describe("SSODebugHandler", () => {
         return ok("");
       });
       sinon.stub(AadAppManifestManager, "writeManifestFileToBuildFolder").callsFake(async () => {});
+      let frontendEnvs: LocalEnvs = {
+        template: {},
+        teamsfx: {},
+        customized: {},
+      };
+      sinon
+        .stub(LocalEnvProvider.prototype, "loadFrontendLocalEnvs")
+        .returns(Promise.resolve(frontendEnvs));
+      sinon.stub(LocalEnvProvider.prototype, "saveFrontendLocalEnvs").callsFake(async (envs) => {
+        frontendEnvs = envs;
+      });
       const args: SSODebugArgs = {};
       const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
       const result = await handler.setUp();
@@ -209,6 +229,15 @@ describe("SSODebugHandler", () => {
       );
       chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].botId, undefined);
       chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].botEndpoint, undefined);
+      const expectedEnvs: LocalEnvs = {
+        template: {},
+        teamsfx: {
+          [LocalEnvKeys.frontend.teamsfx.ClientId]: clientId,
+          [LocalEnvKeys.frontend.teamsfx.LoginUrl]: `${endpoint}/auth-start.html`,
+        },
+        customized: {},
+      };
+      chai.assert.deepEqual(frontendEnvs, expectedEnvs);
       sinon.restore();
     });
 
@@ -243,7 +272,7 @@ describe("SSODebugHandler", () => {
         config: {},
         state: {
           solution: {},
-          "teams-bot": {
+          [ComponentNames.TeamsBot]: {
             botId,
             siteEndpoint: botEndpoint,
           },
@@ -271,6 +300,15 @@ describe("SSODebugHandler", () => {
         return ok("");
       });
       sinon.stub(AadAppManifestManager, "writeManifestFileToBuildFolder").callsFake(async () => {});
+      let botEnvs: LocalEnvs = {
+        template: {},
+        teamsfx: {},
+        customized: {},
+      };
+      sinon.stub(LocalEnvProvider.prototype, "loadBotLocalEnvs").returns(Promise.resolve(botEnvs));
+      sinon.stub(LocalEnvProvider.prototype, "saveBotLocalEnvs").callsFake(async (envs) => {
+        botEnvs = envs;
+      });
       const args: SSODebugArgs = {};
       const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
       const result = await handler.setUp();
@@ -295,6 +333,19 @@ describe("SSODebugHandler", () => {
       );
       chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].botId, botId);
       chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].botEndpoint, botEndpoint);
+      const expectedEnvs: LocalEnvs = {
+        template: {},
+        teamsfx: {
+          [LocalEnvKeys.bot.teamsfx.ClientId]: clientId,
+          [LocalEnvKeys.bot.teamsfx.ClientSecret]: clientSecret,
+          [LocalEnvKeys.bot.teamsfx.AuthorityHost]: "https://login.microsoftonline.com",
+          [LocalEnvKeys.bot.teamsfx.TenantId]: tenantId,
+          [LocalEnvKeys.bot.teamsfx.ApplicationIdUri]: `api://botid-${botId}`,
+          [LocalEnvKeys.bot.teamsfx.LoginEndpoint]: `${botEndpoint}/auth-start.html`,
+        },
+        customized: {},
+      };
+      chai.assert.deepEqual(botEnvs, expectedEnvs);
       sinon.restore();
     });
 
@@ -326,12 +377,16 @@ describe("SSODebugHandler", () => {
         .returns(Promise.resolve(ok(projectSettingV3)));
       const botId = "11111111-1111-1111-1111-111111111111";
       const botEndpoint = "https://xxx.ngrok.io";
+      const tabEndpoint = "https://localhost:53000";
       const envInfoV3: v3.EnvInfoV3 = {
         envName: environmentManager.getLocalEnvName(),
         config: {},
         state: {
           solution: {},
-          "teams-bot": {
+          [ComponentNames.TeamsTab]: {
+            endpoint: tabEndpoint,
+          },
+          [ComponentNames.TeamsBot]: {
             botId,
             siteEndpoint: botEndpoint,
           },
@@ -359,6 +414,26 @@ describe("SSODebugHandler", () => {
         return ok("");
       });
       sinon.stub(AadAppManifestManager, "writeManifestFileToBuildFolder").callsFake(async () => {});
+      let frontendEnvs: LocalEnvs = {
+        template: {},
+        teamsfx: {},
+        customized: {},
+      };
+      sinon
+        .stub(LocalEnvProvider.prototype, "loadFrontendLocalEnvs")
+        .returns(Promise.resolve(frontendEnvs));
+      sinon.stub(LocalEnvProvider.prototype, "saveFrontendLocalEnvs").callsFake(async (envs) => {
+        frontendEnvs = envs;
+      });
+      let botEnvs: LocalEnvs = {
+        template: {},
+        teamsfx: {},
+        customized: {},
+      };
+      sinon.stub(LocalEnvProvider.prototype, "loadBotLocalEnvs").returns(Promise.resolve(botEnvs));
+      sinon.stub(LocalEnvProvider.prototype, "saveBotLocalEnvs").callsFake(async (envs) => {
+        botEnvs = envs;
+      });
       const args: SSODebugArgs = {};
       const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
       const result = await handler.setUp();
@@ -386,6 +461,28 @@ describe("SSODebugHandler", () => {
       );
       chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].botId, botId);
       chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].botEndpoint, botEndpoint);
+      const expectedFrontendEnvs: LocalEnvs = {
+        template: {},
+        teamsfx: {
+          [LocalEnvKeys.frontend.teamsfx.ClientId]: clientId,
+          [LocalEnvKeys.frontend.teamsfx.LoginUrl]: `${tabEndpoint}/auth-start.html`,
+        },
+        customized: {},
+      };
+      const expectedBotEnvs: LocalEnvs = {
+        template: {},
+        teamsfx: {
+          [LocalEnvKeys.bot.teamsfx.ClientId]: clientId,
+          [LocalEnvKeys.bot.teamsfx.ClientSecret]: clientSecret,
+          [LocalEnvKeys.bot.teamsfx.AuthorityHost]: "https://login.microsoftonline.com",
+          [LocalEnvKeys.bot.teamsfx.TenantId]: tenantId,
+          [LocalEnvKeys.bot.teamsfx.ApplicationIdUri]: `api://localhost/botid-${botId}`,
+          [LocalEnvKeys.bot.teamsfx.LoginEndpoint]: `${botEndpoint}/auth-start.html`,
+        },
+        customized: {},
+      };
+      chai.assert.deepEqual(frontendEnvs, expectedFrontendEnvs);
+      chai.assert.deepEqual(botEnvs, expectedBotEnvs);
       sinon.restore();
     });
   });

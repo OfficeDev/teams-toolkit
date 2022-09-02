@@ -90,6 +90,7 @@ import { ApiConnectorImpl } from "./feature/apiconnector/ApiConnectorImpl";
 import { addCicdQuestion } from "./feature/cicd";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import {
+  frameworkQuestion,
   versionCheckQuestion,
   webpartNameQuestion,
 } from "../plugins/resource/spfx/utils/questions";
@@ -97,6 +98,7 @@ import { manifestUtils } from "./resource/appManifest/utils";
 import { Constants } from "../plugins/resource/aad/constants";
 import { getQuestionsForDeployAPIM } from "./resource/apim";
 import { canAddSso } from "./feature/sso";
+import { getAddSPFxQuestionNode } from "./feature/spfx";
 
 export async function getQuestionsForProvisionV3(
   context: v2.Context,
@@ -333,7 +335,7 @@ export async function getQuestionsForAddFeatureV3(
   if (triggerNodeRes.value) {
     addFeatureNode.addChild(triggerNodeRes.value);
   }
-  const addSPFxNodeRes = getAddSPFxQuestionNode();
+  const addSPFxNodeRes = await getAddSPFxQuestionNode(inputs.projectPath);
   if (addSPFxNodeRes.isErr()) return err(addSPFxNodeRes.error);
   if (addSPFxNodeRes.value) {
     addFeatureNode.addChild(addSPFxNodeRes.value);
@@ -502,18 +504,4 @@ export async function getNotificationTriggerQuestionNode(
   }
   res.condition = showNotificationTriggerCondition;
   return ok(res);
-}
-
-export function getAddSPFxQuestionNode(): Result<QTreeNode | undefined, FxError> {
-  const spfx_add_feature = new QTreeNode({
-    type: "group",
-  });
-  spfx_add_feature.condition = { equals: TabSPFxNewUIItem.id };
-
-  const spfx_version_check = new QTreeNode(versionCheckQuestion);
-  spfx_add_feature.addChild(spfx_version_check);
-
-  const spfx_webpart_name = new QTreeNode(webpartNameQuestion);
-  spfx_version_check.addChild(spfx_webpart_name);
-  return ok(spfx_add_feature);
 }

@@ -13,10 +13,9 @@ import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
 import { getTemplatesFolder } from "@microsoft/teamsfx-core";
 import Mustache from "mustache";
-import { CICDProviderFactory } from "@microsoft/teamsfx-core/src/component/feature/cicd/providers/factory";
-import { ProviderKind } from "@microsoft/teamsfx-core/src/component/feature/cicd/providers/enums";
 import * as fs from "fs-extra";
 import mockedEnv from "mocked-env";
+import { CICDProviderFactory } from "../../../../fx-core/src/component/feature/cicd/provider/factory";
 describe("Verify generated templates & readme V3", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
@@ -44,7 +43,7 @@ describe("Verify generated templates & readme V3", function () {
     }
 
     const providerPromises = ["github", "azdo", "jenkins"].map(async (providerName) => {
-      const provider = CICDProviderFactory.create(providerName as ProviderKind);
+      const provider = CICDProviderFactory.create(providerName as any);
       const localTemplatePath = path.join(
         getTemplatesFolder(),
         "plugins",

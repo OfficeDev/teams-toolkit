@@ -219,7 +219,7 @@ describe("Add ci cd workflow", () => {
     });
   });
 
-  describe.only("Errors when adding CI CD workflows", () => {
+  describe("Errors when adding CI CD workflows", () => {
     it("Missing project path", async () => {
       const projectSetting: ProjectSettingsV3 = {
         appName: "my app",

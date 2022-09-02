@@ -534,7 +534,7 @@ export class TeamsfxCore {
    * 2. For VS Code platform, there is no "AAD" option in the deploy plugins selection question.
    *    "Deploy" command does not include "AAD" resource. But there is another command "Deploy aad manifest" in aad manifest's context menu that will trigger the "deploy" lifecycle command in fxcore (with inputs["include-aad-manifest"] === "yes") will trigger "AAD" only deployment.
    * 3. For CLI platform, there is "AAD" option in the deploy plugins selection question.
-   *    "Deploy" command does only includes "AAD" resource if the following conditions meet:
+   *    "Deploy" command includes "AAD" resource if the following conditions meet:
    *      1). inputs["include-aad-manifest"] === "yes" AND
    *      2). deploy options includes "AAD".
    *    In such a case "AAD" will be included in the deployment resources and will be deployed together with other resources.

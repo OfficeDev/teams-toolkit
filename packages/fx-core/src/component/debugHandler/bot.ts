@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 "use strict";
 
+import { cloneDeep } from "lodash";
+
 import {
   assembleError,
   err,
@@ -36,6 +38,7 @@ import {
   errorSource,
   InvalidExistingBotArgsError,
 } from "./error";
+import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
 
 export interface BotDebugArgs {
   botId?: string;
@@ -101,9 +104,10 @@ export class BotDebugHandler {
         envInfoV3.state[ComponentNames.TeamsBot].botPassword = this.args.botPassword;
       }
 
-      // set validDomain, siteEndpoint from args to state
+      // set validDomain, domain, siteEndpoint from args to state
       const url = new URL(this.args.botMessagingEndpoint!);
       envInfoV3.state[ComponentNames.TeamsBot].validDomain = url.hostname;
+      envInfoV3.state[ComponentNames.TeamsBot].domain = url.hostname;
       envInfoV3.state[ComponentNames.TeamsBot].siteEndpoint = url.origin;
 
       // not using existing bot and not yet created
@@ -158,12 +162,14 @@ export class BotDebugHandler {
       );
 
       await environmentManager.writeEnvState(
-        envInfoV3.state,
+        cloneDeep(envInfoV3.state),
         this.projectPath,
         cryptoProvider,
         environmentManager.getLocalEnvName(),
         true
       );
+
+      await this.setEnvs(envInfoV3);
 
       return ok(Void);
     } catch (error: any) {
@@ -171,9 +177,16 @@ export class BotDebugHandler {
     }
   }
 
-  private async setEnvs(): Promise<Result<Void, FxError>> {
-    // TODO: set BOT_ID, BOT_PASSWORD
-    return ok(Void);
+  private async setEnvs(envInfoV3: v3.EnvInfoV3): Promise<void> {
+    const localEnvProvider = new LocalEnvProvider(this.projectPath);
+    const botEnvs = await localEnvProvider.loadBotLocalEnvs();
+
+    botEnvs.template[LocalEnvKeys.bot.template.BotId] =
+      envInfoV3.state[ComponentNames.TeamsBot].botId;
+    botEnvs.template[LocalEnvKeys.bot.template.BotPassword] =
+      envInfoV3.state[ComponentNames.TeamsBot].botPassword;
+
+    localEnvProvider.saveBotLocalEnvs(botEnvs);
   }
 
   // return true if using existing bot

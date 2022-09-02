@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
+import { cloneDeep } from "lodash";
 import { v4 as uuidv4 } from "uuid";
 
 import {
@@ -37,6 +38,8 @@ import { TokenProvider } from "../../plugins/resource/aad/utils/tokenProvider";
 import { ComponentNames } from "../constants";
 import { convertEnvStateV3ToV2 } from "../migrate";
 import { errorSource, InvalidSSODebugArgsError } from "./error";
+import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
+import { getAllowedAppIds } from "../../common/tools";
 
 export interface SSODebugArgs {
   objectId?: string;
@@ -172,7 +175,7 @@ export class SSODebugHandler {
       await AadAppClient.updateAadAppUsingManifest(TelemetryEvent.DebugSetUpSSO, manifest, false);
 
       await environmentManager.writeEnvState(
-        envInfoV3.state,
+        cloneDeep(envInfoV3.state),
         this.projectPath,
         cryptoProvider,
         environmentManager.getLocalEnvName(),
@@ -181,10 +184,7 @@ export class SSODebugHandler {
 
       await AadAppManifestManager.writeManifestFileToBuildFolder(manifest, context);
 
-      const result = await this.setEnvs(projectSettingsV3, envInfoV3);
-      if (result.isErr()) {
-        return err(result.error);
-      }
+      await this.setEnvs(projectSettingsV3, envInfoV3);
 
       return ok(Void);
     } catch (error: any) {
@@ -195,9 +195,62 @@ export class SSODebugHandler {
   private async setEnvs(
     projectSettingsV3: ProjectSettingsV3,
     envInfoV3: v3.EnvInfoV3
-  ): Promise<Result<Void, FxError>> {
-    // TODO: set TeamsFx SDK envs
-    return ok(Void);
+  ): Promise<void> {
+    const localEnvProvider = new LocalEnvProvider(this.projectPath);
+    if (ProjectSettingsHelper.includeFrontend(projectSettingsV3)) {
+      const frontendEnvs = await localEnvProvider.loadFrontendLocalEnvs();
+
+      frontendEnvs.teamsfx[LocalEnvKeys.frontend.teamsfx.ClientId] =
+        envInfoV3.state[ComponentNames.AadApp].clientId;
+      frontendEnvs.teamsfx[LocalEnvKeys.frontend.teamsfx.LoginUrl] = `${
+        envInfoV3.state[ComponentNames.TeamsTab].endpoint
+      }/auth-start.html`;
+
+      if (ProjectSettingsHelper.includeBackend(projectSettingsV3)) {
+        frontendEnvs.teamsfx[LocalEnvKeys.frontend.teamsfx.FuncEndpoint] =
+          frontendEnvs.teamsfx[LocalEnvKeys.frontend.teamsfx.FuncEndpoint] ||
+          "http://localhost:7071";
+        frontendEnvs.teamsfx[LocalEnvKeys.frontend.teamsfx.FuncName] =
+          projectSettingsV3.defaultFunctionName as string;
+      }
+
+      await localEnvProvider.saveFrontendLocalEnvs(frontendEnvs);
+    }
+    if (ProjectSettingsHelper.includeBackend(projectSettingsV3)) {
+      const backendEnvs = await localEnvProvider.loadBackendLocalEnvs();
+
+      backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.ClientId] =
+        envInfoV3.state[ComponentNames.AadApp].clientId;
+      backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.ClientSecret] =
+        envInfoV3.state[ComponentNames.AadApp].clientSecret;
+      backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.TenantId] =
+        envInfoV3.state[ComponentNames.AadApp].tenantId;
+      backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.AuthorityHost] =
+        envInfoV3.state[ComponentNames.AadApp].oauthHost;
+      backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.AllowedAppIds] =
+        getAllowedAppIds().join(";");
+
+      await localEnvProvider.saveBackendLocalEnvs(backendEnvs);
+    }
+    if (ProjectSettingsHelper.includeBot(projectSettingsV3)) {
+      const botEnvs = await localEnvProvider.loadBotLocalEnvs();
+
+      botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.ClientId] =
+        envInfoV3.state[ComponentNames.AadApp].clientId;
+      botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.ClientSecret] =
+        envInfoV3.state[ComponentNames.AadApp].clientSecret;
+      botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.TenantId] =
+        envInfoV3.state[ComponentNames.AadApp].tenantId;
+      botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.AuthorityHost] =
+        envInfoV3.state[ComponentNames.AadApp].oauthHost;
+      botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.LoginEndpoint] = `${
+        envInfoV3.state[ComponentNames.AadApp].botEndpoint
+      }/auth-start.html`;
+      botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.ApplicationIdUri] =
+        envInfoV3.state[ComponentNames.AadApp].applicationIdUris;
+
+      await localEnvProvider.saveBotLocalEnvs(botEnvs);
+    }
   }
 
   // return true if using existing AAD app

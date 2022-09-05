@@ -995,9 +995,6 @@ export async function getQuestionsForAddFeature(
     [ResourcePluginsV2.BotPlugin, BotNewUIOptionItem.id],
     [ResourcePluginsV2.FunctionPlugin, AzureResourceFunction.id],
   ];
-  if (inputs.platform === Platform.CLI_HELP || isCicdAddable) {
-    pluginsWithResources.push([ResourcePluginsV2.CICDPlugin, CicdOptionItem.id]);
-  }
   if (isSPFxMultiTabEnabled()) {
     pluginsWithResources.push([ResourcePluginsV2.SpfxPlugin, TabSPFxNewUIItem.id]);
   }

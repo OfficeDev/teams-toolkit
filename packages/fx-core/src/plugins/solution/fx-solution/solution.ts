@@ -86,7 +86,6 @@ import {
   SUBSCRIPTION_ID,
   RESOURCE_GROUP_NAME,
   SUBSCRIPTION_NAME,
-  LOCAL_TENANT_ID,
   REMOTE_TEAMS_APP_TENANT_ID,
 } from "./constants";
 import { executeConcurrently, executeLifecycles, LifecyclesWithContext } from "./executor";
@@ -113,7 +112,6 @@ import {
   getAllResourcePluginMap,
   getAllResourcePlugins,
   ResourcePlugins,
-  ResourcePluginsV2,
 } from "./ResourcePluginContainer";
 import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
 import {
@@ -155,7 +153,6 @@ export class TeamsAppSolution implements Solution {
   ApimPlugin: Plugin;
   KeyVaultPlugin: Plugin;
   LocalDebugPlugin: Plugin;
-  CICDPlugin: Plugin;
 
   name = "fx-solution-azure";
 
@@ -172,7 +169,6 @@ export class TeamsAppSolution implements Solution {
     this.ApimPlugin = Container.get<Plugin>(ResourcePlugins.ApimPlugin);
     this.KeyVaultPlugin = Container.get<Plugin>(ResourcePlugins.KeyVaultPlugin);
     this.LocalDebugPlugin = Container.get<Plugin>(ResourcePlugins.LocalDebugPlugin);
-    this.CICDPlugin = Container.get<Plugin>(ResourcePluginsV2.CICDPlugin);
     this.runningState = SolutionRunningState.Idle;
   }
 

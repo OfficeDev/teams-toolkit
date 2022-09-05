@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ok, ProjectSettingsV3, v2 } from "@microsoft/teamsfx-api";
+import { ContextV3, ok, ProjectSettingsV3 } from "@microsoft/teamsfx-api";
 import { FxResult } from "../result";
 import * as fs from "fs-extra";
 import { FileSystemError, InternalError, NoProjectOpenedError } from "../errors";
@@ -11,7 +11,6 @@ import Mustache from "mustache";
 import { getTemplatesFolder } from "../../../../folder";
 import { generateBuildScript } from "../utils/buildScripts";
 import { convertToAlphanumericOnly } from "../../../../common/utils";
-import { isV3 } from "../../../../core/globalVars";
 import {
   hasAPIM,
   hasAzureResourceV3,
@@ -27,7 +26,7 @@ export class CICDProvider {
     projectPath: string,
     templateName: string,
     envName: string,
-    context: v2.Context
+    context: ContextV3
   ): Promise<FxResult> {
     // 0. Preconditions check.
     if (!(await fs.pathExists(projectPath))) {
@@ -80,32 +79,17 @@ export class CICDProvider {
     }
 
     // 3. Generate template file.
-    let replacements;
-    if (!isV3()) {
-      const hostType = context.projectSetting.solutionSettings?.hostType;
-      replacements = {
-        env_name: envName,
-        build_script: generateBuildScript(context.projectSetting),
-        hosting_type_contains_spfx: hostType === "SPFx",
-        hosting_type_contains_azure: hostType === "Azure",
-        cloud_resources_contains_sql:
-          context.projectSetting.solutionSettings?.["azureResources"].includes("sql") ?? false,
-        api_prefix: convertToAlphanumericOnly(context.projectSetting.appName),
-        cloud_resources_contains_apim:
-          context.projectSetting.solutionSettings?.["azureResources"].includes("apim") ?? false,
-      };
-    } else {
-      const projectSettingsV3 = context.projectSetting as ProjectSettingsV3;
-      replacements = {
-        env_name: envName,
-        build_script: generateBuildScript(context.projectSetting),
-        hosting_type_contains_spfx: hasSPFxTab(projectSettingsV3),
-        hosting_type_contains_azure: hasAzureResourceV3(projectSettingsV3),
-        cloud_resources_contains_sql: hasSQL(projectSettingsV3),
-        api_prefix: convertToAlphanumericOnly(context.projectSetting.appName),
-        cloud_resources_contains_apim: hasAPIM(projectSettingsV3),
-      };
-    }
+
+    const projectSettingsV3 = context.projectSetting as ProjectSettingsV3;
+    const replacements = {
+      env_name: envName,
+      build_script: generateBuildScript(context.projectSetting),
+      hosting_type_contains_spfx: hasSPFxTab(projectSettingsV3),
+      hosting_type_contains_azure: hasAzureResourceV3(projectSettingsV3),
+      cloud_resources_contains_sql: hasSQL(projectSettingsV3),
+      api_prefix: convertToAlphanumericOnly(context.projectSetting.appName),
+      cloud_resources_contains_apim: hasAPIM(projectSettingsV3),
+    };
 
     const targetTemplatePath = path.join(
       targetPath,

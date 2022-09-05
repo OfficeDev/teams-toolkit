@@ -127,6 +127,9 @@ export async function getQuestionsForDeployV3(
   if (isVSProject(ctx.projectSetting)) {
     return ok(undefined);
   }
+  if (inputs.platform === Platform.VSCode && inputs[Constants.INCLUDE_AAD_MANIFEST] === "yes") {
+    return ok(undefined);
+  }
   const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
   const projectSetting = ctx.projectSetting as ProjectSettingsV3;
   const deployableComponents = [
@@ -142,6 +145,7 @@ export async function getQuestionsForDeployV3(
     [ComponentNames.TeamsApi]: "Azure Function",
     [ComponentNames.APIM]: "API Management",
     [ComponentNames.AppManifest]: "App Studio",
+    [ComponentNames.AadApp]: "AAD",
   };
 
   if (CLIPlatforms.includes(inputs.platform)) {

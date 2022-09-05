@@ -65,6 +65,7 @@ import {
   AzureSolutionQuestionNames,
 } from "../../src/plugins/solution/fx-solution/question";
 import { AddSsoParameters } from "../../src/plugins/solution/fx-solution/constants";
+import { BuiltInFeaturePluginNames } from "../../src/plugins/solution/fx-solution/v3/constants";
 describe("Core component test for v3", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -1167,14 +1168,26 @@ describe("Core component test for v3", () => {
     }
     assert.isTrue(provisionRes.isOk());
 
-    inputs[Constants.INCLUDE_AAD_MANIFEST] = "yes";
-    inputs.platform = Platform.CLI;
-    inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] = [];
-    const deployRes = await fx.deploy(context as ResourceContextV3, inputs);
-    if (deployRes.isErr()) {
-      console.log(deployRes.error);
+    {
+      inputs[Constants.INCLUDE_AAD_MANIFEST] = "yes";
+      inputs.platform = Platform.CLI;
+      inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] = [BuiltInFeaturePluginNames.aad];
+      const deployRes = await fx.deploy(context as ResourceContextV3, inputs);
+      if (deployRes.isErr()) {
+        console.log(deployRes.error);
+      }
+      assert.isTrue(deployRes.isOk());
     }
-    assert.isTrue(deployRes.isOk());
+    {
+      inputs[Constants.INCLUDE_AAD_MANIFEST] = "no";
+      inputs.platform = Platform.CLI;
+      inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] = [BuiltInFeaturePluginNames.aad];
+      const deployRes = await fx.deploy(context as ResourceContextV3, inputs);
+      if (deployRes.isErr()) {
+        console.log(deployRes.error);
+      }
+      assert.isTrue(deployRes.isErr());
+    }
   });
 
   it("fx.deployAadFromVscode", async () => {

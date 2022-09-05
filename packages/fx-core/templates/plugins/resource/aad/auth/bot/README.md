@@ -104,7 +104,7 @@ Please replace the following code:
     const path = require("path");
     ```
 
-1. Register your command in the Teams app manifest. Open `templates/appPackage/manifest.template.json`, and add following lines under `command` in `commandLists` of your bot:
+1. Register your command in the Teams app manifest. Open `templates/appPackage/manifest.template.json`, and add following lines under `commands` in `commandLists` of your bot:
 
     ```
     {
@@ -210,7 +210,7 @@ After successfully add SSO in your project, you can also add a new command.
     this.dialog.addCommand("ShowUserPhoto", new RegExp("photo\s*.*"), showUserImage, scope);
     ```
 
-1. Register your command in the Teams app manifest. Open 'templates/appPackage/manifest.template.json', and add following lines under `command` in `commandLists` of your bot:
+1. Register your command in the Teams app manifest. Open 'templates/appPackage/manifest.template.json', and add following lines under `commands` in `commandLists` of your bot:
 
     ```
     {

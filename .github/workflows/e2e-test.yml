@@ -105,7 +105,7 @@ jobs:
             npm run setup
             npm run setup-metrics
 
-      - name: Package CLI 
+      - name: Package CLI
         working-directory: packages/cli
         run: |
           rm -f *.tgz
@@ -203,7 +203,7 @@ jobs:
           command: |
             npm run setup
 
-      - name:  Download CLI
+      - name: Download CLI
         uses: actions/download-artifact@v3
         with:
           name: Teamsfx-cli
@@ -262,10 +262,20 @@ jobs:
             /tmp/.metrics/output.txt
 
       - name: Sync to Azure DevOps Test Plan
-        if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
+        if: ${{ always() }}
         run: |
           version=$(node -p -e "require('./packages/cli/package.json').version")
           npx ts-node .github/scripts/testPlan.ts sync ./packages/cli/tests/e2e/mochawesome-report/mochawesome.json cli $version
+
+      - name: Sync to Azure DevOps Test Plan
+        if: ${{ always() }}
+        run: |
+          committer=`git log -1 --pretty=format:'%an'`
+          mc=`cat ./packages/cli/tests/e2e/mochawesome-report/mochawesome.json | jq -c | sed -e 's/"/\\"/g'`
+          curl -X POST https://teamsfxteststatus.azurewebsites.net/api/testCase \
+             -H 'Content-Type: application/json' \
+             -H 'Authorization: Bearer ${{ secrets.TESTING_DASHBOARD_TOKEN }}' \
+               -d "{\"basic\":{\"reportId\":\"01\"},\"git\":{\"orginazation\":\"${{ github.repository_owner }}\",\"repository\":\"${{ github.repository }}\",\"commit\":\"${{ github.sha }}\",\"author\":\"$committer\",\"branch\":\"${{ github.ref }}\"},\"github\":{\"os\":\"Ubuntu\",\"nodeVersion\":\"14\",\"on\":\"${{ github.event_name }}\",\"jobId\":\"${{ steps.get-job-id.outputs.jobId }}\",\"runId\":\"${{ github.run_id }}\",\"caseURL\":\"$raw_url\"}, \"mochawesome\": $mc}"
 
   tear-down:
     if: ${{ always() && github.event_name == 'schedule' }}

@@ -11,16 +11,15 @@ import { getDefaultString, getLocalizedString } from "../../../common/localizeUt
 import { VSCodeExtensionCommand } from "../../../common/constants";
 import { telemetryHelper } from "./utils/telemetry-helper";
 import { LifecycleFuncNames } from "./constants";
-import { EnvInfoV3 } from "@microsoft/teamsfx-api/build/v3";
 
 export class CICDImpl {
   public commonProperties: { [key: string]: string } = {};
   public async addCICDWorkflows(
     context: ContextV3,
     inputs: Inputs,
-    envName: string,
-    envInfo: EnvInfoV3 | undefined
+    envName: string
   ): Promise<FxResult> {
+    const envInfo = context.envInfo;
     telemetryHelper.sendStartEvent(
       context,
       envInfo,

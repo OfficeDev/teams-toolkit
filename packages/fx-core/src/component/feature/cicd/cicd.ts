@@ -54,7 +54,7 @@ export class CICD {
   ): Promise<Result<undefined, FxError>> {
     const cicdImpl: CICDImpl = new CICDImpl();
     const envName = inputs.env || inputs[questionNames.Environment];
-    const res = await cicdImpl.addCICDWorkflows(context, inputs, envName, context.envInfo);
+    const res = await cicdImpl.addCICDWorkflows(context, inputs, envName);
     if (res.isErr()) return err(res.error);
     return ok(undefined);
   }

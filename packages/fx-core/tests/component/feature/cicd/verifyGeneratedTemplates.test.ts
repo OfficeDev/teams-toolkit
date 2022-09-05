@@ -85,7 +85,7 @@ describe("Add ci cd workflow", () => {
 
         const provider = CICDProviderFactory.create(providerKind);
 
-        await cicdPlugin.addCICDWorkflows(context, inputs, envName, envInfo);
+        await cicdPlugin.addCICDWorkflows(context, inputs, envName);
         // Assert
         const contentsToBeComparedPromises = Object.values(TemplateKind).map(
           async (templateKind, index, arr) => {
@@ -174,9 +174,9 @@ describe("Add ci cd workflow", () => {
       await fs.ensureDir(inputs.projectPath!);
       const envName = "staging";
 
-      await cicdPlugin.addCICDWorkflows(context, inputs, envName, envInfo);
+      await cicdPlugin.addCICDWorkflows(context, inputs, envName);
       inputs["provider"] = ProviderKind.Jenkins;
-      await cicdPlugin.addCICDWorkflows(context, inputs, envName, envInfo);
+      await cicdPlugin.addCICDWorkflows(context, inputs, envName);
 
       // Assert
       const templatePromises = Object.values(TemplateKind).map(async (templateKind) => {
@@ -265,7 +265,7 @@ describe("Add ci cd workflow", () => {
       await fs.ensureDir(path.join(projectPath, ".github/workflows"));
       await fs.createFile(targetTemplate);
 
-      const res = await cicdPlugin.addCICDWorkflows(context, inputs, envName, envInfo);
+      const res = await cicdPlugin.addCICDWorkflows(context, inputs, envName);
 
       // Assert
       expect(res.isOk()).equal(true);
@@ -308,7 +308,7 @@ describe("Add ci cd workflow", () => {
 
       const envName = "staging";
 
-      const res = await cicdPlugin.addCICDWorkflows(context, inputs, envName, envInfo);
+      const res = await cicdPlugin.addCICDWorkflows(context, inputs, envName);
       expect(res.isErr()).equal(true);
       if (res.isErr()) {
         const error = res.error as any;
@@ -350,7 +350,7 @@ describe("Add ci cd workflow", () => {
         provider: ProviderKind.GitHub,
       };
 
-      const res = await cicdPlugin.addCICDWorkflows(context, inputs, "", envInfo);
+      const res = await cicdPlugin.addCICDWorkflows(context, inputs, "");
       expect(res.isErr()).equal(true);
       if (res.isErr()) {
         const error = res.error as any;
@@ -389,7 +389,7 @@ describe("Add ci cd workflow", () => {
         provider: "",
       };
 
-      const res = await cicdPlugin.addCICDWorkflows(context, inputs, "staging", envInfo);
+      const res = await cicdPlugin.addCICDWorkflows(context, inputs, "staging");
       expect(res.isErr()).equal(true);
       if (res.isErr()) {
         const error = res.error as any;
@@ -428,7 +428,7 @@ describe("Add ci cd workflow", () => {
         provider: ProviderKind.GitHub,
       };
 
-      const res = await cicdPlugin.addCICDWorkflows(context, inputs, "staging", envInfo);
+      const res = await cicdPlugin.addCICDWorkflows(context, inputs, "staging");
       expect(res.isErr()).equal(true);
       if (res.isErr()) {
         const error = res.error as any;
@@ -469,7 +469,7 @@ describe("Add ci cd workflow", () => {
 
       const error = new Error("some fake error");
       sandbox.stub(CICDProviderFactory, "create").throws(error);
-      const res = await cicdPlugin.addCICDWorkflows(context, inputs, "staging", envInfo);
+      const res = await cicdPlugin.addCICDWorkflows(context, inputs, "staging");
       expect(res.isErr()).equal(true);
       if (res.isErr()) {
         const error = res.error as any;

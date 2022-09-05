@@ -820,14 +820,13 @@ async function runBackgroundAsyncTasks(
   await openWelcomePageAfterExtensionInstallation();
 
   await exp.initialize(context);
-  TreatmentVariableValue.previewTreeViewCommand = true;
-  // TreatmentVariableValue.previewTreeViewCommand = (await exp
-  //   .getExpService()
-  //   .getTreatmentVariableAsync(
-  //     TreatmentVariables.VSCodeConfig,
-  //     TreatmentVariables.PreviewTreeViewCommand,
-  //     true
-  //   )) as boolean | undefined;
+  TreatmentVariableValue.previewTreeViewCommand = (await exp
+    .getExpService()
+    .getTreatmentVariableAsync(
+      TreatmentVariables.VSCodeConfig,
+      TreatmentVariables.PreviewTreeViewCommand,
+      true
+    )) as boolean | undefined;
 
   if (isTeamsFxProject) {
     await handlers.autoOpenProjectHandler();

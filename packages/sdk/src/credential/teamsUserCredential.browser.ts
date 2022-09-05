@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { AccessToken, TokenCredential, GetTokenOptions } from "@azure/identity";
-import { GetTeamsUserTokenOptions } from "./teamsUserTokenOptions";
+import { GetTeamsUserTokenOptions } from "../models/teamsUserTokenOptions";
 import { UserInfo } from "../models/userinfo";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
 import * as microsoftTeams from "@microsoft/teams-js";
@@ -251,7 +251,7 @@ export class TeamsUserCredential implements TokenCredential {
   /**
    * Get basic user info from SSO token
    *
-   * @param { string[] } resources - The optional list of resources for full trust Teams apps.
+   * @param {string[]} resources - The optional list of resources for full trust Teams apps.
    *
    * @example
    * ```typescript
@@ -294,7 +294,7 @@ export class TeamsUserCredential implements TokenCredential {
    * Get SSO token using teams SDK
    * It will try to get SSO token from memory first, if SSO token doesn't exist or about to expired, then it will using teams SDK to get SSO token
    *
-   * @param { string[] } resources - The optional list of resources for full trust Teams apps.
+   * @param {string[]} resources - The optional list of resources for full trust Teams apps.
    *
    * @returns SSO token
    */

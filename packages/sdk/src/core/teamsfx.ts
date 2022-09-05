@@ -95,9 +95,10 @@ export class TeamsFx implements TeamsFxConfiguration {
 
   /**
    * Get user information.
+   * @param {string[]} resources - The optional list of resources for full trust Teams apps.
    * @returns UserInfo object.
    */
-  public async getUserInfo(): Promise<UserInfo> {
+  public async getUserInfo(resources?: string[]): Promise<UserInfo> {
     if (this.identityType !== IdentityType.User) {
       const errorMsg = formatString(
         ErrorMessage.IdentityTypeNotSupported,
@@ -124,13 +125,14 @@ export class TeamsFx implements TeamsFxConfiguration {
    * await teamsfx.login("https://graph.microsoft.com/User.Read Calendars.Read"); // multiple scopes using string
    * ```
    * @param scopes - The list of scopes for which the token will have access, before that, we will request user to consent.
+   * @param {string[]} resources - The optional list of resources for full trust Teams apps.
    *
    * @throws {@link ErrorCode|InternalError} when failed to login with unknown error.
    * @throws {@link ErrorCode|ConsentFailed} when user canceled or failed to consent.
    * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
    */
-  public async login(scopes: string | string[]): Promise<void> {
+  public async login(scopes: string | string[], resources?: string[]): Promise<void> {
     throw new ErrorWithCode(
       formatString(ErrorMessage.NodejsRuntimeNotSupported, "login"),
       ErrorCode.RuntimeNotSupported

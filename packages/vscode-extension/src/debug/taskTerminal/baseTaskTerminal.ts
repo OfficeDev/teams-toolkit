@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import * as vscode from "vscode";
-import { assembleError, FxError, Result } from "@microsoft/teamsfx-api";
+import { assembleError, FxError, Result, Void } from "@microsoft/teamsfx-api";
 import * as globalVariables from "../../globalVariables";
 import { showError } from "../../handlers";
 
@@ -49,7 +49,7 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
     this.closeEmitter.fire(0);
   }
 
-  protected abstract do(): Promise<Result<void, FxError>>;
+  protected abstract do(): Promise<Result<Void, FxError>>;
 
   public static resolveTeamsFxVariables(str: string): string {
     return str.replace("${teamsfx:workspaceFolder}", globalVariables.workspaceUri?.fsPath ?? "");

@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { FxError, Result } from "@microsoft/teamsfx-api";
+import { FxError, Result, Void } from "@microsoft/teamsfx-api";
 import * as vscode from "vscode";
 import { checkAndInstallForTask } from "../prerequisitesHandler";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
@@ -30,7 +30,7 @@ export class PrerequisiteTaskTerminal extends BaseTaskTerminal {
     this.args = taskDefinition.args as PrerequisiteArgs;
   }
 
-  async do(): Promise<Result<void, FxError>> {
+  async do(): Promise<Result<Void, FxError>> {
     return await checkAndInstallForTask(this.args.prerequisites ?? [], this.args.ports);
   }
 }

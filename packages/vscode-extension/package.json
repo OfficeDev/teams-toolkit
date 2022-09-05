@@ -742,6 +742,10 @@
                 "description": "%teamstoolkit.taskDefinitions.command.prerequisites.description%"
               },
               {
+                "const": "debug-npm-install",
+                "description": "%teamstoolkit.taskDefinitions.command.npmInstall.description%"
+              },
+              {
               }
             ]
           },
@@ -809,6 +813,39 @@
                   "required": [
                     "ports"
                   ]
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "required": [
+                  "projects"
+                ],
+                "properties": {
+                  "projects": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "cwd"
+                      ],
+                      "properties": {
+                        "cwd": {
+                          "type": "string"
+                        },
+                        "npmInstallArgs": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "forceUpdate": {
+                    "type": "boolean",
+                    "default": false
+                  }
                 },
                 "additionalProperties": false
               }
@@ -1197,7 +1234,6 @@
     "mock-require": "^3.0.3",
     "ms-rest": "^2.5.4",
     "node-loader": "^2.0.0",
-    "node-sass": "^7.0.1",
     "nyc": "^15.1.0",
     "prettier": "^2.4.1",
     "react": "^17.0.2",

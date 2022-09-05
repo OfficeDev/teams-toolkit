@@ -3,17 +3,15 @@
 
 "use strict";
 
-import axios from "axios";
-import FormData from "form-data";
-import fs from "fs-extra";
 import { Argv } from "yargs";
 
-import { FxError, ok, Result, Void, LogLevel } from "@microsoft/teamsfx-api";
+import { FxError, ok, Result, Void, LogLevel, err, UserError } from "@microsoft/teamsfx-api";
 
+import { PackageService } from "./packageService";
 import { serviceEndpoint, serviceScope } from "./serviceConstant";
 import CLILogProvider from "../../commonlib/log";
 import M365TokenProvider from "../../commonlib/m365Login";
-import { sleep } from "../../utils";
+import { cliSource } from "../../constants";
 import { YargsCommand } from "../../yargsCommand";
 
 /*
@@ -59,70 +57,6 @@ async function getTokenAndUpn(): Promise<[string, string]> {
   }
 }
 
-async function sideLoading(baseUrl: string, token: string, manifestPath: string): Promise<void> {
-  const data = await fs.readFile(manifestPath);
-
-  const instance = axios.create({
-    baseURL: baseUrl,
-    timeout: 30000,
-  });
-  instance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-
-  try {
-    const content = new FormData();
-    content.append("package", data);
-    CLILogProvider.necessaryLog(LogLevel.Info, "Uploading package ...");
-    const uploadResponse = await instance.post(
-      "/dev/v1/users/packages",
-      content.getBuffer(),
-      content.getHeaders()
-    );
-
-    const operationId = uploadResponse.data.operationId;
-    const titleId = uploadResponse.data.titlePreview.titleId;
-    CLILogProvider.debug(`Package uploaded. OperationId: ${operationId}, TitleId: ${titleId}`);
-
-    CLILogProvider.necessaryLog(LogLevel.Info, "Acquiring package ...");
-    const acquireResponse = await instance.post("/dev/v1/users/packages/acquisitions", {
-      operationId: operationId,
-    });
-
-    const statusId = acquireResponse.data.statusId;
-    CLILogProvider.debug(`Acquiring package with statusId: ${statusId} ...`);
-
-    let complete = false;
-    do {
-      const statusResponse = await instance.get(`/dev/v1/users/packages/status/${statusId}`);
-      const resCode = statusResponse.status;
-      if (resCode === 200) {
-        complete = true;
-      } else {
-        await sleep(2000);
-      }
-    } while (complete === false);
-
-    CLILogProvider.necessaryLog(LogLevel.Info, `Acquire done. App TitleId: ${titleId}`);
-
-    CLILogProvider.necessaryLog(LogLevel.Info, "Checking acquired package ...");
-    const launchInfo = await instance.get(`/catalog/v1/users/titles/${titleId}/launchInfo`, {
-      params: {
-        SupportedElementTypes:
-          // eslint-disable-next-line no-secrets/no-secrets
-          "Extension,OfficeAddIn,ExchangeAddIn,FirstPartyPages,Dynamics,AAD,LineOfBusiness,LaunchPage,MessageExtension,Bot",
-      },
-    });
-    CLILogProvider.debug(JSON.stringify(launchInfo.data));
-    CLILogProvider.necessaryLog(LogLevel.Info, "Sideloading done.");
-  } catch (error: any) {
-    CLILogProvider.necessaryLog(LogLevel.Error, "Sideloading failed.");
-    if (error.response) {
-      CLILogProvider.necessaryLog(LogLevel.Error, JSON.stringify(error.response.data));
-    } else {
-      CLILogProvider.necessaryLog(LogLevel.Error, error.message);
-    }
-  }
-}
-
 class M365Sideloading extends YargsCommand {
   public readonly commandHead = "sideloading";
   public readonly command = this.commandHead;
@@ -145,10 +79,116 @@ class M365Sideloading extends YargsCommand {
 
   async runCommand(args: { [argName: string]: string }): Promise<Result<any, FxError>> {
     CLILogProvider.necessaryLog(LogLevel.Warning, "This command is in preview.");
-
+    const packageService = new PackageService(sideloadingServiceEndpoint);
     const manifestPath = args["file-path"];
     const tokenAndUpn = await getTokenAndUpn();
-    await sideLoading(sideloadingServiceEndpoint, tokenAndUpn[0], manifestPath);
+    await packageService.sideLoading(tokenAndUpn[0], manifestPath);
+    return ok(Void);
+  }
+}
+
+class M365Unacquire extends YargsCommand {
+  public readonly commandHead = "unacquire";
+  public readonly command = this.commandHead;
+  public readonly description = "Remove an acquired M365 App";
+
+  builder(yargs: Argv): Argv<any> {
+    yargs
+      .option("title-id", {
+        require: false,
+        description: "Title ID of the acquired M365 App",
+        type: "string",
+      })
+      .option("file-path", {
+        require: false,
+        description: "Path to the App manifest zip package",
+        type: "string",
+      })
+      .example(
+        "teamsfx m365 unacquire --title-id U_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+        "Remove the acquired M365 App by Title ID"
+      )
+      .example(
+        "teamsfx m365 unacquire --file-path appPackage.zip",
+        "Remove the acquired M365 App by App Package"
+      );
+    return yargs.version(false);
+  }
+
+  async runCommand(args: { [argName: string]: string }): Promise<Result<any, FxError>> {
+    CLILogProvider.necessaryLog(LogLevel.Warning, "This command is in preview.");
+
+    const packageService = new PackageService(sideloadingServiceEndpoint);
+    let titleId = args["title-id"];
+    const manifestPath = args["file-path"];
+    if (titleId === undefined && manifestPath === undefined) {
+      return err(
+        new UserError(
+          cliSource,
+          "InvalidInput",
+          "Either `title-id` or `file-path` should be provided."
+        )
+      );
+    }
+
+    const tokenAndUpn = await getTokenAndUpn();
+    if (titleId === undefined) {
+      titleId = await packageService.retrieveTitleId(tokenAndUpn[0], manifestPath);
+    }
+    await packageService.unacquire(tokenAndUpn[0], titleId);
+    return ok(Void);
+  }
+}
+
+class M365LaunchInfo extends YargsCommand {
+  public readonly commandHead = "launchinfo";
+  public readonly command = this.commandHead;
+  public readonly description = "Get launch information of an acquired M365 App";
+
+  builder(yargs: Argv): Argv<any> {
+    yargs
+      .option("title-id", {
+        require: false,
+        description: "Title ID of the acquired M365 App",
+        type: "string",
+      })
+      .option("file-path", {
+        require: false,
+        description: "Path to the App manifest zip package",
+        type: "string",
+      })
+      .example(
+        "teamsfx m365 launchinfo --title-id U_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+        "Get launch information of the acquired M365 App by Title ID"
+      )
+      .example(
+        "teamsfx m365 launchinfo --file-path appPackage.zip",
+        "Get launch information of the acquired M365 App by App Package"
+      );
+    return yargs.version(false);
+  }
+
+  async runCommand(args: { [argName: string]: string }): Promise<Result<any, FxError>> {
+    CLILogProvider.necessaryLog(LogLevel.Warning, "This command is in preview.");
+
+    const packageService = new PackageService(sideloadingServiceEndpoint);
+    let titleId = args["title-id"];
+    const manifestPath = args["file-path"];
+    if (titleId === undefined && manifestPath === undefined) {
+      return err(
+        new UserError(
+          cliSource,
+          "InvalidInput",
+          "Either `title-id` or `file-path` should be provided."
+        )
+      );
+    }
+
+    const tokenAndUpn = await getTokenAndUpn();
+    if (titleId === undefined) {
+      titleId = await packageService.retrieveTitleId(tokenAndUpn[0], manifestPath);
+    }
+    await packageService.getLaunchInfo(tokenAndUpn[0], titleId);
     return ok(Void);
   }
 }
@@ -158,7 +198,11 @@ export default class M365 extends YargsCommand {
   public readonly command = `${this.commandHead} <action>`;
   public readonly description = "The M365 App Management.";
 
-  public readonly subCommands: YargsCommand[] = [new M365Sideloading()];
+  public readonly subCommands: YargsCommand[] = [
+    new M365Sideloading(),
+    new M365Unacquire(),
+    new M365LaunchInfo(),
+  ];
 
   public builder(yargs: Argv): Argv<any> {
     yargs.options("action", {

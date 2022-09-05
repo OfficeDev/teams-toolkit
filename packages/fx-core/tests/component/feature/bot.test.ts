@@ -35,6 +35,7 @@ import {
   BotOptionItem,
   MessageExtensionItem,
   NotificationOptionItem,
+  WorkflowOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import { QuestionNames } from "../../../src/plugins/resource/bot/constants";
 import { AppServiceOptionItem } from "../../../src/plugins/resource/bot/question";
@@ -151,6 +152,40 @@ describe("Bot Feature", () => {
     assert.exists(botService);
     assert.isTrue(botService?.provision);
   });
+
+  it("add workflow bot", async () => {
+    sandbox.stub(utils.bicepUtils, "persistBiceps").resolves(ok(undefined));
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+      [AzureSolutionQuestionNames.Features]: WorkflowOptionItem.id,
+      language: "typescript",
+      "app-name": appName,
+    };
+    const teamsBotComponent = Container.get("teams-bot") as any;
+    const addBotRes = await teamsBotComponent.add(context, inputs);
+    if (addBotRes.isErr()) {
+      console.log(addBotRes.error);
+    }
+    assert.isTrue(addBotRes.isOk());
+    const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
+    assert.exists(teamsBot);
+    assert.equal(teamsBot?.hosting, ComponentNames.AzureWebApp);
+    assert.equal(teamsBot?.folder, "bot");
+    assert.isTrue(teamsBot?.build);
+    assert.deepEqual(teamsBot?.capabilities, ["workflow"]);
+    const webApp = getComponent(context.projectSetting, ComponentNames.AzureWebApp);
+    assert.exists(webApp?.connections);
+    if (webApp?.connections) {
+      assert.include(webApp.connections, ComponentNames.TeamsBot);
+      assert.include(webApp.connections, ComponentNames.Identity);
+      assert.equal(webApp.connections.length, 2);
+    }
+    const botService = getComponent(context.projectSetting, ComponentNames.BotService);
+    assert.exists(botService);
+    assert.isTrue(botService?.provision);
+  });
+
   it("configure dotnet bot", async () => {
     const appSettings = [
       AppSettingConstants.Placeholders.botId,

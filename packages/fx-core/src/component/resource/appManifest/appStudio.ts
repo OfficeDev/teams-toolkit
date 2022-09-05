@@ -15,6 +15,8 @@ import {
   TokenProvider,
   v2,
   v3,
+  ProjectSettingsV3,
+  ProjectSettings,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import fs from "fs-extra";
@@ -23,7 +25,7 @@ import { v4 } from "uuid";
 import _ from "lodash";
 import * as util from "util";
 import isUUID from "validator/lib/isUUID";
-import { AppStudioScopes, getAppDirectory } from "../../../common/tools";
+import { AppStudioScopes, getAppDirectory, isSPFxProject } from "../../../common/tools";
 import { HelpLinks } from "../../../common/constants";
 import { AppStudioClient } from "../../../plugins/resource/appstudio/appStudio";
 import { Constants } from "../../../plugins/resource/appstudio/constants";
@@ -81,7 +83,12 @@ export async function createTeamsApp(
     const manifest = JSON.parse(manifestString) as TeamsAppManifest;
     teamsAppId = manifest.id;
   } else {
-    const buildPackage = await buildTeamsAppPackage(inputs.projectPath, envInfo!, true);
+    const buildPackage = await buildTeamsAppPackage(
+      ctx.projectSetting,
+      inputs.projectPath,
+      envInfo!,
+      true
+    );
     if (buildPackage.isErr()) {
       return err(buildPackage.error);
     }
@@ -153,7 +160,11 @@ export async function updateTeamsApp(
     }
     archivedFile = await fs.readFile(inputs.appPackagePath);
   } else {
-    const buildPackage = await buildTeamsAppPackage(inputs.projectPath, envInfo!);
+    const buildPackage = await buildTeamsAppPackage(
+      ctx.projectSetting,
+      inputs.projectPath,
+      envInfo!
+    );
     if (buildPackage.isErr()) {
       return err(buildPackage.error);
     }
@@ -203,6 +214,7 @@ export async function publishTeamsApp(
     }
   } else {
     const buildPackage = await buildTeamsAppPackage(
+      ctx.projectSetting,
       inputs.projectPath,
       envInfo!,
       false,
@@ -273,6 +285,7 @@ export async function publishTeamsApp(
  * @returns Path for built Teams app package
  */
 export async function buildTeamsAppPackage(
+  projectSettings: ProjectSettingsV3 | ProjectSettings,
   projectPath: string,
   envInfo: v3.EnvInfoV3,
   withEmptyCapabilities = false,
@@ -339,6 +352,31 @@ export async function buildTeamsAppPackage(
   }
   await fs.writeFile(manifestFileName, JSON.stringify(manifest, null, 4));
   await fs.chmod(manifestFileName, 0o444);
+
+  if (isSPFxProject(projectSettings)) {
+    const spfxTeamsPath = `${projectPath}/SPFx/teams`;
+    await fs.copyFile(zipFileName, path.join(spfxTeamsPath, "TeamsSPFxApp.zip"));
+
+    for (const file of await fs.readdir(`${projectPath}/SPFx/teams/`)) {
+      if (
+        file.endsWith("color.png") &&
+        manifest.icons.color &&
+        !manifest.icons.color.startsWith("https://")
+      ) {
+        const colorFile = `${appDirectory}/${manifest.icons.color}`;
+        const color = await fs.readFile(colorFile);
+        await fs.writeFile(path.join(spfxTeamsPath, file), color);
+      } else if (
+        file.endsWith("outline.png") &&
+        manifest.icons.outline &&
+        !manifest.icons.outline.startsWith("https://")
+      ) {
+        const outlineFile = `${appDirectory}/${manifest.icons.outline}`;
+        const outline = await fs.readFile(outlineFile);
+        await fs.writeFile(path.join(spfxTeamsPath, file), outline);
+      }
+    }
+  }
 
   return ok(zipFileName);
 }
@@ -434,7 +472,7 @@ export async function updateManifest(
         )
       );
     }
-    await buildTeamsAppPackage(inputs.projectPath, ctx.envInfo);
+    await buildTeamsAppPackage(ctx.projectSetting, inputs.projectPath, ctx.envInfo);
   }
   const existingManifest = await fs.readJSON(manifestFileName);
   delete manifest.id;
@@ -453,10 +491,10 @@ export async function updateManifest(
       AppStudioError.UpdateManifestCancelError.message(manifest.name.short)
     );
     if (res?.isOk() && res.value === "Preview only") {
-      buildTeamsAppPackage(inputs.projectPath, ctx.envInfo);
+      buildTeamsAppPackage(ctx.projectSetting, inputs.projectPath, ctx.envInfo);
       return err(error);
     } else if (res?.isOk() && res.value === "Preview and update") {
-      buildTeamsAppPackage(inputs.projectPath, ctx.envInfo);
+      buildTeamsAppPackage(ctx.projectSetting, inputs.projectPath, ctx.envInfo);
     } else {
       return err(error);
     }

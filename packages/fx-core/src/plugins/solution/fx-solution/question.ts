@@ -88,6 +88,24 @@ export const CommandAndResponseOptionItem: OptionItem = {
   ],
 };
 
+export const WorkflowOptionItem: OptionItem = {
+  // id must match cli `yargsHelp`
+  id: "workflow-bot",
+  label: `$(hubot) ${getLocalizedString("core.WorkflowOption.label")}`,
+  description: getLocalizedString("core.Option.recommend"),
+  cliName: "workflow-bot",
+  detail: getLocalizedString("core.WorkflowOption.detail"),
+  groupName: getLocalizedString("core.options.separator.scenario"),
+  data: "https://aka.ms/teamsfx-create-workflow",
+  buttons: [
+    {
+      iconPath: "tasklist",
+      tooltip: getLocalizedString("core.option.tutorial"),
+      command: "fx-extension.openTutorial",
+    },
+  ],
+};
+
 export const ExistingTabOptionItem: OptionItem = {
   id: "ExistingTab",
   label: `$(browser) ${getLocalizedString("core.ExistingTabOption.label")}`,
@@ -303,6 +321,7 @@ export const CicdOptionItem: OptionItem = {
 export enum BotScenario {
   NotificationBot = "notificationBot",
   CommandAndResponseBot = "commandAndResponseBot",
+  WorkflowBot = "workflowBot",
 }
 
 export const BotNotificationTriggers = {
@@ -447,6 +466,7 @@ export const BotFeatureIds = [
   BotOptionItem.id,
   NotificationOptionItem.id,
   CommandAndResponseOptionItem.id,
+  WorkflowOptionItem.id,
   MessageExtensionItem.id,
   M365SearchAppOptionItem.id,
 ];

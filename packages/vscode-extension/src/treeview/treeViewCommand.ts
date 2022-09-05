@@ -31,6 +31,7 @@ export class TreeViewCommand extends vscode.TreeItem {
   ) {
     super(readyLabel, vscode.TreeItemCollapsibleState.None);
 
+    this.tooltip = this.readyTooltip;
     this.setImagetoIcon();
 
     if (commandId) {

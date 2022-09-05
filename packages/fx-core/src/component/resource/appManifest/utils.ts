@@ -9,6 +9,7 @@ import {
   InputsWithProjectPath,
   v3,
   IStaticTab,
+  ContextV3,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
@@ -39,6 +40,7 @@ import {
   BotScenario,
   CommandAndResponseOptionItem,
   NotificationOptionItem,
+  WorkflowOptionItem,
 } from "../../../plugins/solution/fx-solution/question";
 import { getCustomizedKeys } from "../../../plugins/resource/appstudio/utils/utils";
 import { TelemetryPropertyKey } from "../../../plugins/resource/appstudio/utils/telemetry";
@@ -47,6 +49,7 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { HelpLinks } from "../../../common/constants";
 import { ComponentNames } from "../../constants";
 import { compileHandlebarsTemplateString } from "../../../common/tools";
+import { hasTab } from "../../../common/projectSettingsHelperV3";
 export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {
     const filePath = await this.getTeamsAppManifestPath(projectPath);
@@ -144,8 +147,11 @@ export class ManifestUtils {
               // inputs[CoreQuestionNames.Features]
               if (inputs.features) {
                 const feature = inputs.features;
-                if (feature === CommandAndResponseOptionItem.id) {
-                  // command and response bot
+                if (
+                  feature === CommandAndResponseOptionItem.id ||
+                  feature == WorkflowOptionItem.id
+                ) {
+                  // command and response bot or workflow bot
                   appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3);
                 } else if (feature === NotificationOptionItem.id) {
                   // notification
@@ -157,8 +163,11 @@ export class ManifestUtils {
               } else if (inputs.scenarios) {
                 const scenariosRaw = inputs.scenarios;
                 const scenarios = Array.isArray(scenariosRaw) ? scenariosRaw : [];
-                if (scenarios.includes(BotScenario.CommandAndResponseBot)) {
-                  // command and response bot
+                if (
+                  scenarios.includes(BotScenario.CommandAndResponseBot) ||
+                  scenarios.includes(BotScenario.WorkflowBot)
+                ) {
+                  // command and response bot or workflow bot
                   appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3);
                 } else if (scenarios.includes(BotScenario.NotificationBot)) {
                   // notification
@@ -425,7 +434,7 @@ export class ManifestUtils {
       ...new Set(
         Mustache.parse(resolvedManifestString)
           .filter((x) => {
-            return x[0] != "text" && (!isLocalDebug || x[1] != "state.app-manifest.teamsAppId");
+            return x[0] != "text" && x[1] != "state.app-manifest.teamsAppId";
           })
           .map((x) => x[1])
       ),
@@ -490,6 +499,21 @@ export class ManifestUtils {
       }
     }
     return ok(manifest);
+  }
+
+  async isExistingTab(
+    inputs: InputsWithProjectPath,
+    context: ContextV3
+  ): Promise<Result<boolean, FxError>> {
+    const manifestTemplateRes = await this.readAppManifest(inputs.projectPath);
+    if (manifestTemplateRes.isErr()) return err(manifestTemplateRes.error);
+    const manifest = manifestTemplateRes.value;
+    const hasTabInProjectSettings = hasTab(context.projectSetting);
+    const hasExistingTabInManifest =
+      manifest.staticTabs !== undefined &&
+      manifest.staticTabs.filter((tab) => tab.contentUrl && !tab.contentUrl.includes("{{state."))
+        .length > 0;
+    return ok(hasExistingTabInManifest && !hasTabInProjectSettings);
   }
 }
 

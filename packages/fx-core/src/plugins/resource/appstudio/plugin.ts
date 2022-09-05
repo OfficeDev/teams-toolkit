@@ -1200,7 +1200,9 @@ export class AppStudioPluginImpl {
     const tokens = [
       ...new Set(
         Mustache.parse(manifestString)
-          .filter((x) => x[0] != "text")
+          .filter((x) => {
+            return x[0] != "text" && x[1] != "state.fx-resource-appstudio.teamsAppId";
+          })
           .map((x) => x[1])
       ),
     ];

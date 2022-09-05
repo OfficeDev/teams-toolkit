@@ -3,6 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import * as vscode from "vscode";
+import { assembleError, FxError, Result } from "@microsoft/teamsfx-api";
+import * as globalVariables from "../../globalVariables";
+import { showError } from "../../handlers";
 
 const ControlCodes = {
   CtrlC: "\u0003",
@@ -19,7 +22,10 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
 
   open(): void {
     this.do()
-      .then(() => this.stop())
+      .then((res) => {
+        const error = res.isErr() ? res.error : undefined;
+        this.stop(error);
+      })
       .catch((error) => this.stop(error));
   }
 
@@ -34,13 +40,18 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
   }
 
   protected stop(error?: any): void {
-    if (error?.message) {
+    if (error) {
       // TODO: add color
-      this.writeEmitter.fire(`${error?.message}\r\n`);
+      this.writeEmitter.fire(`${error?.displayMessage ?? error?.message}\r\n`);
+      showError(assembleError(error));
+      this.closeEmitter.fire(1);
     }
-    const exitCode = error ? 1 : 0;
-    this.closeEmitter.fire(exitCode);
+    this.closeEmitter.fire(0);
   }
 
-  protected abstract do(): Promise<void>;
+  protected abstract do(): Promise<Result<void, FxError>>;
+
+  public static resolveTeamsFxVariables(str: string): string {
+    return str.replace("${teamsfx:workspaceFolder}", globalVariables.workspaceUri?.fsPath ?? "");
+  }
 }

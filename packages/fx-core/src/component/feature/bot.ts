@@ -38,6 +38,7 @@ import {
   M365SearchAppOptionItem,
   MessageExtensionItem,
   NotificationOptionItem,
+  WorkflowOptionItem,
 } from "../../plugins/solution/fx-solution/question";
 import { BicepComponent } from "../bicep";
 import { BotCodeProvider } from "../code/botCode";
@@ -251,7 +252,8 @@ export class TeamsBot {
     {
       const manifestCapability: v3.ManifestCapability = {
         name:
-          inputs[CoreQuestionNames.Features] === MessageExtensionItem.id
+          inputs[CoreQuestionNames.Features] === MessageExtensionItem.id ||
+          inputs[CoreQuestionNames.Features] === M365SearchAppOptionItem.id
             ? "MessageExtension"
             : "Bot",
       };
@@ -274,6 +276,8 @@ export class TeamsBot {
  *       group=bot, host=function, scenario=notification-function-base + [notification-trigger-http, notification-trigger-timer]
  *   capability = command-bot:
  *     group=bot, host=app-service, scenario=command-and-response
+ *   capability = workflow-bot:
+ *     group=bot, host=app-service, scenario=workflow
  *   capability = Bot
  *     group=bot, host=app-service, scenario=default
  *   capability = MessagingExtension
@@ -285,6 +289,7 @@ const featureToCapability: Map<string, string> = new Map([
   [M365SearchAppOptionItem.id, "message-extension"],
   [CommandAndResponseOptionItem.id, "command-response"],
   [NotificationOptionItem.id, "notification"],
+  [WorkflowOptionItem.id, "workflow"],
 ]);
 
 const featureToScenario: Map<string, (triggers?: string) => TemplateProjectsScenarios[]> = new Map([
@@ -294,6 +299,7 @@ const featureToScenario: Map<string, (triggers?: string) => TemplateProjectsScen
     CommandAndResponseOptionItem.id,
     () => [TemplateProjectsScenarios.COMMAND_AND_RESPONSE_SCENARIO_NAME],
   ],
+  [WorkflowOptionItem.id, () => [TemplateProjectsScenarios.WORKFLOW_SCENARIO_NAME]],
   [MessageExtensionItem.id, () => [TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME]],
   [M365SearchAppOptionItem.id, () => [TemplateProjectsScenarios.M365_SCENARIO_NAME]],
 ]);

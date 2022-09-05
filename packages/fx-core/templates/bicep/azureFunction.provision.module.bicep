@@ -27,6 +27,7 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
   name: functionAppName
   properties: {
     serverFarmId: serverfarm.id
+    keyVaultReferenceIdentity: userAssignedIdentityId // Use given user assigned identity to access Key Vault
     httpsOnly: true
     siteConfig: {
       alwaysOn: true
@@ -67,7 +68,7 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
           name: 'WEBSITE_RUN_FROM_PACKAGE'
           value: '1' // Run Azure Function from a package file
         }
-        {{#if (contains "teams-bot" connections)}}
+        {{#if (equals "Bot" scenario)}}
         {
           name: 'RUNNING_ON_AZURE'
           value: '1'

@@ -419,12 +419,12 @@ export class ProvisionUtils {
     tokenProvider: TokenProvider
   ): Promise<Result<FillInAzureConfigsResult, FxError>> {
     //1. check subscriptionId
-    const targetSubscriptionId = inputs.targetSubscriptionId;
+    const targetSubscriptionIdFromCLI = inputs.targetSubscriptionId;
     const subscriptionResult = await this.checkProvisionSubscription(
       ctx,
       envInfo,
       tokenProvider.azureAccountProvider,
-      targetSubscriptionId,
+      targetSubscriptionIdFromCLI,
       inputs.env
     );
 
@@ -502,7 +502,7 @@ export class ProvisionUtils {
           CustomizeResourceGroupType.CommandLine;
         resourceGroupInfo = getRes.value;
       }
-    } else if (resourceGroupNameFromEnvConfig) {
+    } else if (resourceGroupNameFromEnvConfig && !targetSubscriptionIdFromCLI) {
       const resourceGroupName = resourceGroupNameFromEnvConfig;
       const envFile = EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, inputs.envName);
       if (!envInfo.config.azure?.subscriptionId) {
@@ -531,7 +531,11 @@ export class ProvisionUtils {
       telemetryProperties[TelemetryProperty.CustomizeResourceGroupType] =
         CustomizeResourceGroupType.EnvConfig;
       resourceGroupInfo = getRes.value;
-    } else if (resourceGroupNameFromState && resourceGroupLocationFromState) {
+    } else if (
+      resourceGroupNameFromState &&
+      resourceGroupLocationFromState &&
+      !targetSubscriptionIdFromCLI
+    ) {
       const checkRes = await resourceGroupHelper.checkResourceGroupExistence(
         resourceGroupNameFromState,
         rmClient

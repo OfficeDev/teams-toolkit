@@ -29,6 +29,7 @@ import {
 import commandController from "./commandController";
 import AzureAccountManager from "./commonlib/azureLogin";
 import VsCodeLogInstance from "./commonlib/log";
+import M365TokenInstance from "./commonlib/m365Login";
 import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcomePage";
 import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUtils";
 import { localSettingsJsonName } from "./debug/constants";
@@ -45,6 +46,7 @@ import { ManifestTemplateHoverProvider } from "./hoverProvider";
 import { VsCodeUI } from "./qm/vsc_ui";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
+import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewProvider";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
 import {
   canUpgradeToArmAndMultiEnv,
@@ -83,6 +85,10 @@ export async function activate(context: vscode.ExtensionContext) {
     handlers.registerAccountMenuCommands(context);
 
     TreeViewManagerInstance.registerTreeViews(context);
+    accountTreeViewProviderInstance.subscribeToStatusChanges({
+      azureAccountProvider: AzureAccountManager,
+      m365TokenProvider: M365TokenInstance,
+    });
 
     registerCodelensAndHoverProviders(context);
 
@@ -814,13 +820,14 @@ async function runBackgroundAsyncTasks(
   await openWelcomePageAfterExtensionInstallation();
 
   await exp.initialize(context);
-  TreatmentVariableValue.previewTreeViewCommand = (await exp
-    .getExpService()
-    .getTreatmentVariableAsync(
-      TreatmentVariables.VSCodeConfig,
-      TreatmentVariables.PreviewTreeViewCommand,
-      true
-    )) as boolean | undefined;
+  TreatmentVariableValue.previewTreeViewCommand = true;
+  // TreatmentVariableValue.previewTreeViewCommand = (await exp
+  //   .getExpService()
+  //   .getTreatmentVariableAsync(
+  //     TreatmentVariables.VSCodeConfig,
+  //     TreatmentVariables.PreviewTreeViewCommand,
+  //     true
+  //   )) as boolean | undefined;
 
   if (isTeamsFxProject) {
     await handlers.autoOpenProjectHandler();

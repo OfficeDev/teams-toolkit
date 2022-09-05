@@ -2,26 +2,26 @@
 // Licensed under the MIT license.
 
 import { FxResult } from "../result";
-import { SystemError, UserError } from "@microsoft/teamsfx-api";
+import { ContextV3, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { TelemetryKeys, TelemetryValues, PluginCICD, PluginSolution } from "../constants";
-import { Context, EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
+import { EnvInfoV3 } from "@microsoft/teamsfx-api/build/v3";
 
 export class telemetryHelper {
   static fillCommonProperty(
-    ctx: Context,
-    envInfo: EnvInfoV2,
+    ctx: ContextV3,
+    envInfo: EnvInfoV3 | undefined,
     properties: { [key: string]: string }
   ): void {
     properties[TelemetryKeys.Component] = PluginCICD.PLUGIN_NAME;
     properties[TelemetryKeys.AppId] =
-      (envInfo.state?.[PluginSolution.PLUGIN_NAME]?.[
+      (envInfo?.state?.[PluginSolution.PLUGIN_NAME]?.[
         PluginSolution.REMOTE_TEAMS_APPID
       ] as string) || "";
   }
 
   static sendStartEvent(
-    ctx: Context,
-    envInfo: EnvInfoV2,
+    ctx: ContextV3,
+    envInfo: EnvInfoV3 | undefined,
     eventName: string,
     properties: { [key: string]: string } = {},
     measurements: { [key: string]: number } = {}
@@ -33,8 +33,8 @@ export class telemetryHelper {
   }
 
   static sendSuccessEvent(
-    ctx: Context,
-    envInfo: EnvInfoV2,
+    ctx: ContextV3,
+    envInfo: EnvInfoV3 | undefined,
     eventName: string,
     properties: { [key: string]: string } = {},
     measurements: { [key: string]: number } = {}
@@ -46,8 +46,8 @@ export class telemetryHelper {
   }
 
   static sendErrorEvent(
-    ctx: Context,
-    envInfo: EnvInfoV2,
+    ctx: ContextV3,
+    envInfo: EnvInfoV3 | undefined,
     eventName: string,
     e: SystemError | UserError,
     properties: { [key: string]: string } = {},
@@ -68,8 +68,8 @@ export class telemetryHelper {
   }
 
   static sendResultEvent(
-    ctx: Context,
-    envInfo: EnvInfoV2,
+    ctx: ContextV3,
+    envInfo: EnvInfoV3 | undefined,
     eventName: string,
     result: FxResult,
     properties: { [key: string]: string } = {},

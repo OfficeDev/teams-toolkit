@@ -44,7 +44,7 @@ import "./feature/api";
 import "./feature/apiConnector";
 import "./feature/apim";
 import "./feature/bot";
-import "./feature/cicd";
+import "./feature/cicd/cicd";
 import "./feature/keyVault";
 import "./feature/spfx";
 import "./feature/sql";

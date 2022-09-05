@@ -49,7 +49,7 @@ import { TeamsfxCore } from "../../src/component/core";
 import { Container } from "typedi";
 import { AzureStorageResource } from "../../src/component/resource/azureStorage";
 import mockedEnv, { RestoreFn } from "mocked-env";
-import { ciOption, githubOption, questionNames } from "../../src/plugins/resource/cicd/questions";
+import { ciOption, githubOption, questionNames } from "../../src/component/feature/cicd/questions";
 import * as armFunctions from "../../src/plugins/solution/fx-solution/arm";
 import { apiConnectorImpl } from "../../src/component/feature/apiConnector";
 import * as backup from "../../src/plugins/solution/fx-solution/utils/backupFiles";

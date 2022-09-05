@@ -272,6 +272,7 @@ jobs:
         run: |
           committer=`git log -1 --pretty=format:'%an'`
           mc=`cat ./packages/cli/tests/e2e/mochawesome-report/mochawesome.json | jq -c | sed -e 's/"/\\"/g'`
+          raw_url="https://github.com/${{ github.repository }}/runs/${{ steps.get-job-id.outputs.jobId }}?check_suite_focus=true"
           curl -X POST https://teamsfxteststatus.azurewebsites.net/api/testCase \
              -H 'Content-Type: application/json' \
              -H 'Authorization: Bearer ${{ secrets.TEAMSFX_PORTAL_TOKEN }}' \

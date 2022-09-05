@@ -87,6 +87,7 @@ describe("Provision Teams app with Azure", () => {
   });
 
   it("Register Teams app with user provided zip", async () => {
+    sandbox.stub(AppStudioClient, "getApp").throws(new Error("404"));
     sandbox.stub(AppStudioClient, "importApp").resolves(appDef);
     const teamsAppId = await plugin.provisionForCLI(
       context,

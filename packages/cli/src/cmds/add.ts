@@ -228,16 +228,9 @@ export default class Add extends YargsCommand {
       ? [
           // Category 1: Add Teams Capability
           ...(isBotNotificationEnabled()
-            ? [
-                ...(isWorkflowBotEnabled()
-                  ? [
-                      new CapabilityAddNotification(),
-                      new CapabilityAddCommandAndResponse(),
-                      new CapabilityAddWorkflow(),
-                    ]
-                  : [new CapabilityAddNotification(), new CapabilityAddCommandAndResponse()]),
-              ]
+            ? [new CapabilityAddNotification(), new CapabilityAddCommandAndResponse()]
             : []),
+          ...(isWorkflowBotEnabled() ? [new CapabilityAddWorkflow()] : []),
           new CapabilityAddSSOTab(),
           new CapabilityAddTab(),
           new CapabilityAddBot(),

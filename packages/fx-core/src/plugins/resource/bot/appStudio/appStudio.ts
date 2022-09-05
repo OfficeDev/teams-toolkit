@@ -158,6 +158,7 @@ export class AppStudio {
           if (e.response?.status === 404) {
             return e.response;
           } else {
+            e.teamsfxUrlName = "<get-bot-registration>";
             throw e;
           }
         }
@@ -191,6 +192,7 @@ export class AppStudio {
         axiosInstance.post(`${AppStudio.baseUrl}/api/botframework`, registration)
       );
     } catch (e) {
+      e.teamsfxUrlName = "<create-bot-registration>";
       throw new ProvisionError(CommonStrings.APP_STUDIO_BOT_REGISTRATION, e);
     }
 
@@ -220,6 +222,7 @@ export class AppStudio {
         axiosInstance.post(`${AppStudio.baseUrl}/api/botframework/${botId}`, botReg)
       );
     } catch (e) {
+      e.teamsfxUrlName = "<update-message-endpoint>";
       throw new MessageEndpointUpdatingError(botReg.messagingEndpoint, e);
     }
 

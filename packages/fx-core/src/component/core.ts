@@ -41,7 +41,7 @@ import "./connection/azureWebAppConfig";
 import { configLocalEnvironment, setupLocalEnvironment } from "./debug";
 import { createEnvWithName } from "./envManager";
 import "./feature/api";
-import "./feature/apiConnector";
+import "./feature/apiconnector/apiConnector";
 import "./feature/apim";
 import "./feature/bot";
 import "./feature/cicd/cicd";

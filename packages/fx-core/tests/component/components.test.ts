@@ -51,7 +51,7 @@ import { AzureStorageResource } from "../../src/component/resource/azureStorage"
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { ciOption, githubOption, questionNames } from "../../src/component/feature/cicd/questions";
 import * as armFunctions from "../../src/plugins/solution/fx-solution/arm";
-import { apiConnectorImpl } from "../../src/component/feature/apiConnector";
+import { apiConnectorImpl } from "../../src/component/feature/apiconnector/apiConnector";
 import * as backup from "../../src/plugins/solution/fx-solution/utils/backupFiles";
 import { AadApp } from "../../src/component/resource/aadApp/aadApp";
 import { Constants } from "../../src/plugins/resource/aad/constants";

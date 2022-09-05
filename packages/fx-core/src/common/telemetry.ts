@@ -38,6 +38,7 @@ export enum TelemetryProperty {
   TemplateFallback = "template-fallback",
   HasSwitchedSubscription = "has-switched-subscription",
   HasSwitchedM365Tenant = "has-switched-m365",
+  CustomizeSubscriptionType = "customize-subscription-type",
 }
 
 export enum TelemetryEvent {
@@ -136,6 +137,13 @@ export enum CustomizeResourceGroupType {
   InteractiveCreateCustomized = "interactive-create-customized",
   InteractiveUseExisting = "interactive-use-existing",
   FallbackDefault = "fallback-default",
+}
+
+export enum CustomizeSubscriptionType {
+  CommandLine = "command-line",
+  EnvConfig = "env-config",
+  EnvState = "env-state",
+  Default = "default",
 }
 
 export enum ProjectMigratorStatus {

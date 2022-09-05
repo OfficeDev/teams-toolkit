@@ -224,7 +224,7 @@ jobs:
             echo "can't find target case in $file"
             exit 1
           else
-            npx mocha --reporter mochawesome --timeout 900000 $file
+            npx mocha --reporter mochawesome --timeout 1200000 $file
           fi
 
       - name: get job id

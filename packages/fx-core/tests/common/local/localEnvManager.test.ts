@@ -317,6 +317,7 @@ describe("LocalEnvManager", () => {
       );
     });
   });
+
   describe("getLocalEnvInfo()", () => {
     const sandbox = sinon.createSandbox();
     let mockedEnvRestore: RestoreFn;
@@ -346,6 +347,40 @@ describe("LocalEnvManager", () => {
         config: {},
         state: { solution: { key: "value" } },
       });
+    });
+  });
+
+  describe("getNgrokTunnelConfig()", () => {
+    beforeEach(() => {});
+
+    afterEach(() => {});
+
+    it("getNgrokTunnelConfig() happy path", async () => {
+      await fs.emptyDir(configFolder);
+      await fs.ensureDir(configFolder);
+      const ngrokConfigFilePath = path.join(configFolder, "ngrok.yml");
+      await fs.writeFile(ngrokConfigFilePath, "tunnels:\n  bot:\n     addr: 53000\n");
+      const res = await localEnvManager.getNgrokTunnelConfig(ngrokConfigFilePath);
+      chai.assert.sameDeepOrderedMembers([...res.entries()], [["bot", "53000"]]);
+    });
+
+    it("empty result", async () => {
+      await fs.emptyDir(configFolder);
+      await fs.ensureDir(configFolder);
+      const ngrokConfigFilePath = path.join(configFolder, "ngrok.yml");
+      await fs.writeFile(ngrokConfigFilePath, "");
+      const res = await localEnvManager.getNgrokTunnelConfig(ngrokConfigFilePath);
+      chai.assert.equal(res.size, 0);
+    });
+
+    it("error schema", async () => {
+      await fs.emptyDir(configFolder);
+      await fs.ensureDir(configFolder);
+      const ngrokConfigFilePath = path.join(configFolder, "ngrok.yml");
+      await fs.writeFile(ngrokConfigFilePath, "tunnels:\nbot\n-\n");
+      await chai
+        .expect(localEnvManager.getNgrokTunnelConfig(ngrokConfigFilePath))
+        .to.be.rejectedWith();
     });
   });
 });

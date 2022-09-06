@@ -14,7 +14,7 @@ import { BOT_ID } from "../../../../../../src/plugins/resource/appstudio/constan
 import { AzureSolutionSettings, ok } from "@microsoft/teamsfx-api";
 import { AppStudio } from "../../../../../../src/plugins/resource/bot/appStudio/appStudio";
 import { PluginAAD } from "../../../../../../src/plugins/resource/bot/resources/strings";
-import { TeamsBotImpl } from "../../../../../../src/plugins/resource/bot/plugin";
+import { RetryHandler } from "../../../../../../src/plugins/resource/bot/utils/retryHandler";
 
 describe("Bot plugin for dotnet", () => {
   describe("Test PostLocalDebug", () => {
@@ -69,8 +69,7 @@ describe("Bot plugin for dotnet", () => {
         chai.assert.isTrue((data as string).includes("tenant_id"));
         chai.assert.isTrue((data as string).includes("https://bot.local.endpoint/bot-auth-start"));
       });
-      sinon.stub(pluginContext.m365TokenProvider!, "getAccessToken").resolves(ok("anything"));
-      sinon.stub(AppStudio, "updateMessageEndpoint").resolves();
+      sinon.stub(RetryHandler, "Retry").resolves({});
 
       // Act
       const result = await botPlugin.postLocalDebug(pluginContext);

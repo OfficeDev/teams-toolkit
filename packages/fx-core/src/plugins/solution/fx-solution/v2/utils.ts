@@ -205,6 +205,7 @@ export function parseUserName(appStudioToken?: Record<string, unknown>): Result<
 export async function checkWhetherLocalDebugM365TenantMatches(
   envInfo: v3.EnvInfoV3 | EnvInfo | undefined,
   telemetryReporter: TelemetryReporter | undefined,
+  isCSharpProject: boolean,
   localDebugTenantId?: string,
   m365TokenProvider?: M365TokenProvider,
   projectPath?: string,
@@ -262,7 +263,7 @@ export async function checkWhetherLocalDebugM365TenantMatches(
         }
 
         if (projectPath !== undefined) {
-          const backupFilesRes = await backupFiles(envInfo.envName, projectPath!);
+          const backupFilesRes = await backupFiles(envInfo.envName, projectPath!, isCSharpProject);
           if (backupFilesRes.isErr()) {
             return err(backupFilesRes.error);
           }

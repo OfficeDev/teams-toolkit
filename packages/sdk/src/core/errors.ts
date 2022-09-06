@@ -114,6 +114,8 @@ export class ErrorMessage {
     "The request already defined api key in request header with name {0}.";
   static readonly DuplicateApiKeyInQueryParam =
     "The request already defined api key in query parameter with name {0}.";
+  static readonly OnlySupportInQueryActivity =
+    "The queryWithToken only support in handleTeamsMessagingExtensionQuery with composeExtension/query type.";
 }
 
 /**

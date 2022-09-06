@@ -63,6 +63,7 @@ import {
   askSubscription,
   CollaborationState,
   Correlator,
+  DepsManager,
   DepsType,
   environmentManager,
   FolderName,
@@ -1377,6 +1378,26 @@ export async function getFuncPathHandler(): Promise<string> {
     const funcStatus = await vscodeDepsChecker.getDepsStatus(DepsType.FuncCoreTools);
     if (funcStatus?.details?.binFolders !== undefined) {
       return `${path.delimiter}${funcStatus.details.binFolders.join(path.delimiter)}${
+        path.delimiter
+      }`;
+    }
+  } catch (error: any) {
+    showError(assembleError(error));
+  }
+
+  return `${path.delimiter}`;
+}
+
+/**
+ * Get dotnet path to be referenced by task definition.
+ * Usage like ${command:...}${env:PATH} so need to include delimiter as well
+ */
+export async function getDotnetPathHandler(): Promise<string> {
+  try {
+    const depsManager = new DepsManager(vscodeLogger, vscodeTelemetry);
+    const dotnetStatus = (await depsManager.getStatus([DepsType.Dotnet]))?.[0];
+    if (dotnetStatus.isInstalled && dotnetStatus?.details?.binFolders !== undefined) {
+      return `${path.delimiter}${dotnetStatus.details.binFolders.join(path.delimiter)}${
         path.delimiter
       }`;
     }

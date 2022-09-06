@@ -230,6 +230,11 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(getFuncPathCmd);
 
+  const getDotnetPathCmd = vscode.commands.registerCommand("fx-extension.get-dotnet-path", () =>
+    Correlator.run(handlers.getDotnetPathHandler)
+  );
+  context.subscriptions.push(getDotnetPathCmd);
+
   const installAppInTeamsCmd = vscode.commands.registerCommand(
     "fx-extension.install-app-in-teams",
     () => Correlator.runWithId(getLocalDebugSessionId(), handlers.installAppInTeams)

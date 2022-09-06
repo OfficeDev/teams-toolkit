@@ -14,6 +14,7 @@ import { BOT_ID } from "../../../../../../src/plugins/resource/appstudio/constan
 import { AzureSolutionSettings, ok } from "@microsoft/teamsfx-api";
 import { AppStudio } from "../../../../../../src/plugins/resource/bot/appStudio/appStudio";
 import { PluginAAD } from "../../../../../../src/plugins/resource/bot/resources/strings";
+import { TeamsBotImpl } from "../../../../../../src/plugins/resource/bot/plugin";
 
 describe("Bot plugin for dotnet", () => {
   describe("Test PostLocalDebug", () => {
@@ -32,6 +33,7 @@ describe("Bot plugin for dotnet", () => {
 
     it("AAD Enabled", async () => {
       sinon.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
+      sinon.stub<any, any>(TeamsBotImpl, "postLocalDebug").returns(ok(undefined));
       const pluginContext = testUtils.newPluginContext();
       pluginContext.projectSettings!.appName = "anything";
       botPluginImpl.config.localDebug.localBotId = "anything";
@@ -41,6 +43,7 @@ describe("Bot plugin for dotnet", () => {
         BotSsoItem.id,
       ];
       (pluginContext.projectSettings?.solutionSettings as AzureSolutionSettings).hostType = "Azure";
+      pluginContext.projectSettings!.programmingLanguage = "csharp";
       pluginContext.envInfo.state.set(
         ResourcePlugins.Bot,
         new Map<string, string>([

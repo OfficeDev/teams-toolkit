@@ -250,4 +250,19 @@ describe("SSO feature", () => {
     const ssoRes = await component.add(context, inputs);
     assert.isTrue(ssoRes.isErr());
   });
+
+  it("add sso with generateConfigBiceps failed", async () => {
+    sandbox.stub(utils, "generateConfigBiceps").resolves(err(undefined as any));
+
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+      language: "typescript",
+      "app-name": appName,
+    };
+
+    const component = Container.get(ComponentNames.SSO) as any;
+    const ssoRes = await component.add(context, inputs);
+    assert.isTrue(ssoRes.isErr());
+  });
 });

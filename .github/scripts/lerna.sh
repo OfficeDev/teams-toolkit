@@ -11,7 +11,6 @@ else
     for i in "${stringarray[@]}"
     do :
         echo package name: $i
-        echo $(jq --arg v "$i" 'has($v)' .github/scripts/lernaDeps.json)
         if [ $(jq --arg v "$i" 'has($v)' .github/scripts/lernaDeps.json) == 'false' ]; then
             echo "Get Error Inputs:" $i
             exit -1

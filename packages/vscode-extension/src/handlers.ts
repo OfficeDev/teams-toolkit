@@ -224,7 +224,6 @@ export function activate(): Result<Void, FxError> {
       expServiceProvider: exp.getExpService(),
     };
     core = new FxCore(tools);
-    accountTreeViewProviderInstance.subscribeToStatusChanges(tools.tokenProvider);
     const workspacePath = globalVariables.workspaceUri?.fsPath;
     if (workspacePath) {
       const unifyConfigWatcher = vscode.workspace.createFileSystemWatcher(

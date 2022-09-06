@@ -50,6 +50,7 @@ export function shouldSkipWriteEnvInfo(
     (res.error.name === "CancelProvision" ||
       res.error.name === SolutionError.FailedToUpdateAzureParameters ||
       res.error.name === SolutionError.FailedToBackupFiles ||
+      res.error.name === SolutionError.MissingSubscriptionIdInConfig ||
       (res.error.name === "UserCancel" &&
         (method === "provisionResourcesV2" || method === "provisionResourcesV3")))
   );

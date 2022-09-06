@@ -292,6 +292,7 @@
     "teamstoolkit.localDebug.multipleTunnelServiceError": "There are multiple running local tunnel tasks. Please close the redundant tasks.",
     "teamstoolkit.localDebug.noTunnelServiceError": "There is no running local tunnel tasks. Please start the local tunnel task first.",
     "teamstoolkit.localDebug.ngrokStoppedError": "Ngrok has been stopped with exit code '%s'. Please check the [terminal](%s) for detailed error information.",
+    "teamstoolkit.localDebug.ngrokProcessError": "Failed to start ngrok. %s Please check the [terminal](%s) for detailed error information.",
     "teamstoolkit.localDebug.ngrokNotFoundError": "Ngrok is not installed by TeamsFx. See teamsfx-debug-tasks#debug-check-prerequisites for how to install the ngrok.",
     "teamstoolkit.localDebug.ngrokTunnelAddrNotFoundError": "The addr of %s tunnel can not be found in the ngrok config file '%s'.",
     "teamstoolkit.localDebug.tunnelServiceNotStartedError": "The tunnel service hasn't been started. Please wait for a moment or restart the local tunnel task.",

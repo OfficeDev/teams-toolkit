@@ -16,6 +16,7 @@ import { DepsManager, DepsType, LocalEnvManager } from "@microsoft/teamsfx-core"
 import { vscodeLogger } from "../depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "../depsChecker/vscodeTelemetry";
 import { openTerminalCommand } from "../constants";
+import VsCodeLogInstance from "../../commonlib/log";
 
 const ngrokTunnelName = "bot";
 const ngrokEndpointRegex = /obj=tunnels name=bot addr=(?<src>.*) url=(?<endpoint>.*)/;
@@ -89,6 +90,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     binFolder?: string
   ): Promise<Result<Void, FxError>> {
     return new Promise<Result<Void, FxError>>((resolve, reject) => {
+      VsCodeLogInstance.info("Starting local tunnel task.");
       const command = `ngrok start ${ngrokTunnelName} --config=${configFile} --log=stdout --log-format=logfmt`;
       const options: cp.SpawnOptions = {
         cwd: globalVariables.workspaceUri?.fsPath ?? "",
@@ -106,7 +108,10 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
         const line = data.toString().replace(/\n/g, "\r\n");
         this.writeEmitter.fire(line);
         const ngrokTunnel = this.parseNgrokEndpointFromLog(line);
-        this.status.endpoint = ngrokTunnel?.dist;
+        if (ngrokTunnel) {
+          this.status.endpoint = ngrokTunnel.dist;
+          VsCodeLogInstance.info("Local tunnel task is started successfully.");
+        }
       });
 
       this.childProc.stderr?.setEncoding("utf-8");
@@ -116,7 +121,24 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
       });
 
       this.childProc.on("error", (error) => {
-        reject(error);
+        resolve(
+          err(
+            new UserError(
+              ExtensionSource,
+              ExtensionErrors.NgrokProcessError,
+              util.format(
+                getDefaultString("teamstoolkit.localDebug.ngrokProcessError"),
+                error?.message ?? "",
+                openTerminalCommand
+              ),
+              util.format(
+                localize("teamstoolkit.localDebug.ngrokProcessError"),
+                error?.message ?? "",
+                openTerminalCommand
+              )
+            )
+          )
+        );
       });
 
       this.childProc.on("close", (code: number) => {

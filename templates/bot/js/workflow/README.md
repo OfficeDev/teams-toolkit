@@ -44,7 +44,7 @@ The following files provide the business logic for the workflow bot. These files
 | `src/index.js` | Application entry point and `restify` handlers for the workflow bot |
 | `src/adaptiveCards/helloworldCommand.json` | A generated Adaptive Card that is sent to Teams |
 | `src/commands/helloworldCommandHandler.js` | Responds to the command message |
-| `src/cardActions/helloworldActionHandler.js` | Responds to the `doStuff` card action |
+| `src/cardActions/doStuffActionHandler.js` | Responds to the `doStuff` card action |
 
 The following files implement the core workflow bot on the Bot Framework. You generally will not need to customize these files.
 
@@ -75,7 +75,7 @@ Teams Toolkit enables you to [easily connect to an existing API](#connect-to-exi
 
 You can edit the file `src/adaptiveCards/helloworldCommand.json` to customize the Adaptive Card to your liking. 
 
-The binding between the model and the Adaptive Card is done by name matching (for example,`cardData.title` maps to `${title}` in the Adaptive Card). You can add, edit, or remove properties and their bindings to customize the Adaptive Card to your needs.
+The binding between the model and the Adaptive Card is done by name matching (for example, `cardData.title` maps to `${title}` in the Adaptive Card). You can add, edit, or remove properties and their bindings to customize the Adaptive Card to your needs.
 
 You can also add new cards if appropriate for your application. Please follow this [sample](https://aka.ms/teamsfx-adaptive-card-sample) to see how to build different types of adaptive cards with a list or a table of dynamic contents using `ColumnSet` and `FactSet`.
 
@@ -142,13 +142,15 @@ Please note:
 * The `actionData` is the data associated with the action, which may include dynamic user input or some contextual data provided in the `data` property of your action.
 * If an Adaptive Card is returned, then the existing card will be replaced with it by default.
 
-```typescript
-import responseCard from "../adaptiveCards/responseCard.json"; 
+```javascript
+const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
+const { AdaptiveCardResponse, InvokeResponseFactory } = require("@microsoft/teamsfx");
+const responseCard = require("../adaptiveCards/responseCard.json");
 
-export class Handler1 implements TeamsFxAdaptiveCardActionHandler { 
+export class Handler1 { 
     triggerVerb = "doStuff";
 
-    async handleActionInvoked(context: TurnContext, actionData: any): Promise<InvokeResponse> { 
+    async handleActionInvoked(context, message) { 
         const responseCardJson = AdaptiveCards.declare(responseCard).render(actionData);
         return InvokeResponseFactory.adaptiveCard(responseCardJson);
     } 
@@ -162,8 +164,8 @@ export class Handler1 implements TeamsFxAdaptiveCardActionHandler {
 1. Go to `bot/src/internal/initialize.js`;
 2. Update your `conversationBot` initialization to enable cardAction feature and add the handler to `actions` array:
 
-```typescript
-export const conversationBot = new ConversationBot({ 
+```javascript
+const conversationBot = new ConversationBot({ 
   ... 
   cardAction: { 
     enabled: true, 
@@ -184,10 +186,25 @@ To add the notification feature:
 
 1. Go to `bot\src\internal\initialize.js`
 2. Update your `conversationBot` initialization to enable notification feature:
-    ![enable-notification](https://user-images.githubusercontent.com/10163840/165462039-12bd4f61-3fc2-4fc8-8910-6a4b1e138626.png)
+
+```javascript
+const conversationBot = new ConversationBot({ 
+  ... 
+  cardAction: { 
+    enabled: true, 
+    actions: [ 
+      new Handler1() 
+    ], 
+  },
+  notification: {
+    enabled: true
+  } 
+}); 
+```
+
 3. To quickly add a sample notification triggered by a HTTP request, you can add the following sample code in `bot\src\index.js`:
 
-    ```typescript
+    ```javascript
     server.post("/api/notification", async (req, res) => {
       for (const target of await conversationBot.notification.installations()) {
         await target.sendMessage("This is a sample notification message");

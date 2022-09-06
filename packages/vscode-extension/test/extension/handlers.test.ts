@@ -192,7 +192,7 @@ describe("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
 
-      sinon.stub(globalVariables, "workspaceUri").value(Uri.file(tmpDir));
+      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(tmpDir));
       const projectSettings: ProjectSettings = {
         appName: "myapp",
         version: "1.0.0",
@@ -519,7 +519,7 @@ describe("handlers", () => {
         })
       );
 
-      sinon.stub(globalVariables, "workspaceUri").value(Uri.parse("file://fakeProjectPath"));
+      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.parse("file://fakeProjectPath"));
       sinon.stub(globalVariables, "isSPFxProject").value(false);
       sinon.stub(commonUtils, "getM365TenantFromEnv").callsFake(async (env: string) => {
         return "fake-tenant-id";
@@ -710,7 +710,7 @@ describe("handlers", () => {
   describe("promptSPFxUpgrade", async () => {
     it("Prompt user to upgrade toolkit when project SPFx version higher than toolkit", async () => {
       sinon.stub(globalVariables, "isSPFxProject").value(true);
-      sinon.stub(globalVariables, "workspaceUri").value(Uri.file(""));
+      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(""));
       sinon.stub(fs, "pathExists").resolves(true);
       sinon.stub(fs, "readJson").resolves({
         "@microsoft/generator-sharepoint": {
@@ -731,7 +731,7 @@ describe("handlers", () => {
 
     it("Prompt user to upgrade project when project SPFx version lower than toolkit", async () => {
       sinon.stub(globalVariables, "isSPFxProject").value(true);
-      sinon.stub(globalVariables, "workspaceUri").value(Uri.file(""));
+      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(""));
       sinon.stub(fs, "pathExists").resolves(true);
       sinon.stub(fs, "readJson").resolves({
         "@microsoft/generator-sharepoint": {
@@ -753,7 +753,7 @@ describe("handlers", () => {
 
     it("Dont show notification when project SPFx version is the same with toolkit", async () => {
       sinon.stub(globalVariables, "isSPFxProject").value(true);
-      sinon.stub(globalVariables, "workspaceUri").value(Uri.file(""));
+      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(""));
       sinon.stub(fs, "pathExists").resolves(true);
       sinon.stub(fs, "readJson").resolves({
         "@microsoft/generator-sharepoint": { version: SUPPORTED_SPFX_VERSION },

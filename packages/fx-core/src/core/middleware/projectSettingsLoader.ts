@@ -118,7 +118,7 @@ export async function loadProjectSettingsByProjectPath(
       projectSettings.solutionSettings.activeResourcePlugins.push(PluginNames.APPST);
     }
     globalVars.isVS = isVSProject(projectSettings);
-    if (isV3()) return ok(convertProjectSettingsV2ToV3(projectSettings));
+    if (isV3()) return ok(convertProjectSettingsV2ToV3(projectSettings, projectPath));
     return ok(projectSettings);
   } catch (e) {
     return err(ReadFileError(e));

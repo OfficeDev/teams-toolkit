@@ -389,3 +389,12 @@ export class NoCapabilityFoundError extends UserError {
     });
   }
 }
+
+export function NgrokConfigError(file: string, errorMessage?: string): UserError {
+  return new UserError(
+    CoreSource,
+    "NgrokConfigError",
+    getDefaultString("error.NgrokConfigError", file, errorMessage ?? ""),
+    getLocalizedString("error.NgrokConfigError", file, errorMessage ?? "")
+  );
+}

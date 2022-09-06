@@ -93,6 +93,9 @@ export const teamsAppIdPlaceholder = "${teamsAppId}";
 export const teamsAppInternalIdPlaceholder = "${teamsAppInternalId}";
 export const accountHintPlaceholder = "${account-hint}";
 
+export const openOutputPanelCommand = "command:fx-extension.showOutputChannel";
+export const openTerminalCommand = "command:workbench.action.terminal.focus";
+
 export type DisplayMessages = {
   taskName: string;
   check: string;
@@ -122,7 +125,7 @@ export const prerequisiteCheckDisplayMessages: DisplayMessages = {
   errorName: ExtensionErrors.PrerequisitesValidationError,
   errorMessageKey: "teamstoolkit.localDebug.prerequisitesCheckFailure",
   errorDisplayMessageKey: "teamstoolkit.localDebug.prerequisitesCheckFailure",
-  errorMessageCommand: "command:fx-extension.showOutputChannel",
+  errorMessageCommand: openOutputPanelCommand,
   errorMessageLink: "teamstoolkit.localDebug.outputPanel",
   errorHelpLink: "https://aka.ms/teamsfx-envchecker-help",
 };
@@ -139,7 +142,7 @@ export const npmInstallDisplayMessages: DisplayMessages = {
   errorName: ExtensionErrors.PrerequisitesInstallPackagesError,
   errorMessageKey: "teamstoolkit.localDebug.npmInstallFailure",
   errorDisplayMessageKey: "teamstoolkit.localDebug.npmInstallFailure",
-  errorMessageCommand: "command:workbench.action.terminal.focus",
+  errorMessageCommand: openTerminalCommand,
   errorMessageLink: "teamstoolkit.localDebug.terminal",
   errorHelpLink: "https://aka.ms/teamsfx-npm-package-task", // TODO: update npm install help link
 };

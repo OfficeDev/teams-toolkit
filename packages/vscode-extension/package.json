@@ -746,6 +746,10 @@
                 "description": "%teamstoolkit.taskDefinitions.command.npmInstall.description%"
               },
               {
+                "const": "debug-start-local-tunnel",
+                "description": "%teamstoolkit.taskDefinitions.command.startLocalTunnel.description%"
+              },
+              {
                 "const": "debug-set-up-tab",
                 "description": "%teamstoolkit.taskDefinitions.command.tab.description%"
               },
@@ -924,6 +928,23 @@
                   "manifestPackagePath": {
                     "type": "string",
                     "description": "%teamstoolkit.taskDefinitions.args.manifest.manifestPackagePathTitle%"
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "required": [
+                  "configFile"
+                ],
+                "properties": {
+                  "configFile": {
+                    "type": "string",
+                    "default": "${teamsfx:workspaceFolder}/.fx/configs/ngrok.yml"
+                  },
+                  "binFolder": {
+                    "type": "string",
+                    "default": "${teamsfx:ngrokBinFolder}"
                   }
                 },
                 "additionalProperties": false

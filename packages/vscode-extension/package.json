@@ -940,11 +940,21 @@
                 "properties": {
                   "configFile": {
                     "type": "string",
-                    "default": "${teamsfx:workspaceFolder}/.fx/configs/ngrok.yml"
+                    "anyOf": [
+                      {
+                        "const": "${teamsfx:workspaceFolder}/.fx/configs/ngrok.yml"
+                      },
+                      {}
+                    ]
                   },
                   "binFolder": {
                     "type": "string",
-                    "default": "${teamsfx:ngrokBinFolder}"
+                    "anyOf": [
+                      {
+                        "const": "${teamsfx:ngrokBinFolder}"
+                      },
+                      {}
+                    ]
                   }
                 },
                 "additionalProperties": false

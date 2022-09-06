@@ -1,48 +1,49 @@
 import * as chai from "chai";
-import * as vscode from "vscode";
-import * as sinon from "sinon";
-import * as handlers from "../../src/handlers";
-import * as StringResources from "../../package.nls.json";
-import {
-  Inputs,
-  Platform,
-  Stage,
-  VsCodeEnv,
-  ok,
-  err,
-  UserError,
-  Void,
-  Result,
-  FxError,
-  ProjectSettings,
-  ConfigFolderName,
-  ProjectSettingsFileName,
-} from "@microsoft/teamsfx-api";
-import M365TokenInstance from "../../src/commonlib/m365Login";
-import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
-import { WebviewPanel } from "../../src/controls/webviewPanel";
-import { PanelType } from "../../src/controls/PanelType";
-import { AzureAccountManager } from "../../src/commonlib/azureLogin";
-import { MockCore } from "../mocks/mockCore";
-import * as commonUtils from "../../src/utils/commonUtils";
-import * as localizeUtils from "../../src/utils/localizeUtils";
-import * as extension from "../../src/extension";
-import TreeViewManagerInstance from "../../src/treeview/treeViewManager";
-import { CollaborationState, CoreHookContext } from "@microsoft/teamsfx-core";
-import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
-import * as globalVariables from "../../src/globalVariables";
-import { Uri } from "vscode";
-import envTreeProviderInstance from "../../src/treeview/environmentTreeViewProvider";
-import accountTreeViewProviderInstance from "../../src/treeview/account/accountTreeViewProvider";
-import * as extTelemetryEvents from "../../src/telemetry/extTelemetryEvents";
-import { ExtensionErrors } from "../../src/error";
-import * as uuid from "uuid";
 import * as fs from "fs-extra";
 import * as path from "path";
+import * as sinon from "sinon";
 import * as util from "util";
-import * as os from "os";
-import { vscodeHelper } from "../../src/debug/depsChecker/vscodeHelper";
+import * as uuid from "uuid";
+import * as vscode from "vscode";
+
+import {
+  ConfigFolderName,
+  err,
+  FxError,
+  Inputs,
+  ok,
+  Platform,
+  ProjectSettings,
+  ProjectSettingsFileName,
+  Result,
+  Stage,
+  UserError,
+  Void,
+  VsCodeEnv,
+} from "@microsoft/teamsfx-api";
+import { CollaborationState, CoreHookContext } from "@microsoft/teamsfx-core";
+import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
+import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+
+import * as StringResources from "../../package.nls.json";
+import { AzureAccountManager } from "../../src/commonlib/azureLogin";
+import M365TokenInstance from "../../src/commonlib/m365Login";
 import { SUPPORTED_SPFX_VERSION } from "../../src/constants";
+import { PanelType } from "../../src/controls/PanelType";
+import { WebviewPanel } from "../../src/controls/webviewPanel";
+import { vscodeHelper } from "../../src/debug/depsChecker/vscodeHelper";
+import { ExtensionErrors } from "../../src/error";
+import * as extension from "../../src/extension";
+import * as globalVariables from "../../src/globalVariables";
+import * as handlers from "../../src/handlers";
+import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
+import * as extTelemetryEvents from "../../src/telemetry/extTelemetryEvents";
+import accountTreeViewProviderInstance from "../../src/treeview/account/accountTreeViewProvider";
+import envTreeProviderInstance from "../../src/treeview/environmentTreeViewProvider";
+import TreeViewManagerInstance from "../../src/treeview/treeViewManager";
+import * as commonUtils from "../../src/utils/commonUtils";
+import * as localizeUtils from "../../src/utils/localizeUtils";
+import { MockCore } from "../mocks/mockCore";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -62,6 +63,17 @@ describe("handlers", () => {
 
     it("No globalState error", async () => {
       const result = await handlers.activate();
+      chai.assert.deepEqual(result.isOk() ? result.value : result.error.name, {});
+    });
+
+    it("Valid project", async () => {
+      sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
+      const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      const addSharedPropertyStub = sandbox.stub(ExtTelemetry, "addSharedProperty");
+      const result = await handlers.activate();
+
+      chai.assert.isTrue(addSharedPropertyStub.called);
+      chai.assert.isTrue(sendTelemetryStub.calledOnceWith("open-teams-app"));
       chai.assert.deepEqual(result.isOk() ? result.value : result.error.name, {});
     });
   });

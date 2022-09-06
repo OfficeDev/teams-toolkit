@@ -148,7 +148,7 @@ export class TeamsfxCore {
     const automaticNpmInstall = "automaticNpmInstall";
     if (scratch === ScratchOptionNo.id) {
       // create from sample
-      const downloadRes = await downloadSample(inputs);
+      const downloadRes = await downloadSample(inputs, undefined, context);
       if (downloadRes.isErr()) {
         return err(downloadRes.error);
       }

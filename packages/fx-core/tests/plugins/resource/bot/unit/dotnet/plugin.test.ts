@@ -33,7 +33,6 @@ describe("Bot plugin for dotnet", () => {
 
     it("AAD Enabled", async () => {
       sinon.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
-      sinon.stub<any, any>(TeamsBotImpl, "postLocalDebug").returns(ok(undefined));
       const pluginContext = testUtils.newPluginContext();
       pluginContext.projectSettings!.appName = "anything";
       botPluginImpl.config.localDebug.localBotId = "anything";
@@ -70,6 +69,8 @@ describe("Bot plugin for dotnet", () => {
         chai.assert.isTrue((data as string).includes("tenant_id"));
         chai.assert.isTrue((data as string).includes("https://bot.local.endpoint/bot-auth-start"));
       });
+      sinon.stub(pluginContext.m365TokenProvider!, "getAccessToken").resolves(ok("anything"));
+      sinon.stub(AppStudio, "updateMessageEndpoint").resolves();
 
       // Act
       const result = await botPlugin.postLocalDebug(pluginContext);

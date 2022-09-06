@@ -824,7 +824,7 @@ describe("handlers", () => {
       const showErrorStub = sinon.stub(handlers, "showError");
       const dotnetPath = await handlers.getDotnetPathHandler();
       chai.assert.equal(dotnetPath, `${path.delimiter}`);
-      chai.assert.isTrue(showErrorStub.called);
+      sinon.assert.calledOnce(showErrorStub);
     });
   });
 });

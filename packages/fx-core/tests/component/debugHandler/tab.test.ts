@@ -28,6 +28,7 @@ import { TabDebugArgs, TabDebugHandler } from "../../../src/component/debugHandl
 import { environmentManager } from "../../../src/core/environment";
 import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
 import { Constants } from "../../../src/plugins/resource/frontend/constants";
+import { runDebugActions } from "./utils";
 
 describe("TabDebugHandler", () => {
   const projectPath = path.resolve(__dirname, "data");
@@ -40,7 +41,7 @@ describe("TabDebugHandler", () => {
     it("invalid args", async () => {
       const args: TabDebugArgs = {};
       const handler = new TabDebugHandler(projectPath, args);
-      const result = await handler.setUp();
+      const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
         chai.assert(result.error instanceof UserError);
@@ -53,7 +54,7 @@ describe("TabDebugHandler", () => {
         baseUrl: "http://localhost:53000",
       };
       const handler = new TabDebugHandler(projectPath, args);
-      const result = await handler.setUp();
+      const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
         chai.assert(result.error instanceof UserError);
@@ -74,7 +75,7 @@ describe("TabDebugHandler", () => {
         baseUrl: "https://localhost:53000",
       };
       const handler = new TabDebugHandler(projectPath, args);
-      const result = await handler.setUp();
+      const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
         chai.assert(result.error instanceof SystemError);
@@ -97,7 +98,7 @@ describe("TabDebugHandler", () => {
         baseUrl: "https://localhost:53000",
       };
       const handler = new TabDebugHandler(projectPath, args);
-      const result = await handler.setUp();
+      const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
         chai.assert(result.error instanceof SystemError);
@@ -144,13 +145,14 @@ describe("TabDebugHandler", () => {
         .returns(Promise.resolve(frontendEnvs));
       sinon.stub(LocalEnvProvider.prototype, "saveFrontendLocalEnvs").callsFake(async (envs) => {
         frontendEnvs = envs;
+        return "";
       });
       const baseUrl = "https://localhost:53000";
       const args: TabDebugArgs = {
         baseUrl,
       };
       const handler = new TabDebugHandler(projectPath, args);
-      const result = await handler.setUp();
+      const result = await runDebugActions(handler.getActions());
       chai.assert(result.isOk());
       chai.assert.equal(envInfoV3.state[ComponentNames.TeamsTab].endpoint, baseUrl);
       chai.assert.equal(envInfoV3.state[ComponentNames.TeamsTab].domain, "localhost");

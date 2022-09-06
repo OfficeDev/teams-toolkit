@@ -35,4 +35,8 @@ export enum ExtensionErrors {
   GrantPermissionNotProvisionError = "GrantPermissionNotProvisionError",
   GetTeamsAppInstallationFailed = "GetTeamsAppInstallationFailed",
   TaskDefinitionError = "TaskDefinitionError",
+  SetUpTabError = "SetUpTabError",
+  SetUpBotError = "SetUpBotError",
+  SetUpSSOError = "SetUpSSOError",
+  PrepareManifestError = "PrepareManifestError",
 }

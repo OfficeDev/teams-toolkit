@@ -92,7 +92,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     return new Promise<Result<Void, FxError>>((resolve, reject) => {
       VsCodeLogInstance.info("Starting local tunnel task.");
       const command = `ngrok start ${ngrokTunnelName} --config=${configFile} --log=stdout --log-format=logfmt`;
-      this.writeEmitter.fire(`${command}\r\n`);
+      this.writeEmitter.fire(`${command}\r\n\r\n`);
       const options: cp.SpawnOptions = {
         cwd: globalVariables.workspaceUri?.fsPath ?? "",
         shell: true,

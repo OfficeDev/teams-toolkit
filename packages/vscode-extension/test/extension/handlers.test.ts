@@ -21,7 +21,12 @@ import {
   Void,
   VsCodeEnv,
 } from "@microsoft/teamsfx-api";
-import { CollaborationState, CoreHookContext } from "@microsoft/teamsfx-core";
+import {
+  CollaborationState,
+  CoreHookContext,
+  DepsManager,
+  DepsType,
+} from "@microsoft/teamsfx-core";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
 import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 
@@ -767,6 +772,51 @@ describe("handlers", () => {
 
       chai.assert.equal(stubShowMessage.callCount, 0);
       sinon.restore();
+    });
+  });
+
+  describe("getDotnetPathHandler", async () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+    it("dotnet is installed", async () => {
+      sinon.stub(DepsManager.prototype, "getStatus").resolves([
+        {
+          name: ".NET Core SDK",
+          type: DepsType.Dotnet,
+          isInstalled: true,
+          command: "",
+          details: {
+            isLinuxSupported: false,
+            installVersion: "",
+            supportedVersions: [],
+            binFolders: ["dotnet-bin-folder"],
+          },
+        },
+      ]);
+
+      const dotnetPath = await handlers.getDotnetPathHandler();
+      chai.assert.equal(dotnetPath, `${path.delimiter}dotnet-bin-folder${path.delimiter}`);
+    });
+
+    it("dotnet is not installed", async () => {
+      sinon.stub(DepsManager.prototype, "getStatus").resolves([
+        {
+          name: ".NET Core SDK",
+          type: DepsType.Dotnet,
+          isInstalled: false,
+          command: "",
+          details: {
+            isLinuxSupported: false,
+            installVersion: "",
+            supportedVersions: [],
+            binFolders: undefined,
+          },
+        },
+      ]);
+
+      const dotnetPath = await handlers.getDotnetPathHandler();
+      chai.assert.equal(dotnetPath, `${path.delimiter}`);
     });
   });
 });

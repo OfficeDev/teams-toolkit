@@ -1396,7 +1396,7 @@ export async function getDotnetPathHandler(): Promise<string> {
   try {
     const depsManager = new DepsManager(vscodeLogger, vscodeTelemetry);
     const dotnetStatus = (await depsManager.getStatus([DepsType.Dotnet]))?.[0];
-    if (dotnetStatus.isInstalled && dotnetStatus?.details?.binFolders !== undefined) {
+    if (dotnetStatus?.isInstalled && dotnetStatus?.details?.binFolders !== undefined) {
       return `${path.delimiter}${dotnetStatus.details.binFolders.join(path.delimiter)}${
         path.delimiter
       }`;

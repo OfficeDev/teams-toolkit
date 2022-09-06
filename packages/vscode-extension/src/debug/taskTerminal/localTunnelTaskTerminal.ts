@@ -50,7 +50,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     this.args = taskDefinition.args as LocalTunnelArgs;
     this.taskTerminalId = uuidv4();
 
-    for (const [id, task] of LocalTunnelTaskTerminal.ngrokTaskTerminals) {
+    for (const task of LocalTunnelTaskTerminal.ngrokTaskTerminals.values()) {
       task.terminal.close();
     }
 

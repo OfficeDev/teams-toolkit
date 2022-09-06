@@ -1,5 +1,5 @@
 import * as restify from "restify";
-import { commandBot } from "./internal/initialize";
+import { conversationBot } from "./internal/initialize";
 
 const server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, () => {
@@ -7,5 +7,5 @@ server.listen(process.env.port || process.env.PORT || 3978, () => {
 });
 
 server.post("/api/messages", async (req, res) => {
-  await commandBot.requestHandler(req, res);
+  await conversationBot.requestHandler(req, res);
 });

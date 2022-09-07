@@ -75,6 +75,15 @@ export const CreateAppError: AadError = {
   ],
 };
 
+export const CreateAppForbiddenError: AadError = {
+  name: "AadCreateAppError",
+  message: () => [
+    getDefaultString("error.aad.CreateAppForbiddenError"),
+    getLocalizedString("error.aad.CreateAppForbiddenError"),
+  ],
+  helpLink: "https://aka.ms/teamsfx-create-aad-itp",
+};
+
 export const CreateSecretError: AadError = {
   name: "AadCreateSecretError",
   message: () => [
@@ -96,6 +105,14 @@ export const UpdateAadAppError: AadError = {
   message: (reason: string): [string, string] => [
     getDefaultString("error.aad.UpdateAadAppError", reason),
     getLocalizedString("error.aad.UpdateAadAppError", reason),
+  ],
+};
+
+export const UpdateAadAppUsingManifestError: AadError = {
+  name: "UpdateAadAppError",
+  message: (reason: string): [string, string] => [
+    getDefaultString("error.aad.UpdateAadAppUsingManifestError", reason),
+    getLocalizedString("error.aad.UpdateAadAppUsingManifestError", reason),
   ],
 };
 

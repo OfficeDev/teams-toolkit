@@ -20,6 +20,8 @@ import {
   GrantPermissionError,
   ListCollaboratorError,
   UpdateAadAppError,
+  CreateAppForbiddenError,
+  UpdateAadAppUsingManifestError,
 } from "./errors";
 import { GraphClient } from "./graph";
 import { IAADPassword } from "./interfaces/IAADApplication";
@@ -29,7 +31,7 @@ import { ProvisionConfig, Utils } from "./utils/configs";
 import { DialogUtils } from "./utils/dialog";
 import { TelemetryUtils } from "./utils/telemetry";
 import { TokenAudience, TokenProvider } from "./utils/tokenProvider";
-import { getAllowedAppIds } from "../../../common/tools";
+import { getAllowedAppIds, isAadManifestEnabled } from "../../../common/tools";
 import { TOOLS } from "../../../core/globalVars";
 import { AADManifest } from "./interfaces/AADManifest";
 import { AadAppManifestManager } from "./aadAppManifestManager";
@@ -53,8 +55,18 @@ export class AadAppClient {
 
       config.clientId = manifest.appId!;
       config.objectId = manifest.id!;
-    } catch (error) {
-      throw AadAppClient.handleError(error, CreateAppError);
+    } catch (error: any) {
+      if (error?.response?.status == Constants.statusCodeForbidden) {
+        throw ResultFactory.UserError(
+          CreateAppForbiddenError.name,
+          CreateAppForbiddenError.message(),
+          error,
+          undefined,
+          CreateAppForbiddenError.helpLink
+        );
+      } else {
+        throw AadAppClient.handleError(error, CreateAppError);
+      }
     }
   }
 
@@ -122,7 +134,11 @@ export class AadAppClient {
         TOOLS.logProvider?.warning(Messages.getLog(message));
         DialogUtils.show(message, UILevels.Warn);
       } else {
-        throw AadAppClient.handleError(error, UpdateAadAppError, error.message);
+        throw AadAppClient.handleError(
+          error,
+          isAadManifestEnabled() ? UpdateAadAppUsingManifestError : UpdateAadAppError,
+          error.message
+        );
       }
     }
   }

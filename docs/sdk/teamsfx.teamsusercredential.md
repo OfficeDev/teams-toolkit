@@ -28,6 +28,6 @@ Can only be used within Teams.
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
 |  [getToken(scopes, options)](./teamsfx.teamsusercredential.gettoken.md) |  | Get access token from credential. |
-|  [getUserInfo()](./teamsfx.teamsusercredential.getuserinfo.md) |  | Get basic user info from SSO token |
-|  [login(scopes)](./teamsfx.teamsusercredential.login.md) |  | Popup login page to get user's access token with specific scopes. |
+|  [getUserInfo(resources)](./teamsfx.teamsusercredential.getuserinfo.md) |  | Get basic user info from SSO token |
+|  [login(scopes, resources)](./teamsfx.teamsusercredential.login.md) |  | Popup login page to get user's access token with specific scopes. |
 

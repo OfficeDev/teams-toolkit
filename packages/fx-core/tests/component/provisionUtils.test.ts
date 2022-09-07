@@ -10,7 +10,7 @@ import { TestHelper } from "../plugins/resource/frontend/helper";
 
 const expect = chai.expect;
 
-describe.only("checkProvisionSubscription", () => {
+describe("checkProvisionSubscription", () => {
   const mocker = sinon.createSandbox();
 
   afterEach(() => {
@@ -548,5 +548,136 @@ describe("fillInAzureConfigs", () => {
     expect(res.isOk()).equal(true);
     expect((envInfo.state.solution as any).subscriptionId).equal("mockSub");
     expect((envInfo.state.solution as any).resourceGroupName).equal("mockRg");
+  });
+
+  it("provision with CLI resource group only", async () => {
+    const context = createContextV3();
+    const azureAccountProvider = new MockAzureAccountProvider();
+    const envInfo = {
+      envName: "test",
+      config: {
+        azure: {
+          subsciptionId: "not-exist-sub",
+        },
+      },
+      state: {
+        solution: {
+          subscriptionId: "mockSub",
+          resourceGroupName: "mockRg",
+          location: "East US",
+        },
+      },
+    };
+    const inputs: v2.InputsWithProjectPath = {
+      platform: Platform.CLI,
+      projectPath: "path",
+      targetResourceGroupName: "cliRg",
+    };
+    mocker.stub(context.logProvider, "log").resolves(true);
+    mocker
+      .stub(azureAccountProvider, "getAccountCredentialAsync")
+      .resolves(TestHelper.fakeCredential);
+    mocker.stub(resourceGroupHelper, "getResourceGroupInfo").resolves(
+      ok({
+        createNewResourceGroup: false,
+        name: "cliRg",
+        location: "East US",
+      })
+    );
+    mocker.stub(azureAccountProvider, "getSelectedSubscription").resolves({
+      subscriptionName: "mockSubName",
+      subscriptionId: "mockSub",
+      tenantId: "mockTenantId",
+    });
+    mocker.stub(azureAccountProvider, "listSubscriptions").resolves([
+      {
+        subscriptionName: "mockSubName",
+        subscriptionId: "mockSub",
+        tenantId: "mockTenantId",
+      },
+    ]);
+    const tokenProvider = { azureAccountProvider };
+
+    const res = await provisionUtils.fillInAzureConfigs(
+      context,
+      inputs,
+      envInfo,
+      tokenProvider as any
+    );
+
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    expect(res.isOk()).equal(true);
+    expect((envInfo.state.solution as any).subscriptionId).equal("mockSub");
+    expect((envInfo.state.solution as any).resourceGroupName).equal("cliRg");
+  });
+
+  it("provision with VS input", async () => {
+    const context = createContextV3();
+    const azureAccountProvider = new MockAzureAccountProvider();
+    const envInfo = {
+      envName: "test",
+      config: {
+        azure: {
+          subscriptionId: "vsSub",
+        },
+      },
+      state: {
+        solution: {
+          subscriptionId: "mockSub",
+          resourceGroupName: "mockRg",
+          location: "East US",
+        },
+      },
+    };
+    const inputs: v2.InputsWithProjectPath = {
+      platform: Platform.VS,
+      projectPath: "path",
+      targetResourceGroupName: "cliRg",
+    };
+    mocker.stub(context.logProvider, "log").resolves(true);
+    mocker
+      .stub(azureAccountProvider, "getAccountCredentialAsync")
+      .resolves(TestHelper.fakeCredential);
+    mocker.stub(resourceGroupHelper, "getResourceGroupInfo").resolves(
+      ok({
+        createNewResourceGroup: false,
+        name: "cliRg",
+        location: "East US",
+      })
+    );
+    mocker.stub(azureAccountProvider, "getSelectedSubscription").resolves({
+      subscriptionName: "mockSubName",
+      subscriptionId: "mockSub",
+      tenantId: "mockTenantId",
+    });
+    mocker.stub(azureAccountProvider, "listSubscriptions").resolves([
+      {
+        subscriptionName: "mockSubName",
+        subscriptionId: "mockSub",
+        tenantId: "mockTenantId",
+      },
+      {
+        subscriptionName: "mockVsSubName",
+        subscriptionId: "vsSub",
+        tenantId: "mockTenantId",
+      },
+    ]);
+    const tokenProvider = { azureAccountProvider };
+
+    const res = await provisionUtils.fillInAzureConfigs(
+      context,
+      inputs,
+      envInfo,
+      tokenProvider as any
+    );
+
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    expect(res.isOk()).equal(true);
+    expect((envInfo.state.solution as any).subscriptionId).equal("vsSub");
+    expect((envInfo.state.solution as any).resourceGroupName).equal("cliRg");
   });
 });

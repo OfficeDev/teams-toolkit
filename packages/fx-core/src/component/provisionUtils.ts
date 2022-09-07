@@ -428,7 +428,9 @@ export class ProvisionUtils {
       tokenProvider.azureAccountProvider,
       targetSubscriptionIdFromCLI,
       inputs.env,
-      !!inputs.targetResourceGroupName && !targetSubscriptionIdFromCLI
+      !!inputs.targetResourceGroupName &&
+        !targetSubscriptionIdFromCLI &&
+        inputs.platform === Platform.CLI
     );
 
     if (subscriptionResult.isErr()) {

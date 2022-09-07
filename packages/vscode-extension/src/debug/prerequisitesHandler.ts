@@ -33,6 +33,7 @@ import {
   ProjectSettingsHelper,
   TelemetryContext,
   validationSettingsHelpLink,
+  LocalEnvProvider,
 } from "@microsoft/teamsfx-core";
 
 import * as os from "os";
@@ -889,7 +890,12 @@ async function resolveLocalCertificate(
           `${prefix} ${ProgressMessage[Checker.LocalCertificate]} ...`
         );
         const trustDevCert = vscodeHelper.isTrustDevCertEnabled();
-        const localCertResult = await localEnvManager.resolveLocalCertificate(trustDevCert);
+        const workspacePath = globalVariables.workspaceUri!.fsPath;
+        const localEnvProvider = new LocalEnvProvider(workspacePath);
+        const localCertResult = await localEnvManager.resolveLocalCertificate(
+          trustDevCert,
+          localEnvProvider
+        );
 
         // trust cert telemetry properties
         ctx.properties[TelemetryProperty.DebugDevCertStatus] = !trustDevCert

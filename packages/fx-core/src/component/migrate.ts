@@ -186,6 +186,7 @@ export function convertProjectSettingsV2ToV3(
       settingsV3.components.push({
         name: ComponentNames.AadApp,
         provision: true,
+        deploy: true,
       });
     }
     if (solutionSettings.activeResourcePlugins.includes("fx-resource-frontend-hosting")) {

@@ -57,15 +57,19 @@ describe("App Studio API Test", () => {
       }
     });
 
-    it("should throw error with response on BadeRequest with 2xx status code", async () => {
+    it("should contain x-correlation-id on BadeRequest with 2xx status code", async () => {
       const fakeAxiosInstance = axios.create();
       sinon.stub(axios, "create").returns(fakeAxiosInstance);
 
+      const xCorrelationId = "fakeCorrelationId";
       const response = {
         data: {
           error: "BadRequest",
         },
         message: "fake message",
+        headers: {
+          "x-correlation-id": xCorrelationId,
+        },
       };
       sinon.stub(fakeAxiosInstance, "post").resolves(response);
 
@@ -80,7 +84,7 @@ describe("App Studio API Test", () => {
         await AppStudioClient.publishTeamsApp(appStudioToken, Buffer.from(""), appStudioToken);
       } catch (error) {
         chai.assert.equal(error.name, AppStudioError.DeveloperPortalAPIFailedError.name);
-        chai.assert.isNotNull(error.response);
+        chai.assert.include(error.message, xCorrelationId);
       }
     });
 
@@ -180,24 +184,40 @@ describe("App Studio API Test", () => {
   });
 
   describe("publishTeamsAppUpdate", () => {
-    it("should throw error with response on BadeRequest with 2xx status code", async () => {
+    it("should contain x-correlation-id on BadeRequest with 2xx status code", async () => {
       const fakeAxiosInstance = axios.create();
       sinon.stub(axios, "create").returns(fakeAxiosInstance);
 
-      const response = {
+      const xCorrelationId = "fakeCorrelationId";
+      const postResponse = {
         data: {
           error: "BadRequest",
         },
         message: "fake message",
+        headers: {
+          "x-correlation-id": xCorrelationId,
+        },
       };
 
-      sinon.stub(fakeAxiosInstance, "post").resolves(response);
-      sinon.stub(AppStudioClient, "getAppByTeamsAppId").resolves({
-        publishingState: PublishingState.submitted,
-        teamsAppId: "xx",
-        displayName: "xx",
-        lastModifiedDateTime: null,
-      });
+      sinon.stub(fakeAxiosInstance, "post").resolves(postResponse);
+
+      const getResponse = {
+        data: {
+          value: [
+            {
+              appDefinitions: [
+                {
+                  publishingState: PublishingState.submitted,
+                  teamsAppId: "xx",
+                  displayName: "xx",
+                  lastModifiedDateTime: null,
+                },
+              ],
+            },
+          ],
+        },
+      };
+      sinon.stub(fakeAxiosInstance, "get").resolves(getResponse);
 
       const ctx = {
         envInfo: newEnvInfo(),
@@ -209,7 +229,7 @@ describe("App Studio API Test", () => {
       try {
         await AppStudioClient.publishTeamsAppUpdate("", Buffer.from(""), appStudioToken);
       } catch (error) {
-        chai.assert.isNotNull(error.response);
+        chai.assert.include(error.message, xCorrelationId);
       }
     });
   });

@@ -17,6 +17,8 @@ import {
   v3,
   ProjectSettingsV3,
   ProjectSettings,
+  UserError,
+  SystemError,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import fs from "fs-extra";
@@ -139,12 +141,16 @@ export async function createTeamsApp(
       );
       return ok(appDefinition.teamsAppId!);
     } catch (e: any) {
-      return err(
-        AppStudioResultFactory.SystemError(
-          AppStudioError.TeamsAppCreateFailedError.name,
-          AppStudioError.TeamsAppCreateFailedError.message(e)
-        )
-      );
+      if (e instanceof UserError || e instanceof SystemError) {
+        return err(e);
+      } else {
+        return err(
+          AppStudioResultFactory.SystemError(
+            AppStudioError.TeamsAppCreateFailedError.name,
+            AppStudioError.TeamsAppCreateFailedError.message(e)
+          )
+        );
+      }
     }
   } else {
     return ok(teamsAppId);

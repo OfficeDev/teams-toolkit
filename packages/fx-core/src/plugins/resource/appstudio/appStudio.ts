@@ -12,6 +12,7 @@ import { Constants, ErrorMessages, APP_STUDIO_API_NAMES } from "./constants";
 import { RetryHandler } from "./utils/utils";
 import { TelemetryEventName, TelemetryUtils } from "./utils/telemetry";
 import { getAppStudioEndpoint } from "../../../component/resource/appManifest/constants";
+import { HelpLinks } from "../../../common/constants";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -99,6 +100,14 @@ export namespace AppStudioClient {
         throw new Error(`Cannot create teams app`);
       }
     } catch (e: any) {
+      if (e.response?.status === 409) {
+        const error = AppStudioResultFactory.UserError(
+          AppStudioError.TeamsAppCreateConflictError.name,
+          AppStudioError.TeamsAppCreateConflictError.message(),
+          HelpLinks.SwtichTenantOrSub
+        );
+        throw error;
+      }
       const error = wrapException(e, APP_STUDIO_API_NAMES.CREATE_APP);
       throw error;
     }

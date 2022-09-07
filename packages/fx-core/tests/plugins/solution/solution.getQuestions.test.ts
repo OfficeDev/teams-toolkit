@@ -54,6 +54,7 @@ import {
   TabNonSsoItem,
   TabOptionItem,
   SingleSignOnOptionItem,
+  WorkflowOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import { ResourcePluginsV2 } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import {
@@ -75,7 +76,6 @@ const sqlPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SqlPlugin
 const spfxPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SpfxPlugin);
 const frontendPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FrontendPlugin);
 const botPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.BotPlugin);
-const cicdPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.CICDPlugin);
 const mockedProvider: TokenProvider = {
   azureAccountProvider: new MockedAzureAccountProvider(),
   m365TokenProvider: new MockedM365Provider(),
@@ -115,9 +115,6 @@ describe("getQuestionsForScaffolding()", async () => {
       return ok(undefined);
     };
     botPluginV2.getQuestionsForScaffolding = async function () {
-      return ok(undefined);
-    };
-    cicdPlugin.getQuestionsForUserTask = async function () {
       return ok(undefined);
     };
     mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "false" });
@@ -412,6 +409,7 @@ describe("getQuestionsForScaffolding()", async () => {
           [
             NotificationOptionItem,
             CommandAndResponseOptionItem,
+            WorkflowOptionItem,
             TabNewUIOptionItem,
             TabNonSsoItem,
             BotNewUIOptionItem,
@@ -460,7 +458,7 @@ describe("getQuestionsForScaffolding()", async () => {
         node &&
           node.data &&
           node.data.type === "singleSelect" &&
-          node.data.staticOptions.length === 10,
+          node.data.staticOptions.length === 11,
         "option item count check"
       );
       if (node && node.data && node.data.type === "singleSelect") {
@@ -470,6 +468,7 @@ describe("getQuestionsForScaffolding()", async () => {
           [
             NotificationOptionItem,
             CommandAndResponseOptionItem,
+            WorkflowOptionItem,
             TabNonSsoItem,
             BotNewUIOptionItem,
             MessageExtensionNewUIItem,

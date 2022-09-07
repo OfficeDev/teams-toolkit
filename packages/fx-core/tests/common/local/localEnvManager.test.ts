@@ -5,17 +5,14 @@ import "mocha";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 
-import { UserError, Result, ok } from "@microsoft/teamsfx-api";
+import { UserError, ok } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
 
+import * as tools from "../../../src/common/tools";
 import { LocalEnvManager } from "../../../src/common/local/localEnvManager";
-import { DepsInfo, DepsType } from "../../../src/common/deps-checker/depsChecker";
+import { DepsType } from "../../../src/common/deps-checker/depsChecker";
 import sinon from "sinon";
-import { DotnetChecker } from "../../../src/common/deps-checker/internal/dotnetChecker";
-import { NgrokChecker } from "../../../src/common/deps-checker/internal/ngrokChecker";
-import { FuncToolChecker } from "../../../src/common/deps-checker/internal/funcToolChecker";
-import { DepsCheckerError } from "../../../src/common/deps-checker/depsError";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { environmentManager } from "../../../src";
 
@@ -84,12 +81,14 @@ describe("LocalEnvManager", () => {
       await fs.ensureDir(configFolder);
       await fs.emptyDir(configFolder);
 
+      sinon.stub(tools, "waitSeconds").resolves();
       let error: UserError | undefined = undefined;
       try {
         await localEnvManager.getProjectSettings(projectPath);
       } catch (e: any) {
         error = e as UserError;
       }
+      sinon.restore();
 
       chai.assert.isDefined(error);
       chai.assert.equal(error!.name, "FileNotFoundError");
@@ -150,10 +149,12 @@ describe("LocalEnvManager", () => {
         JSON.stringify(projectSettings0)
       );
 
+      sinon.stub(tools, "waitSeconds").resolves();
       const projectSettings = await localEnvManager.getProjectSettings(projectPath);
       const localSettings = await localEnvManager.getLocalSettings(projectPath, {
         projectId: projectSettings.projectId,
       });
+      sinon.restore();
 
       chai.assert.isUndefined(localSettings);
     });
@@ -316,6 +317,7 @@ describe("LocalEnvManager", () => {
       );
     });
   });
+
   describe("getLocalEnvInfo()", () => {
     const sandbox = sinon.createSandbox();
     let mockedEnvRestore: RestoreFn;
@@ -345,6 +347,40 @@ describe("LocalEnvManager", () => {
         config: {},
         state: { solution: { key: "value" } },
       });
+    });
+  });
+
+  describe("getNgrokTunnelConfig()", () => {
+    beforeEach(() => {});
+
+    afterEach(() => {});
+
+    it("getNgrokTunnelConfig() happy path", async () => {
+      await fs.emptyDir(configFolder);
+      await fs.ensureDir(configFolder);
+      const ngrokConfigFilePath = path.join(configFolder, "ngrok.yml");
+      await fs.writeFile(ngrokConfigFilePath, "tunnels:\n  bot:\n     addr: 53000\n");
+      const res = await localEnvManager.getNgrokTunnelConfig(ngrokConfigFilePath);
+      chai.assert.sameDeepOrderedMembers([...res.entries()], [["bot", "53000"]]);
+    });
+
+    it("empty result", async () => {
+      await fs.emptyDir(configFolder);
+      await fs.ensureDir(configFolder);
+      const ngrokConfigFilePath = path.join(configFolder, "ngrok.yml");
+      await fs.writeFile(ngrokConfigFilePath, "");
+      const res = await localEnvManager.getNgrokTunnelConfig(ngrokConfigFilePath);
+      chai.assert.equal(res.size, 0);
+    });
+
+    it("error schema", async () => {
+      await fs.emptyDir(configFolder);
+      await fs.ensureDir(configFolder);
+      const ngrokConfigFilePath = path.join(configFolder, "ngrok.yml");
+      await fs.writeFile(ngrokConfigFilePath, "tunnels:\nbot\n-\n");
+      await chai
+        .expect(localEnvManager.getNgrokTunnelConfig(ngrokConfigFilePath))
+        .to.be.rejectedWith();
     });
   });
 });

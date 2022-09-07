@@ -58,13 +58,13 @@ import { AppStudioResultFactory } from "../../../plugins/resource/appstudio/resu
 import {
   TelemetryEventName,
   TelemetryPropertyKey,
+  TelemetryUtils,
 } from "../../../plugins/resource/appstudio/utils/telemetry";
 import { ComponentNames } from "../../constants";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import {
   buildTeamsAppPackage,
   createTeamsApp,
-  getManifest,
   publishTeamsApp,
   updateManifest,
   updateTeamsApp,
@@ -95,7 +95,8 @@ export class AppManifest implements CloudResource {
   ])
   async init(
     context: v2.Context,
-    inputs: InputsWithProjectPath
+    inputs: InputsWithProjectPath,
+    existingApp = false
   ): Promise<Result<undefined, FxError>> {
     let manifest;
     const sourceTemplatesFolder = getTemplatesFolder();
@@ -113,7 +114,6 @@ export class AppManifest implements CloudResource {
       const manifestString = (await fs.readFile(manifestFile)).toString();
       manifest = JSON.parse(manifestString);
     } else {
-      const existingApp = inputs.existingApp as boolean;
       const manifestString = TEAMS_APP_MANIFEST_TEMPLATE;
       manifest = JSON.parse(manifestString);
       if (existingApp || !hasTab(context.projectSetting as ProjectSettingsV3)) {
@@ -191,11 +191,11 @@ export class AppManifest implements CloudResource {
     }),
   ])
   async provision(
-    context: ResourceContextV3,
+    ctx: ResourceContextV3,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    const ctx = context as ResourceContextV3;
+    TelemetryUtils.init(ctx);
     await actionContext?.progressBar?.next(
       getLocalizedString("plugins.appstudio.provisionProgress", ctx.projectSetting.appName)
     );
@@ -239,11 +239,11 @@ export class AppManifest implements CloudResource {
     }),
   ])
   async configure(
-    context: ResourceContextV3,
+    ctx: ResourceContextV3,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    const ctx = context as ResourceContextV3;
+    TelemetryUtils.init(ctx);
     await actionContext?.progressBar?.next(
       getLocalizedString("plugins.appstudio.postProvisionProgress", ctx.projectSetting.appName)
     );
@@ -263,11 +263,11 @@ export class AppManifest implements CloudResource {
     }),
   ])
   async publish(
-    context: ResourceContextV3,
+    ctx: ResourceContextV3,
     inputs: InputsWithProjectPath,
     actionCtx?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    const ctx = context as ResourceContextV3;
+    TelemetryUtils.init(ctx);
     if (
       inputs.platform === Platform.VSCode &&
       inputs[Constants.BUILD_OR_PUBLISH_QUESTION] === manuallySubmitOption.id
@@ -276,6 +276,7 @@ export class AppManifest implements CloudResource {
         actionCtx.telemetryProps[TelemetryPropertyKey.manual] = String(true);
       try {
         const appPackagePath = await buildTeamsAppPackage(
+          ctx.projectSetting,
           inputs.projectPath,
           ctx.envInfo,
           false,
@@ -367,7 +368,7 @@ export class AppManifest implements CloudResource {
     context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<string[], FxError>> {
-    const manifestRes = await getManifest(inputs.projectPath, context.envInfo);
+    const manifestRes = await manifestUtils.getManifest(inputs.projectPath, context.envInfo, false);
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }
@@ -400,7 +401,11 @@ export class AppManifest implements CloudResource {
     context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<string, FxError>> {
-    const res = await buildTeamsAppPackage(inputs.projectPath, context.envInfo);
+    const res = await buildTeamsAppPackage(
+      context.projectSetting,
+      inputs.projectPath,
+      context.envInfo
+    );
     if (res.isOk()) {
       if (inputs.platform === Platform.CLI || inputs.platform === Platform.VS) {
         const builtSuccess = [
@@ -441,6 +446,7 @@ export class AppManifest implements CloudResource {
     context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
+    TelemetryUtils.init(context);
     return await updateManifest(context, inputs);
   }
 
@@ -475,7 +481,7 @@ export class AppManifest implements CloudResource {
     let teamsAppId = "";
     // User may manually update id in manifest template file, rather than configuration file
     // The id in manifest template file should override configurations
-    const manifestResult = await getManifest(inputs.projectPath, envInfo);
+    const manifestResult = await manifestUtils.getManifest(inputs.projectPath, envInfo, false);
     if (manifestResult.isOk()) {
       teamsAppId = manifestResult.value.id;
     }
@@ -499,6 +505,7 @@ export class AppManifest implements CloudResource {
     envInfo: v3.EnvInfoV3,
     m365TokenProvider: M365TokenProvider
   ): Promise<Result<TeamsAppAdmin[], FxError>> {
+    TelemetryUtils.init(ctx);
     try {
       const teamsAppId = await this.getTeamsAppId(ctx, inputs, envInfo);
       if (!teamsAppId) {
@@ -570,6 +577,7 @@ export class AppManifest implements CloudResource {
     m365TokenProvider: M365TokenProvider,
     userInfo: AppUser
   ): Promise<Result<ResourcePermission[], FxError>> {
+    TelemetryUtils.init(ctx);
     try {
       const appStudioTokenRes = await m365TokenProvider.getAccessToken({ scopes: AppStudioScopes });
       const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
@@ -639,6 +647,7 @@ export class AppManifest implements CloudResource {
     m365TokenProvider: M365TokenProvider,
     userInfo: AppUser
   ): Promise<Result<ResourcePermission[], FxError>> {
+    TelemetryUtils.init(ctx);
     try {
       const appStudioTokenRes = await m365TokenProvider.getAccessToken({ scopes: AppStudioScopes });
       const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;

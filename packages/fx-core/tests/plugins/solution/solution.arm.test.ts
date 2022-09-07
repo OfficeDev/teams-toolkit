@@ -642,6 +642,7 @@ function getMockDeployments(mockedOutput?: any) {
 describe("Deploy ARM Template to Azure", () => {
   const mocker = sinon.createSandbox();
   let mockedCtx: SolutionContext;
+  let bicepCommand: string;
   const mockedArmTemplateOutput = {
     provisionOutput: {
       type: "Object",
@@ -665,6 +666,7 @@ describe("Deploy ARM Template to Azure", () => {
   };
 
   beforeEach(async () => {
+    mocker.stub(tools, "waitSeconds").resolves();
     mockedCtx = TestHelper.mockSolutionContext();
     mockedCtx.projectSettings!.solutionSettings = {
       hostType: HostTypeOptionAzure.id,
@@ -697,6 +699,7 @@ describe("Deploy ARM Template to Azure", () => {
         }
       )
     );
+    bicepCommand = await bicepChecker.ensureBicep(mockedCtx);
   });
 
   afterEach(async () => {
@@ -705,6 +708,7 @@ describe("Deploy ARM Template to Azure", () => {
   });
 
   it("should fail when main.bicep do not exist", async () => {
+    mocker.stub(bicepChecker, "ensureBicep").resolves(bicepCommand);
     // Act
     const result = await deployArmTemplates(mockedCtx);
 
@@ -870,6 +874,8 @@ describe("Deploy ARM Template to Azure", () => {
     mockResourceManagementClient.deployments = getMockDeployments() as any;
     mocker.stub(armResources, "ResourceManagementClient").returns(mockResourceManagementClient);
     mocker.stub(arm, "wrapGetDeploymentError").resolves(ok(fetchError));
+    mocker.stub(arm, "pollDeploymentStatus").resolves();
+    mocker.stub(bicepChecker, "ensureBicep").resolves(bicepCommand);
 
     // Act
     const result = await deployArmTemplates(mockedCtx);

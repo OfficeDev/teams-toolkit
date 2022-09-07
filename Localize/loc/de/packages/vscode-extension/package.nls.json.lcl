@@ -30,10 +30,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.accountTree.m365AccountTooltip" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[M365 ACCOUNT  ]A;The Teams Toolkit requires an Microsoft 365 organizational account where Teams is running and has been registered.]]></Val>
+          <Val><![CDATA[Microsoft 365 ACCOUNT  ]A;The Teams Toolkit requires an Microsoft 365 organizational account where Teams is running and has been registered.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[M365-KONTO  ]A; Das Teams-Toolkit erfordert ein Microsoft 365-Organisationskonto, auf dem Teams ausgeführt wird und registriert wurde.]]></Val>
+            <Val><![CDATA[Microsoft 365-KONTO  ]A; Das Teams-Toolkit erfordert ein Microsoft 365-Organisationskonto, auf dem Teams ausgeführt wird und registriert wurde.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[M365 ACCOUNT  ]A;The Teams Toolkit requires an Microsoft 365 organizational account where Teams is running and has been registered.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -57,12 +60,12 @@
       </Item>
       <Item ItemId=";teamstoolkit.accountTree.sideloadingJoinM365" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Create a M365 testing tenant]]></Val>
+          <Val><![CDATA[Create a Microsoft 365 testing tenant]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Erstellen Sie einen M365-Testmandanten]]></Val>
+            <Val><![CDATA[Microsoft 365-Testmandanten erstellen]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Join M365 Developer Program]]></Val>
+            <Val><![CDATA[Create a M365 testing tenant]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -135,12 +138,12 @@
       </Item>
       <Item ItemId=";teamstoolkit.accountTree.sideloadingWarningTooltip" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[M365 account admin doesn't have enabled sideloading permission.]A;· Contact your Teams administrator to resolve this issue. Visit: https://docs.microsoft.com/en-us/microsoftteams/platform/m365-apps/prerequisites]A;· Create a testing tenant. Visit https://developer.microsoft.com/en-us/microsoft-365/dev-program]]></Val>
+          <Val><![CDATA[Microsoft 365 account admin doesn't have enabled sideloading permission.]A;· Contact your Teams administrator to resolve this issue. Visit: https://docs.microsoft.com/en-us/microsoftteams/platform/m365-apps/prerequisites]A;· Create a testing tenant. Visit https://developer.microsoft.com/en-us/microsoft-365/dev-program]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Der Administrator des M365-Kontos hat keine Berechtigung zum seitlichen Laden aktiviert.]A;· Wenden Sie sich an Ihren Teams-Administrator, um dieses Problem zu lösen. Besuchen Sie: https://docs.microsoft.com/en-us/microsoftteams/platform/m365-apps/prerequisites]A;· Erstellen Sie einen Testmandanten. Besuchen Sie https://developer.microsoft.com/en-us/microsoft-365/dev-program]]></Val>
+            <Val><![CDATA[Der Administrator des Microsoft 365-Kontos hat keine Berechtigung zum seitlichen Laden aktiviert.]A;· Wenden Sie sich an Ihren Teams-Administrator, um dieses Problem zu lösen. Besuchen Sie: https://docs.microsoft.com/en-us/microsoftteams/platform/m365-apps/prerequisites]A;· Erstellen Sie einen Testmandanten. Besuchen Sie https://developer.microsoft.com/en-us/microsoft-365/dev-program]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Your M365 tenant admin hasn't enabled sideloading permission for your account. You can't install your app to Teams!]]></Val>
+            <Val><![CDATA[M365 account admin doesn't have enabled sideloading permission.]A;· Contact your Teams administrator to resolve this issue. Visit: https://docs.microsoft.com/en-us/microsoftteams/platform/m365-apps/prerequisites]A;· Create a testing tenant. Visit https://developer.microsoft.com/en-us/microsoft-365/dev-program]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -156,10 +159,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.accountTree.signingInM365" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[M365: Signing in...]]></Val>
+          <Val><![CDATA[Microsoft 365: Signing in...]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[M365: Anmeldung...]]></Val>
+            <Val><![CDATA[Microsoft 365: Anmeldung wird ausgeführt...]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[M365: Signing in...]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -183,10 +189,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.appStudioLogin.createM365TestingTenant" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Create a M365 testing tenant]]></Val>
+          <Val><![CDATA[Create a Microsoft 365 testing tenant]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Erstellen Sie einen M365-Testmandanten]]></Val>
+            <Val><![CDATA[Microsoft 365-Testmandanten erstellen]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Create a M365 testing tenant]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -201,22 +210,25 @@
       </Item>
       <Item ItemId=";teamstoolkit.appStudioLogin.loginCancel" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Sign in canceled. The Teams Toolkit requires a Microsoft 365 (organizational account) with sideloading option.]A;If your account is not ready, create a free M365 testing tenant to start your Teams App development.]]></Val>
+          <Val><![CDATA[Sign in canceled. The Teams Toolkit requires a Microsoft 365 (organizational account) with sideloading option.]A;If your account is not ready, create a free Microsoft 365 testing tenant to start your Teams App development.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Anmeldung abgebrochen. Das Teams-Toolkit erfordert ein Microsoft 365 (Organisationskonto) mit Querladeoption.]A;Wenn Ihr Konto noch nicht bereit ist, erstellen Sie einen kostenlosen M365-Testmandanten, um mit der Entwicklung Ihrer Teams-App zu beginnen.]]></Val>
+            <Val><![CDATA[Anmeldung abgebrochen. Das Teams-Toolkit erfordert ein Microsoft 365-Organisationskonto mit Querladeoption.]A;Wenn Ihr Konto noch nicht bereit ist, erstellen Sie einen kostenlosen Microsoft 365-Testmandanten, um mit der Entwicklung Ihrer Teams-App zu beginnen.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Sign in canceled. The Teams Toolkit requires a Microsoft 365 organizational account where Teams is running and has been registered.]]></Val>
+            <Val><![CDATA[Sign in canceled. The Teams Toolkit requires a Microsoft 365 (organizational account) with sideloading option.]A;If your account is not ready, create a free M365 testing tenant to start your Teams App development.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.appStudioLogin.message" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[The Teams Toolkit requires a Microsoft 365 organizational account where Teams is running and has been registered. You can create a free testing account from M365 Developer Program if needed.]]></Val>
+          <Val><![CDATA[The Teams Toolkit requires a Microsoft 365 organizational account where Teams is running and has been registered. You can create a free testing account from Microsoft 365 Developer Program if needed.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Das Teams-Toolkit erfordert ein Microsoft 365-Organisationskonto, auf dem Teams ausgeführt wird und registriert wurde. Sie können bei Bedarf ein kostenloses Testkonto über das M365-Entwicklerprogramm erstellen.]]></Val>
+            <Val><![CDATA[Das Teams-Toolkit erfordert ein Microsoft 365-Organisationskonto, auf dem Teams ausgeführt wird und registriert wurde. Sie können bei Bedarf ein kostenloses Testkonto über das Microsoft 365-Entwicklerprogramm erstellen.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[The Teams Toolkit requires a Microsoft 365 organizational account where Teams is running and has been registered. You can create a free testing account from M365 Developer Program if needed.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -483,10 +495,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.addAppOwner.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Add M365 Teams App (with AAD App) Owners]]></Val>
+          <Val><![CDATA[Add Microsoft 365 Teams App (with AAD App) Owners]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[M365 Teams-App-Besitzer (mit AAD-App) hinzufügen]]></Val>
+            <Val><![CDATA[Besitzer der Microsoft 365 Teams-App (mit AAD-App) hinzufügen]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Add M365 Teams App (with AAD App) Owners]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -531,10 +546,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.createAccount.m365" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Create a M365 testing tenant]]></Val>
+          <Val><![CDATA[Create a Microsoft 365 testing tenant]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Erstellen Sie einen M365-Testmandanten]]></Val>
+            <Val><![CDATA[Microsoft 365-Testmandanten erstellen]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Create a M365 testing tenant]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -711,10 +729,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.listAppOwner.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[List M365 Teams App (with AAD App) Owners]]></Val>
+          <Val><![CDATA[List Microsoft 365 Teams App (with AAD App) Owners]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[M365 Teams-App-Besitzer (mit AAD-App) auflisten]]></Val>
+            <Val><![CDATA[Besitzer der Microsoft 365 Teams-App (mit AAD-App) auflisten]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[List M365 Teams App (with AAD App) Owners]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -729,10 +750,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.m365AccountSettings.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[M365 portal]]></Val>
+          <Val><![CDATA[Microsoft 365 portal]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[M365-Portal]]></Val>
+            <Val><![CDATA[Microsoft 365-Portal]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[M365 portal]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1437,28 +1461,37 @@
       </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.m365AccountNotMatch" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[The signed in M365 account does not match the M365 tenant used in previous provision. Please sign out and sign in with correct M365 account.]]></Val>
+          <Val><![CDATA[The signed in Microsoft 365 account does not match the Microsoft 365 tenant used in previous provision. Please sign out and sign in with correct Microsoft 365 account.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Das angemeldete M365-Konto stimmt nicht mit dem M365-Mandanten überein, der in der vorherigen Bereitstellung verwendet wurde. Melden Sie sich ab und mit dem richtigen M365-Konto an.]]></Val>
+            <Val><![CDATA[Das angemeldete Microsoft 365-Konto stimmt nicht mit dem Microsoft 365-Mandanten überein, der in der vorherigen Bereitstellung verwendet wurde. Melden Sie sich ab und mit dem richtigen Microsoft 365-Konto an.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[The signed in M365 account does not match the M365 tenant used in previous provision. Please sign out and sign in with correct M365 account.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.m365AccountNotSignedIn" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[No M365 account signed in. Please sign in to M365.]]></Val>
+          <Val><![CDATA[No Microsoft 365 account signed in. Please sign in to Microsoft 365.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Kein M365-Konto angemeldet. Bitte melden Sie sich bei M365 an.]]></Val>
+            <Val><![CDATA[Es ist kein Microsoft 365-Konto angemeldet. Melden Sie sich bei Microsoft 365 an.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[No M365 account signed in. Please sign in to M365.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.m365TenantNotMatch" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[The M365 tenant id(which is used to provision before) does not match the current account.]]></Val>
+          <Val><![CDATA[The Microsoft 365 tenant id(which is used to provision before) does not match the current account.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Die M365-Mandanten-ID (die zuvor für die Bereitstellung verwendet wird) stimmt nicht mit dem aktuellen Konto überein.]]></Val>
+            <Val><![CDATA[Die Microsoft 365-Mandanten-ID (die zuvor für die Bereitstellung verwendet wurde) stimmt nicht mit dem aktuellen Konto überein.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[The M365 tenant id(which is used to provision before) does not match the current account.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1521,6 +1554,24 @@
           <Val><![CDATA[Preview and Debug Adaptive Cards]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Vorschau und debuggen Adaptive Karten]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.previewDescription" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Preview your Teams app locally]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Lokale Vorschau Ihrer Teams-App anzeigen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.previewTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Preview your Teams app]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Vorschau Ihrer Teams-App anzeigen]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1860,19 +1911,25 @@
       </Item>
       <Item ItemId=";teamstoolkit.envTree.missingAzureAndM365Account" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Sign in with your correct Azure / M365 account]]></Val>
+          <Val><![CDATA[Sign in with your correct Azure / Microsoft 365 account]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Melden Sie sich mit Ihrem richtigen Azure-/M365-Konto an]]></Val>
+            <Val><![CDATA[Melden Sie sich mit Ihrem richtigen Azure-/Microsoft 365-Konto an]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Sign in with your correct Azure / M365 account]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.envTree.missingM365Account" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Sign in with your correct M365 account]]></Val>
+          <Val><![CDATA[Sign in with your correct Microsoft 365 account]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Melden Sie sich mit Ihrem richtigen M365-Konto an]]></Val>
+            <Val><![CDATA[Melden Sie sich mit Ihrem richtigen Microsoft 365-Konto an]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Sign in with your correct M365 account]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2259,19 +2316,25 @@
       </Item>
       <Item ItemId=";teamstoolkit.handlers.m365SignIn" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Successfully signed in to M365 account.]]></Val>
+          <Val><![CDATA[Successfully signed in to Microsoft 365 account.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Die Anmeldung beim M365-Konto war erfolgreich.]]></Val>
+            <Val><![CDATA[Die Anmeldung beim Microsoft 365-Konto war erfolgreich.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Successfully signed in to M365 account.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.handlers.m365SignOut" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Successfully signed out of M365 account.]]></Val>
+          <Val><![CDATA[Successfully signed out of Microsoft 365 account.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Erfolgreich vom M365-Konto abgemeldet.]]></Val>
+            <Val><![CDATA[Die Abmeldung vom Microsoft 365-Konto war erfolgreich.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Successfully signed out of M365 account.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2298,6 +2361,45 @@
           <Val><![CDATA[Operation not support: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Vorgang nicht unterstützt: {0}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.promptSPFx.upgradeProject.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You are using a legacy version of SPFx in your project while the current version of Teams Toolkit supports SPFx v%s. If you want to use SPFx v%s, follow 'CLI for Microsoft 365' to upgrade.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Sie verwenden in Ihrem Projekt eine Legacyversion von SPFx, während die aktuelle Version des Teams-Toolkits SPFx v%s unterstützt. Wenn Sie SPFx v%s verwenden möchten, folgen Sie der Anleitung in „CLI für Microsoft 365“, um ein Upgrade durchzuführen.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.promptSPFx.upgradeProject.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[CLI for Microsoft 365]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[CLI für Microsoft 365]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[CLI for M365]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.promptSPFx.upgradeToolkit.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You are using a newer version of SPFx in your project while the current version of Teams Toolkit supports SPFx v%s. Please note that some of the newer SPFx features might not be supported. If you are not using the latest version of Teams Toolkit, consider to upgrade.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Sie verwenden in Ihrem Projekt eine neuere Version von SPFx, während die aktuelle Version des Teams-Toolkits SPFx v%s unterstützt. Beachten Sie, dass einige der neueren SPFx-Funktionen möglicherweise nicht unterstützt werden. Wenn Sie nicht die neueste Version des Teams-Toolkits verwenden, erwägen Sie ein Upgrade.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.promptSPFx.upgradeToolkit.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Upgrade]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Upgrade]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2349,10 +2451,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.handlers.signIn365" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Sign in to M365]]></Val>
+          <Val><![CDATA[Sign in to Microsoft 365]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Melden Sie sich bei M365 an]]></Val>
+            <Val><![CDATA[Bei Microsoft 365 anmelden]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Sign in to M365]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2385,10 +2490,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.handlers.signOutOfM365" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Sign out of M365: ]]></Val>
+          <Val><![CDATA[Sign out of Microsoft 365: ]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Abmelden von M365: ]]></Val>
+            <Val><![CDATA[Von Microsoft 365 abmelden: ]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Sign out of M365: ]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2544,10 +2652,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.localDebug.installApp.m365AccountInfoNotFound" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[M365 account info not found. Please sign in to M365.]]></Val>
+          <Val><![CDATA[Microsoft 365 account info not found. Please sign in to Microsoft 365.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[M365-Kontoinformationen nicht gefunden. Bitte melden Sie sich bei M365 an.]]></Val>
+            <Val><![CDATA[Microsoft 365-Kontoinformationen wurden nicht gefunden. Melden Sie sich bei Microsoft 365 an.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[M365 account info not found. Please sign in to M365.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2623,6 +2734,15 @@
           <Prev Cat="Text">
             <Val><![CDATA[Error occurs when checking prerequisites. Refer to the Output window for detailed error messages. (Fail to check: %s)]]></Val>
           </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.switchM365AccountWarning" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You are now using a different Microsoft 365 tenant from what you previously used.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Sie verwenden jetzt einen anderen Microsoft 365-Mandanten als den, den Sie zuvor verwendet haben.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2905,6 +3025,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.qm.browse" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Browse...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Durchsuchen...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.qm.defaultFolder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Default folder]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Standardordner]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.qm.emptySelection" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[select option is empty]]></Val>
@@ -3027,6 +3165,78 @@
           <Val><![CDATA[Take Survey]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[An Umfrage teilnehmen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.prerequisites.devCertTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Install localhost SSL certificate]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Localhost-SSL-Zertifikat installieren]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.prerequisites.dotnetTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Install .NET]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[.NET installieren]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.prerequisites.funcTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Install Azure Functions Core Tools]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure Functions Core Tools installieren]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.prerequisites.m365AccountTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Validate M365 account]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[M365-Konto überprüfen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.prerequisites.ngrokTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Install Ngrok]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ngrok installieren]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.prerequisites.nodejsTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Validate Node.js]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Node.js überprüfen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.prerequisites.portsTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Validate available ports]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Verfügbare Ports überprüfen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.command.prerequisites.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Validate and install prerequisites.]A; See https://aka.ms/teamsfx-debug-tasks#debug-check-prerequisites for how to customize following args.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Überprüfen und installieren Sie die erforderlichen Komponenten.]A; Informationen zum Anpassen der folgenden Argumente finden Sie in https://aka.ms/teamsfx-debug-tasks#debug-check-prerequisites.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

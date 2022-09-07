@@ -2,9 +2,7 @@
 // Licensed under the MIT license.
 
 import {
-  AppPackageFolderName,
   AzureSolutionSettings,
-  BuildFolderName,
   FxError,
   LogProvider,
   PluginContext,
@@ -386,7 +384,7 @@ export class AadAppForTeamsImpl {
       skip
     );
 
-    await this.writeManifestFileToBuildFolder(manifest, ctx);
+    await AadAppManifestManager.writeManifestFileToBuildFolder(manifest, ctx);
 
     await DialogUtils.progress?.end(true);
 
@@ -851,18 +849,8 @@ export class AadAppForTeamsImpl {
         AadManifestMissingObjectId.message()
       );
     }
-    await this.writeManifestFileToBuildFolder(manifest, ctx);
+    await AadAppManifestManager.writeManifestFileToBuildFolder(manifest, ctx);
     return manifest;
-  }
-
-  private async writeManifestFileToBuildFolder(
-    manifest: AADManifest,
-    ctx: PluginContext
-  ): Promise<void> {
-    const aadManifestPath = `${ctx.root}/${BuildFolderName}/${AppPackageFolderName}/aad.${ctx.envInfo.envName}.json`;
-    const manifestString = JSON.stringify(manifest, null, 4);
-    await fs.ensureDir(path.dirname(aadManifestPath));
-    await fs.writeFile(aadManifestPath, manifestString, "utf8");
   }
 
   private validateDeployManifest(manifest: AADManifest): void {

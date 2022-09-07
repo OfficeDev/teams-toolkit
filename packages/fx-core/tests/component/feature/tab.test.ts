@@ -155,7 +155,7 @@ describe("Tab Feature", () => {
     const res = await component.provision(context as ResourceContextV3, inputs);
     assert.isTrue(res.isOk());
     const tabState = context.envInfo.state?.[ComponentNames.TeamsTab];
-    assert.equal(tabState?.[StorageOutputs.indexPath.key], "");
+    assert.equal(tabState?.[StorageOutputs.indexPath.key], "/");
   });
   it("configure sso blazor tab", async () => {
     const appSettings = [

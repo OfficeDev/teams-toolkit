@@ -16,6 +16,9 @@ output azureWebApp{{scenario}}Output object = {
   appServicePlanName: azureWebApp{{scenario}}Provision.outputs.appServicePlanName
   resourceId: azureWebApp{{scenario}}Provision.outputs.resourceId
   siteEndpoint: azureWebApp{{scenario}}Provision.outputs.siteEndpoint
+  {{#if (equals "Tab" scenario )}}
+  endpoint: azureWebApp{{scenario}}Provision.outputs.siteEndpoint
+  {{/if}}
 }
 
 output {{scenario}}Output object = {

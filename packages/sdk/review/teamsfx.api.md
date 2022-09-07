@@ -383,7 +383,7 @@ export interface TeamsBotSsoPromptTokenResponse extends TokenResponse {
 
 // @public
 export class TeamsFx implements TeamsFxConfiguration {
-    constructor(identityType?: IdentityType, customConfig?: Record<string, string>);
+    constructor(identityType?: IdentityType, customConfig?: Record<string, string> | AuthenticationConfiguration);
     getConfig(key: string): string;
     getConfigs(): Record<string, string>;
     getCredential(): TokenCredential;

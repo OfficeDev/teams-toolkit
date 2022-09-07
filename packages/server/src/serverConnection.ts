@@ -13,7 +13,12 @@ import {
   Stage,
   QTreeNode,
 } from "@microsoft/teamsfx-api";
-import { FxCore, Correlator, getSideloadingStatus } from "@microsoft/teamsfx-core";
+import {
+  FxCore,
+  Correlator,
+  getSideloadingStatus,
+  getProjectComponents as coreGetProjectComponents,
+} from "@microsoft/teamsfx-core";
 import { IServerConnection, Namespaces } from "./apis";
 import LogProvider from "./providers/logger";
 import TokenProvider from "./providers/tokenProvider";
@@ -54,6 +59,7 @@ export default class ServerConnection implements IServerConnection {
       this.customizeValidateFuncRequest.bind(this),
       this.customizeOnSelectionChangeFuncRequest.bind(this),
       this.addSsoRequest.bind(this),
+      this.getProjectComponents.bind(this),
     ].forEach((fn) => {
       /// fn.name = `bound ${functionName}`
       connection.onRequest(`${ServerConnection.namespace}/${fn.name.split(" ")[1]}`, fn);
@@ -247,5 +253,15 @@ export default class ServerConnection implements IServerConnection {
       inputs
     );
     return standardizeResult(res);
+  }
+
+  public async getProjectComponents(
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<Result<string | undefined, FxError>> {
+    if (!inputs.projectPath) {
+      return ok(undefined);
+    }
+    return ok(await coreGetProjectComponents(inputs.projectPath));
   }
 }

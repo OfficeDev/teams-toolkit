@@ -34,11 +34,14 @@ export class Sql {
       addedResources.push(AzureResourceFunction.id);
     }
     const projectSettings = context.projectSetting;
-    const remarks: string[] = ["config 'azure-sql' in projectSettings"];
-    projectSettings.components.push({
-      name: "azure-sql",
-      provision: true,
-    });
+    const remarks: string[] = [];
+    if (!sqlComponent) {
+      remarks.push("config 'azure-sql' in projectSettings");
+      projectSettings.components.push({
+        name: "azure-sql",
+        provision: true,
+      });
+    }
 
     // generate bicep
     // bicep.init

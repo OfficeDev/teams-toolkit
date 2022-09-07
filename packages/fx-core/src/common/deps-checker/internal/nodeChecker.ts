@@ -179,7 +179,7 @@ export class SPFxNodeChecker extends NodeChecker {
   }
 
   protected async getSupportedVersions(): Promise<string[]> {
-    return ["14", "16"];
+    return ["16"];
   }
 }
 

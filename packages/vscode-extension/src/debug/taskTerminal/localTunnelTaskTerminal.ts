@@ -177,7 +177,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     return undefined;
   }
 
-  public static async getNgrokEndpoint(): Promise<string | undefined> {
+  public static async getNgrokEndpoint(): Promise<string> {
     if (this.ngrokTaskTerminals.size > 2) {
       throw new UserError(
         ExtensionSource,

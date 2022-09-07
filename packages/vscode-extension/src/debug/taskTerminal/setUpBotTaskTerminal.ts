@@ -5,7 +5,7 @@
 
 import * as vscode from "vscode";
 
-import { FxError, Result, Void } from "@microsoft/teamsfx-api";
+import { assembleError, err, FxError, Result, Void } from "@microsoft/teamsfx-api";
 import { BotDebugArgs, BotDebugHandler } from "@microsoft/teamsfx-core";
 
 import VsCodeLogInstance from "../../commonlib/log";
@@ -14,6 +14,7 @@ import { tools } from "../../handlers";
 import { setUpBotDisplayMessages } from "../constants";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import { handleDebugActions } from "./common";
+import { LocalTunnelTaskTerminal } from "./localTunnelTaskTerminal";
 
 export class SetUpBotTaskTerminal extends BaseTaskTerminal {
   private readonly args: BotDebugArgs;
@@ -24,6 +25,16 @@ export class SetUpBotTaskTerminal extends BaseTaskTerminal {
   }
 
   async do(): Promise<Result<Void, FxError>> {
+    try {
+      const botTunnelEndpoint = await LocalTunnelTaskTerminal.getNgrokEndpoint();
+      this.args.botMessagingEndpoint = this.args.botMessagingEndpoint?.replace(
+        "${teamsfx:botTunnelEndpoint}",
+        botTunnelEndpoint
+      );
+    } catch (error: unknown) {
+      return err(assembleError(error));
+    }
+
     VsCodeLogInstance.outputChannel.show();
     VsCodeLogInstance.info(setUpBotDisplayMessages.taskName);
     VsCodeLogInstance.outputChannel.appendLine(setUpBotDisplayMessages.check);

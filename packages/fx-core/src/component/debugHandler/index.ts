@@ -4,5 +4,6 @@
 
 export * from "./appManifest";
 export * from "./bot";
+export * from "./common";
 export * from "./sso";
 export * from "./tab";

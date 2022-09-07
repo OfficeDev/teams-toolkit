@@ -148,6 +148,7 @@ describe("TabDebugHandler", () => {
       sinon.stub(LocalEnvProvider.prototype, "loadBotLocalEnvs").returns(Promise.resolve(botEnvs));
       sinon.stub(LocalEnvProvider.prototype, "saveBotLocalEnvs").callsFake(async (envs) => {
         botEnvs = envs;
+        return "";
       });
       const domain = "af0e-180-158-57-208.ngrok.io";
       const botEndpoint = `https://${domain}`;
@@ -224,6 +225,7 @@ describe("TabDebugHandler", () => {
       sinon.stub(LocalEnvProvider.prototype, "loadBotLocalEnvs").returns(Promise.resolve(botEnvs));
       sinon.stub(LocalEnvProvider.prototype, "saveBotLocalEnvs").callsFake(async (envs) => {
         botEnvs = envs;
+        return "";
       });
       const domain = "af0e-180-158-57-208.ngrok.io";
       const botEndpoint = `https://${domain}`;

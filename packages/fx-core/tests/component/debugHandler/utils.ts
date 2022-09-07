@@ -2,13 +2,17 @@
 // Licensed under the MIT license.
 
 import {
+  err,
   FxError,
   LoginStatus,
   M365TokenProvider,
   ok,
   Result,
   TokenRequest,
+  Void,
 } from "@microsoft/teamsfx-api";
+
+import { DebugAction } from "../../../src/component/debugHandler/common";
 
 export class MockM365TokenProvider implements M365TokenProvider {
   private readonly tenantId: string;
@@ -49,4 +53,14 @@ export class MockM365TokenProvider implements M365TokenProvider {
   async removeStatusChangeMap(name: string): Promise<Result<boolean, FxError>> {
     throw new Error("Method not implemented.");
   }
+}
+
+export async function runDebugActions(actions: DebugAction[]): Promise<Result<Void, FxError>> {
+  for (const action of actions) {
+    const result = await action.run();
+    if (result.isErr()) {
+      return err(result.error);
+    }
+  }
+  return ok(Void);
 }

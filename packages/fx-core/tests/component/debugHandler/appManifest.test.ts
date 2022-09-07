@@ -20,7 +20,7 @@ import { environmentManager } from "../../../src/core/environment";
 import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
 import { AppStudioClient } from "../../../src/plugins/resource/appstudio/appStudio";
 import { AppDefinition } from "../../../src/plugins/resource/appstudio/interfaces/appDefinition";
-import { MockM365TokenProvider } from "./utils";
+import { MockM365TokenProvider, runDebugActions } from "./utils";
 
 describe("AppManifestDebugHandler", () => {
   const projectPath = path.resolve(__dirname, "data");
@@ -43,7 +43,7 @@ describe("AppManifestDebugHandler", () => {
         .returns(Promise.resolve(err(error)));
       const args: AppManifestDebugArgs = {};
       const handler = new AppManifestDebugHandler(projectPath, args, m365TokenProvider);
-      const result = await handler.prepare();
+      const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
         chai.assert(result.error instanceof SystemError);
@@ -64,7 +64,7 @@ describe("AppManifestDebugHandler", () => {
       sinon.stub(environmentManager, "loadEnvInfo").returns(Promise.resolve(err(error)));
       const args: AppManifestDebugArgs = {};
       const handler = new AppManifestDebugHandler(projectPath, args, m365TokenProvider);
-      const result = await handler.prepare();
+      const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
         chai.assert(result.error instanceof SystemError);
@@ -106,7 +106,7 @@ describe("AppManifestDebugHandler", () => {
       });
       const args: AppManifestDebugArgs = {};
       const handler = new AppManifestDebugHandler(projectPath, args, m365TokenProvider);
-      const result = await handler.prepare();
+      const result = await runDebugActions(handler.getActions());
       chai.assert(result.isOk());
       chai.assert(called);
       chai.assert.equal(envInfoV3.state[ComponentNames.AppManifest].teamsAppId, teamsAppId);

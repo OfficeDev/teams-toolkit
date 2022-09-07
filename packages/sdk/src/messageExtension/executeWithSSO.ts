@@ -25,13 +25,13 @@ function getSignInResponseForMessageExtension(teamsfx: TeamsFx, scopes: string |
   )}&clientId=${teamsfx.getConfig("clientId")}&tenantId=${teamsfx.getConfig("tenantId")}`;
   return {
     composeExtension: {
-      type: "auth",
+      type: "silentAuth",
       suggestedActions: {
         actions: [
           {
             type: "openUrl",
             value: signInLink,
-            title: "Bot Service OAuth",
+            title: "Message Extension OAuth",
           },
         ],
       },

@@ -143,7 +143,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
       });
 
       this.childProc.on("close", (code: number) => {
-        if (code == 0) {
+        if (code === 0) {
           resolve(ok(Void));
         } else {
           resolve(

@@ -81,13 +81,12 @@ export async function executionWithToken(
       return await logic(tokenRes);
     }
   } catch (err) {
-    if (err.code === ErrorCode.UiRequiredError) {
+    if (err instanceof ErrorWithCode && err.code === ErrorCode.UiRequiredError) {
       internalLogger.verbose("User not consent yet, return 412 to user consent first.");
       const response = { status: 412 };
       await context.sendActivity({ value: response, type: ActivityTypes.InvokeResponse });
       return;
     }
-    internalLogger.error(err.message);
     throw err;
   }
 }

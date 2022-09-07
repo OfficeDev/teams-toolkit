@@ -499,7 +499,7 @@ describe("SSODebugHandler", () => {
           name: "fx-solution-azure",
           version: "1.0.0",
           hostType: "Azure",
-          azureResources: [] as string[],
+          azureResources: ["function"],
           capabilities: ["Tab", "TabSSO", "Bot", "BotSSO"],
           activeResourcePlugins: [
             "fx-resource-frontend-hosting",

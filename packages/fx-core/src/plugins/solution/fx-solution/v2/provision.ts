@@ -56,7 +56,6 @@ import {
 } from "../utils/util";
 import { isCSharpProject, resetEnvInfoWhenSwitchM365 } from "../../../../component/utils";
 import { getSubscriptionId, provisionUtils } from "../../../../component/provisionUtils";
-import { ProgrammingLanguage } from "../../../../component/constants";
 
 export async function provisionResource(
   ctx: v2.Context,

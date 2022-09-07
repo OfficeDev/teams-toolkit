@@ -335,6 +335,9 @@ export class OnBehalfOfUserCredential implements TokenCredential {
 }
 
 // @public
+export function queryWithToken(context: TurnContext_2, config: AuthenticationConfiguration, scopes: string | string[], logic: (token: TeamsMsgExtTokenResponse) => Promise<any>): Promise<InvokeResponse_2 | void>;
+
+// @public
 export function sendAdaptiveCard(target: NotificationTarget, card: unknown): Promise<MessageResponse>;
 
 // @public
@@ -405,6 +408,12 @@ export interface TeamsFxAdaptiveCardActionHandler {
 export interface TeamsFxBotCommandHandler {
     handleCommandReceived(context: TurnContext, message: CommandMessage): Promise<string | Partial<Activity> | void>;
     triggerPatterns: TriggerPatterns;
+}
+
+// @public
+export interface TeamsMsgExtTokenResponse extends TokenResponse {
+    ssoToken: string;
+    ssoTokenExpiration: string;
 }
 
 // @public

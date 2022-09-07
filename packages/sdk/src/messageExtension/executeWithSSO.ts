@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { AccessToken } from "@azure/identity";
-import { TurnContext, InvokeResponse, ActivityTypes } from "botbuilder";
+import { TurnContext, MessagingExtensionResponse, ActivityTypes } from "botbuilder";
 import { parseJwt, getScopesArray, formatString } from "../util/utils";
 import { TeamsMsgExtTokenResponse } from "./teamsMsgExtTokenResponse";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
@@ -60,7 +60,7 @@ export async function executionWithToken(
   config: AuthenticationConfiguration,
   scopes: string | string[],
   logic?: (token: TeamsMsgExtTokenResponse) => Promise<any>
-): Promise<InvokeResponse | void> {
+): Promise<MessagingExtensionResponse | void> {
   const valueObj = context.activity.value;
   if (!valueObj.authentication || !valueObj.authentication.token) {
     internalLogger.verbose("No AccessToken in request, return silentAuth for AccessToken");
@@ -110,10 +110,10 @@ export async function executionWithToken(
  */
 export async function queryWithToken(
   context: TurnContext,
-  config: AuthenticationConfiguration,
+  config: AuthenticationConfiguration | null,
   scopes: string | string[],
   logic: (token: TeamsMsgExtTokenResponse) => Promise<any>
-): Promise<InvokeResponse | void> {
+): Promise<MessagingExtensionResponse | void> {
   if (context.activity.name != "composeExtension/query") {
     internalLogger.error(ErrorMessage.OnlySupportInQueryActivity);
     throw new ErrorWithCode(
@@ -121,5 +121,5 @@ export async function queryWithToken(
       ErrorCode.FailedOperation
     );
   }
-  return await executionWithToken(context, config, scopes, logic);
+  return await executionWithToken(context, config ?? {}, scopes, logic);
 }

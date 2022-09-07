@@ -35,6 +35,7 @@ import { localTelemetryReporter } from "./localTelemetryReporter";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import { PrerequisiteTaskTerminal } from "./taskTerminal/prerequisiteTaskTerminal";
 import { NpmInstallTaskTerminal } from "./taskTerminal/npmInstallTaskTerminal";
+import { LocalTunnelTaskTerminal } from "./taskTerminal/localTunnelTaskTerminal";
 import { SetUpTabTaskTerminal } from "./taskTerminal/setUpTabTaskTerminal";
 import { PrepareManifestTaskTerminal } from "./taskTerminal/prepareManifestTaskTerminal";
 import { SetUpSSOTaskTerminal } from "./taskTerminal/setUpSSOTaskTerminal";
@@ -48,6 +49,10 @@ const customTasks = Object.freeze({
   "debug-npm-install": {
     createTerminal: (d: vscode.TaskDefinition) => new NpmInstallTaskTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Never,
+  },
+  "debug-start-local-tunnel": {
+    createTerminal: (d: vscode.TaskDefinition) => new LocalTunnelTaskTerminal(d),
+    presentationReveal: vscode.TaskRevealKind.Always,
   },
   "debug-set-up-tab": {
     createTerminal: (d: vscode.TaskDefinition) => new SetUpTabTaskTerminal(d),

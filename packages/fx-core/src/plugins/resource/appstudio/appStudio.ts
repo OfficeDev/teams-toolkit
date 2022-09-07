@@ -133,6 +133,35 @@ export namespace AppStudioClient {
   }
 
   /**
+   * Check if app exists in the user's organization by the Teams app id
+   * @param teamsAppId
+   * @param appStudioToken
+   * @param logProvider
+   * @returns
+   */
+  export async function checkExistsInTenant(
+    teamsAppId: string,
+    appStudioToken: string,
+    logProvider?: LogProvider
+  ): Promise<boolean> {
+    const requester = createRequesterWithToken(appStudioToken);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.get(`/api/appdefinitions/manifest/${teamsAppId}`)
+      );
+
+      if (response && response.data) {
+        return <boolean>response.data;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      wrapException(e, APP_STUDIO_API_NAMES.EXISTS_IN_TENANTS);
+      return false;
+    }
+  }
+
+  /**
    * Publish Teams app to Teams App Catalog
    * @param teamsAppId
    * @param file

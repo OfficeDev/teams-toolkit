@@ -4,7 +4,6 @@ import {
   err,
   FxError,
   ok,
-  Platform,
   Result,
   UserError,
 } from "@microsoft/teamsfx-api";

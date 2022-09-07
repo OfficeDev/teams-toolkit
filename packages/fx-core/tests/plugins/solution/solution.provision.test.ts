@@ -102,8 +102,7 @@ import * as backup from "../../../src/plugins/solution/fx-solution/utils/backupF
 import { resourceGroupHelper } from "../../../src/plugins/solution/fx-solution/utils/ResourceGroupHelper";
 import * as manifestTemplate from "../../../src/plugins/resource/appstudio/manifestTemplate";
 import { SolutionRunningState } from "../../../src/plugins/solution/fx-solution/types";
-import mockedEnv from "mocked-env";
-import { askForProvisionConsentNew } from "../../../src/plugins/solution/fx-solution/v2/provision";
+import { provisionUtils } from "../../../src/component/provisionUtils";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -1084,7 +1083,7 @@ describe("API v2 implementation", () => {
       expect(mockedEnvInfo.state.solution.provisionSucceeded === true);
     });
 
-    it("provision after switch M365 account", async () => {
+    it("provision after switch Microsoft 365 account", async () => {
       const projectSettings: ProjectSettings = {
         appName: "my app",
         projectId: uuid.v4(),
@@ -1133,7 +1132,7 @@ describe("API v2 implementation", () => {
       expect(mockedEnvInfo.state.solution.provisionSucceeded).equals(true);
     });
 
-    it("provision after switch M365 account error when backup", async () => {
+    it("provision after switch Microsoft 365 account error when backup", async () => {
       const projectSettings: ProjectSettings = {
         appName: "my app",
         projectId: uuid.v4(),
@@ -1417,7 +1416,7 @@ describe("API v2 implementation", () => {
   });
 });
 
-describe("askForProvisionConsentNew", () => {
+describe("askForProvisionConsent", () => {
   const mocker = sinon.createSandbox();
   afterEach(() => {
     mocker.restore();
@@ -1470,7 +1469,7 @@ describe("askForProvisionConsentNew", () => {
     const m365AccountName = "m365Name";
 
     // Act
-    await askForProvisionConsentNew(
+    await provisionUtils.askForProvisionConsent(
       mockedCtx,
       mockedAzureTokenProvider,
       mockedEnvInfo as v3.EnvInfoV3,
@@ -1483,7 +1482,7 @@ describe("askForProvisionConsentNew", () => {
 
     // Assert
     const expectedAccountsInfo =
-      "Azure account: someUserName\nAzure subscription: subscriptionName\nM365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
+      "Azure account: someUserName\nAzure subscription: subscriptionName\nMicrosoft 365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
     expect(showMessageSpy.calledOnce).equal(true);
     expect(showMessageSpy.calledWithMatch("warn", expectedAccountsInfo, true, "Provision")).equal(
       true
@@ -1538,7 +1537,7 @@ describe("askForProvisionConsentNew", () => {
     const m365AccountName = "m365Name";
 
     // Act
-    const res = await askForProvisionConsentNew(
+    const res = await provisionUtils.askForProvisionConsent(
       mockedCtx,
       mockedAzureTokenProvider,
       mockedEnvInfo as v3.EnvInfoV3,
@@ -1552,7 +1551,7 @@ describe("askForProvisionConsentNew", () => {
 
     // Assert
     const expectedAccountsInfo =
-      "You are now using a different Microsoft 365 tenant from what you previously used.\nAzure account: someUserName\nAzure subscription: subscriptionName\nM365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
+      "You are now using a different Microsoft 365 tenant from what you previously used.\nAzure account: someUserName\nAzure subscription: subscriptionName\nMicrosoft 365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
     expect(showMessageSpy.calledOnce).equal(true);
     expect(
       showMessageSpy.calledWithMatch("warn", expectedAccountsInfo, true, "Provision", "Learn more")
@@ -1608,7 +1607,7 @@ describe("askForProvisionConsentNew", () => {
     const m365AccountName = "m365Name";
 
     // Act
-    const res = await askForProvisionConsentNew(
+    const res = await provisionUtils.askForProvisionConsent(
       mockedCtx,
       mockedAzureTokenProvider,
       mockedEnvInfo as v3.EnvInfoV3,
@@ -1622,7 +1621,7 @@ describe("askForProvisionConsentNew", () => {
 
     // Assert
     const expectedAccountsInfo =
-      "You are now using a different Azure subscription from what you previously used.\nAzure account: someUserName\nAzure subscription: subscriptionName\nM365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
+      "You are now using a different Azure subscription from what you previously used.\nAzure account: someUserName\nAzure subscription: subscriptionName\nMicrosoft 365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
     expect(showMessageSpy.calledOnce).equal(true);
     expect(
       showMessageSpy.calledWithMatch("warn", expectedAccountsInfo, true, "Provision", "Learn more")
@@ -1678,7 +1677,7 @@ describe("askForProvisionConsentNew", () => {
     const m365AccountName = "m365Name";
 
     // Act
-    const res = await askForProvisionConsentNew(
+    const res = await provisionUtils.askForProvisionConsent(
       mockedCtx,
       mockedAzureTokenProvider,
       mockedEnvInfo as v3.EnvInfoV3,
@@ -1692,7 +1691,7 @@ describe("askForProvisionConsentNew", () => {
 
     // Assert
     const expectedAccountsInfo =
-      "You are now using a different Microsoft 365 tenant and a differnt Azure subscription from what you previously used.\nAzure account: someUserName\nAzure subscription: subscriptionName\nM365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
+      "You are now using a different Microsoft 365 tenant and a differnt Azure subscription from what you previously used.\nAzure account: someUserName\nAzure subscription: subscriptionName\nMicrosoft 365 account: m365Name\n\nCost may incur according to the usage. Do you want to provision resources in dev environment using accounts listed above?";
     expect(showMessageSpy.calledOnce).equal(true);
     expect(
       showMessageSpy.calledWithMatch("warn", expectedAccountsInfo, true, "Provision", "Learn more")
@@ -1748,7 +1747,7 @@ describe("askForProvisionConsentNew", () => {
     const m365AccountName = "m365Name";
 
     // Act
-    const res = await askForProvisionConsentNew(
+    const res = await provisionUtils.askForProvisionConsent(
       mockedCtx,
       mockedAzureTokenProvider,
       mockedEnvInfo as v3.EnvInfoV3,
@@ -1762,7 +1761,7 @@ describe("askForProvisionConsentNew", () => {
 
     // Assert
     const expectedAccountsInfo =
-      "You are now using a different Microsoft 365 tenant from what you previously used.\nM365 account: m365Name\n\nDo you want to provision resources in dev environment using the account listed above?";
+      "You are now using a different Microsoft 365 tenant from what you previously used.\nMicrosoft 365 account: m365Name\n\nDo you want to provision resources in dev environment using the account listed above?";
     expect(showMessageSpy.calledOnce).equal(true);
     expect(
       showMessageSpy.calledWithMatch("warn", expectedAccountsInfo, true, "Provision", "Learn more")
@@ -1800,7 +1799,7 @@ describe("askForProvisionConsentNew", () => {
     const m365AccountName = "m365Name";
 
     // Act
-    const res = await askForProvisionConsentNew(
+    const res = await provisionUtils.askForProvisionConsent(
       mockedCtx,
       mockedAzureTokenProvider,
       mockedEnvInfo as v3.EnvInfoV3,
@@ -1846,7 +1845,7 @@ describe("askForProvisionConsentNew", () => {
     const m365AccountName = "m365Name";
 
     // Act
-    const res = await askForProvisionConsentNew(
+    const res = await provisionUtils.askForProvisionConsent(
       mockedCtx,
       mockedAzureTokenProvider,
       mockedEnvInfo as v3.EnvInfoV3,
@@ -1910,7 +1909,7 @@ describe("askForProvisionConsentNew", () => {
     const m365AccountName = "m365Name";
 
     // Act
-    const res = await askForProvisionConsentNew(
+    const res = await provisionUtils.askForProvisionConsent(
       mockedCtx,
       mockedAzureTokenProvider,
       mockedEnvInfo as v3.EnvInfoV3,
@@ -1971,7 +1970,7 @@ describe("askForProvisionConsentNew", () => {
     const m365AccountName = "m365Name";
 
     // Act
-    const res = await askForProvisionConsentNew(
+    const res = await provisionUtils.askForProvisionConsent(
       mockedCtx,
       mockedAzureTokenProvider,
       mockedEnvInfo as v3.EnvInfoV3,

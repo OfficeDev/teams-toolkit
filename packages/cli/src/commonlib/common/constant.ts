@@ -31,7 +31,8 @@ export const unknownSubscription = "UnknownSubscription";
 export const unknownSubscriptionDesc = "Cannot set subscription. Choose a correct subscription.";
 
 export const azureLoginMessage = "Log in to your Azure account - opening default web browser at ";
-export const m365LoginMessage = "Log in to your M365 account - opening default web browser at ";
+export const m365LoginMessage =
+  "Log in to your Microsoft 365 account - opening default web browser at ";
 
 export const changeLoginTenantMessage =
   "The following tenants require Multi-Factor Authentication (MFA). Use 'teamsfx account login azure --tenant TENANT_ID' to explicitly login to a tenant.";

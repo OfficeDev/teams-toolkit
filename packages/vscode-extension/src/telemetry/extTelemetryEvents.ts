@@ -192,12 +192,13 @@ export enum TelemetryEvent {
 
   ShowOutputChannel = "show-output-channel",
   OpenFolder = "open-folder",
+  ClickGetHelp = "click-get-help",
 
   // To track the effect of UX changes
   // that prevents user performing concurrent operations.
   TreeViewCommandConcurrentExecution = "treeview-command-concurrent-execution",
 
-  // To track the A/B test of opening in new window after creating a new project
+  // To track the event of opening in new window after creating a new project
   OpenNewProject = "open-new-project",
 
   // To track the A/B test of choosing folder
@@ -281,6 +282,8 @@ export enum TelemetryProperty {
   Timestamp = "timestamp",
   ProgrammingLanguage = "programming-language",
   HostType = "host-type",
+  // Used with ClickGetHelp
+  HelpLink = "help-link",
 }
 
 export enum TelemetryMeasurements {

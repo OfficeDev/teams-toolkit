@@ -218,8 +218,10 @@ export async function setupLocalEnvironmentCommon(
             return err(error);
           }
 
+          // validDomain is old style state key for backward compatibility
           envInfo.state[BOT_STATE_KEY].siteEndpoint = localBotEndpoint;
           envInfo.state[BOT_STATE_KEY].validDomain = localBotEndpoint.slice(8);
+          envInfo.state[BOT_STATE_KEY].domain = localBotEndpoint.slice(8);
         } else {
           const ngrokHttpUrl = await getNgrokHttpUrl(3978);
           if (!ngrokHttpUrl) {
@@ -229,6 +231,7 @@ export async function setupLocalEnvironmentCommon(
           } else {
             envInfo.state[BOT_STATE_KEY].siteEndpoint = ngrokHttpUrl;
             envInfo.state[BOT_STATE_KEY].validDomain = ngrokHttpUrl.slice(8);
+            envInfo.state[BOT_STATE_KEY].domain = ngrokHttpUrl.slice(8);
           }
         }
       }
@@ -249,6 +252,7 @@ export async function setupLocalEnvironmentCommon(
         } else {
           envInfo.state[BOT_STATE_KEY].siteEndpoint = ngrokHttpUrl;
           envInfo.state[BOT_STATE_KEY].validDomain = ngrokHttpUrl.slice(8);
+          envInfo.state[BOT_STATE_KEY].domain = ngrokHttpUrl.slice(8);
         }
       }
     }

@@ -8,9 +8,17 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as sinon from "sinon";
 import proxyquire from "proxyquire";
-
+import mockedEnv, { RestoreFn } from "mocked-env";
 chai.use(chaiAsPromised);
+let mockedEnvRestore: RestoreFn;
 
+beforeEach(() => {
+  mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "false" });
+});
+
+afterEach(() => {
+  mockedEnvRestore();
+});
 describe("portChecker", () => {
   const projectPath = path.resolve(__dirname, "data");
   const projectSettings0 = {
@@ -41,7 +49,11 @@ describe("portChecker", () => {
         "detect-port": async (port: number) => port,
       });
 
-      const ports = await portChecker.getPortsInUse(projectPath, projectSettings0);
+      const waitingCheckPorts = await portChecker.getPortsFromProject(
+        projectPath,
+        projectSettings0
+      );
+      const ports = await portChecker.getPortsInUse(waitingCheckPorts);
 
       chai.assert.isDefined(ports);
       chai.assert.equal(ports.length, 0);
@@ -56,7 +68,7 @@ describe("portChecker", () => {
       });
       const clock = sinon.useFakeTimers();
 
-      const portsPromise = portChecker.getPortsInUse(
+      const waitingCheckPorts = await portChecker.getPortsFromProject(
         projectPath,
         {
           appName: "unit-test0",
@@ -70,6 +82,7 @@ describe("portChecker", () => {
         },
         true
       );
+      const portsPromise = portChecker.getPortsInUse(waitingCheckPorts);
       clock.tick(30 * 1000);
       const ports = await portsPromise;
 
@@ -82,7 +95,11 @@ describe("portChecker", () => {
         "detect-port": async (port: number) => (port === 53000 ? 53001 : port),
       });
 
-      const ports = await portChecker.getPortsInUse(projectPath, projectSettings0);
+      const waitingCheckPorts = await portChecker.getPortsFromProject(
+        projectPath,
+        projectSettings0
+      );
+      const ports = await portChecker.getPortsInUse(waitingCheckPorts);
 
       chai.assert.isDefined(ports);
       chai.assert.deepEqual(ports, [53000]);
@@ -93,7 +110,11 @@ describe("portChecker", () => {
         "detect-port": async (port: number) => (port === 55000 ? 55001 : port),
       });
 
-      const ports = await portChecker.getPortsInUse(projectPath, projectSettings0);
+      const waitingCheckPorts = await portChecker.getPortsFromProject(
+        projectPath,
+        projectSettings0
+      );
+      const ports = await portChecker.getPortsInUse(waitingCheckPorts);
 
       chai.assert.isDefined(ports);
       chai.assert.deepEqual(ports, []);
@@ -117,7 +138,11 @@ describe("portChecker", () => {
         "detect-port": async (port: number) => (port === 9229 ? 9230 : port),
       });
 
-      const ports = await portChecker.getPortsInUse(projectPath, projectSettings0);
+      const waitingCheckPorts = await portChecker.getPortsFromProject(
+        projectPath,
+        projectSettings0
+      );
+      const ports = await portChecker.getPortsInUse(waitingCheckPorts);
 
       chai.assert.isDefined(ports);
       chai.assert.deepEqual(ports, [9229]);
@@ -141,7 +166,11 @@ describe("portChecker", () => {
         "detect-port": async (port: number) => (port === 9229 ? 9230 : port),
       });
 
-      const ports = await portChecker.getPortsInUse(projectPath, projectSettings0);
+      const waitingCheckPorts = await portChecker.getPortsFromProject(
+        projectPath,
+        projectSettings0
+      );
+      const ports = await portChecker.getPortsInUse(waitingCheckPorts);
 
       chai.assert.isDefined(ports);
       chai.assert.equal(ports.length, 0);
@@ -152,7 +181,12 @@ describe("portChecker", () => {
         "detect-port": async (port: number) => (port === 9229 ? 9230 : port),
       });
 
-      const ports = await portChecker.getPortsInUse(projectPath, projectSettings0, true);
+      const waitingCheckPorts = await portChecker.getPortsFromProject(
+        projectPath,
+        projectSettings0,
+        true
+      );
+      const ports = await portChecker.getPortsInUse(waitingCheckPorts);
 
       chai.assert.isDefined(ports);
       chai.assert.equal(ports.length, 0);

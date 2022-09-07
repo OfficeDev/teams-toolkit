@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "types": ["node"],
-    "module": "commonjs",
+    "module": "CommonJS",
     "target": "es2017",
     "outDir": "build",
     "lib": ["es6", "dom.iterable", "dom"],

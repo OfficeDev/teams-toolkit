@@ -18,6 +18,7 @@ import {
   cleanUp,
   readContextMultiEnv,
   getActivePluginsFromProjectSetting,
+  setProvisionParameterValue,
 } from "../commonUtils";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, PluginId, StateConfigKey } from "../../commonlib/constants";
@@ -58,6 +59,10 @@ describe("Blazor App", function () {
   it(`Provision Resource`, async () => {
     await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(projectPath, "");
+    await setProvisionParameterValue(projectPath, "dev", {
+      key: "webAppSKU",
+      value: "B1",
+    });
 
     const tokenProvider = MockAzureAccountProvider;
     const tokenCredential = await tokenProvider.getAccountCredentialAsync();
@@ -83,10 +88,6 @@ describe("Blazor App", function () {
     chai.assert.equal(
       response[FrontendWebAppConfig.clientSecret],
       await getExpectedM365ClientSecret(context, projectPath, envName, activeResourcePlugins)
-    );
-    chai.assert.include(
-      response[FrontendWebAppConfig.authEndpoint],
-      context[PluginId.FrontendHosting][StateConfigKey.frontendEndpoint]
     );
     chai.assert.equal(
       response[FrontendWebAppConfig.authority],

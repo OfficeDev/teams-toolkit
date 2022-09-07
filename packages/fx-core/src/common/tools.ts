@@ -71,9 +71,9 @@ import { isFeatureFlagEnabled } from "./featureFlags";
 import _ from "lodash";
 import { BotHostTypeName, BotHostTypes } from "./local/constants";
 import { isExistingTabApp } from "./projectSettingsHelper";
-import { ExistingTemplatesStat } from "../plugins/resource/cicd/utils/existingTemplatesStat";
+import { ExistingTemplatesStat } from "../component/feature/cicd/existingTemplatesStat";
 import { environmentManager } from "../core/environment";
-import { NoProjectOpenedError } from "../plugins/resource/cicd/errors";
+import { NoProjectOpenedError } from "../component/feature/cicd/errors";
 import { getProjectTemplatesFolderPath } from "./utils";
 import * as path from "path";
 import { isMiniApp } from "./projectSettingsHelperV3";
@@ -863,7 +863,11 @@ export async function getSideloadingStatus(token: string): Promise<boolean | und
             "UnknownValue",
             `AppStudio response code: ${response.status}, body: ${response.data}`
           ),
-          { [TelemetryProperty.CheckSideloadingHttpStatus]: `${response.status}` }
+          {
+            [TelemetryProperty.CheckSideloadingStatusCode]: `${response.status}`,
+            [TelemetryProperty.CheckSideloadingMethod]: "get",
+            [TelemetryProperty.CheckSideloadingUrl]: "<check-sideloading-status>",
+          }
         );
       }
 

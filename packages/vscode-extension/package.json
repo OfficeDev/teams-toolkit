@@ -26,7 +26,7 @@
   "keywords": [
     "Microsoft Teams",
     "Azure",
-    "M365"
+    "Microsoft 365"
   ],
   "preview": false,
   "categories": [
@@ -453,6 +453,11 @@
         "enablement": "never"
       },
       {
+        "command": "fx-extension.debug",
+        "title": "Teams - Preview your Teams app",
+        "enablement": "never"
+      },
+      {
         "command": "fx-extension.openDeploymentTreeview",
         "title": "Teams - Open Deployment Treeview",
         "enablement": "never"
@@ -731,7 +736,230 @@
         ],
         "properties": {
           "command": {
-            "type": "string"
+            "anyOf": [
+              {
+                "const": "debug-check-prerequisites",
+                "description": "%teamstoolkit.taskDefinitions.command.prerequisites.description%"
+              },
+              {
+                "const": "debug-npm-install",
+                "description": "%teamstoolkit.taskDefinitions.command.npmInstall.description%"
+              },
+              {
+                "const": "debug-start-local-tunnel",
+                "description": "%teamstoolkit.taskDefinitions.command.startLocalTunnel.description%"
+              },
+              {
+                "const": "debug-set-up-tab",
+                "description": "%teamstoolkit.taskDefinitions.command.tab.description%"
+              },
+              {
+                "const": "debug-set-up-bot",
+                "description": "%teamstoolkit.taskDefinitions.command.bot.description%"
+              },
+              {
+                "const": "debug-set-up-sso",
+                "description": "%teamstoolkit.taskDefinitions.command.sso.description%"
+              },
+              {
+                "const": "debug-prepare-manifest",
+                "description": "%teamstoolkit.taskDefinitions.command.manifest.description%"
+              }
+            ]
+          },
+          "args": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "prerequisites"
+                ],
+                "properties": {
+                  "prerequisites": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "anyOf": [
+                        {
+                          "const": "nodejs",
+                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.nodejsTitle%"
+                        },
+                        {
+                          "const": "m365Account",
+                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.m365AccountTitle%"
+                        },
+                        {
+                          "const": "devCert",
+                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.devCertTitle%"
+                        },
+                        {
+                          "const": "func",
+                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.funcTitle%"
+                        },
+                        {
+                          "const": "ngrok",
+                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.ngrokTitle%"
+                        },
+                        {
+                          "const": "dotnet",
+                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.dotnetTitle%"
+                        },
+                        {
+                          "const": "ports",
+                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.portsTitle%"
+                        }
+                      ]
+                    }
+                  },
+                  "ports": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "prerequisites": {
+                      "contains": {
+                        "const": "ports"
+                      }
+                    }
+                  }
+                },
+                "then": {
+                  "required": [
+                    "ports"
+                  ]
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "required": [
+                  "projects"
+                ],
+                "properties": {
+                  "projects": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "cwd"
+                      ],
+                      "properties": {
+                        "cwd": {
+                          "type": "string"
+                        },
+                        "npmInstallArgs": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "forceUpdate": {
+                    "type": "boolean",
+                    "default": false
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "baseUrl"
+                ],
+                "properties": {
+                  "baseUrl": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.tab.baseUrlTitle%"
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "required": [
+                  "botMessagingEndpoint"
+                ],
+                "properties": {
+                  "botId": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.bot.botIdTitle%"
+                  },
+                  "botPassword": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.bot.botPasswordTitle%"
+                  },
+                  "botMessagingEndpoint": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.bot.botMessagingEndpointTitle%"
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "objectId": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.sso.objectIdTitle%"
+                  },
+                  "clientId": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.sso.clientIdTitle%"
+                  },
+                  "clientSecret": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.sso.clientSecretTitle%"
+                  },
+                  "accessAsUserScopeId": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.sso.accessAsUserScopeIdTitle%"
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "manifestPackagePath": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.manifest.manifestPackagePathTitle%"
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "required": [
+                  "configFile"
+                ],
+                "properties": {
+                  "configFile": {
+                    "type": "string",
+                    "anyOf": [
+                      {
+                        "const": "${teamsfx:workspaceFolder}/.fx/configs/ngrok.yml"
+                      },
+                      {}
+                    ]
+                  },
+                  "binFolder": {
+                    "type": "string",
+                    "anyOf": [
+                      {
+                        "const": "${teamsfx:ngrokBinFolder}"
+                      },
+                      {}
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            ]
           }
         }
       }
@@ -998,8 +1226,8 @@
           },
           {
             "id": "teamsToolkitCreateFreeAccount",
-            "title": "Create a M365 testing tenant for free",
-            "description": "Create a free M365 testing tenant to install and preview your Teams apps in Teams.\n If you already have an M365 organizational account, [sign in to M365](command:fx-extension.signinM365?%5B%22WalkThrough%22%5D) and validate [sideloading](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) is enabled.\n[Create a M365 testing tenant](https://developer.microsoft.com/en-us/microsoft-365/dev-program)",
+            "title": "Create a Microsoft 365 testing tenant for free",
+            "description": "Create a free Microsoft 365 testing tenant to install and preview your Teams apps in Teams.\n If you already have a Microsoft 365 organizational account, [sign in to Microsoft 365](command:fx-extension.signinM365?%5B%22WalkThrough%22%5D) and validate [sideloading](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) is enabled.\n[Create a Microsoft 365 testing tenant](https://developer.microsoft.com/en-us/microsoft-365/dev-program)",
             "media": {
               "markdown": "media/itp/itp.md"
             }
@@ -1007,7 +1235,7 @@
           {
             "id": "teamsToolkitPreview",
             "title": "Preview your Teams app locally",
-            "description": "Press [F5](command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D) or discover '[Run and Debug](command:workbench.view.debug)' panel on the activity bar, and click the play icon to locally preview your app in Teams context.\n[Run local preview (F5)](command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D)\n__Tip: To run local preview, sign in to M365 (organizational account) with sideloading option.__",
+            "description": "Press [F5](command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D) or discover '[Run and Debug](command:workbench.view.debug)' panel on the activity bar, and click the play icon to locally preview your app in Teams context.\n[Run local preview (F5)](command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D)\n__Tip: To run local preview, sign in to Microsoft 365 (organizational account) with sideloading option.__",
             "media": {
               "svg": "media/walkthrough/F5.svg",
               "altText": "Preview your Teams app locally"
@@ -1116,7 +1344,6 @@
     "mock-require": "^3.0.3",
     "ms-rest": "^2.5.4",
     "node-loader": "^2.0.0",
-    "node-sass": "^7.0.1",
     "nyc": "^15.1.0",
     "prettier": "^2.4.1",
     "react": "^17.0.2",

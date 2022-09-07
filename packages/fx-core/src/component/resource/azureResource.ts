@@ -15,7 +15,9 @@ import fs from "fs-extra";
 import * as path from "path";
 import "reflect-metadata";
 import { compileHandlebarsTemplateString } from "../../common/tools";
+import { CoreQuestionNames } from "../../core/question";
 import { getTemplatesFolder } from "../../folder";
+import { languageToRuntime } from "../constants";
 
 export abstract class AzureResource implements CloudResource {
   abstract readonly name: string;
@@ -23,7 +25,6 @@ export abstract class AzureResource implements CloudResource {
   abstract readonly outputs: ResourceOutputs;
   abstract readonly finalOutputKeys: string[];
   templateContext: Record<string, any> = {};
-  getTemplateContext?: (context: ContextV3, inputs: InputsWithProjectPath) => Record<string, any>;
 
   async generateBicep(
     context: ContextV3,
@@ -39,11 +40,14 @@ export abstract class AzureResource implements CloudResource {
       "bicep",
       `${this.bicepModuleName}.provision.orchestration.bicep`
     );
-    if (this.getTemplateContext) {
-      try {
-        this.templateContext = this.getTemplateContext(context, inputs);
-      } catch {}
-    }
+    const configs: string[] = [];
+    configs.push(
+      languageToRuntime.get(
+        context.projectSetting.programmingLanguage ||
+          inputs?.[CoreQuestionNames.ProgrammingLanguage]
+      ) ?? ""
+    );
+    this.templateContext.configs = configs;
     const moduleName = this.bicepModuleName + (inputs.scenario || "");
     this.templateContext.componentId = inputs.componentId || "";
     this.templateContext.scenario = inputs.scenario || "";

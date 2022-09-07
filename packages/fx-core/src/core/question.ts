@@ -20,7 +20,11 @@ import { environmentManager } from "./environment";
 import { ConstantString } from "../common/constants";
 import { sampleProvider } from "../common/samples";
 import { isAadManifestEnabled, isExistingTabAppEnabled, isM365AppEnabled } from "../common/tools";
-import { isBotNotificationEnabled, isPreviewFeaturesEnabled } from "../common/featureFlags";
+import {
+  isBotNotificationEnabled,
+  isPreviewFeaturesEnabled,
+  isWorkflowBotEnabled,
+} from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import {
   BotOptionItem,
@@ -37,6 +41,7 @@ import {
   TabSPFxNewUIItem,
   MessageExtensionNewUIItem,
   BotNewUIOptionItem,
+  WorkflowOptionItem,
 } from "../plugins/solution/fx-solution/question";
 import { resourceGroupHelper } from "../plugins/solution/fx-solution/utils/ResourceGroupHelper";
 import { ResourceManagementClient } from "@azure/arm-resources";
@@ -261,8 +266,12 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
   let staticOptions: StaticOptions;
   if (isBotNotificationEnabled()) {
     // new capabilities question order
+    const newBots = isWorkflowBotEnabled()
+      ? [NotificationOptionItem, CommandAndResponseOptionItem, WorkflowOptionItem]
+      : [NotificationOptionItem, CommandAndResponseOptionItem];
+
     staticOptions = [
-      ...[CommandAndResponseOptionItem, NotificationOptionItem],
+      ...newBots,
       ...(isExistingTabAppEnabled() ? [ExistingTabOptionItem] : []),
       ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
       ...[TabNewUIOptionItem, TabSPFxNewUIItem, MessageExtensionNewUIItem],
@@ -310,9 +319,12 @@ export function createCapabilityForDotNet(): SingleSelectQuestion {
 
 export function createCapabilityQuestionPreview(): SingleSelectQuestion {
   // new capabilities question order
+  const newBots = isWorkflowBotEnabled()
+    ? [NotificationOptionItem, CommandAndResponseOptionItem, WorkflowOptionItem]
+    : [NotificationOptionItem, CommandAndResponseOptionItem];
+
   const staticOptions: StaticOptions = [
-    NotificationOptionItem,
-    CommandAndResponseOptionItem,
+    ...newBots,
     TabNewUIOptionItem,
     TabSPFxNewUIItem,
     TabNonSsoItem,
@@ -323,7 +335,7 @@ export function createCapabilityQuestionPreview(): SingleSelectQuestion {
   ];
 
   if (isExistingTabAppEnabled()) {
-    staticOptions.splice(2, 0, ExistingTabOptionItem);
+    staticOptions.splice(newBots.length, 0, ExistingTabOptionItem);
   }
 
   return {
@@ -347,6 +359,7 @@ export function validateCapabilities(inputs: string[]): string | undefined {
       new Set([BotOptionItem.id, MessageExtensionItem.id]),
       new Set([NotificationOptionItem.id]),
       new Set([CommandAndResponseOptionItem.id]),
+      new Set([WorkflowOptionItem.id]),
     ],
     set
   );
@@ -360,6 +373,7 @@ export function validateCapabilities(inputs: string[]): string | undefined {
         MessageExtensionItem.id,
         NotificationOptionItem.id,
         CommandAndResponseOptionItem.id,
+        WorkflowOptionItem.id,
       ]),
       new Set([TabSPFxItem.id]),
     ],
@@ -378,6 +392,7 @@ export function validateCapabilities(inputs: string[]): string | undefined {
         MessageExtensionItem.id,
         NotificationOptionItem.id,
         CommandAndResponseOptionItem.id,
+        WorkflowOptionItem.id,
         ExistingTabOptionItem.id,
       ]),
       new Set([M365SsoLaunchPageOptionItem.id]),
@@ -397,6 +412,7 @@ export async function onChangeSelectionForCapabilities(
       new Set([BotOptionItem.id, MessageExtensionItem.id]),
       new Set([NotificationOptionItem.id]),
       new Set([CommandAndResponseOptionItem.id]),
+      new Set([WorkflowOptionItem.id]),
     ],
     previousSelectedIds,
     currentSelectedIds
@@ -410,6 +426,7 @@ export async function onChangeSelectionForCapabilities(
         MessageExtensionItem.id,
         NotificationOptionItem.id,
         CommandAndResponseOptionItem.id,
+        WorkflowOptionItem.id,
       ]),
       new Set([TabSPFxItem.id]),
       new Set([ExistingTabOptionItem.id]),

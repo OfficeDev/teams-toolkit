@@ -7,7 +7,7 @@ import sinon from "sinon";
 import path from "path";
 import * as os from "os";
 import fs from "fs-extra";
-import _, { findLastKey } from "lodash";
+import _ from "lodash";
 import AdmZip from "adm-zip";
 import {
   ContextV3,
@@ -16,7 +16,6 @@ import {
   ResourceContextV3,
   TeamsAppManifest,
   ok,
-  InputResult,
   SingleSelectResult,
 } from "@microsoft/teamsfx-api";
 import { randomAppName, MockLogProvider, MockTools } from "../../../core/utils";
@@ -30,9 +29,10 @@ import { AppStudioClient } from "../../../../src/plugins/resource/appstudio/appS
 import { Constants } from "../../../../src/plugins/resource/appstudio/constants";
 import { autoPublishOption } from "../../../../src/plugins/resource/appstudio/questions";
 import { PublishingState } from "../../../../src/plugins/resource/appstudio/interfaces/IPublishingAppDefinition";
-import * as appstudio from "../../../../src/component/resource/appManifest/appStudio";
-import * as utils from "../../../../src/component/resource/appManifest/utils";
 import { getAzureProjectRoot } from "../../../plugins/resource/appstudio/helper";
+import { manifestUtils } from "../../../../src/component/resource/appManifest/utils";
+import { TEAMS_APP_MANIFEST_TEMPLATE } from "../../../../src/component/resource/appManifest/constants";
+import * as uuid from "uuid";
 
 describe("App-manifest Component", () => {
   const sandbox = sinon.createSandbox();
@@ -78,7 +78,7 @@ describe("App-manifest Component", () => {
   });
 
   it("validate manifest", async function () {
-    sandbox.stub(appstudio, "getManifest").resolves(ok(new TeamsAppManifest()));
+    sandbox.stub(manifestUtils, "getManifest").resolves(ok(new TeamsAppManifest()));
     const validationAction = await component.validate(context as ResourceContextV3, inputs);
     chai.assert.isTrue(validationAction.isOk());
   });
@@ -86,7 +86,7 @@ describe("App-manifest Component", () => {
   it("validation manifest - without schema", async function () {
     const manifest = new TeamsAppManifest();
     manifest.$schema = undefined;
-    sandbox.stub(appstudio, "getManifest").resolves(ok(manifest));
+    sandbox.stub(manifestUtils, "getManifest").resolves(ok(manifest));
     const validationAction = await component.validate(context as ResourceContextV3, inputs);
     chai.assert.isTrue(validationAction.isErr());
     if (validationAction.isErr()) {
@@ -96,11 +96,43 @@ describe("App-manifest Component", () => {
 
   it("build", async function () {
     const manifest = new TeamsAppManifest();
+    manifest.icons.color = "resources/color.png";
+    manifest.icons.outline = "resources/outline.png";
     manifest.id = "";
-    sandbox.stub(appstudio, "getManifest").resolves(ok(manifest));
+    sandbox.stub(manifestUtils, "getManifest").resolves(ok(manifest));
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "writeFile").resolves();
     sandbox.stub(fs, "chmod").resolves();
+
+    const buildAction = await component.build(context as ResourceContextV3, inputs);
+    chai.assert(buildAction.isOk());
+  });
+
+  it("build for SPFx project", async function () {
+    const manifest = new TeamsAppManifest();
+    manifest.icons.color = "resources/color.png";
+    manifest.icons.outline = "resources/outline.png";
+    manifest.id = "";
+    context.projectSetting!["solutionSettings"] = {
+      name: "fx-solution-azure",
+      activeResourcePlugins: "fx-resource-spfx",
+    };
+    const webpartId1 = uuid.v4();
+    const webpartId2 = uuid.v4();
+    sandbox.stub(manifestUtils, "getManifest").resolves(ok(manifest));
+    sandbox.stub(fs, "pathExists").resolves(true);
+    const stubWriteFile = sandbox.stub(fs, "writeFile").resolves();
+    sandbox.stub(fs, "chmod").resolves();
+    sandbox.stub(fs, "copyFile").resolves();
+    sandbox
+      .stub(fs, "readdir")
+      .resolves([
+        `${webpartId1}_color.png`,
+        `${webpartId1}_outline.png`,
+        `${webpartId2}_color.png`,
+        `${webpartId2}_outline.png`,
+      ] as any);
+    sandbox.stub(fs, "readFile").resolves();
 
     const buildAction = await component.build(context as ResourceContextV3, inputs);
     chai.assert(buildAction.isOk());
@@ -118,7 +150,7 @@ describe("App-manifest Component", () => {
 
   it("deploy - preivew only", async function () {
     const manifest = new TeamsAppManifest();
-    sandbox.stub(utils, "readAppManifest").resolves(ok(manifest));
+    sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readJSON").resolves(manifest);
     sandbox.stub(fs, "readFile").resolves(new Buffer(JSON.stringify(manifest)));
@@ -133,7 +165,7 @@ describe("App-manifest Component", () => {
 
   it.skip("deploy - succeed", async function () {
     const manifest = new TeamsAppManifest();
-    sandbox.stub(utils, "readAppManifest").resolves(ok(manifest));
+    sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readJSON").resolves(manifest);
     sandbox.stub(fs, "readFile").resolves(new Buffer(JSON.stringify(manifest)));
@@ -161,7 +193,7 @@ describe("App-manifest Component", () => {
     manifest.icons.color = "resources/color.png";
     manifest.icons.outline = "resources/outline.png";
 
-    sandbox.stub(utils, "readAppManifest").resolves(ok(manifest));
+    sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "writeFile").resolves();
     sandbox.stub(fs, "chmod").resolves();
@@ -264,9 +296,10 @@ describe("App-manifest Component", () => {
       },
       "aad-app": {
         clientId: "aaaaaaaaaaa-aaaaaaaaaaa-aaaaaaaa",
+        applicationIdUris: "https://aas-bcc",
       },
     };
-    const getManifestRes = await appstudio.getManifest("", envInfo);
+    const getManifestRes = await manifestUtils.getManifest("", envInfo, false);
     chai.assert(getManifestRes.isOk());
     if (getManifestRes.isOk()) {
       const finalManifest = getManifestRes.value;
@@ -346,12 +379,13 @@ describe("App-manifest Component", () => {
       },
       "aad-app": {
         clientId: "aaaaaaaaaaa-aaaaaaaaaaa-aaaaaaaa",
+        applicationIdUris: "https://aas-bcc",
       },
       "teams-bot": {
         botId: "bbbbcccccc",
       },
     };
-    const getManifestRes = await appstudio.getManifest("", envInfo);
+    const getManifestRes = await manifestUtils.getManifest("", envInfo, false);
     chai.assert(getManifestRes.isErr());
   });
 
@@ -426,13 +460,14 @@ describe("App-manifest Component", () => {
       },
       "aad-app": {
         clientId: "aaaaaaaaaaa-aaaaaaaaaaa-aaaaaaaa",
+        applicationIdUris: "https://aas-bcc",
       },
       "teams-bot": {
         botId: "bbbbcccccc",
         validDomain: "abc.com",
       },
     };
-    const getManifestRes = await appstudio.getManifest("", envInfo);
+    const getManifestRes = await manifestUtils.getManifest("", envInfo, false);
     chai.assert(getManifestRes.isOk());
     if (getManifestRes.isOk()) {
       const finalManifest = getManifestRes.value;

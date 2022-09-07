@@ -2,23 +2,26 @@
 // Licensed under the MIT license.
 
 import { IBot, IComposeExtension, IConfigurableTab, IStaticTab } from "@microsoft/teamsfx-api";
+import { isV3 } from "../../../core/globalVars";
+import { BuiltInFeaturePluginNames } from "../../../plugins/solution/fx-solution/v3/constants";
+import { ComponentNames } from "../../constants";
 
-export const TAB_COMPONENT_NAME = "teams-tab";
-export const App_MANIFEST_COMPONENT_NAME = "app-manifest";
-export const AAD_COMPONENT_NAME = "aad-app";
-export const BOT_COMPONENT_NAME = "teams-bot";
+const AAD_STATE_KEY = isV3() ? ComponentNames.AadApp : BuiltInFeaturePluginNames.aad;
+const TAB_STATE_KEY = isV3() ? ComponentNames.TeamsTab : BuiltInFeaturePluginNames.frontend;
+const BOT_STATE_KEY = isV3() ? ComponentNames.TeamsBot : BuiltInFeaturePluginNames.bot;
+const APP_MANIFEST_KEY = isV3() ? ComponentNames.AppManifest : BuiltInFeaturePluginNames.appStudio;
 
 export const TEAMS_APP_MANIFEST_TEMPLATE = `{
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.14/MicrosoftTeams.schema.json",
   "manifestVersion": "1.14",
   "version": "1.0.0",
-  "id": "{{state.${App_MANIFEST_COMPONENT_NAME}.teamsAppId}}",
+  "id": "{{state.${APP_MANIFEST_KEY}.teamsAppId}}",
   "packageName": "com.microsoft.teams.extension",
   "developer": {
       "name": "Teams App, Inc.",
-      "websiteUrl": "{{{state.${TAB_COMPONENT_NAME}.endpoint}}}",
-      "privacyUrl": "{{{state.${TAB_COMPONENT_NAME}.endpoint}}}{{{state.${TAB_COMPONENT_NAME}.indexPath}}}/privacy",
-      "termsOfUseUrl": "{{{state.${TAB_COMPONENT_NAME}.endpoint}}}{{{state.${TAB_COMPONENT_NAME}.indexPath}}}/termsofuse"
+      "websiteUrl": "{{{state.${TAB_STATE_KEY}.endpoint}}}",
+      "privacyUrl": "{{{state.${TAB_STATE_KEY}.endpoint}}}{{{state.${TAB_STATE_KEY}.indexPath}}}/privacy",
+      "termsOfUseUrl": "{{{state.${TAB_STATE_KEY}.endpoint}}}{{{state.${TAB_STATE_KEY}.indexPath}}}/termsofuse"
   },
   "icons": {
       "color": "{{config.manifest.icons.color}}",
@@ -48,21 +51,21 @@ export const STATIC_TABS_TPL_V3: IStaticTab[] = [
   {
     entityId: "index",
     name: "Personal Tab",
-    contentUrl: `{{{state.${TAB_COMPONENT_NAME}.endpoint}}}{{{state.${TAB_COMPONENT_NAME}.indexPath}}}/tab`,
-    websiteUrl: `{{{state.${TAB_COMPONENT_NAME}.endpoint}}}{{{state.${TAB_COMPONENT_NAME}.indexPath}}}/tab`,
+    contentUrl: `{{{state.${TAB_STATE_KEY}.endpoint}}}{{{state.${TAB_STATE_KEY}.indexPath}}}/tab`,
+    websiteUrl: `{{{state.${TAB_STATE_KEY}.endpoint}}}{{{state.${TAB_STATE_KEY}.indexPath}}}/tab`,
     scopes: ["personal"],
   },
 ];
 
 export const CONFIGURABLE_TABS_TPL_V3: IConfigurableTab[] = [
   {
-    configurationUrl: `{{{state.${TAB_COMPONENT_NAME}.endpoint}}}{{{state.${TAB_COMPONENT_NAME}.indexPath}}}/config`,
+    configurationUrl: `{{{state.${TAB_STATE_KEY}.endpoint}}}{{{state.${TAB_STATE_KEY}.indexPath}}}/config`,
     canUpdateConfiguration: true,
     scopes: ["team", "groupchat"],
   },
 ];
 
-export const BOT_ID_PLACEHOLDER = `{{state.${BOT_COMPONENT_NAME}.botId}}`;
+export const BOT_ID_PLACEHOLDER = `{{state.${BOT_STATE_KEY}.botId}}`;
 
 export const BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3: IBot[] = [
   {
@@ -191,8 +194,8 @@ export const COMPOSE_EXTENSIONS_TPL_V3: IComposeExtension[] = [
 ];
 
 export const WEB_APPLICATION_INFO_V3 = {
-  id: `{{state.${AAD_COMPONENT_NAME}.clientId}}`,
-  resource: `{{{state.${AAD_COMPONENT_NAME}.applicationIdUris}}}`,
+  id: `{{state.${AAD_STATE_KEY}.clientId}}`,
+  resource: `{{{state.${AAD_STATE_KEY}.applicationIdUris}}}`,
 };
 
 export function getAppStudioEndpoint(): string {

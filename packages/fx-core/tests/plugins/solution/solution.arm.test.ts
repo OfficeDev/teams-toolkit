@@ -603,6 +603,7 @@ Mocked bot configuration orchestration content. Module path: './teamsFx/botConfi
 describe("Deploy ARM Template to Azure", () => {
   const mocker = sinon.createSandbox();
   let mockedCtx: SolutionContext;
+  let bicepCommand: string;
   const mockedArmTemplateOutput = {
     provisionOutput: {
       type: "Object",
@@ -626,6 +627,7 @@ describe("Deploy ARM Template to Azure", () => {
   };
 
   beforeEach(async () => {
+    mocker.stub(tools, "waitSeconds").resolves();
     mockedCtx = TestHelper.mockSolutionContext();
     mockedCtx.projectSettings!.solutionSettings = {
       hostType: HostTypeOptionAzure.id,
@@ -658,6 +660,7 @@ describe("Deploy ARM Template to Azure", () => {
         }
       )
     );
+    bicepCommand = await bicepChecker.ensureBicep(mockedCtx);
   });
 
   afterEach(async () => {
@@ -666,6 +669,7 @@ describe("Deploy ARM Template to Azure", () => {
   });
 
   it("should fail when main.bicep do not exist", async () => {
+    mocker.stub(bicepChecker, "ensureBicep").resolves(bicepCommand);
     // Act
     const result = await deployArmTemplates(mockedCtx);
 
@@ -687,6 +691,7 @@ describe("Deploy ARM Template to Azure", () => {
 
     let parameterAfterDeploy = "";
     let armTemplateJson = "";
+    mocker.stub(bicepChecker, "ensureBicep").resolves(bicepCommand);
     mocker
       .stub(Deployments.prototype, "createOrUpdate")
       .callsFake(
@@ -765,6 +770,7 @@ describe("Deploy ARM Template to Azure", () => {
     );
 
     let usedExistingParameterDefaultFile = false;
+    mocker.stub(bicepChecker, "ensureBicep").resolves(bicepCommand);
     mocker
       .stub(Deployments.prototype, "createOrUpdate")
       .callsFake(
@@ -887,6 +893,8 @@ describe("Deploy ARM Template to Azure", () => {
     };
     mocker.stub(Deployments.prototype, "createOrUpdate").throwsException(thrownError);
     mocker.stub(arm, "wrapGetDeploymentError").resolves(ok(fetchError));
+    mocker.stub(arm, "pollDeploymentStatus").resolves();
+    mocker.stub(bicepChecker, "ensureBicep").resolves(bicepCommand);
 
     // Act
     const result = await deployArmTemplates(mockedCtx);

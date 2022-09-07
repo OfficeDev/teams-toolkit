@@ -25,9 +25,13 @@ import { DialogContext } from 'botbuilder-dialogs';
 import { DialogTurnResult } from 'botbuilder-dialogs';
 import { GetTokenOptions } from '@azure/identity';
 import { HeroCard } from 'botbuilder';
+import { IAdaptiveCard } from 'adaptivecards';
+import { InvokeResponse } from 'botbuilder-core';
+import { InvokeResponse as InvokeResponse_2 } from 'botbuilder';
 import { O365ConnectorCard } from 'botbuilder';
 import { ReceiptCard } from 'botbuilder';
 import { SecureContextOptions } from 'tls';
+import { StatusCodes } from 'botbuilder';
 import { TeamsChannelAccount } from 'botbuilder';
 import { ThumbnailCard } from 'botbuilder';
 import { TokenCredential } from '@azure/identity';
@@ -36,6 +40,13 @@ import { TurnContext } from 'botbuilder-core';
 import { TurnContext as TurnContext_2 } from 'botbuilder';
 import { WebRequest } from 'botbuilder';
 import { WebResponse } from 'botbuilder';
+
+// @public
+export enum AdaptiveCardResponse {
+    NewForAll = 2,
+    ReplaceForAll = 1,
+    ReplaceForInteractor = 0
+}
 
 // @public
 export enum ApiKeyLocation {
@@ -86,6 +97,18 @@ export class BearerTokenAuthProvider implements AuthProvider {
 }
 
 // @public
+export class CardActionBot {
+    constructor(adapter: BotFrameworkAdapter, options?: CardActionOptions);
+    registerHandler(actionHandler: TeamsFxAdaptiveCardActionHandler): void;
+    registerHandlers(actionHandlers: TeamsFxAdaptiveCardActionHandler[]): void;
+}
+
+// @public
+export interface CardActionOptions {
+    actions?: TeamsFxAdaptiveCardActionHandler[];
+}
+
+// @public
 export class CertificateAuthProvider implements AuthProvider {
     constructor(certOption: SecureContextOptions);
     AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig>;
@@ -124,6 +147,7 @@ export interface CommandOptions {
 export class ConversationBot {
     constructor(options: ConversationOptions);
     readonly adapter: BotFrameworkAdapter;
+    readonly cardAction?: CardActionBot;
     readonly command?: CommandBot;
     readonly notification?: NotificationBot;
     requestHandler(req: WebRequest, res: WebResponse, logic?: (context: TurnContext_2) => Promise<any>): Promise<void>;
@@ -134,6 +158,9 @@ export interface ConversationOptions {
     adapter?: BotFrameworkAdapter;
     adapterConfig?: {
         [key: string]: unknown;
+    };
+    cardAction?: CardActionOptions & {
+        enabled?: boolean;
     };
     command?: CommandOptions & {
         enabled?: boolean;
@@ -202,6 +229,20 @@ export function getTediousConnectionConfig(teamsfx: TeamsFx, databaseName?: stri
 export enum IdentityType {
     App = "Application",
     User = "User"
+}
+
+// @public
+export enum InvokeResponseErrorCode {
+    BadRequest = 400,
+    InternalServerError = 500
+}
+
+// @public
+export class InvokeResponseFactory {
+    static adaptiveCard(card: IAdaptiveCard): InvokeResponse_2;
+    static createInvokeResponse(statusCode: StatusCodes, body?: unknown): InvokeResponse_2;
+    static errorResponse(errorCode: InvokeResponseErrorCode, errorMessage: string): InvokeResponse_2;
+    static textMessage(message: string): InvokeResponse_2;
 }
 
 // @public
@@ -348,7 +389,7 @@ export interface TeamsBotSsoPromptTokenResponse extends TokenResponse {
 
 // @public
 export class TeamsFx implements TeamsFxConfiguration {
-    constructor(identityType?: IdentityType, customConfig?: Record<string, string>);
+    constructor(identityType?: IdentityType, customConfig?: Record<string, string> | AuthenticationConfiguration);
     getConfig(key: string): string;
     getConfigs(): Record<string, string>;
     getCredential(): TokenCredential;
@@ -357,6 +398,13 @@ export class TeamsFx implements TeamsFxConfiguration {
     hasConfig(key: string): boolean;
     login(scopes: string | string[], resources?: string[]): Promise<void>;
     setSsoToken(ssoToken: string): TeamsFx;
+}
+
+// @public
+export interface TeamsFxAdaptiveCardActionHandler {
+    adaptiveCardResponse?: AdaptiveCardResponse;
+    handleActionInvoked(context: TurnContext, actionData: any): Promise<InvokeResponse>;
+    triggerVerb: string;
 }
 
 // @public

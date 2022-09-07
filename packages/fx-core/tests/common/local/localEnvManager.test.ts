@@ -5,17 +5,14 @@ import "mocha";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 
-import { UserError, Result, ok } from "@microsoft/teamsfx-api";
-import * as fs from "fs-extra";
+import { UserError, ok } from "@microsoft/teamsfx-api";
+import fs from "fs-extra";
 import * as path from "path";
 
+import * as tools from "../../../src/common/tools";
 import { LocalEnvManager } from "../../../src/common/local/localEnvManager";
-import { DepsInfo, DepsType } from "../../../src/common/deps-checker/depsChecker";
+import { DepsType } from "../../../src/common/deps-checker/depsChecker";
 import sinon from "sinon";
-import { DotnetChecker } from "../../../src/common/deps-checker/internal/dotnetChecker";
-import { NgrokChecker } from "../../../src/common/deps-checker/internal/ngrokChecker";
-import { FuncToolChecker } from "../../../src/common/deps-checker/internal/funcToolChecker";
-import { DepsCheckerError } from "../../../src/common/deps-checker/depsError";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { environmentManager } from "../../../src";
 
@@ -53,8 +50,30 @@ describe("LocalEnvManager", () => {
   });
 
   describe("getProjectSettings()", () => {
+    const sandbox = sinon.createSandbox();
+    let files: Record<string, any> = {};
+
+    beforeEach(() => {
+      files = {};
+      sandbox.restore();
+      sandbox.stub(fs, "pathExists").callsFake(async (file: string) => {
+        return Promise.resolve(files[path.resolve(file)] !== undefined);
+      });
+      sandbox.stub(fs, "writeFile").callsFake(async (file: fs.PathLike | number, data: any) => {
+        files[path.resolve(file as string)] = data;
+        return Promise.resolve();
+      });
+      sandbox.stub(fs, "readJson").callsFake(async (file: string) => {
+        return Promise.resolve(JSON.parse(files[path.resolve(file)]));
+      });
+      sandbox.stub(tools, "waitSeconds").resolves();
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
     it("happy path", async () => {
-      await fs.ensureDir(configFolder);
       await fs.writeFile(
         path.resolve(configFolder, "projectSettings.json"),
         JSON.stringify(projectSettings0)
@@ -70,7 +89,6 @@ describe("LocalEnvManager", () => {
     });
 
     it("missing field", async () => {
-      await fs.ensureDir(configFolder);
       await fs.writeFile(path.resolve(configFolder, "projectSettings.json"), "{}");
 
       const projectSettings = await localEnvManager.getProjectSettings(projectPath);
@@ -81,9 +99,6 @@ describe("LocalEnvManager", () => {
     });
 
     it("missing file", async () => {
-      await fs.ensureDir(configFolder);
-      await fs.emptyDir(configFolder);
-
       let error: UserError | undefined = undefined;
       try {
         await localEnvManager.getProjectSettings(projectPath);
@@ -97,8 +112,30 @@ describe("LocalEnvManager", () => {
   });
 
   describe("getLocalSettings()", () => {
+    const sandbox = sinon.createSandbox();
+    let files: Record<string, any> = {};
+
+    beforeEach(() => {
+      files = {};
+      sandbox.restore();
+      sandbox.stub(fs, "pathExists").callsFake(async (file: string) => {
+        return Promise.resolve(files[path.resolve(file)] !== undefined);
+      });
+      sandbox.stub(fs, "writeFile").callsFake(async (file: fs.PathLike | number, data: any) => {
+        files[path.resolve(file as string)] = data;
+        return Promise.resolve();
+      });
+      sandbox.stub(fs, "readJson").callsFake(async (file: string) => {
+        return Promise.resolve(JSON.parse(files[path.resolve(file)]));
+      });
+      sandbox.stub(tools, "waitSeconds").resolves();
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
     it("happy path", async () => {
-      await fs.ensureDir(configFolder);
       await fs.writeFile(
         path.resolve(configFolder, "projectSettings.json"),
         JSON.stringify(projectSettings0)
@@ -126,7 +163,6 @@ describe("LocalEnvManager", () => {
     });
 
     it("missing field", async () => {
-      await fs.ensureDir(configFolder);
       await fs.writeFile(
         path.resolve(configFolder, "projectSettings.json"),
         JSON.stringify(projectSettings0)
@@ -143,8 +179,6 @@ describe("LocalEnvManager", () => {
     });
 
     it("missing file", async () => {
-      await fs.ensureDir(configFolder);
-      await fs.emptyDir(configFolder);
       await fs.writeFile(
         path.resolve(configFolder, "projectSettings.json"),
         JSON.stringify(projectSettings0)
@@ -265,8 +299,16 @@ describe("LocalEnvManager", () => {
 
   describe("getActiveDependencies()", () => {
     const sandbox = sinon.createSandbox();
+    let mockedEnvRestore: RestoreFn;
+
+    beforeEach(() => {
+      sandbox.restore();
+      mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "false" });
+    });
+
     afterEach(() => {
       sandbox.restore();
+      mockedEnvRestore();
     });
 
     testData.forEach((data) => {
@@ -280,6 +322,32 @@ describe("LocalEnvManager", () => {
         const result = localEnvManager.getActiveDependencies(projectSettings);
         chai.assert.sameDeepMembers(data.depsTypes, result);
       });
+    });
+  });
+
+  describe("getPortsFromProject()", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
+    it("tab + bot", async () => {
+      const projectSettings = {
+        appName: "",
+        projectId: "",
+        programmingLanguage: "javascript",
+        solutionSettings: {
+          name: "fx-solution-azure",
+          hostType: "Azure",
+          capabilities: ["Tab", "Bot"],
+        },
+      };
+
+      const ports = await localEnvManager.getPortsFromProject(projectPath, projectSettings);
+      chai.assert.sameMembers(
+        ports,
+        [53000, 3978, 9239],
+        `Expected [53000, 3978, 9239], actual ${ports}`
+      );
     });
   });
 
@@ -312,6 +380,52 @@ describe("LocalEnvManager", () => {
         config: {},
         state: { solution: { key: "value" } },
       });
+    });
+  });
+
+  describe("getNgrokTunnelConfig()", () => {
+    const sandbox = sinon.createSandbox();
+    let files: Record<string, any> = {};
+
+    beforeEach(() => {
+      files = {};
+      sandbox.restore();
+      sandbox.stub(fs, "pathExists").callsFake(async (file: string) => {
+        return Promise.resolve(files[path.resolve(file)] !== undefined);
+      });
+      sandbox.stub(fs, "writeFile").callsFake(async (file: fs.PathLike | number, data: any) => {
+        files[path.resolve(file as string)] = data;
+        return Promise.resolve();
+      });
+      sandbox.stub(fs, "readFile").callsFake(async (file: fs.PathLike | number, options?: any) => {
+        return Promise.resolve(files[path.resolve(file as string)]);
+      });
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("getNgrokTunnelConfig() happy path", async () => {
+      const ngrokConfigFilePath = path.join(configFolder, "ngrok.yml");
+      await fs.writeFile(ngrokConfigFilePath, "tunnels:\n  bot:\n     addr: 53000\n");
+      const res = await localEnvManager.getNgrokTunnelConfig(ngrokConfigFilePath);
+      chai.assert.sameDeepOrderedMembers([...res.entries()], [["bot", "53000"]]);
+    });
+
+    it("empty result", async () => {
+      const ngrokConfigFilePath = path.join(configFolder, "ngrok.yml");
+      await fs.writeFile(ngrokConfigFilePath, "");
+      const res = await localEnvManager.getNgrokTunnelConfig(ngrokConfigFilePath);
+      chai.assert.equal(res.size, 0);
+    });
+
+    it("error schema", async () => {
+      const ngrokConfigFilePath = path.join(configFolder, "ngrok.yml");
+      await fs.writeFile(ngrokConfigFilePath, "tunnels:\nbot\n-\n");
+      await chai
+        .expect(localEnvManager.getNgrokTunnelConfig(ngrokConfigFilePath))
+        .to.be.rejectedWith();
     });
   });
 });

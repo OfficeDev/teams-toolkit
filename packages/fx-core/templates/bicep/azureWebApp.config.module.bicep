@@ -6,7 +6,7 @@ param provisionOutputs object
 @secure()
 param currentAppSettings object
 
-var webAppName = split(provisionOutputs.azureWebApp{{scenario}}Output.value.resourceId , '/')[8]
+var webAppName = split(provisionOutputs.azureWebApp{{scenario}}Output.value.resourceId, '/')[8]
 {{#if (contains "aad-app" connections)}}
 var webappEndpoint = provisionOutputs.azureWebApp{{scenario}}Output.value.siteEndpoint
 var m365ClientId = provisionParameters['m365ClientId']
@@ -41,14 +41,19 @@ resource webAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   name: '${webAppName}/appsettings'
   properties: union({
     {{#if (contains "aad-app" connections)}}
-      {{#if (contains "teams-tab" connections)}}
-    TAB_APP_ENDPOINT: webappEndpoint
+      {{#if (contains "dotnet" configs)}}
     TeamsFx__Authentication__ClientId: m365ClientId // Client id of AAD application
     TeamsFx__Authentication__ClientSecret: m365ClientSecret // Client secret of AAD application
-    TeamsFx__Authentication__InitiateLoginEndpoint: uri(webappEndpoint, 'auth-start.html') // The page is used to let users consent required OAuth permissions during bot SSO process
     TeamsFx__Authentication__OAuthAuthority: uri(m365OauthAuthorityHost, m365TenantId) // AAD authority host
+        {{#if (contains "teams-tab" connections)}}
+    TAB_APP_ENDPOINT: webappEndpoint
+        {{/if}}
+        {{#if (contains "teams-bot" connections)}}
+    TeamsFx__Authentication__Bot__InitiateLoginEndpoint: uri(provisionOutputs.webAppOutput.value.siteEndpoint, 'bot-auth-start') // The page is used to let users consent required OAuth permissions during bot SSO process
+    TeamsFx__Authentication__ApplicationIdUri: m365ApplicationIdUri // Application ID URI of AAD application
+        {{/if}}
       {{else}}
-    INITIATE_LOGIN_ENDPOINT: uri(webappEndpoint, 'auth-start.html') // The page is used to let users consent required OAuth permissions during bot SSO process
+    INITIATE_LOGIN_ENDPOINT: uri(webappEndpoint, 'auth-start.html') // The page is used to let users consent required OAuth permissions during SSO process
     M365_AUTHORITY_HOST: m365OauthAuthorityHost // AAD authority host
     M365_CLIENT_ID: m365ClientId // Client id of AAD application
     M365_CLIENT_SECRET: m365ClientSecret // Client secret of AAD application

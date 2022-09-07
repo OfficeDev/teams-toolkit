@@ -63,6 +63,7 @@ import {
   askSubscription,
   CollaborationState,
   Correlator,
+  DepsManager,
   DepsType,
   environmentManager,
   FolderName,
@@ -224,7 +225,6 @@ export function activate(): Result<Void, FxError> {
       expServiceProvider: exp.getExpService(),
     };
     core = new FxCore(tools);
-    accountTreeViewProviderInstance.subscribeToStatusChanges(tools.tokenProvider);
     const workspacePath = globalVariables.workspaceUri?.fsPath;
     if (workspacePath) {
       const unifyConfigWatcher = vscode.workspace.createFileSystemWatcher(
@@ -460,51 +460,10 @@ export async function openFolder(
   args?: any[]
 ) {
   await updateAutoOpenGlobalKey(showLocalDebugMessage, showLocalPreviewMessage, folderPath, args);
-  if (!TreatmentVariableValue.openFolderInNewWindow) {
-    await ExtTelemetry.dispose();
-    // after calling dispose(), let render process to wait for a while instead of directly call "open folder"
-    // otherwise, the flush operation in dispose() will be interrupted due to shut down the render process.
-    setTimeout(() => {
-      commands.executeCommand("vscode.openFolder", folderPath);
-    }, 2000);
-  } else {
-    const selection = await Promise.race([
-      new Promise<Result<string | undefined, FxError>>((resolve, reject) => {
-        setTimeout(resolve, 10000, err("timeout"));
-      }),
-      VS_CODE_UI.showMessage(
-        "info",
-        localize("teamstoolkit.handlers.openProject.title"),
-        false,
-        localize("teamstoolkit.handlers.openInNewWindow"),
-        localize("teamstoolkit.handlers.openInCurrentWindow")
-      ),
-    ]);
-    if (selection.isOk()) {
-      const openInNewWindow = selection.value === localize("teamstoolkit.handlers.openInNewWindow");
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenNewProject, {
-        [TelemetryProperty.VscWindow]: openInNewWindow
-          ? VSCodeWindowChoice.NewWindow
-          : VSCodeWindowChoice.CurrentWindow,
-      });
-      if (openInNewWindow) {
-        commands.executeCommand("vscode.openFolder", folderPath, true);
-      } else {
-        await ExtTelemetry.dispose();
-        // after calling dispose(), let render process to wait for a while instead of directly call "open folder"
-        // otherwise, the flush operation in dispose() will be interrupted due to shut down the render process.
-        setTimeout(() => {
-          commands.executeCommand("vscode.openFolder", folderPath);
-        }, 2000);
-      }
-    } else {
-      // timeout
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenNewProject, {
-        [TelemetryProperty.VscWindow]: VSCodeWindowChoice.NewWindowByDefault,
-      });
-      commands.executeCommand("vscode.openFolder", folderPath, true);
-    }
-  }
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenNewProject, {
+    [TelemetryProperty.VscWindow]: VSCodeWindowChoice.NewWindowByDefault,
+  });
+  commands.executeCommand("vscode.openFolder", folderPath, true);
 }
 
 export async function updateAutoOpenGlobalKey(
@@ -540,6 +499,13 @@ export async function createProjectFromWalkthroughHandler(
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.create);
   return result;
+}
+
+export async function debugHandler(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewLocalDebug, getTriggerFromProperty(args));
+  await vscode.commands.executeCommand("workbench.action.debug.start");
+
+  return ok(null);
 }
 
 export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -1318,6 +1284,7 @@ export async function validateLocalPrerequisitesHandler(): Promise<string | unde
       await sendDebugAllEvent(result.error);
       commonUtils.endLocalDebugSession();
       // return non-zero value to let task "exit ${command:xxx}" to exit
+      showError(result.error);
       return "1";
     }
   });
@@ -1368,6 +1335,7 @@ export async function validateGetStartedPrerequisitesHandler(
   );
   const result = await localPrerequisites.checkPrerequisitesForGetStarted();
   if (result.isErr()) {
+    showError(result.error);
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
   }
@@ -1410,6 +1378,26 @@ export async function getFuncPathHandler(): Promise<string> {
     const funcStatus = await vscodeDepsChecker.getDepsStatus(DepsType.FuncCoreTools);
     if (funcStatus?.details?.binFolders !== undefined) {
       return `${path.delimiter}${funcStatus.details.binFolders.join(path.delimiter)}${
+        path.delimiter
+      }`;
+    }
+  } catch (error: any) {
+    showError(assembleError(error));
+  }
+
+  return `${path.delimiter}`;
+}
+
+/**
+ * Get dotnet path to be referenced by task definition.
+ * Usage like ${command:...}${env:PATH} so need to include delimiter as well
+ */
+export async function getDotnetPathHandler(): Promise<string> {
+  try {
+    const depsManager = new DepsManager(vscodeLogger, vscodeTelemetry);
+    const dotnetStatus = (await depsManager.getStatus([DepsType.Dotnet]))?.[0];
+    if (dotnetStatus?.isInstalled && dotnetStatus?.details?.binFolders !== undefined) {
+      return `${path.delimiter}${dotnetStatus.details.binFolders.join(path.delimiter)}${
         path.delimiter
       }`;
     }
@@ -2277,6 +2265,11 @@ export async function showError(e: UserError | SystemError) {
     const help = {
       title: localize("teamstoolkit.handlers.getHelp"),
       run: async (): Promise<void> => {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickGetHelp, {
+          [TelemetryProperty.ErrorCode]: errorCode,
+          [TelemetryProperty.ErrorMessage]: notificationMessage,
+          [TelemetryProperty.HelpLink]: e.helpLink!,
+        });
         commands.executeCommand("vscode.open", Uri.parse(`${e.helpLink}#${e.source}${e.name}`));
       },
     };

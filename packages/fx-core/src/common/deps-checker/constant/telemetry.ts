@@ -34,6 +34,7 @@ export enum DepsCheckerEvent {
   ngrokCheckSkipped = "ngrok-check-skipped",
   ngrokInstallCompleted = "ngrok-install-completed",
   ngrokInstallError = "ngrok-install-error",
+  ngrokNpmLog = "ngrok-npm-log",
   ngrokInstallScriptCompleted = "ngrok-install-script-completed",
   ngrokInstallScriptError = "ngrok-install-script-error",
   ngrokValidationError = "ngrok-validation-error",
@@ -50,6 +51,13 @@ export enum TelemtryMessages {
   failedToSearchDotnetSdks = "failed to search dotnet sdks.",
   failedToInstallNgrok = "failed to install ngrok.",
   failedToValidateNgrok = "failed to validate ngrok.",
+}
+
+export enum TelemetryProperties {
+  NgrokNpmInstallNodeVersion = "ngrok-npm-install-node-version",
+  NgrokNpmInstallNpmVersion = "ngrok-npm-install-npm-version",
+  NgrokNpmInstallExitCode = "ngrok-npm-install-exit-code",
+  NgrokNpmInstallLog = "ngrok-npm-install-log",
 }
 
 export enum TelemetryMessurement {

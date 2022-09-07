@@ -38,7 +38,7 @@ describe("teamsfx deploy frontend-hosting", function () {
       await CliHelper.deployProject(ResourceToDeploy.FrontendHosting, projectPath);
       throw "should throw an error";
     } catch (e) {
-      expect(e.message).includes("Solution.NoResourcePluginSelected");
+      expect(e.message).includes("fx.NoResourcePluginSelected");
     }
   });
 

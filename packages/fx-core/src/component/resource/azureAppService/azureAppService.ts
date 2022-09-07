@@ -2,8 +2,6 @@
 // Licensed under the MIT license.
 
 import {
-  Bicep,
-  ContextV3,
   FxError,
   InputsWithProjectPath,
   ok,
@@ -15,7 +13,6 @@ import fs from "fs-extra";
 import * as path from "path";
 import { azureWebSiteDeploy } from "../../../common/azure-hosting/utils";
 import * as utils from "../../../plugins/resource/bot/utils/common";
-import { getLanguage, getRuntime } from "../../../plugins/resource/bot/v2/mapping";
 import {
   CheckThrowSomethingMissing,
   PackDirectoryExistenceError,
@@ -28,7 +25,6 @@ import {
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
 } from "../../../common/tools";
-import { CoreQuestionNames } from "../../../core/question";
 
 export abstract class AzureAppService extends AzureResource {
   abstract readonly name: string;
@@ -37,30 +33,11 @@ export abstract class AzureAppService extends AzureResource {
   abstract readonly bicepModuleName: string;
   abstract readonly outputs: ResourceOutputs;
   abstract readonly finalOutputKeys: string[];
-  async generateBicep(
-    context: ContextV3,
-    inputs: InputsWithProjectPath
-  ): Promise<Result<Bicep[], FxError>> {
-    this.getTemplateContext = (context, inputs) => {
-      const configs: string[] = [];
-      configs.push(
-        getRuntime(
-          getLanguage(
-            context.projectSetting.programmingLanguage ||
-              inputs?.[CoreQuestionNames.ProgrammingLanguage]
-          )
-        )
-      );
-      this.templateContext.configs = configs;
-      return this.templateContext;
-    };
-    return super.generateBicep(context, inputs);
-  }
-
   async deploy(
     context: ResourceContextV3,
     inputs: InputsWithProjectPath,
-    restart = false
+    restart = false,
+    givenResourceIdKey?: string
   ): Promise<Result<undefined, FxError>> {
     const progressBar = context.userInteraction.createProgressBar(
       ProgressTitles.deploying(this.displayName, inputs.scenario),
@@ -79,11 +56,8 @@ export abstract class AzureAppService extends AzureResource {
       }
 
       const state = context.envInfo.state[inputs.componentId];
-      const resourceId = CheckThrowSomethingMissing(
-        this.name,
-        this.outputs.resourceId.key,
-        state[this.outputs.resourceId.key]
-      );
+      const resourceIdKey = givenResourceIdKey || this.outputs.resourceId.key;
+      const resourceId = CheckThrowSomethingMissing(this.name, resourceIdKey, state[resourceIdKey]);
       await progressBar.next(ProgressMessages.packingCode);
       const zipBuffer = await utils.zipFolderAsync(publishDir, "");
 

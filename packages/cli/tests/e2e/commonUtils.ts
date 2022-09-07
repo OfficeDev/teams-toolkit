@@ -127,6 +127,21 @@ export function getConfigFileName(appName: string, envName = "dev"): string {
   return path.resolve(testFolder, appName, getEnvFilePathSuffix(envName));
 }
 
+export async function setProvisionParameterValue(
+  projectPath: string,
+  envName: string,
+  paramerters: { key: string; value: string }
+): Promise<void> {
+  const parametersFilePath = path.resolve(
+    projectPath,
+    TestFilePath.configFolder,
+    `azure.parameters.${envName}.json`
+  );
+  const parameters = await fs.readJSON(parametersFilePath);
+  parameters["parameters"]["provisionParameters"]["value"][paramerters.key] = paramerters.value;
+  return fs.writeJSON(parametersFilePath, parameters, { spaces: 4 });
+}
+
 export async function setSimpleAuthSkuNameToB1(projectPath: string) {
   const envFilePath = path.resolve(projectPath, envFilePathSuffix);
   const context = await fs.readJSON(envFilePath);
@@ -134,15 +149,11 @@ export async function setSimpleAuthSkuNameToB1(projectPath: string) {
   return fs.writeJSON(envFilePath, context, { spaces: 4 });
 }
 
-export async function setSimpleAuthSkuNameToB1Bicep(projectPath: string, envName: string) {
-  const parametersFilePath = path.join(
-    projectPath,
-    TestFilePath.configFolder,
-    `azure.parameters.${envName}.json`
-  );
-  const parameters = await fs.readJSON(parametersFilePath);
-  parameters["parameters"]["provisionParameters"]["value"]["simpleAuthSku"] = "B1";
-  return fs.writeJSON(parametersFilePath, parameters, { spaces: 4 });
+export async function setSimpleAuthSkuNameToB1Bicep(
+  projectPath: string,
+  envName: string
+): Promise<void> {
+  return setProvisionParameterValue(projectPath, envName, { key: "simpleAuthSku", value: "B1" });
 }
 
 export async function getProvisionParameterValueByKey(
@@ -171,16 +182,8 @@ export async function setBotSkuNameToB1(projectPath: string) {
   return fs.writeJSON(envFilePath, context, { spaces: 4 });
 }
 
-export async function setBotSkuNameToB1Bicep(projectPath: string, envName: string) {
-  const bicepParameterFile = path.join(
-    `.${ConfigFolderName}`,
-    InputConfigsFolderName,
-    `azure.parameters.${envName}.json`
-  );
-  const parametersFilePath = path.resolve(projectPath, bicepParameterFile);
-  const parameters = await fs.readJSON(parametersFilePath);
-  parameters["parameters"]["provisionParameters"]["value"]["botWebAppSKU"] = "B1";
-  return fs.writeJSON(parametersFilePath, parameters, { spaces: 4 });
+export async function setBotSkuNameToB1Bicep(projectPath: string, envName: string): Promise<void> {
+  return setProvisionParameterValue(projectPath, envName, { key: "webAppSKU", value: "B1" });
 }
 
 export async function setSkipAddingSqlUser(projectPath: string) {
@@ -566,11 +569,12 @@ sku: {
   name: 'B1'
 }
 kind: 'app'
+properties: {}
 }
 `;
   const frontendHostingTestServerFarm = "frontendhosting_testResource";
   await fs.appendFile(
-    path.join(bicepFileFolder, TestFilePath.provisionFolder, "frontendHosting.bicep"),
+    path.join(bicepFileFolder, TestFilePath.provisionFolder, "azureStorageTab.bicep"),
     customizedServerFarmsBicepTemplate.replace(pattern, frontendHostingTestServerFarm)
   );
   newServerFarms.push(frontendHostingTestServerFarm);

@@ -44,14 +44,18 @@ export { TeamsFx } from "./core/teamsfx.browser";
 export { IdentityType } from "./models/identityType";
 
 export {
+  AdaptiveCardResponse,
+  CommandMessage,
   CommandOptions,
+  CardActionOptions,
   ConversationOptions,
   NotificationOptions,
   NotificationTarget,
   NotificationTargetStorage,
   NotificationTargetType,
-  CommandMessage,
+  InvokeResponseErrorCode,
   TriggerPatterns,
+  TeamsFxAdaptiveCardActionHandler,
   TeamsFxBotCommandHandler,
 } from "./conversation/interface";
 export { ConversationBot } from "./conversation/conversation.browser";
@@ -64,3 +68,4 @@ export {
   TeamsBotInstallation,
 } from "./conversation/notification.browser";
 export { CommandBot } from "./conversation/command.browser";
+export { CardActionBot } from "./conversation/cardAction.browser";

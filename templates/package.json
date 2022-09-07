@@ -10,6 +10,7 @@
     },
     "templates": [
         "bot/js/command-and-response",
+        "bot/js/workflow",
         "bot/js/default",
         "bot/js/m365",
         "bot/js/notification-function-base",
@@ -17,6 +18,7 @@
         "bot/js/notification-trigger-http",
         "bot/js/notification-trigger-timer",
         "bot/ts/command-and-response",
+        "bot/ts/workflow",
         "bot/ts/default",
         "bot/ts/m365",
         "bot/ts/notification-function-base",

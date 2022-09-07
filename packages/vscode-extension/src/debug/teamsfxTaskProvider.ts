@@ -34,9 +34,42 @@ import { vscodeHelper } from "./depsChecker/vscodeHelper";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import { PrerequisiteTaskTerminal } from "./taskTerminal/prerequisiteTaskTerminal";
+import { NpmInstallTaskTerminal } from "./taskTerminal/npmInstallTaskTerminal";
+import { LocalTunnelTaskTerminal } from "./taskTerminal/localTunnelTaskTerminal";
+import { SetUpTabTaskTerminal } from "./taskTerminal/setUpTabTaskTerminal";
+import { PrepareManifestTaskTerminal } from "./taskTerminal/prepareManifestTaskTerminal";
+import { SetUpSSOTaskTerminal } from "./taskTerminal/setUpSSOTaskTerminal";
+import { SetUpBotTaskTerminal } from "./taskTerminal/setUpBotTaskTerminal";
 
-const createTerminalFuncs = Object.freeze({
-  "debug-check-prerequisites": (d: vscode.TaskDefinition) => new PrerequisiteTaskTerminal(d),
+const customTasks = Object.freeze({
+  "debug-check-prerequisites": {
+    createTerminal: (d: vscode.TaskDefinition) => new PrerequisiteTaskTerminal(d),
+    presentationReveal: vscode.TaskRevealKind.Never,
+  },
+  "debug-npm-install": {
+    createTerminal: (d: vscode.TaskDefinition) => new NpmInstallTaskTerminal(d),
+    presentationReveal: vscode.TaskRevealKind.Never,
+  },
+  "debug-start-local-tunnel": {
+    createTerminal: (d: vscode.TaskDefinition) => new LocalTunnelTaskTerminal(d),
+    presentationReveal: vscode.TaskRevealKind.Always,
+  },
+  "debug-set-up-tab": {
+    createTerminal: (d: vscode.TaskDefinition) => new SetUpTabTaskTerminal(d),
+    presentationReveal: vscode.TaskRevealKind.Never,
+  },
+  "debug-set-up-bot": {
+    createTerminal: (d: vscode.TaskDefinition) => new SetUpBotTaskTerminal(d),
+    presentationReveal: vscode.TaskRevealKind.Never,
+  },
+  "debug-set-up-sso": {
+    createTerminal: (d: vscode.TaskDefinition) => new SetUpSSOTaskTerminal(d),
+    presentationReveal: vscode.TaskRevealKind.Never,
+  },
+  "debug-prepare-manifest": {
+    createTerminal: (d: vscode.TaskDefinition) => new PrepareManifestTaskTerminal(d),
+    presentationReveal: vscode.TaskRevealKind.Never,
+  },
 });
 
 export class TeamsfxTaskProvider implements vscode.TaskProvider {
@@ -160,24 +193,25 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       return undefined;
     }
 
-    const createTerminal = Object.entries(createTerminalFuncs).find(
+    const customTask = Object.entries(customTasks).find(
       ([k]) => k === task.definition.command
     )?.[1];
-
-    if (createTerminal) {
-      return new vscode.Task(
-        task.definition,
-        vscode.TaskScope.Workspace,
-        task.name,
-        TeamsfxTaskProvider.type,
-        new vscode.CustomExecution(
-          async (resolvedDefinition: vscode.TaskDefinition): Promise<vscode.Pseudoterminal> =>
-            Promise.resolve(createTerminal(resolvedDefinition))
-        )
-      );
+    if (!customTask) {
+      return undefined;
     }
+    const newTask = new vscode.Task(
+      task.definition,
+      vscode.TaskScope.Workspace,
+      task.name,
+      TeamsfxTaskProvider.type,
+      new vscode.CustomExecution(
+        async (resolvedDefinition: vscode.TaskDefinition): Promise<vscode.Pseudoterminal> =>
+          Promise.resolve(customTask.createTerminal(resolvedDefinition))
+      )
+    );
 
-    return undefined;
+    newTask.presentationOptions.reveal = customTask.presentationReveal;
+    return newTask;
   }
 
   private async createFrontendStartTask(

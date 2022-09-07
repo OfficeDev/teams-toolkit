@@ -8,7 +8,8 @@ import {
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import { createContextV3 } from "../../src/component/utils";
-import { newEnvInfoV3, setTools } from "../../src";
+import { newEnvInfoV3 } from "../../src/core/environment";
+import { setTools } from "../../src/core/globalVars";
 import * as os from "os";
 import { MockTools, randomAppName } from "../core/utils";
 import { assert } from "chai";
@@ -17,8 +18,7 @@ import * as sinon from "sinon";
 import * as question from "../../src/component/questionV3";
 import { TeamsBot } from "../../src/component/feature/bot";
 import { AzureWebAppResource } from "../../src/component/resource/azureAppService/azureWebApp";
-import * as deployUtil from "../../src/plugins/solution/fx-solution/v3/deploy";
-import * as provisionUtil from "../../src/plugins/solution/fx-solution/v3/provision";
+import { deployUtils } from "../../src/component/deployUtils";
 
 describe("component core test", () => {
   const sandbox = sinon.createSandbox();
@@ -104,8 +104,8 @@ describe("component core test", () => {
     sandbox.stub(question, "getQuestionsForDeployV3").resolves(ok(undefined));
     sandbox.stub(TeamsBot.prototype, "build").resolves(ok(undefined));
     sandbox.stub(AzureWebAppResource.prototype, "deploy").resolves(ok(undefined));
-    sandbox.stub(deployUtil, "checkDeployAzureSubscription").resolves(ok(Void));
-    sandbox.stub(provisionUtil, "askForDeployConsent").resolves(ok(Void));
+    sandbox.stub(deployUtils, "checkDeployAzureSubscription").resolves(ok(Void));
+    sandbox.stub(deployUtils, "askForDeployConsent").resolves(ok(Void));
 
     const fxCore = new TeamsfxCore();
     const res = await fxCore.deploy(context as ResourceContextV3, inputs);

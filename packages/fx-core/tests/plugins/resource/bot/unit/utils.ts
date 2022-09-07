@@ -335,7 +335,7 @@ export function newInputV2(): Inputs {
     platform: Platform.VSCode,
     env: "test",
     projectPath: "test-app",
-    [QuestionNames.BOT_HOST_TYPE_TRIGGER]: [FunctionsHttpTriggerOptionItem.id],
+    [QuestionNames.BOT_HOST_TYPE_TRIGGER]: FunctionsHttpTriggerOptionItem.id,
     [AzureSolutionQuestionNames.Scenarios]: [BotScenario.NotificationBot],
   };
 }

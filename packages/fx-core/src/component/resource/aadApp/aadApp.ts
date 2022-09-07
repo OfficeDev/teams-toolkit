@@ -14,7 +14,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { ComponentNames } from "../../constants";
+import { AadAppOutputs, ComponentNames } from "../../constants";
 import * as path from "path";
 import fs from "fs-extra";
 import { getTemplatesFolder } from "../../../folder";
@@ -23,51 +23,12 @@ import { convertContext } from "./utils";
 import { convertProjectSettingsV3ToV2 } from "../../migrate";
 import { generateAadManifestTemplate } from "../../../core/generateAadManifestTemplate";
 import { createAuthFiles } from "../../../plugins/solution/fx-solution/v2/executeUserTask";
+import { isVSProject } from "../../../common";
 @Service(ComponentNames.AadApp)
 export class AadApp implements CloudResource {
   readonly type = "cloud";
   readonly name = ComponentNames.AadApp;
-  outputs = {
-    applicationIdUri: {
-      key: "applicationIdUri",
-    },
-    clientId: {
-      key: "clientId",
-    },
-    clientSecret: {
-      key: "clientSecret",
-    },
-    objectId: {
-      key: "objectId",
-    },
-    oauth2PermissionScopeId: {
-      key: "oauth2PermissionScopeId",
-    },
-    frontendEndpoint: {
-      key: "frontendEndpoint",
-    },
-    botId: {
-      key: "botId",
-    },
-    botEndpoint: {
-      key: "botEndpoint",
-    },
-    domain: {
-      key: "domain",
-    },
-    endpoint: {
-      key: "endpoint",
-    },
-    oauthAuthority: {
-      key: "oauthAuthority",
-    },
-    oauthHost: {
-      key: "oauthHost",
-    },
-    tenantId: {
-      key: "tenantId",
-    },
-  };
+  outputs = AadAppOutputs;
   finalOutputKeys = [
     "applicationIdUris",
     "clientId",
@@ -98,7 +59,13 @@ export class AadApp implements CloudResource {
     needTab: boolean,
     needBot: boolean
   ): Promise<Result<undefined, FxError>> {
-    const res = await createAuthFiles(inputs, context, needTab, needBot);
+    const res = await createAuthFiles(
+      inputs,
+      context,
+      needTab,
+      needBot,
+      isVSProject(context.projectSetting)
+    );
     if (res.isErr()) return err(res.error);
     return ok(undefined);
   }

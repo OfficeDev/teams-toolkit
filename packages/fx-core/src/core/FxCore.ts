@@ -54,8 +54,6 @@ import {
 import { TelemetryReporterInstance } from "../common/telemetry";
 import { createV2Context, mapToJson, undefinedName } from "../common/tools";
 import { getTemplatesFolder } from "../folder";
-import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
-import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
 import {
   ApiConnectionOptionItem,
   AzureSolutionQuestionNames,
@@ -63,6 +61,7 @@ import {
   ExistingTabOptionItem,
   M365SearchAppOptionItem,
   M365SsoLaunchPageOptionItem,
+  SingleSignOnOptionItem,
   TabSPFxItem,
 } from "../plugins/solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
@@ -134,7 +133,6 @@ import {
 import { CoreHookContext } from "./types";
 import { isPreviewFeaturesEnabled } from "../common/featureFlags";
 import { createContextV3 } from "../component/utils";
-import { TeamsfxCore } from "../component/core";
 import "../component/core";
 import {
   FeatureId,
@@ -145,13 +143,14 @@ import {
   getQuestionsForProvisionV3,
 } from "../component/questionV3";
 import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
-import { addCicdQuestion } from "../component/feature/cicd";
+import { addCicdQuestion } from "../component/feature/cicd/cicd";
 import { ComponentNames } from "../component/constants";
-import { ApiConnectorImpl } from "../plugins/resource/apiconnector/plugin";
-import { publishQuestion } from "../component/resource/appManifest/appManifest";
+import { AppManifest, publishQuestion } from "../component/resource/appManifest/appManifest";
+import { ApiConnectorImpl } from "../component/feature/apiconnector/ApiConnectorImpl";
 import { createEnvWithName } from "../component/envManager";
 import { getProjectTemplatesFolderPath } from "../common/utils";
 import { manifestUtils } from "../component/resource/appManifest/utils";
+import { preCheck } from "../component/core";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -362,7 +361,7 @@ export class FxCore implements v3.ICore {
     setCurrentStage(Stage.create);
     inputs.stage = Stage.create;
     const context = createContextV3();
-    const fx = Container.get("fx") as TeamsfxCore;
+    const fx = Container.get("fx") as any;
     const res = await fx.create(context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx.projectSettings = context.projectSetting;
@@ -470,8 +469,8 @@ export class FxCore implements v3.ICore {
       permissionRequestProvider: TOOLS.permissionRequest,
       projectSetting: projectSettings,
     };
-    const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-    return appStudioV3.registerTeamsApp(
+    const appStudioV3 = Container.get<AppManifest>(ComponentNames.AppManifest);
+    return appStudioV3.provisionForCLI(
       context,
       inputs as v2.InputsWithProjectPath,
       newEnvInfoV3(),
@@ -756,7 +755,7 @@ export class FxCore implements v3.ICore {
   ): Promise<Result<any, FxError>> {
     inputs.stage = Stage.addFeature;
     const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-    const fx = Container.get("fx") as TeamsfxCore;
+    const fx = Container.get("fx") as any;
     const res = await fx.addFeature(context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
@@ -872,17 +871,20 @@ export class FxCore implements v3.ICore {
     }
     if (func.method === "addCICDWorkflows") {
       const component = Container.get("cicd") as any;
+      inputs[AzureSolutionQuestionNames.Features] = CicdOptionItem.id;
       res = await component.add(context, inputs as InputsWithProjectPath);
     } else if (func.method === "connectExistingApi") {
       const component = Container.get("api-connector") as any;
+      inputs[AzureSolutionQuestionNames.Features] = ApiConnectionOptionItem.id;
       res = await component.add(context, inputs as InputsWithProjectPath);
     } else if (func.method === "addSso") {
       inputs.stage = Stage.addFeature;
+      inputs[AzureSolutionQuestionNames.Features] = SingleSignOnOptionItem.id;
       const component = Container.get("sso") as any;
       res = await component.add(context, inputs as InputsWithProjectPath);
     } else if (func.method === "addFeature") {
       inputs.stage = Stage.addFeature;
-      const fx = Container.get("fx") as TeamsfxCore;
+      const fx = Container.get("fx") as any;
       res = await fx.addFeature(context, inputs as InputsWithProjectPath);
     } else if (func.method === "getManifestTemplatePath") {
       const path = await manifestUtils.getTeamsAppManifestPath(
@@ -1530,20 +1532,23 @@ export class FxCore implements v3.ICore {
     const context = createV2Context(projectSettings);
     ctx.contextV2 = context;
 
-    const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    const appStudioComponent = Container.get<AppManifest>(ComponentNames.AppManifest);
 
     // pre-check before initialize
-    const preCheckResult = await this.preCheck(appStudioV3, projectPath);
+    const preCheckResult = await preCheck(projectPath);
     if (preCheckResult.isErr()) {
       return err(preCheckResult.error);
     }
 
     // init manifest
-    const manifestInitRes = await appStudioV3.init(context, inputs as v2.InputsWithProjectPath);
+    const manifestInitRes = await appStudioComponent.init(
+      context,
+      inputs as v2.InputsWithProjectPath,
+      isInitExistingApp
+    );
     if (manifestInitRes.isErr()) return err(manifestInitRes.error);
 
-    const manifestAddcapRes = await appStudioV3.addCapabilities(
-      context,
+    const manifestAddcapRes = await appStudioComponent.addCapability(
       inputs as v2.InputsWithProjectPath,
       [{ name: "staticTab", existingApp: true }]
     );
@@ -1575,57 +1580,6 @@ export class FxCore implements v3.ICore {
       await fs.copy(sourceReadmePath, targetReadmePath);
     }
     return ok(inputs.projectPath!);
-  }
-
-  // pre-check before initialize
-  async preCheck(
-    appStudioV3: AppStudioPluginV3,
-    projectPath: string
-  ): Promise<Result<Void, FxError>> {
-    const existFiles = new Array<string>();
-    // 0. check if projectSettings.json exists
-    const settingsFile = path.resolve(
-      projectPath,
-      `.${ConfigFolderName}`,
-      "configs",
-      ProjectSettingsFileName
-    );
-    if (await fs.pathExists(settingsFile)) {
-      existFiles.push(settingsFile);
-    }
-
-    // 1. check if manifest templates exist
-    const manifestPreCheckResult = await appStudioV3.preCheck(projectPath);
-    existFiles.push(...manifestPreCheckResult);
-
-    // 2. check if env config file exists
-    const defaultEnvPath = environmentManager.getEnvConfigPath(
-      environmentManager.getDefaultEnvName(),
-      projectPath
-    );
-    if (await fs.pathExists(defaultEnvPath)) {
-      existFiles.push(defaultEnvPath);
-    }
-
-    const localEnvPath = environmentManager.getEnvConfigPath(
-      environmentManager.getLocalEnvName(),
-      projectPath
-    );
-    if (await fs.pathExists(localEnvPath)) {
-      existFiles.push(localEnvPath);
-    }
-
-    // 3. check if README.md exists
-    const readmePath = path.join(projectPath, AutoGeneratedReadme);
-    if (await fs.pathExists(readmePath)) {
-      existFiles.push(readmePath);
-    }
-
-    if (existFiles.length > 0) {
-      return err(new InitializedFileAlreadyExistError(existFiles.join(", ")));
-    }
-
-    return ok(Void);
   }
 
   @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjectorMW, ProjectSettingsWriterMW])

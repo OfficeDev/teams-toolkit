@@ -127,6 +127,30 @@ describe("Azure-Function Component", () => {
     const res = restartWebAppStub.calledOnce;
     chai.assert.isTrue(res);
     chai.assert.isTrue(deployAction.isOk());
-    chai.assert.isTrue(true);
+  });
+  it("deploy happy path for bot", async function () {
+    sandbox.stub(fs, "pathExists").resolves(true);
+    const restartWebAppStub = sandbox.stub(AzureOperations, "restartWebApp").resolves();
+    sandbox.stub(botUtils, "zipFolderAsync").resolves({} as any);
+    sandbox.stub(hostingUtils, "azureWebSiteDeploy").resolves({} as any);
+    assign(inputs, {
+      componentId: ComponentNames.TeamsBot,
+      hosting: inputs.hosting,
+      scenario: Scenarios.Bot,
+      folder: "bot",
+      artifactFolder: "bot",
+    });
+    assign(context.envInfo, {
+      state: {
+        [ComponentNames.TeamsBot]: {
+          resourceId:
+            "/subscriptions/subs/resourceGroups/rg/providers/Microsoft.Web/sites/siteName/appServices",
+        },
+      },
+    });
+    const deployAction = await component.deploy(context as ResourceContextV3, inputs);
+    const res = restartWebAppStub.calledOnce;
+    chai.assert.isTrue(res);
+    chai.assert.isTrue(deployAction.isOk());
   });
 });

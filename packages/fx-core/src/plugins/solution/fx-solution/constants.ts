@@ -161,6 +161,7 @@ export enum SolutionError {
   FailedToCreateAuthFiles = "FailedToCreateAuthFiles",
   FailedToUpdateAzureParameters = "FailedToUpdateAzureParameters",
   FailedToBackupFiles = "FailedToBackupFiles",
+  MissingSubscriptionIdInConfig = "MissingSubscriptionIdInConfig",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";

@@ -64,7 +64,6 @@ import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import {
   buildTeamsAppPackage,
   createTeamsApp,
-  getManifest,
   publishTeamsApp,
   updateManifest,
   updateTeamsApp,
@@ -84,6 +83,7 @@ export class AppManifest implements CloudResource {
       key: "tenantId",
     },
   };
+
   finalOutputKeys = ["teamsAppId", "tenantId"];
   @hooks([
     ActionExecutionMW({
@@ -94,7 +94,8 @@ export class AppManifest implements CloudResource {
   ])
   async init(
     context: v2.Context,
-    inputs: InputsWithProjectPath
+    inputs: InputsWithProjectPath,
+    existingApp = false
   ): Promise<Result<undefined, FxError>> {
     let manifest;
     const sourceTemplatesFolder = getTemplatesFolder();
@@ -112,7 +113,6 @@ export class AppManifest implements CloudResource {
       const manifestString = (await fs.readFile(manifestFile)).toString();
       manifest = JSON.parse(manifestString);
     } else {
-      const existingApp = inputs.existingApp as boolean;
       const manifestString = TEAMS_APP_MANIFEST_TEMPLATE;
       manifest = JSON.parse(manifestString);
       if (existingApp || !hasTab(context.projectSetting as ProjectSettingsV3)) {
@@ -275,15 +275,17 @@ export class AppManifest implements CloudResource {
         actionCtx.telemetryProps[TelemetryPropertyKey.manual] = String(true);
       try {
         const appPackagePath = await buildTeamsAppPackage(
+          context.projectSetting,
           inputs.projectPath,
           ctx.envInfo,
           false,
           actionCtx!.telemetryProps!
         );
+        if (appPackagePath.isErr()) return err(appPackagePath.error);
         const msg = getLocalizedString(
           "plugins.appstudio.adminApprovalTip",
           ctx.projectSetting.appName,
-          appPackagePath
+          appPackagePath.value
         );
         ctx.userInteraction
           .showMessage("info", msg, false, "OK", Constants.READ_MORE)
@@ -365,7 +367,7 @@ export class AppManifest implements CloudResource {
     context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<string[], FxError>> {
-    const manifestRes = await getManifest(inputs.projectPath, context.envInfo);
+    const manifestRes = await manifestUtils.getManifest(inputs.projectPath, context.envInfo, false);
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }
@@ -398,7 +400,11 @@ export class AppManifest implements CloudResource {
     context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<string, FxError>> {
-    const res = await buildTeamsAppPackage(inputs.projectPath, context.envInfo);
+    const res = await buildTeamsAppPackage(
+      context.projectSetting,
+      inputs.projectPath,
+      context.envInfo
+    );
     if (res.isOk()) {
       if (inputs.platform === Platform.CLI || inputs.platform === Platform.VS) {
         const builtSuccess = [
@@ -442,29 +448,29 @@ export class AppManifest implements CloudResource {
     return await updateManifest(context, inputs);
   }
 
-  // /**
-  //  * Check if manifest templates already exist.
-  //  */
-  // async preCheck(projectPath: string): Promise<string[]> {
-  //   const existFiles = new Array<string>();
-  //   for (const templates of ["Templates", "templates"]) {
-  //     const appPackageDir = path.join(projectPath, templates, "appPackage");
-  //     const manifestPath = path.resolve(appPackageDir, "manifest.template.json");
-  //     if (await fs.pathExists(manifestPath)) {
-  //       existFiles.push(manifestPath);
-  //     }
-  //     const resourcesDir = path.resolve(appPackageDir, MANIFEST_RESOURCES);
-  //     const defaultColorPath = path.join(resourcesDir, DEFAULT_COLOR_PNG_FILENAME);
-  //     if (await fs.pathExists(defaultColorPath)) {
-  //       existFiles.push(defaultColorPath);
-  //     }
-  //     const defaultOutlinePath = path.join(resourcesDir, DEFAULT_OUTLINE_PNG_FILENAME);
-  //     if (await fs.pathExists(defaultOutlinePath)) {
-  //       existFiles.push(defaultOutlinePath);
-  //     }
-  //   }
-  //   return existFiles;
-  // }
+  /**
+   * Check if manifest templates already exist.
+   */
+  async preCheck(projectPath: string): Promise<string[]> {
+    const existFiles = new Array<string>();
+    for (const templates of ["Templates", "templates"]) {
+      const appPackageDir = path.join(projectPath, templates, "appPackage");
+      const manifestPath = path.resolve(appPackageDir, "manifest.template.json");
+      if (await fs.pathExists(manifestPath)) {
+        existFiles.push(manifestPath);
+      }
+      const resourcesDir = path.resolve(appPackageDir, MANIFEST_RESOURCES);
+      const defaultColorPath = path.join(resourcesDir, DEFAULT_COLOR_PNG_FILENAME);
+      if (await fs.pathExists(defaultColorPath)) {
+        existFiles.push(defaultColorPath);
+      }
+      const defaultOutlinePath = path.join(resourcesDir, DEFAULT_OUTLINE_PNG_FILENAME);
+      if (await fs.pathExists(defaultOutlinePath)) {
+        existFiles.push(defaultOutlinePath);
+      }
+    }
+    return existFiles;
+  }
   private async getTeamsAppId(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
@@ -473,7 +479,7 @@ export class AppManifest implements CloudResource {
     let teamsAppId = "";
     // User may manually update id in manifest template file, rather than configuration file
     // The id in manifest template file should override configurations
-    const manifestResult = await getManifest(inputs.projectPath, envInfo);
+    const manifestResult = await manifestUtils.getManifest(inputs.projectPath, envInfo, false);
     if (manifestResult.isOk()) {
       teamsAppId = manifestResult.value.id;
     }

@@ -24,6 +24,7 @@ import {
   TabOptionItem,
   TabSPFxItem,
   TabSPFxNewUIItem,
+  WorkflowOptionItem,
 } from "../../src/plugins/solution/fx-solution/question";
 import { getLocalizedString } from "../../src/common/localizeUtils";
 
@@ -159,6 +160,18 @@ describe("Capability Questions", () => {
   });
 
   describe("createCapabilityQuestionPreview()", () => {
+    beforeEach(() => {
+      sinon.restore();
+      sinon.stub(process, "env").value({
+        BOT_NOTIFICATION_ENABLED: "true",
+        WORKFLOW_BOT_ENABLED: "true",
+      });
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
+
     it("should return single select question", () => {
       // Act
       const question = createCapabilityQuestionPreview();
@@ -168,6 +181,7 @@ describe("Capability Questions", () => {
       chai.assert.deepEqual(question.staticOptions, [
         NotificationOptionItem,
         CommandAndResponseOptionItem,
+        WorkflowOptionItem,
         TabNewUIOptionItem,
         TabSPFxNewUIItem,
         TabNonSsoItem,

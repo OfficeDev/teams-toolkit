@@ -1,48 +1,54 @@
 import * as chai from "chai";
-import * as vscode from "vscode";
-import * as sinon from "sinon";
-import * as handlers from "../../src/handlers";
-import * as StringResources from "../../package.nls.json";
-import {
-  Inputs,
-  Platform,
-  Stage,
-  VsCodeEnv,
-  ok,
-  err,
-  UserError,
-  Void,
-  Result,
-  FxError,
-  ProjectSettings,
-  ConfigFolderName,
-  ProjectSettingsFileName,
-} from "@microsoft/teamsfx-api";
-import M365TokenInstance from "../../src/commonlib/m365Login";
-import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
-import { WebviewPanel } from "../../src/controls/webviewPanel";
-import { PanelType } from "../../src/controls/PanelType";
-import { AzureAccountManager } from "../../src/commonlib/azureLogin";
-import { MockCore } from "../mocks/mockCore";
-import * as commonUtils from "../../src/utils/commonUtils";
-import * as localizeUtils from "../../src/utils/localizeUtils";
-import * as extension from "../../src/extension";
-import TreeViewManagerInstance from "../../src/treeview/treeViewManager";
-import { CollaborationState, CoreHookContext } from "@microsoft/teamsfx-core";
-import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
-import * as globalVariables from "../../src/globalVariables";
-import { Uri } from "vscode";
-import envTreeProviderInstance from "../../src/treeview/environmentTreeViewProvider";
-import accountTreeViewProviderInstance from "../../src/treeview/account/accountTreeViewProvider";
-import * as extTelemetryEvents from "../../src/telemetry/extTelemetryEvents";
-import { ExtensionErrors } from "../../src/error";
-import * as uuid from "uuid";
 import * as fs from "fs-extra";
 import * as path from "path";
+import * as sinon from "sinon";
 import * as util from "util";
-import * as os from "os";
-import { vscodeHelper } from "../../src/debug/depsChecker/vscodeHelper";
+import * as uuid from "uuid";
+import * as vscode from "vscode";
+
+import {
+  ConfigFolderName,
+  err,
+  FxError,
+  Inputs,
+  ok,
+  Platform,
+  ProjectSettings,
+  ProjectSettingsFileName,
+  Result,
+  Stage,
+  UserError,
+  Void,
+  VsCodeEnv,
+} from "@microsoft/teamsfx-api";
+import {
+  CollaborationState,
+  CoreHookContext,
+  DepsManager,
+  DepsType,
+} from "@microsoft/teamsfx-core";
+import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
+import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+
+import * as StringResources from "../../package.nls.json";
+import { AzureAccountManager } from "../../src/commonlib/azureLogin";
+import M365TokenInstance from "../../src/commonlib/m365Login";
 import { SUPPORTED_SPFX_VERSION } from "../../src/constants";
+import { PanelType } from "../../src/controls/PanelType";
+import { WebviewPanel } from "../../src/controls/webviewPanel";
+import { vscodeHelper } from "../../src/debug/depsChecker/vscodeHelper";
+import { ExtensionErrors } from "../../src/error";
+import * as extension from "../../src/extension";
+import * as globalVariables from "../../src/globalVariables";
+import * as handlers from "../../src/handlers";
+import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
+import * as extTelemetryEvents from "../../src/telemetry/extTelemetryEvents";
+import accountTreeViewProviderInstance from "../../src/treeview/account/accountTreeViewProvider";
+import envTreeProviderInstance from "../../src/treeview/environmentTreeViewProvider";
+import TreeViewManagerInstance from "../../src/treeview/treeViewManager";
+import * as commonUtils from "../../src/utils/commonUtils";
+import * as localizeUtils from "../../src/utils/localizeUtils";
+import { MockCore } from "../mocks/mockCore";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -62,6 +68,17 @@ describe("handlers", () => {
 
     it("No globalState error", async () => {
       const result = await handlers.activate();
+      chai.assert.deepEqual(result.isOk() ? result.value : result.error.name, {});
+    });
+
+    it("Valid project", async () => {
+      sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
+      const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      const addSharedPropertyStub = sandbox.stub(ExtTelemetry, "addSharedProperty");
+      const result = await handlers.activate();
+
+      chai.assert.isTrue(addSharedPropertyStub.called);
+      chai.assert.isTrue(sendTelemetryStub.calledOnceWith("open-teams-app"));
       chai.assert.deepEqual(result.isOk() ? result.value : result.error.name, {});
     });
   });
@@ -180,7 +197,7 @@ describe("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
 
-      sinon.stub(globalVariables, "workspaceUri").value(Uri.file(tmpDir));
+      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(tmpDir));
       const projectSettings: ProjectSettings = {
         appName: "myapp",
         version: "1.0.0",
@@ -507,7 +524,7 @@ describe("handlers", () => {
         })
       );
 
-      sinon.stub(globalVariables, "workspaceUri").value(Uri.parse("file://fakeProjectPath"));
+      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.parse("file://fakeProjectPath"));
       sinon.stub(globalVariables, "isSPFxProject").value(false);
       sinon.stub(commonUtils, "getM365TenantFromEnv").callsFake(async (env: string) => {
         return "fake-tenant-id";
@@ -698,7 +715,7 @@ describe("handlers", () => {
   describe("promptSPFxUpgrade", async () => {
     it("Prompt user to upgrade toolkit when project SPFx version higher than toolkit", async () => {
       sinon.stub(globalVariables, "isSPFxProject").value(true);
-      sinon.stub(globalVariables, "workspaceUri").value(Uri.file(""));
+      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(""));
       sinon.stub(fs, "pathExists").resolves(true);
       sinon.stub(fs, "readJson").resolves({
         "@microsoft/generator-sharepoint": {
@@ -719,7 +736,7 @@ describe("handlers", () => {
 
     it("Prompt user to upgrade project when project SPFx version lower than toolkit", async () => {
       sinon.stub(globalVariables, "isSPFxProject").value(true);
-      sinon.stub(globalVariables, "workspaceUri").value(Uri.file(""));
+      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(""));
       sinon.stub(fs, "pathExists").resolves(true);
       sinon.stub(fs, "readJson").resolves({
         "@microsoft/generator-sharepoint": {
@@ -741,7 +758,7 @@ describe("handlers", () => {
 
     it("Dont show notification when project SPFx version is the same with toolkit", async () => {
       sinon.stub(globalVariables, "isSPFxProject").value(true);
-      sinon.stub(globalVariables, "workspaceUri").value(Uri.file(""));
+      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(""));
       sinon.stub(fs, "pathExists").resolves(true);
       sinon.stub(fs, "readJson").resolves({
         "@microsoft/generator-sharepoint": { version: SUPPORTED_SPFX_VERSION },
@@ -755,6 +772,57 @@ describe("handlers", () => {
 
       chai.assert.equal(stubShowMessage.callCount, 0);
       sinon.restore();
+    });
+  });
+
+  describe("getDotnetPathHandler", async () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+    it("dotnet is installed", async () => {
+      sinon.stub(DepsManager.prototype, "getStatus").resolves([
+        {
+          name: ".NET Core SDK",
+          type: DepsType.Dotnet,
+          isInstalled: true,
+          command: "",
+          details: {
+            isLinuxSupported: false,
+            installVersion: "",
+            supportedVersions: [],
+            binFolders: ["dotnet-bin-folder"],
+          },
+        },
+      ]);
+
+      const dotnetPath = await handlers.getDotnetPathHandler();
+      chai.assert.equal(dotnetPath, `${path.delimiter}dotnet-bin-folder${path.delimiter}`);
+    });
+
+    it("dotnet is not installed", async () => {
+      sinon.stub(DepsManager.prototype, "getStatus").resolves([
+        {
+          name: ".NET Core SDK",
+          type: DepsType.Dotnet,
+          isInstalled: false,
+          command: "",
+          details: {
+            isLinuxSupported: false,
+            installVersion: "",
+            supportedVersions: [],
+            binFolders: undefined,
+          },
+        },
+      ]);
+
+      const dotnetPath = await handlers.getDotnetPathHandler();
+      chai.assert.equal(dotnetPath, `${path.delimiter}`);
+    });
+
+    it("failed to get dotnet path", async () => {
+      sinon.stub(DepsManager.prototype, "getStatus").rejects(new Error("failed to get status"));
+      const dotnetPath = await handlers.getDotnetPathHandler();
+      chai.assert.equal(dotnetPath, `${path.delimiter}`);
     });
   });
 });

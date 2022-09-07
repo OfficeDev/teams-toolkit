@@ -98,6 +98,12 @@ describe("Migration test for v3", () => {
           name: "azure-function",
           connections: ["teams-api"],
         },
+        {
+          name: "simple-auth",
+        },
+        {
+          name: "key-vault",
+        },
       ],
       programmingLanguage: "javascript",
     };

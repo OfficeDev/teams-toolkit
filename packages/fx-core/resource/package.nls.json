@@ -917,5 +917,6 @@
   "depChecker.linuxDepsNotFoundHelpLinkMessage": "Cannot find @SupportedPackages.\n\nTeams Toolkit requires these dependencies.",
   "error.ActionNotExist": "Action not found: %s.",
   "error.ComponentNotExist": "Component not found: %s.",
-  "error.BadComponent": "Component '%s' lacks of property: %s."
+  "error.BadComponent": "Component '%s' lacks of property: %s.",
+  "error.NgrokConfigError": "Load ngrok config %s failed. %s"
 }

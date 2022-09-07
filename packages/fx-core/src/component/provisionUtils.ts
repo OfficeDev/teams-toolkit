@@ -60,7 +60,7 @@ import { checkWhetherLocalDebugM365TenantMatches } from "../plugins/solution/fx-
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { ComponentNames } from "./constants";
 import { AppStudioScopes } from "./resource/appManifest/constants";
-import { resetEnvInfoWhenSwitchM365 } from "./utils";
+import { isCSharpProject, resetEnvInfoWhenSwitchM365 } from "./utils";
 
 interface M365TenantRes {
   tenantIdInToken: string;
@@ -101,6 +101,7 @@ export class ProvisionUtils {
       const res = await checkWhetherLocalDebugM365TenantMatches(
         envInfo,
         ctx.telemetryReporter,
+        isCSharpProject(ctx.projectSetting.programmingLanguage),
         tenantIdInConfig,
         ctx.tokenProvider.m365TokenProvider,
         inputs.projectPath
@@ -164,7 +165,8 @@ export class ProvisionUtils {
           inputs.projectPath,
           hasSwitchedM365Tenant,
           solutionConfigRes.value.hasSwitchedSubscription,
-          hasBotServiceCreatedBefore
+          hasBotServiceCreatedBefore,
+          isCSharpProject(ctx.projectSetting.programmingLanguage)
         );
 
         if (handleConfigFilesWhenSwitchAccountsRes.isErr()) {
@@ -191,7 +193,8 @@ export class ProvisionUtils {
         inputs.projectPath,
         hasSwitchedM365Tenant,
         false,
-        false
+        false,
+        isCSharpProject(ctx.projectSetting.programmingLanguage)
       );
 
       if (handleConfigFilesWhenSwitchAccountsRes.isErr()) {

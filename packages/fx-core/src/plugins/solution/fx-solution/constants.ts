@@ -162,6 +162,7 @@ export enum SolutionError {
   FailedToUpdateAzureParameters = "FailedToUpdateAzureParameters",
   FailedToBackupFiles = "FailedToBackupFiles",
   MissingSubscriptionIdInConfig = "MissingSubscriptionIdInConfig",
+  FailedToResetAppSettingsDevelopment = "FailedToResetAppSettingsDevelopment",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";

@@ -821,10 +821,8 @@ describe("handlers", () => {
 
     it("failed to get dotnet path", async () => {
       sinon.stub(DepsManager.prototype, "getStatus").rejects(new Error("failed to get status"));
-      const showErrorStub = sinon.stub(handlers, "showError");
       const dotnetPath = await handlers.getDotnetPathHandler();
       chai.assert.equal(dotnetPath, `${path.delimiter}`);
-      sinon.assert.calledOnce(showErrorStub);
     });
   });
 });

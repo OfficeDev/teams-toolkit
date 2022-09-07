@@ -210,7 +210,8 @@ export class ProvisionUtils {
     envInfo: v3.EnvInfoV3,
     azureAccountProvider: AzureAccountProvider,
     targetSubscriptionIdFromCLI: string | undefined,
-    envName: string | undefined
+    envName: string | undefined,
+    isResourceGroupOnlyFromCLI: boolean
   ): Promise<Result<ProvisionSubscriptionCheckResult, FxError>> {
     const subscriptionIdInConfig: string | undefined = envInfo.config.azure?.subscriptionId;
     const subscriptionNameInConfig: string | undefined =
@@ -223,6 +224,7 @@ export class ProvisionUtils {
       TelemetryEvent.CheckSubscriptionStart,
       envName ? { [TelemetryProperty.Env]: getHashedEnv(envName) } : {}
     );
+
     if (!subscriptionIdInState && !subscriptionIdInConfig && !targetSubscriptionIdFromCLI) {
       const subscriptionInAccount = await azureAccountProvider.getSelectedSubscription(true);
       if (!subscriptionInAccount) {
@@ -277,7 +279,7 @@ export class ProvisionUtils {
       }
     }
 
-    if (subscriptionIdInConfig) {
+    if (subscriptionIdInConfig && !isResourceGroupOnlyFromCLI) {
       const targetConfigSubInfo = findSubscriptionFromList(subscriptionIdInConfig, subscriptions);
 
       if (!targetConfigSubInfo) {
@@ -425,7 +427,10 @@ export class ProvisionUtils {
       envInfo,
       tokenProvider.azureAccountProvider,
       targetSubscriptionIdFromCLI,
-      inputs.env
+      inputs.env,
+      !!inputs.targetResourceGroupName &&
+        !targetSubscriptionIdFromCLI &&
+        inputs.platform === Platform.CLI
     );
 
     if (subscriptionResult.isErr()) {

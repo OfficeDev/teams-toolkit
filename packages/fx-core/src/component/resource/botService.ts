@@ -133,7 +133,15 @@ export async function createBotAAD(ctx: ResourceContextV3): Promise<Result<any, 
   const graphToken = graphTokenRes.isOk() ? graphTokenRes.value : undefined;
   CheckThrowSomethingMissing(ConfigNames.GRAPH_TOKEN, graphToken);
   CheckThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, ctx.projectSetting.appName);
-  const botConfig = ctx.envInfo.state[ComponentNames.TeamsBot];
+  // Respect existing bot aad from config first, then states.
+  const botConfig =
+    ctx.envInfo.config.bot?.appId && ctx.envInfo.config.bot?.appPassword
+      ? {
+          botId: ctx.envInfo.config.bot?.appId,
+          botPassword: ctx.envInfo.config.bot?.appPassword,
+        }
+      : ctx.envInfo.state[ComponentNames.TeamsBot];
+
   const botAADCreated = botConfig?.botId !== undefined && botConfig?.botPassword !== undefined;
   if (!botAADCreated) {
     const solutionConfig = ctx.envInfo.state.solution as v3.AzureSolutionConfig;

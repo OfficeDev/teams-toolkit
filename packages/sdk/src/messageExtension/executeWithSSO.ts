@@ -53,7 +53,7 @@ function getSignInResponseForMessageExtension(teamsfx: TeamsFx, scopes: string |
  * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
  * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
  *
- * @returns An Invoke Response for the activity. If the logic not return any, return void instead.
+ * @returns A MessageExtension Response for the activity. If the logic not return any, return void instead.
  */
 export async function executionWithToken(
   context: TurnContext,
@@ -106,7 +106,7 @@ export async function executionWithToken(
  * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
  * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
  *
- * @returns An Invoke Response for the activity. If the logic not return any, return void instead.
+ * @returns A MessageExtension Response for the activity. If the logic not return any, return void instead.
  */
 export async function queryWithToken(
   context: TurnContext,

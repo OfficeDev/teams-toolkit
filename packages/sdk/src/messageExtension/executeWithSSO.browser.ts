@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { TurnContext, InvokeResponse, ActivityTypes } from "botbuilder";
+import { TurnContext, MessagingExtensionResponse } from "botbuilder";
 import { AuthenticationConfiguration } from "../models/configuration";
 import { TeamsMsgExtTokenResponse } from "./teamsMsgExtTokenResponse";
 import { ErrorWithCode, ErrorMessage, ErrorCode } from "../core/errors";
@@ -16,7 +16,7 @@ export async function queryWithToken(
   config: AuthenticationConfiguration,
   scopes: string | string[],
   logic: (token: TeamsMsgExtTokenResponse) => Promise<any>
-): Promise<InvokeResponse | void> {
+): Promise<MessagingExtensionResponse | void> {
   throw new ErrorWithCode(
     formatString(ErrorMessage.BrowserRuntimeNotSupported, "queryWithToken in message extension"),
     ErrorCode.RuntimeNotSupported

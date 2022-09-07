@@ -9,7 +9,7 @@ Users execute query with SSO or Access Token.
 <b>Signature:</b>
 
 ```typescript
-export declare function queryWithToken(context: TurnContext, config: AuthenticationConfiguration, scopes: string | string[], logic: (token: TeamsMsgExtTokenResponse) => Promise<any>): Promise<InvokeResponse | void>;
+export declare function queryWithToken(context: TurnContext, config: AuthenticationConfiguration | null, scopes: string | string[], logic: (token: TeamsMsgExtTokenResponse) => Promise<any>): Promise<MessagingExtensionResponse | void>;
 ```
 
 ## Parameters
@@ -17,15 +17,15 @@ export declare function queryWithToken(context: TurnContext, config: Authenticat
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  context | TurnContext | The context object for the current turn. |
-|  config | [AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md) | User custom the message extension authentication configuration. |
+|  config | [AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md) \| null | User custom the message extension authentication configuration. |
 |  scopes | string \| string\[\] | The list of scopes for which the token will have access. |
 |  logic | (token: [TeamsMsgExtTokenResponse](./teamsfx.teamsmsgexttokenresponse.md)<!-- -->) =&gt; Promise&lt;any&gt; | The user execution code with SSO or Access token. |
 
 <b>Returns:</b>
 
-Promise&lt;InvokeResponse \| void&gt;
+Promise&lt;MessagingExtensionResponse \| void&gt;
 
-An Invoke Response for the activity. If the logic not return any, return void instead.
+A MessageExtension Response for the activity. If the logic not return any, return void instead.
 
 ## Exceptions
 

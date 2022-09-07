@@ -28,6 +28,7 @@ import { HeroCard } from 'botbuilder';
 import { IAdaptiveCard } from 'adaptivecards';
 import { InvokeResponse } from 'botbuilder-core';
 import { InvokeResponse as InvokeResponse_2 } from 'botbuilder';
+import { MessagingExtensionResponse } from 'botbuilder';
 import { O365ConnectorCard } from 'botbuilder';
 import { ReceiptCard } from 'botbuilder';
 import { SecureContextOptions } from 'tls';
@@ -335,7 +336,7 @@ export class OnBehalfOfUserCredential implements TokenCredential {
 }
 
 // @public
-export function queryWithToken(context: TurnContext_2, config: AuthenticationConfiguration, scopes: string | string[], logic: (token: TeamsMsgExtTokenResponse) => Promise<any>): Promise<InvokeResponse_2 | void>;
+export function queryWithToken(context: TurnContext_2, config: AuthenticationConfiguration | null, scopes: string | string[], logic: (token: TeamsMsgExtTokenResponse) => Promise<any>): Promise<MessagingExtensionResponse | void>;
 
 // @public
 export function sendAdaptiveCard(target: NotificationTarget, card: unknown): Promise<MessageResponse>;

@@ -154,6 +154,9 @@ export class TeamsUserCredential implements TokenCredential {
    * Get access token from credential.
    *
    * Important: Access tokens are stored in sessionStorage, read more here: https://aka.ms/teamsfx-session-storage-notice
+   * Important: Full trust applications do not read the resource information from the webApplicationInfo section of the app
+   * manifest. Instead, this resource (along with any additional resources from which to request tokens) must be provided
+   * as a list of resources to the getToken() method through a GetTeamsUserTokenOptions object.
    *
    * @example
    * ```typescript
@@ -167,6 +170,9 @@ export class TeamsUserCredential implements TokenCredential {
    * await credential.getToken("User.Read Application.Read.All") // Get Graph access token for multiple scopes using space-separated string
    * await credential.getToken("https://graph.microsoft.com/User.Read") // Get Graph access token with full resource URI
    * await credential.getToken(["https://outlook.office.com/Mail.Read"]) // Get Outlook access token
+   *
+   * const options: GetTeamsUserTokenOptions = { resources: ["https://domain.example.com"] }; // set up resources for full trust apps.
+   * await credential.getToken([], options) // Get sso token from teams client - only use this approach for full trust apps.
    * ```
    *
    * @param {string | string[]} scopes - The list of scopes for which the token will have access.

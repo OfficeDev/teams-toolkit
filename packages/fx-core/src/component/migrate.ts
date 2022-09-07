@@ -325,6 +325,7 @@ export function convertProjectSettingsV2ToV3(
       settingsV3.components.push({
         name: ComponentNames.APIM,
         provision: true,
+        deploy: true,
       });
     }
     if (solutionSettings.activeResourcePlugins.includes("fx-resource-simple-auth")) {
@@ -341,6 +342,7 @@ export function convertProjectSettingsV2ToV3(
         build: true,
         folder: "api",
         deploy: true,
+        artifactFolder: "api",
       });
       settingsV3.components.push({
         name: ComponentNames.Function,

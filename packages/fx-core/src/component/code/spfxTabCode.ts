@@ -86,10 +86,23 @@ export async function scaffoldSPFx(
     const webpartName = inputs[SPFXQuestionNames.webpart_name] as string;
     const framework = (inputs[SPFXQuestionNames.framework_type] as string) ?? undefined;
     let solutionName: string | undefined = undefined;
+
     if (!isAddSpfx) {
       solutionName =
         ((context as ContextV3).projectSetting?.appName as string) ||
         ((context as PluginContext).projectSettings?.appName as string);
+    } else {
+      const yorcPath = path.join(inputs.projectPath, "SPFx", ".yo-rc.json");
+      if (!(await fs.pathExists(yorcPath))) {
+        await fs.ensureFile(yorcPath);
+        await fs.writeJSON(yorcPath, {
+          "@microsoft/generator-sharepoint": {
+            solutionName:
+              ((context as ContextV3).projectSetting?.appName as string) ||
+              ((context as PluginContext).projectSettings?.appName as string),
+          },
+        });
+      }
     }
 
     const componentName = Utils.normalizeComponentName(webpartName);

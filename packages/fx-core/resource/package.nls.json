@@ -507,6 +507,8 @@
   "error.apiConnector.pkgFileNotExistError": "In %s project, there is no package.json exist",
   "error.apiConnector.componentNotExistError": "Component %s not exist, please add first",
   "error.apiConnector.envVarExistError": "Please provide a different API name to avoid conflicts with existing env variables %s in .env.teamsfx.local",
+  "error.debugHandler.AppManifestPackageNotExistError": "manifestPackagePath %s does not exist.",
+  "error.debugHandler.InvalidAppManifestPackageFileFormatError": "manifestPackagePath must be .zip file path.",
   "error.debugHandler.InvalidSSODebugArgsError": "objectId, clientId and clientSecret are all required if you use existing AAD app for SSO.",
   "error.debugHandler.InvalidExistingBotArgsError": "botId and botPassword need to be set together if you use existing bot.",
   "error.debugHandler.BotMessagingEndpointMissingError": "botMessagingEndpoint is required.",

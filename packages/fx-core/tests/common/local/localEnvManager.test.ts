@@ -6,7 +6,7 @@ import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 
 import { UserError, ok } from "@microsoft/teamsfx-api";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as path from "path";
 
 import * as tools from "../../../src/common/tools";
@@ -50,8 +50,30 @@ describe("LocalEnvManager", () => {
   });
 
   describe("getProjectSettings()", () => {
+    const sandbox = sinon.createSandbox();
+    let files: Record<string, any> = {};
+
+    beforeEach(() => {
+      files = {};
+      sandbox.restore();
+      sandbox.stub(fs, "pathExists").callsFake(async (file: string) => {
+        return Promise.resolve(files[path.resolve(file)] !== undefined);
+      });
+      sandbox.stub(fs, "writeFile").callsFake(async (file: fs.PathLike | number, data: any) => {
+        files[path.resolve(file as string)] = data;
+        return Promise.resolve();
+      });
+      sandbox.stub(fs, "readJson").callsFake(async (file: string) => {
+        return Promise.resolve(JSON.parse(files[path.resolve(file)]));
+      });
+      sandbox.stub(tools, "waitSeconds").resolves();
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
     it("happy path", async () => {
-      await fs.ensureDir(configFolder);
       await fs.writeFile(
         path.resolve(configFolder, "projectSettings.json"),
         JSON.stringify(projectSettings0)
@@ -67,7 +89,6 @@ describe("LocalEnvManager", () => {
     });
 
     it("missing field", async () => {
-      await fs.ensureDir(configFolder);
       await fs.writeFile(path.resolve(configFolder, "projectSettings.json"), "{}");
 
       const projectSettings = await localEnvManager.getProjectSettings(projectPath);
@@ -78,17 +99,12 @@ describe("LocalEnvManager", () => {
     });
 
     it("missing file", async () => {
-      await fs.ensureDir(configFolder);
-      await fs.emptyDir(configFolder);
-
-      sinon.stub(tools, "waitSeconds").resolves();
       let error: UserError | undefined = undefined;
       try {
         await localEnvManager.getProjectSettings(projectPath);
       } catch (e: any) {
         error = e as UserError;
       }
-      sinon.restore();
 
       chai.assert.isDefined(error);
       chai.assert.equal(error!.name, "FileNotFoundError");
@@ -96,8 +112,30 @@ describe("LocalEnvManager", () => {
   });
 
   describe("getLocalSettings()", () => {
+    const sandbox = sinon.createSandbox();
+    let files: Record<string, any> = {};
+
+    beforeEach(() => {
+      files = {};
+      sandbox.restore();
+      sandbox.stub(fs, "pathExists").callsFake(async (file: string) => {
+        return Promise.resolve(files[path.resolve(file)] !== undefined);
+      });
+      sandbox.stub(fs, "writeFile").callsFake(async (file: fs.PathLike | number, data: any) => {
+        files[path.resolve(file as string)] = data;
+        return Promise.resolve();
+      });
+      sandbox.stub(fs, "readJson").callsFake(async (file: string) => {
+        return Promise.resolve(JSON.parse(files[path.resolve(file)]));
+      });
+      sandbox.stub(tools, "waitSeconds").resolves();
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
     it("happy path", async () => {
-      await fs.ensureDir(configFolder);
       await fs.writeFile(
         path.resolve(configFolder, "projectSettings.json"),
         JSON.stringify(projectSettings0)
@@ -125,7 +163,6 @@ describe("LocalEnvManager", () => {
     });
 
     it("missing field", async () => {
-      await fs.ensureDir(configFolder);
       await fs.writeFile(
         path.resolve(configFolder, "projectSettings.json"),
         JSON.stringify(projectSettings0)
@@ -142,19 +179,15 @@ describe("LocalEnvManager", () => {
     });
 
     it("missing file", async () => {
-      await fs.ensureDir(configFolder);
-      await fs.emptyDir(configFolder);
       await fs.writeFile(
         path.resolve(configFolder, "projectSettings.json"),
         JSON.stringify(projectSettings0)
       );
 
-      sinon.stub(tools, "waitSeconds").resolves();
       const projectSettings = await localEnvManager.getProjectSettings(projectPath);
       const localSettings = await localEnvManager.getLocalSettings(projectPath, {
         projectId: projectSettings.projectId,
       });
-      sinon.restore();
 
       chai.assert.isUndefined(localSettings);
     });
@@ -351,13 +384,29 @@ describe("LocalEnvManager", () => {
   });
 
   describe("getNgrokTunnelConfig()", () => {
-    beforeEach(() => {});
+    const sandbox = sinon.createSandbox();
+    let files: Record<string, any> = {};
 
-    afterEach(() => {});
+    beforeEach(() => {
+      files = {};
+      sandbox.restore();
+      sandbox.stub(fs, "pathExists").callsFake(async (file: string) => {
+        return Promise.resolve(files[path.resolve(file)] !== undefined);
+      });
+      sandbox.stub(fs, "writeFile").callsFake(async (file: fs.PathLike | number, data: any) => {
+        files[path.resolve(file as string)] = data;
+        return Promise.resolve();
+      });
+      sandbox.stub(fs, "readFile").callsFake(async (file: fs.PathLike | number, options?: any) => {
+        return Promise.resolve(files[path.resolve(file as string)]);
+      });
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
 
     it("getNgrokTunnelConfig() happy path", async () => {
-      await fs.emptyDir(configFolder);
-      await fs.ensureDir(configFolder);
       const ngrokConfigFilePath = path.join(configFolder, "ngrok.yml");
       await fs.writeFile(ngrokConfigFilePath, "tunnels:\n  bot:\n     addr: 53000\n");
       const res = await localEnvManager.getNgrokTunnelConfig(ngrokConfigFilePath);
@@ -365,8 +414,6 @@ describe("LocalEnvManager", () => {
     });
 
     it("empty result", async () => {
-      await fs.emptyDir(configFolder);
-      await fs.ensureDir(configFolder);
       const ngrokConfigFilePath = path.join(configFolder, "ngrok.yml");
       await fs.writeFile(ngrokConfigFilePath, "");
       const res = await localEnvManager.getNgrokTunnelConfig(ngrokConfigFilePath);
@@ -374,8 +421,6 @@ describe("LocalEnvManager", () => {
     });
 
     it("error schema", async () => {
-      await fs.emptyDir(configFolder);
-      await fs.ensureDir(configFolder);
       const ngrokConfigFilePath = path.join(configFolder, "ngrok.yml");
       await fs.writeFile(ngrokConfigFilePath, "tunnels:\nbot\n-\n");
       await chai

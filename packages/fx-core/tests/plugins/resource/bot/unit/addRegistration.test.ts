@@ -61,10 +61,15 @@ describe("AAD Registration", () => {
   });
 
   describe("registerAADAppAndGetSecretByAppStudio", () => {
+    afterEach(async () => {
+      sinon.restore();
+    });
     it("Invalid App Studio Token", async () => {
       // Arrange
       const appStudioToken = "some invalid app studio token";
       const displayName = "invalidAppStudioToken";
+
+      sinon.stub(RetryHandler, "Retry").throws(new CreateAADAppError());
 
       // Act
       try {

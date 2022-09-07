@@ -201,6 +201,7 @@ describe("SSODebugHandler", () => {
         .returns(Promise.resolve(frontendEnvs));
       sinon.stub(LocalEnvProvider.prototype, "saveFrontendLocalEnvs").callsFake(async (envs) => {
         frontendEnvs = envs;
+        return "";
       });
       const args: SSODebugArgs = {};
       const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
@@ -308,6 +309,7 @@ describe("SSODebugHandler", () => {
       sinon.stub(LocalEnvProvider.prototype, "loadBotLocalEnvs").returns(Promise.resolve(botEnvs));
       sinon.stub(LocalEnvProvider.prototype, "saveBotLocalEnvs").callsFake(async (envs) => {
         botEnvs = envs;
+        return "";
       });
       const args: SSODebugArgs = {};
       const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
@@ -424,6 +426,7 @@ describe("SSODebugHandler", () => {
         .returns(Promise.resolve(frontendEnvs));
       sinon.stub(LocalEnvProvider.prototype, "saveFrontendLocalEnvs").callsFake(async (envs) => {
         frontendEnvs = envs;
+        return "";
       });
       let botEnvs: LocalEnvs = {
         template: {},
@@ -433,6 +436,7 @@ describe("SSODebugHandler", () => {
       sinon.stub(LocalEnvProvider.prototype, "loadBotLocalEnvs").returns(Promise.resolve(botEnvs));
       sinon.stub(LocalEnvProvider.prototype, "saveBotLocalEnvs").callsFake(async (envs) => {
         botEnvs = envs;
+        return "";
       });
       const args: SSODebugArgs = {};
       const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);

@@ -41,17 +41,16 @@ The following files provide the business logic for the workflow bot. These files
 
 | File | Contents |
 | - | - |
-| `src/index.ts` | Application entry point and `restify` handlers for the workflow bot |
+| `src/index.js` | Application entry point and `restify` handlers for the workflow bot |
 | `src/adaptiveCards/helloworldCommand.json` | A generated Adaptive Card that is sent to Teams |
-| `src/commands/helloworldCommandHandler.ts` | Responds to the command message |
-| `src/cardActions/doStuffActionHandler.ts` | Responds to the `doStuff` card action |
-| `src/cardModels.ts` | The default Adaptive Card data model |
+| `src/commands/helloworldCommandHandler.js` | Responds to the command message |
+| `src/cardActions/doStuffActionHandler.js` | Responds to the `doStuff` card action |
 
 The following files implement the core workflow bot on the Bot Framework. You generally will not need to customize these files.
 
 | File / Folder | Contents |
 | - | - |
-| `src/internal/initialize.ts` | Application initialization and bot message handling |
+| `src/internal/initialize.js` | Application initialization and bot message handling |
 
 The following files are project-related files. You generally will not need to customize these files.
 
@@ -74,9 +73,9 @@ Teams Toolkit enables you to [easily connect to an existing API](#connect-to-exi
 
 ## Customize the Adaptive Card
 
-You can edit the file `src/adaptiveCards/helloworldCommand.json` to customize the Adaptive Card to your liking. The file `src/cardModels.ts` defines a data structure that is used to fill data for the Adaptive Card.
+You can edit the file `src/adaptiveCards/helloworldCommand.json` to customize the Adaptive Card to your liking. 
 
-The binding between the model and the Adaptive Card is done by name matching (for example,`CardData.title` maps to `${title}` in the Adaptive Card). You can add, edit, or remove properties and their bindings to customize the Adaptive Card to your needs.
+The binding between the model and the Adaptive Card is done by name matching (for example, `cardData.title` maps to `${title}` in the Adaptive Card). You can add, edit, or remove properties and their bindings to customize the Adaptive Card to your needs.
 
 You can also add new cards if appropriate for your application. Please follow this [sample](https://aka.ms/teamsfx-adaptive-card-sample) to see how to build different types of adaptive cards with a list or a table of dynamic contents using `ColumnSet` and `FactSet`.
 
@@ -143,16 +142,15 @@ Please note:
 * The `actionData` is the data associated with the action, which may include dynamic user input or some contextual data provided in the `data` property of your action.
 * If an Adaptive Card is returned, then the existing card will be replaced with it by default.
 
-```typescript
-import { AdaptiveCards } from "@microsoft/adaptivecards-tools";
-import { TurnContext, InvokeResponse } from "botbuilder";
-import { TeamsFxAdaptiveCardActionHandler, InvokeResponseFactory } from "@microsoft/teamsfx";
-import responseCard from "../adaptiveCards/responseCard.json";
+```javascript
+const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
+const { AdaptiveCardResponse, InvokeResponseFactory } = require("@microsoft/teamsfx");
+const responseCard = require("../adaptiveCards/responseCard.json");
 
-export class Handler1 implements TeamsFxAdaptiveCardActionHandler { 
+export class Handler1 { 
     triggerVerb = "doStuff";
 
-    async handleActionInvoked(context: TurnContext, actionData: any): Promise<InvokeResponse> { 
+    async handleActionInvoked(context, message) { 
         const responseCardJson = AdaptiveCards.declare(responseCard).render(actionData);
         return InvokeResponseFactory.adaptiveCard(responseCardJson);
     } 
@@ -163,11 +161,11 @@ export class Handler1 implements TeamsFxAdaptiveCardActionHandler {
 
 ### Step 4: register the action handler
 
-1. Go to `bot/src/internal/initialize.ts`;
+1. Go to `bot/src/internal/initialize.js`;
 2. Update your `conversationBot` initialization to enable cardAction feature and add the handler to `actions` array:
 
-```typescript
-export const conversationBot = new ConversationBot({ 
+```javascript
+const conversationBot = new ConversationBot({ 
   ... 
   cardAction: { 
     enabled: true, 
@@ -186,26 +184,27 @@ The notification feature adds the ability for your application to send Adaptive 
 
 To add the notification feature:
 
-1. Go to `bot\src\internal\initialize.ts`
+1. Go to `bot\src\internal\initialize.js`
 2. Update your `conversationBot` initialization to enable notification feature:
-    ```typescript
-    const conversationBot = new ConversationBot({ 
-      ... 
-      cardAction: { 
-        enabled: true, 
-        actions: [ 
-          new Handler1() 
-        ], 
-      },
-      notification: {
-        enabled: true
-      } 
-    }); 
-    ```
 
-3. To quickly add a sample notification triggered by a HTTP request, you can add the following sample code in `bot\src\index.ts`:
+```javascript
+const conversationBot = new ConversationBot({ 
+  ... 
+  cardAction: { 
+    enabled: true, 
+    actions: [ 
+      new Handler1() 
+    ], 
+  },
+  notification: {
+    enabled: true
+  } 
+}); 
+```
 
-    ```typescript
+3. To quickly add a sample notification triggered by a HTTP request, you can add the following sample code in `bot\src\index.js`:
+
+    ```javascript
     server.post("/api/notification", async (req, res) => {
       for (const target of await conversationBot.notification.installations()) {
         await target.sendMessage("This is a sample notification message");
@@ -213,7 +212,6 @@ To add the notification feature:
     
       res.json({});
     });
-    ```
 
 4. Uninstall your previous bot installation from Teams, and press `F5` to start your application.
 5. Send a notification to the bot installation targets (channel/group chat/personal chat) by using a your favorite tool to send a HTTP POST request to `https://localhost:3978/api/notification`.
@@ -232,7 +230,7 @@ For more information, [click here](https://aka.ms/teamsfx-connect-api).
 
 ## Customize the initialization
 
-The default initialization is located in `bot/src/internal/initialize.ts`.
+The default initialization is located in `bot/src/internal/initialize.js`.
 
 You can update the initialization logic to:
 

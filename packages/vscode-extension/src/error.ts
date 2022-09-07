@@ -42,4 +42,8 @@ export enum ExtensionErrors {
   NgrokNotFoundError = "NgrokNotFoundError",
   NgrokTunnelAddrNotFoundError = "NgrokTunnelAddrNotFoundError",
   TunnelServiceNotStartedError = "TunnelServiceNotStartedError",
+  SetUpTabError = "SetUpTabError",
+  SetUpBotError = "SetUpBotError",
+  SetUpSSOError = "SetUpSSOError",
+  PrepareManifestError = "PrepareManifestError",
 }

@@ -8,8 +8,11 @@ import * as vscode from "vscode";
 import { FxError, Result, Void } from "@microsoft/teamsfx-api";
 import { TabDebugArgs, TabDebugHandler } from "@microsoft/teamsfx-core";
 
+import VsCodeLogInstance from "../../commonlib/log";
 import { workspaceUri } from "../../globalVariables";
+import { setUpTabDisplayMessages } from "../constants";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
+import { handleDebugActions } from "./common";
 
 export class SetUpTabTaskTerminal extends BaseTaskTerminal {
   private readonly args: TabDebugArgs;
@@ -20,8 +23,14 @@ export class SetUpTabTaskTerminal extends BaseTaskTerminal {
   }
 
   async do(): Promise<Result<Void, FxError>> {
+    VsCodeLogInstance.outputChannel.show();
+    VsCodeLogInstance.info(setUpTabDisplayMessages.taskName);
+    VsCodeLogInstance.outputChannel.appendLine(setUpTabDisplayMessages.check);
+
     const workspacePath: string = workspaceUri?.fsPath as string;
     const handler = new TabDebugHandler(workspacePath, this.args);
-    return await handler.setUp();
+    const actions = handler.getActions();
+
+    return await handleDebugActions(actions, setUpTabDisplayMessages);
   }
 }

@@ -229,6 +229,7 @@ jobs:
 
       - name: get job id
         id: get-job-id
+        if: ${{ always() }}
         uses: ayachensiyuan/get-action-job-id@v1.5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -272,11 +273,12 @@ jobs:
         run: |
           committer=`git log -1 --pretty=format:'%an'`
           mc=`cat ./packages/cli/tests/e2e/mochawesome-report/mochawesome.json | jq -c | sed -e 's/"/\\"/g'`
+          slow_count=`grep -c '"severity":"slow"' /tmp/.metrics/output.txt || true`
           raw_url="https://github.com/${{ github.repository }}/runs/${{ steps.get-job-id.outputs.jobId }}?check_suite_focus=true"
           curl -X POST https://teamsfxteststatus.azurewebsites.net/api/testCase \
              -H 'Content-Type: application/json' \
              -H 'Authorization: Bearer ${{ secrets.TEAMSFX_PORTAL_TOKEN }}' \
-               -d "{\"basic\":{\"reportId\":\"01\"},\"git\":{\"orginazation\":\"${{ github.repository_owner }}\",\"repository\":\"${{ github.repository }}\",\"commit\":\"${{ github.sha }}\",\"author\":\"$committer\",\"branch\":\"${{ github.ref }}\"},\"github\":{\"os\":\"Ubuntu\",\"nodeVersion\":\"14\",\"on\":\"${{ github.event_name }}\",\"jobId\":\"${{ steps.get-job-id.outputs.jobId }}\",\"runId\":\"${{ github.run_id }}\",\"caseURL\":\"$raw_url\"}, \"mochawesome\": $mc}"
+             -d "{\"basic\":{\"reportId\":\"01\"},\"git\":{\"orginazation\":\"${{ github.repository_owner }}\",\"repository\":\"${{ github.repository }}\",\"commit\":\"${{ github.sha }}\",\"author\":\"$committer\",\"branch\":\"${{ github.ref }}\"},\"github\":{\"os\":\"Ubuntu\",\"nodeVersion\":\"14\",\"on\":\"${{ github.event_name }}\",\"jobId\":\"${{ steps.get-job-id.outputs.jobId }}\",\"runId\":\"${{ github.run_id }}\",\"caseURL\":\"$raw_url\", \"slowMethod\":\"$slow_count\"}, \"mochawesome\": $mc}"
 
   tear-down:
     if: ${{ always() && github.event_name == 'schedule' }}

@@ -146,3 +146,20 @@ export const npmInstallDisplayMessages: DisplayMessages = {
   errorMessageLink: "teamstoolkit.localDebug.terminal",
   errorHelpLink: "https://aka.ms/teamsfx-npm-package-task", // TODO: update npm install help link
 };
+
+export const setUpTabDisplayMessages: DisplayMessages = {
+  taskName: "Set up Tab",
+  check:
+    "Teams Toolkit is setting up Tab for debugging. A summary will be generated for your reference.",
+  checkNumber: "We are running total @number of steps for you.",
+  summary: "Set up Tab Summary:",
+  learnMore: "Visit @Link to learn more about Set up Tab task.",
+  learnMoreHelpLink: "https://aka.ms/teamsfx-debug-set-up-tab",
+  launchServices: "",
+  errorName: ExtensionErrors.SetUpTabError,
+  errorMessageKey: "teamstoolkit.localDebug.setUpTabFailure",
+  errorDisplayMessageKey: "teamstoolkit.localDebug.setUpTabFailure",
+  errorMessageCommand: "command:fx-extension.showOutputChannel",
+  errorMessageLink: "teamstoolkit.localDebug.outputPanel",
+  errorHelpLink: "https://aka.ms/teamsfx-debug-set-up-tab",
+};

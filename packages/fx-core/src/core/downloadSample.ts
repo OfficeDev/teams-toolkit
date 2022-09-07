@@ -1,6 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { assembleError, err, FxError, Inputs, ok, Platform, Result } from "@microsoft/teamsfx-api";
+import {
+  assembleError,
+  ContextV3,
+  err,
+  FxError,
+  Inputs,
+  ok,
+  Platform,
+  ProjectSettingsV3,
+  Result,
+} from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import axios, { AxiosResponse } from "axios";
 import * as fs from "fs-extra";
@@ -101,7 +111,8 @@ export async function downloadSampleHook(sampleId: string, sampleAppPath: string
 
 export async function downloadSample(
   inputs: Inputs,
-  ctx?: CoreHookContext
+  ctx?: CoreHookContext,
+  contextV3?: ContextV3
 ): Promise<Result<string, FxError>> {
   let fxError;
   const progress = TOOLS.ui.createProgressBar("Fetch sample app", 3);
@@ -160,6 +171,7 @@ export async function downloadSample(
       inputs.projectId = projectSettings.projectId;
       telemetryProperties[TelemetryProperty.ProjectId] = projectSettings.projectId;
       if (ctx) ctx.projectSettings = projectSettings;
+      if (contextV3) contextV3.projectSetting = projectSettings as ProjectSettingsV3;
       inputs.projectPath = sampleAppPath;
     } else {
       telemetryProperties[TelemetryProperty.ProjectId] =

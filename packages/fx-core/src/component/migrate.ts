@@ -4,7 +4,9 @@ import {
   ProjectSettings,
   ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
+import { pathExistsSync } from "fs-extra";
 import { cloneDeep } from "lodash";
+import { join } from "path";
 import { isVSProject } from "../common/projectSettingsHelper";
 import { hasAzureResourceV3 } from "../common/projectSettingsHelperV3";
 import { isV3 } from "../core/globalVars";
@@ -170,7 +172,10 @@ export function convertEnvStateV2ToV3(envStateV2: Json): Json {
   return envStateV3;
 }
 
-export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): ProjectSettingsV3 {
+export function convertProjectSettingsV2ToV3(
+  settingsV2: ProjectSettings,
+  projectPath: string
+): ProjectSettingsV3 {
   const settingsV3 = cloneDeep(settingsV2) as ProjectSettingsV3;
   const solutionSettings = settingsV2.solutionSettings as AzureSolutionSettings;
   if (solutionSettings && (!settingsV3.components || settingsV3.components.length === 0)) {
@@ -185,6 +190,13 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
     }
     if (solutionSettings.activeResourcePlugins.includes("fx-resource-frontend-hosting")) {
       const hostingComponent = isVS ? ComponentNames.AzureWebApp : ComponentNames.AzureStorage;
+      const existsAuthStartFile = pathExistsSync(
+        join(projectPath, "tabs", "public", "auth-start.html")
+      );
+      const tabSSO =
+        solutionSettings.capabilities.includes("TabSSO") ||
+        solutionSettings.capabilities.includes("SSO") ||
+        existsAuthStartFile;
       if (isVS) {
         const teamsTab: any = {
           hosting: hostingComponent,
@@ -193,7 +205,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           provision: false,
           folder: "",
           artifactFolder: "bin\\Release\\net6.0\\win-x86\\publish",
-          sso: solutionSettings.capabilities.includes("TabSSO"),
+          sso: tabSSO,
           deploy: true,
         };
         settingsV3.components.push(teamsTab);
@@ -204,7 +216,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           build: true,
           provision: true,
           folder: "tabs",
-          sso: solutionSettings.capabilities.includes("TabSSO"),
+          sso: tabSSO,
           deploy: true,
         };
         settingsV3.components.push(teamsTab);

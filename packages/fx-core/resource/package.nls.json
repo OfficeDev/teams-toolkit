@@ -97,6 +97,7 @@
   "core.deployArmTemplates.FailedToGetDeploymentErrorNotification": "resource deployments (%s module) for your project failed and get the error message failed. Please refer to the resource group %s in portal for deployment error.",
   "core.deployArmTemplates.DeploymentFailedNotification": "resource deployments (%s) for your project failed. Please refer to output channel for more error details.",
   "core.handleConfigFile.FailedToUpdateAzureParameters": "Failed to update Azure parameters for %s environment.",
+  "core.appSettingsUtil.FailedToResetAppSettingsDevelopment": "Failed to reset values in appsettings.Development.json.",
   "core.backupFiles.FailedToBackupFiles": "Failed to backup %s.",
   "core.generateArmTemplates.DuplicateParameter": "There are some duplicate parameters in %s, to avoid the conflict, please modify these parameter names: %s",
   "core.generateArmTemplates.InvalidParameterFile": "There are some errors in %s, please make sure this file is valid. The error message is %s",

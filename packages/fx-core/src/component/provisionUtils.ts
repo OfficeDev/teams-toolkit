@@ -25,6 +25,7 @@ import {
   Void,
 } from "@microsoft/teamsfx-api";
 import { snakeCase } from "lodash";
+import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import { PluginDisplayName } from "../common/constants";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
@@ -39,6 +40,7 @@ import { getHashedEnv } from "../common/tools";
 import { convertToAlphanumericOnly } from "../common/utils";
 import { globalVars } from "../core";
 import {
+  AddSsoParameters,
   FillInAzureConfigsResult,
   GLOBAL_CONFIG,
   ProvisionSubscriptionCheckResult,
@@ -61,6 +63,8 @@ import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/co
 import { ComponentNames } from "./constants";
 import { AppStudioScopes } from "./resource/appManifest/constants";
 import { isCSharpProject, resetEnvInfoWhenSwitchM365 } from "./utils";
+import fs from "fs-extra";
+import { AppSettingConstants } from "./code/appSettingUtils";
 
 interface M365TenantRes {
   tenantIdInToken: string;

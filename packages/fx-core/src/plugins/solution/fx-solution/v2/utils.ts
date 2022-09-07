@@ -55,6 +55,7 @@ import { PluginsWithContext } from "../types";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { backupFiles } from "../utils/backupFiles";
 import { TelemetryEvent, TelemetryProperty } from "../../../../common/telemetry";
+import { resetAppSettingsDevelopment } from "../../../../component/code/appSettingUtils";
 
 export function getSelectedPlugins(projectSettings: ProjectSettings): v2.ResourcePlugin[] {
   return getActivatedV2ResourcePlugins(projectSettings);
@@ -266,6 +267,10 @@ export async function checkWhetherLocalDebugM365TenantMatches(
           const backupFilesRes = await backupFiles(envInfo.envName, projectPath!, isCSharpProject);
           if (backupFilesRes.isErr()) {
             return err(backupFilesRes.error);
+          }
+
+          if (isCSharpProject) {
+            await resetAppSettingsDevelopment(projectPath);
           }
         }
       }

@@ -189,6 +189,12 @@ export class ErrorWithCode extends Error {
 // @public
 export function getLogLevel(): LogLevel | undefined;
 
+// @public (undocumented)
+export interface GetTeamsUserTokenOptions extends GetTokenOptions {
+    // (undocumented)
+    resources?: string[];
+}
+
 // @public
 export function getTediousConnectionConfig(teamsfx: TeamsFx, databaseName?: string): Promise<ConnectionConfig>;
 
@@ -347,9 +353,9 @@ export class TeamsFx implements TeamsFxConfiguration {
     getConfigs(): Record<string, string>;
     getCredential(): TokenCredential;
     getIdentityType(): IdentityType;
-    getUserInfo(): Promise<UserInfo>;
+    getUserInfo(resources?: string[]): Promise<UserInfo>;
     hasConfig(key: string): boolean;
-    login(scopes: string | string[]): Promise<void>;
+    login(scopes: string | string[], resources?: string[]): Promise<void>;
     setSsoToken(ssoToken: string): TeamsFx;
 }
 
@@ -363,8 +369,8 @@ export interface TeamsFxBotCommandHandler {
 export class TeamsUserCredential implements TokenCredential {
     constructor(authConfig: AuthenticationConfiguration);
     getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
-    getUserInfo(): Promise<UserInfo>;
-    login(scopes: string | string[]): Promise<void>;
+    getUserInfo(resources?: string[]): Promise<UserInfo>;
+    login(scopes: string | string[], resources?: string[]): Promise<void>;
 }
 
 // @public

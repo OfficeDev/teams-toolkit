@@ -92,12 +92,12 @@ export class TeamsFx implements TeamsFxConfiguration {
     return this.teamsUserCredential;
   }
 
-  public async getUserInfo(): Promise<UserInfo> {
-    return await (this.getCredential() as TeamsUserCredential).getUserInfo();
+  public async getUserInfo(resources?: string[]): Promise<UserInfo> {
+    return await (this.getCredential() as TeamsUserCredential).getUserInfo(resources);
   }
 
-  public async login(scopes: string | string[]): Promise<void> {
-    await (this.getCredential() as TeamsUserCredential).login(scopes);
+  public async login(scopes: string | string[], resources?: string[]): Promise<void> {
+    await (this.getCredential() as TeamsUserCredential).login(scopes, resources);
   }
 
   public setSsoToken(ssoToken: string): TeamsFx {

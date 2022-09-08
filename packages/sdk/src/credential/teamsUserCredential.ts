@@ -28,10 +28,13 @@ export class TeamsUserCredential implements TokenCredential {
 
   /**
    * Popup login page to get user's access token with specific scopes.
+   *
+   * @param {string[]} resources - The optional list of resources for full trust Teams apps.
+   *
    * @remarks
    * Can only be used within Teams.
    */
-  public async login(scopes: string | string[]): Promise<void> {
+  public async login(scopes: string | string[], resources?: string[]): Promise<void> {
     throw new ErrorWithCode(
       formatString(ErrorMessage.NodejsRuntimeNotSupported, "TeamsUserCredential"),
       ErrorCode.RuntimeNotSupported
@@ -55,10 +58,13 @@ export class TeamsUserCredential implements TokenCredential {
 
   /**
    * Get basic user info from SSO token
+   *
+   * @param {string[]} resources - The optional list of resources for full trust Teams apps.
+   *
    * @remarks
    * Can only be used within Teams.
    */
-  public getUserInfo(): Promise<UserInfo> {
+  public getUserInfo(resources?: string[]): Promise<UserInfo> {
     throw new ErrorWithCode(
       formatString(ErrorMessage.NodejsRuntimeNotSupported, "TeamsUserCredential"),
       ErrorCode.RuntimeNotSupported

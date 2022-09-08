@@ -871,15 +871,15 @@
                     "description": "%teamstoolkit.taskDefinitions.args.forceUpdate.title%",
                     "default": false,
                     "oneOf": [
-											{
-												"const": false,
-												"description": "%teamstoolkit.taskDefinitions.args.forceUpdate.false.description%"
-											},
-											{
-												"const": true,
-												"description": "%teamstoolkit.taskDefinitions.args.forceUpdate.true.description%"
-											}
-										]
+                      {
+                        "const": false,
+                        "description": "%teamstoolkit.taskDefinitions.args.forceUpdate.false.description%"
+                      },
+                      {
+                        "const": true,
+                        "description": "%teamstoolkit.taskDefinitions.args.forceUpdate.true.description%"
+                      }
+                    ]
                   }
                 },
                 "additionalProperties": false

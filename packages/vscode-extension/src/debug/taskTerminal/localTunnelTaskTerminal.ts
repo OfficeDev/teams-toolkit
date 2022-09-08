@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as cp from "child_process";
 import * as path from "path";
+import * as kill from "tree-kill";
 import * as util from "util";
 import { v4 as uuidv4 } from "uuid";
 import * as vscode from "vscode";
@@ -59,9 +60,13 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
   }
 
   stop(error?: any): void {
-    this.childProc?.kill();
-    super.stop(error);
-    LocalTunnelTaskTerminal.ngrokTaskTerminals.delete(this.taskTerminalId);
+    if (LocalTunnelTaskTerminal.ngrokTaskTerminals.has(this.taskTerminalId)) {
+      if (this.childProc) {
+        kill(this.childProc.pid);
+      }
+      super.stop(error);
+      LocalTunnelTaskTerminal.ngrokTaskTerminals.delete(this.taskTerminalId);
+    }
   }
 
   do(): Promise<Result<Void, FxError>> {

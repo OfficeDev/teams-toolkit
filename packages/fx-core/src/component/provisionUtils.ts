@@ -512,7 +512,7 @@ export class ProvisionUtils {
       }
     } else if (resourceGroupNameFromEnvConfig && !targetSubscriptionIdFromCLI) {
       const resourceGroupName = resourceGroupNameFromEnvConfig;
-      const envFile = EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, inputs.envName);
+      const envFile = EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, envInfo.envName);
       if (!envInfo.config.azure?.subscriptionId) {
         return err(
           new UserError(

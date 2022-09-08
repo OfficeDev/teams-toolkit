@@ -89,6 +89,8 @@ export class BotService extends AzureResource {
       const regRes = await createBotRegInAppStudio(botConfig, context);
       if (regRes.isErr()) return err(regRes.error);
     }
+    // Update states for bot aad since existing configs will flush states.
+    context.envInfo.state[ComponentNames.TeamsBot] = aadRes.value;
     return ok(undefined);
   }
   @hooks([

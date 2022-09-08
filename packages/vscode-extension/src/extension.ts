@@ -664,12 +664,6 @@ async function initializeContextKey(isTeamsFxProject: boolean) {
     "fx-extension.canUpgradeToArmAndMultiEnv",
     await canUpgradeToArmAndMultiEnv(workspaceUri?.fsPath)
   );
-
-  await vscode.commands.executeCommand(
-    "setContext",
-    "fx-extension.canAddFeature",
-    !isSPFxProject || isSPFxMultiTabEnabled()
-  );
 }
 
 async function setAadManifestEnabledContext() {

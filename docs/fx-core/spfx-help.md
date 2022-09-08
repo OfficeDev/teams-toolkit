@@ -10,6 +10,7 @@ The following table lists SharePoint Framework and compatible versions of common
 |--------------|-----------|------------|-----------|------------|
 | 1.14 | LTS v12, LTS v14 | v5, v6 | v3.9 | v16.13.1 |
 | 1.15 | LTS v14, LTS v16 | v6, v7, v8 | v4.5 | v16.13.1 |
+| 1.16-beta | LTS v16 | v7, v8 | v4.5 | v16.13.1 |
 
 ### Error message
 Teams Toolkit automatically checks Node.js and NPM versions for the latest SharePoint Framework it supports (SPFx v1.15.0 as of writing). You will encounter the following errors during scaffolding if Teams Toolkit detects unsupported Node.js or NPM versions:

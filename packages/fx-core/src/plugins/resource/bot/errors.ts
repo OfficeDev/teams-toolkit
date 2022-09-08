@@ -253,8 +253,7 @@ export class BotRegistrationNotFoundError extends PluginError {
       ErrorNames.BOT_REGISTRATION_NOTFOUND_ERROR,
       Messages.BotRegistrationNotFoundWith(botId),
       [Messages.CheckOutputLogAndTryToFix],
-      innerError,
-      "http://aka.ms/teamsfx-bot-help"
+      innerError
     );
   }
 }

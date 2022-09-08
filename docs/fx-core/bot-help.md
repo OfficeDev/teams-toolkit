@@ -8,6 +8,13 @@ The subscription didn't register to use namespace 'Microsoft.BotService'.
 
 Please refer to this [link](https://aka.ms/rps-not-found) to register your subscription to use namespace 'Microsoft.BotService'.
 
+## BT.BotRegistrationNotFoundError
+
+### Error Message
+
+### Mitigation
+
+
 ## How to reuse existing AAD in Toolkit v2?
 
 Suppose an existing AAD has been registered, you can reuse this AAD by configuring Toolkit project settings.

@@ -23,7 +23,7 @@ export function EnvInfoWriterMW(skip = false): Middleware {
     try {
       await next();
       const res = ctx.result as Result<any, FxError>;
-      if (shouldSkipWriteEnvInfo(ctx.method, res)) {
+      if (shouldSkipWriteEnvInfo(res)) {
         return;
       }
     } catch (e) {
@@ -41,19 +41,8 @@ export function EnvInfoWriterMW(skip = false): Middleware {
   };
 }
 
-export function shouldSkipWriteEnvInfo(
-  method: string | undefined,
-  res: Result<any, FxError>
-): boolean {
-  return (
-    res.isErr() &&
-    (res.error.name === "CancelProvision" ||
-      res.error.name === SolutionError.FailedToUpdateAzureParameters ||
-      res.error.name === SolutionError.FailedToBackupFiles ||
-      res.error.name === SolutionError.MissingSubscriptionIdInConfig ||
-      (res.error.name === "UserCancel" &&
-        (method === "provisionResourcesV2" || method === "provisionResourcesV3")))
-  );
+export function shouldSkipWriteEnvInfo(res: Result<any, FxError>): boolean {
+  return res.isErr() && !!res.error.userData && res.error.userData.shouldSkipWriteEnvInfo;
 }
 
 async function writeEnvInfo(ctx: CoreHookContext, skip: boolean) {

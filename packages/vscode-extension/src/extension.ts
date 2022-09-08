@@ -16,12 +16,7 @@ import {
   Result,
   TemplateFolderName,
 } from "@microsoft/teamsfx-api";
-import {
-  Correlator,
-  isAADEnabled,
-  isSPFxMultiTabEnabled,
-  isValidProject,
-} from "@microsoft/teamsfx-core";
+import { Correlator, isAADEnabled, isValidProject } from "@microsoft/teamsfx-core";
 
 import {
   AadAppTemplateCodeLensProvider,

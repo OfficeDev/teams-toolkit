@@ -16,7 +16,12 @@ import {
   Result,
   TemplateFolderName,
 } from "@microsoft/teamsfx-api";
-import { Correlator, isAADEnabled, isValidProject } from "@microsoft/teamsfx-core";
+import {
+  Correlator,
+  isAADEnabled,
+  isSPFxMultiTabEnabled,
+  isValidProject,
+} from "@microsoft/teamsfx-core";
 
 import {
   AadAppTemplateCodeLensProvider,
@@ -658,6 +663,12 @@ async function initializeContextKey(isTeamsFxProject: boolean) {
     "setContext",
     "fx-extension.canUpgradeToArmAndMultiEnv",
     await canUpgradeToArmAndMultiEnv(workspaceUri?.fsPath)
+  );
+
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.canAddFeature",
+    !isSPFxProject || isSPFxMultiTabEnabled()
   );
 }
 

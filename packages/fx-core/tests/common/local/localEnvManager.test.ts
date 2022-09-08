@@ -15,6 +15,15 @@ import { DepsType } from "../../../src/common/deps-checker/depsChecker";
 import sinon from "sinon";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { environmentManager } from "../../../src";
+import {
+  LocalEnvProvider,
+  LocalEnvs,
+  LocalEnvKeys,
+} from "../../../src/component/debugHandler/localEnvProvider";
+import {
+  LocalCertificate,
+  LocalCertificateManager,
+} from "../../../src/common/local/localCertificateManager";
 
 chai.use(chaiAsPromised);
 
@@ -426,6 +435,45 @@ describe("LocalEnvManager", () => {
       await chai
         .expect(localEnvManager.getNgrokTunnelConfig(ngrokConfigFilePath))
         .to.be.rejectedWith();
+    });
+  });
+
+  describe("resolveLocalCertificate", () => {
+    it("set env", async () => {
+      const localCert: LocalCertificate = {
+        certPath: "certPath",
+        keyPath: "keyPath",
+      };
+      sinon
+        .stub(LocalCertificateManager.prototype, "setupCertificate")
+        .returns(Promise.resolve(localCert));
+      let frontendEnvs: LocalEnvs = {
+        template: {},
+        teamsfx: {},
+        customized: {},
+      };
+      sinon
+        .stub(LocalEnvProvider.prototype, "loadFrontendLocalEnvs")
+        .returns(Promise.resolve(frontendEnvs));
+      sinon.stub(LocalEnvProvider.prototype, "saveFrontendLocalEnvs").callsFake(async (envs) => {
+        frontendEnvs = envs;
+        return "";
+      });
+      const localEnvProvider = new LocalEnvProvider("xxx");
+      const localEnvManager = new LocalEnvManager();
+      const result = await localEnvManager.resolveLocalCertificate(true, localEnvProvider);
+      chai.assert.equal(result.certPath, localCert.certPath);
+      chai.assert.equal(result.keyPath, localCert.keyPath);
+      const expectedFrontendEnvs: LocalEnvs = {
+        template: {
+          [LocalEnvKeys.frontend.template.SslCrtFile]: localCert.certPath,
+          [LocalEnvKeys.frontend.template.SslKeyFile]: localCert.keyPath,
+        },
+        teamsfx: {},
+        customized: {},
+      };
+      chai.assert.deepEqual(frontendEnvs, expectedFrontendEnvs);
+      sinon.restore();
     });
   });
 });

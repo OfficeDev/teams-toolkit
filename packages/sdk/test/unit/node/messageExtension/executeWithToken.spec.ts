@@ -18,6 +18,7 @@ import {
   ConversationReference,
 } from "botbuilder-core";
 import mockedEnv from "mocked-env";
+import { AuthenticationConfiguration } from "../../../../src/models/configuration";
 chaiUse(chaiPromises);
 let restore: () => void;
 
@@ -90,6 +91,7 @@ describe("Message Extension Query With Token Tests - Node", () => {
     sandbox.restore();
     restore();
   });
+
   it("queryWithToken failed in Message Extension Query", async () => {
     try {
       await queryWithToken(
@@ -109,7 +111,36 @@ describe("Message Extension Query With Token Tests - Node", () => {
       assert.strictEqual((err as ErrorWithCode).code, "FailedOperation");
     }
   });
-  it("queryWithToken get SignIn link on the first time in Message Extension Query", async () => {
+
+  it("queryWithToken getSignIn link with user config in MessageExtensionQuery", async () => {
+    const config: AuthenticationConfiguration = {
+      clientId: "fake_client_Id",
+      tenantId: "fake_tennant_Id",
+      authorityHost: "fake_authority_host",
+      initiateLoginEndpoint: "initial_endpoint",
+      clientSecret: "fake_client_secret",
+    };
+    const res = await queryWithToken(
+      { activity: { name: "composeExtension/query", value: {} } } as TurnContext,
+      config,
+      ["fake_scope1", "fake_scope2"],
+      async (token: TeamsMsgExtTokenResponse) => {
+        token;
+      }
+    );
+    assert.isNotNull(res);
+    assert.isNotNull(res!.composeExtension);
+    const signInLink =
+      "initial_endpoint?scope=fake_scope1%20fake_scope2&clientId=fake_client_Id&tenantId=fake_tennant_Id";
+    assert.equal(res!.composeExtension!.type as string, "silentAuth");
+    assert.isNotNull(res!.composeExtension!.suggestedActions!.actions);
+    const action = res!.composeExtension!.suggestedActions!.actions![0];
+    assert.equal(action.type, "openUrl");
+    assert.equal(action.value, signInLink);
+    assert.equal(action.title, "Message Extension OAuth");
+  });
+
+  it("queryWithToken get SignIn link with default config in Message Extension Query", async () => {
     const res = await queryWithToken(
       { activity: { name: "composeExtension/query", value: {} } } as TurnContext,
       null,

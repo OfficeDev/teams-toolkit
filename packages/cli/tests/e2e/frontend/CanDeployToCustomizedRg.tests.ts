@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author Di Lin <dilin@microsoft.com>
+ * @author Zhaofeng Xu <zhaofengxu@microsoft.com>
  */
 
 import path from "path";

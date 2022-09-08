@@ -39,4 +39,32 @@ describe("ngrok", () => {
     const result = await ngrok.getNgrokHttpUrl("4041");
     expect(result).equals("xxx");
   });
+
+  it("could get ngrok url by addr string", async () => {
+    stub(axios, "get").callsFake(async () => {
+      return {
+        data: {
+          tunnels: [
+            { public_url: "test_url", proto: "https", config: { addr: "http://localhost:4041" } },
+          ],
+        },
+      };
+    });
+    const result = await ngrok.getNgrokHttpUrl("http://localhost:4041");
+    expect(result).equals("test_url");
+  });
+
+  it("could get ngrok url by addr string and trailing slash", async () => {
+    stub(axios, "get").callsFake(async () => {
+      return {
+        data: {
+          tunnels: [
+            { public_url: "test_url", proto: "https", config: { addr: "http://localhost:4041" } },
+          ],
+        },
+      };
+    });
+    const result = await ngrok.getNgrokHttpUrl("http://localhost:4041/");
+    expect(result).equals("test_url");
+  });
 });

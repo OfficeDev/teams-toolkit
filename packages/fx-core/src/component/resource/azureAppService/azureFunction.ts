@@ -97,7 +97,16 @@ export class AzureFunctionResource extends AzureAppService {
     context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
-    return await super.deploy(context, inputs, true);
+    let resourceIdKey = this.outputs.resourceId.key;
+    if (inputs.componentId === ComponentNames.TeamsBot) {
+      const state = context.envInfo.state[inputs.componentId];
+      if (!state[resourceIdKey]) {
+        if (state["resourceId"]) {
+          resourceIdKey = "resourceId";
+        }
+      }
+    }
+    return await super.deploy(context, inputs, true, resourceIdKey);
   }
 
   private needConfigure(context: ResourceContextV3): boolean {

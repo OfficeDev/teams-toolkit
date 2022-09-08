@@ -32,6 +32,7 @@ import { PublishingState } from "../../../../src/plugins/resource/appstudio/inte
 import { getAzureProjectRoot } from "../../../plugins/resource/appstudio/helper";
 import { manifestUtils } from "../../../../src/component/resource/appManifest/utils";
 import { TEAMS_APP_MANIFEST_TEMPLATE } from "../../../../src/component/resource/appManifest/constants";
+import * as uuid from "uuid";
 
 describe("App-manifest Component", () => {
   const sandbox = sinon.createSandbox();
@@ -102,6 +103,36 @@ describe("App-manifest Component", () => {
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "writeFile").resolves();
     sandbox.stub(fs, "chmod").resolves();
+
+    const buildAction = await component.build(context as ResourceContextV3, inputs);
+    chai.assert(buildAction.isOk());
+  });
+
+  it("build for SPFx project", async function () {
+    const manifest = new TeamsAppManifest();
+    manifest.icons.color = "resources/color.png";
+    manifest.icons.outline = "resources/outline.png";
+    manifest.id = "";
+    context.projectSetting!["solutionSettings"] = {
+      name: "fx-solution-azure",
+      activeResourcePlugins: "fx-resource-spfx",
+    };
+    const webpartId1 = uuid.v4();
+    const webpartId2 = uuid.v4();
+    sandbox.stub(manifestUtils, "getManifest").resolves(ok(manifest));
+    sandbox.stub(fs, "pathExists").resolves(true);
+    const stubWriteFile = sandbox.stub(fs, "writeFile").resolves();
+    sandbox.stub(fs, "chmod").resolves();
+    sandbox.stub(fs, "copyFile").resolves();
+    sandbox
+      .stub(fs, "readdir")
+      .resolves([
+        `${webpartId1}_color.png`,
+        `${webpartId1}_outline.png`,
+        `${webpartId2}_color.png`,
+        `${webpartId2}_outline.png`,
+      ] as any);
+    sandbox.stub(fs, "readFile").resolves();
 
     const buildAction = await component.build(context as ResourceContextV3, inputs);
     chai.assert(buildAction.isOk());

@@ -9,8 +9,15 @@ Get user information.
 <b>Signature:</b>
 
 ```typescript
-getUserInfo(): Promise<UserInfo>;
+getUserInfo(resources?: string[]): Promise<UserInfo>;
 ```
+
+## Parameters
+
+|  Parameter | Type | Description |
+|  --- | --- | --- |
+|  resources | string\[\] | The optional list of resources for full trust Teams apps. |
+
 <b>Returns:</b>
 
 Promise&lt;[UserInfo](./teamsfx.userinfo.md)<!-- -->&gt;

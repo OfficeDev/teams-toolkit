@@ -31,13 +31,16 @@ export enum TelemetryProperty {
   ActivePlugins = "active-plugins",
   IsSideloadingAllowed = "is-sideloading-allowed",
   NeedMigrateAadManifest = "need-migrate-aad-manifest",
-  CheckSideloadingHttpStatus = "check-sideloading-http-status",
+  CheckSideloadingStatusCode = "status-code",
+  CheckSideloadingMethod = "method",
+  CheckSideloadingUrl = "url",
   TemplateGroup = "template-group",
   TemplateLanguage = "template-language",
   TemplateScenario = "template-scenario",
   TemplateFallback = "template-fallback",
   HasSwitchedSubscription = "has-switched-subscription",
   HasSwitchedM365Tenant = "has-switched-m365",
+  CustomizeSubscriptionType = "customize-subscription-type",
 }
 
 export enum TelemetryEvent {
@@ -136,6 +139,13 @@ export enum CustomizeResourceGroupType {
   InteractiveCreateCustomized = "interactive-create-customized",
   InteractiveUseExisting = "interactive-use-existing",
   FallbackDefault = "fallback-default",
+}
+
+export enum CustomizeSubscriptionType {
+  CommandLine = "command-line",
+  EnvConfig = "env-config",
+  EnvState = "env-state",
+  Default = "default",
 }
 
 export enum ProjectMigratorStatus {

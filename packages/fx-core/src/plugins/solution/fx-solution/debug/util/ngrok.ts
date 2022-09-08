@@ -23,7 +23,7 @@ function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function getNgrokHttpUrl(port: string | number): Promise<string | undefined> {
+export async function getNgrokHttpUrl(addr: string | number): Promise<string | undefined> {
   for (let ngrokWebInterfacePort = 4040; ngrokWebInterfacePort < 4045; ++ngrokWebInterfacePort) {
     let numRetries = 5;
     while (numRetries > 0) {
@@ -33,7 +33,12 @@ export async function getNgrokHttpUrl(port: string | number): Promise<string | u
           const tunnels = (<NgrokApiTunnelsResponse>resp.data).tunnels;
           // tunnels will be empty if tunnel connection is not completed
           for (const tunnel of tunnels) {
-            if (tunnel.config.addr === `http://localhost:${port}` && tunnel.proto === "https") {
+            if (typeof addr === "number" || Number.isInteger(Number.parseInt(addr))) {
+              addr = `http://localhost:${addr}`;
+            } else {
+              addr = removeTrailingSlash(addr);
+            }
+            if (tunnel.config.addr === addr && tunnel.proto === "https") {
               return tunnel.public_url;
             }
           }
@@ -46,4 +51,8 @@ export async function getNgrokHttpUrl(port: string | number): Promise<string | u
     }
   }
   return undefined;
+}
+
+function removeTrailingSlash(str: string): string {
+  return str.replace(/\/$/, "");
 }

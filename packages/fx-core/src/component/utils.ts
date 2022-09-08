@@ -37,7 +37,7 @@ import { LocalCrypto } from "../core/crypto";
 import { environmentManager } from "../core/environment";
 import { TOOLS } from "../core/globalVars";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
-import { ComponentNames, Scenarios, scenarioToComponent } from "./constants";
+import { ComponentNames, ProgrammingLanguage, Scenarios, scenarioToComponent } from "./constants";
 import { DefaultManifestProvider } from "./resource/appManifest/manifestProvider";
 import { getComponent, getComponentByScenario } from "./workflow";
 
@@ -623,4 +623,8 @@ export function addFeatureNotify(
       : getLocalizedString("core.addResource.addResourcesNotice");
   const msg = format(template, addNames);
   ui.showMessage("info", msg, false);
+}
+
+export function isCSharpProject(programmingLanguage: string | undefined) {
+  return programmingLanguage === ProgrammingLanguage.CSharp;
 }

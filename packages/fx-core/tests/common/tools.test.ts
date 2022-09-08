@@ -27,7 +27,7 @@ import { TabSsoItem } from "../../src/plugins/solution/fx-solution/question";
 import * as featureFlags from "../../src/common/featureFlags";
 import fs from "fs-extra";
 import { environmentManager } from "../../src/core/environment";
-import { ExistingTemplatesStat } from "../../src/plugins/resource/cicd/utils/existingTemplatesStat";
+import { ExistingTemplatesStat } from "../../src/component/feature/cicd/existingTemplatesStat";
 
 chai.use(chaiAsPromised);
 

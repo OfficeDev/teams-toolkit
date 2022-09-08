@@ -9,7 +9,7 @@ import {
   InternalError,
   NoProjectOpenedError,
   FileSystemError,
-} from "../../../../src/plugins/resource/cicd/errors";
+} from "../../../../src/component/feature/cicd/errors";
 
 describe("Test Errors", () => {
   describe("PluginError", () => {

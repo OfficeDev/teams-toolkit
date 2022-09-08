@@ -143,7 +143,7 @@ import {
   getQuestionsForProvisionV3,
 } from "../component/questionV3";
 import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
-import { addCicdQuestion } from "../component/feature/cicd";
+import { addCicdQuestion } from "../component/feature/cicd/cicd";
 import { ComponentNames } from "../component/constants";
 import { AppManifest, publishQuestion } from "../component/resource/appManifest/appManifest";
 import { ApiConnectorImpl } from "../component/feature/apiconnector/ApiConnectorImpl";

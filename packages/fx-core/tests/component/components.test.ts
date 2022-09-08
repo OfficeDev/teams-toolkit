@@ -49,9 +49,9 @@ import { TeamsfxCore } from "../../src/component/core";
 import { Container } from "typedi";
 import { AzureStorageResource } from "../../src/component/resource/azureStorage";
 import mockedEnv, { RestoreFn } from "mocked-env";
-import { ciOption, githubOption, questionNames } from "../../src/plugins/resource/cicd/questions";
+import { ciOption, githubOption, questionNames } from "../../src/component/feature/cicd/questions";
 import * as armFunctions from "../../src/plugins/solution/fx-solution/arm";
-import { apiConnectorImpl } from "../../src/component/feature/apiConnector";
+import { apiConnectorImpl } from "../../src/component/feature/apiconnector/apiConnector";
 import * as backup from "../../src/plugins/solution/fx-solution/utils/backupFiles";
 import { AadApp } from "../../src/component/resource/aadApp/aadApp";
 import { Constants } from "../../src/plugins/resource/aad/constants";
@@ -65,6 +65,7 @@ import {
   AzureSolutionQuestionNames,
 } from "../../src/plugins/solution/fx-solution/question";
 import { AddSsoParameters } from "../../src/plugins/solution/fx-solution/constants";
+import { BuiltInFeaturePluginNames } from "../../src/plugins/solution/fx-solution/v3/constants";
 describe("Core component test for v3", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -1167,14 +1168,26 @@ describe("Core component test for v3", () => {
     }
     assert.isTrue(provisionRes.isOk());
 
-    inputs[Constants.INCLUDE_AAD_MANIFEST] = "yes";
-    inputs.platform = Platform.CLI;
-    inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] = [];
-    const deployRes = await fx.deploy(context as ResourceContextV3, inputs);
-    if (deployRes.isErr()) {
-      console.log(deployRes.error);
+    {
+      inputs[Constants.INCLUDE_AAD_MANIFEST] = "yes";
+      inputs.platform = Platform.CLI;
+      inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] = [BuiltInFeaturePluginNames.aad];
+      const deployRes = await fx.deploy(context as ResourceContextV3, inputs);
+      if (deployRes.isErr()) {
+        console.log(deployRes.error);
+      }
+      assert.isTrue(deployRes.isOk());
     }
-    assert.isTrue(deployRes.isOk());
+    {
+      inputs[Constants.INCLUDE_AAD_MANIFEST] = "no";
+      inputs.platform = Platform.CLI;
+      inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] = [BuiltInFeaturePluginNames.aad];
+      const deployRes = await fx.deploy(context as ResourceContextV3, inputs);
+      if (deployRes.isErr()) {
+        console.log(deployRes.error);
+      }
+      assert.isTrue(deployRes.isErr());
+    }
   });
 
   it("fx.deployAadFromVscode", async () => {

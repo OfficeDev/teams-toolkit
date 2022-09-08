@@ -7,6 +7,7 @@ import {
   PluginContext,
   EnvInfo,
   ConfigMap,
+  EnvConfig,
 } from "@microsoft/teamsfx-api";
 import { convertEnvStateV3ToV2, convertProjectSettingsV3ToV2 } from "../../migrate";
 
@@ -15,7 +16,6 @@ export function convertContext(context: ContextV3, inputs: InputsWithProjectPath
   const stateV2 = convertEnvStateV3ToV2(context.envInfo!.state!);
   stateV2["fx-resource-aad-app-for-teams"] ??= {};
   const value = ConfigMap.fromJSON(stateV2);
-
   const pluginCtx: PluginContext = {
     cryptoProvider: context.cryptoProvider,
     config: new ConfigMap(),
@@ -26,13 +26,7 @@ export function convertContext(context: ContextV3, inputs: InputsWithProjectPath
     permissionRequestProvider: context.permissionRequestProvider,
     root: inputs.projectPath,
     envInfo: {
-      config: {
-        manifest: {
-          appName: {
-            short: context.projectSetting.appName,
-          },
-        },
-      },
+      config: context.envInfo?.config as EnvConfig,
       envName: inputs.env,
       state: value,
     } as EnvInfo,

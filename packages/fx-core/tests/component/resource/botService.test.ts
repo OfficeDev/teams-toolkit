@@ -114,7 +114,7 @@ describe("Bot Feature", () => {
     assert.isTrue(telemetryStub.calledTwice);
     const props = telemetryStub.args[1]?.[1];
     assert.equal(props?.[TelemetryKeys.StatusCode], "500");
-    assert.equal(props?.[TelemetryKeys.Url], "<botframework-url>");
+    assert.equal(props?.[TelemetryKeys.Url], "<create-bot-registration>");
     assert.equal(props?.[TelemetryKeys.Method], "post");
   });
 });

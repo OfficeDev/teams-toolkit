@@ -36,7 +36,8 @@ export abstract class AzureAppService extends AzureResource {
   async deploy(
     context: ResourceContextV3,
     inputs: InputsWithProjectPath,
-    restart = false
+    restart = false,
+    givenResourceIdKey?: string
   ): Promise<Result<undefined, FxError>> {
     const progressBar = context.userInteraction.createProgressBar(
       ProgressTitles.deploying(this.displayName, inputs.scenario),
@@ -55,11 +56,8 @@ export abstract class AzureAppService extends AzureResource {
       }
 
       const state = context.envInfo.state[inputs.componentId];
-      const resourceId = CheckThrowSomethingMissing(
-        this.name,
-        this.outputs.resourceId.key,
-        state[this.outputs.resourceId.key]
-      );
+      const resourceIdKey = givenResourceIdKey || this.outputs.resourceId.key;
+      const resourceId = CheckThrowSomethingMissing(this.name, resourceIdKey, state[resourceIdKey]);
       await progressBar.next(ProgressMessages.packingCode);
       const zipBuffer = await utils.zipFolderAsync(publishDir, "");
 

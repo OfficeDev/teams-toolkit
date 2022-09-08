@@ -83,3 +83,11 @@ export class CapabilityAddCommandAndResponse extends CapabilityAddBotBase {
   public readonly description = "Respond to simple commands in Microsoft Teams chat";
   public readonly featureId = FeatureId.CommandAndResponse;
 }
+
+export class CapabilityAddWorkflow extends CapabilityAddBotBase {
+  public readonly commandHead = "workflow";
+  public readonly command = `${this.commandHead}`;
+  public readonly description =
+    "Automate repetitive workflows for common business processes in Microsoft Teams chat";
+  public readonly featureId = FeatureId.Workflow;
+}

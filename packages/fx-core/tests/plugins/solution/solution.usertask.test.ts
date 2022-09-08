@@ -91,7 +91,6 @@ const appStudioPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.App
 const frontendPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FrontendPlugin);
 const botPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.BotPlugin);
 const aadPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
-const cicdPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.CICDPlugin);
 const spfxPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SpfxPlugin);
 const mockedProvider: TokenProvider = {
   azureAccountProvider: new MockedAzureAccountProvider(),
@@ -1477,43 +1476,6 @@ describe("V2 implementation", () => {
   });
 
   describe("add feature", async () => {
-    it("should call cicd plugin when choose cicd option", async () => {
-      mocker
-        .stub<any, any>(cicdPluginV2, "executeUserTask")
-        .returns(Promise.resolve(ok(undefined)));
-      mocker.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
-      const projectSettings: ProjectSettings = {
-        appName: "my app",
-        projectId: uuid.v4(),
-        solutionSettings: {
-          hostType: HostTypeOptionAzure.id,
-          name: "test",
-          version: "1.0",
-          activeResourcePlugins: [botPluginV2.name],
-          capabilities: [BotOptionItem.id],
-          azureResources: [],
-        },
-      };
-
-      const mockedCtx = new MockedV2Context(projectSettings);
-      const mockedInputs: Inputs = {
-        platform: Platform.VSCode,
-        projectPath: testFolder,
-      };
-      mockedInputs[AzureSolutionQuestionNames.Features] = CicdOptionItem.id;
-
-      const result = await executeUserTask(
-        mockedCtx,
-        mockedInputs,
-        { namespace: "solution", method: "addFeature" },
-        {},
-        { envName: "default", config: {}, state: {} },
-        mockedProvider
-      );
-
-      expect(result.isOk()).to.be.true;
-    });
-
     it("should call spfx plugin when choose spfx option", async () => {
       const mockedEnvRestore = mockedEnv({ TEAMSFX_SPFX_MULTI_TAB: "true" });
       mocker

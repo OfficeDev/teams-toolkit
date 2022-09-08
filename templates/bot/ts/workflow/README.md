@@ -44,7 +44,7 @@ The following files provide the business logic for the workflow bot. These files
 | `src/index.ts` | Application entry point and `restify` handlers for the workflow bot |
 | `src/adaptiveCards/helloworldCommand.json` | A generated Adaptive Card that is sent to Teams |
 | `src/commands/helloworldCommandHandler.ts` | Responds to the command message |
-| `src/cardActions/helloworldActionHandler.ts` | Responds to the `doStuff` card action |
+| `src/cardActions/doStuffActionHandler.ts` | Responds to the `doStuff` card action |
 | `src/cardModels.ts` | The default Adaptive Card data model |
 
 The following files implement the core workflow bot on the Bot Framework. You generally will not need to customize these files.
@@ -144,7 +144,10 @@ Please note:
 * If an Adaptive Card is returned, then the existing card will be replaced with it by default.
 
 ```typescript
-import responseCard from "../adaptiveCards/responseCard.json"; 
+import { AdaptiveCards } from "@microsoft/adaptivecards-tools";
+import { TurnContext, InvokeResponse } from "botbuilder";
+import { TeamsFxAdaptiveCardActionHandler, InvokeResponseFactory } from "@microsoft/teamsfx";
+import responseCard from "../adaptiveCards/responseCard.json";
 
 export class Handler1 implements TeamsFxAdaptiveCardActionHandler { 
     triggerVerb = "doStuff";
@@ -164,7 +167,7 @@ export class Handler1 implements TeamsFxAdaptiveCardActionHandler {
 2. Update your `conversationBot` initialization to enable cardAction feature and add the handler to `actions` array:
 
 ```typescript
-export const commandBot = new ConversationBot({ 
+export const conversationBot = new ConversationBot({ 
   ... 
   cardAction: { 
     enabled: true, 
@@ -185,17 +188,32 @@ To add the notification feature:
 
 1. Go to `bot\src\internal\initialize.ts`
 2. Update your `conversationBot` initialization to enable notification feature:
-    ![enable-notification](https://user-images.githubusercontent.com/10163840/165462039-12bd4f61-3fc2-4fc8-8910-6a4b1e138626.png)
+    ```typescript
+    const conversationBot = new ConversationBot({ 
+      ... 
+      cardAction: { 
+        enabled: true, 
+        actions: [ 
+          new Handler1() 
+        ], 
+      },
+      notification: {
+        enabled: true
+      } 
+    }); 
+    ```
+
 3. To quickly add a sample notification triggered by a HTTP request, you can add the following sample code in `bot\src\index.ts`:
 
     ```typescript
     server.post("/api/notification", async (req, res) => {
-      for (const target of await commandBot.notification.installations()) {
+      for (const target of await conversationBot.notification.installations()) {
         await target.sendMessage("This is a sample notification message");
       }
     
       res.json({});
     });
+    ```
 
 4. Uninstall your previous bot installation from Teams, and press `F5` to start your application.
 5. Send a notification to the bot installation targets (channel/group chat/personal chat) by using a your favorite tool to send a HTTP POST request to `https://localhost:3978/api/notification`.

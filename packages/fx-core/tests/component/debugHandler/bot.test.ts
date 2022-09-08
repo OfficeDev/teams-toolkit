@@ -20,12 +20,17 @@ import {
 import { BotDebugArgs, BotDebugHandler } from "../../../src";
 import { ComponentNames } from "../../../src/component/constants";
 import { BotMessagingEndpointMissingError } from "../../../src/component/debugHandler/error";
+import {
+  LocalEnvKeys,
+  LocalEnvProvider,
+  LocalEnvs,
+} from "../../../src/component/debugHandler/localEnvProvider";
 import { environmentManager } from "../../../src/core/environment";
 import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
 import { AADRegistration } from "../../../src/plugins/resource/bot/aadRegistration";
 import { AppStudio } from "../../../src/plugins/resource/bot/appStudio/appStudio";
 import { BotAuthCredential } from "../../../src/plugins/resource/bot/botAuthCredential";
-import { MockM365TokenProvider } from "./utils";
+import { MockM365TokenProvider, runDebugActions } from "./utils";
 
 describe("TabDebugHandler", () => {
   const projectPath = path.resolve(__dirname, "data");
@@ -42,7 +47,7 @@ describe("TabDebugHandler", () => {
         botMessagingEndpoint: "",
       };
       const handler = new BotDebugHandler(projectPath, args, m365TokenProvider);
-      const result = await handler.setUp();
+      const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
         chai.assert(result.error instanceof UserError);
@@ -63,7 +68,7 @@ describe("TabDebugHandler", () => {
         botMessagingEndpoint: "https://af0e-180-158-57-208.ngrok.io/api/messages",
       };
       const handler = new BotDebugHandler(projectPath, args, m365TokenProvider);
-      const result = await handler.setUp();
+      const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
         chai.assert(result.error instanceof SystemError);
@@ -86,7 +91,7 @@ describe("TabDebugHandler", () => {
         botMessagingEndpoint: "https://af0e-180-158-57-208.ngrok.io/api/messages",
       };
       const handler = new BotDebugHandler(projectPath, args, m365TokenProvider);
-      const result = await handler.setUp();
+      const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
         chai.assert(result.error instanceof SystemError);
@@ -130,10 +135,23 @@ describe("TabDebugHandler", () => {
         called = true;
         return botAuthCredential;
       });
+      sinon.stub(AppStudio, "getBotRegistration").callsFake(async () => {
+        return undefined;
+      });
       sinon.stub(AppStudio, "createBotRegistration").callsFake(async () => {});
       sinon.stub(AppStudio, "updateMessageEndpoint").callsFake(async () => {});
       sinon.stub(environmentManager, "writeEnvState").callsFake(async () => {
         return ok("");
+      });
+      let botEnvs: LocalEnvs = {
+        template: {},
+        teamsfx: {},
+        customized: {},
+      };
+      sinon.stub(LocalEnvProvider.prototype, "loadBotLocalEnvs").returns(Promise.resolve(botEnvs));
+      sinon.stub(LocalEnvProvider.prototype, "saveBotLocalEnvs").callsFake(async (envs) => {
+        botEnvs = envs;
+        return "";
       });
       const domain = "af0e-180-158-57-208.ngrok.io";
       const botEndpoint = `https://${domain}`;
@@ -141,7 +159,7 @@ describe("TabDebugHandler", () => {
         botMessagingEndpoint: `${botEndpoint}/api/messages`,
       };
       const handler = new BotDebugHandler(projectPath, args, m365TokenProvider);
-      const result = await handler.setUp();
+      const result = await runDebugActions(handler.getActions());
       chai.assert(result.isOk());
       chai.assert(called);
       chai.assert.equal(
@@ -155,6 +173,15 @@ describe("TabDebugHandler", () => {
       );
       chai.assert.equal(envInfoV3.state[ComponentNames.TeamsBot].siteEndpoint, botEndpoint);
       chai.assert.equal(envInfoV3.state[ComponentNames.TeamsBot].validDomain, domain);
+      const expected: LocalEnvs = {
+        template: {
+          [LocalEnvKeys.bot.template.BotId]: botAuthCredential.clientId as string,
+          [LocalEnvKeys.bot.template.BotPassword]: botAuthCredential.clientSecret as string,
+        },
+        teamsfx: {},
+        customized: {},
+      };
+      chai.assert.deepEqual(botEnvs, expected);
       sinon.restore();
     });
 
@@ -188,10 +215,23 @@ describe("TabDebugHandler", () => {
         called = true;
         return {};
       });
+      sinon.stub(AppStudio, "getBotRegistration").callsFake(async () => {
+        return undefined;
+      });
       sinon.stub(AppStudio, "createBotRegistration").callsFake(async () => {});
       sinon.stub(AppStudio, "updateMessageEndpoint").callsFake(async () => {});
       sinon.stub(environmentManager, "writeEnvState").callsFake(async () => {
         return ok("");
+      });
+      let botEnvs: LocalEnvs = {
+        template: {},
+        teamsfx: {},
+        customized: {},
+      };
+      sinon.stub(LocalEnvProvider.prototype, "loadBotLocalEnvs").returns(Promise.resolve(botEnvs));
+      sinon.stub(LocalEnvProvider.prototype, "saveBotLocalEnvs").callsFake(async (envs) => {
+        botEnvs = envs;
+        return "";
       });
       const domain = "af0e-180-158-57-208.ngrok.io";
       const botEndpoint = `https://${domain}`;
@@ -201,7 +241,7 @@ describe("TabDebugHandler", () => {
         botMessagingEndpoint: `${botEndpoint}/api/messages`,
       };
       const handler = new BotDebugHandler(projectPath, args, m365TokenProvider);
-      const result = await handler.setUp();
+      const result = await runDebugActions(handler.getActions());
       chai.assert(result.isOk());
       chai.assert(!called);
       chai.assert(!envInfoV3.state[ComponentNames.TeamsBot].objectId);
@@ -209,6 +249,15 @@ describe("TabDebugHandler", () => {
       chai.assert.equal(envInfoV3.state[ComponentNames.TeamsBot].botPassword, args.botPassword);
       chai.assert.equal(envInfoV3.state[ComponentNames.TeamsBot].siteEndpoint, botEndpoint);
       chai.assert.equal(envInfoV3.state[ComponentNames.TeamsBot].validDomain, domain);
+      const expected: LocalEnvs = {
+        template: {
+          [LocalEnvKeys.bot.template.BotId]: args.botId as string,
+          [LocalEnvKeys.bot.template.BotPassword]: args.botPassword as string,
+        },
+        teamsfx: {},
+        customized: {},
+      };
+      chai.assert.deepEqual(botEnvs, expected);
       sinon.restore();
     });
   });

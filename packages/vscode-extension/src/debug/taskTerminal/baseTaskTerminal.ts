@@ -2,10 +2,13 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+import * as util from "util";
 import * as vscode from "vscode";
-import { assembleError, FxError, Result } from "@microsoft/teamsfx-api";
+import { assembleError, FxError, Result, UserError, Void } from "@microsoft/teamsfx-api";
 import * as globalVariables from "../../globalVariables";
 import { showError } from "../../handlers";
+import { ExtensionErrors, ExtensionSource } from "../../error";
+import { getDefaultString, localize } from "../../utils/localizeUtils";
 
 const ControlCodes = {
   CtrlC: "\u0003",
@@ -49,9 +52,18 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
     this.closeEmitter.fire(0);
   }
 
-  protected abstract do(): Promise<Result<void, FxError>>;
+  protected abstract do(): Promise<Result<Void, FxError>>;
 
   public static resolveTeamsFxVariables(str: string): string {
     return str.replace("${teamsfx:workspaceFolder}", globalVariables.workspaceUri?.fsPath ?? "");
+  }
+
+  public static taskDefinitionError(argName: string): UserError {
+    return new UserError(
+      ExtensionSource,
+      ExtensionErrors.TaskDefinitionError,
+      util.format(getDefaultString("teamstoolkit.localDebug.taskDefinitionError"), argName),
+      util.format(localize("teamstoolkit.localDebug.taskDefinitionError"), argName)
+    );
   }
 }

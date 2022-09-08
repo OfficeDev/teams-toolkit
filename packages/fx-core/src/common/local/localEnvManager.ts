@@ -24,7 +24,7 @@ import { getNpmInstallLogInfo, NpmInstallLogInfo } from "./npmLogHelper";
 import { getPortsInUse, getPortsFromProject } from "./portChecker";
 import { waitSeconds } from "../tools";
 import { LocalCrypto } from "../../core/crypto";
-import { CoreSource, ReadFileError } from "../../core/error";
+import { CoreSource, ReadFileError, NgrokConfigError } from "../../core/error";
 import { DepsType } from "../deps-checker/depsChecker";
 import { ProjectSettingsHelper } from "./projectSettingsHelper";
 import { LocalCertificate, LocalCertificateManager } from "./localCertificateManager";
@@ -34,6 +34,9 @@ import { getDefaultString, getLocalizedString } from "../localizeUtils";
 import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
 import { isV3 } from "../../core";
 import { convertEnvStateV3ToV2 } from "../../component/migrate";
+import { getNgrokHttpUrl } from "../../plugins/solution/fx-solution/debug/util/ngrok";
+import * as yaml from "js-yaml";
+import { LocalEnvKeys, LocalEnvProvider } from "../../component/debugHandler/localEnvProvider";
 
 export class LocalEnvManager {
   private readonly logger: LogProvider | undefined;
@@ -111,6 +114,10 @@ export class LocalEnvManager {
     return await getPortsInUse(ports, this.logger);
   }
 
+  public async getNgrokHttpUrl(addr: string | number): Promise<string | undefined> {
+    return await getNgrokHttpUrl(addr);
+  }
+
   public async getLocalSettings(
     projectPath: string,
     cryptoOption?: { projectId: string }
@@ -169,11 +176,40 @@ export class LocalEnvManager {
     });
   }
 
-  public async resolveLocalCertificate(trustDevCert: boolean): Promise<LocalCertificate> {
+  public async resolveLocalCertificate(
+    trustDevCert: boolean,
+    localEnvProvider?: LocalEnvProvider
+  ): Promise<LocalCertificate> {
     // Do not print any log in LocalCertificateManager, use the error message returned instead.
     const certManager = new LocalCertificateManager(this.ui);
     const res = await certManager.setupCertificate(trustDevCert);
+    if (trustDevCert && localEnvProvider) {
+      const frontendEnvs = await localEnvProvider.loadFrontendLocalEnvs();
+      frontendEnvs.template[LocalEnvKeys.frontend.template.SslCrtFile] = res.certPath;
+      frontendEnvs.template[LocalEnvKeys.frontend.template.SslKeyFile] = res.keyPath;
+      await localEnvProvider.saveFrontendLocalEnvs(frontendEnvs);
+    }
     return res;
+  }
+
+  public async getNgrokTunnelConfig(configFile: string): Promise<Map<string, string>> {
+    const res = new Map<string, string>();
+    try {
+      const fileContent = await fs.readFile(configFile, "utf8");
+      const config = yaml.load(fileContent) as any;
+      if (config?.tunnels) {
+        for (const [tunnelName, tunnelConfig] of Object.entries(
+          config.tunnels as { [key: string]: any }
+        )) {
+          if (tunnelConfig.addr) {
+            res.set(tunnelName, `${tunnelConfig.addr}`);
+          }
+        }
+      }
+      return res;
+    } catch (e) {
+      throw NgrokConfigError(configFile, e?.message);
+    }
   }
 
   // Retry logic when reading project config files in case of read-write conflict

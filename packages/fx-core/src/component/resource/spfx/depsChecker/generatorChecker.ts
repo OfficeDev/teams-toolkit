@@ -23,7 +23,7 @@ import { DependencyValidateError, NpmInstallError } from "../error";
 import { cpUtils } from "../../../../common/deps-checker/util/cpUtils";
 
 const name = "@microsoft/generator-sharepoint";
-const supportedVersion = "1.15.0";
+const supportedVersion = "1.16.0-beta.1";
 const displayName = `${name}@${supportedVersion}`;
 const timeout = 6 * 60 * 1000;
 

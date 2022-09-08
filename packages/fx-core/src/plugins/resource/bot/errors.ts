@@ -246,6 +246,19 @@ export class PackDirExistenceError extends PluginError {
   }
 }
 
+export class BotRegistrationNotFoundError extends PluginError {
+  constructor(botId: string, innerError?: InnerError) {
+    super(
+      ErrorType.USER,
+      ErrorNames.BOT_REGISTRATION_NOTFOUND_ERROR,
+      Messages.BotRegistrationNotFoundWith(botId),
+      [Messages.CheckOutputLogAndTryToFix],
+      innerError,
+      "http://aka.ms/teamsfx-bot-help"
+    );
+  }
+}
+
 export class MessageEndpointUpdatingError extends PluginError {
   constructor(endpoint: string, innerError?: InnerError) {
     super(

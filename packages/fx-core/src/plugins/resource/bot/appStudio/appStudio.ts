@@ -5,6 +5,7 @@ import { IAADDefinition } from "./interfaces/IAADDefinition";
 import { AxiosInstance, AxiosResponse, default as axios } from "axios";
 import {
   AADAppCheckingError,
+  BotRegistrationNotFoundError,
   ConfigUpdatingError,
   MessageEndpointUpdatingError,
   ProvisionError,
@@ -212,7 +213,7 @@ export class AppStudio {
 
     const botReg = await AppStudio.getBotRegistration(accessToken, botId);
     if (!botReg) {
-      throw new MessageEndpointUpdatingError(endpoint);
+      throw new BotRegistrationNotFoundError(botId);
     }
     botReg.messagingEndpoint = endpoint;
 

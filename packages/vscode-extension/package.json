@@ -834,6 +834,13 @@
                     "ports"
                   ]
                 },
+                "else": {
+                  "not": {
+                    "required": [
+                      "ports"
+                    ]
+                  }
+                },
                 "additionalProperties": false
               },
               {

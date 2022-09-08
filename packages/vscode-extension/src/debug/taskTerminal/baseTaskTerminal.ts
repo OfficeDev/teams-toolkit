@@ -55,7 +55,12 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
   protected abstract do(): Promise<Result<Void, FxError>>;
 
   public static resolveTeamsFxVariables(str: string): string {
-    return str.replace("${teamsfx:workspaceFolder}", globalVariables.workspaceUri?.fsPath ?? "");
+    // Background task cannot resolve variables in VSC. /packages/vscode-extension/src/debug/taskTerminal/baseTaskTerminal.ts
+    // Here Teams Toolkit resolve the workspaceFolder.
+    // TODO: remove one after decide to use which placeholder
+    str = str.replace("${teamsfx:workspaceFolder}", globalVariables.workspaceUri?.fsPath ?? "");
+    str = str.replace("${workspaceFolder}", globalVariables.workspaceUri?.fsPath ?? "");
+    return str;
   }
 
   public static taskDefinitionError(argName: string): UserError {

@@ -4,7 +4,6 @@
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "license": "MIT",
-  "private": "true",
   "scripts": {
     "build": "npx tsc -p ./",
     "lint:staged": "lint-staged",
@@ -21,6 +20,8 @@
     "mochawesome": "^7.0.1"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.19.0",
+    "@typescript-eslint/parser": "^4.19.0",
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@types/chai": "^4.2.14",
     "@types/mocha": "^9.1.0",
@@ -32,7 +33,15 @@
     "source-map-support": "^0.5.21",
     "ts-node": "^9.1.1",
     "tslib": "^2.3.1",
-    "typescript": "^4.5.5"
+    "typescript": "^4.5.5",
+    "eslint": "^7.9.0",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-no-secrets": "^0.8.9",
+    "eslint-plugin-prettier": "^4.0.0",
+    "prettier": "^2.4.1"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "lint-staged": {
     "*.{js,jsx,css,ts,tsx}": [

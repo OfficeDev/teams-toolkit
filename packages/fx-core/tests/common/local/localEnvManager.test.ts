@@ -5,19 +5,25 @@ import "mocha";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 
-import { UserError, Result, ok } from "@microsoft/teamsfx-api";
-import * as fs from "fs-extra";
+import { UserError, ok } from "@microsoft/teamsfx-api";
+import fs from "fs-extra";
 import * as path from "path";
 
+import * as tools from "../../../src/common/tools";
 import { LocalEnvManager } from "../../../src/common/local/localEnvManager";
-import { DepsInfo, DepsType } from "../../../src/common/deps-checker/depsChecker";
+import { DepsType } from "../../../src/common/deps-checker/depsChecker";
 import sinon from "sinon";
-import { DotnetChecker } from "../../../src/common/deps-checker/internal/dotnetChecker";
-import { NgrokChecker } from "../../../src/common/deps-checker/internal/ngrokChecker";
-import { FuncToolChecker } from "../../../src/common/deps-checker/internal/funcToolChecker";
-import { DepsCheckerError } from "../../../src/common/deps-checker/depsError";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { environmentManager } from "../../../src";
+import {
+  LocalEnvProvider,
+  LocalEnvs,
+  LocalEnvKeys,
+} from "../../../src/component/debugHandler/localEnvProvider";
+import {
+  LocalCertificate,
+  LocalCertificateManager,
+} from "../../../src/common/local/localCertificateManager";
 
 chai.use(chaiAsPromised);
 
@@ -53,8 +59,30 @@ describe("LocalEnvManager", () => {
   });
 
   describe("getProjectSettings()", () => {
+    const sandbox = sinon.createSandbox();
+    let files: Record<string, any> = {};
+
+    beforeEach(() => {
+      files = {};
+      sandbox.restore();
+      sandbox.stub(fs, "pathExists").callsFake(async (file: string) => {
+        return Promise.resolve(files[path.resolve(file)] !== undefined);
+      });
+      sandbox.stub(fs, "writeFile").callsFake(async (file: fs.PathLike | number, data: any) => {
+        files[path.resolve(file as string)] = data;
+        return Promise.resolve();
+      });
+      sandbox.stub(fs, "readJson").callsFake(async (file: string) => {
+        return Promise.resolve(JSON.parse(files[path.resolve(file)]));
+      });
+      sandbox.stub(tools, "waitSeconds").resolves();
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
     it("happy path", async () => {
-      await fs.ensureDir(configFolder);
       await fs.writeFile(
         path.resolve(configFolder, "projectSettings.json"),
         JSON.stringify(projectSettings0)
@@ -70,7 +98,6 @@ describe("LocalEnvManager", () => {
     });
 
     it("missing field", async () => {
-      await fs.ensureDir(configFolder);
       await fs.writeFile(path.resolve(configFolder, "projectSettings.json"), "{}");
 
       const projectSettings = await localEnvManager.getProjectSettings(projectPath);
@@ -81,9 +108,6 @@ describe("LocalEnvManager", () => {
     });
 
     it("missing file", async () => {
-      await fs.ensureDir(configFolder);
-      await fs.emptyDir(configFolder);
-
       let error: UserError | undefined = undefined;
       try {
         await localEnvManager.getProjectSettings(projectPath);
@@ -97,8 +121,30 @@ describe("LocalEnvManager", () => {
   });
 
   describe("getLocalSettings()", () => {
+    const sandbox = sinon.createSandbox();
+    let files: Record<string, any> = {};
+
+    beforeEach(() => {
+      files = {};
+      sandbox.restore();
+      sandbox.stub(fs, "pathExists").callsFake(async (file: string) => {
+        return Promise.resolve(files[path.resolve(file)] !== undefined);
+      });
+      sandbox.stub(fs, "writeFile").callsFake(async (file: fs.PathLike | number, data: any) => {
+        files[path.resolve(file as string)] = data;
+        return Promise.resolve();
+      });
+      sandbox.stub(fs, "readJson").callsFake(async (file: string) => {
+        return Promise.resolve(JSON.parse(files[path.resolve(file)]));
+      });
+      sandbox.stub(tools, "waitSeconds").resolves();
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
     it("happy path", async () => {
-      await fs.ensureDir(configFolder);
       await fs.writeFile(
         path.resolve(configFolder, "projectSettings.json"),
         JSON.stringify(projectSettings0)
@@ -126,7 +172,6 @@ describe("LocalEnvManager", () => {
     });
 
     it("missing field", async () => {
-      await fs.ensureDir(configFolder);
       await fs.writeFile(
         path.resolve(configFolder, "projectSettings.json"),
         JSON.stringify(projectSettings0)
@@ -143,8 +188,6 @@ describe("LocalEnvManager", () => {
     });
 
     it("missing file", async () => {
-      await fs.ensureDir(configFolder);
-      await fs.emptyDir(configFolder);
       await fs.writeFile(
         path.resolve(configFolder, "projectSettings.json"),
         JSON.stringify(projectSettings0)
@@ -316,6 +359,7 @@ describe("LocalEnvManager", () => {
       );
     });
   });
+
   describe("getLocalEnvInfo()", () => {
     const sandbox = sinon.createSandbox();
     let mockedEnvRestore: RestoreFn;
@@ -345,6 +389,91 @@ describe("LocalEnvManager", () => {
         config: {},
         state: { solution: { key: "value" } },
       });
+    });
+  });
+
+  describe("getNgrokTunnelConfig()", () => {
+    const sandbox = sinon.createSandbox();
+    let files: Record<string, any> = {};
+
+    beforeEach(() => {
+      files = {};
+      sandbox.restore();
+      sandbox.stub(fs, "pathExists").callsFake(async (file: string) => {
+        return Promise.resolve(files[path.resolve(file)] !== undefined);
+      });
+      sandbox.stub(fs, "writeFile").callsFake(async (file: fs.PathLike | number, data: any) => {
+        files[path.resolve(file as string)] = data;
+        return Promise.resolve();
+      });
+      sandbox.stub(fs, "readFile").callsFake(async (file: fs.PathLike | number, options?: any) => {
+        return Promise.resolve(files[path.resolve(file as string)]);
+      });
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("getNgrokTunnelConfig() happy path", async () => {
+      const ngrokConfigFilePath = path.join(configFolder, "ngrok.yml");
+      await fs.writeFile(ngrokConfigFilePath, "tunnels:\n  bot:\n     addr: 53000\n");
+      const res = await localEnvManager.getNgrokTunnelConfig(ngrokConfigFilePath);
+      chai.assert.sameDeepOrderedMembers([...res.entries()], [["bot", "53000"]]);
+    });
+
+    it("empty result", async () => {
+      const ngrokConfigFilePath = path.join(configFolder, "ngrok.yml");
+      await fs.writeFile(ngrokConfigFilePath, "");
+      const res = await localEnvManager.getNgrokTunnelConfig(ngrokConfigFilePath);
+      chai.assert.equal(res.size, 0);
+    });
+
+    it("error schema", async () => {
+      const ngrokConfigFilePath = path.join(configFolder, "ngrok.yml");
+      await fs.writeFile(ngrokConfigFilePath, "tunnels:\nbot\n-\n");
+      await chai
+        .expect(localEnvManager.getNgrokTunnelConfig(ngrokConfigFilePath))
+        .to.be.rejectedWith();
+    });
+  });
+
+  describe("resolveLocalCertificate", () => {
+    it("set env", async () => {
+      const localCert: LocalCertificate = {
+        certPath: "certPath",
+        keyPath: "keyPath",
+      };
+      sinon
+        .stub(LocalCertificateManager.prototype, "setupCertificate")
+        .returns(Promise.resolve(localCert));
+      let frontendEnvs: LocalEnvs = {
+        template: {},
+        teamsfx: {},
+        customized: {},
+      };
+      sinon
+        .stub(LocalEnvProvider.prototype, "loadFrontendLocalEnvs")
+        .returns(Promise.resolve(frontendEnvs));
+      sinon.stub(LocalEnvProvider.prototype, "saveFrontendLocalEnvs").callsFake(async (envs) => {
+        frontendEnvs = envs;
+        return "";
+      });
+      const localEnvProvider = new LocalEnvProvider("xxx");
+      const localEnvManager = new LocalEnvManager();
+      const result = await localEnvManager.resolveLocalCertificate(true, localEnvProvider);
+      chai.assert.equal(result.certPath, localCert.certPath);
+      chai.assert.equal(result.keyPath, localCert.keyPath);
+      const expectedFrontendEnvs: LocalEnvs = {
+        template: {
+          [LocalEnvKeys.frontend.template.SslCrtFile]: localCert.certPath,
+          [LocalEnvKeys.frontend.template.SslKeyFile]: localCert.keyPath,
+        },
+        teamsfx: {},
+        customized: {},
+      };
+      chai.assert.deepEqual(frontendEnvs, expectedFrontendEnvs);
+      sinon.restore();
     });
   });
 });

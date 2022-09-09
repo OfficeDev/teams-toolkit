@@ -2,7 +2,13 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+import * as util from "util";
 import * as vscode from "vscode";
+import { assembleError, FxError, Result, UserError, Void } from "@microsoft/teamsfx-api";
+import * as globalVariables from "../../globalVariables";
+import { showError } from "../../handlers";
+import { ExtensionErrors, ExtensionSource } from "../../error";
+import { getDefaultString, localize } from "../../utils/localizeUtils";
 
 const ControlCodes = {
   CtrlC: "\u0003",
@@ -19,7 +25,10 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
 
   open(): void {
     this.do()
-      .then(() => this.stop())
+      .then((res) => {
+        const error = res.isErr() ? res.error : undefined;
+        this.stop(error);
+      })
       .catch((error) => this.stop(error));
   }
 
@@ -34,13 +43,32 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
   }
 
   protected stop(error?: any): void {
-    if (error?.message) {
+    if (error) {
       // TODO: add color
-      this.writeEmitter.fire(`${error?.message}\r\n`);
+      this.writeEmitter.fire(`${error?.displayMessage ?? error?.message}\r\n`);
+      showError(assembleError(error));
+      this.closeEmitter.fire(1);
     }
-    const exitCode = error ? 1 : 0;
-    this.closeEmitter.fire(exitCode);
+    this.closeEmitter.fire(0);
   }
 
-  protected abstract do(): Promise<void>;
+  protected abstract do(): Promise<Result<Void, FxError>>;
+
+  public static resolveTeamsFxVariables(str: string): string {
+    // Background task cannot resolve variables in VSC.
+    // Here Teams Toolkit resolve the workspaceFolder.
+    // TODO: remove one after decide to use which placeholder
+    str = str.replace("${teamsfx:workspaceFolder}", globalVariables.workspaceUri?.fsPath ?? "");
+    str = str.replace("${workspaceFolder}", globalVariables.workspaceUri?.fsPath ?? "");
+    return str;
+  }
+
+  public static taskDefinitionError(argName: string): UserError {
+    return new UserError(
+      ExtensionSource,
+      ExtensionErrors.TaskDefinitionError,
+      util.format(getDefaultString("teamstoolkit.localDebug.taskDefinitionError"), argName),
+      util.format(localize("teamstoolkit.localDebug.taskDefinitionError"), argName)
+    );
+  }
 }

@@ -1,11 +1,9 @@
-import { HelloWorldCardActionHandler } from "../cardActions/helloworldActionHandler";
+import { DoStuffCardActionHandler } from "../cardActions/doStuffActionHandler";
 import { HelloWorldCommandHandler } from "../commands/helloworldCommandHandler";
 import { ConversationBot } from "@microsoft/teamsfx";
 
-// Create the command bot and register the command handlers for your app.
-// You can also use the commandBot.command.registerCommands to register other commands
-// if you don't want to register all of them in the constructor
-export const commandBot = new ConversationBot({
+// Create the conversation bot and register the command and card action handlers for your app.
+export const conversationBot = new ConversationBot({
   // The bot id and password to create BotFrameworkAdapter.
   // See https://aka.ms/about-bot-adapter to learn more about adapters.
   adapterConfig: {
@@ -18,6 +16,6 @@ export const commandBot = new ConversationBot({
   },
   cardAction: {
     enabled: true,
-    actions: [new HelloWorldCardActionHandler()],
+    actions: [new DoStuffCardActionHandler()],
   },
 });

@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { AccessToken, TokenCredential, GetTokenOptions } from "@azure/identity";
+import { GetTeamsUserTokenOptions } from "../models/teamsUserTokenOptions";
 import { UserInfo } from "../models/userinfo";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
 import * as microsoftTeams from "@microsoft/teams-js";
@@ -78,20 +79,21 @@ export class TeamsUserCredential implements TokenCredential {
    * await credential.login("https://graph.microsoft.com/User.Read Calendars.Read"); // multiple scopes using string
    * ```
    * @param scopes - The list of scopes for which the token will have access, before that, we will request user to consent.
+   * @param { string[] } resources - The optional list of resources for full trust Teams apps.
    *
    * @throws {@link ErrorCode|InternalError} when failed to login with unknown error.
    * @throws {@link ErrorCode|ConsentFailed} when user canceled or failed to consent.
    * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
    */
-  async login(scopes: string | string[]): Promise<void> {
+  async login(scopes: string | string[], resources?: string[]): Promise<void> {
     validateScopesType(scopes);
     const scopesStr = typeof scopes === "string" ? scopes : scopes.join(" ");
 
     internalLogger.info(`Popup login page to get user's access token with scopes: ${scopesStr}`);
 
     if (!this.initialized) {
-      await this.init();
+      await this.init(resources);
     }
 
     return new Promise<void>((resolve, reject) => {
@@ -152,6 +154,9 @@ export class TeamsUserCredential implements TokenCredential {
    * Get access token from credential.
    *
    * Important: Access tokens are stored in sessionStorage, read more here: https://aka.ms/teamsfx-session-storage-notice
+   * Important: Full trust applications do not read the resource information from the webApplicationInfo section of the app
+   * manifest. Instead, this resource (along with any additional resources from which to request tokens) must be provided
+   * as a list of resources to the getToken() method through a GetTeamsUserTokenOptions object.
    *
    * @example
    * ```typescript
@@ -165,6 +170,9 @@ export class TeamsUserCredential implements TokenCredential {
    * await credential.getToken("User.Read Application.Read.All") // Get Graph access token for multiple scopes using space-separated string
    * await credential.getToken("https://graph.microsoft.com/User.Read") // Get Graph access token with full resource URI
    * await credential.getToken(["https://outlook.office.com/Mail.Read"]) // Get Outlook access token
+   *
+   * const options: GetTeamsUserTokenOptions = { resources: ["https://domain.example.com"] }; // set up resources for full trust apps.
+   * await credential.getToken([], options) // Get sso token from teams client - only use this approach for full trust apps.
    * ```
    *
    * @param {string | string[]} scopes - The list of scopes for which the token will have access.
@@ -185,7 +193,8 @@ export class TeamsUserCredential implements TokenCredential {
     options?: GetTokenOptions
   ): Promise<AccessToken | null> {
     validateScopesType(scopes);
-    const ssoToken = await this.getSSOToken();
+    const resources = (options as GetTeamsUserTokenOptions)?.resources;
+    const ssoToken = await this.getSSOToken(resources);
 
     const scopeStr = typeof scopes === "string" ? scopes : scopes.join(" ");
     if (scopeStr === "") {
@@ -196,7 +205,7 @@ export class TeamsUserCredential implements TokenCredential {
       internalLogger.info("Get access token with scopes: " + scopeStr);
 
       if (!this.initialized) {
-        await this.init();
+        await this.init(resources);
       }
 
       let tokenResponse;
@@ -248,6 +257,8 @@ export class TeamsUserCredential implements TokenCredential {
   /**
    * Get basic user info from SSO token
    *
+   * @param {string[]} resources - The optional list of resources for full trust Teams apps.
+   *
    * @example
    * ```typescript
    * const currentUser = await credential.getUserInfo();
@@ -259,14 +270,14 @@ export class TeamsUserCredential implements TokenCredential {
    *
    * @returns Basic user info with user displayName, objectId and preferredUserName.
    */
-  public async getUserInfo(): Promise<UserInfo> {
+  public async getUserInfo(resources?: string[]): Promise<UserInfo> {
     internalLogger.info("Get basic user info from SSO token");
-    const ssoToken = await this.getSSOToken();
+    const ssoToken = await this.getSSOToken(resources);
     return getUserInfoFromSsoToken(ssoToken.token);
   }
 
-  private async init(): Promise<void> {
-    const ssoToken = await this.getSSOToken();
+  private async init(resources?: string[]): Promise<void> {
+    const ssoToken = await this.getSSOToken(resources);
     const info = getTenantIdAndLoginHintFromSsoToken(ssoToken.token);
     this.loginHint = info.loginHint;
     this.tid = info.tid;
@@ -288,9 +299,12 @@ export class TeamsUserCredential implements TokenCredential {
   /**
    * Get SSO token using teams SDK
    * It will try to get SSO token from memory first, if SSO token doesn't exist or about to expired, then it will using teams SDK to get SSO token
+   *
+   * @param {string[]} resources - The optional list of resources for full trust Teams apps.
+   *
    * @returns SSO token
    */
-  private getSSOToken(): Promise<AccessToken> {
+  private getSSOToken(resources?: string[]): Promise<AccessToken> {
     return new Promise<AccessToken>((resolve, reject) => {
       if (this.ssoToken) {
         if (this.ssoToken.expiresOnTimestamp - Date.now() > tokenRefreshTimeSpanInMillisecond) {
@@ -333,7 +347,7 @@ export class TeamsUserCredential implements TokenCredential {
               internalLogger.error(errorMsg);
               reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
             },
-            resources: [],
+            resources: resources ?? [],
           });
         });
       } else {

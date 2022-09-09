@@ -121,13 +121,14 @@ export async function handleConfigFilesWhenSwitchAccount(
   projectPath: string,
   hasSwitchedM365Tenant: boolean,
   hasSwitchedSubscription: boolean,
-  hasBotServiceCreatedBefore: boolean
+  hasBotServiceCreatedBefore: boolean,
+  isCSharpProject: boolean
 ): Promise<Result<undefined, FxError>> {
   if (!hasSwitchedM365Tenant && !hasSwitchedSubscription) {
     return ok(undefined);
   }
 
-  const backupFilesRes = await backupFiles(envInfo.envName, projectPath);
+  const backupFilesRes = await backupFiles(envInfo.envName, projectPath, isCSharpProject);
   if (backupFilesRes.isErr()) {
     return err(backupFilesRes.error);
   }

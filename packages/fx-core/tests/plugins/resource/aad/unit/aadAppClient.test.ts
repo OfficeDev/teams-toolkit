@@ -22,6 +22,7 @@ import {
 import { AppStudio } from "../../../../../src/plugins/resource/aad/appStudio";
 import {
   CreateAppError,
+  CreateAppForbiddenError,
   CreateSecretError,
   GetAppConfigError,
   GetAppError,
@@ -34,6 +35,7 @@ import { ConfigKeys, Constants } from "../../../../../src/plugins/resource/aad/c
 import { MockM365TokenProvider, MockTools } from "../../../../core/utils";
 import { setTools } from "../../../../../src";
 import { AadAppManifestManager } from "../../../../../src/plugins/resource/aad/aadAppManifestManager";
+import * as tool from "../../../../../src/common/tools";
 
 describe("AAD App Client Test", () => {
   let ctx: PluginContext;
@@ -99,6 +101,24 @@ describe("AAD App Client Test", () => {
       } catch (error) {
         chai.assert.isTrue(error instanceof UserError);
         chai.assert.equal(error.message, CreateAppError.message()[0]);
+      }
+    });
+
+    it("Forbidden", async () => {
+      TokenProvider.init(mockTokenProviders, TokenAudience.Graph);
+
+      const error = {
+        response: {
+          status: 403,
+          message: "errorMessage",
+        },
+      };
+      sinon.stub(AadAppClient, "retryHanlder").throws(error);
+      try {
+        await AadAppClient.createAadAppUsingManifest("createAADApp", {} as any, config);
+      } catch (error) {
+        chai.assert.isTrue(error instanceof UserError);
+        chai.assert.equal(error.message, CreateAppForbiddenError.message()[0]);
       }
     });
   });
@@ -273,6 +293,22 @@ describe("AAD App Client Test", () => {
       } catch (error) {
         chai.assert.isTrue(error instanceof UserError);
         chai.assert.isTrue(error.message.indexOf("create AAD failed") > 0);
+      }
+    });
+
+    it("Bad Request", async () => {
+      sinon.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
+      TokenProvider.init(mockTokenProviders, TokenAudience.Graph);
+      const err: any = new Error("create AAD failed");
+      err.response = {
+        status: 400,
+      };
+      sinon.stub(AadAppClient, "retryHanlder").throws(err);
+      try {
+        await AadAppClient.updateAadAppUsingManifest("updateAadApp", {} as any);
+      } catch (error) {
+        chai.assert.isTrue(error instanceof UserError);
+        chai.assert.isTrue(error.message.indexOf("templates/appPackage/aad.template.json") > 0);
       }
     });
   });

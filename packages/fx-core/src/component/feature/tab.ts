@@ -27,7 +27,7 @@ import { ComponentNames, Scenarios, StorageOutputs } from "../constants";
 import { Plans } from "../messages";
 import { getComponent, getComponentByScenario } from "../workflow";
 import { assign, cloneDeep, merge } from "lodash";
-import { generateConfigBiceps, bicepUtils, addFeatureNotify } from "../utils";
+import { generateConfigBiceps, bicepUtils, addFeatureNotify, scaffoldRootReadme } from "../utils";
 import { TabCodeProvider } from "../code/tabCode";
 import { BicepComponent } from "../bicep";
 import { convertToAlphanumericOnly } from "../../common/utils";
@@ -209,6 +209,7 @@ export class TeamsTab {
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.Components]: JSON.stringify(addedComponents),
     });
+    await scaffoldRootReadme(context.projectSetting, inputs.projectPath);
     addFeatureNotify(inputs, context.userInteraction, "Capability", [inputs.features]);
     return ok(undefined);
   }
@@ -219,15 +220,13 @@ export class TeamsTab {
     }),
   ])
   async provision(context: ResourceContextV3): Promise<Result<undefined, FxError>> {
-    if (context.envInfo.envName === "local") {
-      context.envInfo.state[ComponentNames.TeamsTab] =
-        context.envInfo.state[ComponentNames.TeamsTab] || {};
-      if (isVSProject(context.projectSetting)) {
-        context.envInfo.state[ComponentNames.TeamsTab][StorageOutputs.indexPath.key] = "";
-      } else {
-        context.envInfo.state[ComponentNames.TeamsTab][StorageOutputs.indexPath.key] =
-          Constants.FrontendIndexPath;
-      }
+    context.envInfo.state[ComponentNames.TeamsTab] =
+      context.envInfo.state[ComponentNames.TeamsTab] || {};
+    if (isVSProject(context.projectSetting)) {
+      context.envInfo.state[ComponentNames.TeamsTab][StorageOutputs.indexPath.key] = "/";
+    } else {
+      context.envInfo.state[ComponentNames.TeamsTab][StorageOutputs.indexPath.key] =
+        Constants.FrontendIndexPath;
     }
     return ok(undefined);
   }

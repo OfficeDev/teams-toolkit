@@ -3,6 +3,7 @@ import { isUndefined } from "lodash";
 import { Container } from "typedi";
 import { isExistingTabApp } from "../../../../common/projectSettingsHelper";
 import { AppStudioScopes } from "../../../../common/tools";
+import { isCSharpProject } from "../../../../component/utils";
 import { environmentManager } from "../../../../core/environment";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
 import { PluginNames, SolutionError } from "../constants";
@@ -65,6 +66,7 @@ export async function provisionLocalResource(
   const m365TenantMatches = await checkWhetherLocalDebugM365TenantMatches(
     envInfo as v3.EnvInfoV3,
     ctx.telemetryReporter,
+    isCSharpProject(ctx.projectSetting.programmingLanguage),
     localDebugTenantId,
     tokenProvider.m365TokenProvider,
     inputs.projectPath

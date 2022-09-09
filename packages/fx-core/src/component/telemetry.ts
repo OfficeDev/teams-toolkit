@@ -216,6 +216,7 @@ export function sendMigratedErrorEvent(
       componentName = inputs?.["Scenario"] === Scenarios.Api ? PluginNames.FUNC : PluginNames.BOT;
       break;
     case "BotService":
+    case "BT":
       componentName = PluginNames.BOT;
       telemetryHelper.fillAppStudioErrorProperty(error.innerError, props);
       break;

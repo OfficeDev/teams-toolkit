@@ -12,7 +12,7 @@ import { YoChecker } from "../../../../../src/plugins/resource/spfx/depsChecker/
 import { GeneratorChecker } from "../../../../../src/plugins/resource/spfx/depsChecker/generatorChecker";
 import { cpUtils } from "../../../../../src/plugins/solution/fx-solution/utils/depsChecker/cpUtils";
 import * as uuid from "uuid";
-import { ok, Void } from "@microsoft/teamsfx-api";
+import { ok, Stage, Void } from "@microsoft/teamsfx-api";
 import { DefaultManifestProvider } from "../../../../../src/component/resource/appManifest/manifestProvider";
 import mockedEnv from "mocked-env";
 
@@ -35,8 +35,15 @@ describe("SPFxScaffold", function () {
     sinon.stub(fs, "rename").resolves();
     sinon.stub(fs, "copyFile").resolves();
     sinon.stub(fs, "remove").resolves();
-    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "pathExists").callsFake(async (directory) => {
+      if (directory.includes(".yo-rc.json")) {
+        return false;
+      }
+      return true;
+    });
     sinon.stub(fs, "readJson").resolves({});
+    sinon.stub(fs, "ensureFile").resolves();
+    sinon.stub(fs, "writeJSON").resolves();
     sinon.stub(DefaultManifestProvider.prototype, "updateCapability").resolves(ok(Void));
   });
 
@@ -79,6 +86,7 @@ describe("SPFxScaffold", function () {
       .stub(DefaultManifestProvider.prototype, "addCapabilities")
       .resolves(ok(Void));
     const pluginContext = TestHelper.getFakePluginContext(appName, testFolder, undefined);
+    pluginContext.answers!["stage"] = Stage.addFeature;
     const result = await plugin.postScaffold(pluginContext);
     if (result.isErr()) console.log(result.error);
     expect(result.isOk()).to.eq(true);

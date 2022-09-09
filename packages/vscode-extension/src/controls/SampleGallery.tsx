@@ -24,6 +24,7 @@ import GraphConnector from "../../img/webview/sample/graph-connector-app.gif";
 import IncomingWebhook from "../../img/webview/sample/incoming-webhook.gif";
 import AdaptiveCardNotification from "../../img/webview/sample/adaptive-card-notification.gif";
 import SendProactiveMsg from "../../img/webview/sample/send-proactive-messages.gif";
+import StockUpdate from "../../img/webview/sample/stock-update.gif";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -49,6 +50,7 @@ const imageMapping: { [p: string]: any } = {
   "incoming-webhook-notification": IncomingWebhook,
   "graph-toolkit-one-productivity-hub": GraphToolkitOneProductivityHub,
   "bot-proactive-messaging-teamsfx": SendProactiveMsg,
+  "stocks-update-notification-bot": StockUpdate,
 };
 
 export default class SampleGallery extends React.Component<any, any> {

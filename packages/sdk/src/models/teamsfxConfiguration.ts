@@ -28,9 +28,10 @@ export interface TeamsFxConfiguration {
 
   /**
    * Get user information.
+   * @param {string[]} resources - The optional list of resources for full trust Teams apps.
    * @returns UserInfo object.
    */
-  getUserInfo(): Promise<UserInfo>;
+  getUserInfo(resources?: string[]): Promise<UserInfo>;
 
   /**
    * Popup login page to get user's access token with specific scopes.
@@ -46,13 +47,14 @@ export interface TeamsFxConfiguration {
    * await teamsfx.login("https://graph.microsoft.com/User.Read Calendars.Read"); // multiple scopes using string
    * ```
    * @param scopes - The list of scopes for which the token will have access, before that, we will request user to consent.
+   * @param {string[]} resources - The optional list of resources for full trust Teams apps.
    *
    * @throws {@link ErrorCode|InternalError} when failed to login with unknown error.
    * @throws {@link ErrorCode|ConsentFailed} when user canceled or failed to consent.
    * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
    */
-  login(scopes: string | string[]): Promise<void>;
+  login(scopes: string | string[], resources?: string[]): Promise<void>;
 
   /**
    * Set SSO token when using user identity in NodeJS.

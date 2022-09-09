@@ -70,9 +70,7 @@ class TreeViewManager {
         "teamsfx-development"
       ) as CommandsTreeViewProvider;
       const developmentCommands = developmentTreeviewProvider.getCommands();
-      developmentCommands.splice(
-        1,
-        0,
+      developmentCommands.push(
         new TreeViewCommand(
           localize("teamstoolkit.commandsTreeViewProvider.previewTitle"),
           localize("teamstoolkit.commandsTreeViewProvider.previewDescription"),

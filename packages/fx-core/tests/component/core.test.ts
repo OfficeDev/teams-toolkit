@@ -8,7 +8,8 @@ import {
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import { createContextV3 } from "../../src/component/utils";
-import { newEnvInfoV3, setTools } from "../../src";
+import { newEnvInfoV3 } from "../../src/core/environment";
+import { setTools } from "../../src/core/globalVars";
 import * as os from "os";
 import { MockTools, randomAppName } from "../core/utils";
 import { assert } from "chai";

@@ -21,6 +21,7 @@ namespace Microsoft.TeamsFx.Conversation
         /// <summary>
         /// Initializes a new instance of the <see cref="CardActionBot"/> class.
         /// </summary>
+        /// <exception>
         /// <param name="adapter">The bot adapter.</param>
         /// <param name="options">The initialize options.</param>
         /// <paramref name="adapter"/> or <paramref name="options"/> is null.

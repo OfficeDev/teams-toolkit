@@ -42,7 +42,7 @@ export function EnvInfoWriterMW(skip = false): Middleware {
 }
 
 export function shouldSkipWriteEnvInfo(res: Result<any, FxError>): boolean {
-  return res.isErr() && !!res.error.userData && res.error.userData.shouldSkipWriteEnvInfo;
+  return res.isErr() && !!res.error.userData && !!res.error.userData.shouldSkipWriteEnvInfo;
 }
 
 async function writeEnvInfo(ctx: CoreHookContext, skip: boolean) {

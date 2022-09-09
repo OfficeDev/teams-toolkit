@@ -20,6 +20,7 @@ export class Constants {
   static maxRetryTimes = 10;
   static statusCodeUserError = 400;
   static statusCodeServerError = 500;
+  static statusCodeForbidden = 403;
 
   static permissions = {
     name: "Azure AD App",

@@ -15,7 +15,7 @@ else
             echo "Get Error Inputs:" $i
             exit -1
         fi
-        pkgContent=$(jq ".$i" .github/scripts/lernaDeps.json)
+        pkgContent=$(jq --arg a "$i" '.[$a]' -r .github/scripts/lernaDeps.json)
         content=$(jq --argjson arr1 "$content" --argjson arr2 "$pkgContent" -n '$arr1 + $arr2 | unique')
     done
     echo ======== deps: $content ==========

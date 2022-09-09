@@ -8,9 +8,12 @@ import * as vscode from "vscode";
 import { FxError, Result, Void } from "@microsoft/teamsfx-api";
 import { SSODebugArgs, SSODebugHandler } from "@microsoft/teamsfx-core";
 
+import VsCodeLogInstance from "../../commonlib/log";
 import { workspaceUri } from "../../globalVariables";
 import { tools } from "../../handlers";
+import { setUpSSODisplayMessages } from "../constants";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
+import { handleDebugActions } from "./common";
 
 export class SetUpSSOTaskTerminal extends BaseTaskTerminal {
   private readonly args: SSODebugArgs;
@@ -21,6 +24,10 @@ export class SetUpSSOTaskTerminal extends BaseTaskTerminal {
   }
 
   async do(): Promise<Result<Void, FxError>> {
+    VsCodeLogInstance.outputChannel.show();
+    VsCodeLogInstance.info(setUpSSODisplayMessages.taskName);
+    VsCodeLogInstance.outputChannel.appendLine(setUpSSODisplayMessages.check);
+
     const workspacePath: string = workspaceUri?.fsPath as string;
     const handler = new SSODebugHandler(
       workspacePath,
@@ -30,6 +37,8 @@ export class SetUpSSOTaskTerminal extends BaseTaskTerminal {
       tools.telemetryReporter,
       tools.ui
     );
-    return await handler.setUp();
+    const actions = handler.getActions();
+
+    return await handleDebugActions(actions, setUpSSODisplayMessages);
   }
 }

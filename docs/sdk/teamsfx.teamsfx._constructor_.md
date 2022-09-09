@@ -9,7 +9,7 @@ Constructor of TeamsFx
 <b>Signature:</b>
 
 ```typescript
-constructor(identityType?: IdentityType, customConfig?: Record<string, string>);
+constructor(identityType?: IdentityType, customConfig?: Record<string, string> | AuthenticationConfiguration);
 ```
 
 ## Parameters
@@ -17,7 +17,7 @@ constructor(identityType?: IdentityType, customConfig?: Record<string, string>);
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  identityType | [IdentityType](./teamsfx.identitytype.md) | Choose user or app identity |
-|  customConfig | Record&lt;string, string&gt; | key/value pairs of customized configuration that overrides default ones. |
+|  customConfig | Record&lt;string, string&gt; \| [AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md) | key/value pairs of customized configuration that overrides default ones. |
 
 ## Exceptions
 

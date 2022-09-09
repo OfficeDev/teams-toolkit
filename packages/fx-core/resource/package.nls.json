@@ -97,6 +97,7 @@
   "core.deployArmTemplates.FailedToGetDeploymentErrorNotification": "resource deployments (%s module) for your project failed and get the error message failed. Please refer to the resource group %s in portal for deployment error.",
   "core.deployArmTemplates.DeploymentFailedNotification": "resource deployments (%s) for your project failed. Please refer to output channel for more error details.",
   "core.handleConfigFile.FailedToUpdateAzureParameters": "Failed to update Azure parameters for %s environment.",
+  "core.appSettingsUtil.FailedToResetAppSettingsDevelopment": "Failed to reset values in appsettings.Development.json.",
   "core.backupFiles.FailedToBackupFiles": "Failed to backup %s.",
   "core.generateArmTemplates.DuplicateParameter": "There are some duplicate parameters in %s, to avoid the conflict, please modify these parameter names: %s",
   "core.generateArmTemplates.InvalidParameterFile": "There are some errors in %s, please make sure this file is valid. The error message is %s",
@@ -506,6 +507,8 @@
   "error.apiConnector.pkgFileNotExistError": "In %s project, there is no package.json exist",
   "error.apiConnector.componentNotExistError": "Component %s not exist, please add first",
   "error.apiConnector.envVarExistError": "Please provide a different API name to avoid conflicts with existing env variables %s in .env.teamsfx.local",
+  "error.debugHandler.AppManifestPackageNotExistError": "manifestPackagePath %s does not exist.",
+  "error.debugHandler.InvalidAppManifestPackageFileFormatError": "manifestPackagePath must be .zip file path.",
   "error.debugHandler.InvalidSSODebugArgsError": "objectId, clientId and clientSecret are all required if you use existing AAD app for SSO.",
   "error.debugHandler.InvalidExistingBotArgsError": "botId and botPassword need to be set together if you use existing bot.",
   "error.debugHandler.BotMessagingEndpointMissingError": "botMessagingEndpoint is required.",
@@ -650,6 +653,7 @@
   "error.aad.GetAppConfigError": "Failed to get %s from Azure AD app settings. Please make sure Azure AD app is correctly configured, or delete 'objectId' under %s in %s and try again.",
   "error.aad.GetSkipAppConfigError": "Failed to get all necessary info. You need to set %s, %s, %s, %s under%s in %s.",
   "error.aad.CreateAppError": "Failed to create an app in Azure Active Directory.",
+  "error.aad.CreateAppForbiddenError": "Failed to create an app in Azure Active Directory. This problem can be resolved by login using a Microsoft 365 developer account, you can apply for a free account by joining Microsoft 365 Developer Program(https://developer.microsoft.com/en-us/microsoft-365/dev-program).",
   "error.aad.CreateSecretError": "`Failed to create an application secret in Azure Active Directory.`",
   "error.aad.UpdateRedirectUriError": "Failed to update application redirect URI in Azure Active Directory.",
   "error.aad.UpdateAppIdUriError": "Failed to update Application ID URI in Azure Active Directory. %s",
@@ -676,6 +680,7 @@
   "error.aad.AadManifestMissingIdentifierUris": "identifierUris property is missing or invalid in AAD manifest file, you need to run provision or local debug first",
   "error.aad.AadManifestNotProvisioned": "Failed to generate AAD manifest because the resources have not been provisioned yet. You need to run provision or local debug first. Click Get Help to learn more about why you need to provision or local debug.",
   "error.aad.UpdateAadAppError": "Failed to update application in Azure Active Directory: %s",
+  "error.aad.UpdateAadAppUsingManifestError": "Failed to update application in Azure Active Directory. Please make sure 'templates/appPackage/aad.template.json' is valid: %s",
   "error.aad.AadManifestNotFoundError": "Aad manifest file not found",
   "error.aad.GetDisplayNameError": "Failed to get display name.",
   "error.aad.GetConfigError": "Failed to get configuration value \"%s\" for %s.",
@@ -917,5 +922,6 @@
   "depChecker.linuxDepsNotFoundHelpLinkMessage": "Cannot find @SupportedPackages.\n\nTeams Toolkit requires these dependencies.",
   "error.ActionNotExist": "Action not found: %s.",
   "error.ComponentNotExist": "Component not found: %s.",
-  "error.BadComponent": "Component '%s' lacks of property: %s."
+  "error.BadComponent": "Component '%s' lacks of property: %s.",
+  "error.NgrokConfigError": "Load ngrok config %s failed. %s"
 }

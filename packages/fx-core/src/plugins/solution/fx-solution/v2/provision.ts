@@ -54,7 +54,7 @@ import {
   hasBotServiceCreated,
   sendErrorTelemetryThenReturnError,
 } from "../utils/util";
-import { resetEnvInfoWhenSwitchM365 } from "../../../../component/utils";
+import { isCSharpProject, resetEnvInfoWhenSwitchM365 } from "../../../../component/utils";
 import { getSubscriptionId, provisionUtils } from "../../../../component/provisionUtils";
 
 export async function provisionResource(
@@ -209,7 +209,8 @@ async function provisionResourceImpl(
         inputs.projectPath,
         hasSwitchedM365Tenant,
         solutionConfigRes.value.hasSwitchedSubscription,
-        hasBotServiceCreatedBefore
+        hasBotServiceCreatedBefore,
+        isCSharpProject(ctx.projectSetting.programmingLanguage)
       );
 
       if (handleConfigFilesWhenSwitchAccountsRes.isErr()) {
@@ -237,7 +238,8 @@ async function provisionResourceImpl(
       inputs.projectPath,
       hasSwitchedM365Tenant,
       false,
-      false
+      false,
+      isCSharpProject(ctx.projectSetting.programmingLanguage)
     );
 
     if (handleConfigFilesWhenSwitchAccountsRes.isErr()) {

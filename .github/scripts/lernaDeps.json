@@ -1,36 +1,29 @@
 {
-    "common": [
-        "packages/eslint-config"
-    ],
-    "adaptivecard": [
-        "packages/adaptivecards-tools-sdk"
-    ],
-    "cli": [
-        "packages/manifest",
-        "packages/api",
-        "packages/fx-core",
-        "packages/cli",
-        "templates"
-    ],
-    "vscode": [
-        "packages/manifest",
-        "packages/api",
-        "packages/fx-core",
-        "packages/vscode-extension",
-        "templates"
-    ],
-    "server": [
-        "packages/manifest",
-        "packages/api",
-        "packages/fx-core",
-        "packages/server",
-        "templates"
-    ],
-    "sdk": [
-        "packages/sdk",
-        "packages/sdk-react"
-    ],
-    "template": [
-        "templates"
-    ]
+  "common": ["packages/eslint-config"],
+  "adaptivecard": ["packages/adaptivecards-tools-sdk"],
+  "cli": [
+    "packages/manifest",
+    "packages/api",
+    "packages/fx-core",
+    "packages/cli",
+    "templates"
+  ],
+  "vscode": [
+    "packages/manifest",
+    "packages/api",
+    "packages/fx-core",
+    "packages/vscode-extension",
+    "templates"
+  ],
+  "server": [
+    "packages/manifest",
+    "packages/api",
+    "packages/fx-core",
+    "packages/server",
+    "templates"
+  ],
+  "sdk": ["packages/sdk", "packages/sdk-react"],
+  "template": ["templates"],
+  "extra-shot-mocha": ["packages/extra-shot-mocha"]
 }
+

@@ -161,7 +161,7 @@ type PrerequisiteOrderedChecker = {
   fastFail: boolean;
 };
 
-class Step {
+export class Step {
   private currentStep: number;
   public readonly totalSteps: number;
   constructor(totalSteps: number) {

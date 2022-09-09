@@ -118,7 +118,8 @@ describe("util: handleConfigFilesWhenSwitchAccount", async () => {
       projectPath,
       false,
       false,
-      true
+      true,
+      false
     );
 
     // Assert
@@ -144,7 +145,8 @@ describe("util: handleConfigFilesWhenSwitchAccount", async () => {
       projectPath,
       true,
       true,
-      true
+      true,
+      false
     );
 
     // Assert
@@ -173,6 +175,7 @@ describe("util: handleConfigFilesWhenSwitchAccount", async () => {
       projectPath,
       true,
       true,
+      false,
       false
     );
 
@@ -199,6 +202,7 @@ describe("util: handleConfigFilesWhenSwitchAccount", async () => {
       projectPath,
       true,
       true,
+      false,
       false
     );
 

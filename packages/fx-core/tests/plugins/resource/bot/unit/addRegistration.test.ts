@@ -5,16 +5,21 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 
 import { AADRegistration } from "../../../../../src/plugins/resource/bot/aadRegistration";
-import { PluginError } from "../../../../../src/plugins/resource/bot/errors";
+import { CreateAADAppError, PluginError } from "../../../../../src/plugins/resource/bot/errors";
 import { default as axios } from "axios";
+import { RetryHandler } from "../../../../../src/plugins/resource/bot/utils/retryHandler";
 
 describe("AAD Registration", () => {
   describe("registerAADAppAndGetSecretByGraph", () => {
+    afterEach(async () => {
+      sinon.restore();
+    });
     it("Invalid Graph Token", async () => {
       // Arrange
       const graphToken = "some ivalid graph token";
       const displayName = "invalidGraphToken";
 
+      sinon.stub(RetryHandler, "Retry").throws(new CreateAADAppError());
       // Act
       try {
         await AADRegistration.registerAADAppAndGetSecretByGraph(graphToken, displayName);
@@ -56,10 +61,15 @@ describe("AAD Registration", () => {
   });
 
   describe("registerAADAppAndGetSecretByAppStudio", () => {
+    afterEach(async () => {
+      sinon.restore();
+    });
     it("Invalid App Studio Token", async () => {
       // Arrange
       const appStudioToken = "some invalid app studio token";
       const displayName = "invalidAppStudioToken";
+
+      sinon.stub(RetryHandler, "Retry").throws(new CreateAADAppError());
 
       // Act
       try {

@@ -4,7 +4,7 @@
 
 ## BotSsoExecutionActivityHandler interface
 
-Interface for user to customize sso execution activity handler
+Interface for user to customize SSO execution activity handler
 
 <b>Signature:</b>
 
@@ -12,13 +12,30 @@ Interface for user to customize sso execution activity handler
 export interface BotSsoExecutionActivityHandler 
 ```
 
+## Remarks
+
+Bot SSO execution activity handler is to handle SSO login process and trigger SSO command using [BotSsoExecutionDialog](./teamsfx.botssoexecutiondialog.md)<!-- -->. You can use this interface to implement your own SSO execution dialog, and pass it to ConversationBot options:
+
+```typescript
+export const commandBot = new ConversationBot({
+  ...
+  ssoConfig: {
+    ...
+    dialog: {
+      CustomBotSsoExecutionActivityHandler: YourCustomBotSsoExecutionActivityHandler,
+    }
+  },
+   ...
+});
+```
+For details information about how to implement a BotSsoExecutionActivityHandler, please refer [DefaultBotSsoExecutionActivityHandler](./teamsfx.defaultbotssoexecutionactivityhandler.md) class source code.
+
 ## Methods
 
 |  Method | Description |
 |  --- | --- |
 |  [addCommand(handler, triggerPatterns)](./teamsfx.botssoexecutionactivityhandler.addcommand.md) | Add [TeamsFxBotSsoCommandHandler](./teamsfx.teamsfxbotssocommandhandler.md) instance to [BotSsoExecutionDialog](./teamsfx.botssoexecutiondialog.md) |
-|  [handleTeamsSigninTokenExchange(context, query)](./teamsfx.botssoexecutionactivityhandler.handleteamssignintokenexchange.md) |  |
-|  [handleTeamsSigninVerifyState(context, query)](./teamsfx.botssoexecutionactivityhandler.handleteamssigninverifystate.md) |  |
-|  [onSignInInvoke(context)](./teamsfx.botssoexecutionactivityhandler.onsignininvoke.md) |  |
-|  [run(context)](./teamsfx.botssoexecutionactivityhandler.run.md) |  |
+|  [handleTeamsSigninTokenExchange(context, query)](./teamsfx.botssoexecutionactivityhandler.handleteamssignintokenexchange.md) | Receives invoke activities with Activity name of 'signin/tokenExchange' |
+|  [handleTeamsSigninVerifyState(context, query)](./teamsfx.botssoexecutionactivityhandler.handleteamssigninverifystate.md) | Receives invoke activities with Activity name of 'signin/verifyState'. |
+|  [run(context)](./teamsfx.botssoexecutionactivityhandler.run.md) | Called to initiate the event emission process. |
 

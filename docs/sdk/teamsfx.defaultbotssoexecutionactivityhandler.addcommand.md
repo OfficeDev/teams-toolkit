@@ -4,7 +4,7 @@
 
 ## DefaultBotSsoExecutionActivityHandler.addCommand() method
 
-Add TeamsFxBotSsoCommandHandler instance to sso execution dialog
+Add TeamsFxBotSsoCommandHandler instance to SSO execution dialog
 
 <b>Signature:</b>
 
@@ -22,4 +22,8 @@ addCommand(handler: BotSsoExecutionDialogHandler, triggerPatterns: TriggerPatter
 <b>Returns:</b>
 
 void
+
+## Remarks
+
+This function is used to add SSO command to [BotSsoExecutionDialog](./teamsfx.botssoexecutiondialog.md) instance.
 

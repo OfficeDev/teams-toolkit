@@ -47,7 +47,7 @@ export class CommandResponseMiddleware implements Middleware {
     }
   }
 
-  public addSsoCommand(ssoHandler: TeamsFxBotSsoCommandHandler) {
+  public addSsoCommand(ssoHandler: TeamsFxBotSsoCommandHandler): void {
     this.ssoActivityHandler?.addCommand(
       async (
         context: TurnContext,

@@ -4,7 +4,7 @@
 
 ## DefaultBotSsoExecutionActivityHandler class
 
-Default sso execution activity handler
+Default SSO execution activity handler
 
 <b>Signature:</b>
 
@@ -25,9 +25,8 @@ export declare class DefaultBotSsoExecutionActivityHandler extends TeamsActivity
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
-|  [addCommand(handler, triggerPatterns)](./teamsfx.defaultbotssoexecutionactivityhandler.addcommand.md) |  | Add TeamsFxBotSsoCommandHandler instance to sso execution dialog |
+|  [addCommand(handler, triggerPatterns)](./teamsfx.defaultbotssoexecutionactivityhandler.addcommand.md) |  | Add TeamsFxBotSsoCommandHandler instance to SSO execution dialog |
 |  [handleTeamsSigninTokenExchange(context, query)](./teamsfx.defaultbotssoexecutionactivityhandler.handleteamssignintokenexchange.md) |  | Receives invoke activities with Activity name of 'signin/tokenExchange' |
 |  [handleTeamsSigninVerifyState(context, query)](./teamsfx.defaultbotssoexecutionactivityhandler.handleteamssigninverifystate.md) |  | Receives invoke activities with Activity name of 'signin/verifyState'. |
-|  [onSignInInvoke(context)](./teamsfx.defaultbotssoexecutionactivityhandler.onsignininvoke.md) |  | Handle signin invoke activity type. |
 |  [run(context)](./teamsfx.defaultbotssoexecutionactivityhandler.run.md) |  | Called to initiate the event emission process. |
 

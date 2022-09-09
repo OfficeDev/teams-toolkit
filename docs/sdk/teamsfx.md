@@ -18,7 +18,7 @@
 |  [Channel](./teamsfx.channel.md) | A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team channel. |
 |  [CommandBot](./teamsfx.commandbot.md) | A command bot for receiving commands and sending responses in Teams. |
 |  [ConversationBot](./teamsfx.conversationbot.md) | Provide utilities for bot conversation, including: - handle command and response. - send notification to varies targets (e.g., member, group, channel). |
-|  [DefaultBotSsoExecutionActivityHandler](./teamsfx.defaultbotssoexecutionactivityhandler.md) | Default sso execution activity handler |
+|  [DefaultBotSsoExecutionActivityHandler](./teamsfx.defaultbotssoexecutionactivityhandler.md) | Default SSO execution activity handler |
 |  [ErrorWithCode](./teamsfx.errorwithcode.md) | Error class with code and message thrown by the SDK. |
 |  [InvokeResponseFactory](./teamsfx.invokeresponsefactory.md) | Provides methods for formatting various invoke responses a bot can send to respond to an invoke request. |
 |  [Member](./teamsfx.member.md) | A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team member. |
@@ -66,7 +66,7 @@
 |  [AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md) | Authentication related configuration. |
 |  [AuthProvider](./teamsfx.authprovider.md) | Defines method that injects authentication info to http requests |
 |  [BotSsoConfig](./teamsfx.botssoconfig.md) | Interface for SSO configuration for Bot SSO |
-|  [BotSsoExecutionActivityHandler](./teamsfx.botssoexecutionactivityhandler.md) | Interface for user to customize sso execution activity handler |
+|  [BotSsoExecutionActivityHandler](./teamsfx.botssoexecutionactivityhandler.md) | Interface for user to customize SSO execution activity handler |
 |  [CardActionOptions](./teamsfx.cardactionoptions.md) | Options to initialize [CardActionBot](./teamsfx.cardactionbot.md)<!-- -->. |
 |  [CommandMessage](./teamsfx.commandmessage.md) | Interface for a command message that can handled in a command handler. |
 |  [CommandOptions](./teamsfx.commandoptions.md) | Options to initialize [CommandBot](./teamsfx.commandbot.md)<!-- -->. |

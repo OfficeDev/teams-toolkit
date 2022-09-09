@@ -25,3 +25,5 @@ Promise&lt;void&gt;
 
 A promise that represents the work queued.
 
+ It should trigger [BotSsoExecutionDialog](./teamsfx.botssoexecutiondialog.md) instance to handle signin process
+

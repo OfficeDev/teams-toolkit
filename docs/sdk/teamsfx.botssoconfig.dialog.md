@@ -8,7 +8,7 @@
 
 ```typescript
 dialog?: {
-        CustomBotSsoExecutionActivityHandler?: new (ssoConfig?: BotSsoConfig | undefined) => BotSsoExecutionActivityHandler;
+        CustomBotSsoExecutionActivityHandler?: new (ssoConfig: BotSsoConfig) => BotSsoExecutionActivityHandler;
         conversationState?: ConversationState;
         userState?: UserState;
         dedupStorage?: Storage;

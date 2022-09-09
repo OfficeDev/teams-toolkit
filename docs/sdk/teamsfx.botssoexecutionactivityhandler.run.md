@@ -4,6 +4,8 @@
 
 ## BotSsoExecutionActivityHandler.run() method
 
+Called to initiate the event emission process.
+
 <b>Signature:</b>
 
 ```typescript
@@ -14,7 +16,7 @@ run(context: TurnContext): Promise<void>;
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  context | TurnContext |  |
+|  context | TurnContext | The context object for the current turn. |
 
 <b>Returns:</b>
 

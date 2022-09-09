@@ -4,6 +4,8 @@
 
 ## BotSsoExecutionActivityHandler.handleTeamsSigninVerifyState() method
 
+Receives invoke activities with Activity name of 'signin/verifyState'.
+
 <b>Signature:</b>
 
 ```typescript
@@ -14,10 +16,16 @@ handleTeamsSigninVerifyState(context: TurnContext, query: SigninStateVerificatio
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  context | TurnContext |  |
-|  query | SigninStateVerificationQuery |  |
+|  context | TurnContext | A context object for this turn. |
+|  query | SigninStateVerificationQuery | Signin state (part of signin action auth flow) verification invoke query. |
 
 <b>Returns:</b>
 
 Promise&lt;void&gt;
+
+A promise that represents the work queued.
+
+## Remarks
+
+It should trigger [BotSsoExecutionDialog](./teamsfx.botssoexecutiondialog.md) instance to handle signin process
 

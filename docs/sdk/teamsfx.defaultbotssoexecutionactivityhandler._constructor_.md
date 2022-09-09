@@ -9,12 +9,16 @@ Creates a new instance of the DefaultBotSsoExecutionActivityHandler.
 <b>Signature:</b>
 
 ```typescript
-constructor(ssoConfig?: BotSsoConfig | undefined);
+constructor(ssoConfig: BotSsoConfig);
 ```
 
 ## Parameters
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  ssoConfig | [BotSsoConfig](./teamsfx.botssoconfig.md) \| undefined | configuration for sso command bot |
+|  ssoConfig | [BotSsoConfig](./teamsfx.botssoconfig.md) | configuration for SSO command bot |
+
+## Remarks
+
+In the constructor, it uses BotSsoConfig parameter which from [ConversationBot](./teamsfx.conversationbot.md) options to initialize [BotSsoExecutionDialog](./teamsfx.botssoexecutiondialog.md)<!-- -->. It also need to register an event handler for the message event which trigger [BotSsoExecutionDialog](./teamsfx.botssoexecutiondialog.md) instance.
 

@@ -23,3 +23,7 @@ addCommand(handler: BotSsoExecutionDialogHandler, triggerPatterns: TriggerPatter
 
 void
 
+## Remarks
+
+This function is used to add SSO command to [BotSsoExecutionDialog](./teamsfx.botssoexecutiondialog.md) instance.
+

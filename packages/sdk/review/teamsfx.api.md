@@ -107,7 +107,7 @@ export interface BotSsoConfig {
     } & AuthenticationConfiguration;
     // (undocumented)
     dialog?: {
-        CustomBotSsoExecutionActivityHandler?: new (ssoConfig?: BotSsoConfig | undefined) => BotSsoExecutionActivityHandler;
+        CustomBotSsoExecutionActivityHandler?: new (ssoConfig: BotSsoConfig) => BotSsoExecutionActivityHandler;
         conversationState?: ConversationState;
         userState?: UserState;
         dedupStorage?: Storage_2;
@@ -121,13 +121,8 @@ export interface BotSsoConfig {
 // @public
 export interface BotSsoExecutionActivityHandler {
     addCommand(handler: BotSsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void;
-    // (undocumented)
     handleTeamsSigninTokenExchange(context: TurnContext, query: SigninStateVerificationQuery): Promise<void>;
-    // (undocumented)
     handleTeamsSigninVerifyState(context: TurnContext, query: SigninStateVerificationQuery): Promise<void>;
-    // (undocumented)
-    onSignInInvoke(context: TurnContext): Promise<void>;
-    // (undocumented)
     run(context: TurnContext): Promise<void>;
 }
 
@@ -241,11 +236,10 @@ export function createPfxCertOption(pfx: string | Buffer, options?: {
 
 // @public
 export class DefaultBotSsoExecutionActivityHandler extends TeamsActivityHandler implements BotSsoExecutionActivityHandler {
-    constructor(ssoConfig?: BotSsoConfig | undefined);
+    constructor(ssoConfig: BotSsoConfig);
     addCommand(handler: BotSsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void;
     handleTeamsSigninTokenExchange(context: TurnContext, query: SigninStateVerificationQuery): Promise<void>;
     handleTeamsSigninVerifyState(context: TurnContext, query: SigninStateVerificationQuery): Promise<void>;
-    onSignInInvoke(context: TurnContext): Promise<void>;
     run(context: TurnContext): Promise<void>;
 }
 

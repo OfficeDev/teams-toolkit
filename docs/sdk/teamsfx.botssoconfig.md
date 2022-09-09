@@ -17,5 +17,5 @@ export interface BotSsoConfig
 |  Property | Type | Description |
 |  --- | --- | --- |
 |  [aad](./teamsfx.botssoconfig.aad.md) | { scopes: string\[\]; } &amp; [AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md) | aad related configurations |
-|  [dialog?](./teamsfx.botssoconfig.dialog.md) | { CustomBotSsoExecutionActivityHandler?: new (ssoConfig?: [BotSsoConfig](./teamsfx.botssoconfig.md) \| undefined) =&gt; [BotSsoExecutionActivityHandler](./teamsfx.botssoexecutionactivityhandler.md)<!-- -->; conversationState?: ConversationState; userState?: UserState; dedupStorage?: Storage; ssoPromptConfig?: { timeout?: number; endOnInvalidMessage?: boolean; }; } | <i>(Optional)</i> |
+|  [dialog?](./teamsfx.botssoconfig.dialog.md) | { CustomBotSsoExecutionActivityHandler?: new (ssoConfig: [BotSsoConfig](./teamsfx.botssoconfig.md)<!-- -->) =&gt; [BotSsoExecutionActivityHandler](./teamsfx.botssoexecutionactivityhandler.md)<!-- -->; conversationState?: ConversationState; userState?: UserState; dedupStorage?: Storage; ssoPromptConfig?: { timeout?: number; endOnInvalidMessage?: boolean; }; } | <i>(Optional)</i> |
 

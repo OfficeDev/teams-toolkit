@@ -320,7 +320,7 @@ export interface BotSsoConfig {
      * Custom sso execution activity handler class which should implement the interface {@link BotSsoExecutionActivityHandler}. If not provided, it will use {@link DefaultBotSsoExecutionActivityHandler} by default
      */
     CustomBotSsoExecutionActivityHandler?: new (
-      ssoConfig?: BotSsoConfig | undefined
+      ssoConfig: BotSsoConfig
     ) => BotSsoExecutionActivityHandler;
 
     /**
@@ -418,25 +418,70 @@ export interface ConversationOptions {
 }
 
 /**
- * Interface for user to customize sso execution activity handler
+ * Interface for user to customize SSO execution activity handler
+ *
+ * @remarks
+ * Bot SSO execution activity handler is to handle SSO login process and trigger SSO command using {@link BotSsoExecutionDialog}.
+ * You can use this interface to implement your own SSO execution dialog, and pass it to ConversationBot options:
+ *
+ * ```typescript
+ * export const commandBot = new ConversationBot({
+ *   ...
+ *   ssoConfig: {
+ *     ...
+ *     dialog: {
+ *       CustomBotSsoExecutionActivityHandler: YourCustomBotSsoExecutionActivityHandler,
+ *     }
+ *   },
+ *    ...
+ * });
+ * ```
+ * For details information about how to implement a BotSsoExecutionActivityHandler, please refer {@link DefaultBotSsoExecutionActivityHandler} class source code.
  */
 export interface BotSsoExecutionActivityHandler {
   /**
    * Add {@link TeamsFxBotSsoCommandHandler} instance to {@link BotSsoExecutionDialog}
    * @param handler {@link BotSsoExecutionDialogHandler} callback function
    * @param triggerPatterns The trigger pattern
+   *
+   * @remarks
+   * This function is used to add SSO command to {@link BotSsoExecutionDialog} instance.
    */
   addCommand(handler: BotSsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void;
+
+  /**
+   * Called to initiate the event emission process.
+   * @param context The context object for the current turn.
+   */
   run(context: TurnContext): Promise<void>;
+
+  /**
+   * Receives invoke activities with Activity name of 'signin/verifyState'.
+   * @param context A context object for this turn.
+   * @param query Signin state (part of signin action auth flow) verification invoke query.
+   * @returns A promise that represents the work queued.
+   *
+   * @remarks
+   * It should trigger {@link BotSsoExecutionDialog} instance to handle signin process
+   */
   handleTeamsSigninVerifyState(
     context: TurnContext,
     query: SigninStateVerificationQuery
   ): Promise<void>;
+
+  /**
+   * Receives invoke activities with Activity name of 'signin/tokenExchange'
+   * @param context A context object for this turn.
+   * @param query Signin state (part of signin action auth flow) verification invoke query
+   * @returns A promise that represents the work queued.
+   *
+   * @remark
+   * It should trigger {@link BotSsoExecutionDialog} instance to handle signin process
+   */
   handleTeamsSigninTokenExchange(
     context: TurnContext,
     query: SigninStateVerificationQuery
   ): Promise<void>;
-  onSignInInvoke(context: TurnContext): Promise<void>;
 }
 
 export type BotSsoExecutionDialogHandler = (

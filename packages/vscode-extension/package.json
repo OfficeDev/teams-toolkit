@@ -512,7 +512,7 @@
       {
         "command": "fx-extension.addFeature",
         "title": "%teamstoolkit.commands.addFeature.title%",
-        "enablement": "fx-extension.isTeamsFx && !fx-extension.isSPFx",
+        "enablement": "fx-extension.isTeamsFx",
         "category": "Teams"
       },
       {

@@ -36,6 +36,7 @@ import { isV3 } from "../../core";
 import { convertEnvStateV3ToV2 } from "../../component/migrate";
 import { getNgrokHttpUrl } from "../../plugins/solution/fx-solution/debug/util/ngrok";
 import * as yaml from "js-yaml";
+import { LocalEnvKeys, LocalEnvProvider } from "../../component/debugHandler/localEnvProvider";
 
 export class LocalEnvManager {
   private readonly logger: LogProvider | undefined;
@@ -175,10 +176,19 @@ export class LocalEnvManager {
     });
   }
 
-  public async resolveLocalCertificate(trustDevCert: boolean): Promise<LocalCertificate> {
+  public async resolveLocalCertificate(
+    trustDevCert: boolean,
+    localEnvProvider?: LocalEnvProvider
+  ): Promise<LocalCertificate> {
     // Do not print any log in LocalCertificateManager, use the error message returned instead.
     const certManager = new LocalCertificateManager(this.ui);
     const res = await certManager.setupCertificate(trustDevCert);
+    if (trustDevCert && localEnvProvider) {
+      const frontendEnvs = await localEnvProvider.loadFrontendLocalEnvs();
+      frontendEnvs.template[LocalEnvKeys.frontend.template.SslCrtFile] = res.certPath;
+      frontendEnvs.template[LocalEnvKeys.frontend.template.SslKeyFile] = res.keyPath;
+      await localEnvProvider.saveFrontendLocalEnvs(frontendEnvs);
+    }
     return res;
   }
 

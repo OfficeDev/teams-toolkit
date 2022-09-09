@@ -8,9 +8,12 @@ import * as vscode from "vscode";
 import { FxError, Result, Void } from "@microsoft/teamsfx-api";
 import { AppManifestDebugArgs, AppManifestDebugHandler } from "@microsoft/teamsfx-core";
 
+import VsCodeLogInstance from "../../commonlib/log";
 import { workspaceUri } from "../../globalVariables";
 import { tools } from "../../handlers";
+import { prepareManifestDisplayMessages } from "../constants";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
+import { handleDebugActions } from "./common";
 
 export class PrepareManifestTaskTerminal extends BaseTaskTerminal {
   private readonly args: AppManifestDebugArgs;
@@ -21,6 +24,16 @@ export class PrepareManifestTaskTerminal extends BaseTaskTerminal {
   }
 
   async do(): Promise<Result<Void, FxError>> {
+    if (this.args.manifestPackagePath) {
+      this.args.manifestPackagePath = BaseTaskTerminal.resolveTeamsFxVariables(
+        this.args.manifestPackagePath
+      );
+    }
+
+    VsCodeLogInstance.outputChannel.show();
+    VsCodeLogInstance.info(prepareManifestDisplayMessages.taskName);
+    VsCodeLogInstance.outputChannel.appendLine(prepareManifestDisplayMessages.check);
+
     const workspacePath: string = workspaceUri?.fsPath as string;
     const handler = new AppManifestDebugHandler(
       workspacePath,
@@ -30,6 +43,8 @@ export class PrepareManifestTaskTerminal extends BaseTaskTerminal {
       tools.telemetryReporter,
       tools.ui
     );
-    return await handler.prepare();
+    const actions = handler.getActions();
+
+    return await handleDebugActions(actions, prepareManifestDisplayMessages);
   }
 }

@@ -67,6 +67,7 @@
 |  [CommandMessage](./teamsfx.commandmessage.md) | Interface for a command message that can handled in a command handler. |
 |  [CommandOptions](./teamsfx.commandoptions.md) | Options to initialize [CommandBot](./teamsfx.commandbot.md)<!-- -->. |
 |  [ConversationOptions](./teamsfx.conversationoptions.md) | Options to initialize [ConversationBot](./teamsfx.conversationbot.md) |
+|  [GetTeamsUserTokenOptions](./teamsfx.getteamsusertokenoptions.md) |  |
 |  [Logger](./teamsfx.logger.md) | Interface for customized logger. |
 |  [NotificationOptions\_2](./teamsfx.notificationoptions_2.md) | Options to initialize [NotificationBot](./teamsfx.notificationbot.md)<!-- -->. |
 |  [NotificationTarget](./teamsfx.notificationtarget.md) | Represent a notification target. |

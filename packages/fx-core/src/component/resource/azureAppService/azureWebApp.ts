@@ -1,8 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { FxError, InputsWithProjectPath, ResourceContextV3, Result } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
-import { IdentityOutputs, WebAppOutputs } from "../../constants";
+import { ComponentNames, IdentityOutputs, WebAppOutputs } from "../../constants";
 import { AzureAppService } from "./azureAppService";
 @Service("azure-web-app")
 export class AzureWebAppResource extends AzureAppService {
@@ -17,4 +18,20 @@ export class AzureWebAppResource extends AzureAppService {
       resourceId: IdentityOutputs.identityResourceId.bicepVariable,
     },
   };
+
+  async deploy(
+    context: ResourceContextV3,
+    inputs: InputsWithProjectPath
+  ): Promise<Result<undefined, FxError>> {
+    let resourceIdKey = this.outputs.resourceId.key;
+    if (inputs.componentId === ComponentNames.TeamsBot) {
+      const state = context.envInfo.state[inputs.componentId];
+      if (!state[resourceIdKey]) {
+        if (state["botWebAppResourceId"]) {
+          resourceIdKey = "botWebAppResourceId";
+        }
+      }
+    }
+    return await super.deploy(context, inputs, false, resourceIdKey);
+  }
 }

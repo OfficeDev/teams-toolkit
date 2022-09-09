@@ -777,6 +777,7 @@
                 "properties": {
                   "prerequisites": {
                     "type": "array",
+                    "description": "%teamstoolkit.taskDefinitions.args.prerequisites.title%",
                     "items": {
                       "type": "string",
                       "anyOf": [
@@ -815,7 +816,8 @@
                     "type": "array",
                     "items": {
                       "type": "number"
-                    }
+                    },
+                    "description": "%teamstoolkit.taskDefinitions.args.ports.title%"
                   }
                 },
                 "if": {
@@ -832,6 +834,13 @@
                     "ports"
                   ]
                 },
+                "else": {
+                  "not": {
+                    "required": [
+                      "ports"
+                    ]
+                  }
+                },
                 "additionalProperties": false
               },
               {
@@ -842,6 +851,7 @@
                 "properties": {
                   "projects": {
                     "type": "array",
+                    "description": "%teamstoolkit.taskDefinitions.args.projects.title%",
                     "items": {
                       "type": "object",
                       "required": [
@@ -849,12 +859,14 @@
                       ],
                       "properties": {
                         "cwd": {
-                          "type": "string"
+                          "type": "string",
+                          "description": "%teamstoolkit.taskDefinitions.args.projects.cwd.title%"
                         },
                         "npmInstallArgs": {
                           "type": "array",
                           "items": {
-                            "type": "string"
+                            "type": "string",
+                            "description": "%teamstoolkit.taskDefinitions.args.projects.npmInstallArgs.title%"
                           }
                         }
                       }
@@ -862,9 +874,22 @@
                   },
                   "forceUpdate": {
                     "type": "boolean",
-                    "default": false
+                    "title": "%teamstoolkit.taskDefinitions.args.forceUpdate.title%",
+                    "description": "%teamstoolkit.taskDefinitions.args.forceUpdate.title%",
+                    "default": false,
+                    "oneOf": [
+                      {
+                        "const": false,
+                        "description": "%teamstoolkit.taskDefinitions.args.forceUpdate.false.description%"
+                      },
+                      {
+                        "const": true,
+                        "description": "%teamstoolkit.taskDefinitions.args.forceUpdate.true.description%"
+                      }
+                    ]
                   }
-                }
+                },
+                "additionalProperties": false
               },
               {
                 "type": "object",
@@ -940,6 +965,7 @@
                 "properties": {
                   "configFile": {
                     "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.configFile.title%",
                     "anyOf": [
                       {
                         "const": "${teamsfx:workspaceFolder}/.fx/configs/ngrok.yml"
@@ -949,9 +975,12 @@
                   },
                   "binFolder": {
                     "type": "string",
+                    "title": "%teamstoolkit.taskDefinitions.args.binFolder.title%",
+                    "description": "%teamstoolkit.taskDefinitions.args.binFolder.title%",
                     "anyOf": [
                       {
-                        "const": "${teamsfx:ngrokBinFolder}"
+                        "const": "${teamsfx:ngrokBinFolder}",
+                        "description": "%teamstoolkit.taskDefinitions.args.binFolder.default.description%"
                       },
                       {}
                     ]

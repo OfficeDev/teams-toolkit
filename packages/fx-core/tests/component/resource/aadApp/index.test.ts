@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 
 import {
+  err,
+  FxError,
   InputsWithProjectPath,
   ok,
   Platform,
@@ -123,5 +125,20 @@ describe("aadApp component", () => {
     const component = new AadApp();
     const res = await component.provision(context as ResourceContextV3, inputs);
     assert.isTrue(res.isOk());
+  });
+
+  it("execution error path", async () => {
+    sandbox
+      .stub(AadAppForTeamsImpl.prototype, "postProvisionUsingManifest")
+      .resolves(err(new Error("mock") as FxError));
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+      language: "typescript",
+      "app-name": appName,
+    };
+    const component = new AadApp();
+    const res = await component.configure(context as ResourceContextV3, inputs);
+    assert.isTrue(res.isErr());
   });
 });

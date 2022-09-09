@@ -96,9 +96,16 @@ export class AadApp implements CloudResource {
     context.envInfo.state[ComponentNames.AadApp] ??= {};
     const aadAppImplement = new AadAppForTeamsImpl();
     const convertCtx = convertContext(context, inputs);
-    await aadAppImplement.provisionUsingManifest(convertCtx);
+    const res = await this.runWithExceptionCatchingAsync(
+      async () => aadAppImplement.provisionUsingManifest(convertCtx),
+      convertCtx,
+      Messages.EndProvision.telemetry
+    );
+    if (res.isErr()) {
+      return res;
+    }
     this.setState(convertCtx, context);
-    return ok(undefined);
+    return res;
   }
   async configure(
     context: ResourceContextV3,
@@ -106,12 +113,16 @@ export class AadApp implements CloudResource {
   ): Promise<Result<undefined, FxError>> {
     const aadAppImplement = new AadAppForTeamsImpl();
     const convertCtx = convertContext(context, inputs);
-    await aadAppImplement.postProvisionUsingManifest(convertCtx);
-    const convertState = convertCtx.envInfo.state.get("fx-resource-aad-app-for-teams");
-    convertState.forEach((v: any, k: string) => {
-      context.envInfo.state[ComponentNames.AadApp][k] = v;
-    });
-    return ok(undefined);
+    const res = await this.runWithExceptionCatchingAsync(
+      async () => aadAppImplement.postProvisionUsingManifest(convertCtx),
+      convertCtx,
+      Messages.EndPostProvision.telemetry
+    );
+    if (res.isErr()) {
+      return res;
+    }
+    this.setState(convertCtx, context);
+    return res;
   }
   async setApplicationInContext(
     context: ResourceContextV3,
@@ -122,7 +133,7 @@ export class AadApp implements CloudResource {
     const res = await this.runWithExceptionCatchingAsync(
       async () => aadAppImplement.setApplicationInContext(convertCtx),
       convertCtx,
-      Messages.EndDeploy.telemetry
+      "setApplicationInContext"
     );
     if (res.isErr()) {
       return res;

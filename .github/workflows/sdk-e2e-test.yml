@@ -50,6 +50,15 @@ jobs:
         run: |
           npm run test:e2e:browser
 
+      - name: get job id
+        id: get-job-id
+        if: ${{ always() }}
+        uses: ayachensiyuan/get-action-job-id@v1.5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          job-name: "setup"
+
       - name: List jobs
         if: ${{ always() }}
         id: list-jobs
@@ -124,6 +133,16 @@ jobs:
           echo "::set-output name=body::$body"
           echo "::set-output name=to::$emails"
           echo "::set-output name=subject::$subject"
+
+      - name: Sync to TeamsFx portal
+        if: ${{ always() }}
+        run: |
+          committer=`git log -1 --pretty=format:'%an'`
+          raw_url="https://github.com/${{ github.repository }}/runs/${{ steps.get-job-id.outputs.jobId }}?check_suite_focus=true"
+          curl -X POST https://teamsfxteststatus.azurewebsites.net/api/testCase \
+             -H 'Content-Type: application/json' \
+             -H 'Authorization: Bearer ${{ secrets.TEAMSFX_PORTAL_TOKEN }}' \
+             -d "{\"basic\":{\"reportId\":\"05\"},\"git\":{\"orginazation\":\"${{ github.repository_owner }}\",\"repository\":\"${{ github.repository }}\",\"commit\":\"${{ github.sha }}\",\"author\":\"$committer\",\"branch\":\"${{ github.ref }}\"},\"github\":{\"os\":\"Ubuntu\",\"nodeVersion\":\"14\",\"on\":\"${{ github.event_name }}\",\"jobId\":\"${{ steps.get-job-id.outputs.jobId }}\",\"runId\":\"${{ github.run_id }}\",\"caseURL\":\"$raw_url\",}}"
 
       - name: Report result
         uses: satak/webrequest-action@master

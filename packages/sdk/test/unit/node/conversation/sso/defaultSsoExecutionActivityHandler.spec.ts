@@ -21,7 +21,11 @@ describe("DefaultBotSsoExecutionActivityHandler Tests - Node", () => {
   const authorityHost = "fake_authority_host";
   const initiateLoginEndpoint = "fake_initiate_login_endpoint";
   const applicationIdUri = "fake_application_id_uri";
-
+  const ssoConfig: BotSsoConfig = {
+    aad: {
+      scopes: ["User.Read"],
+    },
+  };
   beforeEach(() => {
     mockedEnvRestore = mockedEnv({
       INITIATE_LOGIN_ENDPOINT: initiateLoginEndpoint,
@@ -40,7 +44,7 @@ describe("DefaultBotSsoExecutionActivityHandler Tests - Node", () => {
 
   it("create default sso execution activity handler should work", () => {
     const defaultBotSsoExecutionActivityHandler: any = new DefaultBotSsoExecutionActivityHandler(
-      undefined
+      ssoConfig
     );
     const ssoExecutionDialog = defaultBotSsoExecutionActivityHandler.ssoExecutionDialog;
     assert.isDefined(ssoExecutionDialog);
@@ -89,7 +93,7 @@ describe("DefaultBotSsoExecutionActivityHandler Tests - Node", () => {
 
   it("trigger sign in function should call sso execution dialog", () => {
     const defaultBotSsoExecutionActivityHandler: any = new DefaultBotSsoExecutionActivityHandler(
-      undefined
+      ssoConfig
     );
     const ssoExecutionDialog =
       defaultBotSsoExecutionActivityHandler.ssoExecutionDialog as BotSsoExecutionDialog;
@@ -101,8 +105,5 @@ describe("DefaultBotSsoExecutionActivityHandler Tests - Node", () => {
 
     defaultBotSsoExecutionActivityHandler.handleTeamsSigninTokenExchange(context);
     assert.isTrue(stub.callCount === 2);
-
-    defaultBotSsoExecutionActivityHandler.onSignInInvoke(context);
-    assert.isTrue(stub.callCount === 3);
   });
 });

@@ -10,6 +10,7 @@ import { TestCommandHandler, TestSsoCommandHandler } from "./testUtils";
 import mockedEnv from "mocked-env";
 import { DefaultBotSsoExecutionActivityHandler } from "../../../../src/conversation/sso/defaultBotSsoExecutionActivityHandler";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../../../../src/core/errors";
+import { BotSsoConfig } from "../../../../src";
 
 describe("CommandBot Tests - Node", () => {
   let mockedEnvRestore: () => void;
@@ -24,6 +25,11 @@ describe("CommandBot Tests - Node", () => {
   const authorityHost = "fake_authority_host";
   const initiateLoginEndpoint = "fake_initiate_login_endpoint";
   const applicationIdUri = "fake_application_id_uri";
+  const ssoConfig: BotSsoConfig = {
+    aad: {
+      scopes: ["User.Read"],
+    },
+  };
 
   beforeEach(() => {
     mockedEnvRestore = mockedEnv({
@@ -94,7 +100,7 @@ describe("CommandBot Tests - Node", () => {
   });
 
   it("create sso command bot should add correct activity handler", () => {
-    const defaultSsoHandler = new DefaultBotSsoExecutionActivityHandler(undefined);
+    const defaultSsoHandler = new DefaultBotSsoExecutionActivityHandler(ssoConfig);
     const commandBot = new CommandBot(
       adapter,
       {
@@ -123,7 +129,7 @@ describe("CommandBot Tests - Node", () => {
     const commandBot = new CommandBot(
       adapter,
       undefined,
-      new DefaultBotSsoExecutionActivityHandler()
+      new DefaultBotSsoExecutionActivityHandler(ssoConfig)
     );
     const middleware = middlewares[0] as CommandResponseMiddleware;
     commandBot.registerSsoCommand(new TestSsoCommandHandler("test"));
@@ -136,7 +142,7 @@ describe("CommandBot Tests - Node", () => {
     const commandBot = new CommandBot(
       adapter,
       undefined,
-      new DefaultBotSsoExecutionActivityHandler()
+      new DefaultBotSsoExecutionActivityHandler(ssoConfig)
     );
     const middleware = middlewares[0] as CommandResponseMiddleware;
     commandBot.registerSsoCommands([
@@ -152,7 +158,7 @@ describe("CommandBot Tests - Node", () => {
     const commandBot = new CommandBot(
       adapter,
       undefined,
-      new DefaultBotSsoExecutionActivityHandler()
+      new DefaultBotSsoExecutionActivityHandler(ssoConfig)
     );
     const middleware = middlewares[0] as CommandResponseMiddleware;
     commandBot.registerCommand(new TestCommandHandler("test"));

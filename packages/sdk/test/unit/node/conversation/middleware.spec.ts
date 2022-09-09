@@ -19,6 +19,7 @@ import {
 import { CardActionMiddleware } from "../../../../src/conversation/middlewares/cardActionMiddleware";
 import { DefaultBotSsoExecutionActivityHandler } from "../../../../src/conversation/sso/defaultBotSsoExecutionActivityHandler";
 import { NotificationMiddleware } from "../../../../src/conversation/middlewares/notificationMiddleware";
+import { BotSsoConfig } from "../../../../src/conversation/interface";
 chaiUse(chaiPromises);
 
 describe("CommandResponse Middleware Tests - Node", () => {
@@ -28,7 +29,11 @@ describe("CommandResponse Middleware Tests - Node", () => {
   const authorityHost = "fake_authority_host";
   const initiateLoginEndpoint = "fake_initiate_login_endpoint";
   const applicationIdUri = "fake_application_id_uri";
-
+  const ssoConfig: BotSsoConfig = {
+    aad: {
+      scopes: ["User.Read"],
+    },
+  };
   let mockedEnvRestore: () => void;
 
   beforeEach(() => {
@@ -121,7 +126,7 @@ describe("CommandResponse Middleware Tests - Node", () => {
     const testContext = new MockContext("test");
     const testSsoCommand = new TestSsoCommandHandler("test");
     const defaultBotSsoExecutionActivityHandler = new DefaultBotSsoExecutionActivityHandler(
-      undefined
+      ssoConfig
     );
     const stub = sinon.stub(defaultBotSsoExecutionActivityHandler, "run").resolves();
 
@@ -139,7 +144,9 @@ describe("CommandResponse Middleware Tests - Node", () => {
   it("onTurn should be called if context is not a message activity", async () => {
     const testContext = new MockContext("test", "invoke");
     const testSsoCommand = new TestSsoCommandHandler("test");
-    const defaultBotSsoExecutionActivityHandler = new DefaultBotSsoExecutionActivityHandler();
+    const defaultBotSsoExecutionActivityHandler = new DefaultBotSsoExecutionActivityHandler(
+      ssoConfig
+    );
     const stub = sinon.stub(defaultBotSsoExecutionActivityHandler, "run").resolves();
 
     const middleware = new CommandResponseMiddleware(

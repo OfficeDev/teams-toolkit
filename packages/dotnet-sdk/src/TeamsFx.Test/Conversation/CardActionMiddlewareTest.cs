@@ -43,7 +43,7 @@
         }
 
         [TestMethod]
-        public async Task OnTurnAsync_VerbMultipleMatch_OnlyTriggerTheFitstHandler()
+        public async Task OnTurnAsync_VerbMultipleMatch_OnlyTriggerTheFirstHandler()
         {
             // Arrange
             var mockHandler1 = CreateMockCardActionHandler("doStuff", InvokeResponseFactory.TextMessage("sample response"));
@@ -115,8 +115,8 @@
             await _middleware.OnTurnAsync(mockTurnContext.Object, (ct) => { return Task.CompletedTask; }, CancellationToken.None);
 
             // Assert
-            var expectedActiviyCount = 1; // invoke response sent in middleware
-            Assert.AreEqual(expectedActiviyCount, activites.Count);
+            var expectedActivityCount = 1; // invoke response sent in middleware
+            Assert.AreEqual(expectedActivityCount, activites.Count);
 
             var invokeResponse = activites[0].Value as InvokeResponse;
             Assert.IsNotNull(invokeResponse);
@@ -155,8 +155,8 @@
             await _middleware.OnTurnAsync(mockTurnContext.Object, (ct) => { return Task.CompletedTask; }, CancellationToken.None);
 
             // Assert
-            var expectedActiviyCount = 2;   // invoke response and updated activity sent in middleware
-            Assert.AreEqual(expectedActiviyCount, activites.Count);
+            var expectedActivityCount = 2;   // invoke response and updated activity sent in middleware
+            Assert.AreEqual(expectedActivityCount, activites.Count);
 
             var invokeResponse = activites[0].Value as InvokeResponse;
             Assert.IsNotNull(invokeResponse);
@@ -192,8 +192,8 @@
             await _middleware.OnTurnAsync(mockTurnContext.Object, (ct) => { return Task.CompletedTask; }, CancellationToken.None);
 
             // Assert
-            var expectedActiviyCount = 2;   // default invoke response and new message activity sent in middleware
-            Assert.AreEqual(expectedActiviyCount, activites.Count);
+            var expectedActivityCount = 2;   // default invoke response and new message activity sent in middleware
+            Assert.AreEqual(expectedActivityCount, activites.Count);
 
             var invokeResponse = activites[0].Value as InvokeResponse;
             Assert.IsNotNull(invokeResponse);
@@ -227,8 +227,8 @@
             await _middleware.OnTurnAsync(mockTurnContext.Object, (ct) => { return Task.CompletedTask; }, CancellationToken.None);
 
             // Assert
-            var expectedActiviyCount = 1;   // invoke response sent in middleware
-            Assert.AreEqual(expectedActiviyCount, activites.Count);
+            var expectedActivityCount = 1;   // invoke response sent in middleware
+            Assert.AreEqual(expectedActivityCount, activites.Count);
 
             var invokeResponse = activites[0].Value as InvokeResponse;
             Assert.IsNotNull(invokeResponse);
@@ -262,8 +262,8 @@
             await _middleware.OnTurnAsync(mockTurnContext.Object, (ct) => { return Task.CompletedTask; }, CancellationToken.None);
 
             // Assert
-            var expectedActiviyCount = 1;   // invoke response sent in middleware
-            Assert.AreEqual(expectedActiviyCount, activites.Count);
+            var expectedActivityCount = 1;   // invoke response sent in middleware
+            Assert.AreEqual(expectedActivityCount, activites.Count);
 
             var invokeResponse = activites[0].Value as InvokeResponse;
             Assert.IsNotNull(invokeResponse);

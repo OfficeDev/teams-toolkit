@@ -1120,6 +1120,30 @@
         }
       },
       {
+        "name": "teamsfx-local-tunnel-watch",
+        "label": "TeamsFx Local Tunnel Problems",
+        "owner": "Teams Toolkit",
+        "source": "teamsfx",
+        "applyTo": "allDocuments",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "pattern": [
+          {
+            "regexp": "^.*$",
+            "file": 0,
+            "location": 1,
+            "message": 2
+          }
+        ],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Starting local tunnel service",
+          "endsPattern": "Local tunnel service is started successfully|Failed to start local tunnel service"
+        }
+      },
+      {
         "name": "teamsfx-bot-watch",
         "label": "TeamsFx Bot Problems",
         "owner": "Teams Toolkit",

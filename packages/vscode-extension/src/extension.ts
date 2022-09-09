@@ -57,6 +57,7 @@ import {
 import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { ExtensionUpgrade } from "./utils/upgrade";
+import { LocalTunnelTaskTerminal } from "./debug/taskTerminal/localTunnelTaskTerminal";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -234,6 +235,19 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
     Correlator.run(handlers.getDotnetPathHandler)
   );
   context.subscriptions.push(getDotnetPathCmd);
+
+  // TODO: remove one after decide to use which placeholder
+  const getNgrokPathCmd = vscode.commands.registerCommand("fx-extension.get-ngrok-path", () =>
+    Correlator.run(() => LocalTunnelTaskTerminal.getNgrokBinFolder())
+  );
+  context.subscriptions.push(getNgrokPathCmd);
+
+  // TODO: remove one after decide to use which placeholder
+  const getTunnelEndpointCmd = vscode.commands.registerCommand(
+    "fx-extension.get-local-tunnel-endpoint",
+    () => Correlator.run(() => LocalTunnelTaskTerminal.getNgrokEndpoint())
+  );
+  context.subscriptions.push(getTunnelEndpointCmd);
 
   const installAppInTeamsCmd = vscode.commands.registerCommand(
     "fx-extension.install-app-in-teams",

@@ -214,3 +214,9 @@ export const prepareManifestDisplayMessages: DisplayMessages = {
   errorMessageLink: "teamstoolkit.localDebug.outputPanel",
   errorHelpLink: "https://aka.ms/teamsfx-debug-prepare-manifest",
 };
+
+export const localTunnelDisplayMessages = Object.freeze({
+  startMessage: "Starting local tunnel service.",
+  successMessage: "Local tunnel service is started successfully.",
+  errorMessage: "Failed to start local tunnel service.",
+});

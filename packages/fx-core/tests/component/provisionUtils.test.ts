@@ -12,7 +12,6 @@ import {
   MockUserInteraction,
 } from "../core/utils";
 import { TestHelper } from "../plugins/resource/frontend/helper";
-import fs from "fs-extra";
 
 const expect = chai.expect;
 
@@ -746,6 +745,7 @@ describe("preProvision", () => {
         azureAccountProvider: new MockAzureAccountProvider(),
         m365TokenProvider: new MockM365TokenProvider(),
       };
+      context.userInteraction = new MockUserInteraction();
 
       sandbox
         .stub(context.tokenProvider.m365TokenProvider, "getAccessToken")
@@ -772,15 +772,23 @@ describe("preProvision", () => {
         subscriptionId: "mockSub",
         tenantId: "mockTenantId",
       });
+      sandbox.stub(resourceGroupHelper, "askResourceGroupInfo").resolves(
+        ok({
+          createNewResourceGroup: true,
+          name: "cliRg",
+          location: "East US",
+        })
+      );
       sandbox
-        .stub(resourceGroupHelper, "askResourceGroupInfo")
+        .stub(resourceGroupHelper, "createNewResourceGroup")
         .resolves(err(new UserError("fakeError", "fakeName", "message", "message")));
+      sandbox.stub(context.userInteraction, "showMessage").resolves(ok("Provision"));
 
       const res = await provisionUtils.preProvision(context, inputs);
 
       expect(res.isErr()).equal(true);
       if (res.isErr()) {
-        expect(res.error.userData.shouldSkipWriteEnvInfo).equal(true);
+        expect(res.error.userData).equal(undefined);
       }
     });
 

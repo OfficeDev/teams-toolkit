@@ -83,7 +83,7 @@ export class ManagementClient {
       await this.client.serverAzureADAdministrators.beginCreateOrUpdateAndWait(
         this.config.resourceGroup,
         this.config.sqlServer,
-        this.config.aadAdmin,
+        Constants.sqlAdministratorType,
         model
       );
     } catch (error) {

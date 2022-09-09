@@ -1,7 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FirewallRule, ServerAzureADAdministrator, SqlManagementClient } from "@azure/arm-sql";
+import {
+  FirewallRule,
+  KnownAdministratorType,
+  ServerAzureADAdministrator,
+  SqlManagementClient,
+} from "@azure/arm-sql";
 import axios from "axios";
 import { ErrorMessage } from "../errors";
 import { Constants } from "../constants";
@@ -70,19 +75,17 @@ export class ManagementClient {
   }
 
   async addAADadmin(tenantId: string, aadAdminObjectId: string, aadAdmin: string): Promise<void> {
-    let model: ServerAzureADAdministrator = {
+    const model: ServerAzureADAdministrator = {
       tenantId: tenantId,
       sid: aadAdminObjectId,
       login: aadAdmin,
+      administratorType: KnownAdministratorType.ActiveDirectory,
     };
-    const tmp: any = model;
-    tmp.administratorType = Constants.sqlAdministratorType;
-    model = tmp as unknown as ServerAzureADAdministrator;
     try {
       await this.manager.serverAzureADAdministrators.beginCreateOrUpdateAndWait(
         this.config.resourceGroup,
         this.config.sqlServer,
-        aadAdmin,
+        KnownAdministratorType.ActiveDirectory,
         model
       );
     } catch (error) {

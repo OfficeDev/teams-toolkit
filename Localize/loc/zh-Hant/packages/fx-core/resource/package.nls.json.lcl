@@ -841,6 +841,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.WorkflowOption.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Automate repetitive workflows for common business processes in Microsoft Teams chat]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[在 Microsoft Teams 聊天中自動化常見商務流程的重複工作流程]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.WorkflowOption.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Workflow bot]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[工作流程 Bot]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.aad.includeAadQuestionTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Whether to deploy aad manifest]]></Val>
@@ -3100,6 +3118,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.MissingSubscriptionInConfig" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Please provide the subscrpition id of the resource group (%s) in (%s)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[請提供 (%s) 中資源群組 (%s) 的訂用帳戶識別碼]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.ModifiedSecretError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The secret file has been changed.]]></Val>
@@ -4320,6 +4347,42 @@
           <Val><![CDATA[Some preconditions of inputs are not met.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[不符合某些輸入的先決條件。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.debugHandler.BotMessagingEndpointMissingError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[botMessagingEndpoint is required.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[需要 botMessagingEndpoint。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.debugHandler.InvalidExistingBotArgsError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[botId and botPassword need to be set together if you use existing bot.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[如果您使用現有的 Bot，則需要將 botId 和 botPassword 設定在一起。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.debugHandler.InvalidSSODebugArgsError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[objectId, clientId and clientSecret are all required if you use existing AAD app for SSO.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[如果您使用適用於 SSO 的現有 AAD 應用程式，則所有 objectId、clientId 和 clientSecret 都是必要的。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.debugHandler.InvalidTabDebugArgsError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[baseUrl is required and must be in the format of 'https://localhost:{port}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[baseUrl 為必要項，且格式必須為 'https://localhost:{port}'。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -6012,10 +6075,13 @@
       </Item>
       <Item ItemId=";plugins.appstudio.dataRequired" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Data required: %s]]></Val>
+          <Val><![CDATA[Data required: %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[需要的資料: %s]]></Val>
+            <Val><![CDATA[需要的資料: %s。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Data required: %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -8169,6 +8235,24 @@
           <Val><![CDATA[Checking Node.js and NPM versions...]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[正在檢查 Node.js 與 NPM 版本...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.questions.webpartName.error.duplicate" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The foler %s already exists. Please choose a different name for your component.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[foler %s 已經存在。請為您的元件選擇不同的名稱。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.questions.webpartName.error.notMatch" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[%s doesn't match pattern: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[%s 不符合模式: %s]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

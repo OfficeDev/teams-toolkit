@@ -1560,19 +1560,25 @@
       </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.previewDescription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Preview your Teams app locally]]></Val>
+          <Val><![CDATA[Debug and preview your Teams app]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Afficher un aperçu de votre application Teams localement]]></Val>
+            <Val><![CDATA[Déboguer et afficher un aperçu de votre application Teams]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Preview your Teams app locally]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.previewTitle" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.previewTitle" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Preview your Teams app]]></Val>
+          <Val><![CDATA[Preview your Teams app (F5)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Afficher un aperçu de votre application Teams]]></Val>
+            <Val><![CDATA[Afficher un aperçu de votre application Teams (F5)]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Preview your Teams app]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2689,11 +2695,29 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.localDebug.npmInstallFailure" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NPM Package Install Task Failed. Please check the %s to see the details.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nous n’avons pas pu installer le package NPM. Vérifiez le %s pour afficher les détails.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.localDebug.openSettings" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Open settings]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Ouvrir les paramètres]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.outputPanel" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[output panel]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Panneau de sortie]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2742,6 +2766,24 @@
           <Val><![CDATA[You are now using a different Microsoft 365 tenant from what you previously used.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Vous utilisez désormais un client Microsoft 365 différent de celui que vous avez utilisé précédemment.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.taskDefinitionError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The value of '%s' is invalid for the task of type 'teamsfx']]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[La valeur de '%s' n’est pas valide pour la tâche de type 'teamsfx'.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.terminal" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[terminal]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[terminal]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3169,6 +3211,42 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.bot.botIdTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The AAD app client id for bot]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[ID client d’application AAD pour bot]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.bot.botMessagingEndpointTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The bot messaging endpoint]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Point de terminaison de messagerie du bot]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.bot.botPasswordTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The AAD app client secret for bot]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Clé secrète client de l’application AAD pour bot]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.manifest.manifestPackagePathTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams manifest app package path]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Chemin d’accès du package d’application du manifeste Teams]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.taskDefinitions.args.prerequisites.devCertTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Install localhost SSL certificate]]></Val>
@@ -3232,11 +3310,101 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.sso.accessAsUserScopeIdTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The AAD app access_as_user scope id for SSO]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[L’application AAD access_as_user l’ID d’étendue pour l’authentification unique]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.sso.clientIdTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The AAD app client id for SSO]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[ID client d’application AAD pour SSO]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.sso.clientSecretTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The AAD app client secret for SSO]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Clé secrète client de l’application AAD pour SSO]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.sso.objectIdTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The AAD app object id for SSO]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[ID d’objet d’application AAD pour SSO]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.tab.baseUrlTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The base url that the Tab app will be hosted on]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[URL de base sur laquelle l’application Tab sera hébergée]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.command.bot.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Set up Bot.]A; See https://aka.ms/teamsfx-debug-tasks#debug-set-up-bot for how to customize following args.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Configurez l’onglet.]A; Consultez https://aka.ms/teamsfx-debug-tasks#debug-set-up-bot pour savoir comment personnaliser les arguments suivants.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.command.manifest.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Build and upload Teams manifest.]A; See https://aka.ms/teamsfx-debug-tasks#debug-prepare-manifest for how to customize following args.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Générez et chargez le manifeste Teams.]A; Consultez https://aka.ms/teamsfx-debug-tasks#debug-prepare-manifest pour savoir comment personnaliser les arguments suivants.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.command.npmInstall.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Install NPM Packages.]A; See https://aka.ms/teamsfx-debug-tasks#debug-npm-install for how to customize following args.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Installez les packages Network Performance Monitor (NPM).]A; Consultez https://aka.ms/teamsfx-debug-tasks#debug-npm-install pour savoir comment personnaliser les arguments suivants.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.taskDefinitions.command.prerequisites.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Validate and install prerequisites.]A; See https://aka.ms/teamsfx-debug-tasks#debug-check-prerequisites for how to customize following args.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Validez et installez les prérequis.]A; Consultez https://aka.ms/teamsfx-debug-tasks#debug-check-prerequisites pour savoir comment personnaliser les arguments suivants.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.command.sso.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Set up SSO.]A; See https://aka.ms/teamsfx-debug-tasks#debug-set-up-sso for how to customize following args.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Configurez SSO.]A; Consultez https://aka.ms/teamsfx-debug-tasks#debug-set-up-sso pour savoir comment personnaliser les arguments suivants.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.command.tab.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Set up Tab.]A; See https://aka.ms/teamsfx-debug-tasks#debug-set-up-tab for how to customize following args.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Configurez l’onglet.]A; Consultez https://aka.ms/teamsfx-debug-tasks#debug-set-up-tab pour savoir comment personnaliser les arguments suivants.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

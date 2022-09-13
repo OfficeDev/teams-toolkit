@@ -352,6 +352,22 @@ describe("Notification Tests - Node", () => {
       assert.strictEqual(channels.length, 0);
     });
 
+    it("channels should return empty array if conversation type is not channel", async () => {
+      sandbox.stub(utils, "getTeamsBotInstallationId").returns("test");
+      sandbox.stub(TeamsInfo, "getTeamChannels").resolves([{} as ChannelInfo, {} as ChannelInfo]);
+      sandbox.stub(TeamsInfo, "getTeamDetails").resolves({ id: "test" } as TeamDetails);
+
+      const conversationRef = {
+        conversation: {
+          conversationType: "personal",
+        },
+      };
+      const installation = new TeamsBotInstallation(adapter, conversationRef as any);
+      assert.isTrue(installation.type !== "Channel");
+      const channels = await installation.channels();
+      assert.strictEqual(channels.length, 0);
+    });
+
     it("members should return correct members", async () => {
       sandbox.stub(TeamsInfo, "getPagedMembers").resolves({
         continuationToken: undefined as unknown as string,

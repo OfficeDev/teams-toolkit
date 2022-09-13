@@ -147,6 +147,23 @@ export const npmInstallDisplayMessages: DisplayMessages = {
   errorHelpLink: "https://aka.ms/teamsfx-npm-package-task", // TODO: update npm install help link
 };
 
+export const localTunnelDisplayMessages = Object.freeze({
+  taskName: "Local Tunnel Service",
+  check:
+    "Teams Toolkit is starting the local tunnel service. It will tunnel local ports to public URLs and inspect traffic. A summary will be generated for your reference.",
+  stepMessage: (tunnelName: string, configFile: string) =>
+    `Starting ${tunnelName} tunnel in the configuration file '${configFile}'`,
+  progressMessage: "Starting local tunnel service.",
+  summary: "Local Tunnel Service Summary:",
+  successSummary: (src: string, dist: string) => `Tunneling ${src} -> ${dist}`,
+  learnMore: (link: string) => `Visit ${link} to learn more about local tunnel task.`,
+  learnMoreHelpLink: "https://aka.ms/teamsfx-local-tunnel-task", // TODO: update local tunnel help link
+  resolveArgsMessage: "Resolve local tunnel task arguements.",
+  startMessage: "Starting local tunnel service.",
+  successMessage: "Local tunnel service is started successfully.",
+  errorMessage: "Failed to start local tunnel service.",
+});
+
 export const setUpTabDisplayMessages: DisplayMessages = {
   taskName: "Set up Tab",
   check:
@@ -214,9 +231,3 @@ export const prepareManifestDisplayMessages: DisplayMessages = {
   errorMessageLink: "teamstoolkit.localDebug.outputPanel",
   errorHelpLink: "https://aka.ms/teamsfx-debug-prepare-manifest",
 };
-
-export const localTunnelDisplayMessages = Object.freeze({
-  startMessage: "Starting local tunnel service.",
-  successMessage: "Local tunnel service is started successfully.",
-  errorMessage: "Failed to start local tunnel service.",
-});

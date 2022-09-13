@@ -37,13 +37,11 @@ export class NpmInstallTaskTerminal extends BaseTaskTerminal {
         throw BaseTaskTerminal.taskDefinitionError("cwd");
       }
 
-      let resolvedCwd = BaseTaskTerminal.resolveTeamsFxVariables(projectOption.cwd);
-      if (!path.isAbsolute(resolvedCwd)) {
-        resolvedCwd = path.join(globalVariables.workspaceUri?.fsPath ?? "", resolvedCwd);
-      }
-
       return {
-        cwd: path.normalize(resolvedCwd),
+        cwd: path.resolve(
+          globalVariables.workspaceUri?.fsPath ?? "",
+          BaseTaskTerminal.resolveTeamsFxVariables(projectOption.cwd)
+        ),
         args: projectOption.npmInstallArgs,
         forceUpdate: this.args.forceUpdate,
       };

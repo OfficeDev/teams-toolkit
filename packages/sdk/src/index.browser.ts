@@ -57,8 +57,14 @@ export {
   TriggerPatterns,
   TeamsFxAdaptiveCardActionHandler,
   TeamsFxBotCommandHandler,
+  TeamsFxBotSsoCommandHandler,
+  BotSsoExecutionActivityHandler,
+  BotSsoConfig,
+  BotSsoExecutionDialogHandler,
 } from "./conversation/interface";
 export { ConversationBot } from "./conversation/conversation.browser";
+export { BotSsoExecutionDialog } from "./conversation/sso/botSsoExecutionDialog.browser";
+export { DefaultBotSsoExecutionActivityHandler } from "./conversation/sso/defaultBotSsoExecutionActivityHandler.browser";
 export {
   Channel,
   Member,

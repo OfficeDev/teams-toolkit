@@ -113,7 +113,7 @@ describe("CommandBot Tests - Node", () => {
 
     assert.isDefined(middleware.ssoActivityHandler);
     assert.isTrue(middleware.ssoActivityHandler instanceof DefaultBotSsoExecutionActivityHandler);
-    assert.isTrue(middleware.commandHandlers.length == 1);
+    assert.isTrue(middleware.ssoCommandHandlers.length == 1);
   });
 
   it("add sso command should throw error if sso activity handler is undefined", () => {
@@ -135,7 +135,7 @@ describe("CommandBot Tests - Node", () => {
     commandBot.registerSsoCommand(new TestSsoCommandHandler("test"));
     assert.isDefined(middleware.ssoActivityHandler);
     assert.isTrue(middleware.ssoActivityHandler instanceof DefaultBotSsoExecutionActivityHandler);
-    assert.isTrue(middleware.commandHandlers.length == 1);
+    assert.isTrue(middleware.ssoCommandHandlers.length == 1);
   });
 
   it("add sso command handlers should add correct activity handler", () => {
@@ -151,7 +151,7 @@ describe("CommandBot Tests - Node", () => {
     ]);
     assert.isDefined(middleware.ssoActivityHandler);
     assert.isTrue(middleware.ssoActivityHandler instanceof DefaultBotSsoExecutionActivityHandler);
-    assert.isTrue(middleware.commandHandlers.length == 2);
+    assert.isTrue(middleware.ssoCommandHandlers.length == 2);
   });
 
   it("add both normal command and sso command should add correct activity handler", () => {
@@ -165,6 +165,7 @@ describe("CommandBot Tests - Node", () => {
     commandBot.registerSsoCommand(new TestSsoCommandHandler("test"));
     assert.isDefined(middleware.ssoActivityHandler);
     assert.isTrue(middleware.ssoActivityHandler instanceof DefaultBotSsoExecutionActivityHandler);
-    assert.isTrue(middleware.commandHandlers.length == 2);
+    assert.isTrue(middleware.commandHandlers.length == 1);
+    assert.isTrue(middleware.ssoCommandHandlers.length == 1);
   });
 });

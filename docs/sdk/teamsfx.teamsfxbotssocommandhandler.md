@@ -22,5 +22,5 @@ export interface TeamsFxBotSsoCommandHandler
 
 |  Method | Description |
 |  --- | --- |
-|  [handleCommandReceived(context, message, ssoToken)](./teamsfx.teamsfxbotssocommandhandler.handlecommandreceived.md) | Handles a bot command received activity. |
+|  [handleCommandReceived(context, message, tokenResponse)](./teamsfx.teamsfxbotssocommandhandler.handlecommandreceived.md) | Handles a bot command received activity. |
 

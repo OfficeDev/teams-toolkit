@@ -46,7 +46,7 @@ function getSignInResponseForMessageExtension(teamsfx: TeamsFx, scopes: string |
  * @param {TurnContext} context - The context object for the current turn.
  * @param {AuthenticationConfiguration} config - User custom the message extension authentication configuration.
  * @param {string[]} scopes - The list of scopes for which the token will have access.
- * @param {function} logic - The user execution code with SSO token.
+ * @param {function} logic - Business logic when executing the query in message extension with SSO or access token.
  *
  * @throws {@link ErrorCode|InternalError} when failed to get access token with unknown error.
  * @throws {@link ErrorCode|TokenExpiredError} when SSO token has already expired.
@@ -95,12 +95,12 @@ export async function executionWithToken(
 }
 
 /**
- * Users execute query with SSO or Access Token.
+ * Users execute query in message extension with SSO or access token.
  *
  * @param {TurnContext} context - The context object for the current turn.
  * @param {AuthenticationConfiguration} config - User custom the message extension authentication configuration.
  * @param {string| string[]} scopes - The list of scopes for which the token will have access.
- * @param {function} logic - The user execution code with SSO or Access token.
+ * @param {function} logic - Business logic when executing the query in message extension with SSO or access token.
  *
  * @throws {@link ErrorCode|InternalError} when User invoke not response to message extension query.
  * @throws {@link ErrorCode|InternalError} when failed to get access token with unknown error.

@@ -4,7 +4,7 @@
 
 ## queryWithToken() function
 
-Users execute query with SSO or Access Token.
+Users execute query in message extension with SSO or access token.
 
 <b>Signature:</b>
 
@@ -19,7 +19,7 @@ export declare function queryWithToken(context: TurnContext, config: Authenticat
 |  context | TurnContext | The context object for the current turn. |
 |  config | [AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md) \| null | User custom the message extension authentication configuration. |
 |  scopes | string \| string\[\] | The list of scopes for which the token will have access. |
-|  logic | (token: [TeamsMsgExtTokenResponse](./teamsfx.teamsmsgexttokenresponse.md)<!-- -->) =&gt; Promise&lt;any&gt; | The user execution code with SSO or Access token. |
+|  logic | (token: [TeamsMsgExtTokenResponse](./teamsfx.teamsmsgexttokenresponse.md)<!-- -->) =&gt; Promise&lt;any&gt; | Business logic when executing the query in message extension with SSO or access token. |
 
 <b>Returns:</b>
 

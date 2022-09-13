@@ -51,7 +51,7 @@
 |  [createPfxCertOption(pfx, options)](./teamsfx.createpfxcertoption.md) | Helper to create SecureContextOptions from PFX format cert |
 |  [getLogLevel()](./teamsfx.getloglevel.md) | Get log level. |
 |  [getTediousConnectionConfig(teamsfx, databaseName)](./teamsfx.gettediousconnectionconfig.md) | Generate connection configuration consumed by tedious. |
-|  [queryWithToken(context, config, scopes, logic)](./teamsfx.querywithtoken.md) | Users execute query with SSO or Access Token. |
+|  [queryWithToken(context, config, scopes, logic)](./teamsfx.querywithtoken.md) | Users execute query in message extension with SSO or access token. |
 |  [sendAdaptiveCard(target, card)](./teamsfx.sendadaptivecard.md) | Send an adaptive card message to a notification target. |
 |  [sendMessage(target, text)](./teamsfx.sendmessage.md) | Send a plain text message to a notification target. |
 |  [setLogFunction(logFunction)](./teamsfx.setlogfunction.md) | Set custom log function. Use the function if it's set. Priority is lower than setLogger. |

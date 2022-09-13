@@ -1,6 +1,6 @@
 import { PersonCard } from "@microsoft/mgt-react";
 import { useContext } from "react";
-import { TeamsFxContext } from "../Context";
+import { TeamsFxContext } from "@microsoft/teamsfx-react";
 
 export function PersonCardGraphToolkit(props: {
   loading?: boolean; error?: any; data?: {

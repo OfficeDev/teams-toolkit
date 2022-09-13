@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { Welcome } from "./sample/Welcome";
-import { TeamsFxContext } from "./Context";
+import { TeamsFxContext } from "@microsoft/teamsfx-react";
 
 const showFunction = Boolean(process.env.REACT_APP_FUNC_NAME);
 

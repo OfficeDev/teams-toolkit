@@ -6,11 +6,9 @@ import { app } from "@microsoft/teams-js";
 import { AzureFunctions } from "./AzureFunctions";
 import { Graph } from "./Graph";
 import { CurrentUser } from "./CurrentUser";
-import { useData } from "@microsoft/teamsfx-react";
+import { TeamsFxContext, useData } from "@microsoft/teamsfx-react";
 import { Deploy } from "./Deploy";
 import { Publish } from "./Publish";
-import { TeamsFxContext } from "../Context";
-
 
 export function Welcome(props: { showFunction?: boolean; environment?: string }) {
   const { showFunction, environment } = {

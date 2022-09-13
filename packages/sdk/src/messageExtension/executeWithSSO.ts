@@ -7,6 +7,7 @@ import { parseJwt, getScopesArray, formatString } from "../util/utils";
 import { TeamsMsgExtTokenResponse } from "./teamsMsgExtTokenResponse";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { AuthenticationConfiguration } from "../models/configuration";
+import { IdentityType } from "../models/identityType";
 import { internalLogger } from "../util/logger";
 import { TeamsFx } from "../core/teamsfx";
 /**
@@ -64,10 +65,12 @@ export async function executionWithToken(
   const valueObj = context.activity.value;
   if (!valueObj.authentication || !valueObj.authentication.token) {
     internalLogger.verbose("No AccessToken in request, return silentAuth for AccessToken");
-    return getSignInResponseForMessageExtension(new TeamsFx(undefined, config), scopes);
+    return getSignInResponseForMessageExtension(new TeamsFx(IdentityType.User, config), scopes);
   }
   try {
-    const teamsfx = new TeamsFx(undefined, config).setSsoToken(valueObj.authentication.token);
+    const teamsfx = new TeamsFx(IdentityType.User, config).setSsoToken(
+      valueObj.authentication.token
+    );
     const token: AccessToken | null = await teamsfx.getCredential().getToken(scopes);
     const ssoTokenExpiration: number = parseJwt(valueObj.authentication.token).exp;
     const tokenRes: TeamsMsgExtTokenResponse = {

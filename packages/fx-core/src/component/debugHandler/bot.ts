@@ -42,8 +42,6 @@ import {
 } from "./error";
 import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
 
-const botTunnelEndpointPlaceholder = "${teamsfx:botTunnelEndpoint}";
-
 const botDebugMessages = {
   validatingArgs: "Validating the arguments ...",
   registeringAAD: "Registering an AAD app for bot ...",
@@ -101,7 +99,7 @@ export class BotDebugHandler {
     const actions: DebugAction[] = [];
     actions.push({
       startMessage: botDebugMessages.validatingArgs,
-      run: this.checkArgs.bind(this),
+      run: this.validateArgs.bind(this),
     });
     actions.push({
       startMessage: botDebugMessages.registeringAAD,
@@ -126,7 +124,7 @@ export class BotDebugHandler {
     return actions;
   }
 
-  private async checkArgs(): Promise<Result<string[], FxError>> {
+  private async validateArgs(): Promise<Result<string[], FxError>> {
     // TODO: allow botPassword to be set in other places (like env) instead of tasks.json
     if (this.args.botId && this.args.botPassword) {
       this.existing = true;
@@ -139,15 +137,6 @@ export class BotDebugHandler {
     }
 
     this.args.botMessagingEndpoint = this.args.botMessagingEndpoint.trim();
-
-    if (this.args.botMessagingEndpoint.includes(botTunnelEndpointPlaceholder)) {
-      // TODO: get bot endpoint from tunnel manager
-      const botEndpoint = "";
-      this.args.botMessagingEndpoint = this.args.botMessagingEndpoint.replace(
-        botTunnelEndpointPlaceholder,
-        botEndpoint
-      );
-    }
 
     return ok([]);
   }

@@ -60,7 +60,7 @@ import { checkWhetherLocalDebugM365TenantMatches } from "../plugins/solution/fx-
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { ComponentNames } from "./constants";
 import { AppStudioScopes } from "./resource/appManifest/constants";
-import { resetEnvInfoWhenSwitchM365 } from "./utils";
+import { isCSharpProject, resetEnvInfoWhenSwitchM365 } from "./utils";
 
 interface M365TenantRes {
   tenantIdInToken: string;
@@ -87,6 +87,7 @@ export class ProvisionUtils {
     const isLocalDebug = envInfo.envName === "local";
     const tenantInfoInTokenRes = await this.getM365TenantId(ctx.tokenProvider.m365TokenProvider);
     if (tenantInfoInTokenRes.isErr()) {
+      addShouldSkipWriteEnvInfo(tenantInfoInTokenRes.error);
       return err(tenantInfoInTokenRes.error);
     }
     const tenantIdInToken = tenantInfoInTokenRes.value.tenantIdInToken;
@@ -101,11 +102,13 @@ export class ProvisionUtils {
       const res = await checkWhetherLocalDebugM365TenantMatches(
         envInfo,
         ctx.telemetryReporter,
+        isCSharpProject(ctx.projectSetting.programmingLanguage),
         tenantIdInConfig,
         ctx.tokenProvider.m365TokenProvider,
         inputs.projectPath
       );
       if (res.isErr()) {
+        addShouldSkipWriteEnvInfo(res.error);
         return err(res.error);
       }
     }
@@ -126,6 +129,7 @@ export class ProvisionUtils {
         ctx.tokenProvider
       );
       if (solutionConfigRes.isErr()) {
+        addShouldSkipWriteEnvInfo(solutionConfigRes.error);
         return err(solutionConfigRes.error);
       }
 
@@ -141,7 +145,25 @@ export class ProvisionUtils {
         subscriptionIdInState
       );
       if (consentResult.isErr()) {
+        addShouldSkipWriteEnvInfo(consentResult.error);
         return err(consentResult.error);
+      }
+
+      if (solutionConfigRes.value.hasSwitchedSubscription || hasSwitchedM365Tenant) {
+        const handleConfigFilesWhenSwitchAccountsRes = await handleConfigFilesWhenSwitchAccount(
+          envInfo as v3.EnvInfoV3,
+          ctx.projectSetting.appName,
+          inputs.projectPath,
+          hasSwitchedM365Tenant,
+          solutionConfigRes.value.hasSwitchedSubscription,
+          hasBotServiceCreatedBefore,
+          isCSharpProject(ctx.projectSetting.programmingLanguage)
+        );
+
+        if (handleConfigFilesWhenSwitchAccountsRes.isErr()) {
+          addShouldSkipWriteEnvInfo(handleConfigFilesWhenSwitchAccountsRes.error);
+          return err(handleConfigFilesWhenSwitchAccountsRes.error);
+        }
       }
 
       // create resource group if needed
@@ -156,21 +178,6 @@ export class ProvisionUtils {
           return err(createRgRes.error);
         }
       }
-
-      if (solutionConfigRes.value.hasSwitchedSubscription || hasSwitchedM365Tenant) {
-        const handleConfigFilesWhenSwitchAccountsRes = await handleConfigFilesWhenSwitchAccount(
-          envInfo as v3.EnvInfoV3,
-          ctx.projectSetting.appName,
-          inputs.projectPath,
-          hasSwitchedM365Tenant,
-          solutionConfigRes.value.hasSwitchedSubscription,
-          hasBotServiceCreatedBefore
-        );
-
-        if (handleConfigFilesWhenSwitchAccountsRes.isErr()) {
-          return err(handleConfigFilesWhenSwitchAccountsRes.error);
-        }
-      }
     } else if (hasSwitchedM365Tenant && !isLocalDebug) {
       const consentResult = await this.askForProvisionConsent(
         ctx,
@@ -183,6 +190,7 @@ export class ProvisionUtils {
         tenantIdInConfig
       );
       if (consentResult.isErr()) {
+        addShouldSkipWriteEnvInfo(consentResult.error);
         return err(consentResult.error);
       }
       const handleConfigFilesWhenSwitchAccountsRes = await handleConfigFilesWhenSwitchAccount(
@@ -191,10 +199,12 @@ export class ProvisionUtils {
         inputs.projectPath,
         hasSwitchedM365Tenant,
         false,
-        false
+        false,
+        isCSharpProject(ctx.projectSetting.programmingLanguage)
       );
 
       if (handleConfigFilesWhenSwitchAccountsRes.isErr()) {
+        addShouldSkipWriteEnvInfo(handleConfigFilesWhenSwitchAccountsRes.error);
         return err(handleConfigFilesWhenSwitchAccountsRes.error);
       }
     }
@@ -210,7 +220,8 @@ export class ProvisionUtils {
     envInfo: v3.EnvInfoV3,
     azureAccountProvider: AzureAccountProvider,
     targetSubscriptionIdFromCLI: string | undefined,
-    envName: string | undefined
+    envName: string | undefined,
+    isResourceGroupOnlyFromCLI: boolean
   ): Promise<Result<ProvisionSubscriptionCheckResult, FxError>> {
     const subscriptionIdInConfig: string | undefined = envInfo.config.azure?.subscriptionId;
     const subscriptionNameInConfig: string | undefined =
@@ -223,6 +234,7 @@ export class ProvisionUtils {
       TelemetryEvent.CheckSubscriptionStart,
       envName ? { [TelemetryProperty.Env]: getHashedEnv(envName) } : {}
     );
+
     if (!subscriptionIdInState && !subscriptionIdInConfig && !targetSubscriptionIdFromCLI) {
       const subscriptionInAccount = await azureAccountProvider.getSelectedSubscription(true);
       if (!subscriptionInAccount) {
@@ -277,7 +289,7 @@ export class ProvisionUtils {
       }
     }
 
-    if (subscriptionIdInConfig) {
+    if (subscriptionIdInConfig && !isResourceGroupOnlyFromCLI) {
       const targetConfigSubInfo = findSubscriptionFromList(subscriptionIdInConfig, subscriptions);
 
       if (!targetConfigSubInfo) {
@@ -425,7 +437,10 @@ export class ProvisionUtils {
       envInfo,
       tokenProvider.azureAccountProvider,
       targetSubscriptionIdFromCLI,
-      inputs.env
+      inputs.env,
+      !!inputs.targetResourceGroupName &&
+        !targetSubscriptionIdFromCLI &&
+        inputs.platform === Platform.CLI
     );
 
     if (subscriptionResult.isErr()) {
@@ -504,7 +519,7 @@ export class ProvisionUtils {
       }
     } else if (resourceGroupNameFromEnvConfig && !targetSubscriptionIdFromCLI) {
       const resourceGroupName = resourceGroupNameFromEnvConfig;
-      const envFile = EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, inputs.envName);
+      const envFile = EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, envInfo.envName);
       if (!envInfo.config.azure?.subscriptionId) {
         return err(
           new UserError(
@@ -775,6 +790,12 @@ export function findSubscriptionFromList(
   subscriptions: SubscriptionInfo[]
 ): SubscriptionInfo | undefined {
   return subscriptions.find((item) => item.subscriptionId === subscriptionId);
+}
+
+function addShouldSkipWriteEnvInfo(error: FxError) {
+  if (!error.userData) {
+    error.userData = { shouldSkipWriteEnvInfo: true };
+  }
 }
 
 export const provisionUtils = new ProvisionUtils();

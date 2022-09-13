@@ -57,6 +57,37 @@ describe("App Studio API Test", () => {
       }
     });
 
+    it("should contain x-correlation-id on BadeRequest with 2xx status code", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const xCorrelationId = "fakeCorrelationId";
+      const response = {
+        data: {
+          error: "BadRequest",
+        },
+        message: "fake message",
+        headers: {
+          "x-correlation-id": xCorrelationId,
+        },
+      };
+      sinon.stub(fakeAxiosInstance, "post").resolves(response);
+
+      const ctx = {
+        envInfo: newEnvInfo(),
+        root: "fakeRoot",
+      } as any as PluginContext;
+      TelemetryUtils.init(ctx);
+      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
+
+      try {
+        await AppStudioClient.publishTeamsApp(appStudioToken, Buffer.from(""), appStudioToken);
+      } catch (error) {
+        chai.assert.equal(error.name, AppStudioError.DeveloperPortalAPIFailedError.name);
+        chai.assert.include(error.message, xCorrelationId);
+      }
+    });
+
     it("Bad gateway", async () => {
       const fakeAxiosInstance = axios.create();
       sinon.stub(axios, "create").returns(fakeAxiosInstance);
@@ -189,6 +220,57 @@ describe("App Studio API Test", () => {
 
       const res = await AppStudioClient.checkExistsInTenant(appDef.teamsAppId!, appStudioToken);
       chai.assert.isTrue(res);
+    });
+  });
+
+  describe("publishTeamsAppUpdate", () => {
+    it("should contain x-correlation-id on BadeRequest with 2xx status code", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const xCorrelationId = "fakeCorrelationId";
+      const postResponse = {
+        data: {
+          error: "BadRequest",
+        },
+        message: "fake message",
+        headers: {
+          "x-correlation-id": xCorrelationId,
+        },
+      };
+
+      sinon.stub(fakeAxiosInstance, "post").resolves(postResponse);
+
+      const getResponse = {
+        data: {
+          value: [
+            {
+              appDefinitions: [
+                {
+                  publishingState: PublishingState.submitted,
+                  teamsAppId: "xx",
+                  displayName: "xx",
+                  lastModifiedDateTime: null,
+                },
+              ],
+            },
+          ],
+        },
+      };
+      sinon.stub(fakeAxiosInstance, "get").resolves(getResponse);
+
+      const ctx = {
+        envInfo: newEnvInfo(),
+        root: "fakeRoot",
+      } as any as PluginContext;
+      TelemetryUtils.init(ctx);
+      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
+
+      try {
+        await AppStudioClient.publishTeamsAppUpdate("", Buffer.from(""), appStudioToken);
+      } catch (error) {
+        chai.assert.include(error.message, xCorrelationId);
+      }
     });
   });
 });

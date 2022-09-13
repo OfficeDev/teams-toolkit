@@ -12,6 +12,7 @@ describe("update Azure parameters", async () => {
   const parameterFileNameTemplate = (env: string) => `azure.parameters.${env}.json`;
   const stateFileNameTemplate = (env: string) => `state.${env}.json`;
   const userDataFileNameTemplate = (env: string) => `${env}.userdata`;
+  const appSettingsFileName = "appsettings.Development.json";
   const configDir = path.join(TestHelper.rootDir, TestFilePath.configFolder);
   const stateDir = path.join(TestHelper.rootDir, TestFilePath.stateFolder);
   const backupFolder = path.join(TestHelper.rootDir, ".backup");
@@ -57,7 +58,7 @@ describe("update Azure parameters", async () => {
     const tools = new MockTools();
     setTools(tools);
     // Act
-    const res = await backupFiles(targetEnvName, TestHelper.rootDir);
+    const res = await backupFiles(targetEnvName, TestHelper.rootDir, false);
 
     // Assert
     const folderExist = await fs.pathExists(backupFolder);
@@ -88,7 +89,7 @@ describe("update Azure parameters", async () => {
     setTools(tools);
 
     // Act
-    const res = await backupFiles(targetEnvName, TestHelper.rootDir);
+    const res = await backupFiles(targetEnvName, TestHelper.rootDir, false);
 
     // Assert
     const folderExist = await fs.pathExists(backupFolder);
@@ -111,7 +112,7 @@ describe("update Azure parameters", async () => {
     );
 
     // Act
-    const res = await backupFiles(targetEnvName, TestHelper.rootDir);
+    const res = await backupFiles(targetEnvName, TestHelper.rootDir, false);
 
     // Assert
     expect(res.isOk()).equal(true);
@@ -160,7 +161,7 @@ describe("update Azure parameters", async () => {
     );
 
     // Act
-    const res = await backupFiles(targetEnvName, TestHelper.rootDir);
+    const res = await backupFiles(targetEnvName, TestHelper.rootDir, false);
 
     // Assert
     expect(res.isOk()).equal(true);
@@ -215,7 +216,7 @@ describe("update Azure parameters", async () => {
     await fs.ensureDir(path.join(backupFolder, ".fx"));
 
     // Act
-    const res = await backupFiles(targetEnvName, TestHelper.rootDir);
+    const res = await backupFiles(targetEnvName, TestHelper.rootDir, false);
 
     // Assert
     expect(await fs.pathExists(backupFolder)).equal(true);
@@ -245,7 +246,7 @@ describe("update Azure parameters", async () => {
     await fs.ensureDir(path.join(backupFolder, ".conflict"));
 
     // Act
-    const res = await backupFiles(targetEnvName, TestHelper.rootDir);
+    const res = await backupFiles(targetEnvName, TestHelper.rootDir, false);
 
     // Assert
     const teamsfxBackupFolder = path.join(TestHelper.rootDir, ".teamsfx.backup");
@@ -261,5 +262,24 @@ describe("update Azure parameters", async () => {
     expect(gitIgnoreExists).equal(true);
     const gitIgnoreContent = await fs.readFile(path.join(TestHelper.rootDir, ".gitignore"));
     expect(gitIgnoreContent.includes(".backup")).equal(true);
+  });
+
+  it("Backup appSettings file", async () => {
+    // Arrange
+    await fs.writeFile(path.join(TestHelper.rootDir, appSettingsFileName), paramContent);
+    const tools = new MockTools();
+    setTools(tools);
+    // Act
+    const res = await backupFiles("local", TestHelper.rootDir, true);
+
+    // Assert
+    const folderExist = await fs.pathExists(backupFolder);
+    expect(folderExist).equal(true);
+
+    const files = await fs.readdir(backupFolder);
+    expect(files.length).equals(2);
+    expect(
+      files[0].includes("appsettings.Development") || files[1].includes("appsettings.Development")
+    );
   });
 });

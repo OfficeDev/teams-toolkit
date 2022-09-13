@@ -9,7 +9,7 @@ Popup login page to get user's access token with specific scopes.
 <b>Signature:</b>
 
 ```typescript
-login(scopes: string | string[]): Promise<void>;
+login(scopes: string | string[], resources?: string[]): Promise<void>;
 ```
 
 ## Parameters
@@ -17,6 +17,7 @@ login(scopes: string | string[]): Promise<void>;
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  scopes | string \| string\[\] |  |
+|  resources | string\[\] | The optional list of resources for full trust Teams apps. |
 
 <b>Returns:</b>
 

@@ -19,7 +19,7 @@ export function EnvInfoWriterMW_V3(skip = false): Middleware {
     try {
       await next();
       const res = ctx.result as Result<any, FxError>;
-      if (shouldSkipWriteEnvInfo(ctx.method, res)) {
+      if (shouldSkipWriteEnvInfo(res)) {
         return;
       }
     } catch (e) {

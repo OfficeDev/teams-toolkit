@@ -21,9 +21,11 @@ namespace Microsoft.TeamsFx.Conversation
         /// <summary>
         /// Initializes a new instance of the <see cref="CommandBot"/> class.
         /// </summary>
-        /// <param name="adapter"></param>
-        /// <param name="options"></param>
-        /// <exception cref="ArgumentNullException"><paramref name="options"/> is null.</exception>
+        /// <param name="adapter">The bot adapter.</param>
+        /// <param name="options">The initialize options.</param>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="adapter"/> or <paramref name="options"/> is null.
+        /// </exception>
         public CommandBot(BotAdapter adapter, CommandOptions options)
         {
             _adapter = adapter ?? throw new ArgumentNullException(nameof(adapter));
@@ -38,7 +40,7 @@ namespace Microsoft.TeamsFx.Conversation
         }
 
         /// <summary>
-        /// Register a command to the command bot.
+        /// Registers a command to the command bot.
         /// </summary>
         /// <param name="commandHandler">A command handler implements <seealso cref="ITeamsCommandHandler"/>.</param>
         /// <exception cref="ArgumentNullException"><paramref name="commandHandler"/>is null.</exception>
@@ -53,9 +55,9 @@ namespace Microsoft.TeamsFx.Conversation
         }
 
         /// <summary>
-        /// Register a set of commands to the command bot.
+        /// Registers a set of commands to the command bot.
         /// </summary>
-        /// <param name="commandHandlers"></param>
+        /// <param name="commandHandlers">A list of command handlers to be registered to the bot.</param>
         /// <exception cref="ArgumentException"><paramref name="commandHandlers"/> is null or empty. </exception>
         public void RegisterCommands(IList<ITeamsCommandHandler> commandHandlers)
         {

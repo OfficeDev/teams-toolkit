@@ -36,6 +36,7 @@ export class APP_STUDIO_API_NAMES {
   public static readonly GET_PUBLISHED_APP = "get-published-app";
   public static readonly UPDATE_PUBLISHED_APP = "update-published-app";
   public static readonly UPDATE_OWNER = "update-owner";
+  public static readonly EXISTS_IN_TENANTS = "exists-in-tenant";
 }
 
 export class ErrorMessages {

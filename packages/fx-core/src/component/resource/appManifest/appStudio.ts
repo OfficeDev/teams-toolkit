@@ -17,6 +17,8 @@ import {
   v3,
   ProjectSettingsV3,
   ProjectSettings,
+  UserError,
+  SystemError,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import fs from "fs-extra";
@@ -34,6 +36,7 @@ import { AppStudioResultFactory } from "../../../plugins/resource/appstudio/resu
 import { ComponentNames } from "../../constants";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { manifestUtils } from "./utils";
+import { environmentManager } from "../../../core/environment";
 
 /**
  * Create Teams app if not exists
@@ -59,6 +62,7 @@ export async function createTeamsApp(
 
   let teamsAppId;
   let archivedFile;
+  let create = true;
   if (inputs.appPackagePath) {
     if (!(await fs.pathExists(inputs.appPackagePath))) {
       return err(
@@ -82,7 +86,37 @@ export async function createTeamsApp(
     const manifestString = manifestFile.getData().toString();
     const manifest = JSON.parse(manifestString) as TeamsAppManifest;
     teamsAppId = manifest.id;
+    if (teamsAppId) {
+      try {
+        await AppStudioClient.getApp(teamsAppId, appStudioToken, ctx.logProvider);
+        create = false;
+      } catch (error) {}
+    }
   } else {
+    // Corner case: users under same tenant cannot import app with same Teams app id
+    // Generate a new Teams app id for local debug to avoid conflict
+    teamsAppId = envInfo.state[ComponentNames.AppManifest]?.teamsAppId;
+    if (teamsAppId) {
+      try {
+        await AppStudioClient.getApp(teamsAppId, appStudioToken, ctx.logProvider);
+        create = false;
+      } catch (error: any) {
+        if (
+          envInfo.envName === environmentManager.getLocalEnvName() &&
+          error.message &&
+          error.message.includes("404")
+        ) {
+          const exists = await AppStudioClient.checkExistsInTenant(
+            teamsAppId,
+            appStudioToken,
+            ctx.logProvider
+          );
+          if (exists) {
+            envInfo.state[ComponentNames.AppManifest].teamsAppId = v4();
+          }
+        }
+      }
+    }
     const buildPackage = await buildTeamsAppPackage(
       ctx.projectSetting,
       inputs.projectPath,
@@ -93,15 +127,8 @@ export async function createTeamsApp(
       return err(buildPackage.error);
     }
     archivedFile = await fs.readFile(buildPackage.value);
-    teamsAppId = envInfo.state[ComponentNames.AppManifest]?.teamsAppId;
   }
-  let create = true;
-  if (teamsAppId) {
-    try {
-      await AppStudioClient.getApp(teamsAppId, appStudioToken, ctx.logProvider);
-      create = false;
-    } catch (error) {}
-  }
+
   if (create) {
     try {
       const appDefinition = await AppStudioClient.importApp(
@@ -114,12 +141,16 @@ export async function createTeamsApp(
       );
       return ok(appDefinition.teamsAppId!);
     } catch (e: any) {
-      return err(
-        AppStudioResultFactory.SystemError(
-          AppStudioError.TeamsAppCreateFailedError.name,
-          AppStudioError.TeamsAppCreateFailedError.message(e)
-        )
-      );
+      if (e instanceof UserError || e instanceof SystemError) {
+        return err(e);
+      } else {
+        return err(
+          AppStudioResultFactory.SystemError(
+            AppStudioError.TeamsAppCreateFailedError.name,
+            AppStudioError.TeamsAppCreateFailedError.message(e)
+          )
+        );
+      }
     }
   } else {
     return ok(teamsAppId);

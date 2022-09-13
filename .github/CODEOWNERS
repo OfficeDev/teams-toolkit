@@ -119,7 +119,7 @@
 
 /packages/simpleauth @adashen @blackchoey @wenytang-ms
 
-/packages/function-extension @adashen @blackchoey @dilin-MS
+/packages/function-extension @adashen @blackchoey
 
 /packages/dotnet-sdk @tecton @JerryYangKai @yiqing-zhao
 /packages/dotnet-sdk/src/TeamsFx/Conversation @swatDong @dooriya @kimizhu

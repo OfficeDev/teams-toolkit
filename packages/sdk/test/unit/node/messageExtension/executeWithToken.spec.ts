@@ -204,4 +204,30 @@ describe("Message Extension Query With Token Tests - Node", () => {
     );
     assert.isEmpty(callbackSpy.getCall(0).args[0].connectionName);
   });
+
+  it("shold throw err once catch exceptions", async () => {
+    sandbox
+      .stub(OnBehalfOfUserCredential.prototype, "getToken")
+      .throws(
+        new ErrorWithCode(
+          "Failed to acquire access token on behalf of user",
+          ErrorCode.ServiceError
+        )
+      );
+    const adapter = new SimpleAdapter();
+    const context: TurnContext = new TurnContext(adapter, activityContext);
+    try {
+      await queryWithToken(context, null, "", async (token) => {
+        token;
+      });
+    } catch (err) {
+      assert.isNotNull(err);
+      assert.isTrue(err instanceof ErrorWithCode);
+      assert.strictEqual(
+        (err as ErrorWithCode).message,
+        "Failed to acquire access token on behalf of user"
+      );
+      assert.strictEqual((err as ErrorWithCode).code, ErrorCode.ServiceError);
+    }
+  });
 });

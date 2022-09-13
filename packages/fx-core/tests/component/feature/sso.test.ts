@@ -9,6 +9,7 @@ import {
   TeamsAppManifest,
   UserError,
   Stage,
+  ok,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
@@ -23,6 +24,8 @@ import Container from "typedi";
 import { ComponentNames } from "../../../src/component/constants";
 import * as os from "os";
 import * as telemetry from "../../../src/core/telemetry";
+import { ManifestUtils } from "../../../src/component/resource/appManifest/utils";
+import { AppManifest } from "../../../src/component/resource/appManifest/appManifest";
 
 describe("SSO can add in project", () => {
   const sandbox = createSandbox();
@@ -173,6 +176,8 @@ describe("SSO feature", () => {
   });
 
   it("happy path", async () => {
+    sandbox.stub(AppManifest.prototype, "addCapability").resolves(ok(undefined));
+    sandbox.stub(ManifestUtils.prototype, "isExistingTab").resolves(ok(true));
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
@@ -183,7 +188,7 @@ describe("SSO feature", () => {
 
     const component = Container.get(ComponentNames.SSO) as any;
     const ssoRes = await component.add(context, inputs);
-    assert.isTrue(ssoRes.isErr());
+    assert.isTrue(ssoRes.isOk());
   });
 
   it("add sso with generateManifest failed", async () => {
@@ -251,8 +256,7 @@ describe("SSO feature", () => {
   });
 
   it("add sso with appManifest failed", async () => {
-    const appManifestComponent = Container.get(ComponentNames.AppManifest) as any;
-    sandbox.stub(appManifestComponent, "addCapability").resolves(err(undefined));
+    sandbox.stub(AppManifest.prototype, "addCapability").resolves(err(undefined as any));
 
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,

@@ -111,7 +111,7 @@ describe("Provision Teams app with Azure", () => {
     sandbox.restore();
   });
 
-  it.skip("Register Teams app with user provided zip", async () => {
+  it("Register Teams app with user provided zip", async () => {
     sandbox.stub<any, any>(fs, "pathExists").resolves(true);
     inputs.appPackagePath = path.join(os.tmpdir(), projectSettings.appName);
     sandbox.stub(AppStudioClient, "getApp").throws(new Error("404"));
@@ -140,7 +140,7 @@ describe("Provision Teams app with Azure", () => {
     }
   });
 
-  it.skip("Update Teams app with user provided zip", async () => {
+  it("Update Teams app with user provided zip", async () => {
     sandbox.stub<any, any>(fs, "pathExists").resolves(true);
     inputs.appPackagePath = path.join(os.tmpdir(), projectSettings.appName);
     const error = new Error();
@@ -178,7 +178,7 @@ describe("Provision Teams app with Azure", () => {
     chai.assert.isTrue(res.isOk());
   });
 
-  it.skip("Teams app id conflict - provision", async () => {
+  it("Teams app id conflict - provision", async () => {
     const appId = uuid();
     contextV3.envInfo.envName = "local";
     contextV3.envInfo.state = {

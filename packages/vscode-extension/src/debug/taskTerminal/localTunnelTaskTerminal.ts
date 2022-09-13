@@ -216,15 +216,14 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
   }
 
   private async outputStepMessage(configFile: string): Promise<void> {
-    VsCodeLogInstance.outputChannel.appendLine(
-      `${localTunnelDisplayMessages.stepMessage(ngrokTunnelName, configFile)} ... `
-    );
+    const stepMessage = localTunnelDisplayMessages.stepMessage(ngrokTunnelName, configFile);
+    VsCodeLogInstance.outputChannel.appendLine(`${stepMessage} ... `);
     VsCodeLogInstance.outputChannel.appendLine("");
 
     this.writeEmitter.fire(`${this.command(configFile)}\r\n\r\n`);
 
     await this.progressHandler.start();
-    await this.progressHandler.next(localTunnelDisplayMessages.startMessage);
+    await this.progressHandler.next(stepMessage);
   }
 
   private async outputSuccessSummary(ngrokTunnel: EndpointInfo): Promise<void> {

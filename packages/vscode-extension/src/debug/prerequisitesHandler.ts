@@ -1300,7 +1300,18 @@ async function getOrderedCheckersForTask(
 ): Promise<PrerequisiteOrderedChecker[]> {
   const checkers: PrerequisiteOrderedChecker[] = [];
   if (prerequisites.includes(Prerequisite.nodejs)) {
-    checkers.push({ info: { checker: DepsType.AzureNode }, fastFail: true });
+    const localEnvManager = new LocalEnvManager(
+      VsCodeLogInstance,
+      ExtTelemetry.reporter,
+      VS_CODE_UI
+    );
+    const projectSettings = await localEnvManager.getProjectSettings(
+      globalVariables.workspaceUri!.fsPath
+    );
+    const nodeDep = getNodeDep(localEnvManager.getActiveDependencies(projectSettings));
+    if (nodeDep) {
+      checkers.push({ info: { checker: nodeDep }, fastFail: true });
+    }
   }
   if (prerequisites.includes(Prerequisite.m365Account)) {
     checkers.push({ info: { checker: Checker.M365Account }, fastFail: false });

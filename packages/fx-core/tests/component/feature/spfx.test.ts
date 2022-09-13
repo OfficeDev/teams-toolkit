@@ -25,7 +25,7 @@ describe("spfx", () => {
       sinon.restore();
     });
 
-    it("Root README file will be generated", () => {
+    it("Root README file will be generated", async () => {
       const sourcePath = path.join(
         getTemplatesFolder(),
         "plugins",
@@ -76,7 +76,7 @@ describe("spfx", () => {
       };
 
       const spfx = new SPFxTab();
-      spfx.add(context, inputs);
+      await spfx.add(context, inputs);
 
       chai.expect(stubCopy.calledOnce);
       chai.expect(stubCopy.calledWith(sourcePath, targetPath));

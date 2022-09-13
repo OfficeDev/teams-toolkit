@@ -111,6 +111,31 @@ describe("App Studio API Test", () => {
       const res = await AppStudioClient.importApp(Buffer.from(""), appStudioToken);
       chai.assert.equal(res, appDef);
     });
+
+    it("409 conflict", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const error = {
+        response: {
+          status: 409,
+        },
+      };
+      sinon.stub(fakeAxiosInstance, "post").throws(error);
+
+      const ctx = {
+        envInfo: newEnvInfo(),
+        root: "fakeRoot",
+      } as any as PluginContext;
+      TelemetryUtils.init(ctx);
+      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
+
+      try {
+        await AppStudioClient.importApp(Buffer.from(""), appStudioToken);
+      } catch (error) {
+        chai.assert.equal(error.name, AppStudioError.TeamsAppCreateConflictError.name);
+      }
+    });
   });
 
   describe("get Teams app", () => {
@@ -149,6 +174,21 @@ describe("App Studio API Test", () => {
       } catch (error) {
         chai.assert.equal(error.name, AppStudioError.DeveloperPortalAPIFailedError.name);
       }
+    });
+  });
+
+  describe("Check exists in tenant", () => {
+    it("Happy path", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const response = {
+        data: true,
+      };
+      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+
+      const res = await AppStudioClient.checkExistsInTenant(appDef.teamsAppId!, appStudioToken);
+      chai.assert.isTrue(res);
     });
   });
 });

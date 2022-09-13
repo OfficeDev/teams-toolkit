@@ -9,27 +9,35 @@ import * as os from "os";
 import * as path from "path";
 import fs from "fs-extra";
 import AdmZip from "adm-zip";
+import Container from "typedi";
 import {
   ProjectSettings,
   v2,
   Platform,
   TokenProvider,
   TeamsAppManifest,
+  ResourceContextV3,
+  ProjectSettingsV3,
+  ok,
 } from "@microsoft/teamsfx-api";
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
 import { Constants } from "../../../../../src/plugins/resource/appstudio/constants";
 import { AppDefinition } from "./../../../../../src/plugins/resource/appstudio/interfaces/appDefinition";
+import { manifestUtils } from "../../../../../src/component/resource/appManifest/utils";
 import { newEnvInfoV3 } from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
+import { setTools } from "../../../../../src/core/globalVars";
 import {
   MockedAzureAccountProvider,
   MockedLogProvider,
   MockedTelemetryReporter,
 } from "../../../solution/util";
 import { MockedM365TokenProvider, MockUserInteraction } from "../helper";
+import { MockTools } from "../../../../core/utils";
 import { AppManifest } from "../../../../../src/component/resource/appManifest/appManifest";
 import { ComponentNames } from "../../../../../src/component/constants";
-import Container from "typedi";
+import { DefaultManifestProvider } from "../../../../../src/component/resource/appManifest/manifestProvider";
+import { getAzureProjectRoot } from "../../../../plugins/resource/appstudio/helper";
 
 describe("Provision Teams app with Azure", () => {
   const sandbox = sinon.createSandbox();
@@ -40,21 +48,24 @@ describe("Provision Teams app with Azure", () => {
     userList: [],
   };
 
+  const projectSettings: ProjectSettings = {
+    appName: "fake",
+    projectId: uuid(),
+  };
+
   const plugin = Container.get<AppManifest>(ComponentNames.AppManifest);
   let context: v2.Context;
   let inputs: v2.InputsWithProjectPath;
   let mockedTokenProvider: TokenProvider;
+  let contextV3: ResourceContextV3;
 
   beforeEach(async () => {
-    const projectSettings: ProjectSettings = {
-      appName: "fake",
-      projectId: uuid(),
-    };
-
+    const tools = new MockTools();
+    setTools(tools);
     inputs = {
       platform: Platform.VSCode,
-      projectPath: path.join(os.tmpdir(), projectSettings.appName),
-      appPackagePath: path.join(os.tmpdir(), projectSettings.appName),
+      projectPath: getAzureProjectRoot(),
+      appPackagePath: "",
     };
 
     mockedTokenProvider = {
@@ -70,6 +81,17 @@ describe("Provision Teams app with Azure", () => {
       projectSetting: projectSettings,
     };
 
+    contextV3 = {
+      envInfo: newEnvInfoV3(),
+      tokenProvider: mockedTokenProvider,
+      userInteraction: new MockUserInteraction(),
+      cryptoProvider: new LocalCrypto(projectSettings.projectId),
+      projectSetting: projectSettings as ProjectSettingsV3,
+      logProvider: new MockedLogProvider(),
+      telemetryReporter: new MockedTelemetryReporter(),
+      manifestProvider: new DefaultManifestProvider(),
+    };
+
     sandbox.stub<any, any>(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readFile").callsFake(async () => {
       const zip = new AdmZip();
@@ -80,6 +102,9 @@ describe("Provision Teams app with Azure", () => {
       const archivedFile = zip.toBuffer();
       return archivedFile;
     });
+    sandbox.stub(fs, "ensureDir").callsFake(async () => {});
+    sandbox.stub(fs, "writeFile").resolves();
+    sandbox.stub(fs, "chmod").resolves();
   });
 
   afterEach(async () => {
@@ -87,6 +112,7 @@ describe("Provision Teams app with Azure", () => {
   });
 
   it("Register Teams app with user provided zip", async () => {
+    inputs.appPackagePath = path.join(os.tmpdir(), projectSettings.appName);
     sandbox.stub(AppStudioClient, "getApp").throws(new Error("404"));
     sandbox.stub(AppStudioClient, "importApp").resolves(appDef);
     const teamsAppId = await plugin.provisionForCLI(
@@ -99,6 +125,7 @@ describe("Provision Teams app with Azure", () => {
   });
 
   it("Update Teams app with user provided zip", async () => {
+    inputs.appPackagePath = path.join(os.tmpdir(), projectSettings.appName);
     const error = new Error();
     (error.name as any) = 409;
     sandbox.stub(AppStudioClient, "getApp").resolves(appDef);
@@ -110,5 +137,28 @@ describe("Provision Teams app with Azure", () => {
       mockedTokenProvider
     );
     chai.assert.isTrue(teamsAppId.isOk());
+  });
+
+  it("Teams app id conflict - provision", async () => {
+    const appId = uuid();
+    contextV3.envInfo.envName = "local";
+    contextV3.envInfo.state = {
+      solution: {},
+      ["app-manifest"]: {},
+    };
+    contextV3.envInfo.state[ComponentNames.AppManifest].teamsAppId = appId;
+
+    sandbox.stub(AppStudioClient, "getApp").throws(new Error("404"));
+    sandbox.stub(AppStudioClient, "checkExistsInTenant").resolves(true);
+    sandbox.stub(AppStudioClient, "importApp").resolves(appDef);
+
+    const manifest = new TeamsAppManifest();
+    manifest.id = "";
+    manifest.icons.color = "resources/color.png";
+    manifest.icons.outline = "resources/outline.png";
+    sandbox.stub(manifestUtils, "getManifest").resolves(ok(manifest));
+
+    const res = await plugin.provision(contextV3, inputs);
+    chai.assert.isTrue(res.isOk());
   });
 });

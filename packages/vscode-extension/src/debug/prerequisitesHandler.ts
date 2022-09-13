@@ -30,6 +30,7 @@ import {
   NodeNotSupportedError,
   baseNpmInstallCommand,
   defaultNpmInstallArg,
+  PluginNames,
   ProjectSettingsHelper,
   TelemetryContext,
   validationSettingsHelpLink,
@@ -707,14 +708,11 @@ function checkM365Account(prefix: string, showLoginPage: boolean): Promise<Check
       );
 
       let hasSwitchedM365Tenant = false;
-      if (
-        localEnvInfo &&
-        localEnvInfo["state"] &&
-        localEnvInfo["state"]["solution"] &&
-        localEnvInfo["state"]["solution"]["teamsAppTenantId"] &&
-        !!tenantId &&
-        localEnvInfo["state"]["solution"]["teamsAppTenantId"] != tenantId
-      ) {
+      const tenantIdFromState: string | undefined =
+        localEnvInfo?.state?.solution?.teamsAppTenantId ||
+        localEnvInfo?.state?.[PluginNames.AAD]?.tenantId ||
+        localEnvInfo?.state?.[PluginNames.APPST]?.tenantId;
+      if (tenantId && tenantIdFromState && tenantIdFromState !== tenantId) {
         hasSwitchedM365Tenant = true;
         showNotification(
           localize("teamstoolkit.localDebug.switchM365AccountWarning"),

@@ -346,8 +346,8 @@ export function wrapError(
     return res;
   }
   if (e instanceof PluginError || e instanceof CommonHostingError) {
-    const message = e.genMessage() + errorMsg;
-    const displayMessage = e.genDisplayMessage() + errorMsg;
+    const message = e.genMessage();
+    const displayMessage = e.genDisplayMessage();
     const result =
       e instanceof PluginError && e.errorType === ErrorType.SYSTEM
         ? ResultFactory.SystemError(e.name, [message, displayMessage], e.innerError)

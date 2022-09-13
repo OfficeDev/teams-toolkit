@@ -13,6 +13,7 @@ import {
   UserError,
   UserErrorOptions,
   Void,
+  PathNotExistError,
 } from "@microsoft/teamsfx-api";
 import {
   AppStudioScopes,
@@ -37,6 +38,7 @@ import {
   LocalEnvProvider,
 } from "@microsoft/teamsfx-core";
 
+import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import * as util from "util";
@@ -1003,6 +1005,16 @@ function checkNpmInstall(
       VsCodeLogInstance.outputChannel.appendLine(
         `${prefix} ${ProgressMessage[Checker.NpmInstall](displayName)} ...`
       );
+
+      if (!(await fs.pathExists(folder))) {
+        return {
+          checker: Checker.NpmInstall,
+          result: ResultStatus.warn,
+          successMsg: doctorConstant.NpmInstallSuccess.split("@app").join(displayName),
+          failureMsg: doctorConstant.NpmInstallFailure.split("@app").join(displayName),
+          error: new PathNotExistError(ExtensionSource, folder),
+        };
+      }
 
       let installed = false;
       if (!forceUpdate) {

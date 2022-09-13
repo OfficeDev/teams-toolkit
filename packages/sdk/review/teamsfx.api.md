@@ -28,6 +28,7 @@ import { GetTokenOptions } from '@azure/identity';
 import { HeroCard } from 'botbuilder';
 import { IAdaptiveCard } from 'adaptivecards';
 import { InvokeResponse } from 'botbuilder';
+import { MessagingExtensionResponse } from 'botbuilder';
 import { O365ConnectorCard } from 'botbuilder';
 import { ReceiptCard } from 'botbuilder';
 import { SecureContextOptions } from 'tls';
@@ -401,7 +402,7 @@ export class OnBehalfOfUserCredential implements TokenCredential {
 }
 
 // @public
-export function queryWithToken(context: TurnContext_2, config: AuthenticationConfiguration | null, scopes: string | string[], logic: (token: TeamsMsgExtTokenResponse) => Promise<any>): Promise<MessagingExtensionResponse | void>;
+export function queryWithToken(context: TurnContext, config: AuthenticationConfiguration | null, scopes: string | string[], logic: (token: TeamsMsgExtTokenResponse) => Promise<any>): Promise<MessagingExtensionResponse | void>;
 
 // @public
 export function sendAdaptiveCard(target: NotificationTarget, card: unknown): Promise<MessageResponse>;
@@ -480,6 +481,12 @@ export interface TeamsFxBotCommandHandler {
 export interface TeamsFxBotSsoCommandHandler {
     handleCommandReceived(context: TurnContext, message: CommandMessage, ssoToken: TeamsBotSsoPromptTokenResponse): Promise<string | Partial<Activity> | void>;
     triggerPatterns: TriggerPatterns;
+}
+
+// @public
+export interface TeamsMsgExtTokenResponse extends TokenResponse {
+    ssoToken: string;
+    ssoTokenExpiration: string;
 }
 
 // @public

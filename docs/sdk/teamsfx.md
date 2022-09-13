@@ -82,6 +82,7 @@
 |  [TeamsFxAdaptiveCardActionHandler](./teamsfx.teamsfxadaptivecardactionhandler.md) | Interface for adaptive card action handler that can process card action invoke and return a response. |
 |  [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) | Interface for a command handler that can process command to a TeamsFx bot and return a response. |
 |  [TeamsFxBotSsoCommandHandler](./teamsfx.teamsfxbotssocommandhandler.md) | Interface for a command handler that can process sso command to a TeamsFx bot and return a response. |
+|  [TeamsMsgExtTokenResponse](./teamsfx.teamsmsgexttokenresponse.md) | Token response provided by Teams Bot SSO prompt |
 |  [UserInfo](./teamsfx.userinfo.md) | UserInfo with user displayName, objectId and preferredUserName. |
 
 ## Type Aliases

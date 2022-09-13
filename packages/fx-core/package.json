@@ -196,5 +196,8 @@
     "access": "public"
   },
   "lint-staged": {
+    "*.{js,jsx,css,ts,tsx}": [
+      "npx eslint --cache --fix --quiet"
+    ]
   }
 }

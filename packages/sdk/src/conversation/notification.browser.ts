@@ -73,14 +73,6 @@ export class Channel implements NotificationTarget {
   public readonly info: ChannelInfo;
 
   /**
-   * Team details.
-   *
-   * @remarks
-   * Only work on server side.
-   */
-  public readonly team: TeamDetails;
-
-  /**
    * Notification target type. For channel it's always "Channel".
    *
    * @remarks
@@ -98,9 +90,8 @@ export class Channel implements NotificationTarget {
    *
    * @param parent - The parent {@link TeamsBotInstallation} where this channel is created from.
    * @param info - Detailed channel information.
-   * @param details - Team details.
    */
-  constructor(parent: TeamsBotInstallation, info: ChannelInfo, details: TeamDetails) {
+  constructor(parent: TeamsBotInstallation, info: ChannelInfo) {
     throw new ErrorWithCode(
       formatString(ErrorMessage.BrowserRuntimeNotSupported, "Channel"),
       ErrorCode.RuntimeNotSupported
@@ -342,6 +333,18 @@ export class TeamsBotInstallation implements NotificationTarget {
       ErrorCode.RuntimeNotSupported
     );
   }
+
+  /**
+   * Get team details from this bot installation
+   *
+   * @returns the team details if bot is installed into a team, otherwise returns undefined.
+   */
+  public async getTeamDetails(): Promise<TeamDetails | undefined> {
+    throw new ErrorWithCode(
+      formatString(ErrorMessage.BrowserRuntimeNotSupported, "TeamsBotInstallation"),
+      ErrorCode.RuntimeNotSupported
+    );
+  }
 }
 
 /**
@@ -443,7 +446,7 @@ export class NotificationBot {
    * @returns the first {@link Channel} where predicate is true, and undefined otherwise.
    */
   public async findChannel(
-    predicate: (channel: Channel) => Promise<boolean>
+    predicate: (channel: Channel, teamDetails: TeamDetails | undefined) => Promise<boolean>
   ): Promise<Channel | undefined> {
     throw new ErrorWithCode(
       formatString(ErrorMessage.BrowserRuntimeNotSupported, "NotificationBot"),
@@ -482,7 +485,7 @@ export class NotificationBot {
    * @returns an array of {@link Channel} where predicate is true, and empty array otherwise.
    */
   public async findAllChannels(
-    predicate: (channel: Channel) => Promise<boolean>
+    predicate: (channel: Channel, teamDetails: TeamDetails | undefined) => Promise<boolean>
   ): Promise<Channel[]> {
     throw new ErrorWithCode(
       formatString(ErrorMessage.BrowserRuntimeNotSupported, "NotificationBot"),

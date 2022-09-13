@@ -158,13 +158,12 @@ export class CertificateAuthProvider implements AuthProvider {
 
 // @public
 export class Channel implements NotificationTarget {
-    constructor(parent: TeamsBotInstallation, info: ChannelInfo, details: TeamDetails);
+    constructor(parent: TeamsBotInstallation, info: ChannelInfo);
     readonly info: ChannelInfo;
     readonly parent: TeamsBotInstallation;
     sendAdaptiveCard(card: unknown): Promise<MessageResponse>;
     // Warning: (ae-forgotten-export) The symbol "MessageResponse" needs to be exported by the entry point index.d.ts
     sendMessage(text: string): Promise<MessageResponse>;
-    readonly team: TeamDetails;
     readonly type: NotificationTargetType;
 }
 
@@ -358,9 +357,9 @@ export class MsGraphAuthProvider implements AuthenticationProvider {
 // @public
 export class NotificationBot {
     constructor(adapter: BotFrameworkAdapter, options?: NotificationOptions_2);
-    findAllChannels(predicate: (channel: Channel) => Promise<boolean>): Promise<Channel[]>;
+    findAllChannels(predicate: (channel: Channel, teamDetails: TeamDetails | undefined) => Promise<boolean>): Promise<Channel[]>;
     findAllMembers(predicate: (member: Member) => Promise<boolean>, scope?: SearchScope): Promise<Member[]>;
-    findChannel(predicate: (channel: Channel) => Promise<boolean>): Promise<Channel | undefined>;
+    findChannel(predicate: (channel: Channel, teamDetails: TeamDetails | undefined) => Promise<boolean>): Promise<Channel | undefined>;
     findMember(predicate: (member: Member) => Promise<boolean>, scope?: SearchScope): Promise<Member | undefined>;
     installations(): Promise<TeamsBotInstallation[]>;
 }
@@ -435,6 +434,7 @@ export class TeamsBotInstallation implements NotificationTarget {
     readonly adapter: BotFrameworkAdapter;
     channels(): Promise<Channel[]>;
     readonly conversationReference: Partial<ConversationReference>;
+    getTeamDetails(): Promise<TeamDetails | undefined>;
     members(): Promise<Member[]>;
     sendAdaptiveCard(card: unknown): Promise<MessageResponse>;
     sendMessage(text: string): Promise<MessageResponse>;

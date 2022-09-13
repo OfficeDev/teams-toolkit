@@ -21,7 +21,7 @@ It's recommended to get channels from .
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(parent, info, details)](./teamsfx.channel._constructor_.md) |  | Constructor. |
+|  [(constructor)(parent, info)](./teamsfx.channel._constructor_.md) |  | Constructor. |
 
 ## Properties
 
@@ -29,7 +29,6 @@ It's recommended to get channels from .
 |  --- | --- | --- | --- |
 |  [info](./teamsfx.channel.info.md) |  | ChannelInfo | Detailed channel information. |
 |  [parent](./teamsfx.channel.parent.md) |  | [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) | The parent [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) where this channel is created from. |
-|  [team](./teamsfx.channel.team.md) |  | TeamDetails | Team details. |
 |  [type](./teamsfx.channel.type.md) |  | [NotificationTargetType](./teamsfx.notificationtargettype.md) | Notification target type. For channel it's always "Channel". |
 
 ## Methods

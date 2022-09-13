@@ -84,11 +84,7 @@ describe("Notification Tests - Node", () => {
     });
 
     it("sendMessage should send correct text", async () => {
-      const channel = new Channel(
-        botInstallation,
-        { id: "1" } as ChannelInfo,
-        { id: "0" } as TeamDetails
-      );
+      const channel = new Channel(botInstallation, { id: "1" } as ChannelInfo);
       assert.strictEqual(channel.type, "Channel");
       activityResponse = {
         id: "message-x",
@@ -105,11 +101,7 @@ describe("Notification Tests - Node", () => {
       sandbox.stub(CardFactory, "adaptiveCard").callsFake((card) => {
         return { content: card } as any;
       });
-      const channel = new Channel(
-        botInstallation,
-        { id: "1" } as ChannelInfo,
-        { id: "0" } as TeamDetails
-      );
+      const channel = new Channel(botInstallation, { id: "1" } as ChannelInfo);
       assert.strictEqual(channel.type, "Channel");
       activityResponse = {
         id: "message-x",
@@ -128,15 +120,6 @@ describe("Notification Tests - Node", () => {
       activityResponse = undefined;
       res = await channel.sendAdaptiveCard({ foo: "bar" });
       assert.deepStrictEqual(res, { id: undefined });
-    });
-
-    it("team should return correct Teams details", async () => {
-      const channel = new Channel(
-        botInstallation,
-        { id: "1" } as ChannelInfo,
-        { id: "0" } as TeamDetails
-      );
-      assert.strictEqual(channel.team.id, "0");
     });
   });
 
@@ -323,7 +306,6 @@ describe("Notification Tests - Node", () => {
     it("channels should return correct channels", async () => {
       sandbox.stub(utils, "getTeamsBotInstallationId").returns("test");
       sandbox.stub(TeamsInfo, "getTeamChannels").resolves([{} as ChannelInfo, {} as ChannelInfo]);
-      sandbox.stub(TeamsInfo, "getTeamDetails").resolves({ id: "test" } as TeamDetails);
 
       const conversationRef = {
         conversation: {
@@ -335,7 +317,6 @@ describe("Notification Tests - Node", () => {
       assert.isTrue(installation.type === "Channel");
       const channels = await installation.channels();
       assert.strictEqual(channels.length, 2);
-      assert.strictEqual(channels[0].team.id, "test");
     });
 
     it("channels should return empty array if no teamId", async () => {
@@ -650,8 +631,8 @@ describe("Notification Bot Tests - Node", () => {
       },
     };
 
-    const channels = await notificationBot.findAllChannels((c) =>
-      Promise.resolve(c.team.id === "test")
+    const channels = await notificationBot.findAllChannels((channel, team) =>
+      Promise.resolve(team?.id === "test")
     );
     assert.lengthOf(channels, 1);
   });

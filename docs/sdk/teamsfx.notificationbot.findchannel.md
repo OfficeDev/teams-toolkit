@@ -9,14 +9,14 @@ Returns the first [Channel](./teamsfx.channel.md) where predicate is true, and u
 <b>Signature:</b>
 
 ```typescript
-findChannel(predicate: (channel: Channel) => Promise<boolean>): Promise<Channel | undefined>;
+findChannel(predicate: (channel: Channel, teamDetails: TeamDetails | undefined) => Promise<boolean>): Promise<Channel | undefined>;
 ```
 
 ## Parameters
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  predicate | (channel: [Channel](./teamsfx.channel.md)<!-- -->) =&gt; Promise&lt;boolean&gt; | find calls predicate once for each channel of the installation, until it finds one where predicate returns true. If such a channel is found, find immediately returns that channel. Otherwise, find returns undefined. |
+|  predicate | (channel: [Channel](./teamsfx.channel.md)<!-- -->, teamDetails: TeamDetails \| undefined) =&gt; Promise&lt;boolean&gt; | find calls predicate once for each channel of the installation, until it finds one where predicate returns true. If such a channel is found, find immediately returns that channel. Otherwise, find returns undefined. |
 
 <b>Returns:</b>
 

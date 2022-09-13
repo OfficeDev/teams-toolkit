@@ -67,11 +67,6 @@ export class Channel implements NotificationTarget {
   public readonly info: ChannelInfo;
 
   /**
-   * Team details.
-   */
-  public readonly team: TeamDetails;
-
-  /**
    * Notification target type. For channel it's always "Channel".
    */
   public readonly type: NotificationTargetType = NotificationTargetType.Channel;
@@ -84,12 +79,10 @@ export class Channel implements NotificationTarget {
    *
    * @param parent - The parent {@link TeamsBotInstallation} where this channel is created from.
    * @param info - Detailed channel information.
-   * @param details - Team details.
    */
-  constructor(parent: TeamsBotInstallation, info: ChannelInfo, details: TeamDetails) {
+  constructor(parent: TeamsBotInstallation, info: ChannelInfo) {
     this.parent = parent;
     this.info = info;
-    this.team = details;
   }
 
   /**
@@ -340,17 +333,15 @@ export class TeamsBotInstallation implements NotificationTarget {
     }
 
     let teamsChannels: ChannelInfo[] = [];
-    let teamDetails: TeamDetails | undefined;
     await this.adapter.continueConversation(this.conversationReference, async (context) => {
       const teamId = utils.getTeamsBotInstallationId(context);
       if (teamId !== undefined) {
         teamsChannels = await TeamsInfo.getTeamChannels(context, teamId);
-        teamDetails = await TeamsInfo.getTeamDetails(context, teamId);
       }
     });
 
     for (const channel of teamsChannels) {
-      channels.push(new Channel(this, channel, teamDetails!));
+      channels.push(new Channel(this, channel));
     }
 
     return channels;
@@ -375,6 +366,23 @@ export class TeamsBotInstallation implements NotificationTarget {
     });
 
     return members;
+  }
+
+  /**
+   * Get team details from this bot installation
+   *
+   * @returns the team details if bot is installed into a team, otherwise returns undefined.
+   */
+  public async getTeamDetails(): Promise<TeamDetails | undefined> {
+    let teamDetails: TeamDetails | undefined;
+    await this.adapter.continueConversation(this.conversationReference, async (context) => {
+      const teamId = utils.getTeamsBotInstallationId(context);
+      if (teamId !== undefined) {
+        teamDetails = await TeamsInfo.getTeamDetails(context, teamId);
+      }
+    });
+
+    return teamDetails;
   }
 }
 
@@ -484,12 +492,15 @@ export class NotificationBot {
    * @returns the first {@link Channel} where predicate is true, and undefined otherwise.
    */
   public async findChannel(
-    predicate: (channel: Channel) => Promise<boolean>
+    predicate: (channel: Channel, teamDetails: TeamDetails | undefined) => Promise<boolean>
   ): Promise<Channel | undefined> {
     for (const target of await this.installations()) {
-      for (const channel of await target.channels()) {
-        if (await predicate(channel)) {
-          return channel;
+      if (target.type === NotificationTargetType.Channel) {
+        const teamDetails = await target.getTeamDetails();
+        for (const channel of await target.channels()) {
+          if (await predicate(channel, teamDetails)) {
+            return channel;
+          }
         }
       }
     }
@@ -530,13 +541,16 @@ export class NotificationBot {
    * @returns an array of {@link Channel} where predicate is true, and empty array otherwise.
    */
   public async findAllChannels(
-    predicate: (channel: Channel) => Promise<boolean>
+    predicate: (channel: Channel, teamDetails: TeamDetails | undefined) => Promise<boolean>
   ): Promise<Channel[]> {
     const channels: Channel[] = [];
     for (const target of await this.installations()) {
-      for (const channel of await target.channels()) {
-        if (await predicate(channel)) {
-          channels.push(channel);
+      if (target.type === NotificationTargetType.Channel) {
+        const teamDetails = await target.getTeamDetails();
+        for (const channel of await target.channels()) {
+          if (await predicate(channel, teamDetails)) {
+            channels.push(channel);
+          }
         }
       }
     }

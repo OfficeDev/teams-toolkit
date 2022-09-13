@@ -9,14 +9,14 @@ Returns all [Channel](./teamsfx.channel.md) where predicate is true, and empty a
 <b>Signature:</b>
 
 ```typescript
-findAllChannels(predicate: (channel: Channel) => Promise<boolean>): Promise<Channel[]>;
+findAllChannels(predicate: (channel: Channel, teamDetails: TeamDetails | undefined) => Promise<boolean>): Promise<Channel[]>;
 ```
 
 ## Parameters
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  predicate | (channel: [Channel](./teamsfx.channel.md)<!-- -->) =&gt; Promise&lt;boolean&gt; | find calls predicate for each channel of the installation. |
+|  predicate | (channel: [Channel](./teamsfx.channel.md)<!-- -->, teamDetails: TeamDetails \| undefined) =&gt; Promise&lt;boolean&gt; | find calls predicate for each channel of the installation. |
 
 <b>Returns:</b>
 

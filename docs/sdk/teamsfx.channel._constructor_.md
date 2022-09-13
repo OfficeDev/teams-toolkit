@@ -9,7 +9,7 @@ Constructor.
 <b>Signature:</b>
 
 ```typescript
-constructor(parent: TeamsBotInstallation, info: ChannelInfo);
+constructor(parent: TeamsBotInstallation, info: ChannelInfo, details: TeamDetails);
 ```
 
 ## Parameters
@@ -18,6 +18,7 @@ constructor(parent: TeamsBotInstallation, info: ChannelInfo);
 |  --- | --- | --- |
 |  parent | [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) | The parent [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) where this channel is created from. |
 |  info | ChannelInfo | Detailed channel information. |
+|  details | TeamDetails | Team details. |
 
 ## Remarks
 

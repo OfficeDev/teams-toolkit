@@ -6,6 +6,7 @@ import {
   CardFactory,
   ChannelInfo,
   ConversationReference,
+  TeamDetails,
   TeamsChannelAccount,
   TeamsInfo,
   TurnContext,
@@ -83,7 +84,11 @@ describe("Notification Tests - Node", () => {
     });
 
     it("sendMessage should send correct text", async () => {
-      const channel = new Channel(botInstallation, { id: "1" } as ChannelInfo);
+      const channel = new Channel(
+        botInstallation,
+        { id: "1" } as ChannelInfo,
+        { id: "0" } as TeamDetails
+      );
       assert.strictEqual(channel.type, "Channel");
       activityResponse = {
         id: "message-x",
@@ -100,7 +105,11 @@ describe("Notification Tests - Node", () => {
       sandbox.stub(CardFactory, "adaptiveCard").callsFake((card) => {
         return { content: card } as any;
       });
-      const channel = new Channel(botInstallation, { id: "1" } as ChannelInfo);
+      const channel = new Channel(
+        botInstallation,
+        { id: "1" } as ChannelInfo,
+        { id: "0" } as TeamDetails
+      );
       assert.strictEqual(channel.type, "Channel");
       activityResponse = {
         id: "message-x",
@@ -119,6 +128,15 @@ describe("Notification Tests - Node", () => {
       activityResponse = undefined;
       res = await channel.sendAdaptiveCard({ foo: "bar" });
       assert.deepStrictEqual(res, { id: undefined });
+    });
+
+    it("team should return correct Teams details", async () => {
+      const channel = new Channel(
+        botInstallation,
+        { id: "1" } as ChannelInfo,
+        { id: "0" } as TeamDetails
+      );
+      assert.strictEqual(channel.team.id, "0");
     });
   });
 
@@ -305,6 +323,8 @@ describe("Notification Tests - Node", () => {
     it("channels should return correct channels", async () => {
       sandbox.stub(utils, "getTeamsBotInstallationId").returns("test");
       sandbox.stub(TeamsInfo, "getTeamChannels").resolves([{} as ChannelInfo, {} as ChannelInfo]);
+      sandbox.stub(TeamsInfo, "getTeamDetails").resolves({ id: "test" } as TeamDetails);
+
       const conversationRef = {
         conversation: {
           conversationType: "channel",
@@ -315,6 +335,7 @@ describe("Notification Tests - Node", () => {
       assert.isTrue(installation.type === "Channel");
       const channels = await installation.channels();
       assert.strictEqual(channels.length, 2);
+      assert.strictEqual(channels[0].team.id, "test");
     });
 
     it("channels should return empty array if no teamId", async () => {
@@ -469,5 +490,173 @@ describe("Notification Bot Tests - Node", () => {
         },
       },
     });
+  });
+
+  it("findMember should return correct member", async () => {
+    sandbox.stub(TeamsInfo, "getPagedMembers").callsFake((ctx, pageSize, continuationToken) => {
+      return new Promise((resolve) =>
+        resolve({
+          continuationToken: undefined as unknown as string,
+          members: [
+            {
+              id: "foo",
+              name: "foo",
+            } as TeamsChannelAccount,
+          ],
+        })
+      );
+    });
+
+    const notificationBot = new NotificationBot(adapter, { storage: storage });
+    storage.items = {
+      _a_1: {
+        channelId: "1",
+        conversation: {
+          conversationType: "channel",
+          id: "1",
+          tenantId: "a",
+        },
+      },
+    };
+
+    const member = await notificationBot.findMember((m) =>
+      Promise.resolve(m.account.name === "foo")
+    );
+    assert.strictEqual(member?.account.id, "foo");
+  });
+
+  it("findMember should return undefined", async () => {
+    sandbox.stub(TeamsInfo, "getPagedMembers").callsFake((ctx, pageSize, continuationToken) => {
+      return new Promise((resolve) =>
+        resolve({
+          continuationToken: undefined as unknown as string,
+          members: [],
+        })
+      );
+    });
+
+    const notificationBot = new NotificationBot(adapter, { storage: storage });
+    const member = await notificationBot.findMember((m) =>
+      Promise.resolve(m.account.name === "NotFound")
+    );
+    assert.isUndefined(member);
+  });
+
+  it("findAllMembers should return an array of correct members", async () => {
+    sandbox.stub(TeamsInfo, "getPagedMembers").callsFake((ctx, pageSize, continuationToken) => {
+      return new Promise((resolve) =>
+        resolve({
+          continuationToken: undefined as unknown as string,
+          members: [
+            {
+              email: "a@contoso.com",
+            } as TeamsChannelAccount,
+            {
+              email: "b@contoso.com",
+            } as TeamsChannelAccount,
+            {
+              email: "c@foo.com",
+            } as TeamsChannelAccount,
+          ],
+        })
+      );
+    });
+
+    const notificationBot = new NotificationBot(adapter, { storage: storage });
+    storage.items = {
+      _a_1: {
+        channelId: "1",
+        conversation: {
+          conversationType: "channel",
+          id: "1",
+          tenantId: "a",
+        },
+      },
+    };
+
+    const members = await notificationBot.findAllMembers((m) =>
+      Promise.resolve(m.account.email?.endsWith("contoso.com") === true)
+    );
+    assert.lengthOf(members, 2);
+  });
+
+  it("findChannel should return correct channel", async () => {
+    sandbox.stub(utils, "getTeamsBotInstallationId").returns("test");
+    sandbox.stub(TeamsInfo, "getTeamDetails").resolves({ id: "test" } as TeamDetails);
+    sandbox.stub(TeamsInfo, "getTeamChannels").resolves([{ id: "1" } as ChannelInfo]);
+    sandbox.stub(TeamsInfo, "getPagedMembers").callsFake((ctx, pageSize, continuationToken) => {
+      return new Promise((resolve) =>
+        resolve({
+          continuationToken: undefined as unknown as string,
+          members: [],
+        })
+      );
+    });
+
+    const notificationBot = new NotificationBot(adapter, { storage: storage });
+    storage.items = {
+      _a_1: {
+        channelId: "1",
+        conversation: {
+          conversationType: "channel",
+          id: "1",
+          tenantId: "a",
+        },
+      },
+    };
+
+    const channel = await notificationBot.findChannel((c) => Promise.resolve(c.info.id === "1"));
+    assert.strictEqual(channel?.info.id, "1");
+  });
+
+  it("findAllChannels should return an array of correct channel", async () => {
+    sandbox.stub(utils, "getTeamsBotInstallationId").returns("test");
+    sandbox.stub(TeamsInfo, "getTeamDetails").resolves({ id: "test" } as TeamDetails);
+    sandbox.stub(TeamsInfo, "getTeamChannels").resolves([{ id: "1" } as ChannelInfo]);
+    sandbox.stub(TeamsInfo, "getPagedMembers").callsFake((ctx, pageSize, continuationToken) => {
+      return new Promise((resolve) =>
+        resolve({
+          continuationToken: undefined as unknown as string,
+          members: [],
+        })
+      );
+    });
+
+    const notificationBot = new NotificationBot(adapter, { storage: storage });
+    storage.items = {
+      _a_1: {
+        channelId: "1",
+        conversation: {
+          conversationType: "channel",
+          id: "1",
+          tenantId: "a",
+        },
+      },
+    };
+
+    const channels = await notificationBot.findAllChannels((c) =>
+      Promise.resolve(c.team.id === "test")
+    );
+    assert.lengthOf(channels, 1);
+  });
+
+  it("findChannel should return undefined", async () => {
+    sandbox.stub(utils, "getTeamsBotInstallationId").returns("test");
+    sandbox.stub(TeamsInfo, "getTeamDetails").resolves({ id: "test" } as TeamDetails);
+    sandbox.stub(TeamsInfo, "getTeamChannels").resolves([{ id: "1" } as ChannelInfo]);
+    sandbox.stub(TeamsInfo, "getPagedMembers").callsFake((ctx, pageSize, continuationToken) => {
+      return new Promise((resolve) =>
+        resolve({
+          continuationToken: undefined as unknown as string,
+          members: [],
+        })
+      );
+    });
+
+    const notificationBot = new NotificationBot(adapter, { storage: storage });
+    const channel = await notificationBot.findChannel((c) =>
+      Promise.resolve(c.info.id === "NotFound")
+    );
+    assert.isUndefined(channel);
   });
 });

@@ -35,6 +35,7 @@ import { SigninStateVerificationQuery } from 'botbuilder';
 import { StatePropertyAccessor } from 'botbuilder';
 import { StatusCodes } from 'botbuilder';
 import { Storage as Storage_2 } from 'botbuilder';
+import { TeamDetails } from 'botbuilder';
 import { TeamsActivityHandler } from 'botbuilder';
 import { TeamsChannelAccount } from 'botbuilder';
 import { ThumbnailCard } from 'botbuilder';
@@ -157,12 +158,13 @@ export class CertificateAuthProvider implements AuthProvider {
 
 // @public
 export class Channel implements NotificationTarget {
-    constructor(parent: TeamsBotInstallation, info: ChannelInfo);
+    constructor(parent: TeamsBotInstallation, info: ChannelInfo, details: TeamDetails);
     readonly info: ChannelInfo;
     readonly parent: TeamsBotInstallation;
     sendAdaptiveCard(card: unknown): Promise<MessageResponse>;
     // Warning: (ae-forgotten-export) The symbol "MessageResponse" needs to be exported by the entry point index.d.ts
     sendMessage(text: string): Promise<MessageResponse>;
+    readonly team: TeamDetails;
     readonly type: NotificationTargetType;
 }
 
@@ -356,6 +358,10 @@ export class MsGraphAuthProvider implements AuthenticationProvider {
 // @public
 export class NotificationBot {
     constructor(adapter: BotFrameworkAdapter, options?: NotificationOptions_2);
+    findAllChannels(predicate: (channel: Channel) => Promise<boolean>): Promise<Channel[]>;
+    findAllMembers(predicate: (member: Member) => Promise<boolean>, scope?: SearchScope): Promise<Member[]>;
+    findChannel(predicate: (channel: Channel) => Promise<boolean>): Promise<Channel | undefined>;
+    findMember(predicate: (member: Member) => Promise<boolean>, scope?: SearchScope): Promise<Member | undefined>;
     installations(): Promise<TeamsBotInstallation[]>;
 }
 
@@ -398,6 +404,14 @@ export class OnBehalfOfUserCredential implements TokenCredential {
     constructor(ssoToken: string, config: AuthenticationConfiguration);
     getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
     getUserInfo(): UserInfo;
+}
+
+// @public
+export enum SearchScope {
+    All = 7,
+    Channel = 4,
+    Group = 2,
+    Person = 1
 }
 
 // @public

@@ -72,6 +72,7 @@ export {
   sendAdaptiveCard,
   sendMessage,
   TeamsBotInstallation,
+  SearchScope,
 } from "./conversation/notification";
 export { CommandBot } from "./conversation/command";
 export { CardActionBot } from "./conversation/cardAction";

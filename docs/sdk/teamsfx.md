@@ -42,6 +42,7 @@
 |  [InvokeResponseErrorCode](./teamsfx.invokeresponseerrorcode.md) | Status code for an <code>application/vnd.microsoft.error</code> invoke response. |
 |  [LogLevel](./teamsfx.loglevel.md) | Log level. |
 |  [NotificationTargetType](./teamsfx.notificationtargettype.md) | The target type where the notification will be sent to. |
+|  [SearchScope](./teamsfx.searchscope.md) | The search scope when calling [NotificationBot.findMember()](./teamsfx.notificationbot.findmember.md) and [NotificationBot.findAllMembers()](./teamsfx.notificationbot.findallmembers.md)<!-- -->. |
 
 ## Functions
 

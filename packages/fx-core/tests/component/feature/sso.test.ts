@@ -8,6 +8,7 @@ import {
   ProjectSettingsV3,
   TeamsAppManifest,
   UserError,
+  Stage,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
@@ -169,6 +170,20 @@ describe("SSO feature", () => {
 
   afterEach(() => {
     sandbox.restore();
+  });
+
+  it("happy path", async () => {
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+      language: "typescript",
+      "app-name": appName,
+      stage: Stage.addFeature,
+    };
+
+    const component = Container.get(ComponentNames.SSO) as any;
+    const ssoRes = await component.add(context, inputs);
+    assert.isTrue(ssoRes.isErr());
   });
 
   it("add sso with generateManifest failed", async () => {

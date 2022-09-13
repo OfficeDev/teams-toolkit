@@ -16,6 +16,7 @@ export { TeamsBotSsoPromptTokenResponse } from "./bot/teamsBotSsoPromptTokenResp
 
 export { UserInfo } from "./models/userinfo";
 export { AuthenticationConfiguration } from "./models/configuration";
+export { GetTeamsUserTokenOptions } from "./models/teamsUserTokenOptions";
 
 export {
   Logger,

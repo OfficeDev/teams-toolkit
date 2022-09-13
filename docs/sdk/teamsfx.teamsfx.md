@@ -27,8 +27,8 @@ export declare class TeamsFx implements TeamsFxConfiguration
 |  [getConfigs()](./teamsfx.teamsfx.getconfigs.md) |  | Get all configurations. |
 |  [getCredential()](./teamsfx.teamsfx.getcredential.md) |  | Credential instance according to identity type choice. |
 |  [getIdentityType()](./teamsfx.teamsfx.getidentitytype.md) |  | Identity type set by user. |
-|  [getUserInfo()](./teamsfx.teamsfx.getuserinfo.md) |  | Get user information. |
+|  [getUserInfo(resources)](./teamsfx.teamsfx.getuserinfo.md) |  | Get user information. |
 |  [hasConfig(key)](./teamsfx.teamsfx.hasconfig.md) |  | Check the value of specific key. |
-|  [login(scopes)](./teamsfx.teamsfx.login.md) |  | Popup login page to get user's access token with specific scopes. |
+|  [login(scopes, resources)](./teamsfx.teamsfx.login.md) |  | Popup login page to get user's access token with specific scopes. |
 |  [setSsoToken(ssoToken)](./teamsfx.teamsfx.setssotoken.md) |  | Set SSO token when using user identity in NodeJS. |
 

@@ -357,7 +357,7 @@ export function convertProjectSettingsV2ToV3(
 
 export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): ProjectSettings {
   const settingsV2: ProjectSettings = cloneDeep(settingsV3) as ProjectSettings;
-  if (settingsV3.components?.length > 0 && !settingsV2.solutionSettings) {
+  if (settingsV3.components?.length > 0) {
     const hostType = hasAzureResourceV3(settingsV3) ? "Azure" : "SPFx";
     settingsV2.solutionSettings = {
       name: "fx-solution-azure",
@@ -398,11 +398,7 @@ export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): Pro
     }
     if (teamsBot) {
       const botCapabilities = teamsBot?.capabilities;
-      if (
-        botCapabilities?.includes("bot") ||
-        botCapabilities?.includes("notification") ||
-        botCapabilities?.includes("command-response")
-      ) {
+      if ((botCapabilities && botCapabilities.length === 0) || botCapabilities?.includes("bot")) {
         settingsV2.solutionSettings.capabilities.push("Bot");
         if (teamsBot.sso) {
           settingsV2.solutionSettings.capabilities.push("BotSSO");

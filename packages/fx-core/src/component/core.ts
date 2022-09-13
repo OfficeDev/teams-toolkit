@@ -592,7 +592,7 @@ export class TeamsfxCore {
           thunk: async () => {
             const clonedInputs = cloneDeep(inputs);
             clonedInputs.folder = component.folder;
-            clonedInputs.artifactFolder = component.artifactFolder;
+            clonedInputs.artifactFolder = component.artifactFolder || clonedInputs.folder;
             clonedInputs.componentId = component.name;
             if (featureComponent.build) {
               const buildRes = await featureComponent.build(context, clonedInputs);

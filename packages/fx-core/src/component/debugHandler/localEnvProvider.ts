@@ -108,8 +108,8 @@ export class LocalEnvProvider {
     );
   }
 
-  public async saveFrontendLocalEnvs(envs: LocalEnvs): Promise<void> {
-    await this.saveLocalEnvFile(
+  public async saveFrontendLocalEnvs(envs: LocalEnvs): Promise<string> {
+    return await this.saveLocalEnvFile(
       path.join(this.projectPath, FolderName.Frontend),
       envs,
       frontendTemplateComment,
@@ -118,8 +118,8 @@ export class LocalEnvProvider {
     );
   }
 
-  public async saveBackendLocalEnvs(envs: LocalEnvs): Promise<void> {
-    await this.saveLocalEnvFile(
+  public async saveBackendLocalEnvs(envs: LocalEnvs): Promise<string> {
+    return await this.saveLocalEnvFile(
       path.join(this.projectPath, FolderName.Function),
       envs,
       undefined,
@@ -128,8 +128,8 @@ export class LocalEnvProvider {
     );
   }
 
-  public async saveBotLocalEnvs(envs: LocalEnvs): Promise<void> {
-    await this.saveLocalEnvFile(
+  public async saveBotLocalEnvs(envs: LocalEnvs): Promise<string> {
+    return await this.saveLocalEnvFile(
       path.join(this.projectPath, FolderName.Bot),
       envs,
       botTemplateComment,
@@ -171,7 +171,7 @@ export class LocalEnvProvider {
     templateComment?: string,
     teamsfxComment?: string,
     customizedComment?: string
-  ): Promise<void> {
+  ): Promise<string> {
     await fs.ensureDir(folder);
     const envPath = path.join(folder, LocalEnvProvider.LocalEnvFileName);
     await fs.createFile(envPath);
@@ -216,5 +216,7 @@ export class LocalEnvProvider {
         await fs.appendFile(envPath, `${key}=${value}${os.EOL}`);
       }
     }
+
+    return envPath;
   }
 }

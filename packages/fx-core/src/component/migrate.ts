@@ -186,6 +186,7 @@ export function convertProjectSettingsV2ToV3(
       settingsV3.components.push({
         name: ComponentNames.AadApp,
         provision: true,
+        deploy: true,
       });
     }
     if (solutionSettings.activeResourcePlugins.includes("fx-resource-frontend-hosting")) {
@@ -324,6 +325,7 @@ export function convertProjectSettingsV2ToV3(
       settingsV3.components.push({
         name: ComponentNames.APIM,
         provision: true,
+        deploy: true,
       });
     }
     if (solutionSettings.activeResourcePlugins.includes("fx-resource-simple-auth")) {
@@ -340,6 +342,7 @@ export function convertProjectSettingsV2ToV3(
         build: true,
         folder: "api",
         deploy: true,
+        artifactFolder: "api",
       });
       settingsV3.components.push({
         name: ComponentNames.Function,
@@ -372,13 +375,14 @@ export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): Pro
       settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-api-connector");
     }
     const aad = getComponent(settingsV3, ComponentNames.AadApp);
+    const teamsTab = getComponent(settingsV3, ComponentNames.TeamsTab);
+    const teamsBot = getComponent(settingsV3, ComponentNames.TeamsBot);
     if (aad) {
       settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-aad-app-for-teams");
-      if (!settingsV2.solutionSettings.capabilities.includes("TabSSO")) {
+      if (!teamsTab && !teamsBot && !settingsV2.solutionSettings.capabilities.includes("TabSSO")) {
         settingsV2.solutionSettings.capabilities.push("TabSSO");
       }
     }
-    const teamsTab = getComponent(settingsV3, ComponentNames.TeamsTab);
     if (teamsTab) {
       settingsV2.solutionSettings.capabilities.push("Tab");
       if (teamsTab.sso) {
@@ -392,14 +396,9 @@ export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): Pro
         settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-frontend-hosting");
       }
     }
-    const teamsBot = getComponent(settingsV3, ComponentNames.TeamsBot);
     if (teamsBot) {
       const botCapabilities = teamsBot?.capabilities;
-      if (
-        botCapabilities?.includes("bot") ||
-        botCapabilities?.includes("notification") ||
-        botCapabilities?.includes("command-response")
-      ) {
+      if ((botCapabilities && botCapabilities.length === 0) || botCapabilities?.includes("bot")) {
         settingsV2.solutionSettings.capabilities.push("Bot");
         if (teamsBot.sso) {
           settingsV2.solutionSettings.capabilities.push("BotSSO");

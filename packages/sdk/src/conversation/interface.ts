@@ -1,8 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { BotFrameworkAdapter } from "botbuilder";
-import { Activity, InvokeResponse, TurnContext } from "botbuilder-core";
+import {
+  BotFrameworkAdapter,
+  ConversationState,
+  UserState,
+  Activity,
+  TurnContext,
+  InvokeResponse,
+  Storage,
+  SigninStateVerificationQuery,
+} from "botbuilder";
+import { TeamsBotSsoPromptTokenResponse } from "../bot/teamsBotSsoPromptTokenResponse";
+import { AuthenticationConfiguration } from "../models/configuration";
 
 /**
  * The response of a message action, e.g., `sendMessage`, `sendAdaptiveCard`.
@@ -164,6 +174,31 @@ export interface TeamsFxBotCommandHandler {
 }
 
 /**
+ * Interface for a command handler that can process sso command to a TeamsFx bot and return a response.
+ */
+export interface TeamsFxBotSsoCommandHandler {
+  /**
+   * The string or regular expression patterns that can trigger this handler.
+   */
+  triggerPatterns: TriggerPatterns;
+
+  /**
+   * Handles a bot command received activity.
+   *
+   * @param context The bot context.
+   * @param message The command message the user types from Teams.
+   * @param ssoToken The sso token which can be used to exchange access token for the bot.
+   * @returns A `Promise` representing an activity or text to send as the command response.
+   * Or no return value if developers want to send the response activity by themselves in this method.
+   */
+  handleCommandReceived(
+    context: TurnContext,
+    message: CommandMessage,
+    ssoToken: TeamsBotSsoPromptTokenResponse
+  ): Promise<string | Partial<Activity> | void>;
+}
+
+/**
  * Options to initialize {@link CommandBot}.
  */
 export interface CommandOptions {
@@ -171,6 +206,11 @@ export interface CommandOptions {
    * The commands to registered with the command bot. Each command should implement the interface {@link TeamsFxBotCommandHandler} so that it can be correctly handled by this command bot.
    */
   commands?: TeamsFxBotCommandHandler[];
+
+  /**
+   * The commands to registered with the sso command bot. Each sso command should implement the interface {@link TeamsFxBotSsoCommandHandler} so that it can be correctly handled by this command bot.
+   */
+  ssoCommands?: TeamsFxBotSsoCommandHandler[];
 }
 
 /**
@@ -262,6 +302,64 @@ export interface TeamsFxAdaptiveCardActionHandler {
 }
 
 /**
+ * Interface for SSO configuration for Bot SSO
+ */
+export interface BotSsoConfig {
+  /**
+   * aad related configurations
+   */
+  aad: {
+    /**
+     * The list of scopes for which the token will have access
+     */
+    scopes: string[];
+  } & AuthenticationConfiguration;
+
+  dialog?: {
+    /**
+     * Custom sso execution activity handler class which should implement the interface {@link BotSsoExecutionActivityHandler}. If not provided, it will use {@link DefaultBotSsoExecutionActivityHandler} by default
+     */
+    CustomBotSsoExecutionActivityHandler?: new (
+      ssoConfig: BotSsoConfig
+    ) => BotSsoExecutionActivityHandler;
+
+    /**
+     * Conversation state for sso command bot, if not provided, it will use internal memory storage to create a new one.
+     */
+    conversationState?: ConversationState;
+
+    /**
+     * User state for sso command bot, if not provided, it will use internal memory storage to create a new one.
+     */
+    userState?: UserState;
+
+    /**
+     * Used by {@link BotSsoExecutionDialog} to remove duplicated messages, if not provided, it will use internal memory storage
+     */
+    dedupStorage?: Storage;
+
+    /**
+     * Settings used to configure an teams sso prompt dialog.
+     */
+    ssoPromptConfig?: {
+      /**
+       * Number of milliseconds the prompt will wait for the user to authenticate.
+       * Defaults to a value `900,000` (15 minutes.)
+       */
+      timeout?: number;
+
+      /**
+       * Value indicating whether the TeamsBotSsoPrompt should end upon receiving an
+       * invalid message.  Generally the TeamsBotSsoPrompt will end the auth flow when receives user
+       * message not related to the auth flow. Setting the flag to false ignores the user's message instead.
+       * Defaults to value `true`
+       */
+      endOnInvalidMessage?: boolean;
+    };
+  };
+}
+
+/**
  * Options to initialize {@link ConversationBot}
  */
 export interface ConversationOptions {
@@ -282,6 +380,11 @@ export interface ConversationOptions {
    * If neither `adapter` nor `adapterConfig` is provided, will use BOT_ID and BOT_PASSWORD from environment variables.
    */
   adapterConfig?: { [key: string]: unknown };
+
+  /**
+   * Configurations for sso command bot
+   */
+  ssoConfig?: BotSsoConfig;
 
   /**
    * The command part.
@@ -313,3 +416,76 @@ export interface ConversationOptions {
     enabled?: boolean;
   };
 }
+
+/**
+ * Interface for user to customize SSO execution activity handler
+ *
+ * @remarks
+ * Bot SSO execution activity handler is to handle SSO login process and trigger SSO command using {@link BotSsoExecutionDialog}.
+ * You can use this interface to implement your own SSO execution dialog, and pass it to ConversationBot options:
+ *
+ * ```typescript
+ * export const commandBot = new ConversationBot({
+ *   ...
+ *   ssoConfig: {
+ *     ...
+ *     dialog: {
+ *       CustomBotSsoExecutionActivityHandler: YourCustomBotSsoExecutionActivityHandler,
+ *     }
+ *   },
+ *    ...
+ * });
+ * ```
+ * For details information about how to implement a BotSsoExecutionActivityHandler, please refer {@link DefaultBotSsoExecutionActivityHandler} class source code.
+ */
+export interface BotSsoExecutionActivityHandler {
+  /**
+   * Add {@link TeamsFxBotSsoCommandHandler} instance to {@link BotSsoExecutionDialog}
+   * @param handler {@link BotSsoExecutionDialogHandler} callback function
+   * @param triggerPatterns The trigger pattern
+   *
+   * @remarks
+   * This function is used to add SSO command to {@link BotSsoExecutionDialog} instance.
+   */
+  addCommand(handler: BotSsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void;
+
+  /**
+   * Called to initiate the event emission process.
+   * @param context The context object for the current turn.
+   */
+  run(context: TurnContext): Promise<void>;
+
+  /**
+   * Receives invoke activities with Activity name of 'signin/verifyState'.
+   * @param context A context object for this turn.
+   * @param query Signin state (part of signin action auth flow) verification invoke query.
+   * @returns A promise that represents the work queued.
+   *
+   * @remarks
+   * It should trigger {@link BotSsoExecutionDialog} instance to handle signin process
+   */
+  handleTeamsSigninVerifyState(
+    context: TurnContext,
+    query: SigninStateVerificationQuery
+  ): Promise<void>;
+
+  /**
+   * Receives invoke activities with Activity name of 'signin/tokenExchange'
+   * @param context A context object for this turn.
+   * @param query Signin state (part of signin action auth flow) verification invoke query
+   * @returns A promise that represents the work queued.
+   *
+   * @remark
+   * It should trigger {@link BotSsoExecutionDialog} instance to handle signin process
+   */
+  handleTeamsSigninTokenExchange(
+    context: TurnContext,
+    query: SigninStateVerificationQuery
+  ): Promise<void>;
+}
+
+export type BotSsoExecutionDialogHandler = (
+  context: TurnContext,
+  tokenResponse: TeamsBotSsoPromptTokenResponse,
+  message: CommandMessage
+) => Promise<void>;

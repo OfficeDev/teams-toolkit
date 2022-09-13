@@ -16,7 +16,7 @@ registerCommand(command: TeamsFxBotCommandHandler): void;
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  command | [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) | The command to registered. |
+|  command | [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) | The command to register. |
 
 <b>Returns:</b>
 

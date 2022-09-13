@@ -512,7 +512,7 @@
       {
         "command": "fx-extension.addFeature",
         "title": "%teamstoolkit.commands.addFeature.title%",
-        "enablement": "fx-extension.isTeamsFx && !fx-extension.isSPFx",
+        "enablement": "fx-extension.isTeamsFx",
         "category": "Teams"
       },
       {
@@ -746,6 +746,10 @@
                 "description": "%teamstoolkit.taskDefinitions.command.npmInstall.description%"
               },
               {
+                "const": "debug-start-local-tunnel",
+                "description": "%teamstoolkit.taskDefinitions.command.startLocalTunnel.description%"
+              },
+              {
                 "const": "debug-set-up-tab",
                 "description": "%teamstoolkit.taskDefinitions.command.tab.description%"
               },
@@ -773,6 +777,7 @@
                 "properties": {
                   "prerequisites": {
                     "type": "array",
+                    "description": "%teamstoolkit.taskDefinitions.args.prerequisites.title%",
                     "items": {
                       "type": "string",
                       "anyOf": [
@@ -811,7 +816,8 @@
                     "type": "array",
                     "items": {
                       "type": "number"
-                    }
+                    },
+                    "description": "%teamstoolkit.taskDefinitions.args.ports.title%"
                   }
                 },
                 "if": {
@@ -828,6 +834,13 @@
                     "ports"
                   ]
                 },
+                "else": {
+                  "not": {
+                    "required": [
+                      "ports"
+                    ]
+                  }
+                },
                 "additionalProperties": false
               },
               {
@@ -838,6 +851,7 @@
                 "properties": {
                   "projects": {
                     "type": "array",
+                    "description": "%teamstoolkit.taskDefinitions.args.projects.title%",
                     "items": {
                       "type": "object",
                       "required": [
@@ -845,12 +859,14 @@
                       ],
                       "properties": {
                         "cwd": {
-                          "type": "string"
+                          "type": "string",
+                          "description": "%teamstoolkit.taskDefinitions.args.projects.cwd.title%"
                         },
                         "npmInstallArgs": {
                           "type": "array",
                           "items": {
-                            "type": "string"
+                            "type": "string",
+                            "description": "%teamstoolkit.taskDefinitions.args.projects.npmInstallArgs.title%"
                           }
                         }
                       }
@@ -858,9 +874,22 @@
                   },
                   "forceUpdate": {
                     "type": "boolean",
-                    "default": false
+                    "title": "%teamstoolkit.taskDefinitions.args.forceUpdate.title%",
+                    "description": "%teamstoolkit.taskDefinitions.args.forceUpdate.title%",
+                    "default": false,
+                    "oneOf": [
+                      {
+                        "const": false,
+                        "description": "%teamstoolkit.taskDefinitions.args.forceUpdate.false.description%"
+                      },
+                      {
+                        "const": true,
+                        "description": "%teamstoolkit.taskDefinitions.args.forceUpdate.true.description%"
+                      }
+                    ]
                   }
-                }
+                },
+                "additionalProperties": false
               },
               {
                 "type": "object",
@@ -924,6 +953,37 @@
                   "manifestPackagePath": {
                     "type": "string",
                     "description": "%teamstoolkit.taskDefinitions.args.manifest.manifestPackagePathTitle%"
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "required": [
+                  "configFile"
+                ],
+                "properties": {
+                  "configFile": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.configFile.title%",
+                    "anyOf": [
+                      {
+                        "const": "${teamsfx:workspaceFolder}/.fx/configs/ngrok.yml"
+                      },
+                      {}
+                    ]
+                  },
+                  "binFolder": {
+                    "type": "string",
+                    "title": "%teamstoolkit.taskDefinitions.args.binFolder.title%",
+                    "description": "%teamstoolkit.taskDefinitions.args.binFolder.title%",
+                    "anyOf": [
+                      {
+                        "const": "${teamsfx:ngrokBinFolder}",
+                        "description": "%teamstoolkit.taskDefinitions.args.binFolder.default.description%"
+                      },
+                      {}
+                    ]
                   }
                 },
                 "additionalProperties": false
@@ -1057,6 +1117,30 @@
           "activeOnStart": true,
           "beginsPattern": "starting web service",
           "endsPattern": "started tunnel|failed to reconnect session"
+        }
+      },
+      {
+        "name": "teamsfx-local-tunnel-watch",
+        "label": "TeamsFx Local Tunnel Problems",
+        "owner": "Teams Toolkit",
+        "source": "teamsfx",
+        "applyTo": "allDocuments",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "pattern": [
+          {
+            "regexp": "^.*$",
+            "file": 0,
+            "location": 1,
+            "message": 2
+          }
+        ],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Starting local tunnel service",
+          "endsPattern": "Local tunnel service is started successfully|Failed to start local tunnel service"
         }
       },
       {
@@ -1364,6 +1448,7 @@
     "open": "^8.4.0",
     "read-package-json-fast": "^2.0.3",
     "sudo-prompt": "^9.2.1",
+    "tree-kill": "^1.2.2",
     "underscore": "^1.12.1",
     "validator": "^13.7.0",
     "vscode-tas-client": "^0.1.47"

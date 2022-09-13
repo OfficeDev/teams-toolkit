@@ -44,7 +44,7 @@
 /packages/api/src/schemas @dooriya @qinezh @a1exwang @kimizhu
 
 /packages/sdk @tecton @blackchoey @SLdragon @dilin-MS @wenytang-ms @yiqing-zhao
-/packages/sdk/src/conversation @kimizhu @swatDong @a1exwang @XiaofuHuang @dooriya
+/packages/sdk/src/conversation @kimizhu @swatDong @a1exwang @XiaofuHuang @dooriya @SLdragon
 /packages/sdk/test/unit/node/conversation @kimizhu @swatDong @a1exwang @XiaofuHuang @dooriya
 
 /packages/fx-core/src/core @jayzhang @LongOddCode @1yefuwang1 @nliu-ms @xzf0587 @hund030

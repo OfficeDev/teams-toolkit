@@ -4,7 +4,7 @@
 import { BotFrameworkAdapter } from "botbuilder";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { formatString } from "../util/utils";
-import { TeamsFxBotCommandHandler } from "./interface";
+import { TeamsFxBotCommandHandler, TeamsFxBotSsoCommandHandler } from "./interface";
 import { CommandResponseMiddleware } from "./middlewares/commandMiddleware";
 
 /**
@@ -54,6 +54,30 @@ export class CommandBot {
    * Only work on server side.
    */
   public registerCommands(commands: TeamsFxBotCommandHandler[]): void {
+    throw new ErrorWithCode(
+      formatString(ErrorMessage.BrowserRuntimeNotSupported, "CommandBot"),
+      ErrorCode.RuntimeNotSupported
+    );
+  }
+
+  /**
+   * Registers a sso command into the command bot.
+   *
+   * @param command The command to register.
+   */
+  public registerSsoCommand(ssoCommand: TeamsFxBotSsoCommandHandler): void {
+    throw new ErrorWithCode(
+      formatString(ErrorMessage.BrowserRuntimeNotSupported, "CommandBot"),
+      ErrorCode.RuntimeNotSupported
+    );
+  }
+
+  /**
+   * Registers commands into the command bot.
+   *
+   * @param commands The commands to register.
+   */
+  public registerSsoCommands(ssoCommands: TeamsFxBotSsoCommandHandler[]): void {
     throw new ErrorWithCode(
       formatString(ErrorMessage.BrowserRuntimeNotSupported, "CommandBot"),
       ErrorCode.RuntimeNotSupported

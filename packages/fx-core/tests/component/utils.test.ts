@@ -4,7 +4,9 @@ import { convertContext } from "../../src/component/resource/aadApp/utils";
 import {
   addFeatureNotify,
   createContextV3,
+  newProjectSettingsV3,
   resetEnvInfoWhenSwitchM365,
+  scaffoldRootReadme,
 } from "../../src/component/utils";
 import { BuiltInFeaturePluginNames } from "../../src/plugins/solution/fx-solution/v3/constants";
 import { MockTools } from "../core/utils";
@@ -19,6 +21,7 @@ import {
 } from "../../src/component/error";
 import { setTools } from "../../src/core/globalVars";
 import { newEnvInfoV3 } from "../../src/core/environment";
+import fs from "fs-extra";
 describe("resetEnvInfoWhenSwitchM365", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -234,5 +237,19 @@ describe("resetEnvInfoWhenSwitchM365", () => {
     assert.isDefined(error2);
     const error3 = new FindFunctionAppError("FE");
     assert.isDefined(error3);
+  });
+  it("scaffoldRootReadme", async () => {
+    sandbox.stub(fs, "pathExists").onFirstCall().resolves(true).onSecondCall().resolves(false);
+    sandbox.stub(fs, "copy").resolves();
+    const projectSettings = newProjectSettingsV3();
+    projectSettings.components = [
+      {
+        name: "teams-tab",
+      },
+      {
+        name: "teams-bot",
+      },
+    ];
+    await scaffoldRootReadme(projectSettings, ".");
   });
 });

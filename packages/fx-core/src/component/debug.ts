@@ -329,6 +329,8 @@ export async function configLocalEnvironmentCommon(
 
       if (includeTab) {
         frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.Port] = "53000";
+        frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.Browser] = "none";
+        frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.Https] = "true";
 
         if (includeAAD) {
           frontendEnvs!.teamsfxLocalEnvs[

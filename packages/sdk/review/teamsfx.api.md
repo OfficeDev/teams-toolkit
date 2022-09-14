@@ -287,6 +287,9 @@ export interface GetTeamsUserTokenOptions extends GetTokenOptions {
 export function getTediousConnectionConfig(teamsfx: TeamsFx, databaseName?: string): Promise<ConnectionConfig>;
 
 // @public
+export function handleMessageExtensionQueryWithToken(context: TurnContext, config: AuthenticationConfiguration | null, scopes: string | string[], logic: (token: MessageExtensionTokenResponse) => Promise<any>): Promise<MessagingExtensionResponse | void>;
+
+// @public
 export enum IdentityType {
     App = "Application",
     User = "User"
@@ -349,6 +352,12 @@ export class MessageBuilder {
 }
 
 // @public
+export interface MessageExtensionTokenResponse extends TokenResponse {
+    ssoToken: string;
+    ssoTokenExpiration: string;
+}
+
+// @public
 export class MsGraphAuthProvider implements AuthenticationProvider {
     constructor(teamsfx: TeamsFxConfiguration, scopes?: string | string[]);
     getAccessToken(): Promise<string>;
@@ -400,9 +409,6 @@ export class OnBehalfOfUserCredential implements TokenCredential {
     getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
     getUserInfo(): UserInfo;
 }
-
-// @public
-export function queryWithToken(context: TurnContext, config: AuthenticationConfiguration | null, scopes: string | string[], logic: (token: TeamsMsgExtTokenResponse) => Promise<any>): Promise<MessagingExtensionResponse | void>;
 
 // @public
 export function sendAdaptiveCard(target: NotificationTarget, card: unknown): Promise<MessageResponse>;
@@ -481,12 +487,6 @@ export interface TeamsFxBotCommandHandler {
 export interface TeamsFxBotSsoCommandHandler {
     handleCommandReceived(context: TurnContext, message: CommandMessage, ssoToken: TeamsBotSsoPromptTokenResponse): Promise<string | Partial<Activity> | void>;
     triggerPatterns: TriggerPatterns;
-}
-
-// @public
-export interface TeamsMsgExtTokenResponse extends TokenResponse {
-    ssoToken: string;
-    ssoTokenExpiration: string;
 }
 
 // @public

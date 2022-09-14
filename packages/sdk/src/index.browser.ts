@@ -75,3 +75,5 @@ export {
 } from "./conversation/notification.browser";
 export { CommandBot } from "./conversation/command.browser";
 export { CardActionBot } from "./conversation/cardAction.browser";
+export { handleMessageExtensionQueryWithToken } from "./messageExtension/executeWithSSO.browser";
+export { MessageExtensionTokenResponse } from "./messageExtension/teamsMsgExtTokenResponse";

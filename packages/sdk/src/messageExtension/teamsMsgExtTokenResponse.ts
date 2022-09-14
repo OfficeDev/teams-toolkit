@@ -5,7 +5,7 @@ import { TokenResponse } from "botframework-schema";
 /**
  * Token response provided by Teams Bot SSO prompt
  */
-export interface TeamsMsgExtTokenResponse extends TokenResponse {
+export interface MessageExtensionTokenResponse extends TokenResponse {
   /**
    * SSO token for user
    */

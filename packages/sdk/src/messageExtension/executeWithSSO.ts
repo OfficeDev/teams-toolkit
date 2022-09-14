@@ -4,7 +4,7 @@
 import { AccessToken } from "@azure/identity";
 import { TurnContext, MessagingExtensionResponse, ActivityTypes } from "botbuilder";
 import { parseJwt, getScopesArray, formatString } from "../util/utils";
-import { TeamsMsgExtTokenResponse } from "./teamsMsgExtTokenResponse";
+import { MessageExtensionTokenResponse } from "./teamsMsgExtTokenResponse";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { AuthenticationConfiguration } from "../models/configuration";
 import { IdentityType } from "../models/identityType";
@@ -60,7 +60,7 @@ export async function executionWithToken(
   context: TurnContext,
   config: AuthenticationConfiguration,
   scopes: string | string[],
-  logic?: (token: TeamsMsgExtTokenResponse) => Promise<any>
+  logic?: (token: MessageExtensionTokenResponse) => Promise<any>
 ): Promise<MessagingExtensionResponse | void> {
   const valueObj = context.activity.value;
   if (!valueObj.authentication || !valueObj.authentication.token) {
@@ -73,7 +73,7 @@ export async function executionWithToken(
     );
     const token: AccessToken | null = await teamsfx.getCredential().getToken(scopes);
     const ssoTokenExpiration: number = parseJwt(valueObj.authentication.token).exp;
-    const tokenRes: TeamsMsgExtTokenResponse = {
+    const tokenRes: MessageExtensionTokenResponse = {
       ssoToken: valueObj.authentication.token,
       ssoTokenExpiration: new Date(ssoTokenExpiration * 1000).toISOString(),
       token: token!.token,
@@ -111,11 +111,11 @@ export async function executionWithToken(
  *
  * @returns A MessageExtension Response for the activity. If the logic not return any, return void instead.
  */
-export async function queryWithToken(
+export async function handleMessageExtensionQueryWithToken(
   context: TurnContext,
   config: AuthenticationConfiguration | null,
   scopes: string | string[],
-  logic: (token: TeamsMsgExtTokenResponse) => Promise<any>
+  logic: (token: MessageExtensionTokenResponse) => Promise<any>
 ): Promise<MessagingExtensionResponse | void> {
   if (context.activity.name != "composeExtension/query") {
     internalLogger.error(ErrorMessage.OnlySupportInQueryActivity);

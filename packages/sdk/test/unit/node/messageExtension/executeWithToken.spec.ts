@@ -2,11 +2,10 @@
 // Licensed under the MIT license.
 import { AccessToken } from "@azure/identity";
 import { ErrorCode, ErrorWithCode } from "../../../../src/core/errors";
-import { queryWithToken } from "../../../../src/messageExtension/executeWithSSO";
-import { TeamsMsgExtTokenResponse } from "../../../../src/messageExtension/teamsMsgExtTokenResponse";
+import { handleMessageExtensionQueryWithToken } from "../../../../src/messageExtension/executeWithSSO";
+import { MessageExtensionTokenResponse } from "../../../../src/messageExtension/teamsMsgExtTokenResponse";
 import { OnBehalfOfUserCredential } from "../../../../src/credential/onBehalfOfUserCredential";
-import { TeamsFx } from "../../../../src/core/teamsfx";
-import { assert, use as chaiUse, expect } from "chai";
+import { assert, use as chaiUse } from "chai";
 const jwtBuilder = require("jwt-builder");
 import * as sinon from "sinon";
 import * as chaiPromises from "chai-as-promised";
@@ -92,13 +91,13 @@ describe("Message Extension Query With Token Tests - Node", () => {
     restore();
   });
 
-  it("queryWithToken failed in Message Extension Query", async () => {
+  it("handleMessageExtensionQueryWithToken failed in Message Extension Query", async () => {
     try {
-      await queryWithToken(
+      await handleMessageExtensionQueryWithToken(
         { activity: { name: "composeExtension/queryLink", value: {} } } as TurnContext,
         null,
         "",
-        async (token: TeamsMsgExtTokenResponse) => {
+        async (token: MessageExtensionTokenResponse) => {
           token;
         }
       );
@@ -106,13 +105,13 @@ describe("Message Extension Query With Token Tests - Node", () => {
       assert.isTrue(err instanceof ErrorWithCode);
       assert.strictEqual(
         (err as ErrorWithCode).message,
-        "The queryWithToken only support in handleTeamsMessagingExtensionQuery with composeExtension/query type."
+        "The handleMessageExtensionQueryWithToken only support in handleTeamsMessagingExtensionQuery with composeExtension/query type."
       );
       assert.strictEqual((err as ErrorWithCode).code, "FailedOperation");
     }
   });
 
-  it("queryWithToken getSignIn link with user config in MessageExtensionQuery", async () => {
+  it("handleMessageExtensionQueryWithToken getSignIn link with user config in MessageExtensionQuery", async () => {
     const config: AuthenticationConfiguration = {
       clientId: "fake_client_Id",
       tenantId: "fake_tennant_Id",
@@ -120,11 +119,11 @@ describe("Message Extension Query With Token Tests - Node", () => {
       initiateLoginEndpoint: "initial_endpoint",
       clientSecret: "fake_client_secret",
     };
-    const res = await queryWithToken(
+    const res = await handleMessageExtensionQueryWithToken(
       { activity: { name: "composeExtension/query", value: {} } } as TurnContext,
       config,
       ["fake_scope1", "fake_scope2"],
-      async (token: TeamsMsgExtTokenResponse) => {
+      async (token: MessageExtensionTokenResponse) => {
         token;
       }
     );
@@ -140,12 +139,12 @@ describe("Message Extension Query With Token Tests - Node", () => {
     assert.equal(action.title, "Message Extension OAuth");
   });
 
-  it("queryWithToken get SignIn link with default config in Message Extension Query", async () => {
-    const res = await queryWithToken(
+  it("handleMessageExtensionQueryWithToken get SignIn link with default config in Message Extension Query", async () => {
+    const res = await handleMessageExtensionQueryWithToken(
       { activity: { name: "composeExtension/query", value: {} } } as TurnContext,
       null,
       "fake_scope",
-      async (token: TeamsMsgExtTokenResponse) => {
+      async (token: MessageExtensionTokenResponse) => {
         token;
       }
     );
@@ -161,7 +160,7 @@ describe("Message Extension Query With Token Tests - Node", () => {
     assert.equal(action.title, "Message Extension OAuth");
   });
 
-  it("queryWithToken get 412 response in Message Extension query", async () => {
+  it("handleMessageExtensionQueryWithToken get 412 response in Message Extension query", async () => {
     const adapter = new SimpleAdapter();
     const context: TurnContext = new TurnContext(adapter, activityContext);
     const spy = sinon.spy(adapter, "sendActivities");
@@ -173,7 +172,7 @@ describe("Message Extension Query With Token Tests - Node", () => {
           ErrorCode.UiRequiredError
         )
       );
-    await queryWithToken(context, null, "", async (token) => {
+    await handleMessageExtensionQueryWithToken(context, null, "", async (token) => {
       token;
     });
     spy.restore();
@@ -182,16 +181,16 @@ describe("Message Extension Query With Token Tests - Node", () => {
     assert.equal(spy.getCall(0).args[1][0].type, "invokeResponse");
   });
 
-  it("queryWithToken with expected token in message extension query", async () => {
+  it("handleMessageExtensionQueryWithToken with expected token in message extension query", async () => {
     const tokenRes: AccessToken = {
       token: "fake_access_token",
       expiresOnTimestamp: now,
     };
     sandbox.stub(OnBehalfOfUserCredential.prototype, "getToken").resolves(tokenRes);
     const context: TurnContext = new TurnContext(new SimpleAdapter(), activityContext);
-    const logic = (token: TeamsMsgExtTokenResponse) => {};
+    const logic = (token: MessageExtensionTokenResponse) => {};
     const callbackSpy = sinon.spy(logic);
-    const res = await queryWithToken(context, null, "", async (token) => {
+    const res = await handleMessageExtensionQueryWithToken(context, null, "", async (token) => {
       callbackSpy(token);
     });
     sinon.assert.calledOnce(callbackSpy);
@@ -217,7 +216,7 @@ describe("Message Extension Query With Token Tests - Node", () => {
     const adapter = new SimpleAdapter();
     const context: TurnContext = new TurnContext(adapter, activityContext);
     try {
-      await queryWithToken(context, null, "", async (token) => {
+      await handleMessageExtensionQueryWithToken(context, null, "", async (token) => {
         token;
       });
     } catch (err) {

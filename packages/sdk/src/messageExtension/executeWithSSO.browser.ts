@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { TurnContext, MessagingExtensionResponse } from "botbuilder";
 import { AuthenticationConfiguration } from "../models/configuration";
-import { TeamsMsgExtTokenResponse } from "./teamsMsgExtTokenResponse";
+import { MessageExtensionTokenResponse } from "./teamsMsgExtTokenResponse";
 import { ErrorWithCode, ErrorMessage, ErrorCode } from "../core/errors";
 import { formatString } from "../util/utils";
 
@@ -11,11 +11,11 @@ import { formatString } from "../util/utils";
  * @remarks
  * Only works in in server side.
  */
-export async function queryWithToken(
+export async function handleMessageExtensionQueryWithToken(
   context: TurnContext,
   config: AuthenticationConfiguration,
   scopes: string | string[],
-  logic: (token: TeamsMsgExtTokenResponse) => Promise<any>
+  logic: (token: MessageExtensionTokenResponse) => Promise<any>
 ): Promise<MessagingExtensionResponse | void> {
   throw new ErrorWithCode(
     formatString(ErrorMessage.BrowserRuntimeNotSupported, "queryWithToken in message extension"),

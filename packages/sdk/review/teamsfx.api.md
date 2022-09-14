@@ -37,7 +37,6 @@ import { StatePropertyAccessor } from 'botbuilder';
 import { StatusCodes } from 'botbuilder';
 import { Storage as Storage_2 } from 'botbuilder';
 import { TeamDetails } from 'botbuilder';
-import { TeamsActivityHandler } from 'botbuilder';
 import { TeamsChannelAccount } from 'botbuilder';
 import { ThumbnailCard } from 'botbuilder';
 import { TokenCredential } from '@azure/identity';
@@ -235,15 +234,6 @@ export function createPemCertOption(cert: string | Buffer, key: string | Buffer,
 export function createPfxCertOption(pfx: string | Buffer, options?: {
     passphrase?: string;
 }): SecureContextOptions;
-
-// @public
-export class DefaultBotSsoExecutionActivityHandler extends TeamsActivityHandler implements BotSsoExecutionActivityHandler {
-    constructor(ssoConfig: BotSsoConfig);
-    addCommand(handler: BotSsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void;
-    handleTeamsSigninTokenExchange(context: TurnContext, query: SigninStateVerificationQuery): Promise<void>;
-    handleTeamsSigninVerifyState(context: TurnContext, query: SigninStateVerificationQuery): Promise<void>;
-    run(context: TurnContext): Promise<void>;
-}
 
 // @public
 export enum ErrorCode {
@@ -499,7 +489,7 @@ export interface TeamsFxBotCommandHandler {
 
 // @public
 export interface TeamsFxBotSsoCommandHandler {
-    handleCommandReceived(context: TurnContext, message: CommandMessage, ssoToken: TeamsBotSsoPromptTokenResponse): Promise<string | Partial<Activity> | void>;
+    handleCommandReceived(context: TurnContext, message: CommandMessage, tokenResponse: TeamsBotSsoPromptTokenResponse): Promise<string | Partial<Activity> | void>;
     triggerPatterns: TriggerPatterns;
 }
 

@@ -18,7 +18,6 @@
 |  [Channel](./teamsfx.channel.md) | A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team channel. |
 |  [CommandBot](./teamsfx.commandbot.md) | A command bot for receiving commands and sending responses in Teams. |
 |  [ConversationBot](./teamsfx.conversationbot.md) | Provide utilities for bot conversation, including: - handle command and response. - send notification to varies targets (e.g., member, group, channel). |
-|  [DefaultBotSsoExecutionActivityHandler](./teamsfx.defaultbotssoexecutionactivityhandler.md) | Default SSO execution activity handler |
 |  [ErrorWithCode](./teamsfx.errorwithcode.md) | Error class with code and message thrown by the SDK. |
 |  [InvokeResponseFactory](./teamsfx.invokeresponsefactory.md) | Provides methods for formatting various invoke responses a bot can send to respond to an invoke request. |
 |  [Member](./teamsfx.member.md) | A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team member. |

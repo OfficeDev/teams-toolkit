@@ -187,14 +187,14 @@ export interface TeamsFxBotSsoCommandHandler {
    *
    * @param context The bot context.
    * @param message The command message the user types from Teams.
-   * @param ssoToken The sso token which can be used to exchange access token for the bot.
+   * @param tokenResponse The tokenResponse which contains sso token that can be used to exchange access token for the bot.
    * @returns A `Promise` representing an activity or text to send as the command response.
    * Or no return value if developers want to send the response activity by themselves in this method.
    */
   handleCommandReceived(
     context: TurnContext,
     message: CommandMessage,
-    ssoToken: TeamsBotSsoPromptTokenResponse
+    tokenResponse: TeamsBotSsoPromptTokenResponse
   ): Promise<string | Partial<Activity> | void>;
 }
 
@@ -436,7 +436,7 @@ export interface ConversationOptions {
  *    ...
  * });
  * ```
- * For details information about how to implement a BotSsoExecutionActivityHandler, please refer {@link DefaultBotSsoExecutionActivityHandler} class source code.
+ * For details information about how to implement a BotSsoExecutionActivityHandler, please refer DefaultBotSsoExecutionActivityHandler class source code: https://github.com/OfficeDev/TeamsFx/blob/dev/packages/sdk/src/conversation/sso/defaultBotSsoExecutionActivityHandler.ts
  */
 export interface BotSsoExecutionActivityHandler {
   /**

@@ -64,7 +64,6 @@ export {
 } from "./conversation/interface";
 export { ConversationBot } from "./conversation/conversation";
 export { BotSsoExecutionDialog } from "./conversation/sso/botSsoExecutionDialog";
-export { DefaultBotSsoExecutionActivityHandler } from "./conversation/sso/defaultBotSsoExecutionActivityHandler";
 export {
   Channel,
   Member,

@@ -143,7 +143,7 @@ jobs:
           curl -X POST https://teamsfxteststatus.azurewebsites.net/api/testcase \
              -H 'Content-Type: application/json' \
              -H 'Authorization: Bearer ${{ secrets.TEAMSFX_PORTAL_TOKEN }}' \
-             -d "{\"basic\":{\"reportId\":\"05\"},\"git\":{\"orginazation\":\"${{ github.repository_owner }}\",\"repository\":\"${{ github.repository }}\",\"commit\":\"${{ github.sha }}\",\"author\":\"$committer\",\"branch\":\"${{ github.ref }}\"},\"github\":{\"os\":\"Ubuntu\",\"nodeVersion\":\"14\",\"on\":\"${{ github.event_name }}\",\"jobId\":\"${{ steps.get-job-id.outputs.jobId }}\",\"runId\":\"${{ github.run_id }}\",\"caseURL\":\"$raw_url\"}, \"mochawesome\": $mc}"
+             -d "{\"basic\":{\"reportId\":\"05\"},\"git\":{\"organization\":\"${{ github.repository_owner }}\",\"repository\":\"${{ github.repository }}\",\"commit\":\"${{ github.sha }}\",\"author\":\"$committer\",\"branch\":\"${{ github.ref }}\"},\"github\":{\"os\":\"Ubuntu\",\"nodeVersion\":\"14\",\"on\":\"${{ github.event_name }}\",\"jobId\":\"${{ steps.get-job-id.outputs.jobId }}\",\"runId\":\"${{ github.run_id }}\",\"caseURL\":\"$raw_url\"}, \"mochawesome\": $mc}"
 
       - name: Report result
         uses: satak/webrequest-action@master

@@ -36,6 +36,7 @@ import { SigninStateVerificationQuery } from 'botbuilder';
 import { StatePropertyAccessor } from 'botbuilder';
 import { StatusCodes } from 'botbuilder';
 import { Storage as Storage_2 } from 'botbuilder';
+import { TeamDetails } from 'botbuilder';
 import { TeamsActivityHandler } from 'botbuilder';
 import { TeamsChannelAccount } from 'botbuilder';
 import { ThumbnailCard } from 'botbuilder';
@@ -366,6 +367,10 @@ export class MsGraphAuthProvider implements AuthenticationProvider {
 // @public
 export class NotificationBot {
     constructor(adapter: BotFrameworkAdapter, options?: NotificationOptions_2);
+    findAllChannels(predicate: (channel: Channel, teamDetails: TeamDetails | undefined) => Promise<boolean>): Promise<Channel[]>;
+    findAllMembers(predicate: (member: Member) => Promise<boolean>, scope?: SearchScope): Promise<Member[]>;
+    findChannel(predicate: (channel: Channel, teamDetails: TeamDetails | undefined) => Promise<boolean>): Promise<Channel | undefined>;
+    findMember(predicate: (member: Member) => Promise<boolean>, scope?: SearchScope): Promise<Member | undefined>;
     installations(): Promise<TeamsBotInstallation[]>;
 }
 
@@ -411,6 +416,14 @@ export class OnBehalfOfUserCredential implements TokenCredential {
 }
 
 // @public
+export enum SearchScope {
+    All = 7,
+    Channel = 4,
+    Group = 2,
+    Person = 1
+}
+
+// @public
 export function sendAdaptiveCard(target: NotificationTarget, card: unknown): Promise<MessageResponse>;
 
 // @public
@@ -431,6 +444,7 @@ export class TeamsBotInstallation implements NotificationTarget {
     readonly adapter: BotFrameworkAdapter;
     channels(): Promise<Channel[]>;
     readonly conversationReference: Partial<ConversationReference>;
+    getTeamDetails(): Promise<TeamDetails | undefined>;
     members(): Promise<Member[]>;
     sendAdaptiveCard(card: unknown): Promise<MessageResponse>;
     sendMessage(text: string): Promise<MessageResponse>;

@@ -50,6 +50,17 @@ describe("CommandResponse Middleware Tests - Node", () => {
     sinon.restore();
     mockedEnvRestore();
   });
+
+  it("add sso command should work", async () => {
+    const testCommandHandler = new TestCommandHandler("test");
+    const middleware = new CommandResponseMiddleware([testCommandHandler]);
+
+    const testSsoCommand = new TestSsoCommandHandler("test");
+    middleware.addSsoCommand(testSsoCommand);
+    assert.isTrue(middleware.hasSsoCommand);
+    assert.isTrue(middleware.ssoCommandHandlers.length === 1);
+  });
+
   it("onTurn should correctly trigger command if matches string", async () => {
     const testContext = new MockContext("test");
 

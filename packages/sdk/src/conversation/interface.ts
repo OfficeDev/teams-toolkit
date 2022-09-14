@@ -436,7 +436,7 @@ export interface ConversationOptions {
  *    ...
  * });
  * ```
- * For details information about how to implement a BotSsoExecutionActivityHandler, please refer DefaultBotSsoExecutionActivityHandler class source code: https://github.com/OfficeDev/TeamsFx/blob/dev/packages/sdk/src/conversation/sso/defaultBotSsoExecutionActivityHandler.ts
+ * For details information about how to implement a BotSsoExecutionActivityHandler, please refer DefaultBotSsoExecutionActivityHandler class source code: https://aka.ms/teamsfx-default-sso-execution-activity-handler
  */
 export interface BotSsoExecutionActivityHandler {
   /**

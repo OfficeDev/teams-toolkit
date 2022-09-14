@@ -28,6 +28,7 @@ import { GetTokenOptions } from '@azure/identity';
 import { HeroCard } from 'botbuilder';
 import { IAdaptiveCard } from 'adaptivecards';
 import { InvokeResponse } from 'botbuilder';
+import { MessagingExtensionResponse } from 'botbuilder';
 import { O365ConnectorCard } from 'botbuilder';
 import { ReceiptCard } from 'botbuilder';
 import { SecureContextOptions } from 'tls';
@@ -286,6 +287,9 @@ export interface GetTeamsUserTokenOptions extends GetTokenOptions {
 export function getTediousConnectionConfig(teamsfx: TeamsFx, databaseName?: string): Promise<ConnectionConfig>;
 
 // @public
+export function handleMessageExtensionQueryWithToken(context: TurnContext, config: AuthenticationConfiguration | null, scopes: string | string[], logic: (token: MessageExtensionTokenResponse) => Promise<any>): Promise<MessagingExtensionResponse | void>;
+
+// @public
 export enum IdentityType {
     App = "Application",
     User = "User"
@@ -345,6 +349,12 @@ export class MessageBuilder {
     static attachSigninCard(title: string, url: string, text?: string): Partial<Activity>;
     // (undocumented)
     static attachThumbnailCard(title: string, images?: (CardImage | string)[], buttons?: (CardAction | string)[], other?: Partial<ThumbnailCard>): Partial<Activity>;
+}
+
+// @public
+export interface MessageExtensionTokenResponse extends TokenResponse {
+    ssoToken: string;
+    ssoTokenExpiration: string;
 }
 
 // @public

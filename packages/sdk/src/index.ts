@@ -77,3 +77,5 @@ export { CommandBot } from "./conversation/command";
 export { CardActionBot } from "./conversation/cardAction";
 export { MessageBuilder } from "./conversation/messageBuilder";
 export { InvokeResponseFactory } from "./conversation/invokeResponseFactory";
+export { handleMessageExtensionQueryWithToken } from "./messageExtension/executeWithSSO";
+export { MessageExtensionTokenResponse } from "./messageExtension/teamsMsgExtTokenResponse";

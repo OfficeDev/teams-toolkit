@@ -53,6 +53,7 @@
 |  [createPfxCertOption(pfx, options)](./teamsfx.createpfxcertoption.md) | Helper to create SecureContextOptions from PFX format cert |
 |  [getLogLevel()](./teamsfx.getloglevel.md) | Get log level. |
 |  [getTediousConnectionConfig(teamsfx, databaseName)](./teamsfx.gettediousconnectionconfig.md) | Generate connection configuration consumed by tedious. |
+|  [handleMessageExtensionQueryWithToken(context, config, scopes, logic)](./teamsfx.handlemessageextensionquerywithtoken.md) | Users execute query in message extension with SSO or access token. |
 |  [sendAdaptiveCard(target, card)](./teamsfx.sendadaptivecard.md) | Send an adaptive card message to a notification target. |
 |  [sendMessage(target, text)](./teamsfx.sendmessage.md) | Send a plain text message to a notification target. |
 |  [setLogFunction(logFunction)](./teamsfx.setlogfunction.md) | Set custom log function. Use the function if it's set. Priority is lower than setLogger. |
@@ -73,6 +74,7 @@
 |  [ConversationOptions](./teamsfx.conversationoptions.md) | Options to initialize [ConversationBot](./teamsfx.conversationbot.md) |
 |  [GetTeamsUserTokenOptions](./teamsfx.getteamsusertokenoptions.md) |  |
 |  [Logger](./teamsfx.logger.md) | Interface for customized logger. |
+|  [MessageExtensionTokenResponse](./teamsfx.messageextensiontokenresponse.md) | Token response provided by Teams Bot SSO prompt |
 |  [NotificationOptions\_2](./teamsfx.notificationoptions_2.md) | Options to initialize [NotificationBot](./teamsfx.notificationbot.md)<!-- -->. |
 |  [NotificationTarget](./teamsfx.notificationtarget.md) | Represent a notification target. |
 |  [NotificationTargetStorage](./teamsfx.notificationtargetstorage.md) | Interface for a storage provider that stores and retrieves notification target references. |

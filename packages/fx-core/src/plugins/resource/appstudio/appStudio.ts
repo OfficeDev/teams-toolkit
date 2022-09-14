@@ -12,6 +12,7 @@ import { Constants, ErrorMessages, APP_STUDIO_API_NAMES } from "./constants";
 import { RetryHandler } from "./utils/utils";
 import { TelemetryEventName, TelemetryUtils } from "./utils/telemetry";
 import { getAppStudioEndpoint } from "../../../component/resource/appManifest/constants";
+import { HelpLinks } from "../../../common/constants";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -99,6 +100,14 @@ export namespace AppStudioClient {
         throw new Error(`Cannot create teams app`);
       }
     } catch (e: any) {
+      if (e.response?.status === 409) {
+        const error = AppStudioResultFactory.UserError(
+          AppStudioError.TeamsAppCreateConflictError.name,
+          AppStudioError.TeamsAppCreateConflictError.message(),
+          HelpLinks.SwtichTenantOrSub
+        );
+        throw error;
+      }
       const error = wrapException(e, APP_STUDIO_API_NAMES.CREATE_APP);
       throw error;
     }
@@ -130,6 +139,35 @@ export namespace AppStudioClient {
       throw error;
     }
     throw new Error(`Cannot get the app definition with app ID ${teamsAppId}`);
+  }
+
+  /**
+   * Check if app exists in the user's organization by the Teams app id
+   * @param teamsAppId
+   * @param appStudioToken
+   * @param logProvider
+   * @returns
+   */
+  export async function checkExistsInTenant(
+    teamsAppId: string,
+    appStudioToken: string,
+    logProvider?: LogProvider
+  ): Promise<boolean> {
+    const requester = createRequesterWithToken(appStudioToken);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.get(`/api/appdefinitions/manifest/${teamsAppId}`)
+      );
+
+      if (response && response.data) {
+        return <boolean>response.data;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      wrapException(e, APP_STUDIO_API_NAMES.EXISTS_IN_TENANTS);
+      return false;
+    }
   }
 
   /**

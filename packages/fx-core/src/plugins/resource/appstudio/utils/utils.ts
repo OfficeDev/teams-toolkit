@@ -51,7 +51,7 @@ export class RetryHandler {
         return response;
       } catch (e: any) {
         // Directly throw 404 error, keep trying for other status code e.g. 503 400
-        if (retries <= 0 || e.response?.status == 404) {
+        if (retries <= 0 || e.response?.status == 404 || e.response?.status == 409) {
           throw e;
         } else {
           await new Promise((resolve) => setTimeout(resolve, 5000));

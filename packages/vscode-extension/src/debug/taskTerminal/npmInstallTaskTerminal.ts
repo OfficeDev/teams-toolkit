@@ -7,6 +7,7 @@ import * as path from "path";
 import { FxError, Result, ok, Void } from "@microsoft/teamsfx-api";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import { checkAndInstallNpmPackagesForTask } from "../prerequisitesHandler";
+import * as globalVariables from "../../globalVariables";
 
 export interface NpmInstallArgs {
   projects?: ProjectOptions[];
@@ -37,7 +38,10 @@ export class NpmInstallTaskTerminal extends BaseTaskTerminal {
       }
 
       return {
-        cwd: path.normalize(BaseTaskTerminal.resolveTeamsFxVariables(projectOption.cwd)),
+        cwd: path.resolve(
+          globalVariables.workspaceUri?.fsPath ?? "",
+          BaseTaskTerminal.resolveTeamsFxVariables(projectOption.cwd)
+        ),
         args: projectOption.npmInstallArgs,
         forceUpdate: this.args.forceUpdate,
       };

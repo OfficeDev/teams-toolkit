@@ -17,8 +17,9 @@ New to Teams app development or Teams Toolkit? Learn more about
 Teams app manifests, deploying to the cloud, and more in the documentation 
 at https://aka.ms/teams-toolkit-vs-docs
 
-Learn more advanced topic like how to customize your command bot code in 
-tutorials at https://aka.ms/command-bot-tutorial
+Learn more advanced topic like how to customize your workflow bot code in 
+tutorials at https://aka.ms/teamsfx-card-action-response
+
 
 Report an issue
 -------------------------

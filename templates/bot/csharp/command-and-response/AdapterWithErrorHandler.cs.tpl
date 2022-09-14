@@ -21,7 +21,7 @@ namespace {{SafeProjectName}}
                 await turnContext.SendActivityAsync("The bot encountered an error or bug.");
                 await turnContext.SendActivityAsync("To continue to run this bot, please fix the bot source code.");
 
-                // Send a trace activity, which will be displayed in the Bot Framework Emulator
+                // Send a trace activity
                 await turnContext.TraceActivityAsync("OnTurnError Trace", exception.Message, "https://www.botframework.com/schemas/error", "TurnError");
             };
         }

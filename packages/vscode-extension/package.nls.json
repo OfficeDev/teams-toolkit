@@ -263,6 +263,7 @@
     "teamstoolkit.handlers.teamsAppIdNotFound": "Failed to find 'fx-resource-appstudio.teamsAppId' in 'state.%s.json'.",
     "teamstoolkit.handlers.teamsToolkit": "Teams Toolkit",
     "teamstoolkit.handlers.vsCodeEnvironment": "VS Code Environment: %s",
+    "teamstoolkit.localDebug.failedCheckers": "Failed to Check: [%s]. ",
     "teamstoolkit.localDebug.howToFixIssues": "How to fix the issues",
     "teamstoolkit.localDebug.installApp.bot.configureOutlook": "Configure Outlook",
     "teamstoolkit.localDebug.installApp.bot.description": "To continue to debug your application in Outlook, you need to follow two steps:",

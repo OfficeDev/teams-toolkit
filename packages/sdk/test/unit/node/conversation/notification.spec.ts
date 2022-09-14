@@ -306,7 +306,6 @@ describe("Notification Tests - Node", () => {
     it("channels should return correct channels", async () => {
       sandbox.stub(utils, "getTeamsBotInstallationId").returns("test");
       sandbox.stub(TeamsInfo, "getTeamChannels").resolves([{} as ChannelInfo, {} as ChannelInfo]);
-
       const conversationRef = {
         conversation: {
           conversationType: "channel",
@@ -336,7 +335,6 @@ describe("Notification Tests - Node", () => {
     it("channels should return empty array if conversation type is not channel", async () => {
       sandbox.stub(utils, "getTeamsBotInstallationId").returns("test");
       sandbox.stub(TeamsInfo, "getTeamChannels").resolves([{} as ChannelInfo, {} as ChannelInfo]);
-      sandbox.stub(TeamsInfo, "getTeamDetails").resolves({ id: "test" } as TeamDetails);
 
       const conversationRef = {
         conversation: {
@@ -364,6 +362,33 @@ describe("Notification Tests - Node", () => {
       assert.isTrue(installation.type === "Channel");
       const members = await installation.members();
       assert.strictEqual(members.length, 2);
+    });
+
+    it("getTeamDetails should return correct team details", async () => {
+      sandbox.stub(utils, "getTeamsBotInstallationId").returns("test");
+      sandbox
+        .stub(TeamsInfo, "getTeamDetails")
+        .resolves({ id: "test", name: "test-team" } as TeamDetails);
+      const conversationRef = {
+        conversation: {
+          conversationType: "channel",
+        },
+      };
+      const installation = new TeamsBotInstallation(adapter, conversationRef as any);
+      const teamDetails = await installation.getTeamDetails();
+      assert.strictEqual(teamDetails?.id, "test");
+      assert.strictEqual(teamDetails?.name, "test-team");
+    });
+
+    it("getTeamDetails should return undefined if conversation type is not channel", async () => {
+      const conversationRef = {
+        conversation: {
+          conversationType: "personal",
+        },
+      };
+      const installation = new TeamsBotInstallation(adapter, conversationRef as any);
+      const teamDetails = await installation.getTeamDetails();
+      assert.isUndefined(teamDetails);
     });
   });
 });

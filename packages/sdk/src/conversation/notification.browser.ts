@@ -496,6 +496,8 @@ export class NotificationBot {
 
 /**
  * The search scope when calling {@link NotificationBot.findMember} and {@link NotificationBot.findAllMembers}.
+ * The search scope is a flagged enum and it can be combined with `|`.
+ * For example, to search from personal chat and group chat, use `SearchScope.Person | SearchScope.Group`.
  */
 export enum SearchScope {
   /**

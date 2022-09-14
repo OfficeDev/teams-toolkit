@@ -374,6 +374,10 @@ export class TeamsBotInstallation implements NotificationTarget {
    * @returns the team details if bot is installed into a team, otherwise returns undefined.
    */
   public async getTeamDetails(): Promise<TeamDetails | undefined> {
+    if (this.type !== NotificationTargetType.Channel) {
+      return undefined;
+    }
+
     let teamDetails: TeamDetails | undefined;
     await this.adapter.continueConversation(this.conversationReference, async (context) => {
       const teamId = utils.getTeamsBotInstallationId(context);
@@ -571,6 +575,8 @@ export class NotificationBot {
 
 /**
  * The search scope when calling {@link NotificationBot.findMember} and {@link NotificationBot.findAllMembers}.
+ * The search scope is a flagged enum and it can be combined with `|`.
+ * For example, to search from personal chat and group chat, use `SearchScope.Person | SearchScope.Group`.
  */
 export enum SearchScope {
   /**

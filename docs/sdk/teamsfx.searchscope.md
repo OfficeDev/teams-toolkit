@@ -4,7 +4,7 @@
 
 ## SearchScope enum
 
-The search scope when calling [NotificationBot.findMember()](./teamsfx.notificationbot.findmember.md) and [NotificationBot.findAllMembers()](./teamsfx.notificationbot.findallmembers.md)<!-- -->.
+The search scope when calling [NotificationBot.findMember()](./teamsfx.notificationbot.findmember.md) and [NotificationBot.findAllMembers()](./teamsfx.notificationbot.findallmembers.md)<!-- -->. The search scope is a flagged enum and it can be combined with `|`<!-- -->. For example, to search from personal chat and group chat, use `SearchScope.Person | SearchScope.Group`<!-- -->.
 
 <b>Signature:</b>
 

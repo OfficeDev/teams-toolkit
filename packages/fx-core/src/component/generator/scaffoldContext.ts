@@ -11,7 +11,6 @@ export interface ScaffoldContext {
   logProvider: LogProvider;
   zipUrl?: string;
   zip?: AdmZip;
-  fallback?: boolean;
   fallbackZipPath?: string;
 
   fileNameReplaceFn?: (name: string, data: Buffer) => string;

@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { ContextV3 } from "@microsoft/teamsfx-api";
+import path from "path";
 import { SampleActionSeq, ScaffoldAction, TemplateActionSeq } from "./scaffoldAction";
 import { ScaffoldContext } from "./scaffoldContext";
 import {
@@ -22,7 +23,7 @@ export class Generator {
     const projectId = ctx.projectSetting?.projectId;
     const scaffoldContext: ScaffoldContext = {
       scenario: `${templateName}_${language}`,
-      destination: destinationPath,
+      destination: path.join(destinationPath, appName),
       logProvider: ctx.logProvider,
       fileDataReplaceFn: genFileDataRenderReplaceFn({
         appName: appName,
@@ -30,7 +31,6 @@ export class Generator {
       }),
       fileNameReplaceFn: genFileNameRenderReplaceFn({
         appName: appName,
-        projectId: projectId,
       }),
       onActionError: templateDefaultOnActionError,
     };
@@ -45,7 +45,7 @@ export class Generator {
     const projectId = ctx.projectSetting?.projectId;
     const scaffoldContext: ScaffoldContext = {
       scenario: sampleName,
-      destination: destinationPath,
+      destination: path.join(destinationPath, sampleName),
       logProvider: ctx.logProvider,
       fileDataReplaceFn: genFileDataRenderReplaceFn({
         projectId: projectId,

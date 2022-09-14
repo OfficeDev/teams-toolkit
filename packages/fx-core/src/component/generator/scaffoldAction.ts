@@ -54,7 +54,6 @@ export const fetchTemplateZipFromLocalAction: ScaffoldAction = {
     if (context.zip) {
       return;
     }
-    context.fallback = true;
 
     if (!context.fallbackZipPath) {
       context.fallbackZipPath = path.join(getTemplatesFolder(), "fallback");

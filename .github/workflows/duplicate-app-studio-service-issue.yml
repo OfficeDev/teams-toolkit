@@ -1,7 +1,7 @@
 name: duplicate issue check for app-studio-service 
 on:
   issues:
-    types: [opened]
+    types: [opened, edited]
 
 jobs:
   main:

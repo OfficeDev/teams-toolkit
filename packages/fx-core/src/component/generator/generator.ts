@@ -50,9 +50,6 @@ export class Generator {
       fileDataReplaceFn: genFileDataRenderReplaceFn({
         projectId: projectId,
       }),
-      fileNameReplaceFn: genFileNameRenderReplaceFn({
-        projectId: projectId,
-      }),
       onActionError: sampleDefaultOnActionError,
     };
     this.generate(scaffoldContext, SampleActionSeq);

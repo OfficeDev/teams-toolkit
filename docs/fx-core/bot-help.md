@@ -8,6 +8,25 @@ The subscription didn't register to use namespace 'Microsoft.BotService'.
 
 Please refer to this [link](https://aka.ms/rps-not-found) to register your subscription to use namespace 'Microsoft.BotService'.
 
+## BT.BotRegistrationNotFoundError
+
+### Error Message
+
+Bot registration was not found. Click 'Get Help' button to learn more about how to check bot registrations.
+
+### Mitigation
+
+The first step is to make sure the remote bot registration doesn't exist.
+Suppose your Teams app's name is `someTeamsApp`, then the target bot registration name you are supposed to find is something like `someTeamsApp-local-debug`. So follow the steps below:
+1. Login to [Bot Framework Dev Portal](https://dev.botframework.com/) with your Microsoft 365 account which is the same account you used in Teams Toolkit.
+1. Click `My Bots` to check the list of bot registrations associated with the current Microsoft 365 account.
+![image](../images/fx-core/bot/click-my-bots.png)
+1. Try to find the bot registration with name `someTeamsApp-local-debug`, and check the associated `App ID` if the target bot registration doesn't exist.
+
+Once we verified that the remote bot registration is gone, to resolve the current error, two alternative ways are available.
+1. Delete state files (config.local.json, state.local.json) of bot registration, rerun local debug (F5) to create new bot registration for use, if you don't care too much about which bot registration you're trying to use.
+1. Find an existing bot registration, and apply [reuse existing AAD](http://aka.ms/teamsfx-bot-help#how-to-reuse-existing-aad-in-toolkit-v2), then rerun local debug (F5).
+
 ## How to reuse existing AAD in Toolkit v2?
 
 Suppose an existing AAD has been registered, you can reuse this AAD by configuring Toolkit project settings.

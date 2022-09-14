@@ -1,0 +1,6 @@
+{
+    "reporterEnabled": "xunit, mochawesome",
+    "xunitReporterOptions": {
+        "output": "test-results.node.xml"
+    }
+}

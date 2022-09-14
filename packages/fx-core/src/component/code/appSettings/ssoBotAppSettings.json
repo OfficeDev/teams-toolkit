@@ -1,0 +1,13 @@
+{
+  "TeamsFx": {
+    "Authentication": {
+      "ClientId": "$clientId$",
+      "ClientSecret": "$client-secret$",
+      "OAuthAuthority": "$oauthAuthority$",
+      "ApplicationIdUri": "$applicationIdUri$",
+      "Bot": {
+        "InitiateLoginEndpoint": "$initiateLoginEndpoint$"
+      }
+    }
+  }
+}

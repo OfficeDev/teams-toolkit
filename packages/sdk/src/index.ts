@@ -16,6 +16,7 @@ export { TeamsBotSsoPromptTokenResponse } from "./bot/teamsBotSsoPromptTokenResp
 
 export { UserInfo } from "./models/userinfo";
 export { AuthenticationConfiguration } from "./models/configuration";
+export { GetTeamsUserTokenOptions } from "./models/teamsUserTokenOptions";
 
 export {
   Logger,
@@ -43,17 +44,26 @@ export { TeamsFx } from "./core/teamsfx";
 export { IdentityType } from "./models/identityType";
 
 export {
+  AdaptiveCardResponse,
+  CommandMessage,
   CommandOptions,
+  CardActionOptions,
   ConversationOptions,
   NotificationOptions,
   NotificationTarget,
   NotificationTargetStorage,
   NotificationTargetType,
-  CommandMessage,
+  InvokeResponseErrorCode,
   TriggerPatterns,
+  TeamsFxAdaptiveCardActionHandler,
   TeamsFxBotCommandHandler,
+  TeamsFxBotSsoCommandHandler,
+  BotSsoExecutionActivityHandler,
+  BotSsoConfig,
+  BotSsoExecutionDialogHandler,
 } from "./conversation/interface";
 export { ConversationBot } from "./conversation/conversation";
+export { BotSsoExecutionDialog } from "./conversation/sso/botSsoExecutionDialog";
 export {
   Channel,
   Member,
@@ -61,6 +71,11 @@ export {
   sendAdaptiveCard,
   sendMessage,
   TeamsBotInstallation,
+  SearchScope,
 } from "./conversation/notification";
 export { CommandBot } from "./conversation/command";
+export { CardActionBot } from "./conversation/cardAction";
 export { MessageBuilder } from "./conversation/messageBuilder";
+export { InvokeResponseFactory } from "./conversation/invokeResponseFactory";
+export { handleMessageExtensionQueryWithToken } from "./messageExtension/executeWithSSO";
+export { MessageExtensionTokenResponse } from "./messageExtension/teamsMsgExtTokenResponse";

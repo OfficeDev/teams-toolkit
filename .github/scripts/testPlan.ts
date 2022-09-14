@@ -528,7 +528,7 @@ async function syncToTestPlan() {
     throw error;
   }
 }
-
+ 
 async function createTestPlan() {
   if (process.argv.length !== 5) {
     throw new Error("invalid param length");

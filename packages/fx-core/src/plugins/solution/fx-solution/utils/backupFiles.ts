@@ -25,8 +25,9 @@ const stateFileNameTemplate = `state.${EnvNamePlaceholder}.json`;
 const userDateFileNameTemplate = `${EnvNamePlaceholder}.userdata`;
 const jsonSuffix = ".json";
 const userDataSuffix = ".userdata";
+const appSettingsFileName = "appsettings.Development.json";
 
-const reportName = "backup-config-and-state-change-logs.md";
+const reportName = "backup-config-change-logs.md";
 
 async function doesBackupFolderCreatedByTTK(backupPath: string) {
   return (
@@ -52,13 +53,14 @@ async function getBackupFolder(projectPath: string): Promise<string> {
 
 export async function backupFiles(
   env: string,
-  projectPath: string
+  projectPath: string,
+  isCSharpProject: boolean
 ): Promise<Result<undefined, FxError>> {
   const time = formatDate();
   const backupFolder = await getBackupFolder(projectPath);
 
   // state file
-  const stateFileBackupRes = await backupFile(
+  const stateFileBackupRes = await backupFxFile(
     projectPath,
     env,
     stateFileNameTemplate,
@@ -72,7 +74,7 @@ export async function backupFiles(
   }
 
   // user data file
-  const userDataFileBackupRes = await backupFile(
+  const userDataFileBackupRes = await backupFxFile(
     projectPath,
     env,
     userDateFileNameTemplate,
@@ -87,7 +89,7 @@ export async function backupFiles(
 
   // Azure parameter file
   if (env !== "local") {
-    const azureParameterFileBackupRes = await backupFile(
+    const azureParameterFileBackupRes = await backupFxFile(
       projectPath,
       env,
       azureParameterFileNameTemplate,
@@ -102,6 +104,21 @@ export async function backupFiles(
     }
   }
 
+  // Back up appsettings.Development.json
+  if (env === "local" && isCSharpProject) {
+    const sourceFilePath = path.join(projectPath, appSettingsFileName);
+    const appSettingsBackupRes = await backupSrcFile(
+      sourceFilePath,
+      appSettingsFileName,
+      backupFolder,
+      time,
+      jsonSuffix
+    );
+    if (appSettingsBackupRes.isErr()) {
+      return err(appSettingsBackupRes.error);
+    }
+  }
+
   // generate readme.
   await generateReport(backupFolder);
 
@@ -113,7 +130,36 @@ export async function backupFiles(
   return ok(undefined);
 }
 
-async function backupFile(
+async function backupSrcFile(
+  sourceFilePath: string,
+  sourceFileName: string,
+  backupFileParentPath: string,
+  time: string,
+  suffix: string
+): Promise<Result<undefined, FxError>> {
+  try {
+    const backupFileName = generateBackupFileName(
+      sourceFileName,
+      backupFileParentPath,
+      suffix,
+      time
+    );
+
+    const backupFile = path.join(backupFileParentPath, backupFileName);
+    await copyFileToBackupFolderIfExists(sourceFilePath, backupFile, backupFileParentPath);
+    return ok(undefined);
+  } catch (exception) {
+    const error = new UserError(
+      SolutionSource,
+      SolutionError.FailedToBackupFiles,
+      getDefaultString("core.backupFiles.FailedToBackupFiles", sourceFilePath),
+      getLocalizedString("core.backupFiles.FailedToBackupFiles", sourceFilePath)
+    );
+    return err(error);
+  }
+}
+
+async function backupFxFile(
   projectPath: string,
   env: string,
   fileNameTemplate: string,
@@ -123,23 +169,17 @@ async function backupFile(
   suffix: string
 ): Promise<Result<undefined, FxError>> {
   const sourceFileName = fileNameTemplate.replace(EnvNamePlaceholder, env);
-  const sourceFile = path.join(path.join(projectPath, folder), sourceFileName);
-  try {
-    const backupFileFolder = path.join(backupFolder, folder);
-    const backupFileName = generateBackupFileName(sourceFileName, backupFileFolder, suffix, time);
+  const sourceFilePath = path.join(path.join(projectPath, folder), sourceFileName);
 
-    const backupFile = path.join(path.join(backupFolder, folder), backupFileName);
-    await copyFileToBackupFolderIfExists(sourceFile, backupFile, path.join(backupFolder, folder));
-    return ok(undefined);
-  } catch (exception) {
-    const error = new UserError(
-      SolutionSource,
-      SolutionError.FailedToBackupFiles,
-      getDefaultString("core.backupFiles.FailedToBackupFiles", sourceFile),
-      getLocalizedString("core.backupFiles.FailedToBackupFiles", sourceFile)
-    );
-    return err(error);
-  }
+  const backupFileParentPath = path.join(backupFolder, folder);
+  const res = await backupSrcFile(
+    sourceFilePath,
+    sourceFileName,
+    backupFileParentPath,
+    time,
+    suffix
+  );
+  return res;
 }
 
 function generateBackupFileName(

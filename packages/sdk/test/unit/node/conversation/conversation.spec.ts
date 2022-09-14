@@ -4,15 +4,36 @@
 import { BotFrameworkAdapter, TurnContext } from "botbuilder";
 import { assert, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
+import mockedEnv from "mocked-env";
 import * as sinon from "sinon";
 import { ConversationBot } from "../../../../src/conversation/conversation";
 
 chaiUse(chaiPromises);
 
 describe("ConversationBot Tests - Node", () => {
+  const clientId = "fake_client_id";
+  const clientSecret = "fake_client_secret";
+  const tenantId = "fake_tenant";
+  const authorityHost = "fake_authority_host";
+  const initiateLoginEndpoint = "fake_initiate_login_endpoint";
+  const applicationIdUri = "fake_application_id_uri";
+  let mockedEnvRestore: () => void;
+
   const sandbox = sinon.createSandbox();
 
+  beforeEach(() => {
+    mockedEnvRestore = mockedEnv({
+      INITIATE_LOGIN_ENDPOINT: initiateLoginEndpoint,
+      M365_CLIENT_ID: clientId,
+      M365_CLIENT_SECRET: clientSecret,
+      M365_TENANT_ID: tenantId,
+      M365_AUTHORITY_HOST: authorityHost,
+      M365_APPLICATION_ID_URI: applicationIdUri,
+    });
+  });
+
   afterEach(() => {
+    mockedEnvRestore();
     sandbox.restore();
   });
 
@@ -22,6 +43,7 @@ describe("ConversationBot Tests - Node", () => {
     assert.isDefined(conversationBot.adapter.onTurnError);
     assert.isUndefined(conversationBot.command);
     assert.isUndefined(conversationBot.notification);
+    assert.isUndefined(conversationBot.cardAction);
   });
 
   it("Create with customized adapter", () => {
@@ -31,6 +53,7 @@ describe("ConversationBot Tests - Node", () => {
     assert.equal(conversationBot.adapter, adapter);
     assert.isUndefined(conversationBot.command);
     assert.isUndefined(conversationBot.notification);
+    assert.isUndefined(conversationBot.cardAction);
   });
 
   it("Create with customized adapterConfig", () => {
@@ -39,17 +62,20 @@ describe("ConversationBot Tests - Node", () => {
     assert.isDefined(conversationBot.adapter.onTurnError);
     assert.isUndefined(conversationBot.command);
     assert.isUndefined(conversationBot.notification);
+    assert.isUndefined(conversationBot.cardAction);
   });
 
   it("Create with all enabled", () => {
     const conversationBot = new ConversationBot({
       command: { enabled: true },
       notification: { enabled: true },
+      cardAction: { enabled: true },
     });
     assert.isDefined(conversationBot.adapter);
     assert.isDefined(conversationBot.adapter.onTurnError);
     assert.isDefined(conversationBot.command);
     assert.isDefined(conversationBot.notification);
+    assert.isDefined(conversationBot.cardAction);
   });
 
   it("requestHandler correctly handles empty logic", async () => {

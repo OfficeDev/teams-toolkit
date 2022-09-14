@@ -12,11 +12,14 @@
 |  [AppCredential](./teamsfx.appcredential.md) | Represent Microsoft 365 tenant identity, and it is usually used when user is not involved like time-triggered automation job. |
 |  [BasicAuthProvider](./teamsfx.basicauthprovider.md) | Provider that handles Basic authentication |
 |  [BearerTokenAuthProvider](./teamsfx.bearertokenauthprovider.md) | Provider that handles Bearer Token authentication |
+|  [BotSsoExecutionDialog](./teamsfx.botssoexecutiondialog.md) | Sso execution dialog, use to handle sso command |
+|  [CardActionBot](./teamsfx.cardactionbot.md) | A card action bot to respond to adaptive card universal actions. |
 |  [CertificateAuthProvider](./teamsfx.certificateauthprovider.md) | Provider that handles Certificate authentication |
 |  [Channel](./teamsfx.channel.md) | A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team channel. |
 |  [CommandBot](./teamsfx.commandbot.md) | A command bot for receiving commands and sending responses in Teams. |
 |  [ConversationBot](./teamsfx.conversationbot.md) | Provide utilities for bot conversation, including: - handle command and response. - send notification to varies targets (e.g., member, group, channel). |
 |  [ErrorWithCode](./teamsfx.errorwithcode.md) | Error class with code and message thrown by the SDK. |
+|  [InvokeResponseFactory](./teamsfx.invokeresponsefactory.md) | Provides methods for formatting various invoke responses a bot can send to respond to an invoke request. |
 |  [Member](./teamsfx.member.md) | A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team member. |
 |  [MessageBuilder](./teamsfx.messagebuilder.md) | Provides utility method to build bot message with cards that supported in Teams. |
 |  [MsGraphAuthProvider](./teamsfx.msgraphauthprovider.md) | Microsoft Graph auth provider for Teams Framework |
@@ -31,11 +34,14 @@
 
 |  Enumeration | Description |
 |  --- | --- |
+|  [AdaptiveCardResponse](./teamsfx.adaptivecardresponse.md) | Options used to control how the response card will be sent to users. |
 |  [ApiKeyLocation](./teamsfx.apikeylocation.md) | Define available location for API Key location |
 |  [ErrorCode](./teamsfx.errorcode.md) | Error code to trace the error types. |
 |  [IdentityType](./teamsfx.identitytype.md) | Identity type to use in authentication. |
+|  [InvokeResponseErrorCode](./teamsfx.invokeresponseerrorcode.md) | Status code for an <code>application/vnd.microsoft.error</code> invoke response. |
 |  [LogLevel](./teamsfx.loglevel.md) | Log level. |
 |  [NotificationTargetType](./teamsfx.notificationtargettype.md) | The target type where the notification will be sent to. |
+|  [SearchScope](./teamsfx.searchscope.md) | The search scope when calling [NotificationBot.findMember()](./teamsfx.notificationbot.findmember.md) and [NotificationBot.findAllMembers()](./teamsfx.notificationbot.findallmembers.md)<!-- -->. The search scope is a flagged enum and it can be combined with <code>&#124;</code>. For example, to search from personal chat and group chat, use <code>SearchScope.Person &#124; SearchScope.Group</code>. |
 
 ## Functions
 
@@ -47,6 +53,7 @@
 |  [createPfxCertOption(pfx, options)](./teamsfx.createpfxcertoption.md) | Helper to create SecureContextOptions from PFX format cert |
 |  [getLogLevel()](./teamsfx.getloglevel.md) | Get log level. |
 |  [getTediousConnectionConfig(teamsfx, databaseName)](./teamsfx.gettediousconnectionconfig.md) | Generate connection configuration consumed by tedious. |
+|  [handleMessageExtensionQueryWithToken(context, config, scopes, logic)](./teamsfx.handlemessageextensionquerywithtoken.md) | Users execute query in message extension with SSO or access token. |
 |  [sendAdaptiveCard(target, card)](./teamsfx.sendadaptivecard.md) | Send an adaptive card message to a notification target. |
 |  [sendMessage(target, text)](./teamsfx.sendmessage.md) | Send a plain text message to a notification target. |
 |  [setLogFunction(logFunction)](./teamsfx.setlogfunction.md) | Set custom log function. Use the function if it's set. Priority is lower than setLogger. |
@@ -59,22 +66,30 @@
 |  --- | --- |
 |  [AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md) | Authentication related configuration. |
 |  [AuthProvider](./teamsfx.authprovider.md) | Defines method that injects authentication info to http requests |
+|  [BotSsoConfig](./teamsfx.botssoconfig.md) | Interface for SSO configuration for Bot SSO |
+|  [BotSsoExecutionActivityHandler](./teamsfx.botssoexecutionactivityhandler.md) | Interface for user to customize SSO execution activity handler |
+|  [CardActionOptions](./teamsfx.cardactionoptions.md) | Options to initialize [CardActionBot](./teamsfx.cardactionbot.md)<!-- -->. |
 |  [CommandMessage](./teamsfx.commandmessage.md) | Interface for a command message that can handled in a command handler. |
 |  [CommandOptions](./teamsfx.commandoptions.md) | Options to initialize [CommandBot](./teamsfx.commandbot.md)<!-- -->. |
 |  [ConversationOptions](./teamsfx.conversationoptions.md) | Options to initialize [ConversationBot](./teamsfx.conversationbot.md) |
+|  [GetTeamsUserTokenOptions](./teamsfx.getteamsusertokenoptions.md) |  |
 |  [Logger](./teamsfx.logger.md) | Interface for customized logger. |
+|  [MessageExtensionTokenResponse](./teamsfx.messageextensiontokenresponse.md) | Token response provided by Teams Bot SSO prompt |
 |  [NotificationOptions\_2](./teamsfx.notificationoptions_2.md) | Options to initialize [NotificationBot](./teamsfx.notificationbot.md)<!-- -->. |
 |  [NotificationTarget](./teamsfx.notificationtarget.md) | Represent a notification target. |
 |  [NotificationTargetStorage](./teamsfx.notificationtargetstorage.md) | Interface for a storage provider that stores and retrieves notification target references. |
 |  [TeamsBotSsoPromptSettings](./teamsfx.teamsbotssopromptsettings.md) | Settings used to configure an TeamsBotSsoPrompt instance. |
 |  [TeamsBotSsoPromptTokenResponse](./teamsfx.teamsbotssoprompttokenresponse.md) | Token response provided by Teams Bot SSO prompt |
+|  [TeamsFxAdaptiveCardActionHandler](./teamsfx.teamsfxadaptivecardactionhandler.md) | Interface for adaptive card action handler that can process card action invoke and return a response. |
 |  [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) | Interface for a command handler that can process command to a TeamsFx bot and return a response. |
+|  [TeamsFxBotSsoCommandHandler](./teamsfx.teamsfxbotssocommandhandler.md) | Interface for a command handler that can process sso command to a TeamsFx bot and return a response. |
 |  [UserInfo](./teamsfx.userinfo.md) | UserInfo with user displayName, objectId and preferredUserName. |
 
 ## Type Aliases
 
 |  Type Alias | Description |
 |  --- | --- |
+|  [BotSsoExecutionDialogHandler](./teamsfx.botssoexecutiondialoghandler.md) |  |
 |  [LogFunction](./teamsfx.logfunction.md) | Log function for customized logging. |
 |  [TriggerPatterns](./teamsfx.triggerpatterns.md) | The trigger pattern used to trigger a [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) instance. |
 

@@ -7,6 +7,7 @@ import {
   ChannelInfo,
   ConversationParameters,
   ConversationReference,
+  TeamDetails,
   TeamsChannelAccount,
   TeamsInfo,
   TurnContext,
@@ -19,7 +20,7 @@ import {
   NotificationOptions,
   MessageResponse,
 } from "./interface";
-import { NotificationMiddleware } from "./middleware";
+import { NotificationMiddleware } from "./middlewares/notificationMiddleware";
 import { ConversationReferenceStore, LocalFileStorage } from "./storage";
 import * as utils from "./utils";
 
@@ -326,6 +327,11 @@ export class TeamsBotInstallation implements NotificationTarget {
    * @returns an array of channels if bot is installed into a team, otherwise returns an empty array.
    */
   public async channels(): Promise<Channel[]> {
+    const channels: Channel[] = [];
+    if (this.type !== NotificationTargetType.Channel) {
+      return channels;
+    }
+
     let teamsChannels: ChannelInfo[] = [];
     await this.adapter.continueConversation(this.conversationReference, async (context) => {
       const teamId = utils.getTeamsBotInstallationId(context);
@@ -334,7 +340,6 @@ export class TeamsBotInstallation implements NotificationTarget {
       }
     });
 
-    const channels: Channel[] = [];
     for (const channel of teamsChannels) {
       channels.push(new Channel(this, channel));
     }
@@ -361,6 +366,27 @@ export class TeamsBotInstallation implements NotificationTarget {
     });
 
     return members;
+  }
+
+  /**
+   * Get team details from this bot installation
+   *
+   * @returns the team details if bot is installed into a team, otherwise returns undefined.
+   */
+  public async getTeamDetails(): Promise<TeamDetails | undefined> {
+    if (this.type !== NotificationTargetType.Channel) {
+      return undefined;
+    }
+
+    let teamDetails: TeamDetails | undefined;
+    await this.adapter.continueConversation(this.conversationReference, async (context) => {
+      const teamId = utils.getTeamsBotInstallationId(context);
+      if (teamId !== undefined) {
+        teamDetails = await TeamsInfo.getTeamDetails(context, teamId);
+      }
+    });
+
+    return teamDetails;
   }
 }
 
@@ -433,4 +459,143 @@ export class NotificationBot {
 
     return targets;
   }
+
+  /**
+   * Returns the first {@link Member} where predicate is true, and undefined otherwise.
+   *
+   * @param predicate find calls predicate once for each member of the installation,
+   * until it finds one where predicate returns true. If such a member is found, find
+   * immediately returns that member. Otherwise, find returns undefined.
+   * @param scope the scope to find members from the installations
+   * (personal chat, group chat, Teams channel).
+   * @returns the first {@link Member} where predicate is true, and undefined otherwise.
+   */
+  public async findMember(
+    predicate: (member: Member) => Promise<boolean>,
+    scope?: SearchScope
+  ): Promise<Member | undefined> {
+    for (const target of await this.installations()) {
+      if (this.matchSearchScope(target, scope)) {
+        for (const member of await target.members()) {
+          if (await predicate(member)) {
+            return member;
+          }
+        }
+      }
+    }
+
+    return;
+  }
+
+  /**
+   * Returns the first {@link Channel} where predicate is true, and undefined otherwise.
+   *
+   * @param predicate find calls predicate once for each channel of the installation,
+   * until it finds one where predicate returns true. If such a channel is found, find
+   * immediately returns that channel. Otherwise, find returns undefined.
+   * @returns the first {@link Channel} where predicate is true, and undefined otherwise.
+   */
+  public async findChannel(
+    predicate: (channel: Channel, teamDetails: TeamDetails | undefined) => Promise<boolean>
+  ): Promise<Channel | undefined> {
+    for (const target of await this.installations()) {
+      if (target.type === NotificationTargetType.Channel) {
+        const teamDetails = await target.getTeamDetails();
+        for (const channel of await target.channels()) {
+          if (await predicate(channel, teamDetails)) {
+            return channel;
+          }
+        }
+      }
+    }
+
+    return;
+  }
+
+  /**
+   * Returns all {@link Member} where predicate is true, and empty array otherwise.
+   *
+   * @param predicate find calls predicate for each member of the installation.
+   * @param scope the scope to find members from the installations
+   * (personal chat, group chat, Teams channel).
+   * @returns an array of {@link Member} where predicate is true, and empty array otherwise.
+   */
+  public async findAllMembers(
+    predicate: (member: Member) => Promise<boolean>,
+    scope?: SearchScope
+  ): Promise<Member[]> {
+    const members: Member[] = [];
+    for (const target of await this.installations()) {
+      if (this.matchSearchScope(target, scope)) {
+        for (const member of await target.members()) {
+          if (await predicate(member)) {
+            members.push(member);
+          }
+        }
+      }
+    }
+
+    return members;
+  }
+
+  /**
+   * Returns all {@link Channel} where predicate is true, and empty array otherwise.
+   *
+   * @param predicate find calls predicate for each channel of the installation.
+   * @returns an array of {@link Channel} where predicate is true, and empty array otherwise.
+   */
+  public async findAllChannels(
+    predicate: (channel: Channel, teamDetails: TeamDetails | undefined) => Promise<boolean>
+  ): Promise<Channel[]> {
+    const channels: Channel[] = [];
+    for (const target of await this.installations()) {
+      if (target.type === NotificationTargetType.Channel) {
+        const teamDetails = await target.getTeamDetails();
+        for (const channel of await target.channels()) {
+          if (await predicate(channel, teamDetails)) {
+            channels.push(channel);
+          }
+        }
+      }
+    }
+
+    return channels;
+  }
+
+  private matchSearchScope(target: NotificationTarget, scope?: SearchScope): boolean {
+    scope = scope ?? SearchScope.All;
+
+    return (
+      (target.type === NotificationTargetType.Channel && (scope & SearchScope.Channel) !== 0) ||
+      (target.type === NotificationTargetType.Group && (scope & SearchScope.Group) !== 0) ||
+      (target.type === NotificationTargetType.Person && (scope & SearchScope.Person) !== 0)
+    );
+  }
+}
+
+/**
+ * The search scope when calling {@link NotificationBot.findMember} and {@link NotificationBot.findAllMembers}.
+ * The search scope is a flagged enum and it can be combined with `|`.
+ * For example, to search from personal chat and group chat, use `SearchScope.Person | SearchScope.Group`.
+ */
+export enum SearchScope {
+  /**
+   * Search members from the installations in personal chat only.
+   */
+  Person = 1,
+
+  /**
+   * Search members from the installations in group chat only.
+   */
+  Group = 2,
+
+  /**
+   * Search members from the installations in Teams channel only.
+   */
+  Channel = 4,
+
+  /**
+   * Search members from all installations including personal chat, group chat and Teams channel.
+   */
+  All = Person | Group | Channel,
 }

@@ -42,6 +42,11 @@
         public CommandBot Command { get; private set; }
 
         /// <summary>
+        /// The entry point of adaptive card action.
+        /// </summary>
+        public CardActionBot CardAction { get; private set; }
+
+        /// <summary>
         /// Creates new instance of the <see cref="ConversationBot"/>.
         /// </summary>
         /// <param name="options">Initialize options.</param>
@@ -67,6 +72,11 @@
             if (options.Command != null)
             {
                 Command = new CommandBot(Adapter, options.Command);
+            }
+
+            if (options.CardAction != null)
+            {
+                CardAction = new CardActionBot(Adapter, options.CardAction);
             }
         }
     }

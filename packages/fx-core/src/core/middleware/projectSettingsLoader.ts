@@ -43,7 +43,6 @@ import { globalVars, isV3 } from "../globalVars";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 import { CoreHookContext } from "../types";
 import { convertProjectSettingsV2ToV3 } from "../../component/migrate";
-
 export const ProjectSettingsLoaderMW: Middleware = async (
   ctx: CoreHookContext,
   next: NextFunction
@@ -119,7 +118,7 @@ export async function loadProjectSettingsByProjectPath(
       projectSettings.solutionSettings.activeResourcePlugins.push(PluginNames.APPST);
     }
     globalVars.isVS = isVSProject(projectSettings);
-    if (isV3()) return ok(convertProjectSettingsV2ToV3(projectSettings));
+    if (isV3()) return ok(convertProjectSettingsV2ToV3(projectSettings, projectPath));
     return ok(projectSettings);
   } catch (e) {
     return err(ReadFileError(e));

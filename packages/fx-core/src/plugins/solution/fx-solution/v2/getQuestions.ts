@@ -21,7 +21,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import Container from "typedi";
 import { HelpLinks, ResourcePlugins } from "../../../../common/constants";
-import { Constants as AppStudioConstants } from "../../../resource/appstudio/constants";
 import { PluginNames, SolutionError, SolutionSource } from "../constants";
 import {
   ApiConnectionOptionItem,
@@ -34,7 +33,6 @@ import {
   AzureSolutionQuestionNames,
   BotNewUIOptionItem,
   BotOptionItem,
-  BotSsoItem,
   CicdOptionItem,
   CommandAndResponseOptionItem,
   createAddAzureResourceQuestion,
@@ -53,6 +51,7 @@ import {
   TabSPFxItem,
   TabSPFxNewUIItem,
   TabSsoItem,
+  WorkflowOptionItem,
 } from "../question";
 import {
   getAllV2ResourcePluginMap,
@@ -62,11 +61,9 @@ import {
 import { checkWetherProvisionSucceeded, getSelectedPlugins, isAzureProject } from "./utils";
 import { isV3 } from "../../../../core/globalVars";
 import { TeamsAppSolutionNameV2 } from "./constants";
-import { BuiltInFeaturePluginNames } from "../v3/constants";
-import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
 import { NoCapabilityFoundError } from "../../../../core/error";
-import { isExistingTabApp, isVSProject } from "../../../../common/projectSettingsHelper";
+import { isVSProject } from "../../../../common/projectSettingsHelper";
 import {
   canAddApiConnection,
   canAddSso,
@@ -89,6 +86,8 @@ import {
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { Constants } from "../../../resource/aad/constants";
 import { PluginBot } from "../../../resource/bot/resources/strings";
+import { ComponentNames } from "../../../../component/constants";
+import { AppManifest } from "../../../../component/resource/appManifest/appManifest";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,
@@ -110,6 +109,7 @@ export async function getQuestionsForScaffolding(
         BotOptionItem.id,
         NotificationOptionItem.id,
         CommandAndResponseOptionItem.id,
+        WorkflowOptionItem.id,
         MessageExtensionItem.id,
         ...(isAadManifestEnabled() ? [TabNonSsoItem.id] : []),
         M365SsoLaunchPageOptionItem.id,
@@ -192,7 +192,8 @@ export async function getQuestionsForScaffolding(
             cap.includes(BotOptionItem.id) ||
             cap.includes(MessageExtensionItem.id) ||
             cap.includes(NotificationOptionItem.id) ||
-            cap.includes(CommandAndResponseOptionItem.id)
+            cap.includes(CommandAndResponseOptionItem.id) ||
+            cap.includes(WorkflowOptionItem.id)
           ) {
             return undefined;
           }
@@ -226,6 +227,7 @@ export async function getQuestionsForScaffoldingPreview(
         BotOptionItem.id,
         NotificationOptionItem.id,
         CommandAndResponseOptionItem.id,
+        WorkflowOptionItem.id,
         MessageExtensionItem.id,
         ...(isAadManifestEnabled() ? [TabNonSsoItem.id] : []),
         M365SsoLaunchPageOptionItem.id,
@@ -306,7 +308,8 @@ export async function getQuestionsForScaffoldingPreview(
             cap === BotOptionItem.id ||
             cap === MessageExtensionItem.id ||
             cap === NotificationOptionItem.id ||
-            cap === CommandAndResponseOptionItem.id
+            cap === CommandAndResponseOptionItem.id ||
+            cap === WorkflowOptionItem.id
           ) {
             return undefined;
           }
@@ -607,7 +610,9 @@ export async function getQuestionsForAddCapability(
     addCapQuestion.staticOptions = [
       ...(isBotNotificationEnabled() ? [TabNewUIOptionItem] : [TabOptionItem]),
       ...[BotOptionItem],
-      ...(isBotNotificationEnabled() ? [NotificationOptionItem, CommandAndResponseOptionItem] : []),
+      ...(isBotNotificationEnabled()
+        ? [NotificationOptionItem, CommandAndResponseOptionItem, WorkflowOptionItem]
+        : []),
       ...(isBotNotificationEnabled() ? [MessageExtensionNewUIItem] : [MessageExtensionItem]),
       ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
     ];
@@ -641,9 +646,8 @@ export async function getQuestionsForAddCapability(
   if (canProceed.isErr()) {
     return err(canProceed.error);
   }
-  const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+  const appStudioPlugin = Container.get<AppManifest>(ComponentNames.AppManifest);
   const tabExceedRes = await appStudioPlugin.capabilityExceedLimit(
-    ctx,
     inputs as v2.InputsWithProjectPath,
     "staticTab"
   );
@@ -652,7 +656,6 @@ export async function getQuestionsForAddCapability(
   }
   const isTabAddable = !tabExceedRes.value;
   const botExceedRes = await appStudioPlugin.capabilityExceedLimit(
-    ctx,
     inputs as v2.InputsWithProjectPath,
     "Bot"
   );
@@ -661,7 +664,6 @@ export async function getQuestionsForAddCapability(
   }
   const isBotAddable = !botExceedRes.value;
   const meExceedRes = await appStudioPlugin.capabilityExceedLimit(
-    ctx,
     inputs as v2.InputsWithProjectPath,
     "MessageExtension"
   );
@@ -682,6 +684,7 @@ export async function getQuestionsForAddCapability(
   if (isBotAddable) {
     if (isBotNotificationEnabled()) {
       options.push(CommandAndResponseOptionItem);
+      options.push(WorkflowOptionItem);
       options.push(NotificationOptionItem);
       options.push(BotOptionItem);
     } else {
@@ -823,14 +826,14 @@ async function getStaticOptionsForAddCapability(
     const options: OptionItem[] = [];
     options.push(NotificationOptionItem);
     options.push(CommandAndResponseOptionItem);
+    options.push(WorkflowOptionItem);
     options.push(TabNewUIOptionItem, TabNonSsoItem);
     options.push(BotNewUIOptionItem);
     options.push(MessageExtensionNewUIItem);
     return ok(options);
   }
-  const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+  const appStudioPlugin = Container.get<AppManifest>(ComponentNames.AppManifest);
   const tabExceedRes = await appStudioPlugin.capabilityExceedLimit(
-    ctx,
     inputs as v2.InputsWithProjectPath,
     "staticTab"
   );
@@ -846,7 +849,6 @@ async function getStaticOptionsForAddCapability(
 
   const isTabAddable = !tabExceedRes.value;
   const botExceedRes = await appStudioPlugin.capabilityExceedLimit(
-    ctx,
     inputs as v2.InputsWithProjectPath,
     "Bot"
   );
@@ -858,7 +860,6 @@ async function getStaticOptionsForAddCapability(
   const isScenarioBotAddable = !botExceedRes.value && !hasMe;
   const isDefaultBotAddable = !botExceedRes.value;
   const meExceedRes = await appStudioPlugin.capabilityExceedLimit(
-    ctx,
     inputs as v2.InputsWithProjectPath,
     "MessageExtension"
   );
@@ -886,6 +887,7 @@ async function getStaticOptionsForAddCapability(
   if (isScenarioBotAddable) {
     options.push(NotificationOptionItem);
     options.push(CommandAndResponseOptionItem);
+    options.push(WorkflowOptionItem);
   }
   if (isTabAddable) {
     if (!settings?.capabilities.includes(TabOptionItem.id)) {
@@ -977,6 +979,7 @@ export async function getQuestionsForAddFeature(
       enum: [
         NotificationOptionItem.id,
         CommandAndResponseOptionItem.id,
+        WorkflowOptionItem.id,
         TabNewUIOptionItem.id,
         TabNonSsoItem.id,
         BotNewUIOptionItem.id,
@@ -992,12 +995,6 @@ export async function getQuestionsForAddFeature(
     [ResourcePluginsV2.BotPlugin, BotNewUIOptionItem.id],
     [ResourcePluginsV2.FunctionPlugin, AzureResourceFunction.id],
   ];
-  if (inputs.platform === Platform.CLI_HELP || isCicdAddable) {
-    pluginsWithResources.push([ResourcePluginsV2.CICDPlugin, CicdOptionItem.id]);
-  }
-  if (inputs.platform === Platform.CLI_HELP || isApiConnectionAddable) {
-    pluginsWithResources.push([ResourcePluginsV2.ApiConnectorPlugin, ApiConnectionOptionItem.id]);
-  }
   if (isSPFxMultiTabEnabled()) {
     pluginsWithResources.push([ResourcePluginsV2.SpfxPlugin, TabSPFxNewUIItem.id]);
   }

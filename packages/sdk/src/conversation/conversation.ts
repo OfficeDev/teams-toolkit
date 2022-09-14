@@ -2,9 +2,11 @@
 // Licensed under the MIT license.
 
 import { BotFrameworkAdapter, TurnContext, WebRequest, WebResponse } from "botbuilder";
+import { CardActionBot } from "./cardAction";
 import { CommandBot } from "./command";
-import { ConversationOptions } from "./interface";
+import { ConversationOptions, BotSsoExecutionActivityHandler } from "./interface";
 import { NotificationBot } from "./notification";
+import { DefaultBotSsoExecutionActivityHandler } from "./sso/defaultBotSsoExecutionActivityHandler";
 
 /**
  * Provide utilities for bot conversation, including:
@@ -74,6 +76,11 @@ export class ConversationBot {
   public readonly notification?: NotificationBot;
 
   /**
+   * The action handler used for adaptive card universal actions.
+   */
+  public readonly cardAction?: CardActionBot;
+
+  /**
    * Creates new instance of the `ConversationBot`.
    *
    * @remarks
@@ -88,12 +95,32 @@ export class ConversationBot {
       this.adapter = this.createDefaultAdapter(options.adapterConfig);
     }
 
+    let ssoCommandActivityHandler: BotSsoExecutionActivityHandler | undefined;
+
+    if (options?.ssoConfig) {
+      if (options.ssoConfig.dialog?.CustomBotSsoExecutionActivityHandler) {
+        ssoCommandActivityHandler =
+          new options.ssoConfig.dialog.CustomBotSsoExecutionActivityHandler(options.ssoConfig);
+      } else {
+        ssoCommandActivityHandler = new DefaultBotSsoExecutionActivityHandler(options.ssoConfig);
+      }
+    }
+
     if (options.command?.enabled) {
-      this.command = new CommandBot(this.adapter, options.command);
+      this.command = new CommandBot(
+        this.adapter,
+        options.command,
+        ssoCommandActivityHandler,
+        options.ssoConfig
+      );
     }
 
     if (options.notification?.enabled) {
       this.notification = new NotificationBot(this.adapter, options.notification);
+    }
+
+    if (options.cardAction?.enabled) {
+      this.cardAction = new CardActionBot(this.adapter, options.cardAction);
     }
   }
 

@@ -12,6 +12,7 @@ import {
   cleanUp,
   execAsync,
   readContextMultiEnv,
+  setBotSkuNameToB1Bicep,
 } from "../commonUtils";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, PluginId, ProjectSettingKey, TestFilePath } from "../../commonlib/constants";
@@ -88,6 +89,7 @@ describe("Add SSO", () => {
         expect(readmeExists).to.be.true;
       }
 
+      await setBotSkuNameToB1Bicep(projectPath, "dev");
       await CliHelper.provisionProject(projectPath, "");
 
       const context = await readContextMultiEnv(projectPath, "dev");

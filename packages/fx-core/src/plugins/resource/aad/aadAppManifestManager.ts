@@ -13,6 +13,8 @@ import { getAppDirectory } from "../../../common/tools";
 import { isV3 } from "../../../core";
 import { convertManifestTemplateToV3 } from "../../../component/migrate";
 import { ComponentNames } from "../../../component/constants";
+import { AppPackageFolderName, BuildFolderName } from "@microsoft/teamsfx-api";
+import * as path from "path";
 
 const baseUrl = `https://graph.microsoft.com/v1.0`;
 
@@ -130,6 +132,16 @@ export namespace AadAppManifestManager {
         AadManifestLoadError.message(manifestFilePath, e.message)
       );
     }
+  }
+
+  export async function writeManifestFileToBuildFolder(
+    manifest: AADManifest,
+    ctx: PluginContext
+  ): Promise<void> {
+    const aadManifestPath = `${ctx.root}/${BuildFolderName}/${AppPackageFolderName}/aad.${ctx.envInfo.envName}.json`;
+    const manifestString = JSON.stringify(manifest, null, 4);
+    await fs.ensureDir(path.dirname(aadManifestPath));
+    await fs.writeFile(aadManifestPath, manifestString, "utf8");
   }
 
   function fromEntries(iterable: Map<string, any>) {

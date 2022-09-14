@@ -29,6 +29,7 @@ import {
 import commandController from "./commandController";
 import AzureAccountManager from "./commonlib/azureLogin";
 import VsCodeLogInstance from "./commonlib/log";
+import M365TokenInstance from "./commonlib/m365Login";
 import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcomePage";
 import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUtils";
 import { localSettingsJsonName } from "./debug/constants";
@@ -45,6 +46,7 @@ import { ManifestTemplateHoverProvider } from "./hoverProvider";
 import { VsCodeUI } from "./qm/vsc_ui";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
+import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewProvider";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
 import {
   canUpgradeToArmAndMultiEnv,
@@ -55,6 +57,7 @@ import {
 import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { ExtensionUpgrade } from "./utils/upgrade";
+import { LocalTunnelTaskTerminal } from "./debug/taskTerminal/localTunnelTaskTerminal";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -83,6 +86,10 @@ export async function activate(context: vscode.ExtensionContext) {
     handlers.registerAccountMenuCommands(context);
 
     TreeViewManagerInstance.registerTreeViews(context);
+    accountTreeViewProviderInstance.subscribeToStatusChanges({
+      azureAccountProvider: AzureAccountManager,
+      m365TokenProvider: M365TokenInstance,
+    });
 
     registerCodelensAndHoverProviders(context);
 
@@ -224,6 +231,24 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(getFuncPathCmd);
 
+  const getDotnetPathCmd = vscode.commands.registerCommand("fx-extension.get-dotnet-path", () =>
+    Correlator.run(handlers.getDotnetPathHandler)
+  );
+  context.subscriptions.push(getDotnetPathCmd);
+
+  // TODO: remove one after decide to use which placeholder
+  const getNgrokPathCmd = vscode.commands.registerCommand("fx-extension.get-ngrok-path", () =>
+    Correlator.run(() => LocalTunnelTaskTerminal.getNgrokBinFolder())
+  );
+  context.subscriptions.push(getNgrokPathCmd);
+
+  // TODO: remove one after decide to use which placeholder
+  const getTunnelEndpointCmd = vscode.commands.registerCommand(
+    "fx-extension.get-local-tunnel-endpoint",
+    () => Correlator.run(() => LocalTunnelTaskTerminal.getNgrokEndpoint())
+  );
+  context.subscriptions.push(getTunnelEndpointCmd);
+
   const installAppInTeamsCmd = vscode.commands.registerCommand(
     "fx-extension.install-app-in-teams",
     () => Correlator.runWithId(getLocalDebugSessionId(), handlers.installAppInTeams)
@@ -281,6 +306,9 @@ function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext)
     handlers.initProjectHandler,
     "initProject"
   );
+
+  // User can click to debug directly, same as pressing "F5".
+  registerInCommandController(context, "fx-extension.debug", handlers.debugHandler);
 
   // Add features
   registerInCommandController(
@@ -413,8 +441,8 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(editAadManifestTemplateCmd);
 
-  const preview = vscode.commands.registerCommand("fx-extension.preview", (node) => {
-    Correlator.run(handlers.treeViewPreviewHandler, node.identifier);
+  const preview = vscode.commands.registerCommand("fx-extension.preview", async (node) => {
+    await Correlator.run(handlers.treeViewPreviewHandler, node.identifier);
   });
   context.subscriptions.push(preview);
 
@@ -589,8 +617,8 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
 
   const previewWithIcon = vscode.commands.registerCommand(
     "fx-extension.previewWithIcon",
-    (node) => {
-      Correlator.run(handlers.treeViewPreviewHandler, node.identifier);
+    async (node) => {
+      await Correlator.run(handlers.treeViewPreviewHandler, node.identifier);
     }
   );
   context.subscriptions.push(previewWithIcon);
@@ -810,6 +838,15 @@ async function runBackgroundAsyncTasks(
 
   await openWelcomePageAfterExtensionInstallation();
 
+  await exp.initialize(context);
+  TreatmentVariableValue.previewTreeViewCommand = (await exp
+    .getExpService()
+    .getTreatmentVariableAsync(
+      TreatmentVariables.VSCodeConfig,
+      TreatmentVariables.PreviewTreeViewCommand,
+      true
+    )) as boolean | undefined;
+
   if (isTeamsFxProject) {
     await handlers.autoOpenProjectHandler();
     await handlers.promptSPFxUpgrade();
@@ -817,7 +854,6 @@ async function runBackgroundAsyncTasks(
     await AzureAccountManager.updateSubscriptionInfo();
   }
 
-  await exp.initialize(context);
   TreatmentVariableValue.isEmbeddedSurvey = (await exp
     .getExpService()
     .getTreatmentVariableAsync(
@@ -830,13 +866,6 @@ async function runBackgroundAsyncTasks(
     .getTreatmentVariableAsync(
       TreatmentVariables.VSCodeConfig,
       TreatmentVariables.UseFolderSelection,
-      true
-    )) as boolean | undefined;
-  TreatmentVariableValue.openFolderInNewWindow = (await exp
-    .getExpService()
-    .getTreatmentVariableAsync(
-      TreatmentVariables.VSCodeConfig,
-      TreatmentVariables.OpenFolderInNewWindow,
       true
     )) as boolean | undefined;
   if (!TreatmentVariableValue.isEmbeddedSurvey) {

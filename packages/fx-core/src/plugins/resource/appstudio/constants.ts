@@ -25,7 +25,18 @@ export class Constants {
     type: "M365",
   };
 
-  public static readonly CORRELATION_ID = "X-Correlation-ID";
+  // HTTP headers are case insensitive. Axios lowercases all headers.
+  public static readonly CORRELATION_ID = "x-correlation-id";
+}
+
+export class APP_STUDIO_API_NAMES {
+  public static readonly CREATE_APP = "create-app";
+  public static readonly GET_APP = "get-app";
+  public static readonly PUBLISH_APP = "publish-app";
+  public static readonly GET_PUBLISHED_APP = "get-published-app";
+  public static readonly UPDATE_PUBLISHED_APP = "update-published-app";
+  public static readonly UPDATE_OWNER = "update-owner";
+  public static readonly EXISTS_IN_TENANTS = "exists-in-tenant";
 }
 
 export class ErrorMessages {

@@ -31,18 +31,21 @@ export enum TelemetryProperty {
   ActivePlugins = "active-plugins",
   IsSideloadingAllowed = "is-sideloading-allowed",
   NeedMigrateAadManifest = "need-migrate-aad-manifest",
-  CheckSideloadingHttpStatus = "check-sideloading-http-status",
+  CheckSideloadingStatusCode = "status-code",
+  CheckSideloadingMethod = "method",
+  CheckSideloadingUrl = "url",
   TemplateGroup = "template-group",
   TemplateLanguage = "template-language",
   TemplateScenario = "template-scenario",
   TemplateFallback = "template-fallback",
   HasSwitchedSubscription = "has-switched-subscription",
   HasSwitchedM365Tenant = "has-switched-m365",
+  CustomizeSubscriptionType = "customize-subscription-type",
 }
 
 export enum TelemetryEvent {
   Scaffold = "scaffold",
-  GenerateBicep = "generate-arm-template",
+  GenerateBicep = "generate-arm-templates",
   LocalDebug = "local-debug",
   PostLocalDebug = "post-local-debug",
   Provision = "provision",
@@ -51,7 +54,7 @@ export enum TelemetryEvent {
   Deploy = "deploy",
   DownloadSampleStart = "download-sample-start",
   DownloadSample = "download-sample",
-  CreateProject = "create-new-project",
+  CreateProject = "create",
   AddFeature = "add-feature",
   ProjectUpgrade = "project-upgrade",
   ProjectUpgradeStart = "project-upgrade-start",
@@ -107,6 +110,7 @@ export enum TelemetryEvent {
   ScaffoldFromTemplates = "scaffold-from-templates",
   ConfirmProvision = "confirm-provision",
   CheckLocalDebugTenant = "check-local-debug-tenant",
+  DebugSetUpSSO = "debug-set-up-sso",
 }
 
 export enum TelemetrySuccess {
@@ -135,6 +139,13 @@ export enum CustomizeResourceGroupType {
   InteractiveCreateCustomized = "interactive-create-customized",
   InteractiveUseExisting = "interactive-use-existing",
   FallbackDefault = "fallback-default",
+}
+
+export enum CustomizeSubscriptionType {
+  CommandLine = "command-line",
+  EnvConfig = "env-config",
+  EnvState = "env-state",
+  Default = "default",
 }
 
 export enum ProjectMigratorStatus {

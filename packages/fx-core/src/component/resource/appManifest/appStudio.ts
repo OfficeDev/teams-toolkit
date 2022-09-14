@@ -15,6 +15,10 @@ import {
   TokenProvider,
   v2,
   v3,
+  ProjectSettingsV3,
+  ProjectSettings,
+  UserError,
+  SystemError,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import fs from "fs-extra";
@@ -23,21 +27,16 @@ import { v4 } from "uuid";
 import _ from "lodash";
 import * as util from "util";
 import isUUID from "validator/lib/isUUID";
-import {
-  AppStudioScopes,
-  compileHandlebarsTemplateString,
-  getAppDirectory,
-} from "../../../common/tools";
+import { AppStudioScopes, getAppDirectory, isSPFxProject } from "../../../common/tools";
 import { HelpLinks } from "../../../common/constants";
 import { AppStudioClient } from "../../../plugins/resource/appstudio/appStudio";
 import { Constants } from "../../../plugins/resource/appstudio/constants";
 import { AppStudioError } from "../../../plugins/resource/appstudio/errors";
 import { AppStudioResultFactory } from "../../../plugins/resource/appstudio/results";
-import { readAppManifest, getTeamsAppManifestPath } from "./utils";
 import { ComponentNames } from "../../constants";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
-import { getCustomizedKeys } from "../../../plugins/resource/appstudio/utils/utils";
-import { TelemetryPropertyKey } from "../../../plugins/resource/appstudio/utils/telemetry";
+import { manifestUtils } from "./utils";
+import { environmentManager } from "../../../core/environment";
 
 /**
  * Create Teams app if not exists
@@ -63,6 +62,7 @@ export async function createTeamsApp(
 
   let teamsAppId;
   let archivedFile;
+  let create = true;
   if (inputs.appPackagePath) {
     if (!(await fs.pathExists(inputs.appPackagePath))) {
       return err(
@@ -86,21 +86,49 @@ export async function createTeamsApp(
     const manifestString = manifestFile.getData().toString();
     const manifest = JSON.parse(manifestString) as TeamsAppManifest;
     teamsAppId = manifest.id;
+    if (teamsAppId) {
+      try {
+        await AppStudioClient.getApp(teamsAppId, appStudioToken, ctx.logProvider);
+        create = false;
+      } catch (error) {}
+    }
   } else {
-    const buildPackage = await buildTeamsAppPackage(inputs.projectPath, envInfo!, true);
+    // Corner case: users under same tenant cannot import app with same Teams app id
+    // Generate a new Teams app id for local debug to avoid conflict
+    teamsAppId = envInfo.state[ComponentNames.AppManifest]?.teamsAppId;
+    if (teamsAppId) {
+      try {
+        await AppStudioClient.getApp(teamsAppId, appStudioToken, ctx.logProvider);
+        create = false;
+      } catch (error: any) {
+        if (
+          envInfo.envName === environmentManager.getLocalEnvName() &&
+          error.message &&
+          error.message.includes("404")
+        ) {
+          const exists = await AppStudioClient.checkExistsInTenant(
+            teamsAppId,
+            appStudioToken,
+            ctx.logProvider
+          );
+          if (exists) {
+            envInfo.state[ComponentNames.AppManifest].teamsAppId = v4();
+          }
+        }
+      }
+    }
+    const buildPackage = await buildTeamsAppPackage(
+      ctx.projectSetting,
+      inputs.projectPath,
+      envInfo!,
+      true
+    );
     if (buildPackage.isErr()) {
       return err(buildPackage.error);
     }
     archivedFile = await fs.readFile(buildPackage.value);
-    teamsAppId = envInfo.state[ComponentNames.AppManifest]?.teamsAppId;
   }
-  let create = true;
-  if (teamsAppId) {
-    try {
-      await AppStudioClient.getApp(teamsAppId, appStudioToken, ctx.logProvider);
-      create = false;
-    } catch (error) {}
-  }
+
   if (create) {
     try {
       const appDefinition = await AppStudioClient.importApp(
@@ -113,12 +141,16 @@ export async function createTeamsApp(
       );
       return ok(appDefinition.teamsAppId!);
     } catch (e: any) {
-      return err(
-        AppStudioResultFactory.SystemError(
-          AppStudioError.TeamsAppCreateFailedError.name,
-          AppStudioError.TeamsAppCreateFailedError.message(e)
-        )
-      );
+      if (e instanceof UserError || e instanceof SystemError) {
+        return err(e);
+      } else {
+        return err(
+          AppStudioResultFactory.SystemError(
+            AppStudioError.TeamsAppCreateFailedError.name,
+            AppStudioError.TeamsAppCreateFailedError.message(e)
+          )
+        );
+      }
     }
   } else {
     return ok(teamsAppId);
@@ -159,7 +191,11 @@ export async function updateTeamsApp(
     }
     archivedFile = await fs.readFile(inputs.appPackagePath);
   } else {
-    const buildPackage = await buildTeamsAppPackage(inputs.projectPath, envInfo!);
+    const buildPackage = await buildTeamsAppPackage(
+      ctx.projectSetting,
+      inputs.projectPath,
+      envInfo!
+    );
     if (buildPackage.isErr()) {
       return err(buildPackage.error);
     }
@@ -209,6 +245,7 @@ export async function publishTeamsApp(
     }
   } else {
     const buildPackage = await buildTeamsAppPackage(
+      ctx.projectSetting,
       inputs.projectPath,
       envInfo!,
       false,
@@ -279,6 +316,7 @@ export async function publishTeamsApp(
  * @returns Path for built Teams app package
  */
 export async function buildTeamsAppPackage(
+  projectSettings: ProjectSettingsV3 | ProjectSettings,
   projectPath: string,
   envInfo: v3.EnvInfoV3,
   withEmptyCapabilities = false,
@@ -286,7 +324,12 @@ export async function buildTeamsAppPackage(
 ): Promise<Result<string, FxError>> {
   const buildFolderPath = path.join(projectPath, BuildFolderName, AppPackageFolderName);
   await fs.ensureDir(buildFolderPath);
-  const manifestRes = await getManifest(projectPath, envInfo, telemetryProps);
+  const manifestRes = await manifestUtils.getManifest(
+    projectPath,
+    envInfo,
+    withEmptyCapabilities,
+    telemetryProps
+  );
   if (manifestRes.isErr()) {
     return err(manifestRes.error);
   }
@@ -341,6 +384,31 @@ export async function buildTeamsAppPackage(
   await fs.writeFile(manifestFileName, JSON.stringify(manifest, null, 4));
   await fs.chmod(manifestFileName, 0o444);
 
+  if (isSPFxProject(projectSettings)) {
+    const spfxTeamsPath = `${projectPath}/SPFx/teams`;
+    await fs.copyFile(zipFileName, path.join(spfxTeamsPath, "TeamsSPFxApp.zip"));
+
+    for (const file of await fs.readdir(`${projectPath}/SPFx/teams/`)) {
+      if (
+        file.endsWith("color.png") &&
+        manifest.icons.color &&
+        !manifest.icons.color.startsWith("https://")
+      ) {
+        const colorFile = `${appDirectory}/${manifest.icons.color}`;
+        const color = await fs.readFile(colorFile);
+        await fs.writeFile(path.join(spfxTeamsPath, file), color);
+      } else if (
+        file.endsWith("outline.png") &&
+        manifest.icons.outline &&
+        !manifest.icons.outline.startsWith("https://")
+      ) {
+        const outlineFile = `${appDirectory}/${manifest.icons.outline}`;
+        const outline = await fs.readFile(outlineFile);
+        await fs.writeFile(path.join(spfxTeamsPath, file), outline);
+      }
+    }
+  }
+
   return ok(zipFileName);
 }
 
@@ -388,79 +456,13 @@ export async function validateManifest(
   }
 }
 
-export async function getManifest(
-  projectPath: string,
-  envInfo: v3.EnvInfoV3,
-  telemetryProps?: Record<string, string>
-): Promise<Result<TeamsAppManifest, FxError>> {
-  // Read template
-  const manifestTemplateRes = await readAppManifest(projectPath);
-  if (manifestTemplateRes.isErr()) {
-    return err(manifestTemplateRes.error);
-  }
-  let manifestString = JSON.stringify(manifestTemplateRes.value);
-  const customizedKeys = getCustomizedKeys("", JSON.parse(manifestString));
-  if (telemetryProps) {
-    telemetryProps[TelemetryPropertyKey.customizedKeys] = JSON.stringify(customizedKeys);
-  }
-  // Render mustache template with state and config
-  const view = {
-    config: envInfo.config,
-    state: envInfo.state,
-  };
-  manifestString = compileHandlebarsTemplateString(manifestString, view);
-
-  const manifest: TeamsAppManifest = JSON.parse(manifestString);
-
-  // dynamically set validDomains for manifest, which can be refactored by static manifest templates
-  const isLocalDebug = envInfo.envName === "local";
-  const isProvisionSucceeded =
-    envInfo.state.solution.provisionSucceeded === "true" ||
-    envInfo.state.solution.provisionSucceeded === true;
-  if (isLocalDebug || manifest.validDomains?.length === 0) {
-    const validDomains: string[] = [];
-    const tabEndpoint = envInfo.state[ComponentNames.TeamsTab]?.endpoint as string;
-    const tabDomain = envInfo.state[ComponentNames.TeamsTab]?.domain as string;
-    if (tabDomain) {
-      validDomains.push(tabDomain);
-    }
-    if (tabEndpoint && isLocalDebug) {
-      validDomains.push(tabEndpoint.slice(8));
-    }
-    const botId = envInfo.state[ComponentNames.TeamsBot]?.botId;
-    const botDomain = envInfo.state[ComponentNames.TeamsBot]?.validDomain;
-    if (botId) {
-      if (!botDomain) {
-        return err(
-          AppStudioResultFactory.UserError(
-            AppStudioError.GetRemoteConfigFailedError.name,
-            AppStudioError.GetRemoteConfigFailedError.message(
-              getLocalizedString("plugins.appstudio.dataRequired", "validDomain"),
-              isProvisionSucceeded
-            ),
-            HelpLinks.WhyNeedProvision
-          )
-        );
-      } else {
-        validDomains.push(botDomain);
-      }
-    }
-    for (const domain of validDomains) {
-      if (manifest.validDomains?.indexOf(domain) == -1) {
-        manifest.validDomains.push(domain);
-      }
-    }
-  }
-  return ok(manifest);
-}
-
 export async function updateManifest(
   ctx: ResourceContextV3,
   inputs: InputsWithProjectPath
 ): Promise<Result<undefined, FxError>> {
   const teamsAppId = ctx.envInfo.state[ComponentNames.AppManifest]?.teamsAppId;
   let manifest: any;
-  const manifestResult = await getManifest(inputs.projectPath, ctx.envInfo);
+  const manifestResult = await manifestUtils.getManifest(inputs.projectPath, ctx.envInfo, false);
   if (manifestResult.isErr()) {
     ctx.logProvider?.error(getLocalizedString("error.appstudio.updateManifestFailed"));
     const isProvisionSucceeded = ctx.envInfo.state["solution"].provisionSucceeded as boolean;
@@ -485,7 +487,7 @@ export async function updateManifest(
     manifest = manifestResult.value;
   }
 
-  const manifestFileName = await getTeamsAppManifestPath(inputs.projectPath);
+  const manifestFileName = await manifestUtils.getTeamsAppManifestPath(inputs.projectPath);
   if (!(await fs.pathExists(manifestFileName))) {
     const isProvisionSucceeded = ctx.envInfo.state["solution"].provisionSucceeded as boolean;
     if (!isProvisionSucceeded) {
@@ -501,7 +503,7 @@ export async function updateManifest(
         )
       );
     }
-    await buildTeamsAppPackage(inputs.projectPath, ctx.envInfo);
+    await buildTeamsAppPackage(ctx.projectSetting, inputs.projectPath, ctx.envInfo);
   }
   const existingManifest = await fs.readJSON(manifestFileName);
   delete manifest.id;
@@ -520,10 +522,10 @@ export async function updateManifest(
       AppStudioError.UpdateManifestCancelError.message(manifest.name.short)
     );
     if (res?.isOk() && res.value === "Preview only") {
-      buildTeamsAppPackage(inputs.projectPath, ctx.envInfo);
+      buildTeamsAppPackage(ctx.projectSetting, inputs.projectPath, ctx.envInfo);
       return err(error);
     } else if (res?.isOk() && res.value === "Preview and update") {
-      buildTeamsAppPackage(inputs.projectPath, ctx.envInfo);
+      buildTeamsAppPackage(ctx.projectSetting, inputs.projectPath, ctx.envInfo);
     } else {
       return err(error);
     }

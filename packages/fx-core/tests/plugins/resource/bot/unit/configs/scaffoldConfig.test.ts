@@ -17,6 +17,7 @@ import { ResourcePlugins } from "../../../../../../src/common/constants";
 import { QuestionNames } from "../../../../../../src/plugins/resource/bot/constants";
 import {
   AppServiceOptionItem,
+  FunctionsHttpAndTimerTriggerOptionItem,
   FunctionsHttpTriggerOptionItem,
   FunctionsTimerTriggerOptionItem,
 } from "../../../../../../src/plugins/resource/bot/question";
@@ -100,16 +101,12 @@ describe("triggers Tests", () => {
   afterEach(() => sinon.restore());
 
   it("resolves triggers from HostTypeTrigger question", async () => {
-    const cases: [string[], string[], string][] = [
-      [[AppServiceOptionItem.id], [], "App Service no trigger"],
-      [[FunctionsHttpTriggerOptionItem.id], [NotificationTriggers.HTTP], "Functions http trigger"],
+    const cases: [string, string[], string][] = [
+      [AppServiceOptionItem.id, [], "App Service no trigger"],
+      [FunctionsHttpTriggerOptionItem.id, [NotificationTriggers.HTTP], "Functions http trigger"],
+      [FunctionsTimerTriggerOptionItem.id, [NotificationTriggers.TIMER], "Functions timer trigger"],
       [
-        [FunctionsTimerTriggerOptionItem.id],
-        [NotificationTriggers.TIMER],
-        "Functions timer trigger",
-      ],
-      [
-        [FunctionsTimerTriggerOptionItem.id, FunctionsHttpTriggerOptionItem.id],
+        FunctionsHttpAndTimerTriggerOptionItem.id,
         [NotificationTriggers.HTTP, NotificationTriggers.TIMER],
         "Functions timer & http trigger",
       ],
@@ -154,6 +151,7 @@ describe("Plugin Settings: 'capabilities'", () => {
       [BotCapabilities.COMMAND_AND_RESPONSE],
       "Scaffold command and response bot",
     ],
+    [true, {}, [BotScenario.WorkflowBot], [BotCapabilities.WORKFLOW], "Scaffold workflow bot"],
     [
       true,
       {},

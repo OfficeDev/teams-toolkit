@@ -9,6 +9,7 @@ import {
   FunctionsTimerTriggerOptionItem,
   AppServiceOptionItem,
   AppServiceOptionItemForVS,
+  FunctionsHttpAndTimerTriggerOptionItem,
 } from "../question";
 import { BicepModules, HostType, ProgrammingLanguage, Runtime } from "./enum";
 
@@ -44,6 +45,14 @@ const triggerScenariosMap: Map<string, string[]> = new Map<string, string[]>([
       TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_TIMER_SCENARIO_NAME,
     ],
   ],
+  [
+    FunctionsHttpAndTimerTriggerOptionItem.id,
+    [
+      TemplateProjectsScenarios.NOTIFICATION_FUNCTION_BASE_SCENARIO_NAME,
+      TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_HTTP_SCENARIO_NAME,
+      TemplateProjectsScenarios.NOTIFICATION_FUNCTION_TRIGGER_TIMER_SCENARIO_NAME,
+    ],
+  ],
   [AppServiceOptionItem.id, [TemplateProjectsScenarios.NOTIFICATION_RESTIFY_SCENARIO_NAME]],
   [AppServiceOptionItemForVS.id, [TemplateProjectsScenarios.NOTIFICATION_WEBAPI_SCENARIO_NAME]],
 ]);
@@ -55,9 +64,8 @@ const PlatformRuntimeMap: Map<Platform, Runtime> = new Map<Platform, Runtime>([
   [Platform.CLI_HELP, Runtime.Node],
 ]);
 
-function getKeyNotFoundInMapErrorMsg(key: any, map: Map<any, any>) {
-  const mapName = Object.keys({ map })[0];
-  return `The key ${key} is not found in map ${mapName}.`;
+function getKeyNotFoundInMapErrorMsg(key: any) {
+  return `The key ${key} is not found in map.`;
 }
 
 const projectFileMap = new Map<Runtime, (appName: string) => string>([
@@ -74,7 +82,7 @@ export function getPlatformRuntime(platform: Platform): Runtime {
   if (runtime) {
     return runtime;
   }
-  throw new Error(getKeyNotFoundInMapErrorMsg(platform, PlatformRuntimeMap));
+  throw new Error(getKeyNotFoundInMapErrorMsg(platform));
 }
 
 export function getRuntime(lang: ProgrammingLanguage): Runtime {
@@ -82,7 +90,7 @@ export function getRuntime(lang: ProgrammingLanguage): Runtime {
   if (runtime) {
     return runtime;
   }
-  throw new Error(getKeyNotFoundInMapErrorMsg(lang, runtimeMap));
+  throw new Error(getKeyNotFoundInMapErrorMsg(lang));
 }
 
 export function getServiceType(hostType?: string): ServiceType {
@@ -90,7 +98,7 @@ export function getServiceType(hostType?: string): ServiceType {
   if (serviceType) {
     return serviceType;
   }
-  throw new Error(getKeyNotFoundInMapErrorMsg(hostType, serviceMap));
+  throw new Error(getKeyNotFoundInMapErrorMsg(hostType));
 }
 
 export function getLanguage(lang?: string): ProgrammingLanguage {
@@ -98,7 +106,7 @@ export function getLanguage(lang?: string): ProgrammingLanguage {
   if (language) {
     return language;
   }
-  throw new Error(getKeyNotFoundInMapErrorMsg(lang, langMap));
+  throw new Error(getKeyNotFoundInMapErrorMsg(lang));
 }
 
 export function getTriggerScenarios(trigger: string): string[] {
@@ -106,7 +114,7 @@ export function getTriggerScenarios(trigger: string): string[] {
   if (scenarios) {
     return scenarios;
   }
-  throw new Error(getKeyNotFoundInMapErrorMsg(trigger, triggerScenariosMap));
+  throw new Error(getKeyNotFoundInMapErrorMsg(trigger));
 }
 
 export function getProjectFileName(runtime: Runtime, appName: string): string {
@@ -114,5 +122,5 @@ export function getProjectFileName(runtime: Runtime, appName: string): string {
   if (projectFileName) {
     return projectFileName(appName);
   }
-  throw new Error(getKeyNotFoundInMapErrorMsg(runtime, projectFileMap));
+  throw new Error(getKeyNotFoundInMapErrorMsg(runtime));
 }

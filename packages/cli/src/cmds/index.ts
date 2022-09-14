@@ -21,6 +21,7 @@ import { isRemoteCollaborationEnabled } from "../utils";
 import Manifest from "./manifest";
 import Permission from "./permission";
 import Env from "./env";
+import M365 from "./m365/m365";
 import { ManifestValidate } from "./validate";
 
 export const commands: YargsCommand[] = [
@@ -55,4 +56,8 @@ export function registerCommands(yargs: Argv): void {
       command.handler.bind(command)
     );
   });
+
+  // hide this since it's in preview
+  const m365 = new M365();
+  yargs.command(m365.command, false, m365.builder.bind(m365), m365.handler.bind(m365));
 }

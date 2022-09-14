@@ -47,6 +47,8 @@ import {
   validationSettingsHelpLink,
   AppStudioScopes,
   TelemetryContext,
+  isV3,
+  getProjectComponents,
 } from "@microsoft/teamsfx-core";
 
 import { YargsCommand } from "../../yargsCommand";
@@ -82,7 +84,7 @@ import { openHubWebClient } from "./launch";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 
 enum Checker {
-  M365Account = "M365 Account",
+  M365Account = "Microsoft 365 Account",
   LocalCertificate = "Development certificate for localhost",
   Ports = "Ports",
 }
@@ -211,7 +213,7 @@ export default class Preview extends YargsCommand {
       workspaceFolder
     ) as string;
     this.telemetryProperties[TelemetryProperty.PreviewProjectComponents] =
-      (await this.getProjectComponents(workspaceFolder)) ?? "";
+      (await getProjectComponents(workspaceFolder)) ?? "";
 
     return await localTelemetryReporter.runWithTelemetryGeneric(
       TelemetryEvent.Preview,
@@ -782,7 +784,7 @@ export default class Preview extends YargsCommand {
       ?.get(constants.teamsAppTenantIdConfigKey) as string;
 
     const remoteTeamsAppId: string = config?.config
-      ?.get(constants.appstudioPluginName)
+      ?.get(isV3() ? "app-manifest" : constants.appstudioPluginName)
       ?.get(constants.remoteTeamsAppIdConfigKey);
     if (remoteTeamsAppId === undefined || remoteTeamsAppId.length === 0) {
       return err(errors.PreviewWithoutProvision());
@@ -1654,37 +1656,6 @@ export default class Preview extends YargsCommand {
       return fxError;
     } else {
       return new UnknownError(source, JSON.stringify(e));
-    }
-  }
-
-  private async getProjectComponents(workspaceFolder: string): Promise<string | undefined> {
-    try {
-      const localEnvManager = new LocalEnvManager();
-      const projectSettings = await localEnvManager.getProjectSettings(workspaceFolder);
-
-      const result: { [key: string]: any } = { components: [] };
-      if (ProjectSettingsHelper.isSpfx(projectSettings)) {
-        result.components.push("spfx");
-      }
-      if (ProjectSettingsHelper.includeFrontend(projectSettings)) {
-        result.components.push("frontend");
-      }
-      if (ProjectSettingsHelper.includeBot(projectSettings)) {
-        result.components.push(`bot`);
-        result.botHostType = ProjectSettingsHelper.includeFuncHostedBot(projectSettings)
-          ? "azure-functions"
-          : "app-service";
-        result.botCapabilities = ProjectSettingsHelper.getBotCapabilities(projectSettings);
-      }
-      if (ProjectSettingsHelper.includeBackend(projectSettings)) {
-        result.components.push("backend");
-      }
-      if (ProjectSettingsHelper.includeAAD(projectSettings)) {
-        result.components.push("aad");
-      }
-      return JSON.stringify(result);
-    } catch (error: any) {
-      return undefined;
     }
   }
 }

@@ -30,10 +30,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.accountTree.m365AccountTooltip" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[M365 ACCOUNT  ]A;The Teams Toolkit requires an Microsoft 365 organizational account where Teams is running and has been registered.]]></Val>
+          <Val><![CDATA[Microsoft 365 ACCOUNT  ]A;The Teams Toolkit requires an Microsoft 365 organizational account where Teams is running and has been registered.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[M365 계정  ]A;Teams Toolkit에는 Teams가 실행 중이고 등록된 Microsoft 365 조직 계정이 필요합니다.]]></Val>
+            <Val><![CDATA[Microsoft 365 계정  ]A;Teams Toolkit에는 Teams가 실행 중이고 등록된 Microsoft 365 조직 계정이 필요합니다.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[M365 ACCOUNT  ]A;The Teams Toolkit requires an Microsoft 365 organizational account where Teams is running and has been registered.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -57,12 +60,12 @@
       </Item>
       <Item ItemId=";teamstoolkit.accountTree.sideloadingJoinM365" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Create a M365 testing tenant]]></Val>
+          <Val><![CDATA[Create a Microsoft 365 testing tenant]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[M365 테스트 테넌트 만들기]]></Val>
+            <Val><![CDATA[Microsoft 365 테스트 테넌트 만들기]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Join M365 Developer Program]]></Val>
+            <Val><![CDATA[Create a M365 testing tenant]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -135,12 +138,12 @@
       </Item>
       <Item ItemId=";teamstoolkit.accountTree.sideloadingWarningTooltip" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[M365 account admin doesn't have enabled sideloading permission.]A;· Contact your Teams administrator to resolve this issue. Visit: https://docs.microsoft.com/en-us/microsoftteams/platform/m365-apps/prerequisites]A;· Create a testing tenant. Visit https://developer.microsoft.com/en-us/microsoft-365/dev-program]]></Val>
+          <Val><![CDATA[Microsoft 365 account admin doesn't have enabled sideloading permission.]A;· Contact your Teams administrator to resolve this issue. Visit: https://docs.microsoft.com/en-us/microsoftteams/platform/m365-apps/prerequisites]A;· Create a testing tenant. Visit https://developer.microsoft.com/en-us/microsoft-365/dev-program]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[M365 계정 관리자에 활성화된 테스트용 로드 권한이 없습니다.]A;· 이 문제를 해결하려면 Teams 관리자에게 문의하세요. 참고 사이트: https://docs.microsoft.com/ko-kr/microsoftteams/platform/m365-apps/prerequisites]A;· 테스트 테넌트를 만드세요. 참고 사이트: https://developer.microsoft.com/ko-kr/microsoft-365/dev-program]]></Val>
+            <Val><![CDATA[Microsoft 365 계정 관리자에 활성화된 테스트용 로드 권한이 없습니다.]A;· 이 문제를 해결하려면 Teams 관리자에게 문의하세요. 참고 사이트: https://docs.microsoft.com/ko-kr/microsoftteams/platform/m365-apps/prerequisites]A;· 테스트 테넌트를 만드세요. 참고 사이트: https://developer.microsoft.com/ko-kr/microsoft-365/dev-program]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Your M365 tenant admin hasn't enabled sideloading permission for your account. You can't install your app to Teams!]]></Val>
+            <Val><![CDATA[M365 account admin doesn't have enabled sideloading permission.]A;· Contact your Teams administrator to resolve this issue. Visit: https://docs.microsoft.com/en-us/microsoftteams/platform/m365-apps/prerequisites]A;· Create a testing tenant. Visit https://developer.microsoft.com/en-us/microsoft-365/dev-program]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -156,10 +159,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.accountTree.signingInM365" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[M365: Signing in...]]></Val>
+          <Val><![CDATA[Microsoft 365: Signing in...]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[M365: 로그인 중...]]></Val>
+            <Val><![CDATA[Microsoft 365: 로그인 중...]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[M365: Signing in...]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -183,10 +189,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.appStudioLogin.createM365TestingTenant" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Create a M365 testing tenant]]></Val>
+          <Val><![CDATA[Create a Microsoft 365 testing tenant]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[M365 테스트 테넌트 만들기]]></Val>
+            <Val><![CDATA[Microsoft 365 테스트 테넌트 만들기]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Create a M365 testing tenant]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -201,22 +210,25 @@
       </Item>
       <Item ItemId=";teamstoolkit.appStudioLogin.loginCancel" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Sign in canceled. The Teams Toolkit requires a Microsoft 365 (organizational account) with sideloading option.]A;If your account is not ready, create a free M365 testing tenant to start your Teams App development.]]></Val>
+          <Val><![CDATA[Sign in canceled. The Teams Toolkit requires a Microsoft 365 (organizational account) with sideloading option.]A;If your account is not ready, create a free Microsoft 365 testing tenant to start your Teams App development.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[로그인이 취소되었습니다. Teams 도구 키트에 테스트용 로드 옵션을 사용하는 Microsoft 365(조직 계정)가 필요합니다.]A;계정이 준비되지 않은 경우 무료 M365 테스트 테넌트를 만들어 Teams 앱 개발을 시작하세요.]]></Val>
+            <Val><![CDATA[로그인이 취소되었습니다. Teams 도구 키트에는 사이드로드 옵션이 있는 Microsoft 365(조직 계정)가 필요합니다.]A; 계정이 준비되지 않은 경우 무료 Microsoft 365 테스트 테넌트를 만들어 Teams 앱 개발을 시작하세요.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Sign in canceled. The Teams Toolkit requires a Microsoft 365 organizational account where Teams is running and has been registered.]]></Val>
+            <Val><![CDATA[Sign in canceled. The Teams Toolkit requires a Microsoft 365 (organizational account) with sideloading option.]A;If your account is not ready, create a free M365 testing tenant to start your Teams App development.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.appStudioLogin.message" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[The Teams Toolkit requires a Microsoft 365 organizational account where Teams is running and has been registered. You can create a free testing account from M365 Developer Program if needed.]]></Val>
+          <Val><![CDATA[The Teams Toolkit requires a Microsoft 365 organizational account where Teams is running and has been registered. You can create a free testing account from Microsoft 365 Developer Program if needed.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams Toolkit에는 Teams가 실행 중이고 등록된 Microsoft 365 조직 계정이 필요합니다. 필요한 경우 M365 개발자 프로그램에서 무료 테스트 계정을 만들 수 있습니다.]]></Val>
+            <Val><![CDATA[Teams Toolkit에는 Teams가 실행 중이고 등록된 Microsoft 365 조직 계정이 필요합니다. 필요한 경우 Microsoft 365 개발자 프로그램에서 무료 테스트 계정을 만들 수 있습니다.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[The Teams Toolkit requires a Microsoft 365 organizational account where Teams is running and has been registered. You can create a free testing account from M365 Developer Program if needed.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -483,10 +495,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.addAppOwner.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Add M365 Teams App (with AAD App) Owners]]></Val>
+          <Val><![CDATA[Add Microsoft 365 Teams App (with AAD App) Owners]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[M365 Teams 앱(AAD 앱 포함) 소유자 추가]]></Val>
+            <Val><![CDATA[Microsoft 365 Teams 앱(AAD 앱 포함) 소유자 추가]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Add M365 Teams App (with AAD App) Owners]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -531,10 +546,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.createAccount.m365" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Create a M365 testing tenant]]></Val>
+          <Val><![CDATA[Create a Microsoft 365 testing tenant]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[M365 테스트 테넌트 만들기]]></Val>
+            <Val><![CDATA[Microsoft 365 테스트 테넌트 만들기]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Create a M365 testing tenant]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -711,10 +729,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.listAppOwner.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[List M365 Teams App (with AAD App) Owners]]></Val>
+          <Val><![CDATA[List Microsoft 365 Teams App (with AAD App) Owners]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[M365 Teams 앱(AAD 앱 포함) 소유자 나열]]></Val>
+            <Val><![CDATA[Microsoft 365 Teams 앱 나열(AAD 앱 포함) 소유자]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[List M365 Teams App (with AAD App) Owners]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -729,10 +750,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.commands.m365AccountSettings.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[M365 portal]]></Val>
+          <Val><![CDATA[Microsoft 365 portal]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[M365 포털]]></Val>
+            <Val><![CDATA[Microsoft 365 포털]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[M365 portal]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1437,28 +1461,37 @@
       </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.m365AccountNotMatch" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[The signed in M365 account does not match the M365 tenant used in previous provision. Please sign out and sign in with correct M365 account.]]></Val>
+          <Val><![CDATA[The signed in Microsoft 365 account does not match the Microsoft 365 tenant used in previous provision. Please sign out and sign in with correct Microsoft 365 account.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[로그인한 M365 계정이 이전 프로비저닝에 사용된 M365 테넌트와 일치하지 않습니다. 로그아웃한 후 올바른 M365 계정으로 로그인하세요.]]></Val>
+            <Val><![CDATA[로그인한 Microsoft 365 계정이 이전 프로비전에 사용된 Microsoft 365 테넌트와 일치하지 않습니다. 로그아웃하고 올바른 Microsoft 365 계정으로 로그인하세요.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[The signed in M365 account does not match the M365 tenant used in previous provision. Please sign out and sign in with correct M365 account.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.m365AccountNotSignedIn" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[No M365 account signed in. Please sign in to M365.]]></Val>
+          <Val><![CDATA[No Microsoft 365 account signed in. Please sign in to Microsoft 365.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[로그인한 M365 계정이 없습니다. M365에 로그인하세요.]]></Val>
+            <Val><![CDATA[로그인한 Microsoft 365 계정이 없습니다. Microsoft 365에 로그인하세요.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[No M365 account signed in. Please sign in to M365.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.m365TenantNotMatch" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[The M365 tenant id(which is used to provision before) does not match the current account.]]></Val>
+          <Val><![CDATA[The Microsoft 365 tenant id(which is used to provision before) does not match the current account.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[이전에 프로비저닝하는 데 사용되는 M365 테넌트 ID가 현재 계정과 일치하지 않습니다.]]></Val>
+            <Val><![CDATA[이전에 프로비전하는 데 사용되는 Microsoft 365 테넌트 ID가 현재 계정과 일치하지 않습니다.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[The M365 tenant id(which is used to provision before) does not match the current account.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1522,6 +1555,30 @@
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[적응형 카드 미리 보기 및 디버그]]></Val>
           </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.previewDescription" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Debug and preview your Teams app]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams 앱 디버그 및 미리 보기]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Preview your Teams app locally]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.previewTitle" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Preview your Teams app (F5)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams 앱 미리 보기(F5)]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Preview your Teams app]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1860,19 +1917,25 @@
       </Item>
       <Item ItemId=";teamstoolkit.envTree.missingAzureAndM365Account" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Sign in with your correct Azure / M365 account]]></Val>
+          <Val><![CDATA[Sign in with your correct Azure / Microsoft 365 account]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[올바른 Azure/M365 계정으로 로그인]]></Val>
+            <Val><![CDATA[올바른 Azure/Microsoft 365 계정으로 로그인합니다.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Sign in with your correct Azure / M365 account]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.envTree.missingM365Account" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Sign in with your correct M365 account]]></Val>
+          <Val><![CDATA[Sign in with your correct Microsoft 365 account]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[올바른 M365 계정으로 로그인]]></Val>
+            <Val><![CDATA[올바른 Microsoft 365 계정으로 로그인]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Sign in with your correct M365 account]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2259,19 +2322,25 @@
       </Item>
       <Item ItemId=";teamstoolkit.handlers.m365SignIn" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Successfully signed in to M365 account.]]></Val>
+          <Val><![CDATA[Successfully signed in to Microsoft 365 account.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[M365 계정에 로그인했습니다.]]></Val>
+            <Val><![CDATA[Microsoft 365 계정에 로그인했습니다.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Successfully signed in to M365 account.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.handlers.m365SignOut" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Successfully signed out of M365 account.]]></Val>
+          <Val><![CDATA[Successfully signed out of Microsoft 365 account.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[M365 계정에서 로그아웃했습니다.]]></Val>
+            <Val><![CDATA[Microsoft 365 계정에서 로그아웃했습니다.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Successfully signed out of M365 account.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2298,6 +2367,45 @@
           <Val><![CDATA[Operation not support: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[작업이 지원되지 않음: %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.promptSPFx.upgradeProject.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You are using a legacy version of SPFx in your project while the current version of Teams Toolkit supports SPFx v%s. If you want to use SPFx v%s, follow 'CLI for Microsoft 365' to upgrade.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[현재 버전의 Teams 도구 키트가 SPFx v%s을(를) 지원하는 동안 프로젝트에서 레거시 버전의 SPFx를 사용하고 있습니다. SPFx v%s을(를) 사용하려면 'CLI for Microsoft 365'를 따라 업그레이드하세요.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.promptSPFx.upgradeProject.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[CLI for Microsoft 365]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Microsoft 365용 CLI]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[CLI for M365]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.promptSPFx.upgradeToolkit.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You are using a newer version of SPFx in your project while the current version of Teams Toolkit supports SPFx v%s. Please note that some of the newer SPFx features might not be supported. If you are not using the latest version of Teams Toolkit, consider to upgrade.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[현재 버전의 Teams 도구 키트가 SPFx v%s을(를) 지원하는 동안 프로젝트에서 최신 버전의 SPFx를 사용하고 있습니다. 일부 최신 SPFx 기능은 지원되지 않을 수 있습니다. 최신 버전의 Teams 도구 키트를 사용하지 않는 경우 업그레이드를 고려하세요.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.handlers.promptSPFx.upgradeToolkit.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Upgrade]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[업그레이드]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2349,10 +2457,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.handlers.signIn365" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Sign in to M365]]></Val>
+          <Val><![CDATA[Sign in to Microsoft 365]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[M365에 로그인]]></Val>
+            <Val><![CDATA[Microsoft 365에 로그인]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Sign in to M365]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2385,10 +2496,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.handlers.signOutOfM365" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Sign out of M365: ]]></Val>
+          <Val><![CDATA[Sign out of Microsoft 365: ]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[M365에서 로그아웃: ]]></Val>
+            <Val><![CDATA[Microsoft 365에서 로그아웃: ]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Sign out of M365: ]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2544,10 +2658,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.localDebug.installApp.m365AccountInfoNotFound" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[M365 account info not found. Please sign in to M365.]]></Val>
+          <Val><![CDATA[Microsoft 365 account info not found. Please sign in to Microsoft 365.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[M365 계정 정보를 찾을 수 없습니다. M365에 로그인하세요.]]></Val>
+            <Val><![CDATA[Microsoft 365 계정 정보를 찾을 수 없습니다. Microsoft 365에 로그인하세요.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[M365 account info not found. Please sign in to M365.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2578,11 +2695,29 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.localDebug.npmInstallFailure" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[NPM Package Install Task Failed. Please check the %s to see the details.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[NPM 패키지 설치 작업이 실패했습니다. 자세한 내용을 보려면 %s을(를) 확인하세요.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.localDebug.openSettings" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Open settings]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[설정 열기]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.outputPanel" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[output panel]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[출력 패널]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2623,6 +2758,33 @@
           <Prev Cat="Text">
             <Val><![CDATA[Error occurs when checking prerequisites. Refer to the Output window for detailed error messages. (Fail to check: %s)]]></Val>
           </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.switchM365AccountWarning" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You are now using a different Microsoft 365 tenant from what you previously used.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[이제 이전에 사용한 것과 다른 Microsoft 365 테넌트를 사용하고 있습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.taskDefinitionError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The value of '%s' is invalid for the task of type 'teamsfx']]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA['teamsfx' 유형의 작업에 대해 '%s' 값이 잘못되었습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.terminal" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[terminal]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[단말기]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2905,6 +3067,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.qm.browse" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Browse...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[찾아보기...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.qm.defaultFolder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Default folder]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[기본 폴더]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.qm.emptySelection" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[select option is empty]]></Val>
@@ -3027,6 +3207,204 @@
           <Val><![CDATA[Take Survey]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[설문 조사 참여]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.bot.botIdTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The AAD app client id for bot]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[봇용 AAD 앱 클라이언트 ID]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.bot.botMessagingEndpointTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The bot messaging endpoint]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[봇 메시징 엔드포인트]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.bot.botPasswordTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The AAD app client secret for bot]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[봇에 대한 AAD 앱 클라이언트 암호]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.manifest.manifestPackagePathTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams manifest app package path]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams 매니페스트 앱 패키지 경로]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.prerequisites.devCertTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Install localhost SSL certificate]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[로컬 호스트 SSL 인증서 설치]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.prerequisites.dotnetTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Install .NET]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[.NET 설치]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.prerequisites.funcTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Install Azure Functions Core Tools]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure Functions 핵심 도구 설치]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.prerequisites.m365AccountTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Validate M365 account]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[M365 계정 확인]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.prerequisites.ngrokTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Install Ngrok]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ngrok 설치]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.prerequisites.nodejsTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Validate Node.js]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Node.js 유효성 검사]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.prerequisites.portsTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Validate available ports]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[사용 가능한 포트 확인]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.sso.accessAsUserScopeIdTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The AAD app access_as_user scope id for SSO]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SSO에 대한 AAD 앱 access_as_user 범위 ID]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.sso.clientIdTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The AAD app client id for SSO]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SSO용 AAD 앱 클라이언트 ID]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.sso.clientSecretTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The AAD app client secret for SSO]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SSO용 AAD 앱 클라이언트 암호]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.sso.objectIdTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The AAD app object id for SSO]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SSO용 AAD 앱 개체 ID]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.tab.baseUrlTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The base url that the Tab app will be hosted on]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[탭 앱이 호스팅될 기본 URL]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.command.bot.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Set up Bot.]A; See https://aka.ms/teamsfx-debug-tasks#debug-set-up-bot for how to customize following args.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[봇을 설정합니다.]A; 다음 인수를 사용자 지정하는 방법은 https://aka.ms/teamsfx-debug-tasks#debug-set-up-bot을 참조하세요.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.command.manifest.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Build and upload Teams manifest.]A; See https://aka.ms/teamsfx-debug-tasks#debug-prepare-manifest for how to customize following args.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams 매니페스트를 빌드하고 업로드합니다.]A; 다음 인수를 사용자 지정하는 방법은 https://aka.ms/teamsfx-debug-tasks#debug-prepare-manifest를 참조하세요.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.command.npmInstall.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Install NPM Packages.]A; See https://aka.ms/teamsfx-debug-tasks#debug-npm-install for how to customize following args.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[NPM 패키지를 설치합니다.]A; 다음 인수를 사용자 지정하는 방법은 https://aka.ms/teamsfx-debug-tasks#debug-npm-install을 참조하세요.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.command.prerequisites.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Validate and install prerequisites.]A; See https://aka.ms/teamsfx-debug-tasks#debug-check-prerequisites for how to customize following args.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[필수 구성 요소를 확인하고 설치합니다.]A; 다음 인수를 사용자 지정하는 방법은 https://aka.ms/teamsfx-debug-tasks#debug-check-prerequisites를 참조하세요.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.command.sso.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Set up SSO.]A; See https://aka.ms/teamsfx-debug-tasks#debug-set-up-sso for how to customize following args.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SSO를 설정합니다.]A; 다음 인수를 사용자 지정하는 방법은 https://aka.ms/teamsfx-debug-tasks#debug-set-up-sso를 참조하세요.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.command.tab.description" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Set up Tab.]A; See https://aka.ms/teamsfx-debug-tasks#debug-set-up-tab for how to customize following args.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[탭을 설정합니다.]A; 다음 인수를 사용자 지정하는 방법은 https://aka.ms/teamsfx-debug-tasks#debug-set-up-tab을 참조하세요.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

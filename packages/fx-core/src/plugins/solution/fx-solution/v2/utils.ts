@@ -47,6 +47,7 @@ import {
   TabOptionItem,
   TabSPFxItem,
   TabSsoItem,
+  WorkflowOptionItem,
 } from "../question";
 import { getActivatedV2ResourcePlugins, getAllV2ResourcePlugins } from "../ResourcePluginContainer";
 import { getPluginContext } from "../utils/util";
@@ -54,6 +55,7 @@ import { PluginsWithContext } from "../types";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { backupFiles } from "../utils/backupFiles";
 import { TelemetryEvent, TelemetryProperty } from "../../../../common/telemetry";
+import { resetAppSettingsDevelopment } from "../../../../component/code/appSettingUtils";
 
 export function getSelectedPlugins(projectSettings: ProjectSettings): v2.ResourcePlugin[] {
   return getActivatedV2ResourcePlugins(projectSettings);
@@ -204,6 +206,7 @@ export function parseUserName(appStudioToken?: Record<string, unknown>): Result<
 export async function checkWhetherLocalDebugM365TenantMatches(
   envInfo: v3.EnvInfoV3 | EnvInfo | undefined,
   telemetryReporter: TelemetryReporter | undefined,
+  isCSharpProject: boolean,
   localDebugTenantId?: string,
   m365TokenProvider?: M365TokenProvider,
   projectPath?: string,
@@ -261,9 +264,13 @@ export async function checkWhetherLocalDebugM365TenantMatches(
         }
 
         if (projectPath !== undefined) {
-          const backupFilesRes = await backupFiles(envInfo.envName, projectPath!);
+          const backupFilesRes = await backupFiles(envInfo.envName, projectPath!, isCSharpProject);
           if (backupFilesRes.isErr()) {
             return err(backupFilesRes.error);
+          }
+
+          if (isCSharpProject) {
+            await resetAppSettingsDevelopment(projectPath);
           }
         }
       }
@@ -316,7 +323,8 @@ export function fillInSolutionSettings(
   let hostType = answers[AzureSolutionQuestionNames.HostType] as string;
   if (
     capabilities.includes(NotificationOptionItem.id) ||
-    capabilities.includes(CommandAndResponseOptionItem.id)
+    capabilities.includes(CommandAndResponseOptionItem.id) ||
+    capabilities.includes(WorkflowOptionItem.id)
   ) {
     // find and replace "NotificationOptionItem" and "CommandAndResponseOptionItem" to "BotOptionItem", so it does not impact capabilities in projectSettings.json
     const scenarios: BotScenario[] = [];
@@ -325,11 +333,19 @@ export function fillInSolutionSettings(
       capabilities[notificationIndex] = BotOptionItem.id;
       scenarios.push(BotScenario.NotificationBot);
     }
+
     const commandAndResponseIndex = capabilities.indexOf(CommandAndResponseOptionItem.id);
     if (commandAndResponseIndex !== -1) {
       capabilities[commandAndResponseIndex] = BotOptionItem.id;
       scenarios.push(BotScenario.CommandAndResponseBot);
     }
+
+    const workflowIndex = capabilities.indexOf(WorkflowOptionItem.id);
+    if (workflowIndex !== -1) {
+      capabilities[workflowIndex] = BotOptionItem.id;
+      scenarios.push(BotScenario.WorkflowBot);
+    }
+
     answers[AzureSolutionQuestionNames.Scenarios] = scenarios;
     // dedup
     capabilities = [...new Set(capabilities)];

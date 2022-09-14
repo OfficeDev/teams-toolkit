@@ -2,8 +2,16 @@
 // Licensed under the MIT license.
 
 import { BotFrameworkAdapter } from "botbuilder";
-import { CommandOptions, TeamsFxBotCommandHandler } from "./interface";
-import { CommandResponseMiddleware } from "./middleware";
+import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
+import { internalLogger } from "../util/logger";
+import {
+  CommandOptions,
+  BotSsoConfig,
+  BotSsoExecutionActivityHandler,
+  TeamsFxBotCommandHandler,
+  TeamsFxBotSsoCommandHandler,
+} from "./interface";
+import { CommandResponseMiddleware } from "./middlewares/commandMiddleware";
 
 /**
  * A command bot for receiving commands and sending responses in Teams.
@@ -14,6 +22,7 @@ import { CommandResponseMiddleware } from "./middleware";
 export class CommandBot {
   private readonly adapter: BotFrameworkAdapter;
   private readonly middleware: CommandResponseMiddleware;
+  private readonly ssoConfig: BotSsoConfig | undefined;
 
   /**
    * Creates a new instance of the `CommandBot`.
@@ -21,15 +30,26 @@ export class CommandBot {
    * @param adapter The bound `BotFrameworkAdapter`.
    * @param options - initialize options
    */
-  constructor(adapter: BotFrameworkAdapter, options?: CommandOptions) {
-    this.middleware = new CommandResponseMiddleware(options?.commands);
+  constructor(
+    adapter: BotFrameworkAdapter,
+    options?: CommandOptions,
+    ssoCommandActivityHandler?: BotSsoExecutionActivityHandler,
+    ssoConfig?: BotSsoConfig
+  ) {
+    this.ssoConfig = ssoConfig;
+
+    this.middleware = new CommandResponseMiddleware(
+      options?.commands,
+      options?.ssoCommands,
+      ssoCommandActivityHandler
+    );
     this.adapter = adapter.use(this.middleware);
   }
 
   /**
    * Registers a command into the command bot.
    *
-   * @param command The command to registered.
+   * @param command The command to register.
    */
   public registerCommand(command: TeamsFxBotCommandHandler): void {
     if (command) {
@@ -40,11 +60,45 @@ export class CommandBot {
   /**
    * Registers commands into the command bot.
    *
-   * @param commands The command to registered.
+   * @param commands The commands to register.
    */
   public registerCommands(commands: TeamsFxBotCommandHandler[]): void {
     if (commands) {
       this.middleware.commandHandlers.push(...commands);
+    }
+  }
+
+  /**
+   * Registers a sso command into the command bot.
+   *
+   * @param command The command to register.
+   */
+  public registerSsoCommand(ssoCommand: TeamsFxBotSsoCommandHandler): void {
+    this.validateSsoActivityHandler();
+    this.middleware.addSsoCommand(ssoCommand);
+  }
+
+  /**
+   * Registers commands into the command bot.
+   *
+   * @param commands The commands to register.
+   */
+  public registerSsoCommands(ssoCommands: TeamsFxBotSsoCommandHandler[]): void {
+    if (ssoCommands.length > 0) {
+      this.validateSsoActivityHandler();
+      for (const ssoCommand of ssoCommands) {
+        this.middleware.addSsoCommand(ssoCommand);
+      }
+    }
+  }
+
+  private validateSsoActivityHandler() {
+    if (!this.middleware.ssoActivityHandler) {
+      internalLogger.error(ErrorMessage.SsoActivityHandlerIsNull);
+      throw new ErrorWithCode(
+        ErrorMessage.SsoActivityHandlerIsNull,
+        ErrorCode.SsoActivityHandlerIsUndefined
+      );
     }
   }
 }

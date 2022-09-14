@@ -9,12 +9,15 @@ import {
   FxError,
   InputsWithProjectPath,
   ok,
+  PluginContext,
   ResourceContextV3,
   Result,
+  SystemError,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { ComponentNames } from "../../constants";
+import { AadAppOutputs, ComponentNames } from "../../constants";
 import * as path from "path";
 import fs from "fs-extra";
 import { getTemplatesFolder } from "../../../folder";
@@ -23,51 +26,17 @@ import { convertContext } from "./utils";
 import { convertProjectSettingsV3ToV2 } from "../../migrate";
 import { generateAadManifestTemplate } from "../../../core/generateAadManifestTemplate";
 import { createAuthFiles } from "../../../plugins/solution/fx-solution/v2/executeUserTask";
+import { isVSProject } from "../../../common";
+import { DialogUtils } from "../../../plugins/resource/aad/utils/dialog";
+import { TelemetryUtils } from "../../../plugins/resource/aad/utils/telemetry";
+import { Messages, Telemetry } from "../../../plugins/resource/aad/constants";
+import { UnhandledError } from "../../../plugins/resource/aad/errors";
+import { AadResult, ResultFactory } from "../../../plugins/resource/aad/results";
 @Service(ComponentNames.AadApp)
 export class AadApp implements CloudResource {
   readonly type = "cloud";
   readonly name = ComponentNames.AadApp;
-  outputs = {
-    applicationIdUri: {
-      key: "applicationIdUri",
-    },
-    clientId: {
-      key: "clientId",
-    },
-    clientSecret: {
-      key: "clientSecret",
-    },
-    objectId: {
-      key: "objectId",
-    },
-    oauth2PermissionScopeId: {
-      key: "oauth2PermissionScopeId",
-    },
-    frontendEndpoint: {
-      key: "frontendEndpoint",
-    },
-    botId: {
-      key: "botId",
-    },
-    botEndpoint: {
-      key: "botEndpoint",
-    },
-    domain: {
-      key: "domain",
-    },
-    endpoint: {
-      key: "endpoint",
-    },
-    oauthAuthority: {
-      key: "oauthAuthority",
-    },
-    oauthHost: {
-      key: "oauthHost",
-    },
-    tenantId: {
-      key: "tenantId",
-    },
-  };
+  outputs = AadAppOutputs;
   finalOutputKeys = [
     "applicationIdUris",
     "clientId",
@@ -98,7 +67,13 @@ export class AadApp implements CloudResource {
     needTab: boolean,
     needBot: boolean
   ): Promise<Result<undefined, FxError>> {
-    const res = await createAuthFiles(inputs, context, needTab, needBot);
+    const res = await createAuthFiles(
+      inputs,
+      context,
+      needTab,
+      needBot,
+      isVSProject(context.projectSetting)
+    );
     if (res.isErr()) return err(res.error);
     return ok(undefined);
   }
@@ -121,12 +96,16 @@ export class AadApp implements CloudResource {
     context.envInfo.state[ComponentNames.AadApp] ??= {};
     const aadAppImplement = new AadAppForTeamsImpl();
     const convertCtx = convertContext(context, inputs);
-    await aadAppImplement.provisionUsingManifest(convertCtx);
-    const convertState = convertCtx.envInfo.state.get("fx-resource-aad-app-for-teams");
-    convertState.forEach((v: any, k: string) => {
-      context.envInfo.state[ComponentNames.AadApp][k] = v;
-    });
-    return ok(undefined);
+    const res = await this.runWithExceptionCatchingAsync(
+      async () => aadAppImplement.provisionUsingManifest(convertCtx),
+      convertCtx,
+      Messages.EndProvision.telemetry
+    );
+    if (res.isErr()) {
+      return res;
+    }
+    this.setState(convertCtx, context);
+    return res;
   }
   async configure(
     context: ResourceContextV3,
@@ -134,12 +113,16 @@ export class AadApp implements CloudResource {
   ): Promise<Result<undefined, FxError>> {
     const aadAppImplement = new AadAppForTeamsImpl();
     const convertCtx = convertContext(context, inputs);
-    await aadAppImplement.postProvisionUsingManifest(convertCtx);
-    const convertState = convertCtx.envInfo.state.get("fx-resource-aad-app-for-teams");
-    convertState.forEach((v: any, k: string) => {
-      context.envInfo.state[ComponentNames.AadApp][k] = v;
-    });
-    return ok(undefined);
+    const res = await this.runWithExceptionCatchingAsync(
+      async () => aadAppImplement.postProvisionUsingManifest(convertCtx),
+      convertCtx,
+      Messages.EndPostProvision.telemetry
+    );
+    if (res.isErr()) {
+      return res;
+    }
+    this.setState(convertCtx, context);
+    return res;
   }
   async setApplicationInContext(
     context: ResourceContextV3,
@@ -147,24 +130,100 @@ export class AadApp implements CloudResource {
   ): Promise<Result<undefined, FxError>> {
     const aadAppImplement = new AadAppForTeamsImpl();
     const convertCtx = convertContext(context, inputs);
-    await aadAppImplement.setApplicationInContext(convertCtx);
-    const convertState = convertCtx.envInfo.state.get("fx-resource-aad-app-for-teams");
-    convertState.forEach((v: any, k: string) => {
-      context.envInfo.state[ComponentNames.AadApp][k] = v;
-    });
-    return ok(undefined);
+    const res = await this.runWithExceptionCatchingAsync(
+      async () => aadAppImplement.setApplicationInContext(convertCtx),
+      convertCtx,
+      "setApplicationInContext"
+    );
+    if (res.isErr()) {
+      return res;
+    }
+    this.setState(convertCtx, context);
+    return res;
   }
+
   async deploy(
     context: ResourceContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
     const aadAppImplement = new AadAppForTeamsImpl();
     const convertCtx = convertContext(context, inputs);
-    await aadAppImplement.deploy(convertCtx);
+    const res = await this.runWithExceptionCatchingAsync(
+      () => aadAppImplement.deploy(convertCtx),
+      convertCtx,
+      Messages.EndDeploy.telemetry
+    );
+    if (res.isErr()) {
+      return res;
+    }
+    this.setState(convertCtx, context);
+    return res;
+  }
+
+  private setState(convertCtx: PluginContext, context: ResourceContextV3) {
     const convertState = convertCtx.envInfo.state.get("fx-resource-aad-app-for-teams");
     convertState.forEach((v: any, k: string) => {
       context.envInfo.state[ComponentNames.AadApp][k] = v;
     });
-    return ok(undefined);
+  }
+
+  private async runWithExceptionCatchingAsync(
+    fn: () => Promise<AadResult>,
+    ctx: PluginContext,
+    stage: string
+  ): Promise<AadResult> {
+    try {
+      return await fn();
+    } catch (e) {
+      return this.returnError(e, ctx, stage);
+    }
+  }
+
+  private returnError(e: any, ctx: PluginContext, stage: string): AadResult {
+    if (e instanceof SystemError || e instanceof UserError) {
+      let errorMessage = e.message;
+      // For errors contains innerError, e.g. failures when calling Graph API
+      if (e.innerError) {
+        errorMessage += ` Detailed error: ${e.innerError.message}.`;
+        if (e.innerError.response?.data?.errorMessage) {
+          // For errors return from App Studio API
+          errorMessage += ` Reason: ${e.innerError.response?.data?.errorMessage}`;
+        } else if (e.innerError.response?.data?.error?.message) {
+          // For errors return from Graph API
+          errorMessage += ` Reason: ${e.innerError.response?.data?.error?.message}`;
+        }
+        e.message = errorMessage;
+      }
+      ctx.logProvider?.error(errorMessage);
+      TelemetryUtils.sendErrorEvent(
+        stage,
+        e.name,
+        e instanceof UserError ? Telemetry.userError : Telemetry.systemError,
+        errorMessage
+      );
+      DialogUtils.progress?.end(false);
+      return err(e);
+    } else {
+      if (!(e instanceof Error)) {
+        e = new Error(e.toString());
+      }
+
+      ctx.logProvider?.error(e.message);
+      TelemetryUtils.sendErrorEvent(
+        stage,
+        UnhandledError.name,
+        Telemetry.systemError,
+        UnhandledError.message() + " " + e.message
+      );
+      return err(
+        ResultFactory.SystemError(
+          UnhandledError.name,
+          UnhandledError.message(),
+          e,
+          undefined,
+          undefined
+        )
+      );
+    }
   }
 }

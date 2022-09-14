@@ -5,6 +5,7 @@ import {
   BotFrameworkAdapter,
   ChannelInfo,
   ConversationReference,
+  TeamDetails,
   TeamsChannelAccount,
 } from "botbuilder";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
@@ -332,6 +333,18 @@ export class TeamsBotInstallation implements NotificationTarget {
       ErrorCode.RuntimeNotSupported
     );
   }
+
+  /**
+   * Get team details from this bot installation
+   *
+   * @returns the team details if bot is installed into a team, otherwise returns undefined.
+   */
+  public async getTeamDetails(): Promise<TeamDetails | undefined> {
+    throw new ErrorWithCode(
+      formatString(ErrorMessage.BrowserRuntimeNotSupported, "TeamsBotInstallation"),
+      ErrorCode.RuntimeNotSupported
+    );
+  }
 }
 
 /**
@@ -397,4 +410,113 @@ export class NotificationBot {
       ErrorCode.RuntimeNotSupported
     );
   }
+
+  /**
+   * Returns the first {@link Member} where predicate is true, and undefined otherwise.
+   *
+   * @remarks
+   * Only work on server side.
+   *
+   * @param predicate find calls predicate once for each member of the installation,
+   * until it finds one where predicate returns true. If such a member is found, find
+   * immediately returns that member. Otherwise, find returns undefined.
+   * @param scope the scope to find members from the installations
+   * (personal chat, group chat, Teams channel).
+   * @returns the first {@link Member} where predicate is true, and undefined otherwise.
+   */
+  public async findMember(
+    predicate: (member: Member) => Promise<boolean>,
+    scope?: SearchScope
+  ): Promise<Member | undefined> {
+    throw new ErrorWithCode(
+      formatString(ErrorMessage.BrowserRuntimeNotSupported, "NotificationBot"),
+      ErrorCode.RuntimeNotSupported
+    );
+  }
+
+  /**
+   * Returns the first {@link Channel} where predicate is true, and undefined otherwise.
+   *
+   * @remarks
+   * Only work on server side.
+   *
+   * @param predicate find calls predicate once for each channel of the installation,
+   * until it finds one where predicate returns true. If such a channel is found, find
+   * immediately returns that channel. Otherwise, find returns undefined.
+   * @returns the first {@link Channel} where predicate is true, and undefined otherwise.
+   */
+  public async findChannel(
+    predicate: (channel: Channel, teamDetails: TeamDetails | undefined) => Promise<boolean>
+  ): Promise<Channel | undefined> {
+    throw new ErrorWithCode(
+      formatString(ErrorMessage.BrowserRuntimeNotSupported, "NotificationBot"),
+      ErrorCode.RuntimeNotSupported
+    );
+  }
+
+  /**
+   * Returns all {@link Member} where predicate is true, and empty array otherwise.
+   *
+   * @remarks
+   * Only work on server side.
+   *
+   * @param predicate find calls predicate for each member of the installation.
+   * @param scope the scope to find members from the installations
+   * (personal chat, group chat, Teams channel).
+   * @returns an array of {@link Member} where predicate is true, and empty array otherwise.
+   */
+  public async findAllMembers(
+    predicate: (member: Member) => Promise<boolean>,
+    scope?: SearchScope
+  ): Promise<Member[]> {
+    throw new ErrorWithCode(
+      formatString(ErrorMessage.BrowserRuntimeNotSupported, "NotificationBot"),
+      ErrorCode.RuntimeNotSupported
+    );
+  }
+
+  /**
+   * Returns all {@link Channel} where predicate is true, and empty array otherwise.
+   *
+   * @remarks
+   * Only work on server side.
+   *
+   * @param predicate find calls predicate for each channel of the installation.
+   * @returns an array of {@link Channel} where predicate is true, and empty array otherwise.
+   */
+  public async findAllChannels(
+    predicate: (channel: Channel, teamDetails: TeamDetails | undefined) => Promise<boolean>
+  ): Promise<Channel[]> {
+    throw new ErrorWithCode(
+      formatString(ErrorMessage.BrowserRuntimeNotSupported, "NotificationBot"),
+      ErrorCode.RuntimeNotSupported
+    );
+  }
+}
+
+/**
+ * The search scope when calling {@link NotificationBot.findMember} and {@link NotificationBot.findAllMembers}.
+ * The search scope is a flagged enum and it can be combined with `|`.
+ * For example, to search from personal chat and group chat, use `SearchScope.Person | SearchScope.Group`.
+ */
+export enum SearchScope {
+  /**
+   * Search members from the installations in personal chat only.
+   */
+  Person = 1,
+
+  /**
+   * Search members from the installations in group chat only.
+   */
+  Group = 2,
+
+  /**
+   * Search members from the installations in Teams channel only.
+   */
+  Channel = 4,
+
+  /**
+   * Search members from all installations including personal chat, group chat and Teams channel.
+   */
+  All = Person | Group | Channel,
 }

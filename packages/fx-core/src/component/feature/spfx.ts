@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
+import fs from "fs-extra";
+import * as path from "path";
 import {
   ContextV3,
   err,
@@ -17,6 +19,7 @@ import { Container, Service } from "typedi";
 import { isVSProject } from "../../common/projectSettingsHelper";
 import { globalVars } from "../../core/globalVars";
 import { CoreQuestionNames } from "../../core/question";
+import { TabSPFxNewUIItem } from "../../plugins";
 import {
   frameworkQuestion,
   versionCheckQuestion,
@@ -25,8 +28,8 @@ import {
 import { SPFxTabCodeProvider } from "../code/spfxTabCode";
 import { ComponentNames } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
-import { ActionExecutionMW } from "../middleware/actionExecutionMW";
-import { addFeatureNotify } from "../utils";
+import { addFeatureNotify, scaffoldRootReadme } from "../utils";
+import { isSPFxMultiTabEnabled } from "../../common";
 @Service(ComponentNames.SPFxTab)
 export class SPFxTab {
   name = ComponentNames.SPFxTab;
@@ -70,6 +73,9 @@ export class SPFxTab {
       if (res.isErr()) return err(res.error);
       effects.push("generate local debug settings");
     }
+    if (isSPFxMultiTabEnabled()) {
+      await scaffoldRootReadme(context.projectSetting, inputs.projectPath);
+    }
     addFeatureNotify(inputs, context.userInteraction, "Capability", [inputs.features]);
     return ok(undefined);
   }
@@ -86,4 +92,35 @@ export function getSPFxScaffoldQuestion(): QTreeNode {
   const spfx_webpart_name = new QTreeNode(webpartNameQuestion);
   spfx_version_check.addChild(spfx_webpart_name);
   return spfx_frontend_host;
+}
+
+export async function getAddSPFxQuestionNode(
+  projectPath: string | undefined
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const spfx_add_feature = new QTreeNode({
+    type: "group",
+  });
+  spfx_add_feature.condition = { equals: TabSPFxNewUIItem.id };
+
+  const spfx_version_check = new QTreeNode(versionCheckQuestion);
+  spfx_add_feature.addChild(spfx_version_check);
+
+  if (projectPath) {
+    const yorcPath = path.join(projectPath, "SPFx", ".yo-rc.json");
+    if (await fs.pathExists(yorcPath)) {
+      const yorc = await fs.readJson(yorcPath);
+      const template = yorc["@microsoft/generator-sharepoint"]?.template;
+      if (template === undefined || template === "") {
+        const spfx_framework_type = new QTreeNode(frameworkQuestion);
+        spfx_version_check.addChild(spfx_framework_type);
+      }
+    } else {
+      const spfx_framework_type = new QTreeNode(frameworkQuestion);
+      spfx_version_check.addChild(spfx_framework_type);
+    }
+  }
+
+  const spfx_webpart_name = new QTreeNode(webpartNameQuestion);
+  spfx_version_check.addChild(spfx_webpart_name);
+  return ok(spfx_add_feature);
 }

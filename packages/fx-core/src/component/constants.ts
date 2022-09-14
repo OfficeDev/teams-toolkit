@@ -56,6 +56,23 @@ export const scenarioToComponent = new Map([
   [Scenarios.Tab, ComponentNames.TeamsTab],
 ]);
 
+export enum ProgrammingLanguage {
+  JS = "javascript",
+  TS = "typescript",
+  CSharp = "csharp",
+}
+
+export enum Runtime {
+  nodejs = "node",
+  dotnet = "dotnet",
+}
+
+export const languageToRuntime = new Map([
+  [ProgrammingLanguage.JS, Runtime.nodejs],
+  [ProgrammingLanguage.TS, Runtime.nodejs],
+  [ProgrammingLanguage.CSharp, Runtime.dotnet],
+]);
+
 export const ActionNames = {
   provision: "provision",
   configure: "configure",
@@ -223,4 +240,53 @@ export const BotServiceOutputs = {
   botPassword: {
     key: "botPassword",
   },
+};
+
+export const AadAppOutputs = {
+  applicationIdUris: {
+    key: "applicationIdUris",
+  },
+  clientId: {
+    key: "clientId",
+  },
+  clientSecret: {
+    key: "clientSecret",
+  },
+  objectId: {
+    key: "objectId",
+  },
+  oauth2PermissionScopeId: {
+    key: "oauth2PermissionScopeId",
+  },
+  frontendEndpoint: {
+    key: "frontendEndpoint",
+  },
+  botId: {
+    key: "botId",
+  },
+  botEndpoint: {
+    key: "botEndpoint",
+  },
+  domain: {
+    key: "domain",
+  },
+  endpoint: {
+    key: "endpoint",
+  },
+  oauthAuthority: {
+    key: "oauthAuthority",
+  },
+  oauthHost: {
+    key: "oauthHost",
+  },
+  tenantId: {
+    key: "tenantId",
+  },
+};
+
+export const FunctionAppSetting = {
+  keys: {
+    allowedAppIds: "ALLOWED_APP_IDS",
+  },
+  allowedAppIdSep: ";",
 };

@@ -23,7 +23,6 @@ import { SqlResult, SqlResultFactory } from "./results";
 import { DialogUtils } from "./utils/dialogUtils";
 import { TelemetryUtils } from "./utils/telemetryUtils";
 import "./v2";
-import "./v3";
 @Service(ResourcePlugins.SqlPlugin)
 export class SqlPlugin implements Plugin {
   name = "fx-resource-azure-sql";

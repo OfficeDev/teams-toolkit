@@ -8,6 +8,7 @@ import {
   Json,
   LogProvider,
   ProjectSettings,
+  TelemetryReporter,
 } from "@microsoft/teamsfx-api";
 import * as os from "os";
 import {
@@ -26,6 +27,7 @@ import {
   LocalEnvCertKeys,
   LocalEnvFrontendKeys,
 } from "./constants";
+import { LocalEnvManager } from "./localEnvManager";
 import { LocalEnvProvider } from "./localEnvProvider";
 import { ProjectSettingsHelper } from "./projectSettingsHelper";
 
@@ -182,4 +184,40 @@ export async function convertToLocalEnvs(
   }
 
   return localEnvs;
+}
+
+// for telemetry use only
+// Used by VSC, CLI & VS
+export async function getProjectComponents(
+  projectPath: string,
+  logger?: LogProvider,
+  telemetry?: TelemetryReporter
+): Promise<string | undefined> {
+  const localEnvManager = new LocalEnvManager(logger, telemetry);
+  try {
+    const projectSettings = await localEnvManager.getProjectSettings(projectPath);
+    const result: { [key: string]: any } = { components: [] };
+    if (ProjectSettingsHelper.isSpfx(projectSettings)) {
+      result.components.push("spfx");
+    }
+    if (ProjectSettingsHelper.includeFrontend(projectSettings)) {
+      result.components.push("frontend");
+    }
+    if (ProjectSettingsHelper.includeBot(projectSettings)) {
+      result.components.push(`bot`);
+      result.botHostType = ProjectSettingsHelper.includeFuncHostedBot(projectSettings)
+        ? "azure-functions"
+        : "app-service";
+      result.botCapabilities = ProjectSettingsHelper.getBotCapabilities(projectSettings);
+    }
+    if (ProjectSettingsHelper.includeBackend(projectSettings)) {
+      result.components.push("backend");
+    }
+    if (ProjectSettingsHelper.includeAAD(projectSettings)) {
+      result.components.push("aad");
+    }
+    return JSON.stringify(result);
+  } catch (error: any) {
+    return undefined;
+  }
 }

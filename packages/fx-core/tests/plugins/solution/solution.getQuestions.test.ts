@@ -23,7 +23,6 @@ import Container from "typedi";
 import * as uuid from "uuid";
 import "../../../src/plugins/resource/apim/v2";
 import "../../../src/plugins/resource/appstudio/v2";
-import { AppStudioPluginV3 } from "../../../src/plugins/resource/appstudio/v3";
 import "../../../src/plugins/resource/bot/v2";
 import "../../../src/plugins/resource/frontend/v2";
 import "../../../src/plugins/resource/function/v2";
@@ -55,6 +54,7 @@ import {
   TabNonSsoItem,
   TabOptionItem,
   SingleSignOnOptionItem,
+  WorkflowOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import { ResourcePluginsV2 } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import {
@@ -67,7 +67,8 @@ import { BuiltInFeaturePluginNames } from "../../../src/plugins/solution/fx-solu
 import { MockedM365Provider, MockedAzureAccountProvider, MockedV2Context } from "./util";
 import { BotCapabilities, PluginBot } from "../../../src/plugins/resource/bot/resources/strings";
 import { BotHostTypes } from "../../../src";
-
+import mockedEnv, { RestoreFn } from "mocked-env";
+import { manifestUtils } from "../../../src/component/resource/appManifest/utils";
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 const functionPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FunctionPlugin);
@@ -75,7 +76,6 @@ const sqlPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SqlPlugin
 const spfxPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SpfxPlugin);
 const frontendPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FrontendPlugin);
 const botPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.BotPlugin);
-const cicdPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.CICDPlugin);
 const mockedProvider: TokenProvider = {
   azureAccountProvider: new MockedAzureAccountProvider(),
   m365TokenProvider: new MockedM365Provider(),
@@ -100,7 +100,7 @@ describe("getQuestionsForScaffolding()", async () => {
       azureResources: [],
     },
   };
-
+  let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
     spfxPluginV2.getQuestionsForScaffolding = async function () {
       return ok(undefined);
@@ -117,13 +117,12 @@ describe("getQuestionsForScaffolding()", async () => {
     botPluginV2.getQuestionsForScaffolding = async function () {
       return ok(undefined);
     };
-    cicdPlugin.getQuestionsForUserTask = async function () {
-      return ok(undefined);
-    };
+    mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "false" });
   });
 
   afterEach(() => {
     sandbox.restore();
+    mockedEnvRestore();
   });
 
   it("getQuestionsForScaffolding", async () => {
@@ -256,15 +255,13 @@ describe("getQuestionsForScaffolding()", async () => {
       method: "addCapability",
       namespace: "fx-solution-azure",
     };
-    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     sandbox.stub<any, any>(featureFlags, "isBotNotificationEnabled").returns(false);
     sandbox.stub<any, any>(tool, "isAadManifestEnabled").returns(false);
     sandbox
-      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
+      .stub<any, any>(manifestUtils, "capabilityExceedLimit")
       .callsFake(
         async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath,
+          projectPath: string,
           capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
         ) => {
           return ok(false);
@@ -308,18 +305,7 @@ describe("getQuestionsForScaffolding()", async () => {
       method: "addCapability",
       namespace: "fx-solution-azure",
     };
-    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-    sandbox
-      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
-      .callsFake(
-        async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath,
-          capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
-        ) => {
-          return ok(true);
-        }
-      );
+    sandbox.stub<any, any>(manifestUtils, "capabilityExceedLimit").resolves(ok(true));
     (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType =
       HostTypeOptionAzure.id;
     const res = await getQuestionsForUserTask(
@@ -399,18 +385,7 @@ describe("getQuestionsForScaffolding()", async () => {
       method: "addFeature",
       namespace: "fx-solution-azure",
     };
-    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-    sandbox
-      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
-      .callsFake(
-        async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath,
-          capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
-        ) => {
-          return ok(false);
-        }
-      );
+    sandbox.stub<any, any>(manifestUtils, "capabilityExceedLimit").resolves(ok(false));
     (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType =
       HostTypeOptionAzure.id;
     const res = await getQuestionsForAddFeature(
@@ -434,6 +409,7 @@ describe("getQuestionsForScaffolding()", async () => {
           [
             NotificationOptionItem,
             CommandAndResponseOptionItem,
+            WorkflowOptionItem,
             TabNewUIOptionItem,
             TabNonSsoItem,
             BotNewUIOptionItem,
@@ -465,18 +441,7 @@ describe("getQuestionsForScaffolding()", async () => {
       method: "addFeature",
       namespace: "fx-solution-azure",
     };
-    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
-    sandbox
-      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
-      .callsFake(
-        async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath,
-          capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
-        ) => {
-          return ok(false);
-        }
-      );
+    sandbox.stub<any, any>(manifestUtils, "capabilityExceedLimit").resolves(ok(false));
     (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType =
       HostTypeOptionAzure.id;
     const res = await getQuestionsForUserTask(
@@ -493,7 +458,7 @@ describe("getQuestionsForScaffolding()", async () => {
         node &&
           node.data &&
           node.data.type === "singleSelect" &&
-          node.data.staticOptions.length === 10,
+          node.data.staticOptions.length === 11,
         "option item count check"
       );
       if (node && node.data && node.data.type === "singleSelect") {
@@ -503,6 +468,7 @@ describe("getQuestionsForScaffolding()", async () => {
           [
             NotificationOptionItem,
             CommandAndResponseOptionItem,
+            WorkflowOptionItem,
             TabNonSsoItem,
             BotNewUIOptionItem,
             MessageExtensionNewUIItem,
@@ -606,13 +572,11 @@ describe("getQuestionsForScaffolding()", async () => {
       method: "addFeature",
       namespace: "fx-solution-azure",
     };
-    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     sandbox
-      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
+      .stub<any, any>(manifestUtils, "capabilityExceedLimit")
       .callsFake(
         async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath,
+          projectPath: string,
           capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
         ) => {
           if (capability === "Bot") {
@@ -693,13 +657,11 @@ describe("getQuestionsForScaffolding()", async () => {
       method: "addFeature",
       namespace: "fx-solution-azure",
     };
-    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     sandbox
-      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
+      .stub<any, any>(manifestUtils, "capabilityExceedLimit")
       .callsFake(
         async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath,
+          projectPath: string,
           capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
         ) => {
           if (capability === "Bot") {

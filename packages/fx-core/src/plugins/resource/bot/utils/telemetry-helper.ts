@@ -5,7 +5,6 @@ import { FxResult } from "../result";
 import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { TelemetryKeys, TelemetryValues } from "../constants";
 import { PluginBot, PluginSolution } from "../resources/strings";
-import { getAppStudioEndpoint } from "../../../../component/resource/appManifest/constants";
 
 export class telemetryHelper {
   static fillCommonProperty(ctx: PluginContext, properties: { [key: string]: string }): void {
@@ -28,14 +27,12 @@ export class telemetryHelper {
     innerError: any | undefined,
     properties: { [key: string]: string }
   ): void {
-    const appStudioUrl = `${getAppStudioEndpoint()}/api/botframework`;
-    const url = innerError?.toJSON?.()?.config?.url as string;
-    if (url && url.startsWith(appStudioUrl)) {
-      properties[TelemetryKeys.Url] = "<botframework-url>";
-    } else {
+    const url = innerError?.teamsfxUrlName as string;
+    if (!url) {
       return;
     }
 
+    properties[TelemetryKeys.Url] = url;
     const statusCode = `${innerError?.response?.status}`;
     if (statusCode) {
       properties[TelemetryKeys.StatusCode] = statusCode;

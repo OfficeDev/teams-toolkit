@@ -5,15 +5,18 @@ import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { createSandbox, SinonSandbox } from "sinon";
 import dotenv from "dotenv";
-import { AadService } from "../../../../src/plugins/resource/apim/services/aadService";
-import { IAadPluginConfig, IApimPluginConfig } from "../../../../src/plugins/resource/apim/config";
-import { TeamsAppAadManager } from "../../../../src/plugins/resource/apim/managers/teamsAppAadManager";
+import { AadService } from "../../../../src/component/resource/apim/services/aadService";
+import {
+  IAadPluginConfig,
+  IApimPluginConfig,
+} from "../../../../src/component/resource/apim/config";
+import { TeamsAppAadManager } from "../../../../src/component/resource/apim/managers/teamsAppAadManager";
 import {
   ApimPluginConfigKeys,
   TeamsToolkitComponent,
-} from "../../../../src/plugins/resource/apim/constants";
-import { Lazy } from "../../../../src/plugins/resource/apim/utils/commonUtils";
-import { AssertConfigNotEmpty } from "../../../../src/plugins/resource/apim/error";
+} from "../../../../src/component/resource/apim/constants";
+import { Lazy } from "../../../../src/component/resource/apim/utils/commonUtils";
+import { AssertConfigNotEmpty } from "../../../../src/component/resource/apim/error";
 import { mockAxios, MockAxiosInput, MockAxiosOutput } from "./mock";
 dotenv.config();
 chai.use(chaiAsPromised);

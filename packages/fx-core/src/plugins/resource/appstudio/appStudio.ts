@@ -8,10 +8,11 @@ import { AppUser } from "./interfaces/appUser";
 import { AppStudioError } from "./errors";
 import { IPublishingAppDenition } from "./interfaces/IPublishingAppDefinition";
 import { AppStudioResultFactory } from "./results";
-import { Constants, ErrorMessages } from "./constants";
+import { Constants, ErrorMessages, APP_STUDIO_API_NAMES } from "./constants";
 import { RetryHandler } from "./utils/utils";
 import { TelemetryEventName, TelemetryUtils } from "./utils/telemetry";
 import { getAppStudioEndpoint } from "../../../component/resource/appManifest/constants";
+import { HelpLinks } from "../../../common/constants";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -99,7 +100,15 @@ export namespace AppStudioClient {
         throw new Error(`Cannot create teams app`);
       }
     } catch (e: any) {
-      const error = wrapException(e, "create-app");
+      if (e.response?.status === 409) {
+        const error = AppStudioResultFactory.UserError(
+          AppStudioError.TeamsAppCreateConflictError.name,
+          AppStudioError.TeamsAppCreateConflictError.message(),
+          HelpLinks.SwtichTenantOrSub
+        );
+        throw error;
+      }
+      const error = wrapException(e, APP_STUDIO_API_NAMES.CREATE_APP);
       throw error;
     }
   }
@@ -126,10 +135,39 @@ export namespace AppStudioClient {
         }
       }
     } catch (e) {
-      const error = wrapException(e, "get-app");
+      const error = wrapException(e, APP_STUDIO_API_NAMES.GET_APP);
       throw error;
     }
     throw new Error(`Cannot get the app definition with app ID ${teamsAppId}`);
+  }
+
+  /**
+   * Check if app exists in the user's organization by the Teams app id
+   * @param teamsAppId
+   * @param appStudioToken
+   * @param logProvider
+   * @returns
+   */
+  export async function checkExistsInTenant(
+    teamsAppId: string,
+    appStudioToken: string,
+    logProvider?: LogProvider
+  ): Promise<boolean> {
+    const requester = createRequesterWithToken(appStudioToken);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.get(`/api/appdefinitions/manifest/${teamsAppId}`)
+      );
+
+      if (response && response.data) {
+        return <boolean>response.data;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      wrapException(e, APP_STUDIO_API_NAMES.EXISTS_IN_TENANTS);
+      return false;
+    }
   }
 
   /**
@@ -154,7 +192,6 @@ export namespace AppStudioClient {
       );
 
       if (response && response.data) {
-        const requestPath = `${response.request?.method} ${response.request?.path}`;
         if (response.data.error) {
           // To avoid App Studio BadGateway error
           // The app is actually published to app catalog.
@@ -164,11 +201,11 @@ export namespace AppStudioClient {
               return appDefinition.teamsAppId;
             }
           }
-          throw AppStudioResultFactory.SystemError(
-            AppStudioError.TeamsAppPublishFailedError.name,
-            AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, requestPath),
-            `code: ${response.data.error.code}, message: ${response.data.error.message}`
-          );
+          const error = new Error(response?.data.error.message);
+          error.name = response?.data.error.code;
+          (error as any).response = response;
+          const exception = wrapException(error, APP_STUDIO_API_NAMES.PUBLISH_APP);
+          throw exception;
         } else {
           return response.data.id;
         }
@@ -182,13 +219,8 @@ export namespace AppStudioClient {
       if (e instanceof SystemError) {
         throw e;
       } else {
-        const correlationId = e.response?.headers[Constants.CORRELATION_ID];
-        const requestPath = `${e.response?.request?.method} ${e.response.request?.path}`;
-        throw AppStudioResultFactory.SystemError(
-          AppStudioError.TeamsAppPublishFailedError.name,
-          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, requestPath, correlationId),
-          e
-        );
+        const error = wrapException(e, APP_STUDIO_API_NAMES.PUBLISH_APP);
+        throw error;
       }
     }
   }
@@ -231,11 +263,11 @@ export namespace AppStudioClient {
       const requestPath = `${response.request?.method} ${response.request?.path}`;
       if (response && response.data) {
         if (response.data.error || response.data.errorMessage) {
-          throw AppStudioResultFactory.SystemError(
-            AppStudioError.TeamsAppPublishFailedError.name,
-            AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, requestPath),
-            response.data.error?.message || response.data.errorMessage
-          );
+          const error = new Error(response.data.error?.message || response.data.errorMessage);
+          error.name = response?.data.error.code;
+          (error as any).response = response;
+          const exception = wrapException(error, APP_STUDIO_API_NAMES.UPDATE_PUBLISHED_APP);
+          throw exception;
         } else {
           return response.data.teamsAppId;
         }
@@ -249,13 +281,8 @@ export namespace AppStudioClient {
       if (error instanceof SystemError) {
         throw error;
       } else {
-        const correlationId = error.response?.headers[Constants.CORRELATION_ID];
-        const requestPath = `${error.response?.request?.method} ${error.response.request?.path}`;
-        throw AppStudioResultFactory.SystemError(
-          AppStudioError.TeamsAppPublishFailedError.name,
-          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, requestPath, correlationId),
-          error
-        );
+        const exception = wrapException(error, APP_STUDIO_API_NAMES.UPDATE_PUBLISHED_APP);
+        throw exception;
       }
     }
   }
@@ -265,22 +292,27 @@ export namespace AppStudioClient {
     appStudioToken: string
   ): Promise<IPublishingAppDenition | undefined> {
     const requester = createRequesterWithToken(appStudioToken);
-    const response = await requester.get(`/api/publishing/${teamsAppId}`);
-    if (response && response.data && response.data.value && response.data.value.length > 0) {
-      const appdefinitions: IPublishingAppDenition[] = response.data.value[0].appDefinitions.map(
-        (item: any) => {
-          return {
-            lastModifiedDateTime: item.lastModifiedDateTime
-              ? new Date(item.lastModifiedDateTime)
-              : null,
-            publishingState: item.publishingState,
-            teamsAppId: item.teamsAppId,
-            displayName: item.displayName,
-          };
-        }
-      );
-      return appdefinitions[appdefinitions.length - 1];
-    } else {
+    try {
+      const response = await requester.get(`/api/publishing/${teamsAppId}`);
+      if (response && response.data && response.data.value && response.data.value.length > 0) {
+        const appdefinitions: IPublishingAppDenition[] = response.data.value[0].appDefinitions.map(
+          (item: any) => {
+            return {
+              lastModifiedDateTime: item.lastModifiedDateTime
+                ? new Date(item.lastModifiedDateTime)
+                : null,
+              publishingState: item.publishingState,
+              teamsAppId: item.teamsAppId,
+              displayName: item.displayName,
+            };
+          }
+        );
+        return appdefinitions[appdefinitions.length - 1];
+      } else {
+        return undefined;
+      }
+    } catch (e: any) {
+      const error = wrapException(e, APP_STUDIO_API_NAMES.GET_PUBLISHED_APP);
       return undefined;
     }
   }
@@ -346,7 +378,6 @@ export namespace AppStudioClient {
 
     app.userList?.push(newUser);
     const requester = createRequesterWithToken(appStudioToken);
-
     try {
       const response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
       if (!response || !response.data || !checkUser(response.data as AppDefinition, newUser)) {

@@ -28,6 +28,7 @@ import { GetTokenOptions } from '@azure/identity';
 import { HeroCard } from 'botbuilder';
 import { IAdaptiveCard } from 'adaptivecards';
 import { InvokeResponse } from 'botbuilder';
+import { MessagingExtensionResponse } from 'botbuilder';
 import { O365ConnectorCard } from 'botbuilder';
 import { ReceiptCard } from 'botbuilder';
 import { SecureContextOptions } from 'tls';
@@ -35,6 +36,8 @@ import { SigninStateVerificationQuery } from 'botbuilder';
 import { StatePropertyAccessor } from 'botbuilder';
 import { StatusCodes } from 'botbuilder';
 import { Storage as Storage_2 } from 'botbuilder';
+import { TeamDetails } from 'botbuilder';
+import { TeamsActivityHandler } from 'botbuilder';
 import { TeamsChannelAccount } from 'botbuilder';
 import { ThumbnailCard } from 'botbuilder';
 import { TokenCredential } from '@azure/identity';
@@ -276,6 +279,9 @@ export interface GetTeamsUserTokenOptions extends GetTokenOptions {
 export function getTediousConnectionConfig(teamsfx: TeamsFx, databaseName?: string): Promise<ConnectionConfig>;
 
 // @public
+export function handleMessageExtensionQueryWithToken(context: TurnContext, config: AuthenticationConfiguration | null, scopes: string | string[], logic: (token: MessageExtensionTokenResponse) => Promise<any>): Promise<MessagingExtensionResponse | void>;
+
+// @public
 export enum IdentityType {
     App = "Application",
     User = "User"
@@ -338,6 +344,12 @@ export class MessageBuilder {
 }
 
 // @public
+export interface MessageExtensionTokenResponse extends TokenResponse {
+    ssoToken: string;
+    ssoTokenExpiration: string;
+}
+
+// @public
 export class MsGraphAuthProvider implements AuthenticationProvider {
     constructor(teamsfx: TeamsFxConfiguration, scopes?: string | string[]);
     getAccessToken(): Promise<string>;
@@ -346,6 +358,10 @@ export class MsGraphAuthProvider implements AuthenticationProvider {
 // @public
 export class NotificationBot {
     constructor(adapter: BotFrameworkAdapter, options?: NotificationOptions_2);
+    findAllChannels(predicate: (channel: Channel, teamDetails: TeamDetails | undefined) => Promise<boolean>): Promise<Channel[]>;
+    findAllMembers(predicate: (member: Member) => Promise<boolean>, scope?: SearchScope): Promise<Member[]>;
+    findChannel(predicate: (channel: Channel, teamDetails: TeamDetails | undefined) => Promise<boolean>): Promise<Channel | undefined>;
+    findMember(predicate: (member: Member) => Promise<boolean>, scope?: SearchScope): Promise<Member | undefined>;
     installations(): Promise<TeamsBotInstallation[]>;
 }
 
@@ -391,6 +407,14 @@ export class OnBehalfOfUserCredential implements TokenCredential {
 }
 
 // @public
+export enum SearchScope {
+    All = 7,
+    Channel = 4,
+    Group = 2,
+    Person = 1
+}
+
+// @public
 export function sendAdaptiveCard(target: NotificationTarget, card: unknown): Promise<MessageResponse>;
 
 // @public
@@ -411,6 +435,7 @@ export class TeamsBotInstallation implements NotificationTarget {
     readonly adapter: BotFrameworkAdapter;
     channels(): Promise<Channel[]>;
     readonly conversationReference: Partial<ConversationReference>;
+    getTeamDetails(): Promise<TeamDetails | undefined>;
     members(): Promise<Member[]>;
     sendAdaptiveCard(card: unknown): Promise<MessageResponse>;
     sendMessage(text: string): Promise<MessageResponse>;

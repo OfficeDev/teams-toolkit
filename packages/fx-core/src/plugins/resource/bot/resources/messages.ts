@@ -27,6 +27,10 @@ export class Messages {
     getDefaultString("plugins.bot.FailedToUpdateConfigs", something),
     getLocalizedString("plugins.bot.FailedToUpdateConfigs", something),
   ];
+  public static readonly BotRegistrationNotFoundWith = (botId: string): [string, string] => [
+    getDefaultString("plugins.bot.BotRegistrationNotFoundWith", botId),
+    getLocalizedString("plugins.bot.BotRegistrationNotFoundWith", botId),
+  ];
   public static readonly FailToUpdateMessageEndpoint = (endpoint: string): [string, string] => [
     getDefaultString("plugins.bot.FailedUpdateMessageEndpoint", endpoint),
     getLocalizedString("plugins.bot.FailedUpdateMessageEndpoint", endpoint),

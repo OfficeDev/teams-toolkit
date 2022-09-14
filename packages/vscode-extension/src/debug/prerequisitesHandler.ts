@@ -13,6 +13,7 @@ import {
   UserError,
   UserErrorOptions,
   Void,
+  PathNotExistError,
 } from "@microsoft/teamsfx-api";
 import {
   AppStudioScopes,
@@ -30,12 +31,14 @@ import {
   NodeNotSupportedError,
   baseNpmInstallCommand,
   defaultNpmInstallArg,
+  PluginNames,
   ProjectSettingsHelper,
   TelemetryContext,
   validationSettingsHelpLink,
   LocalEnvProvider,
 } from "@microsoft/teamsfx-core";
 
+import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import * as util from "util";
@@ -707,14 +710,11 @@ function checkM365Account(prefix: string, showLoginPage: boolean): Promise<Check
       );
 
       let hasSwitchedM365Tenant = false;
-      if (
-        localEnvInfo &&
-        localEnvInfo["state"] &&
-        localEnvInfo["state"]["solution"] &&
-        localEnvInfo["state"]["solution"]["teamsAppTenantId"] &&
-        !!tenantId &&
-        localEnvInfo["state"]["solution"]["teamsAppTenantId"] != tenantId
-      ) {
+      const tenantIdFromState: string | undefined =
+        localEnvInfo?.state?.solution?.teamsAppTenantId ||
+        localEnvInfo?.state?.[PluginNames.AAD]?.tenantId ||
+        localEnvInfo?.state?.[PluginNames.APPST]?.tenantId;
+      if (tenantId && tenantIdFromState && tenantIdFromState !== tenantId) {
         hasSwitchedM365Tenant = true;
         showNotification(
           localize("teamstoolkit.localDebug.switchM365AccountWarning"),
@@ -1006,6 +1006,16 @@ function checkNpmInstall(
         `${prefix} ${ProgressMessage[Checker.NpmInstall](displayName)} ...`
       );
 
+      if (!(await fs.pathExists(folder))) {
+        return {
+          checker: Checker.NpmInstall,
+          result: ResultStatus.warn,
+          successMsg: doctorConstant.NpmInstallSuccess.split("@app").join(displayName),
+          failureMsg: doctorConstant.NpmInstallFailure.split("@app").join(displayName),
+          error: new PathNotExistError(ExtensionSource, folder),
+        };
+      }
+
       let installed = false;
       if (!forceUpdate) {
         try {
@@ -1290,7 +1300,18 @@ async function getOrderedCheckersForTask(
 ): Promise<PrerequisiteOrderedChecker[]> {
   const checkers: PrerequisiteOrderedChecker[] = [];
   if (prerequisites.includes(Prerequisite.nodejs)) {
-    checkers.push({ info: { checker: DepsType.AzureNode }, fastFail: true });
+    const localEnvManager = new LocalEnvManager(
+      VsCodeLogInstance,
+      ExtTelemetry.reporter,
+      VS_CODE_UI
+    );
+    const projectSettings = await localEnvManager.getProjectSettings(
+      globalVariables.workspaceUri!.fsPath
+    );
+    const nodeDep = getNodeDep(localEnvManager.getActiveDependencies(projectSettings));
+    if (nodeDep) {
+      checkers.push({ info: { checker: nodeDep }, fastFail: true });
+    }
   }
   if (prerequisites.includes(Prerequisite.m365Account)) {
     checkers.push({ info: { checker: Checker.M365Account }, fastFail: false });

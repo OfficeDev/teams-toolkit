@@ -37,7 +37,6 @@ import { StatePropertyAccessor } from 'botbuilder';
 import { StatusCodes } from 'botbuilder';
 import { Storage as Storage_2 } from 'botbuilder';
 import { TeamDetails } from 'botbuilder';
-import { TeamsActivityHandler } from 'botbuilder';
 import { TeamsChannelAccount } from 'botbuilder';
 import { ThumbnailCard } from 'botbuilder';
 import { TokenCredential } from '@azure/identity';

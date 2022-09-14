@@ -108,6 +108,15 @@ export namespace AppStudioClient {
         );
         throw error;
       }
+      // Corner case: The provided app ID conflict with an existing published app
+      // See Developer Portal PR: 507264
+      if (e.response?.status == 422 && e.message.contains("App already exists and published")) {
+        const error = AppStudioResultFactory.UserError(
+          AppStudioError.TeamsAppCreateConflictWithPublishedAppError.name,
+          AppStudioError.TeamsAppCreateConflictWithPublishedAppError.message()
+        );
+        throw error;
+      }
       const error = wrapException(e, APP_STUDIO_API_NAMES.CREATE_APP);
       throw error;
     }

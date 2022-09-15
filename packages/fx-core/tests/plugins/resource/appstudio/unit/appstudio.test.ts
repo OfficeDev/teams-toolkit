@@ -167,6 +167,34 @@ describe("App Studio API Test", () => {
         chai.assert.equal(error.name, AppStudioError.TeamsAppCreateConflictError.name);
       }
     });
+
+    it("422 conflict", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const error = {
+        response: {
+          status: 422,
+          data: "Unable import, App already exists and published. publishStatus: 'LobStore'",
+        },
+      };
+      sinon.stub(fakeAxiosInstance, "post").throws(error);
+      const ctx = {
+        envInfo: newEnvInfo(),
+        root: "fakeRoot",
+      } as any as PluginContext;
+      TelemetryUtils.init(ctx);
+      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
+
+      try {
+        await AppStudioClient.importApp(Buffer.from(""), appStudioToken);
+      } catch (error) {
+        chai.assert.equal(
+          error.name,
+          AppStudioError.TeamsAppCreateConflictWithPublishedAppError.name
+        );
+      }
+    });
   });
 
   describe("get Teams app", () => {

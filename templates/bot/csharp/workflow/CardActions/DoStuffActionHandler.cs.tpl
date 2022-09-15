@@ -1,8 +1,8 @@
-﻿using AdaptiveCards.Templating;
+﻿using {{SafeProjectName}}.Models;
+using AdaptiveCards.Templating;
 using Microsoft.Bot.Builder;
 using Microsoft.TeamsFx.Conversation;
 using Newtonsoft.Json;
-using {{SafeProjectName}}.Models;
 
 namespace {{SafeProjectName}}.CardActions
 {

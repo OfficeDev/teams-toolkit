@@ -21,9 +21,13 @@ import { telemetryHelper } from "../utils/telemetry-helper";
 import { TelemetryEvents, TelemetryProperty } from "../utils/telemetryEvents";
 import { DependencyValidateError, NpmInstallError } from "../error";
 import { cpUtils } from "../../../../common/deps-checker/util/cpUtils";
+import { isOfficialSPFx } from "../utils/utils";
+import { Constants } from "../utils/constants";
 
 const name = "@microsoft/generator-sharepoint";
-const supportedVersion = "1.16.0-beta.1";
+const supportedVersion = isOfficialSPFx()
+  ? Constants.SPFX_VERSION
+  : Constants.SPFX_VERSION_PRERELEASE;
 const displayName = `${name}@${supportedVersion}`;
 const timeout = 6 * 60 * 1000;
 

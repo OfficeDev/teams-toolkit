@@ -9,7 +9,7 @@ import {
   NpmVersionNotSupportedError,
 } from "../error";
 import { Constants } from "./constants";
-import { Utils } from "./utils";
+import { isOfficialSPFx, Utils } from "./utils";
 
 export enum SPFXQuestionNames {
   framework_type = "spfx-framework-type",
@@ -90,14 +90,20 @@ export const versionCheckQuestion: Question = {
       throw NpmNotFoundError();
     }
 
-    const isNpmVersionSupported = Constants.SUPPORTED_NPM_VERSION.includes(npmMajorVersion);
+    const supportedNpmVersion = isOfficialSPFx()
+      ? Constants.SUPPORTED_NPM_VERSION
+      : Constants.SUPPORTED_NPM_VERSION_PRERELEASE;
+    const isNpmVersionSupported = supportedNpmVersion.includes(npmMajorVersion);
     if (!isNpmVersionSupported) {
       throw NpmVersionNotSupportedError(npmMajorVersion!);
     }
 
+    const supportedNodeVersion = isOfficialSPFx()
+      ? Constants.SUPPORTED_NODE_VERSION
+      : Constants.SUPPORTED_NODE_VERSION_PRERELEASE;
     const nodeMajorVersion = await Utils.getNodeVersion();
     const isNodeVersionSupported =
-      nodeMajorVersion && Constants.SUPPORTED_NODE_VERSION.includes(nodeMajorVersion);
+      nodeMajorVersion && supportedNodeVersion.includes(nodeMajorVersion);
     if (!isNodeVersionSupported) {
       throw NodeVersionNotSupportedError(nodeMajorVersion ?? "");
     }

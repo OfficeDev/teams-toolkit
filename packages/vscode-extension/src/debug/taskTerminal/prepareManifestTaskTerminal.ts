@@ -11,7 +11,7 @@ import { AppManifestDebugArgs, AppManifestDebugHandler } from "@microsoft/teamsf
 import VsCodeLogInstance from "../../commonlib/log";
 import { workspaceUri } from "../../globalVariables";
 import { tools } from "../../handlers";
-import { prepareManifestDisplayMessages } from "../constants";
+import { prepareManifestDisplayMessages, taskNamePrefix } from "../constants";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import { handleDebugActions } from "./common";
 
@@ -31,7 +31,7 @@ export class PrepareManifestTaskTerminal extends BaseTaskTerminal {
     }
 
     VsCodeLogInstance.outputChannel.show();
-    VsCodeLogInstance.info(prepareManifestDisplayMessages.taskName);
+    VsCodeLogInstance.info(`${taskNamePrefix}${prepareManifestDisplayMessages.taskName}`);
     VsCodeLogInstance.outputChannel.appendLine(prepareManifestDisplayMessages.check);
 
     const workspacePath: string = workspaceUri?.fsPath as string;

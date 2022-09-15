@@ -11,7 +11,7 @@ import { BotDebugArgs, BotDebugHandler } from "@microsoft/teamsfx-core";
 import VsCodeLogInstance from "../../commonlib/log";
 import { workspaceUri } from "../../globalVariables";
 import { tools } from "../../handlers";
-import { setUpBotDisplayMessages } from "../constants";
+import { setUpBotDisplayMessages, taskNamePrefix } from "../constants";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import { handleDebugActions } from "./common";
 import { LocalTunnelTaskTerminal } from "./localTunnelTaskTerminal";
@@ -36,7 +36,7 @@ export class SetUpBotTaskTerminal extends BaseTaskTerminal {
     }
 
     VsCodeLogInstance.outputChannel.show();
-    VsCodeLogInstance.info(setUpBotDisplayMessages.taskName);
+    VsCodeLogInstance.info(`${taskNamePrefix}${setUpBotDisplayMessages.taskName}`);
     VsCodeLogInstance.outputChannel.appendLine(setUpBotDisplayMessages.check);
 
     const workspacePath: string = workspaceUri?.fsPath as string;

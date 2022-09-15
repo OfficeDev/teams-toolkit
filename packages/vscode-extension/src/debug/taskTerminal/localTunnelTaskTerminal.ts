@@ -17,7 +17,7 @@ import { BaseTaskTerminal } from "./baseTaskTerminal";
 import { DepsManager, DepsType, LocalEnvManager } from "@microsoft/teamsfx-core";
 import { vscodeLogger } from "../depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "../depsChecker/vscodeTelemetry";
-import { openTerminalCommand, localTunnelDisplayMessages } from "../constants";
+import { openTerminalCommand, localTunnelDisplayMessages, taskNamePrefix } from "../constants";
 import VsCodeLogInstance from "../../commonlib/log";
 import { doctorConstant } from "../depsChecker/doctorConstant";
 
@@ -101,7 +101,9 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
       throw BaseTaskTerminal.taskDefinitionError("configFile");
     }
 
-    const configFile = BaseTaskTerminal.resolveTeamsFxVariables(this.args.configFile);
+    const configFile = path.normalize(
+      BaseTaskTerminal.resolveTeamsFxVariables(this.args.configFile)
+    );
     this.status.resolvedConfigFile = configFile;
 
     const binFolder = this.args.binFolder
@@ -208,7 +210,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
   }
 
   private outputStartMessage(): void {
-    VsCodeLogInstance.info(localTunnelDisplayMessages.taskName);
+    VsCodeLogInstance.info(`${taskNamePrefix}${localTunnelDisplayMessages.taskName}`);
     VsCodeLogInstance.outputChannel.appendLine(localTunnelDisplayMessages.check);
     VsCodeLogInstance.outputChannel.appendLine("");
 

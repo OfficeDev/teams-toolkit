@@ -87,7 +87,6 @@ describe("Add SSO Command Tests", function () {
             "command-and-response",
             "sso-tab",
             "tab",
-            "spfx-tab",
             "bot",
             "message-extension",
             "azure-function",

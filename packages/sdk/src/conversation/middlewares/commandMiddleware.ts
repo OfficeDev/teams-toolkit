@@ -17,8 +17,8 @@ import {
  * @internal
  */
 export class CommandResponseMiddleware implements Middleware {
-  public readonly commandHandlers: (TeamsFxBotCommandHandler | TeamsFxBotSsoCommandHandler)[] = [];
-  private readonly ssoCommandHandlers: TeamsFxBotSsoCommandHandler[] = [];
+  public readonly commandHandlers: TeamsFxBotCommandHandler[] = [];
+  public readonly ssoCommandHandlers: TeamsFxBotSsoCommandHandler[] = [];
 
   public ssoActivityHandler: BotSsoExecutionActivityHandler | undefined;
   public hasSsoCommand: boolean;
@@ -62,7 +62,6 @@ export class CommandResponseMiddleware implements Middleware {
       ssoHandler.triggerPatterns
     );
     this.ssoCommandHandlers.push(ssoHandler);
-    this.commandHandlers.push(ssoHandler);
     this.hasSsoCommand = true;
   }
 
@@ -70,28 +69,32 @@ export class CommandResponseMiddleware implements Middleware {
     if (context.activity.type === ActivityTypes.Message) {
       // Invoke corresponding command handler for the command response
       const commandText = this.getActivityText(context.activity);
-
+      let alreadyProcessed = false;
       for (const handler of this.commandHandlers) {
         const matchResult = this.shouldTrigger(handler.triggerPatterns, commandText);
 
         // It is important to note that the command bot will stop processing handlers
         // when the first command handler is matched.
         if (!!matchResult) {
-          if (this.isSsoExecutionHandler(handler)) {
-            await this.ssoActivityHandler?.run(context);
-          } else {
-            const message: CommandMessage = {
-              text: commandText,
-            };
-            message.matches = Array.isArray(matchResult) ? matchResult : void 0;
-            const response = await (handler as TeamsFxBotCommandHandler).handleCommandReceived(
-              context,
-              message
-            );
+          const message: CommandMessage = {
+            text: commandText,
+          };
+          message.matches = Array.isArray(matchResult) ? matchResult : void 0;
+          const response = await handler.handleCommandReceived(context, message);
 
-            await this.processResponse(context, response);
-          }
+          await this.processResponse(context, response);
+          alreadyProcessed = true;
           break;
+        }
+      }
+
+      if (!alreadyProcessed) {
+        for (const handler of this.ssoCommandHandlers) {
+          const matchResult = this.shouldTrigger(handler.triggerPatterns, commandText);
+          if (!!matchResult) {
+            await this.ssoActivityHandler?.run(context);
+            break;
+          }
         }
       }
     } else {
@@ -111,12 +114,6 @@ export class CommandResponseMiddleware implements Middleware {
         await context.sendActivity(replyActivity);
       }
     }
-  }
-
-  private isSsoExecutionHandler(
-    handler: TeamsFxBotCommandHandler | TeamsFxBotSsoCommandHandler
-  ): boolean {
-    return this.ssoCommandHandlers.indexOf(handler) >= 0;
   }
 
   private matchPattern(pattern: string | RegExp, text: string): boolean | RegExpMatchArray {

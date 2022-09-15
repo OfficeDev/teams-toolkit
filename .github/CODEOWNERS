@@ -43,7 +43,7 @@
 /packages/api @jayzhang @1yefuwang1 @LongOddCode @nliu-ms
 /packages/api/src/schemas @dooriya @qinezh @a1exwang @kimizhu
 
-/packages/sdk @tecton @blackchoey @SLdragon @dilin-MS @wenytang-ms @yiqing-zhao
+/packages/sdk @tecton @blackchoey @SLdragon @wenytang-ms @yiqing-zhao
 /packages/sdk/src/conversation @kimizhu @swatDong @a1exwang @XiaofuHuang @dooriya @SLdragon
 /packages/sdk/test/unit/node/conversation @kimizhu @swatDong @a1exwang @XiaofuHuang @dooriya
 
@@ -111,15 +111,15 @@
 /packages/fx-core/src/plugins/resource/keyvault @adashen @formulahendry @xzf0587
 /packages/fx-core/tests/plugins/resource/keyvault @adashen @formulahendry @xzf0587
 
-/packages/fx-core/src/plugins/solution/arm.ts @blackchoey @xzf0587 @dilin-MS @wenytang-ms @adashen
-/packages/fx-core/src/common/armInterface.ts @blackchoey @xzf0587 @dilin-MS @wenytang-ms @adashen
+/packages/fx-core/src/plugins/solution/arm.ts @blackchoey @xzf0587 @wenytang-ms @adashen
+/packages/fx-core/src/common/armInterface.ts @blackchoey @xzf0587 @wenytang-ms @adashen
 
 /packages/fx-core/src/common/local @kimizhu @swatDong @kuojianlu @XiaofuHuang
 /packages/fx-core/tests/common/local @kimizhu @swatDong @kuojianlu @XiaofuHuang
 
 /packages/simpleauth @adashen @blackchoey @wenytang-ms
 
-/packages/function-extension @adashen @blackchoey @dilin-MS
+/packages/function-extension @adashen @blackchoey
 
 /packages/dotnet-sdk @tecton @JerryYangKai @yiqing-zhao
 /packages/dotnet-sdk/src/TeamsFx/Conversation @swatDong @dooriya @kimizhu

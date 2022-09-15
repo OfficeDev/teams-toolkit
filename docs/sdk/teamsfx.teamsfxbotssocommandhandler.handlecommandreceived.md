@@ -9,7 +9,7 @@ Handles a bot command received activity.
 <b>Signature:</b>
 
 ```typescript
-handleCommandReceived(context: TurnContext, message: CommandMessage, ssoToken: TeamsBotSsoPromptTokenResponse): Promise<string | Partial<Activity> | void>;
+handleCommandReceived(context: TurnContext, message: CommandMessage, tokenResponse: TeamsBotSsoPromptTokenResponse): Promise<string | Partial<Activity> | void>;
 ```
 
 ## Parameters
@@ -18,7 +18,7 @@ handleCommandReceived(context: TurnContext, message: CommandMessage, ssoToken: T
 |  --- | --- | --- |
 |  context | TurnContext | The bot context. |
 |  message | [CommandMessage](./teamsfx.commandmessage.md) | The command message the user types from Teams. |
-|  ssoToken | [TeamsBotSsoPromptTokenResponse](./teamsfx.teamsbotssoprompttokenresponse.md) | The sso token which can be used to exchange access token for the bot. |
+|  tokenResponse | [TeamsBotSsoPromptTokenResponse](./teamsfx.teamsbotssoprompttokenresponse.md) | The tokenResponse which contains sso token that can be used to exchange access token for the bot. |
 
 <b>Returns:</b>
 

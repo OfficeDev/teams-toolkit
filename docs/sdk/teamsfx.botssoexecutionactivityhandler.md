@@ -28,7 +28,7 @@ export const commandBot = new ConversationBot({
    ...
 });
 ```
-For details information about how to implement a BotSsoExecutionActivityHandler, please refer [DefaultBotSsoExecutionActivityHandler](./teamsfx.defaultbotssoexecutionactivityhandler.md) class source code.
+For details information about how to implement a BotSsoExecutionActivityHandler, please refer DefaultBotSsoExecutionActivityHandler class source code: https://aka.ms/teamsfx-default-sso-execution-activity-handler
 
 ## Methods
 

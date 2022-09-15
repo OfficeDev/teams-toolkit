@@ -83,6 +83,8 @@ describe("Add SSO Command Tests", function () {
       isPreviewFeaturesEnabled()
         ? [
             "add <feature>",
+            "notification",
+            "command-and-response",
             "sso-tab",
             "tab",
             "bot",

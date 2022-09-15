@@ -38,7 +38,6 @@ import { VS_CODE_UI } from "../extension";
 import { localTelemetryReporter, sendDebugAllEvent } from "./localTelemetryReporter";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { performance } from "perf_hooks";
-import * as kill from "tree-kill";
 import { LocalTunnelTaskTerminal } from "./taskTerminal/localTunnelTaskTerminal";
 
 class NpmInstallTaskInfo {
@@ -500,7 +499,7 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
 export function terminateAllRunningTeamsfxTasks(): void {
   for (const task of allRunningTeamsfxTasks) {
     try {
-      kill(task[1], "SIGTERM");
+      process.kill(task[1], "SIGTERM");
     } catch (e) {
       // ignore and keep killing others
     }

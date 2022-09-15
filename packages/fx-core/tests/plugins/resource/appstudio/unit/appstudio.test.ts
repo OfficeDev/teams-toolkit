@@ -32,7 +32,7 @@ describe("App Studio API Test", () => {
     sinon.restore();
   });
 
-  describe.skip("publish Teams app", () => {
+  describe("publish Teams app", () => {
     it("API Failure", async () => {
       const fakeAxiosInstance = axios.create();
       sinon.stub(axios, "create").returns(fakeAxiosInstance);
@@ -226,7 +226,7 @@ describe("App Studio API Test", () => {
     });
   });
 
-  describe.skip("get Teams app", () => {
+  describe("get Teams app", () => {
     it("Happy path", async () => {
       const fakeAxiosInstance = axios.create();
       sinon.stub(axios, "create").returns(fakeAxiosInstance);
@@ -265,7 +265,7 @@ describe("App Studio API Test", () => {
     });
   });
 
-  describe.skip("Check exists in tenant", () => {
+  describe("Check exists in tenant", () => {
     it("Happy path", async () => {
       const fakeAxiosInstance = axios.create();
       sinon.stub(axios, "create").returns(fakeAxiosInstance);
@@ -280,7 +280,7 @@ describe("App Studio API Test", () => {
     });
   });
 
-  describe.skip("publishTeamsAppUpdate", () => {
+  describe("publishTeamsAppUpdate", () => {
     it("should contain x-correlation-id on BadeRequest with 2xx status code", async () => {
       const fakeAxiosInstance = axios.create();
       sinon.stub(axios, "create").returns(fakeAxiosInstance);

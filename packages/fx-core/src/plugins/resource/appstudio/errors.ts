@@ -268,4 +268,12 @@ export class AppStudioError {
       getLocalizedString("error.appstudio.teamsAppCreateConflict"),
     ],
   };
+
+  public static readonly TeamsAppCreateConflictWithPublishedAppError = {
+    name: "TeamsAppCreateConflictWithPublishedApp",
+    message: (): [string, string] => [
+      getDefaultString("error.appstudio.teamsAppCreateConflictWithPublishedApp"),
+      getLocalizedString("error.appstudio.teamsAppCreateConflictWithPublishedApp"),
+    ],
+  };
 }

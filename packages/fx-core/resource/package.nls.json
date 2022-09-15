@@ -452,6 +452,7 @@
   "error.appstudio.validateFetchSchemaFailed": "Failed to get schema from %s, message: %s",
   "error.appstudio.validateSchemaNotDefined": "Manifest schema is not defined",
   "error.appstudio.teamsAppCreateConflict": "Failed to create Teams app with 409 Conflict error. That may come from your app id is conflicting with another app in your tenant. Click Get Help to learn more.",
+  "error.appstudio.teamsAppCreateConflictWithPublishedApp": "A Teams app with that id already exists in your organization's app store. Please manually update the app id and try again.",
   "error.function.FunctionNameConflictError": "Function already exists, please choose another name.",
   "error.function.FetchConfigError": "Failed to find %s from configuration.",
   "error.function.ValidationError": "Invalid %s.",

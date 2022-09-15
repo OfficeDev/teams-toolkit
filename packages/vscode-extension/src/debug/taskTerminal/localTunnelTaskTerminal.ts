@@ -101,7 +101,8 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
       throw BaseTaskTerminal.taskDefinitionError("configFile");
     }
 
-    const configFile = path.normalize(
+    const configFile = path.resolve(
+      globalVariables.workspaceUri?.fsPath ?? "",
       BaseTaskTerminal.resolveTeamsFxVariables(this.args.configFile)
     );
     this.status.resolvedConfigFile = configFile;

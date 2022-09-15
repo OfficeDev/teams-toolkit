@@ -38,9 +38,9 @@ import { IAADDefinition } from "../interfaces/IAADDefinition";
 import { TelemetryUtils } from "./telemetry";
 import { ResultFactory } from "../results";
 import { getPermissionRequest } from "../permissions";
-import { GraphScopes, isAadManifestEnabled } from "../../../../common";
 import { convertToAlphanumericOnly } from "../../../../common/utils";
 import { ComponentNames } from "../../../../component/constants";
+import { GraphScopes, isAadManifestEnabled } from "../../../../common/tools";
 
 const aadComponentKey = ComponentNames.AadApp;
 const tabComponentKey = ComponentNames.TeamsTab;

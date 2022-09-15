@@ -48,9 +48,10 @@ import "../../src/plugins/solution/fx-solution/v2/solution";
 import { getLocalizedString } from "../../src/common/localizeUtils";
 import { ResourceManagementClient } from "@azure/arm-resources";
 import { resourceGroupHelper } from "../../src/plugins/solution/fx-solution/utils/ResourceGroupHelper";
-import { MockedAzureAccountProvider } from "../plugins/solution/util";
-import { MockedAzureTokenProvider } from "../plugins/solution/solution.provision.test";
-import { upgradeDefaultFunctionName, upgradeProgrammingLanguage } from "../../src/core/middleware";
+import {
+  upgradeDefaultFunctionName,
+  upgradeProgrammingLanguage,
+} from "../../src/core/middleware/envInfoLoader";
 describe("Other test case", () => {
   const sandbox = sinon.createSandbox();
 
@@ -299,9 +300,9 @@ describe("Other test case", () => {
   });
   it("getQuestionsForResourceGroup", async () => {
     const mockSubscriptionId = "mockSub";
-    const accountProvider = new MockedAzureTokenProvider();
+    const accountProvider = new MockAzureAccountProvider();
     const mockToken = await accountProvider.getAccountCredentialAsync();
-    const mockRmClient = new ResourceManagementClient(mockToken, mockSubscriptionId);
+    const mockRmClient = new ResourceManagementClient(mockToken!, mockSubscriptionId);
     const node = await resourceGroupHelper.getQuestionsForResourceGroup(
       "defaultRG",
       [["g1", "East US"]],

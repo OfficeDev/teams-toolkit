@@ -13,8 +13,8 @@ import {
   convertToLocalEnvs,
   getProjectComponents,
 } from "../../../src/common/local/localSettingsHelper";
-import { LocalEnvManager } from "../../../src";
 import { ProjectSettings, ProjectSettingsV3 } from "@microsoft/teamsfx-api";
+import { LocalEnvManager } from "../../../src/common/local/localEnvManager";
 chai.use(chaiAsPromised);
 
 describe("localSettingsHelper", () => {

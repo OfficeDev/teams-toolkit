@@ -5,21 +5,15 @@ import { ProjectSettings } from "@microsoft/teamsfx-api/build/types";
 import { assert, expect } from "chai";
 import * as dotenv from "dotenv";
 import "mocha";
+import { isValidProject, validateProjectSettings } from "../../src/common/projectSettingsHelper";
 import {
   convertDotenvToEmbeddedJson,
-  isValidProject,
-  newEnvInfo,
   redactObject,
   replaceTemplateWithUserData,
-  validateProjectSettings,
-} from "../../src";
+} from "../../src/common/tools";
+import { newEnvInfo } from "../../src/core/environment";
 import { BuiltInSolutionNames } from "../../src/plugins/solution/fx-solution/v3/constants";
 describe("tools", () => {
-  // it("base64 encode", () => {
-  //   const source = "Hello, World!";
-  //   expect(base64Encode(source)).to.equal("SGVsbG8sIFdvcmxkIQ==");
-  // });
-
   it("newEnvInfo should return valid object", () => {
     const result = newEnvInfo();
     expect(result).to.be.not.null;

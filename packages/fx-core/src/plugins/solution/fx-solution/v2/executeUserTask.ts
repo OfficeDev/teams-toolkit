@@ -27,14 +27,6 @@ import { cloneDeep } from "lodash";
 import path from "path";
 import { Container } from "typedi";
 import * as util from "util";
-import {
-  BotHostTypeName,
-  BotHostTypes,
-  canAddSso,
-  isAADEnabled,
-  isAadManifestEnabled,
-  isSPFxMultiTabEnabled,
-} from "../../../../common";
 import { ResourcePlugins } from "../../../../common/constants";
 import { isExistingTabApp, isVSProject } from "../../../../common/projectSettingsHelper";
 import {
@@ -95,6 +87,9 @@ import { unzip } from "../../../../common/template-utils/templatesUtils";
 import { InputsWithProjectPath } from "@microsoft/teamsfx-api/build/v2";
 import { AppManifest } from "../../../../component/resource/appManifest/appManifest";
 import { ComponentNames } from "../../../../component/constants";
+import { isSPFxMultiTabEnabled } from "../../../../common/featureFlags";
+import { canAddSso, isAADEnabled, isAadManifestEnabled } from "../../../../common/tools";
+import { BotHostTypeName, BotHostTypes } from "../../../../common/local/constants";
 export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,

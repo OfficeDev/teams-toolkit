@@ -19,7 +19,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
-import { newEnvInfo, setTools } from "../../../../src";
 import { TabLanguage } from "../../../../src/plugins/resource/frontend/resources/templateInfo";
 import { LocalCrypto } from "../../../../src/core/crypto";
 import {
@@ -36,6 +35,8 @@ import {
 } from "../../../core/utils";
 import * as path from "path";
 import * as os from "os";
+import { newEnvInfo } from "../../../../src/core/environment";
+import { setTools } from "../../../../src/core/globalVars";
 describe("API V2 adapter", () => {
   beforeEach(() => {});
 

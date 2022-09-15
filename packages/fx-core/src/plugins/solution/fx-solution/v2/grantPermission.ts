@@ -20,11 +20,11 @@ import {
   UserError,
   SystemError,
 } from "@microsoft/teamsfx-api";
-import { CollaborationState, PermissionsResult, ResourcePermission } from "../../../../common";
 import { AppUser } from "../../../resource/appstudio/interfaces/appUser";
 import {
   AzureRoleAssignmentsHelpLink,
   PluginNames,
+  REMOTE_TEAMS_APP_TENANT_ID,
   SharePointManageSiteAdminHelpLink,
   SolutionError,
   SolutionSource,
@@ -40,10 +40,14 @@ import { flattenConfigMap } from "../../../resource/utils4v2";
 import { NamedThunk, executeConcurrently as executeNamedThunkConcurrently } from "./executor";
 import { CollaborationUtil, CollabApiParam } from "./collaborationUtil";
 import { getPluginAndContextArray } from "./utils";
-import { REMOTE_TEAMS_APP_TENANT_ID } from "..";
 import { Container } from "typedi";
 import { PluginsWithContext } from "../types";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
+import {
+  CollaborationState,
+  PermissionsResult,
+  ResourcePermission,
+} from "../../../../common/permissionInterface";
 
 async function grantPermissionImpl(
   param: CollabApiParam,

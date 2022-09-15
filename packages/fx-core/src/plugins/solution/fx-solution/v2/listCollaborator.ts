@@ -20,14 +20,6 @@ import {
   SystemError,
   UserError,
 } from "@microsoft/teamsfx-api";
-import {
-  AadOwner,
-  CollaborationState,
-  Collaborator,
-  getHashedEnv,
-  ListCollaboratorResult,
-  TeamsAppAdmin,
-} from "../../../../common";
 import { AppUser } from "../../../resource/appstudio/interfaces/appUser";
 import {
   PluginNames,
@@ -51,6 +43,14 @@ import * as util from "util";
 import { PluginsWithContext } from "../types";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { VSCodeExtensionCommand } from "../../../../common/constants";
+import {
+  AadOwner,
+  CollaborationState,
+  Collaborator,
+  ListCollaboratorResult,
+  TeamsAppAdmin,
+} from "../../../../common/permissionInterface";
+import { getHashedEnv } from "../../../../common/tools";
 
 export async function executeListCollaboratorV2(
   ctx: v2.Context,

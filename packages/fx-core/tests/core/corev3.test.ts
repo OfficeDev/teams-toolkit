@@ -4,12 +4,10 @@
 import { Inputs, ok, Platform, Stage, v3 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
-import mockedEnv, { RestoreFn } from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { Container } from "typedi";
-import { environmentManager, FxCore, setTools } from "../../src";
+import { FxCore } from "../../src";
 import {
   CoreQuestionNames,
   ScratchOptionNoVSC,
@@ -20,11 +18,12 @@ import {
   TabOptionItem,
   TabSPFxItem,
 } from "../../src/plugins/solution/fx-solution/question";
-import { BuiltInSolutionNames } from "../../src/plugins/solution/fx-solution/v3/constants";
 import { deleteFolder, MockTools, randomAppName } from "./utils";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import fs from "fs-extra";
 import { SPFXQuestionNames } from "../../src/plugins/resource/spfx/utils/questions";
+import { setTools } from "../../src/core/globalVars";
+import { environmentManager } from "../../src/core/environment";
 describe("Core basic APIs for v3", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();

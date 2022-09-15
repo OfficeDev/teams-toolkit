@@ -41,13 +41,9 @@ import {
 
 import { getLocalizedString } from "../common/localizeUtils";
 import { localSettingsFileName } from "../common/localSettingsProvider";
-import {
-  isExistingTabApp,
-  isValidProject,
-  newProjectSettings,
-} from "../common/projectSettingsHelper";
+import { isValidProject, newProjectSettings } from "../common/projectSettingsHelper";
 import { TelemetryReporterInstance } from "../common/telemetry";
-import { createV2Context, mapToJson, undefinedName } from "../common/tools";
+import { createV2Context } from "../common/tools";
 import { getTemplatesFolder } from "../folder";
 import {
   ApiConnectionOptionItem,
@@ -62,7 +58,6 @@ import { LocalCrypto } from "./crypto";
 import { environmentManager, newEnvInfoV3 } from "./environment";
 import {
   CopyFileError,
-  FunctionRouterError,
   InvalidInputError,
   NonExistEnvNameError,
   NotImplementedError,
@@ -83,33 +78,13 @@ import {
   loadSolutionContext,
 } from "./middleware/envInfoLoader";
 import { EnvInfoLoaderMW_V3, loadEnvInfoV3 } from "./middleware/envInfoLoaderV3";
-import { EnvInfoWriterMW } from "./middleware/envInfoWriter";
 import { EnvInfoWriterMW_V3 } from "./middleware/envInfoWriterV3";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { ProjectMigratorMW } from "./middleware/projectMigrator";
 import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
 import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
-import {
-  getQuestionsForAddFeature,
-  getQuestionsForCreateProjectV2,
-  getQuestionsForCreateProjectV3,
-  getQuestionsForDeploy,
-  getQuestionsForInit,
-  getQuestionsForProvision,
-  getQuestionsForPublish,
-  getQuestionsForUserTaskV2,
-  getQuestionsForUserTaskV3,
-  getQuestionsV2,
-  QuestionModelMW,
-} from "./middleware/questionModel";
-import { SolutionLoaderMW } from "./middleware/solutionLoader";
-import {
-  CoreQuestionNames,
-  ProjectNamePattern,
-  QuestionRootFolder,
-  ScratchOptionNo,
-} from "./question";
-import { getAllSolutionPluginsV2, getSolutionPluginV2ByName } from "./SolutionPluginContainer";
+import { getQuestionsForCreateProjectV2, QuestionModelMW } from "./middleware/questionModel";
+import { CoreQuestionNames, ProjectNamePattern } from "./question";
 import {
   CoreTelemetryComponentName,
   CoreTelemetryEvent,
@@ -118,9 +93,8 @@ import {
   sendErrorTelemetryThenReturnError,
 } from "./telemetry";
 import { CoreHookContext } from "./types";
-import { isPreviewFeaturesEnabled } from "../common/featureFlags";
 import { createContextV3 } from "../component/utils";
-import "../component/core";
+import { preCheck } from "../component/core";
 import {
   FeatureId,
   getQuestionsForAddFeatureSubCommand,
@@ -137,7 +111,7 @@ import { ApiConnectorImpl } from "../component/feature/apiconnector/ApiConnector
 import { createEnvWithName } from "../component/envManager";
 import { getProjectTemplatesFolderPath } from "../common/utils";
 import { manifestUtils } from "../component/resource/appManifest/utils";
-import { preCheck } from "../component/core";
+import { copyParameterJson } from "../plugins/solution/fx-solution/arm";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -476,26 +450,14 @@ export class FxCore implements v3.ICore {
     }
     return res;
   }
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(true),
-    SolutionLoaderMW,
-    ContextInjectorMW,
-    EnvInfoWriterMW(),
-  ])
+  @hooks([ErrorHandlerMW])
   async getQuestions(
     stage: Stage,
-    inputs: Inputs,
-    ctx?: CoreHookContext
+    inputs: Inputs
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    if (!ctx) return err(new ObjectIsUndefinedError("getQuestions input stuff"));
     inputs.stage = Stage.getQuestions;
     setCurrentStage(Stage.getQuestions);
-    const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-    context.envInfo = ctx.envInfoV2 as v3.EnvInfoV3;
-    context.tokenProvider = TOOLS.tokenProvider;
+    const context = createContextV3();
     if (stage === Stage.publish) {
       return await publishQuestion(inputs);
     } else if (stage === Stage.create) {
@@ -516,24 +478,14 @@ export class FxCore implements v3.ICore {
     return res;
   }
 
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(true),
-    SolutionLoaderMW,
-    ContextInjectorMW,
-    EnvInfoWriterMW(),
-  ])
+  @hooks([ErrorHandlerMW])
   async getQuestionsForUserTask(
     func: FunctionRouter,
-    inputs: Inputs,
-    ctx?: CoreHookContext
+    inputs: Inputs
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    if (!ctx) return err(new ObjectIsUndefinedError("getQuestionsForUserTask input stuff"));
     inputs.stage = Stage.getQuestions;
     setCurrentStage(Stage.getQuestions);
-    const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+    const context = createContextV3();
     if (func.method === "addFeature") {
       return await getQuestionsForAddFeatureV3(context, inputs);
     } else if (func.method === "addResource") {
@@ -777,8 +729,7 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
-    SolutionLoaderMW,
-    EnvInfoLoaderMW(true),
+    EnvInfoLoaderMW_V3(true),
     ContextInjectorMW,
   ])
   async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
@@ -813,12 +764,12 @@ export class FxCore implements v3.ICore {
     inputs.sourceEnvName = createEnvCopyInput.sourceEnvName;
     inputs.targetEnvName = createEnvCopyInput.targetEnvName;
 
-    if (!ctx.solutionV2 || !ctx.contextV2)
-      return err(new ObjectIsUndefinedError("ctx.solutionV2, ctx.contextV2"));
-    if (ctx.solutionV2.createEnv) {
-      inputs.copy = true;
-      return await ctx.solutionV2.createEnv(ctx.contextV2, inputs);
-    }
+    await copyParameterJson(
+      inputs.projectPath!,
+      ctx.projectSetting.appName,
+      inputs.targetEnvName!,
+      inputs.sourceEnvName!
+    );
     return ok(Void);
   }
 
@@ -860,7 +811,6 @@ export class FxCore implements v3.ICore {
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
-    SolutionLoaderMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
   ])
@@ -883,7 +833,6 @@ export class FxCore implements v3.ICore {
       return err(NonExistEnvNameError(env));
     }
 
-    const core = ctx!.self as FxCore;
     const solutionContext = await loadSolutionContext(inputs, ctx!.projectSettings, env);
 
     if (!solutionContext.isErr()) {
@@ -1005,7 +954,7 @@ export class FxCore implements v3.ICore {
     return ok(inputs.projectPath!);
   }
 
-  @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjectorMW, ProjectSettingsWriterMW])
+  @hooks([ErrorHandlerMW, ContextInjectorMW, ProjectSettingsWriterMW])
   async init(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     const result = await this._init(inputs, ctx);
     if (result.isOk()) {
@@ -1014,19 +963,6 @@ export class FxCore implements v3.ICore {
 
     return result;
   }
-
-  //V1,V2 questions
-  _getQuestionsForCreateProjectV2 = getQuestionsForCreateProjectV2;
-  _getQuestionsForCreateProjectV3 = getQuestionsForCreateProjectV3;
-  _getQuestionsForUserTask = getQuestionsForUserTaskV2;
-  _getQuestions = getQuestionsV2;
-  //v3 questions
-  _getQuestionsForAddFeature = getQuestionsForAddFeature;
-  _getQuestionsForProvision = getQuestionsForProvision;
-  _getQuestionsForDeploy = getQuestionsForDeploy;
-  _getQuestionsForPublish = getQuestionsForPublish;
-  _getQuestionsForInit = getQuestionsForInit;
-  _getQuestionsForUserTaskV3 = getQuestionsForUserTaskV3;
 }
 
 export async function ensureBasicFolderStructure(

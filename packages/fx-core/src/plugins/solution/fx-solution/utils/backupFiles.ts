@@ -14,7 +14,7 @@ import { SolutionError, SolutionSource } from "../constants";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { getResourceFolder } from "../../../../folder";
 import { addPathToGitignore } from "../../../../core/middleware/projectMigrator";
-import { TOOLS } from "../../../../core";
+import { TOOLS } from "../../../../core/globalVars";
 
 const windowsPathLengthLimit = 260;
 const fileNameLengthLimit = 255;

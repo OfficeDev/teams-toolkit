@@ -37,7 +37,7 @@ import {
 } from "../common/telemetry";
 import { getHashedEnv } from "../common/tools";
 import { convertToAlphanumericOnly } from "../common/utils";
-import { globalVars } from "../core";
+import { globalVars } from "../core/globalVars";
 import {
   FillInAzureConfigsResult,
   GLOBAL_CONFIG,

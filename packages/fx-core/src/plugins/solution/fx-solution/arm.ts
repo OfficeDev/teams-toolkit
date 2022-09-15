@@ -38,11 +38,11 @@ import {
   SUBSCRIPTION_ID,
 } from "./constants";
 import { environmentManager } from "../../../core/environment";
-import { compileHandlebarsTemplateString, isVSProject } from "../../../common";
 import { ArmTemplateResult, NamedArmResourcePlugin } from "../../../common/armInterface";
 import { ConstantString, HelpLinks, PluginDisplayName } from "../../../common/constants";
 import { executeCommand } from "../../../common/cpUtils";
 import {
+  compileHandlebarsTemplateString,
   getResourceGroupNameFromResourceId,
   getSubscriptionIdFromResourceId,
   getUuid,
@@ -57,6 +57,7 @@ import { NamedArmResourcePluginAdaptor } from "./v2/adaptor";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { convertToAlphanumericOnly, getProjectTemplatesFolderPath } from "../../../common/utils";
 import { convertManifestTemplateToV3, pluginName2ComponentName } from "../../../component/migrate";
+import { isVSProject } from "../../../common/projectSettingsHelper";
 
 const bicepOrchestrationFileName = "main.bicep";
 const bicepOrchestrationProvisionMainFileName = "mainProvision.bicep";

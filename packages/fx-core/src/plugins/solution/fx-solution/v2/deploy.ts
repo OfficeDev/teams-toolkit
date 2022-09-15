@@ -14,10 +14,10 @@ import {
   v3,
 } from "@microsoft/teamsfx-api";
 import { isUndefined } from "lodash";
-import { AppStudioScopes } from "../../../../common";
 import { PluginDisplayName } from "../../../../common/constants";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { getAzurePlugins, isVSProject } from "../../../../common/projectSettingsHelper";
+import { AppStudioScopes } from "../../../../common/tools";
 import { deployUtils } from "../../../../component/deployUtils";
 import { Constants } from "../../../resource/aad/constants";
 import { checkM365Tenant, checkSubscription } from "../commonQuestions";

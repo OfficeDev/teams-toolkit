@@ -20,7 +20,6 @@ import {
   SystemError,
   UserError,
 } from "@microsoft/teamsfx-api";
-import { CollaborationState, PermissionsResult, ResourcePermission } from "../../../../common";
 import { AppUser } from "../../../resource/appstudio/interfaces/appUser";
 import {
   PluginNames,
@@ -42,6 +41,11 @@ import { getPluginAndContextArray } from "./utils";
 import { Container } from "typedi";
 import { PluginsWithContext } from "../types";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
+import {
+  CollaborationState,
+  PermissionsResult,
+  ResourcePermission,
+} from "../../../../common/permissionInterface";
 
 async function executeCheckPermissionV1(
   ctx: SolutionContext,

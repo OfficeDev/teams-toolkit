@@ -1,5 +1,5 @@
 import { Json } from "@microsoft/teamsfx-api";
-import { compileHandlebarsTemplateString } from "../../../src";
+import { compileHandlebarsTemplateString } from "../../../src/common/tools";
 import { ArmTemplateResult } from "../../../src/common/armInterface";
 
 export function mockSolutionGenerateArmTemplates(

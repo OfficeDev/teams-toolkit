@@ -1,6 +1,6 @@
 import { FxError, Inputs, Json, Result, v2 } from "@microsoft/teamsfx-api";
-import { isVSProject } from "../../../../common";
 import { getLocalizedString } from "../../../../common/localizeUtils";
+import { isVSProject } from "../../../../common/projectSettingsHelper";
 import { armV2 } from "../arm";
 import { NamedArmResourcePluginAdaptor, ScaffoldingContextAdapter } from "./adaptor";
 import { showUpdateArmTemplateNotice } from "./executeUserTask";

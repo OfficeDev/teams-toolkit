@@ -12,8 +12,8 @@ import {
 } from "@microsoft/teamsfx-api";
 import { DeepReadonly, EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { Service } from "typedi";
-import { isPreviewFeaturesEnabled } from "../../../../common";
 import { PluginDisplayName } from "../../../../common/constants";
+import { isPreviewFeaturesEnabled } from "../../../../common/featureFlags";
 import { SolutionPluginsV2 } from "../../../../core/SolutionPluginContainer";
 import { checkPermission } from "./checkPermission";
 import { TeamsAppSolutionNameV2 } from "./constants";

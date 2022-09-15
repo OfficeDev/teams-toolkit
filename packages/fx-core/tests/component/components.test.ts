@@ -1059,7 +1059,7 @@ describe("Core component test for v3", () => {
 
   it("fx.deploy.cli.withAAD", async () => {
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
-    mockedEnvRestore = mockedEnv({
+    const mockedEnvRestore = mockedEnv({
       SWITCH_ACCOUNT: "false",
       TEAMSFX_AAD_MANIFEST: "true",
     });
@@ -1180,11 +1180,13 @@ describe("Core component test for v3", () => {
       }
       assert.isTrue(deployRes.isErr());
     }
+
+    mockedEnvRestore();
   });
 
   it("fx.deployAadFromVscode", async () => {
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
-    mockedEnvRestore = mockedEnv({
+    const mockedEnvRestore = mockedEnv({
       SWITCH_ACCOUNT: "false",
       TEAMSFX_AAD_MANIFEST: "true",
     });
@@ -1290,6 +1292,7 @@ describe("Core component test for v3", () => {
       console.log(deployRes.error);
     }
     assert.isTrue(deployRes.isOk());
+    mockedEnvRestore();
   });
   it("getParameterJsonV3", async () => {
     const str = `{

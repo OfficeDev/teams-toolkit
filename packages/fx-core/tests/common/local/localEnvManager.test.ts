@@ -13,8 +13,6 @@ import * as tools from "../../../src/common/tools";
 import { LocalEnvManager } from "../../../src/common/local/localEnvManager";
 import { DepsType } from "../../../src/common/deps-checker/depsChecker";
 import sinon from "sinon";
-import mockedEnv, { RestoreFn } from "mocked-env";
-import { environmentManager } from "../../../src";
 import {
   LocalEnvProvider,
   LocalEnvs,
@@ -24,6 +22,7 @@ import {
   LocalCertificate,
   LocalCertificateManager,
 } from "../../../src/common/local/localCertificateManager";
+import { environmentManager } from "../../../src/core/environment";
 
 chai.use(chaiAsPromised);
 

@@ -57,8 +57,8 @@ import * as TasksNext from "../plugins/solution/fx-solution/debug/util/tasksNext
 import * as Settings from "../plugins/solution/fx-solution/debug/util/settings";
 import fs from "fs-extra";
 import { updateJson, useNewTasks } from "../plugins/solution/fx-solution/debug/scaffolding";
-import { TOOLS } from "../core";
 import { getComponent } from "./workflow";
+import { TOOLS } from "../core/globalVars";
 
 export interface LocalEnvConfig {
   vscodeEnv?: VsCodeEnv;

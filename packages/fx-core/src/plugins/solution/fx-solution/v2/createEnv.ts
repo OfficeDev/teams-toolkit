@@ -9,8 +9,8 @@ import {
   v2,
   Void,
 } from "@microsoft/teamsfx-api";
-import { CopyFileError } from "../../../../core";
 import { newEnvInfo } from "../../../../core/environment";
+import { CopyFileError } from "../../../../core/error";
 import { copyParameterJson, getParameterJson } from "../arm";
 import { isAzureProject } from "./utils";
 

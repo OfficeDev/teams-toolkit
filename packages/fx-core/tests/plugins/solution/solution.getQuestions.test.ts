@@ -66,9 +66,8 @@ import {
 import { BuiltInFeaturePluginNames } from "../../../src/plugins/solution/fx-solution/v3/constants";
 import { MockedM365Provider, MockedAzureAccountProvider, MockedV2Context } from "./util";
 import { BotCapabilities, PluginBot } from "../../../src/plugins/resource/bot/resources/strings";
-import { BotHostTypes } from "../../../src";
-import mockedEnv, { RestoreFn } from "mocked-env";
 import { manifestUtils } from "../../../src/component/resource/appManifest/utils";
+import { BotHostTypes } from "../../../src/common/local/constants";
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 const functionPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FunctionPlugin);

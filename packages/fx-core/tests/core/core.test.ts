@@ -31,15 +31,9 @@ import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import { Container } from "typedi";
-import {
-  createV2Context,
-  environmentManager,
-  FxCore,
-  InvalidInputError,
-  setTools,
-  validateProjectSettings,
-} from "../../src";
 import * as featureFlags from "../../src/common/featureFlags";
+import { validateProjectSettings } from "../../src/common/projectSettingsHelper";
+import { setTools } from "../../src/core/globalVars";
 import { loadProjectSettings } from "../../src/core/middleware/projectSettingsLoader";
 import {
   CoreQuestionNames,
@@ -58,6 +52,10 @@ import { ResourcePlugins } from "../../src/plugins/solution/fx-solution/Resource
 import { scaffoldSourceCode } from "../../src/plugins/solution/fx-solution/v2/scaffolding";
 import { BuiltInSolutionNames } from "../../src/plugins/solution/fx-solution/v3/constants";
 import { deleteFolder, MockSolution, MockSolutionV2, MockTools, randomAppName } from "./utils";
+import { FxCore } from "../../src";
+import { createV2Context } from "../../src/common/tools";
+import { InvalidInputError } from "../../src/core/error";
+import { environmentManager } from "../../src/core/environment";
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
   const mockSolutionV1 = new MockSolution();

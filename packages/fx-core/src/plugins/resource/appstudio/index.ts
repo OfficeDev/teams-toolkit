@@ -35,8 +35,8 @@ import "./v2";
 import { AppUser } from "./interfaces/appUser";
 import { getManifestTemplatePath } from "./manifestTemplate";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
-import { isDeployManifestEnabled } from "../../../common";
 import { VSCodeExtensionCommand } from "../../../common/constants";
+import { isDeployManifestEnabled } from "../../../common/tools";
 
 @Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {

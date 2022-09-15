@@ -31,7 +31,7 @@ import {
   HostTypeOptionAzure,
 } from "../../../../../src/plugins/solution/fx-solution/question";
 import { ResourcePlugins } from "../../util";
-import { PluginNames } from "../../../../../src";
+import { PluginNames } from "../../../../../src/plugins/solution/fx-solution/constants";
 chai.use(chaiAsPromised);
 
 dotenv.config();

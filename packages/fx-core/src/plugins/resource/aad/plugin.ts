@@ -74,9 +74,13 @@ import {
   TabOptionItem,
 } from "../../solution/fx-solution/question";
 import { format, Formats } from "./utils/format";
-import { PluginNames, REMOTE_AAD_ID, SOLUTION_PROVISION_SUCCEEDED } from "../../solution";
 import { generateAadManifestTemplate } from "../../../core/generateAadManifestTemplate";
-import { isVSProject } from "../../../common";
+import { isVSProject } from "../../../common/projectSettingsHelper";
+import {
+  PluginNames,
+  REMOTE_AAD_ID,
+  SOLUTION_PROVISION_SUCCEEDED,
+} from "../../solution/fx-solution/constants";
 
 export class AadAppForTeamsImpl {
   public async provision(ctx: PluginContext, isLocalDebug = false): Promise<AadResult> {

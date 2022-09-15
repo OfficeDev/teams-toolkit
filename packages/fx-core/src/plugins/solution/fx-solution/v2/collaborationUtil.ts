@@ -20,9 +20,9 @@ import { isArray } from "lodash";
 import {
   CollaborationState,
   CollaborationStateResult,
-  GraphScopes,
   ResourcePermission,
-} from "../../../../common";
+} from "../../../../common/permissionInterface";
+import { GraphScopes } from "../../../../common/tools";
 import { AppUser } from "../../../resource/appstudio/interfaces/appUser";
 import {
   GLOBAL_CONFIG,

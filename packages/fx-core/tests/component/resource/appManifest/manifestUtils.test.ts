@@ -40,7 +40,7 @@ import {
 import { MockTools } from "../../../core/utils";
 import { getAzureProjectRoot } from "../../../plugins/resource/appstudio/helper";
 import fs from "fs-extra";
-import { newEnvInfoV3 } from "../../../../src";
+import { newEnvInfoV3 } from "../../../../src/core/environment";
 
 describe("Load and Save manifest template V3", () => {
   setTools(new MockTools());

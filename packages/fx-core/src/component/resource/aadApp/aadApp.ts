@@ -26,12 +26,12 @@ import { convertContext } from "./utils";
 import { convertProjectSettingsV3ToV2 } from "../../migrate";
 import { generateAadManifestTemplate } from "../../../core/generateAadManifestTemplate";
 import { createAuthFiles } from "../../../plugins/solution/fx-solution/v2/executeUserTask";
-import { isVSProject } from "../../../common";
 import { DialogUtils } from "../../../plugins/resource/aad/utils/dialog";
 import { TelemetryUtils } from "../../../plugins/resource/aad/utils/telemetry";
 import { Messages, Telemetry } from "../../../plugins/resource/aad/constants";
 import { UnhandledError } from "../../../plugins/resource/aad/errors";
 import { AadResult, ResultFactory } from "../../../plugins/resource/aad/results";
+import { isVSProject } from "../../../common/projectSettingsHelper";
 @Service(ComponentNames.AadApp)
 export class AadApp implements CloudResource {
   readonly type = "cloud";

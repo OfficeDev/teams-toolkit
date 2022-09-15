@@ -30,7 +30,6 @@ import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import { Container } from "typedi";
-import { setTools } from "../../src";
 import * as commonTools from "../../src/common/tools";
 import { environmentManager } from "../../src/core/environment";
 import { EnvInfoLoaderMW } from "../../src/core/middleware/envInfoLoader";
@@ -44,6 +43,7 @@ import { MockSolution, MockTools, MockUserInteraction, randomAppName } from "./u
 import { ConstantString } from "../../src/common/constants";
 import { CoreHookContext } from "../../src/core/types";
 import { getProjectTemplatesFolderPath } from "../../src/common/utils";
+import { setTools } from "../../src/core/globalVars";
 let mockedEnvRestore: () => void;
 describe("Middleware - others", () => {
   const sandbox = sinon.createSandbox();

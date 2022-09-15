@@ -9,12 +9,11 @@ import {
   ReplyUrlsWithType,
   RequiredResourceAccess,
 } from "../plugins/resource/aad/interfaces/AADManifest";
-import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
 import { getAppDirectory } from "../common/tools";
 import { ComponentNames } from "../component/constants";
 import { getComponent } from "../component/workflow";
 import { ProjectSettingsHelper } from "../common/local/projectSettingsHelper";
-import { isVSProject } from "../common";
+import { isVSProject } from "../common/projectSettingsHelper";
 
 interface Permission {
   resource: string;
@@ -33,7 +32,6 @@ export async function generateAadManifestTemplate(
   const aadManifestTemplate = `${templatesFolder}/${Constants.aadManifestTemplateFolder}/${Constants.aadManifestTemplateName}`;
   await fs.ensureDir(appDir);
 
-  const azureSolutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
   const isVs = isVSProject(projectSettings);
 
   const aadManifestPath = `${appDir}/${Constants.aadManifestTemplateName}`;

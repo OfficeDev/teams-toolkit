@@ -11,7 +11,7 @@ import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio
 import { AppDefinition } from "../../../../../src/plugins/resource/appstudio/interfaces/appDefinition";
 import { ConfigMap, PluginContext, Platform } from "@microsoft/teamsfx-api";
 import { getAzureProjectRoot } from "./../helper";
-import { newEnvInfo } from "../../../../../src";
+import { newEnvInfo } from "../../../../../src/core/environment";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import { mockTokenProviderM365 } from "./../../aad/helper";
 import { v4 as uuid } from "uuid";

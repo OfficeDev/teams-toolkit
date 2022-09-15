@@ -1286,6 +1286,146 @@
           }
         ]
       }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "IssuesOnlyResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "hasLabel",
+              "parameters": {
+                "label": "close-wait"
+              }
+            },
+            {
+              "operator": "not",
+              "operands": [
+                {
+                  "name": "isAction",
+                  "parameters": {
+                    "action": "closed"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "eventType": "issue",
+        "eventNames": [
+          "issues",
+          "project_card"
+        ],
+        "taskName": "[Issue Management] Remove close-wait label",
+        "actions": [
+          {
+            "name": "removeLabel",
+            "parameters": {
+              "label": "close-wait"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "scheduled",
+      "capabilityId": "ScheduledSearch",
+      "subCapability": "ScheduledSearch",
+      "version": "1.1",
+      "config": {
+        "frequency": [
+          {
+            "weekDay": 0,
+            "hours": [1],
+            "timezoneOffset": 8
+          },
+          {
+            "weekDay": 1,
+            "hours": [1],
+            "timezoneOffset": 8
+          },
+          {
+            "weekDay": 2,
+            "hours": [1],
+            "timezoneOffset": 8
+          },
+          {
+            "weekDay": 3,
+            "hours": [1],
+            "timezoneOffset": 8
+          },
+          {
+            "weekDay": 4,
+            "hours": [1],
+            "timezoneOffset": 8
+          },
+          {
+            "weekDay": 5,
+            "hours": [1],
+            "timezoneOffset": 8
+          },
+          {
+            "weekDay": 6,
+            "hours": [1],
+            "timezoneOffset": 8
+          }
+        ],
+        "searchTerms": [
+          {
+            "name": "isOpen",
+            "parameters": {}
+          },
+          {
+            "name": "isIssue",
+            "parameters": {}
+          },
+          {
+            "name": "noActivitySince",
+            "parameters": {
+              "days": 1
+            }
+          },
+          {
+            "name": "hasLabel",
+            "parameters": {
+              "label": "close-wait"
+            }
+          },
+          {
+            "name": "noLabel",
+            "parameters": {
+              "label": "bug"
+            }
+          },
+          {
+            "name": "noLabel",
+            "parameters": {
+              "label": "feature-request"
+            }
+          },
+          {
+            "name": "notPartOfAnyMilestone",
+            "parameters": {}
+          }
+        ],
+        "taskName": "[Close Issue Management] For issue with close-wait label",
+        "actions": [
+          {
+            "name": "closeIssue",
+            "parameters": {}
+          },
+          {
+            "name": "removeLabel",
+            "parameters": {
+              "label": "close-wait"
+            }
+          }
+        ]
+      }
     }
   ],
   "userGroups": [

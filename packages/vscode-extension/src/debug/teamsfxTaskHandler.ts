@@ -26,6 +26,7 @@ import {
   issueLink,
   issueTemplate,
   m365AppsPrerequisitesHelpLink,
+  TaskCommand,
 } from "./constants";
 import * as util from "util";
 import VsCodeLogInstance from "../commonlib/log";
@@ -37,6 +38,8 @@ import { VS_CODE_UI } from "../extension";
 import { localTelemetryReporter, sendDebugAllEvent } from "./localTelemetryReporter";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { performance } from "perf_hooks";
+import * as kill from "tree-kill";
+import { LocalTunnelTaskTerminal } from "./taskTerminal/localTunnelTaskTerminal";
 
 class NpmInstallTaskInfo {
   private startTime: number;
@@ -86,6 +89,16 @@ function isNpmInstallTask(task: vscode.Task): boolean {
   return false;
 }
 
+function isTeamsFxTransparentTask(task: vscode.Task): boolean {
+  if (task.definition && task.definition.type === ProductName) {
+    const command = task.definition.command as string;
+    if ((Object.values(TaskCommand) as string[]).includes(command)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function isTeamsfxTask(task: vscode.Task): boolean {
   // teamsfx: xxx start / xxx watch
   if (task) {
@@ -95,6 +108,11 @@ function isTeamsfxTask(task: vscode.Task): boolean {
         task.name.trim().toLocaleLowerCase().endsWith("watch"))
     ) {
       // provided by toolkit
+      return true;
+    }
+
+    const res = isTeamsFxTransparentTask(task);
+    if (res) {
       return true;
     }
 
@@ -288,6 +306,9 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
       [TelemetryProperty.DebugServiceName]: task.name,
       [TelemetryProperty.DebugServiceExitCode]: event.exitCode + "",
     });
+    if (isTeamsFxTransparentTask(task) && event.exitCode !== 0) {
+      terminateAllRunningTeamsfxTasks();
+    }
   } else if (isNpmInstallTask(task)) {
     try {
       const taskInfo = activeNpmInstallTasks.get(task.name);
@@ -479,12 +500,13 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
 export function terminateAllRunningTeamsfxTasks(): void {
   for (const task of allRunningTeamsfxTasks) {
     try {
-      process.kill(task[1], "SIGTERM");
+      kill(task[1], "SIGTERM");
     } catch (e) {
       // ignore and keep killing others
     }
   }
   allRunningTeamsfxTasks.clear();
+  LocalTunnelTaskTerminal.stopAll();
 }
 
 function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): void {

@@ -42,7 +42,7 @@ type EndpointInfo = {
 export interface LocalTunnelArgs {
   configFile?: string;
   binFolder?: string;
-  // TODO: reuse?: boolean
+  reuse?: boolean;
 }
 
 export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
@@ -345,6 +345,14 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
       );
     }
     return res.details.binFolders.join(path.delimiter);
+  }
+
+  public static async stopAll(): Promise<void> {
+    for (const task of LocalTunnelTaskTerminal.ngrokTaskTerminals.values()) {
+      if (!task.terminal.args?.reuse) {
+        task.terminal.close();
+      }
+    }
   }
 
   private static async resolveBinFolder(str: string): Promise<string> {

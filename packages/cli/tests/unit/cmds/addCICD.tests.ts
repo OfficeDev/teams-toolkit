@@ -68,22 +68,21 @@ describe("Add CICD Command Tests", function () {
   it("Builder Check", () => {
     const cmd = new Add();
     yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
-    expect(registeredCommands).deep.equals(
-      isPreviewFeaturesEnabled()
-        ? [
-            "add <feature>",
-            "sso-tab",
-            "tab",
-            "bot",
-            "message-extension",
-            "azure-function",
-            "azure-apim",
-            "azure-sql",
-            "azure-keyvault",
-            "cicd",
-          ]
-        : ["add <feature>", "cicd"]
-    );
+    expect(registeredCommands).deep.equals([
+      "add <feature>",
+      "notification",
+      "command-and-response",
+      "sso-tab",
+      "tab",
+      "spfx-tab",
+      "bot",
+      "message-extension",
+      "azure-function",
+      "azure-apim",
+      "azure-sql",
+      "azure-keyvault",
+      "cicd",
+    ]);
   });
 
   it("Add CICD Command Running Check", async () => {

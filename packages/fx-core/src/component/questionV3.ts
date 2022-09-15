@@ -426,6 +426,7 @@ export async function getQuestionsForAddResourceV3(
 export enum FeatureId {
   Tab = "Tab",
   TabNonSso = "TabNonSso",
+  TabSPFx = "TabSPFx",
   Notification = "Notification",
   CommandAndResponse = "command-bot",
   Workflow = "workflow-bot",
@@ -445,6 +446,7 @@ export enum FeatureId {
 export const FeatureIdToComponent = {
   [FeatureId.Tab]: ComponentNames.TeamsTab,
   [FeatureId.TabNonSso]: ComponentNames.TeamsTab,
+  [FeatureId.TabSPFx]: ComponentNames.SPFxTab,
   [FeatureId.M365SsoLaunchPage]: ComponentNames.TeamsTab,
   [FeatureId.Notification]: ComponentNames.TeamsBot,
   [FeatureId.CommandAndResponse]: ComponentNames.TeamsBot,
@@ -475,6 +477,8 @@ export async function getQuestionsForAddFeatureSubCommand(
   if (BotFeatureIds.includes(featureId)) {
     return await getNotificationTriggerQuestionNode(inputs);
   } else if (TabFeatureIds.includes(featureId)) {
+  } else if (featureId === TabSPFxNewUIItem.id) {
+    return ok(new QTreeNode(webpartNameQuestion));
   } else if (featureId === AzureResourceSQLNewUI.id) {
   } else if (
     featureId === AzureResourceFunctionNewUI.id ||

@@ -14,6 +14,7 @@ import {
   CapabilityAddNotification,
   CapabilityAddCommandAndResponse,
   CapabilityAddWorkflow,
+  CapabilityAddSPFxTab,
 } from "../../../src/cmds/capability";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
 import HelpParamGenerator from "../../../src/helpParamGenerator";
@@ -113,6 +114,32 @@ describe("Capability Command Tests", function () {
 
   it("Capability Add Tab Command Running Check with Error", async () => {
     const cmd = new CapabilityAddTab();
+    const args = {
+      [constants.RootFolderNode.data.name as string]: "fake",
+    };
+    try {
+      await cmd.handler(args);
+      throw new Error("Should throw an error.");
+    } catch (e) {
+      expect(telemetryEvents).deep.equals([TelemetryEvent.AddCapStart, TelemetryEvent.AddCap]);
+      expect(telemetryEventStatus).equals(TelemetrySuccess.No);
+      expect(e).instanceOf(UserError);
+      expect(e.name).equals("NotSupportedProjectType");
+    }
+  });
+
+  it("Capability Add SPFx Tab Command Running Check", async () => {
+    const cmd = new CapabilityAddSPFxTab();
+    const args = {
+      [constants.RootFolderNode.data.name as string]: "real",
+    };
+    await cmd.handler(args);
+    expect(telemetryEvents).deep.equals([TelemetryEvent.AddCapStart, TelemetryEvent.AddCap]);
+    expect(telemetryEventStatus).equals(TelemetrySuccess.Yes);
+  });
+
+  it("Capability Add SPFx Tab Command Running Check with Error", async () => {
+    const cmd = new CapabilityAddSPFxTab();
     const args = {
       [constants.RootFolderNode.data.name as string]: "fake",
     };

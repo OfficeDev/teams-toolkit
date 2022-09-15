@@ -261,6 +261,7 @@ export function syncFeatureFlags() {
   process.env["TEAMSFX_GENERATOR_ENV_CHECKER_ENABLE"] = getConfiguration(
     ConfigurationKey.generatorEnvCheckerEnable
   ).toString();
+  process.env["TEAMSFX_SPFX_VERSIOIN"] = getConfiguration(ConfigurationKey.SPFxVersion).toString();
 
   initializePreviewFeatureFlags();
 }

@@ -985,7 +985,7 @@
           },
           "fx-extension.SPFxVersion":{
             "type": "string",
-            "description": "Select used SPFx version. (Requires reload of VS Code)",
+            "description": "Select what version of SPFx to use. (Requires reload of VS Code)",
             "enum": ["1.15.0", "1.16.0-beta.1"],
             "default": "1.15.0"
           }

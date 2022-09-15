@@ -235,3 +235,13 @@ export const prepareManifestDisplayMessages: DisplayMessages = {
 };
 
 export const taskNamePrefix = "[Task Started] ";
+
+export const TaskCommand = Object.freeze({
+  checkPrerequisites: "debug-check-prerequisites",
+  npmInstall: "debug-npm-install",
+  startLocalTunnel: "debug-start-local-tunnel",
+  setUpTab: "debug-set-up-tab",
+  setUpBot: "debug-set-up-bot",
+  setUpSSO: "debug-set-up-sso",
+  prepareManifest: "debug-prepare-manifest",
+});

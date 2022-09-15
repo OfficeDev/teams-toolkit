@@ -1168,10 +1168,17 @@ async function handleCheckResults(
           displayMessages.errorMessageCommand
         })`
       );
-      const displayMessage = util.format(
-        localize(displayMessages.errorDisplayMessageKey),
-        `[${localize(displayMessages.errorMessageLink)}](${displayMessages.errorMessageCommand})`
-      );
+
+      // show failure summary in display message
+      const displayMessage =
+        util.format(
+          localize("teamstoolkit.localDebug.failedCheckers"),
+          failures.map((f) => f.failureMsg ?? f.checker).join(", ")
+        ) +
+        util.format(
+          localize(displayMessages.errorDisplayMessageKey),
+          `[${localize(displayMessages.errorMessageLink)}](${displayMessages.errorMessageCommand})`
+        );
       const errorOptions: UserErrorOptions = {
         source: ExtensionSource,
         name: displayMessages.errorName,

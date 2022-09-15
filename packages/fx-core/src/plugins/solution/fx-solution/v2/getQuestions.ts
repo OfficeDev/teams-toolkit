@@ -48,7 +48,6 @@ import {
   TabNewUIOptionItem,
   TabNonSsoItem,
   TabOptionItem,
-  TabSPFxItem,
   TabSPFxNewUIItem,
   TabSsoItem,
   WorkflowOptionItem,
@@ -59,7 +58,6 @@ import {
   ResourcePluginsV2,
 } from "../ResourcePluginContainer";
 import { checkWetherProvisionSucceeded, getSelectedPlugins, isAzureProject } from "./utils";
-import { isV3 } from "../../../../core/globalVars";
 import { TeamsAppSolutionNameV2 } from "./constants";
 import { canAddCapability, canAddResource } from "./executeUserTask";
 import { NoCapabilityFoundError } from "../../../../core/error";
@@ -101,48 +99,7 @@ export async function getQuestionsForScaffolding(
     },
   });
 
-  if (!isV3()) {
-    node.condition = {
-      containsAny: [
-        TabSPFxItem.id,
-        TabOptionItem.id,
-        BotOptionItem.id,
-        NotificationOptionItem.id,
-        CommandAndResponseOptionItem.id,
-        WorkflowOptionItem.id,
-        MessageExtensionItem.id,
-        ...(isAadManifestEnabled() ? [TabNonSsoItem.id] : []),
-        M365SsoLaunchPageOptionItem.id,
-        M365SearchAppOptionItem.id,
-      ],
-    };
-    // 1.1.1 SPFX Tab
-    const spfxPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
-      ResourcePluginsV2.SpfxPlugin
-    );
-    if (spfxPlugin.getQuestionsForScaffolding) {
-      const res = await spfxPlugin.getQuestionsForScaffolding(ctx, inputs);
-      if (res.isErr()) return res;
-      if (res.value) {
-        const spfxNode = res.value as QTreeNode;
-        spfxNode.condition = {
-          validFunc: (input: any, inputs?: Inputs) => {
-            if (!inputs) {
-              return "Invalid inputs";
-            }
-            const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
-            if (cap.includes(TabSPFxItem.id)) {
-              return undefined;
-            }
-            return "SPFx is not selected";
-          },
-        };
-        if (spfxNode.data) node.addChild(spfxNode);
-      }
-    }
-  } else {
-    node.condition = { containsAny: [TabOptionItem.id, BotOptionItem.id, MessageExtensionItem.id] };
-  }
+  node.condition = { containsAny: [TabOptionItem.id, BotOptionItem.id, MessageExtensionItem.id] };
 
   // 1.1.2 Azure Tab
   const tabRes = await getTabScaffoldQuestionsV2(
@@ -219,49 +176,7 @@ export async function getQuestionsForScaffoldingPreview(
     },
   });
 
-  if (!isV3()) {
-    node.condition = {
-      enum: [
-        TabSPFxItem.id,
-        TabOptionItem.id,
-        BotOptionItem.id,
-        NotificationOptionItem.id,
-        CommandAndResponseOptionItem.id,
-        WorkflowOptionItem.id,
-        MessageExtensionItem.id,
-        ...(isAadManifestEnabled() ? [TabNonSsoItem.id] : []),
-        M365SsoLaunchPageOptionItem.id,
-        M365SearchAppOptionItem.id,
-      ],
-    };
-
-    // 1.1.1 SPFX Tab
-    const spfxPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
-      ResourcePluginsV2.SpfxPlugin
-    );
-    if (spfxPlugin.getQuestionsForScaffolding) {
-      const res = await spfxPlugin.getQuestionsForScaffolding(ctx, inputs);
-      if (res.isErr()) return res;
-      if (res.value) {
-        const spfxNode = res.value as QTreeNode;
-        spfxNode.condition = {
-          validFunc: (input: any, inputs?: Inputs) => {
-            if (!inputs) {
-              return "Invalid inputs";
-            }
-            const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string;
-            if (cap === TabSPFxItem.id) {
-              return undefined;
-            }
-            return "SPFx is not selected";
-          },
-        };
-        if (spfxNode.data) node.addChild(spfxNode);
-      }
-    }
-  } else {
-    node.condition = { enum: [TabOptionItem.id, BotOptionItem.id, MessageExtensionItem.id] };
-  }
+  node.condition = { enum: [TabOptionItem.id, BotOptionItem.id, MessageExtensionItem.id] };
 
   // 1.1.2 Azure Tab
   const tabRes = await getTabScaffoldQuestionsV2(

@@ -13,23 +13,12 @@ import {
   convertToLocalEnvs,
   getProjectComponents,
 } from "../../../src/common/local/localSettingsHelper";
-import mockedEnv, { RestoreFn } from "mocked-env";
 import { LocalEnvManager } from "../../../src";
 import { ProjectSettings, ProjectSettingsV3 } from "@microsoft/teamsfx-api";
 chai.use(chaiAsPromised);
 
 describe("localSettingsHelper", () => {
   describe("convertToLocalEnvs()", () => {
-    let mockedEnvRestore: RestoreFn;
-
-    beforeEach(() => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "false" });
-    });
-
-    afterEach(() => {
-      mockedEnvRestore();
-    });
-
     const projectSettings0 = {
       appName: "unit-test0",
       projectId: "11111111-1111-1111-1111-111111111111",

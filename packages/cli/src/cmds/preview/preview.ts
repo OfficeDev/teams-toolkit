@@ -47,7 +47,6 @@ import {
   validationSettingsHelpLink,
   AppStudioScopes,
   TelemetryContext,
-  isV3,
   getProjectComponents,
 } from "@microsoft/teamsfx-core";
 
@@ -784,7 +783,7 @@ export default class Preview extends YargsCommand {
       ?.get(constants.teamsAppTenantIdConfigKey) as string;
 
     const remoteTeamsAppId: string = config?.config
-      ?.get(isV3() ? "app-manifest" : constants.appstudioPluginName)
+      ?.get("app-manifest")
       ?.get(constants.remoteTeamsAppIdConfigKey);
     if (remoteTeamsAppId === undefined || remoteTeamsAppId.length === 0) {
       return err(errors.PreviewWithoutProvision());

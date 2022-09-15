@@ -68,7 +68,6 @@ describe("Core basic APIs", () => {
   let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
     setTools(tools);
-    mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "false" });
     Container.set(SolutionPluginsV2.AzureTeamsSolutionV2, mockSolutionV2);
     Container.set(SolutionPlugins.AzureTeamsSolution, mockSolutionV1);
     sandbox.stub<any, any>(featureFlags, "isPreviewFeaturesEnabled").returns(true);
@@ -76,7 +75,6 @@ describe("Core basic APIs", () => {
   afterEach(async () => {
     sandbox.restore();
     deleteFolder(projectPath);
-    mockedEnvRestore();
   });
   describe("create from new", async () => {
     it("CLI with folder input", async () => {
@@ -168,8 +166,6 @@ describe("Core basic APIs", () => {
       const spfx = Container.get(ResourcePlugins.SpfxPlugin) as Plugin;
       sandbox.stub<any, any>(appstudio, "scaffold").resolves(ok(undefined));
       sandbox.stub<any, any>(spfx, "postScaffold").resolves(ok(undefined));
-      const newParam = { TEAMSFX_APIV3: "false" };
-      mockedEnvRestore = mockedEnv(newParam);
       appName = randomAppName();
       const projectSettings: ProjectSettings = {
         appName: "my app",
@@ -203,8 +199,6 @@ describe("Core basic APIs", () => {
 
   it("createProject, provision, deploy, localDebug, publish, executeUserTask, getProjectConfig, getQuestionsForUserTask, encrypt, decrypt", async () => {
     appName = randomAppName();
-    const newParam = { TEAMSFX_APIV3: "false" };
-    mockedEnvRestore = mockedEnv(newParam);
     const core = new FxCore(tools);
     const inputs: Inputs = {
       platform: Platform.VSCode,

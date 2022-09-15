@@ -54,9 +54,6 @@ export async function generateAadManifestTemplate(
     aadJson.requiredResourceAccess = requiredResourceAccess;
   }
 
-  // if (isV3()) {
-  //   updateRedirectUrlV3(aadJson, projectSettings);
-  // } else {
   const hasTab = ProjectSettingsHelper.includeFrontend(projectSettings);
   if (hasTab) {
     const tabRedirectUrl1 =

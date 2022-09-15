@@ -24,10 +24,8 @@ describe("Core basic APIs - create from sample", () => {
   const tools = new MockTools();
   let appName = randomAppName();
   let projectPath = path.resolve(os.tmpdir(), appName);
-  let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
     setTools(tools);
-    mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "false" });
     Container.set(SolutionPluginsV2.AzureTeamsSolutionV2, mockSolutionV2);
     Container.set(SolutionPlugins.AzureTeamsSolution, mockSolutionV1);
     sandbox
@@ -47,7 +45,6 @@ describe("Core basic APIs - create from sample", () => {
   afterEach(async () => {
     sandbox.restore();
     deleteFolder(projectPath);
-    mockedEnvRestore();
   });
 
   it("create from sample hello-world-tab", async () => {

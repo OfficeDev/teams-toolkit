@@ -30,11 +30,9 @@ describe("Core basic APIs for v3", () => {
   const tools = new MockTools();
   let appName = randomAppName();
   let projectPath = path.resolve(os.tmpdir(), appName);
-  let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
     sandbox.restore();
     setTools(tools);
-    mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "true" });
     sandbox
       .stub<any, any>(axios, "get")
       .callsFake(async (url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<any>> => {
@@ -53,7 +51,6 @@ describe("Core basic APIs for v3", () => {
   });
 
   afterEach(() => {
-    mockedEnvRestore();
     sandbox.restore();
     deleteFolder(projectPath);
   });

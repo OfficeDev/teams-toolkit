@@ -308,16 +308,12 @@ describe("LocalEnvManager", () => {
 
   describe("getActiveDependencies()", () => {
     const sandbox = sinon.createSandbox();
-    let mockedEnvRestore: RestoreFn;
-
     beforeEach(() => {
       sandbox.restore();
-      mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "false" });
     });
 
     afterEach(() => {
       sandbox.restore();
-      mockedEnvRestore();
     });
 
     testData.forEach((data) => {
@@ -362,16 +358,12 @@ describe("LocalEnvManager", () => {
 
   describe("getLocalEnvInfo()", () => {
     const sandbox = sinon.createSandbox();
-    let mockedEnvRestore: RestoreFn;
-
     beforeEach(() => {
       sandbox.restore();
-      mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "true" });
     });
 
     afterEach(() => {
       sandbox.restore();
-      mockedEnvRestore();
     });
 
     it("getLocalEnvInfo() happy path", async () => {

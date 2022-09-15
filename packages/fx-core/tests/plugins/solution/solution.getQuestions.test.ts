@@ -100,7 +100,6 @@ describe("getQuestionsForScaffolding()", async () => {
       azureResources: [],
     },
   };
-  let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
     spfxPluginV2.getQuestionsForScaffolding = async function () {
       return ok(undefined);
@@ -117,12 +116,10 @@ describe("getQuestionsForScaffolding()", async () => {
     botPluginV2.getQuestionsForScaffolding = async function () {
       return ok(undefined);
     };
-    mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "false" });
   });
 
   afterEach(() => {
     sandbox.restore();
-    mockedEnvRestore();
   });
 
   it("getQuestionsForScaffolding", async () => {

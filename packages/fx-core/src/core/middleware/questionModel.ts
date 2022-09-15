@@ -27,7 +27,7 @@ import { newProjectSettings } from "../../common/projectSettingsHelper";
 import { ExistingTabOptionItem, TabSPFxItem } from "../../plugins/solution/fx-solution/question";
 import { getQuestionsForGrantPermission } from "../collaborator";
 import { CoreSource, FunctionRouterError } from "../error";
-import { isV3, TOOLS } from "../globalVars";
+import { TOOLS } from "../globalVars";
 import {
   createAppNameQuestion,
   createCapabilityForDotNet,
@@ -368,22 +368,15 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   }
   createNew.addChild(capNode);
 
-  if (!isV3()) {
-    const solutionNodeResult = await setSolutionScaffoldingQuestionNodeAsChild(inputs, capNode);
-    if (solutionNodeResult.isErr()) {
-      return err(solutionNodeResult.error);
-    }
-  } else {
-    const triggerNodeRes = await getNotificationTriggerQuestionNode(inputs);
-    if (triggerNodeRes.isErr()) return err(triggerNodeRes.error);
-    if (triggerNodeRes.value) {
-      capNode.addChild(triggerNodeRes.value);
-    }
-    const spfxNode = await getSPFxScaffoldQuestion();
-    if (spfxNode) {
-      spfxNode.condition = { equals: TabSPFxItem.id };
-      capNode.addChild(spfxNode);
-    }
+  const triggerNodeRes = await getNotificationTriggerQuestionNode(inputs);
+  if (triggerNodeRes.isErr()) return err(triggerNodeRes.error);
+  if (triggerNodeRes.value) {
+    capNode.addChild(triggerNodeRes.value);
+  }
+  const spfxNode = await getSPFxScaffoldQuestion();
+  if (spfxNode) {
+    spfxNode.condition = { equals: TabSPFxItem.id };
+    capNode.addChild(spfxNode);
   }
   // Language
   const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
@@ -446,25 +439,15 @@ async function getQuestionsForCreateProjectWithDotNet(
   const dotnetCapNode = new QTreeNode(createCapabilityForDotNet());
   dotnetNode.addChild(dotnetCapNode);
 
-  if (!isV3()) {
-    const solutionNodeResult = await setSolutionScaffoldingQuestionNodeAsChild(
-      inputs,
-      dotnetCapNode
-    );
-    if (solutionNodeResult.isErr()) {
-      return err(solutionNodeResult.error);
-    }
-  } else {
-    const triggerNodeRes = await getNotificationTriggerQuestionNode(inputs);
-    if (triggerNodeRes.isErr()) return err(triggerNodeRes.error);
-    if (triggerNodeRes.value) {
-      dotnetCapNode.addChild(triggerNodeRes.value);
-    }
-    const spfxNode = await getSPFxScaffoldQuestion();
-    if (spfxNode) {
-      spfxNode.condition = { equals: TabSPFxItem.id };
-      dotnetCapNode.addChild(spfxNode);
-    }
+  const triggerNodeRes = await getNotificationTriggerQuestionNode(inputs);
+  if (triggerNodeRes.isErr()) return err(triggerNodeRes.error);
+  if (triggerNodeRes.value) {
+    dotnetCapNode.addChild(triggerNodeRes.value);
+  }
+  const spfxNode = await getSPFxScaffoldQuestion();
+  if (spfxNode) {
+    spfxNode.condition = { equals: TabSPFxItem.id };
+    dotnetCapNode.addChild(spfxNode);
   }
 
   dotnetCapNode.addChild(new QTreeNode(ProgrammingLanguageQuestionForDotNet));

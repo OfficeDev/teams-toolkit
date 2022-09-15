@@ -74,16 +74,9 @@ describe("Core component test for v3", () => {
   const projectPath = path.join(os.homedir(), "TeamsApps", appName);
   const context = createContextV3();
   const fx = Container.get<TeamsfxCore>("fx");
-  let mockedEnvRestore: RestoreFn;
-  beforeEach(() => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "true" });
-  });
-
   afterEach(() => {
     sandbox.restore();
-    mockedEnvRestore();
   });
-
   after(async () => {
     deleteFolder(projectPath);
   });
@@ -1068,7 +1061,6 @@ describe("Core component test for v3", () => {
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     mockedEnvRestore = mockedEnv({
       SWITCH_ACCOUNT: "false",
-      TEAMSFX_APIV3: "true",
       TEAMSFX_AAD_MANIFEST: "true",
     });
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
@@ -1194,7 +1186,6 @@ describe("Core component test for v3", () => {
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     mockedEnvRestore = mockedEnv({
       SWITCH_ACCOUNT: "false",
-      TEAMSFX_APIV3: "true",
       TEAMSFX_AAD_MANIFEST: "true",
     });
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();

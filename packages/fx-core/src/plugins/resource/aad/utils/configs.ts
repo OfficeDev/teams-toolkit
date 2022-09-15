@@ -36,17 +36,15 @@ import {
 } from "../../../../common/localSettingsConstants";
 import { IAADDefinition } from "../interfaces/IAADDefinition";
 import { TelemetryUtils } from "./telemetry";
-import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { ResultFactory } from "../results";
 import { getPermissionRequest } from "../permissions";
 import { GraphScopes, isAadManifestEnabled } from "../../../../common";
 import { convertToAlphanumericOnly } from "../../../../common/utils";
 import { ComponentNames } from "../../../../component/constants";
-import { isV3 } from "../../../../core/globalVars";
 
-const aadComponentKey = isV3() ? ComponentNames.AadApp : BuiltInFeaturePluginNames.aad;
-const tabComponentKey = isV3() ? ComponentNames.TeamsTab : BuiltInFeaturePluginNames.frontend;
-const botComponentKey = isV3() ? ComponentNames.TeamsBot : BuiltInFeaturePluginNames.bot;
+const aadComponentKey = ComponentNames.AadApp;
+const tabComponentKey = ComponentNames.TeamsTab;
+const botComponentKey = ComponentNames.TeamsBot;
 
 export class Utils {
   public static addLogAndTelemetryWithLocalDebug(

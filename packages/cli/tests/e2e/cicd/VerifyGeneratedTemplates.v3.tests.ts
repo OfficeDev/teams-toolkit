@@ -14,21 +14,13 @@ import { Capability } from "../../commonlib/constants";
 import { getTemplatesFolder } from "@microsoft/teamsfx-core";
 import Mustache from "mustache";
 import * as fs from "fs-extra";
-import mockedEnv from "mocked-env";
 import { CICDProviderFactory } from "../../../../fx-core/src/component/feature/cicd/provider/factory";
 describe("Verify generated templates & readme V3", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
-  let mockedEnvRestore: () => void;
-  before(async () => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_APIV3: "true",
-    });
-  });
   after(async () => {
     await cleanUp(appName, projectPath, false, false, false);
-    mockedEnvRestore();
   });
 
   it(`Verify generated templates & readme`, async function () {

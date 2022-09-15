@@ -55,7 +55,6 @@ import { Container } from "typedi";
 import { pick } from "lodash";
 import { convertEnvStateV2ToV3, convertEnvStateV3ToV2 } from "../component/migrate";
 import { LocalCrypto } from "./crypto";
-import { isV3 } from "./globalVars";
 
 export interface EnvStateFiles {
   envState: string;
@@ -348,16 +347,13 @@ class EnvironmentManager {
       return err(userDataResult.error);
     }
     const userData = userDataResult.value;
-    const isv3 = isV3();
     if (!(await fs.pathExists(envFiles.envState))) {
       return ok({ solution: {} });
     }
     const template = await fs.readFile(envFiles.envState, { encoding: "utf-8" });
     const result = replaceTemplateWithUserData(template, userData);
     let resultJson: Json = JSON.parse(result);
-    if (isv3) {
-      resultJson = convertEnvStateV2ToV3(resultJson);
-    }
+    resultJson = convertEnvStateV2ToV3(resultJson);
     return ok(resultJson as v3.ResourceStates);
   }
 

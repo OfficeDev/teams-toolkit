@@ -10,9 +10,6 @@ import { v4 as uuidv4 } from "uuid";
 import * as fs from "fs-extra";
 import Mustache from "mustache";
 import { getAppDirectory } from "../../../common/tools";
-import { isV3 } from "../../../core";
-import { convertManifestTemplateToV3 } from "../../../component/migrate";
-import { ComponentNames } from "../../../component/constants";
 import { AppPackageFolderName, BuildFolderName } from "@microsoft/teamsfx-api";
 import * as path from "path";
 

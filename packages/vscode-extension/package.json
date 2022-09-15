@@ -984,6 +984,11 @@
                       },
                       {}
                     ]
+                  },
+                  "reuse":{
+                    "type": "boolean",
+                    "description": "%teamstoolkit.taskDefinitions.args.reuse.title%",
+                    "default": false
                   }
                 },
                 "additionalProperties": false

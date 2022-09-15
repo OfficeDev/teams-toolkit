@@ -15,7 +15,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
-import { ErrorHandlerMW } from "../../../src/core/middleware";
+import { ErrorHandlerMW } from "../../../src/core/middleware/errorHandler";
 
 describe("Middleware - ErrorHandlerMW", () => {
   const inputs: Inputs = { platform: Platform.VSCode };

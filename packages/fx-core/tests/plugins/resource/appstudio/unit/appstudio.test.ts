@@ -32,7 +32,7 @@ describe("App Studio API Test", () => {
     sinon.restore();
   });
 
-  describe("publish Teams app", () => {
+  describe.skip("publish Teams app", () => {
     it("API Failure", async () => {
       const fakeAxiosInstance = axios.create();
       sinon.stub(axios, "create").returns(fakeAxiosInstance);
@@ -195,9 +195,38 @@ describe("App Studio API Test", () => {
         );
       }
     });
+
+    it("400 bad reqeust", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const error = {
+        response: {
+          staus: 400,
+          data: "BadRequest",
+          headers: {
+            "x-correlation-id": uuid(),
+          },
+        },
+        message: "fake message",
+      };
+      sinon.stub(fakeAxiosInstance, "post").throws(error);
+      const ctx = {
+        envInfo: newEnvInfo(),
+        root: "fakeRoot",
+      } as any as PluginContext;
+      TelemetryUtils.init(ctx);
+      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
+
+      try {
+        await AppStudioClient.importApp(Buffer.from(""), appStudioToken);
+      } catch (error) {
+        chai.assert.equal(error.name, AppStudioError.DeveloperPortalAPIFailedError.name);
+      }
+    });
   });
 
-  describe("get Teams app", () => {
+  describe.skip("get Teams app", () => {
     it("Happy path", async () => {
       const fakeAxiosInstance = axios.create();
       sinon.stub(axios, "create").returns(fakeAxiosInstance);
@@ -236,7 +265,7 @@ describe("App Studio API Test", () => {
     });
   });
 
-  describe("Check exists in tenant", () => {
+  describe.skip("Check exists in tenant", () => {
     it("Happy path", async () => {
       const fakeAxiosInstance = axios.create();
       sinon.stub(axios, "create").returns(fakeAxiosInstance);
@@ -251,7 +280,7 @@ describe("App Studio API Test", () => {
     });
   });
 
-  describe("publishTeamsAppUpdate", () => {
+  describe.skip("publishTeamsAppUpdate", () => {
     it("should contain x-correlation-id on BadeRequest with 2xx status code", async () => {
       const fakeAxiosInstance = axios.create();
       sinon.stub(axios, "create").returns(fakeAxiosInstance);

@@ -260,4 +260,20 @@ export class AppStudioError {
       getLocalizedString("error.appstudio.capabilityNotExist", capability),
     ],
   };
+
+  public static readonly TeamsAppCreateConflictError = {
+    name: "TeamsAppCreateConflict",
+    message: (): [string, string] => [
+      getDefaultString("error.appstudio.teamsAppCreateConflict"),
+      getLocalizedString("error.appstudio.teamsAppCreateConflict"),
+    ],
+  };
+
+  public static readonly TeamsAppCreateConflictWithPublishedAppError = {
+    name: "TeamsAppCreateConflictWithPublishedApp",
+    message: (): [string, string] => [
+      getDefaultString("error.appstudio.teamsAppCreateConflictWithPublishedApp"),
+      getLocalizedString("error.appstudio.teamsAppCreateConflictWithPublishedApp"),
+    ],
+  };
 }

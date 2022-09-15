@@ -123,6 +123,7 @@ export class ErrorNames {
   public static readonly PROVISION_ERROR = "ProvisionError";
   public static readonly CONFIG_UPDATING_ERROR = "ConfigUpdatingError";
   public static readonly CONFIG_VALIDATION_ERROR = "ConfigValidationError";
+  public static readonly BOT_REGISTRATION_NOTFOUND_ERROR = "BotRegistrationNotFoundError";
   public static readonly MSG_ENDPOINT_UPDATING_ERROR = "MessageEndpointUpdatingError";
   public static readonly COMMAND_EXECUTION_ERROR = "CommandExecutionError";
   public static readonly CALL_APPSTUDIO_API_ERROR = "CallAppStudioAPIError";

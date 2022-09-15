@@ -24,5 +24,10 @@ namespace Microsoft.TeamsFx.Conversation
         /// Gets or sets the command option used to initialize the <see cref="ConversationBot.Command"/> .
         /// </summary>
         public CommandOptions Command { get; set; }
+
+        /// <summary>
+        /// Gets or sets the adaptive card action options used to initialize the <see cref="ConversationBot.CardAction"/> .
+        /// </summary>
+        public CardActionOptions CardAction { get; set; }
     }
 }

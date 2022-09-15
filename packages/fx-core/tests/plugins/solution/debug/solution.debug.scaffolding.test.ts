@@ -19,7 +19,8 @@ import {
   BotScenario,
 } from "../../../../src/plugins/solution/fx-solution/question";
 import { BotCapabilities, PluginBot } from "../../../../src/plugins/resource/bot/resources/strings";
-import { BotHostTypes, isAadManifestEnabled } from "../../../../src/common";
+import { isAadManifestEnabled } from "../../../../src/common/tools";
+import { BotHostTypes } from "../../../../src/common/local/constants";
 
 const numAADLocalEnvs = 2;
 const numSimpleAuthLocalEnvs = 10;

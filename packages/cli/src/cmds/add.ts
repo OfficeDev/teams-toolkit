@@ -35,12 +35,13 @@ import {
 } from "./capability";
 import {
   isBotNotificationEnabled,
-  isAadManifestEnabled,
-  isApiConnectEnabled,
   isPreviewFeaturesEnabled,
   isWorkflowBotEnabled,
-} from "@microsoft/teamsfx-core";
-
+} from "@microsoft/teamsfx-core/build/common/featureFlags";
+import {
+  isAadManifestEnabled,
+  isApiConnectEnabled,
+} from "@microsoft/teamsfx-core/build/common/tools";
 export class AddCICD extends YargsCommand {
   public readonly commandHead = `cicd`;
   public readonly command = this.commandHead;

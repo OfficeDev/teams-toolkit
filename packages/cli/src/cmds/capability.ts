@@ -4,7 +4,7 @@
 "use strict";
 
 import { ProjectSettings } from "@microsoft/teamsfx-api";
-import { ProjectSettingsHelper } from "@microsoft/teamsfx-core";
+import { ProjectSettingsHelper } from "@microsoft/teamsfx-core/build/common/local/projectSettingsHelper";
 import { FeatureId } from "@microsoft/teamsfx-core/build/component/questionV3";
 
 import { TelemetryEvent } from "../telemetry/cliTelemetryEvents";

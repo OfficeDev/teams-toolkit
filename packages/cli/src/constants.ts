@@ -4,7 +4,7 @@
 "use strict";
 
 import { Inputs, Platform, QTreeNode, Stage } from "@microsoft/teamsfx-api";
-import { sampleProvider } from "@microsoft/teamsfx-core";
+import { sampleProvider } from "@microsoft/teamsfx-core/build/common/samples";
 
 export const cliSource = "TeamsfxCLI";
 export const cliName = "teamsfx";

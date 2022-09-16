@@ -220,7 +220,13 @@ export class TabCodeProvider {
       addToEnvs(EnvKeys.ClientID, ctx.envInfo?.state?.[ComponentNames.AadApp]?.clientId as string);
       addToEnvs(EnvKeys.StartLoginPage, DependentPluginInfo.StartLoginPageURL);
     }
-
+    const simpleAuth = getComponent(ctx.projectSetting, ComponentNames.SimpleAuth);
+    if (simpleAuth) {
+      addToEnvs(
+        EnvKeys.RuntimeEndpoint,
+        ctx.envInfo?.state?.[ComponentNames.SimpleAuth]?.endpoint as string
+      );
+    }
     return envs;
   }
   private async doBlazorBuild(tabPath: string, logger?: LogProvider): Promise<string> {

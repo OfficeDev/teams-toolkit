@@ -6,9 +6,10 @@ import AdmZip from "adm-zip";
 import { ScaffoldAction } from "./scaffoldAction";
 
 export interface ScaffoldContext {
-  scenario: string;
+  name: string;
   destination: string;
   logProvider: LogProvider;
+  appFolder?: string;
   zipUrl?: string;
   zip?: AdmZip;
   fallbackZipPath?: string;

@@ -4,9 +4,9 @@
 import AdmZip from "adm-zip";
 import path from "path";
 import { ScaffoldContext } from "./scaffoldContext";
-import { fetchUrl, templateZipName } from "./utils";
+import { fetchUrl, templateZipName, unzip } from "./utils";
 import fs from "fs-extra";
-import { fetchZipFromUrl, unzip } from "../../common/template-utils/templatesUtils";
+import { fetchZipFromUrl } from "../../common/template-utils/templatesUtils";
 import {
   defaultTimeoutInMs,
   defaultTryLimits,
@@ -32,14 +32,14 @@ export enum ScaffoldActionName {
 export const fetchTemplateUrlWithTagAction: ScaffoldAction = {
   name: ScaffoldActionName.FetchTemplateUrlWithTag,
   run: async (context: ScaffoldContext) => {
-    context.zipUrl = await fetchUrl(context.scenario, templateDownloadBaseUrl);
+    context.zipUrl = await fetchUrl(context.name, templateDownloadBaseUrl);
   },
 };
 
 export const fetchSampleUrlWithTagAction: ScaffoldAction = {
   name: ScaffoldActionName.FetchSampleUrlWithTag,
   run: async (context: ScaffoldContext) => {
-    context.zipUrl = await fetchUrl(context.scenario, sampleDownloadBaseUrl);
+    context.zipUrl = await fetchUrl(context.name, sampleDownloadBaseUrl);
   },
 };
 
@@ -64,7 +64,7 @@ export const fetchTemplateZipFromLocalAction: ScaffoldAction = {
       context.fallbackZipPath = path.join(getTemplatesFolder(), "fallback");
     }
 
-    const fileName: string = templateZipName(context.scenario);
+    const fileName: string = templateZipName(context.name);
     const zipPath: string = path.join(context.fallbackZipPath, fileName);
 
     const data: Buffer = await fs.readFile(zipPath);
@@ -81,6 +81,7 @@ export const unzipAction: ScaffoldAction = {
     await unzip(
       context.zip,
       context.destination,
+      context.appFolder,
       context.fileNameReplaceFn,
       context.fileDataReplaceFn
     );

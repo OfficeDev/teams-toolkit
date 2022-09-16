@@ -23,7 +23,7 @@ export class Generator {
     const appName = ctx.projectSetting?.appName;
     const projectId = ctx.projectSetting?.projectId;
     const scaffoldContext: ScaffoldContext = {
-      scenario: `${templateName}_${language}`,
+      name: `${templateName}_${language}`,
       destination: path.join(destinationPath, appName),
       logProvider: ctx.logProvider,
       fileDataReplaceFn: genFileDataRenderReplaceFn({
@@ -46,7 +46,7 @@ export class Generator {
     const projectId = ctx.projectSetting?.projectId;
     const destination = await getValidSampleDestination(sampleName, destinationPath);
     const scaffoldContext: ScaffoldContext = {
-      scenario: sampleName,
+      name: sampleName,
       destination: destination,
       logProvider: ctx.logProvider,
       fileDataReplaceFn: genFileDataRenderReplaceFn({

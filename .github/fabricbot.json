@@ -800,7 +800,7 @@
                 {
                   "name": "isActivitySender",
                   "parameters": {
-                    "user": "github-actions"
+                    "user": "github-actions[bot]"
                   }
                 }
               ]
@@ -1319,7 +1319,7 @@
                 {
                   "name": "isActivitySender",
                   "parameters": {
-                    "user": "github-actions"
+                    "user": "github-actions[bot]"
                   }
                 }
               ]

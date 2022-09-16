@@ -94,7 +94,7 @@ export function genFileNameRenderReplaceFn(variables: { [key: string]: string })
 export async function unzip(
   zip: AdmZip,
   dstPath: string,
-  appFolder: string,
+  appFolder?: string,
   nameReplaceFn?: (filePath: string, data: Buffer) => string,
   dataReplaceFn?: (filePath: string, data: Buffer) => Buffer | string,
   filesInAppendMode = [".gitignore"]

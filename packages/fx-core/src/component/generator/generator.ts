@@ -43,15 +43,12 @@ export class Generator {
     destinationPath: string,
     ctx: ContextV3
   ): Promise<void> {
-    const projectId = ctx.projectSetting?.projectId;
     const destination = await getValidSampleDestination(sampleName, destinationPath);
+    // sample doesn't need replace function. Replacing projectId will be handled by core.
     const scaffoldContext: ScaffoldContext = {
       name: sampleName,
       destination: destination,
       logProvider: ctx.logProvider,
-      fileDataReplaceFn: genFileDataRenderReplaceFn({
-        projectId: projectId,
-      }),
       onActionError: sampleDefaultOnActionError,
     };
     this.generate(scaffoldContext, SampleActionSeq);

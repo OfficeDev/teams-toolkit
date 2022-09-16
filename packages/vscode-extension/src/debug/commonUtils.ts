@@ -13,12 +13,14 @@ import * as globalVariables from "../globalVariables";
 import {
   LocalEnvManager,
   FolderName,
-  environmentManager,
+  getProjectComponents as coreGetProjectComponents,
+} from "@microsoft/teamsfx-core/build/common/local";
+import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { getResourceGroupInPortal } from "@microsoft/teamsfx-core/build/common/tools";
+import {
   PluginNames,
   GLOBAL_CONFIG,
-  getResourceGroupInPortal,
-  getProjectComponents as coreGetProjectComponents,
-} from "@microsoft/teamsfx-core";
+} from "@microsoft/teamsfx-core/build/plugins/solution/fx-solution/constants";
 import { allRunningDebugSessions } from "./teamsfxTaskHandler";
 
 export async function getProjectRoot(

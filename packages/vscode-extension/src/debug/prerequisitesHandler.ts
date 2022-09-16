@@ -1356,7 +1356,7 @@ async function getOrderedCheckersForTask(
     checkers.push({ info: { checker: orderedDeps[orderedDeps.length - 1] }, fastFail: true });
   }
 
-  if (prerequisites.includes(Prerequisite.portsOccupation)) {
+  if (prerequisites.includes(Prerequisite.portOccupancy)) {
     checkers.push({ info: { checker: Checker.Ports, ports: ports }, fastFail: false });
   }
   return checkers;

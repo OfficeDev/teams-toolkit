@@ -806,13 +806,13 @@
                           "title": "%teamstoolkit.taskDefinitions.args.prerequisites.dotnetTitle%"
                         },
                         {
-                          "const": "portsOccupation",
+                          "const": "portOccupancy",
                           "title": "%teamstoolkit.taskDefinitions.args.prerequisites.portsTitle%"
                         }
                       ]
                     }
                   },
-                  "portsOccupation": {
+                  "portOccupancy": {
                     "type": "array",
                     "items": {
                       "type": "number"
@@ -824,20 +824,20 @@
                   "properties": {
                     "prerequisites": {
                       "contains": {
-                        "const": "portsOccupation"
+                        "const": "portOccupancy"
                       }
                     }
                   }
                 },
                 "then": {
                   "required": [
-                    "portsOccupation"
+                    "portOccupancy"
                   ]
                 },
                 "else": {
                   "not": {
                     "required": [
-                      "portsOccupation"
+                      "portOccupancy"
                     ]
                   }
                 },

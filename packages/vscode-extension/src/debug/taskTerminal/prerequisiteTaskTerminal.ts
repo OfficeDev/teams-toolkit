@@ -9,7 +9,7 @@ import { BaseTaskTerminal } from "./baseTaskTerminal";
 
 export interface PrerequisiteArgs {
   prerequisites?: string[];
-  portsOccupation?: number[];
+  portOccupancy?: number[];
 }
 
 export enum Prerequisite {
@@ -19,7 +19,7 @@ export enum Prerequisite {
   func = "func",
   ngrok = "ngrok",
   dotnet = "dotnet",
-  portsOccupation = "portsOccupation",
+  portOccupancy = "portOccupancy",
 }
 
 export class PrerequisiteTaskTerminal extends BaseTaskTerminal {
@@ -31,6 +31,6 @@ export class PrerequisiteTaskTerminal extends BaseTaskTerminal {
   }
 
   async do(): Promise<Result<Void, FxError>> {
-    return await checkAndInstallForTask(this.args.prerequisites ?? [], this.args.portsOccupation);
+    return await checkAndInstallForTask(this.args.prerequisites ?? [], this.args.portOccupancy);
   }
 }

@@ -12,7 +12,7 @@ class DoStuffActionHandler {
      */
     const cardData = {
       title: "Hello World Bot",
-      body: "Congratulations! Your task is processed successfully. Click the button below to learn more about Bots and the Teams Toolkit.",
+      body: "Congratulations! Your task is processed successfully.",
     };
 
     const cardJson = AdaptiveCards.declare(responseCard).render(cardData);
@@ -22,7 +22,7 @@ class DoStuffActionHandler {
      * If you want to send invoke response with text message, you can:
      * 
      return InvokeResponseFactory.textMessage("[ACK] Successfully!");
-    */
+     */
 
     /**
      * If you want to send invoke response with error message, you can:

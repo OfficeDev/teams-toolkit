@@ -280,11 +280,7 @@ export class AppStudioPlugin implements Plugin {
         res.error,
         this.appStudioPluginImpl.commonProperties
       );
-      if (res.error.name === AppStudioError.UpdateManifestCancelError.name) {
-        return ok(Void);
-      } else {
-        return err(res.error);
-      }
+      return err(res.error);
     } else {
       TelemetryUtils.sendSuccessEvent(
         TelemetryEventName.updateManifest,
@@ -314,11 +310,7 @@ export class AppStudioPlugin implements Plugin {
         res.error,
         this.appStudioPluginImpl.commonProperties
       );
-      if (res.error.name === AppStudioError.UpdateManifestCancelError.name) {
-        return ok(Void);
-      } else {
-        return err(res.error);
-      }
+      return err(res.error);
     } else {
       TelemetryUtils.sendSuccessEvent(
         TelemetryEventName.deploy,

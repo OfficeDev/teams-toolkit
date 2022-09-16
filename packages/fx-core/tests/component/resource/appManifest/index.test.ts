@@ -154,7 +154,7 @@ describe("App-manifest Component", () => {
     }
   });
 
-  it("deploy - preivew only", async function () {
+  it("deploy - preview only", async function () {
     const manifest = new TeamsAppManifest();
     manifest.id = "";
     manifest.icons.color = "resources/color.png";

@@ -213,14 +213,6 @@ export class AppStudioError {
     ],
   };
 
-  public static readonly UpdateManifestCancelError = {
-    name: "UpdateManifestCancelled",
-    message: (name: string): [string, string] => [
-      getDefaultString("error.appstudio.updateManifestCancelled", name),
-      getLocalizedString("error.appstudio.updateManifestCancelled", name),
-    ],
-  };
-
   public static readonly UpdateManifestWithInvalidAppError = {
     name: "UpdateManifestWithInvalidAppError",
     message: (appId: string): [string, string] => [

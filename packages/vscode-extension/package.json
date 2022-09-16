@@ -984,6 +984,11 @@
                       },
                       {}
                     ]
+                  },
+                  "reuse":{
+                    "type": "boolean",
+                    "description": "%teamstoolkit.taskDefinitions.args.reuse.title%",
+                    "default": false
                   }
                 },
                 "additionalProperties": false
@@ -1175,6 +1180,7 @@
         "properties": {
           "fx-extension.prerequisiteCheck": {
             "type": "object",
+            "markdownDescription": "**[Obsolete]** Only work for `${command:fx-extension.validate-local-prerequisites}`",
             "properties": {
               "node": {
                 "type": "boolean",
@@ -1214,7 +1220,7 @@
         }
       },
       {
-        "title": "SPFx Prerequisite Check",
+        "title": "SPFx Configuration",
         "order": 2,
         "properties": {
           "fx-extension.SPFxPrerequisiteCheck": {
@@ -1234,6 +1240,12 @@
               "yo": true,
               "sharepointYeomanGenerator": true
             }
+          },
+          "fx-extension.SPFxVersion":{
+            "type": "string",
+            "description": "Select what version of SPFx to use. (Requires reload of VS Code)",
+            "enum": ["1.15.0", "1.16.0-beta.1"],
+            "default": "1.15.0"
           }
         }
       }

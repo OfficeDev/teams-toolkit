@@ -25,4 +25,5 @@ export const doctorConstant = {
   NpmInstallSuccess: "NPM packages for @app are installed",
   NpmInstallFailure: "NPM Install for @app",
   HelpLink: `Please refer to @Link for more information.`,
+  PortSuccess: "Port (@port)",
 };

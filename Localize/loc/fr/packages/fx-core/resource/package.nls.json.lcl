@@ -841,6 +841,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.WorkflowOption.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Automate repetitive workflows for common business processes in Microsoft Teams chat]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Automatiser les flux de travail répétitifs pour les processus métier courants dans la conversation Microsoft Teams]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.WorkflowOption.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Workflow bot]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Bot de flux de travail]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.aad.includeAadQuestionTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Whether to deploy aad manifest]]></Val>
@@ -3100,6 +3118,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.MissingSubscriptionInConfig" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Please provide the subscrpition id of the resource group (%s) in (%s)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Indiquez l’ID de sous-ressource du groupe de ressources (%s) dans (%s).]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.ModifiedSecretError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The secret file has been changed.]]></Val>
@@ -4320,6 +4347,42 @@
           <Val><![CDATA[Some preconditions of inputs are not met.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Certaines conditions préalables des entrées ne sont pas remplies.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.debugHandler.BotMessagingEndpointMissingError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[botMessagingEndpoint is required.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[botMessagingEndpoint est obligatoire.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.debugHandler.InvalidExistingBotArgsError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[botId and botPassword need to be set together if you use existing bot.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[botId et botPassword doivent être définis ensemble si vous utilisez un bot existant.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.debugHandler.InvalidSSODebugArgsError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[objectId, clientId and clientSecret are all required if you use existing AAD app for SSO.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[ObjectId, clientId et clientSecret sont tous requis si vous utilisez une application Azure Active Directory (AAD) existante pour l’authentification unique (SSO).]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.debugHandler.InvalidTabDebugArgsError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[baseUrl is required and must be in the format of 'https://localhost:{port}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[baseUrl est obligatoire et doit être au format 'https://localhost:{port}'.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -6012,10 +6075,13 @@
       </Item>
       <Item ItemId=";plugins.appstudio.dataRequired" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Data required: %s]]></Val>
+          <Val><![CDATA[Data required: %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Données requises : %s]]></Val>
+            <Val><![CDATA[Données requises : %s]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Data required: %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -8169,6 +8235,24 @@
           <Val><![CDATA[Checking Node.js and NPM versions...]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Vérification des versions de Node.js et NPM...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.questions.webpartName.error.duplicate" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The foler %s already exists. Please choose a different name for your component.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Le dossier %s existe déjà. Choisissez un autre nom pour votre composant.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";plugins.spfx.questions.webpartName.error.notMatch" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[%s doesn't match pattern: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[%s ne correspond pas au modèle : %s.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

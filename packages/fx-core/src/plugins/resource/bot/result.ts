@@ -28,7 +28,7 @@ export class FxBotPluginResultFactory {
         displayMessage: errorMessage[1],
         source: FxBotPluginResultFactory.source,
         error: innerError,
-        helpLink,
+        helpLink: helpLink ?? this.defaultHelpLink,
       })
     );
   }

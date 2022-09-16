@@ -132,6 +132,7 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
       presentation: {
         hidden: true,
       },
+      internalConsoleOptions: "neverOpen",
     },
     {
       name: "Start Teams workbench (Chrome)",
@@ -150,6 +151,7 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
       presentation: {
         hidden: true,
       },
+      internalConsoleOptions: "neverOpen",
     },
   ];
   return configurations;
@@ -202,6 +204,7 @@ function launchRemote(
       group: "remote",
       order: order,
     },
+    internalConsoleOptions: "neverOpen",
   };
 }
 
@@ -229,6 +232,7 @@ function startAndAttachToFrontend(
       group: "all",
       hidden: true,
     },
+    internalConsoleOptions: "neverOpen",
   };
 }
 
@@ -251,6 +255,7 @@ function launchBot(
       group: "all",
       hidden: true,
     },
+    internalConsoleOptions: "neverOpen",
   };
 }
 

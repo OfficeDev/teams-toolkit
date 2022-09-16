@@ -59,7 +59,7 @@ describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
 
     const solutionContext = await newSolutionContext(tools, inputs);
     const configMap = new ConfigMap();
-    const pluginName = "fx-resource-aad-app-for-teams";
+    const pluginName = "aad-app";
     const secretName = "clientSecret";
     const secretText = "test";
     configMap.set(secretName, secretText);
@@ -144,7 +144,7 @@ describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
     const content = fileMap.get(userdataFile);
     assert.isTrue(content !== undefined);
     const userdata = dotenv.parse(content);
-    const secretValue = userdata[`${pluginName}.${secretName}`];
+    const secretValue = userdata["fx-resource-aad-app-for-teams.clientSecret"];
     assert.isTrue(secretValue.startsWith("crypto_"));
     const decryptedRes = cryptoProvider.decrypt(secretValue);
     assert.isTrue(decryptedRes.isOk() && decryptedRes.value === secretText);

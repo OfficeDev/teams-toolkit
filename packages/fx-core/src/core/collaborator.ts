@@ -48,7 +48,8 @@ import { VSCodeExtensionCommand } from "../common/constants";
 import { ComponentNames } from "../component/constants";
 import { hasAAD, hasAzureResourceV3, hasSPFxTab } from "../common/projectSettingsHelperV3";
 import { AppManifest } from "../component/resource/appManifest/appManifest";
-
+import "../component/core";
+import "../plugins/resource/aad/v3";
 export async function listCollaborator(
   ctx: ContextV3,
   inputs: v2.InputsWithProjectPath,

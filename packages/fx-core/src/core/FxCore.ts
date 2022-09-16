@@ -766,7 +766,7 @@ export class FxCore implements v3.ICore {
 
     await copyParameterJson(
       inputs.projectPath!,
-      ctx.projectSetting.appName,
+      ctx.projectSettings!.appName,
       inputs.targetEnvName!,
       inputs.sourceEnvName!
     );

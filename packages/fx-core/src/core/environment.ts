@@ -183,7 +183,7 @@ class EnvironmentManager {
 
     let envState: Json = envData instanceof Map ? mapToJson(envData) : envData;
     // v3 envState will be converted into v2 for compatibility
-    if (isV3) envState = convertEnvStateV3ToV2(envState);
+    envState = convertEnvStateV3ToV2(envState);
     const secrets = separateSecretData(envState);
     this.encrypt(secrets, cryptoProvider);
 

@@ -53,7 +53,7 @@ describe("Core basic APIs for v3", () => {
     sandbox.restore();
     deleteFolder(projectPath);
   });
-  it("create + provision (VSC, Tab)", async () => {
+  it("create from new (VSC, Tab)", async () => {
     appName = randomAppName();
     const inputs: Inputs = {
       platform: Platform.VSCode,

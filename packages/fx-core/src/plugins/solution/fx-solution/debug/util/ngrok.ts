@@ -35,10 +35,12 @@ export async function getNgrokHttpUrl(addr: string | number): Promise<string | u
           for (const tunnel of tunnels) {
             if (typeof addr === "number" || Number.isInteger(Number.parseInt(addr))) {
               addr = `http://localhost:${addr}`;
-            } else {
-              addr = removeTrailingSlash(addr);
             }
-            if (tunnel.config.addr === addr && tunnel.proto === "https") {
+
+            if (
+              removeTrailingSlash(tunnel.config.addr) === removeTrailingSlash(addr) &&
+              tunnel.proto === "https"
+            ) {
               return tunnel.public_url;
             }
           }

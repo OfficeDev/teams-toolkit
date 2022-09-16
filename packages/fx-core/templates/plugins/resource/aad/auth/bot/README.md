@@ -295,3 +295,20 @@ The AAD [manifest](https://docs.microsoft.com/azure/active-directory/develop/ref
 Follow this [document](https://aka.ms/teamsfx-aad-manifest#customize-aad-manifest-template) if you need to include additional API permissions to access your desired APIs.
 
 Follow this [document](https://aka.ms/teamsfx-aad-manifest#How-to-view-the-AAD-app-on-the-Azure-portal) to view your AAD application in Azure Portal.
+
+# Trouble Shooting
+
+## Login page does not pop up after clicking `continue`
+
+First check whether your auth-start page is available by directly go to "{your-bot-endpoint}/auth-start.html" in your browser. You can find your-bot-endpoint in `.fx/states/state.{env}.json`.
+
+  - If the auth-start page can be opened in your browser, please try sign out current account in Teams app page and sign in again and run the command again.
+  - If encounter with ngrok page below when local debug, please follow the steps to solve this issue.
+  
+    1. Stop debugging in Visual Studio Code.
+    1. Sign up an ngrok account in https://dashboard.ngrok.com/signup.
+    1. Copy your personal ngrok authtoken from https://dashboard.ngrok.com/get-started/your-authtoken.
+    1. Run `npx ngrok authtoken <your-personal-ngrok-authtoken>` in Visual Studio Code terminal.
+    1. Start debugging the project again by hitting the F5 key in Visual Studio Code.
+
+    ![ngrok auth page](https://user-images.githubusercontent.com/63089166/190566043-6957edc9-c5b8-409d-b532-979ee0ef6ce5.png)

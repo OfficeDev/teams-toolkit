@@ -7,9 +7,8 @@ import * as fs from "fs-extra";
 import { selectTag } from "../../common/template-utils/templates";
 import { fetchTemplateTagList } from "../../common/template-utils/templatesUtils";
 import {
-  sampleDownloadBaseUrl,
-  sampleTagListUrl,
-  templateDownloadBaseUrl,
+  defaultTimeoutInMs,
+  defaultTryLimits,
   templateFileExt,
   templateTagListUrl,
 } from "./constant";
@@ -22,30 +21,18 @@ import {
 import { ScaffoldAction, ScaffoldActionName } from "./scaffoldAction";
 import { ScaffoldContext } from "./scaffoldContext";
 
-export async function fetchTemplateUrl(
+export async function fetchUrl(
   templateName: string,
-  tryLimits: number,
-  timeoutInMs: number
+  baseUrl: string,
+  tryLimits = defaultTryLimits,
+  timeoutInMs = defaultTimeoutInMs
 ): Promise<string> {
   const tags = await fetchTemplateTagList(templateTagListUrl, tryLimits, timeoutInMs);
   const selectedTag = selectTag(tags.replace(/\r/g, "").split("\n"));
   if (!selectedTag) {
     throw new Error(`Failed to find valid template for ${templateName}`);
   }
-  return `${templateDownloadBaseUrl}/${selectTag}/${templateZipName(templateName)}`;
-}
-
-export async function fetchSampleUrl(
-  sampleName: string,
-  tryLimits: number,
-  timeoutInMs: number
-): Promise<string> {
-  const tags = await fetchTemplateTagList(sampleTagListUrl, tryLimits, timeoutInMs);
-  const selectedTag = selectTag(tags.replace(/\r/g, "").split("\n"));
-  if (!selectedTag) {
-    throw new Error(`Failed to find valid template for ${sampleName}`);
-  }
-  return `${sampleDownloadBaseUrl}/${selectTag}/${templateZipName(sampleName)}`;
+  return `${baseUrl}/${selectTag}/${templateZipName(templateName)}`;
 }
 
 export async function getValidSampleDestination(

@@ -132,6 +132,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     tunnelName: string,
     binFolder?: string
   ): Promise<Result<Void, FxError>> {
+    let timeout: NodeJS.Timeout | undefined = undefined;
     return new Promise<Result<Void, FxError>>((resolve, reject) => {
       const options: cp.SpawnOptions = {
         cwd: globalVariables.workspaceUri?.fsPath ?? "",
@@ -203,7 +204,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
         }
       });
 
-      setTimeout(() => {
+      timeout = setTimeout(() => {
         if (!this.status.endpoint) {
           this.saveNgrokEndpointFromApi(configFile, tunnelName).then((res) => {
             if (res.isErr()) {
@@ -212,6 +213,10 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
           });
         }
       }, ngrokTimeout);
+    }).finally(() => {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
     });
   }
 

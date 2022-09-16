@@ -44,3 +44,7 @@ export function isSPFxMultiTabEnabled(): boolean {
 export function isWorkflowBotEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.WorkflowBotEnabled, false);
 }
+
+export function isLocalDebugTransparencyEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.LocalDebugTransparency, false);
+}

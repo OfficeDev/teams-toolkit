@@ -42,7 +42,7 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
     }
   }
 
-  protected stop(error?: any): void {
+  protected async stop(error?: any): Promise<void> {
     if (error) {
       // TODO: add color
       this.writeEmitter.fire(`${error?.displayMessage ?? error?.message}\r\n`);

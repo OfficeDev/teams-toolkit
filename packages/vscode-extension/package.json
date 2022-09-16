@@ -453,11 +453,6 @@
         "enablement": "never"
       },
       {
-        "command": "fx-extension.debug",
-        "title": "Teams - Preview your Teams app",
-        "enablement": "never"
-      },
-      {
         "command": "fx-extension.openDeploymentTreeview",
         "title": "Teams - Open Deployment Treeview",
         "enablement": "never"

@@ -1180,6 +1180,7 @@
         "properties": {
           "fx-extension.prerequisiteCheck": {
             "type": "object",
+            "markdownDescription": "**[Obsolete]** Only work for `${command:fx-extension.validate-local-prerequisites}`",
             "properties": {
               "node": {
                 "type": "boolean",

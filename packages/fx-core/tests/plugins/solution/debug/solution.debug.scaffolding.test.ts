@@ -21,6 +21,7 @@ import {
 import { BotCapabilities, PluginBot } from "../../../../src/plugins/resource/bot/resources/strings";
 import { isAadManifestEnabled } from "../../../../src/common/tools";
 import { BotHostTypes } from "../../../../src/common/local/constants";
+import { convertProjectSettingsV2ToV3 } from "../../../../src/component/migrate";
 
 const numAADLocalEnvs = 2;
 const numSimpleAuthLocalEnvs = 10;
@@ -87,7 +88,7 @@ describe("solution.debug.scaffolding", () => {
           },
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(projectSetting);
+        const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
         const result = await scaffoldLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
@@ -153,7 +154,7 @@ describe("solution.debug.scaffolding", () => {
           },
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(projectSetting);
+        const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
         const result = await scaffoldLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
@@ -197,7 +198,7 @@ describe("solution.debug.scaffolding", () => {
           },
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(projectSetting);
+        const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
         const result = await scaffoldLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
@@ -241,7 +242,7 @@ describe("solution.debug.scaffolding", () => {
           },
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(projectSetting);
+        const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
         const result = await scaffoldLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
@@ -302,7 +303,7 @@ describe("solution.debug.scaffolding", () => {
           },
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(projectSetting);
+        const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
         const result = await scaffoldLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
@@ -351,7 +352,7 @@ describe("solution.debug.scaffolding", () => {
             },
           },
         };
-        const v2Context = new MockedV2Context(projectSetting);
+        const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
         inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.NotificationBot];
         const result = await scaffoldLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
@@ -418,7 +419,7 @@ describe("solution.debug.scaffolding", () => {
             },
           },
         };
-        const v2Context = new MockedV2Context(projectSetting);
+        const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
         inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.NotificationBot];
         const result = await scaffoldLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
@@ -487,7 +488,7 @@ describe("solution.debug.scaffolding", () => {
           },
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(projectSetting);
+        const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
         const result = await scaffoldLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
@@ -553,7 +554,7 @@ describe("solution.debug.scaffolding", () => {
           },
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(projectSetting);
+        const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
         const result = await scaffoldLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
@@ -597,7 +598,7 @@ describe("solution.debug.scaffolding", () => {
           },
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(projectSetting);
+        const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
         const result = await scaffoldLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
@@ -641,7 +642,7 @@ describe("solution.debug.scaffolding", () => {
           },
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(projectSetting);
+        const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
         const result = await scaffoldLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
@@ -704,7 +705,7 @@ describe("solution.debug.scaffolding", () => {
           },
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(projectSetting);
+        const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
         const result = await scaffoldLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
@@ -766,7 +767,7 @@ describe("solution.debug.scaffolding", () => {
           },
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(projectSetting);
+        const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
         const result = await scaffoldLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
@@ -808,7 +809,7 @@ describe("solution.debug.scaffolding", () => {
           hostType: "SPFx",
         },
       };
-      const v2Context = new MockedV2Context(projectSetting);
+      const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
       const result = await scaffoldLocalDebugSettings(v2Context, inputs);
       chai.assert.isTrue(result.isOk());
 
@@ -848,7 +849,7 @@ describe("solution.debug.scaffolding", () => {
           activeResourcePlugins: [],
         },
       };
-      const v2Context = new MockedV2Context(projectSetting);
+      const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
       const result = await scaffoldLocalDebugSettings(v2Context, inputs);
       chai.assert.isTrue(result.isOk());
 
@@ -869,7 +870,7 @@ describe("solution.debug.scaffolding", () => {
         },
       };
 
-      const v2Context = new MockedV2Context(projectSetting);
+      const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
       const result = await scaffoldLocalDebugSettings(v2Context, inputs);
       chai.assert.isTrue(result.isOk());
 
@@ -894,7 +895,7 @@ describe("solution.debug.scaffolding", () => {
         },
         programmingLanguage: "javascript",
       };
-      const v2Context = new MockedV2Context(projectSetting);
+      const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
       const result = await scaffoldLocalDebugSettings(v2Context, inputs);
       chai.assert.isTrue(result.isOk());
     });
@@ -927,7 +928,7 @@ describe("solution.debug.scaffolding", () => {
         },
         programmingLanguage: "javascript",
       };
-      const v2Context = new MockedV2Context(projectSetting);
+      const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
       const result = await scaffoldLocalDebugSettings(v2Context, inputs);
       chai.assert.isTrue(result.isOk());
 
@@ -972,7 +973,7 @@ describe("solution.debug.scaffolding", () => {
         },
         programmingLanguage: "javascript",
       };
-      const v2Context = new MockedV2Context(projectSetting);
+      const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
       const result = await scaffoldLocalDebugSettings(v2Context, inputs);
       chai.assert.isTrue(result.isOk());
 
@@ -1036,7 +1037,7 @@ describe("solution.debug.scaffolding", () => {
         },
         programmingLanguage: "javascript",
       };
-      const v2Context = new MockedV2Context(projectSetting);
+      const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
       const result = await scaffoldLocalDebugSettings(v2Context, inputs);
       chai.assert.isTrue(result.isOk());
 

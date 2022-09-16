@@ -214,7 +214,7 @@ describe("LocalEnvManager", () => {
         name: "fx-solution-azure",
         hostType: "Azure",
         capabilities: ["Tab"],
-        activeResourcePlugins: ["fx-resource-simple-auth"],
+        activeResourcePlugins: ["fx-resource-simple-auth", "fx-resource-frontend-hosting"],
       },
       depsTypes: [DepsType.AzureNode, DepsType.Dotnet],
     },
@@ -224,6 +224,7 @@ describe("LocalEnvManager", () => {
         name: "fx-solution-azure",
         hostType: "Azure",
         capabilities: ["Tab"],
+        activeResourcePlugins: ["fx-resource-frontend-hosting"],
       },
       depsTypes: [DepsType.AzureNode],
     },
@@ -234,7 +235,11 @@ describe("LocalEnvManager", () => {
         hostType: "Azure",
         capabilities: ["Tab"],
         azureResources: ["function"],
-        activeResourcePlugins: ["fx-resource-simple-auth"],
+        activeResourcePlugins: [
+          "fx-resource-simple-auth",
+          "fx-resource-frontend-hosting",
+          "fx-resource-function",
+        ],
       },
       depsTypes: [DepsType.FunctionNode, DepsType.Dotnet, DepsType.FuncCoreTools],
     },
@@ -244,6 +249,7 @@ describe("LocalEnvManager", () => {
         name: "fx-solution-azure",
         hostType: "Azure",
         capabilities: ["Bot"],
+        activeResourcePlugins: ["fx-resource-bot"],
       },
       depsTypes: [DepsType.AzureNode, DepsType.Ngrok],
     },
@@ -253,7 +259,11 @@ describe("LocalEnvManager", () => {
         name: "fx-solution-azure",
         hostType: "Azure",
         capabilities: ["Tab", "Bot"],
-        activeResourcePlugins: ["fx-resource-simple-auth"],
+        activeResourcePlugins: [
+          "fx-resource-simple-auth",
+          "fx-resource-frontend-hosting",
+          "fx-resource-bot",
+        ],
       },
       depsTypes: [DepsType.AzureNode, DepsType.Dotnet, DepsType.Ngrok],
     },
@@ -264,7 +274,12 @@ describe("LocalEnvManager", () => {
         hostType: "Azure",
         capabilities: ["Tab", "Bot", "MessagingExtension"],
         azureResources: ["function"],
-        activeResourcePlugins: ["fx-resource-simple-auth"],
+        activeResourcePlugins: [
+          "fx-resource-simple-auth",
+          "fx-resource-frontend-hosting",
+          "fx-resource-bot",
+          "fx-resource-function",
+        ],
       },
       depsTypes: [DepsType.FunctionNode, DepsType.Dotnet, DepsType.Ngrok, DepsType.FuncCoreTools],
     },
@@ -273,6 +288,7 @@ describe("LocalEnvManager", () => {
       solutionSettings: {
         name: "fx-solution-azure",
         hostType: "SPFx",
+        activeResourcePlugins: ["fx-resource-spfx"],
       },
       depsTypes: [DepsType.SpfxNode],
     },
@@ -282,6 +298,7 @@ describe("LocalEnvManager", () => {
         name: "fx-solution-azure",
         hostType: "Azure",
         capabilities: ["Bot"],
+        activeResourcePlugins: ["fx-resource-bot"],
       },
       pluginSettings: {
         "fx-resource-bot": {
@@ -296,6 +313,7 @@ describe("LocalEnvManager", () => {
         name: "fx-solution-azure",
         hostType: "Azure",
         capabilities: ["Bot"],
+        activeResourcePlugins: ["fx-resource-bot"],
       },
       pluginSettings: {
         "fx-resource-bot": {

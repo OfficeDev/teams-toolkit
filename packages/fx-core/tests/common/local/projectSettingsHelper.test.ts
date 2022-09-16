@@ -7,10 +7,11 @@ import * as chai from "chai";
 import { ProjectSettings } from "@microsoft/teamsfx-api";
 
 import { ProjectSettingsHelper } from "../../../src/common/local/projectSettingsHelper";
+import { convertProjectSettingsV2ToV3 } from "../../../src/component/migrate";
 
 describe("ProjectSettingsHelper", () => {
   it("Azure All", () => {
-    const projectSettings = {
+    let projectSettings = {
       appName: "unit-test",
       projectId: "11111111-1111-1111-1111-111111111111",
       solutionSettings: {
@@ -21,7 +22,7 @@ describe("ProjectSettingsHelper", () => {
         activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
       },
     } as ProjectSettings;
-
+    projectSettings = convertProjectSettingsV2ToV3(projectSettings, ".");
     const isSpfx = ProjectSettingsHelper.isSpfx(projectSettings);
     const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
     const includeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
@@ -38,7 +39,7 @@ describe("ProjectSettingsHelper", () => {
   });
 
   it("Azure All with Simple Auth", () => {
-    const projectSettings = {
+    let projectSettings = {
       appName: "unit-test",
       projectId: "11111111-1111-1111-1111-111111111111",
       solutionSettings: {
@@ -49,7 +50,7 @@ describe("ProjectSettingsHelper", () => {
         activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
       },
     } as ProjectSettings;
-
+    projectSettings = convertProjectSettingsV2ToV3(projectSettings, ".");
     const isSpfx = ProjectSettingsHelper.isSpfx(projectSettings);
     const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
     const includeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
@@ -66,7 +67,7 @@ describe("ProjectSettingsHelper", () => {
   });
 
   it("SPFx", () => {
-    const projectSettings = {
+    let projectSettings = {
       appName: "unit-test",
       projectId: "11111111-1111-1111-1111-111111111111",
       solutionSettings: {
@@ -74,7 +75,7 @@ describe("ProjectSettingsHelper", () => {
         hostType: "SPFx",
       },
     } as ProjectSettings;
-
+    projectSettings = convertProjectSettingsV2ToV3(projectSettings, ".");
     const isSpfx = ProjectSettingsHelper.isSpfx(projectSettings);
     const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
     const includeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
@@ -91,7 +92,7 @@ describe("ProjectSettingsHelper", () => {
   });
 
   it("Partial Settings", () => {
-    const projectSettings = {
+    let projectSettings = {
       appName: "unit-test",
       projectId: "11111111-1111-1111-1111-111111111111",
       solutionSettings: {
@@ -102,7 +103,7 @@ describe("ProjectSettingsHelper", () => {
         activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
       },
     } as ProjectSettings;
-
+    projectSettings = convertProjectSettingsV2ToV3(projectSettings, ".");
     const isSpfx = ProjectSettingsHelper.isSpfx(projectSettings);
     const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
     const includeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
@@ -119,7 +120,7 @@ describe("ProjectSettingsHelper", () => {
   });
 
   it("Partial Settings without AAD plugin", () => {
-    const projectSettings = {
+    let projectSettings = {
       appName: "unit-test",
       projectId: "11111111-1111-1111-1111-111111111111",
       solutionSettings: {
@@ -130,7 +131,7 @@ describe("ProjectSettingsHelper", () => {
         activeResourcePlugins: ["fx-resource-frontend-hosting"],
       },
     } as ProjectSettings;
-
+    projectSettings = convertProjectSettingsV2ToV3(projectSettings, ".");
     const isSpfx = ProjectSettingsHelper.isSpfx(projectSettings);
     const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
     const includeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
@@ -147,7 +148,7 @@ describe("ProjectSettingsHelper", () => {
   });
 
   it("Invalid Settings", () => {
-    const projectSettings = {
+    let projectSettings = {
       appName: "unit-test",
       projectId: "11111111-1111-1111-1111-111111111111",
       solutionSettings: {
@@ -157,7 +158,7 @@ describe("ProjectSettingsHelper", () => {
         foo: "bar",
       },
     } as ProjectSettings;
-
+    projectSettings = convertProjectSettingsV2ToV3(projectSettings, ".");
     const isSpfx = ProjectSettingsHelper.isSpfx(projectSettings);
     const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
     const includeBackend = ProjectSettingsHelper.includeBackend(projectSettings);

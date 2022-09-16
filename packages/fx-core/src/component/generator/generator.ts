@@ -3,12 +3,21 @@
 
 import { ContextV3 } from "@microsoft/teamsfx-api";
 import path from "path";
-import { SampleActionSeq, ScaffoldAction, TemplateActionSeq } from "./scaffoldAction";
-import { ScaffoldContext } from "./scaffoldContext";
+import {
+  Component,
+  sendTelemetryEvent,
+  TelemetryEvent,
+  TelemetryProperty,
+} from "../../common/telemetry";
+import { SampleActionSeq, GenerateAction, TemplateActionSeq } from "./generateAction";
+import { GenerateContext } from "./generateContext";
 import {
   genFileDataRenderReplaceFn,
   genFileNameRenderReplaceFn,
+  getOutsideSampleRelativePath,
+  getOutsideSampleUrl,
   getValidSampleDestination,
+  isSampleFromOutside,
   sampleDefaultOnActionError,
   templateDefaultOnActionError,
 } from "./utils";
@@ -22,7 +31,8 @@ export class Generator {
   ): Promise<void> {
     const appName = ctx.projectSetting?.appName;
     const projectId = ctx.projectSetting?.projectId;
-    const scaffoldContext: ScaffoldContext = {
+    const generateContext: GenerateContext = {
+      type: "template",
       name: `${templateName}_${language}`,
       destination: path.join(destinationPath, appName),
       logProvider: ctx.logProvider,
@@ -35,7 +45,7 @@ export class Generator {
       }),
       onActionError: templateDefaultOnActionError,
     };
-    this.generate(scaffoldContext, TemplateActionSeq);
+    this.generate(generateContext, TemplateActionSeq);
   }
 
   public static async generateFromSamples(
@@ -45,19 +55,29 @@ export class Generator {
   ): Promise<void> {
     const destination = await getValidSampleDestination(sampleName, destinationPath);
     // sample doesn't need replace function. Replacing projectId will be handled by core.
-    const scaffoldContext: ScaffoldContext = {
+    const generateContext: GenerateContext = {
+      type: "sample",
       name: sampleName,
       destination: destination,
       logProvider: ctx.logProvider,
       onActionError: sampleDefaultOnActionError,
     };
-    this.generate(scaffoldContext, SampleActionSeq);
+    if (isSampleFromOutside(sampleName)) {
+      generateContext.zipUrl = getOutsideSampleUrl(sampleName);
+      generateContext.relativePath = getOutsideSampleRelativePath(sampleName);
+    }
+    this.generate(generateContext, SampleActionSeq);
   }
 
   private static async generate(
-    context: ScaffoldContext,
-    actions: ScaffoldAction[]
+    context: GenerateContext,
+    actions: GenerateAction[]
   ): Promise<void> {
+    sendTelemetryEvent(Component.core, TelemetryEvent.GenerateStart, {
+      [TelemetryProperty.GenerateType]: context.type,
+      [TelemetryProperty.GenerateName]: context.name,
+    });
+    context.logProvider.info(`Start generating ${context.type} ${context.name}`);
     for (const action of actions) {
       try {
         await context.onActionStart?.(action, context);
@@ -70,5 +90,11 @@ export class Generator {
         if (e instanceof Error) await context.onActionError(action, context, e);
       }
     }
+    sendTelemetryEvent(Component.core, TelemetryEvent.Generate, {
+      [TelemetryProperty.GenerateType]: context.type,
+      [TelemetryProperty.GenerateName]: context.name,
+      [TelemetryProperty.GenerateFallback]: context.fallbackZipPath ? "true" : "false", // Track fallback cases.
+    });
+    context.logProvider.info(`Finish generating ${context.type} ${context.name}`);
   }
 }

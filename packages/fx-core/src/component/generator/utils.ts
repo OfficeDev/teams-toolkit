@@ -18,12 +18,12 @@ import {
   TemplateZipFallbackError,
   UnzipError,
 } from "./error";
-import { ScaffoldAction, ScaffoldActionName } from "./scaffoldAction";
-import { ScaffoldContext } from "./scaffoldContext";
+import { GenerateAction, GenerateActionName } from "./generateAction";
+import { GenerateContext } from "./generateContext";
 import AdmZip from "adm-zip";
 import { EOL } from "os";
 
-export async function fetchUrl(
+export async function fetchZipUrl(
   name: string,
   baseUrl: string,
   tryLimits = defaultTryLimits,
@@ -35,23 +35,6 @@ export async function fetchUrl(
     throw new Error(`Failed to find valid template for ${name}`);
   }
   return `${baseUrl}/${selectTag}/${templateZipName(name)}`;
-}
-
-export async function getValidSampleDestination(
-  sampleName: string,
-  destinationPath: string
-): Promise<string> {
-  let sampleDestination = path.join(destinationPath, sampleName);
-  if (
-    (await fs.pathExists(sampleDestination)) &&
-    (await fs.readdir(sampleDestination)).length > 0
-  ) {
-    let suffix = 1;
-    while (await fs.pathExists(sampleDestination)) {
-      sampleDestination = path.join(destinationPath, `${sampleName}_${suffix++}`);
-    }
-  }
-  return sampleDestination;
 }
 
 export const templateZipName = (templateName: string): string => `${templateName}.zip`;
@@ -87,21 +70,21 @@ export function genFileNameRenderReplaceFn(variables: { [key: string]: string })
     renderTemplateFileName(fileName, fileData, variables).replace(templateFileExt, "");
 }
 
-//this function does the following things:
+//the unzip function does the following things:
 //1. unzip the package into dstPath,
 //2. replace the file name and file content with the given replace functions
 //3. if appFolder is provided, only the files within appFolder will be kept. This is used for samples from other repos.
 export async function unzip(
   zip: AdmZip,
   dstPath: string,
-  appFolder?: string,
+  relativePath?: string,
   nameReplaceFn?: (filePath: string, data: Buffer) => string,
   dataReplaceFn?: (filePath: string, data: Buffer) => Buffer | string,
   filesInAppendMode = [".gitignore"]
 ): Promise<void> {
   let entries: AdmZip.IZipEntry[] = zip.getEntries().filter((entry) => !entry.isDirectory);
-  if (appFolder) {
-    entries = entries.filter((entry) => entry.entryName.startsWith(appFolder));
+  if (relativePath) {
+    entries = entries.filter((entry) => entry.entryName.startsWith(relativePath));
   }
 
   for (const entry of entries) {
@@ -109,8 +92,8 @@ export async function unzip(
     let entryName: string = nameReplaceFn
       ? nameReplaceFn(entry.entryName, rawEntryData)
       : entry.entryName;
-    if (appFolder) {
-      entryName = entryName.replace(appFolder, "");
+    if (relativePath) {
+      entryName = entryName.replace(relativePath, "");
     }
     const entryData: string | Buffer = dataReplaceFn
       ? dataReplaceFn(entry.name, rawEntryData)
@@ -128,18 +111,51 @@ export async function unzip(
   }
 }
 
+export async function getValidSampleDestination(
+  sampleName: string,
+  destinationPath: string
+): Promise<string> {
+  let sampleDestination = path.join(destinationPath, sampleName);
+  // if sample destination already exists, append a number to the end.
+  if (
+    (await fs.pathExists(sampleDestination)) &&
+    (await fs.readdir(sampleDestination)).length > 0
+  ) {
+    let suffix = 1;
+    while (await fs.pathExists(sampleDestination)) {
+      sampleDestination = path.join(destinationPath, `${sampleName}_${suffix++}`);
+    }
+  }
+  return sampleDestination;
+}
+
+export function isSampleFromOutside(sampleName: string): boolean {
+  //TODO
+  return false;
+}
+
+export function getOutsideSampleRelativePath(sampleName: string): string {
+  //TODO
+  return "";
+}
+
+export function getOutsideSampleUrl(sampleName: string): string {
+  //TODO
+  return "";
+}
+
 export async function templateDefaultOnActionError(
-  action: ScaffoldAction,
-  context: ScaffoldContext,
+  action: GenerateAction,
+  context: GenerateContext,
   error: Error
 ) {
   switch (action.name) {
-    case ScaffoldActionName.FetchTemplateUrlWithTag:
-    case ScaffoldActionName.FetchZipFromUrl:
+    case GenerateActionName.FetchTemplateUrlWithTag:
+    case GenerateActionName.FetchZipFromUrl:
       break;
-    case ScaffoldActionName.FetchTemplateZipFromLocal:
+    case GenerateActionName.FetchTemplateZipFromLocal:
       throw new TemplateZipFallbackError();
-    case ScaffoldActionName.Unzip:
+    case GenerateActionName.Unzip:
       throw new UnzipError();
     default:
       throw new Error(error.message);
@@ -147,16 +163,16 @@ export async function templateDefaultOnActionError(
 }
 
 export async function sampleDefaultOnActionError(
-  action: ScaffoldAction,
-  context: ScaffoldContext,
+  action: GenerateAction,
+  context: GenerateContext,
   error: Error
 ) {
   switch (action.name) {
-    case ScaffoldActionName.FetchSampleUrlWithTag:
+    case GenerateActionName.FetchSampleUrlWithTag:
       throw new FetchSampleUrlWithTagError();
-    case ScaffoldActionName.FetchZipFromUrl:
+    case GenerateActionName.FetchZipFromUrl:
       throw new FetchZipFromUrlError();
-    case ScaffoldActionName.Unzip:
+    case GenerateActionName.Unzip:
       throw new UnzipError();
     default:
       throw new Error(error.message);

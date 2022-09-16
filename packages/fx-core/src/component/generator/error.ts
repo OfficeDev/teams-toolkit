@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { UserError } from "@microsoft/teamsfx-api";
+import { SystemError } from "@microsoft/teamsfx-api";
 
 export class TemplateZipFallbackError {}
 

@@ -36,6 +36,9 @@ export enum TelemetryProperty {
   TemplateLanguage = "template-language",
   TemplateScenario = "template-scenario",
   TemplateFallback = "template-fallback",
+  GenerateType = "generate-type",
+  GenerateName = "generate-name",
+  GenerateFallback = "generate-fallback",
   HasSwitchedSubscription = "has-switched-subscription",
   HasSwitchedM365Tenant = "has-switched-m365",
 }
@@ -105,6 +108,8 @@ export enum TelemetryEvent {
   FillProjectId = "fill-project-id",
   ScaffoldFromTemplatesStart = "scaffold-from-templates-start",
   ScaffoldFromTemplates = "scaffold-from-templates",
+  GenerateStart = "generate-start",
+  Generate = "generate",
   ConfirmProvision = "confirm-provision",
   CheckLocalDebugTenant = "check-local-debug-tenant",
   DebugSetUpSSO = "debug-set-up-sso",

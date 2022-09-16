@@ -67,37 +67,26 @@ describe("Add api-connector Command Tests", () => {
   it("Builder Check", () => {
     const cmd = new Add();
     yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
-    expect(registeredCommands).deep.equals(
-      isPreviewFeaturesEnabled()
-        ? [
-            "add <feature>",
-            "sso-tab",
-            "tab",
-            "bot",
-            "message-extension",
-            "azure-function",
-            "azure-apim",
-            "azure-sql",
-            "azure-keyvault",
-            "api-connection [auth-type]",
-            "basic",
-            "aad",
-            "apikey",
-            "cert",
-            "custom",
-            "cicd",
-          ]
-        : [
-            "add <feature>",
-            "api-connection [auth-type]",
-            "basic",
-            "aad",
-            "apikey",
-            "cert",
-            "custom",
-            "cicd",
-          ]
-    );
+    expect(registeredCommands).deep.equals([
+      "add <feature>",
+      "notification",
+      "command-and-response",
+      "sso-tab",
+      "tab",
+      "bot",
+      "message-extension",
+      "azure-function",
+      "azure-apim",
+      "azure-sql",
+      "azure-keyvault",
+      "api-connection [auth-type]",
+      "basic",
+      "aad",
+      "apikey",
+      "cert",
+      "custom",
+      "cicd",
+    ]);
   });
 
   it("Add api-connection Command Running Check", async () => {

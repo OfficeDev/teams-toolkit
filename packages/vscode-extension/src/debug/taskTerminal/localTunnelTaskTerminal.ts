@@ -17,7 +17,7 @@ import { BaseTaskTerminal } from "./baseTaskTerminal";
 import { DepsManager, DepsType, LocalEnvManager } from "@microsoft/teamsfx-core";
 import { vscodeLogger } from "../depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "../depsChecker/vscodeTelemetry";
-import { openTerminalCommand, localTunnelDisplayMessages } from "../constants";
+import { openTerminalCommand, localTunnelDisplayMessages, taskNamePrefix } from "../constants";
 import VsCodeLogInstance from "../../commonlib/log";
 import { doctorConstant } from "../depsChecker/doctorConstant";
 
@@ -42,7 +42,7 @@ type EndpointInfo = {
 export interface LocalTunnelArgs {
   configFile?: string;
   binFolder?: string;
-  // TODO: reuse?: boolean
+  reuse?: boolean;
 }
 
 export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
@@ -101,7 +101,10 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
       throw BaseTaskTerminal.taskDefinitionError("configFile");
     }
 
-    const configFile = BaseTaskTerminal.resolveTeamsFxVariables(this.args.configFile);
+    const configFile = path.resolve(
+      globalVariables.workspaceUri?.fsPath ?? "",
+      BaseTaskTerminal.resolveTeamsFxVariables(this.args.configFile)
+    );
     this.status.resolvedConfigFile = configFile;
 
     const binFolder = this.args.binFolder
@@ -208,7 +211,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
   }
 
   private outputStartMessage(): void {
-    VsCodeLogInstance.info(localTunnelDisplayMessages.taskName);
+    VsCodeLogInstance.info(`${taskNamePrefix}${localTunnelDisplayMessages.taskName}`);
     VsCodeLogInstance.outputChannel.appendLine(localTunnelDisplayMessages.check);
     VsCodeLogInstance.outputChannel.appendLine("");
 
@@ -345,6 +348,14 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
       );
     }
     return res.details.binFolders.join(path.delimiter);
+  }
+
+  public static async stopAll(): Promise<void> {
+    for (const task of LocalTunnelTaskTerminal.ngrokTaskTerminals.values()) {
+      if (!task.terminal.args?.reuse) {
+        task.terminal.close();
+      }
+    }
   }
 
   private static async resolveBinFolder(str: string): Promise<string> {

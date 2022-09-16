@@ -72,6 +72,9 @@ import {
   prerequisiteCheckDisplayMessages,
   npmInstallDisplayMessages,
   DisplayMessages,
+  taskNamePrefix,
+  prerequisiteCheckTaskDisplayMessages,
+  prerequisiteCheckForGetStartedDisplayMessages,
 } from "./constants";
 import M365TokenInstance from "../commonlib/m365Login";
 import { signedOut } from "../commonlib/common/constant";
@@ -281,29 +284,34 @@ async function checkPort(
     async (ctx: TelemetryContext) => {
       VsCodeLogInstance.outputChannel.appendLine(displayMessage);
       const portsInUse = await localEnvManager.getPortsInUse(ports);
+      const formatPortStr = (ports: number[]) =>
+        ports.length > 1 ? ports.join(", ") : `${ports[0]}`;
       if (portsInUse.length > 0) {
         ctx.properties[TelemetryProperty.DebugPortsInUse] = JSON.stringify(portsInUse);
-        let message: string;
-        if (portsInUse.length > 1) {
-          message = util.format(
-            localize("teamstoolkit.localDebug.portsAlreadyInUse"),
-            portsInUse.join(", ")
-          );
-        } else {
-          message = util.format(
-            localize("teamstoolkit.localDebug.portAlreadyInUse"),
-            portsInUse[0]
-          );
-        }
+        const message = util.format(
+          getDefaultString("teamstoolkit.localDebug.portsAlreadyInUse"),
+          formatPortStr(portsInUse)
+        );
+        const displayMessage = util.format(
+          localize("teamstoolkit.localDebug.portsAlreadyInUse"),
+          formatPortStr(portsInUse)
+        );
+
         return {
           checker: Checker.Ports,
           result: ResultStatus.failed,
-          error: new UserError(ExtensionSource, ExtensionErrors.PortAlreadyInUse, message),
+          error: new UserError(
+            ExtensionSource,
+            ExtensionErrors.PortAlreadyInUse,
+            message,
+            displayMessage
+          ),
         };
       }
       return {
         checker: Checker.Ports,
         result: ResultStatus.success,
+        successMsg: doctorConstant.PortSuccess.replace("@port", formatPortStr(ports)),
       };
     }
   );
@@ -312,7 +320,7 @@ async function checkPort(
 export async function checkPrerequisitesForGetStarted(): Promise<Result<void, FxError>> {
   const nodeChecker = await getOrderedCheckersForGetStarted();
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GetStartedPrerequisitesStart);
-  const res = await _checkAndInstall(prerequisiteCheckDisplayMessages, nodeChecker);
+  const res = await _checkAndInstall(prerequisiteCheckForGetStartedDisplayMessages, nodeChecker);
   if (res.error) {
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.GetStartedPrerequisites, res.error);
     return err(res.error);
@@ -367,7 +375,7 @@ export async function checkAndInstallForTask(
         terminateAllRunningTeamsfxTasks();
       }
 
-      const res = await _checkAndInstall(prerequisiteCheckDisplayMessages, orderedCheckers);
+      const res = await _checkAndInstall(prerequisiteCheckTaskDisplayMessages, orderedCheckers);
       if (res.error) {
         const debugSession = commonUtils.getLocalDebugSession();
         addCheckResultsForTelemetry(
@@ -432,7 +440,7 @@ async function _checkAndInstall(
     );
 
     VsCodeLogInstance.outputChannel.show();
-    VsCodeLogInstance.info(displayMessages.taskName);
+    VsCodeLogInstance.info(`${taskNamePrefix}${displayMessages.taskName}`);
     VsCodeLogInstance.outputChannel.appendLine(displayMessages.check);
 
     // Get deps
@@ -1145,8 +1153,10 @@ async function handleCheckResults(
 
   if (fromLocalDebug) {
     if (!shouldStop) {
-      output.appendLine("");
-      output.appendLine(displayMessages.launchServices);
+      if (displayMessages.launchServices) {
+        output.appendLine("");
+        output.appendLine(displayMessages.launchServices);
+      }
       await progressHelper?.stop(true);
     }
 
@@ -1158,10 +1168,17 @@ async function handleCheckResults(
           displayMessages.errorMessageCommand
         })`
       );
-      const displayMessage = util.format(
-        localize(displayMessages.errorDisplayMessageKey),
-        `[${localize(displayMessages.errorMessageLink)}](${displayMessages.errorMessageCommand})`
-      );
+
+      // show failure summary in display message
+      const displayMessage =
+        util.format(
+          localize("teamstoolkit.localDebug.failedCheckers"),
+          failures.map((f) => f.failureMsg ?? f.checker).join(", ")
+        ) +
+        util.format(
+          localize(displayMessages.errorDisplayMessageKey),
+          `[${localize(displayMessages.errorMessageLink)}](${displayMessages.errorMessageCommand})`
+        );
       const errorOptions: UserErrorOptions = {
         source: ExtensionSource,
         name: displayMessages.errorName,

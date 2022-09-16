@@ -613,6 +613,12 @@ export function isGeneratorCheckerEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.GeneratorCheckerEnable, true);
 }
 
+export function getSPFxVersion(): string {
+  const flag = process.env[FeatureFlagName.SPFxVersion];
+
+  return flag ?? "1.15.0";
+}
+
 export async function generateBicepFromFile(
   templateFilePath: string,
   context: any

@@ -795,6 +795,17 @@
               ]
             },
             {
+              "operator": "not",
+              "operands": [
+                {
+                  "name": "isActivitySender",
+                  "parameters": {
+                    "user": "github-actions[bot]"
+                  }
+                }
+              ]
+            },
+            {
               "name": "isOpen",
               "parameters": {}
             }
@@ -1301,6 +1312,17 @@
               "parameters": {
                 "label": "close-wait"
               }
+            },
+            {
+              "operator": "not",
+              "operands": [
+                {
+                  "name": "isActivitySender",
+                  "parameters": {
+                    "user": "github-actions[bot]"
+                  }
+                }
+              ]
             },
             {
               "operator": "not",

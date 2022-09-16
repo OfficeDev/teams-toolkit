@@ -11,7 +11,7 @@ import { SSODebugArgs, SSODebugHandler } from "@microsoft/teamsfx-core";
 import VsCodeLogInstance from "../../commonlib/log";
 import { workspaceUri } from "../../globalVariables";
 import { tools } from "../../handlers";
-import { setUpSSODisplayMessages } from "../constants";
+import { setUpSSODisplayMessages, taskNamePrefix } from "../constants";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import { handleDebugActions } from "./common";
 
@@ -25,7 +25,7 @@ export class SetUpSSOTaskTerminal extends BaseTaskTerminal {
 
   async do(): Promise<Result<Void, FxError>> {
     VsCodeLogInstance.outputChannel.show();
-    VsCodeLogInstance.info(setUpSSODisplayMessages.taskName);
+    VsCodeLogInstance.info(`${taskNamePrefix}${setUpSSODisplayMessages.taskName}`);
     VsCodeLogInstance.outputChannel.appendLine(setUpSSODisplayMessages.check);
 
     const workspacePath: string = workspaceUri?.fsPath as string;

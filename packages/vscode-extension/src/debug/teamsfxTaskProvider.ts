@@ -40,33 +40,34 @@ import { SetUpTabTaskTerminal } from "./taskTerminal/setUpTabTaskTerminal";
 import { PrepareManifestTaskTerminal } from "./taskTerminal/prepareManifestTaskTerminal";
 import { SetUpSSOTaskTerminal } from "./taskTerminal/setUpSSOTaskTerminal";
 import { SetUpBotTaskTerminal } from "./taskTerminal/setUpBotTaskTerminal";
+import { TaskCommand } from "./constants";
 
 const customTasks = Object.freeze({
-  "debug-check-prerequisites": {
+  [TaskCommand.checkPrerequisites]: {
     createTerminal: (d: vscode.TaskDefinition) => new PrerequisiteTaskTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Never,
   },
-  "debug-npm-install": {
+  [TaskCommand.npmInstall]: {
     createTerminal: (d: vscode.TaskDefinition) => new NpmInstallTaskTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Never,
   },
-  "debug-start-local-tunnel": {
+  [TaskCommand.startLocalTunnel]: {
     createTerminal: (d: vscode.TaskDefinition) => new LocalTunnelTaskTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Always,
   },
-  "debug-set-up-tab": {
+  [TaskCommand.setUpTab]: {
     createTerminal: (d: vscode.TaskDefinition) => new SetUpTabTaskTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Never,
   },
-  "debug-set-up-bot": {
+  [TaskCommand.setUpBot]: {
     createTerminal: (d: vscode.TaskDefinition) => new SetUpBotTaskTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Never,
   },
-  "debug-set-up-sso": {
+  [TaskCommand.setUpSSO]: {
     createTerminal: (d: vscode.TaskDefinition) => new SetUpSSOTaskTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Never,
   },
-  "debug-prepare-manifest": {
+  [TaskCommand.prepareManifest]: {
     createTerminal: (d: vscode.TaskDefinition) => new PrepareManifestTaskTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Never,
   },

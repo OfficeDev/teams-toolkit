@@ -13,6 +13,7 @@ import {
 import * as path from "path";
 import { MockTools } from "../../../core/utils";
 import { setTools } from "../../../../src/core/globalVars";
+import { convertProjectSettingsV2ToV3 } from "../../../../src/component/migrate";
 chai.use(chaiAsPromised);
 
 describe("solution.debug.provisionLocal", () => {
@@ -36,7 +37,7 @@ describe("solution.debug.provisionLocal", () => {
         platform: Platform.VSCode,
         projectPath: path.resolve(__dirname, `./data/${projectSetting.projectId}`),
       };
-      const v2Context = new MockedV2Context(projectSetting);
+      const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
       const result = await setupLocalDebugSettings(v2Context, inputs, {
         auth: {},
         frontend: {},
@@ -62,7 +63,7 @@ describe("solution.debug.provisionLocal", () => {
         platform: Platform.VSCode,
         projectPath: path.resolve(__dirname, `./data/${projectSetting.projectId}`),
       };
-      const v2Context = new MockedV2Context(projectSetting);
+      const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
       const localSettings = {
         foo: {},
         bar: {},
@@ -91,7 +92,7 @@ describe("solution.debug.provisionLocal", () => {
         platform: Platform.VSCode,
         projectPath: path.resolve(__dirname, `./data/${projectSetting.projectId}`),
       };
-      const v2Context = new MockedV2Context(projectSetting);
+      const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
       const result = await configLocalDebugSettings(v2Context, inputs, {
         teamsApp: {},
         auth: {},
@@ -122,7 +123,7 @@ describe("solution.debug.provisionLocal", () => {
         projectPath: path.resolve(__dirname, `./data/${projectSetting.projectId}`),
         checkerInfo: { skipNgrok: true },
       };
-      const v2Context = new MockedV2Context(projectSetting);
+      const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
       const envInfo = {
         envName: "default",
         config: {
@@ -162,7 +163,7 @@ describe("solution.debug.provisionLocal", () => {
         projectPath: path.resolve(__dirname, `./data/${projectSetting.projectId}`),
         checkerInfo: { skipNgrok: true },
       };
-      const v2Context = new MockedV2Context(projectSetting);
+      const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
       const envInfo = {
         envName: "default",
         config: {},

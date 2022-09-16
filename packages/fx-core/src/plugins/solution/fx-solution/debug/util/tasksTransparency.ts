@@ -411,7 +411,7 @@ function setUpBot(): Record<string, unknown> {
   return {
     label: "Set up Bot",
     type: "teamsfx",
-    command: "debug-set-up-tab",
+    command: "debug-set-up-bot",
     args: commentJson.assign(commentJson.parse(comment), {
       botMessagingEndpoint: "${teamsfx:botTunnelEndpoint}/api/messages",
     }),
@@ -432,7 +432,7 @@ function setUpSSO(): Record<string, unknown> {
   return {
     label: "Set up SSO",
     type: "teamsfx",
-    command: "debug-set-up-tab",
+    command: "debug-set-up-sso",
     args: commentJson.parse(comment),
   };
 }

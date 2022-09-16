@@ -41,7 +41,7 @@ type EndpointInfo = {
 
 export interface LocalTunnelArgs {
   configFile?: string;
-  binFolder?: string;
+  useGlobalNgrok?: boolean;
   reuse?: boolean;
 }
 
@@ -107,10 +107,8 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     );
     this.status.resolvedConfigFile = configFile;
 
-    const binFolder = this.args.binFolder
-      ? await LocalTunnelTaskTerminal.resolveBinFolder(
-          BaseTaskTerminal.resolveTeamsFxVariables(this.args.binFolder)
-        )
+    const binFolder = !this.args.useGlobalNgrok
+      ? await LocalTunnelTaskTerminal.getNgrokBinFolder()
       : undefined;
 
     return { configFile: configFile, binFolder: binFolder };

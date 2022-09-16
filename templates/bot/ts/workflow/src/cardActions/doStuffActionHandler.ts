@@ -17,7 +17,7 @@ export class DoStuffCardActionHandler implements TeamsFxAdaptiveCardActionHandle
      */
     const cardData: CardData = {
       title: "Hello World Bot",
-      body: "Congratulations! Your task is processed successfully. Click the button below to learn more about Bots and the Teams Toolkit.",
+      body: "Congratulations! Your task is processed successfully.",
     };
 
     const cardJson = AdaptiveCards.declare(responseCard).render(cardData);

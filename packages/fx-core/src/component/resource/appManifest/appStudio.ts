@@ -18,6 +18,7 @@ import {
   ProjectSettingsV3,
   ProjectSettings,
   UserError,
+  UserCancelError,
   SystemError,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
@@ -296,10 +297,7 @@ export async function publishTeamsApp(
       );
       return ok({ publishedAppId: appId, appName: manifest.name.short, update: true });
     } else {
-      throw AppStudioResultFactory.SystemError(
-        AppStudioError.TeamsAppPublishCancelError.name,
-        AppStudioError.TeamsAppPublishCancelError.message(manifest.name.short)
-      );
+      return err(UserCancelError);
     }
   } else {
     const appId = await AppStudioClient.publishTeamsApp(
@@ -459,7 +457,7 @@ export async function validateManifest(
 export async function updateManifest(
   ctx: ResourceContextV3,
   inputs: InputsWithProjectPath
-): Promise<Result<undefined, FxError>> {
+): Promise<Result<any, FxError>> {
   const teamsAppId = ctx.envInfo.state[ComponentNames.AppManifest]?.teamsAppId;
   let manifest: any;
   const manifestResult = await manifestUtils.getManifest(inputs.projectPath, ctx.envInfo, false);
@@ -517,17 +515,12 @@ export async function updateManifest(
       "Preview and update"
     );
 
-    const error = AppStudioResultFactory.UserError(
-      AppStudioError.UpdateManifestCancelError.name,
-      AppStudioError.UpdateManifestCancelError.message(manifest.name.short)
-    );
     if (res?.isOk() && res.value === "Preview only") {
-      buildTeamsAppPackage(ctx.projectSetting, inputs.projectPath, ctx.envInfo);
-      return err(error);
+      return await buildTeamsAppPackage(ctx.projectSetting, inputs.projectPath, ctx.envInfo);
     } else if (res?.isOk() && res.value === "Preview and update") {
       buildTeamsAppPackage(ctx.projectSetting, inputs.projectPath, ctx.envInfo);
     } else {
-      return err(error);
+      return err(UserCancelError);
     }
   }
 
@@ -554,11 +547,7 @@ export async function updateManifest(
         );
 
         if (!(res?.isOk() && res.value === "Overwrite and update")) {
-          const error = AppStudioResultFactory.UserError(
-            AppStudioError.UpdateManifestCancelError.name,
-            AppStudioError.UpdateManifestCancelError.message(manifest.name.short)
-          );
-          return err(error);
+          return err(UserCancelError);
         }
       }
     }

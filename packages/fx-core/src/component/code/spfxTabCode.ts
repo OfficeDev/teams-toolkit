@@ -86,6 +86,7 @@ export async function scaffoldSPFx(
     const webpartName = inputs[SPFXQuestionNames.webpart_name] as string;
     const framework = (inputs[SPFXQuestionNames.framework_type] as string) ?? undefined;
     let solutionName: string | undefined = undefined;
+    let yoPersisted = true;
 
     if (!isAddSpfx) {
       solutionName =
@@ -94,6 +95,7 @@ export async function scaffoldSPFx(
     } else {
       const yorcPath = path.join(inputs.projectPath, "SPFx", ".yo-rc.json");
       if (!(await fs.pathExists(yorcPath))) {
+        yoPersisted = false;
         await fs.ensureFile(yorcPath);
         await fs.writeJSON(yorcPath, {
           "@microsoft/generator-sharepoint": {
@@ -225,7 +227,7 @@ export async function scaffoldSPFx(
     }
 
     // update readme
-    if (!isAddSpfx) {
+    if (!isAddSpfx || !yoPersisted) {
       await fs.copyFile(
         path.resolve(templateFolder, "./solution/README.md"),
         `${outputFolderPath}/README.md`

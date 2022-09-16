@@ -250,6 +250,7 @@ function launchRemote(
       group: "remote",
       order: order,
     },
+    internalConsoleOptions: "neverOpen",
   };
 }
 
@@ -279,6 +280,7 @@ function attachToFrontend(
       group: "all",
       hidden: true,
     },
+    internalConsoleOptions: "neverOpen",
   };
 }
 
@@ -307,6 +309,7 @@ function attachToFrontendM365(
       group: "all",
       hidden: true,
     },
+    internalConsoleOptions: "neverOpen",
   };
 }
 
@@ -358,6 +361,7 @@ function launchBot(
       group: "all",
       hidden: true,
     },
+    internalConsoleOptions: "neverOpen",
   };
 }
 
@@ -381,6 +385,7 @@ function launchBotM365(
       group: "all",
       hidden: true,
     },
+    internalConsoleOptions: "neverOpen",
   };
 }
 

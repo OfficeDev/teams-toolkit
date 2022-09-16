@@ -45,6 +45,22 @@ export class CapabilityAddSSOTab extends CapabilityAddBase {
   }
 }
 
+export class CapabilityAddSPFxTab extends CapabilityAddBase {
+  public readonly commandHead = `spfx-tab`;
+  public readonly command = `${this.commandHead}`;
+  public readonly description =
+    "Teams-aware webpages with SharePoint Framework embedded in Microsoft Teams";
+  public readonly featureId = FeatureId.TabSPFx;
+
+  public override getNpmInstallExcludeCaps(settings: ProjectSettings | undefined) {
+    return {
+      excludeFrontend: ProjectSettingsHelper.includeFrontend(settings),
+      excludeBackend: true,
+      excludeBot: true,
+    };
+  }
+}
+
 abstract class CapabilityAddBotBase extends CapabilityAddBase {
   public override getNpmInstallExcludeCaps(settings: ProjectSettings | undefined) {
     return {

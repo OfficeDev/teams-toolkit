@@ -398,7 +398,11 @@ export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): Pro
     }
     if (teamsBot) {
       const botCapabilities = teamsBot?.capabilities;
-      if ((botCapabilities && botCapabilities.length === 0) || botCapabilities?.includes("bot")) {
+      if (
+        (botCapabilities && botCapabilities.length === 0) ||
+        botCapabilities?.includes("bot") ||
+        botCapabilities?.includes("command-response")
+      ) {
         settingsV2.solutionSettings.capabilities.push("Bot");
         if (teamsBot.sso) {
           settingsV2.solutionSettings.capabilities.push("BotSSO");

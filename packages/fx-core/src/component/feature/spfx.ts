@@ -28,8 +28,8 @@ import {
 import { SPFxTabCodeProvider } from "../code/spfxTabCode";
 import { ComponentNames } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
-import { ActionExecutionMW } from "../middleware/actionExecutionMW";
-import { addFeatureNotify } from "../utils";
+import { addFeatureNotify, scaffoldRootReadme } from "../utils";
+import { isSPFxMultiTabEnabled } from "../../common";
 @Service(ComponentNames.SPFxTab)
 export class SPFxTab {
   name = ComponentNames.SPFxTab;
@@ -72,6 +72,9 @@ export class SPFxTab {
       const res = await generateLocalDebugSettings(context, inputs);
       if (res.isErr()) return err(res.error);
       effects.push("generate local debug settings");
+    }
+    if (isSPFxMultiTabEnabled()) {
+      await scaffoldRootReadme(context.projectSetting, inputs.projectPath);
     }
     addFeatureNotify(inputs, context.userInteraction, "Capability", [inputs.features]);
     return ok(undefined);

@@ -20,7 +20,7 @@ Ensure each command should ONLY be registered with the command once, otherwise i
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(adapter, options)](./teamsfx.commandbot._constructor_.md) |  | Creates a new instance of the <code>CommandBot</code>. |
+|  [(constructor)(adapter, options, ssoCommandActivityHandler, ssoConfig)](./teamsfx.commandbot._constructor_.md) |  | Creates a new instance of the <code>CommandBot</code>. |
 
 ## Methods
 
@@ -28,4 +28,6 @@ Ensure each command should ONLY be registered with the command once, otherwise i
 |  --- | --- | --- |
 |  [registerCommand(command)](./teamsfx.commandbot.registercommand.md) |  | Registers a command into the command bot. |
 |  [registerCommands(commands)](./teamsfx.commandbot.registercommands.md) |  | Registers commands into the command bot. |
+|  [registerSsoCommand(ssoCommand)](./teamsfx.commandbot.registerssocommand.md) |  | Registers a sso command into the command bot. |
+|  [registerSsoCommands(ssoCommands)](./teamsfx.commandbot.registerssocommands.md) |  | Registers commands into the command bot. |
 

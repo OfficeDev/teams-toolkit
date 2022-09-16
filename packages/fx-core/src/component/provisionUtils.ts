@@ -87,6 +87,7 @@ export class ProvisionUtils {
     const isLocalDebug = envInfo.envName === "local";
     const tenantInfoInTokenRes = await this.getM365TenantId(ctx.tokenProvider.m365TokenProvider);
     if (tenantInfoInTokenRes.isErr()) {
+      addShouldSkipWriteEnvInfo(tenantInfoInTokenRes.error);
       return err(tenantInfoInTokenRes.error);
     }
     const tenantIdInToken = tenantInfoInTokenRes.value.tenantIdInToken;
@@ -107,6 +108,7 @@ export class ProvisionUtils {
         inputs.projectPath
       );
       if (res.isErr()) {
+        addShouldSkipWriteEnvInfo(res.error);
         return err(res.error);
       }
     }
@@ -127,6 +129,7 @@ export class ProvisionUtils {
         ctx.tokenProvider
       );
       if (solutionConfigRes.isErr()) {
+        addShouldSkipWriteEnvInfo(solutionConfigRes.error);
         return err(solutionConfigRes.error);
       }
 
@@ -142,20 +145,8 @@ export class ProvisionUtils {
         subscriptionIdInState
       );
       if (consentResult.isErr()) {
+        addShouldSkipWriteEnvInfo(consentResult.error);
         return err(consentResult.error);
-      }
-
-      // create resource group if needed
-      if (solutionConfig.needCreateResourceGroup) {
-        const createRgRes = await resourceGroupHelper.createNewResourceGroup(
-          solutionConfig.resourceGroupName,
-          ctx.tokenProvider.azureAccountProvider,
-          solutionConfig.subscriptionId,
-          solutionConfig.location
-        );
-        if (createRgRes.isErr()) {
-          return err(createRgRes.error);
-        }
       }
 
       if (solutionConfigRes.value.hasSwitchedSubscription || hasSwitchedM365Tenant) {
@@ -170,7 +161,21 @@ export class ProvisionUtils {
         );
 
         if (handleConfigFilesWhenSwitchAccountsRes.isErr()) {
+          addShouldSkipWriteEnvInfo(handleConfigFilesWhenSwitchAccountsRes.error);
           return err(handleConfigFilesWhenSwitchAccountsRes.error);
+        }
+      }
+
+      // create resource group if needed
+      if (solutionConfig.needCreateResourceGroup) {
+        const createRgRes = await resourceGroupHelper.createNewResourceGroup(
+          solutionConfig.resourceGroupName,
+          ctx.tokenProvider.azureAccountProvider,
+          solutionConfig.subscriptionId,
+          solutionConfig.location
+        );
+        if (createRgRes.isErr()) {
+          return err(createRgRes.error);
         }
       }
     } else if (hasSwitchedM365Tenant && !isLocalDebug) {
@@ -185,6 +190,7 @@ export class ProvisionUtils {
         tenantIdInConfig
       );
       if (consentResult.isErr()) {
+        addShouldSkipWriteEnvInfo(consentResult.error);
         return err(consentResult.error);
       }
       const handleConfigFilesWhenSwitchAccountsRes = await handleConfigFilesWhenSwitchAccount(
@@ -198,6 +204,7 @@ export class ProvisionUtils {
       );
 
       if (handleConfigFilesWhenSwitchAccountsRes.isErr()) {
+        addShouldSkipWriteEnvInfo(handleConfigFilesWhenSwitchAccountsRes.error);
         return err(handleConfigFilesWhenSwitchAccountsRes.error);
       }
     }
@@ -783,6 +790,12 @@ export function findSubscriptionFromList(
   subscriptions: SubscriptionInfo[]
 ): SubscriptionInfo | undefined {
   return subscriptions.find((item) => item.subscriptionId === subscriptionId);
+}
+
+function addShouldSkipWriteEnvInfo(error: FxError) {
+  if (!error.userData) {
+    error.userData = { shouldSkipWriteEnvInfo: true };
+  }
 }
 
 export const provisionUtils = new ProvisionUtils();

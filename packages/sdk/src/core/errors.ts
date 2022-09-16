@@ -31,6 +31,36 @@ export enum ErrorCode {
   ChannelNotSupported = "ChannelNotSupported",
 
   /**
+   * Failed to retrieve sso token
+   */
+  FailedToRetrieveSsoToken = "FailedToRetrieveSsoToken",
+
+  /**
+   * Failed to process sso handler
+   */
+  FailedToProcessSsoHandler = "FailedToProcessSsoHandler",
+
+  /**
+   * Cannot find command
+   */
+  CannotFindCommand = "CannotFindCommand",
+
+  /**
+   * Failed to run sso step
+   */
+  FailedToRunSsoStep = "FailedToRunSsoStep",
+
+  /**
+   * Failed to run dedup step
+   */
+  FailedToRunDedupStep = "FailedToRunDedupStep",
+
+  /**
+   * Sso activity handler is undefined
+   */
+  SsoActivityHandlerIsUndefined = "SsoActivityHandlerIsUndefined",
+
+  /**
    * Runtime is not supported error.
    */
   RuntimeNotSupported = "RuntimeNotSupported",
@@ -100,6 +130,23 @@ export class ErrorMessage {
   // ChannelNotSupported Error
   static readonly OnlyMSTeamsChannelSupported = "{0} is only supported in MS Teams Channel";
 
+  static readonly FailedToProcessSsoHandler = "Failed to process sso handler: {0}";
+
+  // FailedToRetrieveSsoToken Error
+  static readonly FailedToRetrieveSsoToken =
+    "Failed to retrieve sso token, user failed to finish the AAD consent flow.";
+
+  // CannotFindCommand Error
+  static readonly CannotFindCommand = "Cannot find command: {0}";
+
+  static readonly FailedToRunSsoStep = "Failed to run dialog to retrieve sso token: {0}";
+
+  static readonly FailedToRunDedupStep = "Failed to run dialog to remove duplicated messages: {0}";
+
+  // SsoActivityHandlerIsUndefined Error
+  static readonly SsoActivityHandlerIsNull =
+    "Sso command can only be used or added when sso activity handler is not undefined";
+
   // IdentityTypeNotSupported Error
   static readonly IdentityTypeNotSupported = "{0} identity is not supported in {1}";
 
@@ -114,6 +161,8 @@ export class ErrorMessage {
     "The request already defined api key in request header with name {0}.";
   static readonly DuplicateApiKeyInQueryParam =
     "The request already defined api key in query parameter with name {0}.";
+  static readonly OnlySupportInQueryActivity =
+    "The handleMessageExtensionQueryWithToken only support in handleTeamsMessagingExtensionQuery with composeExtension/query type.";
 }
 
 /**

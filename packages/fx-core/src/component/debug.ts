@@ -495,12 +495,6 @@ export async function generateLocalDebugSettingsCommon(
         );
       } else {
         await fs.ensureDir(`${inputs.projectPath}/.vscode/`);
-        await updateJson(
-          `${inputs.projectPath}/.vscode/settings.json`,
-          Settings.generateSettings(includeBackend || includeFuncHostedBot, isSpfx),
-          Settings.mergeSettings
-        );
-
         if (await useTransparentTasks(inputs.projectPath)) {
           const launchConfigurations = isM365
             ? LaunchTransparency.generateM365Configurations(
@@ -603,6 +597,11 @@ export async function generateLocalDebugSettingsCommon(
           );
         }
       }
+      await updateJson(
+        `${inputs.projectPath}/.vscode/settings.json`,
+        Settings.generateSettings(includeBackend || includeFuncHostedBot, isSpfx),
+        Settings.mergeSettings
+      );
     }
   } catch (error: any) {
     const systemError = ScaffoldLocalDebugSettingsError(error);

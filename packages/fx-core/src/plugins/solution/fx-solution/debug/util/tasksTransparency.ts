@@ -96,7 +96,7 @@ export function generateTasks(
     installNPMpackages(includeFrontend, includeBackend, includeBot),
   ];
 
-  if (includeBackend || includeFuncHostedBot) {
+  if (includeBackend) {
     tasks.push(installAzureFunctionsBindingExtensions());
   }
 
@@ -299,7 +299,7 @@ function validateAndInstallPrerequisites(
     comments.push("7071, // backend service port", "9229, // backend debug port");
   }
   if (includeFuncHostedBot && !includeBackend) {
-    prerequisites.push("func", "dotnet");
+    prerequisites.push("func");
   }
   if (includeBot) {
     prerequisites.push("ngrok");
@@ -345,7 +345,7 @@ function installNPMpackages(
   }
   if (includeBackend) {
     result.args.projects.push({
-      cwd: "${workspaceFolder}/bot",
+      cwd: "${workspaceFolder}/api",
       npmInstallArgs: ["--no-audit"],
     });
   }
@@ -380,7 +380,7 @@ function startLocalTunnel(): Record<string, unknown> {
     command: "debug-start-local-tunnel",
     args: {
       configFile: ".fx/configs/ngrok.yml",
-      useGlobalNgrok: false,
+      binFolder: "${teamsfx:ngrokBinFolder}",
       reuse: false,
     },
     isBackground: true,
@@ -413,7 +413,7 @@ function setUpBot(): Record<string, unknown> {
     type: "teamsfx",
     command: "debug-set-up-tab",
     args: commentJson.assign(commentJson.parse(comment), {
-      botMessagingEndpoint: "api/messages",
+      botMessagingEndpoint: "${teamsfx:botTunnelEndpoint}/api/messages",
     }),
   };
 }

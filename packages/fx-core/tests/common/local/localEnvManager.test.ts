@@ -23,6 +23,7 @@ import {
   LocalCertificateManager,
 } from "../../../src/common/local/localCertificateManager";
 import { environmentManager } from "../../../src/core/environment";
+import { convertProjectSettingsV2ToV3 } from "../../../src/component/migrate";
 
 chai.use(chaiAsPromised);
 
@@ -323,7 +324,8 @@ describe("LocalEnvManager", () => {
           solutionSettings: data.solutionSettings,
           pluginSettings: data.pluginSettings,
         };
-        const result = localEnvManager.getActiveDependencies(projectSettings);
+        const projectSettingsV3 = convertProjectSettingsV2ToV3(projectSettings, ".");
+        const result = localEnvManager.getActiveDependencies(projectSettingsV3);
         chai.assert.sameDeepMembers(data.depsTypes, result);
       });
     });

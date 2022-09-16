@@ -198,7 +198,7 @@ export class TabCodeProvider {
     });
     return ok(undefined);
   }
-  private collectEnvs(ctx: ContextV3): { [key: string]: string } {
+  collectEnvs(ctx: ContextV3): { [key: string]: string } {
     const envs: { [key: string]: string } = {};
     const addToEnvs = (key: string, value: string | undefined) => {
       // Check for both null and undefined, add to envs when value is "", 0 or false.

@@ -8,6 +8,7 @@ import { ScaffoldContext } from "./scaffoldContext";
 import {
   genFileDataRenderReplaceFn,
   genFileNameRenderReplaceFn,
+  getValidSampleDestination,
   sampleDefaultOnActionError,
   templateDefaultOnActionError,
 } from "./utils";
@@ -43,9 +44,10 @@ export class Generator {
     ctx: ContextV3
   ): Promise<void> {
     const projectId = ctx.projectSetting?.projectId;
+    const destination = await getValidSampleDestination(sampleName, destinationPath);
     const scaffoldContext: ScaffoldContext = {
       scenario: sampleName,
-      destination: path.join(destinationPath, sampleName),
+      destination: destination,
       logProvider: ctx.logProvider,
       fileDataReplaceFn: genFileDataRenderReplaceFn({
         projectId: projectId,

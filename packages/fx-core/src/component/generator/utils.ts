@@ -3,6 +3,7 @@
 
 import Mustache from "mustache";
 import path from "path";
+import * as fs from "fs-extra";
 import { selectTag } from "../../common/template-utils/templates";
 import { fetchTemplateTagList } from "../../common/template-utils/templatesUtils";
 import {
@@ -45,6 +46,23 @@ export async function fetchSampleUrl(
     throw new Error(`Failed to find valid template for ${sampleName}`);
   }
   return `${sampleDownloadBaseUrl}/${selectTag}/${templateZipName(sampleName)}`;
+}
+
+export async function getValidSampleDestination(
+  sampleName: string,
+  destinationPath: string
+): Promise<string> {
+  let sampleDestination = path.join(destinationPath, sampleName);
+  if (
+    (await fs.pathExists(sampleDestination)) &&
+    (await fs.readdir(sampleDestination)).length > 0
+  ) {
+    let suffix = 1;
+    while (await fs.pathExists(sampleDestination)) {
+      sampleDestination = path.join(destinationPath, `${sampleName}_${suffix++}`);
+    }
+  }
+  return sampleDestination;
 }
 
 export const templateZipName = (templateName: string): string => `${templateName}.zip`;

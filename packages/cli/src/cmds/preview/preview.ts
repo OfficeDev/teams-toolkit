@@ -775,8 +775,7 @@ export default class Preview extends YargsCommand {
       if (!this.sharepointSiteUrl) {
         return err(errors.NoUrlForSPFxRemotePreview());
       }
-      const spfxRoot = path.join(workspaceFolder, FolderName.SPFx);
-      return this.spfxPreview(spfxRoot, browser, this.sharepointSiteUrl, browserArguments);
+      return this.spfxPreview(workspaceFolder, browser, this.sharepointSiteUrl, browserArguments);
     }
 
     const tenantId = config?.config

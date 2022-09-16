@@ -24,6 +24,8 @@ import fs from "fs-extra";
 import { SPFXQuestionNames } from "../../src/plugins/resource/spfx/utils/questions";
 import { setTools } from "../../src/core/globalVars";
 import { environmentManager } from "../../src/core/environment";
+import * as templateActions from "../../src/common/template-utils/templatesActions";
+
 describe("Core basic APIs for v3", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -47,6 +49,7 @@ describe("Core basic APIs for v3", () => {
       });
     sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev"]));
     sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
+    sandbox.stub<any, any>(templateActions, "scaffoldFromTemplates").resolves();
   });
 
   afterEach(() => {

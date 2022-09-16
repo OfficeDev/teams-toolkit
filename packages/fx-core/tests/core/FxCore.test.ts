@@ -27,15 +27,16 @@ import {
   TabSPFxItem,
 } from "../../src/plugins/solution/fx-solution/question";
 import { deleteFolder, MockTools, randomAppName } from "./utils";
+import * as templateActions from "../../src/common/template-utils/templatesActions";
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
   let appName = randomAppName();
   let projectPath = path.resolve(os.tmpdir(), appName);
-  let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
     setTools(tools);
     sandbox.stub<any, any>(featureFlags, "isPreviewFeaturesEnabled").returns(true);
+    sandbox.stub<any, any>(templateActions, "scaffoldFromTemplates").resolves();
   });
   afterEach(async () => {
     sandbox.restore();

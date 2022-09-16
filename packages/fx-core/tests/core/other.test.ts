@@ -52,6 +52,7 @@ import {
   upgradeDefaultFunctionName,
   upgradeProgrammingLanguage,
 } from "../../src/core/middleware/envInfoLoader";
+import { TestHelper } from "../plugins/resource/frontend/helper";
 describe("Other test case", () => {
   const sandbox = sinon.createSandbox();
 
@@ -300,9 +301,10 @@ describe("Other test case", () => {
   });
   it("getQuestionsForResourceGroup", async () => {
     const mockSubscriptionId = "mockSub";
-    const accountProvider = new MockAzureAccountProvider();
-    const mockToken = await accountProvider.getAccountCredentialAsync();
-    const mockRmClient = new ResourceManagementClient(mockToken!, mockSubscriptionId);
+    const mockRmClient = new ResourceManagementClient(
+      TestHelper.fakeCredential,
+      mockSubscriptionId
+    );
     const node = await resourceGroupHelper.getQuestionsForResourceGroup(
       "defaultRG",
       [["g1", "East US"]],

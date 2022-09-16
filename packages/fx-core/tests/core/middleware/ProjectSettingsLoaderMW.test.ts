@@ -9,6 +9,7 @@ import {
   Inputs,
   ok,
   Platform,
+  ProjectSettings,
   ProjectSettingsFileName,
   Result,
   Stage,
@@ -96,13 +97,8 @@ describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 2", () =
   setTools(tools);
   class MyClass {
     tools = tools;
-    async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-      assert.isTrue(ctx !== undefined);
-      if (ctx) {
-        assert.deepEqual(projectSettings, ctx.projectSettings);
-        assert.isTrue(ctx.contextV2 !== undefined);
-      }
-      return ok("");
+    async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<ProjectSettings, FxError>> {
+      return ok(ctx!.projectSettings!);
     }
   }
   hooks(MyClass, {
@@ -111,6 +107,6 @@ describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 2", () =
   it(`success to load project settings`, async () => {
     const my = new MyClass();
     const res = await my.other(inputs);
-    assert.isTrue(res.isOk() && res.value === "");
+    assert.isTrue(res.isOk() && res.value !== undefined && res.value.appName === appName);
   });
 });

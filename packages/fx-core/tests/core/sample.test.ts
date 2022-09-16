@@ -9,25 +9,19 @@ import "mocha";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { Container } from "typedi";
-import { FxCore } from "../../src";
-import { CoreQuestionNames, ScratchOptionNoVSC } from "../../src/core/question";
-import { SolutionPlugins, SolutionPluginsV2 } from "../../src/core/SolutionPluginContainer";
-import { deleteFolder, MockSolution, MockSolutionV2, MockTools, randomAppName } from "./utils";
+import { FxCore } from "../../src/core/FxCore";
 import * as downloadSample from "../../src/core/downloadSample";
-import * as projectSettingsLoader from "../../src/core/middleware/projectSettingsLoader";
 import { setTools } from "../../src/core/globalVars";
+import * as projectSettingsLoader from "../../src/core/middleware/projectSettingsLoader";
+import { CoreQuestionNames, ScratchOptionNoVSC } from "../../src/core/question";
+import { deleteFolder, MockTools, randomAppName } from "./utils";
 describe("Core basic APIs - create from sample", () => {
   const sandbox = sinon.createSandbox();
-  const mockSolutionV1 = new MockSolution();
-  const mockSolutionV2 = new MockSolutionV2();
   const tools = new MockTools();
   let appName = randomAppName();
   let projectPath = path.resolve(os.tmpdir(), appName);
   beforeEach(() => {
     setTools(tools);
-    Container.set(SolutionPluginsV2.AzureTeamsSolutionV2, mockSolutionV2);
-    Container.set(SolutionPlugins.AzureTeamsSolution, mockSolutionV1);
     sandbox
       .stub<any, any>(axios, "get")
       .callsFake(async (url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<any>> => {

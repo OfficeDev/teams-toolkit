@@ -21,6 +21,7 @@ describe("portChecker", () => {
       azureResources: ["function"],
       capabilities: ["Tab", "Bot"],
     },
+    components: [{ name: "teams-tab" }, { name: "teams-bot" }, { name: "teams-api" }],
   };
 
   describe("getPortsInUse()", () => {
@@ -69,6 +70,7 @@ describe("portChecker", () => {
             hostType: "Azure",
             capabilities: ["Bot"],
           },
+          components: [{ name: "teams-bot" }],
         },
         true
       );

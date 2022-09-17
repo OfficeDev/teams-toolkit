@@ -4,7 +4,7 @@
 import "mocha";
 import * as chai from "chai";
 
-import { ProjectSettings } from "@microsoft/teamsfx-api";
+import { ProjectSettings, ProjectSettingsV3 } from "@microsoft/teamsfx-api";
 
 import { ProjectSettingsHelper } from "../../../src/common/local/projectSettingsHelper";
 import { convertProjectSettingsV2ToV3 } from "../../../src/component/migrate";
@@ -21,7 +21,13 @@ describe("ProjectSettingsHelper", () => {
         azureResources: ["function"],
         activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
       },
-    } as ProjectSettings;
+      components: [
+        { name: "teams-tab" },
+        { name: "teams-bot" },
+        { name: "teams-api" },
+        { name: "aad-app" },
+      ],
+    } as ProjectSettingsV3;
     projectSettings = convertProjectSettingsV2ToV3(projectSettings, ".");
     const isSpfx = ProjectSettingsHelper.isSpfx(projectSettings);
     const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
@@ -49,6 +55,13 @@ describe("ProjectSettingsHelper", () => {
         azureResources: ["function"],
         activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
       },
+      components: [
+        { name: "teams-tab" },
+        { name: "teams-bot" },
+        { name: "teams-api" },
+        { name: "aad-app" },
+        { name: "simple-auth" },
+      ],
     } as ProjectSettings;
     projectSettings = convertProjectSettingsV2ToV3(projectSettings, ".");
     const isSpfx = ProjectSettingsHelper.isSpfx(projectSettings);
@@ -74,7 +87,8 @@ describe("ProjectSettingsHelper", () => {
         name: "fx-solution-azure",
         hostType: "SPFx",
       },
-    } as ProjectSettings;
+      components: [{ name: "teams-tab", hosting: "spfx" }],
+    } as ProjectSettingsV3;
     projectSettings = convertProjectSettingsV2ToV3(projectSettings, ".");
     const isSpfx = ProjectSettingsHelper.isSpfx(projectSettings);
     const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
@@ -102,7 +116,8 @@ describe("ProjectSettingsHelper", () => {
         foo: "bar",
         activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
       },
-    } as ProjectSettings;
+      components: [{ name: "teams-tab" }, { name: "aad-app" }],
+    } as ProjectSettingsV3;
     projectSettings = convertProjectSettingsV2ToV3(projectSettings, ".");
     const isSpfx = ProjectSettingsHelper.isSpfx(projectSettings);
     const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
@@ -130,7 +145,8 @@ describe("ProjectSettingsHelper", () => {
         foo: "bar",
         activeResourcePlugins: ["fx-resource-frontend-hosting"],
       },
-    } as ProjectSettings;
+      components: [{ name: "teams-tab" }],
+    } as ProjectSettingsV3;
     projectSettings = convertProjectSettingsV2ToV3(projectSettings, ".");
     const isSpfx = ProjectSettingsHelper.isSpfx(projectSettings);
     const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
@@ -156,7 +172,9 @@ describe("ProjectSettingsHelper", () => {
         hostType: "Invalid",
         azureResources: ["foo", "bar"],
         foo: "bar",
+        activeResourcePlugins: [],
       },
+      components: [],
     } as ProjectSettings;
     projectSettings = convertProjectSettingsV2ToV3(projectSettings, ".");
     const isSpfx = ProjectSettingsHelper.isSpfx(projectSettings);

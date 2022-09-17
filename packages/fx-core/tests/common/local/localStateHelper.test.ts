@@ -85,8 +85,8 @@ describe("localStateHelper", () => {
           azureResources: [] as string[],
           capabilities: ["Tab"],
           activeResourcePlugins: [],
-          components: [{ name: "teams-tab" }],
         },
+        components: [{ name: "teams-tab" }],
       };
       const localEnvs = await convertToLocalEnvs(projectPath, projectSettings, envInfo0);
 

@@ -8,6 +8,7 @@ import {
   SolutionContext,
   AzureSolutionSettings,
   UserError,
+  ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs from "fs-extra";
@@ -56,6 +57,7 @@ chai.use(chaiAsPromised);
 import { expect } from "chai";
 import { MockedLogProvider } from "./util";
 import { SolutionError } from "../../../src/plugins/solution/fx-solution/constants";
+import { ComponentNames } from "../../../src/component/constants";
 
 describe("Generate ARM Template for project", () => {
   const mocker = sinon.createSandbox();
@@ -611,14 +613,14 @@ describe("Deploy ARM Template to Azure", () => {
         frontendHostingOutput: {
           type: "Object",
           value: {
-            teamsFxPluginId: PluginId.FrontendHosting,
+            teamsFxPluginId: ComponentNames.TeamsTab,
             frontendHostingOutputKey: TestHelper.frontendhostingOutputValue,
           },
         },
         identityOutput: {
           type: "Object",
           value: {
-            teamsFxPluginId: PluginId.Identity,
+            teamsFxPluginId: ComponentNames.Identity,
             identityOutputKey: TestHelper.identityOutputValue,
           },
         },
@@ -635,6 +637,7 @@ describe("Deploy ARM Template to Azure", () => {
       activeResourcePlugins: [aadPlugin.name, fehostPlugin.name, identityPlugin.name],
       capabilities: [TabOptionItem.id],
     };
+    (mockedCtx.projectSettings as ProjectSettingsV3).components = [{name: ComponentNames.TeamsTab} , {name: ComponentNames.}];
     mockedCtx.envInfo.state.set(
       PluginId.Aad,
       new ConfigMap([

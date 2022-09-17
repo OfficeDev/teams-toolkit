@@ -8,6 +8,7 @@ import {
   SolutionContext,
   AzureSolutionSettings,
   UserError,
+  ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs from "fs-extra";
@@ -635,6 +636,11 @@ describe("Deploy ARM Template to Azure", () => {
       activeResourcePlugins: [aadPlugin.name, fehostPlugin.name, identityPlugin.name],
       capabilities: [TabOptionItem.id],
     };
+    (mockedCtx.projectSettings! as ProjectSettingsV3).components = [
+      { name: "teams-tab", hosting: "azure-storage" },
+      { name: "aad-app", provision: true },
+      { name: "identity" },
+    ];
     mockedCtx.envInfo.state.set(
       PluginId.Aad,
       new ConfigMap([

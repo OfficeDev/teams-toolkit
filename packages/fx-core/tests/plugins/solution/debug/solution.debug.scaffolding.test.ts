@@ -86,9 +86,10 @@ describe("solution.debug.scaffolding", () => {
             azureResources: ["function"],
             activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
           },
+          components: [{ name: "teams-tab" }, { name: "teams-api" }, { name: "aad-app" }],
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
+        const v2Context = new MockedV2Context(projectSetting);
         const result = await scaffoldLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
@@ -152,9 +153,10 @@ describe("solution.debug.scaffolding", () => {
             capabilities: ["Tab"],
             activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
           },
+          components: [{ name: "teams-tab" }, { name: "aad-app" }],
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
+        const v2Context = new MockedV2Context(projectSetting);
         const result = await scaffoldLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
@@ -196,9 +198,10 @@ describe("solution.debug.scaffolding", () => {
             capabilities: ["Tab"],
             activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
           },
+          components: [{ name: "teams-tab" }, { name: "aad-app" }, { name: "simple-auth" }],
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
+        const v2Context = new MockedV2Context(projectSetting);
         const result = await scaffoldLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
@@ -240,9 +243,10 @@ describe("solution.debug.scaffolding", () => {
             capabilities: ["Tab"],
             activeResourcePlugins: [],
           },
+          components: [{ name: "teams-tab" }],
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
+        const v2Context = new MockedV2Context(projectSetting);
         const result = await scaffoldLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
@@ -301,9 +305,10 @@ describe("solution.debug.scaffolding", () => {
             hostType: "Azure",
             capabilities: ["Bot"],
           },
+          components: [{ name: "teams-bot" }],
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
+        const v2Context = new MockedV2Context(projectSetting);
         const result = await scaffoldLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
@@ -344,6 +349,7 @@ describe("solution.debug.scaffolding", () => {
             hostType: "Azure",
             capabilities: ["Bot"],
           },
+          components: [{ name: "teams-bot", hosting: "azure-web-app" }],
           programmingLanguage: parameter.programmingLanguage,
           pluginSettings: {
             [PluginBot.PLUGIN_NAME]: {
@@ -352,7 +358,7 @@ describe("solution.debug.scaffolding", () => {
             },
           },
         };
-        const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
+        const v2Context = new MockedV2Context(projectSetting);
         inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.NotificationBot];
         const result = await scaffoldLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
@@ -411,6 +417,7 @@ describe("solution.debug.scaffolding", () => {
             hostType: "Azure",
             capabilities: ["Bot"],
           },
+          components: [{ name: "teams-bot", hosting: "azure-function" }],
           programmingLanguage: parameter.programmingLanguage,
           pluginSettings: {
             [PluginBot.PLUGIN_NAME]: {
@@ -419,7 +426,7 @@ describe("solution.debug.scaffolding", () => {
             },
           },
         };
-        const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
+        const v2Context = new MockedV2Context(projectSetting);
         inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.NotificationBot];
         const result = await scaffoldLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
@@ -486,9 +493,15 @@ describe("solution.debug.scaffolding", () => {
             azureResources: ["function"],
             activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
           },
+          components: [
+            { name: "teams-bot" },
+            { name: "teams-tab" },
+            { name: "teams-api" },
+            { name: "aad-app" },
+          ],
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
+        const v2Context = new MockedV2Context(projectSetting);
         const result = await scaffoldLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
@@ -552,9 +565,10 @@ describe("solution.debug.scaffolding", () => {
             capabilities: ["Tab", "Bot"],
             activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
           },
+          components: [{ name: "teams-bot" }, { name: "teams-tab" }, { name: "aad-app" }],
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
+        const v2Context = new MockedV2Context(projectSetting);
         const result = await scaffoldLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
@@ -596,9 +610,15 @@ describe("solution.debug.scaffolding", () => {
             capabilities: ["Tab", "Bot"],
             activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
           },
+          components: [
+            { name: "teams-bot" },
+            { name: "teams-tab" },
+            { name: "aad-app" },
+            { name: "simple-auth" },
+          ],
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
+        const v2Context = new MockedV2Context(projectSetting);
         const result = await scaffoldLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
@@ -640,9 +660,10 @@ describe("solution.debug.scaffolding", () => {
             capabilities: ["Tab", "Bot"],
             activeResourcePlugins: [],
           },
+          components: [{ name: "teams-bot" }, { name: "teams-tab" }],
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
+        const v2Context = new MockedV2Context(projectSetting);
         const result = await scaffoldLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
@@ -703,9 +724,10 @@ describe("solution.debug.scaffolding", () => {
             capabilities: ["Tab"],
             activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
           },
+          components: [{ name: "teams-tab" }, { name: "aad-app" }],
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
+        const v2Context = new MockedV2Context(projectSetting);
         const result = await scaffoldLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
@@ -765,9 +787,10 @@ describe("solution.debug.scaffolding", () => {
             hostType: "Azure",
             capabilities: ["Bot"],
           },
+          components: [{ name: "teams-bot" }],
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
+        const v2Context = new MockedV2Context(projectSetting);
         const result = await scaffoldLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
@@ -808,8 +831,9 @@ describe("solution.debug.scaffolding", () => {
           version: "",
           hostType: "SPFx",
         },
+        components: [{ name: "teams-tab", hosting: "spfx" }],
       };
-      const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
+      const v2Context = new MockedV2Context(projectSetting);
       const result = await scaffoldLocalDebugSettings(v2Context, inputs);
       chai.assert.isTrue(result.isOk());
 
@@ -848,8 +872,9 @@ describe("solution.debug.scaffolding", () => {
           azureResources: ["function"],
           activeResourcePlugins: [],
         },
+        components: [{ name: "teams-tab" }, { name: "teams-api" }],
       };
-      const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
+      const v2Context = new MockedV2Context(projectSetting);
       const result = await scaffoldLocalDebugSettings(v2Context, inputs);
       chai.assert.isTrue(result.isOk());
 
@@ -868,9 +893,10 @@ describe("solution.debug.scaffolding", () => {
           name: "",
           version: "",
         },
+        components: [],
       };
 
-      const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
+      const v2Context = new MockedV2Context(projectSetting);
       const result = await scaffoldLocalDebugSettings(v2Context, inputs);
       chai.assert.isTrue(result.isOk());
 
@@ -893,9 +919,15 @@ describe("solution.debug.scaffolding", () => {
           azureResources: ["function"],
           activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
         },
+        components: [
+          { name: "teams-tab" },
+          { name: "teams-bot" },
+          { name: "teams-api" },
+          { name: "aad-app" },
+        ],
         programmingLanguage: "javascript",
       };
-      const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
+      const v2Context = new MockedV2Context(projectSetting);
       const result = await scaffoldLocalDebugSettings(v2Context, inputs);
       chai.assert.isTrue(result.isOk());
     });
@@ -926,9 +958,10 @@ describe("solution.debug.scaffolding", () => {
           capabilities: ["Tab", "Bot"],
           activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
         },
+        components: [{ name: "teams-tab" }, { name: "teams-bot" }, { name: "aad-app" }],
         programmingLanguage: "javascript",
       };
-      const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
+      const v2Context = new MockedV2Context(projectSetting);
       const result = await scaffoldLocalDebugSettings(v2Context, inputs);
       chai.assert.isTrue(result.isOk());
 
@@ -971,9 +1004,10 @@ describe("solution.debug.scaffolding", () => {
           capabilities: ["Tab", "Bot"],
           activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
         },
+        components: [{ name: "teams-tab" }, { name: "teams-bot" }, { name: "aad-app" }],
         programmingLanguage: "javascript",
       };
-      const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
+      const v2Context = new MockedV2Context(projectSetting);
       const result = await scaffoldLocalDebugSettings(v2Context, inputs);
       chai.assert.isTrue(result.isOk());
 
@@ -1035,6 +1069,7 @@ describe("solution.debug.scaffolding", () => {
           capabilities: ["Tab", "Bot"],
           activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
         },
+        components: [{ name: "teams-tab" }, { name: "teams-bot" }, { name: "aad-app" }],
         programmingLanguage: "javascript",
       };
       const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));

@@ -172,6 +172,7 @@ export class TestHelper {
           azureResources: [],
           activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
         },
+        components: [{ name: "teams-tab" }, { name: "aad-app" }],
       },
       permissionRequestProvider: mockPermissionRequestProvider,
     } as unknown as PluginContext;

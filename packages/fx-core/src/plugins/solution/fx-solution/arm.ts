@@ -607,9 +607,12 @@ function syncArmOutput(envInfo: EnvInfo | v3.EnvInfoV3, armOutput: any) {
               for (const pluginOutputKey of pluginOutputKeys) {
                 if (pluginOutputKey != TEAMS_FX_RESOURCE_ID_KEY) {
                   if (envInfo.state instanceof Map) {
-                    (envInfo.state as Map<string, any>)
-                      .get(pluginId)
-                      ?.set(pluginOutputKey, pluginOutput[pluginOutputKey]);
+                    let configMap = envInfo.state.get(pluginId);
+                    if (!configMap) {
+                      configMap = new Map<string, any>();
+                      envInfo.state.set(pluginId, configMap);
+                    }
+                    configMap.set(pluginOutputKey, pluginOutput[pluginOutputKey]);
                   } else {
                     if (!envInfo.state[pluginId]) envInfo.state[pluginId] = {};
                     envInfo.state[pluginId][pluginOutputKey] = pluginOutput[pluginOutputKey];

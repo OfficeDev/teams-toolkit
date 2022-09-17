@@ -17,6 +17,7 @@ import {
   TeamsAppManifest,
   ok,
   SingleSelectResult,
+  UserCancelError,
 } from "@microsoft/teamsfx-api";
 import { randomAppName, MockLogProvider, MockTools } from "../../../core/utils";
 import { createContextV3 } from "../../../../src/component/utils";
@@ -26,12 +27,12 @@ import { AppStudioError } from "../../../../src/plugins/resource/appstudio/error
 import { newEnvInfoV3 } from "../../../../src";
 import { ComponentNames } from "../../../../src/component/constants";
 import { AppStudioClient } from "../../../../src/plugins/resource/appstudio/appStudio";
+import { AppDefinition } from "../../../../src/plugins/resource/appstudio/interfaces/appDefinition";
 import { Constants } from "../../../../src/plugins/resource/appstudio/constants";
 import { autoPublishOption } from "../../../../src/plugins/resource/appstudio/questions";
 import { PublishingState } from "../../../../src/plugins/resource/appstudio/interfaces/IPublishingAppDefinition";
 import { getAzureProjectRoot } from "../../../plugins/resource/appstudio/helper";
 import { manifestUtils } from "../../../../src/component/resource/appManifest/utils";
-import { TEAMS_APP_MANIFEST_TEMPLATE } from "../../../../src/component/resource/appManifest/constants";
 import * as uuid from "uuid";
 
 describe("App-manifest Component", () => {
@@ -44,6 +45,11 @@ describe("App-manifest Component", () => {
     platform: Platform.VSCode,
     "app-name": appName,
     appPackagePath: "fakePath",
+  };
+  const appDef: AppDefinition = {
+    appName: "fake",
+    teamsAppId: uuid.v4(),
+    userList: [],
   };
   const inputsWithoutUserProvidedZip: InputsWithProjectPath = {
     projectPath: getAzureProjectRoot(),
@@ -148,19 +154,21 @@ describe("App-manifest Component", () => {
     }
   });
 
-  it("deploy - preivew only", async function () {
+  it("deploy - preview only", async function () {
     const manifest = new TeamsAppManifest();
+    manifest.id = "";
+    manifest.icons.color = "resources/color.png";
+    manifest.icons.outline = "resources/outline.png";
     sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(manifest));
+    sandbox.stub(manifestUtils, "getManifest").resolves(ok(manifest));
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readJSON").resolves(manifest);
     sandbox.stub(fs, "readFile").resolves(new Buffer(JSON.stringify(manifest)));
     sandbox.stub(context.userInteraction, "showMessage").resolves(ok("Preview only"));
+    sandbox.stub(AppStudioClient, "importApp").resolves(appDef);
 
     const deployAction = await component.deploy(context as ResourceContextV3, inputs);
     chai.assert.isTrue(deployAction.isErr());
-    if (deployAction.isErr()) {
-      chai.assert.equal(deployAction.error.name, AppStudioError.UpdateManifestCancelError.name);
-    }
   });
 
   it.skip("deploy - succeed", async function () {

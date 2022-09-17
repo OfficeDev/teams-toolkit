@@ -5,7 +5,7 @@ import sinon from "sinon";
 import yargs, { Options } from "yargs";
 
 import { FxError, Inputs, ok, Func } from "@microsoft/teamsfx-api";
-import { FxCore, isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core";
+import { FxCore } from "@microsoft/teamsfx-core";
 import HelpParamGenerator from "../../../src/helpParamGenerator";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";

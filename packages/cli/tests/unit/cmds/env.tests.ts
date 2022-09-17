@@ -25,7 +25,7 @@ import { expect } from "../utils";
 import * as Utils from "../../../src/utils";
 import HelpParamGenerator from "../../../src/helpParamGenerator";
 import { YargsCommand } from "../../../src/yargsCommand";
-import { FxCore } from "@microsoft/teamsfx-core";
+import { CoreHookContext } from "@microsoft/teamsfx-core/build/core/types";
 
 enum CommandName {
   Add = "add",
@@ -120,16 +120,14 @@ describe("Env Add Command Tests", function () {
     });
     sandbox
       .stub(core.FxCore.prototype, "createEnv")
-      .callsFake(
-        async (inputs: Inputs, ctx?: core.CoreHookContext): Promise<Result<Void, FxError>> => {
-          if (createEnvError) {
-            return err(createEnvError);
-          }
-          sourceEnvName = inputs.sourceEnvName;
-          newTargetEnvName = inputs.newTargetEnvName;
-          return ok(Void);
+      .callsFake(async (inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> => {
+        if (createEnvError) {
+          return err(createEnvError);
         }
-      );
+        sourceEnvName = inputs.sourceEnvName;
+        newTargetEnvName = inputs.newTargetEnvName;
+        return ok(Void);
+      });
   });
 
   after(() => {

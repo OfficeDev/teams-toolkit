@@ -7,7 +7,6 @@ import yargs, { Options } from "yargs";
 
 import { FxError, Inputs, LogLevel, ok, UserError } from "@microsoft/teamsfx-api";
 import { FxCore } from "@microsoft/teamsfx-core";
-import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 
 import New from "../../../src/cmds/new";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
@@ -21,7 +20,6 @@ import {
   createFolderIfNotExist,
   deleteFolderIfExists,
   expect,
-  getDirFiles,
   TestFolder,
 } from "../utils";
 

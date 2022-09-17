@@ -23,5 +23,5 @@ static createInvokeResponse(statusCode: StatusCodes, body?: unknown): InvokeResp
 
 InvokeResponse
 
-{<!-- -->InvokeResponse<!-- -->} An InvokeResponse object.
+An InvokeResponse object.
 

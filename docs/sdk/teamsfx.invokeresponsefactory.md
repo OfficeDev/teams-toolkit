@@ -20,7 +20,7 @@ This example sends an invoke response that contains an adaptive card.
 
 ```typescript
 
-const myCard: IAdaptiveCard = {
+const myCard = {
    type: "AdaptiveCard",
    body: [
     {

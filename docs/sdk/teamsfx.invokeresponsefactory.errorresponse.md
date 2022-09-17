@@ -25,5 +25,5 @@ static errorResponse(errorCode: InvokeResponseErrorCode, errorMessage: string): 
 
 InvokeResponse
 
-{<!-- -->InvokeResponse<!-- -->} An InvokeResponse object.
+ An InvokeResponse object.
 

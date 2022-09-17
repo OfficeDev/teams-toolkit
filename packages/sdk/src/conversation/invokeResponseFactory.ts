@@ -1,4 +1,3 @@
-import { IAdaptiveCard } from "adaptivecards";
 import { InvokeResponse, StatusCodes } from "botbuilder";
 import { InvokeResponseErrorCode } from "./interface";
 
@@ -23,7 +22,7 @@ export enum InvokeResponseType {
  *
  * ```typescript
  *
- * const myCard: IAdaptiveCard = {
+ * const myCard = {
  *    type: "AdaptiveCard",
  *    body: [
  *     {
@@ -47,9 +46,9 @@ export class InvokeResponseFactory {
    * The type of the invoke response is `application/vnd.microsoft.activity.message`
    * indicates the request was successfully processed.
    *
-   * @param message A text message included in a invoke response.
+   * @param message A text message included in an invoke response.
    *
-   * @returns {InvokeResponse} An InvokeResponse object.
+   * @returns An InvokeResponse object.
    */
   public static textMessage(message: string): InvokeResponse {
     if (!message) {
@@ -75,9 +74,9 @@ export class InvokeResponseFactory {
    *
    * @param card The adaptive card JSON payload.
    *
-   * @returns {InvokeResponse} An InvokeResponse object.
+   * @returns An InvokeResponse object.
    */
-  public static adaptiveCard(card: IAdaptiveCard): InvokeResponse {
+  public static adaptiveCard(card: unknown): InvokeResponse {
     if (!card) {
       throw new Error("The adaptive card content cannot be null or undefined");
     }
@@ -103,7 +102,7 @@ export class InvokeResponseFactory {
    *  - 500 (InternalServerError): indicate an unexpected error occurred.
    * @param errorMessage The error message.
    *
-   * @returns {InvokeResponse} An InvokeResponse object.
+   * @returns {@link InvokeResponse} An InvokeResponse object.
    */
   public static errorResponse(
     errorCode: InvokeResponseErrorCode,
@@ -127,7 +126,7 @@ export class InvokeResponseFactory {
    * @param statusCode The status code.
    * @param body The value of the response body.
    *
-   * @returns {InvokeResponse} An InvokeResponse object.
+   * @returns An InvokeResponse object.
    */
   public static createInvokeResponse(statusCode: StatusCodes, body?: unknown): InvokeResponse {
     return {

@@ -16,11 +16,11 @@ static textMessage(message: string): InvokeResponse;
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  message | string | A text message included in a invoke response. |
+|  message | string | A text message included in an invoke response. |
 
 <b>Returns:</b>
 
 InvokeResponse
 
-{<!-- -->InvokeResponse<!-- -->} An InvokeResponse object.
+An InvokeResponse object.
 

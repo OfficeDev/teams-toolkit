@@ -441,11 +441,7 @@ describe("AadAppForTeamsPlugin: CI", () => {
     context.root = "./";
     context.projectSettings!.programmingLanguage = "csharp";
     (context.projectSettings!.solutionSettings as AzureSolutionSettings).capabilities = ["Bot"];
-    (context.projectSettings! as ProjectSettingsV3).components = [
-      { name: "teams-tab" },
-      { name: "aad-app" },
-      { name: "teams-bot" },
-    ];
+    (context.projectSettings! as ProjectSettingsV3).components = [{ name: "teams-bot" }];
     sinon.stub(fs, "pathExists").resolves(true);
 
     const fakeManifest = {

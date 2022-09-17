@@ -2,17 +2,10 @@ import "mocha";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import * as fs from "fs-extra";
-import {
-  ConfigFolderName,
-  InputConfigsFolderName,
-  Inputs,
-  Platform,
-  v2,
-} from "@microsoft/teamsfx-api";
+import { ConfigFolderName, InputConfigsFolderName, Inputs, Platform } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as uuid from "uuid";
 import { MockedV2Context } from "../util";
-import { LocalEnvManager } from "../../../../src/common/local/localEnvManager";
 import { scaffoldLocalDebugSettings } from "../../../../src/plugins/solution/fx-solution/debug/scaffolding";
 import {
   AzureSolutionQuestionNames,
@@ -21,10 +14,6 @@ import {
 import { BotCapabilities, PluginBot } from "../../../../src/plugins/resource/bot/resources/strings";
 import { isAadManifestEnabled } from "../../../../src/common/tools";
 import { BotHostTypes } from "../../../../src/common/local/constants";
-import { convertProjectSettingsV2ToV3 } from "../../../../src/component/migrate";
-
-const numAADLocalEnvs = 2;
-const numSimpleAuthLocalEnvs = 10;
 
 chai.use(chaiAsPromised);
 
@@ -1072,7 +1061,7 @@ describe("solution.debug.scaffolding", () => {
         components: [{ name: "teams-tab" }, { name: "teams-bot" }, { name: "aad-app" }],
         programmingLanguage: "javascript",
       };
-      const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
+      const v2Context = new MockedV2Context(projectSetting);
       const result = await scaffoldLocalDebugSettings(v2Context, inputs);
       chai.assert.isTrue(result.isOk());
 

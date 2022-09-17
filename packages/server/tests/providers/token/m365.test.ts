@@ -9,7 +9,6 @@ import sinon from "sinon";
 import { createMessageConnection } from "vscode-jsonrpc";
 import ServerM365TokenProvider from "../../../src/providers/token/m365";
 import { err, ok } from "@microsoft/teamsfx-api";
-import { AppStudioScopes } from "../../../../fx-core/src";
 
 chai.use(chaiAsPromised);
 

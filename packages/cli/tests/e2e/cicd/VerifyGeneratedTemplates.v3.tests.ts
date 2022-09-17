@@ -11,7 +11,7 @@ import * as chai from "chai";
 import { getTestFolder, getUniqueAppName, cleanUp } from "../commonUtils";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
-import { getTemplatesFolder } from "@microsoft/teamsfx-core";
+import { getTemplatesFolder } from "@microsoft/teamsfx-core/build/folder";
 import Mustache from "mustache";
 import * as fs from "fs-extra";
 import { CICDProviderFactory } from "../../../../fx-core/src/component/feature/cicd/provider/factory";

@@ -13,7 +13,6 @@ import {
 import * as path from "path";
 import { MockTools } from "../../../core/utils";
 import { setTools } from "../../../../src/core/globalVars";
-import { convertProjectSettingsV2ToV3 } from "../../../../src/component/migrate";
 chai.use(chaiAsPromised);
 
 describe("solution.debug.provisionLocal", () => {
@@ -31,13 +30,14 @@ describe("solution.debug.provisionLocal", () => {
           azureResources: ["function"],
           activeResourcePlugins: ["fx-resource-simple-auth"],
         },
+        components: [{ name: "teams-tab" }, { name: "teams-api" }, { name: "simple-auth" }],
         programmingLanguage: "typescript",
       };
       const inputs = {
         platform: Platform.VSCode,
         projectPath: path.resolve(__dirname, `./data/${projectSetting.projectId}`),
       };
-      const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
+      const v2Context = new MockedV2Context(projectSetting);
       const result = await setupLocalDebugSettings(v2Context, inputs, {
         auth: {},
         frontend: {},
@@ -57,13 +57,19 @@ describe("solution.debug.provisionLocal", () => {
           azureResources: ["function"],
           activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
         },
+        components: [
+          { name: "teams-tab" },
+          { name: "teams-api" },
+          { name: "simple-auth" },
+          { name: "aad-app" },
+        ],
         programmingLanguage: "typescript",
       };
       const inputs = {
         platform: Platform.VSCode,
         projectPath: path.resolve(__dirname, `./data/${projectSetting.projectId}`),
       };
-      const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
+      const v2Context = new MockedV2Context(projectSetting);
       const localSettings = {
         foo: {},
         bar: {},
@@ -87,12 +93,13 @@ describe("solution.debug.provisionLocal", () => {
           activeResourcePlugins: [],
         },
         programmingLanguage: "typescript",
+        components: [],
       };
       const inputs = {
         platform: Platform.VSCode,
         projectPath: path.resolve(__dirname, `./data/${projectSetting.projectId}`),
       };
-      const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
+      const v2Context = new MockedV2Context(projectSetting);
       const result = await configLocalDebugSettings(v2Context, inputs, {
         teamsApp: {},
         auth: {},
@@ -116,6 +123,7 @@ describe("solution.debug.provisionLocal", () => {
           azureResources: ["function"],
           capabilities: ["Tab", "Bot", "MessagingExtension"],
         },
+        components: [{ name: "teams-tab" }, { name: "teams-api" }, { name: "teams-bot" }],
         programmingLanguage: "typescript",
       };
       const inputs = {
@@ -123,7 +131,7 @@ describe("solution.debug.provisionLocal", () => {
         projectPath: path.resolve(__dirname, `./data/${projectSetting.projectId}`),
         checkerInfo: { skipNgrok: true },
       };
-      const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
+      const v2Context = new MockedV2Context(projectSetting);
       const envInfo = {
         envName: "default",
         config: {
@@ -156,6 +164,7 @@ describe("solution.debug.provisionLocal", () => {
           azureResources: ["function"],
           capabilities: ["Tab", "Bot", "MessagingExtension"],
         },
+        components: [{ name: "teams-tab" }, { name: "teams-api" }, { name: "teams-bot" }],
         programmingLanguage: "typescript",
       };
       const inputs = {
@@ -163,7 +172,7 @@ describe("solution.debug.provisionLocal", () => {
         projectPath: path.resolve(__dirname, `./data/${projectSetting.projectId}`),
         checkerInfo: { skipNgrok: true },
       };
-      const v2Context = new MockedV2Context(convertProjectSettingsV2ToV3(projectSetting, "."));
+      const v2Context = new MockedV2Context(projectSetting);
       const envInfo = {
         envName: "default",
         config: {},

@@ -15,6 +15,7 @@ import {
 } from "../../../src/common/local/localSettingsHelper";
 import { ProjectSettings, ProjectSettingsV3 } from "@microsoft/teamsfx-api";
 import { LocalEnvManager } from "../../../src/common/local/localEnvManager";
+import { convertProjectSettingsV2ToV3 } from "../../../src/component/migrate";
 chai.use(chaiAsPromised);
 
 describe("localSettingsHelper", () => {
@@ -30,7 +31,7 @@ describe("localSettingsHelper", () => {
         hostType: "Azure",
         azureResources: [] as string[],
         capabilities: ["Tab"],
-        activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
+        activeResourcePlugins: ["fx-resource-frontend-hosting", "fx-resource-aad-app-for-teams"],
       },
       components: [
         { name: "teams-tab", sso: true },
@@ -75,14 +76,22 @@ describe("localSettingsHelper", () => {
       await fs.ensureDir(projectPath);
       await fs.emptyDir(projectPath);
 
-      const projectSettingsAll = cloneDeep(projectSettings0);
-      const aadPluginKey = projectSettingsAll.solutionSettings.activeResourcePlugins.indexOf(
-        "fx-resource-aad-app-for-teams"
-      );
-      if (aadPluginKey > -1) {
-        projectSettingsAll.solutionSettings.activeResourcePlugins.splice(aadPluginKey, 1);
-      }
-      const localEnvs = await convertToLocalEnvs(projectPath, projectSettingsAll, localSettings0);
+      const projectSettings = {
+        appName: "unit-test0",
+        projectId: "11111111-1111-1111-1111-111111111111",
+        version: "2.0.0",
+        programmingLanguage: "javascript",
+        solutionSettings: {
+          name: "fx-solution-azure",
+          version: "1.0.0",
+          hostType: "Azure",
+          azureResources: [] as string[],
+          capabilities: ["Tab"],
+          activeResourcePlugins: ["fx-resource-frontend-hosting"],
+        },
+        components: [{ name: "teams-tab", sso: true }],
+      };
+      const localEnvs = await convertToLocalEnvs(projectPath, projectSettings, localSettings0);
 
       chai.assert.isDefined(localEnvs);
       chai.assert.equal(Object.keys(localEnvs).length, 5);
@@ -97,7 +106,11 @@ describe("localSettingsHelper", () => {
       const projectSettingsAll = cloneDeep(projectSettings0);
       projectSettingsAll.solutionSettings.activeResourcePlugins.push("fx-resource-simple-auth");
       projectSettingsAll.components.push({ name: "simple-auth", provision: true });
-      const localEnvs = await convertToLocalEnvs(projectPath, projectSettingsAll, localSettings0);
+      const localEnvs = await convertToLocalEnvs(
+        projectPath,
+        convertProjectSettingsV2ToV3(projectSettingsAll, "."),
+        localSettings0
+      );
 
       chai.assert.isDefined(localEnvs);
       chai.assert.equal(Object.keys(localEnvs).length, 17);
@@ -132,11 +145,27 @@ describe("localSettingsHelper", () => {
       const botEnvPath = path.resolve(projectPath, "bot/.env.teamsfx.local");
       fs.ensureFileSync(botEnvPath);
       fs.writeFileSync(botEnvPath, "FOO=BOT");
-      const projectSettingsAll = cloneDeep(projectSettings0);
-      projectSettingsAll.solutionSettings.capabilities.push("Bot");
-      projectSettingsAll.solutionSettings.azureResources.push("function");
-
-      const localEnvs = await convertToLocalEnvs(projectPath, projectSettingsAll, undefined);
+      const projectSettings = {
+        appName: "unit-test0",
+        projectId: "11111111-1111-1111-1111-111111111111",
+        version: "2.0.0",
+        programmingLanguage: "javascript",
+        solutionSettings: {
+          name: "fx-solution-azure",
+          version: "1.0.0",
+          hostType: "Azure",
+          azureResources: [] as string[],
+          capabilities: ["Tab"],
+          activeResourcePlugins: ["fx-resource-frontend-hosting", "fx-resource-aad-app-for-teams"],
+        },
+        components: [
+          { name: "teams-tab", sso: true },
+          { name: "aad-app", provision: true },
+          { name: "teams-bot" },
+          { name: "teams-api" },
+        ],
+      };
+      const localEnvs = await convertToLocalEnvs(projectPath, projectSettings, undefined);
 
       chai.assert.isDefined(localEnvs);
       chai.assert.equal(localEnvs["FRONTEND_FOO"], "FRONTEND");

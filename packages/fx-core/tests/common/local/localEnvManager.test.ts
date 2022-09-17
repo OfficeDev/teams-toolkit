@@ -363,10 +363,14 @@ describe("LocalEnvManager", () => {
           name: "fx-solution-azure",
           hostType: "Azure",
           capabilities: ["Tab", "Bot"],
+          activeResourcePlugins: ["fx-resource-frontend-hosting", "fx-resource-bot"],
         },
       };
 
-      const ports = await localEnvManager.getPortsFromProject(projectPath, projectSettings);
+      const ports = await localEnvManager.getPortsFromProject(
+        projectPath,
+        convertProjectSettingsV2ToV3(projectSettings, ".")
+      );
       chai.assert.sameMembers(
         ports,
         [53000, 3978, 9239],

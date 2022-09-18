@@ -18,8 +18,12 @@ import os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import * as uuid from "uuid";
-import { checkPermission, grantPermission, listCollaborator } from "../../src/core/collaborator";
-import { CollaborationUtil } from "../../src/plugins/solution/fx-solution/v2/collaborationUtil";
+import {
+  checkPermission,
+  CollaborationUtil,
+  grantPermission,
+  listCollaborator,
+} from "../../src/core/collaborator";
 import {
   BuiltInFeaturePluginNames,
   BuiltInSolutionNames,

@@ -55,20 +55,36 @@ After provision, you can find the default domain from `fx-resource-frontend-host
 1. Navigate to your created CDN endpoint and copy the endpoint hostname. For example, "https://sample.azureedge.net"
 
 #### Action 3 Update Frontend Info
-1. Open `templates\azure\provision\frontendHosting.bicep` file, and find the following two lines:
-    ```
-    output endpoint string = 'https://${siteDomain}'
-    output domain string = siteDomain
-    ```
+1. Update `domain` and `endpoint`
+    * For Visual Studio Code
+        1. Open `templates\azure\provision\azureStorageTab.bicep` file, and find the following two lines:
+            ```
+            output endpoint string = 'https://${siteDomain}'
+            output domain string = siteDomain
+            ```
 
-1. Replace `siteDomain` with your CDN endpoint as following. Note you need to use your CDN endpoint copied above.
-   ```
-   output endpoint string = 'https://sample.azureedge.net'
-   output domain string = 'sample.azureedge.net'
-   ```
+        1. Replace `siteDomain` with your CDN endpoint as following. Note you need to use your CDN endpoint copied above.
+            ```
+            output endpoint string = 'https://sample.azureedge.net'
+            output domain string = 'sample.azureedge.net'
+            ```
+    * For Visual Studio
+        1. Open `templates\azure\provision\webapp.bicep` file, and find the following two lines:
+            ```
+            output endpoint string = 'https://${siteDomain}'
+            output domain string = siteDomain
+            ```
 
-1. Run "Teams - Provision in the cloud" and "Teams - Deploy to the cloud" or press F5 to start local debug.
-Please refer to the [Setup CDN as storage custom domain](#scenario-one-setup-cdn-as-storage-custom-domain) to config custom domain.
+        1. Replace `siteDomain` with your CDN endpoint as following. Note you need to use your CDN endpoint copied above.
+        ```
+        output endpoint string = 'https://sample.azureedge.net'
+        output domain string = 'sample.azureedge.net'
+        ```
+
+1. `Provision` and `Deploy`
+    * [Visual Studio Code] Run "Teams - Provision in the cloud" and "Teams - Deploy to the cloud" or press F5 to start local debug.
+    * [Visual Studio] Click "Project" -> "Teams Toolkit" -> "Provision in the cloud" and "Deploy to the cloud" or click "Project" -> "Teams Toolkit" -> "Prepare Teams App Dependencies".
+
 
 ### Step #2 Update Auth Config
 Get the custom domain from `fx-resource-frontend-hosting.domain` in `.fx\states\state.{envName}.json`. Add auth field in `.fx\configs\config.{envName}.json` as below and replace the value of `frontendDomain` with the custom domain. 

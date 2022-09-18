@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { ResourceManagementClient } from "@azure/arm-resources";
 import {
   FuncValidation,
   Inputs,
@@ -18,10 +19,12 @@ import mockedEnv from "mocked-env";
 import os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { Container } from "typedi";
-import { FeatureFlagName } from "../../src/common/constants";
+import { executeCommand, tryExecuteCommand } from "../../src/common/cpUtils";
 import { isFeatureFlagEnabled } from "../../src/common/featureFlags";
-import * as tools from "../../src/common/tools";
+import { execPowerShell, execShell } from "../../src/common/local/process";
+import { TaskDefinition } from "../../src/common/local/taskDefinition";
+import { getLocalizedString } from "../../src/common/localizeUtils";
+import { isValidProject } from "../../src/common/projectSettingsHelper";
 import {
   ContextUpgradeError,
   FetchSampleError,
@@ -30,29 +33,15 @@ import {
   TaskNotSupportError,
   WriteFileError,
 } from "../../src/core/error";
-import { createAppNameQuestion } from "../../src/core/question";
-import {
-  getAllSolutionPluginsV2,
-  getSolutionPluginByName,
-  getSolutionPluginV2ByName,
-  SolutionPlugins,
-  SolutionPluginsV2,
-} from "../../src/core/SolutionPluginContainer";
-import { parseTeamsAppTenantId } from "../../src/plugins/solution/fx-solution/v2/utils";
-import { MockAzureAccountProvider, MockTools, randomAppName } from "./utils";
-import { executeCommand, tryExecuteCommand } from "../../src/common/cpUtils";
-import { TaskDefinition } from "../../src/common/local/taskDefinition";
-import { execPowerShell, execShell } from "../../src/common/local/process";
-import { isValidProject } from "../../src/common/projectSettingsHelper";
-import "../../src/plugins/solution/fx-solution/v2/solution";
-import { getLocalizedString } from "../../src/common/localizeUtils";
-import { ResourceManagementClient } from "@azure/arm-resources";
-import { resourceGroupHelper } from "../../src/plugins/solution/fx-solution/utils/ResourceGroupHelper";
 import {
   upgradeDefaultFunctionName,
   upgradeProgrammingLanguage,
 } from "../../src/core/middleware/envInfoLoader";
+import { createAppNameQuestion } from "../../src/core/question";
+import { resourceGroupHelper } from "../../src/plugins/solution/fx-solution/utils/ResourceGroupHelper";
+import { parseTeamsAppTenantId } from "../../src/plugins/solution/fx-solution/v2/utils";
 import { TestHelper } from "../plugins/resource/frontend/helper";
+import { randomAppName } from "./utils";
 describe("Other test case", () => {
   const sandbox = sinon.createSandbox();
 
@@ -176,19 +165,6 @@ describe("Other test case", () => {
     });
     assert.isFalse(isFeatureFlagEnabled(featureFlagName));
     restore();
-  });
-
-  it("SolutionPluginContainer", () => {
-    const solutionPluginsV2 = getAllSolutionPluginsV2();
-    assert.isTrue(solutionPluginsV2.map((s) => s.name).includes("fx-solution-azure"));
-    assert.equal(
-      getSolutionPluginV2ByName("fx-solution-azure"),
-      Container.get(SolutionPluginsV2.AzureTeamsSolutionV2)
-    );
-    assert.equal(
-      getSolutionPluginByName("fx-solution-azure"),
-      Container.get(SolutionPlugins.AzureTeamsSolution)
-    );
   });
 
   it("ContextUpgradeError", async () => {

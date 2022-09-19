@@ -69,8 +69,8 @@ import {
   TelemetryProperty,
 } from "../../common/telemetry";
 import * as dotenv from "dotenv";
-import { PlaceHolders } from "../../plugins/resource/spfx/utils/constants";
-import { Utils as SPFxUtils } from "../../plugins/resource/spfx/utils/utils";
+import { PlaceHolders } from "../../component/resource/spfx/utils/constants";
+import { Utils as SPFxUtils } from "../../component/resource/spfx/utils/utils";
 import util from "util";
 import { NamedArmResourcePluginAdaptor } from "../../plugins/solution/fx-solution/v2/adaptor";
 import { setActivatedResourcePluginsV2 } from "../../plugins/solution/fx-solution/v2/utils";

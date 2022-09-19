@@ -22,7 +22,7 @@ import {
   frameworkQuestion,
   versionCheckQuestion,
   webpartNameQuestion,
-} from "../../plugins/resource/spfx/utils/questions";
+} from "../../component/resource/spfx/utils/questions";
 import { SPFxTabCodeProvider } from "../code/spfxTabCode";
 import { ComponentNames } from "../constants";
 import { generateLocalDebugSettings } from "../debug";

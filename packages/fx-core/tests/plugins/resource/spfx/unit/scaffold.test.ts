@@ -20,10 +20,10 @@ import { ComponentNames } from "../../../../../src/component/constants";
 import { DefaultManifestProvider } from "../../../../../src/component/resource/appManifest/manifestProvider";
 import { createContextV3, newProjectSettingsV3 } from "../../../../../src/component/utils";
 import { setTools } from "../../../../../src/core/globalVars";
-import { GeneratorChecker } from "../../../../../src/plugins/resource/spfx/depsChecker/generatorChecker";
-import { YoChecker } from "../../../../../src/plugins/resource/spfx/depsChecker/yoChecker";
-import { SPFXQuestionNames } from "../../../../../src/plugins/resource/spfx/utils/questions";
-import { Utils } from "../../../../../src/plugins/resource/spfx/utils/utils";
+import { GeneratorChecker } from "../../../../../src/component/resource/spfx/depsChecker/generatorChecker";
+import { YoChecker } from "../../../../../src/component/resource/spfx/depsChecker/yoChecker";
+import { SPFXQuestionNames } from "../../../../../src/component/resource/spfx/utils/questions";
+import { Utils } from "../../../../../src/component/resource/spfx/utils/utils";
 import { cpUtils } from "../../../../../src/plugins/solution/fx-solution/utils/depsChecker/cpUtils";
 import { MockTools, MockUserInteraction } from "../../../../core/utils";
 

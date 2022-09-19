@@ -4,9 +4,9 @@
 import "mocha";
 import sinon from "sinon";
 import * as chai from "chai";
-import * as Utils from "../../../../../src/plugins/resource/spfx/utils/utils";
+import * as Utils from "../../../../../src/component/resource/spfx/utils/utils";
 import { InputsWithProjectPath, ok, Platform, ResourceContextV3 } from "@microsoft/teamsfx-api";
-import { SPOClient } from "../../../../../src/plugins/resource/spfx/spoClient";
+import { SPOClient } from "../../../../../src/component/resource/spfx/spoClient";
 import * as tools from "../../../../../src/common/tools";
 import { SpfxResource } from "../../../../../src/component/resource/spfx";
 import { createContextV3 } from "../../../../../src/component/utils";

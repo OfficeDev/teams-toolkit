@@ -10,11 +10,11 @@ import fs from "fs-extra";
 
 import { TestHelper } from "../helper";
 
-import { telemetryHelper } from "../../../../../src/plugins/resource/spfx/utils/telemetry-helper";
-import { YoChecker } from "../../../../../src/plugins/resource/spfx/depsChecker/yoChecker";
+import { telemetryHelper } from "../../../../../src/component/resource/spfx/utils/telemetry-helper";
+import { YoChecker } from "../../../../../src/component/resource/spfx/depsChecker/yoChecker";
 import { LogProvider, LogLevel, Colors } from "@microsoft/teamsfx-api";
 
-const ryc = rewire("../../../../../src/plugins/resource/spfx/depsChecker/yoChecker");
+const ryc = rewire("../../../../../src/component/resource/spfx/depsChecker/yoChecker");
 
 class StubLogger implements LogProvider {
   async log(logLevel: LogLevel, message: string): Promise<boolean> {

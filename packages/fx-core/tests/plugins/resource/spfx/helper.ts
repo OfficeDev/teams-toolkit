@@ -24,7 +24,7 @@ import {
   Colors,
   M365TokenProvider,
 } from "@microsoft/teamsfx-api";
-import { SPFXQuestionNames } from "../../../../src/plugins/resource/spfx/utils/questions";
+import { SPFXQuestionNames } from "../../../../src/component/resource/spfx/utils/questions";
 import faker from "faker";
 import sinon from "sinon";
 import { newEnvInfo } from "../../../../src/core/environment";

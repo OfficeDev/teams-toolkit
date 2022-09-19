@@ -14,7 +14,7 @@ import {
 import VsCodeLogInstance from "../../commonlib/log";
 import { workspaceUri } from "../../globalVariables";
 import { tools } from "../../handlers";
-import { setUpBotDisplayMessages, taskNamePrefix } from "../constants";
+import { setUpBotDisplayMessages } from "../constants";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import { handleDebugActions } from "./common";
 import { LocalTunnelTaskTerminal } from "./localTunnelTaskTerminal";
@@ -39,8 +39,7 @@ export class SetUpBotTaskTerminal extends BaseTaskTerminal {
     }
 
     VsCodeLogInstance.outputChannel.show();
-    VsCodeLogInstance.info(`${taskNamePrefix}${setUpBotDisplayMessages.taskName}`);
-    VsCodeLogInstance.outputChannel.appendLine(setUpBotDisplayMessages.check);
+    VsCodeLogInstance.info(setUpBotDisplayMessages.title);
 
     const workspacePath: string = workspaceUri?.fsPath as string;
     const handler = new BotDebugHandler(

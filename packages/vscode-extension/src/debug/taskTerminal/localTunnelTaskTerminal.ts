@@ -18,7 +18,7 @@ import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps
 import { LocalEnvManager } from "@microsoft/teamsfx-core/build/common/local";
 import { vscodeLogger } from "../depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "../depsChecker/vscodeTelemetry";
-import { openTerminalCommand, localTunnelDisplayMessages, taskNamePrefix } from "../constants";
+import { openTerminalCommand, localTunnelDisplayMessages } from "../constants";
 import VsCodeLogInstance from "../../commonlib/log";
 import { doctorConstant } from "../depsChecker/doctorConstant";
 
@@ -283,7 +283,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
   }
 
   private outputStartMessage(): void {
-    VsCodeLogInstance.info(`${taskNamePrefix}${localTunnelDisplayMessages.taskName}`);
+    VsCodeLogInstance.info(localTunnelDisplayMessages.title);
     VsCodeLogInstance.outputChannel.appendLine(localTunnelDisplayMessages.check);
     VsCodeLogInstance.outputChannel.appendLine("");
 

@@ -73,7 +73,6 @@ import {
   prerequisiteCheckDisplayMessages,
   npmInstallDisplayMessages,
   DisplayMessages,
-  taskNamePrefix,
   prerequisiteCheckTaskDisplayMessages,
   prerequisiteCheckForGetStartedDisplayMessages,
 } from "./constants";
@@ -441,8 +440,7 @@ async function _checkAndInstall(
     );
 
     VsCodeLogInstance.outputChannel.show();
-    VsCodeLogInstance.info(`${taskNamePrefix}${displayMessages.taskName}`);
-    VsCodeLogInstance.outputChannel.appendLine(displayMessages.check);
+    VsCodeLogInstance.info(displayMessages.title);
 
     // Get deps
     const depsManager = new DepsManager(vscodeLogger, vscodeTelemetry);
@@ -848,7 +846,10 @@ async function checkDependency(
           : ResultStatus.success
         : ResultStatus.failed,
       successMsg: dep.details.binFolders
-        ? `${dep.name} (installed at ${dep.details.binFolders?.[0]})`
+        ? doctorConstant.DepsSuccess.replace("@depsName", dep.name).replace(
+            "@binFolder",
+            dep.details.binFolders?.[0]
+          )
         : dep.name,
       error: handleDepsCheckerError(dep.error, dep),
     };

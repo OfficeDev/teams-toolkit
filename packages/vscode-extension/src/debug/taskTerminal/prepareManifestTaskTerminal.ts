@@ -14,7 +14,7 @@ import {
 import VsCodeLogInstance from "../../commonlib/log";
 import { workspaceUri } from "../../globalVariables";
 import { tools } from "../../handlers";
-import { prepareManifestDisplayMessages, taskNamePrefix } from "../constants";
+import { prepareManifestDisplayMessages } from "../constants";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import { handleDebugActions } from "./common";
 
@@ -34,8 +34,7 @@ export class PrepareManifestTaskTerminal extends BaseTaskTerminal {
     }
 
     VsCodeLogInstance.outputChannel.show();
-    VsCodeLogInstance.info(`${taskNamePrefix}${prepareManifestDisplayMessages.taskName}`);
-    VsCodeLogInstance.outputChannel.appendLine(prepareManifestDisplayMessages.check);
+    VsCodeLogInstance.info(prepareManifestDisplayMessages.title);
 
     const workspacePath: string = workspaceUri?.fsPath as string;
     const handler = new AppManifestDebugHandler(

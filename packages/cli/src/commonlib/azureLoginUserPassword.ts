@@ -11,6 +11,7 @@ import dotenv from "dotenv";
 import { AzureAccountProvider, SubscriptionInfo, UserError } from "@microsoft/teamsfx-api";
 
 import * as cfg from "./common/userPasswordConfig";
+import { AzureScopes, ConvertTokenToJson } from "@microsoft/teamsfx-core";
 
 dotenv.config();
 
@@ -82,8 +83,14 @@ export class AzureAccountProviderUserPassword implements AzureAccountProvider {
   removeStatusChangeMap(name: string): Promise<boolean> {
     throw new Error("Method not implemented.");
   }
-  getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined> {
-    throw new Error("Method not implemented.");
+  async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined> {
+    const identity = await this.getIdentityCredentialAsync();
+    const token = await identity?.getToken(AzureScopes);
+    if (token?.token) {
+      return ConvertTokenToJson(token?.token);
+    } else {
+      return undefined;
+    }
   }
 
   async listSubscriptions(): Promise<SubscriptionInfo[]> {

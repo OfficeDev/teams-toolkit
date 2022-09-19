@@ -19,6 +19,7 @@ import CLILogProvider from "./log";
 import { LogLevel as LLevel } from "@microsoft/teamsfx-api";
 import * as os from "os";
 import { AzureSpCrypto } from "./cacheAccess";
+import { AzureScopes, ConvertTokenToJson } from "@microsoft/teamsfx-core";
 
 /**
  * Prepare for service principal login, not fully implemented
@@ -125,8 +126,14 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     };
   }
 
-  getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined> {
-    throw new Error("Method not implemented.");
+  async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined> {
+    const identity = await this.getIdentityCredentialAsync();
+    const token = await identity?.getToken(AzureScopes);
+    if (token?.token) {
+      return ConvertTokenToJson(token?.token);
+    } else {
+      return undefined;
+    }
   }
 
   async listSubscriptions(): Promise<SubscriptionInfo[]> {

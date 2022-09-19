@@ -65,7 +65,7 @@ export function generateTasks(
   includeFuncHostedBot: boolean,
   includeSSO: boolean,
   programmingLanguage: string
-): Record<string, unknown>[] {
+): (Record<string, unknown> | CommentJSONValue)[] {
   /**
    * Referenced by launch.json
    *   - Start Teams App Locally
@@ -85,7 +85,7 @@ export function generateTasks(
    *   - Watch backend
    *   - Start bot
    */
-  const tasks: Record<string, unknown>[] = [
+  const tasks: (Record<string, unknown> | CommentJSONValue)[] = [
     startTeamsAppLocally(includeFrontend, includeBackend, includeBot, includeSSO),
     validateAndInstallPrerequisites(
       includeFrontend,
@@ -153,7 +153,7 @@ export function generateM365Tasks(
   includeFuncHostedBot: boolean,
   includeSSO: boolean,
   programmingLanguage: string
-): Record<string, unknown>[] {
+): (Record<string, unknown> | CommentJSONValue)[] {
   /**
    * Referenced by launch.json
    *   - Start Teams App Locally
@@ -359,8 +359,11 @@ function installNPMpackages(
   return result;
 }
 
-function installAzureFunctionsBindingExtensions(): Record<string, unknown> {
-  return {
+function installAzureFunctionsBindingExtensions(): CommentJSONValue {
+  const comment = `{
+    // TeamsFx Azure Functions project depends on extra Azure Functions binding extensions for HTTP trigger authorization.
+  }`;
+  const task = {
     label: "Install Azure Functions binding extensions",
     type: "shell",
     command: "dotnet build extensions.csproj -o ./bin --ignore-failed-sources",
@@ -371,6 +374,7 @@ function installAzureFunctionsBindingExtensions(): Record<string, unknown> {
       },
     },
   };
+  return commentJson.assign(commentJson.parse(comment), task);
 }
 
 function startLocalTunnel(): Record<string, unknown> {

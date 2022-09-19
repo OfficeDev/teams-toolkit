@@ -12,7 +12,7 @@ export const errorSource = "debugHandler";
 export function AppManifestPackageNotExistError(appManifestPackagePath: string): UserError {
   return new UserError(
     errorSource,
-    "InvalidAppManifestDebugArgsError",
+    "InvalidDebugArgsError",
     util.format(
       getDefaultString("error.debugHandler.AppManifestPackageNotExistError"),
       appManifestPackagePath
@@ -27,44 +27,26 @@ export function AppManifestPackageNotExistError(appManifestPackagePath: string):
 export function InvalidAppManifestPackageFileFormatError(): UserError {
   return new UserError(
     errorSource,
-    "InvalidAppManifestDebugArgsError",
+    "InvalidDebugArgsError",
     getDefaultString("error.debugHandler.InvalidAppManifestPackageFileFormatError"),
     getLocalizedString("error.debugHandler.InvalidAppManifestPackageFileFormatError")
   );
 }
 
-export function InvalidSSODebugArgsError(): UserError {
+export function DebugArgumentEmptyError(argument: string): UserError {
   return new UserError(
     errorSource,
-    "InvalidSSODebugArgsError",
-    getDefaultString("error.debugHandler.InvalidSSODebugArgsError"),
-    getLocalizedString("error.debugHandler.InvalidSSODebugArgsError")
+    "InvalidDebugArgsError",
+    util.format(getDefaultString("error.debugHandler.DebugArgumentEmptyError"), argument),
+    util.format(getLocalizedString("error.debugHandler.DebugArgumentEmptyError"), argument)
   );
 }
 
-export function InvalidExistingBotArgsError(): UserError {
+export function InvalidTabBaseUrlError(): UserError {
   return new UserError(
     errorSource,
-    "InvalidBotDebugArgsError",
-    getDefaultString("error.debugHandler.InvalidExistingBotArgsError"),
-    getLocalizedString("error.debugHandler.InvalidExistingBotArgsError")
-  );
-}
-
-export function BotMessagingEndpointMissingError(): UserError {
-  return new UserError(
-    errorSource,
-    "InvalidBotDebugArgsError",
-    getDefaultString("error.debugHandler.BotMessagingEndpointMissingError"),
-    getLocalizedString("error.debugHandler.BotMessagingEndpointMissingError")
-  );
-}
-
-export function InvalidTabDebugArgsError(): UserError {
-  return new UserError(
-    errorSource,
-    "InvalidTabDebugArgsError",
-    getDefaultString("error.debugHandler.InvalidTabDebugArgsError"),
-    getLocalizedString("error.debugHandler.InvalidTabDebugArgsError")
+    "InvalidDebugArgsError",
+    getDefaultString("error.debugHandler.InvalidTabBaseUrlError"),
+    getLocalizedString("error.debugHandler.InvalidTabBaseUrlError")
   );
 }

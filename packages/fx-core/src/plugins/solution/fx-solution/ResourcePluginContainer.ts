@@ -11,7 +11,6 @@ import "reflect-metadata";
 import { Container } from "typedi";
 import { SolutionError, SolutionSource } from "./constants";
 export const ResourcePlugins = {
-  SpfxPlugin: "SpfxPlugin",
   FrontendPlugin: "FrontendPlugin",
   IdentityPlugin: "IdentityPlugin",
   SqlPlugin: "SqlPlugin",
@@ -26,7 +25,6 @@ export const ResourcePlugins = {
 };
 
 export const ResourcePluginsV2 = {
-  SpfxPlugin: "SpfxPluginV2",
   FrontendPlugin: "FrontendPluginV2",
   IdentityPlugin: "IdentityPluginV2",
   SqlPlugin: "SqlPluginV2",

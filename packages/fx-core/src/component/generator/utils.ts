@@ -116,7 +116,6 @@ export async function getValidSampleDestination(
   destinationPath: string
 ): Promise<string> {
   let sampleDestination = path.join(destinationPath, sampleName);
-  // if sample destination already exists, append a number to the end.
   if (
     (await fs.pathExists(sampleDestination)) &&
     (await fs.readdir(sampleDestination)).length > 0

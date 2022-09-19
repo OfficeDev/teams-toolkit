@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { ResourceContextV3, AzureAccountProvider, LogProvider, Json } from "@microsoft/teamsfx-api";
-import { AzureScopes } from "../../../../common";
+import { AzureScopes } from "../../../../common/tools";
 import { ComponentNames } from "../../../constants";
 import { ManagementClient } from "../clients/management";
 import { SqlClient } from "../clients/sql";

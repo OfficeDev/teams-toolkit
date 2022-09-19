@@ -16,7 +16,7 @@ import {
 } from "../../../../src/plugins/resource/frontend/constants";
 import { FrontendConfig } from "../../../../src/plugins/resource/frontend/configs";
 import { MyTokenCredential } from "../bot/unit/utils";
-import { StorageAccountsCreateResponse } from "@azure/arm-storage/esm/models";
+import { StorageAccountsCreateResponse } from "@azure/arm-storage";
 import { LocalCrypto } from "../../../../src/core/crypto";
 import { newEnvInfo } from "../../../../src/core/environment";
 import { ARM_TEMPLATE_OUTPUT } from "../../../../src/plugins/solution/fx-solution/constants";

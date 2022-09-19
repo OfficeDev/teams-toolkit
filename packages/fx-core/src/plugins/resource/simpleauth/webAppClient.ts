@@ -18,7 +18,7 @@ import { ResultFactory } from "./result";
 import { DialogUtils } from "./utils/dialog";
 import { Providers, ResourceManagementClient } from "@azure/arm-resources";
 import { Utils } from "./utils/common";
-import { AzureScopes } from "../../../common";
+import { AzureScopes } from "../../../common/tools";
 
 export class WebAppClient {
   private credentials: TokenCredential;

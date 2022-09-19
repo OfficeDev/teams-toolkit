@@ -24,7 +24,7 @@ import { LogMessages } from "../log";
 import { TokenCredential } from "@azure/identity";
 import { OpenAPI } from "openapi-types";
 import { Providers } from "@azure/arm-resources";
-import { AzureScopes, ConvertTokenToJson } from "../../../../common";
+import { AzureScopes, ConvertTokenToJson } from "../../../../common/tools";
 
 export class ApimService {
   private readonly subscriptionId: string;
